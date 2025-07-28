@@ -215,6 +215,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         not_milestone_title: nil,
         any_milestones: false,
         none_milestones: false,
+        milestone_state_filters: nil,
         assignee_ids: [assignee_user.id],
         not_assignee_ids: nil,
         or_assignee_ids: nil,
@@ -334,6 +335,54 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         end
 
         it_behaves_like 'executes ES search with expected params'
+      end
+
+      context 'when milestone_state_filters param provided' do
+        context 'when milestone_wildcard_id param is UPCOMING' do
+          before do
+            params[:milestone_wildcard_id] = described_class::FILTER_MILESTONE_UPCOMING
+            search_params.merge!(milestone_state_filters: [:upcoming])
+          end
+
+          it_behaves_like 'executes ES search with expected params'
+        end
+
+        context 'when milestone_wildcard_id param is STARTED' do
+          before do
+            params[:milestone_wildcard_id] = described_class::FILTER_MILESTONE_STARTED
+            search_params.merge!(milestone_state_filters: [:started])
+          end
+
+          it_behaves_like 'executes ES search with expected params'
+        end
+
+        context 'when not milestone_wildcard_id param is UPCOMING' do
+          before do
+            params[:not][:milestone_wildcard_id] = described_class::FILTER_MILESTONE_UPCOMING
+            search_params.merge!(milestone_state_filters: [:not_upcoming])
+          end
+
+          it_behaves_like 'executes ES search with expected params'
+        end
+
+        context 'when not milestone_wildcard_id param is STARTED' do
+          before do
+            params[:not][:milestone_wildcard_id] = described_class::FILTER_MILESTONE_STARTED
+            search_params.merge!(milestone_state_filters: [:not_started])
+          end
+
+          it_behaves_like 'executes ES search with expected params'
+        end
+
+        context 'when milestone_wildcard_id is STARTED and not milestone_wildcard_id is UPCOMING' do
+          before do
+            params[:milestone_wildcard_id] = described_class::FILTER_MILESTONE_STARTED
+            params[:not][:milestone_wildcard_id] = described_class::FILTER_MILESTONE_UPCOMING
+            search_params.merge!(milestone_state_filters: [:started, :not_upcoming])
+          end
+
+          it_behaves_like 'executes ES search with expected params'
+        end
       end
 
       context 'when multiple assignee usernames provided' do

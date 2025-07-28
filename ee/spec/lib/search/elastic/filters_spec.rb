@@ -249,6 +249,124 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
+  describe '.by_milestone_state' do
+    subject(:by_milestone_state) { described_class.by_milestone_state(query_hash: query_hash, options: options) }
+
+    # milestone_state_filters holds [:upcoming, :started, :not_upcoming, :not_started]
+    context 'when milestone_state_filters options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:milestone_state_filters] contains :upcoming' do
+      let(:options) { { milestone_state_filters: [:upcoming] } }
+
+      it 'adds the upcoming milestone filter to query_hash' do
+        expected_filter = [{
+          bool: {
+            _name: "filters:milestone_state_upcoming",
+            must: [
+              { term: { milestone_state: "active" } },
+              { range: { milestone_start_date: { gt: "now/d" } } }
+            ]
+          }
+        }]
+
+        expect(by_milestone_state.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone_state.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:milestone_state_filters] contains :not_started' do
+      let(:options) { { milestone_state_filters: [:not_started] } }
+
+      it 'adds the not_started milestone filter to query_hash' do
+        expected_filter = [{
+          bool: {
+            _name: "filters:milestone_state_not_started",
+            must: [
+              { term: { milestone_state: "active" } },
+              { range: { milestone_start_date: { gt: "now/d" } } }
+            ]
+          }
+        }]
+
+        expect(by_milestone_state.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone_state.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:milestone_state_filters] contains :not_upcoming' do
+      let(:options) { { milestone_state_filters: [:not_upcoming] } }
+
+      it 'adds the not_upcoming milestone filter to query_hash' do
+        expected_filter = [{
+          bool: {
+            _name: "filters:milestone_state_not_upcoming",
+            must: [
+              { term: { milestone_state: "active" } },
+              { range: { milestone_start_date: { lte: "now/d" } } }
+            ]
+          }
+        }]
+
+        expect(by_milestone_state.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone_state.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:milestone_state_filters] contains :started' do
+      let(:options) { { milestone_state_filters: [:started] } }
+
+      it 'adds the started milestone filter to query_hash' do
+        expected_filter = [{
+          bool: {
+            _name: "filters:milestone_state_started",
+            must: [
+              { term: { milestone_state: "active" } },
+              {
+                bool: {
+                  should: [
+                    { range: { milestone_start_date: { lte: "now/d" } } },
+                    { bool: { must_not: { exists: { field: "milestone_start_date" } } } }
+                  ]
+                }
+              },
+              {
+                bool: {
+                  should: [
+                    { range: { milestone_due_date: { gte: "now/d" } } },
+                    { bool: { must_not: { exists: { field: "milestone_due_date" } } } }
+                  ]
+                }
+              }
+            ],
+            must_not: {
+              bool: {
+                must: [
+                  { bool: { must_not: { exists: { field: "milestone_start_date" } } } },
+                  { bool: { must_not: { exists: { field: "milestone_due_date" } } } }
+                ]
+              }
+            }
+          }
+        }]
+
+        expect(by_milestone_state.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_milestone_state.dig(:query, :bool, :must)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_milestone_state.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+  end
+
   describe '.by_author' do
     let_it_be(:included_user) { user }
     let_it_be(:excluded_user) { create(:user) }

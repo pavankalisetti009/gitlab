@@ -189,6 +189,80 @@ module Search
           query_hash
         end
 
+        def by_milestone_state(query_hash:, options:)
+          # Unified milestone state filters holding an array of the following symbols
+          # :upcoming, :started, :not_upcoming, :not_started
+          milestone_state_filters = options[:milestone_state_filters]
+
+          return query_hash unless milestone_state_filters
+
+          context.name(:filters) do
+            milestone_state_filters.each do |filter_type|
+              base_query = {
+                bool: {
+                  _name: context.name("milestone_state_#{filter_type}"),
+                  must: [
+                    { term: { milestone_state: "active" } }
+                  ]
+                }
+              }
+
+              if filter_type == :upcoming || filter_type == :not_started
+                # Both follow the same patterns: active milestones with start_date > now
+                base_query[:bool][:must] << {
+                  range: { milestone_start_date: { gt: "now/d" } }
+                }
+              end
+
+              if filter_type == :started
+                # Active milestones that have started but not finished
+                # or that have started but have no due date
+                # or that have no start date but due date is in the future
+                base_query[:bool][:must].concat([
+                  {
+                    bool: {
+                      should: [
+                        { range: { milestone_start_date: { lte: "now/d" } } },
+                        { bool: { must_not: { exists: { field: "milestone_start_date" } } } }
+                      ]
+                    }
+                  },
+                  {
+                    bool: {
+                      should: [
+                        { range: { milestone_due_date: { gte: "now/d" } } },
+                        { bool: { must_not: { exists: { field: "milestone_due_date" } } } }
+                      ]
+                    }
+                  }
+                ])
+
+                base_query[:bool][:must_not] = {
+                  bool: {
+                    must: [
+                      { bool: { must_not: { exists: { field: "milestone_start_date" } } } },
+                      { bool: { must_not: { exists: { field: "milestone_due_date" } } } }
+                    ]
+                  }
+                }
+              end
+
+              if filter_type == :not_upcoming
+                # Active milestones that have already started (start_date <= now)
+                base_query[:bool][:must] << {
+                  range: { milestone_start_date: { lte: "now/d" } }
+                }
+              end
+
+              add_filter(query_hash, :query, :bool, :filter) do
+                base_query
+              end
+            end
+          end
+
+          query_hash
+        end
+
         def by_assignees(query_hash:, options:)
           assignee_ids = options[:assignee_ids]
           not_assignee_ids = options[:not_assignee_ids]
