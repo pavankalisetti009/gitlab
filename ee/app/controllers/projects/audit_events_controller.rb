@@ -41,7 +41,7 @@ class Projects::AuditEventsController < Projects::ApplicationController
 
   def check_audit_events_available!
     render_404 unless can?(current_user, :read_project_audit_events, project) &&
-      (project.feature_available?(:audit_events) || LicenseHelper.show_promotions?(current_user))
+      (project.feature_available?(:audit_events) || show_promotions?(current_user))
   end
 
   def events

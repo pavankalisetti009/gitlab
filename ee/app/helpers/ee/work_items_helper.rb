@@ -33,5 +33,14 @@ module EE
 
       super
     end
+
+    override :instance_type_new_trial_path
+    def instance_type_new_trial_path(group)
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        new_trial_path(namespace_id: group&.id)
+      else
+        super
+      end
+    end
   end
 end
