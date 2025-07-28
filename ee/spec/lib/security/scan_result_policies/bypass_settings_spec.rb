@@ -69,4 +69,76 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
       end
     end
   end
+
+  describe '#user_ids' do
+    context 'when users are present' do
+      let(:bypass_settings) { { users: [{ id: 100 }, { id: 200 }] } }
+
+      it 'returns the ids of users' do
+        expect(bypass_settings_instance.user_ids).to match_array([100, 200])
+      end
+    end
+
+    context 'when users is nil or missing' do
+      let(:bypass_settings) { {} }
+
+      it 'returns nil' do
+        expect(bypass_settings_instance.user_ids).to be_nil
+      end
+    end
+  end
+
+  describe '#group_ids' do
+    context 'when groups are present' do
+      let(:bypass_settings) { { groups: [{ id: 300 }, { id: 400 }] } }
+
+      it 'returns the ids of groups' do
+        expect(bypass_settings_instance.group_ids).to match_array([300, 400])
+      end
+    end
+
+    context 'when groups is nil or missing' do
+      let(:bypass_settings) { {} }
+
+      it 'returns nil' do
+        expect(bypass_settings_instance.group_ids).to be_nil
+      end
+    end
+  end
+
+  describe '#default_roles' do
+    context 'when roles are present' do
+      let(:bypass_settings) { { roles: %w[maintainer developer developer] } }
+
+      it 'returns unique roles as an array' do
+        expect(bypass_settings_instance.default_roles).to match_array(%w[maintainer developer])
+      end
+    end
+
+    context 'when roles is nil or missing' do
+      let(:bypass_settings) { {} }
+
+      it 'returns an empty array' do
+        expect(bypass_settings_instance.default_roles).to eq([])
+      end
+    end
+  end
+
+  describe '#custom_role_ids' do
+    context 'when custom_roles are present' do
+      let(:bypass_settings) { { custom_roles: [{ id: 500 }, { id: 600 }] } }
+
+      it 'returns the ids of custom roles' do
+        expect(bypass_settings_instance.custom_role_ids).to match_array([500, 600])
+      end
+    end
+
+    context 'when custom_roles is nil or missing' do
+      let(:bypass_settings) { {} }
+
+      it 'returns nil' do
+        expect(bypass_settings_instance.custom_role_ids).to be_nil
+      end
+    end
+  end
 end
