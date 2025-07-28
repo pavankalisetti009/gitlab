@@ -1,8 +1,8 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { mount, shallowMount } from '@vue/test-utils';
 import { unionBy } from 'lodash';
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SidebarStatusDropdown from 'ee/sidebar/components/status/sidebar_status_dropdown.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
@@ -29,7 +29,7 @@ describe('SidebarStatus component', () => {
   });
 
   const createComponent = ({
-    mountFn = shallowMount,
+    mountFn = shallowMountExtended,
     fullPath = 'gitlab-org/gitlab-test',
     queryHandler = namespaceQueryHandler,
   } = {}) => {
@@ -43,6 +43,7 @@ describe('SidebarStatus component', () => {
   };
 
   const findSidebarDropdownWidget = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findDropdownItems = () => wrapper.findAllByTestId('status-list-item');
 
   const showDropdown = () => {
     findSidebarDropdownWidget().vm.$emit('shown');
@@ -81,7 +82,7 @@ describe('SidebarStatus component', () => {
     });
 
     it('resets the options on frontend when dropdown hidden after search', async () => {
-      createComponent({ mountFn: mount });
+      createComponent({ mountFn: mountExtended });
 
       showDropdown();
       await waitForPromises();
@@ -110,13 +111,20 @@ describe('SidebarStatus component', () => {
     });
 
     it('shows the status in dropdown when the items have finished fetching', async () => {
-      createComponent({ mountFn: mount });
+      createComponent({ mountFn: mountExtended });
 
       showDropdown();
       await waitForPromises();
 
+      const dropdownItems = findDropdownItems();
       expect(findSidebarDropdownWidget().props('loading')).toBe(false);
       expect(findSidebarDropdownWidget().props('items')).toHaveLength(allowedStatus.length);
+      expect(dropdownItems).toHaveLength(allowedStatus.length);
+
+      const dropdownItemIcon = dropdownItems.at(0).findComponent(GlIcon);
+      expect(dropdownItemIcon.exists()).toBe(true);
+      expect(dropdownItemIcon.props('name')).toBe(allowedStatus[0].iconName);
+      expect(dropdownItemIcon.attributes('style')).toBe('color: rgb(115, 114, 120);');
     });
   });
 });

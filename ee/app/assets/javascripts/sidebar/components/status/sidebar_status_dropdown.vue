@@ -1,7 +1,8 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
 import { unionBy } from 'lodash';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
+import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
@@ -10,6 +11,7 @@ import { __, s__ } from '~/locale';
 export default {
   components: {
     GlCollapsibleListbox,
+    GlIcon,
   },
   props: {
     fullPath: {
@@ -82,6 +84,7 @@ export default {
     },
   },
   methods: {
+    getAdaptiveStatusColor,
     onSearch(value) {
       this.searchTerm = value;
     },
@@ -117,7 +120,15 @@ export default {
       @reset="handleReset"
     >
       <template #list-item="{ item }">
-        <slot name="list-item" :item="item">{{ item.text }}</slot>
+        <div class="gl-truncate" data-testid="status-list-item">
+          <gl-icon
+            :name="item.iconName"
+            :size="12"
+            class="gl-mr-2"
+            :style="{ color: getAdaptiveStatusColor(item.color) }"
+          />
+          <span>{{ item.text }}</span>
+        </div>
       </template>
     </gl-collapsible-listbox>
   </div>

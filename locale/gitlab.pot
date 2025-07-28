@@ -72038,6 +72038,9 @@ msgstr ""
 msgid "WorkItem|No assignees"
 msgstr ""
 
+msgid "WorkItem|No available status for all selected items."
+msgstr ""
+
 msgid "WorkItem|No child items are currently assigned. Use child items to break down this issue into smaller parts."
 msgstr ""
 
@@ -72309,6 +72312,9 @@ msgid "WorkItem|Something went wrong while fetching more related vulnerabilities
 msgstr ""
 
 msgid "WorkItem|Something went wrong while fetching related vulnerabilities."
+msgstr ""
+
+msgid "WorkItem|Something went wrong while fetching statuses. Please try again."
 msgstr ""
 
 msgid "WorkItem|Something went wrong while fetching the %{workItemType}. Please try again."
