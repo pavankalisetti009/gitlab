@@ -54,6 +54,14 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           expect(data[:ldap_users_path]).to eq '/admin/users?filter=ldap_sync'
         end
 
+        context 'when license does not have custom roles feature' do
+          before do
+            stub_licensed_features(custom_roles: false)
+          end
+
+          it { is_expected.not_to have_key(:new_role_path) }
+        end
+
         context 'when user cannot manage ldap admin links' do
           before do
             allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(false)
@@ -98,6 +106,14 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             expect(data[:group_full_path]).to eq source.full_path
             expect(data[:group_id]).to eq source.id
             expect(data[:current_user_email]).to eq user.notification_email_or_default
+          end
+
+          context 'when group license does not have custom roles features' do
+            before do
+              allow(root_group).to receive(:custom_roles_enabled?).and_return(false)
+            end
+
+            it { is_expected.not_to have_key(:new_role_path) }
           end
         end
       end
