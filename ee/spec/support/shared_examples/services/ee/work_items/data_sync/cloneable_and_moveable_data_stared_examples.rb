@@ -100,6 +100,7 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
 
   let_it_be(:move) { WorkItems::DataSync::MoveService }
   let_it_be(:clone) { WorkItems::DataSync::CloneService }
+  let_it_be(:always_cleaned_up_widgets) { [:work_item_parent, :epic] }
 
   # rubocop: disable Layout/LineLength -- improved readability with one line per widget
   let_it_be(:widgets) do

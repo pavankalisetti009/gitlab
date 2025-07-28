@@ -166,6 +166,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
 
         before do
           allow(original_work_item).to receive(:supports_move_and_clone?).and_return(true)
+          stub_licensed_features(epics: true, subepics: true)
         end
 
         it_behaves_like 'cloneable and moveable work item'

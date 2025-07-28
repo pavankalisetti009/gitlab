@@ -158,39 +158,97 @@ RSpec.describe WorkItems::DataSync::Widgets::Hierarchy, feature_category: :team_
     end
 
     describe '#post_move_cleanup' do
-      context 'when work item to be moved is an issue with epic_issue record' do
-        let_it_be(:parent_link) do
-          create(:parent_link, work_item: work_item, work_item_parent: epic.work_item, relative_position: 20).tap do |l|
-            create(:epic_issue, issue: work_item, epic: epic, work_item_parent_link: l, relative_position: 20)
+      context 'when cleanup_data_source_work_item_data feature is enabled' do
+        before do
+          stub_feature_flags(cleanup_data_source_work_item_data: true)
+        end
+
+        context 'when work item to be moved is an issue with epic_issue record' do
+          let_it_be(:parent_link) do
+            create(:parent_link, :with_epic_issue, work_item: work_item, work_item_parent: epic.work_item,
+              relative_position: 20)
+          end
+
+          it "clears the epic and deletes the epic_issue and the parent_link records" do
+            expect { callback.post_move_cleanup }.to change { work_item.reload.epic }.from(epic).to(nil)
+              .and change { EpicIssue.count }.by(-1)
+              .and change { WorkItems::ParentLink.count }.by(-1)
           end
         end
 
-        it "clears the epic and deletes the epic_issue and the parent_link records" do
-          expect { callback.post_move_cleanup }.to change { work_item.reload.epic }.from(epic).to(nil)
-            .and change { EpicIssue.count }.by(-1)
-            .and change { WorkItems::ParentLink.count }.by(-1)
+        context "when work item to be moved is an epic" do
+          let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+          let_it_be(:target_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: another_group) }
+
+          # As a new work item is created, we need to recreate the parent_link
+          let_it_be(:parent_link) do
+            create(:parent_link, work_item: work_item, work_item_parent: epic.work_item,
+              relative_position: 20).tap do |l|
+              work_item.sync_object.update!(parent: epic, work_item_parent_link: l, relative_position: 20)
+            end
+          end
+
+          before do
+            stub_licensed_features(epics: true, subepics: true)
+          end
+
+          it "clears the parent_link from work_item and clears the parent from the epic sync object" do
+            expect { callback.post_move_cleanup }.to change { work_item.reload.parent_link }.to(nil)
+              .and change { work_item.reload.sync_object.parent }.to(nil)
+          end
+
+          it "deletes the parent_link but does not delete any epic_issue record as there is none" do
+            expect { callback.post_move_cleanup }.to change { WorkItems::ParentLink.count }.by(-1)
+              .and not_change { EpicIssue.count }
+          end
         end
       end
 
-      context "when work item to be moved is an epic" do
-        let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
-        let_it_be(:target_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: another_group) }
+      context 'when cleanup_data_source_work_item_data feature is disabled' do
+        before do
+          stub_feature_flags(cleanup_data_source_work_item_data: false)
+        end
 
-        # As a new work item is created, we need to recreate the parent_link
-        let_it_be(:parent_link) do
-          create(:parent_link, work_item: work_item, work_item_parent: epic.work_item, relative_position: 20).tap do |l|
-            work_item.sync_object.update!(parent: epic, work_item_parent_link: l, relative_position: 20)
+        context 'when work item to be moved is an issue with epic_issue record' do
+          let_it_be(:parent_link) do
+            create(:parent_link, work_item: work_item, work_item_parent: epic.work_item,
+              relative_position: 20).tap do |l|
+              create(:epic_issue, issue: work_item, epic: epic, work_item_parent_link: l, relative_position: 20)
+            end
+          end
+
+          it "clears the epic and delete the epic_issue and the parent_link records" do
+            expect { callback.post_move_cleanup }.to change { work_item.reload.epic }.from(epic).to(nil)
+              .and change { EpicIssue.count }.by(-1)
+              .and change { WorkItems::ParentLink.count }.by(-1)
           end
         end
 
-        it "clears the parent_link from work_item but does not clear the parent from the epic sync object" do
-          expect { callback.post_move_cleanup }.to change { work_item.reload.parent_link }.to(nil)
-            .and not_change { work_item.reload.sync_object.parent }
-        end
+        context "when work item to be moved is an epic" do
+          let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+          let_it_be(:target_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: another_group) }
 
-        it "deletes the parent_link but does not delete any epic_issue record as there is none" do
-          expect { callback.post_move_cleanup }.to change { WorkItems::ParentLink.count }.by(-1)
-            .and not_change { EpicIssue.count }
+          # As a new work item is created, we need to recreate the parent_link
+          let_it_be(:parent_link) do
+            create(:parent_link, work_item: work_item, work_item_parent: epic.work_item,
+              relative_position: 20).tap do |l|
+              work_item.sync_object.update!(parent: epic, work_item_parent_link: l, relative_position: 20)
+            end
+          end
+
+          before do
+            stub_licensed_features(epics: true, subepics: true)
+          end
+
+          it "clears the parent_link from work_item but does not clear the parent from the epic sync object" do
+            expect { callback.post_move_cleanup }.to change { work_item.reload.parent_link }.to(nil)
+            .and change { work_item.reload.sync_object.parent }.to(nil)
+          end
+
+          it "deletes the parent_link but does not delete any epic_issue record as there is none" do
+            expect { callback.post_move_cleanup }.to change { WorkItems::ParentLink.count }.by(-1)
+              .and not_change { EpicIssue.count }
+          end
         end
       end
     end
