@@ -89,6 +89,7 @@ describe('CreateTrialWelcomeForm', () => {
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findCountrySelect = () => wrapper.findByTestId('country-dropdown');
   const findStateSelect = () => wrapper.findByTestId('state-dropdown');
+  const findCompanyNameInput = () => wrapper.find('[name="company_name"]');
   const fieldsProps = () => findFormFields().props('fields');
   const formValues = () => findFormFields().props('modelValue') || wrapper.vm.formValues;
 
@@ -255,6 +256,13 @@ describe('CreateTrialWelcomeForm', () => {
       it('always includes project name field', () => {
         expect(fieldsProps()).toHaveProperty('project_name');
         expect(fieldsProps().project_name.label).toBe(' ');
+      });
+
+      it('updates group and project names when company name changes', () => {
+        findCompanyNameInput().vm.$emit('input', 'company name');
+
+        expect(formValues().group_name).toBe('company name-group');
+        expect(formValues().project_name).toBe('company name-project');
       });
     });
   });

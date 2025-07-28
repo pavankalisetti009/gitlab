@@ -223,6 +223,12 @@ export default {
         this.formValues.state = '';
       }
     },
+    onCompanyNameChange(input, text) {
+      input(text);
+
+      this.formValues.group_name = `${text}-${this.$options.i18n.group}`;
+      this.formValues.project_name = `${text}-${this.$options.i18n.project}`;
+    },
   },
   apollo: {
     countries: {
@@ -262,6 +268,8 @@ export default {
     gitlabSubscription: TRIAL_GITLAB_SUBSCRIPTION_AGREEMENT,
     privacyStatement: TRIAL_PRIVACY_STATEMENT,
     cookiePolicy: TRIAL_COOKIE_POLICY,
+    group: __('group'),
+    project: __('project'),
   },
   formId: 'create-trial-form',
 };
@@ -286,6 +294,16 @@ export default {
       :server-validations="serverValidations"
       @submit="onSubmit"
     >
+      <template #input(company_name)="{ id, value, input = () => {}, blur = () => {} }">
+        <gl-form-input
+          :id="id"
+          name="company_name"
+          :value="value"
+          @input="onCompanyNameChange(input, $event)"
+          @blur="blur"
+        />
+      </template>
+
       <template #input(country)>
         <gl-form-select
           id="country"
@@ -310,7 +328,7 @@ export default {
         />
       </template>
 
-      <template #input(group_name)="{ id, value, input = () => {}, blur = () => {} }">
+      <template #input(group_name)="{ id, value = '', input = () => {}, blur = () => {} }">
         <div class="gl-flex">
           <gl-form-group
             class="gl-mb-0 gl-flex-grow"
