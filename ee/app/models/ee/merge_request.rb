@@ -372,7 +372,11 @@ module EE
     end
 
     def has_container_scanning_reports?
-      !!diff_head_pipeline&.complete_or_manual_and_has_reports?(::Ci::JobArtifact.of_report_type(:container_scanning))
+      if ::Feature.enabled?(:show_child_reports_in_mr_page, project)
+        !!diff_head_pipeline&.complete_or_manual? && pipeline_has_report_in_self_or_descendants?(:container_scanning)
+      else
+        !!diff_head_pipeline&.complete_or_manual_and_has_reports?(::Ci::JobArtifact.of_report_type(:container_scanning))
+      end
     end
 
     def compare_container_scanning_reports(current_user)

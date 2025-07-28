@@ -823,16 +823,16 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
   end
 
   describe '#enabled_reports' do
-    where(:report_type, :with_reports, :feature) do
-      :sast                | [:with_sast_reports]                                       | :sast
-      :container_scanning  | [:with_container_scanning_reports]                         | :container_scanning
-      :dast                | [:with_dast_reports]                                       | :dast
-      :dependency_scanning | [:with_dependency_scanning_reports]                        | :dependency_scanning
-      :dependency_scanning | [:with_cyclonedx_reports]                                  | :dependency_scanning
-      :license_scanning    | [:with_cyclonedx_reports]                                  | :license_scanning
-      :coverage_fuzzing    | [:with_coverage_fuzzing_reports]                           | :coverage_fuzzing
-      :secret_detection    | [:with_secret_detection_reports]                           | :secret_detection
-      :api_fuzzing         | [:with_api_fuzzing_reports]                                | :api_fuzzing
+    where(:report_type, :with_reports, :feature, :artifact_report) do
+      :sast                | [:with_sast_reports]                | :sast                | :sast_feature_branch
+      :container_scanning  | [:with_container_scanning_reports]  | :container_scanning  | :container_scanning_feature_branch
+      :dast                | [:with_dast_reports]                | :dast                | :dast_feature_branch
+      :dependency_scanning | [:with_dependency_scanning_reports] | :dependency_scanning | :dependency_scanning_feature_branch
+      :dependency_scanning | [:with_cyclonedx_reports]           | :dependency_scanning | :cyclonedx_with_matching_dependency_files
+      :license_scanning    | [:with_cyclonedx_reports]           | :license_scanning    | :license_scanning_feature_branch
+      :coverage_fuzzing    | [:with_coverage_fuzzing_reports]    | :coverage_fuzzing    | :coverage_fuzzing_report
+      :secret_detection    | [:with_secret_detection_reports]    | :secret_detection    | :secret_detection_feature_branch
+      :api_fuzzing         | [:with_api_fuzzing_reports]         | :api_fuzzing         | :api_fuzzing_report
     end
 
     with_them do
@@ -852,6 +852,30 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         let(:merge_request) { create(:ee_merge_request, source_project: project) }
 
         it { is_expected.to be_falsy }
+
+        context "but the child pipeline has reports" do
+          let(:pipeline) { create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
+          let(:child_pipeline) { create(:ee_ci_pipeline, :success, child_of: pipeline) }
+          let!(:child_build) { create(:ee_ci_build, artifact_report, pipeline: child_pipeline) }
+
+          it 'returns true if report is supported for child pipelines' do
+            supported_report_types_for_child_pipelines = [:sast, :secret_detection, :container_scanning]
+
+            if supported_report_types_for_child_pipelines.include?(feature)
+              is_expected.to be_truthy
+            else
+              is_expected.to be_falsy
+            end
+          end
+
+          context 'with FF show_child_reports_in_mr_page disabled' do
+            before do
+              stub_feature_flags(show_child_reports_in_mr_page: false)
+            end
+
+            it { is_expected.to be_falsy }
+          end
+        end
       end
     end
   end
@@ -874,6 +898,37 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       end
 
       it { is_expected.to eq(expected) }
+    end
+  end
+
+  shared_examples_for 'reports in child pipelines' do |report_type|
+    context 'when the child pipeline has reports' do
+      let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
+      let_it_be(:pipeline) { create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
+      let_it_be(:child_pipeline) { create(:ee_ci_pipeline, :success, child_of: pipeline) }
+      let_it_be(:child_build) { create(:ee_ci_build, report_type, pipeline: child_pipeline) }
+
+      context 'when the pipeline is still running' do
+        let_it_be(:pipeline) { create(:ee_ci_pipeline, :running, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
+
+        it 'returns false if head pipeline is running' do
+          expect(subject).to eq(false)
+        end
+      end
+
+      it 'returns true if head pipeline is finished' do
+        expect(subject).to eq(true)
+      end
+
+      context 'when FF show_child_reports_in_mr_page is disabled' do
+        before do
+          stub_feature_flags(show_child_reports_in_mr_page: false)
+        end
+
+        it 'returns false regardless of child pipeline reports' do
+          expect(subject).to eq(false)
+        end
+      end
     end
   end
 
@@ -965,6 +1020,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       it { is_expected.to be_falsey }
     end
+
+    it_behaves_like "reports in child pipelines", :container_scanning_feature_branch
   end
 
   describe '#has_dast_reports?' do
