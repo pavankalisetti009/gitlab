@@ -58,4 +58,17 @@ RSpec.describe Mutations::Vulnerabilities::Confirm, feature_category: :vulnerabi
       end
     end
   end
+
+  describe '.authorization_scopes' do
+    it 'includes api, read_api, ai_workflows scope' do
+      expect(described_class.authorization_scopes).to include(:api, :read_api, :ai_workflows)
+    end
+  end
+
+  describe 'field scopes' do
+    it 'includes api, read_api, ai_workflows scope for vulnerability field' do
+      vulnerability_field = described_class.fields['vulnerability']
+      expect(vulnerability_field.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+    end
+  end
 end
