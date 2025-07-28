@@ -10,7 +10,10 @@ RSpec.describe Types::Namespaces::AvailableFeaturesType, feature_category: :shar
 
   shared_examples_for 'a type that resolves available features' do
     where(:field, :licensed_feature) do
+      :has_blocked_issues_feature | :blocked_issues
+      :has_custom_fields_feature | :custom_fields
       :has_epics_feature | :epics
+      :has_group_bulk_edit_feature | :group_bulk_edit
       :has_issuable_health_status_feature | :issuable_health_status
       :has_issue_weights_feature | :issue_weights
       :has_iterations_feature | :iterations
@@ -19,7 +22,7 @@ RSpec.describe Types::Namespaces::AvailableFeaturesType, feature_category: :shar
       :has_quality_management_feature | :quality_management
       :has_scoped_labels_feature | :scoped_labels
       :has_subepics_feature | :subepics
-      :has_statuses_feature | :work_item_status
+      :has_work_item_status_feature | :work_item_status
     end
 
     with_them do
