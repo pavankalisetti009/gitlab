@@ -98,7 +98,6 @@ export default {
       socketManager: null,
       workflowId: null,
       workflowStatus: null,
-      pendingToolCall: null,
       isProcessingToolApproval: false,
     };
   },
@@ -189,7 +188,6 @@ export default {
         this.workflowId = null;
       }
       this.workflowStatus = null;
-      this.pendingToolCall = null;
     },
 
     setDimensions() {
@@ -281,7 +279,6 @@ export default {
             ...msg,
             requestId,
             role,
-            message_type: msg.message_type,
           };
         });
 
@@ -289,22 +286,6 @@ export default {
 
         // Update workflow status and pending tool call
         this.workflowStatus = action.newCheckpoint.status;
-
-        // Check if we need to show tool approval modal
-        if (this.workflowStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED) {
-          this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
-          const lastMessage = messages[messages.length - 1];
-          if (lastMessage && lastMessage.tool_info) {
-            this.pendingToolCall = {
-              name: lastMessage.tool_info.name,
-              parameters: lastMessage.tool_info.args || {},
-            };
-          }
-        } else {
-          this.pendingToolCall = null;
-          // Only send actionResponse when NOT waiting for approval
-          this.socketManager?.send({ actionResponse: { requestID: action.requestID } });
-        }
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
           this.setLoading(false);

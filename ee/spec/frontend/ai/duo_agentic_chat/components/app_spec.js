@@ -440,7 +440,7 @@ describe('Duo Agentic Chat', () => {
         );
       });
 
-      it('handles tool approval flow and sends actionResponse immediately', async () => {
+      it('handles tool approval flow', async () => {
         const mockCheckpointData = {
           requestID: 'request-id-1',
           newCheckpoint: {
@@ -470,14 +470,6 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-        expect(wrapper.vm.pendingToolCall).toEqual({
-          name: 'run_command',
-          parameters: { command: 'ls -la' },
-        });
-
-        expect(mockSocketManager.send).toHaveBeenCalledWith({
-          actionResponse: { requestID: 'request-id-1' },
-        });
       });
 
       it('handles tool messages in the chat log', async () => {
