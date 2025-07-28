@@ -4,8 +4,6 @@ module WorkItems
   module Statuses
     module SystemDefined
       class Lifecycle
-        include ActiveModel::Model
-        include ActiveModel::Attributes
         include ActiveRecord::FixedItemsModel::Model
         include GlobalID::Identification
         include WorkItems::Statuses::Lifecycle
@@ -22,7 +20,6 @@ module WorkItems
           }
         ].freeze
 
-        attribute :id, :integer
         attribute :name, :string
         attribute :work_item_base_types
         attribute :status_ids
