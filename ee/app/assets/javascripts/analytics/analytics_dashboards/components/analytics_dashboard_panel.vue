@@ -127,7 +127,6 @@ export default {
       data: null,
       loading: false,
       loadingDelayed: false,
-      tooltip: null,
       dropdownItems: [
         {
           text: __('Delete'),
@@ -203,6 +202,9 @@ export default {
     },
     bodyContentClasses() {
       return this.showLicenseRequiredState ? 'gl-content-center' : '';
+    },
+    tooltip() {
+      return this.visualizationOptions?.tooltip;
     },
   },
   watch: {
@@ -329,9 +331,6 @@ export default {
     isCubeJsBadRequest(error) {
       return Boolean(error.status === HTTP_STATUS_BAD_REQUEST && error.response?.message);
     },
-    handleShowTooltip(tooltipText) {
-      this.tooltip = tooltipText;
-    },
   },
   PANEL_TROUBLESHOOTING_URL,
 };
@@ -384,7 +383,6 @@ export default {
         :data="data"
         :options="visualizationOptions"
         @set-alerts="setAlerts"
-        @showTooltip="handleShowTooltip"
         @updateQuery="onUpdateQuery"
       />
     </template>

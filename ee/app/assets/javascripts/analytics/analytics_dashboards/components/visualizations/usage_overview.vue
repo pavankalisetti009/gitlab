@@ -1,8 +1,6 @@
 <script>
-import { compact } from 'lodash';
 import { GlAvatar, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import { s__, __, sprintf } from '~/locale';
-import dateFormat, { masks } from '~/lib/dateformat';
+import { __, sprintf } from '~/locale';
 import {
   BACKGROUND_AGGREGATION_DOCS_LINK,
   BACKGROUND_AGGREGATION_WARNING_TITLE,
@@ -39,25 +37,12 @@ export default {
     },
   },
   computed: {
-    recordedAt() {
-      const allRecordedAt = compact(this.data.metrics.map((metric) => metric.recordedAt));
-      const [mostRecentRecordedAt] = allRecordedAt.sort().slice(-1);
-
-      if (!mostRecentRecordedAt) return null;
-
-      return dateFormat(mostRecentRecordedAt, `${masks.isoDate} ${masks.shortTime}`);
-    },
     avatarAltText() {
       const { fullName } = this.data.namespace;
       return sprintf(__("%{name}'s avatar"), { name: fullName });
     },
   },
   mounted() {
-    const { recordedAt } = this;
-    const { tooltip, lastUpdated } = this.$options.i18n;
-    const tooltipText = `${tooltip}${recordedAt ? sprintf(lastUpdated, { recordedAt }) : ''}`;
-    this.$emit('showTooltip', { description: tooltipText });
-
     if (!this.overviewCountsAggregationEnabled) {
       const { description, descriptionLink, backgroundAggregationNoData } = this.$options.i18n;
       this.$emit('set-alerts', {
@@ -75,10 +60,6 @@ export default {
     },
   },
   i18n: {
-    tooltip: s__(
-      'Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
-    ),
-    lastUpdated: s__('Analytics| Last updated: %{recordedAt}'),
     backgroundAggregationWarningTitle: BACKGROUND_AGGREGATION_WARNING_TITLE,
     description: ENABLE_BACKGROUND_AGGREGATION_WARNING_TEXT,
     descriptionLink: BACKGROUND_AGGREGATION_DOCS_LINK,

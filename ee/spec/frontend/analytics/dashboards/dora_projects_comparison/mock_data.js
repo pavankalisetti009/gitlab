@@ -33,25 +33,6 @@ export const mockProjectsDoraMetrics = [
   },
 ];
 
-export const mockUnfilteredProjectsDoraMetrics = [
-  ...mockProjectsDoraMetrics,
-  {
-    name: 'No data',
-    avatarUrl: 'http://gdk.test:3000/nodata',
-    webUrl: 'http://gdk.test:3000/flightjs/nodata',
-    deployment_frequency: null,
-    change_failure_rate: null,
-    lead_time_for_changes: null,
-    time_to_restore_service: null,
-    trends: {
-      deployment_frequency: 0,
-      lead_time_for_changes: 0,
-      time_to_restore_service: 0,
-      change_failure_rate: 0,
-    },
-  },
-];
-
 export const mockDataSourceResponses = [
   {
     data: {

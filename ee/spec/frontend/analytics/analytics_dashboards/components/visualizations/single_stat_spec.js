@@ -37,12 +37,6 @@ describe('Single Stat Visualization', () => {
       expect(findSingleStat().props('value')).toBe(35);
     });
 
-    it('does not emit `showTooltip`', () => {
-      createWrapper();
-
-      expect(wrapper.emitted('showTooltip')).toBeUndefined();
-    });
-
     describe('when there are user defined options that include decimal places', () => {
       const options = {
         title: 'Sessions',
@@ -77,19 +71,6 @@ describe('Single Stat Visualization', () => {
           expect(findSingleStat().props()).toMatchObject({ animationDecimalPlaces });
         },
       );
-    });
-
-    describe('when options include tooltip', () => {
-      const tooltip = { description: 'Example tooltip', descriptionLink: '/foo' };
-
-      beforeEach(() => {
-        createWrapper({ options: { tooltip } });
-      });
-
-      it('emits `showTooltip` with tooltip text', () => {
-        expect(wrapper.emitted('showTooltip')).toHaveLength(1);
-        expect(wrapper.emitted('showTooltip')[0][0]).toEqual(tooltip);
-      });
     });
   });
 });
