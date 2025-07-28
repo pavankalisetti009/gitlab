@@ -434,7 +434,7 @@ gem 'async', '~> 2.24.0', require: false, feature_category: :shared
 gem 'io-event', '~> 1.12', require: false, feature_category: :shared
 
 # Security report schemas used to validate CI job artifacts of security jobs
-gem 'gitlab-security_report_schemas', '0.1.3.min15.0.0.max15.2.2', feature_category: :vulnerability_management
+gem 'gitlab-security_report_schemas', '0.1.3.min15.0.0.max15.2.3', feature_category: :vulnerability_management
 
 # OpenTelemetry
 group :opentelemetry do
