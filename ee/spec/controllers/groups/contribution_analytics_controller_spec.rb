@@ -32,6 +32,8 @@ RSpec.describe Groups::ContributionAnalyticsController, feature_category: :value
     group.add_owner(user)
     group.add_member(user2, GroupMember::DEVELOPER)
     group.add_member(user3, GroupMember::MAINTAINER)
+
+    stub_feature_flags(contributions_analytics_dashboard: false)
   end
 
   describe '#authorize_read_contribution_analytics!' do
@@ -141,6 +143,35 @@ RSpec.describe Groups::ContributionAnalyticsController, feature_category: :value
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
+      end
+    end
+  end
+
+  describe '#redirect_to_new_dashboard' do
+    let(:request) { get :show, params: { group_id: group.path } }
+
+    before do
+      sign_in(user)
+    end
+
+    context 'when contributions_analytics_dashboard feature flag is disabled' do
+      it 'does not redirect to new dashboard' do
+        request
+
+        expect(response).to have_gitlab_http_status(:success)
+      end
+    end
+
+    context 'when contributions_analytics_dashboard feature flag is enabled' do
+      before do
+        stub_feature_flags(contributions_analytics_dashboard: true)
+      end
+
+      it 'redirects to new dashboard', :aggregate_failures do
+        request
+
+        expect(response).to have_gitlab_http_status(:redirect)
+        expect(response).to redirect_to group_analytics_dashboards_path(group, vueroute: 'contributions_dashboard')
       end
     end
   end
