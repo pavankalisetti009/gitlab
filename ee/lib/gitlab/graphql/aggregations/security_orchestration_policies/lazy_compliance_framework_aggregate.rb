@@ -44,7 +44,11 @@ module Gitlab
               @lazy_state[:loaded_objects][framework.id] ||= {}
 
               policy_types_with_constructors.each do |type, constructor|
-                constructed = constructor.call(filter_policies_by_scope(policies[type], framework.id))
+                filtered_policies = filter_policies_by_scope(policies[type], framework.id)
+                unique_policies = filtered_policies.uniq do |policy|
+                  [policy[:checksum], policy[:security_policy_management_project_id]]
+                end
+                constructed = constructor.call(unique_policies)
                 loaded_and_constructed = Array.wrap(@lazy_state.dig(:loaded_objects, framework.id, type)) + constructed
                 @lazy_state[:loaded_objects][framework.id][type] = loaded_and_constructed
               end

@@ -18,6 +18,11 @@ module Resolvers
         required: false,
         default_value: true
 
+      argument :deduplicate_policies, GraphQL::Types::Boolean,
+        description: 'Remove duplicate policies when the same policy is applied via multiple routes.',
+        required: false,
+        default_value: false
+
       def resolve(**args)
         policies = ::Security::ScanResultPoliciesFinder.new(context[:current_user], object,
           args.merge(include_invalid: true)).execute

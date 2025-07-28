@@ -310,6 +310,43 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
     end
   end
 
+  context 'when deduplicate_policies is given' do
+    before do
+      stub_licensed_features(security_orchestration_policies: true)
+      project.add_developer(user)
+      group.add_developer(user)
+    end
+
+    let_it_be(:project) { create(:project, group: group) }
+
+    let!(:group_policy_configuration) do
+      create(
+        :security_orchestration_policy_configuration,
+        :namespace,
+        security_policy_management_project: policy_management_project,
+        namespace: group
+      )
+    end
+
+    context 'when deduplicate_policies is false (default)' do
+      let(:args) { { relationship: :inherited, deduplicate_policies: false } }
+
+      it 'returns duplicate policies from both project and namespace' do
+        expect(resolve_policies.size).to eq(2)
+        expect(resolve_policies.pluck(:name)).to all(eq('Run DAST in every pipeline'))
+      end
+    end
+
+    context 'when deduplicate_policies is true' do
+      let(:args) { { relationship: :inherited, deduplicate_policies: true } }
+
+      it 'returns deduplicated policies' do
+        expect(resolve_policies.size).to eq(1)
+        expect(resolve_policies.first[:name]).to eq('Run DAST in every pipeline')
+      end
+    end
+  end
+
   def edit_project_policy_path(target_project, policy)
     Gitlab::Routing.url_helpers.edit_project_security_policy_url(
       target_project, id: CGI.escape(policy[:name]), type: 'scan_execution_policy'

@@ -20,8 +20,17 @@ module Security
     def fetch_security_policies
       return [] unless authorized_to_read_policy_configuration?
 
-      fetch_policy_configurations
-        .flat_map { |config| merge_project_relationship(config) }
+      policies = fetch_policy_configurations.flat_map { |config| merge_project_relationship(config) }
+
+      if params[:deduplicate_policies]
+        deduplicate_policies(policies)
+      else
+        policies
+      end
+    end
+
+    def deduplicate_policies(policies)
+      policies.uniq { |policy| policy[:config].security_policy_management_project_id }
     end
 
     def policy_configuration

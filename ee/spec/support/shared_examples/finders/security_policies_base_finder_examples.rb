@@ -340,6 +340,83 @@ RSpec.shared_examples 'security policies finder' do
           end
         end
       end
+
+      context 'for policy deduplication' do
+        let_it_be(:dedup_management_project) { create(:project) }
+        let_it_be(:dedup_group) { create(:group) }
+        let_it_be(:dedup_project_1) { create(:project, group: dedup_group) }
+        let_it_be(:dedup_project_2) { create(:project, group: dedup_group) }
+        let_it_be(:dedup_actor) { create(:user) }
+
+        let!(:dedup_config_1) do
+          create(
+            :security_orchestration_policy_configuration,
+            security_policy_management_project: dedup_management_project,
+            project: dedup_project_1,
+            experiments: { pipeline_execution_schedule_policy: { enabled: true } }
+          )
+        end
+
+        let!(:dedup_config_2) do
+          create(
+            :security_orchestration_policy_configuration,
+            security_policy_management_project: dedup_management_project,
+            project: dedup_project_2,
+            experiments: { pipeline_execution_schedule_policy: { enabled: true } }
+          )
+        end
+
+        before_all do
+          dedup_group.add_developer(dedup_actor)
+          dedup_project_1.add_developer(dedup_actor)
+          dedup_project_2.add_developer(dedup_actor)
+        end
+
+        before do
+          stub_licensed_features(security_orchestration_policies: true)
+
+          allow_next_instances_of(Repository, 2) do |repository|
+            allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
+          end
+        end
+
+        context 'when deduplicate_policies is true' do
+          it 'deduplicates policies with same security_policy_management_project_id' do
+            result = described_class.new(
+              dedup_actor,
+              dedup_group,
+              { relationship: :descendant, deduplicate_policies: true }
+            ).execute
+
+            expect(result.count).to eq(1)
+            expect(result.first[:name]).to eq(policy[:name])
+          end
+        end
+
+        context 'when deduplicate_policies is false' do
+          it 'returns all policies without deduplication' do
+            result = described_class.new(
+              dedup_actor,
+              dedup_group,
+              { relationship: :descendant, deduplicate_policies: false }
+            ).execute
+
+            expect(result.count).to eq(2)
+            expect(result.pluck(:name)).to all(eq(policy[:name]))
+
+            config_ids = result.map { |policy| policy[:config].id }
+            expect(config_ids).to contain_exactly(dedup_config_1.id, dedup_config_2.id)
+          end
+        end
+
+        context 'when deduplicate_policies is not provided' do
+          it 'defaults to no deduplication' do
+            result = described_class.new(dedup_actor, dedup_group, { relationship: :descendant }).execute
+
+            expect(result.count).to eq(2)
+          end
+        end
+      end
     end
   end
 end

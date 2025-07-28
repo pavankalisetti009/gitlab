@@ -149,5 +149,43 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
         end
       end
     end
+
+    describe '#load_queued_records deduplication' do
+      let(:policy_scope) { { compliance_frameworks: [{ id: framework.id }] } }
+      let_it_be(:ref_project) { create(:project, :repository) }
+      let_it_be(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
+
+      let(:duplicate_policy_1) { build(:scan_execution_policy, name: 'Duplicate Policy', policy_scope: policy_scope) }
+      let(:duplicate_policy_2) { build(:scan_execution_policy, name: 'Duplicate Policy', policy_scope: policy_scope) }
+
+      let(:policy_yaml_with_duplicates) do
+        build(:orchestration_policy_yaml,
+          scan_execution_policy: [duplicate_policy_1, duplicate_policy_2]
+        )
+      end
+
+      let(:fake_state) { { pending_frameworks: Set.new([framework]), loaded_objects: {} } }
+
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+        lazy_aggregate.instance_variable_set(:@lazy_state, fake_state)
+
+        allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(ref_project)
+        allow_next_instance_of(Repository) do |repository|
+          allow(repository).to receive(:blob_data_at).and_return(policy_yaml_with_duplicates)
+        end
+      end
+
+      context 'when there are duplicate policies' do
+        let(:policy_type) { :scan_execution_policies }
+
+        it 'deduplicates policies with same checksum and management project id' do
+          policies = lazy_aggregate.execute
+
+          expect(policies.count).to eq(1)
+          expect(policies.first[:name]).to eq('Duplicate Policy')
+        end
+      end
+    end
   end
 end
