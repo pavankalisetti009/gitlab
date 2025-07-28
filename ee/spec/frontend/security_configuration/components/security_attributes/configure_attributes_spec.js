@@ -11,6 +11,7 @@ import {
   mockSecurityAttributeCategories,
   mockSecurityAttributes,
 } from 'ee/security_configuration/graphql/resolvers';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 Vue.use(VueApollo);
 
@@ -48,9 +49,17 @@ describe('Configure attributes', () => {
     });
   };
 
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   beforeEach(async () => {
     createComponent();
     await waitForPromises();
+  });
+
+  it('tracks a page view', () => {
+    const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+    expect(trackEventSpy).toHaveBeenCalledWith('view_group_security_attributes', {}, undefined);
   });
 
   it('queries for the security attribute categories', () => {

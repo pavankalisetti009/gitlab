@@ -1,3 +1,13 @@
+<script>
+import { InternalEvents } from '~/tracking';
+
+export default {
+  mixins: [InternalEvents.mixin()],
+  mounted() {
+    this.trackEvent('view_project_security_attributes');
+  },
+};
+</script>
 <template>
   <p class="gl-my-5">
     {{
