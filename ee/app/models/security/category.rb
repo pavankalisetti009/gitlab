@@ -6,11 +6,7 @@ module Security
 
     belongs_to :namespace, optional: false
 
-    enum :editable_state, {
-      locked: 0,
-      partially_editable: 10,
-      editable: 20
-    }
+    enum :editable_state, Enums::Security.editable_states
 
     enum :template_type, {
       business_impact: 0,
