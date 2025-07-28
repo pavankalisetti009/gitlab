@@ -43,7 +43,13 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="pageTitle" />
+    <page-heading :heading="pageTitle">
+      <template #description>
+        <p>
+          {{ s__('AICatalog|Test run agents to see how they respond.') }}
+        </p>
+      </template>
+    </page-heading>
 
     <ai-catalog-agent-run-form
       :is-submitting="isSubmitting"
