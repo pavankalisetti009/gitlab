@@ -60,7 +60,7 @@ export default {
 
 <template>
   <visibility-change-detector @visible="reload">
-    <h4 class="gl-heading-4 gl-mb-4 gl-mt-0">{{ __('Recently viewed') }}</h4>
+    <h2 class="gl-heading-4 gl-mb-4 gl-mt-0">{{ __('Recently viewed') }}</h2>
 
     <p v-if="error">
       {{
