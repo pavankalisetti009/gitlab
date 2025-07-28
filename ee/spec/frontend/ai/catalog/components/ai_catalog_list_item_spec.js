@@ -67,7 +67,7 @@ describe('AiCatalogListItem', () => {
       const items = findDisclosureDropdownItems();
 
       expect(items).toHaveLength(3);
-      expect(items.at(0).text()).toBe('Run');
+      expect(items.at(0).text()).toBe('Test Run');
       expect(items.at(1).text()).toBe('Edit');
       expect(items.at(2).text()).toBe('Delete');
       expect(items.at(2).attributes('variant')).toBe('danger');
