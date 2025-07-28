@@ -58,6 +58,7 @@ export default {
     currentDate.setHours(0, 0, 0, 0);
 
     return {
+      // eslint-disable-next-line vue/no-unused-properties -- Used in CommonMixin logic (isTimeframeForToday) to compare with timeframeItem.
       currentDate,
       isExpanded: false,
       childEpics: [],
