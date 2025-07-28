@@ -57,6 +57,7 @@ RSpec.describe BoardsHelper do
         allow(helper).to receive(:can?).with(user, :bulk_admin_epic, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :create_projects, project.group).and_return(false)
         allow(helper).to receive(:can?).with(user, :read_crm_organization, project.crm_group).and_return(false)
+        allow(helper).to receive(:can?).with(user, :read_crm_contact, project.crm_group).and_return(false)
       end
 
       shared_examples 'serializes the availability of a licensed feature' do |feature_name, feature_key|
@@ -150,6 +151,7 @@ RSpec.describe BoardsHelper do
         allow(helper).to receive(:can?).with(user, :admin_issue, group).and_return(false)
         allow(helper).to receive(:can?).with(user, :create_projects, group).and_return(false)
         allow(helper).to receive(:can?).with(user, :read_crm_organization, group).and_return(false)
+        allow(helper).to receive(:can?).with(user, :read_crm_contact, group).and_return(false)
       end
 
       it 'returns the correct permission for creating an epic from board' do
