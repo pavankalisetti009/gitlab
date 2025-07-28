@@ -861,7 +861,7 @@ RSpec/BeEq:
     - 'spec/lib/gitlab/import_export/project/tree_restorer_spec.rb'
     - 'spec/lib/gitlab/import_export/saver_spec.rb'
     - 'spec/lib/gitlab/import_export/snippet_repo_restorer_spec.rb'
-    - 'spec/lib/gitlab/inactive_projects_deletion_warning_tracker_spec.rb'
+    - 'spec/lib/gitlab/dormant_projects_deletion_warning_tracker_spec.rb'
     - 'spec/lib/gitlab/instrumentation/redis_cluster_validator_spec.rb'
     - 'spec/lib/gitlab/instrumentation/redis_helper_spec.rb'
     - 'spec/lib/gitlab/instrumentation_helper_spec.rb'
