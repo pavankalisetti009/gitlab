@@ -17,6 +17,8 @@ module EE
         mount_mutation ::Mutations::Ai::Catalog::Flow::Delete, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::Catalog::Flow::Update, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::Catalog::ItemConsumer::Create, experiment: { milestone: '18.3' }
+        mount_mutation ::Mutations::Ai::Catalog::ItemConsumer::Delete, experiment: { milestone: '18.3' }
+        mount_mutation ::Mutations::Ai::Catalog::ItemConsumer::Update, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ci::Catalog::VerifiedNamespace::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Delete
