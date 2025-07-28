@@ -36,7 +36,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
   end
 
   describe '#seats_calculation_message' do
-    subject { seats_calculation_message(license) }
+    subject(:method) { seats_calculation_message(license) }
 
     let(:license) { double('License', 'exclude_guests_from_active_count?' => exclude_guests) }
 
@@ -44,7 +44,10 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
       let(:exclude_guests) { true }
 
       it 'returns the message' do
-        expect(subject).to eq("Users with a Guest role or those who don't belong to a Project or Group will not use a seat from your license.")
+        expect(method).to eq(
+          "Users with a Guest role or those who don't belong to a Project or Group will not use a seat from " \
+            "your license."
+        )
       end
     end
 
@@ -52,7 +55,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
       let(:exclude_guests) { false }
 
       it 'returns nil' do
-        expect(subject).to be_blank
+        expect(method).to be_blank
       end
     end
   end
@@ -83,9 +86,11 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
     let(:current_user) { build(:admin) }
 
     before do
-      allow(helper).to receive(:subscription_portal_manage_url).and_return('subscriptions_manage_url')
-      allow(helper).to receive(:self_managed_new_trial_url).and_return('self_managed_new_trial_url')
-      allow(helper).to receive(:current_user).and_return(current_user)
+      allow(helper).to receive_messages(
+        subscription_portal_manage_url: 'subscriptions_manage_url',
+        self_managed_new_trial_url: 'self_managed_new_trial_url',
+        current_user: current_user
+      )
     end
 
     context 'when there is a current license' do
@@ -94,14 +99,18 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
         license = double('License', plan: custom_plan)
         allow(License).to receive(:current).and_return(license)
 
-        expect(helper.cloud_license_view_data).to eq({ has_active_license: 'true',
-                                                       customers_portal_url: 'subscriptions_manage_url',
-                                                       free_trial_path: 'self_managed_new_trial_url',
-                                                       buy_subscription_path: promo_pricing_url,
-                                                       subscription_sync_path: sync_seat_link_admin_license_path,
-                                                       license_remove_path: admin_license_path,
-                                                       congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
-                                                       license_usage_file_path: admin_license_usage_export_path(format: :csv) })
+        expect(helper.cloud_license_view_data).to eq(
+          {
+            has_active_license: 'true',
+            customers_portal_url: 'subscriptions_manage_url',
+            free_trial_path: 'self_managed_new_trial_url',
+            buy_subscription_path: promo_pricing_url,
+            subscription_sync_path: sync_seat_link_admin_license_path,
+            license_remove_path: admin_license_path,
+            congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
+            license_usage_file_path: admin_license_usage_export_path(format: :csv)
+          }
+        )
       end
     end
 
@@ -109,14 +118,18 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
       it 'returns the data for the view' do
         allow(License).to receive(:current).and_return(nil)
 
-        expect(helper.cloud_license_view_data).to eq({ has_active_license: 'false',
-                                                       customers_portal_url: 'subscriptions_manage_url',
-                                                       free_trial_path: 'self_managed_new_trial_url',
-                                                       buy_subscription_path: promo_pricing_url,
-                                                       subscription_sync_path: sync_seat_link_admin_license_path,
-                                                       license_remove_path: admin_license_path,
-                                                       congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
-                                                       license_usage_file_path: admin_license_usage_export_path(format: :csv) })
+        expect(helper.cloud_license_view_data).to eq(
+          {
+            has_active_license: 'false',
+            customers_portal_url: 'subscriptions_manage_url',
+            free_trial_path: 'self_managed_new_trial_url',
+            buy_subscription_path: promo_pricing_url,
+            subscription_sync_path: sync_seat_link_admin_license_path,
+            license_remove_path: admin_license_path,
+            congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
+            license_usage_file_path: admin_license_usage_export_path(format: :csv)
+          }
+        )
       end
     end
 
@@ -135,11 +148,11 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
     context 'without a user' do
       subject { helper.show_promotions?(nil) }
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'with a user' do
-      let_it_be(:selected_user) { create(:user) }
+      let_it_be(:selected_user) { build_stubbed(:user) }
 
       subject { helper.show_promotions?(selected_user) }
 
@@ -148,7 +161,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
           stub_ee_application_setting(should_check_namespace_plan: true)
         end
 
-        it { is_expected.to eq(true) }
+        it { is_expected.to be(true) }
       end
 
       context 'when gitlabdotcom returns false' do
@@ -156,14 +169,14 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
           allow(Gitlab).to receive(:com?).and_return(false)
         end
 
-        it { is_expected.to eq(false) }
+        it { is_expected.to be(false) }
       end
 
       context 'on EE' do
         context 'with hide on self managed true' do
           subject { helper.show_promotions?(selected_user, hide_on_self_managed: true) }
 
-          it { is_expected.to eq(false) }
+          it { is_expected.to be(false) }
         end
 
         context 'without a valid license' do
@@ -171,30 +184,30 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             allow(License).to receive(:current).and_return(nil)
           end
 
-          it { is_expected.to eq(true) }
+          it { is_expected.to be(true) }
         end
 
         context 'with a valid license' do
-          let_it_be(:license) { create(:license) }
+          let_it_be(:license) { build_stubbed(:license) }
 
           before do
             allow(License).to receive(:current).and_return(license)
           end
 
-          context 'expired license' do
+          context 'with expired license' do
             before do
               allow(license).to receive(:expired?).and_return(true)
             end
 
-            it { is_expected.to eq(true) }
+            it { is_expected.to be(true) }
           end
 
-          context 'non expired license' do
+          context 'with non expired license' do
             before do
               allow(license).to receive(:expired?).and_return(false)
             end
 
-            it { is_expected.to eq(false) }
+            it { is_expected.to be(false) }
           end
         end
       end

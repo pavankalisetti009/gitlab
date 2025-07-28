@@ -59,9 +59,3 @@ end
 direct :subscription_portal_new_subscription do
   Addressable::URI.join(subscription_portal_url, "/subscriptions/new").to_s
 end
-
-direct :subscription_portal_new_trial do |params|
-  uri = Addressable::URI.join(subscription_portal_url, '/trials/new')
-  uri.query_values = params if params.present?
-  uri.to_s
-end

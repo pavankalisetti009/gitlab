@@ -39,6 +39,29 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             epics_list_path: group_epics_path(project)
           })
       end
+
+      context "when gitlab_com_subscriptions is available" do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        context "when project has parent group" do
+          let_it_be(:group) { build_stubbed(:group) }
+          let_it_be(:project) { build(:project, group: group) }
+
+          it 'returns the correct new trial path' do
+            expect(helper.work_items_data(project,
+              current_user)).to include({ new_trial_path: new_trial_path(namespace_id: group.id) })
+          end
+        end
+
+        context "when project does not have parent group" do
+          it 'returns the correct new trial path' do
+            expect(helper.work_items_data(project,
+              current_user)).to include({ new_trial_path: new_trial_path(namespace_id: nil) })
+          end
+        end
+      end
     end
 
     context 'when feature not available' do
@@ -51,6 +74,20 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_group_bulk_edit_feature: "false"
           }
         )
+      end
+
+      context "when gitlab_com_subscriptions is unavailable" do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
+
+        it 'returns the correct new trial path' do
+          expect(helper).to respond_to(:self_managed_new_trial_url)
+          allow(helper).to receive(:self_managed_new_trial_url).and_return('subscription_portal_trial_url')
+          expect(helper.work_items_data(project, current_user)).to include(
+            { new_trial_path: "subscription_portal_trial_url" }
+          )
+        end
       end
     end
   end
