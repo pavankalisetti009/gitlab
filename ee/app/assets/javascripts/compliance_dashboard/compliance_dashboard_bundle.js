@@ -48,7 +48,6 @@ export default () => {
     featureProjectsReportEnabled,
     featureSecurityPoliciesEnabled,
     violationsV2Enabled,
-    groupDashboardEnabled,
     policyDisplayLimit,
     activeComplianceFrameworks,
   } = el.dataset;
@@ -57,7 +56,7 @@ export default () => {
   Vue.use(VueRouter);
 
   const routes = Object.entries({
-    [ROUTE_DASHBOARD]: parseBoolean(groupDashboardEnabled) && !projectId,
+    [ROUTE_DASHBOARD]: !projectId,
     [ROUTE_STANDARDS_ADHERENCE]: parseBoolean(featureAdherenceReportEnabled),
     [ROUTE_VIOLATIONS]: parseBoolean(featureViolationsReportEnabled),
     [ROUTE_FRAMEWORKS]: true,

@@ -69,7 +69,6 @@ module EE
 
         feature_violations_report_enabled: violations_report.to_s,
         violations_v2_enabled: ::Feature.enabled?(:compliance_violations_report, group).to_s,
-        group_dashboard_enabled: ::Feature.enabled?(:compliance_group_dashboard, group).to_s,
         active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
         feature_projects_report_enabled: true.to_s,
         can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s,
