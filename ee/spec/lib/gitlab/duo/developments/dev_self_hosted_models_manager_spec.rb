@@ -16,7 +16,9 @@ RSpec.describe Gitlab::Duo::Developments::DevSelfHostedModelsManager, feature_ca
         "Mistral Small [FireworksAI]",
         "Mixtral 8x22b [FireworksAI]",
         "Llama 3.1 70b [FireworksAI]",
-        "Llama 3.3 70b [FireworksAI]"
+        "Llama 3.3 70b [FireworksAI]",
+        "Llama 3.1 8b [FireworksAI]",
+        "Codestral 22b v0.1 [FireworksAI]"
       ]
     end
 
@@ -64,6 +66,8 @@ RSpec.describe Gitlab::Duo::Developments::DevSelfHostedModelsManager, feature_ca
       Llama 3.1 70b [Bedrock]
       Mistral Small [FireworksAI]
       Mixtral 8x22b [FireworksAI]
+      Codestral 22b v0.1 [FireworksAI]
+      Llama 3.1 8b [FireworksAI]
       Llama 3.1 70b [FireworksAI]
       Llama 3.3 70b [FireworksAI]
       MSG

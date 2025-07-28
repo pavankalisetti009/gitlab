@@ -55,6 +55,18 @@ module Gitlab
             model: :mixtral
           },
           {
+            name: "Codestral 22b v0.1 [FireworksAI]",
+            endpoint: "https://api.fireworks.ai/inference/v1/chat/completions",
+            identifier: "fireworks_ai/accounts/gitlab/deployedModels/mistralai-codestral-22b-v0p1-d8p7f3i9",
+            model: :codestral
+          },
+          {
+            name: "Llama 3.1 8b [FireworksAI]",
+            endpoint: "https://api.fireworks.ai/inference/v1/chat/completions",
+            identifier: "fireworks_ai/accounts/fireworks/models/llama-v3p1-8b-instruct",
+            model: :llama3
+          },
+          {
             name: "Llama 3.1 70b [FireworksAI]",
             endpoint: "https://api.fireworks.ai/inference/v1/chat/completions",
             identifier: "fireworks_ai/accounts/fireworks/models/llama-v3p1-70b-instruct",
