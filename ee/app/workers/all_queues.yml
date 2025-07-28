@@ -3614,6 +3614,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_policies_group_project_transfer
+  :worker_name: Security::Policies::GroupProjectTransferWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_policies_group_transfer
+  :worker_name: Security::Policies::GroupTransferWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_policies_project_transfer
   :worker_name: Security::Policies::ProjectTransferWorker
   :feature_category: :security_policy_management
