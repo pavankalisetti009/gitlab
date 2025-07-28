@@ -6882,6 +6882,7 @@ CREATE TABLE namespace_descendants (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 )
 PARTITION BY HASH (namespace_id);
@@ -6895,6 +6896,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_00 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6907,6 +6909,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_01 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6919,6 +6922,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_02 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6931,6 +6935,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_03 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6943,6 +6948,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_04 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6955,6 +6961,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_05 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6967,6 +6974,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_06 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6979,6 +6987,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_07 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -6991,6 +7000,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_08 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7003,6 +7013,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_09 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7015,6 +7026,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_10 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7027,6 +7039,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_11 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7039,6 +7052,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_12 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7051,6 +7065,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_13 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7063,6 +7078,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_14 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7075,6 +7091,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_15 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7087,6 +7104,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_16 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7099,6 +7117,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_17 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7111,6 +7130,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_18 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7123,6 +7143,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_19 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7135,6 +7156,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_20 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7147,6 +7169,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_21 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7159,6 +7182,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_22 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7171,6 +7195,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_23 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7183,6 +7208,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_24 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7195,6 +7221,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_25 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7207,6 +7234,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_26 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7219,6 +7247,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_27 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7231,6 +7260,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_28 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7243,6 +7273,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_29 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7255,6 +7286,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_30 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
@@ -7267,6 +7299,7 @@ CREATE TABLE gitlab_partitions_static.namespace_descendants_31 (
     calculated_at timestamp with time zone,
     all_active_project_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     all_unarchived_project_ids bigint[] DEFAULT '{}'::bigint[],
+    self_and_descendant_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     CONSTRAINT check_60ae9ef706 CHECK ((all_unarchived_project_ids IS NOT NULL))
 );
 
