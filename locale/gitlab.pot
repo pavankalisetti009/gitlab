@@ -28134,9 +28134,6 @@ msgstr ""
 msgid "Geo"
 msgstr ""
 
-msgid "Geo Replication - %{node_name}"
-msgstr ""
-
 msgid "Geo Settings"
 msgstr ""
 
@@ -28196,9 +28193,6 @@ msgid "Geo|All"
 msgstr ""
 
 msgid "Geo|All %{replicableType} are being scheduled for %{action}"
-msgstr ""
-
-msgid "Geo|All %{replicable_name}"
 msgstr ""
 
 msgid "Geo|All projects"
@@ -28342,9 +28336,6 @@ msgstr ""
 msgid "Geo|Filter Geo sites"
 msgstr ""
 
-msgid "Geo|Filter by name"
-msgstr ""
-
 msgid "Geo|Geo Replication - %{node_name}"
 msgstr ""
 
@@ -28388,9 +28379,6 @@ msgid "Geo|If enabled, GitLab will handle Object Storage replication using Geo."
 msgstr ""
 
 msgid "Geo|If you want to make changes, you must visit the primary site."
-msgstr ""
-
-msgid "Geo|In progress"
 msgstr ""
 
 msgid "Geo|Internal URL"

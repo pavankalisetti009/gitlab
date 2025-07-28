@@ -55,25 +55,6 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
     end
   end
 
-  describe '#geo_filter_nav_options' do
-    let(:replicable_controller) { 'admin/geo/replicables' }
-    let(:replicable_name) { 'projects' }
-    let(:expected_nav_options) do
-      [
-        { value: "", text: "All projects", href: "/admin/geo/replication/projects" },
-        { value: "pending", text: "In progress", href: "/admin/geo/replication/projects?sync_status=pending" },
-        { value: "failed", text: "Failed", href: "/admin/geo/replication/projects?sync_status=failed" },
-        { value: "synced", text: "Synced", href: "/admin/geo/replication/projects?sync_status=synced" }
-      ]
-    end
-
-    subject(:geo_filter_nav_options) { helper.geo_filter_nav_options(replicable_controller, replicable_name) }
-
-    it 'returns correct urls' do
-      expect(geo_filter_nav_options).to eq(expected_nav_options)
-    end
-  end
-
   describe '#format_file_size_for_checksum' do
     context 'when file size is of even length' do
       it 'returns same file size string' do

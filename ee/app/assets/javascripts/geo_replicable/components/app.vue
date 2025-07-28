@@ -1,10 +1,9 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState, mapGetters } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { sprintf, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
 import {
   isValidFilter,
@@ -19,19 +18,16 @@ import {
   GEO_TROUBLESHOOTING_LINK,
 } from '../constants';
 import GeoReplicable from './geo_replicable.vue';
-import GeoReplicableFilterBar from './geo_replicable_filter_bar.vue';
 import GeoFeedbackBanner from './geo_feedback_banner.vue';
 
 export default {
   name: 'GeoReplicableApp',
   components: {
-    GeoReplicableFilterBar,
     GeoListTopBar,
     GeoReplicable,
     GeoFeedbackBanner,
     GeoList,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     itemTitle: {
       default: '',
@@ -44,7 +40,6 @@ export default {
   },
   computed: {
     ...mapState(['isLoading', 'replicableItems']),
-    ...mapGetters(['hasFilters']),
     hasReplicableItems() {
       return this.replicableItems.length > 0;
     },
@@ -59,9 +54,7 @@ export default {
       return this.activeFilters.filter(({ type }) => type !== TOKEN_TYPES.REPLICABLE_TYPE);
     },
     emptyStateHasFilters() {
-      return this.glFeatures.geoReplicablesFilteredListView
-        ? Boolean(this.activeFilteredSearchFilters.length)
-        : this.hasFilters;
+      return Boolean(this.activeFilteredSearchFilters.length);
     },
     emptyState() {
       return {
@@ -76,10 +69,7 @@ export default {
     },
   },
   created() {
-    if (this.glFeatures.geoReplicablesFilteredListView) {
-      this.getFiltersFromQuery();
-    }
-
+    this.getFiltersFromQuery();
     this.fetchReplicableItems();
   },
   methods: {
@@ -116,9 +106,7 @@ export default {
 <template>
   <article class="geo-replicable-container">
     <geo-feedback-banner />
-    <geo-replicable-filter-bar v-if="!glFeatures.geoReplicablesFilteredListView" />
     <geo-list-top-bar
-      v-else
       :listbox-header-text="s__('Geo|Select replicable type')"
       :active-listbox-item="activeReplicableType"
       :active-filtered-search-filters="activeFilteredSearchFilters"
