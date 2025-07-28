@@ -15,6 +15,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
   let wrapper;
 
   const mockProjectFullPath = 'project-1';
+  const mockFilters = { reportType: ['API_FUZZING'] };
 
   const defaultMockVulnerabilitiesOverTimeData = {
     data: {
@@ -48,7 +49,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
     },
   };
 
-  const createComponent = ({ mockVulnerabilitiesOverTimeHandler = null } = {}) => {
+  const createComponent = ({ props = {}, mockVulnerabilitiesOverTimeHandler = null } = {}) => {
     const vulnerabilitiesOverTimeHandler =
       mockVulnerabilitiesOverTimeHandler ||
       jest.fn().mockResolvedValue(defaultMockVulnerabilitiesOverTimeData);
@@ -59,6 +60,10 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
 
     wrapper = shallowMountExtended(ProjectVulnerabilitiesOverTimePanel, {
       apolloProvider,
+      propsData: {
+        filters: mockFilters,
+        ...props,
+      },
       provide: {
         projectFullPath: mockProjectFullPath,
       },
@@ -88,6 +93,32 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
   describe('Apollo query', () => {
     it('fetches vulnerabilities over time data when component is created', () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+        fullPath: mockProjectFullPath,
+        reportType: mockFilters.reportType,
+      });
+    });
+
+    it('passes filters to the GraphQL query', () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent({
+        props: {
+          filters: { reportType: ['API_FUZZING', 'SAST'] },
+        },
+      });
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+        fullPath: mockProjectFullPath,
+        reportType: ['API_FUZZING', 'SAST'],
+      });
+    });
+
+    it('does not include reportType when filters are empty', () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent({
+        props: {
+          filters: {},
+        },
+      });
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,

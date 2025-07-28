@@ -108,10 +108,4 @@ describe('Group Security Dashboard (new version) - Component', () => {
       expect(getFirstPanel().componentProps.filters).toEqual({ projectId });
     });
   });
-
-  describe('panel component props', () => {
-    it('passes filters to the vulnerabilities over time panel component', () => {
-      expect(getFirstPanel().componentProps.filters).toEqual({});
-    });
-  });
 });

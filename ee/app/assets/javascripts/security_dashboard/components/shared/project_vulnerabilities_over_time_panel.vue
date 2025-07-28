@@ -11,11 +11,18 @@ export default {
     VulnerabilitiesOverTimeChart,
   },
   inject: ['projectFullPath'],
+  props: {
+    filters: {
+      type: Object,
+      required: true,
+    },
+  },
   apollo: {
     vulnerabilitiesOverTime: {
       query: getVulnerabilitiesOverTime,
       variables() {
         return {
+          ...{ reportType: this.filters.reportType },
           fullPath: this.projectFullPath,
         };
       },
