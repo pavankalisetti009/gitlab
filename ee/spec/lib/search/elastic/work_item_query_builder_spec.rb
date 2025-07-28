@@ -448,6 +448,62 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           end
         end
       end
+
+      context 'when backfill_milestone_state_work_items_index has finished' do
+        before do
+          set_elasticsearch_migration_to(:backfill_milestone_state_work_items_index, including: true)
+        end
+
+        context 'when milestone_state_filters option is provided' do
+          context 'with upcoming filter' do
+            let(:options) { base_options.merge(milestone_state_filters: [:upcoming]) }
+
+            it 'applies the milestone upcoming state filter' do
+              assert_names_in_query(build, with: %w[filters:milestone_state_upcoming])
+            end
+          end
+
+          context 'with not_upcoming filter' do
+            let(:options) { base_options.merge(milestone_state_filters: [:not_upcoming]) }
+
+            it 'applies the milestone upcoming state filter' do
+              assert_names_in_query(build, with: %w[filters:milestone_state_not_upcoming])
+            end
+          end
+
+          context 'with started filter' do
+            let(:options) { base_options.merge(milestone_state_filters: [:started]) }
+
+            it 'applies the milestone upcoming state filter' do
+              assert_names_in_query(build, with: %w[filters:milestone_state_started])
+            end
+          end
+
+          context 'with not_started filter' do
+            let(:options) { base_options.merge(milestone_state_filters: [:not_started]) }
+
+            it 'applies the milestone upcoming state filter' do
+              assert_names_in_query(build, with: %w[filters:milestone_state_not_started])
+            end
+          end
+        end
+      end
+
+      context 'when backfill_milestone_state_work_items_index has not finished' do
+        before do
+          set_elasticsearch_migration_to(:backfill_milestone_state_work_items_index, including: false)
+        end
+
+        context 'when milestone_state_filters options are provided' do
+          let(:options) do
+            base_options.merge(milestone_state_filters: [:started])
+          end
+
+          it 'does not apply milestone state filters' do
+            assert_names_in_query(build, without: %w[filters:milestone_state_filters])
+          end
+        end
+      end
     end
 
     describe 'assignees' do

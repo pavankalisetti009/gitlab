@@ -67,7 +67,8 @@ module EE
           milestone_title: params[:milestone_title],
           none_milestones: params[:none_milestones],
           any_milestones: params[:any_milestones],
-          not_milestone_title: params[:not_milestone_title]
+          not_milestone_title: params[:not_milestone_title],
+          milestone_state_filters: params[:milestone_state_filters]
         }
       end
 

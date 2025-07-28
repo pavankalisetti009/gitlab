@@ -45,6 +45,7 @@ module Search
           not_milestone_title
           none_milestones
           any_milestones
+          milestone_state_filters
           assignee_ids
           not_assignee_ids
           or_assignee_ids

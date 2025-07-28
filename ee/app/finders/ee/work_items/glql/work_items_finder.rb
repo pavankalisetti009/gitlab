@@ -16,7 +16,7 @@
 #     confidential - Boolean
 #     author_username - String
 #     milestone_title:       - Array of strings (cannot be simultaneously used with milestone_wildcard_id)
-#     milestone_wildcard_id: - String with possible values of  'none', 'any'
+#     milestone_wildcard_id: - String with possible values of  'none', 'any', 'upcoming', 'started'
 #                              (cannot be simultaneously used with milestone_title)
 #     assignee_usernames:    - Array of strings
 #     assignee_wildcard_id:  - String with possible values of  'none', 'any'
@@ -42,11 +42,13 @@ module EE
           :weight, :weight_wildcard_id, :issue_types, :health_status_filter
         ].freeze
         NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
-          :weight_wildcard_id, :health_status_filter].freeze
+          :weight_wildcard_id, :health_status_filter, :milestone_wildcard_id].freeze
         OR_FILTERS = [:assignee_usernames, :label_names].freeze
 
         FILTER_NONE = 'none'
         FILTER_ANY = 'any'
+        FILTER_MILESTONE_UPCOMING = 'upcoming'
+        FILTER_MILESTONE_STARTED = 'started'
 
         GLQL_SOURCE = 'glql'
 
@@ -137,7 +139,8 @@ module EE
             milestone_title: params[:milestone_title],
             not_milestone_title: params.dig(:not, :milestone_title),
             none_milestones: none_milestones?,
-            any_milestones: any_milestones?
+            any_milestones: any_milestones?,
+            milestone_state_filters: milestone_state_filters
           }
         end
 
@@ -197,6 +200,33 @@ module EE
           return unless type_names.present?
 
           Array(type_names).filter_map { |type| ::WorkItems::Type::BASE_TYPES.dig(type.to_sym, :id) }
+        end
+
+        def upcoming_milestone?
+          params[:milestone_wildcard_id].to_s.downcase == FILTER_MILESTONE_UPCOMING
+        end
+
+        def started_milestone?
+          params[:milestone_wildcard_id].to_s.downcase == FILTER_MILESTONE_STARTED
+        end
+
+        def not_upcoming_milestone?
+          params.dig(:not, :milestone_wildcard_id).to_s.downcase == FILTER_MILESTONE_UPCOMING
+        end
+
+        def not_started_milestone?
+          params.dig(:not, :milestone_wildcard_id).to_s.downcase == FILTER_MILESTONE_STARTED
+        end
+
+        def milestone_state_filters
+          filters = []
+
+          filters << :upcoming if upcoming_milestone?
+          filters << :started if started_milestone?
+          filters << :not_upcoming if not_upcoming_milestone?
+          filters << :not_started if not_started_milestone?
+
+          filters.presence
         end
 
         def use_elasticsearch?
