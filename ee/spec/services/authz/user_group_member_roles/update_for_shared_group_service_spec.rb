@@ -25,6 +25,22 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
     user2.reload
   end
 
+  shared_examples 'logs event data' do |upserted_count:, deleted_count:|
+    it 'logs event data' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          shared_group_id: group.id,
+          shared_with_group_id: shared_with_group.id,
+          'update_user_group_member_roles.event': 'group_group_link created/updated',
+          'update_user_group_member_roles.upserted_count': upserted_count,
+          'update_user_group_member_roles.deleted_count': deleted_count
+        )
+      )
+
+      execute
+    end
+  end
+
   it 'creates UserGroupMemberRole records for each user in group_group_link.shared_with_group' do
     expect { execute }.to change {
       [
@@ -37,6 +53,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
 
     expect(Authz::UserGroupMemberRole.count).to eq(2)
   end
+
+  it_behaves_like 'logs event data', upserted_count: 2, deleted_count: 0
 
   context 'with existing UserGroupMemberRole records' do
     let_it_be(:old_role) { create(:member_role, :guest) }
@@ -66,6 +84,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
       expect(Authz::UserGroupMemberRole.count).to eq(3)
     end
 
+    it_behaves_like 'logs event data', upserted_count: 2, deleted_count: 0
+
     context 'when member role is removed' do
       before do
         group_group_link.update!(member_role: nil)
@@ -82,6 +102,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
 
         expect(Authz::UserGroupMemberRole.find(in_group.id)).not_to be_nil
       end
+
+      it_behaves_like 'logs event data', upserted_count: 0, deleted_count: 2
     end
   end
 end

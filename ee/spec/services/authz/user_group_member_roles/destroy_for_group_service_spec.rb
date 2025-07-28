@@ -18,6 +18,22 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
     create(:user_group_member_role, user: user, group: other_group)
   end
 
+  shared_examples 'logs event data' do |deleted_count:|
+    it 'logs event data' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          user_id: user.id,
+          group_id: group.id,
+          'update_user_group_member_roles.event': 'member deleted',
+          'update_user_group_member_roles.upserted_count': 0,
+          'update_user_group_member_roles.deleted_count': deleted_count
+        )
+      )
+
+      execute
+    end
+  end
+
   it 'destroys the UserGroupMemberRole record for the user in the group' do
     expect { execute }.to change {
       [
@@ -26,6 +42,8 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
       ]
     }.from([true, true]).to([false, true])
   end
+
+  it_behaves_like 'logs event data', deleted_count: 1
 
   context 'when there are groups shared with the group' do
     let_it_be(:shared_group) { create(:group) }
@@ -48,5 +66,7 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
         ]
       }.from([true, true, true, true]).to([false, false, false, true])
     end
+
+    it_behaves_like 'logs event data', deleted_count: 3
   end
 end

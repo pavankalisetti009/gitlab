@@ -12,6 +12,8 @@ module Authz
       def initialize(group_group_link)
         @shared_group = group_group_link.shared_group
         @shared_with_group = group_group_link.shared_with_group
+        @upserted_count = 0
+        @deleted_count = 0
       end
 
       def execute
@@ -32,13 +34,16 @@ module Authz
           to_delete = to_delete.filter_map { |a| a[:id] }
           to_add = to_add.map { |a| a.except(:id) }
 
-          ::Authz::UserGroupMemberRole.delete_all_with_id(to_delete) unless to_delete.empty?
+          @deleted_count += ::Authz::UserGroupMemberRole.delete_all_with_id(to_delete) unless to_delete.empty?
 
           next if to_add.empty?
 
-          ::Authz::UserGroupMemberRole.upsert_all(to_add,
-            unique_by: %i[user_id group_id shared_with_group_id])
+          ::Authz::UserGroupMemberRole
+            .upsert_all(to_add, unique_by: %i[user_id group_id shared_with_group_id])
+            .tap { |result| @upserted_count += result.count }
         end
+
+        log
       end
 
       private
@@ -80,6 +85,16 @@ module Authz
 
       def user_group_member_roles
         ::Authz::UserGroupMemberRole.arel_table
+      end
+
+      def log
+        Gitlab::AppJsonLogger.info(
+          shared_group_id: @shared_group.id,
+          shared_with_group_id: @shared_with_group.id,
+          'update_user_group_member_roles.event': 'group_group_link created/updated',
+          'update_user_group_member_roles.upserted_count': @upserted_count,
+          'update_user_group_member_roles.deleted_count': @deleted_count
+        )
       end
     end
   end
