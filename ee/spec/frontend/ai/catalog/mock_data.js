@@ -23,30 +23,19 @@ const mockAgentFactory = (overrides = {}) => ({
   ...overrides,
 });
 
-const mockAgentVersions = [
-  {
-    id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-    versionName: 'v1.0.0-draft',
-    __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
-    systemPrompt: 'The system prompt',
-    userPrompt: 'The user prompt',
-  },
-];
+const mockAgentVersion = {
+  id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+  versionName: 'v1.0.0-draft',
+  __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
+  systemPrompt: 'The system prompt',
+  userPrompt: 'The user prompt',
+};
 
 export const mockBaseAgent = mockAgentFactory();
 
 export const mockAgent = mockAgentFactory({
   project: mockProject,
-  versions: {
-    nodes: mockAgentVersions,
-  },
-});
-
-export const mockLatestAgent = mockAgentFactory({
-  project: mockProject,
-  latestVersion: {
-    mockAgentVersions,
-  },
+  latestVersion: mockAgentVersion,
 });
 
 export const mockAgents = [
@@ -74,13 +63,13 @@ export const mockCatalogItemsResponse = {
   },
 };
 
-export const mockCatalogItemResponse = {
+export const mockAiCatalogAgentResponse = {
   data: {
     aiCatalogItem: mockAgent,
   },
 };
 
-export const mockCatalogItemNullResponse = {
+export const mockAiCatalogAgentNullResponse = {
   data: {
     aiCatalogItem: null,
   },
@@ -109,7 +98,7 @@ export const mockUpdateAiCatalogAgentSuccessMutation = {
   data: {
     aiCatalogAgentUpdate: {
       errors: [],
-      item: mockLatestAgent,
+      item: mockAgent,
       __typename: TYPENAME_AI_CATALOG_AGENT_UPDATE,
     },
   },

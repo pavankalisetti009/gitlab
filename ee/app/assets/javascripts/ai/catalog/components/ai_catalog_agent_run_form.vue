@@ -30,7 +30,7 @@ export default {
   data() {
     return {
       formValues: {
-        userPrompt: this.aiCatalogAgent.versions?.nodes?.[0]?.userPrompt,
+        userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
       },
     };
   },

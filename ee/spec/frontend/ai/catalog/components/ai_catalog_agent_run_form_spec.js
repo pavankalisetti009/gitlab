@@ -41,9 +41,7 @@ describe('AiCatalogAgentRunForm', () => {
     expect(findFormFields().props('fields')).toEqual({
       userPrompt: expect.any(Object),
     });
-    expect(findFormFields().props('values').userPrompt).toBe(
-      mockAgent.versions.nodes[0].userPrompt,
-    );
+    expect(findFormFields().props('values').userPrompt).toBe(mockAgent.latestVersion.userPrompt);
   });
 
   describe('form submission', () => {

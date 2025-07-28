@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import AiCatalogAgents from '../pages/ai_catalog_agents.vue';
+import AiCatalogAgent from '../pages/ai_catalog_agent.vue';
 import AiCatalogAgentsEdit from '../pages/ai_catalog_agents_edit.vue';
 import AiCatalogAgentsRun from '../pages/ai_catalog_agents_run.vue';
 import AiCatalogAgentsNew from '../pages/ai_catalog_agents_new.vue';
@@ -37,21 +38,6 @@ export const createRouter = (base) => {
         path: '/agents/new',
         component: AiCatalogAgentsNew,
       },
-      {
-        name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-        path: '/agents/:id/edit',
-        component: AiCatalogAgentsEdit,
-      },
-      {
-        name: AI_CATALOG_AGENTS_RUN_ROUTE,
-        path: '/agents/:id/run',
-        component: AiCatalogAgentsRun,
-      },
-      {
-        name: AI_CATALOG_FLOWS_ROUTE,
-        path: '/flows',
-        component: AiCatalogFlows,
-      },
       // Catch-all route for /agents/:id - redirect to /agents?show=:id
       {
         path: '/agents/:id',
@@ -59,6 +45,27 @@ export const createRouter = (base) => {
           path: '/agents',
           query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
         }),
+      },
+      {
+        path: '/agents/:id',
+        component: AiCatalogAgent,
+        children: [
+          {
+            name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+            path: 'edit',
+            component: AiCatalogAgentsEdit,
+          },
+          {
+            name: AI_CATALOG_AGENTS_RUN_ROUTE,
+            path: 'run',
+            component: AiCatalogAgentsRun,
+          },
+        ],
+      },
+      {
+        name: AI_CATALOG_FLOWS_ROUTE,
+        path: '/flows',
+        component: AiCatalogFlows,
       },
     ],
   });

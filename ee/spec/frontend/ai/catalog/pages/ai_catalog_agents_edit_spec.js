@@ -7,7 +7,6 @@ import { TYPENAME_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue';
-import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import updateAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_agent.mutation.graphql';
 import {
@@ -15,8 +14,6 @@ import {
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 import {
-  mockCatalogItemResponse,
-  mockCatalogItemNullResponse,
   mockAgent,
   mockUpdateAiCatalogAgentSuccessMutation,
   mockUpdateAiCatalogAgentErrorMutation,
@@ -28,6 +25,10 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('AiCatalogAgentsEdit', () => {
   let wrapper;
   let mockApollo;
+
+  const defaultProps = {
+    aiCatalogAgent: mockAgent,
+  };
   const agentId = 1;
   const routeParams = { id: agentId };
   const mockToast = {
@@ -37,20 +38,18 @@ describe('AiCatalogAgentsEdit', () => {
     push: jest.fn(),
   };
 
-  const mockCatalogItemQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemResponse);
-  const mockCatalogItemNullQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemNullResponse);
   const mockUpdateAiCatalogAgentHandler = jest
     .fn()
     .mockResolvedValue(mockUpdateAiCatalogAgentSuccessMutation);
 
-  const createComponent = ({ catalogItemQueryHandler = mockCatalogItemQueryHandler } = {}) => {
-    mockApollo = createMockApollo([
-      [aiCatalogAgentQuery, catalogItemQueryHandler],
-      [updateAiCatalogAgent, mockUpdateAiCatalogAgentHandler],
-    ]);
+  const createComponent = () => {
+    mockApollo = createMockApollo([[updateAiCatalogAgent, mockUpdateAiCatalogAgentHandler]]);
 
     wrapper = shallowMount(AiCatalogAgentsEdit, {
       apolloProvider: mockApollo,
+      propsData: {
+        ...defaultProps,
+      },
       mocks: {
         $route: {
           params: routeParams,
@@ -63,36 +62,12 @@ describe('AiCatalogAgentsEdit', () => {
 
   const findForm = () => wrapper.findComponent(AiCatalogAgentForm);
 
-  describe('with agent data', () => {
-    beforeEach(async () => {
-      await createComponent();
-    });
-
-    it('fetches item data', () => {
-      expect(mockCatalogItemQueryHandler).toHaveBeenCalled();
-    });
-
-    it('render edit form', () => {
-      expect(findForm().exists()).toBe(true);
-    });
+  beforeEach(() => {
+    createComponent();
   });
 
-  describe('without agent data', () => {
-    beforeEach(async () => {
-      await createComponent({ catalogItemQueryHandler: mockCatalogItemNullQueryHandler });
-    });
-
-    it('fetches list data', () => {
-      expect(mockCatalogItemNullQueryHandler).toHaveBeenCalled();
-    });
-
-    it('does not render edit form', () => {
-      expect(findForm().exists()).toBe(false);
-    });
-
-    it('redirect to the agents list page', () => {
-      expect(mockRouter.push).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE });
-    });
+  it('render edit form', () => {
+    expect(findForm().exists()).toBe(true);
   });
 
   describe('Form Submit', () => {
@@ -107,10 +82,6 @@ describe('AiCatalogAgentsEdit', () => {
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
-
-    beforeEach(async () => {
-      await createComponent();
-    });
 
     it('sends an update request', async () => {
       await findForm().vm.$emit('submit', formValues);
