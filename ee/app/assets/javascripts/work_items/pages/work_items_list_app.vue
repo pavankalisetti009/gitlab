@@ -4,6 +4,7 @@ import { GlEmptyState } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { findStatusWidget } from '~/work_items/utils';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import {
   WORK_ITEM_TYPE_NAME_EPIC,
@@ -23,6 +24,7 @@ import {
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 
@@ -41,6 +43,7 @@ export default {
     EmptyStateWithAnyIssues,
     GlEmptyState,
     WorkItemsListApp,
+    WorkItemStatusBadge,
   },
   inject: [
     'hasEpicsFeature',
@@ -154,6 +157,12 @@ export default {
     incrementUpdateCount() {
       this.workItemUpdateCount += 1;
     },
+    hasStatus(issuable) {
+      return findStatusWidget(issuable);
+    },
+    issuableStatusItem(issuable) {
+      return findStatusWidget(issuable)?.status || {};
+    },
   },
 };
 </script>
@@ -204,6 +213,9 @@ export default {
           />
         </template>
       </gl-empty-state>
+    </template>
+    <template #custom-status="{ issuable = {} }">
+      <work-item-status-badge v-if="hasStatus(issuable)" :item="issuableStatusItem(issuable)" />
     </template>
   </work-items-list-app>
 </template>
