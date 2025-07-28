@@ -1904,7 +1904,7 @@ GEM
     text (1.3.1)
     thor (1.3.1)
     thread_safe (0.3.6)
-    thrift (0.16.0)
+    thrift (0.22.0)
     tilt (2.0.11)
     timeout (0.4.3)
     timfel-krb5-auth (0.8.3)
