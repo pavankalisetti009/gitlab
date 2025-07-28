@@ -30,4 +30,18 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForSharedGroupService, featur
 
     expect(Authz::UserGroupMemberRole.where(id: [other1.id, other2.id]).count).to be 2
   end
+
+  it 'logs event data' do
+    expect(Gitlab::AppJsonLogger).to receive(:info).with(
+      hash_including(
+        shared_group_id: shared_group.id,
+        shared_with_group_id: shared_with_group.id,
+        'update_user_group_member_roles.event': 'group_group_link deleted',
+        'update_user_group_member_roles.upserted_count': 0,
+        'update_user_group_member_roles.deleted_count': 2
+      )
+    )
+
+    execute
+  end
 end

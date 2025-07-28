@@ -35,11 +35,29 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
     user.user_group_member_roles.where(group: group, member_role: member_role)
   end
 
+  shared_examples 'logs event data' do |upserted_count:, deleted_count:|
+    it 'logs event data' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          user_id: user.id,
+          group_id: group.id,
+          'update_user_group_member_roles.event': 'member created/updated',
+          'update_user_group_member_roles.upserted_count': upserted_count,
+          'update_user_group_member_roles.deleted_count': deleted_count
+        )
+      )
+
+      execute
+    end
+  end
+
   it 'creates a UserGroupMemberRole record for the user in the group' do
     expect { execute }.to change {
       fetch_records(user, group, member.member_role).exists?
     }.from(false).to(true)
   end
+
+  it_behaves_like 'logs event data', upserted_count: 1, deleted_count: 0
 
   context 'with an existing UserGroupMemberRole record' do
     let_it_be(:old_role) { create(:member_role, :guest, namespace: group) }
@@ -64,6 +82,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
       it 'deletes the existing record' do
         expect { execute }.to change { user.user_group_member_roles.count }.from(1).to(0)
       end
+
+      it_behaves_like 'logs event data', upserted_count: 0, deleted_count: 1
     end
   end
 
@@ -82,6 +102,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
         ]
       }.from([false, false]).to([true, true])
     end
+
+    it_behaves_like 'logs event data', upserted_count: 2, deleted_count: 0
 
     context 'with existing UserGroupMemberRole records' do
       let_it_be(:old_role) { create(:member_role, :guest, namespace: group) }
@@ -113,6 +135,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
         it 'deletes the existing records' do
           expect { execute }.to change { user.user_group_member_roles.count }.from(2).to(0)
         end
+
+        it_behaves_like 'logs event data', upserted_count: 0, deleted_count: 2
       end
     end
   end

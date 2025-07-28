@@ -11,6 +11,8 @@ module Authz
         @user = member.user
         @group = member.source
         @member = member
+        @upserted_count = 0
+        @deleted_count = 0
       end
 
       def execute
@@ -27,17 +29,22 @@ module Authz
         to_delete, to_add = attrs.partition { |a| a[:member_role_id].nil? }
         to_delete = to_delete.pluck(:id).compact # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Array#pluck
 
-        ::Authz::UserGroupMemberRole.delete_all_with_id(to_delete) unless to_delete.empty?
+        @deleted_count += ::Authz::UserGroupMemberRole.delete_all_with_id(to_delete) unless to_delete.empty?
 
         to_add = to_add.map { |a| a.except(:id) }
         in_group, in_shared_groups = to_add.partition { |a| a[:shared_with_group_id].nil? }
 
-        ::Authz::UserGroupMemberRole.upsert_all(in_group, unique_by: %i[user_id group_id]) unless in_group.empty?
+        unless in_group.empty?
+          ::Authz::UserGroupMemberRole
+            .upsert_all(in_group, unique_by: %i[user_id group_id])
+            .tap { |result| @upserted_count += result.count }
+        end
 
-        return if in_shared_groups.empty?
+        ::Authz::UserGroupMemberRole
+          .upsert_all(in_shared_groups, unique_by: %i[user_id group_id shared_with_group_id])
+          .tap { |result| @upserted_count += result.count } unless in_shared_groups.empty?
 
-        ::Authz::UserGroupMemberRole.upsert_all(in_shared_groups,
-          unique_by: %i[user_id group_id shared_with_group_id])
+        log
       end
 
       private
@@ -87,6 +94,16 @@ module Authz
 
       def user_group_member_roles
         ::Authz::UserGroupMemberRole.arel_table
+      end
+
+      def log
+        Gitlab::AppJsonLogger.info(
+          user_id: @user.id,
+          group_id: @group.id,
+          'update_user_group_member_roles.event': 'member created/updated',
+          'update_user_group_member_roles.upserted_count': @upserted_count,
+          'update_user_group_member_roles.deleted_count': @deleted_count
+        )
       end
     end
   end
