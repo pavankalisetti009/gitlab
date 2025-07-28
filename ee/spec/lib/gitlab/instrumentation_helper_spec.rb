@@ -24,16 +24,15 @@ RSpec.describe Gitlab::InstrumentationHelper do
 
     context 'when Zoekt calls are made', :zoekt_settings_enabled, :zoekt_cache_disabled do
       let_it_be(:group) { create(:group) }
-      let_it_be(:project) { create(:project, :public, :repository, group: group) }
+      let_it_be(:project) { create(:project, :public, :small_repo, group: group) }
       let(:node_id) { ::Search::Zoekt::Node.last.id }
 
-      before do
+      before_all do
         zoekt_ensure_project_indexed!(project)
       end
 
       it 'adds Zoekt data' do
-        search_results = Search::Zoekt::SearchResults.new(nil, 'query', nil,
-          group_id: group.id, node_id: node_id)
+        search_results = Search::Zoekt::SearchResults.new(nil, 'query', nil, group_id: group.id, node_id: node_id)
         search_results.objects('blobs')
 
         subject
