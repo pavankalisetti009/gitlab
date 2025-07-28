@@ -138,7 +138,7 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
       allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
 
       allow_next_instance_of(Search::Elastic::References::Embedding) do |ref|
-        allow(ref).to receive(:as_indexed_json).and_return({ embedding_0: embedding, routing: group_routing })
+        allow(ref).to receive(:as_indexed_json).and_return({ embedding_1: embedding, routing: group_routing })
       end
     end
 
@@ -147,7 +147,7 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
       ensure_elasticsearch_index!
 
       expect(docs_in_index('gitlab-test-work_items', include_source: true)).to match_array([hash_including({
-        'id' => work_item.id, 'routing' => group_routing, 'title' => work_item.title, 'embedding_0' => embedding
+        'id' => work_item.id, 'routing' => group_routing, 'title' => work_item.title, 'embedding_1' => embedding
       })])
 
       new_title = 'My title 2'
@@ -155,7 +155,7 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
       ensure_elasticsearch_index!
 
       expect(docs_in_index('gitlab-test-work_items', include_source: true)).to match_array([hash_including({
-        'id' => work_item.id, 'routing' => group_routing, 'title' => new_title, 'embedding_0' => embedding
+        'id' => work_item.id, 'routing' => group_routing, 'title' => new_title, 'embedding_1' => embedding
       })])
     end
 
@@ -173,7 +173,7 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
 
         expect(docs_in_index)
           .to match_array([hash_including({ 'id' => work_item.id, 'routing' => group_routing, 'title' => old_title })])
-        expect(docs_in_index.first.keys).not_to include('embedding_0')
+        expect(docs_in_index.first.keys).not_to include('embedding_1')
 
         new_title = 'My title 2'
         work_item.update!(title: new_title)
@@ -182,7 +182,7 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
         docs_in_index = docs_in_index('gitlab-test-work_items', include_source: true)
         expect(docs_in_index)
           .to match_array([hash_including({ 'id' => work_item.id, 'routing' => group_routing, 'title' => new_title })])
-        expect(docs_in_index.first.keys).not_to include('embedding_0')
+        expect(docs_in_index.first.keys).not_to include('embedding_1')
       end
     end
   end

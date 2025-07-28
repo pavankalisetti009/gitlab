@@ -19,3 +19,5 @@ class AddEmbedding1ToWorkItemsOpenSearch < Elastic::Migration
     Search::Elastic::Types::WorkItem
   end
 end
+
+AddEmbedding1ToWorkItemsOpenSearch.prepend ::Search::Elastic::MigrationObsolete

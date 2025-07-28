@@ -16,3 +16,5 @@ class RemoveEmbedding0FromWorkItems < Elastic::Migration
     'embedding_0'
   end
 end
+
+RemoveEmbedding0FromWorkItems.prepend ::Search::Elastic::MigrationObsolete

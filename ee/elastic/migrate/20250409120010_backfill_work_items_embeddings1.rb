@@ -101,3 +101,5 @@ class BackfillWorkItemsEmbeddings1 < Elastic::Migration
     remaining_documents_count * SPACE_CALCULATION_MULTIPLIER
   end
 end
+
+BackfillWorkItemsEmbeddings1.prepend ::Search::Elastic::MigrationObsolete

@@ -103,7 +103,7 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
     end
 
     it 'returns the embedding and its version' do
-      expect(work_item_embedding_ref.as_indexed_json).to eq({ embedding_0: mock_embedding, routing: routing })
+      expect(work_item_embedding_ref.as_indexed_json).to eq({ embedding_1: mock_embedding, routing: routing })
     end
 
     it 'calls embedding API' do
@@ -113,7 +113,7 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
 
       expect(Gitlab::Llm::VertexAi::Embeddings::Text)
         .to receive(:new)
-        .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: nil)
+        .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: model)
         .and_return(embedding_service)
 
       work_item_embedding_ref.as_indexed_json
@@ -125,68 +125,16 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
       let(:primitive) { 'semantic_search_issue' }
 
       it 'returns the embedding and its version' do
-        expect(work_item_embedding_ref.as_indexed_json).to eq({ embedding_0: mock_embedding, routing: routing })
+        expect(work_item_embedding_ref.as_indexed_json).to eq({ embedding_1: mock_embedding, routing: routing })
       end
 
       it 'calls embedding API' do
         expect(Gitlab::Llm::VertexAi::Embeddings::Text)
           .to receive(:new)
-          .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: nil)
+          .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: model)
           .and_return(embedding_service)
 
-        expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_0])
-      end
-
-      context 'when embedding_1 migration is added to Elasticsearch' do
-        before do
-          set_elasticsearch_migration_to :add_embedding1_to_work_items_elastic, including: true
-        end
-
-        it 'calls embedding API with custom model' do
-          expect(Gitlab::Llm::VertexAi::Embeddings::Text)
-            .to receive(:new)
-            .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: model)
-            .and_return(embedding_service)
-
-          expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_0, :embedding_1])
-        end
-
-        context 'when backfill_work_items_embeddings1 migration is complete' do
-          before do
-            set_elasticsearch_migration_to :backfill_work_items_embeddings1, including: true
-          end
-
-          it 'does not set embedding_0' do
-            expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_1])
-          end
-        end
-      end
-
-      context 'when embedding_1 migration is added to OpenSearch' do
-        before do
-          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:add_embedding1_to_work_items_open_search).and_return(true)
-        end
-
-        it 'calls embedding API with custom model' do
-          expect(Gitlab::Llm::VertexAi::Embeddings::Text)
-            .to receive(:new)
-            .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: model)
-            .and_return(embedding_service)
-
-          expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_0, :embedding_1])
-        end
-
-        context 'when backfill_work_items_embeddings1 migration is complete' do
-          before do
-            allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-              .with(:backfill_work_items_embeddings1).and_return(true)
-          end
-
-          it 'does not set embedding_0' do
-            expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_1])
-          end
-        end
+        expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_1])
       end
     end
 

@@ -55,8 +55,7 @@ module Search
         def work_item_json
           json = { routing: routing }
 
-          json[:embedding_0] = embedding(work_item_content) if embedding_0_in_use?
-          json[:embedding_1] = embedding(work_item_content, model: MODEL_VERSIONS[1]) if embedding_1_added_to_work_item?
+          json[:embedding_1] = embedding(work_item_content, model: MODEL_VERSIONS[1])
 
           json
         end
@@ -93,15 +92,6 @@ module Search
           "work item of type '#{database_record.work_item_type.name}' " \
             "with title '#{database_record.title}' " \
             "and description '#{database_record.description}'"
-        end
-
-        def embedding_0_in_use?
-          !::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items_embeddings1)
-        end
-
-        def embedding_1_added_to_work_item?
-          ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding1_to_work_items_elastic) ||
-            ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding1_to_work_items_open_search)
         end
 
         def tracking_context
