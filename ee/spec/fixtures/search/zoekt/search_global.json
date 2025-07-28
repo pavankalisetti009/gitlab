@@ -73,13 +73,13 @@
                           {
                             "meta": {
                               "key": "traversal_ids",
-                              "value": "9970-457-"
+                              "value": "^9970-457-"
                             }
                           },
                           {
                             "meta": {
                               "key": "traversal_ids",
-                              "value": "9970-123-"
+                              "value": "^9970-123-"
                             }
                           },
                           {

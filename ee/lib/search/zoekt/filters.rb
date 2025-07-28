@@ -65,6 +65,12 @@ module Search
 
           { query_string: { query: query } }
         end
+
+        def by_traversal_ids(traversal_ids)
+          raise ArgumentError, 'Traversal IDs cannot be empty' if traversal_ids.blank?
+
+          by_meta(key: 'traversal_ids', value: "^#{traversal_ids}")
+        end
       end
     end
   end
