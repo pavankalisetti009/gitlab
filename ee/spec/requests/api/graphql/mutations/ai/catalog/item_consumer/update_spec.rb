@@ -93,6 +93,9 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
         locked: false
       )
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
+      expect(graphql_dig_at(mutation_response, :item_consumer)).to match(
+        a_graphql_entity_for(item_consumer, :enabled, :locked)
+      )
     end
   end
 end
