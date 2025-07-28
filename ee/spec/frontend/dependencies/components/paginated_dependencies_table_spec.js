@@ -193,7 +193,7 @@ describe('PaginatedDependenciesTable component', () => {
 
   describe('keyset pagination', () => {
     const nextCursor = 'eyJpZCI6IjQyIiwiX2tkIjoibiJ9';
-    const prevCursor = 'eyJpZCI6IjQwIiwiX2tkIjoicCJ9';
+    const prevCursor = 'abCUNXL8ifWbNxzoM1ylOkpovVK0';
 
     beforeEach(async () => {
       factory();
