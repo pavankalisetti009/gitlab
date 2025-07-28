@@ -36,9 +36,9 @@ RSpec.describe AuditEvents::ExportCsvService, feature_category: :audit_events do
   it 'includes the appropriate headers' do
     expect(csv.headers).to eq([
       'ID', 'Author ID', 'Author Name', 'Author Email',
-                                'Entity ID', 'Entity Type', 'Entity Path',
-                                'Target ID', 'Target Type', 'Target Details',
-                                'Action', 'IP Address', 'Created At (UTC)'
+      'Entity ID', 'Entity Type', 'Entity Path',
+      'Target ID', 'Target Type', 'Target Details',
+      'Action', 'IP Address', 'Created At (UTC)'
     ])
   end
 

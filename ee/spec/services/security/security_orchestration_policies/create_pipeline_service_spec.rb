@@ -23,7 +23,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
       context "with pipeline scan types" do
         let(:actions) do
           [{ scan: "secret_detection" },
-           { scan: "container_scanning" }]
+            { scan: "container_scanning" }]
         end
 
         specify do
@@ -48,7 +48,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
       context "with pipeline scan types" do
         let(:actions) do
           [{ scan: "secret_detection" },
-           { scan: "container_scanning" }]
+            { scan: "container_scanning" }]
         end
 
         specify do
@@ -99,7 +99,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
       context "with scan pipeline actions" do
         let(:actions) do
           [{ scan: "secret_detection" },
-           { scan: "container_scanning" }]
+            { scan: "container_scanning" }]
         end
 
         it "succeeds" do
@@ -218,8 +218,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
       context "with scan pipeline and on-demand actions" do
         let(:actions) do
           [{ scan: "secret_detection" },
-           { scan: "container_scanning" },
-           { scan: "dast" }]
+            { scan: "container_scanning" },
+            { scan: "dast" }]
         end
 
         it "succeeds" do
