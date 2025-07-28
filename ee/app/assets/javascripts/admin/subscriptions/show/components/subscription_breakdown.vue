@@ -99,6 +99,8 @@ export default {
   watch: {
     licenseError(error, prevError) {
       if (!error || error === prevError) {
+        // Note: This can never happen in practice, since the error is always a
+        // new Error instance, i.e., truthy and unique.
         return;
       }
 

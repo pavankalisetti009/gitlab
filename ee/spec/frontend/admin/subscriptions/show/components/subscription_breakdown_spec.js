@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import { GlCard } from '@gitlab/ui';
+import { GlCard, GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import AxiosMockAdapter from 'axios-mock-adapter';
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
 import { createAlert } from '~/alert';
 import mutations from 'ee/admin/subscriptions/show/store/mutations';
-import * as types from 'ee/admin/subscriptions/show/store/mutation_types';
+import { removeLicense } from 'ee/admin/subscriptions/show/store/actions';
 import createState from 'ee/admin/subscriptions/show/store/state';
 import SubscriptionActivationModal from 'ee/admin/subscriptions/show/components/subscription_activation_modal.vue';
 import SubscriptionBreakdown, {
@@ -24,8 +24,8 @@ import {
 } from 'ee/admin/subscriptions/show/constants';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import axios from '~/lib/utils/axios_utils';
-import * as initialStore from 'ee/admin/subscriptions/show/store/';
 import { license, subscriptionPastHistory, subscriptionFutureHistory } from '../mock_data';
 
 jest.mock('~/alert');
@@ -47,6 +47,7 @@ describe('Subscription Breakdown', () => {
   const findDetailsHistory = () => wrapper.findComponent(SubscriptionDetailsHistory);
   const findDetailsUserInfo = () => wrapper.findComponent(SubscriptionDetailsUserInfo);
   const findRemoveLicenseButton = () => wrapper.findByTestId('remove-license-button');
+  const findRemoveLicenseModal = () => wrapper.findComponent(GlModal);
   const findActivateSubscriptionAction = () =>
     wrapper.findByTestId('subscription-activate-subscription-action');
   const findSubscriptionActivationModal = () => wrapper.findComponent(SubscriptionActivationModal);
@@ -56,13 +57,16 @@ describe('Subscription Breakdown', () => {
   const createStore = ({
     didSyncFail = false,
     syncSubscriptionMock = jest.fn(),
-    initialState = createState({ licenseRemovePath: '', subscriptionSyncPath: '' }),
+    initialState = createState({ licenseRemovalPath: '', subscriptionSyncPath: '' }),
   } = {}) => {
+    Vue.use(Vuex);
+
     return new Vuex.Store({
-      ...initialStore,
       actions: {
         syncSubscription: syncSubscriptionMock,
+        removeLicense,
       },
+      mutations,
       getters: {
         didSyncFail: () => didSyncFail,
         didSyncSucceed: () => false,
@@ -242,10 +246,11 @@ describe('Subscription Breakdown', () => {
     });
 
     describe('showAlert', () => {
-      let state;
-
       beforeEach(() => {
-        state = createState({ licenseRemovePath: '', subscriptionSyncPath: '' });
+        const state = createState({
+          licenseRemovalPath: licenseRemovePath,
+          subscriptionSyncPath: '',
+        });
         const store = createStore({ initialState: state });
 
         createComponent({ stubs: { GlCard, SubscriptionDetailsCard }, store });
@@ -255,32 +260,17 @@ describe('Subscription Breakdown', () => {
         createAlert.mockClear();
       });
 
-      const removeLicenseErrorMutation = async (payload) => {
-        mutations[types.RECEIVE_REMOVE_LICENSE_ERROR](state, payload);
-        await nextTick();
-      };
-
       it('is called when licenseError is populated', async () => {
-        const payload = 'an error message';
+        axiosMock.onDelete(licenseRemovePath).reply(418);
 
-        await removeLicenseErrorMutation(payload);
+        findRemoveLicenseModal().vm.$emit('primary');
 
-        expect(createAlert).toHaveBeenCalledWith({ message: payload });
-      });
+        await waitForPromises();
 
-      it('is not called again when licenseError is the same as the previous error', async () => {
-        const payload = 'an error message';
+        expect(createAlert).toHaveBeenCalledWith({ message: expect.any(Error) });
 
-        await removeLicenseErrorMutation(payload);
-        await removeLicenseErrorMutation(payload);
-
-        expect(createAlert).toHaveBeenCalledTimes(1);
-      });
-
-      it('is not called when licenseError is empty', async () => {
-        await removeLicenseErrorMutation('');
-
-        expect(createAlert).not.toHaveBeenCalled();
+        const error = createAlert.mock.calls[0][0].message;
+        expect(error.message).toMatch('418');
       });
     });
   });
