@@ -16,6 +16,8 @@ module Ai
       include Gitlab::ExclusiveLeaseHelpers
       prepend ::Geo::SkipSecondary
 
+      pause_control :active_context
+
       idempotent!
       worker_resource_boundary :cpu
       urgency :low

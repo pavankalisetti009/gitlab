@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category: :global_search do
   let(:worker) { described_class.new }
 
+  it_behaves_like 'active_context pause-controlled worker' do
+    let(:worker_params) { [123] }
+  end
+
   describe '#perform' do
     let_it_be(:repository) { create(:ai_active_context_code_repository, state: :pending) }
 

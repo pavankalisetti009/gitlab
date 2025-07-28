@@ -48,12 +48,12 @@ module Ai
         end
       end
 
-      private
-
       def use_advanced_search_config?
         ADAPTERS_FOR_ADVANCED_SEARCH.include?(adapter_class&.safe_constantize) &&
           read_attribute(:options)['use_advanced_search_config'] == true
       end
+
+      private
 
       def validate_options
         return if options.is_a?(Hash)
