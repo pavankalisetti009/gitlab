@@ -50,8 +50,7 @@ describe('MetricsDetails', () => {
   const projectId = 1234;
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findMetricDetails = () => wrapper.findComponentByTestId('metric-details');
-
+  const findMetricDetails = () => wrapper.findByTestId('metric-details');
   const findHeader = () => wrapper.findComponent(PageHeading);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
   const findChart = () => wrapper.find(`[data-testid="metric-chart"]`);
@@ -83,7 +82,7 @@ describe('MetricsDetails', () => {
 
   const showToast = jest.fn();
 
-  const mountComponent = async (props = {}) => {
+  const mountComponent = async (props = {}, stubs = {}) => {
     wrapper = shallowMountExtended(MetricsDetails, {
       mocks: {
         $toast: {
@@ -97,11 +96,18 @@ describe('MetricsDetails', () => {
       },
       stubs: {
         GlSprintf,
+        MetricsHeatMap: stubComponent(MetricsHeatmap, {
+          template: `<div ref="chartComponent"><div ref="chart"></div></div>`,
+        }),
+        MetricsLineChart: stubComponent(MetricsLineChart, {
+          template: `<div ref="chartComponent"><div ref="chart"></div></div>`,
+        }),
         RelatedIssuesProvider: stubComponent(RelatedIssuesProvider, {
           template: `<div>
             <slot :issues="[]" :loading="false" :error="null" />
           </div>`,
         }),
+        ...stubs,
       },
     });
     await waitForPromises();
@@ -581,7 +587,6 @@ describe('MetricsDetails', () => {
     beforeEach(() => {
       visitUrlMock = jest.spyOn(urlUtility, 'visitUrl').mockReturnValue({});
       visitUrlWithAlertsMock = jest.spyOn(urlUtility, 'visitUrlWithAlerts').mockReturnValue({});
-      wrapper.vm.$refs.chartComponent = { $refs: { chart: {} } };
       uploadMetricsSnapshot.mockResolvedValue('http://test.host/share/url');
     });
 
@@ -635,7 +640,14 @@ describe('MetricsDetails', () => {
     });
 
     it('does not upload the metric snapshot if the chart does not exist', async () => {
-      wrapper.vm.$refs.chartComponent = { $refs: { chart: null } };
+      await mountComponent(
+        {},
+        {
+          MetricsLineChart: stubComponent(MetricsLineChart, {
+            template: `<div ref="chartComponent"></div>`,
+          }),
+        },
+      );
 
       await onButtonClicked();
 
