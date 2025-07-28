@@ -47353,6 +47353,9 @@ msgstr ""
 msgid "Possible to override in each project."
 msgstr ""
 
+msgid "PostStart event references command '%{command}' which has no command definition."
+msgstr ""
+
 msgid "PostStart event references command '%{command}' which is not an exec command. Only exec commands are supported in postStart events"
 msgstr ""
 

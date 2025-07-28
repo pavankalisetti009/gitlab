@@ -359,8 +359,19 @@ module RemoteDevelopment
 
             # ===== postStart specific validations =====
 
-            # Check if the referenced command is an exec command
             referenced_command = commands.find { |cmd| cmd[:id] == command_name }
+            # Check if referenced command is defined in the command section
+            unless referenced_command.is_a?(Hash)
+              append_err(
+                format(_("PostStart event references command '%{command}' which has no command definition."),
+                  command: command_name
+                ),
+                context
+              )
+              next
+            end
+
+            # Check if the referenced command is an exec command
             next if referenced_command[:exec].present?
 
             append_err(
