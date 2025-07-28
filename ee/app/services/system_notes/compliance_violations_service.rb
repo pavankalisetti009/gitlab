@@ -6,5 +6,15 @@ module SystemNotes # rubocop:disable Gitlab/BoundedContexts -- SystemNotes modul
       new_status = noteable.status.humanize
       create_note(NoteSummary.new(noteable, project, author, "changed status to #{new_status}", action: 'status'))
     end
+
+    def link_issue(issue)
+      body = "marked this compliance violation as related to #{issue.to_reference(full: true)}"
+      create_note(NoteSummary.new(noteable, project, author, body, action: 'relate'))
+    end
+
+    def unlink_issue(issue)
+      body = "removed the relation with #{issue.to_reference(full: true)}"
+      create_note(NoteSummary.new(noteable, project, author, body, action: 'unrelate'))
+    end
   end
 end
