@@ -1,0 +1,61 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :workflow_catalog do
+  describe '#execute' do
+    let_it_be(:developer) { create(:user) }
+    let_it_be(:maintainer) { create(:user) }
+    let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    let(:params) { { enabled: false, locked: false } }
+
+    subject(:response) { described_class.new(item_consumer, user, params).execute }
+
+    shared_examples 'Ai::Catalog::ItemConsumers::UpdateService' do
+      context 'when user does not have permission' do
+        let(:user) { developer }
+
+        it 'returns an error' do
+          expect(response).to be_error
+          expect(response.message).to contain_exactly('You have insufficient permission to update this item consumer')
+        end
+      end
+
+      context 'when user has permission' do
+        let(:user) { maintainer }
+
+        it 'returns success response' do
+          expect(response).to be_success
+        end
+
+        it 'updates the item consumer' do
+          expect { response }.to change { item_consumer.enabled }.from(true).to(false)
+            .and change { item_consumer.locked }.from(true).to(false)
+        end
+
+        context 'when the item consumer cannot be updated' do
+          let(:params) { { pinned_version_prefix: 'a' * 51 } }
+
+          it 'returns an error' do
+            expect(response).to be_error
+            expect(response.message).to contain_exactly('Pinned version prefix is too long (maximum is 50 characters)')
+          end
+        end
+      end
+    end
+
+    context 'with a project level item consumer' do
+      let_it_be_with_reload(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+
+      it_behaves_like 'Ai::Catalog::ItemConsumers::UpdateService'
+    end
+
+    context 'with a group level item consumer' do
+      let_it_be_with_reload(:item_consumer) { create(:ai_catalog_item_consumer, group: group) }
+
+      it_behaves_like 'Ai::Catalog::ItemConsumers::UpdateService'
+    end
+  end
+end

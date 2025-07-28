@@ -2455,6 +2455,56 @@ Input type: `AiCatalogItemConsumerCreateInput`
 | <a id="mutationaicatalogitemconsumercreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationaicatalogitemconsumercreateitemconsumer"></a>`itemConsumer` | [`AiCatalogItemConsumer`](#aicatalogitemconsumer) | Item configuration created. |
 
+### `Mutation.aiCatalogItemConsumerDelete`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogItemConsumerDeleteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogitemconsumerdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogitemconsumerdeleteid"></a>`id` | [`AiCatalogItemConsumerID!`](#aicatalogitemconsumerid) | Global ID of the catalog item consumer to delete. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogitemconsumerdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogitemconsumerdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogitemconsumerdeletesuccess"></a>`success` | [`Boolean!`](#boolean) | Returns true if catalog item consumer was successfully deleted. |
+
+### `Mutation.aiCatalogItemConsumerUpdate`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogItemConsumerUpdateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogitemconsumerupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogitemconsumerupdateenabled"></a>`enabled` | [`Boolean`](#boolean) | Whether the flow is enabled in the group or project. |
+| <a id="mutationaicatalogitemconsumerupdateid"></a>`id` | [`AiCatalogItemConsumerID!`](#aicatalogitemconsumerid) | Global ID of the catalog item consumer to update. |
+| <a id="mutationaicatalogitemconsumerupdatelocked"></a>`locked` | [`Boolean`](#boolean) | Whether the configuration is locked. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogitemconsumerupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogitemconsumerupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogitemconsumerupdateitemconsumer"></a>`itemConsumer` | [`AiCatalogItemConsumer`](#aicatalogitemconsumer) | Item consumer that was updated. |
+
 ### `Mutation.aiDuoWorkflowCreate`
 
 {{< details >}}
@@ -49264,6 +49314,12 @@ An example `AiAgentVersionID` is: `"gid://gitlab/Ai::AgentVersion/1"`.
 A `AiCatalogBuiltInToolID` is a global ID. It is encoded as a string.
 
 An example `AiCatalogBuiltInToolID` is: `"gid://gitlab/Ai::Catalog::BuiltInTool/1"`.
+
+### `AiCatalogItemConsumerID`
+
+A `AiCatalogItemConsumerID` is a global ID. It is encoded as a string.
+
+An example `AiCatalogItemConsumerID` is: `"gid://gitlab/Ai::Catalog::ItemConsumer/1"`.
 
 ### `AiCatalogItemID`
 
