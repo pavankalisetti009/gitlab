@@ -12,6 +12,16 @@ FactoryBot.define do
     pending_count { 1 }
 
     # rubocop:disable RSpec/FactoryBot/StrategyInCallback -- this is not a direct association of the factory created here
+    trait :with_control_status do
+      after(:create) do |status|
+        create(:project_control_compliance_status,
+          compliance_requirement: status.compliance_requirement,
+          project: status.project,
+          namespace: status.namespace,
+          requirement_status: status)
+      end
+    end
+
     before :create do |status|
       framework = status.compliance_framework
       project = status.project
