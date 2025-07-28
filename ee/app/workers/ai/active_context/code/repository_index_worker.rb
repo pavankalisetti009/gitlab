@@ -9,6 +9,8 @@ module Ai
         include Gitlab::ExclusiveLeaseHelpers
         prepend ::Geo::SkipSecondary
 
+        pause_control :active_context
+
         feature_category :global_search
         deduplicate :until_executing
         data_consistency :sticky

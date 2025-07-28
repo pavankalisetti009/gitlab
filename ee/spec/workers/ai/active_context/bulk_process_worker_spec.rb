@@ -13,6 +13,10 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
   it { is_expected.to be_a(CronjobQueue) }
   it { is_expected.to be_a(Search::Worker) }
 
+  it_behaves_like 'active_context pause-controlled worker' do
+    let(:worker_params) { [] }
+  end
+
   describe '#perform' do
     let(:queue_class_name) { 'Ai::Context::TestQueue' }
     let(:shard) { 1 }
