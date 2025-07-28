@@ -157,6 +157,32 @@ describe('AiCatalogAgents', () => {
     });
   });
 
+  describe('when linking directly to an agent via URL', () => {
+    describe('when item id is found in list', () => {
+      beforeEach(async () => {
+        setWindowLocation('?show=1');
+        await createComponent();
+      });
+
+      it('opens the drawer and passes activeItem as prop', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
+        expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
+      });
+    });
+
+    describe('when item id is not found in list', () => {
+      beforeEach(async () => {
+        setWindowLocation('?show=98');
+        await createComponent();
+      });
+
+      it('does not open the drawer', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+        expect(findAiCatalogItemDrawer().props('activeItem')).toBeNull();
+      });
+    });
+  });
+
   describe('on deleting an agent', () => {
     const deleteAgent = (index = 0) => findAiCatalogList().props('deleteFn')(mockAgents[index].id);
 
@@ -207,32 +233,6 @@ describe('AiCatalogAgents', () => {
         await waitForPromises();
         expect(findGlAlert().text()).toBe('Failed to delete agent. Error: Request failed');
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
-      });
-    });
-  });
-
-  describe('when linking directly to a agent via URL', () => {
-    describe('when item id is found in list', () => {
-      beforeEach(async () => {
-        setWindowLocation('?show=1');
-        await createComponent();
-      });
-
-      it('opens the drawer and passes activeItem as prop', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
-        expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
-      });
-    });
-
-    describe('when item id is not found in list', () => {
-      beforeEach(async () => {
-        setWindowLocation('?show=98');
-        await createComponent();
-      });
-
-      it('does not open the drawer', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-        expect(findAiCatalogItemDrawer().props('activeItem')).toBeNull();
       });
     });
   });
