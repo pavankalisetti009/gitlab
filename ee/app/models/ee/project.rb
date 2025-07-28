@@ -60,6 +60,8 @@ module EE
 
       after_create :create_security_setting, unless: :security_setting
 
+      after_commit :update_security_inventory_filters, if: :saved_change_to_name?
+
       belongs_to :mirror_user, class_name: 'User'
 
       has_one :wiki_repository, class_name: 'Projects::WikiRepository', inverse_of: :project
@@ -1663,6 +1665,10 @@ module EE
           errors.add(:url, _("must be inside the fork network"))
         end
       end
+    end
+
+    def update_security_inventory_filters
+      Security::InventoryFilter.by_project_id(self.id).update(project_name: self.name)
     end
   end
 end
