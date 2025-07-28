@@ -1,4 +1,5 @@
 <script>
+import { InternalEvents } from '~/tracking';
 import getSecurityAttributesQuery from '../../graphql/client/security_attributes.query.graphql';
 import CategoryList from './category_list.vue';
 import CategoryForm from './category_form.vue';
@@ -11,6 +12,7 @@ export default {
     CategoryForm,
     AttributeDrawer,
   },
+  mixins: [InternalEvents.mixin()],
   inject: ['groupFullPath'],
   data() {
     return {
@@ -36,6 +38,9 @@ export default {
         }
       },
     },
+  },
+  mounted() {
+    this.trackEvent('view_group_security_attributes');
   },
   methods: {
     selectCategory(category) {
