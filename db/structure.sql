@@ -18864,7 +18864,8 @@ CREATE TABLE oauth_applications (
     confidential boolean DEFAULT true NOT NULL,
     expire_access_tokens boolean DEFAULT false NOT NULL,
     ropc_enabled boolean DEFAULT true NOT NULL,
-    dynamic boolean DEFAULT false NOT NULL
+    dynamic boolean DEFAULT false NOT NULL,
+    CONSTRAINT check_75750847b8 CHECK ((char_length(scopes) <= 2048))
 );
 
 CREATE SEQUENCE oauth_applications_id_seq
@@ -30034,9 +30035,6 @@ ALTER TABLE resource_label_events
 
 ALTER TABLE ONLY project_type_ci_runners
     ADD CONSTRAINT check_619c71f3a2 UNIQUE (id);
-
-ALTER TABLE oauth_applications
-    ADD CONSTRAINT check_75750847b8 CHECK ((char_length(scopes) <= 2048)) NOT VALID;
 
 ALTER TABLE ONLY group_type_ci_runners
     ADD CONSTRAINT check_81b90172a6 UNIQUE (id);
