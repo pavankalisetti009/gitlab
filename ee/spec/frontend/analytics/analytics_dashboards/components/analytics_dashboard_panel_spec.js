@@ -86,7 +86,6 @@ describe('AnalyticsDashboardPanel', () => {
     it('renders the panel base component', () => {
       expect(findExtendedDashboardPanel().props()).toMatchObject({
         title: mockPanel.title,
-        tooltip: null,
         loading: true,
         showAlertState: false,
         alertPopoverTitle: '',
@@ -265,186 +264,174 @@ describe('AnalyticsDashboardPanel', () => {
         });
       });
 
-      describe('and the visualization emits showTooltip', () => {
-        const tooltip = { description: 'This is a tooltip' };
+      describe('and the visualization emits an error', () => {
+        const error = 'test error';
+        let captureExceptionSpy;
 
         beforeEach(() => {
-          findVisualization().vm.$emit('showTooltip', tooltip);
+          captureExceptionSpy = jest.spyOn(Sentry, 'captureException');
         });
 
-        it('sets the tooltip on the panels base component', () => {
-          expect(findExtendedDashboardPanel().props('tooltip')).toBe(tooltip);
+        afterEach(() => {
+          captureExceptionSpy.mockRestore();
         });
 
-        describe('and the visualization emits an error', () => {
-          const error = 'test error';
-          let captureExceptionSpy;
-
+        describe('with errors', () => {
           beforeEach(() => {
-            captureExceptionSpy = jest.spyOn(Sentry, 'captureException');
-          });
-
-          afterEach(() => {
-            captureExceptionSpy.mockRestore();
-          });
-
-          describe('with errors', () => {
-            beforeEach(() => {
-              findVisualization().vm.$emit('set-alerts', {
-                errors: [error],
-                warnings: [error],
-                alerts: [error],
-                canRetry: false,
-              });
-            });
-
-            it('sets the error state on the panels base component', () => {
-              expect(findExtendedDashboardPanel().props()).toMatchObject({
-                loading: false,
-                showAlertState: true,
-                alertVariant: VARIANT_DANGER,
-              });
-            });
-
-            it('hides the visualization', () => {
-              expect(findVisualization().exists()).toBe(false);
-            });
-
-            it('shows the default error body', () => {
-              expect(findAlertBody().text()).toBe('Something went wrong.');
-            });
-
-            it('logs the error to Sentry', () => {
-              expect(captureExceptionSpy).toHaveBeenCalledWith(error);
+            findVisualization().vm.$emit('set-alerts', {
+              errors: [error],
+              warnings: [error],
+              alerts: [error],
+              canRetry: false,
             });
           });
 
-          describe('with warnings', () => {
-            beforeEach(() => {
-              findVisualization().vm.$emit('set-alerts', {
-                warnings: [error],
-                alerts: [error],
-                canRetry: false,
-              });
-            });
-
-            it('sets the error state on the panels base component', () => {
-              expect(findExtendedDashboardPanel().props()).toMatchObject({
-                loading: false,
-                showAlertState: true,
-                alertVariant: VARIANT_WARNING,
-              });
-            });
-
-            it('shows visualization', () => {
-              expect(findVisualization().exists()).toBe(true);
-            });
-
-            it('does not show the error body', () => {
-              expect(findAlertBody().exists()).toBe(false);
-            });
-
-            it('does not log to Sentry', () => {
-              expect(captureExceptionSpy).not.toHaveBeenCalled();
+          it('sets the error state on the panels base component', () => {
+            expect(findExtendedDashboardPanel().props()).toMatchObject({
+              loading: false,
+              showAlertState: true,
+              alertVariant: VARIANT_DANGER,
             });
           });
 
-          describe('with alerts', () => {
-            beforeEach(() => {
-              findVisualization().vm.$emit('set-alerts', {
-                alerts: [error],
-                canRetry: false,
-              });
-            });
+          it('hides the visualization', () => {
+            expect(findVisualization().exists()).toBe(false);
+          });
 
-            it('sets the alert state on the panels base component', () => {
-              expect(findExtendedDashboardPanel().props()).toMatchObject({
-                loading: false,
-                showAlertState: true,
-                alertVariant: VARIANT_INFO,
-              });
-            });
+          it('shows the default error body', () => {
+            expect(findAlertBody().text()).toBe('Something went wrong.');
+          });
 
-            it('shows visualization', () => {
-              expect(findVisualization().exists()).toBe(true);
-            });
+          it('logs the error to Sentry', () => {
+            expect(captureExceptionSpy).toHaveBeenCalledWith(error);
+          });
+        });
 
-            it('does not show the error body', () => {
-              expect(findAlertBody().exists()).toBe(false);
-            });
-
-            it('does not log to Sentry', () => {
-              expect(captureExceptionSpy).not.toHaveBeenCalled();
+        describe('with warnings', () => {
+          beforeEach(() => {
+            findVisualization().vm.$emit('set-alerts', {
+              warnings: [error],
+              alerts: [error],
+              canRetry: false,
             });
           });
 
-          describe('with only alert description', () => {
-            beforeEach(() => {
-              findVisualization().vm.$emit('set-alerts', {
-                description: 'This is just information',
-              });
-            });
-
-            it('sets the alert state on the panels base component', () => {
-              expect(findExtendedDashboardPanel().props()).toMatchObject({
-                loading: false,
-                showAlertState: true,
-                alertVariant: VARIANT_INFO,
-              });
-            });
-
-            it('shows visualization', () => {
-              expect(findVisualization().exists()).toBe(true);
-            });
-
-            it('does not show the error body', () => {
-              expect(findAlertBody().exists()).toBe(false);
-            });
-
-            it('does not log to Sentry', () => {
-              expect(captureExceptionSpy).not.toHaveBeenCalled();
+          it('sets the error state on the panels base component', () => {
+            expect(findExtendedDashboardPanel().props()).toMatchObject({
+              loading: false,
+              showAlertState: true,
+              alertVariant: VARIANT_WARNING,
             });
           });
 
-          describe('with an alert description containing link placeholders', () => {
-            it('sets the default if there is no set', async () => {
-              findVisualization().vm.$emit('set-alerts', {
-                description: 'This is just information, %{linkStart}learn more%{linkEnd}',
-              });
+          it('shows visualization', () => {
+            expect(findVisualization().exists()).toBe(true);
+          });
 
-              await nextTick();
+          it('does not show the error body', () => {
+            expect(findAlertBody().exists()).toBe(false);
+          });
 
-              expect(findAlertDescriptionLink().attributes('href')).toBe(
-                '/help/user/analytics/analytics_dashboards#troubleshooting',
-              );
-            });
+          it('does not log to Sentry', () => {
+            expect(captureExceptionSpy).not.toHaveBeenCalled();
+          });
+        });
 
-            it('can override the default link', async () => {
-              findVisualization().vm.$emit('set-alerts', {
-                description: 'This is just information, %{linkStart}learn more%{linkEnd}',
-                descriptionLink: 'https://en.wikipedia.org/wiki/Macross_Plus',
-              });
-
-              await nextTick();
-
-              expect(findAlertDescriptionLink().attributes('href')).toBe(
-                'https://en.wikipedia.org/wiki/Macross_Plus',
-              );
+        describe('with alerts', () => {
+          beforeEach(() => {
+            findVisualization().vm.$emit('set-alerts', {
+              alerts: [error],
+              canRetry: false,
             });
           });
 
-          describe.each`
-            canRetry
-            ${false}
-            ${true}
-          `('canRetry: $canRetry', ({ canRetry }) => {
-            beforeEach(() => {
-              findVisualization().vm.$emit('set-alerts', { errors: [error], canRetry });
+          it('sets the alert state on the panels base component', () => {
+            expect(findExtendedDashboardPanel().props()).toMatchObject({
+              loading: false,
+              showAlertState: true,
+              alertVariant: VARIANT_INFO,
+            });
+          });
+
+          it('shows visualization', () => {
+            expect(findVisualization().exists()).toBe(true);
+          });
+
+          it('does not show the error body', () => {
+            expect(findAlertBody().exists()).toBe(false);
+          });
+
+          it('does not log to Sentry', () => {
+            expect(captureExceptionSpy).not.toHaveBeenCalled();
+          });
+        });
+
+        describe('with only alert description', () => {
+          beforeEach(() => {
+            findVisualization().vm.$emit('set-alerts', {
+              description: 'This is just information',
+            });
+          });
+
+          it('sets the alert state on the panels base component', () => {
+            expect(findExtendedDashboardPanel().props()).toMatchObject({
+              loading: false,
+              showAlertState: true,
+              alertVariant: VARIANT_INFO,
+            });
+          });
+
+          it('shows visualization', () => {
+            expect(findVisualization().exists()).toBe(true);
+          });
+
+          it('does not show the error body', () => {
+            expect(findAlertBody().exists()).toBe(false);
+          });
+
+          it('does not log to Sentry', () => {
+            expect(captureExceptionSpy).not.toHaveBeenCalled();
+          });
+        });
+
+        describe('with an alert description containing link placeholders', () => {
+          it('sets the default if there is no set', async () => {
+            findVisualization().vm.$emit('set-alerts', {
+              description: 'This is just information, %{linkStart}learn more%{linkEnd}',
             });
 
-            it(`${canRetry ? 'renders' : 'does not render'} a retry button`, () => {
-              expect(findPanelRetryButton().exists()).toBe(canRetry);
+            await nextTick();
+
+            expect(findAlertDescriptionLink().attributes('href')).toBe(
+              '/help/user/analytics/analytics_dashboards#troubleshooting',
+            );
+          });
+
+          it('can override the default link', async () => {
+            findVisualization().vm.$emit('set-alerts', {
+              description: 'This is just information, %{linkStart}learn more%{linkEnd}',
+              descriptionLink: 'https://en.wikipedia.org/wiki/Macross_Plus',
             });
+
+            await nextTick();
+
+            expect(findAlertDescriptionLink().attributes('href')).toBe(
+              'https://en.wikipedia.org/wiki/Macross_Plus',
+            );
+          });
+        });
+
+        describe.each`
+          canRetry
+          ${false}
+          ${true}
+        `('canRetry: $canRetry', ({ canRetry }) => {
+          beforeEach(() => {
+            findVisualization().vm.$emit('set-alerts', { errors: [error], canRetry });
+          });
+
+          it(`${canRetry ? 'renders' : 'does not render'} a retry button`, () => {
+            expect(findPanelRetryButton().exists()).toBe(canRetry);
           });
         });
       });
@@ -668,5 +655,19 @@ describe('AnalyticsDashboardPanel', () => {
         expect(findExtendedDashboardPanel().props('title')).toBe(renderedTitle);
       },
     );
+  });
+
+  describe('when options includes a tooltip', () => {
+    const tooltip = { description: 'This is a tooltip' };
+
+    beforeEach(() => {
+      createWrapper({
+        props: { visualization: { ...mockPanel.visualization, options: { tooltip } } },
+      });
+    });
+
+    it('sets the tooltip on the panels base component', () => {
+      expect(findExtendedDashboardPanel().props('tooltip')).toEqual(tooltip);
+    });
   });
 });

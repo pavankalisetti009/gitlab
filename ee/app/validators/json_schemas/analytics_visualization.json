@@ -93,6 +93,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "tooltip": {
+          "$ref": "#/definitions/Tooltip"
+        },
         "xAxis": {
           "$ref": "#/definitions/XAxis"
         },
@@ -233,6 +236,21 @@
         }
       },
       "title": "ChartTooltip"
+    },
+    "Tooltip": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "descriptionLink": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description"
+      ]
     }
   }
 }

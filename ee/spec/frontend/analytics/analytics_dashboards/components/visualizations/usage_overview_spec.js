@@ -108,14 +108,6 @@ describe('Usage Overview Visualization', () => {
           expect(findMetricValue(idx).text()).toBe(String(value));
         });
       });
-
-      it('emits `showTooltip` with the latest metric.recordedAt as the last updated time', () => {
-        expect(wrapper.emitted('showTooltip')).toHaveLength(1);
-        expect(wrapper.emitted('showTooltip')[0][0]).toEqual({
-          description:
-            'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly. Last updated: 2023-11-27 11:59 PM',
-        });
-      });
     });
   });
 
@@ -139,14 +131,6 @@ describe('Usage Overview Visualization', () => {
     it('should render each metric as a single stat with value 0', () => {
       mockGroupUsageMetrics.forEach((_, idx) => {
         expect(findMetricValue(idx).text()).toBe('0');
-      });
-    });
-
-    it('emits `showTooltip` without the last updated time', () => {
-      expect(wrapper.emitted('showTooltip')).toHaveLength(1);
-      expect(wrapper.emitted('showTooltip')[0][0]).toEqual({
-        description:
-          'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
       });
     });
   });

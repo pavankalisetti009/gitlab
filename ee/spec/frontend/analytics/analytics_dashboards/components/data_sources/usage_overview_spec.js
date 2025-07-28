@@ -11,6 +11,7 @@ import fetch, {
   prepareQuery,
   extractUsageMetrics,
   extractUsageNamespaceData,
+  getMostRecentRecordedAt,
 } from 'ee/analytics/analytics_dashboards/data_sources/usage_overview';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import {
@@ -80,6 +81,20 @@ describe('Usage overview Data Source', () => {
     );
   });
 
+  describe('getMostRecentRecordedAt', () => {
+    it('returns most recent recorded timestamp as expected', () => {
+      expect(getMostRecentRecordedAt(mockGroupUsageMetrics)).toBe('Nov 27, 2023, 11:59 PM');
+    });
+
+    it.each`
+      description                      | data
+      ${'there is no data'}            | ${[]}
+      ${'latest timestamp is invalid'} | ${[{ ...mockGroupUsageMetrics[0], recordedAt: 'invalid-timestamp' }]}
+    `('returns null when $description', ({ data }) => {
+      expect(getMostRecentRecordedAt(data)).toBeNull();
+    });
+  });
+
   describe('prepareQuery', () => {
     const queryIncludeKeys = [
       'includeGroups',
@@ -115,6 +130,8 @@ describe('Usage overview Data Source', () => {
   });
 
   describe('fetch', () => {
+    const setVisualizationOverrides = jest.fn();
+
     describe.each`
       namespaceDescription    | namespaceOverride                 | expectedNamespace
       ${'default namespace'}  | ${undefined}                      | ${namespace}
@@ -123,7 +140,11 @@ describe('Usage overview Data Source', () => {
       it(`will request the namespace's usage overview metrics`, async () => {
         jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
 
-        obj = await fetch({ namespace, queryOverrides: { namespace: namespaceOverride } });
+        obj = await fetch({
+          namespace,
+          queryOverrides: { namespace: namespaceOverride },
+          setVisualizationOverrides,
+        });
 
         expect(defaultClient.query).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -151,6 +172,7 @@ describe('Usage overview Data Source', () => {
             namespace: namespaceOverride,
             filters: { include: [USAGE_OVERVIEW_IDENTIFIER_MERGE_REQUESTS] },
           },
+          setVisualizationOverrides,
         });
 
         expect(defaultClient.query).toHaveBeenCalledWith(
@@ -172,19 +194,30 @@ describe('Usage overview Data Source', () => {
     });
 
     describe.each`
-      namespaceTypeDescription    | queryResponse                           | usageOverviewData
-      ${'for group namespaces'}   | ${mockGroupUsageMetricsQueryResponse}   | ${mockGroupUsageOverviewData}
-      ${'for project namespaces'} | ${mockProjectUsageMetricsQueryResponse} | ${mockProjectUsageOverviewData}
-    `('$namespaceTypeDescription', ({ queryResponse, usageOverviewData }) => {
+      namespaceTypeDescription    | queryResponse                           | usageOverviewData               | lastUpdated
+      ${'for group namespaces'}   | ${mockGroupUsageMetricsQueryResponse}   | ${mockGroupUsageOverviewData}   | ${'Nov 27, 2023, 11:59 PM'}
+      ${'for project namespaces'} | ${mockProjectUsageMetricsQueryResponse} | ${mockProjectUsageOverviewData} | ${'Nov 26, 2023, 11:59 PM'}
+    `('$namespaceTypeDescription', ({ queryResponse, usageOverviewData, lastUpdated }) => {
       describe('with no data', () => {
         beforeEach(async () => {
           jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
 
-          obj = await fetch({ namespace, queryOverrides: mockFilters });
+          obj = await fetch({ namespace, queryOverrides: mockFilters, setVisualizationOverrides });
         });
 
         it('returns the no data object', () => {
           expect(obj).toMatchObject({ metrics: mockUsageMetricsNoData });
+        });
+
+        it(`sets the visualization's tooltip without last updated timestamp`, () => {
+          expect(setVisualizationOverrides).toHaveBeenCalledWith({
+            visualizationOptionOverrides: {
+              tooltip: expect.objectContaining({
+                description:
+                  'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
+              }),
+            },
+          });
         });
       });
 
@@ -192,11 +225,21 @@ describe('Usage overview Data Source', () => {
         beforeEach(async () => {
           jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: queryResponse });
 
-          obj = await fetch({ namespace, queryOverrides: mockFilters });
+          obj = await fetch({ namespace, queryOverrides: mockFilters, setVisualizationOverrides });
         });
 
         it('will fetch the usage overview data', () => {
           expect(obj).toMatchObject(usageOverviewData);
+        });
+
+        it(`sets the visualization's tooltip with last updated timestamp`, () => {
+          expect(setVisualizationOverrides).toHaveBeenCalledWith({
+            visualizationOptionOverrides: {
+              tooltip: expect.objectContaining({
+                description: `Statistics on namespace usage. Usage data is a cumulative count, and updated monthly. Last updated: ${lastUpdated}`,
+              }),
+            },
+          });
         });
       });
     });

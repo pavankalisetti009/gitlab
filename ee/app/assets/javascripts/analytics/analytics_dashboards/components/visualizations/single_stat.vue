@@ -39,13 +39,6 @@ export default {
       return humanizeDisplayUnit({ data, unit });
     },
   },
-  mounted() {
-    const { tooltip } = this.options;
-
-    if (tooltip) {
-      this.$emit('showTooltip', tooltip);
-    }
-  },
 };
 </script>
 

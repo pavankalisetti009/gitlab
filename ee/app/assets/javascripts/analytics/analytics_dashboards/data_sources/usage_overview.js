@@ -1,3 +1,4 @@
+import { compact } from 'lodash';
 import {
   USAGE_OVERVIEW_QUERY_INCLUDE_KEYS,
   USAGE_OVERVIEW_METADATA,
@@ -11,13 +12,15 @@ import {
   USAGE_OVERVIEW_IDENTIFIER_PIPELINES,
 } from '~/analytics/shared/constants';
 import { toYmd } from '~/analytics/shared/utils';
-import { __ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import {
   GROUP_VISIBILITY_TYPE,
   PROJECT_VISIBILITY_TYPE,
   VISIBILITY_TYPE_ICON,
 } from '~/visibility_level/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
+import { isValidDate, newDate } from '~/lib/utils/datetime_utility';
 import { defaultClient } from '../graphql/client';
 import getUsageOverviewQuery from '../graphql/queries/get_usage_overview.query.graphql';
 
@@ -78,6 +81,19 @@ export const extractUsageMetrics = (data) => {
   }, []);
 };
 
+/**
+ * Returns the most recent recorded timestamp from usage metrics query response
+ */
+export const getMostRecentRecordedAt = (data = []) => {
+  const allRecordedAt = compact(data.map((metric) => metric.recordedAt));
+  const [mostRecentRecordedAt] = allRecordedAt.sort().slice(-1);
+  const date = newDate(mostRecentRecordedAt);
+
+  if (!isValidDate(date)) return null;
+
+  return localeDateFormat.asDateTime.format(newDate(date));
+};
+
 const usageOverviewNoData = extractUsageMetrics({
   [USAGE_OVERVIEW_IDENTIFIER_GROUPS]: {
     identifier: USAGE_OVERVIEW_IDENTIFIER_GROUPS,
@@ -128,6 +144,7 @@ export default async function fetch({
     namespace: namespaceOverride,
     filters: { include = USAGE_OVERVIEW_IDENTIFIERS } = {},
   } = {},
+  setVisualizationOverrides,
 }) {
   const fullPath = namespaceOverride || namespace;
   const variableOverrides = prepareQuery(include);
@@ -147,6 +164,20 @@ export default async function fetch({
     .then(({ data = {} }) => {
       const usageOverviewData = data?.group || data?.project;
       const isProjectNamespace = Boolean(data?.project);
+      const recordedAt = usageOverviewData
+        ? getMostRecentRecordedAt(extractUsageMetrics(usageOverviewData))
+        : null;
+      const namespaceUsageText = s__(
+        'Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
+      );
+      const lastUpdatedText = s__('Analytics| Last updated: %{recordedAt}');
+      const visualizationOptionOverrides = {
+        tooltip: {
+          description: `${namespaceUsageText}${recordedAt ? sprintf(lastUpdatedText, { recordedAt }) : ''}`,
+        },
+      };
+
+      setVisualizationOverrides({ visualizationOptionOverrides });
 
       if (!usageOverviewData) {
         return { metrics: usageOverviewNoData };

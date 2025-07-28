@@ -1,9 +1,15 @@
-import doraMetricsByProject from 'ee/analytics/analytics_dashboards/data_sources/dora_metrics_by_project';
-import { mockDataSourceResponses } from 'ee_jest/analytics/dashboards/dora_projects_comparison/mock_data';
+import doraMetricsByProject, {
+  filterProjects,
+} from 'ee/analytics/analytics_dashboards/data_sources/dora_metrics_by_project';
+import {
+  mockDataSourceResponses,
+  mockProjectsDoraMetrics,
+} from 'ee_jest/analytics/dashboards/dora_projects_comparison/mock_data';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 
 describe('Dora Metrics by project Data Source', () => {
   const setAlerts = jest.fn();
+  const setVisualizationOverrides = jest.fn();
 
   let res;
 
@@ -12,9 +18,35 @@ describe('Dora Metrics by project Data Source', () => {
       namespace: 'cool namespace',
       isProject: false,
       setAlerts,
+      setVisualizationOverrides,
       ...args,
     });
   };
+
+  describe('filterProjects', () => {
+    const mockUnfilteredProjectsDoraMetrics = [
+      ...mockProjectsDoraMetrics,
+      {
+        name: 'No data',
+        avatarUrl: 'http://gdk.test:3000/nodata',
+        webUrl: 'http://gdk.test:3000/flightjs/nodata',
+        deployment_frequency: null,
+        change_failure_rate: null,
+        lead_time_for_changes: null,
+        time_to_restore_service: null,
+        trends: {
+          deployment_frequency: 0,
+          lead_time_for_changes: 0,
+          time_to_restore_service: 0,
+          change_failure_rate: 0,
+        },
+      },
+    ];
+
+    it('filters out projects with empty DORA data', () => {
+      expect(filterProjects(mockUnfilteredProjectsDoraMetrics)).toEqual(mockProjectsDoraMetrics);
+    });
+  });
 
   describe('for group', () => {
     beforeEach(() => {
@@ -45,7 +77,17 @@ describe('Dora Metrics by project Data Source', () => {
       );
     });
 
-    it('formats the DORA metrics for the list of projects', () => {
+    it(`sets the visualization's tooltip`, () => {
+      expect(setVisualizationOverrides).toHaveBeenCalledWith({
+        visualizationOptionOverrides: {
+          tooltip: expect.objectContaining({
+            description: 'Showing 1 project. Excluding 1 project with no DORA metrics.',
+          }),
+        },
+      });
+    });
+
+    it('returns filtered projects with formatted DORA metrics', () => {
       expect(res).toMatchSnapshot();
     });
   });
