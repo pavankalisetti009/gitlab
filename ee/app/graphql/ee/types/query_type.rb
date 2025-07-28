@@ -176,7 +176,6 @@ module EE
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
-          experiment: { milestone: '16.4' },
           description: 'Time taken for CI jobs to be picked up by runner by percentile. ' \
             'Enable the ClickHouse database backend to use this query.',
           resolver: ::Resolvers::Ci::InstanceQueueingHistoryResolver,
