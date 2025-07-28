@@ -1,13 +1,10 @@
 <script>
 import { s__ } from '~/locale';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import updateAiCatalogAgent from '../graphql/mutations/update_ai_catalog_agent.mutation.graphql';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
-import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
 export default {
   name: 'AiCatalogAgentsEdit',
@@ -15,63 +12,37 @@ export default {
     AiCatalogAgentForm,
     PageHeading,
   },
-  apollo: {
+  props: {
     aiCatalogAgent: {
-      query: aiCatalogAgentQuery,
-      variables() {
-        return {
-          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
-        };
-      },
-      update(data) {
-        return data?.aiCatalogItem;
-      },
-      result(res) {
-        this.onAgentQueryResult(res);
-      },
+      type: Object,
+      required: true,
     },
   },
   data() {
     return {
-      aiCatalogAgent: null,
       errorMessages: [],
       isSubmitting: false,
     };
   },
   computed: {
     agentName() {
-      return this.aiCatalogAgent?.name || '';
-    },
-    agentSystemPrompt() {
-      return this.aiCatalogAgent?.versions?.nodes?.[0]?.systemPrompt;
-    },
-    agentUserPrompt() {
-      return this.aiCatalogAgent?.versions?.nodes?.[0]?.userPrompt;
+      return this.aiCatalogAgent.name;
     },
     pageTitle() {
-      return `${s__('AICatalog|Edit agent')}: ${this.agentName}`;
+      return `${s__('AICatalog|Edit agent')}: ${this.agentName || this.$route.params.id}`;
     },
     initialValues() {
       return {
-        projectId: this.aiCatalogAgent?.project.id || null,
+        projectId: this.aiCatalogAgent.project?.id,
         name: this.agentName,
-        description: this.aiCatalogAgent?.description || '',
-        systemPrompt: this.agentSystemPrompt,
-        userPrompt: this.agentUserPrompt,
-        public: this.aiCatalogAgent?.public || false,
+        description: this.aiCatalogAgent.description,
+        systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
+        userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
+        public: this.aiCatalogAgent.public,
       };
     },
   },
   methods: {
-    onAgentQueryResult({ data }) {
-      if (!data || !data.aiCatalogItem) {
-        const queryError = new Error(
-          `Agent not found: Failed to query agent with ID ${this.$route.params.id}`,
-        );
-        Sentry.captureException(queryError);
-        this.$router.push({ name: AI_CATALOG_AGENTS_ROUTE });
-      }
-    },
     async handleSubmit(formValues) {
       this.isSubmitting = true;
       this.resetErrorMessages();
@@ -120,13 +91,12 @@ export default {
 </script>
 
 <template>
-  <div v-if="aiCatalogAgent">
+  <div>
     <page-heading :heading="pageTitle" />
     <p>
       {{ s__('AICatalog|Modify the agent settings and configuration.') }}
     </p>
     <ai-catalog-agent-form
-      v-if="aiCatalogAgent"
       mode="edit"
       :error-messages="errorMessages"
       :initial-values="initialValues"
