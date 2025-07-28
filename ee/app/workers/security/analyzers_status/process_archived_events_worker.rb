@@ -24,6 +24,7 @@ module Security
         return unless project
 
         UpdateArchivedService.execute(project)
+        handle_security_inventory_filters(project)
       end
 
       def handle_namespace_related_records(namespace_id)
@@ -31,6 +32,10 @@ module Security
         return unless group.present?
 
         Security::AnalyzerNamespaceStatuses::RecalculateService.execute(group)
+      end
+
+      def handle_security_inventory_filters(project)
+        Security::InventoryFilter.by_project_id(project.id).update(archived: project.archived)
       end
     end
   end

@@ -4,6 +4,8 @@ module Security
   class InventoryFilter < ::SecApplicationRecord
     self.table_name = 'security_inventory_filters'
 
+    scope :by_project_id, ->(project_id) { where(project_id: project_id) }
+
     belongs_to :project
     validates :archived, allow_nil: false, inclusion: { in: [true, false] }
 

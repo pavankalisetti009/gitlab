@@ -5499,4 +5499,17 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(result).to match_array(described_class.all)
     end
   end
+
+  describe '#update_security_inventory_filters' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:inventory_filter) { create(:security_inventory_filters, project: project) }
+    let(:old_name) { project.name }
+    let(:new_name) { "New Project Name" }
+
+    subject(:update_name) { project.update!(name: new_name) }
+
+    it 'updates Security::InventoryFilter with new name' do
+      expect { update_name }.to change { inventory_filter.reload.project_name }.from(old_name).to(new_name)
+    end
+  end
 end

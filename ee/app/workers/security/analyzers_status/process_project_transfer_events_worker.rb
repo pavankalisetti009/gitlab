@@ -16,6 +16,11 @@ module Security
 
         UpdateProjectAncestorsStatusesService.execute(project)
         project.analyzer_statuses.update_all(traversal_ids: project.namespace.traversal_ids)
+        update_inventory_filter(project)
+      end
+
+      def update_inventory_filter(project)
+        InventoryFilter.by_project_id(project.id).update(traversal_ids: project.namespace.traversal_ids)
       end
     end
   end

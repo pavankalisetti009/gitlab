@@ -53,4 +53,19 @@ RSpec.describe Security::InventoryFilter, feature_category: :security_asset_inve
       let_it_be(:model) { create(:security_inventory_filters, project: parent) }
     end
   end
+
+  describe 'scopes' do
+    let_it_be(:project1) { create(:project) }
+    let_it_be(:project2) { create(:project) }
+    let_it_be(:inventory_filter1) { create(:security_inventory_filters, project: project1) }
+    let_it_be(:inventory_filter2) { create(:security_inventory_filters, project: project2) }
+
+    describe '.by_project_id' do
+      subject { described_class.by_project_id(project1.id) }
+
+      it 'returns filters for the specified project only' do
+        is_expected.to contain_exactly(inventory_filter1)
+      end
+    end
+  end
 end

@@ -11,6 +11,7 @@ RSpec.describe Security::AnalyzersStatus::ProcessProjectTransferEventsWorker, fe
 
     let!(:project) { create(:project, namespace: old_namespace) }
     let!(:projct_analyzer_status) { create(:analyzer_project_status, analyzer_type: :sast, project: project) }
+    let!(:inventory_filter) { create(:security_inventory_filters, project: project) }
     let(:update_ancestors_service) { Security::AnalyzersStatus::UpdateProjectAncestorsStatusesService }
     let(:project_id) { project.id }
     let(:project_event) do
@@ -46,6 +47,13 @@ RSpec.describe Security::AnalyzersStatus::ProcessProjectTransferEventsWorker, fe
           .from(old_namespace.traversal_ids).to(new_namespace.traversal_ids)
 
         expect(update_ancestors_service).to have_received(:execute).with(project)
+      end
+    end
+
+    context 'when there is an inventory_filter record' do
+      it 'updates inventory_filter record with new traversal ids' do
+        expect { handle_event }.to change { inventory_filter.reload.traversal_ids }
+          .from(old_namespace.traversal_ids).to(new_namespace.traversal_ids)
       end
     end
   end
