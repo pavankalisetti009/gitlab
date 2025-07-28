@@ -12,6 +12,14 @@ RSpec.describe API::Ci::Variables, feature_category: :ci_variables do
     stub_licensed_features(audit_events: true)
   end
 
+  describe 'GET /projects/:id/variables/:key' do
+    include_examples 'audit event for variable access', :ci_variable do
+      let(:make_request) { get api("/projects/#{project.id}/variables/#{audited_variable.key}", user) }
+      let(:expected_entity_id) { project.id }
+      let(:variable_attributes) { { project: project, hidden: is_hidden_variable, masked: is_masked_variable } }
+    end
+  end
+
   describe 'POST /projects/:id/variables' do
     subject(:post_create) do
       post api("/projects/#{project.id}/variables", user), params: { key: 'new_variable', value: 'secret_value', protected: true }
