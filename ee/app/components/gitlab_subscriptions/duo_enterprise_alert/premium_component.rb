@@ -14,7 +14,7 @@ module GitlabSubscriptions
       end
 
       def duo_pro_add_on_purchase?
-        GitlabSubscriptions::DuoPro.any_add_on_purchase_for_namespace(namespace)
+        GitlabSubscriptions::Duo.any_add_on_purchase_for_namespace(namespace)
       end
       strong_memoize_attr :duo_pro_add_on_purchase?
 

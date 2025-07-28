@@ -10,7 +10,7 @@ module GitlabSubscriptions
       end
 
       def namespaces_eligible_for_trial
-        Users::AddOnTrialEligibleNamespacesFinder.new(user, add_on: :duo_pro).execute
+        Users::AddOnTrialEligibleNamespacesFinder.new(user, add_on: :duo).execute
       end
 
       override :product_interaction

@@ -27,6 +27,14 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       it { is_expected.to have_gitlab_http_status(:forbidden) }
     end
 
+    context 'when premium group with duo enterprise add_on' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group_for_trial)
+      end
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
+
     context 'when ultimate group owner' do
       let(:base_params) { { namespace_id: ineligible_paid_group.id } }
 

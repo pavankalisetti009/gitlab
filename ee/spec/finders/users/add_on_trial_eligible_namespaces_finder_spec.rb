@@ -7,18 +7,20 @@ RSpec.describe Users::AddOnTrialEligibleNamespacesFinder, feature_category: :sub
     let_it_be(:user) { create :user }
     let_it_be(:namespace_with_free_plan) { create(:group_with_plan, plan: :free_plan) }
 
-    context 'for duo_pro' do
-      subject(:execute) { described_class.new(user, add_on: :duo_pro).execute }
+    context 'for duo' do
+      subject(:execute) { described_class.new(user, add_on: :duo).execute }
 
       context 'when the namespace is on a premium plan' do
         let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, name: 'Zed', plan: :premium_plan) }
-        let_it_be(:namespace_with_duo) { create(:group_with_plan, plan: :premium_plan) }
+        let_it_be(:namespace_with_duo_pro) { create(:group_with_plan, plan: :premium_plan) }
+        let_it_be(:namespace_with_duo_enterprise) { create(:group_with_plan, plan: :premium_plan) }
         let_it_be(:namespace_with_other_addon) { create(:group_with_plan, name: 'Alpha', plan: :premium_plan) }
         let_it_be(:namespace_with_middle_name) { create(:group_with_plan, name: 'Beta', plan: :premium_plan) }
         let_it_be(:namespace_with_ultimate_plan) { create(:group_with_plan, name: 'Gama', plan: :ultimate_plan) }
 
         before_all do
-          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace_with_duo)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace_with_duo_pro)
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace_with_duo_enterprise)
           create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
         end
 
@@ -29,7 +31,8 @@ RSpec.describe Users::AddOnTrialEligibleNamespacesFinder, feature_category: :sub
         context 'when user owns groups' do
           before_all do
             namespace_with_paid_plan.add_owner(user)
-            namespace_with_duo.add_owner(user)
+            namespace_with_duo_pro.add_owner(user)
+            namespace_with_duo_enterprise.add_owner(user)
             namespace_with_free_plan.add_owner(user)
             namespace_with_other_addon.add_owner(user)
             namespace_with_middle_name.add_owner(user)

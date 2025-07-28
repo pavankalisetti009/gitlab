@@ -69,7 +69,7 @@ module GitlabSubscriptions
       end
 
       def eligible_namespaces
-        Users::AddOnTrialEligibleNamespacesFinder.new(current_user, add_on: :duo_pro).execute
+        Users::AddOnTrialEligibleNamespacesFinder.new(current_user, add_on: :duo).execute
       end
       strong_memoize_attr :eligible_namespaces
 

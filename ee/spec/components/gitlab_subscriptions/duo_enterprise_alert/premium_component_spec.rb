@@ -65,9 +65,9 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
     it { is_expected.not_to have_content(title) }
   end
 
-  context 'with Duo Pro add-on' do
+  context 'with Duo add-on' do
     before do
-      allow(GitlabSubscriptions::DuoPro)
+      allow(GitlabSubscriptions::Duo)
         .to receive(:any_add_on_purchase_for_namespace)
         .with(namespace)
         .and_return(build(:gitlab_subscription_add_on_purchase))
