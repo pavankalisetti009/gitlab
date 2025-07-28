@@ -674,13 +674,6 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
     end
   end
 
-  it_behaves_like '#editable_by_user?' do
-    let(:merge_request) { create(:merge_request, :unique_branches, source_project: project, target_project: project) }
-    let(:approval_rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
-    let(:any_approver_rule) { build(:any_approver_rule, merge_request: merge_request) }
-    let(:code_owner_rule) { create(:code_owner_rule, merge_request: merge_request) }
-  end
-
   describe '#hook_attrs' do
     let(:rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
 

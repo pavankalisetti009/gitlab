@@ -16,6 +16,8 @@ module EE
       end
 
       condition(:read_only, scope: :subject) { read_only? }
+      condition(:approval_rules_editable) { approval_rules_editable? }
+      condition(:new_editing_rules) { new_editing_rules? }
       condition(:merge_request_discussion_locked) { @subject.discussion_locked? }
       condition(:merge_request_project_archived) { @subject.project.archived? }
 
@@ -85,10 +87,23 @@ module EE
         protected_branch.approval_project_rules.for_groups(@user.group_members.reporters.select(:source_id)).exists?
       end
 
-      rule { ~can_override_approvers }.prevent :update_approvers
+      def new_editing_rules?
+        ::Feature.enabled?(:ensure_consistent_editing_rule, @subject.project)
+      end
+
+      def approval_rules_editable?
+        can?(:update_merge_request) && @subject.approval_rules_editable_by?(@user)
+      end
+
+      # Note: Handled in the approval_rules_editable_by method
+      rule { ~new_editing_rules & ~can_override_approvers }.prevent :update_approvers
 
       rule { can?(:update_merge_request) }.policy do
         enable :update_approvers
+      end
+
+      rule { new_editing_rules & ~approval_rules_editable }.policy do
+        prevent :update_approvers
       end
 
       rule { merge_request_group_approver }.policy do

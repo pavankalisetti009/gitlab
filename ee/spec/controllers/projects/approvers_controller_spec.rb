@@ -75,10 +75,28 @@ RSpec.describe Projects::ApproversController, feature_category: :source_code_man
         let(:object) { merge_request }
 
         before_all do
-          project.add_developer(user)
+          project.add_maintainer(user)
         end
 
         it_behaves_like 'when the user can update approvers'
+      end
+
+      context 'when ensure_consistent_editing_rule is off' do
+        before do
+          stub_feature_flags(ensure_consistent_editing_rule: false)
+        end
+
+        it_behaves_like 'removing an approver without access'
+
+        context 'when the user can update approvers' do
+          let(:object) { merge_request }
+
+          before_all do
+            project.add_developer(user)
+          end
+
+          it_behaves_like 'when the user can update approvers'
+        end
       end
     end
 
@@ -115,10 +133,28 @@ RSpec.describe Projects::ApproversController, feature_category: :source_code_man
         let(:object) { merge_request }
 
         before_all do
-          project.add_developer(user)
+          project.add_maintainer(user)
         end
 
         it_behaves_like 'when the user can update approvers'
+      end
+
+      context 'when ensure_consistent_editing_rule is off' do
+        before do
+          stub_feature_flags(ensure_consistent_editing_rule: false)
+        end
+
+        it_behaves_like 'removing an approver without access'
+
+        context 'when the user can update approvers' do
+          let(:object) { merge_request }
+
+          before_all do
+            project.add_developer(user)
+          end
+
+          it_behaves_like 'when the user can update approvers'
+        end
       end
     end
   end

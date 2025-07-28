@@ -71,7 +71,7 @@ RSpec.describe 'Merge request > User edits MR with approval rules', :js, feature
     before do
       group_project = create(:project, :public, :repository, namespace: group)
       group_project_merge_request = create(:merge_request, source_project: group_project)
-      group.add_developer(author)
+      group.add_maintainer(author)
 
       visit(edit_project_merge_request_path(group_project, group_project_merge_request))
 

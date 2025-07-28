@@ -341,16 +341,4 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
       it { is_expected.to be_nil }
     end
   end
-
-  it_behaves_like '#editable_by_user?' do
-    let(:merge_request) { create(:merge_request, :unique_branches, source_project: project, target_project: project) }
-    let(:approval_rule) { create(:merge_requests_approval_rule, merge_request: merge_request, project_id: project.id) }
-    let(:any_approver_rule) do
-      build(:merge_requests_approval_rule, rule_type: :any_approver, merge_request: merge_request)
-    end
-
-    let(:code_owner_rule) do
-      build(:merge_requests_approval_rule, rule_type: :code_owner, merge_request: merge_request)
-    end
-  end
 end

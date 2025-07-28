@@ -8,18 +8,19 @@ module MergeRequests
 
     condition(:merge_request_origin, scope: :subject, score: 0) { @subject.originates_from_merge_request? }
     condition(:merge_request_readable) { can?(:read_merge_request, @subject.merge_request) }
-    condition(:merge_request_editable) do
-      if Feature.enabled?(:ensure_consistent_editing_rule, @subject.merge_request&.project)
-        @subject.editable_by_user?(@user) &&
-          can?(:update_merge_request, @subject.merge_request)
+    condition(:approval_rules_editable) do
+      if !@subject.user_defined?
+        false
+      elsif ::Feature.enabled?(:ensure_consistent_editing_rule, @subject.merge_request.project)
+        can?(:update_approvers, @subject.merge_request)
       else
-        can?(:update_merge_request, @subject.merge_request) && @subject.user_defined?
+        can?(:update_merge_request, @subject.merge_request)
       end
     end
 
     rule { project_origin & project_readable }.enable :read_approval_rule
     rule { project_origin & project_editable }.enable :edit_approval_rule
     rule { merge_request_origin & merge_request_readable }.enable :read_approval_rule
-    rule { merge_request_origin & merge_request_editable }.enable :edit_approval_rule
+    rule { merge_request_origin & approval_rules_editable }.enable :edit_approval_rule
   end
 end
