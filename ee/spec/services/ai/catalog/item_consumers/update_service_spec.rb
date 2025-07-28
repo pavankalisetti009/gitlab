@@ -9,7 +9,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
     let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer) }
     let_it_be(:project) { create(:project, group: group) }
 
-    let(:params) { { enabled: false, locked: false } }
+    let(:params) { { enabled: false, locked: false, pinned_version_prefix: '1.1' } }
 
     subject(:response) { described_class.new(item_consumer, user, params).execute }
 
@@ -33,6 +33,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
         it 'updates the item consumer' do
           expect { response }.to change { item_consumer.enabled }.from(true).to(false)
             .and change { item_consumer.locked }.from(true).to(false)
+            .and change { item_consumer.pinned_version_prefix }.from(nil).to('1.1')
         end
 
         context 'when the item consumer cannot be updated' do
