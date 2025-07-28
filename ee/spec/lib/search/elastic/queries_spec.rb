@@ -494,7 +494,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         current_user: user,
         hybrid_similarity: hybrid_similarity,
         hybrid_boost: hybrid_boost,
-        embedding_field: :embedding_0,
+        embedding_field: :embedding_1,
         fields: %w[iid^3 title^2 description],
         vectors_supported: :elasticsearch
       }
@@ -521,7 +521,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       let(:options) do
         {
           current_user: user,
-          embedding_field: :embedding_0,
+          embedding_field: :embedding_1,
           fields: %w[iid^3 title^2 description],
           vectors_supported: :elasticsearch
         }
@@ -563,7 +563,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       let(:options) do
         {
           current_user: user,
-          embedding_field: :embedding_0,
+          embedding_field: :embedding_1,
           fields: %w[iid^3 title^2 description],
           vectors_supported: nil
         }
@@ -580,7 +580,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       let(:options) do
         {
           current_user: user,
-          embedding_field: :embedding_0,
+          embedding_field: :embedding_1,
           fields: %w[iid^3 title^2 description],
           vectors_supported: :invalid_client
         }
@@ -595,7 +595,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       let(:options) do
         {
           current_user: user,
-          embedding_field: :embedding_0,
+          embedding_field: :embedding_1,
           fields: %w[iid^3 title^2 description],
           vectors_supported: :opensearch
         }
@@ -603,7 +603,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
 
       it 'builds opensearch knn query' do
         expect(by_knn.dig(:query, :bool, :should))
-          .to include(a_hash_including(knn: { embedding_0: { k: 25, vector: mock_embedding } }))
+          .to include(a_hash_including(knn: { embedding_1: { k: 25, vector: mock_embedding } }))
       end
 
       it 'sets simple_query_string_boost and keyword_match_clause options' do
@@ -623,7 +623,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       let(:options) do
         {
           current_user: user,
-          embedding_field: :embedding_0,
+          embedding_field: :embedding_1,
           fields: %w[iid^3 title^2 description],
           vectors_supported: :elasticsearch
         }
@@ -631,7 +631,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
 
       it 'builds elasticsearch knn query' do
         expect(by_knn[:knn]).to match(a_hash_including(
-          field: 'embedding_0',
+          field: 'embedding_1',
           query_vector: mock_embedding,
           boost: described_class::DEFAULT_HYBRID_BOOST,
           k: 25,

@@ -116,13 +116,8 @@ module Search
 
       override :extra_options
       def extra_options
-        if ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items_embeddings1)
-          embedding_field = :embedding_1
-          model = Search::Elastic::References::Embedding::MODEL_VERSIONS[1]
-        else
-          embedding_field = :embedding_0
-          model = Search::Elastic::References::Embedding::MODEL_VERSIONS[0]
-        end
+        embedding_field = :embedding_1
+        model = Search::Elastic::References::Embedding::MODEL_VERSIONS[1]
 
         {
           authorization_use_traversal_ids: true,

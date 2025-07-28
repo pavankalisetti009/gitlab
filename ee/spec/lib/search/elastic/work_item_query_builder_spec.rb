@@ -200,8 +200,8 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
 
-      it 'add knn query for opensearch using the textembedding-gecko@003 model' do
-        model = 'textembedding-gecko@003'
+      it 'adds a knn query for opensearch on the embedding_1 field using the text-embedding-005 model' do
+        model = 'text-embedding-005'
         expect(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new)
           .with(anything, user: anything, tracking_context: anything, unit_primitive: anything, model: model)
           .and_return(embedding_service)
@@ -209,37 +209,13 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         query = build
         os_knn_query = {
           knn: {
-            embedding_0: {
+            embedding_1: {
               k: 25,
               vector: mock_embedding
             }
           }
         }
         expect(query[:query][:bool][:should]).to include(os_knn_query)
-      end
-
-      context 'when embedding_1 field is backfilled' do
-        before do
-          set_elasticsearch_migration_to(:backfill_work_items_embeddings1, including: true)
-        end
-
-        it 'adds a knn query for opensearch on the embedding_1 field using the text-embedding-005 model' do
-          model = 'text-embedding-005'
-          expect(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new)
-            .with(anything, user: anything, tracking_context: anything, unit_primitive: anything, model: model)
-            .and_return(embedding_service)
-
-          query = build
-          os_knn_query = {
-            knn: {
-              embedding_1: {
-                k: 25,
-                vector: mock_embedding
-              }
-            }
-          }
-          expect(query[:query][:bool][:should]).to include(os_knn_query)
-        end
       end
 
       context 'when simple_query_string is used' do
@@ -250,7 +226,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           query_hash = build
           os_knn_query = {
             knn: {
-              embedding_0: {
+              embedding_1: {
                 k: 25,
                 vector: mock_embedding
               }
