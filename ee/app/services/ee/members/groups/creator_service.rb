@@ -7,6 +7,11 @@ module EE
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
+        override :execute
+        def execute
+          super.tap(&:update_user_group_member_roles)
+        end
+
         class_methods do
           extend ::Gitlab::Utils::Override
 

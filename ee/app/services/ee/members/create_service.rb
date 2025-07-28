@@ -134,7 +134,6 @@ module EE
       def after_execute(member:)
         super
 
-        member.update_user_group_member_roles
         append_added_member_ids_with_users(member: member)
         log_audit_event(member: member)
         convert_invited_user_to_invite_onboarding(member: member)

@@ -200,14 +200,9 @@ module EE
       false
     end
 
-    def update_user_group_member_roles
-      return unless source.is_a?(Group)
-      return unless ::Feature.enabled?(:cache_user_group_member_roles, source.root_ancestor)
-      return unless member_role || ::GroupGroupLink.for_shared_with_groups(source.id).with_custom_role.exists?
-
-      run_after_commit_or_now do
-        ::Authz::UserGroupMemberRoles::UpdateForGroupWorker.perform_async(id)
-      end
+    def update_user_group_member_roles(old_values_map: nil)
+      ::Authz::UserGroupMemberRoles::UpdateForGroupMemberService
+        .new(self, old_values_map: old_values_map).execute
     end
 
     private

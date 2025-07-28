@@ -55,7 +55,7 @@ module EE
         old_access_level = old_values_map[:human_access]
         old_expiry = old_values_map[:expires_at]
 
-        update_user_group_member_roles(member, old_values_map)
+        member.update_user_group_member_roles(old_values_map: old_values_map)
         log_audit_event(old_access_level: old_access_level, old_expiry: old_expiry, member: member)
       end
 
@@ -143,24 +143,6 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
-      end
-
-      def update_user_group_member_roles(member, old_values_map)
-        return unless member.source.is_a?(Group)
-
-        member_role_changed = member.member_role_id != old_values_map[:member_role_id]
-        access_level_changed = member.access_level != old_values_map[:access_level]
-
-        unless member_role_changed ||
-            (access_level_changed && ::GroupGroupLink.for_shared_with_groups(member.source.id).with_custom_role.exists?)
-          return
-        end
-
-        return unless ::Feature.enabled?(:cache_user_group_member_roles, member.source.root_ancestor)
-
-        member.run_after_commit_or_now do
-          ::Authz::UserGroupMemberRoles::UpdateForGroupWorker.perform_async(member.id)
-        end
       end
 
       override :build_old_values_map

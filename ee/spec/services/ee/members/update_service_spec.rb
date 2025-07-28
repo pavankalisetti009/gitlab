@@ -476,66 +476,16 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
           let(:initial_member_role) { nil }
           let(:target_member_role) { member_role_guest }
 
-          before do
-            stub_feature_flags(cache_user_group_member_roles: source)
-          end
-
           it_behaves_like 'correct member role assignment'
 
-          shared_examples 'enqueues UpdateForGroupWorker job' do
-            it 'enqueues an ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
-              allow(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to receive(:perform_async)
-
-              update_member
-
-              expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker)
-                .to have_received(:perform_async).with(member.id)
-            end
-          end
-
-          shared_examples 'does not enqueue UpdateForGroupWorker job' do
-            it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
-              expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).not_to receive(:perform_async)
-
-              update_member
-            end
-          end
-
-          context 'when feature flag is disabled' do
-            before do
-              stub_feature_flags(cache_user_group_member_roles: false)
+          it 'calls update_user_group_member_roles on the updated member' do
+            expect_next_found_instance_of(GroupMember) do |instance|
+              expect(instance).to receive(:update_user_group_member_roles)
+                .with(old_values_map: a_hash_including(member_role_id: nil))
             end
 
-            it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+            update_member
           end
-
-          context 'when neither member role nor access level was updated' do
-            let(:params) { { expires_at: 1.day.from_now.to_date, source: source } }
-
-            it_behaves_like 'does not enqueue UpdateForGroupWorker job'
-          end
-
-          context 'when only access level was updated' do
-            let(:params) { { access_level: Gitlab::Access::DEVELOPER, source: source } }
-
-            context 'and source group has a member role in another group' do
-              let_it_be(:shared_group) { create(:group) }
-
-              before do
-                create(:group_group_link,
-                  shared_group: shared_group,
-                  shared_with_group: source,
-                  member_role: create(:member_role, namespace: shared_group)
-                )
-              end
-
-              it_behaves_like 'enqueues UpdateForGroupWorker job'
-            end
-
-            it_behaves_like 'does not enqueue UpdateForGroupWorker job'
-          end
-
-          it_behaves_like 'enqueues UpdateForGroupWorker job'
         end
       end
     end
