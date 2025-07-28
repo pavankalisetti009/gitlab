@@ -49,6 +49,19 @@ RSpec.describe Users::ArkoseSession, :saas, feature_category: :instance_resilien
       expect(arkose_session).to be_persisted
     end
 
+    context 'when verify response has empty telltale list' do
+      let_it_be(:json_verify_response) do
+        json_verify_response.tap do |response|
+          response['session_details']['telltale_list'] = []
+        end
+      end
+
+      it 'creates an ArkoseSession from a valid verify response with no telltales' do
+        expect(arkose_session).to be_persisted
+        expect(arkose_session.reload.telltale_list).to eq []
+      end
+    end
+
     context 'when verify response is invalid' do
       let_it_be(:json_verify_response) do
         Gitlab::Json.parse(File.read(Rails.root.join('ee/spec/fixtures/arkose/invalid_token.json')))

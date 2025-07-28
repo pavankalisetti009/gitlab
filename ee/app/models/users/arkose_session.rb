@@ -15,7 +15,7 @@ module Users
     validates :user_agent, length: { maximum: 255 }
     validates :user_language_shown, length: { maximum: 64 }
     validates :device_xid, length: { maximum: 64 }
-    validates :telltale_list, presence: true
+    validates :telltale_list, presence: true, unless: -> { telltale_list == [] }
     validates :user_ip, length: { maximum: 64 }
     validates :country, length: { maximum: 64 }
     validates :region, length: { maximum: 64 }
