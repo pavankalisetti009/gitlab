@@ -507,6 +507,62 @@ exports[`Security Dashboard default states sets up project-level with \`projectS
       <div
         class="gl-flex gl-flex-col gl-grow"
       >
+        <section
+          class="gl-flex gl-flex-row gl-flex-wrap gl-gap-5 gl-pb-3 gl-pt-4"
+          data-testid="filters-container"
+        >
+          <div
+            class="gl-search-box-by-click gl-search-box-by-click-with-search-button input-group"
+            data-testid="filtered-search-input"
+            role="group"
+          >
+            <div
+              class="gl-filtered-search-scrollable-container gl-filtered-search-scrollable-container-with-search-button"
+            >
+              <div
+                class="gl-filtered-search-scrollable"
+              >
+                <div
+                  class="gl-filtered-search-item gl-filtered-search-last-item gl-filtered-search-term gl-h-auto"
+                  data-testid="filtered-search-term"
+                >
+                  <div
+                    class="gl-filtered-search-term-token gl-filtered-search-token-segment"
+                    data-testid="filtered-search-token-segment"
+                  >
+                    <input
+                      aria-label="Search"
+                      class="gl-filtered-search-term-input"
+                      data-testid="filtered-search-term-input"
+                      placeholder="Filter results..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="input-group-append"
+            >
+              <button
+                aria-label="Search"
+                class="btn btn-default btn-default-tertiary btn-icon btn-md gl-button gl-search-box-by-click-search-button"
+                data-testid="search-button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="gl-button-icon gl-fill-current gl-icon s16"
+                  data-testid="search-icon"
+                  role="img"
+                >
+                  <use
+                    href="file-mock#search"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
         <div
           class="-gl-mx-3 grid-stack grid-stack-static gs-12"
           data-testid="gridstack-grid"
