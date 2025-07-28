@@ -621,6 +621,14 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
           expect(member.access_level).to eq(::Gitlab::Access::DEVELOPER)
           expect(member.member_role_id).to eq(member_role.id)
         end
+
+        it 'calls update_user_group_member_roles on the new member' do
+          expect_next_instance_of(GroupMember) do |instance|
+            expect(instance).to receive(:update_user_group_member_roles)
+          end
+
+          sync_group.update_permissions
+        end
       end
     end
 

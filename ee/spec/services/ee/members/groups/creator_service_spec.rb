@@ -268,6 +268,14 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
         it 'saves the `member_role`' do
           expect(member.member_role).to eq(member_role)
         end
+
+        it 'calls update_user_group_member_roles on the new member' do
+          expect_next_instance_of(GroupMember) do |instance|
+            expect(instance).to receive(:update_user_group_member_roles)
+          end
+
+          member
+        end
       end
 
       context 'when custom roles are not enabled' do

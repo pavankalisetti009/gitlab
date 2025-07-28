@@ -88,6 +88,14 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
           expect(member.access_level).to eq(::Gitlab::Access::DEVELOPER)
           expect(member.member_role).to eq(member_role)
         end
+
+        it 'calls update_user_group_member_roles on the new members' do
+          expect_next_instances_of(GroupMember, 2) do |instance|
+            expect(instance).to receive(:update_user_group_member_roles)
+          end
+
+          sync
+        end
       end
 
       context 'when custom roles are not enabled' do

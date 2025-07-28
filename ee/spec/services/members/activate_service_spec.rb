@@ -27,6 +27,27 @@ RSpec.describe Members::ActivateService, feature_category: :groups_and_projects 
       execute
     end
 
+    context 'when members have possible custom role assignments' do
+      let(:group_members) { members.filter { |m| m.is_a?(GroupMember) } }
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        group_members.each do |m|
+          member_role = create(:member_role, base_access_level: m.access_level, namespace: m.source.root_ancestor)
+          m.update!(member_role: member_role)
+        end
+      end
+
+      it 'calls update_user_group_member_roles on the activated members' do
+        expect_next_found_instances_of(GroupMember, group_members.count) do |instance|
+          expect(instance).to receive(:update_user_group_member_roles)
+        end
+
+        execute
+      end
+    end
+
     it 'logs the approval in application logs' do
       allow(Gitlab::AppLogger).to receive(:info)
 
@@ -176,7 +197,7 @@ RSpec.describe Members::ActivateService, feature_category: :groups_and_projects 
     context 'when skipping authorization' do
       let_it_be(:current_user) { Users::Internal.automation_bot }
 
-      let_it_be(:members) { [create(:group_member, :awaiting, group: root_group, user: user)] }
+      let_it_be(:members) { [create(:group_member, :developer, :awaiting, group: root_group, user: user)] }
 
       subject(:execute) { described_class.for_group(root_group).execute(current_user: current_user, skip_authorization: true) }
 
@@ -191,8 +212,8 @@ RSpec.describe Members::ActivateService, feature_category: :groups_and_projects 
       context 'when there are awaiting members' do
         let_it_be(:members) do
           [
-            create(:group_member, :awaiting, group: root_group),
-            create(:group_member, :awaiting, group: sub_group),
+            create(:group_member, :developer, :awaiting, group: root_group),
+            create(:group_member, :developer, :awaiting, group: sub_group),
             create(:project_member, :awaiting, project: project)
           ]
         end

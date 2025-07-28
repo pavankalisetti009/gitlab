@@ -48,6 +48,7 @@ module Members
 
       activate_memberships
       update_user_project_access
+      update_user_group_member_roles
       log_audit_event
       log_event
 
@@ -97,6 +98,10 @@ module Members
           message: 'Changed the membership state to active'
         )
       end
+    end
+
+    def update_user_group_member_roles
+      affected_members.each(&:update_user_group_member_roles)
     end
   end
 end
