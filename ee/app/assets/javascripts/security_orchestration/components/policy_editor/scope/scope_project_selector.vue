@@ -136,6 +136,7 @@ export default {
 
       <group-projects-dropdown
         v-else
+        with-project-count
         :disabled="disabled"
         :group-full-path="groupFullPath"
         :selected="projectIds"

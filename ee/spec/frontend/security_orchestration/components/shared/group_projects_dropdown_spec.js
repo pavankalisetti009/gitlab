@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -30,7 +30,7 @@ describe('GroupProjectsDropdown', () => {
     endCursor: null,
   };
 
-  const mockApolloHandlers = (nodes = defaultNodes, hasNextPage = false) => {
+  const mockApolloHandlers = (nodes = defaultNodes, hasNextPage = false, count = 0) => {
     return {
       getGroupProjects: jest.fn().mockResolvedValue({
         data: {
@@ -38,6 +38,7 @@ describe('GroupProjectsDropdown', () => {
           group: {
             id: 2,
             projects: {
+              ...(count > 0 ? { count } : {}),
               nodes,
               pageInfo: { ...defaultPageInfo, hasNextPage },
             },
@@ -70,6 +71,7 @@ describe('GroupProjectsDropdown', () => {
   };
 
   const findDropdown = () => wrapper.findComponent(BaseItemsDropdown);
+  const findFooter = () => wrapper.findByTestId('footer');
 
   describe('selection', () => {
     beforeEach(() => {
@@ -78,6 +80,7 @@ describe('GroupProjectsDropdown', () => {
 
     it('should render loading state', () => {
       expect(findDropdown().props('loading')).toBe(true);
+      expect(findFooter().exists()).toBe(false);
     });
 
     it('should load items', async () => {
@@ -323,6 +326,7 @@ describe('GroupProjectsDropdown', () => {
           fullPath: GROUP_FULL_PATH,
           projectIds: null,
           search: '4',
+          withCount: false,
         });
 
         await waitForPromises();
@@ -344,6 +348,7 @@ describe('GroupProjectsDropdown', () => {
         projectIds: null,
         search: 'project-1-full-path',
         fullPath: GROUP_FULL_PATH,
+        withCount: false,
       });
     });
   });
@@ -371,8 +376,95 @@ describe('GroupProjectsDropdown', () => {
           after: null,
           fullPath: GROUP_FULL_PATH,
           projectIds,
+          withCount: false,
         });
       },
     );
+  });
+
+  describe('project count', () => {
+    const nodes = generateMockProjects(Array.from({ length: 101 }).map((_, i) => i));
+
+    describe('default rendering', () => {
+      beforeEach(() => {
+        createComponent({
+          propsData: {
+            withProjectCount: true,
+          },
+          stubs: {
+            GlSprintf,
+          },
+          handlers: mockApolloHandlers(nodes, true, 150),
+        });
+      });
+
+      it('renders footer with project information', async () => {
+        await waitForPromises();
+
+        expect(findFooter().exists()).toBe(true);
+        expect(findFooter().text()).toContain('101 of 150');
+      });
+
+      it('queries projects with project count', () => {
+        expect(requestHandlers.getGroupProjects).toHaveBeenCalledWith({
+          fullPath: GROUP_FULL_PATH,
+          projectIds: null,
+          withCount: true,
+        });
+      });
+    });
+
+    describe('select all projects', () => {
+      it('loads all projects when select all clicked', async () => {
+        createComponent({
+          propsData: {
+            withProjectCount: true,
+          },
+          stubs: {
+            GlSprintf,
+          },
+          handlers: mockApolloHandlers(nodes, false, 150),
+        });
+
+        await waitForPromises();
+
+        await findDropdown().vm.$emit('select-all', defaultNodesIds);
+
+        expect(requestHandlers.getGroupProjects).toHaveBeenNthCalledWith(1, {
+          fullPath: GROUP_FULL_PATH,
+          projectIds: null,
+          withCount: true,
+        });
+
+        expect(requestHandlers.getGroupProjects).toHaveBeenNthCalledWith(2, {
+          fullPath: GROUP_FULL_PATH,
+          projectIds: null,
+          search: '',
+          withCount: true,
+        });
+      });
+    });
+
+    describe('search', () => {
+      it('does not query backend on search when all projects were loaded', async () => {
+        createComponent({
+          propsData: {
+            withProjectCount: true,
+          },
+          stubs: {
+            GlSprintf,
+          },
+          handlers: mockApolloHandlers(nodes, false, 101),
+        });
+
+        await waitForPromises();
+
+        expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(1);
+
+        findDropdown().vm.$emit('search', 'project-1-full-path');
+
+        expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });
