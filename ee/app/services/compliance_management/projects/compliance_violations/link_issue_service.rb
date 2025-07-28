@@ -26,7 +26,10 @@ module ComplianceManagement
           link_record = ComplianceManagement::Projects::ComplianceViolationIssue.new(issue: issue,
             project_compliance_violation: violation, project: violation.project)
 
-          return ServiceResponse.success if link_record.save
+          if link_record.save
+            create_system_note
+            return ServiceResponse.success
+          end
 
           ServiceResponse.error(message: "Failed to link issue: #{link_record.errors.full_messages.join(', ')}")
         end
@@ -38,6 +41,13 @@ module ComplianceManagement
         def allowed?
           Ability.allowed?(current_user, :read_compliance_violations_report, violation) &&
             Ability.allowed?(current_user, :read_issue, issue)
+        end
+
+        def create_system_note
+          ::SystemNotes::ComplianceViolationsService.new(
+            container: violation.project,
+            noteable: violation,
+            author: current_user).link_issue(issue)
         end
       end
     end

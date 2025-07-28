@@ -21,7 +21,10 @@ module ComplianceManagement
             return ServiceResponse.error(message: "Issue ID #{issue.id} is not linked to violation ID #{violation.id}")
           end
 
-          return ServiceResponse.success if violation.issues.destroy(issue)
+          if violation.issues.destroy(issue)
+            create_system_note
+            return ServiceResponse.success
+          end
 
           Gitlab::ErrorTracking.track_and_raise_exception(
             StandardError.new("Failed to unlink issue from violation: #{issue.errors.full_messages.join(', ')}"),
@@ -36,6 +39,13 @@ module ComplianceManagement
 
         def allowed?
           Ability.allowed?(current_user, :read_compliance_violations_report, violation)
+        end
+
+        def create_system_note
+          ::SystemNotes::ComplianceViolationsService.new(
+            container: violation.project,
+            noteable: violation,
+            author: current_user).unlink_issue(issue)
         end
       end
     end

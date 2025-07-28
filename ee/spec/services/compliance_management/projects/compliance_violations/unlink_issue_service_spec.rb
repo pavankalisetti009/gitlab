@@ -34,6 +34,10 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolations::UnlinkIssue
           expect { service.execute }.to change { ComplianceManagement::Projects::ComplianceViolationIssue.count }.by(-1)
         end
 
+        it 'creates a system note' do
+          expect { service.execute }.to change { Note.where(noteable_id: violation.id).count }.by(1)
+        end
+
         it 'returns success response' do
           result = service.execute
 
@@ -93,6 +97,10 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolations::UnlinkIssue
 
           expect(result).to be_error
           expect(result.message).to eq("Issue ID #{issue.id} is not linked to violation ID #{violation.id}")
+        end
+
+        it 'does not create a system note' do
+          expect { service.execute }.not_to change { Note.where(noteable_id: violation.id).count }
         end
       end
 
