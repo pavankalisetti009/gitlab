@@ -35,6 +35,8 @@ RSpec.describe 'Group active tab', :js, feature_category: :groups_and_projects d
 
   context 'on group Contribution Analytics' do
     before do
+      stub_feature_flags(contributions_analytics_dashboard: false)
+
       visit group_contribution_analytics_path(group)
     end
 

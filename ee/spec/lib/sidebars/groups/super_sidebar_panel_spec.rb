@@ -40,6 +40,8 @@ RSpec.describe Sidebars::Groups::SuperSidebarPanel, feature_category: :navigatio
     stub_saas_features(gitlab_com_subscriptions: true)
     # Needed for virtual registry
     stub_config(dependency_proxy: { enabled: true })
+    # Needed for Contribution analytics
+    stub_feature_flags(contributions_analytics_dashboard: false)
   end
 
   it_behaves_like 'a panel with uniquely identifiable menu items'

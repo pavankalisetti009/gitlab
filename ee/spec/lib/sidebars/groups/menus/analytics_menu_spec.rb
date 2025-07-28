@@ -119,11 +119,20 @@ RSpec.describe Sidebars::Groups::Menus::AnalyticsMenu, feature_category: :naviga
 
       before do
         stub_licensed_features(contribution_analytics: true)
+        stub_feature_flags(contributions_analytics_dashboard: false)
       end
 
       it { is_expected.not_to be_nil }
 
-      describe 'when licensed feature :group_coverage_reports is disabled' do
+      describe 'when contributions_analytics_dashboard feature flag is enabled' do
+        specify do
+          stub_feature_flags(contributions_analytics_dashboard: true)
+
+          is_expected.to be_nil
+        end
+      end
+
+      describe 'when licensed feature :contribution_analytics is disabled' do
         specify do
           stub_licensed_features(contribution_analytics: false)
 

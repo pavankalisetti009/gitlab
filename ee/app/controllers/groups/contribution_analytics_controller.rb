@@ -5,6 +5,9 @@ class Groups::ContributionAnalyticsController < Groups::ApplicationController
 
   before_action :group
   before_action :authorize_read_contribution_analytics!
+  before_action :redirect_to_new_dashboard, only: :show, if: -> {
+    Feature.enabled?(:contributions_analytics_dashboard, group)
+  }
 
   layout 'group'
 
@@ -66,5 +69,9 @@ class Groups::ContributionAnalyticsController < Groups::ApplicationController
 
   def tracking_project_source
     nil
+  end
+
+  def redirect_to_new_dashboard
+    redirect_to group_analytics_dashboards_path(group, vueroute: 'contributions_dashboard')
   end
 end

@@ -73,7 +73,7 @@ module Sidebars
         end
 
         def contribution_analytics_menu_item
-          unless show_contribution_analytics?
+          unless show_legacy_contribution_analytics?
             return ::Sidebars::NilMenuItem.new(item_id: :contribution_analytics)
           end
 
@@ -87,7 +87,9 @@ module Sidebars
           )
         end
 
-        def show_contribution_analytics?
+        def show_legacy_contribution_analytics?
+          return false if Feature.enabled?(:contributions_analytics_dashboard, context.group)
+
           can?(context.current_user, :read_group_contribution_analytics, context.group)
         end
 

@@ -19,6 +19,7 @@ RSpec.describe 'Groups > Contribution Analytics', :js, feature_category: :value_
   before do
     group.add_owner(user)
     sign_in(user)
+    stub_feature_flags(contributions_analytics_dashboard: false)
   end
 
   describe 'visit Contribution Analytics page for group' do
@@ -111,6 +112,22 @@ RSpec.describe 'Groups > Contribution Analytics', :js, feature_category: :value_
           expect(page).not_to have_content('Using ClickHouse')
         end
       end
+    end
+  end
+
+  context 'when contribution_analytics_dashboard feature flag is enabled' do
+    before do
+      stub_licensed_features(group_level_analytics_dashboard: true)
+      stub_feature_flags(contributions_analytics_dashboard: true)
+      visit group_contribution_analytics_path(group)
+
+      wait_for_all_requests
+    end
+
+    it 'redirects to the new dashboard page', :aggregate_failures do
+      expect(page).to have_current_path(group_analytics_dashboards_path(group, vueroute: 'contributions_dashboard'),
+        ignore_query: true)
+      expect(page).to have_content _('Contributions Dashboard')
     end
   end
 end
