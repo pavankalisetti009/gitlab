@@ -21,6 +21,21 @@ module EE
 
           params
         end
+
+        override :audit_variable_access
+        def audit_variable_access(variable, scope)
+          message = "CI/CD variable '#{variable.key}' accessed with the API"
+          message += " (hidden variable, no value shown)" if variable.hidden?
+
+          audit_context = {
+            name: 'variable_viewed_api',
+            author: current_user,
+            scope: scope,
+            target: variable,
+            message: message
+          }
+          ::Gitlab::Audit::Auditor.audit(audit_context)
+        end
       end
     end
   end
