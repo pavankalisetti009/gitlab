@@ -50,6 +50,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
         schema_version: 1,
         version: '1.0.0',
         definition: {
+          steps: [],
           triggers: []
         }.stringify_keys
       )

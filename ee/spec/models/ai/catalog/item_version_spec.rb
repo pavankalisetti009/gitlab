@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
+  subject(:version) { build_stubbed(:ai_catalog_item_version) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:organization) }
     it { is_expected.to belong_to(:item).required }
@@ -15,11 +17,34 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
     it { is_expected.to validate_length_of(:version).is_at_most(50) }
 
-    it 'definition validates json_schema' do
-      validator = described_class.validators_on(:definition).find { |v| v.is_a?(JsonSchemaValidator) }
+    describe 'definition json_schema' do
+      context 'when item is an agent' do
+        subject(:version) { build_stubbed(:ai_catalog_agent_version) }
 
-      expect(validator.options[:filename]).to eq('ai_catalog_item_version_definition')
-      expect(validator.instance_variable_get(:@size_limit)).to eq(64.kilobytes)
+        it { is_expected.to be_valid }
+
+        context 'when definition is invalid' do
+          before do
+            version.definition['system_prompt'] = nil
+          end
+
+          it { is_expected.not_to be_valid }
+        end
+      end
+
+      context 'when item is a flow' do
+        subject(:version) { build_stubbed(:ai_catalog_flow_version) }
+
+        it { is_expected.to be_valid }
+
+        context 'when definition is invalid' do
+          before do
+            version.definition['something'] = 1
+          end
+
+          it { is_expected.not_to be_valid }
+        end
+      end
     end
 
     describe '#validate_readonly' do

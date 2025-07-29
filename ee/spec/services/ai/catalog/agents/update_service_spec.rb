@@ -106,6 +106,8 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
       describe 'updating the latest version schema version' do
         before do
           stub_const('Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION', 987)
+          allow(agent).to receive(:latest_version).and_return(latest_version)
+          allow(latest_version).to receive(:json_schema_filename).and_return('agent_v1')
         end
 
         it 'sets it to the current schema version' do

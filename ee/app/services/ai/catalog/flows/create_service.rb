@@ -18,7 +18,7 @@ module Ai
           version_params = {
             schema_version: SCHEMA_VERSION,
             version: DEFAULT_VERSION,
-            definition: { triggers: [] }
+            definition: { triggers: [], steps: [] }
           }
 
           item = Ai::Catalog::Item.new(item_params)
