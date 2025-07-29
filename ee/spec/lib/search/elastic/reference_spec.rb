@@ -164,4 +164,10 @@ RSpec.describe ::Search::Elastic::Reference, feature_category: :global_search do
       expect { described_class.preload_indexing_data(anything) }.to raise_error(NotImplementedError)
     end
   end
+
+  describe '.model_klass' do
+    it 'raises a NotImplementedError' do
+      expect { described_class.model_klass }.to raise_error(NotImplementedError)
+    end
+  end
 end

@@ -93,6 +93,10 @@ module Search
           environment_specific_index_name('work_items')
         end
 
+        def self.model_klass
+          ::WorkItem
+        end
+
         attr_reader :identifier, :routing
 
         def initialize(identifier, routing)
@@ -128,10 +132,6 @@ module Search
         override :index_name
         def index_name
           self.class.index
-        end
-
-        def model_klass
-          ::WorkItem
         end
 
         private
