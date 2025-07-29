@@ -37,6 +37,7 @@ query getWorkItemsFullEE(
   $weight: String
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
+  $status: String
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -76,6 +77,7 @@ query getWorkItemsFullEE(
       weight: $weight
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
+      status: { name: $status }
     ) {
       pageInfo {
         ...PageInfo
@@ -107,6 +109,7 @@ query getWorkItemsFullEE(
         webUrl
         widgets(
           onlyTypes: [
+            STATUS
             ASSIGNEES
             AWARD_EMOJI
             MILESTONE
