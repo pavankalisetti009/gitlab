@@ -102,4 +102,28 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
       expect(build(:ai_catalog_item_version, release_date: Time.zone.now)).not_to be_draft
     end
   end
+
+  describe '#respond_to?' do
+    subject(:version) { build_stubbed(:ai_catalog_item_version) }
+
+    context 'when method starts with "def_"' do
+      it 'returns true' do
+        expect(version.respond_to?(:def_system_prompt)).to be(true)
+      end
+    end
+
+    context 'when method does not start with "def_"' do
+      it 'returns false' do
+        expect(version.respond_to?(:unknown_method)).to be(false)
+      end
+    end
+  end
+
+  describe '#method_missing' do
+    subject(:version) { build_stubbed(:ai_catalog_item_version) }
+
+    it 'provides access to top level definition attributes' do
+      expect(version.def_system_prompt).to eq('Talk like a pirate!')
+    end
+  end
 end
