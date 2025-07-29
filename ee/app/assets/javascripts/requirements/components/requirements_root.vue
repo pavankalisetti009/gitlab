@@ -1,5 +1,5 @@
 <script>
-import { GlPagination, GlAlert } from '@gitlab/ui';
+import { GlKeysetPagination, GlAlert } from '@gitlab/ui';
 import Api from '~/api';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
@@ -46,7 +46,7 @@ export default {
   DEFAULT_PAGE_SIZE,
   availableSortOptions,
   components: {
-    GlPagination,
+    GlKeysetPagination,
     GlAlert,
     FilteredSearchBar,
     EmptyResult,
@@ -273,15 +273,6 @@ export default {
         return Boolean(hasPreviousPage || hasNextPage);
       }
       return this.totalRequirementsForCurrentTab > DEFAULT_PAGE_SIZE && !this.requirementsListEmpty;
-    },
-    prevPage() {
-      return Math.max(this.currentPage - 1, 0);
-    },
-    nextPage() {
-      const nextPage = this.currentPage + 1;
-      return nextPage > Math.ceil(this.totalRequirementsForCurrentTab / DEFAULT_PAGE_SIZE)
-        ? null
-        : nextPage;
     },
   },
   methods: {
@@ -669,21 +660,19 @@ export default {
       this.nextPageCursor = '';
       this.updateUrl();
     },
-    handlePageChange(page) {
+    handlePageChange(to) {
       const { startCursor, endCursor } = this.requirements.pageInfo;
-      const toNext = page > this.currentPage;
-
-      if (toNext) {
+      if (to === 'next') {
         this.prevPageCursor = '';
         this.nextPageCursor = endCursor;
-      } else {
+        this.currentPage += 1;
+      } else if (to === 'prev') {
         this.prevPageCursor = startCursor;
         this.nextPageCursor = '';
+        this.currentPage -= 1;
       }
 
-      this.track('click_navigation', { label: toNext ? 'next' : 'prev' });
-
-      this.currentPage = page;
+      this.track('click_navigation', { label: to });
 
       this.updateUrl();
     },
@@ -781,16 +770,14 @@ export default {
         @reopenClick="handleRequirementStateChange"
       />
     </ul>
-    <gl-pagination
-      v-if="showPaginationControls"
-      :value="currentPage"
-      :per-page="$options.DEFAULT_PAGE_SIZE"
-      :prev-page="prevPage"
-      :next-page="nextPage"
-      align="center"
-      class="gl-pagination gl-mt-3"
-      @input="handlePageChange"
-    />
+    <div class="gl-flex gl-justify-center">
+      <gl-keyset-pagination
+        v-if="showPaginationControls"
+        v-bind="requirements.pageInfo"
+        @prev="handlePageChange('prev')"
+        @next="handlePageChange('next')"
+      />
+    </div>
     <import-requirements-modal ref="modal" :project-path="projectPath" @import="importCsv" />
     <export-requirements-modal
       ref="exportModal"
