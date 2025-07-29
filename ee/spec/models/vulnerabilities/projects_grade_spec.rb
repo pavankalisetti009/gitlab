@@ -361,12 +361,12 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
     context 'when all vulnerables are nil or empty' do
       it 'raises ArgumentError for empty vulnerables' do
         expect { described_class.grades_for([]) }
-          .to raise_error(ArgumentError, /No vulnerables provided/)
+          .to raise_error(ArgumentError, /No vulnerable entities provided/)
       end
 
       it 'raises ArgumentError when only nils are passed' do
         expect { described_class.grades_for([nil, nil]) }
-          .to raise_error(ArgumentError, /No vulnerables provided/)
+          .to raise_error(ArgumentError, /No vulnerable entities provided/)
       end
     end
 

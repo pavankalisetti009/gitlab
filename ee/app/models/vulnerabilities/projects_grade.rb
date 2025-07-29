@@ -42,11 +42,11 @@ module Vulnerabilities
     end
 
     def self.normalize_vulnerables(vulnerables)
-      set = Set.new(vulnerables).compact
+      list = Array(vulnerables).compact.uniq
 
-      raise ArgumentError, 'No vulnerables provided' if set.empty?
+      raise ArgumentError, 'No vulnerable entities provided' if list.empty?
 
-      set
+      list
     end
 
     def self.build_relations(vulnerables, include_subgroups)
