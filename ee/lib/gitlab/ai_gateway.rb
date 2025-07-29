@@ -8,6 +8,7 @@ module Gitlab
 
     FEATURE_FLAG_CACHE_KEY = "gitlab_ai_gateway_feature_flags"
     CURRENT_CONTEXT_CACHE_KEY = "gitlab_ai_gateway_current_context"
+    ACCESS_TOKEN_PATH = "/v1/code/user_access_token"
 
     def self.url
       self_hosted_url || cloud_connector_url
@@ -17,10 +18,18 @@ module Gitlab
       "#{::CloudConnector::Config.base_url}/ai"
     end
 
-    def self.access_token_url
-      base_url = self_hosted_url || "#{::CloudConnector::Config.base_url}/auth"
+    def self.cloud_connector_auth_url
+      "#{::CloudConnector::Config.base_url}/auth"
+    end
 
-      "#{base_url}/v1/code/user_access_token"
+    def self.access_token_url(code_completions_feature_setting)
+      base_url = if code_completions_feature_setting&.vendored?
+                   cloud_connector_auth_url
+                 else
+                   self_hosted_url || cloud_connector_auth_url
+                 end
+
+      "#{base_url}#{ACCESS_TOKEN_PATH}"
     end
 
     def self.self_hosted_url

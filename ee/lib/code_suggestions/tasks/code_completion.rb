@@ -32,6 +32,8 @@ module CodeSuggestions
           amazon_q_prompt
         elsif self_hosted?
           self_hosted_prompt
+        elsif vendored?
+          self_hosted_vendored_prompt
         elsif use_model_switching?
           model_switching_ai_gateway_prompt
         else
@@ -62,6 +64,14 @@ module CodeSuggestions
           current_user,
           feature_setting,
           model_details.user_group_with_claude_code_completion
+        )
+      end
+
+      def self_hosted_vendored_prompt
+        CodeSuggestions::Prompts::CodeCompletion::SelfHosted::Vendored.new(
+          params,
+          current_user,
+          feature_setting
         )
       end
 

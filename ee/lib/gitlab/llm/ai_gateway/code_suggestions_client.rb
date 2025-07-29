@@ -78,7 +78,7 @@ module Gitlab
           )
 
           response = Gitlab::HTTP.post(
-            Gitlab::AiGateway.access_token_url,
+            Gitlab::AiGateway.access_token_url(code_completions_feature_setting),
             headers: Gitlab::AiGateway.headers(user: user, service: service),
             body: nil,
             timeout: DEFAULT_TIMEOUT,
@@ -108,6 +108,14 @@ module Gitlab
         private
 
         attr_reader :user
+
+        # We only need to look at the code completion feature setting for self-hosted models.
+        # Namespace level model switching record for code completions
+        # (::Ai::ModelSelection::NamespaceFeatureSetting) need not be looked at because
+        # direct connections are not allowed on model-switched code completions.
+        def code_completions_feature_setting
+          ::Ai::FeatureSetting.find_by_feature(:code_completions)
+        end
 
         def error(message)
           {

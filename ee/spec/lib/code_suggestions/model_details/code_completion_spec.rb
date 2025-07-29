@@ -147,6 +147,14 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       let(:expected_claude_result) { {} }
 
       let(:expected_self_hosted_model_result) { {} }
+
+      context 'when code_completions is vendored' do
+        it 'returns the vendored model' do
+          create(:ai_feature_setting, :code_completions, provider: :vendored)
+
+          expect(actual_result).to eq({ model_provider: 'gitlab', model_name: '' })
+        end
+      end
     end
   end
 

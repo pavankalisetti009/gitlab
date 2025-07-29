@@ -233,7 +233,7 @@ module API
           details_hash = completion_model_details.current_model
 
           access = {
-            base_url: ::Gitlab::AiGateway.url,
+            base_url: completion_model_details.base_url,
             # for development purposes we just return instance JWT, this should not be used in production
             # until we generate a short-term token for user
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429
