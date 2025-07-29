@@ -3,7 +3,7 @@ import SectionLayout from 'ee/security_orchestration/components/policy_editor/se
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
 import LicenseScanRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/license_scan_rule_builder.vue';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
 import RuleMultiSelect from 'ee/security_orchestration/components/policy_editor/rule_multi_select.vue';
 import StatusFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/status_filter.vue';
 import LicenseFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/license_filter.vue';

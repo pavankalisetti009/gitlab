@@ -6,7 +6,7 @@ import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { BRANCH_EXCEPTIONS_KEY, SCAN_RESULT_BRANCH_TYPE_OPTIONS } from '../../constants';
 import SectionLayout from '../../section_layout.vue';
 import { getDefaultRule } from '../lib';
-import BranchSelection from './branch_selection.vue';
+import BranchSelection from '../../branch_selection.vue';
 import ScanTypeSelect from './scan_type_select.vue';
 
 export default {

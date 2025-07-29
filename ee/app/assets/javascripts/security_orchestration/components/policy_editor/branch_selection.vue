@@ -2,15 +2,15 @@
 import { GlCollapsibleListbox, GlFormInput } from '@gitlab/ui';
 import { n__, s__ } from '~/locale';
 import { isProject } from 'ee/security_orchestration/components/utils';
-import { slugifyToArray } from '../../utils';
+import { slugifyToArray } from 'ee/security_orchestration/components/policy_editor/utils';
+import ProtectedBranchesDropdown from 'ee/security_orchestration/components/policy_editor/protected_branches_dropdown.vue';
 import {
   ALL_PROTECTED_BRANCHES,
   BRANCHES_KEY,
   BRANCH_TYPE_KEY,
   SCAN_RESULT_BRANCH_TYPE_OPTIONS,
   SPECIFIC_BRANCHES,
-} from '../../constants';
-import ProtectedBranchesDropdown from '../../protected_branches_dropdown.vue';
+} from './constants';
 
 export default {
   components: {
