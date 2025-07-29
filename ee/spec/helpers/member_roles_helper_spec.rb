@@ -24,6 +24,10 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     end
   end
 
+  shared_examples 'does not have admin_mode_setting_path' do
+    it { is_expected.not_to have_key(:admin_mode_setting_path) }
+  end
+
   describe '#member_roles_data' do
     context 'when on self-managed' do
       subject(:data) { helper.member_roles_data }
@@ -77,6 +81,44 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
 
           it_behaves_like 'no LDAP data'
         end
+
+        context 'when admin mode is enabled' do
+          before do
+            allow(Gitlab::CurrentSettings).to receive(:admin_mode).and_return(true)
+          end
+
+          context 'when there are no admin roles' do
+            it_behaves_like 'does not have admin_mode_setting_path'
+          end
+
+          context 'when there are admin roles' do
+            before do
+              allow(MemberRole).to receive(:admin).and_return([build_stubbed(:member_role, :admin)])
+            end
+
+            it_behaves_like 'does not have admin_mode_setting_path'
+          end
+        end
+
+        context 'when admin mode is disabled' do
+          before do
+            allow(Gitlab::CurrentSettings).to receive(:admin_mode).and_return(false)
+          end
+
+          context 'when there are no admin roles' do
+            it_behaves_like 'does not have admin_mode_setting_path'
+          end
+
+          context 'when there are admin roles' do
+            before do
+              allow(MemberRole).to receive(:admin).and_return([build_stubbed(:member_role, :admin)])
+            end
+
+            it 'has admin_mode_setting_path' do
+              expect(data[:admin_mode_setting_path]).to eq '/admin/application_settings/general#js-signin-settings'
+            end
+          end
+        end
       end
     end
 
@@ -85,6 +127,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         subject(:data) { helper.member_roles_data(source) }
 
         it_behaves_like 'no LDAP data'
+        it_behaves_like 'does not have admin_mode_setting_path'
 
         it 'matches the expected data' do
           expect(data[:new_role_path]).to be_nil
@@ -100,6 +143,8 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(true)
             allow(Gitlab.config.ldap).to receive(:enabled).and_return(true)
           end
+
+          it_behaves_like 'does not have admin_mode_setting_path'
 
           it 'matches the expected data' do
             expect(data[:new_role_path]).to eq new_group_settings_roles_and_permission_path(source)
