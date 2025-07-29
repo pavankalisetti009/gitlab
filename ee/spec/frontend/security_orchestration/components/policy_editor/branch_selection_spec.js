@@ -1,7 +1,7 @@
 import { nextTick } from 'vue';
 import { GlCollapsibleListbox, GlFormInput } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
 import ProtectedBranchesDropdown from 'ee/security_orchestration/components/policy_editor/protected_branches_dropdown.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
