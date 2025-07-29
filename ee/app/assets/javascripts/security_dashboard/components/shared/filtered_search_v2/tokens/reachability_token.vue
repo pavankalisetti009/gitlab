@@ -2,14 +2,17 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
-import QuerystringSync from '../../filters/querystring_sync.vue';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import eventHub from '../event_hub';
 
 export default {
   validValues: ['IN_USE', 'NOT_FOUND', 'UNKNOWN'],
+  transformFilters: (filters) => {
+    return { reachability: Array.isArray(filters) ? filters[0] : filters };
+  },
+  transformQueryParams: (params) => {
+    return Array.isArray(params) ? params[0] : params;
+  },
   components: {
-    QuerystringSync,
     GlFilteredSearchToken,
     SearchSuggestion,
   },
@@ -30,7 +33,7 @@ export default {
   },
   data() {
     return {
-      selectedReachability: this.value.data?.[0] || 'IN_USE',
+      selectedReachability: this.value.data?.[0] || '',
     };
   },
   computed: {
@@ -54,20 +57,8 @@ export default {
     },
   },
   methods: {
-    resetSelected() {
-      this.selectedReachability = undefined;
-      this.emitFiltersChanged();
-    },
     toggleSelected(selectedValue) {
       this.selectedReachability = selectedValue;
-      this.emitFiltersChanged();
-    },
-    updateSelectedFromQS(value) {
-      this.selectedReachability = value?.[0];
-      this.emitFiltersChanged();
-    },
-    emitFiltersChanged() {
-      eventHub.$emit('filters-changed', { reachability: this.selectedReachability });
     },
   },
   i18n: {
@@ -91,33 +82,25 @@ export default {
 </script>
 
 <template>
-  <querystring-sync
-    querystring-key="reachability"
-    :value="queryStringValue"
-    :valid-values="$options.validValues"
-    @input="updateSelectedFromQS"
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :value="tokenValue"
+    v-on="$listeners"
+    @select="toggleSelected"
   >
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :value="tokenValue"
-      v-on="$listeners"
-      @select="toggleSelected"
-      @destroy="resetSelected"
-    >
-      <template #view>
-        <span data-testid="reachability-token-placeholder">{{ toggleText }}</span>
-      </template>
-      <template #suggestions>
-        <search-suggestion
-          v-for="item in $options.items"
-          :key="item.value"
-          :value="item.value"
-          :text="item.text"
-          :selected="item.value === selectedReachability"
-          :data-testid="`suggestion-${item.value}`"
-        />
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+    <template #view>
+      <span data-testid="reachability-token-placeholder">{{ toggleText }}</span>
+    </template>
+    <template #suggestions>
+      <search-suggestion
+        v-for="item in $options.items"
+        :key="item.value"
+        :value="item.value"
+        :text="item.text"
+        :selected="item.value === selectedReachability"
+        :data-testid="`suggestion-${item.value}`"
+      />
+    </template>
+  </gl-filtered-search-token>
 </template>

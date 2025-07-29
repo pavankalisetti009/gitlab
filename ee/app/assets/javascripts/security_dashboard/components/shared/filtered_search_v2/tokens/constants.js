@@ -8,6 +8,7 @@ import ProjectToken from './project_token.vue';
 import ScannerToken from './scanner_token.vue';
 import IdentifierToken from './identifier_token.vue';
 import ReportTypeToken from './report_type_token.vue';
+import ReachabilityToken from './reachability_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -88,4 +89,13 @@ export const REPORT_TYPE_VENDOR_TOKEN_DEFINITION = {
   unique: true,
   token: ReportTypeToken,
   operators: OPERATORS_OR,
+};
+
+export const REACHABILITY_TOKEN_DEFINITION = {
+  type: 'reachability',
+  title: ReachabilityToken.i18n.label,
+  multiSelect: false,
+  unique: true,
+  token: ReachabilityToken,
+  operators: OPERATORS_IS,
 };
