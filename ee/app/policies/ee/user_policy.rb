@@ -37,6 +37,11 @@ module EE
         .prevent :create_user_personal_access_token
 
       rule { ~profiles_can_be_made_private & ~admin }.prevent :make_profile_private
+
+      desc "User can assign a default Duo group setting"
+      condition(:default_duo_group_assignment_available) { can_assign_default_duo_group? }
+
+      rule { default_duo_group_assignment_available }.enable :assign_default_duo_group
     end
 
     def profiles_can_be_made_private?
@@ -48,6 +53,12 @@ module EE
     override :private_profile?
     def private_profile?
       profiles_can_be_made_private? && super
+    end
+
+    def can_assign_default_duo_group?
+      return false unless ::Feature.enabled?(:ai_model_switching, user)
+
+      ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
     end
   end
 end

@@ -67,33 +67,35 @@ RSpec.describe Profiles::PreferencesController, feature_category: :user_profile 
         create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
       end
 
-      [true, false].each do |ai_model_switching|
-        [true, false].each do |duo_features_enabled|
-          context "when ai_model_switching flag is #{ai_model_switching} and
-             duo_features_enabled is #{duo_features_enabled}" do
-            before do
-              stub_feature_flags(ai_model_switching: ai_model_switching)
-              stub_application_setting(duo_features_enabled: duo_features_enabled)
-            end
+      subject do
+        patch :update,
+          params: { user: { user_preference_attributes:
+          { default_duo_add_on_assignment_id: user_assignment.id } } }
+      end
 
-            def patch_call
-              patch :update,
-                params: { user: { user_preference_attributes:
-                { default_duo_add_on_assignment_id: user_assignment.id } } }
-            end
+      context "when assign default duo group is not allowed" do
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(false)
+        end
 
-            it "correctly handles default duo add on assignment field" do
-              if ai_model_switching && duo_features_enabled
-                expect { patch_call }.to change {
-                  user_preference.reload.default_duo_add_on_assignment_id
-                }.from(nil).to(user_assignment.id)
-              else
-                expect { patch_call }.not_to change {
-                  user_preference.reload.default_duo_add_on_assignment_id
-                }
-              end
-            end
-          end
+        it 'does not update default_duo_add_on_assignment_id' do
+          expect { subject }.not_to change {
+            user_preference.reload.default_duo_add_on_assignment_id
+          }
+        end
+      end
+
+      context "when assign default duo group is allowed" do
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
+        end
+
+        it 'updates default_duo_add_on_assignment_id' do
+          expect { subject }.to change {
+            user_preference.reload.default_duo_add_on_assignment_id
+          }.from(nil).to(user_assignment.id)
         end
       end
     end

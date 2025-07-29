@@ -250,4 +250,24 @@ RSpec.describe UserPolicy do
       it { is_expected.to(allowed? ? be_allowed(:read_user_profile) : be_disallowed(:read_user_profile)) }
     end
   end
+
+  describe ':assign_default_duo_group' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:ai_model_switching, :duo_features_enabled, :allowed?) do
+      false | true | false
+      true | false | false
+      false | false | false
+      true | true | true
+    end
+
+    with_them do
+      before do
+        stub_feature_flags(ai_model_switching: ai_model_switching)
+        stub_application_setting(duo_features_enabled: duo_features_enabled)
+      end
+
+      it { is_expected.to(allowed? ? be_allowed(:assign_default_duo_group) : be_disallowed(:assign_default_duo_group)) }
+    end
+  end
 end

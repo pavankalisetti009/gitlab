@@ -10,18 +10,16 @@ module EE::Profiles::PreferencesController
 
   def preferences_param_names_ee
     params_ee = []
-    params_ee.push({ user_preference_attributes: [:default_duo_add_on_assignment_id] }) if can_assign_default_duo_group?
+
+    if Ability.allowed?(user, :assign_default_duo_group, user)
+      params_ee.push({ user_preference_attributes: [
+        :default_duo_add_on_assignment_id
+      ] })
+    end
+
     params_ee.push(:group_view) if License.feature_available?(:security_dashboard)
     params_ee.push(:enabled_zoekt) if user.has_exact_code_search?
 
     params_ee
-  end
-
-  def can_assign_default_duo_group?
-    return false unless ::Feature.enabled?(:ai_model_switching, user)
-
-    return false unless ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
-
-    true
   end
 end
