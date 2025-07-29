@@ -24,6 +24,17 @@ module EE
             null: true,
             description: 'Namespace labels_fetch.',
             fallback_value: nil
+
+          field :issues_settings,
+            GraphQL::Types::String,
+            null: true,
+            description: 'Namespace issues settings path.'
+
+          def issues_settings
+            return unless object&.root_ancestor
+
+            url_helpers.group_settings_issues_path(object&.root_ancestor)
+          end
         end
       end
     end
