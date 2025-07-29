@@ -43747,6 +43747,9 @@ msgstr ""
 msgid "Observability|Authentication failed"
 msgstr ""
 
+msgid "Observability|Authentication failed. Please refresh the page."
+msgstr ""
+
 msgid "Observability|Beta Release"
 msgstr ""
 
@@ -43906,6 +43909,9 @@ msgstr ""
 msgid "Observability|Length must be a positive integer"
 msgstr ""
 
+msgid "Observability|Loading metrics..."
+msgstr ""
+
 msgid "Observability|Message validation failed"
 msgstr ""
 
@@ -43922,9 +43928,6 @@ msgid "Observability|O11y Service Settings"
 msgstr ""
 
 msgid "Observability|Observability Access Requested"
-msgstr ""
-
-msgid "Observability|Observability Dashboard"
 msgstr ""
 
 msgid "Observability|Observability Service Configuration"
