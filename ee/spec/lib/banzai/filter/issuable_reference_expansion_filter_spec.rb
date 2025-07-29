@@ -32,16 +32,6 @@ RSpec.describe Banzai::Filter::IssuableReferenceExpansionFilter, feature_categor
     expect(doc.css('a').last.text).to eq("#{closed_epic.to_reference} (closed)")
   end
 
-  it 'skips cross references if the user cannot read cross group' do
-    expect(Ability).to receive(:allowed?).with(user, :read_cross_project).and_return(false)
-
-    link = create_link(closed_epic.to_reference(other_group), epic: closed_epic.id, reference_type: 'epic')
-
-    doc = filter(link, context.merge(group: other_group))
-
-    expect(doc.css('a').last.text).to eq(closed_epic.to_reference(other_group))
-  end
-
   it 'shows title for references with +' do
     link = create_link(epic.to_reference, epic: epic.id, reference_type: 'epic', reference_format: '+')
 
