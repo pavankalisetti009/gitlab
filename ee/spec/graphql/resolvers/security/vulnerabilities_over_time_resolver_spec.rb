@@ -6,11 +6,16 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
   include GraphqlHelpers
 
   subject(:resolved_metrics) do
-    resolve(described_class, obj: operate_on, args: args, ctx: { current_user: current_user })
+    context = { current_user: current_user }
+    context[:report_type] = report_type_filter if defined?(report_type_filter)
+    resolve(described_class, obj: operate_on, args: args, ctx: context)
   end
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:project_2) { create(:project, namespace: group) }
+  let_it_be(:project_3) { create(:project, namespace: group) }
+  let_it_be(:project_4) { create(:project, namespace: group) }
   let_it_be(:current_user) { create(:user) }
 
   let_it_be(:vulnerabilities) do
@@ -36,6 +41,19 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
     end
   end
 
+  let_it_be(:additional_project_vulnerabilities) do
+    [
+      create(:vulnerability, :with_finding, severity: :critical, report_type: :sast, project: project_2,
+        created_at: '2019-10-15T00:00:00Z'),
+      create(:vulnerability, :with_finding, severity: :high, report_type: :dast, project: project_2,
+        created_at: '2019-10-16T00:00:00Z'),
+      create(:vulnerability, :with_finding, severity: :medium, report_type: :container_scanning, project: project_3,
+        created_at: '2019-10-15T00:00:00Z'),
+      create(:vulnerability, :with_finding, severity: :low, report_type: :secret_detection, project: project_4,
+        created_at: '2019-10-17T00:00:00Z')
+    ]
+  end
+
   describe '#resolve' do
     let(:start_date) { Date.new(2019, 10, 15) }
     let(:end_date) { Date.new(2019, 10, 21) }
@@ -56,12 +74,27 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
         end
 
         before do
-          Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
+          Elastic::ProcessBookkeepingService.track!(*vulnerabilities, *additional_project_vulnerabilities)
           ensure_elasticsearch_index!
         end
 
         it 'returns vulnerability metrics data' do
+          expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
           expect(resolved_metrics.items).not_to be_empty
+
+          all_severities = resolved_metrics.items.flat_map do |item|
+            item[:by_severity]&.map do |s| # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+              s[:severity]
+            end
+          end.compact.uniq
+          all_report_types = resolved_metrics.items.flat_map do |item|
+            item[:by_report_type]&.map do |rt| # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+              rt[:report_type]
+            end
+          end.compact.uniq
+
+          expect(all_severities).to include('low', 'medium', 'high', 'critical')
+          expect(all_report_types).to include('sast', 'dast', 'dependency_scanning')
         end
 
         context 'with filter arguments' do
@@ -71,13 +104,210 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
               end_date: end_date,
               project_id: [project.to_global_id.to_s],
               severity: ['critical'],
-              scanner: ['sast']
+              report_type: %w[sast dast]
             }
           end
 
           it 'returns filtered vulnerability metrics' do
             expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
             expect(resolved_metrics.items).not_to be_empty
+          end
+
+          context 'with report_type filter' do
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date,
+                report_type: %w[SAST DAST]
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by report type' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              resolved_metrics.items.each do |item|
+                expect(item[:by_report_type]).to be_present
+                report_types = item[:by_report_type].map { |rt| rt[:report_type] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                expect(report_types).to include('sast', 'dast')
+              end
+            end
+          end
+        end
+
+        context 'when filtering on page-level' do
+          context 'with single report type filtering' do
+            let(:report_type_filter) { ['sast'] }
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by single report type' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              resolved_metrics.items.each do |item|
+                next unless item[:by_report_type].present?
+
+                report_types = item[:by_report_type].map { |rt| rt[:report_type] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                expect(report_types).to all(eq('sast'))
+              end
+            end
+          end
+
+          context 'with multiple report types filtering' do
+            let(:report_type_filter) { %w[sast dast dependency_scanning] }
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by multiple report types' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              resolved_metrics.items.each do |item|
+                next unless item[:by_report_type].present?
+
+                report_types = item[:by_report_type].map { |rt| rt[:report_type] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                expect(report_types).to all(be_in(%w[sast dast dependency_scanning]))
+              end
+            end
+          end
+
+          context 'when filtering on a single project' do
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date,
+                project_id: [project.to_global_id.to_s]
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by single project' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              has_severity_data = resolved_metrics.items.any? do |item|
+                item[:by_severity].present? && item[:by_severity].any?
+              end
+              has_report_type_data = resolved_metrics.items.any? do |item|
+                item[:by_report_type].present? && item[:by_report_type].any?
+              end
+
+              expect(has_severity_data || has_report_type_data).to be true
+            end
+          end
+
+          context 'with multiple projects filtering' do
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date,
+                project_id: [
+                  project.to_global_id.to_s,
+                  project_2.to_global_id.to_s,
+                  project_3.to_global_id.to_s,
+                  project_4.to_global_id.to_s
+                ]
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by multiple projects' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              has_severity_data = resolved_metrics.items.any? do |item|
+                item[:by_severity].present? && item[:by_severity].any?
+              end
+              has_report_type_data = resolved_metrics.items.any? do |item|
+                item[:by_report_type].present? && item[:by_report_type].any?
+              end
+
+              expect(has_severity_data || has_report_type_data).to be true
+            end
+          end
+        end
+
+        context 'when filtering on panel-level' do
+          context 'with single severity filtering' do
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date,
+                severity: ['critical']
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by single severity' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              resolved_metrics.items.each do |item|
+                next unless item[:by_severity].present?
+
+                severities = item[:by_severity].map { |s| s[:severity] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                expect(severities).to all(eq('critical'))
+              end
+            end
+          end
+
+          context 'with multiple severities filtering' do
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date,
+                severity: %w[critical high medium]
+              }
+            end
+
+            it 'returns vulnerability metrics filtered by multiple severities' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              resolved_metrics.items.each do |item|
+                next unless item[:by_severity].present?
+
+                severities = item[:by_severity].map { |s| s[:severity] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                expect(severities).to all(be_in(%w[critical high medium]))
+              end
+            end
+          end
+        end
+
+        context 'when combining multiple filters' do
+          context 'with mixed page and panel level filters' do
+            let(:args) do
+              {
+                start_date: start_date,
+                end_date: end_date,
+                project_id: [project.to_global_id.to_s],
+                severity: ['critical'],
+                report_type: ['sast']
+              }
+            end
+
+            it 'returns vulnerability metrics with combined filters applied' do
+              expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+              expect(resolved_metrics.items).not_to be_empty
+
+              resolved_metrics.items.each do |item|
+                if item[:by_severity].present?
+                  severities = item[:by_severity].map { |s| s[:severity] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                  expect(severities).to all(eq('critical'))
+                end
+
+                if item[:by_report_type].present?
+                  report_types = item[:by_report_type].map { |rt| rt[:report_type] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
+                  expect(report_types).to all(eq('sast'))
+                end
+              end
+            end
           end
         end
       end
@@ -91,7 +321,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
       context 'when group_security_dashboard_new feature flag is disabled' do
         before_all do
           group.add_maintainer(current_user)
-          Elastic::ProcessBookkeepingService.track!(*vulnerabilities)
+          Elastic::ProcessBookkeepingService.track!(*vulnerabilities, *additional_project_vulnerabilities)
           ensure_elasticsearch_index!
         end
 

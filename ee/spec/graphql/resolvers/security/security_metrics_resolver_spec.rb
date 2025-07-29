@@ -56,9 +56,7 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
       let(:operate_on) { group }
       let(:filter_args) do
         {
-          project_id: [project.to_global_id.to_s],
-          severity: ['critical'],
-          scanner: ['sast']
+          project_id: [project.to_global_id.to_s]
         }
       end
 
