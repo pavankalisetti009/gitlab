@@ -29,7 +29,7 @@ module Search
 
           children << Filters.by_repo_ids([project_id])
         when :group
-          children << Filters.by_meta(key: "traversal_ids", value: auth.get_traversal_ids_for_group(group_id))
+          children << Filters.by_traversal_ids(auth.get_traversal_ids_for_group(group_id))
         when :global
           # no additional filters needed
         else
@@ -56,7 +56,7 @@ module Search
         private_branch_filters = []
         if authorized_traversal_ids.present?
           private_branch_filters.concat authorized_traversal_ids.map { |t|
-            Filters.by_meta(key: 'traversal_ids', value: t)
+            Filters.by_traversal_ids(t)
           }
         end
 

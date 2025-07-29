@@ -14,6 +14,16 @@ RSpec.describe Search::Zoekt::Filters, feature_category: :global_search do
     end
   end
 
+  describe '.by_traversal_ids' do
+    it 'raises error if traversal_ids is empty' do
+      expect { described_class.by_traversal_ids([]) }.to raise_error(ArgumentError, 'Traversal IDs cannot be empty')
+    end
+
+    it 'returns a traversal_ids filter with the given IDs as a prefix search' do
+      expect(described_class.by_traversal_ids('123-456-')).to eq({ meta: { key: 'traversal_ids', value: '^123-456-' } })
+    end
+  end
+
   describe '.by_repo_ids' do
     it 'raises error if ids is not an array' do
       expect { described_class.by_repo_ids('foo') }.to raise_error(ArgumentError)
