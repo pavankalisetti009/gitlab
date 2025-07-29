@@ -5,9 +5,6 @@ class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
   before_action :set_replicator_class, only: [:index, :show]
   before_action :set_replicator_with_id, only: :show
   before_action :load_node_data, only: [:index, :show]
-  before_action only: :index do
-    push_frontend_feature_flag(:geo_replicables_filtered_list_view, current_user)
-  end
 
   def index
     # legacy routes always get redirected, either to the current node, or
