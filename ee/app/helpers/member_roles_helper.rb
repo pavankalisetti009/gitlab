@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module MemberRolesHelper
+  include Gitlab::Utils::StrongMemoize
   include ::GitlabSubscriptions::SubscriptionHelper
 
   def member_roles_data(group = nil)
@@ -11,7 +12,8 @@ module MemberRolesHelper
       current_user_email: current_user.notification_email_or_default,
       ldap_users_path: ldap_enabled? ? admin_users_path(filter: 'ldap_sync') : nil,
       ldap_servers: ldap_servers&.to_json,
-      is_saas: gitlab_com_subscription?.to_s
+      is_saas: gitlab_com_subscription?.to_s,
+      admin_mode_setting_path: (admin_mode_setting_path unless group)
     }.compact
   end
 
@@ -70,4 +72,11 @@ module MemberRolesHelper
 
     ::Gitlab::Auth::Ldap::Config.available_servers.map { |server| { text: server.label, value: server.provider_name } }
   end
+
+  def admin_mode_setting_path
+    return unless MemberRole.admin.any? && !Gitlab::CurrentSettings.admin_mode
+
+    general_admin_application_settings_path(anchor: 'js-signin-settings')
+  end
+  strong_memoize_attr :admin_mode_setting_path
 end
