@@ -17,7 +17,7 @@ module Ai
       validates :version, length: { maximum: 50 }
       validates :version, uniqueness: { scope: :item }
 
-      validates :definition, json_schema: { filename: 'ai_catalog_item_version_definition', size_limit: 64.kilobytes }
+      validate :validate_json_schema
 
       validate :validate_readonly
 
@@ -58,6 +58,22 @@ module Ai
         return super unless method_name.starts_with?(DEFINITION_ACCESSOR_PREFIX)
 
         definition[method_name.to_s.delete_prefix(DEFINITION_ACCESSOR_PREFIX)]
+      end
+
+      def validate_json_schema
+        return errors.add(:definition, s_('AICatalog|unable to validate definition')) unless item
+
+        JsonSchemaValidator.new({
+          attributes: :definition,
+          base_directory: %w[app validators json_schemas ai_catalog],
+          filename: json_schema_filename,
+          size_limit: 64.kilobytes,
+          detail_errors: true
+        }).validate(self)
+      end
+
+      def json_schema_filename
+        "#{item.item_type}_v#{schema_version || 1}"
       end
 
       def validate_readonly

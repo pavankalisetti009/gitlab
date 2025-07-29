@@ -2591,6 +2591,9 @@ msgstr ""
 msgid "AICatalog|e.g., Research Assistant, Creative Writer, Code Helper"
 msgstr ""
 
+msgid "AICatalog|unable to validate definition"
+msgstr ""
+
 msgid "AISummary|Generates a summary of this issue"
 msgstr ""
 
