@@ -2,6 +2,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import * as urlUtils from '~/lib/utils/url_utility';
 import * as utils from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/from_yaml';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
+import AdvancedEditorToggle from 'ee/security_orchestration/components/policy_editor/advanced_editor_toggle.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
@@ -28,6 +29,7 @@ describe('Split View', () => {
 
   const findScanTypeSelector = () => wrapper.findByTestId('scan-type-selector');
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
+  const findAdvancedEditorToggle = () => wrapper.findComponent(AdvancedEditorToggle);
 
   beforeEach(() => {
     jest
@@ -44,6 +46,8 @@ describe('Split View', () => {
           namespaceType: 'group',
         },
       });
+
+      findAdvancedEditorToggle().vm.$emit('enable-advanced-editor', true);
 
       createPolicyObjectMock = jest
         .spyOn(utils, 'createPolicyObject')

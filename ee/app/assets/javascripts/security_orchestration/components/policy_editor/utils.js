@@ -3,6 +3,7 @@ import { isValidCron } from 'cron-validator';
 import { safeDump } from 'js-yaml';
 import { sprintf, s__, __ } from '~/locale';
 import { joinPaths, visitUrl } from '~/lib/utils/url_utility';
+import { getStorageValue } from '~/lib/utils/local_storage';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import getFile from 'ee/security_orchestration/graphql/queries/get_file.query.graphql';
@@ -26,6 +27,7 @@ import {
   MULTIPLE_SELECTED_LABEL,
   MULTIPLE_SELECTED_LABEL_SINGLE_OPTION,
   MORE_LABEL,
+  ADVANCED_EDITOR_STORAGE_KEY,
 } from './constants';
 
 /**
@@ -801,3 +803,13 @@ export const parseExceptionsStringToItems = (items = []) => {
 };
 
 export const getHostname = () => window?.location?.host || __('your GitLab instance');
+
+export const getAdvancedEditorValue = () => {
+  const { exists, value } = getStorageValue(ADVANCED_EDITOR_STORAGE_KEY);
+
+  if (exists) {
+    return value;
+  }
+
+  return false;
+};

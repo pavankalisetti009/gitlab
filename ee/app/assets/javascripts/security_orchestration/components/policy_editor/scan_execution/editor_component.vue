@@ -23,6 +23,7 @@ import OverloadWarningModal from 'ee/security_orchestration/components/overload_
 import {
   policyBodyToYaml,
   policyToYaml,
+  getAdvancedEditorValue,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
@@ -140,6 +141,11 @@ export default {
     'maxScanExecutionPolicyActions',
   ],
   props: {
+    advancedEditorEnabled: {
+      type: Boolean,
+      required: false,
+      default: getAdvancedEditorValue(),
+    },
     errorSources: {
       type: Array,
       required: true,
@@ -373,6 +379,7 @@ export default {
 <template>
   <editor-layout
     v-if="!disableScanPolicyUpdate"
+    :advanced-editor-enabled="advancedEditorEnabled"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"

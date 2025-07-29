@@ -2,6 +2,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import * as urlUtils from '~/lib/utils/url_utility';
 import * as utils from 'ee/security_orchestration/components/policy_editor/scan_result/lib/from_yaml';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
+import AdvancedEditorBanner from 'ee/security_orchestration/components/policy_editor/advanced_editor_banner.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT, GROUP_TYPE } from 'ee/security_orchestration/constants';
 import GroupSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/group_select.vue';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -32,6 +33,7 @@ describe('Split View', () => {
   const findAvailableTypeListBox = () => wrapper.findByTestId('available-types');
   const findGroupSelect = () => wrapper.findComponent(GroupSelect);
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
+  const findAdvancedEditorBanner = () => wrapper.findComponent(AdvancedEditorBanner);
 
   beforeEach(() => {
     jest
@@ -48,6 +50,8 @@ describe('Split View', () => {
           namespaceType: 'group',
         },
       });
+
+      findAdvancedEditorBanner().vm.$emit('enable-advanced-editor', true);
 
       createPolicyObjectMock = jest
         .spyOn(utils, 'createPolicyObject')
