@@ -143,6 +143,7 @@ module Gitlab
           "resolve_vulnerability/mixtral": "^1.0.0",
           "resolve_vulnerability/llama3": "^1.0.0",
           "review_merge_request/base": "^1.0.0",
+          "review_merge_request/amazon_q": "^1.0.0",
           "summarize_new_merge_request/base": "^2.0.0",
           "summarize_new_merge_request/amazon_q": "^1.0.0",
           "summarize_new_merge_request/claude_3": "^1.0.0",
