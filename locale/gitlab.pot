@@ -43376,6 +43376,9 @@ msgstr ""
 msgid "Observability|Last 7 days"
 msgstr ""
 
+msgid "Observability|Message validation failed"
+msgstr ""
+
 msgid "Observability|O11y Service Settings"
 msgstr ""
 
@@ -43428,6 +43431,12 @@ msgid "Observability|User Email"
 msgstr ""
 
 msgid "Observability|View our %{documentation} for further instructions on how to use these features."
+msgstr ""
+
+msgid "Observability|allowedMessageType must be a non-empty string"
+msgstr ""
+
+msgid "Observability|allowedOrigin must be a non-empty string"
 msgstr ""
 
 msgid "Oct"
