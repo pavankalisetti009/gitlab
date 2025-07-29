@@ -14,9 +14,10 @@ describe('RegistryUpstreamForm', () => {
     cacheValidityHours: 12,
   };
 
-  const createComponent = (props = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(RegistryUpstreamForm, {
       propsData: props,
+      provide,
     });
   };
 
@@ -69,7 +70,7 @@ describe('RegistryUpstreamForm', () => {
     describe('inputs when upstream prop is set', () => {
       beforeEach(() => {
         createComponent({
-          upstream,
+          props: { upstream },
         });
       });
 
@@ -104,29 +105,39 @@ describe('RegistryUpstreamForm', () => {
       });
 
       it('renders Cancel button', () => {
-        expect(findCancelButton().exists()).toBe(true);
+        expect(findCancelButton().text()).toBe('Cancel');
+        expect(findCancelButton().props('href')).toBe('');
       });
 
       it('renders Test upstream button if canTestUpstream is true', () => {
-        createComponent({ canTestUpstream: true });
+        createComponent({ props: { canTestUpstream: true } });
         expect(findTestUpstreamButton().exists()).toBe(true);
       });
 
       it('does not render Test upstream button if canTestUpstream is false', () => {
-        createComponent({ canTestUpstream: false });
+        createComponent({ props: { canTestUpstream: false } });
         expect(findTestUpstreamButton().exists()).toBe(false);
       });
 
       it('renders `Save changes` button when upstream exists', () => {
-        createComponent({ upstream });
+        createComponent({ props: { upstream } });
         expect(findSubmitButton().text()).toBe('Save changes');
+      });
+
+      it('sets upstreamPath to Cancel button href attribute when present', () => {
+        createComponent({
+          provide: {
+            upstreamPath: 'upstream_path',
+          },
+        });
+        expect(findCancelButton().props('href')).toBe('upstream_path');
       });
     });
   });
 
   describe('emits events', () => {
     it('emits submit event when form is submitted and form is valid', () => {
-      createComponent({ upstream });
+      createComponent({ props: { upstream } });
 
       findForm().vm.$emit('submit', { preventDefault: () => {} });
 
@@ -146,7 +157,7 @@ describe('RegistryUpstreamForm', () => {
     });
 
     it('does not emit a submit event when the form is not valid', () => {
-      createComponent({ upstream: { ...upstream, url: 'ftp://hello' } });
+      createComponent({ props: { upstream: { ...upstream, url: 'ftp://hello' } } });
 
       findForm().vm.$emit('submit', { preventDefault: () => {} });
 
@@ -162,7 +173,7 @@ describe('RegistryUpstreamForm', () => {
     });
 
     it('emits testUpstream event when Test upstream button is clicked', () => {
-      createComponent({ upstream, canTestUpstream: true });
+      createComponent({ props: { upstream, canTestUpstream: true } });
 
       findTestUpstreamButton().vm.$emit('click');
 
@@ -182,7 +193,9 @@ describe('RegistryUpstreamForm', () => {
     });
 
     it('does not emit a testUpstream event when the form is not valid', () => {
-      createComponent({ upstream: { ...upstream, url: 'ftp://hello' }, canTestUpstream: true });
+      createComponent({
+        props: { upstream: { ...upstream, url: 'ftp://hello' }, canTestUpstream: true },
+      });
 
       findTestUpstreamButton().vm.$emit('click');
 
