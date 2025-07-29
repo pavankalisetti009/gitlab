@@ -382,6 +382,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       create(:cloud_connector_access, data: {
         available_services: [
           { name: "amazon_q_integration", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
+          { name: "glab_ask_git_command", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
           { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] }
         ]
       })
@@ -409,6 +410,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       true  | :code_suggestions | 'duo_amazon_q'
       true  | :troubleshoot_job | 'duo_amazon_q'
       true  | :explain_vulnerability | 'duo_amazon_q'
+      true  | :glab_ask_git_command | 'duo_amazon_q'
       true  | :resolve_vulnerability | 'duo_amazon_q'
       true  | :summarize_comments | 'duo_amazon_q'
       true  | :generate_commit_message | 'duo_amazon_q'
