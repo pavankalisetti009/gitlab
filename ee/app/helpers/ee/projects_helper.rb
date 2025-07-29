@@ -294,17 +294,6 @@ module EE
       project_security_compliance_dashboard_path(project, vueroute: "frameworks")
     end
 
-    def project_compliance_framework_app_data(project, can_edit)
-      group = project.root_ancestor
-      {
-        group_name: group.name,
-        group_path: group_path(group),
-        empty_state_svg_path: image_path('illustrations/welcome/ee_trial.svg')
-      }.tap do |data|
-        data[:add_framework_path] = "#{edit_group_path(group)}#js-compliance-frameworks-settings" if can_edit
-      end
-    end
-
     def proxied_site
       ::Gitlab::Geo.proxied_site(request.env)
     end
