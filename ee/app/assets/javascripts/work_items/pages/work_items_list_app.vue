@@ -15,6 +15,8 @@ import {
 import {
   TOKEN_TYPE_CUSTOM_FIELD,
   OPERATORS_IS,
+  TOKEN_TYPE_STATUS,
+  TOKEN_TITLE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   TOKEN_TITLE_WEIGHT,
@@ -25,6 +27,7 @@ import {
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
+import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 
@@ -53,6 +56,7 @@ export default {
     'hasCustomFieldsFeature',
     'hasIssueWeightsFeature',
     'hasIssuableHealthStatusFeature',
+    'hasStatusFeature',
   ],
   props: {
     withTabs: {
@@ -139,6 +143,17 @@ export default {
           unique: true,
         });
       }
+      if (this.showCustomStatusFeature) {
+        tokens.push({
+          type: TOKEN_TYPE_STATUS,
+          title: TOKEN_TITLE_STATUS,
+          icon: 'status',
+          token: WorkItemStatusToken,
+          fullPath: this.rootPageFullPath,
+          unique: true,
+          operators: OPERATORS_IS,
+        });
+      }
 
       if (this.hasIssuableHealthStatusFeature) {
         tokens.push({
@@ -151,6 +166,9 @@ export default {
       }
 
       return tokens;
+    },
+    showCustomStatusFeature() {
+      return this.hasStatusFeature && !this.isEpicsList;
     },
   },
   methods: {
