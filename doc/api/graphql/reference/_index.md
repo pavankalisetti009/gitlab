@@ -39355,6 +39355,25 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectsecurityexclusionsscanner"></a>`scanner` | [`ExclusionScannerEnum`](#exclusionscannerenum) | Filter entries by scanner. |
 | <a id="projectsecurityexclusionstype"></a>`type` | [`ExclusionTypeEnum`](#exclusiontypeenum) | Filter entries by exclusion type. |
 
+##### `Project.securityMetrics`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Security metrics.This feature is currently under development and not yet available for general use.
+
+Returns [`SecurityMetrics`](#securitymetrics).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
+| <a id="projectsecuritymetricsscanner"></a>`scanner` | [`[String!]`](#string) | Filter by scanner names. |
+| <a id="projectsecuritymetricsseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter by vulnerability severity levels. |
+
 ##### `Project.securityPolicies`
 
 {{< details >}}
