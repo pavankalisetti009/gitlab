@@ -2105,7 +2105,7 @@ msgstr ""
 msgid "2FA"
 msgstr ""
 
-msgid "2FADevice|Registered On"
+msgid "2FADevice|Registered on"
 msgstr ""
 
 msgid "30+ contributions"
@@ -42037,7 +42037,7 @@ msgstr ""
 msgid "Not adopted"
 msgstr ""
 
-msgid "Not all browsers support WebAuthn. You must save your recovery codes after you first register a two-factor authenticator to be able to sign in, even from an unsupported browser."
+msgid "Not all browsers support WebAuthn. You must save your recovery codes after you first register a two-factor authenticator to be able to sign in."
 msgstr ""
 
 msgid "Not all data has been processed yet, the accuracy of the chart for the selected timeframe is limited."
@@ -59522,7 +59522,7 @@ msgstr ""
 msgid "Set up Jira Integration"
 msgstr ""
 
-msgid "Set up a hardware device to enable two-factor authentication (2FA)."
+msgid "Set up a WebAuthn device to enable two-factor authentication (2FA)."
 msgstr ""
 
 msgid "Set up assertions/attributes/claims (email, first_name, last_name) and NameID according to %{docsLinkStart}the documentation %{icon}%{docsLinkEnd}"
@@ -70209,7 +70209,7 @@ msgstr ""
 msgid "Web terminal"
 msgstr ""
 
-msgid "WebAuthn Devices"
+msgid "WebAuthn devices"
 msgstr ""
 
 msgid "WebAuthn only works with HTTPS-enabled websites. Contact your administrator for more details."
@@ -73007,9 +73007,6 @@ msgid "You do not have permission to update the environment."
 msgstr ""
 
 msgid "You do not have permissions to run the import."
-msgstr ""
-
-msgid "You don't have any WebAuthn devices registered yet."
 msgstr ""
 
 msgid "You don't have any applications."
