@@ -1,3 +1,9 @@
+import {
+  CATEGORY_EDITABLE,
+  CATEGORY_PARTIALLY_EDITABLE,
+  CATEGORY_LOCKED,
+} from '../components/security_attributes/constants';
+
 /* eslint-disable @gitlab/require-i18n-strings */
 export const mockSecurityAttributeCategories = [
   {
@@ -5,8 +11,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Application',
     description: 'Categorize projects by application type and technology stack.',
     multipleSelection: true,
-    canEditCategory: false,
-    canEditAttributes: true,
+    editableState: CATEGORY_PARTIALLY_EDITABLE,
     attributeCount: 8,
   },
   {
@@ -14,8 +19,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Business Impact',
     description: 'Classify projects by their importance to business operations.',
     multipleSelection: false,
-    canEditCategory: false,
-    canEditAttributes: false,
+    editableState: CATEGORY_LOCKED,
     attributeCount: 5,
   },
   {
@@ -23,8 +27,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Business Unit',
     description: 'Organize projects by owning teams and departments.',
     multipleSelection: true,
-    canEditCategory: false,
-    canEditAttributes: true,
+    editableState: CATEGORY_PARTIALLY_EDITABLE,
     attributeCount: 4,
   },
   {
@@ -32,8 +35,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Exposure level',
     description: 'Tag systems based on network accessibility and exposure risk.',
     multipleSelection: false,
-    canEditCategory: false,
-    canEditAttributes: true,
+    editableState: CATEGORY_PARTIALLY_EDITABLE,
     attributeCount: 4,
   },
   {
@@ -41,8 +43,7 @@ export const mockSecurityAttributeCategories = [
     name: 'Location',
     description: 'Track system hosting locations and geographic deployment.',
     multipleSelection: false,
-    canEditCategory: true,
-    canEditAttributes: true,
+    editableState: CATEGORY_EDITABLE,
     attributeCount: 7,
   },
 ];

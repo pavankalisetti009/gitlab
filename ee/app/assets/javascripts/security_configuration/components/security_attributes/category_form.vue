@@ -18,7 +18,12 @@ import {
 } from '@gitlab/ui';
 import { __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import { defaultCategory } from './constants';
+import {
+  defaultCategory,
+  CATEGORY_EDITABLE,
+  CATEGORY_PARTIALLY_EDITABLE,
+  CATEGORY_LOCKED,
+} from './constants';
 
 export default {
   components: {
@@ -57,16 +62,16 @@ export default {
       return !this.category?.id;
     },
     isLocked() {
-      return !this.category?.canEditCategory && !this.category?.canEditAttributes;
+      return this.category?.editableState === CATEGORY_LOCKED;
     },
     isLimited() {
-      return !this.category?.canEditCategory && this.category?.canEditAttributes;
+      return this.category?.editableState === CATEGORY_PARTIALLY_EDITABLE;
     },
     isCategoryEditable() {
-      return this.category?.canEditCategory || this.isNew;
+      return this.category?.editableState === CATEGORY_EDITABLE || this.isNew;
     },
     areAttributesEditable() {
-      return this.category?.canEditAttributes || this.isNew;
+      return !this.isLocked || this.isNew;
     },
     categoryName() {
       return this.category?.name;
