@@ -126,7 +126,7 @@ describe('RelatedTraces', () => {
     });
 
     it('does not render the widget', () => {
-      expect(wrapper.html()).toBe('');
+      expect(wrapper.find('*').exists()).toBe(false);
     });
   });
 });
