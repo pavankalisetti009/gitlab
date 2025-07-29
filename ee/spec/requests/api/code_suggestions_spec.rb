@@ -982,13 +982,21 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
           end
 
+          let(:base_url) { ::Gitlab::AiGateway.url }
+          let(:model_details) do
+            {
+              'model_name' => 'codestral-2501',
+              'model_provider' => 'fireworks_ai'
+            }
+          end
+
           let(:expected_response) do
             {
-              'base_url' => ::Gitlab::AiGateway.url,
+              'base_url' => base_url,
               'expires_at' => expected_expiration,
               'token' => token,
               'headers' => expected_headers,
-              'model_details' => { 'model_name' => 'codestral-2501', 'model_provider' => 'fireworks_ai' }
+              'model_details' => model_details
             }
           end
 
@@ -1011,6 +1019,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           context 'when code completions is self-hosted' do
+            before do
+              allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http://local-aigw:5052')
+            end
+
             it 'does not include the model metadata in the direct access details' do
               create(:ai_feature_setting, provider: :self_hosted, feature: :code_completions)
 
@@ -1026,6 +1038,26 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 post_api
 
                 expect(response).to have_gitlab_http_status(:unauthorized)
+              end
+            end
+
+            context 'when code completions is vendored' do
+              let(:model_details) do
+                {
+                  'model_name' => '',
+                  'model_provider' => 'gitlab'
+                }
+              end
+
+              let(:base_url) { ::Gitlab::AiGateway.cloud_connector_url }
+
+              it 'returns access details' do
+                create(:ai_feature_setting, provider: :vendored, feature: :code_completions)
+
+                post_api
+
+                expect(response).to have_gitlab_http_status(:created)
+                expect(json_response).to match(expected_response)
               end
             end
           end

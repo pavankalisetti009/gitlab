@@ -75,6 +75,49 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     end
   end
 
+  describe '.access_token_url' do
+    before do
+      stub_env('AI_GATEWAY_URL', 'http://local-aigw:5052')
+      allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+    end
+
+    let(:cloud_connector_auth_full_url) { "#{url}/auth/v1/code/user_access_token" }
+    let(:self_hosted_auth_full_url) { "http://local-aigw:5052/v1/code/user_access_token" }
+
+    context 'when no code_completions_feature_setting is provided' do
+      it 'returns the cloud connector auth url' do
+        expect(described_class.access_token_url(nil)).to eq(self_hosted_auth_full_url)
+      end
+    end
+
+    context 'when code_completions_feature_setting is not vendored' do
+      it 'returns the self hosted auth url' do
+        feature_setting = create(:ai_feature_setting, :code_completions, provider: :self_hosted)
+
+        expect(described_class.access_token_url(feature_setting)).to eq(self_hosted_auth_full_url)
+      end
+    end
+
+    context 'when code_completions_feature_setting is vendored' do
+      it 'returns the cloud connector auth url' do
+        feature_setting = create(:ai_feature_setting, :code_completions, provider: :vendored)
+
+        expect(described_class.access_token_url(feature_setting)).to eq(cloud_connector_auth_full_url)
+      end
+    end
+  end
+
+  describe '.cloud_connector_auth_url' do
+    before do
+      stub_env('AI_GATEWAY_URL', 'http://local-aigw:5052')
+      allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+    end
+
+    it 'returns the cloud connector auth url' do
+      expect(described_class.cloud_connector_auth_url).to eq("#{url}/auth")
+    end
+  end
+
   describe '.push_feature_flag', :request_store do
     before do
       allow(::Feature).to receive(:enabled?).and_return(true)

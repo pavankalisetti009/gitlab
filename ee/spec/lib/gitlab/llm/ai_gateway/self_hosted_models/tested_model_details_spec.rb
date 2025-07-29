@@ -16,6 +16,12 @@ RSpec.describe Gitlab::Llm::AiGateway::SelfHostedModels::TestedModelDetails, fea
     end
   end
 
+  describe '#vendored?' do
+    it 'returns false' do
+      expect(tested_model_details.vendored?).to be(false)
+    end
+  end
+
   describe '#self_hosted?' do
     it 'returns false' do
       expect(tested_model_details.self_hosted?).to be(true)
