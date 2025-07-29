@@ -6,6 +6,7 @@ module Ai
       include SafelyChangeColumnDefault
 
       AGENT_SCHEMA_VERSION = 1
+      DEFINITION_ACCESSOR_PREFIX = 'def_'
 
       self.table_name = "ai_catalog_item_versions"
 
@@ -48,6 +49,16 @@ module Ai
       end
 
       private
+
+      def respond_to_missing?(name, include_private)
+        name.starts_with?(DEFINITION_ACCESSOR_PREFIX) || super
+      end
+
+      def method_missing(method_name, *args, &block)
+        return super unless method_name.starts_with?(DEFINITION_ACCESSOR_PREFIX)
+
+        definition[method_name.to_s.delete_prefix(DEFINITION_ACCESSOR_PREFIX)]
+      end
 
       def validate_readonly
         return unless readonly? && changed?
