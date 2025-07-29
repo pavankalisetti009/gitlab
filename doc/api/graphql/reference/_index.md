@@ -39370,8 +39370,7 @@ Returns [`SecurityMetrics`](#securitymetrics).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
-| <a id="projectsecuritymetricsscanner"></a>`scanner` | [`[String!]`](#string) | Filter by scanner names. |
-| <a id="projectsecuritymetricsseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter by vulnerability severity levels. |
+| <a id="projectsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
 
 ##### `Project.securityPolicies`
 
