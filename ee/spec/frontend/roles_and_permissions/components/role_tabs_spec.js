@@ -2,7 +2,7 @@ import { GlLink, GlSprintf, GlTabs, GlTab } from '@gitlab/ui';
 import RoleTabs from 'ee/roles_and_permissions/components/role_tabs.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import RolesCrud from 'ee/roles_and_permissions/components/roles_table/roles_crud.vue';
+import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 import { ldapServers as ldapServersData } from '../mock_data';
 

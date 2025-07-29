@@ -3,7 +3,7 @@ import { GlTabs, GlTab, GlSprintf, GlLink } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import RolesCrud from './roles_table/roles_crud.vue';
+import RolesCrud from './roles_crud/roles_crud.vue';
 import LdapSyncCrud from './ldap_sync/ldap_sync_crud.vue';
 
 export const LDAP_TAB_QUERYSTRING_VALUE = 'ldap';
