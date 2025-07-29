@@ -73,7 +73,5 @@ scope_avatar_classes:
   file: app/helpers/sidebars_helper.rb
 group_or_project_milestone_path:
   file: app/helpers/timeboxes_helper.rb
-can_admin_project_milestones?:
-  file: app/helpers/timeboxes_helper.rb
 all_visibility_levels_restricted?:
   file: app/helpers/visibility_level_helper.rb
