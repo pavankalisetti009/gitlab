@@ -349,6 +349,10 @@ module Vulnerabilities
       metadata['identifiers'].find { |hash| hash['type'] == 'gitleaks_rule_id' }&.dig('value')
     end
 
+    def token_value
+      metadata['raw_source_code_extract']
+    end
+
     def cve_enrichment
       return unless cve_value
 
