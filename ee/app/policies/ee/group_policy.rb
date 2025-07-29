@@ -9,6 +9,7 @@ module EE
       include ::Gitlab::Utils::StrongMemoize
       include RemoteDevelopment::GroupPolicy
       include Vulnerabilities::AdvancedVulnerabilityManagementPolicy
+      include WorkItems::LifecycleAndStatusPolicy
 
       condition(:ldap_synced, scope: :subject) { @subject.ldap_synced? }
       condition(:saml_group_links_exists, scope: :subject) do
@@ -19,7 +20,6 @@ module EE
       condition(:iterations_available, scope: :subject) { @subject.feature_available?(:iterations) }
       condition(:subepics_available, scope: :subject) { @subject.feature_available?(:subepics) }
       condition(:custom_fields_available, scope: :subject) { @subject.feature_available?(:custom_fields) }
-      condition(:work_item_statuses_available, scope: :subject) { @subject.feature_available?(:work_item_status) }
       condition(:external_audit_events_available, scope: :subject) do
         @subject.feature_available?(:external_audit_events)
       end
@@ -536,15 +536,6 @@ module EE
 
       rule { maintainer & custom_fields_available }.policy do
         enable :admin_custom_field
-      end
-
-      rule { can?(:read_work_item) & work_item_statuses_available }.policy do
-        enable :read_work_item_lifecycle
-        enable :read_work_item_status
-      end
-
-      rule { maintainer & work_item_statuses_available }.policy do
-        enable :admin_work_item_lifecycle
       end
 
       rule { ~can?(:read_cross_project) }.policy do

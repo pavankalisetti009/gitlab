@@ -9,6 +9,7 @@ module EE
       include ReadonlyAbilities
       include ::Gitlab::Utils::StrongMemoize
       include Vulnerabilities::AdvancedVulnerabilityManagementPolicy
+      include WorkItems::LifecycleAndStatusPolicy
 
       desc "User is a security policy bot on the project"
       condition(:security_policy_bot) { user&.security_policy_bot? && team_member? }
