@@ -1,0 +1,52 @@
+# frozen_string_literal: true
+
+module API
+  module Entities
+    module Admin
+      class Model < Grape::Entity
+        include ::API::Helpers::RelatedResourcesHelpers
+
+        expose :id, documentation: { type: "integer", example: 123 }
+        expose :model_class, documentation: { type: "string", example: 'Project' } do |model|
+          model.class.name
+        end
+        expose :created_at, documentation: { type: "dateTime", example: "2025-01-31T15:10:45.080Z" } do |model|
+          model.respond_to?(:created_at) ? model.created_at : nil
+        end
+
+        # File-specific fields
+        expose :file_size, documentation: { type: "integer", example: 123 } do |model|
+          model.attributes.has_key?('size') ? model.size : nil
+        end
+
+        # Geo-specific fields
+        expose :checksum_information,
+          documentation: { type: "JSON", example: {
+            checksum: { type: "string", example: 'abc' },
+            last_checksum: { type: "dateTime", example: "2025-01-31T15:10:45.080Z" },
+            checksum_state: { type: "string", example: 'pending' },
+            checksum_retry_count: { type: "integer", example: 100 },
+            checksum_retry_at: { type: "dateTime", example: "2025-01-31T15:10:45.080Z" },
+            checksum_failure: { type: "string", example: 'failed' }
+          } },
+          if: ->(model) { verification_enabled?(model) } do
+          expose :verification_checksum, as: :checksum
+          expose :verified_at, as: :last_checksum
+          expose :verification_state, as: :checksum_state
+          expose :verification_retry_count, as: :checksum_retry_count
+          expose :verification_retry_at, as: :checksum_retry_at
+          expose :verification_failure, as: :checksum_failure
+        end
+
+        private
+
+        def verification_enabled?(model)
+          return false unless ::Gitlab::Geo.enabled?
+          return false unless model.respond_to?(:replicator)
+
+          model.replicator.class.verification_enabled?
+        end
+      end
+    end
+  end
+end
