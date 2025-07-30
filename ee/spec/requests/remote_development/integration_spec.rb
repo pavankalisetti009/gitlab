@@ -35,11 +35,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:common_parent_namespace_name) { "common-parent-group" }
   let(:common_parent_namespace) { create(:group, name: common_parent_namespace_name, owners: agent_admin_user) }
   let(:common_organization) { common_parent_namespace.organization }
-  let(:organization_user) do
-    create(:user).tap do |u|
-      create(:organization_user, organization: common_organization, user: u)
-    end
-  end
+  let(:organization_user) { create(:user, organization: common_organization) }
 
   let(:agent_project_namespace) do
     create(:group, name: "agent-project-group", parent: common_parent_namespace)

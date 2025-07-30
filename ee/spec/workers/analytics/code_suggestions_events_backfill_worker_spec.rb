@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::CodeSuggestionsEventsBackfillWorker, feature_category: :value_stream_management do
-  let_it_be(:user) { create(:user, :with_organization) }
+  let_it_be(:user) { create(:user) }
 
   it_behaves_like 'common ai usage backfill worker', Ai::CodeSuggestionEvent do
     let!(:pg_events) do
