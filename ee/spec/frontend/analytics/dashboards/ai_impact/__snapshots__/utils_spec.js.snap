@@ -496,6 +496,31 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
     "change": {
       "value": -0.15730337078651688,
     },
+    "chart": {
+      "data": [
+        [
+          "Oct 1 – 31",
+          8.9,
+        ],
+        [
+          "Nov 1 – 30",
+          5.6,
+        ],
+        [
+          "Dec 1 – 31",
+          0,
+        ],
+        [
+          "Jan 1 – 31",
+          0,
+        ],
+        [
+          "Feb 1 – 29",
+          7.5,
+        ],
+      ],
+      "tooltipLabel": "%",
+    },
     "this-month": {
       "tooltip": undefined,
       "value": "4.0%",
@@ -526,6 +551,31 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
       "tooltip": "Value can't be calculated due to division by zero.",
       "value": "n/a",
     },
+    "chart": {
+      "data": [
+        [
+          "Oct 1 – 31",
+          0,
+        ],
+        [
+          "Nov 1 – 30",
+          100,
+        ],
+        [
+          "Dec 1 – 31",
+          20,
+        ],
+        [
+          "Jan 1 – 31",
+          90.9,
+        ],
+        [
+          "Feb 1 – 29",
+          50,
+        ],
+      ],
+      "tooltipLabel": "%",
+    },
     "this-month": {
       "tooltip": "8/9",
       "value": "88.9%",
@@ -555,6 +605,31 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
     "change": {
       "tooltip": "Value can't be calculated due to insufficient data.",
       "value": "n/a",
+    },
+    "chart": {
+      "data": [
+        [
+          "Oct 1 – 31",
+          10,
+        ],
+        [
+          "Nov 1 – 30",
+          15,
+        ],
+        [
+          "Dec 1 – 31",
+          0,
+        ],
+        [
+          "Jan 1 – 31",
+          30,
+        ],
+        [
+          "Feb 1 – 29",
+          null,
+        ],
+      ],
+      "tooltipLabel": "/day",
     },
     "this-month": {
       "tooltip": undefined,
