@@ -33,10 +33,10 @@ export default {
         };
       },
       update(data) {
-        return data?.duoWorkflowWorkflows?.edges?.map((w) => w.node) || [];
+        return data?.project?.duoWorkflowWorkflows?.edges?.map((w) => w.node) || [];
       },
       result({ data }) {
-        this.workflowsPageInfo = data?.duoWorkflowWorkflows?.pageInfo || {};
+        this.workflowsPageInfo = data?.project?.duoWorkflowWorkflows?.pageInfo || {};
       },
       error(error) {
         createAlert({

@@ -96,9 +96,8 @@ describe('AgentsPlatformIndex', () => {
         });
 
         it('passes workflows to AgentFlowList component', () => {
-          const expectedWorkflows = mockAgentFlowsResponse.data.duoWorkflowWorkflows.edges.map(
-            (w) => w.node,
-          );
+          const expectedWorkflows =
+            mockAgentFlowsResponse.data.project.duoWorkflowWorkflows.edges.map((w) => w.node);
 
           expect(findWorkflowsList().props('workflows')).toEqual(expectedWorkflows);
         });
@@ -128,13 +127,16 @@ describe('AgentsPlatformIndex', () => {
         beforeEach(async () => {
           getAgentFlowsHandler.mockResolvedValue({
             data: {
-              duoWorkflowWorkflows: {
-                edges: [],
-                pageInfo: {
-                  startCursor: null,
-                  endCursor: null,
-                  hasNextPage: false,
-                  hasPreviousPage: false,
+              project: {
+                id: 'gid://gitlab/Project/1',
+                duoWorkflowWorkflows: {
+                  edges: [],
+                  pageInfo: {
+                    startCursor: null,
+                    endCursor: null,
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                  },
                 },
               },
             },
@@ -160,14 +162,17 @@ describe('AgentsPlatformIndex', () => {
         beforeEach(async () => {
           getAgentFlowsHandler.mockResolvedValue({
             data: {
-              duoWorkflowWorkflows: {
-                pageInfo: {
-                  startCursor: null,
-                  endCursor: null,
-                  hasNextPage: false,
-                  hasPreviousPage: false,
+              project: {
+                id: 'gid://gitlab/Project/1',
+                duoWorkflowWorkflows: {
+                  pageInfo: {
+                    startCursor: null,
+                    endCursor: null,
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                  },
+                  edges: [],
                 },
-                edges: [],
               },
             },
           });
@@ -233,14 +238,17 @@ describe('AgentsPlatformIndex', () => {
 
           const secondPageResponse = {
             data: {
-              duoWorkflowWorkflows: {
-                pageInfo: {
-                  startCursor: 'start2',
-                  endCursor: 'end2',
-                  hasNextPage: false,
-                  hasPreviousPage: true,
+              project: {
+                id: 'gid://gitlab/Project/1',
+                duoWorkflowWorkflows: {
+                  pageInfo: {
+                    startCursor: 'start2',
+                    endCursor: 'end2',
+                    hasNextPage: false,
+                    hasPreviousPage: true,
+                  },
+                  edges: secondPageWorkflowEdges,
                 },
-                edges: secondPageWorkflowEdges,
               },
             },
           };
@@ -255,9 +263,8 @@ describe('AgentsPlatformIndex', () => {
           await createWrapper();
 
           // Assert initial data is passed as props
-          const initialWorkflows = mockAgentFlowsResponse.data.duoWorkflowWorkflows.edges.map(
-            (w) => w.node,
-          );
+          const initialWorkflows =
+            mockAgentFlowsResponse.data.project.duoWorkflowWorkflows.edges.map((w) => w.node);
           expect(findWorkflowsList().props('workflows')).toEqual(initialWorkflows);
 
           // Emit the next-page event
