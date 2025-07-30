@@ -23,7 +23,7 @@ describe('AiCatalogNavTabs', () => {
 
   const findButton = () => wrapper.findComponent(GlButton);
 
-  describe('When on the agents list route', () => {
+  describe('when on the agents route', () => {
     beforeEach(() => {
       createComponent();
     });
@@ -37,7 +37,7 @@ describe('AiCatalogNavTabs', () => {
     });
   });
 
-  describe('When not on the agents list route', () => {
+  describe('when on flows route', () => {
     beforeEach(() => {
       createComponent({ routePath: AI_CATALOG_FLOWS_ROUTE });
     });

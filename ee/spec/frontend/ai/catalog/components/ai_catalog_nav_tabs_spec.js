@@ -37,10 +37,11 @@ describe('AiCatalogNavTabs', () => {
     expect(findAllTabs()).toHaveLength(2);
   });
 
-  it('renders the Agents tab', () => {
+  it('renders the Agents tab as active', () => {
     const agentsTab = findAllTabs().at(0);
 
     expect(agentsTab.attributes('title')).toBe('Agents');
+    expect(agentsTab.attributes('active')).toBe('true');
   });
 
   it('renders the Flows tab', () => {

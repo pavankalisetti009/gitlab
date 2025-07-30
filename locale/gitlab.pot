@@ -2428,6 +2428,9 @@ msgstr ""
 msgid "AICatalog|Agent deleted successfully."
 msgstr ""
 
+msgid "AICatalog|Agent not found."
+msgstr ""
+
 msgid "AICatalog|Agent updated successfully."
 msgstr ""
 
@@ -5975,9 +5978,6 @@ msgid "AiAgents|Create your own AI Agents"
 msgstr ""
 
 msgid "AiAnalytics|the ClickHouse data store is not available"
-msgstr ""
-
-msgid "AiCatalog|Agent not found."
 msgstr ""
 
 msgid "AiImpactAnalytics|Assigned Duo seat engagement"

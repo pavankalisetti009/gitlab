@@ -14,7 +14,7 @@ export default {
         {
           text: s__('AICatalog|Agents'),
           route: AI_CATALOG_AGENTS_ROUTE,
-          active: this.$route.path.startsWith(AI_CATALOG_AGENTS_ROUTE),
+          active: !this.$route.path.startsWith(AI_CATALOG_FLOWS_ROUTE),
         },
         {
           text: s__('AICatalog|Flows'),
