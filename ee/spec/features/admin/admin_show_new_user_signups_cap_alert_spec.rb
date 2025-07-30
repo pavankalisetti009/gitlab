@@ -12,6 +12,7 @@ RSpec.describe 'displays new user signups cap alert', :js, feature_category: :ac
     before do
       allow(User).to receive(:billable).and_return((0..9))
       stub_application_setting(new_user_signups_cap: 9)
+      stub_feature_flags(hide_incident_management_features: false)
       stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_USER_CAP)
 
       gitlab_sign_in(admin)
