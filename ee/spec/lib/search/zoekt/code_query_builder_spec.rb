@@ -18,7 +18,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
   end
 
   describe 'project search' do
-    let(:extracted_result_path) { 'search_project.json' }
+    let(:extracted_result_path) { 'search_project_meta_project_id.json' }
 
     let(:options) do
       {
@@ -32,10 +32,22 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
     it 'builds the correct object' do
       expect(result).to eq(expected_extracted_result)
     end
+
+    context 'when zoekt_search_meta_project_ids is disabled' do
+      let(:extracted_result_path) { 'search_project.json' }
+
+      before do
+        stub_feature_flags(zoekt_search_meta_project_ids: false)
+      end
+
+      it 'builds the correct object' do
+        expect(result).to eq(expected_extracted_result)
+      end
+    end
   end
 
   describe 'group search' do
-    let(:extracted_result_path) { 'search_group_user_access.json' }
+    let(:extracted_result_path) { 'search_group_meta_project_id.json' }
     let(:group) { create(:group) }
 
     let(:options) do
@@ -63,10 +75,22 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
     it 'builds the correct object' do
       expect(result).to eq(expected_extracted_result)
     end
+
+    context 'when zoekt_search_meta_project_ids is disabled' do
+      let(:extracted_result_path) { 'search_group_user_access.json' }
+
+      before do
+        stub_feature_flags(zoekt_search_meta_project_ids: false)
+      end
+
+      it 'builds the correct object' do
+        expect(result).to eq(expected_extracted_result)
+      end
+    end
   end
 
   describe 'global search' do
-    let(:extracted_result_path) { 'search_global.json' }
+    let(:extracted_result_path) { 'search_global_meta_project_id.json' }
     let(:group) { create(:group) }
 
     let(:options) do
@@ -93,6 +117,18 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
 
     it 'builds the correct object' do
       expect(result).to eq(expected_extracted_result)
+    end
+
+    context 'when zoekt_search_meta_project_ids is disabled' do
+      let(:extracted_result_path) { 'search_global.json' }
+
+      before do
+        stub_feature_flags(zoekt_search_meta_project_ids: false)
+      end
+
+      it 'builds the correct object' do
+        expect(result).to eq(expected_extracted_result)
+      end
     end
   end
 end
