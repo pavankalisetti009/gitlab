@@ -116,6 +116,20 @@ export default {
       // only attributes are used by the filtered_search component, so only those needs processing
       return prepareTokens(this.filters.attributes);
     },
+    isHistogram() {
+      return isHistogram(this.metricType);
+    },
+    sharedChartProps() {
+      return {
+        ref: 'chartComponent',
+        'chart-interactive': this.shouldShowRelatedTraces,
+        'metric-data': this.metricData,
+        'data-testid': 'metric-chart',
+        loading: this.loading,
+        cancelled: this.queryCancelled,
+        class: 'gl-mb-5',
+      };
+    },
     query() {
       return filterObjToQuery(this.filters);
     },
@@ -227,9 +241,6 @@ export default {
         variant: 'danger',
       });
       this.queryCancelled = true;
-    },
-    getChartComponent() {
-      return isHistogram(this.metricType) ? MetricsHeatMap : MetricsLineChart;
     },
     onChartSelected(datapoints) {
       this.selectedDatapoints = datapoints;
@@ -346,17 +357,12 @@ export default {
           />
 
           <div v-if="metricData && metricData.length">
-            <component
-              :is="getChartComponent()"
-              ref="chartComponent"
-              :chart-interactive="shouldShowRelatedTraces"
-              :metric-data="metricData"
-              :loading="loading"
-              :cancelled="queryCancelled"
-              data-testid="metric-chart"
-              class="gl-mb-5"
+            <metrics-heat-map
+              v-if="isHistogram"
+              v-bind="sharedChartProps"
               @selected="onChartSelected"
             />
+            <metrics-line-chart v-else v-bind="sharedChartProps" @selected="onChartSelected" />
 
             <related-traces
               v-if="shouldShowRelatedTraces"
