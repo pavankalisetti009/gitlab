@@ -160,6 +160,30 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
     end
   end
 
+  describe '#prompt_version' do
+    let(:completion_instance) { described_class.new(prompt_message, template_class, ai_options) }
+
+    context 'when Amazon Q is enabled' do
+      before do
+        allow(Ai::AmazonQ).to receive(:enabled?).and_return(true)
+      end
+
+      it 'returns the Amazon Q prompt version' do
+        expect(completion_instance.prompt_version).to eq('amazon_q/1.0.0')
+      end
+    end
+
+    context 'when Amazon Q is not enabled' do
+      before do
+        allow(Ai::AmazonQ).to receive(:enabled?).and_return(false)
+      end
+
+      it 'returns the default prompt version' do
+        expect(completion_instance.prompt_version).to eq('1.2.0')
+      end
+    end
+  end
+
   describe '#root_namespace' do
     let(:completion_instance) { described_class.new(prompt_message, template_class, ai_options) }
 

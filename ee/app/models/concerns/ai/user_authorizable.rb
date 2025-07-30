@@ -14,7 +14,7 @@ module Ai
     # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
     DUO_ADD_ONS_CACHE_KEY = 'user-%{user_id}-duo-add-ons-cache'
     AMAZON_Q_FEATURES = [:duo_chat, :code_suggestions, :troubleshoot_job, :explain_vulnerability,
-      :resolve_vulnerability, :summarize_comments, :review_merge_request].freeze
+      :resolve_vulnerability, :summarize_comments, :review_merge_request, :generate_commit_message].freeze
 
     Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, :authorized_by_duo_core, keyword_init: true)
 

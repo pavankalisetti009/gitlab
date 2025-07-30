@@ -411,6 +411,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       true  | :explain_vulnerability | 'duo_amazon_q'
       true  | :resolve_vulnerability | 'duo_amazon_q'
       true  | :summarize_comments | 'duo_amazon_q'
+      true  | :generate_commit_message | 'duo_amazon_q'
     end
 
     with_them do
