@@ -7,7 +7,8 @@ import projectIterationsQuery from 'ee/work_items/graphql/project_iterations.que
 import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { STATUS_OPEN } from '~/issues/constants';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
+import { BULK_EDIT_NO_VALUE } from '~/work_items/constants';
 
 export default {
   name: 'WorkItemBulkEditIteration',
@@ -78,6 +79,17 @@ export default {
       return this.$apollo.queries.iterations.loading;
     },
     listboxItems() {
+      if (!this.searchTerm.trim().length) {
+        return [
+          {
+            text: s__('WorkItem|No iteration'),
+            textSrOnly: true,
+            options: [{ text: s__('WorkItem|No iteration'), value: BULK_EDIT_NO_VALUE }],
+          },
+          ...groupOptionsByIterationCadences(this.iterations),
+        ];
+      }
+
       return groupOptionsByIterationCadences(this.iterations);
     },
     selectedIteration() {
@@ -86,6 +98,9 @@ export default {
     toggleText() {
       if (this.selectedIteration) {
         return getIterationPeriod(this.selectedIteration);
+      }
+      if (this.selectedId === BULK_EDIT_NO_VALUE) {
+        return s__('WorkItem|No iteration');
       }
       return __('Select iteration');
     },
