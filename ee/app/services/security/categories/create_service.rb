@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+
+module Security
+  module Categories
+    class CreateService < BaseService
+      def initialize(namespace:, params:, current_user:)
+        @root_namespace = namespace&.root_ancestor
+        @params = params
+        @current_user = current_user
+        @category = Security::Category.new
+      end
+
+      def execute
+        return ServiceResponse.error(message: 'Not permitted to create security category') unless permitted?
+
+        return error if CreatePredefinedService.new(namespace: root_namespace, current_user: current_user)
+          .execute.error?
+
+        category.assign_attributes(
+          namespace: root_namespace,
+          name: params[:name],
+          description: params[:description],
+          editable_state: params[:editable_state] || :editable,
+          template_type: params[:template_type],
+          multiple_selection: params[:multiple_selection] || false
+        )
+        return error unless category.save
+
+        success
+      end
+
+      attr_reader :root_namespace, :params, :current_user, :category
+
+      private
+
+      def permitted?
+        current_user.can?(:admin_security_attributes, root_namespace)
+      end
+
+      def success
+        ServiceResponse.success(payload: { category: category })
+      end
+
+      def error
+        ServiceResponse.error(message: _('Failed to create security category'), payload: category.errors)
+      end
+    end
+  end
+end

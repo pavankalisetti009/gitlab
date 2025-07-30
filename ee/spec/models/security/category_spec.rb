@@ -39,6 +39,54 @@ RSpec.describe Security::Category, feature_category: :security_asset_inventories
         end
       end
     end
+
+    describe '#strip_whitespaces' do
+      it 'strips whitespace from name and description' do
+        category = build(:security_category, namespace: root_level_group, name: "  Category with whitespace  ",
+          description: "  Description with whitespace  ")
+
+        category.valid?
+
+        expect(category.name).to eq("Category with whitespace")
+        expect(category.description).to eq("Description with whitespace")
+      end
+    end
+
+    describe '#attributes_limit' do
+      let(:category) { create(:security_category, namespace: root_level_group) }
+
+      it 'allows up to MAX_ATTRIBUTES security attributes' do
+        create_list(:security_attribute, Security::Category::MAX_ATTRIBUTES - 1, security_category: category,
+          namespace: root_level_group)
+
+        category.security_attributes <<
+          build(:security_attribute, security_category: category, namespace: root_level_group, name: "added 50")
+        expect(category).to be_valid
+      end
+
+      it 'prevents having more than MAX_ATTRIBUTES security attributes' do
+        create_list(:security_attribute, Security::Category::MAX_ATTRIBUTES, security_category: category,
+          namespace: root_level_group)
+
+        category.security_attributes <<
+          build(:security_attribute, security_category: category, namespace: root_level_group, name: "added 51")
+
+        expect(category).not_to be_valid
+        expect(category.errors[:security_attributes]).to include('cannot have more than 50 attributes per category')
+      end
+    end
+  end
+
+  describe 'scopes' do
+    describe '.by_namespace' do
+      let(:another_root_level_group) { create(:group) }
+      let(:category) { create(:security_category, namespace: root_level_group) }
+      let(:another_category) { create(:security_category, namespace: another_root_level_group) }
+
+      it 'returns the correct categories' do
+        expect(described_class.by_namespace(root_level_group)).to match_array([category])
+      end
+    end
   end
 
   context 'with loose foreign key on security_category.namespace_id' do
