@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_management do
   before do
+    stub_feature_flags(work_item_view_for_issues: true)
     stub_licensed_features(board_milestone_lists: true)
   end
 
@@ -41,12 +42,10 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
       it 'successfully assigns weight to newly-created issue' do
         create_issue_in_board_list(0)
 
-        within_testid('issue-boards-sidebar') do
-          find('.weight [data-testid="edit-button"]').click
-          find('.weight .form-control').set("10\n")
+        within_testid('work-item-weight') do
+          click_button 'Edit'
+          send_keys 10, :enter
         end
-
-        wait_for_requests
 
         page.within(first('.board-card')) do
           expect(find('.board-card-weight .board-card-info-text').text).to eq("10")
@@ -57,10 +56,8 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
         it 'successfully loads milestone to be added to newly created issue' do
           create_issue_in_board_list(1)
 
-          within_testid('sidebar-milestones') do
+          within_testid('work-item-milestone') do
             click_button 'Edit'
-
-            wait_for_requests
 
             expect(page).to have_content 'Milestone 1'
           end
@@ -71,7 +68,7 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
         it 'successfully loads iteration to be added to newly created issue' do
           create_issue_in_board_list(2)
 
-          within_testid('select-iteration') do
+          within_testid('work-item-iteration') do
             expect(page).to have_content 'Test iteration'
           end
         end
@@ -89,7 +86,7 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
 
           expect { create_issue_in_board_list(0) }.to change { Issue.count }.by(1)
 
-          within_testid('iteration-edit') do
+          within_testid('work-item-iteration') do
             expect(page).to have_content iteration.title
           end
 
