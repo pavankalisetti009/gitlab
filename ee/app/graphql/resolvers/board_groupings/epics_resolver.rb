@@ -21,21 +21,9 @@ module Resolvers
 
         issue_params = item_filters(args[:issue_filters])
 
-        if empty_issue_params?(issue_params) && Feature.enabled?(:board_grouped_by_epic_performance, group)
-          # The service outputs an optimized query in which `ORDER` clause must appear nested inside a CTE.
-          # To prevent the keyset pagination connection from appending unnecessary `ORDER` clause that
-          # could make the query very slow, we are using the offset pagination connection.
-          # However, this query is only more performant when there are no issue filters as it would
-          # take a longer time to find matching epics.
-          offset_pagination(
-            ::Epics::WithIssuesFinder.new(
-              accessible_epics: accessible_epics,
-              accessible_issues: accessible_issues(issue_params)
-            ).execute
-          )
-        else
-          Epic.id_in(board_epic_ids(issue_params))
-        end
+        # The feature flag board_grouped_by_epic_performance has been removed
+        # and the optimized path is no longer available
+        Epic.id_in(board_epic_ids(issue_params))
       end
 
       private
