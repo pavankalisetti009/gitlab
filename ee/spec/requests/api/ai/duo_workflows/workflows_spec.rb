@@ -652,21 +652,16 @@ expires_at: duo_workflow_service_token_expires_at })
       end
 
       context 'when agent_platform_model_selection feature flag is enabled' do
-        let(:duo_agent_platform_setting) do
-          instance_double('Ai::FeatureSetting').tap do |setting|
-            allow(setting).to receive(:model_metadata_params).and_return({
-              provider: 'gitlab',
-              name: 'claude-3-sonnet',
-              identifier: 'claude-3-7-sonnet-20250219'
-            })
-          end
+        let_it_be(:self_hosted_model) do
+          create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+        end
+
+        let_it_be_with_refind(:duo_agent_platform_setting) do
+          create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: self_hosted_model)
         end
 
         before do
           stub_feature_flags(agent_platform_model_selection: true)
-          allow(::Ai::FeatureSetting).to receive(:find_or_initialize_by_feature)
-            .with(:duo_agent_platform)
-            .and_return(duo_agent_platform_setting)
         end
 
         it 'includes model metadata headers in the response' do
@@ -681,20 +676,17 @@ expires_at: duo_workflow_service_token_expires_at })
             'x-gitlab-self-hosted-models-metadata' => be_a(String)
           )
 
-          # Verify the JSON content of the metadata header
           metadata = ::Gitlab::Json.parse(headers['x-gitlab-self-hosted-models-metadata'])
           expect(metadata).to include(
-            'provider' => 'gitlab',
-            'name' => 'claude-3-sonnet',
-            'identifier' => 'claude-3-7-sonnet-20250219'
+            'provider' => 'openai',
+            'name' => 'claude_3',
+            'identifier' => self_hosted_model.identifier,
+            'api_key' => self_hosted_model.api_token,
+            'endpoint' => self_hosted_model.endpoint
           )
         end
 
         it 'creates ModelMetadata with the correct feature setting' do
-          expect(::Ai::FeatureSetting).to receive(:find_or_initialize_by_feature)
-            .with(:duo_agent_platform)
-            .and_return(duo_agent_platform_setting)
-
           expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).to receive(:new)
             .with(feature_setting: duo_agent_platform_setting)
             .and_call_original
@@ -703,13 +695,9 @@ expires_at: duo_workflow_service_token_expires_at })
         end
 
         context 'when ModelMetadata returns nil' do
-          let(:duo_agent_platform_setting) do
-            instance_double('Ai::FeatureSetting').tap do |setting|
-              allow(setting).to receive(:model_metadata_params).and_return(nil)
-            end
-          end
-
           it 'does not include model metadata headers' do
+            duo_agent_platform_setting.destroy!
+
             get api(path, user), headers: workhorse_headers
 
             expect(response).to have_gitlab_http_status(:ok)
@@ -723,14 +711,10 @@ expires_at: duo_workflow_service_token_expires_at })
           end
         end
 
-        context 'when ModelMetadata returns empty hash' do
-          let(:duo_agent_platform_setting) do
-            instance_double('Ai::FeatureSetting').tap do |setting|
-              allow(setting).to receive(:model_metadata_params).and_return({})
-            end
-          end
+        context 'when feature setting is disabled' do
+          it 'does not include model metadata headers when provider is disabled' do
+            duo_agent_platform_setting.update!(provider: :disabled)
 
-          it 'merges empty hash without adding extra headers' do
             get api(path, user), headers: workhorse_headers
 
             expect(response).to have_gitlab_http_status(:ok)
@@ -751,7 +735,7 @@ expires_at: duo_workflow_service_token_expires_at })
         end
 
         it 'does not include model metadata headers' do
-          expect(::Ai::FeatureSetting).not_to receive(:find_or_initialize_by_feature)
+          expect(::Ai::FeatureSetting).not_to receive(:find_by_feature)
           expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).not_to receive(:new)
 
           get api(path, user), headers: workhorse_headers
