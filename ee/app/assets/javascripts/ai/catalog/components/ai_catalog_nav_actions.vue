@@ -1,6 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import { AI_CATALOG_AGENTS_NEW_ROUTE, AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
+import { AI_CATALOG_AGENTS_NEW_ROUTE, AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 
 export default {
   name: 'AiCatalogNavActions',
@@ -9,7 +9,7 @@ export default {
   },
   computed: {
     shouldDisplayButton() {
-      return this.$route.path === AI_CATALOG_AGENTS_ROUTE;
+      return this.$route.path !== AI_CATALOG_FLOWS_ROUTE;
     },
   },
   newAgentRoute: AI_CATALOG_AGENTS_NEW_ROUTE,

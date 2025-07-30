@@ -55,7 +55,7 @@ export default {
 
     <gl-empty-state
       v-else-if="agentNotFound"
-      :title="s__('AiCatalog|Agent not found.')"
+      :title="s__('AICatalog|Agent not found.')"
       :svg-path="$options.emptySearchSvg"
     />
 
