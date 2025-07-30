@@ -41806,6 +41806,9 @@ msgstr ""
 msgid "No data found for this query."
 msgstr ""
 
+msgid "No default Duo group found. Select a default Duo group in your user preferences and try again."
+msgstr ""
+
 msgid "No deployments found"
 msgstr ""
 

@@ -184,6 +184,38 @@ RSpec.describe UserPreference do
     end
   end
 
+  describe 'no_eligible_duo_add_on_assignments?', :saas do
+    context 'when there are multiple eligible duo add-on assignments' do
+      include_context 'with multiple user add-on assignments'
+
+      it 'returns false' do
+        expect(user_preference.no_eligible_duo_add_on_assignments?).to be_falsey
+      end
+    end
+
+    context 'when there is one eligible duo add-on assignment' do
+      let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
+
+      let_it_be(:add_on) do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
+      end
+
+      let!(:user_assignments) do
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
+      end
+
+      it 'returns false' do
+        expect(user_preference.no_eligible_duo_add_on_assignments?).to be_falsey
+      end
+    end
+
+    context 'when there are no eligible duo add-on assignments' do
+      it 'returns true' do
+        expect(user_preference.no_eligible_duo_add_on_assignments?).to be_truthy
+      end
+    end
+  end
+
   describe '#get_default_duo_namespace', :saas do
     context 'when there are multiple eligible duo add-on assignments' do
       include_context 'with multiple user add-on assignments'

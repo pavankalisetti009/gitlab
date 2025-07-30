@@ -37,6 +37,10 @@ module EE
           "No Duo seat assignments with namespace found with ID #{default_duo_add_on_assignment_id}")
       end
 
+      def no_eligible_duo_add_on_assignments?
+        eligible_duo_add_on_assignments.none?
+      end
+
       def get_default_duo_namespace
         return default_duo_add_on_assignment.add_on_purchase.namespace if default_duo_add_on_assignment.present?
 
