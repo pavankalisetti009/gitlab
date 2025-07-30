@@ -8,8 +8,7 @@ RSpec.describe 'getting organization information', feature_category: :organizati
   let(:query) { graphql_query_for(:organization, { id: organization.to_global_id }, organization_fields) }
 
   let_it_be(:organization) { create(:organization) }
-  let_it_be(:current_user) { create(:user, organization: organization) }
-  let_it_be(:organization_owner) { create(:organization_owner, user: current_user, organization: organization) }
+  let_it_be(:current_user) { create(:user, owner_of: organization) }
   let_it_be(:group) { create(:group, organization: organization, developers: current_user) }
   let_it_be(:project) { create(:project, group: group, organization: organization, developers: current_user) }
 
