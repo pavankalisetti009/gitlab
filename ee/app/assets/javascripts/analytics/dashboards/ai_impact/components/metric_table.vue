@@ -34,15 +34,12 @@ import {
   SUPPORTED_FLOW_METRICS,
   DASHBOARD_LOADING_FAILURE,
   RESTRICTED_METRIC_ERROR,
-  CHART_LOADING_FAILURE,
   CHART_GRADIENT,
   CHART_GRADIENT_INVERTED,
 } from '../../constants';
 import {
   mergeTableData,
   generateValueStreamDashboardStartDate,
-  generateChartTimePeriods,
-  generateSparklineCharts,
   getRestrictedTableMetrics,
   formatMetric,
 } from '../../utils';
@@ -56,7 +53,6 @@ import {
 import {
   SUPPORTED_AI_METRICS,
   HIDE_METRIC_DRILL_DOWN,
-  AI_IMPACT_TABLE_METRICS,
   AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS,
 } from '../constants';
 import {
@@ -112,9 +108,6 @@ export default {
     dashboardTimePeriods() {
       return generateDateRanges(this.dashboardStartDate);
     },
-    chartTimePeriods() {
-      return generateChartTimePeriods(this.dashboardStartDate);
-    },
     dashboardTableFields() {
       return generateTableColumns(this.dashboardStartDate);
     },
@@ -150,13 +143,9 @@ export default {
   },
   async mounted() {
     const failedTableMetrics = await this.resolveQueries(this.fetchTableMetrics);
-    const failedChartMetrics = await this.resolveQueries(this.fetchSparklineCharts);
 
     const alerts = generateTableAlerts([[RESTRICTED_METRIC_ERROR, this.restrictedMetrics]]);
-    const warnings = generateTableAlerts([
-      [DASHBOARD_LOADING_FAILURE, failedTableMetrics],
-      [CHART_LOADING_FAILURE, failedChartMetrics],
-    ]);
+    const warnings = generateTableAlerts([[DASHBOARD_LOADING_FAILURE, failedTableMetrics]]);
 
     if (alerts.length > 0 || warnings.length > 0) {
       this.$emit('set-alerts', { alerts, warnings, canRetry: warnings.length > 0 });
@@ -207,18 +196,6 @@ export default {
       try {
         const data = await fetchMetricsForTimePeriods(this.dashboardTimePeriods, queryFn);
         this.tableData = mergeTableData(this.tableData, generateTableRows(data));
-      } catch (error) {
-        throw metrics;
-      }
-    },
-
-    async fetchSparklineCharts({ metrics, queryFn }) {
-      try {
-        const data = await fetchMetricsForTimePeriods(this.chartTimePeriods, queryFn);
-        this.tableData = mergeTableData(
-          this.tableData,
-          generateSparklineCharts(data, AI_IMPACT_TABLE_METRICS),
-        );
       } catch (error) {
         throw metrics;
       }

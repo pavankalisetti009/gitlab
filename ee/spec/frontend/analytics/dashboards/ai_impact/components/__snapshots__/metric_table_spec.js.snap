@@ -16,28 +16,24 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       20,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       40,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       60,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       20,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       40,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      60,
     ],
   ],
   "gradient": [
@@ -67,28 +63,24 @@ exports[`Metric table for the code_suggestions_acceptance_rate table row when th
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       20,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       42.9,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       66.7,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       50,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       17.6,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      33.3,
     ],
   ],
   "gradient": [
@@ -129,28 +121,24 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       5,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       10,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       25,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       5,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       10,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      25,
     ],
   ],
   "gradient": [
@@ -180,27 +168,23 @@ exports[`Metric table for the contributor_count table row when the data is loade
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       4,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       4,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       4,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       4,
     ],
     [
-      "Oct 31 - Dec 1",
-      4,
-    ],
-    [
-      "Dec 1 - Dec 31",
+      "Nov 1 – 30",
       4,
     ],
   ],
@@ -231,28 +215,24 @@ exports[`Metric table for the cycle_time table row when the data is loaded rende
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       1,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       2,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       4,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       1,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       2,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      4,
     ],
   ],
   "gradient": [
@@ -282,28 +262,24 @@ exports[`Metric table for the deployment_frequency table row when the data is lo
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       10,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       20,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       40,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       10,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       20,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      40,
     ],
   ],
   "gradient": [
@@ -333,28 +309,24 @@ exports[`Metric table for the deploys table row when the data is loaded renders 
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       5,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       10,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       20,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       5,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       10,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      20,
     ],
   ],
   "gradient": [
@@ -384,28 +356,24 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       20,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       42.9,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       66.7,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       50,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       17.6,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      33.3,
     ],
   ],
   "gradient": [
@@ -446,28 +414,24 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       33.3,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       85.7,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       73.3,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       66.7,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       41.2,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      50,
     ],
   ],
   "gradient": [
@@ -497,28 +461,24 @@ exports[`Metric table for the issues table row when the data is loaded renders t
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       1,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       2,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       4,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       1,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       2,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      4,
     ],
   ],
   "gradient": [
@@ -548,28 +508,24 @@ exports[`Metric table for the issues_completed table row when the data is loaded
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       5,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       10,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       20,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       5,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       10,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      20,
     ],
   ],
   "gradient": [
@@ -599,28 +555,24 @@ exports[`Metric table for the lead_time table row when the data is loaded render
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       1,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       2,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       4,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       1,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       2,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      4,
     ],
   ],
   "gradient": [
@@ -650,28 +602,24 @@ exports[`Metric table for the lead_time_for_changes table row when the data is l
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       1.2,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       2.3,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       4.6,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       1.2,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       2.3,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      4.6,
     ],
   ],
   "gradient": [
@@ -701,28 +649,24 @@ exports[`Metric table for the median_time_to_merge table row when the data is lo
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       0.1,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       0.2,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       0.3,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       0.3,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       0.2,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      0.1,
     ],
   ],
   "gradient": [
@@ -752,27 +696,23 @@ exports[`Metric table for the merge_request_throughput table row when the data i
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       10,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       10,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       10,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       10,
     ],
     [
-      "Oct 31 - Dec 1",
-      10,
-    ],
-    [
-      "Dec 1 - Dec 31",
+      "Nov 1 – 30",
       10,
     ],
   ],
@@ -803,28 +743,24 @@ exports[`Metric table for the time_to_restore_service table row when the data is
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       1.2,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       2.3,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       4.6,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       1.2,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       2.3,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      4.6,
     ],
   ],
   "gradient": [
@@ -854,28 +790,24 @@ exports[`Metric table for the vulnerability_critical table row when the data is 
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       40,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       20,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       10,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       40,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       20,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      10,
     ],
   ],
   "gradient": [
@@ -905,28 +837,24 @@ exports[`Metric table for the vulnerability_high table row when the data is load
   "connectNulls": true,
   "data": [
     [
-      "Jul 1 - Jul 31",
+      "Jul 1 – 31",
       40,
     ],
     [
-      "Jul 31 - Aug 31",
+      "Aug 1 – 31",
       20,
     ],
     [
-      "Aug 31 - Oct 1",
+      "Sep 1 – 30",
       10,
     ],
     [
-      "Oct 1 - Oct 31",
+      "Oct 1 – 31",
       40,
     ],
     [
-      "Oct 31 - Dec 1",
+      "Nov 1 – 30",
       20,
-    ],
-    [
-      "Dec 1 - Dec 31",
-      10,
     ],
   ],
   "gradient": [
