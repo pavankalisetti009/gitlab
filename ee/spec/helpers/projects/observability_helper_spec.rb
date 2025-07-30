@@ -43,7 +43,6 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
         projectFullPath: project.full_path,
         projectId: project.id,
         traceId: "trace-id",
-        tracingIndexUrl: namespace_project_tracing_index_path(project.group, project),
         logsIndexUrl: namespace_project_logs_path(project.group, project),
         createIssueUrl: new_namespace_project_issue_path(project.group, project),
         metricsIndexUrl: namespace_project_metrics_path(project.group, project)
