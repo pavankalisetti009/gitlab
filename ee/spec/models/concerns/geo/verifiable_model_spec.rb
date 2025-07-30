@@ -80,4 +80,17 @@ RSpec.describe Geo::VerifiableModel, feature_category: :geo_replication do
       end
     end
   end
+
+  context 'when using the with_state_details scope' do
+    where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
+    with_them do
+      let(:factory) { factory_name(model_classes) }
+
+      it 'prevents n+1 queries' do
+        create_list(factory, 4)
+
+        expect { model_classes.with_state_details.all.map(&:verification_state) }.not_to exceed_query_limit(2)
+      end
+    end
+  end
 end
