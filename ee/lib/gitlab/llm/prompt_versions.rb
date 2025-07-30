@@ -116,6 +116,7 @@ module Gitlab
           "code_suggestions/generations/mistral": "^1.0.0",
           "code_suggestions/generations/mixtral": "^1.0.0",
           "generate_commit_message/base": "^1.0.0",
+          "generate_commit_message/amazon_q": "^1.0.0",
           "generate_description/base": "^1.0.0",
           "generate_description/claude_3": "^1.0.0",
           "glab_ask_git_command/base": "^1.0.0",
