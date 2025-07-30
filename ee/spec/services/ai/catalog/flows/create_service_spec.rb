@@ -28,6 +28,11 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       it 'does not create a flow' do
         expect { response }.not_to change { Ai::Catalog::Item.count }
       end
+
+      it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { response }
+          .not_to trigger_internal_events('create_ai_catalog_item')
+      end
     end
 
     it 'returns a success response with item in payload' do
@@ -54,6 +59,16 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
           triggers: []
         }.stringify_keys
       )
+    end
+
+    it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+      expect { response }
+       .to trigger_internal_events('create_ai_catalog_item')
+       .with(user: user, project: project, additional_properties: { label: 'flow' })
+       .and increment_usage_metrics(
+         'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_weekly',
+         'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly'
+       )
     end
 
     context 'when there is a validation issue' do
