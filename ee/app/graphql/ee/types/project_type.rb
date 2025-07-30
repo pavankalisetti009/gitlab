@@ -361,7 +361,8 @@ module EE
         field :duo_context_exclusion_settings, ::Types::Projects::DuoContextExclusionSettingsType,
           null: true,
           description: 'Settings for excluding files from Duo context.',
-          experiment: { milestone: '18.2' }
+          experiment: { milestone: '18.2' },
+          scopes: [:api, :read_api, :ai_workflows]
 
         field :duo_workflow_status_check, ::Types::Ai::DuoWorkflows::EnablementType,
           null: true,
