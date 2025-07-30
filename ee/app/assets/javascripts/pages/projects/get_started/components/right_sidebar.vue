@@ -51,7 +51,7 @@ export default {
       trackingLabel: 'gitlab_ci_cd',
     },
     {
-      text: __('SSH keys'),
+      text: __('SSH Keys'),
       url: helpPagePath('user/ssh'),
       trackingLabel: 'ssh_keys',
     },
