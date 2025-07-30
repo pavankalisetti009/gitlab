@@ -434,7 +434,7 @@ export default {
         : __('Resolved 1 discussion.');
     },
     showIntersectionObserver() {
-      return !this.isModal && !this.editMode && !this.isDrawer;
+      return !this.isModal && !this.editMode;
     },
     workItemLinkedItems() {
       return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC
@@ -925,6 +925,7 @@ export default {
         :parent-work-item-confidentiality="parentWorkItemConfidentiality"
         :full-path="workItemFullPath"
         :is-modal="isModal"
+        :is-drawer="isDrawer"
         :work-item="workItem"
         :is-sticky-header-showing="isStickyHeaderShowing"
         :work-item-notifications-subscribed="workItemNotificationsSubscribed"
@@ -1190,7 +1191,7 @@ export default {
               >
                 <h2 class="gl-sr-only">{{ s__('WorkItem|Attributes') }}</h2>
                 <work-item-attributes-wrapper
-                  :class="{ 'gl-top-5': isDrawer }"
+                  :class="{ 'gl-top-9': isDrawer }"
                   :full-path="workItemFullPath"
                   :work-item="workItem"
                   :group-path="groupPath"
