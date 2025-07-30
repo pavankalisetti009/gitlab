@@ -16,16 +16,23 @@ module Search
           current_time = Time.current.to_i
           payload = {
             iat: current_time,
-            exp: current_time + TOKEN_EXPIRE_TIME.to_i,
             iss: ISSUER,
             aud: AUDIENCE
           }
+
+          payload[:exp] = current_time + TOKEN_EXPIRE_TIME.to_i unless skip_expiration?
 
           JWT.encode(payload, secret_token, 'HS256')
         end
 
         def authorization_header
           "Bearer #{jwt_token}"
+        end
+
+        private
+
+        def skip_expiration?
+          Gitlab::Utils.to_boolean(ENV['ZOEKT_JWT_SKIP_EXPIRY'])
         end
       end
     end
