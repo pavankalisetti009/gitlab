@@ -50,8 +50,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
           let_it_be(:role) { create(:member_role, :admin, **existing_abilities) }
 
           it_behaves_like 'custom role update' do
-            let(:audit_event_message) { 'Admin role was updated' }
-            let(:audit_event_type) { 'admin_role_updated' }
+            let(:audit_event_message) { 'Custom admin role was updated' }
+            let(:audit_event_type) { 'custom_admin_role_updated' }
           end
         end
       end
@@ -100,8 +100,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
           let(:user) { admin }
 
           it_behaves_like 'custom role update' do
-            let(:audit_event_message) { 'Admin role was updated' }
-            let(:audit_event_type) { 'admin_role_updated' }
+            let(:audit_event_message) { 'Custom admin role was updated' }
+            let(:audit_event_type) { 'custom_admin_role_updated' }
           end
         end
       end

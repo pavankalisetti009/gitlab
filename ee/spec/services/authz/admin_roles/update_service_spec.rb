@@ -43,8 +43,8 @@ RSpec.describe Authz::AdminRoles::UpdateService, feature_category: :permissions 
         let(:user) { admin }
 
         it_behaves_like 'custom role update' do
-          let(:audit_event_message) { 'Admin role was updated' }
-          let(:audit_event_type) { 'admin_role_updated' }
+          let(:audit_event_message) { 'Custom admin role was updated' }
+          let(:audit_event_type) { 'custom_admin_role_updated' }
         end
       end
     end

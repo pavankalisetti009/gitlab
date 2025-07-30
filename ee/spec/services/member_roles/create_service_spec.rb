@@ -147,8 +147,8 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
               allow(Ability).to receive(:allowed?).and_return(false)
             end
 
-            let(:audit_event_message) { 'Admin role was created' }
-            let(:audit_event_type) { 'admin_role_created' }
+            let(:audit_event_message) { 'Custom admin role was created' }
+            let(:audit_event_type) { 'custom_admin_role_created' }
           end
         end
       end
