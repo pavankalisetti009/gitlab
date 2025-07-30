@@ -117,6 +117,8 @@ describe('Cluster Token component', () => {
           { value: 'test-agent-2', gid: 'gid://GitLab/Agent/5' },
         ]),
       ).toEqual('test-agent-1,test-agent-2');
+
+      expect(ClusterToken.transformQueryParams([])).toBe('ALL');
     });
   });
 
