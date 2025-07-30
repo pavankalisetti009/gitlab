@@ -13,7 +13,6 @@ scope module: :gitlab_subscriptions do
     get :buy_minutes
     get :buy_storage
     get :payment_form
-    get :payment_method
     post :validate_payment_method
   end
   resources :hand_raise_leads, only: :create, path: 'gitlab_subscriptions/hand_raise_leads',
