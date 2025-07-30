@@ -2455,9 +2455,6 @@ msgstr ""
 msgid "AICatalog|Create agent"
 msgstr ""
 
-msgid "AICatalog|Create new agent"
-msgstr ""
-
 msgid "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks."
 msgstr ""
 
