@@ -13,16 +13,16 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       token: 'AKIASOMEAWSACCESSKEY',
       location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
     },
-     {
-       type: 'aws_secret',
-       token: 'some_aws_secret_key_some_aws_secret_key_',
-       location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
-     },
-     {
-       type: 'aws_secret',
-       token: 'another_aws_secret_key_another_secret_key',
-       location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
-     }]
+      {
+        type: 'aws_secret',
+        token: 'some_aws_secret_key_some_aws_secret_key_',
+        location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
+      },
+      {
+        type: 'aws_secret',
+        token: 'another_aws_secret_key_another_secret_key',
+        location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
+      }]
   end
 
   let_it_be(:revocable_external_token_types) do

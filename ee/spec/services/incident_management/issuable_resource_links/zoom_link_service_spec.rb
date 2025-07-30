@@ -113,9 +113,9 @@ RSpec.describe IncidentManagement::IssuableResourceLinks::ZoomLinkService, featu
         [
           ['https://zoom.us/j/123456789 Demo meeting', 'https://zoom.us/j/123456789', 'Demo meeting'],
           ['https://zoom.us/j/123456789 http://example.com Space fire, fire again', 'https://zoom.us/j/123456789',
-           'http://example.com Space fire, fire again'],
+            'http://example.com Space fire, fire again'],
           ['https://zoom.us/my/name https://zoom.us/j/123456789 Fire, fire on!, extinguishe now!',
-           'https://zoom.us/my/name', 'https://zoom.us/j/123456789 Fire, fire on!, extinguishe now!'],
+            'https://zoom.us/my/name', 'https://zoom.us/j/123456789 Fire, fire on!, extinguishe now!'],
           ['https://zoom.us/my/name https://zoom.us/j/123456789', 'https://zoom.us/my/name', 'https://zoom.us/j/123456789']
         ]
       end
