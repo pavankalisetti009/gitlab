@@ -1,0 +1,10 @@
+---
+name: zoekt_search_meta_project_ids
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557714
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/199439
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557723
+milestone: '18.3'
+group: group::global search
+type: ops
+default_enabled: false

@@ -1,0 +1,127 @@
+{
+  "query": {
+    "and": {
+      "children": [
+        {
+          "query_string": {
+            "query": "test"
+          }
+        },
+        {
+          "or": {
+            "children": [
+              {
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "20"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "10"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "and": {
+                  "children": [
+                    {
+                      "or": {
+                        "children": [
+                          {
+                            "meta": {
+                              "key": "repository_access_level",
+                              "value": "10"
+                            }
+                          },
+                          {
+                            "meta": {
+                              "key": "repository_access_level",
+                              "value": "20"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "or": {
+                        "children": [
+                          {
+                            "meta": {
+                              "key": "traversal_ids",
+                              "value": "^9970-457-"
+                            }
+                          },
+                          {
+                            "meta": {
+                              "key": "traversal_ids",
+                              "value": "^9970-123-"
+                            }
+                          },
+                          {
+                            "or": {
+                              "children": [
+                                {
+                                  "meta": {
+                                    "key": "project_id",
+                                    "value": "^1$"
+                                  }
+                                },
+                                {
+                                  "meta": {
+                                    "key": "project_id",
+                                    "value": "^56$"
+                                  }
+                                },
+                                {
+                                  "meta": {
+                                    "key": "project_id",
+                                    "value": "^99$"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "meta": {
+            "key": "archived",
+            "value": "f"
+          }
+        }
+      ]
+    }
+  }
+}

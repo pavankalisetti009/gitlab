@@ -1,0 +1,49 @@
+{
+  "query": {
+    "and": {
+      "children": [
+        {
+          "query_string": {
+            "query": "test"
+          }
+        },
+        {
+          "or": {
+            "children": [
+              {
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "20"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "meta": {
+            "key": "archived",
+            "value": "f"
+          }
+        },
+        {
+          "meta": {
+            "key": "project_id",
+            "value": "^1$"
+          }
+        }
+      ]
+    }
+  }
+}

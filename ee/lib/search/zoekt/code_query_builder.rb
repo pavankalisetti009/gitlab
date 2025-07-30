@@ -27,7 +27,7 @@ module Search
         when :project
           raise ArgumentError, 'Project ID cannot be empty for project search' if project_id.blank?
 
-          children << Filters.by_repo_ids([project_id])
+          children << by_repo_ids([project_id])
         when :group
           children << Filters.by_traversal_ids(auth.get_traversal_ids_for_group(group_id))
         when :global
@@ -42,7 +42,7 @@ module Search
       def build_repo_ids_payload(base_query)
         raise ArgumentError, 'Repo ids cannot be empty' if options[:repo_ids].blank?
 
-        Filters.and_filters(base_query, Filters.by_repo_ids(options[:repo_ids]))
+        Filters.and_filters(base_query, by_repo_ids(options[:repo_ids]))
       end
 
       def access_branches
@@ -60,7 +60,7 @@ module Search
           }
         end
 
-        private_branch_filters << Filters.by_repo_ids(authorized_project_ids) if authorized_project_ids.present?
+        private_branch_filters << by_repo_ids(authorized_project_ids) if authorized_project_ids.present?
 
         return [public_branch, internal_branch] if private_branch_filters.empty?
 
@@ -95,8 +95,18 @@ module Search
         )
       end
 
+      def by_repo_ids(ids)
+        return Filters.by_project_ids(ids) if use_meta_project_ids?
+
+        Filters.by_repo_ids(ids)
+      end
+
       def use_zoekt_traversal_id_query?
         Feature.enabled?(:zoekt_traversal_id_queries, current_user)
+      end
+
+      def use_meta_project_ids?
+        Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
       end
     end
   end
