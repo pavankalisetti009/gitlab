@@ -163,6 +163,16 @@ module API
             unsafe_passthrough_params: params.except(:private_token)
           ).task
 
+          if task.duo_context_not_found?
+            msg = _('No default Duo group found. Select a default Duo group in your user preferences and try again.')
+
+            render_structured_api_error!({
+              'error' => 'missing_default_duo_group',
+              'error_description' => msg,
+              'message' => { error: msg }
+            }, 422)
+          end
+
           unauthorized_with_origin_header! if task.feature_disabled?
 
           service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
