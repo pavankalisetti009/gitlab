@@ -199,7 +199,7 @@ module API
               push_feature_flags
 
               if Feature.enabled?(:agent_platform_model_selection) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This is an instance level feature flag
-                duo_agent_platform_setting = ::Ai::FeatureSetting.find_or_initialize_by_feature(:duo_agent_platform)
+                duo_agent_platform_setting = ::Ai::FeatureSetting.find_by_feature(:duo_agent_platform)
 
                 model_metadata_headers = Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata.new(
                   feature_setting: duo_agent_platform_setting
