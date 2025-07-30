@@ -37,6 +37,7 @@ query getProjectDependencies(
         licenses {
           name
           url
+          spdxIdentifier
         }
         vulnerabilityCount
       }

@@ -23,6 +23,11 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
         blobPath
         path
       }
+      licenses {
+        name
+        spdxIdentifier
+        url
+      }
     FIELDS
   end
 
@@ -59,13 +64,20 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
         'version' => occurrence.version,
         'componentVersion' => {
           'id' => occurrence.component_version.to_gid.to_s,
-          'version' => occurrence.version
+          'version' => occurrence.component_version.version
         },
         'packager' => package_manager_enum(occurrence.packager),
         'location' => {
           'blobPath' => "/#{project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.source.input_file_path}",
           'path' => occurrence.source.input_file_path
-        }
+        },
+        'licenses' => occurrence.licenses.map do |license|
+          {
+            'name' => license['name'],
+            'spdxIdentifier' => license['spdx_identifier'],
+            'url' => license['url']
+          }
+        end
       }
     end
 
@@ -89,13 +101,20 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
           'version' => occurrence.version,
           'componentVersion' => {
             'id' => occurrence.component_version.to_gid.to_s,
-            'version' => occurrence.version
+            'version' => occurrence.component_version.version
           },
           'packager' => nil,
           'location' => {
             'blobPath' => nil,
             'path' => nil
-          }
+          },
+          'licenses' => occurrence.licenses.map do |license|
+            {
+              'name' => license['name'],
+              'spdxIdentifier' => license['spdx_identifier'],
+              'url' => license['url']
+            }
+          end
         }
       end
 
@@ -120,7 +139,14 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
           'location' => {
             'blobPath' => "/#{project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.source.input_file_path}",
             'path' => occurrence.source.input_file_path
-          }
+          },
+          'licenses' => occurrence.licenses.map do |license|
+            {
+              'name' => license['name'],
+              'spdxIdentifier' => license['spdx_identifier'],
+              'url' => license['url']
+            }
+          end
         }
       end
 

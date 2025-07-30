@@ -15,6 +15,7 @@ RSpec.describe 'Query.group(fullPath).dependencyAggregations', feature_category:
   let_it_be(:variables) { { fullPath: group.full_path } }
   let_it_be(:fields) do
     <<~FIELDS
+      id
       name
       version
       componentVersion {
@@ -24,6 +25,11 @@ RSpec.describe 'Query.group(fullPath).dependencyAggregations', feature_category:
       packager
       vulnerabilityCount
       occurrenceCount
+      licenses {
+        name
+        spdxIdentifier
+        url
+      }
     FIELDS
   end
 
