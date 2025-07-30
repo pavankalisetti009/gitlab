@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: :seat_cost_management do
   let_it_be(:root_namespace) { create(:group) }
+  let_it_be(:subgroup) { create(:group, parent: root_namespace) }
   let_it_be(:source) { create(:group, parent: root_namespace) }
   let_it_be(:user) { create(:user) }
 
@@ -80,10 +81,8 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
     end
 
     context 'when user is still a member of group hierarchy' do
-      let(:another_sub_group) { create(:group, parent: root_namespace) }
-
-      before do
-        another_sub_group.add_guest(user)
+      before_all do
+        subgroup.add_guest(user)
       end
 
       it_behaves_like 'returns early'
@@ -105,6 +104,42 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
       end
 
       it_behaves_like 'returns early'
+    end
+
+    context 'when an access request remains' do
+      before do
+        create(:group_member, :access_request, source: subgroup, user: user)
+      end
+
+      it 'removes the seat assignment' do
+        expect do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+        end.to change { GitlabSubscriptions::SeatAssignment.where(namespace: root_namespace, user: user).count }.by(-1)
+      end
+    end
+
+    context 'when a pending membership remains' do
+      before do
+        create(:group_member, :awaiting, source: subgroup, user: user)
+      end
+
+      it 'removes the seat assignment' do
+        expect do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+        end.to change { GitlabSubscriptions::SeatAssignment.where(namespace: root_namespace, user: user).count }.by(-1)
+      end
+    end
+
+    context 'when an invited membership remains' do
+      before do
+        create(:group_member, :invited, source: subgroup, user: user)
+      end
+
+      it 'removes the seat assignment' do
+        expect do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+        end.to change { GitlabSubscriptions::SeatAssignment.where(namespace: root_namespace, user: user).count }.by(-1)
+      end
     end
   end
 end
