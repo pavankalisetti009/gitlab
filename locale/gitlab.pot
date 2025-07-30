@@ -431,11 +431,6 @@ msgid_plural "%d options"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d package"
-msgid_plural "%d packages"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d pending comment"
 msgid_plural "%d pending comments"
 msgstr[0] ""
@@ -528,11 +523,6 @@ msgstr[1] ""
 
 msgid "%d template found"
 msgid_plural "%d templates found"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "%d version"
-msgid_plural "%d versions"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -18085,6 +18075,9 @@ msgid "ContainerRegistry|Run cleanup:"
 msgstr ""
 
 msgid "ContainerRegistry|Save storage space by automatically deleting tags from the container registry and keeping the ones you want. %{linkStart}How does cleanup work?%{linkEnd}"
+msgstr ""
+
+msgid "ContainerRegistry|Select tag"
 msgstr ""
 
 msgid "ContainerRegistry|Set cleanup rules"
@@ -44472,6 +44465,11 @@ msgstr ""
 
 msgid "Package type must be NuGet"
 msgstr ""
+
+msgid "PackageRegistry|%{count} selected"
+msgid_plural "PackageRegistry|%{count} selected"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "PackageRegistry|%{linkStart}Wildcards%{linkEnd} such as `my-package-*` are supported."
 msgstr ""
