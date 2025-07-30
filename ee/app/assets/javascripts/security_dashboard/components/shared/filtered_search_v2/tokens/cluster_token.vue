@@ -15,7 +15,7 @@ export default {
   },
   inject: ['projectFullPath'],
   transformQueryParams: (filters) => {
-    return filters.map(({ value }) => value).join(',');
+    return filters.map(({ value }) => value).join(',') || ALL_CLUSTER_VALUE;
   },
   transformFilters: (filters) => {
     return {
