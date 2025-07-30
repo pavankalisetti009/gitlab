@@ -13,6 +13,7 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       role: 'user',
       content: 'response',
       user: user,
+      thread: thread,
       referer_url: 'http://127.0.0.1:3000',
       additional_context: Gitlab::Llm::AiMessageAdditionalContext.new(
         [
@@ -40,7 +41,7 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
   end
 
   let_it_be(:agent_version_id) { 1 }
-  let(:thread) { nil }
+  let_it_be(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
 
   subject(:storage) { described_class.new(user, agent_version_id, thread) }
 
@@ -82,11 +83,38 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
         expect(storage.messages.last.content).to eq('msg')
       end
     end
+
+    context 'when thread is nil' do
+      subject(:storage) { described_class.new(user, agent_version_id) }
+
+      it 'adds new legacy message', :aggregate_failures do
+        uuid = 'unique_id'
+
+        allow(SecureRandom).to receive(:uuid).and_return(uuid)
+        expect(storage.messages).to be_empty
+
+        result = storage.add(message)
+
+        last = storage.messages.last
+        expect(last.message_xid).to eq(uuid)
+        expect(last.user).to eq(user)
+        expect(last.request_id).to eq(request_id)
+        expect(last.error_details).to match_array(['some error1', 'another error'])
+        expect(last.content).to eq('response')
+        expect(last.role).to eq('user')
+        expect(last.ai_action).to eq('chat')
+        expect(last.timestamp).not_to be_nil
+        expect(last.referer_url).to eq('http://127.0.0.1:3000')
+        expect(last.extras['additional_context']).to eq(payload[:additional_context].to_a)
+
+        expect(result).to be_a(Ai::Conversation::Message)
+        expect(result.thread.conversation_type).to eq('duo_chat_legacy')
+        expect(result).to eq(last)
+      end
+    end
   end
 
   describe '#messages' do
-    let_it_be(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
-
     before do
       create(:ai_conversation_message, payload_active_record.merge(content: 'msg1'))
       create(:ai_conversation_message, payload_active_record.merge(content: 'msg2'))
@@ -123,9 +151,23 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
 
       expect(storage.messages).to be_empty
     end
+
+    context 'when thread is nil' do
+      subject(:storage) { described_class.new(user, agent_version_id) }
+
+      it 'creates a new thread' do
+        expect(storage.messages.count).to eq(2)
+
+        expect { storage.clear! }.to change { user.ai_conversation_threads.count }.by(1)
+
+        expect(storage.messages).to be_empty
+      end
+    end
   end
 
   describe '#current_thread' do
+    let(:storage) { described_class.new(user, agent_version_id, thread) }
+
     subject(:current_thread) { storage.current_thread }
 
     context 'when thread is specified' do
@@ -137,6 +179,8 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     end
 
     context 'when thread is not specified' do
+      let(:storage) { described_class.new(user, agent_version_id) }
+
       context 'when no threads exist for the user' do
         it 'returns a new thread' do
           expect { current_thread }.to change { user.ai_conversation_threads.count }.by(1)

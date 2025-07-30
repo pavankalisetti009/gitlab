@@ -4,13 +4,19 @@ module Gitlab
   module Duo
     module Chat
       class Completions
-        def initialize(user, resource: nil)
+        def initialize(user, organization:, resource: nil)
           @current_user = user
           @resource = resource
+          @organization = organization
         end
 
         def execute(safe_params: {})
           action_name = 'chat'
+
+          thread = Gitlab::Llm::ThreadEnsurer.new(current_user, organization).execute(
+            conversation_type: :duo_chat_legacy,
+            write_mode: true
+          )
 
           options = safe_params.slice(:referer_url, :current_file, :additional_context).compact_blank
           message_attributes = {
@@ -18,6 +24,7 @@ module Gitlab
             role: ::Gitlab::Llm::AiMessage::ROLE_USER,
             ai_action: action_name,
             user: current_user,
+            thread: thread,
             context: ::Gitlab::Llm::AiMessageContext.new(resource: resource),
             client_subscription_id: safe_params[:client_subscription_id],
             additional_context: ::Gitlab::Llm::AiMessageAdditionalContext.new(safe_params[:additional_context])
@@ -39,7 +46,7 @@ module Gitlab
 
         private
 
-        attr_reader :current_user, :resource
+        attr_reader :current_user, :resource, :organization
 
         def reset_chat(action_name, message_attributes)
           message_attributes[:content] = '/reset'
