@@ -11,20 +11,39 @@ RSpec.describe ::Search::Zoekt::JwtAuth, feature_category: :global_search do
   end
 
   describe '.jwt_token' do
-    it 'generates a JWT token with the expected claims', :freeze_time do
-      secret = 'test-secret'
-      allow(described_class).to receive(:secret_token).and_return(secret)
+    let(:secret) { 'test-secret' }
+    let(:token) { described_class.jwt_token }
+    let(:decoded_token) { JWT.decode(token, secret, true, { algorithm: 'HS256' })[0] }
 
-      token = described_class.jwt_token
-      decoded_token = JWT.decode(token, secret, true, { algorithm: 'HS256' })[0]
+    before do
+      allow(described_class).to receive(:secret_token).and_return(secret)
+    end
+
+    it 'generates a JWT token with the expected claims', :freeze_time do
       current_time = Time.current.to_i
 
-      expect(decoded_token).to include(
+      expect(decoded_token).to match(
         'iss' => described_class::ISSUER,
         'aud' => described_class::AUDIENCE,
         'iat' => current_time,
         'exp' => current_time + described_class::TOKEN_EXPIRE_TIME.to_i
       )
+    end
+
+    context 'when ZOEKT_JWT_SKIP_EXPIRY is set' do
+      before do
+        stub_env('ZOEKT_JWT_SKIP_EXPIRY', 'true')
+      end
+
+      it 'does not set the exp claim in the JWT token', :freeze_time do
+        expect { decoded_token }.not_to raise_error
+
+        expect(decoded_token).to match(
+          'iss' => described_class::ISSUER,
+          'aud' => described_class::AUDIENCE,
+          'iat' => Time.current.to_i
+        )
+      end
     end
   end
 
