@@ -18,6 +18,6 @@ export default {
 
 <template>
   <gl-button v-if="shouldDisplayButton" :to="{ name: $options.newAgentRoute }" variant="confirm">
-    {{ s__('AICatalog|New agent') }}
+    {{ s__('AICatalog|Create agent') }}
   </gl-button>
 </template>

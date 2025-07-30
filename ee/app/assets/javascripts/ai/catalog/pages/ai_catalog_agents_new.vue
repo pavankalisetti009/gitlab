@@ -61,7 +61,7 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Create new agent')" />
+    <page-heading :heading="s__('AICatalog|New agent')" />
 
     <ai-catalog-agent-form
       mode="create"
