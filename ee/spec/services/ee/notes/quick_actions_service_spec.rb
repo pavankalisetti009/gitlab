@@ -695,7 +695,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       context 'when a user does not have permissions to promote an issue' do
         it 'does not promote an issue to an epic' do
           expect { execute(note) }.not_to change { Epic.count }
-          expect(issue.promoted_to_epic_id).to be_nil
+          expect(issue.reload.promoted_to_epic_id).to be_nil
         end
       end
 
@@ -706,7 +706,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
         it 'promotes an issue to an epic' do
           expect { execute(note) }.to change { Epic.count }.by(1)
-          expect(issue.promoted_to_epic_id).to be_present
+          expect(issue.reload.promoted_to_epic_id).to be_present
         end
 
         context 'with a double promote' do

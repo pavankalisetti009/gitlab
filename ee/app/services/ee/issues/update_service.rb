@@ -81,7 +81,8 @@ module EE
       def handle_promotion(issue)
         return unless params.delete(:promote_to_epic)
 
-        Epics::IssuePromoteService.new(container: issue.project, current_user: current_user).execute(issue)
+        ::WorkItems::LegacyEpics::IssuePromoteService.new(container: issue.project,
+          current_user: current_user).execute(issue)
       end
 
       def should_update_requirement_verification_status?(issuable)
