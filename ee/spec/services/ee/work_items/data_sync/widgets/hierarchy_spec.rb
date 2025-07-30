@@ -134,6 +134,29 @@ RSpec.describe WorkItems::DataSync::Widgets::Hierarchy, feature_category: :team_
         end
       end
 
+      context 'when work item to be copied becomes an epic with epic_issue record' do
+        let_it_be_with_reload(:target_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+        let_it_be_with_reload(:parent_link) do
+          create(:parent_link, :with_epic_issue, work_item: work_item, work_item_parent: epic.work_item,
+            relative_position: 20)
+        end
+
+        it "sets the correct data on the legacy epic parent relationship" do
+          expect { callback.after_save_commit }.to not_change { EpicIssue.count }
+            .and change { WorkItems::ParentLink.count }.by(1)
+
+          parent_link = target_work_item.parent_link
+          parent_epic = target_work_item.sync_object.reload
+
+          expect(parent_epic.parent).to eq(epic)
+          expect(parent_epic.work_item_parent_link).to eq(parent_link)
+          expect(parent_link.relative_position).to eq(parent_epic.relative_position)
+
+          expect(target_work_item.epic_issue).to be_nil
+          expect(parent_link.work_item_parent).to eq(epic.work_item)
+        end
+      end
+
       context "when work item to be moved is an epic" do
         let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
         let_it_be(:target_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: another_group) }

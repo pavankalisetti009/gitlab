@@ -70,7 +70,7 @@ module EE
           return super unless command == :promote_to && new_type.epic?
 
           begin
-            Epics::IssuePromoteService
+            ::WorkItems::LegacyEpics::IssuePromoteService
               .new(container: quick_action_target.container, current_user: current_user)
               .execute(quick_action_target)
 

@@ -1,0 +1,10 @@
+---
+name: use_data_sync_for_issue_promotion
+description: Use the WorkItem's DataSync services to promote an issue to an epic.
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556211
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198124
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556206
+milestone: '18.3'
+group: group::product planning
+type: gitlab_com_derisk
+default_enabled: false
