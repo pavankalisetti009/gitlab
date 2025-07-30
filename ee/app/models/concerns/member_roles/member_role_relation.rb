@@ -41,14 +41,14 @@ module MemberRoles
     private
 
     def validate_member_role_access_level
-      return unless member_role_id && member_role_owner.custom_roles_enabled?
+      return unless member_role_id && member_role_owner&.custom_roles_enabled?
       return if self[base_access_level_attr] == member_role.base_access_level
 
       errors.add(:member_role_id, _("the custom role's base access level does not match the current access level"))
     end
 
     def validate_access_level_locked_for_member_role
-      return unless member_role_id && member_role_owner.custom_roles_enabled?
+      return unless member_role_id && member_role_owner&.custom_roles_enabled?
       return if member_role_changed? # it is ok to change the access level when changing the member role
       return unless changed.include?(base_access_level_attr.to_s)
 

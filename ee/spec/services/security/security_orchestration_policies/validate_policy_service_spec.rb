@@ -424,6 +424,61 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
           end
         end
 
+        context 'with custom role approvers' do
+          let_it_be(:guest_role_admin_mr) { create(:member_role, :guest, :admin_merge_request, namespace: nil) }
+          let!(:guest_with_role) do
+            if container.is_a?(Group)
+              create(:group_member, :guest, source: container, member_role: guest_role_admin_mr).user
+            else
+              create(:project_member, :guest, source: container, member_role: guest_role_admin_mr).user
+            end
+          end
+
+          let(:action) do
+            {
+              type: 'require_approval',
+              role_approvers: [guest_role_admin_mr.id]
+            }
+          end
+
+          before do
+            stub_licensed_features(custom_roles: true)
+          end
+
+          context 'with exceeding approvals_required' do
+            before do
+              skip if container.is_a?(Group)
+
+              action[:approvals_required] = 2
+            end
+
+            it_behaves_like 'fails validation'
+          end
+
+          context 'with sufficient approvals_required' do
+            before do
+              action[:approvals_required] = 1
+            end
+
+            it_behaves_like 'passes validation'
+          end
+
+          context 'with sufficient approvals_required through membership inheritance' do
+            before do
+              skip if container.is_a?(Group)
+              container.update!(group: parent_group)
+              action[:approvals_required] = 1
+            end
+
+            let(:parent_group) { create(:group) }
+            let!(:guest_with_role) do
+              create(:group_member, :guest, source: parent_group, member_role: guest_role_admin_mr).user
+            end
+
+            it_behaves_like 'passes validation'
+          end
+        end
+
         context 'with compound approvals' do
           let(:group) { create(:group) }
           let(:other_user) { create(:user) }

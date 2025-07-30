@@ -34,9 +34,16 @@ module EE
       scope :non_owners, -> { where("members.access_level < ?", ::Gitlab::Access::OWNER) }
       scope :by_user_id, ->(user_id) { where(user_id: user_id) }
 
-      scope :eligible_approvers_by_groups, ->(groups) do
+      scope :eligible_approvers_ids_by_groups, ->(groups) do
         where(source_id: groups.pluck(:id), access_level: ::Gitlab::Access::DEVELOPER...)
+          .select(:user_id)
           .limit(::Security::ScanResultPolicy::APPROVERS_LIMIT)
+      end
+
+      scope :eligible_approvers_ids_by_group_ids_and_custom_roles, ->(group_ids, custom_roles) do
+        where(source_id: group_ids, member_role_id: custom_roles)
+          .select(:user_id)
+          .limit(Security::ScanResultPolicy::APPROVERS_LIMIT)
       end
 
       attr_accessor :ignore_user_limits
