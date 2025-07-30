@@ -11,10 +11,6 @@ export default {
       type: String,
       required: true,
     },
-    tracingIndexUrl: {
-      required: true,
-      type: String,
-    },
     logsIndexUrl: {
       required: true,
       type: String,
@@ -47,7 +43,6 @@ export default {
 <template>
   <tracing-details
     :trace-id="traceId"
-    :tracing-index-url="tracingIndexUrl"
     :logs-index-url="logsIndexUrl"
     :metrics-index-url="metricsIndexUrl"
     :project-full-path="projectFullPath"
