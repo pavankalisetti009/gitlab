@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
-  let_it_be(:current_user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:current_user) { create(:user, organization: organization) }
   let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -38,6 +39,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
       context 'when the question does not need formatting' do
         it 'finds issue' do
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: tools_used)
         end
@@ -50,6 +52,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
           url = ::Gitlab::UrlBuilder.build(issue, only_path: false)
 
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(query: "Please summarize the current status of the issue #{url}.")
         end
@@ -61,6 +64,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
         it 'returns nil for tools_used' do
           allow(response).to receive(:ai_response).and_return(nil)
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: nil)
         end
@@ -70,6 +74,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
         it 'returns nil for tools_used' do
           allow(answer).to receive(:context).and_return(nil)
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: nil)
         end
@@ -79,6 +84,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
         it 'returns nil for tools_used' do
           allow(context).to receive(:tools_used).and_return(nil)
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: nil)
         end
@@ -95,6 +101,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
       context 'when the question does not need formatting' do
         it 'finds epic' do
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: tools_used)
         end
@@ -107,6 +114,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
           url = ::Gitlab::UrlBuilder.build(epic, only_path: false)
 
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(query: "Please summarize the current status of the epic #{url}.")
         end
@@ -118,6 +126,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
         it 'returns nil for tools_used' do
           allow(response).to receive(:ai_response).and_return(nil)
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: nil)
         end
@@ -127,6 +136,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
         it 'returns nil for tools_used' do
           allow(answer).to receive(:context).and_return(nil)
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: nil)
         end
@@ -136,6 +146,7 @@ RSpec.describe Gitlab::Duo::Chat::Request, :saas, feature_category: :duo_chat do
         it 'returns nil for tools_used' do
           allow(context).to receive(:tools_used).and_return(nil)
           expect(::Gitlab::Duo::Chat::Completions).to receive(:new).with(current_user,
+            organization: organization,
             resource: resource_record).and_return(completions)
           expect(request).to include(ref: 'ref', query: query, response: response_body, tools_used: nil)
         end

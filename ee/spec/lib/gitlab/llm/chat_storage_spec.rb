@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:thread) { create(:ai_conversation_thread, organization: organization) }
   let_it_be(:request_id) { 'uuid' }
   let_it_be(:timestamp) { Time.current.to_s }
   let(:payload) do
@@ -15,6 +16,7 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
       role: 'user',
       content: 'response',
       user: user,
+      thread: thread,
       referer_url: 'http://127.0.0.1:3000',
       additional_context: Gitlab::Llm::AiMessageAdditionalContext.new(
         [
@@ -27,15 +29,15 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
 
   let_it_be(:agent_version_id) { 1 }
   let(:message) { build(:ai_chat_message, payload) }
-  let(:postgres_storage) { Gitlab::Llm::ChatStorage::Postgresql.new(user, agent_version_id) }
+  let(:postgres_storage) { Gitlab::Llm::ChatStorage::Postgresql.new(user, agent_version_id, thread) }
 
-  subject { described_class.new(user, agent_version_id) }
+  subject { described_class.new(user, agent_version_id, thread) }
 
   describe '#add' do
     it 'stores the message in PostgreSQL' do
-      subject.add(message)
+      active_record = subject.add(message)
 
-      expect(postgres_storage.messages).to include(message.active_record)
+      expect(postgres_storage.messages).to include(active_record)
     end
   end
 
@@ -57,8 +59,8 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
 
   it_behaves_like '#messages'
 
-  describe '#messages without thread, and thread_fallback false' do
-    subject { described_class.new(user, thread_fallback: false) }
+  describe '#messages without thread' do
+    subject { described_class.new(user, nil, thread) }
 
     it 'returns []' do
       expect do
@@ -174,7 +176,6 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
       subject.clear!
 
       expect(subject.messages).to be_empty
-      expect(postgres_storage.messages).to be_empty
     end
   end
 
