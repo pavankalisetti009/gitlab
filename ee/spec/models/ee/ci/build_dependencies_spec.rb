@@ -248,15 +248,6 @@ RSpec.describe Ci::BuildDependencies do
 
       let(:build_stage) { create(:ci_stage, pipeline: pipeline2, name: 'build') }
 
-      before do
-        cross_dependencies_limit.next.times do |index|
-          create(:ci_build, :success,
-            pipeline: pipeline2, name: "dependency-#{index}",
-            stage_idx: 1, ci_stage: build_stage, user: user
-          )
-        end
-      end
-
       let(:dependencies) do
         Array.new(cross_dependencies_limit.next) do |index|
           {
@@ -265,6 +256,15 @@ RSpec.describe Ci::BuildDependencies do
             ref: pipeline2.ref,
             artifacts: true
           }
+        end
+      end
+
+      before do
+        cross_dependencies_limit.next.times do |index|
+          create(:ci_build, :success,
+            pipeline: pipeline2, name: "dependency-#{index}",
+            stage_idx: 1, ci_stage: build_stage, user: user
+          )
         end
       end
 

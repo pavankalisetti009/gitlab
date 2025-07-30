@@ -22,10 +22,9 @@ RSpec.describe Preloaders::Environments::ProtectedEnvironmentPreloader, :aggrega
     let_it_be(:staging, refind: true) { create(:environment, name: 'staging', project: project) }
     let_it_be(:production_operator) { create(:user, developer_of: project) }
     let_it_be(:staging_operator) { create(:user, developer_of: project) }
+    let(:association_attributes) { [:deploy_access_levels, :project] }
 
     subject { described_class.new([production, staging]).execute(association_attributes) }
-
-    let(:association_attributes) { [:deploy_access_levels, :project] }
 
     shared_examples 'preloads and associates environments' do
       it 'preloads protected environments' do

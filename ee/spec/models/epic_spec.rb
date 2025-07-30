@@ -1205,14 +1205,13 @@ RSpec.describe Epic, feature_category: :portfolio_management do
   describe '.epics_readable_by_user' do
     let_it_be(:visible_epic) { create(:epic) }
     let_it_be(:confidential_epic) { create(:epic, :confidential) }
+    let(:epics) { [visible_epic] }
 
     subject { described_class.epics_readable_by_user(epics, user) }
 
     before do
       stub_licensed_features(epics: true)
     end
-
-    let(:epics) { [visible_epic] }
 
     context 'with an admin when admin mode is enabled', :enable_admin_mode do
       let(:user) { build(:user, admin: true) }
