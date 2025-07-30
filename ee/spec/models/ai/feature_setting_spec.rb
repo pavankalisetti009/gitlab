@@ -368,7 +368,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           summarize_review: 12,
           glab_ask_git_command: 13,
           duo_chat_summarize_comments: 14,
-          duo_agent_platform: 15
+          duo_agent_platform: 16
         }.freeze)
       end
 
