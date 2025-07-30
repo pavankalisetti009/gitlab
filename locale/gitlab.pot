@@ -37864,6 +37864,9 @@ msgstr ""
 msgid "Maintenance mode"
 msgstr ""
 
+msgid "MaintenanceMode|There was an error updating the Maintenance Mode Settings"
+msgstr ""
+
 msgid "Make a merge request to propose changes to this project."
 msgstr ""
 
@@ -64113,9 +64116,6 @@ msgid "There was an error summarizing your pending comments."
 msgstr ""
 
 msgid "There was an error syncing project %{name}"
-msgstr ""
-
-msgid "There was an error updating the Maintenance Mode Settings"
 msgstr ""
 
 msgid "There was an error updating your display preferences."

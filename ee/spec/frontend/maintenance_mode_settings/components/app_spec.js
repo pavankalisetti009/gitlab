@@ -1,33 +1,28 @@
 import { GlToggle, GlFormTextarea, GlForm, GlLoadingIcon } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import waitForPromises from 'helpers/wait_for_promises';
 import MaintenanceModeSettingsApp from 'ee/maintenance_mode_settings/components/app.vue';
-import { MOCK_BASIC_SETTINGS_DATA } from '../mock_data';
+import { updateApplicationSettings } from '~/rest_api';
+import { createAlert } from '~/alert';
 
-Vue.use(Vuex);
+jest.mock('~/rest_api.js');
+jest.mock('~/alert');
 
 describe('MaintenanceModeSettingsApp', () => {
   let wrapper;
 
-  const actionSpies = {
-    updateMaintenanceModeSettings: jest.fn(),
-    setMaintenanceEnabled: jest.fn(),
-    setBannerMessage: jest.fn(),
+  const defaultProps = {
+    initialBannerMessage: '',
+    initialMaintenanceEnabled: false,
   };
 
-  const createComponent = (initialState) => {
-    const store = new Vuex.Store({
-      state: {
-        ...MOCK_BASIC_SETTINGS_DATA,
-        ...initialState,
-      },
-      actions: actionSpies,
-    });
-
+  const createComponent = (props) => {
     wrapper = shallowMount(MaintenanceModeSettingsApp, {
-      store,
+      propsData: {
+        ...defaultProps,
+        ...props,
+      },
     });
   };
 
@@ -35,88 +30,101 @@ describe('MaintenanceModeSettingsApp', () => {
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findGlToggle = () => wrapper.findComponent(GlToggle);
   const findGlFormTextarea = () => wrapper.findComponent(GlFormTextarea);
-  const findSubmitButton = () => findMaintenanceModeSettingsForm().find('[type="submit"]');
 
-  describe('template', () => {
-    describe('when loading is true', () => {
-      beforeEach(() => {
-        createComponent({ loading: true });
-      });
-
-      it('renders GlLoadingIcon', () => {
-        expect(findGlLoadingIcon().exists()).toBe(true);
-      });
-
-      it('does not render the MaintenanceModeSettingsForm', () => {
-        expect(findMaintenanceModeSettingsForm().exists()).toBe(false);
+  describe('when maintenance mode is enabled', () => {
+    beforeEach(() => {
+      createComponent({
+        initialBannerMessage: 'test message',
+        initialMaintenanceEnabled: true,
       });
     });
 
-    describe('when loading is false', () => {
-      beforeEach(() => {
-        createComponent();
+    it('renders the form and not loading icon', () => {
+      expect(findGlLoadingIcon().exists()).toBe(false);
+      expect(findMaintenanceModeSettingsForm().exists()).toBe(true);
+    });
+
+    it('sets the GlToggle to true', () => {
+      expect(findGlToggle().attributes('value')).toBe('true');
+    });
+
+    it('sets the GlFormTextarea to the banner message', () => {
+      expect(findGlFormTextarea().attributes('value')).toBe('test message');
+    });
+
+    it('properly calls updateApplicationSettings when the form is updated and submitted', async () => {
+      findGlToggle().vm.$emit('change', false);
+      findGlFormTextarea().vm.$emit('input', '');
+      await nextTick();
+
+      findMaintenanceModeSettingsForm().vm.$emit('submit', { preventDefault: () => {} });
+      await nextTick();
+
+      expect(findGlLoadingIcon().exists()).toBe(true);
+      expect(updateApplicationSettings).toHaveBeenCalledWith({
+        maintenance_mode: false,
+        maintenance_mode_message: '',
       });
 
-      it('does not render GlLoadingIcon', () => {
-        expect(findGlLoadingIcon().exists()).toBe(false);
-      });
-
-      it('renders the MaintenanceModeSettingsForm', () => {
-        expect(findMaintenanceModeSettingsForm().exists()).toBe(true);
-      });
-
-      it('renders the submit button', () => {
-        expect(findSubmitButton().exists()).toBe(true);
-      });
+      await waitForPromises();
+      expect(findGlLoadingIcon().exists()).toBe(false);
     });
   });
 
-  describe('GlToggle', () => {
-    it('has label', () => {
+  describe('when maintenance mode is disabled', () => {
+    beforeEach(() => {
       createComponent();
-
-      expect(findGlToggle().props('label')).toBe(MaintenanceModeSettingsApp.i18n.toggleLabel);
     });
 
-    describe('onChange', () => {
-      beforeEach(() => {
-        createComponent();
-        findGlToggle().vm.$emit('change', false);
+    it('renders the form and not loading icon', () => {
+      expect(findGlLoadingIcon().exists()).toBe(false);
+      expect(findMaintenanceModeSettingsForm().exists()).toBe(true);
+    });
+
+    it('sets the GlToggle to undefined', () => {
+      expect(findGlToggle().attributes('value')).toBeUndefined();
+    });
+
+    it('sets the GlFormTextarea to be empty', () => {
+      expect(findGlFormTextarea().attributes('value')).toBe('');
+    });
+
+    it('properly calls updateApplicationSettings when the form is updated and submitted', async () => {
+      findGlToggle().vm.$emit('change', true);
+      findGlFormTextarea().vm.$emit('input', 'test message');
+      await nextTick();
+
+      findMaintenanceModeSettingsForm().vm.$emit('submit', { preventDefault: () => {} });
+      await nextTick();
+
+      expect(findGlLoadingIcon().exists()).toBe(true);
+      expect(updateApplicationSettings).toHaveBeenCalledWith({
+        maintenance_mode: true,
+        maintenance_mode_message: 'test message',
       });
 
-      it('calls setMaintenanceEnabled with the new boolean', () => {
-        expect(actionSpies.setMaintenanceEnabled).toHaveBeenCalledWith(expect.any(Object), {
-          maintenanceEnabled: false,
-        });
-      });
+      await waitForPromises();
+      expect(findGlLoadingIcon().exists()).toBe(false);
     });
   });
 
-  describe('GlFormTextarea', () => {
-    describe('onInput', () => {
-      beforeEach(() => {
-        createComponent();
-        findGlFormTextarea().vm.$emit('input', 'Hello World');
-      });
-
-      it('calls setBannerMessage with the new string', () => {
-        expect(actionSpies.setBannerMessage).toHaveBeenCalledWith(expect.any(Object), {
-          bannerMessage: 'Hello World',
-        });
-      });
+  describe('when updating maintenance mode fails', () => {
+    beforeEach(() => {
+      updateApplicationSettings.mockImplementation(() => Promise.reject());
+      createComponent();
     });
-  });
 
-  describe('MaintenanceModeSettingsForm', () => {
-    describe('onSubmit', () => {
-      beforeEach(() => {
-        createComponent();
-        findMaintenanceModeSettingsForm().vm.$emit('submit', { preventDefault: () => {} });
+    it('sends a createAlert error', async () => {
+      findMaintenanceModeSettingsForm().vm.$emit('submit', { preventDefault: () => {} });
+      await nextTick();
+
+      expect(findGlLoadingIcon().exists()).toBe(true);
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'There was an error updating the Maintenance Mode Settings',
       });
 
-      it('calls updateMaintenanceModeSettings', () => {
-        expect(actionSpies.updateMaintenanceModeSettings).toHaveBeenCalledTimes(1);
-      });
+      await waitForPromises();
+      expect(findGlLoadingIcon().exists()).toBe(false);
     });
   });
 });
