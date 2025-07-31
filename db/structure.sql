@@ -17024,11 +17024,17 @@ CREATE TABLE jira_tracker_data (
     project_id bigint,
     group_id bigint,
     organization_id bigint,
+    jira_check_enabled boolean DEFAULT false NOT NULL,
+    jira_assignee_check_enabled boolean DEFAULT false NOT NULL,
+    jira_status_check_enabled boolean DEFAULT false NOT NULL,
+    jira_exists_check_enabled boolean DEFAULT false NOT NULL,
+    jira_allowed_statuses_string text,
     CONSTRAINT check_0bf84b76e9 CHECK ((char_length(vulnerabilities_issuetype) <= 255)),
     CONSTRAINT check_160e0f9fe2 CHECK ((num_nonnulls(instance_integration_id, integration_id) = 1)),
     CONSTRAINT check_214cf6a48b CHECK ((char_length(project_key) <= 255)),
     CONSTRAINT check_4cc5bbc801 CHECK ((char_length(jira_issue_prefix) <= 255)),
-    CONSTRAINT check_9863a0a5fd CHECK ((char_length(jira_issue_regex) <= 255))
+    CONSTRAINT check_9863a0a5fd CHECK ((char_length(jira_issue_regex) <= 255)),
+    CONSTRAINT check_b5ab881f50 CHECK ((char_length(jira_allowed_statuses_string) <= 1024))
 );
 
 CREATE SEQUENCE jira_tracker_data_id_seq
