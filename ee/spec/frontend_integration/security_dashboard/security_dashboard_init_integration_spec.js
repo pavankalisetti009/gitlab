@@ -31,6 +31,11 @@ describe('Security Dashboard', () => {
     window.gon.features = {
       groupSecurityDashboardNew: false,
     };
+
+    // Set up abilities
+    window.gon.abilities = {
+      accessAdvancedVulnerabilityManagement: false,
+    };
   });
 
   afterEach(() => {
@@ -58,21 +63,24 @@ describe('Security Dashboard', () => {
       expect(root).toMatchSnapshot();
     });
 
-    it('sets up group-level with `groupSecurityDashboardNew` feature flag set to `true`', async () => {
-      window.gon.features.groupSecurityDashboardNew = true;
-
-      await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
-
-      expect(root).toMatchSnapshot();
-    });
-
-    it('sets up instance-level', async () => {
-      await createComponent({
-        data: { instanceDashboardSettingsPath: '/instance/settings_page' },
-        type: DASHBOARD_TYPE_INSTANCE,
+    describe('`groupSecurityDashboardNew` feature flag enabled', () => {
+      beforeEach(() => {
+        window.gon.features.groupSecurityDashboardNew = true;
       });
 
-      expect(root).toMatchSnapshot();
+      it('sets up old dashboard when elastic search is disabled', async () => {
+        await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
+
+        expect(root).toMatchSnapshot();
+      });
+
+      it('sets up new dashboard when elastic search is enabled', async () => {
+        window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
+
+        await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
+
+        expect(root).toMatchSnapshot();
+      });
     });
 
     it('sets up project-level', async () => {
@@ -88,16 +96,44 @@ describe('Security Dashboard', () => {
       expect(root).toMatchSnapshot();
     });
 
-    it('sets up project-level with `projectSecurityDashboardNew` feature flag set to `true`', async () => {
-      window.gon.features.projectSecurityDashboardNew = true;
+    describe('`projectSecurityDashboardNew` feature flag enabled', () => {
+      beforeEach(() => {
+        window.gon.features.projectSecurityDashboardNew = true;
+      });
 
+      it('sets up old dashboard when elastic search is disabled', async () => {
+        await createComponent({
+          data: {
+            projectFullPath: '/test/project',
+            hasVulnerabilities: 'true',
+            securityConfigurationPath: '/test/configuration',
+          },
+          type: DASHBOARD_TYPE_PROJECT,
+        });
+
+        expect(root).toMatchSnapshot();
+      });
+
+      it('sets up new dashboard when elastic search is enabled', async () => {
+        window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
+
+        await createComponent({
+          data: {
+            projectFullPath: '/test/project',
+            hasVulnerabilities: 'true',
+            securityConfigurationPath: '/test/configuration',
+          },
+          type: DASHBOARD_TYPE_PROJECT,
+        });
+
+        expect(root).toMatchSnapshot();
+      });
+    });
+
+    it('sets up instance-level', async () => {
       await createComponent({
-        data: {
-          projectFullPath: '/test/project',
-          hasVulnerabilities: 'true',
-          securityConfigurationPath: '/test/configuration',
-        },
-        type: DASHBOARD_TYPE_PROJECT,
+        data: { instanceDashboardSettingsPath: '/instance/settings_page' },
+        type: DASHBOARD_TYPE_INSTANCE,
       });
 
       expect(root).toMatchSnapshot();

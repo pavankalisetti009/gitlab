@@ -60,12 +60,15 @@ export default async (el, dashboardType) => {
   let props;
   let component;
 
+  const hasAccessAdvancedVulnerabilityManagement =
+    gon.abilities?.accessAdvancedVulnerabilityManagement;
+
   if (dashboardType === DASHBOARD_TYPE_GROUP) {
     const isGroupSecurityDashboardNewEnabled = gon.features.groupSecurityDashboardNew;
 
     if (!hasProjects) {
       component = ReportNotConfiguredGroup;
-    } else if (isGroupSecurityDashboardNewEnabled) {
+    } else if (isGroupSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
       const { default: GroupSecurityDashboardNew } = await import(
         './components/shared/group_security_dashboard_new.vue'
       );
@@ -90,7 +93,7 @@ export default async (el, dashboardType) => {
 
     if (!hasVulnerabilities) {
       component = ReportNotConfiguredProject;
-    } else if (isProjectSecurityDashboardNewEnabled) {
+    } else if (isProjectSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
       const { default: ProjectSecurityDashboardNew } = await import(
         './components/shared/project_security_dashboard_new.vue'
       );
