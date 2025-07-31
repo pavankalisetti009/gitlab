@@ -37,7 +37,7 @@ describe('GitlabDuoSettings', () => {
     });
   };
 
-  const findCard = () => wrapper.findByTestId('gitlab-duo-settings-card');
+  const findCard = () => wrapper.findByTestId('gitlab-duo-settings');
   const findSaveButton = () => wrapper.findByTestId('gitlab-duo-save-button');
   const findDuoSettings = () => wrapper.findByTestId('duo-settings');
   const findDuoCascadingLockIcon = () => wrapper.findByTestId('duo-cascading-lock-icon');
