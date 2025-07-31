@@ -28,11 +28,10 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqu
     end
 
     context 'when given valid parameters' do
-      it 'enqueues only the projects applied to the framework',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545635' do
+      it 'enqueues only the projects applied to the framework' do
         expect(ComplianceManagement::ProjectComplianceEvaluatorWorker)
           .to receive(:schedule_compliance_evaluation)
-          .with(framework.id, [project1.id, project2.id]).once
+          .with(framework.id, match_array([project1.id, project2.id])).once
 
         perform
       end
