@@ -12,6 +12,8 @@ class PushRule < ApplicationRecord
   belongs_to :organization, class_name: 'Organizations::Organization'
   has_one :group, inverse_of: :push_rule, autosave: true
 
+  validates :project_id, uniqueness: { allow_nil: true }, on: :create
+
   before_save :convert_to_re2
 
   def global?

@@ -7,7 +7,7 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:project_owner) { project.first_owner }
 
-  let(:global_push_rule) { create(:push_rule_sample, project: project) }
+  let(:global_push_rule) { create(:push_rule_sample) }
   let(:push_rule) { create(:push_rule, project: project) }
 
   let(:possible_help_texts) do
