@@ -42,7 +42,7 @@ import {
 } from './constants';
 
 export default {
-  COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/group/compliance_frameworks.md'),
+  COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/compliance/compliance_frameworks/_index'),
   SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/_index.md'),
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {

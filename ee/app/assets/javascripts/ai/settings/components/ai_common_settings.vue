@@ -67,7 +67,7 @@ export default {
       this.cacheEnabled = value;
     },
   },
-  aiFeaturesHelpPath: helpPagePath('user/ai_features'),
+  aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
 };
 </script>
 <template>

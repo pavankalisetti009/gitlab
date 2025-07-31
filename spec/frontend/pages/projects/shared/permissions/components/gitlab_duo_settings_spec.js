@@ -80,7 +80,7 @@ describe('GitlabDuoSettings', () => {
 
       expect(findDuoSettings().exists()).toBe(true);
       expect(findDuoSettings().props()).toEqual({
-        helpPath: '/help/user/ai_features',
+        helpPath: '/help/user/gitlab_duo/_index',
         helpText: 'Use AI-native features in this project.',
         label: 'GitLab Duo',
         labelFor: null,
