@@ -11,6 +11,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { handleBranchTypeSelect } from '../lib';
 import {
+  PIPELINE_SOURCES_KEY,
   SCAN_EXECUTION_RULES_LABELS,
   SCAN_EXECUTION_RULES_PIPELINE_KEY,
   SCAN_EXECUTION_RULES_SCHEDULE_KEY,
@@ -20,6 +21,8 @@ import BranchTypeSelector from './branch_type_selector.vue';
 import PipelineSourceSelector from './pipeline_source_selector.vue';
 
 export default {
+  BRANCH_EXCEPTIONS_KEY,
+  PIPELINE_SOURCES_KEY,
   SCAN_EXECUTION_RULES_LABELS,
   i18n: {
     selectedBranchesPlaceholder: s__('ScanExecutionPolicy|Select branches'),
@@ -162,10 +165,10 @@ export default {
 
       this.$emit('changed', updatedRule);
     },
-    removeExceptions() {
+    removeProperty(property) {
       const rule = { ...this.initRule };
-      if (BRANCH_EXCEPTIONS_KEY in rule) {
-        delete rule[BRANCH_EXCEPTIONS_KEY];
+      if (property in rule) {
+        delete rule[property];
       }
 
       this.$emit('changed', rule);
@@ -217,8 +220,9 @@ export default {
 
           <template #sources>
             <pipeline-source-selector
-              :all-sources="showAllPipelineSources"
+              :show-all-sources="showAllPipelineSources"
               :pipeline-sources="pipelineSources"
+              @remove="removeProperty($options.PIPELINE_SOURCES_KEY)"
               @select="updateRule"
             />
           </template>
@@ -226,7 +230,7 @@ export default {
           <template #branchExceptions>
             <branch-exception-selector
               :selected-exceptions="branchExceptions"
-              @remove="removeExceptions"
+              @remove="removeProperty($options.BRANCH_EXCEPTIONS_KEY)"
               @select="updateRule"
             />
           </template>
