@@ -53,6 +53,7 @@ module CodeSuggestions
       end
 
       def duo_context_not_found?
+        return false unless ::Feature.enabled?(:ai_default_duo_namespace_user, current_user, type: :wip)
         return false if ::Ai::AmazonQ.connected?
         return false if self_hosted_feature_setting.present?
         # we need to return true only when there is multiple seats assigned to the user.
