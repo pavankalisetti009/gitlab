@@ -187,7 +187,9 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
             end
 
             page.within('aside.right-sidebar') do
-              click_button('Select labels', match: :first)
+              page.within('fieldset', text: 'Add labels') do
+                click_button('Select labels')
+              end
 
               list_item = find('.gl-new-dropdown-item', match: :first)
               expect(list_item).to have_text(bug_label.title)
