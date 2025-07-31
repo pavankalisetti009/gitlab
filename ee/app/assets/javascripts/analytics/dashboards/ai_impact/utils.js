@@ -160,10 +160,15 @@ const buildTableRow = ({ identifier, units, timePeriods }) => {
     });
   }, {});
 
+  // Calculate the % change between 5 months ago > 1 month ago. We don't
+  // use the current month since it does not contain a full month dataset.
   const firstMonth = timePeriods.find((timePeriod) => timePeriod.key === getColumnKeyForMonth(1));
   const lastMonth = timePeriods.find((timePeriod) => timePeriod.key === getColumnKeyForMonth(5));
   const change = calculateChange(firstMonth[identifier]?.value, lastMonth[identifier]?.value);
 
+  // Format the trend line data for the previous 5 months. We don't render
+  // the current month in the trend line since it does not contain a full
+  // month of data, which could skew the rendered chart.
   const chart = {
     tooltipLabel: CHART_TOOLTIP_UNITS[units],
     data: timePeriods
