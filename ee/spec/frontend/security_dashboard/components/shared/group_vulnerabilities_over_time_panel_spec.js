@@ -107,25 +107,32 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       });
     });
 
-    it('passes filters to the GraphQL query', () => {
+    it.each(['projectId', 'reportType'])(
+      'passes filters to the GraphQL query',
+      (availableFilterType) => {
+        const { vulnerabilitiesOverTimeHandler } = createComponent({
+          props: {
+            filters: { [availableFilterType]: ['filterValue'] },
+          },
+        });
+
+        expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+          fullPath: mockGroupFullPath,
+          startDate: ninetyDaysAgoInIsoFormat,
+          endDate: todayInIsoFormat,
+          [availableFilterType]: ['filterValue'],
+        });
+      },
+    );
+
+    it.each`
+      condition                | filters
+      ${'empty filters'}       | ${{}}
+      ${'unsupported filters'} | ${{ unsupportedFilter: ['filterValue'] }}
+    `('does not add filters to the GraphQL query when given $condition', ({ filters }) => {
       const { vulnerabilitiesOverTimeHandler } = createComponent({
         props: {
-          filters: { projectId: 'gid://gitlab/Project/456' },
-        },
-      });
-
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockGroupFullPath,
-        projectId: 'gid://gitlab/Project/456',
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
-      });
-    });
-
-    it('does not include projectId when filters are empty', () => {
-      const { vulnerabilitiesOverTimeHandler } = createComponent({
-        props: {
-          filters: {},
+          filters,
         },
       });
 

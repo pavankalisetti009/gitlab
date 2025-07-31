@@ -4,8 +4,10 @@ import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
+import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
+import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 const PROJECT_TOKEN_DEFINITION = {
   type: 'projectId',
@@ -13,6 +15,15 @@ const PROJECT_TOKEN_DEFINITION = {
   multiSelect: true,
   unique: true,
   token: markRaw(ProjectToken),
+  operators: OPERATORS_OR,
+};
+
+const REPORT_TYPE_TOKEN_DEFINITION = {
+  type: 'reportType',
+  title: s__('SecurityReports|Report type'),
+  multiSelect: true,
+  unique: true,
+  token: markRaw(ReportTypeToken),
   operators: OPERATORS_OR,
 };
 
@@ -58,11 +69,20 @@ export default {
       if (Object.keys(newFilters).length === 0) {
         this.filters = {};
       } else {
-        this.filters = { ...this.filters, ...newFilters };
+        this.filters = { ...this.filters, ...this.removeAllID(newFilters) };
       }
     },
+    removeAllID(filters) {
+      const filtersWithoutAllID = {};
+
+      Object.entries(filters).forEach(([filterName, filterValues]) => {
+        filtersWithoutAllID[filterName] = filterValues.filter((v) => v !== ALL_ID);
+      });
+
+      return filtersWithoutAllID;
+    },
   },
-  filteredSearchTokens: [PROJECT_TOKEN_DEFINITION],
+  filteredSearchTokens: [PROJECT_TOKEN_DEFINITION, REPORT_TYPE_TOKEN_DEFINITION],
 };
 </script>
 
