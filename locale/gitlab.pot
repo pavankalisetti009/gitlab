@@ -12933,9 +12933,6 @@ msgstr ""
 msgid "Checking branch validity…"
 msgstr ""
 
-msgid "Checking group path availability…"
-msgstr ""
-
 msgid "Checking if merge request can be merged…"
 msgstr ""
 
@@ -19248,9 +19245,6 @@ msgid "Create wildcard: %{searchTerm}"
 msgstr ""
 
 msgid "Create your first page"
-msgstr ""
-
-msgid "Create your group"
 msgstr ""
 
 msgid "Create, update, or delete a merge request."
@@ -30585,9 +30579,6 @@ msgstr ""
 msgid "Group SAML must be enabled to test"
 msgstr ""
 
-msgid "Group URL"
-msgstr ""
-
 msgid "Group access token creation is disabled in this group."
 msgstr ""
 
@@ -30669,9 +30660,6 @@ msgstr ""
 msgid "Group milestone"
 msgstr ""
 
-msgid "Group name (your organization)"
-msgstr ""
-
 msgid "Group name can contain only letters, digits, dashes, spaces, dots, underscores, parenthesis, and emojis."
 msgstr ""
 
@@ -30688,12 +30676,6 @@ msgid "Group or project"
 msgstr ""
 
 msgid "Group overview content"
-msgstr ""
-
-msgid "Group path is already taken. We've suggested one that is available."
-msgstr ""
-
-msgid "Group path is available."
 msgstr ""
 
 msgid "Group project URLs are prefixed with the group namespace"
@@ -47229,9 +47211,6 @@ msgstr ""
 msgid "Please enter your current password."
 msgstr ""
 
-msgid "Please fill in a descriptive name for your group."
-msgstr ""
-
 msgid "Please fill in a name for your topic."
 msgstr ""
 
@@ -61707,9 +61686,6 @@ msgstr ""
 msgid "Subscription service outage"
 msgstr ""
 
-msgid "Subscription successfully applied to \"%{group_name}\""
-msgstr ""
-
 msgid "Subscription successfully created."
 msgstr ""
 
@@ -70678,9 +70654,6 @@ msgstr ""
 msgid "Welcome back! Your account had been deactivated due to inactivity but is now reactivated."
 msgstr ""
 
-msgid "Welcome to GitLab, %{first_name}!"
-msgstr ""
-
 msgid "Welcome to GitLab, %{name}!"
 msgstr ""
 
@@ -72845,9 +72818,6 @@ msgstr ""
 msgid "You can also use project access tokens with Git to authenticate over HTTP(S). %{link_start}Learn more.%{link_end}"
 msgstr ""
 
-msgid "You can always edit this later"
-msgstr ""
-
 msgid "You can check it in your %{pat_link_start}personal access tokens%{pat_link_end} settings."
 msgstr ""
 
@@ -73511,9 +73481,6 @@ msgid "Your %{plan_name} subscription will expire on %{expires_on}"
 msgstr ""
 
 msgid "Your %{plan_name} subscription with a temporary extension will expire on %{expires_on}"
-msgstr ""
-
-msgid "Your %{plan} plan will be applied to your group."
 msgstr ""
 
 msgid "Your %{resource_type} access token %{codeOpen}%{token_name}%{codeClose} for %{codeOpen}%{resource_path}%{codeClose} will expire in %{days_to_expire} or less."
