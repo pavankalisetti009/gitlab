@@ -144,8 +144,9 @@ module Gitlab
             {
               execution_policy_job: true,
               execution_policy_name: current_policy.name,
-              execution_policy_variables_override: current_policy.variables_override_strategy
-            }
+              execution_policy_variables_override: current_policy.variables_override_strategy,
+              execution_policy_pre_succeeds: current_policy.experiment_enabled?(:ensure_pipeline_policy_pre_succeeds)
+            }.compact_blank
           end
 
           private

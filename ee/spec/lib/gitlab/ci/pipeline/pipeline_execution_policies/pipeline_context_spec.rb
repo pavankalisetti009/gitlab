@@ -632,6 +632,15 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
         expect(job_options).to eq(execution_policy_job: true, execution_policy_name: 'My policy',
           execution_policy_variables_override: { allowed: false })
       end
+
+      describe 'experiments' do
+        it 'adds ensure_reserved_pre_succeeds option when experiment enabled' do
+          allow(current_policy)
+            .to receive(:experiment_enabled?).with(:ensure_pipeline_policy_pre_succeeds).and_return(true)
+
+          expect(job_options).to match(a_hash_including(execution_policy_pre_succeeds: true))
+        end
+      end
     end
 
     context 'when building project pipeline' do
