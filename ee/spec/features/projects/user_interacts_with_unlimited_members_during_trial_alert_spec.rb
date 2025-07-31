@@ -11,8 +11,6 @@ RSpec.describe 'Project > Unlimited members alert', :js, :saas, feature_category
   let_it_be(:user) { create(:user) }
 
   before do
-    stub_get_billing_account_details
-
     stub_feature_flags(streamlined_first_product_experience: false)
   end
 

@@ -25,7 +25,6 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
     stub_billing_plans(namespace.id, plan.name, plans_data.to_json)
     stub_subscription_management_data(namespace.id)
     stub_temporary_extension_data(namespace.id)
-    stub_get_billing_account_details
 
     sign_in(user)
   end
