@@ -112,7 +112,7 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink
         mount_mutation ::Mutations::Vulnerabilities::CreateExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
-        mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride
+        mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssue, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
