@@ -91,7 +91,8 @@ export default {
     },
   },
   methods: {
-    checkVerificationCode() {
+    checkVerificationCode(value) {
+      this.form.fields.verificationCode.value = value;
       const errorMessage = validateVerificationCode(this.form.fields.verificationCode.value);
       this.form.fields.verificationCode.feedback = errorMessage;
       this.form.fields.verificationCode.state = errorMessage.length <= 0;
@@ -186,7 +187,7 @@ export default {
     >
       <gl-form-input
         id="verification_code"
-        v-model="form.fields.verificationCode.value"
+        :value="form.fields.verificationCode.value"
         type="number"
         name="verification_code"
         :state="form.fields.verificationCode.state"
