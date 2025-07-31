@@ -210,7 +210,7 @@ export default {
       showSidebar: true,
       truncationEnabled: true,
       lastRealtimeUpdatedAt: new Date(),
-      isRefetching: false,
+      refetchError: null,
     };
   },
   apollo: {
@@ -242,8 +242,10 @@ export default {
         return data.workspace.workItem ?? {};
       },
       error() {
-        if (this.isRefetching) {
-          this.isRefetching = false;
+        if (this.workItem?.id === this.workItemId || this.workItem?.iid === this.workItemIid) {
+          this.refetchError = s__(
+            'WorkItem|Your data might be out of date. Refresh to see the latest information.',
+          );
           return;
         }
         this.setEmptyState();
@@ -257,6 +259,11 @@ export default {
         if (isEmpty(this.workItem)) {
           this.setEmptyState();
         }
+        if (!res.error) {
+          this.error = null;
+          this.refetchError = null;
+        }
+
         if (!(this.isModal || this.isDrawer) && this.workItem.namespace) {
           const path = this.workItem.namespace.fullPath
             ? ` · ${this.workItem.namespace.fullPath}`
@@ -889,7 +896,6 @@ export default {
       const now = new Date();
       const staleThreshold = 5 * 60 * 1000; // 5 minutes in milliseconds
       if (now - this.lastRealtimeUpdatedAt > staleThreshold) {
-        this.isRefetching = true;
         this.$apollo.queries.workItem.refetch();
         this.lastRealtimeUpdatedAt = now;
       }
@@ -968,6 +974,25 @@ export default {
         <section v-if="updateError" class="flash-container flash-container-page sticky">
           <gl-alert class="gl-mb-3" variant="danger" @dismiss="updateError = undefined">
             {{ updateError }}
+          </gl-alert>
+        </section>
+        <section
+          v-if="refetchError"
+          :class="isDrawer ? 'gl-sticky gl-top-0' : 'flash-container flash-container-page sticky'"
+          :style="{ zIndex: 100 }"
+          data-testid="work-item-refetch-alert"
+        >
+          <gl-alert class="gl-mb-3" variant="warning" @dismiss="refetchError = null">
+            <span>{{ refetchError }}</span>
+            <gl-button
+              class="gl-ml-2"
+              category="primary"
+              variant="confirm"
+              size="small"
+              @click="$apollo.queries.workItem.refetch()"
+            >
+              {{ __('Refresh') }}
+            </gl-button>
           </gl-alert>
         </section>
         <section :class="workItemBodyClass">
