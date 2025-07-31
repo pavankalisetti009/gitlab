@@ -19438,6 +19438,27 @@ CREATE SEQUENCE p_ci_job_annotations_id_seq
 
 ALTER SEQUENCE p_ci_job_annotations_id_seq OWNED BY p_ci_job_annotations.id;
 
+CREATE TABLE p_ci_job_definitions (
+    id bigint NOT NULL,
+    partition_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    interruptible boolean DEFAULT false NOT NULL,
+    checksum bytea NOT NULL,
+    config jsonb DEFAULT '{}'::jsonb NOT NULL
+)
+PARTITION BY LIST (partition_id);
+
+CREATE SEQUENCE p_ci_job_definitions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE p_ci_job_definitions_id_seq OWNED BY p_ci_job_definitions.id;
+
 CREATE SEQUENCE p_ci_job_inputs_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -28531,6 +28552,8 @@ ALTER TABLE ONLY p_catalog_resource_sync_events ALTER COLUMN id SET DEFAULT next
 
 ALTER TABLE ONLY p_ci_builds_metadata ALTER COLUMN id SET DEFAULT nextval('ci_builds_metadata_id_seq'::regclass);
 
+ALTER TABLE ONLY p_ci_job_definitions ALTER COLUMN id SET DEFAULT nextval('p_ci_job_definitions_id_seq'::regclass);
+
 ALTER TABLE ONLY p_ci_job_inputs ALTER COLUMN id SET DEFAULT nextval('p_ci_job_inputs_id_seq'::regclass);
 
 ALTER TABLE ONLY p_ci_workloads ALTER COLUMN id SET DEFAULT nextval('p_ci_workloads_id_seq'::regclass);
@@ -31351,6 +31374,9 @@ ALTER TABLE ONLY p_ci_job_artifact_reports
 
 ALTER TABLE ONLY p_ci_job_artifacts
     ADD CONSTRAINT p_ci_job_artifacts_pkey PRIMARY KEY (id, partition_id);
+
+ALTER TABLE ONLY p_ci_job_definitions
+    ADD CONSTRAINT p_ci_job_definitions_pkey PRIMARY KEY (id, partition_id);
 
 ALTER TABLE ONLY p_ci_job_inputs
     ADD CONSTRAINT p_ci_job_inputs_pkey PRIMARY KEY (id, partition_id);
@@ -37374,6 +37400,10 @@ CREATE UNIQUE INDEX index_p_ci_job_annotations_on_partition_id_job_id_name ON ON
 CREATE INDEX index_p_ci_job_annotations_on_project_id ON ONLY p_ci_job_annotations USING btree (project_id);
 
 CREATE INDEX index_p_ci_job_artifact_reports_on_project_id ON ONLY p_ci_job_artifact_reports USING btree (project_id);
+
+CREATE INDEX index_p_ci_job_definitions_on_interruptible ON ONLY p_ci_job_definitions USING btree (interruptible);
+
+CREATE UNIQUE INDEX index_p_ci_job_definitions_on_project_id_and_checksum ON ONLY p_ci_job_definitions USING btree (project_id, checksum, partition_id);
 
 CREATE UNIQUE INDEX index_p_ci_job_inputs_on_job_id_and_name ON ONLY p_ci_job_inputs USING btree (job_id, name, partition_id);
 
