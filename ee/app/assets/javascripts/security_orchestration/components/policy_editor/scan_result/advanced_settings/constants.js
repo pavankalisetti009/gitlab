@@ -15,6 +15,7 @@ export const PATTERN = 'pattern';
 export const SOURCE = 'source';
 export const TARGET = 'target';
 
+export const CUSTOM_ROLES = 'custom_roles';
 export const ROLES = 'roles';
 export const GROUPS = 'groups';
 export const ACCOUNTS = 'service_accounts';

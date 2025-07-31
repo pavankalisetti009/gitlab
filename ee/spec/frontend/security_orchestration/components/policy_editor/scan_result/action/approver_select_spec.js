@@ -5,7 +5,7 @@ import ApproverSelect from 'ee/security_orchestration/components/policy_editor/s
 import { EMPTY_TYPE, GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import GroupSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/group_select.vue';
 import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
-import RoleSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/role_select.vue';
+import RoleSelect from 'ee/security_orchestration/components/shared/role_select.vue';
 
 describe('ApproverSelect', () => {
   let wrapper;
