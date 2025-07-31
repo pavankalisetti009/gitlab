@@ -68,6 +68,10 @@ module EE
         args[:iteration_cadence_id] = iteration_cadence_ids_from_args(args) if args[:iteration_cadence_id].present?
 
         rewrite_param_name(params, :iteration_wildcard_id, :iteration_id)
+
+        rewrite_param_name(params[:not], :iteration_wildcard_id, :iteration_id) if params.dig(:not,
+          :iteration_wildcard_id).present?
+
         params
       end
 
