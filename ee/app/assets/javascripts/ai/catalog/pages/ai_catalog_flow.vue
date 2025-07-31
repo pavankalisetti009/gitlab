@@ -3,23 +3,23 @@ import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-search-md.svg';
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
+import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
 export default {
-  name: 'AiCatalogAgent',
+  name: 'AiCatalogFlow',
   components: {
     GlEmptyState,
     GlLoadingIcon,
   },
   data() {
     return {
-      aiCatalogAgent: {},
+      aiCatalogFlow: {},
     };
   },
   apollo: {
-    aiCatalogAgent: {
-      query: aiCatalogAgentQuery,
+    aiCatalogFlow: {
+      query: aiCatalogFlowQuery,
       variables() {
         return {
           id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
@@ -39,10 +39,10 @@ export default {
   },
   computed: {
     isLoading() {
-      return this.$apollo.queries.aiCatalogAgent.loading;
+      return this.$apollo.queries.aiCatalogFlow.loading;
     },
-    isAgentNotFound() {
-      return this.aiCatalogAgent && Object.keys(this.aiCatalogAgent).length === 0;
+    isFlowNotFound() {
+      return this.aiCatalogFlow && Object.keys(this.aiCatalogFlow).length === 0;
     },
   },
   emptySearchSvg,
@@ -54,11 +54,11 @@ export default {
     <gl-loading-icon v-if="isLoading" size="lg" class="gl-my-5" />
 
     <gl-empty-state
-      v-else-if="isAgentNotFound"
-      :title="s__('AiCatalog|Agent not found.')"
+      v-else-if="isFlowNotFound"
+      :title="s__('AiCatalog|Flow not found.')"
       :svg-path="$options.emptySearchSvg"
     />
 
-    <router-view v-else :ai-catalog-agent="aiCatalogAgent" />
+    <router-view v-else :ai-catalog-flow="aiCatalogFlow" />
   </div>
 </template>

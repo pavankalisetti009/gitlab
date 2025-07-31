@@ -18,6 +18,7 @@ import {
   VISIBILITY_LEVEL_PUBLIC,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
+import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -207,7 +208,7 @@ export default {
   },
   methods: {
     handleSubmit() {
-      const trimmedFormValues = {
+      const transformedValues = {
         projectId: this.formValues.projectId.trim(),
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
@@ -215,9 +216,10 @@ export default {
         userPrompt: this.formValues.userPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
       };
-      this.$emit('submit', trimmedFormValues);
+      this.$emit('submit', transformedValues);
     },
   },
+  indexRoute: AI_CATALOG_AGENTS_ROUTE,
 };
 </script>
 
@@ -329,7 +331,7 @@ export default {
           </gl-alert>
         </template>
       </gl-form-fields>
-      <ai-catalog-form-buttons :is-disabled="isLoading">
+      <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
         <gl-button
           class="js-no-auto-disable"
           type="submit"

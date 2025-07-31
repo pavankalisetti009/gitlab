@@ -20,13 +20,9 @@ export default {
     };
   },
   methods: {
-    async handleSubmit(formValues) {
+    async handleSubmit(input) {
       this.isSubmitting = true;
-      // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/555081
-      const input = {
-        ...formValues,
-        public: true,
-      };
+      this.resetErrorMessages();
       try {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogFlow,
@@ -56,6 +52,9 @@ export default {
         this.isSubmitting = false;
       }
     },
+    resetErrorMessages() {
+      this.errorMessages = [];
+    },
   },
 };
 </script>
@@ -68,7 +67,7 @@ export default {
       mode="create"
       :is-loading="isSubmitting"
       :error-messages="errorMessages"
-      @dismiss-error="errorMessages = []"
+      @dismiss-error="resetErrorMessages"
       @submit="handleSubmit"
     />
   </div>

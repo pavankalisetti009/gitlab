@@ -2491,6 +2491,9 @@ msgstr ""
 msgid "AICatalog|Edit agent"
 msgstr ""
 
+msgid "AICatalog|Edit flow"
+msgstr ""
+
 msgid "AICatalog|Failed to delete agent. %{error}"
 msgstr ""
 
@@ -2513,6 +2516,9 @@ msgid "AICatalog|Input cannot exceed %{value} characters. Please shorten your in
 msgstr ""
 
 msgid "AICatalog|Modify the agent settings and configuration."
+msgstr ""
+
+msgid "AICatalog|Modify the flow settings and configuration."
 msgstr ""
 
 msgid "AICatalog|Name is required."
@@ -6005,6 +6011,12 @@ msgid "AiAgents|Create your own AI Agents"
 msgstr ""
 
 msgid "AiAnalytics|the ClickHouse data store is not available"
+msgstr ""
+
+msgid "AiCatalog|Agent not found."
+msgstr ""
+
+msgid "AiCatalog|Flow not found."
 msgstr ""
 
 msgid "AiImpactAnalytics|Assigned Duo seat engagement"

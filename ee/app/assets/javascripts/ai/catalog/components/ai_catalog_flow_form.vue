@@ -1,8 +1,23 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlAlert, GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
-import { MAX_LENGTH_NAME, MAX_LENGTH_DESCRIPTION } from 'ee/ai/catalog/constants';
+import {
+  GlAlert,
+  GlButton,
+  GlForm,
+  GlFormFields,
+  GlFormRadio,
+  GlFormRadioGroup,
+  GlFormTextarea,
+  GlIcon,
+} from '@gitlab/ui';
+import {
+  MAX_LENGTH_NAME,
+  MAX_LENGTH_DESCRIPTION,
+  VISIBILITY_LEVEL_PRIVATE,
+  VISIBILITY_LEVEL_PUBLIC,
+} from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
+import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -15,7 +30,10 @@ export default {
     GlButton,
     GlForm,
     GlFormFields,
+    GlFormRadio,
+    GlFormRadioGroup,
     GlFormTextarea,
+    GlIcon,
   },
   props: {
     mode: {
@@ -44,9 +62,15 @@ export default {
       },
     },
   },
+
   data() {
     return {
-      formValues: this.initialValues,
+      formValues: {
+        ...this.initialValues,
+        visibilityLevel: this.initialValues.public
+          ? VISIBILITY_LEVEL_PUBLIC
+          : VISIBILITY_LEVEL_PRIVATE,
+      },
     };
   },
   computed: {
@@ -108,14 +132,16 @@ export default {
   },
   methods: {
     handleSubmit() {
-      const trimmedFormValues = {
+      const transformedValues = {
         projectId: this.formValues.projectId.trim(),
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
+        public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
       };
-      this.$emit('submit', trimmedFormValues);
+      this.$emit('submit', transformedValues);
     },
   },
+  indexRoute: AI_CATALOG_FLOWS_ROUTE,
 };
 </script>
 <template>
@@ -158,8 +184,43 @@ export default {
             @update="input"
           />
         </template>
+        <template #input(visibilityLevel)="{ id, input, validation, value }">
+          <gl-form-radio-group
+            :id="id"
+            :state="validation.state"
+            :checked="value"
+            data-testid="agent-form-radio-group-visibility-level"
+            @input="input"
+          >
+            <gl-form-radio
+              v-for="level in visibilityLevels"
+              :key="level.value"
+              :value="level.value"
+              :state="validation.state"
+              :data-testid="`${level.value}-radio`"
+              class="gl-mb-3"
+            >
+              <div class="gl-flex gl-items-center gl-gap-2">
+                <gl-icon :size="16" :name="level.icon" />
+                <span class="gl-font-semibold">
+                  {{ level.label }}
+                </span>
+              </div>
+              <template #help>{{ level.text }}</template>
+            </gl-form-radio>
+          </gl-form-radio-group>
+          <gl-alert
+            v-if="visibilityLevelAlertText"
+            :dismissible="false"
+            data-testid="agent-form-visibility-level-alert"
+            class="gl-mt-3"
+            variant="info"
+          >
+            {{ visibilityLevelAlertText }}
+          </gl-alert>
+        </template>
       </gl-form-fields>
-      <ai-catalog-form-buttons :is-disabled="isLoading">
+      <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
         <gl-button
           class="js-no-auto-disable"
           type="submit"

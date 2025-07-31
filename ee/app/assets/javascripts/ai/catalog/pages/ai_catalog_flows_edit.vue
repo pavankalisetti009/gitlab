@@ -13,20 +13,38 @@ export default {
     AiCatalogFlowForm,
     PageHeading,
   },
+  props: {
+    aiCatalogFlow: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       errorMessages: [],
       isSubmitting: false,
     };
   },
-  methods: {
-    async handleSubmit(formValues) {
-      this.isSubmitting = true;
-      // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/555081
-      const input = {
-        ...formValues,
-        public: true,
+  computed: {
+    flowName() {
+      return this.aiCatalogFlow.name;
+    },
+    pageTitle() {
+      return `${s__('AICatalog|Edit flow')}: ${this.flowName || this.$route.params.id}`;
+    },
+    initialValues() {
+      return {
+        projectId: this.aiCatalogFlow.project?.id,
+        name: this.flowName,
+        description: this.aiCatalogFlow.description,
+        public: this.aiCatalogFlow.public,
       };
+    },
+  },
+  methods: {
+    async handleSubmit(input) {
+      this.isSubmitting = true;
+      this.resetErrorMessages();
       try {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogFlow,
@@ -56,19 +74,25 @@ export default {
         this.isSubmitting = false;
       }
     },
+    resetErrorMessages() {
+      this.errorMessages = [];
+    },
   },
 };
 </script>
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Create new flow')" />
-
+    <page-heading :heading="pageTitle" />
+    <p>
+      {{ s__('AICatalog|Modify the flow settings and configuration.') }}
+    </p>
     <ai-catalog-flow-form
-      mode="create"
+      mode="edit"
+      :initial-values="initialValues"
       :is-loading="isSubmitting"
       :error-messages="errorMessages"
-      @dismiss-error="errorMessages = []"
+      @dismiss-error="resetErrorMessages"
       @submit="handleSubmit"
     />
   </div>

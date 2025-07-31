@@ -21,6 +21,7 @@ describe('AiCatalogFlowForm', () => {
     projectId: 'gid://gitlab/Project/1000000',
     name: 'My AI Flow',
     description: 'A helpful AI assistant',
+    public: false,
   };
 
   const createWrapper = (props = {}) => {
@@ -90,8 +91,6 @@ describe('AiCatalogFlowForm', () => {
         projectId: addRandomSpacesToString(initialValues.projectId),
         name: addRandomSpacesToString(initialValues.name),
         description: addRandomSpacesToString(initialValues.description),
-        systemPrompt: addRandomSpacesToString(initialValues.systemPrompt),
-        userPrompt: addRandomSpacesToString(initialValues.userPrompt),
       };
 
       createWrapper({ initialValues: formValuesWithRandomSpaces });

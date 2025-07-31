@@ -7,6 +7,7 @@ import AiCatalogAgent from '../pages/ai_catalog_agent.vue';
 import AiCatalogAgentsEdit from '../pages/ai_catalog_agents_edit.vue';
 import AiCatalogAgentsRun from '../pages/ai_catalog_agents_run.vue';
 import AiCatalogAgentsNew from '../pages/ai_catalog_agents_new.vue';
+import AiCatalogFlow from '../pages/ai_catalog_flow.vue';
 import AiCatalogFlows from '../pages/ai_catalog_flows.vue';
 import AiCatalogFlowsEdit from '../pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowsNew from '../pages/ai_catalog_flows_new.vue';
@@ -88,7 +89,6 @@ export const createRouter = (base) => {
         ],
       },
       // FLOWS
-      // Catch-all route for /agents/:id - redirect to /agents?show=:id
       {
         name: AI_CATALOG_FLOWS_ROUTE,
         path: '/flows',
@@ -102,6 +102,7 @@ export const createRouter = (base) => {
         path: '/flows/new',
         component: AiCatalogFlowsNew,
       },
+      // Catch-all route for /flows/:id - redirect to /flows?show=:id
       {
         path: '/flows/:id',
         redirect: (to) => ({
@@ -111,7 +112,7 @@ export const createRouter = (base) => {
       },
       {
         path: '/flows/:id',
-        component: AiCatalogAgent,
+        component: AiCatalogFlow,
         children: [
           {
             name: AI_CATALOG_FLOWS_EDIT_ROUTE,
