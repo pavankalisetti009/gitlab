@@ -32,8 +32,6 @@ RSpec.describe 'Group > Unlimited members alert', :js, :saas, feature_category: 
       stub_application_setting(dashboard_limit_enabled: true)
 
       stub_temporary_extension_data(group.id)
-
-      stub_get_billing_account_details
     end
 
     context 'when user is not owner' do
