@@ -238,7 +238,8 @@ module EE
           new_project_pipeline_path: new_project_pipeline_path(project),
           scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
           can_view_false_positive: can_view_false_positive?,
-          vulnerability_quota: vulnerability_quota_information(project)
+          vulnerability_quota: vulnerability_quota_information(project),
+          validity_checks_enabled: project&.security_setting&.validity_checks_enabled&.to_s || 'false'
         }
       )
     end

@@ -211,6 +211,7 @@ export const generateVulnerabilities = () => [
     severity: 'critical',
     state: 'DISMISSED',
     reportType: 'SAST',
+    findingTokenStatus: null,
     resolvedOnDefaultBranch: false,
     location: {
       image:
@@ -280,6 +281,7 @@ export const generateVulnerabilities = () => [
     severity: 'high',
     state: 'DETECTED',
     reportType: 'DEPENDENCY_SCANNING',
+    findingTokenStatus: null,
     location: {
       file: 'src/main/java/com/gitlab/security_products/tests/App.java',
       startLine: '1337',
@@ -317,6 +319,7 @@ export const generateVulnerabilities = () => [
     severity: 'high',
     state: 'DETECTED',
     reportType: 'CUSTOM_SCANNER_WITHOUT_TRANSLATION',
+    findingTokenStatus: null,
     location: {
       file: 'src/main/java/com/gitlab/security_products/tests/App.java',
     },
@@ -353,6 +356,7 @@ export const generateVulnerabilities = () => [
     cvss: [],
     cveEnrichment: null,
     reportType: '',
+    findingTokenStatus: null,
     severity: 'high',
     state: 'DETECTED',
     location: {
@@ -389,6 +393,7 @@ export const generateVulnerabilities = () => [
     cvss: [],
     cveEnrichment: null,
     reportType: 'DAST',
+    findingTokenStatus: null,
     location: {},
     project: {
       id: 'project-5',
@@ -421,6 +426,7 @@ export const generateVulnerabilities = () => [
     cvss: [],
     cveEnrichment: null,
     reportType: 'DEPENDENCY_SCANNING',
+    findingTokenStatus: null,
     location: {
       path: '/v1/trees',
     },
@@ -455,6 +461,7 @@ export const generateVulnerabilities = () => [
     cvss: [],
     cveEnrichment: null,
     reportType: 'DEPENDENCY_SCANNING',
+    findingTokenStatus: null,
     location: {
       path: '/v1/trees',
       file: 'yarn.lock',
@@ -472,6 +479,50 @@ export const generateVulnerabilities = () => [
     archivalInformation: {
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-30',
+    },
+    reachability: 'UNKNOWN',
+    __typename: 'Vulnerability',
+  },
+  {
+    id: 'id_7',
+    title: 'Secret Detection Vulnerability',
+    severity: 'high',
+    state: 'DETECTED',
+    detectedAt: '2024-01-15T10:30:00Z',
+    resolvedOnDefaultBranch: false,
+    issueLinks: [],
+    mergeRequest: null,
+    identifiers: [
+      {
+        externalType: 'secret_detection',
+        name: 'GitLab Secret Detection',
+      },
+    ],
+    dismissalReason: null,
+    cvss: [],
+    cveEnrichment: null,
+    reportType: 'SECRET_DETECTION',
+    findingTokenStatus: {
+      id: 'token-status-7',
+      status: 'ACTIVE',
+    },
+    location: {
+      file: 'config/secrets.yml',
+      startLine: '10',
+    },
+    project: {
+      id: 'project-7',
+      nameWithNamespace: 'Test / Secret Detection Project',
+    },
+    scanner: { id: 'scanner-7', vendor: 'GitLab', name: 'Secret Detection' },
+    vulnerabilityPath: 'path/to/secret',
+    userNotesCount: 0,
+    aiResolutionAvailable: false,
+    aiResolutionEnabled: false,
+    hasRemediations: false,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-04-01',
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',

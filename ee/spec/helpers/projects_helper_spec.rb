@@ -397,7 +397,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
             critical: 'true',
             exceeded: 'false',
             full: 'false'
-          }
+          },
+          validity_checks_enabled: 'false'
         }
       end
 
@@ -483,6 +484,34 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           end
 
           it { is_expected.to match(base_values.merge(sbom_pipeline_values, pipeline_values)) }
+        end
+      end
+
+      context 'with validity checks configuration' do
+        context 'when project has validity checks enabled' do
+          before do
+            security_setting = instance_double(ProjectSecuritySetting, validity_checks_enabled: true)
+            allow(project).to receive(:security_setting).and_return(security_setting)
+          end
+
+          it { is_expected.to include(validity_checks_enabled: 'true') }
+        end
+
+        context 'when project has validity checks disabled' do
+          before do
+            security_setting = instance_double(ProjectSecuritySetting, validity_checks_enabled: false)
+            allow(project).to receive(:security_setting).and_return(security_setting)
+          end
+
+          it { is_expected.to include(validity_checks_enabled: 'false') }
+        end
+
+        context 'when project has no security setting' do
+          before do
+            allow(project).to receive(:security_setting).and_return(nil)
+          end
+
+          it { is_expected.to include(validity_checks_enabled: 'false') }
         end
       end
     end
