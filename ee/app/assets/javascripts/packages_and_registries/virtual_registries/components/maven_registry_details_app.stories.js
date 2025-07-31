@@ -14,13 +14,12 @@ export default {
         },
       },
     },
-    createUpstream: {
+    upstreamCreated: {
       description: 'Emitted when a new upstream is created',
-      action: 'createUpstream',
+      action: 'upstreamCreated',
       table: {
         type: {
-          summary:
-            '(upstream: { name: string, url: string, cacheValidityHours?: number, description?: string, username?: string, password?: string }) => void',
+          summary: '() => void',
         },
       },
     },
@@ -126,8 +125,8 @@ Default.args = {
     },
   },
   canTestUpstream: true,
-  createUpstream: (upstream) => {
-    showToast(`Upstream create called for "${upstream.name}"`);
+  createUpstream: () => {
+    showToast(`Upstream created`);
   },
   testUpstream: (upstream) => {
     showToast(`Upstream test called for "${upstream.name}"`);
