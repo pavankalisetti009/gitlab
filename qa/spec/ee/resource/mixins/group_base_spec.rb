@@ -20,7 +20,7 @@ RSpec.describe QA::EE::Resource::GroupBase do
       def reload!
         struct = Struct.new(:api_response)
         if remove_calls.size >= 1
-          struct.new({ marked_for_deletion_on: true })
+          struct.new({ marked_for_deletion_on: true, full_path: scheduled_deletion_full_path })
         else
           struct.new({})
         end
@@ -34,6 +34,10 @@ RSpec.describe QA::EE::Resource::GroupBase do
         '/hello/foobar'
       end
 
+      def scheduled_deletion_full_path
+        '/hello/foobar-deletion_scheduled-12345'
+      end
+
       def remove_via_api!
         @remove_calls << api_delete_path
       end
@@ -43,7 +47,7 @@ RSpec.describe QA::EE::Resource::GroupBase do
   it 'requests deletion twice with immediate_remove_via_api!' do
     group = klass.new
     group.immediate_remove_via_api!
-    expected = %w[/foobar /foobar?permanently_remove=true&full_path=%2Fhello%2Ffoobar]
+    expected = %w[/foobar /foobar?permanently_remove=true&full_path=%2Fhello%2Ffoobar-deletion_scheduled-12345]
     expect(group.remove_calls).to eql(expected)
   end
 
