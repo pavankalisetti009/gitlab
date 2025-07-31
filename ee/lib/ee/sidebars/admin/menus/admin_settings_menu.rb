@@ -104,7 +104,7 @@ module EE
             return unless dedicated?
 
             ::Sidebars::MenuItem.new(
-              title: _('Usage Quotas'),
+              title: _('Usage quotas'),
               link: usage_quotas_admin_application_settings_path,
               active_routes: { path: 'admin/application_settings#usage_quotas' },
               item_id: :admin_usage_quotas,

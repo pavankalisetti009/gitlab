@@ -67380,10 +67380,10 @@ msgstr ""
 msgid "Usage"
 msgstr ""
 
-msgid "Usage Quotas"
+msgid "Usage breakdown"
 msgstr ""
 
-msgid "Usage breakdown"
+msgid "Usage quotas"
 msgstr ""
 
 msgid "Usage statistics"
@@ -67404,7 +67404,7 @@ msgstr ""
 msgid "UsageQuotas|Container registry storage statistics are not used to calculate the total project storage. Total project storage is calculated after namespace container deduplication, where the total of all unique containers is added to the namespace storage total."
 msgstr ""
 
-msgid "UsageQuotas|Loading Usage Quotas tab content"
+msgid "UsageQuotas|Loading Usage quotas tab content"
 msgstr ""
 
 msgid "UsageQuotas|Namespace transfer data used"
@@ -67521,7 +67521,7 @@ msgstr ""
 msgid "UsageQuota|Learn more about usage quotas."
 msgstr ""
 
-msgid "UsageQuota|Loading Usage Quotas tabs"
+msgid "UsageQuota|Loading Usage quotas tabs"
 msgstr ""
 
 msgid "UsageQuota|Local proxy used for frequently-accessed upstream Docker images."
@@ -67599,7 +67599,7 @@ msgstr ""
 msgid "UsageQuota|Something went wrong while fetching runner filters"
 msgstr ""
 
-msgid "UsageQuota|Something went wrong while loading Usage Quotas Tabs."
+msgid "UsageQuota|Something went wrong while loading Usage quotas Tabs."
 msgstr ""
 
 msgid "UsageQuota|Storage per project included in %{planName} subscription"
@@ -67662,9 +67662,6 @@ msgstr ""
 msgid "UsageQuota|Usage"
 msgstr ""
 
-msgid "UsageQuota|Usage Quotas"
-msgstr ""
-
 msgid "UsageQuota|Usage breakdown"
 msgstr ""
 
@@ -67687,6 +67684,9 @@ msgid "UsageQuota|Usage of resources across your projects"
 msgstr ""
 
 msgid "UsageQuota|Usage of shared resources across the projects in your instance"
+msgstr ""
+
+msgid "UsageQuota|Usage quotas"
 msgstr ""
 
 msgid "UsageQuota|User settings %{gt} Usage quotas"

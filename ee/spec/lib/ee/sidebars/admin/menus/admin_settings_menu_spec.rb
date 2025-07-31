@@ -63,7 +63,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
       end
     end
 
-    describe 'Usage Quotas' do
+    describe 'Usage quotas' do
       let(:item_id) { :admin_usage_quotas }
 
       context 'when the instance is a Dedicated instance' do
