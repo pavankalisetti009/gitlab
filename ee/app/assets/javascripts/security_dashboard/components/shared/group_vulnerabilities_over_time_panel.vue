@@ -23,7 +23,6 @@ export default {
     vulnerabilitiesOverTime: {
       query: getVulnerabilitiesOverTime,
       variables() {
-        const { projectId } = this.filters;
         const startDate = formatDate(
           getDateInPast(new Date(), this.$options.defaultStartDate),
           'isoDate',
@@ -31,10 +30,11 @@ export default {
         const endDate = formatDate(new Date(), 'isoDate');
 
         return {
-          ...(projectId ? { projectId } : {}),
-          fullPath: this.groupFullPath,
           startDate,
           endDate,
+          projectId: this.filters.projectId,
+          reportType: this.filters.reportType,
+          fullPath: this.groupFullPath,
         };
       },
       update(data) {

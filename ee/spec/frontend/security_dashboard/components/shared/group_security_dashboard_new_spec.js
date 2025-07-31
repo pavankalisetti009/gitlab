@@ -6,7 +6,9 @@ import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/consta
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/group_security_dashboard_new.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
+import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
+import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 jest.mock('~/alert');
 
@@ -74,12 +76,20 @@ describe('Group Security Dashboard (new version) - Component', () => {
             token: markRaw(ProjectToken),
             operators: OPERATORS_OR,
           }),
+          expect.objectContaining({
+            type: 'reportType',
+            title: 'Report type',
+            multiSelect: true,
+            unique: true,
+            token: markRaw(ReportTypeToken),
+            operators: OPERATORS_OR,
+          }),
         ]),
       );
     });
 
     it('updates filters when filters-changed event is emitted', async () => {
-      const newFilters = { projectId: 'gid://gitlab/Project/123' };
+      const newFilters = { projectId: ['gid://gitlab/Project/123'] };
       findFilteredSearch().vm.$emit('filters-changed', newFilters);
       await nextTick();
 
@@ -87,7 +97,7 @@ describe('Group Security Dashboard (new version) - Component', () => {
     });
 
     it('clears filters when empty filters object is emitted', async () => {
-      const initialFilters = { projectId: 'gid://gitlab/Project/123' };
+      const initialFilters = { projectId: ['gid://gitlab/Project/123'] };
       findFilteredSearch().vm.$emit('filters-changed', initialFilters);
       await nextTick();
 
@@ -101,11 +111,25 @@ describe('Group Security Dashboard (new version) - Component', () => {
     });
 
     it('passes filters to the vulnerabilities over time panel', async () => {
-      const projectId = 'gid://gitlab/Project/123';
+      const projectId = ['gid://gitlab/Project/123'];
       findFilteredSearch().vm.$emit('filters-changed', { projectId });
       await nextTick();
 
       expect(getFirstPanel().componentProps.filters).toEqual({ projectId });
+    });
+
+    it('removes filter when ALL_ID is present in the filter value', async () => {
+      const projectId = ['gid://gitlab/Project/123'];
+      const newFilters = { projectId, reportType: [ALL_ID] };
+
+      findFilteredSearch().vm.$emit('filters-changed', newFilters);
+      await nextTick();
+
+      // projectId should remain, but reportType contains ALL_ID so it should be an empty array
+      expect(getFirstPanel().componentProps.filters).toEqual({
+        projectId,
+        reportType: [],
+      });
     });
   });
 });
