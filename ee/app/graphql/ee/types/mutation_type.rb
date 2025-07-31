@@ -243,6 +243,7 @@ module EE
         mount_mutation ::Mutations::Security::CiConfiguration::SetGroupSecretPushProtection
         mount_mutation ::Mutations::Security::CiConfiguration::SetValidityChecks
         mount_mutation ::Mutations::Security::CiConfiguration::SetContainerScanningForRegistry
+        mount_mutation ::Mutations::Security::CiConfiguration::SetLicenseConfigurationSource
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Destroy
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Update
         mount_mutation ::Mutations::DependencyProxy::Packages::Settings::Update

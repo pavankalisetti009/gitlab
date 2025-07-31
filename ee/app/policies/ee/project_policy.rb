@@ -1183,6 +1183,13 @@ module EE
         enable :enable_container_scanning_for_registry
       end
 
+      condition(:license_information_source_available, scope: :subject) do
+        @subject.licensed_feature_available?(:license_information_source)
+      end
+      rule { license_information_source_available & (can?(:maintainer_access) | can?(:admin_security_testing)) }.policy do
+        enable :set_license_information_source
+      end
+
       rule { secret_push_protection_available & can?(:developer_access) }.policy do
         enable :read_secret_push_protection_info
       end
