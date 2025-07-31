@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Usage Quotas', :saas, feature_category: :consumables_cost_management do
+RSpec.describe 'Groups > Usage quotas', :saas, feature_category: :consumables_cost_management do
   include ContentSecurityPolicyHelpers
 
   let_it_be_with_reload(:user) { create(:user) }

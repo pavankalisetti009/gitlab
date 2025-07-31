@@ -21,7 +21,7 @@ module QA
             end
 
             def go_to_usage_quotas
-              open_settings_submenu('Usage Quotas')
+              open_settings_submenu('Usage quotas')
             end
           end
         end

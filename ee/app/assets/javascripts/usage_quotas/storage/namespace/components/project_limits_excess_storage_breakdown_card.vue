@@ -8,7 +8,7 @@ import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 /**
  * ProjectLimitsExcessStorageBreakdownCard
  *
- * This card is used on Namespace Usage Quotas
+ * This card is used on Namespace Usage quotas
  * when the namespace has Project-level storage limits
  * https://docs.gitlab.com/ee/user/storage_usage_quotas#project-storage-limit
  * It describes the relationship between excess storage and purchased storage
