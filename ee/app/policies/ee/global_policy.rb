@@ -143,14 +143,6 @@ module EE
         License.duo_core_features_available?
       end
 
-      condition(:duo_core_features_enabled) do
-        ::Ai::Setting.duo_core_features_enabled?
-      end
-
-      rule { duo_core_features_available & duo_core_features_enabled }.policy do
-        enable :access_duo_core_features
-      end
-
       rule { ~anonymous & remote_development_feature_licensed }.policy do
         enable :access_workspaces_feature
       end
