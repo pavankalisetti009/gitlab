@@ -170,7 +170,8 @@ export default {
     }
   },
   methods: {
-    checkPhoneNumber() {
+    checkPhoneNumber(value) {
+      this.form.fields.phoneNumber.value = value;
       const errorMessage = validatePhoneNumber(this.inputPhoneNumber);
       this.form.fields.phoneNumber.feedback = errorMessage;
       this.form.fields.phoneNumber.state = errorMessage.length <= 0;
@@ -292,7 +293,7 @@ export default {
     >
       <gl-form-input-group>
         <gl-form-input
-          v-model="form.fields.phoneNumber.value"
+          :value="form.fields.phoneNumber.value"
           type="tel"
           name="phone_number"
           :state="form.fields.phoneNumber.state"
