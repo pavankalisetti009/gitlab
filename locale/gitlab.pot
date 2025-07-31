@@ -72158,6 +72158,9 @@ msgstr ""
 msgid "WorkItem|You're only seeing %{boldStart}other activity%{boldEnd} in the feed. To add a comment, switch to one of the following options."
 msgstr ""
 
+msgid "WorkItem|Your data might be out of date. Refresh to see the latest information."
+msgstr ""
+
 msgid "WorkItem|Zoom link"
 msgstr ""
 
