@@ -29,7 +29,6 @@ import { buildApiUrl } from '~/api/api_utils';
 import {
   i18n,
   WIDGET_TYPE_ASSIGNEES,
-  WIDGET_TYPE_NOTIFICATIONS,
   WIDGET_TYPE_CURRENT_USER_TODOS,
   WIDGET_TYPE_DESCRIPTION,
   WIDGET_TYPE_AWARD_EMOJI,
@@ -383,9 +382,6 @@ export default {
     canReorderDesign() {
       return this.hasDesignWidget && this.workspacePermissions.moveDesign;
     },
-    workItemNotificationsSubscribed() {
-      return Boolean(this.findWidget(WIDGET_TYPE_NOTIFICATIONS)?.subscribed);
-    },
     workItemCurrentUserTodos() {
       return this.findWidget(WIDGET_TYPE_CURRENT_USER_TODOS);
     },
@@ -531,7 +527,6 @@ export default {
         fullPath: this.workItemFullPath,
         workItemId: this.workItem.id,
         hideSubscribe: this.newTodoAndNotificationsEnabled,
-        subscribedToNotifications: this.workItemNotificationsSubscribed,
         workItemType: this.workItemType,
         workItemIid: this.iid,
         projectId: this.workItemProjectId,
@@ -628,7 +623,7 @@ export default {
       this.editMode = true;
     },
     findWidget(type) {
-      return this.widgets?.find((widget) => widget.type === type);
+      return this.workItem?.widgets?.find((widget) => widget.type === type);
     },
     toggleConfidentiality(confidentialStatus) {
       this.updateInProgress = true;
@@ -927,7 +922,6 @@ export default {
         :is-modal="isModal"
         :work-item="workItem"
         :is-sticky-header-showing="isStickyHeaderShowing"
-        :work-item-notifications-subscribed="workItemNotificationsSubscribed"
         @hideStickyHeader="hideStickyHeader"
         @showStickyHeader="showStickyHeader"
         @deleteWorkItem="$emit('deleteWorkItem', { workItemType, workItemId: workItem.id })"
@@ -1038,7 +1032,6 @@ export default {
                 <work-item-notifications-widget
                   v-if="newTodoAndNotificationsEnabled"
                   :work-item-id="workItem.id"
-                  :subscribed-to-notifications="workItemNotificationsSubscribed"
                   @error="updateError = $event"
                 />
                 <work-item-actions
