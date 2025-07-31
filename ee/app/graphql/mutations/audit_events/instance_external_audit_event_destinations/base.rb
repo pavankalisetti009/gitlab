@@ -8,7 +8,7 @@ module Mutations
 
         def ready?(**args)
           unless current_user&.can?(:admin_instance_external_audit_events)
-            raise Gitlab::Graphql::Errors::ResourceNotAvailable, ERROR_MESSAGE
+            raise_resource_not_available_error! ERROR_MESSAGE
           end
 
           super
