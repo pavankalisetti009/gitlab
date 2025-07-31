@@ -24,6 +24,7 @@ query EEgetWorkItemStateCounts(
   $types: [IssueType!]
   $updatedAfter: Time
   $updatedBefore: Time
+  $crmOrganizationId: String
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
   $in: [IssuableSearchableField!]
   $not: NegatedWorkItemFilterInput
@@ -59,6 +60,7 @@ query EEgetWorkItemStateCounts(
       types: $types
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
+      crmOrganizationId: $crmOrganizationId
       customField: $customField
       in: $in
       not: $not
@@ -95,6 +97,7 @@ query EEgetWorkItemStateCounts(
       types: $types
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
+      crmOrganizationId: $crmOrganizationId
       in: $in
       not: $not
       or: $or
