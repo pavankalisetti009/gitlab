@@ -295,6 +295,7 @@ module GitlabSubscriptions
       security_scans_api
       observability_alerts
       measure_comment_temperature
+      license_information_source
     ].freeze
 
     STARTER_FEATURES_WITH_USAGE_PING = %i[

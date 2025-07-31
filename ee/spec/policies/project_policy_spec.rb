@@ -5354,4 +5354,41 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to send(expected_result, :create_container_registry_protection_immutable_tag_rule) }
     end
   end
+
+  describe 'set_license_information_source' do
+    let(:license_information_source_feature) { true }
+
+    before do
+      stub_licensed_features(security_dashboard: true, license_information_source: license_information_source_feature)
+    end
+
+    context 'when user has a lesser role' do
+      let(:current_user) { developer }
+
+      it { is_expected.to be_disallowed(:set_license_information_source) }
+    end
+
+    context 'when user is a maintainer' do
+      let(:current_user) { maintainer }
+
+      context 'with admin_security_testing enabled' do
+        it { is_expected.to be_allowed(:set_license_information_source) }
+      end
+
+      context 'when admin_security_testing is disabled' do
+        before do
+          allow(Ability).to receive(:allowed?).with(current_user, :admin_all_resources, :global)
+          allow(Ability).to receive(:allowed?).with(current_user, :admin_security_testing, project).and_return(false)
+        end
+
+        it { is_expected.to be_allowed(:set_license_information_source) }
+      end
+
+      context 'when the licensed feature is disabled' do
+        let(:license_information_source_feature) { false }
+
+        it { is_expected.to be_disallowed(:set_license_information_source) }
+      end
+    end
+  end
 end
