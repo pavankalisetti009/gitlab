@@ -52,21 +52,6 @@ export default (base, breadcrumbState, permissions = {}) => {
             },
           ]
         : []),
-      ...(permissions.canCreateNewDashboard
-        ? [
-            {
-              name: 'dashboard-new',
-              path: '/new',
-              component: AnalyticsDashboard,
-              props: {
-                isNewDashboard: true,
-              },
-              meta: {
-                getName: () => s__('Analytics|New dashboard'),
-              },
-            },
-          ]
-        : []),
       {
         name: 'dashboard-detail',
         path: '/:slug',
