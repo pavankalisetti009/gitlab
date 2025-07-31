@@ -297,7 +297,7 @@ describe('BaseRuleComponent', () => {
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
         expect(findPipelineSourceSelector().props()).toEqual({
-          allSources: true,
+          showAllSources: true,
           pipelineSources: {},
         });
       });
@@ -315,7 +315,7 @@ describe('BaseRuleComponent', () => {
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
         expect(findPipelineSourceSelector().props()).toEqual({
-          allSources: false,
+          showAllSources: false,
           pipelineSources: {},
         });
       });
@@ -336,6 +336,22 @@ describe('BaseRuleComponent', () => {
         await findPipelineSourceSelector().vm.$emit('select', pipelineSources);
 
         expect(wrapper.emitted('changed')[0][0]).toEqual(expect.objectContaining(pipelineSources));
+      });
+
+      it('should remove selection from rule', () => {
+        const pipelineRule = {
+          type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+          branch_type: TARGET_DEFAULT,
+        };
+
+        createComponent({
+          props: {
+            initRule: { ...pipelineRule, pipeline_sources: { including: ['api'] } },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        findPipelineSourceSelector().vm.$emit('remove');
+        expect(wrapper.emitted('changed')).toEqual([[{ ...pipelineRule }]]);
       });
     });
 
