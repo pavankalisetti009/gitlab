@@ -103,7 +103,7 @@ export default {
 </script>
 <template>
   <div>
-    <gl-loading-icon v-if="isSecretLoading" size="lg" class="gl-mt-6" />
+    <gl-loading-icon v-if="isSecretLoading" size="lg" class="gl-mt-5" />
     <div v-if="secret">
       <secret-delete-modal
         :full-path="fullPath"

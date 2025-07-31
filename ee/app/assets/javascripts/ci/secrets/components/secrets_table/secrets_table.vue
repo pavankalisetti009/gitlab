@@ -4,6 +4,7 @@ import {
   GlEmptyState,
   GlIcon,
   GlLabel,
+  GlLoadingIcon,
   GlSprintf,
   GlTableLite,
   GlKeysetPagination,
@@ -38,6 +39,7 @@ export default {
     GlIcon,
     GlKeysetPagination,
     GlLabel,
+    GlLoadingIcon,
     GlSprintf,
     GlTableLite,
     SecretDeleteModal,
@@ -95,11 +97,11 @@ export default {
     hasPreviousPage() {
       return this.startCursor !== null;
     },
-    onSecretsPage() {
-      return window.location.pathname.includes('/-/secrets');
+    isLoading() {
+      return this.$apollo.queries.secrets.loading;
     },
     showEmptyState() {
-      return !this.$apollo.queries.secrets.loading && this.secrets.length === 0;
+      return this.secrets.length === 0;
     },
     showPagination() {
       return this.hasPreviousPage || this.hasNextPage;
@@ -168,7 +170,7 @@ export default {
 </script>
 <template>
   <div>
-    <h1 v-if="onSecretsPage" class="page-title gl-text-size-h-display">
+    <h1 class="page-title gl-text-size-h-display">
       {{ s__('Secrets|Secrets') }}
     </h1>
     <p>
@@ -180,9 +182,9 @@ export default {
         "
       />
     </p>
-
+    <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-5" />
     <gl-empty-state
-      v-if="showEmptyState"
+      v-else-if="showEmptyState"
       :title="s__('Secrets|Secure your sensitive information')"
       :description="
         s__(
