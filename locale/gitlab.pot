@@ -71285,6 +71285,9 @@ msgstr ""
 msgid "Weight - %{maxIssueWeight}"
 msgstr ""
 
+msgid "Weight does not match total of child items."
+msgstr ""
+
 msgid "Welcome %{name},"
 msgstr ""
 

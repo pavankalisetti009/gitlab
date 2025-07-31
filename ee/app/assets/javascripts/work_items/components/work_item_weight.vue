@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlFormGroup, GlFormInput, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlFormGroup, GlFormInput, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
@@ -21,6 +21,7 @@ export default {
     GlButton,
     GlFormGroup,
     GlFormInput,
+    GlIcon,
     WorkItemSidebarWidget,
   },
   mixins: [Tracking.mixin()],
@@ -54,8 +55,17 @@ export default {
     weight() {
       return this.widget.weight;
     },
+    rolledUpWeight() {
+      return this.widget.rolledUpWeight;
+    },
     hasWeight() {
       return this.weight !== null;
+    },
+    hasRolledUpWeight() {
+      return this.rolledUpWeight !== null;
+    },
+    hasConflictingWeights() {
+      return this.hasWeight && this.hasRolledUpWeight && this.weight !== this.rolledUpWeight;
     },
     showRemoveWeight() {
       return this.hasWeight && !this.isUpdating;
@@ -163,6 +173,15 @@ export default {
     <template #content>
       <template v-if="hasWeight">
         {{ weight }}
+
+        <gl-icon
+          v-if="hasConflictingWeights"
+          v-gl-tooltip
+          name="warning"
+          :title="__('Weight does not match total of child items.')"
+          class="gl-ml-2 gl-cursor-help"
+          variant="warning"
+        />
       </template>
       <span v-else class="gl-text-subtle">
         {{ __('None') }}
