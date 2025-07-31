@@ -26,6 +26,7 @@ query workItemMetadataEE($fullPath: ID!) {
       reportAbuse
       signIn
       issuesSettings @gl_introduced(version: "18.3.0-pre")
+      userExportEmail
     }
   }
 }
