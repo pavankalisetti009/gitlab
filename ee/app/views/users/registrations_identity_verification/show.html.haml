@@ -1,5 +1,5 @@
 - page_title s_('IdentityVerification|Help us keep GitLab secure')
-- if trial_registration?
+- if onboarding_status_presenter.new_registration_design?
   - experiment(:lightweight_trial_registration_redesign, actor: @user) do |e|
     - e.candidate do
       - content_for :hide_empty_navbar, true

@@ -20,6 +20,7 @@ module EE
       delegate :show_joining_project?, :hide_setup_for_company_field?, to: :registration_type
       delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
       delegate :learn_gitlab_redesign?, :show_company_form_footer?, to: :registration_type
+      delegate :new_registration_design?, to: :registration_type
 
       module ClassMethods
         extend ::Gitlab::Utils::Override
