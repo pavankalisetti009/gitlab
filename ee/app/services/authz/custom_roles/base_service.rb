@@ -4,6 +4,7 @@ module Authz
   module CustomRoles
     class BaseService
       include Gitlab::Allowable
+      include Gitlab::InternalEventsTracking
 
       def initialize(current_user, params = {})
         @current_user = current_user
@@ -47,6 +48,15 @@ module Authz
             message: "Member role was #{action}"
           }
         end
+      end
+
+      def collect_metrics
+        track_internal_event(
+          event_name,
+          project: nil,
+          namespace: namespace,
+          user: current_user
+        )
       end
 
       def namespace

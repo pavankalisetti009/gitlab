@@ -7,6 +7,8 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
 
+  let(:namespace) { role.namespace } # used in tracking custom role action shard examples
+
   subject(:service) { described_class.new(user) }
 
   before do
@@ -29,7 +31,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
         let_it_be(:user) { admin }
 
         it_behaves_like 'deleting a role'
-        it_behaves_like 'tracking regular custom role deletion'
+        it_behaves_like 'tracking custom role action', 'delete'
 
         context 'when the member role is linked to a security policy' do
           before do
@@ -55,7 +57,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
             let(:audit_event_abilities) { 'read_admin_users' }
           end
 
-          it_behaves_like 'tracking admin custom role deletion'
+          it_behaves_like 'tracking custom role action', 'delete_admin'
         end
       end
     end
@@ -80,7 +82,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
             let(:audit_entity_type) { group.class.name }
           end
 
-          it_behaves_like 'tracking regular custom role deletion'
+          it_behaves_like 'tracking custom role action', 'delete'
         end
       end
 
@@ -94,7 +96,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
           let(:audit_event_abilities) { 'read_admin_users' }
         end
 
-        it_behaves_like 'tracking admin custom role deletion'
+        it_behaves_like 'tracking custom role action', 'delete_admin'
       end
     end
   end

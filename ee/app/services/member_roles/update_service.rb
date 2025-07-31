@@ -18,6 +18,7 @@ module MemberRoles
 
       if role.save
         log_audit_event(action: :updated)
+        collect_metrics
 
         success
       else
@@ -27,6 +28,13 @@ module MemberRoles
 
     def allowed?
       can?(current_user, :admin_member_role, role)
+    end
+
+    def event_name
+      # TODO: Remove this as part of https://gitlab.com/gitlab-org/gitlab/-/issues/555681
+      return 'update_admin_custom_role' if role.admin_related_role?
+
+      'update_custom_role'
     end
   end
 end

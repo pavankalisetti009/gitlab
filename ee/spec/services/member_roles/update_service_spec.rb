@@ -8,6 +8,7 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
   let_it_be(:admin) { create(:admin) }
 
   let(:user) { regular_user }
+  let(:namespace) { role.namespace } # used in tracking custom role action shard examples
 
   describe '#execute' do
     let_it_be(:existing_abilities) { { read_vulnerability: true } }
@@ -43,6 +44,7 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
         let(:user) { admin }
 
         it_behaves_like 'custom role update'
+        it_behaves_like 'tracking custom role action', 'update'
 
         context 'with admin roles' do
           let_it_be(:existing_abilities) { { read_admin_cicd: true } }
@@ -53,6 +55,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
             let(:audit_event_message) { 'Custom admin role was updated' }
             let(:audit_event_type) { 'custom_admin_role_updated' }
           end
+
+          it_behaves_like 'tracking custom role action', 'update_admin'
         end
       end
     end
@@ -80,6 +84,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
             let(:audit_entity_id) { group.id }
             let(:audit_entity_type) { group.class.name }
           end
+
+          it_behaves_like 'tracking custom role action', 'update'
         end
       end
 
@@ -103,6 +109,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
             let(:audit_event_message) { 'Custom admin role was updated' }
             let(:audit_event_type) { 'custom_admin_role_updated' }
           end
+
+          it_behaves_like 'tracking custom role action', 'update_admin'
         end
       end
     end
