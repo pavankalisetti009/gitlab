@@ -9895,7 +9895,7 @@ msgstr ""
 msgid "Banned"
 msgstr ""
 
-msgid "Banner message"
+msgid "Banner message (optional)"
 msgstr ""
 
 msgid "Based on"
@@ -37862,6 +37862,9 @@ msgid "Maintainer"
 msgstr ""
 
 msgid "Maintenance mode"
+msgstr ""
+
+msgid "MaintenanceMode|By disabling maintenance mode your banner message will be lost."
 msgstr ""
 
 msgid "MaintenanceMode|There was an error updating the Maintenance Mode Settings"
