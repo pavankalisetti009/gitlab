@@ -80,7 +80,6 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
 
         it 'renders the dashboard list correctly' do
           expect(page).to have_content _('Analytics dashboards')
-          expect(page).to have_content _('Dashboards are created by editing the projects dashboard files')
         end
 
         it_behaves_like 'has value streams dashboard link'

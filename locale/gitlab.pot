@@ -1784,9 +1784,6 @@ msgstr ""
 msgid "(+%{count}&nbsp;rules)"
 msgstr ""
 
-msgid "(Copy)"
-msgstr ""
-
 msgid "(Limited to %{quota} compute minutes per month)"
 msgstr ""
 
@@ -7771,9 +7768,6 @@ msgstr ""
 msgid "Analytics|Column chart"
 msgstr ""
 
-msgid "Analytics|Configure Dashboard Project"
-msgstr ""
-
 msgid "Analytics|Configure analytics reports."
 msgstr ""
 
@@ -7781,9 +7775,6 @@ msgid "Analytics|Continue creating"
 msgstr ""
 
 msgid "Analytics|Continue editing"
-msgstr ""
-
-msgid "Analytics|Could not clone the dashboard. Refresh the page to try again."
 msgstr ""
 
 msgid "Analytics|Create dashboard %{dashboardSlug}"
@@ -7801,9 +7792,6 @@ msgstr ""
 msgid "Analytics|Custom"
 msgstr ""
 
-msgid "Analytics|Custom dashboards"
-msgstr ""
-
 msgid "Analytics|Dashboard description"
 msgstr ""
 
@@ -7816,16 +7804,7 @@ msgstr ""
 msgid "Analytics|Dashboard title"
 msgstr ""
 
-msgid "Analytics|Dashboard was cloned successfully"
-msgstr ""
-
 msgid "Analytics|Dashboard was saved successfully"
-msgstr ""
-
-msgid "Analytics|Dashboards are created by editing the groups dashboard files."
-msgstr ""
-
-msgid "Analytics|Dashboards are created by editing the projects dashboard files."
 msgstr ""
 
 msgid "Analytics|Data explorer"
@@ -7905,9 +7884,6 @@ msgstr ""
 msgid "Analytics|Line chart"
 msgstr ""
 
-msgid "Analytics|New dashboard"
-msgstr ""
-
 msgid "Analytics|No dashboard matches the specified URL path."
 msgstr ""
 
@@ -7969,9 +7945,6 @@ msgid "Analytics|Tables"
 msgstr ""
 
 msgid "Analytics|The visualization preview displays only the last 7 days. Dashboard visualizations can display the entire date range."
-msgstr ""
-
-msgid "Analytics|To create your own dashboards, first configure a project to store your dashboards."
 msgstr ""
 
 msgid "Analytics|Unable to update analytics settings. Please try again."
@@ -13721,9 +13694,6 @@ msgid "Clientside DSN"
 msgstr ""
 
 msgid "Clientside traces sample rate"
-msgstr ""
-
-msgid "Clone"
 msgstr ""
 
 msgid "Clone repository"

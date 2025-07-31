@@ -86,20 +86,11 @@ export default () => {
       this.name = value;
     },
   });
-  const customizableDashboardsAvailable = window.gon?.features?.customizableDashboards || false;
-  const groupAnalyticsDashboardEditorEnabled =
-    window.gon?.features?.groupAnalyticsDashboardEditor || false;
   const customDashboardsProject = analyticsDashboardPointer;
   const isProject = parseBoolean(isProjectStr);
 
-  const canCreateNewDashboard =
-    customizableDashboardsAvailable &&
-    customDashboardsProject &&
-    (isProject || groupAnalyticsDashboardEditorEnabled);
-
   const router = createRouter(routerBase, breadcrumbState, {
     canConfigureProjectSettings,
-    canCreateNewDashboard,
   });
 
   injectVueAppBreadcrumbs(router, AnalyticsDashboardsBreadcrumbs);
@@ -137,8 +128,6 @@ export default () => {
       defaultUseInstanceConfiguration: parseBoolean(defaultUseInstanceConfiguration),
       overviewCountsAggregationEnabled: parseBoolean(overviewCountsAggregationEnabled),
       hasScopedLabelsFeature: parseBoolean(hasScopedLabelsFeature),
-      canCreateNewDashboard,
-      customizableDashboardsAvailable,
     },
     render(h) {
       return h(DashboardsApp);
