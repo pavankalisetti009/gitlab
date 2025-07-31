@@ -25,7 +25,7 @@ module Resolvers
           end_time: end_time
         ).execute
 
-        raise Gitlab::Graphql::Errors::ResourceNotAvailable, result.errors.join(', ') if result.error?
+        raise_resource_not_available_error! result.errors.join(', ') if result.error?
 
         result.payload[:shifts]
       end
