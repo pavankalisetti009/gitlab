@@ -4,6 +4,8 @@ import PolicyExceptions from 'ee/security_orchestration/components/policy_editor
 import PolicyExceptionsModal from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_modal.vue';
 import PolicyExceptionsSelectedList from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_selected_list.vue';
 import { mockBranchPatterns } from 'ee_jest/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/mocks';
+import { BRANCHES } from '~/projects/commit_box/info/constants';
+import { ROLES } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 describe('PolicyExceptions', () => {
   let wrapper;
@@ -36,6 +38,7 @@ describe('PolicyExceptions', () => {
   describe('selected exceptions', () => {
     const mockSelectedExceptions = {
       roles: ['maintainer', 'developer'],
+      custom_roles: ['1', '2'],
       branches: mockBranchPatterns,
       groups: [{ id: 1, name: 'group1' }],
     };
@@ -60,11 +63,29 @@ describe('PolicyExceptions', () => {
         },
       });
 
-      findPolicyExceptionsSelectedList().vm.$emit('remove', 'branches');
+      findPolicyExceptionsSelectedList().vm.$emit('remove', ROLES);
+      expect(wrapper.emitted('changed')).toEqual([
+        ['bypass_settings', { branches: mockBranchPatterns, groups: [{ id: 1, name: 'group1' }] }],
+      ]);
+    });
+
+    it('does not remove custom_roles when other than roles exception is removed', () => {
+      createComponent({
+        propsData: {
+          exceptions: mockSelectedExceptions,
+        },
+      });
+
+      findPolicyExceptionsSelectedList().vm.$emit('remove', BRANCHES);
       expect(wrapper.emitted('changed')).toEqual([
         [
           'bypass_settings',
-          { roles: ['maintainer', 'developer'], groups: [{ id: 1, name: 'group1' }] },
+          {
+            branches: mockBranchPatterns,
+            groups: [{ id: 1, name: 'group1' }],
+            custom_roles: ['1', '2'],
+            roles: ['maintainer', 'developer'],
+          },
         ],
       ]);
     });

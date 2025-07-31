@@ -4,6 +4,7 @@ import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component
 import BranchPatternSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/branch_pattern_selector.vue';
 import GroupsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/groups_selector.vue';
 import TokensSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/tokens_selector.vue';
+import RolesSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/roles_selector.vue';
 import ServiceAccountsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/service_accounts_selector.vue';
 import UsersSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/users_selector.vue';
 import PolicyExceptionsModal from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_modal.vue';
@@ -11,6 +12,7 @@ import PolicyExceptionsSelector from 'ee/security_orchestration/components/polic
 import {
   ACCOUNTS,
   GROUPS,
+  ROLES,
   SOURCE_BRANCH_PATTERNS,
   TOKENS,
   USERS,
@@ -19,6 +21,7 @@ import {
   mockAccounts,
   mockBranchPatterns,
   mockGroups,
+  mockRoles,
   mockTokens,
   mockUsers,
 } from 'ee_jest/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/mocks';
@@ -43,6 +46,7 @@ describe('PolicyExceptionsModal', () => {
   const findTokensSelector = () => wrapper.findComponent(TokensSelector);
   const findUsersSelector = () => wrapper.findComponent(UsersSelector);
   const findPolicyExceptionsSelector = () => wrapper.findComponent(PolicyExceptionsSelector);
+  const findRolesSelector = () => wrapper.findComponent(RolesSelector);
   const findSaveButton = () => wrapper.findByTestId('save-button');
   const findModalTitle = () => wrapper.findByTestId('modal-title');
   const findModalSubtitle = () => wrapper.findByTestId('modal-subtitle');
@@ -273,6 +277,50 @@ describe('PolicyExceptionsModal', () => {
         [
           {
             users: mockUsers,
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('roles', () => {
+    it('renders roles selector', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            roles: mockRoles,
+          },
+          selectedTab: ROLES,
+        },
+      });
+
+      expect(findRolesSelector().exists()).toBe(true);
+      expect(findRolesSelector().props('selectedRoles')).toEqual(mockRoles);
+
+      expect(findModalTitle().text()).toBe('Roles');
+      expect(findModalSubtitle().text()).toBe(
+        'Select role exceptions. Choose which roles can bypass this policy.',
+      );
+    });
+
+    it('saves selected roles', async () => {
+      createComponent({
+        propsData: {
+          selectedTab: ROLES,
+        },
+      });
+
+      await findRolesSelector().vm.$emit('set-roles', { roles: mockRoles, custom_roles: [] });
+
+      expect(wrapper.emitted('changed')).toBeUndefined();
+
+      await findSaveButton().vm.$emit('click');
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            roles: mockRoles,
+            custom_roles: [],
           },
         ],
       ]);

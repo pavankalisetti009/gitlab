@@ -83,6 +83,11 @@ export default {
     users() {
       return this.selectedExceptions?.users || [];
     },
+    roles() {
+      const roles = this.selectedExceptions?.roles || [];
+      const customRoles = this.selectedExceptions?.custom_roles || [];
+      return [...roles, ...customRoles];
+    },
   },
   watch: {
     exceptions(newVal) {
@@ -130,6 +135,13 @@ export default {
         users,
       };
     },
+    setRoles({ roles, custom_roles }) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        roles,
+        custom_roles,
+      };
+    },
     setAccessTokens(accessTokens) {
       this.selectedExceptions = {
         ...this.selectedExceptions,
@@ -168,7 +180,11 @@ export default {
       v-if="selectedTab"
       class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
     >
-      <roles-selector v-if="tabSelected($options.ROLES)" />
+      <roles-selector
+        v-if="tabSelected($options.ROLES)"
+        :selected-roles="roles"
+        @set-roles="setRoles"
+      />
       <users-selector
         v-if="tabSelected($options.USERS)"
         :selected-users="users"

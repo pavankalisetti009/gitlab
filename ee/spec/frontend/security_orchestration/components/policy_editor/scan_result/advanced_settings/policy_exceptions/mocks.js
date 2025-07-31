@@ -26,6 +26,8 @@ export const mockUsers = [
   { id: 'user-2', username: 'user-2' },
 ];
 
+export const mockRoles = ['maintainer', 'developer'];
+
 export const mockServiceAccounts = [
   { id: 1, name: 'service-account-1', username: 'sa1' },
   { id: 2, name: 'service-account-2', username: 'sa2' },

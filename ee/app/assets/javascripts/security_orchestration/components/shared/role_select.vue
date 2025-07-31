@@ -57,6 +57,11 @@ export default {
       required: false,
       default: true,
     },
+    customDropdownClasses: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -122,6 +127,7 @@ export default {
       block
       is-check-centered
       multiple
+      :class="customDropdownClasses"
       :header-text="__('Roles')"
       :reset-button-label="__('Clear all')"
       :toggle-class="[{ '!gl-shadow-inner-1-red-500': !state }]"

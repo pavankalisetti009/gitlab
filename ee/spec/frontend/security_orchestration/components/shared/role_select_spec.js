@@ -4,7 +4,7 @@ import { GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import RoleSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/role_select.vue';
+import RoleSelect from 'ee/security_orchestration/components/shared/role_select.vue';
 import groupCustomRoles from 'ee/security_orchestration/graphql/queries/group_custom_roles.query.graphql';
 import projectCustomRoles from 'ee/security_orchestration/graphql/queries/project_custom_roles.query.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -301,6 +301,18 @@ describe('RoleSelect component', () => {
       findListbox().vm.$emit('reset');
 
       expect(wrapper.emitted('select-items')).toEqual([[{ role_approvers: [] }]]);
+    });
+  });
+
+  describe('css classes', () => {
+    it('adds custom css classes to role dropdown', () => {
+      createComponent({
+        propsData: {
+          customDropdownClasses: ['custom-class'],
+        },
+      });
+
+      expect(findListbox().classes()).toContain('custom-class');
     });
   });
 });
