@@ -49,5 +49,16 @@ module Authz
       # assigments in the given group through an invited group.
       find_by(user: user, group: group, shared_with_group: nil)
     end
+
+    def self.with_attrs(attrs, attr_values)
+      # WHERE (attr1, attr2) IN (VALUES (attr1_value, attr2_value), (attr1_value2, attr2_value2))
+      #
+      # E.g. to fetch all records created for group_group_link we could do
+      # .with_attrs([:group_id, :shared_with_group_id], [[1, 2], [3, 4]])
+      attrs = Array(attrs.collect { |a| arel_table[a] })
+      values = Arel::Nodes::ValuesList.new(attr_values)
+
+      where(Arel::Nodes::In.new(Arel::Nodes::Grouping.new(attrs), values))
+    end
   end
 end

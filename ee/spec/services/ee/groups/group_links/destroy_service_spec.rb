@@ -56,31 +56,25 @@ RSpec.describe Groups::GroupLinks::DestroyService, '#execute', feature_category:
 
     describe "shared_with_group's members' ::Authz::UserGroupMemberRole records" do
       shared_examples 'does not enqueue a DestroyForSharedGroupWorker job' do
-        it 'does not enqueue a ::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker job' do
+        specify do
           expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker).not_to receive(:perform_async)
 
           service.execute(link)
         end
       end
 
-      context 'when link has no member role assigned' do
-        it_behaves_like 'does not enqueue a DestroyForSharedGroupWorker job'
-      end
+      it_behaves_like 'does not enqueue a DestroyForSharedGroupWorker job'
 
-      context 'when link has a member role assigned' do
-        let_it_be(:member_role) { create(:member_role, namespace: shared_group) }
-
+      context 'when ::Authz::UserGroupMemberRole records exist matching the link' do
         before do
-          link.update!(member_role: member_role)
+          create(:user_group_member_role, group: link.shared_group, shared_with_group: link.shared_with_group)
         end
 
         it 'enqueues a ::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker job' do
-          allow(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker).to receive(:perform_async)
+          expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker)
+            .to receive(:perform_async).with(link.shared_group_id, link.shared_with_group_id)
 
           service.execute(link)
-
-          expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker)
-            .to have_received(:perform_async).with(link.shared_group_id, link.shared_with_group_id)
         end
 
         context 'when feature flag is disabled' do
@@ -133,6 +127,21 @@ RSpec.describe Groups::GroupLinks::DestroyService, '#execute', feature_category:
 
           subject.execute(links)
         end
+      end
+    end
+
+    context 'for links with matching ::Authz::UserGroupMemberRole records' do
+      let(:link) { links.first }
+
+      before do
+        create(:user_group_member_role, group: link.shared_group, shared_with_group: link.shared_with_group)
+      end
+
+      it 'enqueues a ::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker job' do
+        expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker)
+          .to receive(:perform_async).once.with(link.shared_group_id, link.shared_with_group_id)
+
+        service.execute(links)
       end
     end
   end
