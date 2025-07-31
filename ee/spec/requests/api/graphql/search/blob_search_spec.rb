@@ -144,9 +144,24 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
     end
 
     context 'when project is archived' do
-      before do
-        project.update!(archived: true)
-        zoekt_ensure_project_indexed!(project)
+      RSpec.shared_examples 'does not return archived projects' do
+        it 'archived projects are not included in the response' do
+          post_graphql(query, current_user: current_user)
+          expect(graphql_data_at(:blobSearch, :files).pluck('projectPath')).not_to include(archived_project.full_path)
+        end
+      end
+
+      RSpec.shared_examples 'returns archived projects' do
+        it 'archived projects are included in the response' do
+          post_graphql(query, current_user: current_user)
+          expect(graphql_data_at(:blobSearch, :files).pluck('projectPath')).to include(archived_project.full_path)
+        end
+      end
+
+      let_it_be(:archived_project) { create(:project, :public, :archived, :small_repo, group: group) }
+
+      before_all do
+        zoekt_ensure_project_indexed!(archived_project)
       end
 
       context 'when traversal id feature flag is disabled' do
@@ -154,30 +169,18 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
           stub_feature_flags(zoekt_traversal_id_queries: false)
         end
 
-        it 'does not return archived projects by default' do
-          post_graphql(query, current_user: current_user)
-          expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-          expect(graphql_data_at(:blobSearch, :files)).to be_empty
-        end
+        it_behaves_like 'does not return archived projects'
 
         context 'when include_archived is true' do
           let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
 
-          it 'returns archived projects' do
-            post_graphql(query, current_user: current_user)
-            expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
-            expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
-          end
+          it_behaves_like 'returns archived projects'
         end
 
         context 'when include_archived is false' do
           let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: false } }
 
-          it 'does not return archived projects' do
-            post_graphql(query, current_user: current_user)
-            expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-            expect(graphql_data_at(:blobSearch, :files)).to be_empty
-          end
+          it_behaves_like 'does not return archived projects'
         end
       end
 
@@ -186,57 +189,33 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
           stub_feature_flags(zoekt_ast_search_payload: false)
         end
 
-        it 'does not return archived projects by default' do
-          post_graphql(query, current_user: current_user)
-          expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-          expect(graphql_data_at(:blobSearch, :files)).to be_empty
-        end
+        it_behaves_like 'does not return archived projects'
 
         context 'when include_archived is true' do
           let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
 
-          it 'returns archived projects' do
-            post_graphql(query, current_user: current_user)
-            expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
-            expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
-          end
+          it_behaves_like 'returns archived projects'
         end
 
         context 'when include_archived is false' do
           let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: false } }
 
-          it 'does not return archived projects' do
-            post_graphql(query, current_user: current_user)
-            expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-            expect(graphql_data_at(:blobSearch, :files)).to be_empty
-          end
+          it_behaves_like 'does not return archived projects'
         end
       end
 
-      it 'does not return archived projects by default' do
-        post_graphql(query, current_user: current_user)
-        expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-        expect(graphql_data_at(:blobSearch, :files)).to be_empty
-      end
+      it_behaves_like 'does not return archived projects'
 
       context 'when include_archived is true' do
         let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
 
-        it 'returns archived projects' do
-          post_graphql(query, current_user: current_user)
-          expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
-          expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
-        end
+        it_behaves_like 'returns archived projects'
       end
 
       context 'when include_archived is false' do
         let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: false } }
 
-        it 'does not return archived projects' do
-          post_graphql(query, current_user: current_user)
-          expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-          expect(graphql_data_at(:blobSearch, :files)).to be_empty
-        end
+        it_behaves_like 'does not return archived projects'
       end
     end
 
