@@ -35,20 +35,18 @@ module WorkItems
       end
 
       def rolled_up_weight
-        return unless widget_options[:rollup]
-
         use_cached_rolled_up_weight? ? cached_rolled_up_weight : calculated_rolled_up_weight
       end
 
       def rolled_up_completed_weight
-        return unless widget_options[:rollup]
-
         use_cached_rolled_up_weight? ? cached_rolled_up_completed_weight : calculated_rolled_up_completed_weight
       end
 
       private
 
       def rolled_up_weight_by_state
+        return unless widget_options[:rollup]
+
         # We cannot use `#sum(:weight)` because ActiveRecord returns 0 when PG returns NULL.
         # We need to distinguish between a sum of 0 and the absence of descendant weights.
         work_item.descendants
