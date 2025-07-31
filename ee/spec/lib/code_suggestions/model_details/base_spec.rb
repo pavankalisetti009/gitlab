@@ -142,8 +142,22 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   end
 
   describe '#duo_context_not_found?' do
+    let(:default_namespace_ff_state) { true }
+
+    before do
+      stub_feature_flags(ai_default_duo_namespace_user: default_namespace_ff_state)
+    end
+
     context 'when no duo context can be found' do
       it_behaves_like 'feature_setting cannot be inferred for method', :duo_context_not_found?, true
+    end
+
+    context 'when the ai_default_duo_namespace_user ff is disabled' do
+      let(:default_namespace_ff_state) { false }
+
+      it 'returns false' do
+        expect(model_details.duo_context_not_found?).to be(false)
+      end
     end
 
     context 'when Amazon Q is connected' do
