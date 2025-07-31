@@ -107,6 +107,8 @@ module Gitlab
               '0.9.0' # Claude 3.5 Sonnet
             elsif ::Ai::AmazonQ.enabled?
               'amazon_q/1.0.0' # Amazon Q
+            elsif Feature.enabled?(:duo_code_review_prompt_updates, user)
+              '1.3.0' # Claude 4.0 Sonnet with major prompt updates
             elsif duo_code_review_custom_instructions_enabled?
               '1.2.0' # Claude 4.0 Sonnet with custom instructions
             elsif Feature.enabled?(:duo_code_review_claude_4_0_rollout, user)
