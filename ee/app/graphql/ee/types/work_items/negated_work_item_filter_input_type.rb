@@ -17,6 +17,11 @@ module EE
           argument :iteration_id, [::GraphQL::Types::ID],
             required: false,
             description: 'List of iteration Global IDs not applied to the work items.'
+          argument :iteration_wildcard_id, ::Types::IterationWildcardIdEnum,
+            required: false,
+            description: 'Filter by negated iteration ID wildcard.'
+
+          validates mutually_exclusive: [:iteration_id, :iteration_wildcard_id]
         end
       end
     end

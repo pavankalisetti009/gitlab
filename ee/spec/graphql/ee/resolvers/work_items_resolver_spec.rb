@@ -238,6 +238,17 @@ RSpec.describe Resolvers::WorkItemsResolver do
         end
       end
 
+      describe 'filtering by negated iteration wildcard' do
+        it 'returns work items not in current iteration' do
+          expect(resolve_items(not: { iteration_wildcard_id: 'CURRENT' }))
+            .to contain_exactly(
+              work_item1, work_item2, work_item3,
+              work_item_with_iteration1, work_item_with_iteration2, work_item_without_iteration,
+              work_item_with_upcoming_iteration
+            )
+        end
+      end
+
       it 'handles invalid global IDs gracefully' do
         invalid_id = 'invalid_global_id_format'
 
