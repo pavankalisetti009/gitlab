@@ -69336,6 +69336,9 @@ msgstr ""
 msgid "VirtualRegistry|Registry types"
 msgstr ""
 
+msgid "VirtualRegistry|Something went wrong while creating the upstream. Please try again."
+msgstr ""
+
 msgid "VirtualRegistry|Test upstream"
 msgstr ""
 
@@ -69352,6 +69355,9 @@ msgid "VirtualRegistry|Updated %{date}"
 msgstr ""
 
 msgid "VirtualRegistry|Upstream URL"
+msgstr ""
+
+msgid "VirtualRegistry|Upstream created successfully"
 msgstr ""
 
 msgid "VirtualRegistry|Upstreams"

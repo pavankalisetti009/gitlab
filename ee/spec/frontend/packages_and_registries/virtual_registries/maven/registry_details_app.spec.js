@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import getMavenVirtualRegistryUpstreamsQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_virtual_registry_upstreams.query.graphql';
-import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_upstream_registry.mutation.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -42,13 +41,6 @@ describe('MavenRegistryDetailsApp', () => {
   const findUpstreamRegistryItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
 
   const groupMavenRegistriesHandler = jest.fn().mockResolvedValue(mockGroupVirtualRegistry);
-  const createUpstreamSuccessHandler = jest.fn().mockResolvedValue({
-    data: {
-      mavenUpstreamCache: {
-        errors: [],
-      },
-    },
-  });
   const errorHandler = jest.fn().mockRejectedValue(mockError);
 
   const createComponent = ({ handlers = [] } = {}) => {
@@ -84,30 +76,16 @@ describe('MavenRegistryDetailsApp', () => {
     });
   });
 
-  describe('When creating a new upstream', () => {
-    it('creates a new upstream', async () => {
-      const event = {
-        name: 'Maven upstream 7',
-        url: 'https://repo.maven.apache.org/maven2',
-        description: '',
-        username: '',
-        password: '',
-        cacheValidityHours: 24,
-      };
-
+  describe('When a new upstream has been created', () => {
+    it('refetches upstreams query', async () => {
       createComponent({
-        handlers: [
-          [getMavenVirtualRegistryUpstreamsQuery, groupMavenRegistriesHandler],
-          [createUpstreamRegistryMutation, createUpstreamSuccessHandler],
-        ],
+        handlers: [[getMavenVirtualRegistryUpstreamsQuery, groupMavenRegistriesHandler]],
       });
 
-      await findMavenRegistryDetails().vm.$emit('createUpstream', event);
+      await waitForPromises();
+      await findMavenRegistryDetails().vm.$emit('upstreamCreated');
 
-      expect(createUpstreamSuccessHandler).toHaveBeenCalledWith({
-        id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/1',
-        ...event,
-      });
+      expect(groupMavenRegistriesHandler).toHaveBeenCalledTimes(2);
     });
   });
 

@@ -1,16 +1,20 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton } from '@gitlab/ui';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sprintf, s__ } from '~/locale';
+import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_upstream.mutation.graphql';
+import { convertToMavenRegistryGraphQLId } from '../utils';
+import { captureException } from '../sentry_utils';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
 import RegistryUpstreamForm from './registry_upstream_form.vue';
 
 export default {
   name: 'MavenRegistryDetailsApp',
   components: {
+    GlAlert,
     GlButton,
     MetadataItem,
     TitleArea,
@@ -58,8 +62,7 @@ export default {
    */
   /**
    * Emitted when a new upstream is created
-   * @event createUpstream
-   * @property {Object} upstream - The upstream object being created
+   * @event upstreamCreated
    */
   /**
    * Emitted when an upstream is tested
@@ -77,9 +80,11 @@ export default {
    * @event deleteUpstream
    * @property {string} upstreamId - The ID of the upstream to delete
    */
-  emits: ['reorderUpstream', 'createUpstream', 'testUpstream', 'clearCache', 'deleteUpstream'],
+  emits: ['reorderUpstream', 'upstreamCreated', 'testUpstream', 'clearCache', 'deleteUpstream'],
   data() {
     return {
+      createUpstreamError: '',
+      createUpstreamMutationLoading: false,
       upstreamItems: this.upstreams?.nodes || [],
     };
   },
@@ -100,6 +105,9 @@ export default {
     toggleText() {
       return this.glAbilities.createVirtualRegistry ? s__('VirtualRegistry|Add upstream') : null;
     },
+    mavenVirtualRegistryID() {
+      return convertToMavenRegistryGraphQLId(this.registry.id);
+    },
   },
   watch: {
     upstreams(val) {
@@ -110,8 +118,43 @@ export default {
     reorderUpstream(direction, upstreamId) {
       this.$emit('reorderUpstream', direction, upstreamId);
     },
+    async upstreamAction(name, mutationData) {
+      this.createUpstreamMutationLoading = true;
+      this.createUpstreamError = '';
+
+      try {
+        const {
+          data: {
+            [name]: { errors },
+          },
+        } = await this.$apollo.mutate({
+          mutation: createUpstreamRegistryMutation,
+          variables: mutationData,
+        });
+
+        if (errors.length > 0) {
+          this.createUpstreamError = errors.join(', ');
+        } else {
+          this.emitUpstreamCreated();
+          this.$toast.show(s__('VirtualRegistry|Upstream created successfully'));
+        }
+      } catch (error) {
+        this.createUpstreamError = s__(
+          'VirtualRegistry|Something went wrong while creating the upstream. Please try again.',
+        );
+        captureException({ error, component: this.$options.name });
+      } finally {
+        this.createUpstreamMutationLoading = false;
+      }
+    },
     createUpstream(form) {
-      this.$emit('createUpstream', form);
+      this.upstreamAction(this.$options.upstreamRegistryCreate, {
+        id: this.mavenVirtualRegistryID,
+        ...form,
+      });
+    },
+    emitUpstreamCreated() {
+      this.$emit('upstreamCreated');
       this.hideForm();
     },
     clearCache(upstreamId) {
@@ -125,8 +168,12 @@ export default {
     },
     hideForm() {
       this.$refs.registryDetailsCrud.hideForm();
+      if (this.createUpstreamError) {
+        this.createUpstreamError = '';
+      }
     },
   },
+  upstreamRegistryCreate: 'mavenUpstreamCreate',
 };
 </script>
 
@@ -176,8 +223,12 @@ export default {
         </p>
       </template>
       <template #form>
+        <gl-alert v-if="createUpstreamError" variant="danger" @dismiss="createUpstreamError = ''">
+          {{ createUpstreamError }}
+        </gl-alert>
         <registry-upstream-form
           :registry="registry"
+          :loading="createUpstreamMutationLoading"
           :can-test-upstream="canTestUpstream"
           @submit="createUpstream"
           @testUpstream="testUpstream"
