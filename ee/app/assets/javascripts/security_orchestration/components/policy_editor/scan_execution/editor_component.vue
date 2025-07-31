@@ -88,6 +88,7 @@ export default {
     configurationTitle: s__('SecurityOrchestration|Additional configuration'),
     scanExecutionPolicyHelpPage: helpPagePath(
       'user/application_security/policies/scan_execution_policies',
+      { anchor: 'scan-execution-policy-editor' },
     ),
   },
   apollo: {
