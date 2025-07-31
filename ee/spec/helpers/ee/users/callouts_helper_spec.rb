@@ -397,52 +397,28 @@ RSpec.describe EE::Users::CalloutsHelper do
 
   describe '.show_explore_duo_core_banner?' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:group) { create(:group) }
     let(:merge_request) { create(:merge_request) }
 
-    subject { helper.show_explore_duo_core_banner?(merge_request, group) }
+    subject { helper.show_explore_duo_core_banner?(merge_request) }
 
-    before_all do
-      group.add_developer(user)
+    where(:is_assignee, :user_can_access_duo_chat_via_duo_core, :user_dismissed, :expected_result) do
+      true | true | false | true
+      false | true | false | false
+      true | true | true | false
+      true | false | false | false
     end
 
-    before do
-      allow(helper).to receive(:current_user).and_return(user)
-      merge_request.update!(assignees: [user]) if is_assignee
-      allow(helper).to receive(:user_dismissed?).with(::Users::CalloutsHelper::EXPLORE_DUO_CORE_BANNER) { user_dismissed }
-    end
-
-    context 'with saas', :saas do
-      where(:is_assignee, :user_can_access_duo_core, :user_dismissed, :expected_result) do
-        true  | true  | false | true
-        false | true  | false | false
-        true  | false | false | false
-        true  | true  | true  | false
+    with_them do
+      before do
+        allow(helper).to receive(:current_user).and_return(user)
+        merge_request.update!(assignees: [user]) if is_assignee
+        allow(helper).to receive(:user_dismissed?).with(::Users::CalloutsHelper::EXPLORE_DUO_CORE_BANNER) { user_dismissed }
+        allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(
+          instance_double(Ai::UserAuthorizable::Response, authorized_by_duo_core: user_can_access_duo_chat_via_duo_core)
+        )
       end
 
-      with_them do
-        before do
-          allow(user).to receive(:can?).with(:access_duo_core_features, group).and_return(user_can_access_duo_core)
-        end
-
-        it { is_expected.to be expected_result }
-      end
-    end
-
-    context 'with self-managed' do
-      where(:is_assignee, :user_can_access_duo_core, :user_dismissed, :expected_result) do
-        true | true | false | true
-        false | true | false | false
-        true | true | true | false
-      end
-
-      with_them do
-        before do
-          allow(user).to receive(:can?).with(:access_duo_core_features).and_return(user_can_access_duo_core)
-        end
-
-        it { is_expected.to be expected_result }
-      end
+      it { is_expected.to be expected_result }
     end
   end
 

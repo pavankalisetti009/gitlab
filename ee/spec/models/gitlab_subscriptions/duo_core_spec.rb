@@ -20,36 +20,4 @@ RSpec.describe GitlabSubscriptions::DuoCore, feature_category: :'add-on_provisio
       it { is_expected.to be(false) }
     end
   end
-
-  describe '.available?' do
-    using RSpec::Parameterized::TableSyntax
-
-    let(:user) { build(:user) }
-    let(:namespace) { build(:namespace) }
-
-    subject { described_class.available?(user, namespace) }
-
-    where(:gitlab_duo_saas_only, :can_access, :with_namespace, :expected_result) do
-      true  | true  | true  | true
-      true  | false | true  | false
-      false | true  | false | true
-      false | false | false | false
-    end
-
-    with_them do
-      before do
-        stub_saas_features(gitlab_duo_saas_only: gitlab_duo_saas_only)
-
-        if with_namespace
-          allow(user).to receive(:can?).with(:access_duo_core_features, namespace).and_return(can_access)
-        else
-          allow(user).to receive(:can?).with(:access_duo_core_features).and_return(can_access)
-        end
-      end
-
-      it 'returns the expected result' do
-        is_expected.to eq(expected_result)
-      end
-    end
-  end
 end
