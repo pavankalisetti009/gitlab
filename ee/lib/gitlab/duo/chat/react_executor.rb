@@ -13,6 +13,7 @@ module Gitlab
         ExhaustedLoopError = Class.new(StandardError)
         AgentEventError = Class.new(StandardError)
         RetryableAgentEventError = Class.new(StandardError)
+        DefaultNamespaceNotFound = Class.new(StandardError)
 
         attr_reader :tools, :user_input, :context, :response_handler, :thread
         attr_accessor :iterations
@@ -151,6 +152,15 @@ module Gitlab
                 "Please try a different prompt or clear your conversation history with /clear."),
               source: "chat_v2",
               error_code: "A1006"
+            )
+          when DefaultNamespaceNotFound
+            Gitlab::Llm::Chain::Answer.error_answer(
+              error: error,
+              context: context,
+              content: _("you have not selected a default GitLab Duo namespace. " \
+                "Please select a default GitLab Duo namespace in your user preferences."),
+              source: "chat_v2",
+              error_code: "G3002"
             )
           when Gitlab::AiGateway::ForbiddenError
             Gitlab::Llm::Chain::Answer.error_answer(
@@ -342,15 +352,50 @@ module Gitlab
         strong_memoize_attr :current_blob
 
         def chat_feature_setting
-          root_namespace = context.ai_request&.root_namespace
+          return if ::Ai::AmazonQ.connected?
 
-          if Feature.enabled?(:ai_model_switching, root_namespace)
-            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace, :duo_chat)
-          else
-            ::Ai::FeatureSetting.find_by_feature(:duo_chat)
-          end
+          model_selection_namespace_setting || self_hosted_feature_setting
         end
         strong_memoize_attr :chat_feature_setting
+
+        def model_selection_namespace_setting
+          namespace = duo_namespace
+
+          return if namespace.nil?
+
+          ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(namespace, :duo_chat)
+        end
+        strong_memoize_attr :model_selection_namespace_setting
+
+        def duo_namespace
+          context_namespace = context.ai_request&.root_namespace
+
+          return context_namespace if context_namespace
+
+          # When there is no root_namespace given we need to prioritize SHM feature settings
+          # Therefore this method and #model_selection_namespace_setting needs to return nil.
+          # No need to return the default namespace in those cases.
+          return if self_hosted_feature_setting
+
+          user_preference = context.current_user.user_preference
+
+          inferred_namespace = user_preference.get_default_duo_namespace
+
+          return inferred_namespace if inferred_namespace
+
+          # we need to return the default namespace only when there is multiple seats assigned to the user.
+          # Otherwise, we might have error in undesirable cases
+          # e.g. when self-hosted feature setting are not correctly set
+          return if user_preference.no_eligible_duo_add_on_assignments?
+
+          raise DefaultNamespaceNotFound
+        end
+        strong_memoize_attr :duo_namespace
+
+        def self_hosted_feature_setting
+          ::Ai::FeatureSetting.find_by_feature(:duo_chat)
+        end
+        strong_memoize_attr :self_hosted_feature_setting
 
         def record_first_token_apex
           return unless context.started_at
