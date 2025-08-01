@@ -34,7 +34,7 @@ query getIssuesCountEE(
   $closedBefore: Time
   $subscribed: SubscriptionStatus
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
-  $status: String
+  $status: WorkItemWidgetStatusFilterInput
 ) {
   group(fullPath: $fullPath) @skip(if: $isProject) {
     id
@@ -73,7 +73,7 @@ query getIssuesCountEE(
       closedBefore: $closedBefore
       subscribed: $subscribed
       customField: $customField
-      status: { name: $status }
+      status: $status
     ) {
       count
     }
@@ -112,7 +112,7 @@ query getIssuesCountEE(
       closedBefore: $closedBefore
       subscribed: $subscribed
       customField: $customField
-      status: { name: $status }
+      status: $status
     ) {
       count
     }
@@ -151,7 +151,7 @@ query getIssuesCountEE(
       closedBefore: $closedBefore
       subscribed: $subscribed
       customField: $customField
-      status: { name: $status }
+      status: $status
     ) {
       count
     }
@@ -194,7 +194,7 @@ query getIssuesCountEE(
       closedBefore: $closedBefore
       subscribed: $subscribed
       customField: $customField
-      status: { name: $status }
+      status: $status
     ) {
       count
     }
@@ -234,7 +234,7 @@ query getIssuesCountEE(
       closedBefore: $closedBefore
       subscribed: $subscribed
       customField: $customField
-      status: { name: $status }
+      status: $status
     ) {
       count
     }
@@ -274,7 +274,7 @@ query getIssuesCountEE(
       closedBefore: $closedBefore
       subscribed: $subscribed
       customField: $customField
-      status: { name: $status }
+      status: $status
     ) {
       count
     }

@@ -38,7 +38,7 @@ query getWorkItemsFullEE(
   $weight: String
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
-  $status: String
+  $status: WorkItemWidgetStatusFilterInput
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -79,7 +79,7 @@ query getWorkItemsFullEE(
       weight: $weight
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
-      status: { name: $status }
+      status: $status
     ) {
       pageInfo {
         ...PageInfo
