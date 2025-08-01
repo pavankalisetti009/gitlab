@@ -88,6 +88,11 @@ and IRAP Top Secret.
 
 ### IRAP Official
 
+The following table lists the requirements supported by GitLab for IRAP Official and the controls for the requirements.
+You can use the
+[`irap_official.json` template](https://gitlab.com/gitlab-org/software-supply-chain-security/compliance/engineering/compliance-adherence-templates/-/blob/main/irap_official.json?ref_type=heads)
+to create a compliance framework for this standard.
+
 | IRAP Official requirement                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Supported controls |
 |:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------|
 | ISM-0402 Application security testing                     | Applications are comprehensively tested for vulnerabilities, using static application security testing and dynamic application security testing, prior to their initial release and any subsequent releases.                                                                                                                                                                                                                                                | <ul><li>SAST running</li><li>DAST running</li></ul> |
@@ -102,6 +107,11 @@ and IRAP Top Secret.
 | ISM-1875 Protecting credentials                           | Networks are scanned at least monthly to identify any credentials that are being stored in the clear.                                                                                                                                                                                                                                                                                                                                                       | <ul><li>Secret detection running</li></ul> |
 
 ### IRAP Protected
+
+The following table lists the requirements supported by GitLab for IRAP Protected and the controls for the requirements.
+You can use the
+[`irap_protected.json` template](https://gitlab.com/gitlab-org/software-supply-chain-security/compliance/engineering/compliance-adherence-templates/-/blob/main/irap_protected.json?ref_type=heads)
+to create a compliance framework for this standard.
 
 | IRAP Protected requirement                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Supported controls |
 |:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------|
@@ -118,6 +128,11 @@ and IRAP Top Secret.
 
 ### IRAP Secret
 
+The following table lists the requirements supported by GitLab for IRAP Secret and the controls for the requirements.
+You can use the
+[`irap_secret.json` template](https://gitlab.com/gitlab-org/software-supply-chain-security/compliance/engineering/compliance-adherence-templates/-/blob/main/irap_secret.json?ref_type=heads)
+to create a compliance framework for this standard.
+
 | IRAP Secret requirement                                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Supported controls |
 |:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------|
 | ISM-0402 Application security testing                     | Applications are comprehensively tested for vulnerabilities, using static application security testing and dynamic application security testing, prior to their initial release and any subsequent releases.                                                                                                                                                                                                                                                | <ul><li>SAST running</li><li>DAST running</li></ul> |
@@ -132,6 +147,11 @@ and IRAP Top Secret.
 | ISM-1875 Protecting credentials                           | Networks are scanned at least monthly to identify any credentials that are being stored in the clear.                                                                                                                                                                                                                                                                                                                                                       | <ul><li>Secret detection running</li></ul> |
 
 ### IRAP Top Secret
+
+The following table lists the requirements supported by GitLab for IRAP Top Secret and the controls for the requirements.
+You can use the
+[`irap_top_secret.json` template](https://gitlab.com/gitlab-org/software-supply-chain-security/compliance/engineering/compliance-adherence-templates/-/blob/main/irap_top_secret.json?ref_type=heads)
+to create a compliance framework for this standard.
 
 | IRAP Top Secret requirement                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Supported controls |
 |:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------|
