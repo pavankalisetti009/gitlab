@@ -219,14 +219,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       context "when there are no violations" do
         it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(collect_security_policy_violations_detected_audit_events: false)
-        end
-
-        it_behaves_like 'not enqueuing the PolicyViolationsDetectedAuditEventWorker'
-      end
     end
 
     describe 'security_policy_violations_resolved audit event' do
@@ -261,14 +253,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         context 'when there are other existing violations' do
           before do
             service.add([policy_b], [])
-          end
-
-          it_behaves_like 'not enqueuing the PolicyViolationsResolvedAuditEventWorker'
-        end
-
-        context 'when the feature flag is disabled' do
-          before do
-            stub_feature_flags(collect_security_policy_violations_resolved_audit_events: false)
           end
 
           it_behaves_like 'not enqueuing the PolicyViolationsResolvedAuditEventWorker'

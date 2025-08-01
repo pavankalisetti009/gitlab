@@ -43,9 +43,6 @@ module Security
       end
 
       def audit_merged_with_policy_violations(merge_request)
-        return unless Feature.enabled?(:collect_merge_request_merged_with_policy_violations_audit_events,
-          merge_request.project)
-
         MergeRequests::MergedWithPolicyViolationsAuditEventService.new(merge_request).execute
       end
     end

@@ -121,10 +121,6 @@ module Security
       end
 
       def record_violations_detected_audit_event?
-        return false unless ::Feature.enabled?(
-          :collect_security_policy_violations_detected_audit_events, merge_request.project
-        )
-
         updated_violations.any? && updated_violations.running.empty?
       end
 
@@ -138,10 +134,6 @@ module Security
       strong_memoize_attr :updated_violations
 
       def record_violations_resolved_audit_event?
-        return unless ::Feature.enabled?(
-          :collect_security_policy_violations_resolved_audit_events, merge_request.project
-        )
-
         @deleted_violations_with_data && updated_violations.empty?
       end
 
