@@ -25983,7 +25983,7 @@ CREATE TABLE vulnerability_occurrences (
     location_fingerprint bytea NOT NULL,
     name character varying NOT NULL,
     metadata_version character varying NOT NULL,
-    raw_metadata text NOT NULL,
+    raw_metadata text,
     vulnerability_id bigint,
     details jsonb DEFAULT '{}'::jsonb NOT NULL,
     description text,
