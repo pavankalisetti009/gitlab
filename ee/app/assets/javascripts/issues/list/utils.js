@@ -171,6 +171,7 @@ export const mergeDuplicatedCustomFieldTokens = (filterTokensCustomFields) => {
 export const convertToApiParams = (filterTokens, options = {}) => {
   const params = new Map();
   const filterTokensFoss = filterTokens.filter((t) => !isCustomFieldToken(t));
+  const statusToken = filterTokens.find((t) => t.type === 'status');
 
   if (options.hasCustomFieldsFeature) {
     const filterTokensCustomFields = filterTokens.filter((t) => isCustomFieldToken(t));
@@ -204,6 +205,10 @@ export const convertToApiParams = (filterTokens, options = {}) => {
           : data,
       );
     });
+  }
+
+  if (options.hasStatusFeature && statusToken?.value?.data) {
+    params.set('status', { name: statusToken?.value?.data });
   }
 
   return {

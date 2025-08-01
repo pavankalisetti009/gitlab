@@ -32,7 +32,7 @@ query EEgetWorkItemStateCounts(
   $weight: String
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
-  $status: String
+  $status: WorkItemWidgetStatusFilterInput
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -66,7 +66,7 @@ query EEgetWorkItemStateCounts(
       not: $not
       or: $or
       healthStatusFilter: $healthStatusFilter
-      status: { name: $status }
+      status: $status
     ) {
       all
       closed
@@ -104,7 +104,7 @@ query EEgetWorkItemStateCounts(
       weight: $weight
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
-      status: { name: $status }
+      status: $status
     ) {
       all
       closed
