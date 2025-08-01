@@ -1,11 +1,14 @@
 <script>
-import { GlFilteredSearchSuggestion, GlIcon, GlTruncate } from '@gitlab/ui';
+import { GlFilteredSearchSuggestion, GlIcon, GlTruncate, GlTooltipDirective } from '@gitlab/ui';
 
 export default {
   components: {
     GlFilteredSearchSuggestion,
     GlIcon,
     GlTruncate,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     /**
@@ -29,6 +32,11 @@ export default {
       required: false,
       default: false,
     },
+    tooltipText: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
 };
 </script>
@@ -43,6 +51,15 @@ export default {
       />
       <gl-truncate v-if="truncate" position="middle" :text="text" />
       <template v-else>{{ text }}</template>
+      <gl-icon
+        v-if="tooltipText"
+        v-gl-tooltip
+        data-testid="tooltip-icon"
+        name="question-o"
+        variant="subtle"
+        class="gl-ml-3"
+        :title="tooltipText"
+      />
     </div>
   </gl-filtered-search-suggestion>
 </template>
