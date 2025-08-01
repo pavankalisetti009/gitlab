@@ -103,6 +103,19 @@ module EE
       validates :work_item_parent_link, presence: true, on: :create, if: -> { parent.present? }
       validate :validate_same_work_item_parent_link, on: :create, if: -> { parent.present? }
 
+      with_options(comparison: {
+        allow_nil: true,
+        less_than_or_equal_to: ::WorkItems::DatesSource::MAX_DATE_LIMIT,
+        greater_than_or_equal_to: ::WorkItems::DatesSource::MIN_DATE_LIMIT
+      }, if: :validate_dates?) do
+        validates :start_date
+        validates :start_date_fixed
+        validates :due_date
+        validates :due_date_fixed
+      end
+
+      # Needed to use EntityDateHelper#remaining_days_in_words
+      alias_attribute(:due_date, :end_date)
       alias_attribute :parent_ids, :parent_id
       alias_attribute :issuing_parent_id, :group_id
       alias_method :issue, :work_item
@@ -455,9 +468,6 @@ module EE
       (Date.today - start_date).to_i
     end
 
-    # Needed to use EntityDateHelper#remaining_days_in_words
-    alias_attribute(:due_date, :end_date)
-
     def start_date_from_milestones
       start_date_is_fixed? ? start_date_sourcing_milestone&.start_date : start_date
     end
@@ -780,6 +790,16 @@ module EE
     end
 
     private
+
+    # Validate for new records or when any date field has changed
+    def validate_dates?
+      new_record? || any_dates_changed?
+    end
+
+    def any_dates_changed?
+      (changed_attributes.keys & %w[start_date start_date_fixed end_date due_date_fixed])
+        .present?
+    end
 
     def validate_parent_epic
       if self == parent
