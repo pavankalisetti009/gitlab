@@ -32,7 +32,7 @@ module Emails
 
       add_group_headers
 
-      @sent_notification = SentNotification.record(@epic, recipient_id, reply_key)
+      @sent_notification = SentNotification.record(@epic, recipient_id)
     end
 
     def epic_thread_options(sender_id, reason)
