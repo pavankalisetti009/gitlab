@@ -4,6 +4,7 @@ import {
   GlEmptyState,
   GlKeysetPagination,
   GlLoadingIcon,
+  GlLink,
   GlTableLite,
 } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
@@ -32,6 +33,7 @@ describe('SecretsTable component', () => {
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findEmptyStateButton = () => findEmptyState().findComponent(GlButton);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findLearnMoreLink = () => wrapper.findComponent(GlLink);
   const findNewSecretButton = () => wrapper.findByTestId('new-secret-button');
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
   const findSecretsTableRows = () => findSecretsTable().find('tbody').findAll('tr');
@@ -155,6 +157,12 @@ describe('SecretsTable component', () => {
 
     it('hides the delete secret modal', () => {
       expect(findDeleteModal().props('showModal')).toBe(false);
+    });
+
+    it('renders learn more link', () => {
+      expect(findLearnMoreLink().attributes('href')).toBe(
+        '/help/ci/secrets/secrets_manager/_index',
+      );
     });
   });
 

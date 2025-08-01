@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlToggle } from '@gitlab/ui';
+import { GlLink, GlToggle } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -59,6 +59,7 @@ describe('SecretManagerSettings', () => {
   };
 
   const findError = () => wrapper.findByTestId('secret-manager-error');
+  const findLearnMoreLink = () => wrapper.findComponent(GlLink);
   const findToggle = () => wrapper.findComponent(GlToggle);
   const findPermissionsSettings = () => wrapper.findComponent(PermissionsSettings);
 
@@ -95,6 +96,12 @@ describe('SecretManagerSettings', () => {
 
     it('disables toggle when user does not have permission', () => {
       expect(findToggle().props('disabled')).toBe(true);
+    });
+
+    it('renders learn more link', () => {
+      expect(findLearnMoreLink().attributes('href')).toBe(
+        '/help/ci/secrets/secrets_manager/_index',
+      );
     });
   });
 
