@@ -66,6 +66,7 @@ export default {
     :is-optional-default="isOptional"
     :require-password-to-approve="requirePasswordToApprove"
     :modal-id="modalId"
+    :is-collapsible="!isBasic"
     :collapsed="collapsed"
     :has-all-approvals="hasAllApprovals"
     :action-buttons="tertiaryActionsButtons"
