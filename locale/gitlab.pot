@@ -35229,6 +35229,9 @@ msgid_plural "Items - %d"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Item weight"
+msgstr ""
+
 msgid "Item with ID: %{id} cannot be added. You don't have permission to perform this action."
 msgstr ""
 
@@ -66681,6 +66684,9 @@ msgid "Total cores (CPUs)"
 msgstr ""
 
 msgid "Total memory (GB)"
+msgstr ""
+
+msgid "Total of child items"
 msgstr ""
 
 msgid "Total test time for all commits/merges"

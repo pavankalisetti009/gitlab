@@ -1,5 +1,12 @@
 <script>
-import { GlButton, GlFormGroup, GlFormInput, GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import {
+  GlButton,
+  GlFormGroup,
+  GlFormInput,
+  GlIcon,
+  GlTooltipDirective,
+  GlPopover,
+} from '@gitlab/ui';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
@@ -23,6 +30,8 @@ export default {
     GlFormInput,
     GlIcon,
     WorkItemSidebarWidget,
+    GlPopover,
+    IssueWeight: () => import('ee_component/issues/components/issue_weight.vue'),
   },
   mixins: [Tracking.mixin()],
   inject: ['hasIssueWeightsFeature'],
@@ -176,12 +185,26 @@ export default {
 
         <gl-icon
           v-if="hasConflictingWeights"
-          v-gl-tooltip
+          id="conflicting-weight-warning-icon"
           name="warning"
-          :title="__('Weight does not match total of child items.')"
           class="gl-ml-2 gl-cursor-help"
           variant="warning"
         />
+        <gl-popover target="conflicting-weight-warning-icon" triggers="hover focus">
+          <div class="gl-text-strong">{{ __('Weight does not match total of child items.') }}</div>
+          <div class="gl-mt-3 gl-flex gl-gap-3">
+            <span>
+              <div class="gl-text-subtle">{{ __('Total of child items') }}</div>
+              <issue-weight :weight="rolledUpWeight" class="!gl-text-strong" />
+            </span>
+            <span>
+              <div class="gl-text-subtle">
+                {{ __('Item weight') }}
+              </div>
+              <span class="gl-text-strong">{{ weight }}</span>
+            </span>
+          </div>
+        </gl-popover>
       </template>
       <span v-else class="gl-text-subtle">
         {{ __('None') }}
