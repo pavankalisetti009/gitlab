@@ -72,7 +72,8 @@ RSpec.describe OauthAccessToken, feature_category: :system_access do
 
     context 'with actual fallback strategies' do
       let!(:pbkdf2_token) { create(:oauth_access_token, application: app_one) }
-      let!(:plain_token) { create(:oauth_access_token, application: app_two) }
+      let!(:sha512_token) { create(:oauth_access_token, application: app_two) }
+      let!(:plain_token) { create(:oauth_access_token, application: app_three) }
 
       before do
         allow(described_class).to receive(:upgrade_fallback_value).and_call_original
@@ -99,6 +100,18 @@ RSpec.describe OauthAccessToken, feature_category: :system_access do
         expect(result).to eq(plain_token)
         expect(described_class).to have_received(:upgrade_fallback_value).with(plain_token, :token,
           different_secret)
+      end
+
+      it 'finds token stored with SHA512 strategy when PBKDF2 fails' do
+        plaintext_token_value = "123456"
+        value = Gitlab::DoorkeeperSecretStoring::Token::Sha512Hash.transform_secret(plaintext_token_value)
+        sha512_token.update_column(:token, value)
+
+        result = described_class.find_by_fallback_token(:token, plaintext_token_value)
+
+        expect(result).to eq(sha512_token)
+        expect(described_class).to have_received(:upgrade_fallback_value).with(sha512_token, :token,
+          plaintext_token_value)
       end
 
       it 'upgrade legacy plain text tokens' do

@@ -18,4 +18,11 @@ RSpec.describe "Token fallback strategies", feature_category: :system_access do
     pbkdf_token.update_column(:token, value)
     expect(OauthAccessToken.by_token(plaintext_token_value)).to be_truthy
   end
+
+  it "works with SHA512 token" do
+    sha512_token = create(:oauth_access_token)
+    value = Gitlab::DoorkeeperSecretStoring::Token::Sha512Hash.transform_secret(plaintext_token_value)
+    sha512_token.update_column(:token, value)
+    expect(OauthAccessToken.by_token(plaintext_token_value)).to be_truthy
+  end
 end
