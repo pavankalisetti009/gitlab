@@ -44,7 +44,6 @@ describe('DashboardsList', () => {
   const findPageTitle = () => wrapper.findByTestId('page-heading');
   const findPageDescription = () => wrapper.findByTestId('page-heading-description');
   const findHelpLink = () => wrapper.findByTestId('help-link');
-  const findDataExplorerButton = () => wrapper.findByTestId('data-explorer-button');
 
   const $router = {
     push: jest.fn(),
@@ -136,19 +135,7 @@ describe('DashboardsList', () => {
   });
 
   describe('for projects', () => {
-    it('does not render the data explorer button', () => {
-      createWrapper();
-
-      expect(findDataExplorerButton().exists()).toBe(false);
-    });
-
     describe('when custom dashboards project is configured', () => {
-      it('does not render the data explorer button', () => {
-        createWrapper();
-
-        expect(findDataExplorerButton().exists()).toBe(false);
-      });
-
       describe('when product analytics is onboarded', () => {
         beforeEach(async () => {
           mockAnalyticsDashboardsHandler = jest
@@ -164,20 +151,11 @@ describe('DashboardsList', () => {
 
           findProductAnalyticsOnboarding().vm.$emit('complete');
         });
-
-        it('should show the data explorer button', () => {
-          expect(findDataExplorerButton().exists()).toBe(true);
-        });
       });
     });
   });
 
   describe('for groups', () => {
-    it('does not render the data explorer button', () => {
-      createWrapper({ isProject: false, isGroup: true });
-
-      expect(findDataExplorerButton().exists()).toBe(false);
-    });
     describe('with successful dashboards query', () => {
       beforeEach(() => {
         mockAnalyticsDashboardsHandler = jest

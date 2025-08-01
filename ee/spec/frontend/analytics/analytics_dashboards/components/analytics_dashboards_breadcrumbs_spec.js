@@ -86,37 +86,8 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
       ]);
     });
 
-    it('should render the root and the static route when the user visits', async () => {
-      await router.push('/data-explorer');
-
-      expect(findBreadcrumbs().props('items')).toStrictEqual([
-        rootBreadcrumb,
-        {
-          text: 'Data explorer',
-          to: undefined,
-        },
-      ]);
-    });
-
     it('should disable auto-resize behavior', () => {
       expect(findBreadcrumbs().props('autoResize')).toEqual(false);
     });
-  });
-
-  it('should render the static breadcrumbs', async () => {
-    const staticBreadcrumb = { text: 'Static breadcrumb', href: '/static' };
-    createWrapper({
-      staticBreadcrumbs: [staticBreadcrumb],
-    });
-    await router.push('/data-explorer');
-
-    expect(findBreadcrumbs().props('items')).toStrictEqual([
-      staticBreadcrumb,
-      rootBreadcrumb,
-      {
-        text: 'Data explorer',
-        to: undefined,
-      },
-    ]);
   });
 });

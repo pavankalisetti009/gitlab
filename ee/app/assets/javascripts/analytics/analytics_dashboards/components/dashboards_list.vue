@@ -58,9 +58,6 @@ export default {
     };
   },
   computed: {
-    showVizDesignerButton() {
-      return this.isProject && this.customDashboardsProject && this.productAnalyticsIsOnboarded;
-    },
     dashboards() {
       return this.userDashboards;
     },
@@ -72,12 +69,6 @@ export default {
         Object.entries(ONBOARDING_FEATURE_COMPONENTS)
           .filter(this.featureEnabled)
           .filter(this.featureRequiresOnboarding),
-      );
-    },
-    productAnalyticsIsOnboarded() {
-      return (
-        this.featureEnabled([productAnalyticsOnboardingType]) &&
-        !this.featureRequiresOnboarding([productAnalyticsOnboardingType])
       );
     },
   },
@@ -146,16 +137,6 @@ export default {
             <gl-link data-testid="help-link" :href="$options.helpPageUrl">{{ content }}</gl-link>
           </template>
         </gl-sprintf>
-      </template>
-
-      <template v-if="showVizDesignerButton" #actions>
-        <gl-button
-          v-if="showVizDesignerButton"
-          to="data-explorer"
-          data-testid="data-explorer-button"
-        >
-          {{ s__('Analytics|Data explorer') }}
-        </gl-button>
       </template>
     </page-heading>
     <ul data-testid="dashboards-list" class="content-list gl-border-t gl-border-subtle">
