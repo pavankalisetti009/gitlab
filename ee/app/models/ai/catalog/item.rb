@@ -42,6 +42,15 @@ module Ai
         update(deleted_at: Time.zone.now)
       end
 
+      def definition(version)
+        @definition = case item_type.to_sym
+                      when AGENT_TYPE
+                        AgentDefinition.new(self, version)
+                      when FLOW_TYPE
+                        FlowDefinition.new(self, version)
+                      end
+      end
+
       private
 
       def prevent_deletion_if_consumers_exist
