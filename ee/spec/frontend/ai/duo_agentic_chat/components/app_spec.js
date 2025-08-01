@@ -9,9 +9,11 @@ import { setAgenticMode } from 'ee/ai/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
+import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/app.vue';
+import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
+import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
@@ -19,6 +21,7 @@ import {
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
+  DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
@@ -39,6 +42,21 @@ jest.mock('~/lib/utils/websocket_utils', () => ({
     return JSON.parse(data);
   }),
   closeSocket: jest.fn(),
+}));
+
+jest.mock('ee/ai/duo_agentic_chat/utils/apollo_utils', () => ({
+  ApolloUtils: {
+    createWorkflow: jest.fn(),
+    deleteWorkflow: jest.fn(),
+    fetchWorkflowEvents: jest.fn(),
+  },
+}));
+
+jest.mock('ee/ai/duo_agentic_chat/utils/workflow_utils', () => ({
+  WorkflowUtils: {
+    transformChatMessages: jest.fn(),
+    parseWorkflowData: jest.fn(),
+  },
 }));
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
@@ -64,15 +82,55 @@ const MOCK_CONTEXT_PRESETS_RESPONSE = {
     },
   },
 };
-const MOCK_WORKFLOW_MUTATION_RESPONSE = {
+const MOCK_APOLLO_UTILS_CREATE_WORKFLOW_RESPONSE = {
+  workflowId: '456',
+  threadId: null,
+};
+
+const MOCK_USER_WORKFLOWS_RESPONSE = {
   data: {
-    aiDuoWorkflowCreate: {
-      workflow: {
-        id: MOCK_WORKFLOW_ID,
-      },
-      errors: [],
+    duoWorkflowWorkflows: {
+      edges: [
+        {
+          node: {
+            id: MOCK_WORKFLOW_ID,
+            title: 'Test workflow goal',
+            lastUpdatedAt: '2024-01-01T00:00:00Z',
+          },
+        },
+      ],
     },
   },
+};
+
+const MOCK_WORKFLOW_EVENTS_RESPONSE = {
+  duoWorkflowEvents: {
+    nodes: [
+      {
+        id: 'event-1',
+        checkpoint: '{"channel_values": {"ui_chat_log": []}}',
+      },
+    ],
+  },
+};
+
+const MOCK_TRANSFORMED_MESSAGES = [
+  {
+    content: 'Hello, how can I help?',
+    role: 'assistant',
+    requestId: '456-0',
+    message_type: 'agent',
+  },
+];
+
+const MOCK_UTILS_SETUP = () => {
+  ApolloUtils.createWorkflow.mockResolvedValue(MOCK_APOLLO_UTILS_CREATE_WORKFLOW_RESPONSE);
+  ApolloUtils.deleteWorkflow.mockResolvedValue(true);
+  ApolloUtils.fetchWorkflowEvents.mockResolvedValue(MOCK_WORKFLOW_EVENTS_RESPONSE);
+  WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
+  WorkflowUtils.parseWorkflowData.mockReturnValue({
+    checkpoint: { channel_values: { ui_chat_log: [] } },
+  });
 };
 
 const expectedAdditionalContext = [
@@ -109,9 +167,9 @@ describe('Duo Agentic Chat', () => {
     setLoading: jest.fn(),
   };
 
-  const duoWorkflowMutationHandlerMock = jest
-    .fn()
-    .mockResolvedValue(MOCK_WORKFLOW_MUTATION_RESPONSE);
+  const mockRefetch = jest.fn().mockResolvedValue({});
+
+  const userWorkflowsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_USER_WORKFLOWS_RESPONSE);
   const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(AgenticDuoChat);
@@ -132,12 +190,14 @@ describe('Duo Agentic Chat', () => {
     const store = new Vuex.Store({
       actions: actionSpies,
       state: {
+        loading: false,
+        messages: [],
         ...initialState,
       },
     });
 
     const apolloProvider = createMockApollo([
-      [duoWorkflowMutation, duoWorkflowMutationHandlerMock],
+      [getUserWorkflows, userWorkflowsQueryHandlerMock],
       [getAiChatContextPresets, contextPresetsQueryHandlerMock],
     ]);
 
@@ -153,14 +213,19 @@ describe('Duo Agentic Chat', () => {
         return data;
       },
     });
+
+    if (wrapper.vm.$apollo?.queries?.agenticWorkflows) {
+      wrapper.vm.$apollo.queries.agenticWorkflows.refetch = mockRefetch;
+    }
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRefetch.mockClear();
+    MOCK_UTILS_SETUP();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
     duoChatGlobalState.isAgenticChatShown = false;
   });
 
@@ -177,6 +242,28 @@ describe('Duo Agentic Chat', () => {
 
       it('passes isToolApprovalProcessing prop to AgenticDuoChat component', () => {
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+      });
+
+      it('passes multithreading props to AgenticDuoChat component', async () => {
+        await waitForPromises();
+
+        expect(findDuoChat().props('isMultithreaded')).toBe(true);
+        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
+        expect(findDuoChat().props('activeThreadId')).toBe('');
+        expect(findDuoChat().props('threadList')).toEqual([
+          {
+            id: 'gid://gitlab/Ai::DuoWorkflow/456',
+            lastUpdatedAt: '2024-01-01T00:00:00Z',
+            title: 'Test workflow goal',
+          },
+        ]);
+      });
+
+      it('calls the user workflows GraphQL query when component loads', () => {
+        expect(userWorkflowsQueryHandlerMock).toHaveBeenCalledWith({
+          type: 'chat',
+          first: 99999,
+        });
       });
 
       it('calls the context presets GraphQL query when component loads', () => {
@@ -206,7 +293,8 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().exists()).toBe(false);
       });
 
-      it('does not call the context presets GraphQL query', () => {
+      it('does not call the GraphQL queries', () => {
+        expect(userWorkflowsQueryHandlerMock).not.toHaveBeenCalled();
         expect(contextPresetsQueryHandlerMock).not.toHaveBeenCalled();
       });
     });
@@ -249,12 +337,11 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
-        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
-          goal: MOCK_USER_MESSAGE.content,
-          workflowDefinition: 'chat',
-          agentPrivileges: [2, 3],
-          preApprovedAgentPrivileges: [2],
+        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
           projectId: MOCK_PROJECT_ID,
+          namespaceId: null,
+          goal: MOCK_USER_MESSAGE.content,
+          activeThread: undefined,
         });
 
         expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
@@ -282,12 +369,11 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
-        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
-          goal: MOCK_USER_MESSAGE.content,
-          workflowDefinition: 'chat',
-          agentPrivileges: [2, 3],
-          preApprovedAgentPrivileges: [2],
+        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
+          projectId: null,
           namespaceId: MOCK_NAMESPACE_ID,
+          goal: MOCK_USER_MESSAGE.content,
+          activeThread: undefined,
         });
 
         expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
@@ -319,13 +405,11 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
-        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
-          goal: MOCK_USER_MESSAGE.content,
-          workflowDefinition: 'chat',
-          agentPrivileges: [2, 3],
-          preApprovedAgentPrivileges: [2],
+        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
           projectId: MOCK_PROJECT_ID,
           namespaceId: MOCK_NAMESPACE_ID,
+          goal: MOCK_USER_MESSAGE.content,
+          activeThread: undefined,
         });
       });
 
@@ -338,11 +422,11 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
-        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith({
+        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
+          projectId: null,
+          namespaceId: null,
           goal: MOCK_USER_MESSAGE.content,
-          workflowDefinition: 'chat',
-          agentPrivileges: [2, 3],
-          preApprovedAgentPrivileges: [2],
+          activeThread: undefined,
         });
       });
 
@@ -359,7 +443,7 @@ describe('Duo Agentic Chat', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
-        expect(duoWorkflowMutationHandlerMock).not.toHaveBeenCalled();
+        expect(ApolloUtils.createWorkflow).not.toHaveBeenCalled();
         expect(createWebSocket).toHaveBeenCalledWith(
           '/api/v4/ai/duo_workflows/ws',
           expect.any(Object),
@@ -412,6 +496,7 @@ describe('Duo Agentic Chat', () => {
               },
             }),
             status: 'completed',
+            goal: 'Test goal for activeThread',
           },
         };
 
@@ -421,23 +506,22 @@ describe('Duo Agentic Chat', () => {
           },
         });
 
-        expect(actionSpies.setMessages).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.arrayContaining([
-            expect.objectContaining({
-              content: 'Hello, how can I help?',
-              message_type: 'agent',
-              role: 'assistant',
-              requestId: '456-0',
-            }),
-            expect.objectContaining({
+        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith(
+          [
+            { content: 'Hello, how can I help?', message_type: 'agent' },
+            {
               content: 'I can assist with optimizing your CI pipeline.',
               message_type: 'agent',
-              role: 'assistant',
-              requestId: '456-1',
-            }),
-          ]),
+            },
+          ],
+          '456',
         );
+
+        expect(actionSpies.setMessages).toHaveBeenCalledWith(
+          expect.anything(),
+          MOCK_TRANSFORMED_MESSAGES,
+        );
+        expect(findDuoChat().props('activeThreadId')).toBe('Test goal for activeThread');
       });
 
       it('handles tool approval flow', async () => {
@@ -470,102 +554,6 @@ describe('Duo Agentic Chat', () => {
         await nextTick();
 
         expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      });
-
-      it('handles tool messages in the chat log', async () => {
-        const mockCheckpointData = {
-          requestID: 'request-id-2',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'Using tool to search issues',
-                    message_type: 'tool',
-                    tool_info: { name: 'search_issues' },
-                  },
-                ],
-              },
-            }),
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
-          },
-        });
-
-        expect(actionSpies.setMessages).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.arrayContaining([
-            expect.objectContaining({
-              content: 'Using tool to search issues',
-              message_type: 'tool',
-              role: 'tool',
-              tool_info: { name: 'search_issues' },
-              requestId: '456-0',
-            }),
-          ]),
-        );
-      });
-
-      it.each([
-        {
-          messageType: 'request',
-          expectedRole: 'assistant',
-          expectedMessageType: 'request',
-          description: 'handles request message type correctly',
-        },
-        {
-          messageType: 'agent',
-          expectedRole: 'assistant',
-          expectedMessageType: 'agent',
-          description: 'handles agent message type correctly',
-        },
-        {
-          messageType: 'special',
-          expectedRole: 'special',
-          expectedMessageType: 'special',
-          description: 'handles special message type correctly',
-        },
-      ])('$description', async ({ messageType, expectedRole, expectedMessageType }) => {
-        const mockCheckpointData = {
-          requestID: 'request-id-3',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'Processing your request',
-                    message_type: messageType,
-                    additional_data: { some: 'data' },
-                  },
-                ],
-              },
-            }),
-            status: 'completed',
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
-          },
-        });
-
-        expect(actionSpies.setMessages).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.arrayContaining([
-            expect.objectContaining({
-              content: 'Processing your request',
-              message_type: expectedMessageType,
-              role: expectedRole,
-              additional_data: { some: 'data' },
-              requestId: '456-0',
-            }),
-          ]),
-        );
       });
 
       it('sets loading to false when workflow status is INPUT_REQUIRED', async () => {
@@ -903,8 +891,8 @@ describe('Duo Agentic Chat', () => {
       expect(findDuoChat().props('predefinedPrompts')).toEqual([]);
     });
 
-    it('handles workflow mutation errors', async () => {
-      duoWorkflowMutationHandlerMock.mockRejectedValue(new Error(errorText));
+    it('handles workflow creation errors', async () => {
+      ApolloUtils.createWorkflow.mockRejectedValue(new Error(errorText));
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
       await waitForPromises();
@@ -1105,6 +1093,87 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
+  describe('Multithreading features', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      createComponent();
+    });
+
+    describe('@thread-selected', () => {
+      it('switches to selected thread and fetches workflow events', async () => {
+        const mockThread = { id: MOCK_WORKFLOW_ID };
+        const mockParsedData = { checkpoint: { channel_values: { ui_chat_log: [] } } };
+
+        WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
+        WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
+
+        findDuoChat().vm.$emit('thread-selected', mockThread);
+        await waitForPromises();
+
+        expect(ApolloUtils.fetchWorkflowEvents).toHaveBeenCalledWith(
+          expect.anything(),
+          MOCK_WORKFLOW_ID,
+        );
+
+        expect(WorkflowUtils.parseWorkflowData).toHaveBeenCalledWith(MOCK_WORKFLOW_EVENTS_RESPONSE);
+        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith([], '456');
+
+        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
+        expect(findDuoChat().props('activeThreadId')).toBe(MOCK_WORKFLOW_ID);
+        expect(findDuoChat().props('messages')).toEqual(MOCK_TRANSFORMED_MESSAGES);
+      });
+
+      it('handles errors when fetching workflow events', async () => {
+        const mockThread = { id: MOCK_WORKFLOW_ID };
+        const errorText = 'Failed to fetch workflow events';
+
+        ApolloUtils.fetchWorkflowEvents.mockRejectedValue(new Error(errorText));
+
+        findDuoChat().vm.$emit('thread-selected', mockThread);
+        await waitForPromises();
+
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            errors: [`Error: ${errorText}`],
+          }),
+        );
+        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+      });
+    });
+
+    describe('@back-to-list', () => {
+      it('switches back to list view and refetches workflows', async () => {
+        await waitForPromises();
+
+        findDuoChat().vm.$emit('back-to-list');
+        await nextTick();
+
+        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.LIST);
+        expect(findDuoChat().props('activeThreadId')).toBe('');
+        expect(wrapper.vm.chatMessageHistory).toEqual([]);
+        expect(mockRefetch).toHaveBeenCalled();
+      });
+    });
+
+    describe('@delete-thread', () => {
+      beforeEach(async () => {
+        jest.clearAllMocks();
+        ApolloUtils.deleteWorkflow.mockResolvedValue(true);
+        await waitForPromises();
+      });
+
+      it('calls deleteWorkflow and refetches workflows when deleting a thread', async () => {
+        const mockThreadId = MOCK_WORKFLOW_ID;
+        findDuoChat().vm.$emit('delete-thread', mockThreadId);
+        await waitForPromises();
+
+        expect(ApolloUtils.deleteWorkflow).toHaveBeenCalledWith(expect.anything(), mockThreadId);
+        expect(mockRefetch).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('Agentic Mode Toggle', () => {
     const findGlToggle = () => wrapper.findComponent(GlToggle);
 
@@ -1119,11 +1188,9 @@ describe('Duo Agentic Chat', () => {
     });
 
     it('passes correct props to GlToggle', () => {
-      expect(findGlToggle().props()).toMatchObject({
-        label: 'Agentic mode (Beta)',
-        labelPosition: 'left',
-        value: false,
-      });
+      expect(findGlToggle().props('label')).toBe('Agentic mode (Beta)');
+      expect(findGlToggle().props('labelPosition')).toBe('left');
+      expect(findGlToggle().props('value')).toBe(false);
     });
 
     it('binds duoAgenticModePreference to v-model', async () => {
