@@ -180,7 +180,7 @@ RSpec.describe Oauth::GeoAuthController, :geo, feature_category: :geo_replicatio
   end
 
   describe 'GET logout' do
-    let(:logout_state) { Gitlab::Geo::Oauth::LogoutState.new(token: access_token.plaintext_token).encode }
+    let(:logout_state) { Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token).encode }
 
     render_views
 
