@@ -50,6 +50,14 @@ module Gitlab
 
       return unless enabled
 
+      # We don't want the `expanded_ai_logging` feature flag to be pushed to AIGW
+      # on any kind of self-managed instance (including instances running Self-hosted Duo)
+      # Expanded logging will work via `enabled_instance_verbose_ai_logs` for self-hosted Duo
+      # And, expanded logging should not work at all for self-managed instances connected to cloud AIGW.
+      # Essentially, `expanded_ai_logging` FF should only work on gitlab.com, for
+      # debugging purposes.
+      return if expanded_ai_logging_on_self_managed?(name)
+
       enabled_feature_flags.append(name)
     end
 
@@ -62,6 +70,14 @@ module Gitlab
     # See https://gitlab.com/gitlab-org/gitlab/-/blob/master/gems/gitlab-safe_request_store/README.md
     def self.enabled_feature_flags
       Gitlab::SafeRequestStore.fetch(FEATURE_FLAG_CACHE_KEY) { [] }
+    end
+
+    def self.expanded_ai_logging_on_self_managed?(name)
+      # cloud_connector_static_catalog is only available on GitLab.com (SaaS)
+      # so its absence indicates a self-managed instance
+      self_managed_instance = !::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+
+      name.to_sym == :expanded_ai_logging && self_managed_instance
     end
 
     def self.headers(user:, service:, agent: nil, lsp_version: nil)

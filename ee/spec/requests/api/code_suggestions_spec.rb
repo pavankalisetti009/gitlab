@@ -267,6 +267,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     shared_examples 'code completions endpoint' do
+      let(:gitlab_enabled_feature_flgs) { [""] }
+
       context 'when feature is disabled' do
         include_examples 'code suggestions feature disabled'
       end
@@ -322,7 +324,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'x-gitlab-feature-enabled-by-namespace-ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12'],
-            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+            "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
           )
         end
 
@@ -399,7 +401,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
-              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
             )
           end
         end
@@ -448,7 +450,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-realm' => [gitlab_realm],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2'],
-              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
             })
           end
         end
@@ -892,7 +894,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             end
           end
 
-          it_behaves_like 'code completions endpoint'
+          it_behaves_like 'code completions endpoint' do
+            let(:gitlab_enabled_feature_flgs) { ["expanded_ai_logging"] }
+          end
 
           it_behaves_like 'an endpoint authenticated with token', :ok
 

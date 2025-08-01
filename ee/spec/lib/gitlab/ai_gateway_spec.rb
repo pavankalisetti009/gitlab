@@ -123,12 +123,56 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       allow(::Feature).to receive(:enabled?).and_return(true)
     end
 
+    context 'when expanded_ai_logging feature flag on self-managed instance' do
+      it 'does not push the feature flag' do
+        described_class.push_feature_flag('expanded_ai_logging')
+
+        expect(described_class.enabled_feature_flags).to be_empty
+      end
+    end
+
+    context 'when expanded_ai_logging feature flag on GitLab.com', :saas do
+      it 'pushes the feature flag' do
+        described_class.push_feature_flag('expanded_ai_logging')
+
+        expect(described_class.enabled_feature_flags).to contain_exactly('expanded_ai_logging')
+      end
+    end
+
     it 'push feature flag' do
       described_class.push_feature_flag("feature_a")
       described_class.push_feature_flag("feature_b")
       described_class.push_feature_flag("feature_c")
 
       expect(described_class.enabled_feature_flags).to match_array(%w[feature_a feature_b feature_c])
+    end
+  end
+
+  describe '.expanded_ai_logging_on_self_managed?' do
+    subject { described_class.expanded_ai_logging_on_self_managed?(feature_name) }
+
+    context 'when feature name is expanded_ai_logging' do
+      let(:feature_name) { :expanded_ai_logging }
+
+      context 'when instance is self-managed' do
+        it { is_expected.to be true }
+      end
+
+      context 'when instance is GitLab.com', :saas do
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when feature name is not expanded_ai_logging' do
+      let(:feature_name) { :some_other_feature }
+
+      context 'when instance is self-managed' do
+        it { is_expected.to be false }
+      end
+
+      context 'when instance is GitLab.com', :saas do
+        it { is_expected.to be false }
+      end
     end
   end
 
