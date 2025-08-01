@@ -371,8 +371,13 @@ module EE
 
         field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
           null: true,
-          description: 'GitLab Duo Agent Platform flows for a project, for all users (remote execution only).',
+          description: 'GitLab Duo Agent Platform flows for a project, for all users (remote flows only).',
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver
+
+        field :duo_workflow_events, ::Types::Ai::DuoWorkflows::WorkflowEventType.connection_type,
+          null: true,
+          description: 'Checkpoints for GitLab Duo Agent Platform flows, for all users (remote flows only).',
+          resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowEventsResolver
 
         field :gitlab_subscriptions_preview_billable_user_change,
           ::Types::GitlabSubscriptions::PreviewBillableUserChangeType,

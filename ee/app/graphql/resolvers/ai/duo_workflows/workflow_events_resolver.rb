@@ -17,8 +17,17 @@ module Resolvers
         def resolve(**args)
           return [] unless current_user
 
+          if object.is_a?(::Project)
+            project = object
+            return [] unless current_user.can?(:duo_workflow, project)
+          end
+
           Gitlab::Graphql::Lazy.with_value(find_object(id: args[:workflow_id])) do |workflow|
-            workflow && Ability.allowed?(current_user, :read_duo_workflow, workflow) ? workflow.checkpoints : []
+            if can_get_workflow_checkpoints?(workflow, project)
+              workflow.checkpoints
+            else
+              []
+            end
           end
         end
 
@@ -26,6 +35,16 @@ module Resolvers
 
         def find_object(id:)
           GitlabSchema.find_by_gid(id)
+        end
+
+        def can_get_workflow_checkpoints?(workflow, project)
+          return false unless workflow
+
+          return false unless Ability.allowed?(current_user, :read_duo_workflow, workflow)
+
+          return false if project && workflow.project != project
+
+          true
         end
       end
     end
