@@ -158,8 +158,7 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
       let(:event_data) do
         {
           id: child_work_item.id,
-          namespace_id: project.namespace.id,
-          work_item_parent_id: parent_work_item.id
+          namespace_id: project.namespace.id
         }
       end
 
@@ -169,7 +168,7 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
         handler.handle_event(event)
 
         expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-          parent_work_item.id
+          child_work_item.id
         ])
       end
 
@@ -179,7 +178,6 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
           {
             id: child_work_item.id,
             namespace_id: project.namespace.id,
-            work_item_parent_id: parent_work_item.id,
             previous_work_item_parent_id: previous_parent.id
           }
         end
@@ -188,27 +186,8 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
           handler.handle_event(event)
 
           expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-            parent_work_item.id,
+            child_work_item.id,
             previous_parent.id
-          ])
-        end
-      end
-
-      context 'when work_item_parent_id is nil' do
-        let(:event_data) do
-          {
-            id: child_work_item.id,
-            namespace_id: project.namespace.id,
-            work_item_parent_id: nil,
-            previous_work_item_parent_id: parent_work_item.id
-          }
-        end
-
-        it 'only includes previous parent' do
-          handler.handle_event(event)
-
-          expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-            parent_work_item.id
           ])
         end
       end
@@ -224,28 +203,12 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
 
       let(:event) { WorkItems::WorkItemClosedEvent.new(data: event_data) }
 
-      it 'calls UpdateWeightsWorker with parent work item id' do
+      it 'calls UpdateWeightsWorker with work item id' do
         handler.handle_event(event)
 
         expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-          parent_work_item.id
+          child_work_item.id
         ])
-      end
-
-      context 'when work item has no parent' do
-        let(:orphan_work_item) { create(:work_item, :task, project: project) }
-        let(:event_data) do
-          {
-            id: orphan_work_item.id,
-            namespace_id: project.namespace.id
-          }
-        end
-
-        it 'does not call UpdateWeightsWorker when work item has no parent' do
-          handler.handle_event(event)
-
-          expect(WorkItems::Weights::UpdateWeightsWorker).not_to have_received(:perform_async)
-        end
       end
     end
 
@@ -259,11 +222,11 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
 
       let(:event) { WorkItems::WorkItemReopenedEvent.new(data: event_data) }
 
-      it 'calls UpdateWeightsWorker with parent work item id' do
+      it 'calls UpdateWeightsWorker with work item id' do
         handler.handle_event(event)
 
         expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-          parent_work_item.id
+          child_work_item.id
         ])
       end
     end
@@ -278,11 +241,11 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
 
       let(:event) { WorkItems::WorkItemCreatedEvent.new(data: event_data) }
 
-      it 'calls UpdateWeightsWorker with parent work item id' do
+      it 'calls UpdateWeightsWorker with work item id' do
         handler.handle_event(event)
 
         expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-          parent_work_item.id
+          child_work_item.id
         ])
       end
     end
@@ -297,23 +260,12 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
 
       let(:event) { WorkItems::WorkItemDeletedEvent.new(data: event_data) }
 
-      it 'calls UpdateWeightsWorker with parent work item id' do
+      it 'calls UpdateWeightsWorker with work item id' do
         handler.handle_event(event)
 
         expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
-          parent_work_item.id
+          child_work_item.id
         ])
-      end
-    end
-
-    context 'when work item does not exist' do
-      let(:event_data) { { id: 999999, namespace_id: project.namespace.id } }
-      let(:event) { WorkItems::WorkItemUpdatedEvent.new(data: event_data) }
-
-      it 'does not call UpdateWeightsWorker when work item does not exist' do
-        handler.handle_event(event)
-
-        expect(WorkItems::Weights::UpdateWeightsWorker).not_to have_received(:perform_async)
       end
     end
   end

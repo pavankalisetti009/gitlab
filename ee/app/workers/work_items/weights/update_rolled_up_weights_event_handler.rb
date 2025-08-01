@@ -40,21 +40,9 @@ module WorkItems
         work_item_id = event.data[:id]
         return unless work_item_id
 
-        work_item_ids = []
-
-        # Add parent IDs from event data if present
-        work_item_ids << event.data[:work_item_parent_id] if event.data[:work_item_parent_id]
+        work_item_ids = [work_item_id]
 
         work_item_ids << event.data[:previous_work_item_parent_id] if event.data[:previous_work_item_parent_id]
-
-        # If no parent IDs in event data, look up the work item's parent
-        if work_item_ids.empty?
-          work_item = WorkItem.find_by_id(work_item_id)
-          work_item_ids << work_item.work_item_parent.id if work_item&.work_item_parent
-        end
-
-        work_item_ids.compact!
-        return if work_item_ids.blank?
 
         UpdateWeightsWorker.perform_async(work_item_ids)
       end
