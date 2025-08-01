@@ -4,10 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
   include FakeBlobHelpers
+
   describe "#execute" do
     subject(:answer) { agent.execute }
 
-    # rubocop:disable RSpec/MultipleMemoizedHelpers -- All the memoized vars are necessary
     let(:agent) do
       described_class.new(
         user_input: user_input,
@@ -18,7 +18,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       )
     end
 
-    let_it_be(:root_namespace) { create(:group) }
     let_it_be(:project) { create(:project) }
     let_it_be(:issue) { create(:issue, project: project) }
     let_it_be(:organization) { create(:organization) }
@@ -33,10 +32,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     let(:extra_resource) { {} }
     let(:started_at_timestamp) { 2.seconds.ago.to_i }
     let(:current_file) { nil }
-    let(:model_metadata) do
-      { feature_setting: "duo_chat", identifier: nil, provider: "gitlab" }
-    end
-
     let(:additional_context) do
       [
         { category: 'snippet', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
@@ -71,7 +66,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
           current_file: nil,
           additional_context: context.additional_context
         }],
-        model_metadata: model_metadata,
+        model_metadata: nil,
         unavailable_resources: %w[Pipelines Vulnerabilities]
       }
     end
@@ -91,8 +86,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         Gitlab::Llm::Utils::Authorizer::Response.new(allowed: true)
       )
       allow(Gitlab::AiGateway).to receive(:headers).and_return({})
-      stub_feature_flags(ai_model_switching: true)
-      allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(root_namespace)
     end
 
     def expect_sli_error(failed)
@@ -121,7 +114,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
               role: "assistant"
             }
           ],
-          model_metadata: model_metadata,
+          model_metadata: nil,
           unavailable_resources: %w[Pipelines Vulnerabilities]
         }
       end
@@ -604,6 +597,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     end
 
     context 'for model selection at the namespace level' do
+      let_it_be(:root_namespace) { create(:group) }
       let(:ai_request) { instance_double(::Gitlab::Llm::Chain::Requests::AiGateway, root_namespace: root_namespace) }
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
@@ -661,103 +655,19 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         it_behaves_like 'sends a request with identifier and feature_setting'
       end
 
-      context 'when there is no root_namespace given' do
-        let(:ai_request) { nil }
-
-        context 'when the feature flag is off' do
-          let(:model_metadata) { nil }
-
-          before do
-            stub_feature_flags(ai_model_switching: false)
-          end
-
-          it 'sends a request without identifier and feature_setting' do
-            expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-              expect(react_agent).to receive(:step).with(hash_including(step_params))
-                                                   .and_yield(action_event).and_return([action_event])
-            end
-
-            agent.execute
-          end
+      context 'when no model is explicitly set, and hence the feature should fallback to GitLab Default' do
+        let_it_be(:model_ref) { nil }
+        let_it_be(:ai_feature) do
+          create(:ai_namespace_feature_setting,
+            namespace: root_namespace,
+            feature: :duo_chat,
+            offered_model_ref: nil,
+            offered_model_name: nil,
+            model_definitions: {}
+          )
         end
 
-        context 'with a self-hosted models present' do
-          let(:model_metadata) { nil }
-
-          before do
-            self_hosted_model = create(:ai_self_hosted_model, api_token: 'test_token')
-            create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat)
-          end
-
-          it 'sends the self-hosted model metadata' do
-            params = step_params
-            params[:model_metadata] = {
-              api_key: "test_token",
-              endpoint: "http://localhost:11434/v1",
-              name: "mistral",
-              provider: :openai,
-              identifier: "provider/some-model"
-            }
-
-            expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-              expect(react_agent).to receive(:step).with(params)
-                                                   .and_yield(action_event).and_return([action_event])
-            end
-
-            agent.execute
-          end
-        end
-
-        context 'when no duo namespace can be inferred' do
-          let(:root_namespace) { nil }
-          let(:has_no_seat_assignments) { false }
-
-          before do
-            allow(user.user_preference)
-              .to receive(:no_eligible_duo_add_on_assignments?).and_return(has_no_seat_assignments)
-          end
-
-          context 'when user has no seat assignment' do
-            let(:has_no_seat_assignments) { true }
-
-            it 'sends the self-hosted model metadata' do
-              params = step_params
-              params[:model_metadata] = nil
-
-              expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-                expect(react_agent).to receive(:step).with(params)
-                                                     .and_yield(action_event).and_return([action_event])
-              end
-
-              agent.execute
-            end
-          end
-
-          context 'when user has seat assignment' do
-            it "returns an error answer" do
-              expect_sli_error(true)
-              expect(answer.is_final?).to be_truthy
-              expect(answer.content).to eq("you have not selected a default GitLab Duo namespace. " \
-                "Please select a default GitLab Duo namespace in your user preferences.")
-              expect(answer.error_code).to eq("G3002")
-            end
-          end
-        end
-
-        context 'when a duo namespace can be inferred' do
-          let(:model_ref) { nil }
-          let_it_be(:ai_feature) do
-            create(:ai_namespace_feature_setting,
-              namespace: root_namespace,
-              feature: :duo_chat,
-              offered_model_ref: nil,
-              offered_model_name: nil,
-              model_definitions: {}
-            )
-          end
-
-          it_behaves_like 'sends a request with identifier and feature_setting'
-        end
+        it_behaves_like 'sends a request with identifier and feature_setting'
       end
     end
 
@@ -892,5 +802,4 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
   end
-  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
