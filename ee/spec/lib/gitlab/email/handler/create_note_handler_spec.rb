@@ -19,7 +19,7 @@ RSpec.describe Gitlab::Email::Handler::CreateNoteHandler do
   let(:note) { create(:note, project: nil, noteable: noteable) }
 
   let!(:sent_notification) do
-    SentNotification.record_note(note, user.id, mail_key)
+    SentNotification.record_note(note, user.id, { reply_key: mail_key })
   end
 
   context "when the note could not be saved" do
