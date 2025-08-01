@@ -26,6 +26,9 @@
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "public_branch"
                 }
               },
               {
@@ -44,6 +47,9 @@
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "internal_branch"
                 }
               },
               {
@@ -65,6 +71,9 @@
                             }
                           }
                         ]
+                      },
+                      "_context": {
+                        "name": "admin_branch"
                       }
                     },
                     {
@@ -107,9 +116,15 @@
                             }
                           }
                         ]
+                      },
+                      "_context": {
+                        "name": "user_authorizations"
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "private_branch"
                 }
               }
             ]

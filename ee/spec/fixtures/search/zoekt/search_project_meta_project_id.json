@@ -26,6 +26,9 @@
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "public_branch"
                 }
               }
             ]
@@ -41,6 +44,9 @@
           "meta": {
             "key": "project_id",
             "value": "^1$"
+          },
+          "_context": {
+            "name": "project_id_search"
           }
         }
       ]
