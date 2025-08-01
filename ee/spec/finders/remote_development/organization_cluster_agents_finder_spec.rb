@@ -53,6 +53,14 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
       end
     end
 
+    context 'when user is empty' do
+      let(:user) { nil }
+
+      it 'returns an empty response' do
+        expect(response).to eq([])
+      end
+    end
+
     context 'with filter_type set to all' do
       let(:filter) { :all }
 
