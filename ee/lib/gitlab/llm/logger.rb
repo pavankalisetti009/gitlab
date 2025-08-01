@@ -12,7 +12,11 @@ module Gitlab
       end
 
       def conditional_info(user, message:, klass:, event_name:, ai_component:, **options)
-        if Feature.enabled?(:expanded_ai_logging, user)
+        # :expanded_ai_logging is only meant for use in gitlab.com
+        # For expanded logging in self-hosted Duo instances, in both Rails logs and AIGW logs, we
+        # should use the instance setting.
+        if Feature.enabled?(:expanded_ai_logging, user) ||
+            ::Gitlab::CurrentSettings.enabled_expanded_logging
           info(message: message, klass: klass, event_name: event_name, ai_component: ai_component, **options)
         else
           info(message: message, klass: klass, event_name: event_name, ai_component: ai_component)
