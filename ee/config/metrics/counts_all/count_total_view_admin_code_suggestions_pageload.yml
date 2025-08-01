@@ -1,7 +1,7 @@
 ---
 key_path: counts.count_total_view_admin_code_suggestions_pageload
 description: Count of total users who visited the admin code suggestions page
-product_group: personal_productivity
+product_group: engagement
 performance_indicator_type: []
 value_type: number
 status: active
