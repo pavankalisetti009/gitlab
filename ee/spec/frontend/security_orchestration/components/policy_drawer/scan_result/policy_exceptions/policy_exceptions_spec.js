@@ -1,4 +1,5 @@
 import BranchPatternException from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/branch_pattern_exception.vue';
+import RolesExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/roles_exceptions.vue';
 import PolicyExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/policy_exceptions.vue';
 import UsersGroupsExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/users_groups_exceptions.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -16,6 +17,7 @@ describe('Policy Exceptions', () => {
   const findSubHeader = () => wrapper.findByTestId('subheader');
   const findBranchPatternException = () => wrapper.findComponent(BranchPatternException);
   const findUsersGroupsExceptions = () => wrapper.findComponent(UsersGroupsExceptions);
+  const findRolesExceptions = () => wrapper.findComponent(RolesExceptions);
 
   describe('default rendering', () => {
     beforeEach(() => {
@@ -94,6 +96,55 @@ describe('Policy Exceptions', () => {
 
       expect(findUsersGroupsExceptions().props('users')).toEqual(users);
       expect(findUsersGroupsExceptions().props('groups')).toEqual(groups);
+      expect(findSubHeader().text()).toBe('4 bypass configurations defined:');
+    });
+  });
+
+  describe('roles exceptions', () => {
+    const roles = ['maintainer', 'developer'];
+    const customRoles = [{ id: 1 }, { id: 2 }];
+
+    it('renders roles exceptions', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            roles,
+          },
+        },
+      });
+
+      expect(findRolesExceptions().exists()).toBe(true);
+      expect(findRolesExceptions().props('roles')).toEqual(roles);
+      expect(findSubHeader().text()).toBe('2 bypass configurations defined:');
+    });
+
+    it('renders custom roles exceptions', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            custom_roles: customRoles,
+          },
+        },
+      });
+
+      expect(findRolesExceptions().exists()).toBe(true);
+      expect(findRolesExceptions().props('customRoles')).toEqual(customRoles);
+      expect(findSubHeader().text()).toBe('2 bypass configurations defined:');
+    });
+
+    it('renders mixed roles exceptions', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            roles,
+            custom_roles: customRoles,
+          },
+        },
+      });
+
+      expect(findRolesExceptions().exists()).toBe(true);
+      expect(findRolesExceptions().props('roles')).toEqual(roles);
+      expect(findRolesExceptions().props('customRoles')).toEqual(customRoles);
       expect(findSubHeader().text()).toBe('4 bypass configurations defined:');
     });
   });

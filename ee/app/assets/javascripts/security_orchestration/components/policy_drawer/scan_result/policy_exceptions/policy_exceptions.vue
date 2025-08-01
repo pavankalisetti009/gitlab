@@ -2,6 +2,7 @@
 import { s__, __, n__, sprintf } from '~/locale';
 import BranchPatternException from './branch_pattern_exception.vue';
 import UsersGroupsExceptions from './users_groups_exceptions.vue';
+import RolesExceptions from './roles_exceptions.vue';
 
 export default {
   i18n: {
@@ -11,6 +12,7 @@ export default {
   components: {
     BranchPatternException,
     UsersGroupsExceptions,
+    RolesExceptions,
   },
   props: {
     exceptions: {
@@ -34,6 +36,15 @@ export default {
     },
     hasGroupsOrUsers() {
       return this.users.length > 0 || this.groups.length > 0;
+    },
+    customRoles() {
+      return this.exceptions?.custom_roles?.filter((role) => role && role.id) || [];
+    },
+    roles() {
+      return this.exceptions?.roles || [];
+    },
+    hasRoles() {
+      return this.roles.length > 0 || this.customRoles.length > 0;
     },
     totalExceptionsCount() {
       let sum = 0;
@@ -64,5 +75,6 @@ export default {
 
     <branch-pattern-exception v-if="hasBranches" :branches="branches" />
     <users-groups-exceptions v-if="hasGroupsOrUsers" :groups="groups" :users="users" />
+    <roles-exceptions v-if="hasRoles" :roles="roles" :custom-roles="customRoles" />
   </div>
 </template>
