@@ -241,7 +241,7 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
           it_behaves_like 'renders DORA metrics chart panels with empty states'
         end
 
-        context 'with data available' do
+        context 'with data available', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/558470' do
           before do
             create_mock_dora_metrics(environment)
 
