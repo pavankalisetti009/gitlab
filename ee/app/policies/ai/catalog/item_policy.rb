@@ -31,12 +31,7 @@ module Ai
         enable :admin_ai_catalog_item
       end
 
-      rule { ~ai_catalog_enabled }.policy do
-        prevent :read_ai_catalog_item
-        prevent :admin_ai_catalog_item
-      end
-
-      rule { deleted_item }.policy do
+      rule { ~ai_catalog_enabled | deleted_item }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
       end
