@@ -2,7 +2,7 @@ import {
   CATEGORY_EDITABLE,
   CATEGORY_PARTIALLY_EDITABLE,
   CATEGORY_LOCKED,
-} from '../components/security_attributes/constants';
+} from '../../components/security_attributes/constants';
 
 /* eslint-disable @gitlab/require-i18n-strings */
 export const mockSecurityAttributeCategories = [
@@ -231,6 +231,26 @@ export default {
         nodes: mockSecurityAttributes.filter(
           (node) => categoryId === undefined || node.categoryId === categoryId,
         ),
+      };
+    },
+  },
+  Project: {
+    securityAttributes() {
+      return {
+        nodes: mockSecurityAttributes
+          // Temporarily (for mock data), return only attributes that contain the letter p
+          .filter((attribute) => attribute.name.includes('p'))
+          .map((attribute) => {
+            const { name } = mockSecurityAttributeCategories.find(
+              (category) => category.id === attribute.categoryId,
+            );
+            return {
+              ...attribute,
+              category: {
+                name,
+              },
+            };
+          }),
       };
     },
   },

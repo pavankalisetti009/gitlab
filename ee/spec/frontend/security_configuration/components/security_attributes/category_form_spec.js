@@ -13,16 +13,16 @@ import {
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import {
+  mockSecurityAttributeCategories,
+  mockSecurityAttributes,
+} from 'ee/security_configuration/security_attributes/graphql/resolvers';
+import {
   CATEGORY_EDITABLE,
   CATEGORY_PARTIALLY_EDITABLE,
   CATEGORY_LOCKED,
 } from 'ee/security_configuration/components/security_attributes/constants';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import CategoryForm from 'ee/security_configuration/components/security_attributes/category_form.vue';
-import {
-  mockSecurityAttributeCategories,
-  mockSecurityAttributes,
-} from 'ee/security_configuration/graphql/resolvers';
 
 const category = mockSecurityAttributeCategories[0];
 const expectedAttributes = mockSecurityAttributes.filter(
