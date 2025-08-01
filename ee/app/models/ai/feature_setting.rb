@@ -26,8 +26,7 @@ module Ai
       summarize_review: 12,
       glab_ask_git_command: 13,
       duo_chat_summarize_comments: 14,
-      # Note: Assigned value 16 to 'duo_agent_platform' because 15 is already used by 'duo_code_review'
-      # in FeaturesConfigurable. To maintain consistent ordering across components (including self-hosted),
+      review_merge_request: 15,
       duo_agent_platform: 16
     }.freeze
 
