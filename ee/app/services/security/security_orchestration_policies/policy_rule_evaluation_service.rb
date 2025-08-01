@@ -76,11 +76,6 @@ module Security
       end
 
       def rule_applies_to_target_branch?(rule)
-        if ::Feature.disabled?(
-          :merge_request_approval_policies_inapplicable_rule_evaluation, merge_request.project)
-          return true
-        end
-
         rule.applicable_to_branch?(merge_request.target_branch)
       end
 
