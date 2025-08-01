@@ -39,6 +39,11 @@ const TEST_COMPONENTS = [
     name: 'websocket-extensions',
     __typename: 'Component',
   },
+  {
+    id: 'gid://gitlab/Sbom::Component/69',
+    name: 'Is',
+    __typename: 'Component',
+  },
 ];
 
 describe('ee/dependencies/components/filtered_search/tokens/component_token.vue', () => {
@@ -238,6 +243,13 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
 
       expect(findSuggestions()).toHaveLength(1);
     });
+
+    it('allows searching for 2-character package names', async () => {
+      await searchForComponent('Is');
+
+      expect(findSuggestions()).toHaveLength(1);
+      expect(findSuggestions().at(0).text()).toBe('Is');
+    });
   });
 
   describe('when there is an error fetching the list of components', () => {
@@ -266,15 +278,15 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
   });
 
   describe('where there is a suggestion dropdown', () => {
-    it('displays when user types less than 3 characters', async () => {
+    it('displays when user types less than 2 characters', async () => {
       createComponent({ mountFn: mountExtended });
 
-      const suggestionText = 'Enter at least 3 characters to view available components.';
+      const suggestionText = 'Enter at least 2 characters to view available components.';
 
-      await searchForComponent('we');
+      await searchForComponent('w');
       expect(wrapper.text()).toBe(suggestionText);
 
-      await searchForComponent('web');
+      await searchForComponent('we');
       expect(wrapper.text()).not.toBe(suggestionText);
     });
 

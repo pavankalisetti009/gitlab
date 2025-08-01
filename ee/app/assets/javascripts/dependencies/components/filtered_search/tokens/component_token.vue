@@ -12,7 +12,7 @@ import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from 'ee/dependencies/constants';
 import groupComponentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
 import projectComponentsQuery from 'ee/dependencies/graphql/project_components.query.graphql';
 
-const MIN_CHARS = 3;
+const MIN_CHARS = 2;
 
 export default {
   components: {
@@ -159,7 +159,7 @@ export default {
     },
   },
   i18n: {
-    placeholder: s__('Dependencies|Enter at least 3 characters to view available components.'),
+    placeholder: s__('Dependencies|Enter at least 2 characters to view available components.'),
     noResult: s__('Dependencies|No components found.'),
   },
 };
