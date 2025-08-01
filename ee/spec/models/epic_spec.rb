@@ -380,6 +380,37 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         end
       end
     end
+
+    %i[start_date start_date_fixed due_date due_date_fixed].each do |field|
+      context 'for new records' do
+        it "validates #{field} minimum value" do
+          epic = build(:epic, field => WorkItems::DatesSource::MIN_DATE_LIMIT - 1.day)
+
+          expect(epic).not_to be_valid
+          expect(epic.errors[field]).to include('must be greater than or equal to 1000-01-01')
+        end
+
+        it "validates #{field} maximum value" do
+          epic = build(:epic, field => WorkItems::DatesSource::MAX_DATE_LIMIT + 1.day)
+
+          expect(epic).not_to be_valid
+          expect(epic.errors[field]).to include('must be less than or equal to 9999-12-31')
+        end
+      end
+
+      context 'for existing records' do
+        it "validates #{field} only if it was updated", :aggregate_failures do
+          epic = build(:epic, field => WorkItems::DatesSource::MAX_DATE_LIMIT + 1.day)
+          epic.save!(validate: false)
+
+          expect(epic).to be_valid
+
+          epic[field] += 1.day
+          expect(epic).not_to be_valid
+          expect(epic.errors[field]).to include('must be less than or equal to 9999-12-31')
+        end
+      end
+    end
   end
 
   describe '#max_children_count_achieved?' do
