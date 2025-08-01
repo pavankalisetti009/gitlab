@@ -21,6 +21,7 @@ fragment WorkItem on WorkItem {
   promotedToEpicUrl
   movedToWorkItemUrl
   duplicatedToWorkItemUrl
+  showPlanUpgradePromotion
   project {
     id
   }
