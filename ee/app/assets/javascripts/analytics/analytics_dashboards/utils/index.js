@@ -1,7 +1,6 @@
 import produce from 'immer';
 import uniqueId from 'lodash/uniqueId';
 import {
-  SESSIONS_TABLE_NAME,
   DASHBOARD_SCHEMA_VERSION,
   CATEGORY_SINGLE_STATS,
   CATEGORY_CHARTS,
@@ -9,54 +8,11 @@ import {
   VISUALIZATION_TYPE_DATA_TABLE,
   VISUALIZATION_TYPE_SINGLE_STAT,
 } from 'ee/analytics/analytics_dashboards/constants';
-import { DATE_RANGE_FILTER_DIMENSIONS } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
 import { humanize } from '~/lib/utils/text_utility';
 import { cloneWithoutReferences } from '~/lib/utils/common_utils';
 import getAllCustomizableDashboardsQuery from '../graphql/queries/get_all_customizable_dashboards.query.graphql';
 import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
 import { TYPENAME_ANALYTICS_DASHBOARD_PANEL } from '../graphql/constants';
-
-/**
- * Given a CubeJS property (e.g. `Sessions.count`), get the schema name (e.g. `Sessions`).
- */
-export function getMetricSchema(metric) {
-  return metric?.split('.')[0];
-}
-
-/**
- * Filters an array of dimensions by schema
- */
-export function getDimensionsForSchema(selectedSchema, availableDimensions) {
-  if (!selectedSchema) return [];
-
-  return availableDimensions.filter(({ name }) => getMetricSchema(name) === selectedSchema);
-}
-
-/**
- * Selects a time dimension for a given schema
- */
-export function getTimeDimensionForSchema(selectedSchema, availableTimeDimensions) {
-  if (!selectedSchema) return null;
-
-  const timeDimensions = availableTimeDimensions.filter(
-    ({ name }) => getMetricSchema(name) === selectedSchema,
-  );
-
-  if (timeDimensions.length === 1) {
-    // We only allow filtering by a single timeDimension. We expect most of our cubes to only have a single time dimension.
-    return timeDimensions.at(0);
-  }
-
-  if (selectedSchema === SESSIONS_TABLE_NAME) {
-    // Our `Sessions` cube is different, having both `startsAt`, `endsAt` timeDimensions.
-    // We want to explicitly select the right dimension for Sessions so have this hardcoded lookup
-    const sessionsDimensionName = DATE_RANGE_FILTER_DIMENSIONS[SESSIONS_TABLE_NAME.toLowerCase()];
-    return timeDimensions.find(({ name }) => name === sessionsDimensionName);
-  }
-
-  // An unknown situation where a cube other than Sessions has more than one timeDimension. Hide it from the UI.
-  return null;
-}
 
 /**
  * Updates a dashboard detail in cache from getProductAnalyticsDashboard:{slug}

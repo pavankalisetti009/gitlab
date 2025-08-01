@@ -13,10 +13,6 @@ module QA
                 element 'dashboard-errors-badge'
               end
 
-              view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/dashboards_list.vue' do
-                element 'data-explorer-button'
-              end
-
               def wait_for_dashboards_list
                 has_element?('dashboard-router-link', wait: 120)
               end
@@ -31,10 +27,6 @@ module QA
 
               def open_behavior_dashboard
                 open_dashboard('Behavior')
-              end
-
-              def click_data_explorer_button
-                click_element('data-explorer-button')
               end
 
               def open_dashboard(name)
