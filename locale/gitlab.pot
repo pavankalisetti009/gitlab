@@ -41740,6 +41740,9 @@ msgstr ""
 msgid "No data available"
 msgstr ""
 
+msgid "No data available."
+msgstr ""
+
 msgid "No data found for this query."
 msgstr ""
 
@@ -58427,6 +58430,9 @@ msgid "SecurityReports|Reachable:"
 msgstr ""
 
 msgid "SecurityReports|Remove project from dashboard"
+msgstr ""
+
+msgid "SecurityReports|Report Type"
 msgstr ""
 
 msgid "SecurityReports|Report export in progress. After the report is generated, an email will be sent with the download link."
@@ -76108,6 +76114,36 @@ msgid "rendered diff"
 msgstr ""
 
 msgid "reply should have same confidentiality as top-level note"
+msgstr ""
+
+msgid "reportType|API Fuzzing"
+msgstr ""
+
+msgid "reportType|Cluster Image Scanning"
+msgstr ""
+
+msgid "reportType|Container Scanning"
+msgstr ""
+
+msgid "reportType|Container Scanning for Registry"
+msgstr ""
+
+msgid "reportType|Coverage Fuzzing"
+msgstr ""
+
+msgid "reportType|DAST"
+msgstr ""
+
+msgid "reportType|Dependency Scanning"
+msgstr ""
+
+msgid "reportType|Generic"
+msgstr ""
+
+msgid "reportType|SAST"
+msgstr ""
+
+msgid "reportType|Secret Detection"
 msgstr ""
 
 msgid "repositories"
