@@ -1,6 +1,5 @@
 import { merge, cloneDeep, zip, isEmpty, mapKeys } from 'lodash';
 import { dateFormats } from '~/analytics/shared/constants';
-import { extractVSAFeaturesFromGON } from '~/analytics/shared/utils';
 import dateFormat from '~/lib/dateformat';
 import {
   convertObjectPropsToCamelCase,
@@ -148,7 +147,6 @@ export const buildCycleAnalyticsInitialData = ({
     lastRunAt: aggregationLastRunAt,
     nextRunAt: aggregationNextRunAt,
   },
-  features: extractVSAFeaturesFromGON(),
   namespace: {
     name: namespaceName,
     restApiRequestPath: namespaceRestApiRequestPath,

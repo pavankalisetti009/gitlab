@@ -2,6 +2,7 @@
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState, mapGetters } from 'vuex';
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_feature_mixin';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
 import { VSA_METRICS_GROUPS, FLOW_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
 import {
@@ -40,6 +41,7 @@ export default {
     ValueStreamSelect,
     UrlSync,
   },
+  mixins: [glLicensedFeaturesMixin()],
   props: {
     emptyStateSvgPath: {
       type: String,
@@ -75,7 +77,6 @@ export default {
       'pagination',
       'aggregation',
       'groupPath',
-      'features',
       'canEdit',
       'enableProjectsFilter',
       'enableCustomizableStages',
@@ -140,7 +141,7 @@ export default {
       };
     },
     showDashboardsLink() {
-      return this.enableVsdLink && Boolean(this.features?.groupLevelAnalyticsDashboard);
+      return Boolean(this.enableVsdLink && this.glLicensedFeatures.groupLevelAnalyticsDashboard);
     },
     dashboardsPath() {
       return this.showDashboardsLink
