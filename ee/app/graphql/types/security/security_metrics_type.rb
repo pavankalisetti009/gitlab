@@ -13,7 +13,7 @@ module Types
         resolver: ::Resolvers::Security::VulnerabilitiesOverTimeResolver do
         argument :project_id, [GraphQL::Types::ID],
           required: false,
-          description: 'Filter by project IDs.'
+          description: 'Filter by project IDs in a group. This argument is ignored when we are querying for a project.'
 
         argument :report_type, [Types::VulnerabilityReportTypeEnum],
           required: false,

@@ -27,7 +27,7 @@ module Resolvers
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
         validate_date_range!(start_date, end_date)
 
-        return [] if !vulnerable || Feature.disabled?(:group_security_dashboard_new, vulnerable)
+        return [] if !vulnerable || !feature_enabled?(vulnerable)
 
         base_params = build_base_params(start_date, end_date, args)
 
@@ -38,6 +38,14 @@ module Resolvers
       end
 
       private
+
+      def feature_enabled?(vulnerable)
+        if vulnerable.is_a?(Project)
+          Feature.enabled?(:project_security_dashboard_new, vulnerable)
+        elsif vulnerable.is_a?(Group)
+          Feature.enabled?(:group_security_dashboard_new, vulnerable)
+        end
+      end
 
       def build_base_params(start_date, end_date, args)
         project_ids = context[:project_id]
