@@ -88,6 +88,6 @@ class OauthAccessToken < Doorkeeper::AccessToken
   end
 
   def self.fallback_strategies
-    [Gitlab::DoorkeeperSecretStoring::Token::Pbkdf2Sha512, Doorkeeper::SecretStoring::Plain]
+    [Gitlab::DoorkeeperSecretStoring::Token::Sha512Hash, Gitlab::DoorkeeperSecretStoring::Token::Pbkdf2Sha512, Doorkeeper::SecretStoring::Plain]
   end
 end
