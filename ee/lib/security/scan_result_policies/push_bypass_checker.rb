@@ -5,10 +5,11 @@ module Security
     class PushBypassChecker
       include Gitlab::Utils::StrongMemoize
 
-      def initialize(project:, user_access:, branch_name:)
+      def initialize(project:, user_access:, branch_name:, push_options:)
         @project = project
         @user_access = user_access
         @branch_name = branch_name
+        @push_options = push_options
       end
 
       def check_bypass!
@@ -22,14 +23,15 @@ module Security
 
       private
 
-      attr_reader :project, :user_access, :branch_name
+      attr_reader :project, :user_access, :branch_name, :push_options
 
       def bypass_allowed?(policy)
         Security::ScanResultPolicies::PolicyBypassChecker.new(
           security_policy: policy,
           project: project,
           user_access: user_access,
-          branch_name: branch_name
+          branch_name: branch_name,
+          push_options: push_options
         ).bypass_allowed?
       end
     end

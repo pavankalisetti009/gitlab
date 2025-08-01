@@ -8,7 +8,14 @@ RSpec.describe Security::ScanResultPolicies::PushBypassChecker, feature_category
   let_it_be(:branch_name) { 'main' }
   let_it_be(:user) { create(:user, :project_bot) }
   let_it_be(:user_access) { Gitlab::UserAccess.new(user, container: project) }
-  let_it_be(:checker) { described_class.new(project: project, user_access: user_access, branch_name: branch_name) }
+  let_it_be(:checker) do
+    described_class.new(
+      project: project,
+      user_access: user_access,
+      branch_name: branch_name,
+      push_options: {}
+    )
+  end
 
   describe '#check_bypass!' do
     context 'when the feature is not available' do

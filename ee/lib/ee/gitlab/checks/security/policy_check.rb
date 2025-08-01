@@ -35,7 +35,10 @@ module EE
 
           def policies_bypass_applied?
             ::Security::ScanResultPolicies::PushBypassChecker.new(
-              project: project, user_access: user_access, branch_name: branch_name
+              project: project,
+              user_access: user_access,
+              branch_name: branch_name,
+              push_options: change_access.push_options
             ).check_bypass!
           end
 
