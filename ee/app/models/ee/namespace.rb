@@ -638,6 +638,14 @@ module EE
     end
     strong_memoize_attr :self_and_ancestor_ids_with_csp
 
+    def compliance_framework_ids_with_csp
+      direct_ids = root_ancestor.compliance_management_frameworks.pluck_primary_key
+      return direct_ids if !csp_enabled?(self) || designated_as_csp? || ::Feature.disabled?(:include_csp_frameworks,
+        root_ancestor)
+
+      [*direct_ids, *organization_policy_setting.csp_namespace.compliance_management_frameworks.pluck_primary_key]
+    end
+
     def ancestor_ids_with_csp
       return ancestor_ids unless csp_enabled?(self)
 

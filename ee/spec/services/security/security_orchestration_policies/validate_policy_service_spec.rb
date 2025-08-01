@@ -1098,6 +1098,146 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
 
           it_behaves_like 'sets validation errors', field: :compliance_frameworks, message: 'Invalid Compliance Framework ID(s)'
         end
+
+        context 'with CSP namespace functionality' do
+          include Security::PolicyCspHelpers
+
+          let(:container) { create(:group) }
+          let_it_be(:csp_group) { create(:group) }
+          let_it_be(:csp_framework_1) { create(:compliance_framework, namespace: csp_group) }
+          let_it_be(:csp_framework_2) { create(:compliance_framework, namespace: csp_group, name: 'CSP SOX') }
+
+          let_it_be(:invalid_group) { create(:group) }
+          let_it_be(:invalid_framework) { create(:compliance_framework, namespace: invalid_group) }
+
+          let!(:framework_1) { create(:compliance_framework, namespace: container.root_ancestor) }
+          let!(:framework_2) { create(:compliance_framework, namespace: container.root_ancestor, name: 'SOX') }
+
+          before do
+            stub_csp_group(csp_group)
+          end
+
+          context 'when include_csp_frameworks feature flag is disabled' do
+            before do
+              stub_feature_flags(include_csp_frameworks: false)
+            end
+
+            context 'when using framework IDs that exist in CSP namespace' do
+              let(:policy_scope) do
+                {
+                  compliance_frameworks: [
+                    { id: csp_framework_1.id }
+                  ]
+                }
+              end
+
+              it { expect(result[:status]).to eq(:error) }
+
+              it_behaves_like 'sets validation errors', field: :compliance_frameworks, message: 'Invalid Compliance Framework ID(s)'
+            end
+          end
+
+          context 'when CSP namespace is nil' do
+            before do
+              stub_csp_group(nil)
+            end
+
+            context 'when using framework IDs that do not exist in current namespace' do
+              let(:policy_scope) do
+                {
+                  compliance_frameworks: [
+                    { id: invalid_framework.id }
+                  ]
+                }
+              end
+
+              it { expect(result[:status]).to eq(:error) }
+
+              it_behaves_like 'sets validation errors', field: :compliance_frameworks, message: 'Invalid Compliance Framework ID(s)'
+            end
+          end
+
+          context 'when CSP namespace is the same' do
+            before do
+              stub_csp_group(container.root_ancestor)
+            end
+
+            context 'when using valid framework IDs' do
+              it { expect(result[:status]).to eq(:success) }
+            end
+          end
+
+          context 'when CSP namespace is different from current namespace' do
+            context 'when CSP namespace has no compliance frameworks' do
+              let(:empty_csp_group) { create(:group) }
+
+              before do
+                stub_csp_group(empty_csp_group)
+              end
+
+              context 'when using framework IDs that only exist in current namespace' do
+                it { expect(result[:status]).to eq(:success) }
+              end
+
+              context 'when using invalid framework IDs' do
+                let(:policy_scope) do
+                  {
+                    compliance_frameworks: [
+                      { id: invalid_framework.id }
+                    ]
+                  }
+                end
+
+                it { expect(result[:status]).to eq(:error) }
+
+                it_behaves_like 'sets validation errors', field: :compliance_frameworks, message: 'Invalid Compliance Framework ID(s)'
+              end
+            end
+
+            context 'when CSP namespace has compliance frameworks' do
+              context 'when using framework IDs that exist only in CSP namespace' do
+                let(:policy_scope) do
+                  {
+                    compliance_frameworks: [
+                      { id: csp_framework_1.id }
+                    ]
+                  }
+                end
+
+                it { expect(result[:status]).to eq(:success) }
+              end
+
+              context 'when using framework IDs from both namespaces' do
+                let(:policy_scope) do
+                  {
+                    compliance_frameworks: [
+                      { id: framework_1.id },
+                      { id: csp_framework_1.id }
+                    ]
+                  }
+                end
+
+                it { expect(result[:status]).to eq(:success) }
+              end
+
+              context 'when using mix of valid and invalid framework IDs' do
+                let(:policy_scope) do
+                  {
+                    compliance_frameworks: [
+                      { id: framework_1.id },
+                      { id: csp_framework_1.id },
+                      { id: invalid_framework.id }
+                    ]
+                  }
+                end
+
+                it { expect(result[:status]).to eq(:error) }
+
+                it_behaves_like 'sets validation errors', field: :compliance_frameworks, message: 'Invalid Compliance Framework ID(s)'
+              end
+            end
+          end
+        end
       end
     end
   end

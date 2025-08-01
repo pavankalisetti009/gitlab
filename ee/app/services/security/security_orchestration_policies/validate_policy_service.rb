@@ -139,7 +139,9 @@ module Security
         return false if project_container?
         return false if compliance_framework_ids.blank?
 
-        container.root_ancestor.compliance_management_frameworks.id_in(compliance_framework_ids).count != compliance_framework_ids.count
+        valid_count = (container.compliance_framework_ids_with_csp & compliance_framework_ids).count
+
+        valid_count != compliance_framework_ids.count
       end
 
       def required_approvals_exceed_eligible_approvers?
