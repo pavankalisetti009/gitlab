@@ -43,6 +43,10 @@ module Issuables
     scope :of_field_type, ->(field_type) { where(field_type: field_type) }
 
     class << self
+      def find_by_case_insensitive_name(name)
+        find_by('LOWER(name) = ?', name.downcase)
+      end
+
       def without_any_work_item_types
         where_not_exists(associated_work_item_type_relation)
       end
