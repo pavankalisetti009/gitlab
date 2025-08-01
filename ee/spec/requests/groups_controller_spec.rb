@@ -617,6 +617,65 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
         end
       end
     end
+
+    context 'when setting hide_email_on_profile' do
+      let(:params) { { group: { hide_email_on_profile: true } } }
+
+      before do
+        group.add_owner(user)
+        allow(Group).to receive(:find_by_full_path).and_return(group)
+        allow(group).to receive(:domain_verification_available?).and_return(true)
+      end
+
+      it 'successfully updates the setting for top-level group owners' do
+        expect { request }.to change {
+          group.reload.namespace_settings.hide_email_on_profile?
+        }.from(false).to(true)
+
+        expect(response).to have_gitlab_http_status(:found)
+      end
+
+      context 'and user is not a group owner' do
+        before do
+          group.owners.delete(user)
+          group.add_maintainer(user)
+        end
+
+        it 'does not change the setting and returns not found' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.hide_email_on_profile?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when domain verification is not enabled' do
+        before do
+          allow(group).to receive(:domain_verification_available?).and_return(false)
+        end
+
+        it 'does not change the setting' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.hide_email_on_profile?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+
+      context 'when group is not a root group' do
+        let(:group) { create(:group, :nested) }
+
+        it 'does not change the setting' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.hide_email_on_profile?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+    end
   end
 
   describe 'PUT #transfer', :saas do

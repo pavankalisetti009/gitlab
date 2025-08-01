@@ -114,6 +114,9 @@ module EE
       delegate :user_cap_enabled?, to: :namespace_settings
 
       delegate :disable_personal_access_tokens=, to: :namespace_settings
+      delegate :hide_email_on_profile=, to: :namespace_settings
+      delegate :hide_email_on_profile?, to: :namespace_settings
+
       delegate :enterprise_users_extensions_marketplace_enabled=, to: :namespace_settings
 
       delegate :wiki_access_level, :wiki_access_level=, to: :group_feature, allow_nil: true
@@ -1079,6 +1082,12 @@ module EE
       self_and_ancestors
         .joins(:namespace_settings)
         .where(namespace_settings: { extended_grat_expiry_webhooks_execute: true })
+    end
+
+    def enterprise_user_settings_available?(user = nil)
+      root? &&
+        domain_verification_available? &&
+        Ability.allowed?(user, :owner_access, self)
     end
 
     def virtual_registry_policy_subject

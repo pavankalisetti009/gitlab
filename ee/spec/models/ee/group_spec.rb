@@ -3043,6 +3043,24 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
+    describe '#hide_email_on_profile?' do
+      it 'returns false by default' do
+        expect(group.hide_email_on_profile?).to be_falsey
+      end
+
+      it 'returns true when enabled' do
+        group.update!(hide_email_on_profile: true)
+        expect(group.hide_email_on_profile?).to be_truthy
+      end
+    end
+
+    describe '#hide_email_on_profile=' do
+      it 'delegates to namespace_settings' do
+        expect(group.namespace_settings).to receive(:hide_email_on_profile=).with(true)
+        group.hide_email_on_profile = true
+      end
+    end
+
     context 'when setting extended_grat_expiry_webhooks_execute is disabled' do
       before do
         group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
@@ -4282,6 +4300,49 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to eq(false) }
+    end
+  end
+
+  describe '#enterprise_user_settings_available?' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: root_group) }
+
+    context 'when all conditions are met' do
+      before do
+        allow(root_group).to receive(:domain_verification_available?).and_return(true)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, root_group).and_return(true)
+      end
+
+      it 'returns true for root group' do
+        expect(root_group.enterprise_user_settings_available?(current_user)).to be_truthy
+      end
+
+      it 'returns false for subgroup' do
+        expect(subgroup.enterprise_user_settings_available?(current_user)).to be_falsey
+      end
+    end
+
+    context 'when domain verification is not available' do
+      before do
+        allow(root_group).to receive(:domain_verification_available?).and_return(false)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, root_group).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(root_group.enterprise_user_settings_available?(current_user)).to be_falsey
+      end
+    end
+
+    context 'when user does not have owner access' do
+      before do
+        allow(root_group).to receive(:domain_verification_available?).and_return(true)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, root_group).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(root_group.enterprise_user_settings_available?(current_user)).to be_falsey
+      end
     end
   end
 

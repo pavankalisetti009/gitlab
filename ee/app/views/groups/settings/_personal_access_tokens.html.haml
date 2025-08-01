@@ -3,5 +3,4 @@
 %h5= s_('AccessTokens|Personal access tokens')
 
 .form-group.gl-mb-3
-  = render_if_exists 'groups/settings/enterprise_users_pats', f: f, group: @group
   = render_if_exists 'groups/settings/service_accounts_pats_expiration_enforced', f: f, group: @group
