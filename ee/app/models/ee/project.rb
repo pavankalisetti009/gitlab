@@ -65,7 +65,14 @@ module EE
       belongs_to :mirror_user, class_name: 'User'
 
       has_one :wiki_repository, class_name: 'Projects::WikiRepository', inverse_of: :project
-      has_one :push_rule, ->(project) { project&.feature_available?(:push_rules) ? all : none }, inverse_of: :project
+      has_one :push_rule, ->(project) {
+        if project&.feature_available?(:push_rules)
+          ::Feature.enabled?(:push_rule_ordered_by_id, project) ? order(:id) : all
+        else
+          none
+        end
+      }, inverse_of: :project
+
       has_one :index_status
 
       has_one :github_integration, class_name: 'Integrations::Github'

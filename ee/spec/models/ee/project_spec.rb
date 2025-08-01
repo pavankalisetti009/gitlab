@@ -1277,11 +1277,12 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   end
 
   describe '#push_rule' do
-    let(:project) { create(:project, push_rule: create(:push_rule)) }
+    subject(:project_push_rule) { project.reload_push_rule }
 
-    subject(:push_rule) { project.reload_push_rule }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:push_rule) { create(:push_rule, project: project) }
 
-    it { is_expected.not_to be_nil }
+    it { is_expected.to eq(push_rule) }
 
     context 'push rules unlicensed' do
       before do
@@ -1289,6 +1290,32 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to be_nil }
+    end
+
+    context 'when project has multiple push rules' do
+      let!(:duplicated_push_rule) { build(:push_rule, project: project).tap { |p| p.save!(validate: false) } }
+
+      context 'when push_rule_ordered_by_id feature flag is disabled' do
+        before do
+          stub_feature_flags(push_rule_ordered_by_id: false)
+        end
+
+        it 'returns a push rule without guaranteed order' do
+          is_expected.to be_in([push_rule, duplicated_push_rule])
+        end
+      end
+
+      context 'when push_rule_ordered_by_id feature flag is enabled' do
+        before do
+          stub_feature_flags(push_rule_ordered_by_id: true)
+        end
+
+        it 'returns the push rule with the lowest ID' do
+          is_expected.to eq(push_rule)
+
+          expect(project.push_rule.id).to be < duplicated_push_rule.id
+        end
+      end
     end
   end
 
