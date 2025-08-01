@@ -103,8 +103,8 @@ RSpec.describe OauthAccessToken, feature_category: :system_access do
 
       it 'upgrade legacy plain text tokens' do
         described_class.find_by_fallback_token(:token, plain_token.plaintext_token)
-        sha512_hash = Gitlab::DoorkeeperSecretStoring::Token::Sha512Hash.transform_secret(plain_token.plaintext_token)
-        expect(plain_token.reload.token).to eq(sha512_hash)
+        pbkdf2_hash = Gitlab::DoorkeeperSecretStoring::Token::Pbkdf2Sha512.transform_secret(plain_token.plaintext_token)
+        expect(plain_token.reload.token).to eq(pbkdf2_hash)
       end
 
       it 'returns nil when no strategy finds a match' do
