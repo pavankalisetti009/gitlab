@@ -368,6 +368,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           summarize_review: 12,
           glab_ask_git_command: 13,
           duo_chat_summarize_comments: 14,
+          review_merge_request: 15,
           duo_agent_platform: 16
         }.freeze)
       end
@@ -378,7 +379,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     describe 'feature metadata completeness' do
       # certain features are added in feature_metadata.yml for use in
       # model switching, and they may not be available in self-hosted Duo yet.
-      let(:features_only_for_model_switching) { %w[review_merge_request] }
+      let(:features_only_for_model_switching) { %w[] }
 
       it 'includes all features defined in feature_metadata.yml', :aggregate_failures do
         metadata_features = ::Ai::FeatureConfigurable::FEATURE_METADATA.keys
