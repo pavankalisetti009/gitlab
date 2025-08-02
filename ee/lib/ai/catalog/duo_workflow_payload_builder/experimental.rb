@@ -3,7 +3,7 @@
 module Ai
   module Catalog
     module DuoWorkflowPayloadBuilder
-      class V1 < Base
+      class Experimental < Base
         FLOW_VERSION = 'experimental'
         FLOW_ENVIRONMENT = 'remote'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
