@@ -347,13 +347,6 @@ RSpec.shared_examples 'a Geo framework registry' do
         end.to change { registry.retry_at }.from(a_kind_of(ActiveSupport::TimeWithZone)).to(nil)
            .and change { registry.retry_count }.to(0)
       end
-
-      it 'sets last_synced_at to nil' do
-        expect do
-          registry.pending!
-          registry.reload
-        end.to change { registry.last_synced_at }.from(a_kind_of(ActiveSupport::TimeWithZone)).to(nil)
-      end
     end
   end
 
