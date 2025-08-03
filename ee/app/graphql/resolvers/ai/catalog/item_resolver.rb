@@ -11,12 +11,17 @@ module Resolvers
         argument :id,
           ::Types::GlobalIDType[::Ai::Catalog::Item],
           required: true,
+          loads: ::Types::Ai::Catalog::ItemInterface,
+          as: :item,
           description: 'Global ID of the catalog item to find.'
 
-        def resolve(id:)
-          return unless ::Feature.enabled?(:global_ai_catalog, current_user)
+        def resolve(item:)
+          # TODO We can remove this line when organization checks apply to all policy checks
+          # as the type authorization will take care of this.
+          # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196700
+          return unless item.organization == current_organization
 
-          GitlabSchema.find_by_gid(id)
+          item
         end
       end
     end

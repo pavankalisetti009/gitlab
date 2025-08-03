@@ -113,6 +113,15 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         expect(result).to contain_exactly(agent_type_item)
       end
     end
+
+    describe '.for_organization' do
+      let_it_be(:item_1) { create(:ai_catalog_item, organization: create(:organization)) }
+      let_it_be(:item_2) { create(:ai_catalog_item, organization: create(:organization)) }
+
+      it 'returns items for the specified organization' do
+        expect(described_class.for_organization(item_1.organization)).to contain_exactly(item_1)
+      end
+    end
   end
 
   describe 'callbacks' do

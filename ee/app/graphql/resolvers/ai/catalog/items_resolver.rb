@@ -18,6 +18,7 @@ module Resolvers
           return ::Ai::Catalog::Item.none unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
           items = ::Ai::Catalog::Item.not_deleted
+          items = items.for_organization(current_organization)
           items = items.with_item_type(item_type) if item_type
           apply_lookahead(items)
         end

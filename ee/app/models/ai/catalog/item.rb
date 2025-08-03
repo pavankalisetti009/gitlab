@@ -23,6 +23,7 @@ module Ai
 
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
+      scope :for_organization, ->(organization) { where(organization: organization) }
 
       before_destroy :prevent_deletion_if_consumers_exist
 
