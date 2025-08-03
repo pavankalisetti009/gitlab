@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog do
+RSpec.describe 'getting an AI catalog item', :with_current_organization, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
@@ -164,5 +164,13 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
         'latestVersion' => a_graphql_entity_for(latest_version)
       )
     )
+  end
+
+  context 'when item belongs to another organization' do
+    before do
+      catalog_item.update!(organization: create(:organization))
+    end
+
+    it_behaves_like 'an unsuccessful query'
   end
 end
