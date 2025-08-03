@@ -14,10 +14,6 @@ module Admin
       before_action :ensure_feature_available!
       before_action :ensure_seat_assignable_duo_add_on!
 
-      before_action do
-        push_frontend_feature_flag(:enable_add_on_users_pagesize_selection)
-      end
-
       def index
         @subscription_name = License.current.subscription_name
         @duo_add_on_start_date = duo_pro_or_enterprise_add_on_purchase&.started_at

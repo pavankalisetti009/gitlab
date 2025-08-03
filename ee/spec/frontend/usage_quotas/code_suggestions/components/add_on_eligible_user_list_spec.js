@@ -175,7 +175,6 @@ describe('Add On Eligible User List', () => {
   let mockApolloClient;
 
   const createComponent = ({
-    enableAddOnUsersPagesizeSelection = false,
     isBulkAddOnAssignmentEnabled = false,
     addOnAssignmentBulkCreateHandler = bulkAssignAddOnHandler,
     addOnAssignmentBulkRemoveHandler = bulkUnassignAddOnHandler,
@@ -202,9 +201,6 @@ describe('Add On Eligible User List', () => {
         },
         provide: {
           addDuoProHref,
-          glFeatures: {
-            enableAddOnUsersPagesizeSelection,
-          },
           isBulkAddOnAssignmentEnabled,
           groupId: 1,
           subscriptionName: null,
@@ -707,11 +703,10 @@ describe('Add On Eligible User List', () => {
       });
     });
 
-    describe('when enableAddOnUsersPagesizeSelection is enabled', () => {
+    describe('page size selection', () => {
       beforeEach(() => {
         return createComponent({
           props: { pageInfo: pageInfoWithMorePages },
-          enableAddOnUsersPagesizeSelection: true,
         });
       });
 

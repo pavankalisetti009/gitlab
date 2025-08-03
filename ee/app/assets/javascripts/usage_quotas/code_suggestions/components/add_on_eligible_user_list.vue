@@ -24,7 +24,6 @@ import {
   NOT_ENOUGH_SEATS_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { DUO_IDENTIFIERS } from 'ee/constants/duo';
 import {
@@ -70,7 +69,7 @@ export default {
     GlTable,
     PageSizeSelector,
   },
-  mixins: [glFeatureFlagMixin(), trackingMixin],
+  mixins: [trackingMixin],
   inject: {
     addDuoProHref: { default: null },
     groupId: { default: null },
@@ -138,9 +137,6 @@ export default {
   computed: {
     hasMaxRoleField() {
       return this.tableItems?.some(({ maxRole }) => maxRole);
-    },
-    isPagesizeSelectionEnabled() {
-      return this.glFeatures.enableAddOnUsersPagesizeSelection;
     },
     showPagination() {
       if (this.isLoading || !this.pageInfo) {
@@ -529,13 +525,11 @@ export default {
     <div v-if="showPagination" class="gl-relative gl-mt-5 gl-justify-center gl-text-center">
       <gl-keyset-pagination v-bind="pageInfo" @prev="prevPage" @next="nextPage" />
 
-      <div v-if="isPagesizeSelectionEnabled">
-        <page-size-selector
-          :value="pageSize"
-          class="gl-absolute gl-right-0 gl-top-0"
-          @input="onPageSizeChange"
-        />
-      </div>
+      <page-size-selector
+        :value="pageSize"
+        class="gl-absolute gl-right-0 gl-top-0"
+        @input="onPageSizeChange"
+      />
     </div>
 
     <add-on-bulk-action-confirmation-modal

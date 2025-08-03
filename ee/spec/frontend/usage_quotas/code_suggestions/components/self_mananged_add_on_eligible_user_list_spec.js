@@ -32,7 +32,6 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('Add On Eligible User List', () => {
   let wrapper;
-  let enableAddOnUsersPagesizeSelection = false;
 
   const duoProAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
@@ -87,11 +86,6 @@ describe('Add On Eligible User List', () => {
         addOnPurchaseId: duoProAddOnPurchaseId,
         activeDuoTier,
         ...props,
-      },
-      provide: {
-        glFeatures: {
-          enableAddOnUsersPagesizeSelection,
-        },
       },
     });
 
@@ -275,7 +269,6 @@ describe('Add On Eligible User List', () => {
 
   describe('with page size selection', () => {
     beforeEach(() => {
-      enableAddOnUsersPagesizeSelection = true;
       return createComponent();
     });
 

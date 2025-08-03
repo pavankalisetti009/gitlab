@@ -33,7 +33,6 @@ Vue.use(VueApollo);
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('Add On Eligible User List', () => {
-  let enableAddOnUsersPagesizeSelection = false;
   let wrapper;
 
   const fullPath = 'namespace/full-path';
@@ -113,9 +112,6 @@ describe('Add On Eligible User List', () => {
       },
       provide: {
         fullPath,
-        glFeatures: {
-          enableAddOnUsersPagesizeSelection,
-        },
         addDuoProHref: 'http://customers.gitlab.com/namespaces/0/duo_pro_seats',
         groupId: 1,
         subscriptionName: null,
@@ -308,7 +304,6 @@ describe('Add On Eligible User List', () => {
 
   describe('with page size selection', () => {
     beforeEach(() => {
-      enableAddOnUsersPagesizeSelection = true;
       return createComponent();
     });
 
