@@ -30,6 +30,10 @@ module Gitlab
           list_of_available_models
         end
 
+        def available_model_names
+          list_of_available_models.map { |model| model_name_converter(model) }
+        end
+
         private
 
         def model_matching_hash

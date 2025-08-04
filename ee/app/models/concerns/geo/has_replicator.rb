@@ -22,6 +22,13 @@ module Geo
           end
         RUBY
       end
+
+      # Find a record from the current model from specified primary_key value
+      #
+      # @param [Integer] value
+      def find_by_primary_key(value)
+        find_by(primary_key => value)
+      end
     end
 
     # Geo Replicator
