@@ -23,7 +23,7 @@ RSpec.describe 'Value stream analytics charts', :js, feature_category: :value_st
   end
 
   3.times do |i|
-    let_it_be("issue_#{i}".to_sym) { create(:issue, title: "New Issue #{i}", project: project, created_at: 2.days.ago) }
+    let_it_be(:"issue_#{i}") { create(:issue, title: "New Issue #{i}", project: project, created_at: 2.days.ago) }
   end
 
   before do

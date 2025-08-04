@@ -21,7 +21,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
   let(:empty_state_selector) { '[data-testid="vsa-empty-state"]' }
 
   3.times do |i|
-    let_it_be("issue_#{i}".to_sym) { create(:issue, title: "New Issue #{i}", project: project, created_at: 2.days.ago) }
+    let_it_be(:"issue_#{i}") { create(:issue, title: "New Issue #{i}", project: project, created_at: 2.days.ago) }
   end
 
   before do

@@ -35,7 +35,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
   let(:empty_state_selector) { '[data-testid="vsa-empty-state"]' }
 
   3.times do |i|
-    let_it_be("issue_#{i}".to_sym) { create(:issue, title: "New Issue #{i}", project: sub_group_project, created_at: 2.days.ago) }
+    let_it_be(:"issue_#{i}") { create(:issue, title: "New Issue #{i}", project: sub_group_project, created_at: 2.days.ago) }
   end
 
   def select_stage(name)

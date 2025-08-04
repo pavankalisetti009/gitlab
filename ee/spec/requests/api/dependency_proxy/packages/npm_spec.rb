@@ -46,7 +46,7 @@ RSpec.describe API::DependencyProxy::Packages::Npm, :aggregate_failures, feature
             end
 
             before do
-              project.send("add_#{user_role}".to_sym, user) unless user_role == :anonymous
+              project.send(:"add_#{user_role}", user) unless user_role == :anonymous
             end
 
             it_behaves_like 'returning response status', params[:expected_status]

@@ -21,7 +21,7 @@ RSpec::Matchers.define :have_aggregate do |type, facet, state, status = nil, exp
                  :issues_needing_attention
                else
                  # AT_RISK_STATUS, ON_TRACK_STATUS can be directly mapped to HealthStatusStruct attribute names
-                 "issues_#{Issue.health_statuses.key(status)}".to_sym
+                 :"issues_#{Issue.health_statuses.key(status)}"
                end
       end
 
