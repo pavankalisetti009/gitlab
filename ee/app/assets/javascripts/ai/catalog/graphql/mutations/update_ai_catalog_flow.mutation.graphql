@@ -2,7 +2,7 @@
 #import "../fragments/ai_catalog_flow_version.fragment.graphql"
 
 mutation updateAiCatalogFlow($input: AiCatalogFlowUpdateInput!) {
-  aiCatalogAgentUpdate(input: $input) {
+  aiCatalogFlowUpdate(input: $input) {
     errors
     item {
       ...BaseAiCatalogItem

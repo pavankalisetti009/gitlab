@@ -1,9 +1,8 @@
 <script>
 import { s__ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import createAiCatalogFlow from '../graphql/mutations/create_ai_catalog_flow.mutation.graphql';
+import updateAiCatalogFlow from '../graphql/mutations/update_ai_catalog_flow.mutation.graphql';
 import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
@@ -46,25 +45,31 @@ export default {
       this.isSubmitting = true;
       this.resetErrorMessages();
       try {
+        const { name, description, public: publicValue } = input;
+
         const { data } = await this.$apollo.mutate({
-          mutation: createAiCatalogFlow,
+          mutation: updateAiCatalogFlow,
           variables: {
-            input,
+            input: {
+              id: this.aiCatalogFlow.id,
+              name,
+              description,
+              public: publicValue,
+            },
           },
         });
 
         if (data) {
-          const { errors } = data.aiCatalogFlowCreate;
+          const { errors } = data.aiCatalogFlowUpdate;
           if (errors.length > 0) {
             this.errorMessages = errors;
             return;
           }
 
-          const newFlowId = getIdFromGraphQLId(data.aiCatalogFlowCreate.item.id);
-          this.$toast.show(s__('AICatalog|Flow created successfully.'));
+          this.$toast.show(s__('AICatalog|Flow updated successfully.'));
           this.$router.push({
             name: AI_CATALOG_FLOWS_ROUTE,
-            query: { [AI_CATALOG_SHOW_QUERY_PARAM]: newFlowId },
+            query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.$route.params.id },
           });
         }
       } catch (error) {

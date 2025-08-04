@@ -2497,6 +2497,9 @@ msgstr ""
 msgid "AICatalog|Flow not found."
 msgstr ""
 
+msgid "AICatalog|Flow updated successfully."
+msgstr ""
+
 msgid "AICatalog|Flows"
 msgstr ""
 
