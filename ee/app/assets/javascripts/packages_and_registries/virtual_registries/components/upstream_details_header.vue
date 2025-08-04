@@ -1,13 +1,22 @@
 <script>
+import { GlButton } from '@gitlab/ui';
 import { n__ } from '~/locale';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 
 export default {
   name: 'MavenUpstreamDetailsHeader',
   components: {
+    GlButton,
     TitleArea,
     MetadataItem,
+  },
+  mixins: [glAbilitiesMixin()],
+  inject: {
+    editUpstreamPath: {
+      default: '',
+    },
   },
   props: {
     upstream: {
@@ -16,6 +25,9 @@ export default {
     },
   },
   computed: {
+    canEdit() {
+      return this.glAbilities.updateVirtualRegistry && this.editUpstreamPath;
+    },
     artifactsCountText() {
       return n__('%d Artifact', '%d Artifacts', this.upstream.cacheEntriesCount || 0);
     },
@@ -25,6 +37,11 @@ export default {
 
 <template>
   <title-area :title="upstream.name">
+    <template v-if="canEdit" #right-actions>
+      <gl-button :href="editUpstreamPath">
+        {{ __('Edit') }}
+      </gl-button>
+    </template>
     <template #metadata-registry-type>
       <metadata-item icon="infrastructure-registry" :text="s__('VirtualRegistry|Maven')" />
     </template>
