@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SearchController, type: :request, feature_category: :global_search do
+RSpec.describe SearchController, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, maintainers: user) }
 
@@ -245,7 +245,7 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
           end
         end
 
-        context 'when the search_type is zoekt', :zoekt, :zoekt_settings_enabled do
+        context 'when the search_type is zoekt', :zoekt_settings_enabled do
           let(:params) { { search: 'test', scope: 'blobs', project_id: project.id } }
 
           before do
