@@ -1,5 +1,5 @@
 <script>
-import { GlDisclosureDropdown, GlAvatar, GlIcon, GlLoadingIcon, GlLink } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlAvatar, GlIcon, GlLoadingIcon, GlLink, GlBadge } from '@gitlab/ui';
 import getCurrentUserOrganizations from '~/organizations/shared/graphql/queries/current_user_organizations.query.graphql';
 import { AVATAR_SHAPE_OPTION_RECT } from '~/vue_shared/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -21,15 +21,25 @@ export default {
   i18n: {
     currentOrganization: s__('Organization|Current organization'),
     switchOrganizations: s__('Organization|Switch organizations'),
+    improveOrganizations: {
+      helpImprove: s__('Organization|Help improve Organizations'),
+      newFeatureExplanation: s__(
+        'Organization|Organizations is a new feature. Help us make it better by',
+      ),
+      callToAction: s__('Organization|sharing your experience'),
+    },
     switchingNotSupportedMessage: s__(
       'Organization|Switching between organizations is not currently supported.',
     ),
     learnMore: __('Learn more'),
+    projectStatus: __('Alpha'),
   },
   switchingOrganizationsDocsPath: helpPagePath('user/organization/_index.md', {
     anchor: 'switch-organizations',
   }),
-  components: { GlDisclosureDropdown, GlAvatar, GlIcon, GlLoadingIcon, GlLink },
+  feedbackUrl:
+    'https://gitlab.com/gitlab-com/gl-infra/tenant-scale/organizations/organizations-internal-feedback/-/issues/1',
+  components: { GlDisclosureDropdown, GlAvatar, GlIcon, GlLoadingIcon, GlLink, GlBadge },
   data() {
     return {
       organizations: {},
@@ -147,6 +157,13 @@ export default {
       </button>
     </template>
 
+    <template #group-label="{ group }">
+      {{ group.name }}
+      <gl-badge v-if="group.name === $options.i18n.currentOrganization" variant="info">
+        {{ $options.i18n.projectStatus }}
+      </gl-badge>
+    </template>
+
     <template #list-item="{ item }">
       <gl-loading-icon v-if="item.id === $options.ITEM_LOADING.id" />
       <span v-else-if="item.id === $options.ITEM_EMPTY.id">{{ item.text }}</span>
@@ -162,21 +179,38 @@ export default {
       </div>
     </template>
 
-    <template v-if="!organizationSwitchingEnabled" #footer>
+    <template #footer>
       <div class="gl-border-t gl-mt-2 gl-border-t-dropdown gl-px-4 gl-pt-3">
-        <div class="gl-text-sm gl-font-bold">
-          {{ $options.i18n.switchOrganizations }}
+        <div v-if="!organizationSwitchingEnabled">
+          <div class="gl-text-sm gl-font-bold">
+            {{ $options.i18n.switchOrganizations }}
+          </div>
+          <div class="gl-py-3">
+            <p class="gl-m-0 gl-text-sm gl-text-subtle">
+              {{ $options.i18n.switchingNotSupportedMessage }}
+              <gl-link
+                class="gl-text-sm"
+                :href="$options.switchingOrganizationsDocsPath"
+                data-testid="switching-docs-link"
+                >{{ $options.i18n.learnMore }}</gl-link
+              >.
+            </p>
+          </div>
         </div>
-        <div class="gl-py-3">
-          <p class="gl-m-0 gl-text-sm gl-text-subtle">
-            {{ $options.i18n.switchingNotSupportedMessage }}
-            <gl-link
-              class="gl-text-sm"
-              :href="$options.switchingOrganizationsDocsPath"
-              data-testid="switching-docs-link"
-              >{{ $options.i18n.learnMore }}</gl-link
-            >.
-          </p>
+
+        <div v-else>
+          <div class="gl-text-sm gl-font-bold">
+            {{ $options.i18n.improveOrganizations.helpImprove }}
+          </div>
+          <div class="gl-py-3">
+            <p class="gl-m-0 gl-text-sm gl-text-subtle">
+              {{ $options.i18n.improveOrganizations.newFeatureExplanation }}
+              <gl-link class="gl-text-sm" data-testid="feedback-url" :href="$options.feedbackUrl">{{
+                $options.i18n.improveOrganizations.callToAction
+              }}</gl-link
+              >.
+            </p>
+          </div>
         </div>
       </div>
     </template>
