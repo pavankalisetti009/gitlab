@@ -4,6 +4,7 @@ import { PROMO_URL } from '~/constants';
 
 export const statusesInfo = {
   scanner_sast_running: {
+    title: s__('ComplianceStandardsAdherence|SAST running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures Static Application Security Testing (SAST) is configured and running in the project's default branch pipeline.",
     ),
@@ -20,6 +21,7 @@ export const statusesInfo = {
     ],
   },
   minimum_approvals_required_1: {
+    title: s__('ComplianceStandardsAdherence|At least one approval'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures that merge requests require at least one approval before merging.',
     ),
@@ -36,6 +38,7 @@ export const statusesInfo = {
     ],
   },
   minimum_approvals_required_2: {
+    title: s__('ComplianceStandardsAdherence|At least two approvals'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures that merge requests require at least two approvals before merging.',
     ),
@@ -52,6 +55,7 @@ export const statusesInfo = {
     ],
   },
   merge_request_prevent_author_approval: {
+    title: s__('ComplianceStandardsAdherence|Author approved merge request is forbidden'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures that the author of a merge request cannot approve their own changes.',
     ),
@@ -68,6 +72,7 @@ export const statusesInfo = {
     ],
   },
   merge_request_prevent_committers_approval: {
+    title: s__('ComplianceStandardsAdherence|Committers approved merge request is forbidden'),
     description: s__(
       'ComplianceStandardsAdherence|Prevents users who have committed to a merge request from approving it.',
     ),
@@ -84,6 +89,7 @@ export const statusesInfo = {
     ],
   },
   project_visibility_not_internal: {
+    title: s__('ComplianceStandardsAdherence|Internal visibility is forbidden'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures projects are not set to internal visibility.',
     ),
@@ -100,6 +106,7 @@ export const statusesInfo = {
     ],
   },
   default_branch_protected: {
+    title: s__('ComplianceStandardsAdherence|Default branch protected'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures the default branch has protection rules enabled.',
     ),
@@ -116,6 +123,7 @@ export const statusesInfo = {
     ],
   },
   auth_sso_enabled: {
+    title: s__('ComplianceStandardsAdherence|Auth SSO enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures Single Sign-On (SSO) authentication is enabled for the project.',
     ),
@@ -132,6 +140,7 @@ export const statusesInfo = {
     ],
   },
   scanner_secret_detection_running: {
+    title: s__('ComplianceStandardsAdherence|Secret detection running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures secret detection scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -148,6 +157,7 @@ export const statusesInfo = {
     ],
   },
   scanner_dep_scanning_running: {
+    title: s__('ComplianceStandardsAdherence|Dependency scanning running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures dependency scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -164,6 +174,7 @@ export const statusesInfo = {
     ],
   },
   scanner_container_scanning_running: {
+    title: s__('ComplianceStandardsAdherence|Container scanning running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures container scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -180,6 +191,7 @@ export const statusesInfo = {
     ],
   },
   scanner_license_compliance_running: {
+    title: s__('ComplianceStandardsAdherence|License compliance running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures license compliance scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -196,6 +208,7 @@ export const statusesInfo = {
     ],
   },
   scanner_dast_running: {
+    title: s__('ComplianceStandardsAdherence|DAST running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures Dynamic Application Security Testing (DAST) is configured and running in the project's default branch pipeline.",
     ),
@@ -212,6 +225,7 @@ export const statusesInfo = {
     ],
   },
   scanner_api_security_running: {
+    title: s__('ComplianceStandardsAdherence|API security running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures API security scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -228,6 +242,7 @@ export const statusesInfo = {
     ],
   },
   scanner_fuzz_testing_running: {
+    title: s__('ComplianceStandardsAdherence|Fuzz testing running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures fuzz testing is configured and running in the project's default branch pipeline.",
     ),
@@ -244,6 +259,7 @@ export const statusesInfo = {
     ],
   },
   scanner_code_quality_running: {
+    title: s__('ComplianceStandardsAdherence|Code quality running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures code quality scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -260,6 +276,7 @@ export const statusesInfo = {
     ],
   },
   scanner_iac_running: {
+    title: s__('ComplianceStandardsAdherence|IaC scanning running'),
     description: s__(
       "ComplianceStandardsAdherence|Ensures Infrastructure as Code (IaC) scanning is configured and running in the project's default branch pipeline.",
     ),
@@ -276,6 +293,7 @@ export const statusesInfo = {
     ],
   },
   code_changes_requires_code_owners: {
+    title: s__('ComplianceStandardsAdherence|Code changes requires code owners'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures code changes require approval from code owners.',
     ),
@@ -292,6 +310,7 @@ export const statusesInfo = {
     ],
   },
   reset_approvals_on_push: {
+    title: s__('ComplianceStandardsAdherence|Reset approvals on push'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures approvals are reset when new commits are pushed to the merge request.',
     ),
@@ -308,6 +327,7 @@ export const statusesInfo = {
     ],
   },
   status_checks_required: {
+    title: s__('ComplianceStandardsAdherence|Status checks required'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures status checks must pass before merging is allowed.',
     ),
@@ -324,6 +344,7 @@ export const statusesInfo = {
     ],
   },
   require_branch_up_to_date: {
+    title: s__('ComplianceStandardsAdherence|Require branch up to date'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures the source branch is up to date with the target branch before merging.',
     ),
@@ -340,6 +361,7 @@ export const statusesInfo = {
     ],
   },
   resolve_discussions_required: {
+    title: s__('ComplianceStandardsAdherence|Resolve discussions required'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures all discussions must be resolved before merging is allowed.',
     ),
@@ -356,6 +378,7 @@ export const statusesInfo = {
     ],
   },
   require_linear_history: {
+    title: s__('ComplianceStandardsAdherence|Require linear history'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures a linear commit history by forbidding merge commits.',
     ),
@@ -374,6 +397,7 @@ export const statusesInfo = {
     ],
   },
   restrict_push_merge_access: {
+    title: s__('ComplianceStandardsAdherence|Restrict push/merge access'),
     description: s__(
       'ComplianceStandardsAdherence|Restricts who can push to or merge into protected branches.',
     ),
@@ -390,6 +414,7 @@ export const statusesInfo = {
     ],
   },
   force_push_disabled: {
+    title: s__('ComplianceStandardsAdherence|Force push disabled'),
     description: s__('ComplianceStandardsAdherence|Prevents force pushing to repositories.'),
     fixes: [
       {
@@ -404,6 +429,7 @@ export const statusesInfo = {
     ],
   },
   terraform_enabled: {
+    title: s__('ComplianceStandardsAdherence|Terraform enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures Terraform integration is enabled for the project.',
     ),
@@ -420,6 +446,7 @@ export const statusesInfo = {
     ],
   },
   project_repo_exists: {
+    title: s__('ComplianceStandardsAdherence|Project repository exists'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures that a Git repository exists for the project.',
     ),
@@ -436,6 +463,7 @@ export const statusesInfo = {
     ],
   },
   issue_tracking_enabled: {
+    title: s__('ComplianceStandardsAdherence|Issue tracking enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures issue tracking functionality is enabled for the project.',
     ),
@@ -452,6 +480,7 @@ export const statusesInfo = {
     ],
   },
   stale_branch_cleanup_enabled: {
+    title: s__('ComplianceStandardsAdherence|Stale branch cleanup enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures automatic cleanup of stale branches is enabled.',
     ),
@@ -468,6 +497,7 @@ export const statusesInfo = {
     ],
   },
   branch_deletion_disabled: {
+    title: s__('ComplianceStandardsAdherence|Branch deletion disabled'),
     description: s__('ComplianceStandardsAdherence|Prevents deletion of branches.'),
     fixes: [
       {
@@ -482,6 +512,7 @@ export const statusesInfo = {
     ],
   },
   review_and_archive_stale_repos: {
+    title: s__('ComplianceStandardsAdherence|Review and archive stale repositories'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures stale repositories are reviewed and archived.',
     ),
@@ -498,6 +529,7 @@ export const statusesInfo = {
     ],
   },
   review_and_remove_inactive_users: {
+    title: s__('ComplianceStandardsAdherence|Review and remove inactive users'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures inactive users are reviewed and removed.',
     ),
@@ -514,6 +546,7 @@ export const statusesInfo = {
     ],
   },
   more_members_than_admins: {
+    title: s__('ComplianceStandardsAdherence|More members than admins'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures fewer administrators are assigned to the project than total members.',
     ),
@@ -530,6 +563,7 @@ export const statusesInfo = {
     ],
   },
   require_mfa_for_contributors: {
+    title: s__('ComplianceStandardsAdherence|Require MFA for contributors'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures contributors have Multi-Factor Authentication enabled.',
     ),
@@ -546,6 +580,7 @@ export const statusesInfo = {
     ],
   },
   require_mfa_at_org_level: {
+    title: s__('ComplianceStandardsAdherence|Require MFA at organization level'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures Multi-Factor Authentication is required at the organization level.',
     ),
@@ -562,6 +597,7 @@ export const statusesInfo = {
     ],
   },
   ensure_2_admins_per_repo: {
+    title: s__('ComplianceStandardsAdherence|Ensure two administrators per repository'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures at least two administrators are assigned to each repository.',
     ),
@@ -578,6 +614,7 @@ export const statusesInfo = {
     ],
   },
   strict_permissions_for_repo: {
+    title: s__('ComplianceStandardsAdherence|Strict Permission for Repository'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures strict permissions are set for repository access.',
     ),
@@ -594,6 +631,7 @@ export const statusesInfo = {
     ],
   },
   secure_webhooks: {
+    title: s__('ComplianceStandardsAdherence|Secure webhooks'),
     description: s__('ComplianceStandardsAdherence|Ensures webhooks are securely configured.'),
     fixes: [
       {
@@ -608,6 +646,7 @@ export const statusesInfo = {
     ],
   },
   restricted_build_access: {
+    title: s__('ComplianceStandardsAdherence|Restricted build access'),
     description: s__(
       'ComplianceStandardsAdherence|Restricts access to build artifacts and pipeline outputs.',
     ),
@@ -624,6 +663,7 @@ export const statusesInfo = {
     ],
   },
   gitlab_license_level_ultimate: {
+    title: s__('ComplianceStandardsAdherence|GitLab license level Ultimate'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures the GitLab instance is using an Ultimate license level.',
     ),
@@ -640,6 +680,7 @@ export const statusesInfo = {
     ],
   },
   status_page_configured: {
+    title: s__('ComplianceStandardsAdherence|Status page configured'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures a status page is configured for the project.',
     ),
@@ -656,6 +697,7 @@ export const statusesInfo = {
     ],
   },
   has_valid_ci_config: {
+    title: s__('ComplianceStandardsAdherence|Has valid CI/CD configuration'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures the project has a valid CI/CD configuration.',
     ),
@@ -672,6 +714,7 @@ export const statusesInfo = {
     ],
   },
   error_tracking_enabled: {
+    title: s__('ComplianceStandardsAdherence|Error tracking enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures error tracking is enabled for the project.',
     ),
@@ -688,6 +731,7 @@ export const statusesInfo = {
     ],
   },
   default_branch_users_can_push: {
+    title: s__('ComplianceStandardsAdherence|Default branch users can push'),
     description: s__(
       'ComplianceStandardsAdherence|Controls whether users can push directly to the default branch.',
     ),
@@ -704,6 +748,7 @@ export const statusesInfo = {
     ],
   },
   default_branch_protected_from_direct_push: {
+    title: s__('ComplianceStandardsAdherence|Default branch protected from direct push'),
     description: s__('ComplianceStandardsAdherence|Prevents direct pushes to the default branch.'),
     fixes: [
       {
@@ -718,6 +763,7 @@ export const statusesInfo = {
     ],
   },
   push_protection_enabled: {
+    title: s__('ComplianceStandardsAdherence|Push protection enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures push protection is enabled for sensitive files.',
     ),
@@ -734,6 +780,7 @@ export const statusesInfo = {
     ],
   },
   project_marked_for_deletion: {
+    title: s__('ComplianceStandardsAdherence|Project not marked for deletion'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures that project is not marked for deletion.',
     ),
@@ -750,6 +797,7 @@ export const statusesInfo = {
     ],
   },
   project_archived: {
+    title: s__('ComplianceStandardsAdherence|Project not archived'),
     description: s__('ComplianceStandardsAdherence|Ensures that project is not archived.'),
     fixes: [
       {
@@ -764,6 +812,7 @@ export const statusesInfo = {
     ],
   },
   default_branch_users_can_merge: {
+    title: s__('ComplianceStandardsAdherence|Default branch users can merge'),
     description: s__(
       'ComplianceStandardsAdherence|Controls whether users can merge changes to the default branch.',
     ),
@@ -780,6 +829,7 @@ export const statusesInfo = {
     ],
   },
   merge_request_commit_reset_approvals: {
+    title: s__('ComplianceStandardsAdherence|Merge request commit reset approvals'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures new commits to merge requests reset approvals.',
     ),
@@ -796,6 +846,7 @@ export const statusesInfo = {
     ],
   },
   project_visibility_not_public: {
+    title: s__('ComplianceStandardsAdherence|Project visibility not public'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures projects are not set to public visibility.',
     ),
@@ -812,6 +863,7 @@ export const statusesInfo = {
     ],
   },
   package_hunter_no_findings_untriaged: {
+    title: s__('ComplianceStandardsAdherence|Package Hunter no findings untriaged'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures all package hunter findings are triaged.',
     ),
@@ -828,6 +880,7 @@ export const statusesInfo = {
     ],
   },
   project_pipelines_not_public: {
+    title: s__('ComplianceStandardsAdherence|Project pipelines not public'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures project pipelines are not publicly visible.',
     ),
@@ -844,6 +897,7 @@ export const statusesInfo = {
     ],
   },
   vulnerabilities_slo_days_over_threshold: {
+    title: s__('ComplianceStandardsAdherence|Vulnerabilities SLO days over threshold'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures vulnerabilities are addressed within SLO thresholds.',
     ),
@@ -860,6 +914,7 @@ export const statusesInfo = {
     ],
   },
   merge_requests_approval_rules_prevent_editing: {
+    title: s__('ComplianceStandardsAdherence|Merge requests approval rules prevent editing'),
     description: s__(
       'ComplianceStandardsAdherence|Prevents editing of merge request approval rules.',
     ),
@@ -876,6 +931,9 @@ export const statusesInfo = {
     ],
   },
   project_user_defined_variables_restricted_to_maintainers: {
+    title: s__(
+      'ComplianceStandardsAdherence|User-defined CI/CD variables restricted to maintainers',
+    ),
     description: s__(
       'ComplianceStandardsAdherence|User-defined CI/CD variables restricted to maintainers.',
     ),
@@ -892,6 +950,7 @@ export const statusesInfo = {
     ],
   },
   merge_requests_require_code_owner_approval: {
+    title: s__('ComplianceStandardsAdherence|Merge requests require code owner approval'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures merge requests require approval from code owners.',
     ),
@@ -908,6 +967,7 @@ export const statusesInfo = {
     ],
   },
   cicd_job_token_scope_enabled: {
+    title: s__('ComplianceStandardsAdherence|CI/CD job token scope enabled'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures CI/CD job token scope restrictions are enabled.',
     ),
@@ -924,6 +984,7 @@ export const statusesInfo = {
     ],
   },
   protected_branches_set: {
+    title: s__('ComplianceStandardsAdherence|Protected branches exist'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures that project contains protected branches.',
     ),
@@ -939,6 +1000,7 @@ export const statusesInfo = {
     ],
   },
   code_owner_approval_required: {
+    title: s__('ComplianceStandardsAdherence|Code owner approval required'),
     description: s__('ComplianceStandardsAdherence|Ensures that code owners file is configured.'),
     fixes: [
       {
@@ -953,6 +1015,7 @@ export const statusesInfo = {
     ],
   },
   require_signed_commits: {
+    title: s__('ComplianceStandardsAdherence|Requires signed commits'),
     description: s__('ComplianceStandardsAdherence|Ensures that signed commits are required'),
     fixes: [
       {
@@ -967,6 +1030,7 @@ export const statusesInfo = {
     ],
   },
   has_forks: {
+    title: s__('ComplianceStandardsAdherence|Forks exist for the project'),
     description: s__('ComplianceStandardsAdherence|Ensures that the project has been forked.'),
     fixes: [
       {

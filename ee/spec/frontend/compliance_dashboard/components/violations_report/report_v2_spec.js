@@ -313,7 +313,7 @@ describe('ComplianceViolationsReportV2 component', () => {
 
       expect(tableRows()).toHaveLength(1);
       expect(firstRow.text()).toContain('Frontend Project');
-      expect(firstRow.text()).toContain('SAST configuration');
+      expect(firstRow.text()).toContain('SAST running');
       expect(firstRow.text()).toContain('Request to compliance requirement external failed.');
       expect(firstRow.text()).toContain('By John Doe');
     });
@@ -711,7 +711,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('SAST configuration');
+      expect(result).toBe('SAST running');
     });
 
     it('returns linkTitle for known control names', () => {
@@ -720,7 +720,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('Merge request approvals');
+      expect(result).toBe('At least one approval');
     });
 
     it('returns original name when control name not found in statusesInfo', () => {
@@ -750,7 +750,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('Protected branches');
+      expect(result).toBe('Default branch protected');
     });
 
     it('handles statusInfo with null/undefined fixes', () => {
@@ -794,7 +794,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       expect(result).toBe('test_control_no_link_title');
     });
 
-    it('handles statusInfo with fixes[0].linkTitle as null', () => {
+    it('handles statusInfo with title as null', () => {
       const control = { name: 'test_control_null_link_title' };
 
       statusesInfo.test_control_null_link_title = {

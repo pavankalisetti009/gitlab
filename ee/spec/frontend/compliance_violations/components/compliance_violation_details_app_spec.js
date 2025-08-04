@@ -307,7 +307,7 @@ describe('ComplianceViolationDetailsApp', () => {
       });
     });
 
-    it('displays the project location with link', () => {
+    it('displays the project with link', () => {
       const { project } = mockComplianceViolation;
       const projectLink = wrapper.findByTestId('compliance-violation-location-link');
       expect(projectLink.exists()).toBe(true);

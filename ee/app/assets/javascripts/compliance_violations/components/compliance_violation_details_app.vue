@@ -120,7 +120,7 @@ export default {
   },
   i18n: {
     status: s__('ComplianceReport|Status'),
-    location: s__('ComplianceReport|Location'),
+    project: s__('ComplianceReport|Project'),
     queryError: s__(
       'ComplianceReport|Failed to load the compliance violation. Refresh the page and try again.',
     ),
@@ -155,7 +155,7 @@ export default {
       />
     </div>
     <div class="gl-mt-4">
-      <span class="gl-font-bold">{{ $options.i18n.location }}:</span>
+      <span class="gl-font-bold">{{ $options.i18n.project }}:</span>
       <a
         :href="projectComplianceViolation.project.webUrl"
         data-testid="compliance-violation-location-link"
