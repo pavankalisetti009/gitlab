@@ -189,7 +189,7 @@ export default {
             :id="id"
             :state="validation.state"
             :checked="value"
-            data-testid="agent-form-radio-group-visibility-level"
+            data-testid="flow-form-radio-group-visibility-level"
             @input="input"
           >
             <gl-form-radio
@@ -212,7 +212,7 @@ export default {
           <gl-alert
             v-if="visibilityLevelAlertText"
             :dismissible="false"
-            data-testid="agent-form-visibility-level-alert"
+            data-testid="flow-form-visibility-level-alert"
             class="gl-mt-3"
             variant="info"
           >

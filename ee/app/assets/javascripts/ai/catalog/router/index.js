@@ -90,34 +90,46 @@ export const createRouter = (base) => {
       },
       // FLOWS
       {
-        name: AI_CATALOG_FLOWS_ROUTE,
+        component: NestedRouteApp,
         path: '/flows',
-        component: AiCatalogFlows,
         meta: {
           text: s__('AICatalog|Flows'),
         },
-      },
-      {
-        name: AI_CATALOG_FLOWS_NEW_ROUTE,
-        path: '/flows/new',
-        component: AiCatalogFlowsNew,
-      },
-      // Catch-all route for /flows/:id - redirect to /flows?show=:id
-      {
-        path: '/flows/:id',
-        redirect: (to) => ({
-          path: '/flows',
-          query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
-        }),
-      },
-      {
-        path: '/flows/:id',
-        component: AiCatalogFlow,
         children: [
           {
-            name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-            path: 'edit',
-            component: AiCatalogFlowsEdit,
+            name: AI_CATALOG_FLOWS_ROUTE,
+            path: '',
+            component: AiCatalogFlows,
+          },
+          {
+            name: AI_CATALOG_FLOWS_NEW_ROUTE,
+            path: 'new',
+            component: AiCatalogFlowsNew,
+            meta: {
+              text: s__('AICatalog|New flow'),
+            },
+          },
+          // Catch-all route for /flows/:id - redirect to /flows?show=:id
+          {
+            path: ':id',
+            redirect: (to) => ({
+              path: '/flows',
+              query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
+            }),
+          },
+          {
+            path: ':id',
+            component: AiCatalogFlow,
+            children: [
+              {
+                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+                path: 'edit',
+                component: AiCatalogFlowsEdit,
+                meta: {
+                  text: s__('AICatalog|Edit flow'),
+                },
+              },
+            ],
           },
         ],
       },

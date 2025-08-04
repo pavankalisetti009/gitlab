@@ -12,7 +12,7 @@ import {
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 import {
-  mockBaseFlow,
+  mockFlow,
   mockCreateAiCatalogFlowSuccessMutation,
   mockCreateAiCatalogFlowErrorMutation,
 } from '../mock_data';
@@ -55,7 +55,7 @@ describe('AiCatalogFlowsNew', () => {
   });
 
   describe('Form Submit', () => {
-    const { name, description, project } = mockBaseFlow;
+    const { name, description, project } = mockFlow;
     const formValues = {
       name,
       description,

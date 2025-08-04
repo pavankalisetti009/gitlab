@@ -12,11 +12,11 @@ import {
 describe('AiCatalogNavTabs', () => {
   let wrapper;
 
-  const createComponent = ({ routePath = AI_CATALOG_AGENTS_ROUTE } = {}) => {
+  const createComponent = ({ routeName = AI_CATALOG_AGENTS_ROUTE } = {}) => {
     wrapper = shallowMountExtended(AiCatalogNavActions, {
       mocks: {
         $route: {
-          path: routePath,
+          name: routeName,
         },
       },
     });
@@ -24,7 +24,7 @@ describe('AiCatalogNavTabs', () => {
 
   const findButton = () => wrapper.findComponent(GlButton);
 
-  describe('when on the agents route', () => {
+  describe('when on agents route', () => {
     beforeEach(() => {
       createComponent();
     });
@@ -40,7 +40,7 @@ describe('AiCatalogNavTabs', () => {
 
   describe('when on flows route', () => {
     beforeEach(() => {
-      createComponent({ routePath: AI_CATALOG_FLOWS_ROUTE });
+      createComponent({ routeName: AI_CATALOG_FLOWS_ROUTE });
     });
 
     it('renders button', () => {
@@ -52,9 +52,9 @@ describe('AiCatalogNavTabs', () => {
     });
   });
 
-  describe('When on other route', () => {
+  describe('when on other route', () => {
     beforeEach(() => {
-      createComponent({ routePath: AI_CATALOG_FLOWS_NEW_ROUTE });
+      createComponent({ routeName: AI_CATALOG_FLOWS_NEW_ROUTE });
     });
 
     it('does not render button', () => {

@@ -2,6 +2,7 @@
 import { GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import {
+  AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
@@ -14,8 +15,9 @@ export default {
     GlButton,
   },
   computed: {
-    buttonInfo() {
-      switch (this.$route.path) {
+    buttonProps() {
+      switch (this.$route.name) {
+        case AI_CATALOG_INDEX_ROUTE:
         case AI_CATALOG_AGENTS_ROUTE:
           return {
             route: AI_CATALOG_AGENTS_NEW_ROUTE,
@@ -38,7 +40,7 @@ export default {
 </script>
 
 <template>
-  <gl-button v-if="buttonInfo.route" :to="{ name: buttonInfo.route }" variant="confirm">
-    {{ buttonInfo.label }}
+  <gl-button v-if="buttonProps.route" :to="{ name: buttonProps.route }" variant="confirm">
+    {{ buttonProps.label }}
   </gl-button>
 </template>

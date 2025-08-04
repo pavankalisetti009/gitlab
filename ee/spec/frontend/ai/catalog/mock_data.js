@@ -160,10 +160,10 @@ export const mockFlow = mockFlowFactory({
   latestVersion: mockFlowVersion,
 });
 
-export const mockBaseFlow = { ...mockFlow, project: mockProject };
+export const mockBaseFlow = mockFlowFactory();
 
 export const mockFlows = [
-  mockFlow,
+  mockBaseFlow,
   mockFlowFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/5',
     name: 'Test AI Flow 2',
