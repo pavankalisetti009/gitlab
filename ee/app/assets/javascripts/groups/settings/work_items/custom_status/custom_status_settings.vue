@@ -2,13 +2,24 @@
 import { GlAlert, GlButton, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import StatusModal from './status_modal.vue';
+import CreateLifecycleModal from './create_lifecycle_modal.vue';
 import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
 
 export default {
-  components: { GlAlert, GlButton, GlIcon, StatusModal, WorkItemStatusBadge, HelpPageLink },
+  components: {
+    GlAlert,
+    GlButton,
+    GlIcon,
+    StatusModal,
+    WorkItemStatusBadge,
+    HelpPageLink,
+    CreateLifecycleModal,
+  },
+  mixins: [glFeatureFlagMixin()],
   props: {
     fullPath: {
       type: String,
@@ -21,6 +32,7 @@ export default {
       errorText: '',
       errorDetail: '',
       selectedLifecycleId: null,
+      showCreateLifecycleModal: false,
     };
   },
   apollo: {
@@ -45,6 +57,9 @@ export default {
     selectedLifecycle() {
       return this.lifecycles.find((lifecycle) => lifecycle.id === this.selectedLifecycleId);
     },
+    workItemStatusMvc2Enabled() {
+      return this.glFeatures.workItemStatusMvc2;
+    },
   },
   methods: {
     dismissAlert() {
@@ -59,6 +74,9 @@ export default {
     },
     handleLifecycleUpdate() {
       this.$apollo.queries.lifecycles.refetch();
+    },
+    toggleCreateLifecycleModal() {
+      this.showCreateLifecycleModal = !this.showCreateLifecycleModal;
     },
   },
 };
@@ -98,6 +116,25 @@ export default {
       </details>
     </gl-alert>
 
+    <section
+      v-if="workItemStatusMvc2Enabled"
+      class="gl-mb-4 gl-flex gl-items-center gl-justify-between"
+    >
+      <div>
+        <h5 class="gl-mb-2">{{ s__('WorkItem|Lifecycles') }}</h5>
+        <p class="gl-mb-0">
+          {{
+            s__(
+              'WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle.',
+            )
+          }}
+        </p>
+      </div>
+      <gl-button @click="toggleCreateLifecycleModal">{{
+        s__('WorkItem|Create lifecycle')
+      }}</gl-button>
+    </section>
+
     <div
       v-for="lifecycle in lifecycles"
       :key="lifecycle.id"
@@ -133,6 +170,11 @@ export default {
       :full-path="fullPath"
       @close="closeModal"
       @lifecycle-updated="handleLifecycleUpdate"
+    />
+
+    <create-lifecycle-modal
+      :visible="showCreateLifecycleModal"
+      @close="toggleCreateLifecycleModal"
     />
   </div>
 </template>

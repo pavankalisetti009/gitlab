@@ -6,10 +6,10 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
-import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields_list.vue';
-import groupCustomFieldsQuery from 'ee/groups/settings/work_items/group_custom_fields.query.graphql';
-import customFieldArchiveMutation from 'ee/groups/settings/work_items/custom_field_archive.mutation.graphql';
+import CustomFieldForm from 'ee/groups/settings/work_items/custom_fields/custom_field_form.vue';
+import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields/custom_fields_list.vue';
+import groupCustomFieldsQuery from 'ee/groups/settings/work_items/custom_fields/group_custom_fields.query.graphql';
+import customFieldArchiveMutation from 'ee/groups/settings/work_items/custom_fields/custom_field_archive.mutation.graphql';
 
 Vue.use(VueApollo);
 

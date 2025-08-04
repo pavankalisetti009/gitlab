@@ -6,11 +6,11 @@ import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import StatusLifecycleModal from 'ee/groups/settings/work_items/status_modal.vue';
-import StatusForm from 'ee/groups/settings/work_items/status_form.vue';
+import StatusLifecycleModal from 'ee/groups/settings/work_items/custom_status/status_modal.vue';
+import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.vue';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
-import lifecycleUpdateMutation from 'ee/groups/settings/work_items/lifecycle_update.mutation.graphql';
-import namespaceMetadataQuery from 'ee/groups/settings/work_items/namespace_metadata.query.graphql';
+import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/lifecycle_update.mutation.graphql';
+import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/namespace_metadata.query.graphql';
 import { mockNamespaceMetadata, deleteStatusErrorResponse } from './mock_data';
 
 Vue.use(VueApollo);

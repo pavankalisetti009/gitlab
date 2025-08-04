@@ -71701,6 +71701,9 @@ msgstr ""
 msgid "WorkItem|Create field"
 msgstr ""
 
+msgid "WorkItem|Create lifecycle"
+msgstr ""
+
 msgid "WorkItem|Created %{timeago}"
 msgstr ""
 
@@ -71872,6 +71875,12 @@ msgid "WorkItem|Last updated %{timeago}"
 msgstr ""
 
 msgid "WorkItem|Lavender"
+msgstr ""
+
+msgid "WorkItem|Lifecycles"
+msgstr ""
+
+msgid "WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle."
 msgstr ""
 
 msgid "WorkItem|Light blue"
