@@ -83,7 +83,7 @@ module Gitlab
     def self.headers(user:, service:, agent: nil, lsp_version: nil)
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
-        'Authorization' => "Bearer #{service.access_token(user)}",
+        'Authorization' => "Bearer #{cloud_connector_token(service, user)}",
         'Content-Type' => 'application/json',
         'X-Gitlab-Is-Team-Member' =>
           (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s,
@@ -127,6 +127,15 @@ module Gitlab
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
         'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
+    end
+
+    def self.cloud_connector_token(service, user)
+      return service.access_token(user) unless Feature.enabled?(:cloud_connector_new_token_path, user)
+
+      # Until https://gitlab.com/groups/gitlab-org/-/epics/15639 is complete, we generate service
+      # definitions for each UP, so passing the service name here should be safe, even if `service`
+      # is not defined explicitly.
+      ::CloudConnector::Tokens.get(unit_primitive: service.name, resource: user)
     end
   end
 end

@@ -9,9 +9,9 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
   let(:url) { "https://#{host}/api" }
   let(:model_config) { instance_double('Gitlab::Llm::VertexAi::ModelConfigurations::CodeChat', host: host) }
   let(:unit_primitive) { 'explain_vulnerability' }
-  let(:current_token) { SecureRandom.uuid }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:enablement_type) { 'add_on' }
+  let(:aigw_headers) { { 'header' => 'value' } }
   let(:auth_response) do
     instance_double(Ai::UserAuthorizable::Response,
       namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
@@ -23,9 +23,11 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
 
   before do
     stub_ee_application_setting(vertex_ai_host: host)
-    available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: current_token,
-      name: :vertex_ai_proxy)
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(available_service_data)
+    service = instance_double(CloudConnector::BaseAvailableServiceData, name: :vertex_ai_proxy)
+    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
+    allow(Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: service)
+      .and_return(aigw_headers)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
@@ -34,19 +36,9 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
       expect(configuration.headers).to include(
         {
           'Accept' => 'application/json',
-          'Authorization' => "Bearer #{current_token}",
-          "x-gitlab-feature-enabled-by-namespace-ids" => enabled_by_namespace_ids.join(','),
-          'x-gitlab-feature-enablement-type' => enablement_type,
           'Host' => host,
-          'Content-Type' => 'application/json',
-          'X-Gitlab-Authentication-Type' => 'oidc',
-          'x-gitlab-global-user-id' => be_an(String),
-          'x-gitlab-host-name' => be_an(String),
-          'x-gitlab-instance-id' => be_an(String),
-          'x-gitlab-realm' => be_an(String),
-          'X-Gitlab-Unit-Primitive' => unit_primitive,
-          'X-Request-ID' => be_an(String)
-        }
+          'X-Gitlab-Unit-Primitive' => unit_primitive
+        }.merge(aigw_headers)
       )
     end
   end
