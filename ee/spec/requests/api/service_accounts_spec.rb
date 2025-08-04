@@ -246,7 +246,12 @@ RSpec.describe API::ServiceAccounts, :with_current_organization, :aggregate_fail
           context 'when email confirmation is required' do
             before do
               stub_application_setting_enum('email_confirmation_setting', 'hard')
+
+              allow(Devise::Mailer).to receive(:confirmation_instructions).and_return(mailer_double)
+              allow(mailer_double).to receive(:deliver_later)
             end
+
+            let(:mailer_double) { instance_double(ActionMailer::MessageDelivery) }
 
             it 'only updates the unconfirmed email' do
               perform_request
@@ -255,6 +260,12 @@ RSpec.describe API::ServiceAccounts, :with_current_organization, :aggregate_fail
               expect(json_response.keys).to match_array(%w[id name username email public_email unconfirmed_email])
               expect(json_response['unconfirmed_email']).to eq('test@test.com')
               expect(json_response['email']).not_to eq('test@test.com')
+            end
+
+            it 'sends a confirmation email' do
+              expect(mailer_double).to receive(:deliver_later)
+
+              perform_request
             end
           end
 

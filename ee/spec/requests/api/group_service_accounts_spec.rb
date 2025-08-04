@@ -257,7 +257,13 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
       end
 
       context 'when email is provided' do
+        before do
+          allow(Devise::Mailer).to receive(:confirmation_instructions).and_return(mailer_double)
+          allow(mailer_double).to receive(:deliver_later)
+        end
+
         let(:params) { { email: 'test@test.com' } }
+        let(:mailer_double) { instance_double(ActionMailer::MessageDelivery) }
 
         it 'only updates the unconfirmed email' do
           perform_request
@@ -266,6 +272,12 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           expect(json_response.keys).to match_array(%w[id name username email public_email unconfirmed_email])
           expect(json_response['unconfirmed_email']).to eq('test@test.com')
           expect(json_response['email']).not_to eq('test@test.com')
+        end
+
+        it 'sends a confirmation email' do
+          expect(mailer_double).to receive(:deliver_later)
+
+          perform_request
         end
       end
 
