@@ -18824,6 +18824,9 @@ msgstr ""
 msgid "Copy source branch name"
 msgstr ""
 
+msgid "Copy tag name"
+msgstr ""
+
 msgid "Copy to clipboard"
 msgstr ""
 
