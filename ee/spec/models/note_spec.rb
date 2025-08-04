@@ -556,7 +556,7 @@ RSpec.describe Note, feature_category: :team_planning do
     let_it_be(:issue) { create(:issue, project: create(:project)) }
     let_it_be(:note1) { create(:note, noteable: issue, project: issue.project, created_at: 2.days.ago) }
     let_it_be(:note2) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago) }
-    let_it_be(:epic) { create(:epic) }
+    let_it_be(:epic) { create(:epic, id: non_existing_record_id) } # Making sure epic id doesn't match issue id
     let_it_be(:note3) { create(:note, noteable: epic, project: nil) }
 
     subject(:distinct_notes) { described_class.distinct_on_noteable_id }
@@ -564,7 +564,7 @@ RSpec.describe Note, feature_category: :team_planning do
     it 'returns one note per noteable_id' do
       noteable_ids = distinct_notes.map(&:noteable_id)
 
-      expect(noteable_ids).to match_array([issue.id, epic.id])
+      expect(noteable_ids).to contain_exactly(issue.id, epic.id)
     end
 
     it 'returns any one note for noteable_id' do
