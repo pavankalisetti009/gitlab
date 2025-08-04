@@ -15,6 +15,7 @@ module EE
         expose :deployment_events, documentation: { type: 'boolean' }
         expose :feature_flag_events, documentation: { type: 'boolean' }
         expose :releases_events, documentation: { type: 'boolean' }
+        expose :milestone_events, documentation: { type: 'boolean' }
         expose :subgroup_events, documentation: { type: 'boolean' }
         expose :emoji_events, documentation: { type: 'boolean' }
         expose :resource_access_token_events, documentation: { type: 'boolean' }
