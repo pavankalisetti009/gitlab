@@ -7,12 +7,6 @@ components:
       gl/inject-editor: true
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
-      args:
-        - |
-          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_CONTAINER_ARGS, 10) %>
-      command:
-        - "/bin/sh"
-        - "-c"
       env:
         - name: GL_TOOLS_DIR
           value: "/projects/.gl-tools"
@@ -42,6 +36,15 @@ components:
       env:
         - name: MYSQL_ROOT_PASSWORD
           value: "my-secret-pw"
+      dedicatedPod: false
+      mountSources: true
+  - name: user-defined-entrypoint-cmd-component
+    attributes:
+      overrideCommand: false
+    container:
+      image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+      command: ["echo"]
+      args: ["-n", "user-defined entrypoint command"]
       dedicatedPod: false
       mountSources: true
   - name: gl-tools-injector
