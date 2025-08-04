@@ -5,8 +5,6 @@ require 'spec_helper'
 RSpec.describe ApprovalWrappedAnyApproverRule do
   let(:merge_request) { create(:merge_request) }
 
-  subject { described_class.new(merge_request, rule) }
-
   let(:rule) do
     create(:any_approver_rule, merge_request: merge_request, approvals_required: 2)
   end
@@ -18,6 +16,8 @@ RSpec.describe ApprovalWrappedAnyApproverRule do
     create(:approval, merge_request: merge_request, user: approver1)
     create(:approval, merge_request: merge_request, user: approver2)
   end
+
+  subject { described_class.new(merge_request, rule) }
 
   describe '#approvals_approvers' do
     it 'contains every approved user' do
