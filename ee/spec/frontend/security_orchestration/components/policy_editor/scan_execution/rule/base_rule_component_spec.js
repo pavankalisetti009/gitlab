@@ -13,8 +13,9 @@ import {
 import {
   ALL_PROTECTED_BRANCHES,
   SPECIFIC_BRANCHES,
-  VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
+  TARGET_BRANCHES,
   TARGET_DEFAULT,
+  VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
@@ -167,20 +168,21 @@ describe('BaseRuleComponent', () => {
   });
 
   describe('branch types', () => {
-    it.each(VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS)('should select branch type', (branchType) => {
-      createComponent();
+    it.each(VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS)(
+      'should select branch type %s',
+      (branchType) => {
+        createComponent();
 
-      findBranchTypeSelector().vm.$emit('set-branch-type', branchType);
+        findBranchTypeSelector().vm.$emit('set-branch-type', branchType);
 
-      expect(wrapper.emitted('changed')).toEqual([
-        [
-          {
-            type: SCAN_EXECUTION_SCHEDULE_RULE,
-            branch_type: branchType,
-          },
-        ],
-      ]);
-    });
+        const expected = { type: SCAN_EXECUTION_SCHEDULE_RULE, branch_type: branchType };
+        if (TARGET_BRANCHES.includes(branchType)) {
+          expected.pipeline_sources = { including: ['merge_request_event', 'push'] };
+        }
+
+        expect(wrapper.emitted('changed')).toEqual([[expected]]);
+      },
+    );
 
     it.each`
       type                            | emittedValue
