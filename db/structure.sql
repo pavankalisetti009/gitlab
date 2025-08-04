@@ -30198,6 +30198,9 @@ ALTER TABLE ONLY group_type_ci_runners
 ALTER TABLE merge_request_context_commit_diff_files
     ADD CONSTRAINT check_90390c308c CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE related_epic_links
+    ADD CONSTRAINT check_a6d9d7c276 CHECK ((issue_link_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE p_ci_job_artifacts
     ADD CONSTRAINT check_b8fac815e7 CHECK ((char_length(exposed_as) <= 100)) NOT VALID;
 

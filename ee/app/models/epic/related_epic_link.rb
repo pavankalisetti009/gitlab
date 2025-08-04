@@ -23,7 +23,7 @@ class Epic::RelatedEpicLink < ApplicationRecord
     )
   end
 
-  validates :related_work_item_link, presence: true, on: :create
+  validates :related_work_item_link, presence: true
 
   class << self
     extend ::Gitlab::Utils::Override
