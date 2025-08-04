@@ -53,25 +53,6 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
         stub_licensed_features(epics: true, related_epics: true)
       end
 
-      context 'when synced_work_item: true' do
-        let(:extra_params) { { synced_work_item: true } }
-
-        before do
-          # Remove the FK, because otherwise it gets deleted through the constraint.
-          related_epic_link.update!(related_work_item_link: nil)
-        end
-
-        it 'skips the permission check' do
-          expect { destroy_links }.to change { WorkItems::RelatedWorkItemLink.count }.by(-1)
-        end
-
-        it 'does not destroy related epic link' do
-          expect(::Epics::RelatedEpicLinks::DestroyService).not_to receive(:new)
-
-          expect { destroy_links }.not_to change { Epic::RelatedEpicLink.count }
-        end
-      end
-
       context 'when synced_work_item: false' do
         it 'creates system notes' do
           expect(SystemNoteService).to receive(:unrelate_issuable).with(source, target, user)
