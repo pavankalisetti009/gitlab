@@ -5,17 +5,21 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
+import TokenValidityBadge from 'ee/vue_shared/security_reports/components/token_validity_badge.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import refreshFindingTokenStatusMutation from '../graphql/mutations/refresh_finding_token_status.mutation.graphql';
 
 export default {
-  name: 'ValidityCheckRefresh',
+  name: 'ValidityCheck',
   components: {
     GlButton,
     TimeAgoTooltip,
+    TokenValidityBadge,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     findingTokenStatus: {
       type: Object,
@@ -31,11 +35,15 @@ export default {
     return {
       isLoading: false,
       latestUpdatedAt: null,
+      latestStatus: null,
     };
   },
   computed: {
     lastCheckedAt() {
       return this.latestUpdatedAt || this.findingTokenStatus?.updatedAt;
+    },
+    tokenValidityStatus() {
+      return this.latestStatus || this.findingTokenStatus?.status || 'unknown';
     },
   },
   methods: {
@@ -55,7 +63,10 @@ export default {
         if (errors?.length) {
           this.createErrorAlert(new Error(errors.join('. ')));
         } else if (findingTokenStatus) {
-          this.latestUpdatedAt = findingTokenStatus.updatedAt;
+          const { updatedAt, status } = findingTokenStatus;
+
+          this.latestUpdatedAt = updatedAt;
+          this.latestStatus = status;
         }
       } catch (error) {
         this.createErrorAlert(error);
@@ -77,25 +88,28 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mt-4">
-    <span class="gl-font-sm gl-ml-2 gl-mr-2" data-testid="validity-last-checked">
-      {{ s__('VulnerabilityManagement|Last checked:') }}
-      <template v-if="lastCheckedAt">
-        <time-ago-tooltip :time="lastCheckedAt" />
-      </template>
-      <template v-else>
-        <span>{{ s__('VulnerabilityManagement|not available') }}</span>
-      </template>
-    </span>
-    <gl-button
-      v-gl-tooltip
-      :loading="isLoading"
-      category="tertiary"
-      size="small"
-      icon="retry"
-      :title="s__('VulnerabilityManagement|Retry')"
-      :aria-label="s__('VulnerabilityManagement|Retry')"
-      @click="refreshValidityCheck"
-    />
-  </div>
+  <span>
+    <token-validity-badge :status="tokenValidityStatus" />
+    <div v-if="glFeatures.validityRefresh" class="gl-mt-4">
+      <span class="gl-font-sm gl-ml-2 gl-mr-2" data-testid="validity-last-checked">
+        {{ s__('VulnerabilityManagement|Last checked:') }}
+        <template v-if="lastCheckedAt">
+          <time-ago-tooltip :time="lastCheckedAt" />
+        </template>
+        <template v-else>
+          <span>{{ s__('VulnerabilityManagement|not available') }}</span>
+        </template>
+      </span>
+      <gl-button
+        v-gl-tooltip
+        :loading="isLoading"
+        category="tertiary"
+        size="small"
+        icon="retry"
+        :title="s__('VulnerabilityManagement|Retry')"
+        :aria-label="s__('VulnerabilityManagement|Retry')"
+        @click="refreshValidityCheck"
+      />
+    </div>
+  </span>
 </template>
