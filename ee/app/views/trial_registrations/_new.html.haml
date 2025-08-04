@@ -2,9 +2,8 @@
   = render 'devise/shared/minimal_footer'
 
 = render "layouts/google_tag_manager_body"
-- @body_class = 'marketing-background-gradient'
 
-.row.marketing-styling
+.row
   .col-md-8.gl-flex.gl-flex-col
     %h1.gl-mt-0.gl-max-w-75
       = s_('InProductMarketing|Get Started with GitLab')
@@ -62,7 +61,7 @@
       .gl-text-default.gl-text-sm
         = s_('InProductMarketing|Trusted by')
 
-      .gl-mt-5.gl-flex.gl-gap-6.gl-flex-wrap
+      .gl-mt-5.gl-flex.gl-gap-6.gl-flex-wrap.dark:gl-invert{ 'data-testid': 'trusted-logos' }
         - TrialRegistrationsHelper::TRUSTED_BY_LOGOS.each do |logo|
           .gl-flex.gl-items-center
             = image_tag(logo[:path], alt: logo[:alt], title: logo[:title], width: 100)
