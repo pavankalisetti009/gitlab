@@ -275,6 +275,14 @@ RSpec.describe API::DependencyProxy::Packages::Npm, :aggregate_failures, feature
           end
         end
       end
+
+      it_behaves_like 'updating personal access token last used' do
+        let_it_be(:package) { create(:npm_package, project: project) }
+        let(:package_file) { package.package_files.with_format('tgz').take }
+        let(:package_name) { package.name }
+        let(:file_name) { package_file.file_name }
+        let(:headers) { build_token_auth_header(personal_access_token.token) }
+      end
     end
 
     context 'with invalid parameters' do

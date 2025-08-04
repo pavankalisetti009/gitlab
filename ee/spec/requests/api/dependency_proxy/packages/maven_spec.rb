@@ -437,6 +437,14 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
           end
         end
       end
+
+      it_behaves_like 'updating personal access token last used' do
+        let_it_be(:package) { create(:maven_package, project: project) }
+        let(:package_file) { package.package_files.with_format('pom').take }
+        let(:path) { package.maven_metadatum.path }
+        let(:file_name) { package_file.file_name }
+        let(:headers) { basic_auth_header(user.username, personal_access_token.token) }
+      end
     end
 
     context 'with invalid parameters' do
