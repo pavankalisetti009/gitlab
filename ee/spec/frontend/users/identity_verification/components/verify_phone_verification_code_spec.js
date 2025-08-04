@@ -128,7 +128,7 @@ describe('Verify phone verification code input component', () => {
 
         expect(findVerificationCodeInput().attributes('state')).toBe(expectedState);
 
-        expect(findVerifyCodeButton().attributes('disabled')).toBe(expectedButtonState);
+        expect(findVerifyCodeButton().attributes().disabled).toBe(expectedButtonState);
       },
     );
   });
@@ -353,7 +353,7 @@ describe('Verify phone verification code input component', () => {
         });
 
         it('should disable the verify, go back and resend buttons', () => {
-          expect(findVerifyCodeButton().attributes('disabled')).toBe('true');
+          expect(findVerifyCodeButton().attributes().disabled).toBe('true');
           expect(findGoBackLink().exists()).toBe(false);
           expect(findResendCodeButton().exists()).toBe(false);
         });
