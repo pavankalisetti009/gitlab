@@ -54602,6 +54602,9 @@ msgstr ""
 msgid "Runners|You've registered a new runner!"
 msgstr ""
 
+msgid "Runners|You've registered a new runner! Your runner is online and ready to run jobs."
+msgstr ""
+
 msgid "Runners|Your runner is online and ready to run jobs."
 msgstr ""
 
