@@ -28,6 +28,13 @@ RSpec.describe Types::MutationType do
     end
   end
 
+  describe 'vulnerabilities revert to detected mutation scopes' do
+    it 'includes api, read_api scopes, ai_workflows scope for vulnerabilities revert to detected mutation' do
+      dismiss_mutation = described_class.fields['vulnerabilityRevertToDetected']
+      expect(dismiss_mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+    end
+  end
+
   describe 'vulnerabilities dismiss mutation scopes' do
     it 'includes api, read_api scopes, ai_workflows scope for vulnerabilities dismiss mutation' do
       dismiss_mutation = described_class.fields['vulnerabilityDismiss']
