@@ -181,5 +181,44 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
         expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::SecurityPolicy.count }
       end
     end
+
+    context 'with CSP namespace functionality' do
+      include Security::PolicyCspHelpers
+
+      let_it_be(:csp_group) { create(:group) }
+      let_it_be(:csp_framework) { create(:compliance_framework, namespace: csp_group, name: 'CSP Framework') }
+
+      before do
+        stub_csp_group(csp_group)
+      end
+
+      context 'when frameworks exist in both regular and CSP namespaces' do
+        let_it_be(:mixed_framework_ids) { [framework1.id, csp_framework.id] }
+
+        before do
+          allow(security_policy).to receive(:framework_ids_from_scope).and_return(mixed_framework_ids)
+        end
+
+        subject(:execute) { described_class.new(security_policy: security_policy, policy_diff: policy_diff).execute }
+
+        it 'creates records for both regular and CSP frameworks' do
+          expect { execute }.to change {
+            ComplianceManagement::ComplianceFramework::SecurityPolicy.all.pluck(:framework_id)
+          }.from(be_empty).to(contain_exactly(framework1.id, csp_framework.id))
+        end
+
+        context 'when CSP feature flag is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'does not create ComplianceFramework::SecurityPolicy' do
+            expect { execute }.not_to change {
+              ComplianceManagement::ComplianceFramework::SecurityPolicy.count
+            }.from(0)
+          end
+        end
+      end
+    end
   end
 end

@@ -619,6 +619,12 @@ module EE
     end
     strong_memoize_attr :designated_as_csp?
 
+    def organization_csp_namespace
+      return unless csp_enabled?(self)
+
+      organization_policy_setting.csp_namespace
+    end
+
     def all_projects_with_csp_in_batches(of: 1000, only_active: false, &block)
       relation = designated_as_csp? ? ::Project.all : all_projects
       relation = relation.not_aimed_for_deletion.non_archived if only_active
