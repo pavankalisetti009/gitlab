@@ -1,3 +1,4 @@
+import { GlButton } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { newWorkItemId } from '~/work_items/utils';
@@ -8,6 +9,7 @@ import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_i
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import groupWorkspacePermissionsQuery from '~/work_items/graphql/group_workspace_permissions.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
@@ -16,6 +18,7 @@ import {
   namespaceWorkItemTypesQueryResponse,
   updateWorkItemMutationResponseFactory,
   workItemByIidResponseFactory,
+  mockGroupPermissionsQueryResponse,
 } from '../mock_data';
 
 describe('WorkItemStatus component', () => {
@@ -33,6 +36,7 @@ describe('WorkItemStatus component', () => {
 
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
   const findWorkItemStatusBadge = () => wrapper.findComponent(WorkItemStatusBadge);
+  const findManageStatusButton = () => wrapper.findComponent(GlButton);
 
   const showDropdown = () => {
     findSidebarDropdownWidget().vm.$emit('dropdownShown');
@@ -76,6 +80,8 @@ describe('WorkItemStatus component', () => {
     mutationHandler = successUpdateWorkItemMutationHandler,
     workItemId = 'gid://gitlab/WorkItem/1',
     hasStatusFeature = true,
+    hasWorkItemStatusFeature = true,
+    workspacePermissionsResponse = mockGroupPermissionsQueryResponse(),
   } = {}) => {
     const workItemResponse = workItemByIidResponseFactory({
       statusWidgetPresent: true,
@@ -83,12 +89,14 @@ describe('WorkItemStatus component', () => {
       canUpdate,
     });
     const workItemByIidSuccessHandler = jest.fn().mockResolvedValue(workItemResponse);
+    const workspacePermissionsHandler = jest.fn().mockResolvedValue(workspacePermissionsResponse);
 
     wrapper = mountFn(WorkItemStatus, {
       apolloProvider: createMockApollo([
         [namespaceWorkItemTypesQuery, workItemTypesHandler],
         [workItemByIidQuery, workItemByIidSuccessHandler],
         [updateWorkItemMutation, mutationHandler],
+        [groupWorkspacePermissionsQuery, workspacePermissionsHandler],
       ]),
       propsData: {
         canUpdate,
@@ -99,6 +107,8 @@ describe('WorkItemStatus component', () => {
       },
       provide: {
         hasStatusFeature,
+        hasWorkItemStatusFeature,
+        issuesSettings: '/groups/test-project-path/-/settings/issues',
       },
     });
   };
@@ -145,6 +155,7 @@ describe('WorkItemStatus component', () => {
   it('does not render the dropdown when the license is not available', async () => {
     createComponent({
       hasStatusFeature: false,
+      hasWorkItemStatusFeature: false,
     });
     await waitForPromises();
 
@@ -305,6 +316,27 @@ describe('WorkItemStatus component', () => {
         iconName: firstStatus.iconName,
         color: firstStatus.color,
       });
+    });
+
+    it('shows the `Manage status` in footer when it has permisions', async () => {
+      createComponentAndShowDropdown();
+      await waitForPromises();
+
+      expect(findSidebarDropdownWidget().props('showFooter')).toBe(true);
+      expect(findManageStatusButton().exists()).toBe(true);
+      expect(findManageStatusButton().props('href')).toBe(
+        '/groups/test-project-path/-/settings/issues/#statuses',
+      );
+    });
+
+    it('does not show the `Manage status` in footer when it does not have permissions', () => {
+      createComponent({
+        workspacePermissionsResponse: {
+          ...mockGroupPermissionsQueryResponse({ adminWorkItemLifecycle: false }),
+        },
+      });
+
+      expect(findSidebarDropdownWidget().props('showFooter')).toBe(false);
     });
 
     describe('Tracking event', () => {

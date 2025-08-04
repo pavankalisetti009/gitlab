@@ -1,5 +1,5 @@
 <script>
-import { GlIcon } from '@gitlab/ui';
+import { GlIcon, GlButton } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -13,6 +13,7 @@ import {
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import groupWorkspacePermissionsQuery from '~/work_items/graphql/group_workspace_permissions.query.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { findStatusWidget, newWorkItemId, newWorkItemFullPath } from '~/work_items/utils';
@@ -28,9 +29,10 @@ export default {
     GlIcon,
     WorkItemStatusBadge,
     WorkItemSidebarDropdownWidget,
+    GlButton,
   },
   mixins: [InternalEvents.mixin()],
-  inject: ['hasStatusFeature'],
+  inject: ['hasStatusFeature', 'issuesSettings', 'hasWorkItemStatusFeature'],
   props: {
     fullPath: {
       type: String,
@@ -61,6 +63,7 @@ export default {
       shouldFetch: false,
       updateInProgress: false,
       localStatus: {},
+      workspacePermissions: {},
     };
   },
   computed: {
@@ -117,6 +120,13 @@ export default {
         })) || []
       );
     },
+    adminWorkItemLifecycle() {
+      return this.workspacePermissions?.adminWorkItemLifecycle;
+    },
+    issuesSettingsLink() {
+      // null handling in case of old backend node
+      return this.issuesSettings ? `${this.issuesSettings}/#statuses` : null;
+    },
   },
   apollo: {
     workItem: {
@@ -159,6 +169,24 @@ export default {
           'error',
           s__('WorkItem|Something went wrong when fetching status. Please try again.'),
         );
+      },
+    },
+    workspacePermissions: {
+      query: groupWorkspacePermissionsQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath.split('/')[0], // get group full path
+        };
+      },
+      skip() {
+        return this.isLoading || !this.fullPath;
+      },
+      update(data) {
+        return data.workspace?.userPermissions ?? {};
+      },
+      error(error) {
+        Sentry.captureException(error);
+        this.$emit('error', s__('WorkItem|Something went wrong when fetching user permissions'));
       },
     },
   },
@@ -232,7 +260,7 @@ export default {
 
 <template>
   <work-item-sidebar-dropdown-widget
-    v-if="hasStatusFeature"
+    v-if="hasStatusFeature || hasWorkItemStatusFeature"
     :dropdown-label="$options.i18n.status"
     :can-update="canUpdate"
     dropdown-name="status"
@@ -244,6 +272,7 @@ export default {
     :header-text="__('Select status')"
     data-testid="work-item-status"
     no-reset-button
+    :show-footer="adminWorkItemLifecycle"
     @searchStarted="search"
     @dropdownShown="shouldFetch = true"
     @dropdownHidden="search('')"
@@ -262,6 +291,17 @@ export default {
     </template>
     <template #readonly>
       <work-item-status-badge v-if="hasStatus" :item="localStatus" />
+    </template>
+    <template #footer>
+      <gl-button
+        class="!gl-mt-2 !gl-justify-start"
+        block
+        category="tertiary"
+        :href="issuesSettingsLink"
+        data-testid="manage-statuses"
+      >
+        {{ __('Manage statuses') }}
+      </gl-button>
     </template>
   </work-item-sidebar-dropdown-widget>
 </template>
