@@ -1,0 +1,10 @@
+#import "../fragments/ai_catalog_item.fragment.graphql"
+
+mutation createAiCatalogFlow($input: AiCatalogFlowCreateInput!) {
+  aiCatalogFlowCreate(input: $input) {
+    errors
+    item {
+      ...BaseAiCatalogItem
+    }
+  }
+}

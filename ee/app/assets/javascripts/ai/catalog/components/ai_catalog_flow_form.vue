@@ -5,20 +5,19 @@ import {
   GlButton,
   GlForm,
   GlFormFields,
-  GlFormTextarea,
-  GlFormRadioGroup,
   GlFormRadio,
+  GlFormRadioGroup,
+  GlFormTextarea,
   GlIcon,
 } from '@gitlab/ui';
 import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
-  MAX_LENGTH_PROMPT,
   VISIBILITY_LEVEL_PRIVATE,
   VISIBILITY_LEVEL_PUBLIC,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
-import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
+import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -31,8 +30,8 @@ export default {
     GlButton,
     GlForm,
     GlFormFields,
-    GlFormRadioGroup,
     GlFormRadio,
+    GlFormRadioGroup,
     GlFormTextarea,
     GlIcon,
   },
@@ -59,13 +58,11 @@ export default {
           projectId: tmpProjectId,
           name: '',
           description: '',
-          systemPrompt: '',
-          userPrompt: '',
-          public: false,
         };
       },
     },
   },
+
   data() {
     return {
       formValues: {
@@ -78,51 +75,13 @@ export default {
   },
   computed: {
     formId() {
-      return uniqueId('ai-catalog-agent-form-');
+      return uniqueId('ai-catalog-flow-form-');
     },
     isEditMode() {
       return this.mode === 'edit';
     },
     submitButtonText() {
-      return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create agent');
-    },
-    visibilityLevels() {
-      return [
-        {
-          value: VISIBILITY_LEVEL_PRIVATE,
-          label: s__('AICatalog|Private'),
-          text: s__(
-            'AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners  of this project can edit or delete the agent.',
-          ),
-          icon: 'lock',
-        },
-        {
-          value: VISIBILITY_LEVEL_PUBLIC,
-          label: s__('AICatalog|Public'),
-          text: s__(
-            'AICatalog|Anyone can view and use the agent without authorization. Only maintainers and owners of this project can edit or delete the agent.',
-          ),
-          icon: 'earth',
-        },
-      ];
-    },
-    visibilityLevelAlertText() {
-      if (
-        this.isEditMode &&
-        this.initialValues.public &&
-        this.formValues.visibilityLevel === VISIBILITY_LEVEL_PRIVATE
-      ) {
-        return s__('AICatalog|This agent can be made private if it is not used.');
-      }
-
-      if (
-        !this.initialValues.public &&
-        this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC
-      ) {
-        return s__('AICatalog|A public agent can be made private only if it is not used.');
-      }
-
-      return '';
+      return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create flow');
     },
     fields() {
       return {
@@ -132,13 +91,13 @@ export default {
             requiredLabel: s__('AICatalog|Project ID is required.'),
           }),
           inputAttrs: {
-            'data-testid': 'agent-form-input-project-id',
+            'data-testid': 'flow-form-input-project-id',
             placeholder: tmpProjectId,
             disabled: this.isEditMode,
           },
           groupAttrs: {
             labelDescription: s__(
-              'AICatalog|Select a project for your AI agent to be associated with.',
+              'AICatalog|Select a project for your AI flow to be associated with.',
             ),
           },
         },
@@ -149,11 +108,11 @@ export default {
             maxLength: MAX_LENGTH_NAME,
           }),
           inputAttrs: {
-            'data-testid': 'agent-form-input-name',
+            'data-testid': 'flow-form-input-name',
             placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
           },
           groupAttrs: {
-            labelDescription: s__('AICatalog|Choose a memorable name for your AI agent.'),
+            labelDescription: s__('AICatalog|Choose a memorable name for your AI flow.'),
           },
         },
         description: {
@@ -164,42 +123,7 @@ export default {
           }),
           groupAttrs: {
             labelDescription: s__(
-              'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
-            ),
-          },
-        },
-        systemPrompt: {
-          label: s__('AICatalog|System Prompt'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|System Prompt is required.'),
-            maxLength: MAX_LENGTH_PROMPT,
-          }),
-          groupAttrs: {
-            labelDescription: s__(
-              "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
-            ),
-          },
-        },
-        userPrompt: {
-          label: s__('AICatalog|User Prompt'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|User Prompt is required.'),
-            maxLength: MAX_LENGTH_PROMPT,
-          }),
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Provide default instructions or context that will be included with every user interaction.',
-            ),
-          },
-        },
-        visibilityLevel: {
-          label: __('Visibility level'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|Visibility level is required.'),
-          }),
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog.',
+              'AICatalog|Briefly describe what this flow is designed to do and its key capabilities.',
             ),
           },
         },
@@ -212,24 +136,21 @@ export default {
         projectId: this.formValues.projectId.trim(),
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
-        systemPrompt: this.formValues.systemPrompt.trim(),
-        userPrompt: this.formValues.userPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
       };
       this.$emit('submit', transformedValues);
     },
   },
-  indexRoute: AI_CATALOG_AGENTS_ROUTE,
+  indexRoute: AI_CATALOG_FLOWS_ROUTE,
 };
 </script>
-
 <template>
   <div>
     <gl-alert
       v-if="errorMessages.length"
       class="gl-mb-3 gl-mt-5"
       variant="danger"
-      data-testid="agent-form-error-alert"
+      data-testid="flow-form-error-alert"
       @dismiss="$emit('dismiss-error')"
     >
       <span v-if="errorMessages.length === 1">{{ errorMessages[0] }}</span>
@@ -239,7 +160,8 @@ export default {
         </li>
       </ul>
     </gl-alert>
-    <gl-form :id="formId" @submit.prevent="">
+
+    <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
       <gl-form-fields
         v-model="formValues"
         :form-id="formId"
@@ -252,45 +174,12 @@ export default {
             :no-resize="false"
             :placeholder="
               s__(
-                'AICatalog|This agent specializes in... It can help you with... Best suited for...',
+                'AICatalog|This flow specializes in... It can help you with... Best suited for...',
               )
             "
             :state="validation.state"
             :value="value"
-            data-testid="agent-form-textarea-description"
-            @blur="blur"
-            @update="input"
-          />
-        </template>
-        <template #input(systemPrompt)="{ id, input, value, blur, validation }">
-          <gl-form-textarea
-            :id="id"
-            :no-resize="false"
-            :placeholder="
-              s__(
-                'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
-              )
-            "
-            :state="validation.state"
-            :value="value"
-            data-testid="agent-form-textarea-system-prompt"
-            @blur="blur"
-            @update="input"
-          />
-        </template>
-        <template #input(userPrompt)="{ id, input, value, blur, validation }">
-          <gl-form-textarea
-            :id="id"
-            :no-resize="false"
-            :placeholder="
-              s__(
-                'AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include...',
-              )
-            "
-            :rows="10"
-            :state="validation.state"
-            :value="value"
-            data-testid="agent-form-textarea-user-prompt"
+            data-testid="flow-form-textarea-description"
             @blur="blur"
             @update="input"
           />
@@ -300,7 +189,7 @@ export default {
             :id="id"
             :state="validation.state"
             :checked="value"
-            data-testid="agent-form-radio-group-visibility-level"
+            data-testid="flow-form-radio-group-visibility-level"
             @input="input"
           >
             <gl-form-radio
@@ -323,7 +212,7 @@ export default {
           <gl-alert
             v-if="visibilityLevelAlertText"
             :dismissible="false"
-            data-testid="agent-form-visibility-level-alert"
+            data-testid="flow-form-visibility-level-alert"
             class="gl-mt-3"
             variant="info"
           >
@@ -337,7 +226,7 @@ export default {
           type="submit"
           variant="confirm"
           category="primary"
-          data-testid="agent-form-submit-button"
+          data-testid="flow-form-submit-button"
           :loading="isLoading"
         >
           {{ submitButtonText }}

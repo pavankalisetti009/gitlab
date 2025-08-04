@@ -3,6 +3,7 @@ import { uniqueId } from 'lodash';
 import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { MAX_LENGTH_PROMPT } from 'ee/ai/catalog/constants';
+import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -58,6 +59,7 @@ export default {
       },
     },
   },
+  indexRoute: AI_CATALOG_AGENTS_ROUTE,
 };
 </script>
 
@@ -82,7 +84,7 @@ export default {
         />
       </template>
     </gl-form-fields>
-    <ai-catalog-form-buttons :is-disabled="isSubmitting">
+    <ai-catalog-form-buttons :is-disabled="isSubmitting" :index-route="$options.indexRoute">
       <gl-button
         class="js-no-auto-disable"
         type="submit"
