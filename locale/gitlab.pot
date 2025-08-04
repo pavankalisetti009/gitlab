@@ -29932,9 +29932,6 @@ msgstr ""
 msgid "GlobalSearch|Toggle if results have target branch included or excluded"
 msgstr ""
 
-msgid "GlobalSearch|Type %{kbdOpen}/%{kbdClose} to search"
-msgstr ""
-
 msgid "GlobalSearch|Type for new suggestions to appear below."
 msgstr ""
 

@@ -129,10 +129,15 @@ export default {
 </script>
 
 <template>
-  <gl-disclosure-dropdown :items="items" class="gl-block" placement="bottom" @shown="onShown">
+  <gl-disclosure-dropdown
+    :items="items"
+    class="super-sidebar-org-switcher-dropdown gl-mx-1 gl-block"
+    placement="bottom"
+    @shown="onShown"
+  >
     <template #toggle>
       <button
-        class="user-bar-button organization-switcher-button gl-flex gl-w-full gl-items-center gl-gap-3 gl-rounded-base gl-border-none gl-p-2 gl-text-left gl-leading-1"
+        class="user-bar-button organization-switcher-button gl-flex gl-w-full gl-items-center gl-gap-4 gl-rounded-base gl-border-none gl-p-2 gl-pr-3 gl-text-left gl-font-semibold gl-leading-1"
         data-testid="toggle-button"
       >
         <gl-avatar
@@ -142,7 +147,7 @@ export default {
           :entity-name="currentOrganization.name"
           :src="currentOrganization.avatar_url"
         />
-        <span>{{ currentOrganization.name }}</span>
+        <span class="gl-grow">{{ currentOrganization.name }}</span>
         <gl-icon class="gl-button-icon gl-new-dropdown-chevron" name="chevron-down" />
       </button>
     </template>
