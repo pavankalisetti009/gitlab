@@ -10,14 +10,18 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
   let(:query) { 'foo' }
   let_it_be(:user1) { build(:user, id: 1) }
   let(:page) { 1 }
-  let(:project_ids) { [3, 2, 1] }
+  let(:project_id) { 1 }
+  let(:group_id) { 2 }
   let(:search_results) { { 0 => { project_id: 1 }, 1 => { project_id: 2 }, 2 => { project_id: 3 } } }
   let(:total_count) { 3 }
   let(:file_count) { 3 }
   let(:response) { [search_results, total_count, file_count] }
 
   subject(:cache) do
-    described_class.new(query, **default_options.merge(current_user: user1, project_ids: project_ids, page: page))
+    described_class.new(
+      query,
+      **default_options.merge(current_user: user1, project_id: project_id, group_id: group_id, page: page)
+    )
   end
 
   before do
@@ -29,22 +33,24 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
     let(:multi_match_2) { instance_double(::Search::Zoekt::MultiMatch, max_chunks_size: 5) }
     let(:uniq_examples) do
       [
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1 },
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1, per_page: 10 },
-        { current_user: build(:user, id: 1), query: 'bar', project_ids: [3, 2], page: 1 },
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [2], page: 1 },
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 2 },
-        { current_user: build(:user, id: 2), query: 'foo', project_ids: [3, 2], page: 1 },
-        { current_user: build(:user, id: nil), query: 'foo', project_ids: [3, 2], page: 1 },
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1, multi_match: multi_match_1 },
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1, multi_match: multi_match_2 }
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 3, group_id: 2, page: 1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 3, group_id: 2, page: 1, per_page: 10 },
+        { current_user: build(:user, id: 1), query: 'bar', project_id: 3, group_id: 2, page: 1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_id: nil, group_id: 2, page: 1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 3, group_id: 2, page: 2 },
+        { current_user: build(:user, id: 2), query: 'foo', project_id: 3, group_id: 2, page: 1 },
+        { current_user: build(:user, id: nil), query: 'foo', project_id: 3, group_id: 2, page: 1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 3, group_id: 2, page: 1,
+          multi_match: multi_match_1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 3, group_id: 2, page: 1,
+          multi_match: multi_match_2 }
       ]
     end
 
     let(:duplicate_examples) do
       [
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [1, 3, 2], page: 1, per_page: 20 },
-        { current_user: build(:user, id: 1), query: 'foo', project_ids: [2, 3, 1], page: 1, per_page: 20 }
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 1, group_id: 2, page: 1, per_page: 20 },
+        { current_user: build(:user, id: 1), query: 'foo', project_id: 1, group_id: 2, page: 1, per_page: 20 }
       ]
     end
 
@@ -97,19 +103,29 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
       end
     end
 
-    context 'when project_ids is not array' do
-      let(:project_ids) { nil }
+    context 'when project_id is not present' do
+      let(:project_id) { nil }
 
-      it 'returns false' do
-        expect(cache.enabled?).to be false
+      it 'returns true if group_id is present' do
+        expect(group_id).to be_present
+        expect(cache.enabled?).to be true
+      end
+
+      context 'and group_id is not present' do
+        let(:group_id) { nil }
+
+        it 'returns false' do
+          expect(cache.enabled?).to be false
+        end
       end
     end
 
-    context 'when project_ids is empty' do
-      let(:project_ids) { [] }
+    context 'when group_id is not present' do
+      let(:group_id) { nil }
 
-      it 'returns false' do
-        expect(cache.enabled?).to be false
+      it 'returns true if project_id is present' do
+        expect(project_id).to be_present
+        expect(cache.enabled?).to be true
       end
     end
   end

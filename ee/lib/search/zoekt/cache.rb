@@ -8,7 +8,7 @@ module Search
       MAX_PAGES = 10
       EXPIRES_IN = 5.minutes
 
-      attr_reader :current_user, :query, :project_ids, :per_page, :current_page, :max_per_page, :search_mode,
+      attr_reader :current_user, :query, :project_id, :group_id, :per_page, :current_page, :max_per_page, :search_mode,
         :multi_match
 
       def self.humanize_expires_in
@@ -18,23 +18,22 @@ module Search
         "#{number_in_words(number)} #{unit}"
       end
 
-      def initialize(
-        query, current_user:, project_ids:, per_page:, page:, max_per_page:, search_mode:,
-        multi_match: false)
+      def initialize(query, **options)
         @query = query
-        @current_user = current_user
-        @project_ids = project_ids
-        @per_page = per_page
-        @current_page = page
-        @max_per_page = max_per_page
-        @search_mode = search_mode
-        @multi_match = multi_match
+        @current_user = options.fetch(:current_user)
+        @project_id = options.fetch(:project_id)
+        @group_id = options.fetch(:group_id)
+        @per_page = options.fetch(:per_page)
+        @current_page = options.fetch(:page)
+        @max_per_page = options.fetch(:max_per_page)
+        @search_mode = options.fetch(:search_mode)
+        @multi_match = options.fetch(:multi_match, false)
       end
 
       def enabled?
         return false unless Gitlab::CurrentSettings.zoekt_cache_response?
 
-        project_ids.is_a?(Array) && project_ids.present? && per_page <= max_per_page
+        (project_id.present? || group_id.present?) && per_page <= max_per_page
       end
 
       def fetch
@@ -70,11 +69,11 @@ module Search
       end
 
       def search_fingerprint
-        project_ids_key = project_ids.sort.hash.to_s
+        scope_key = "g#{group_id}-p#{project_id}"
         multi_match_key = multi_match.present? ? multi_match.max_chunks_size : 'false'
 
         OpenSSL::Digest.hexdigest('SHA256',
-          "#{query}-#{project_ids_key}-#{search_mode}-#{multi_match_key}")
+          "#{query}-#{scope_key}-#{search_mode}-#{multi_match_key}")
       end
 
       def read_cache
