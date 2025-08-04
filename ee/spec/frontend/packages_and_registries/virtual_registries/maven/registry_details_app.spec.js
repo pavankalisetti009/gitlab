@@ -14,9 +14,11 @@ jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
 Vue.use(VueApollo);
 
-const mockGroupVirtualRegistry = {
+const mockMavenRegistryUpstreams = {
   data: {
-    ...groupVirtualRegistry,
+    mavenVirtualRegistry: {
+      ...groupVirtualRegistry.group.mavenVirtualRegistries.nodes[0],
+    },
   },
 };
 
@@ -40,7 +42,7 @@ describe('MavenRegistryDetailsApp', () => {
   const findMavenRegistryDetails = () => wrapper.findComponent(MavenRegistryDetails);
   const findUpstreamRegistryItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
 
-  const groupMavenRegistriesHandler = jest.fn().mockResolvedValue(mockGroupVirtualRegistry);
+  const mavenRegistryUpstreamsHandler = jest.fn().mockResolvedValue(mockMavenRegistryUpstreams);
   const errorHandler = jest.fn().mockRejectedValue(mockError);
 
   const createComponent = ({ handlers = [] } = {}) => {
@@ -62,11 +64,10 @@ describe('MavenRegistryDetailsApp', () => {
 
   describe('upstreams list', () => {
     it('displays the upstream registries currently available', async () => {
-      const upstreamsLength =
-        groupVirtualRegistry.group.mavenVirtualRegistries.nodes[0].upstreams.length;
+      const upstreamsLength = mockMavenRegistryUpstreams.data.mavenVirtualRegistry.upstreams.length;
 
       createComponent({
-        handlers: [[getMavenVirtualRegistryUpstreamsQuery, groupMavenRegistriesHandler]],
+        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
       });
 
       await waitForPromises();
@@ -79,13 +80,13 @@ describe('MavenRegistryDetailsApp', () => {
   describe('When a new upstream has been created', () => {
     it('refetches upstreams query', async () => {
       createComponent({
-        handlers: [[getMavenVirtualRegistryUpstreamsQuery, groupMavenRegistriesHandler]],
+        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
       });
 
       await waitForPromises();
       await findMavenRegistryDetails().vm.$emit('upstreamCreated');
 
-      expect(groupMavenRegistriesHandler).toHaveBeenCalledTimes(2);
+      expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });
   });
 

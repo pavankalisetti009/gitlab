@@ -22,18 +22,20 @@ export default {
   },
   data() {
     return {
-      group: {},
+      mavenVirtualRegistry: {},
       mavenVirtualRegistryID: convertToMavenRegistryGraphQLId(this.registry.id),
     };
   },
   apollo: {
-    group: {
+    mavenVirtualRegistry: {
       query: getMavenVirtualRegistryUpstreams,
       variables() {
         return {
-          groupPath: this.groupPath,
-          mavenVirtualRegistryID: this.mavenVirtualRegistryID,
+          id: this.mavenVirtualRegistryID,
         };
+      },
+      update(data) {
+        return data.mavenVirtualRegistry || {};
       },
       error(error) {
         captureException({ error, component: this.$options.name });
@@ -42,22 +44,12 @@ export default {
   },
   computed: {
     upstreams() {
-      if (Object.keys(this.group).length === 0) {
-        return {};
-      }
-
-      const { mavenVirtualRegistries } = this.group;
-      const { upstreams } = mavenVirtualRegistries.nodes[0];
-
-      return {
-        count: upstreams.length,
-        nodes: upstreams,
-      };
+      return this.mavenVirtualRegistry?.upstreams ?? [];
     },
   },
   methods: {
-    refetchGroupQuery() {
-      this.$apollo.queries.group.refetch();
+    refetchMavenVirtualRegistryQuery() {
+      this.$apollo.queries.mavenVirtualRegistry.refetch();
     },
   },
 };
@@ -66,6 +58,6 @@ export default {
   <maven-registry-details
     :registry="registry"
     :upstreams="upstreams"
-    @upstreamCreated="refetchGroupQuery"
+    @upstreamCreated="refetchMavenVirtualRegistryQuery"
   />
 </template>

@@ -26,30 +26,21 @@ describe('MavenRegistryDetailsApp', () => {
       name: 'Registry title',
       description: 'Registry description',
     },
-    upstreams: {
-      count: 1,
-      nodes: [
-        {
-          id: 1,
-          name: 'Upstream title',
-          description: 'Upstream description',
-          url: 'http://maven.org/test',
-          cacheValidityHours: 24,
-          position: 1,
-          cacheSize: '100 MB',
-          canClearCache: true,
-          warning: {
-            text: 'Example warning text',
-          },
+    upstreams: [
+      {
+        id: 1,
+        name: 'Upstream title',
+        description: 'Upstream description',
+        url: 'http://maven.org/test',
+        cacheValidityHours: 24,
+        position: 1,
+        cacheSize: '100 MB',
+        canClearCache: true,
+        warning: {
+          text: 'Example warning text',
         },
-      ],
-      pageInfo: {
-        startCursor: 'eyJ1cHN0cmVhbV9pZCI6IjEifQ',
-        hasNextPage: false,
-        hasPreviousPage: false,
-        endCursor: 'eyJ1cHN0cmVhbV9pZCI6IjEifQ',
       },
-    },
+    ],
   };
 
   const defaultProvide = {
@@ -151,7 +142,7 @@ describe('MavenRegistryDetailsApp', () => {
       expect(findCrudComponent().props()).toMatchObject({
         title: 'Upstreams',
         icon: 'infrastructure-registry',
-        count: defaultProps.upstreams.count,
+        count: defaultProps.upstreams.length,
         toggleText: 'Add upstream',
       });
     });
@@ -165,9 +156,9 @@ describe('MavenRegistryDetailsApp', () => {
     it('renders the upstreams and passes correct props to each', () => {
       const upstreams = findUpstreams();
 
-      expect(upstreams).toHaveLength(defaultProps.upstreams.count);
+      expect(upstreams).toHaveLength(defaultProps.upstreams.length);
       expect(upstreams.at(0).props()).toMatchObject({
-        upstream: defaultProps.upstreams.nodes[0],
+        upstream: defaultProps.upstreams[0],
       });
     });
 
