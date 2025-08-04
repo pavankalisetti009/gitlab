@@ -55,7 +55,7 @@ RSpec.shared_examples 'an artifact registry service handling validation errors' 
           end
 
           it_behaves_like 'returning an error service response',
-            message: described_class::ERROR_RESPONSES["no_#{integration_type}_integration".to_sym].message
+            message: described_class::ERROR_RESPONSES[:"no_#{integration_type}_integration"].message
         end
 
         context 'when disabled' do
@@ -64,7 +64,7 @@ RSpec.shared_examples 'an artifact registry service handling validation errors' 
           end
 
           it_behaves_like 'returning an error service response',
-            message: described_class::ERROR_RESPONSES["#{integration_type}_integration_disabled".to_sym].message
+            message: described_class::ERROR_RESPONSES[:"#{integration_type}_integration_disabled"].message
         end
       end
     end

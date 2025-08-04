@@ -17,7 +17,7 @@ RSpec.describe Plan, feature_category: :subscription_management do
 
     Plan.default_plans.each do |plan|
       context "when '#{plan}'" do
-        let(:plan) { build("#{plan}_plan".to_sym) }
+        let(:plan) { build(:"#{plan}_plan") }
 
         it { is_expected.to be_falsey }
       end
@@ -25,7 +25,7 @@ RSpec.describe Plan, feature_category: :subscription_management do
 
     Plan::PAID_HOSTED_PLANS.each do |plan|
       context "when '#{plan}'" do
-        let(:plan) { build("#{plan}_plan".to_sym) }
+        let(:plan) { build(:"#{plan}_plan") }
 
         it { is_expected.to be_truthy }
       end
@@ -88,7 +88,7 @@ RSpec.describe Plan, feature_category: :subscription_management do
 
     Plan.default_plans.each do |plan|
       context "when '#{plan}'" do
-        let(:plan) { build("#{plan}_plan".to_sym) }
+        let(:plan) { build(:"#{plan}_plan") }
 
         it { is_expected.to be_falsey }
       end
@@ -96,7 +96,7 @@ RSpec.describe Plan, feature_category: :subscription_management do
 
     real_paid_plans.each do |plan|
       context "when '#{plan}'" do
-        let(:plan) { build("#{plan}_plan".to_sym) }
+        let(:plan) { build(:"#{plan}_plan") }
 
         it { is_expected.to be_truthy }
       end
@@ -104,7 +104,7 @@ RSpec.describe Plan, feature_category: :subscription_management do
 
     Plan::FREE_TRIAL_PLANS.each do |plan|
       context "when '#{plan}'" do
-        let(:plan) { build("#{plan}_plan".to_sym) }
+        let(:plan) { build(:"#{plan}_plan") }
 
         it { is_expected.to be_falsey }
       end

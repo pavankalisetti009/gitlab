@@ -60,7 +60,7 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
 
         it "has the correct help text" do
           rule = global_setting ? global_push_rule : push_rule
-          message = possible_help_texts["#{rule_attr}_#{help_text}".to_sym].presence || possible_help_texts[help_text]
+          message = possible_help_texts[:"#{rule_attr}_#{help_text}"].presence || possible_help_texts[help_text]
 
           expect(helper.public_send("#{rule_attr}_description", rule)).to match(message)
 

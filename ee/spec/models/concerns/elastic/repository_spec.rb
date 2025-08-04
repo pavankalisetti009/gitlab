@@ -76,7 +76,7 @@ RSpec.describe Repository, :elastic, :sidekiq_inline, feature_category: :global_
   end
 
   def search_and_check!(on, query, type:, per: 1000)
-    results = on.elastic_search(query, type: type, per: per, options: { search_level: 'global' })["#{type}s".to_sym][:results]
+    results = on.elastic_search(query, type: type, per: per, options: { search_level: 'global' })[:"#{type}s"][:results]
 
     blobs, commits = results.partition { |result| result['_source']['blob'].present? }
 
