@@ -257,30 +257,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
     end
   end
 
-  describe 'GET #payment_method' do
-    subject { get :payment_method, params: { id: 'xx' } }
-
-    context 'with unauthorized user' do
-      it { is_expected.to have_gitlab_http_status(:redirect) }
-      it { is_expected.to redirect_to new_user_session_path }
-    end
-
-    context 'with authorized user' do
-      before do
-        sign_in(user)
-        client_response = { success: true, data: { credit_card_type: 'Visa' } }
-        allow(Gitlab::SubscriptionPortal::Client).to receive(:payment_method).with('xx').and_return(client_response)
-      end
-
-      it { is_expected.to have_gitlab_http_status(:ok) }
-
-      it 'returns the data attribute of the client response in JSON format' do
-        subject
-        expect(response.body).to eq('{"credit_card_type":"Visa"}')
-      end
-    end
-  end
-
   describe 'GET #validate_payment_method' do
     let(:params) { { id: 'foo' } }
 
