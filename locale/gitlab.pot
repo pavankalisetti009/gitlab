@@ -1734,6 +1734,9 @@ msgstr ""
 msgid "'attributes' for component '%{component_name}' must be a Hash"
 msgstr ""
 
+msgid "'attributes' in component '%{component}' must be a Hash"
+msgstr ""
+
 msgid "'command' must be a Hash"
 msgstr ""
 
@@ -50731,10 +50734,16 @@ msgstr ""
 msgid "Prompt users to upload SSH keys"
 msgstr ""
 
+msgid "Properties 'command', 'args' for component '%{name}' can only be specified when the 'overrideCommand' attribute is set to false"
+msgstr ""
+
 msgid "Property 'dedicatedPod' of component '%{component}' is not yet supported"
 msgstr ""
 
 msgid "Property 'hotReloadCapable' for exec command '%{command}' must be false when specified"
+msgstr ""
+
+msgid "Property 'overrideCommand' of component '%{name}' must be a boolean (true or false)"
 msgstr ""
 
 msgid "Protect"

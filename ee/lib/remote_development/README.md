@@ -623,7 +623,7 @@ This approach ensures:
 
 The `RemoteDevelopment::Files` module contains constants for all the files (default devfile, shell scripts, script fragments, commands, etc)
 that are used in the Remote Development domain for various purposes, such as programatically injecting into container `ENTRYPOINT`/`CMD`, etc.
-For example: `RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_CONTAINER_ARGS`.
+For example: `RemoteDevelopment::Files::CONTAINER_KEEPALIVE_COMMAND_ARGS`.
 
 The contents of these files are pulled out to separate files in the filesystem, instead of being hardcoded
 via inline Ruby HEREDOC or other means. This allows them to have full support for syntax highlighting and refactoring in IDEs,

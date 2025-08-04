@@ -650,7 +650,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             runtimeClassName: default_runtime_class,
             containers: [
               {
-                args: [files_module::MAIN_COMPONENT_UPDATER_CONTAINER_ARGS],
+                args: [files_module::CONTAINER_KEEPALIVE_COMMAND_ARGS],
                 command: %w[/bin/sh -c],
                 env: [
                   {
@@ -780,6 +780,46 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     secretRef: {
                       name: "#{workspace_name}-env-var"
                     }
+                  }
+                ]
+              },
+              {
+                image: "quay.io/mloriedo/universal-developer-image:ubi8-dw-demo",
+                imagePullPolicy: "Always",
+                name: "user-defined-entrypoint-cmd-component",
+                resources: default_resources_per_workspace_container,
+                command: ["echo"],
+                args: ["-n", "user-defined entrypoint command"],
+                env: [
+                  {
+                    name: "PROJECTS_ROOT",
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+                  },
+                  {
+                    name: "PROJECT_SOURCE",
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+                  }
+                ],
+                securityContext: container_security_context,
+                envFrom: [
+                  {
+                    secretRef: {
+                      name: "#{workspace_name}-env-var"
+                    }
+                  }
+                ],
+                volumeMounts: [
+                  {
+                    mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
+                    name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
+                  },
+                  {
+                    mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
+                    name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
+                  },
+                  {
+                    mountPath: create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH,
+                    name: create_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
                   }
                 ]
               }

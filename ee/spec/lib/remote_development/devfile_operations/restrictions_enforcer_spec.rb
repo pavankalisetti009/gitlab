@@ -74,6 +74,8 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
 
       # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
       where(:input_devfile_name, :error_str) do
+        "example.invalid-attributes-override-command-with-command-args-present-devfile.yaml.erb" | "Properties 'command', 'args' for component 'tooling-container' can only be specified when the 'overrideCommand' attribute is set to false"
+        "example.invalid-attributes-override-command-with-non-boolean-value-devfile.yaml.erb" | "Property 'overrideCommand' of component 'tooling-container' must be a boolean (true or false)"
         "example.invalid-attributes-tools-injector-absent-devfile.yaml.erb" | "No component has '#{main_component_indicator_attribute}' attribute"
         "example.invalid-attributes-tools-injector-multiple-devfile.yaml.erb" | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute"
         "example.invalid-component-missing-name.yaml.erb" | "A component must have a 'name'"

@@ -43,10 +43,6 @@ module RemoteDevelopment
             ssh_port: WORKSPACE_SSH_PORT
           )
 
-          override_command_and_args(
-            main_component_container: main_component_container
-          )
-
           context
         end
 
@@ -109,20 +105,7 @@ module RemoteDevelopment
           nil
         end
 
-        # @param [Hash] main_component_container
-        # @return [void]
-        def self.override_command_and_args(main_component_container:)
-          # This overrides the main container's command
-          # Open issue to support both starting the editor and running the default command:
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/392853
-
-          main_component_container[:command] = %w[/bin/sh -c]
-          main_component_container[:args] = [MAIN_COMPONENT_UPDATER_CONTAINER_ARGS]
-
-          nil
-        end
-
-        private_class_method :update_env_vars, :update_endpoints, :override_command_and_args
+        private_class_method :update_env_vars, :update_endpoints
       end
     end
   end

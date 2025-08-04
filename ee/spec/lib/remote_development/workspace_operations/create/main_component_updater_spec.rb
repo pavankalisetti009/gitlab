@@ -31,12 +31,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpda
     expect(returned_value[:processed_devfile]).to eq(expected_processed_devfile)
   end
 
-  it 'preserves script formatting' do
-    expected = expected_processed_devfile[:components].first[:container][:args].first
-    actual = returned_value[:processed_devfile][:components].first[:container][:args].first
-    expect(actual).to eq(expected)
-  end
-
   context "when vscode_extension_marketplace_metadata Web IDE setting is disabled" do
     let(:expected_processed_devfile_name) { "example.main-container-updated-marketplace-disabled-devfile.yaml.erb" }
     let(:vscode_extension_marketplace_metadata_enabled) { false }
