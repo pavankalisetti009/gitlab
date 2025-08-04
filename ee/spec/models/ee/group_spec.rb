@@ -2980,6 +2980,71 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#has_active_hooks?' do
+    let_it_be_with_reload(:parent_group) { create(:group) }
+    let_it_be_with_reload(:group) { create(:group, parent: parent_group) }
+    let(:hooks_scope) { :push_hooks }
+
+    subject { group.has_active_hooks?(hooks_scope) }
+
+    context 'when group_webhooks feature is available' do
+      before do
+        stub_licensed_features(group_webhooks: true)
+      end
+
+      context 'when no hooks exist' do
+        it 'returns false' do
+          expect(subject).to be false
+        end
+      end
+
+      context 'when hook exists for the group' do
+        let_it_be_with_reload(:group_hook) { create(:group_hook, group: group, push_events: true) }
+
+        it 'returns true for push_hooks scope' do
+          expect(subject).to be true
+        end
+
+        context 'with different hook scope' do
+          let(:hooks_scope) { :issues_hooks }
+
+          it 'returns false' do
+            expect(subject).to be false
+          end
+        end
+      end
+
+      context 'when hook exists for the ancestor group' do
+        let!(:parent_hook) { create(:group_hook, group: parent_group, push_events: true) }
+
+        it 'returns true when checking group that inherits hooks from ancestor' do
+          expect(subject).to be true
+        end
+      end
+
+      context 'when hook exists for unrelated group' do
+        let!(:unrelated_group) { create(:group) }
+        let!(:unrelated_group_hook) { create(:group_hook, group: unrelated_group, push_events: true) }
+
+        it 'returns false' do
+          expect(subject).to be false
+        end
+      end
+    end
+
+    context 'when group_webhooks feature is not available' do
+      before do
+        stub_licensed_features(group_webhooks: false)
+      end
+
+      let!(:group_hook) { create(:group_hook, group: group, push_events: true) }
+
+      it 'returns false even when hook exists' do
+        expect(subject).to be false
+      end
+    end
+  end
+
   context 'when resource access token hooks for expiry notification' do
     let(:group) { create(:group) }
     let(:group_hook) { create(:group_hook, group: group, resource_access_token_events: true) }

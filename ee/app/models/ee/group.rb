@@ -812,6 +812,12 @@ module EE
       execute_async_hooks(group_hooks, hooks_scope, data)
     end
 
+    override :has_active_hooks?
+    def has_active_hooks?(hooks_scope = :push_hooks)
+      feature_available?(:group_webhooks) &&
+        GroupHook.where(group_id: self_and_ancestors).hooks_for(hooks_scope).any?
+    end
+
     override :git_transfer_in_progress?
     def git_transfer_in_progress?
       reference_counter(type: ::Gitlab::GlRepository::WIKI).value > 0

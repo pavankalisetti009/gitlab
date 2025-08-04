@@ -30,6 +30,7 @@ FactoryBot.define do
       project_events { true }
       wiki_page_events { true }
       releases_events { true }
+      milestone_events { true }
       subgroup_events { true }
       emoji_events { true }
       resource_access_token_events { true }

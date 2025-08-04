@@ -141,6 +141,7 @@ RSpec.describe Groups::HooksController, feature_category: :webhooks do
             wiki_page_events: true,
             deployment_events: true,
             releases_events: true,
+            milestone_events: true,
             member_events: true,
             subgroup_events: true,
             url_variables: [
