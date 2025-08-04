@@ -52,6 +52,23 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
     end
 
     context 'with hotspot_duo_chat_during_trial experiment' do
+      context 'with tracking' do
+        let(:experiment) { instance_double(ApplicationExperiment) }
+
+        before do
+          allow(view)
+            .to receive(:experiment)
+            .with(:hotspot_duo_chat_during_trial, actor: user)
+            .and_return(experiment)
+        end
+
+        it 'creates assignment event' do
+          expect(experiment).to receive(:track).with(:assignment, namespace: group)
+
+          render
+        end
+      end
+
       context 'when control' do
         before do
           stub_experiments(hotspot_duo_chat_during_trial: :control)
