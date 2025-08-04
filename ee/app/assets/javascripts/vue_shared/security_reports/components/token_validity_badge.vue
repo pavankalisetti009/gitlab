@@ -32,7 +32,7 @@ export default {
   },
   computed: {
     validityCheckLabel() {
-      switch (this.status) {
+      switch (this.status?.toLowerCase()) {
         case 'active':
           return VALIDITY_CHECK_TYPE.active;
         case 'inactive':
