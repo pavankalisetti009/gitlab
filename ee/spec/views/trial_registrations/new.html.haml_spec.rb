@@ -44,6 +44,16 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
       href = promo_url(path: '/free-trial', query: { hosted: 'self-managed' })
       is_expected.to have_link(s_('InProductMarketing|Start with Self-Managed'), href: href)
     end
+
+    it 'has dark mode support for trusted logos' do
+      is_expected.to have_css("[data-testid='trusted-logos'].dark\\:gl-invert")
+    end
+
+    it 'renders trusted by logos with proper alt and title' do
+      TrialRegistrationsHelper::TRUSTED_BY_LOGOS.each do |logo|
+        is_expected.to have_css("img[alt='#{logo[:alt]}'][title='#{logo[:title]}']")
+      end
+    end
   end
 
   context 'when lightweight_trial_registration_redesign is candidate' do
