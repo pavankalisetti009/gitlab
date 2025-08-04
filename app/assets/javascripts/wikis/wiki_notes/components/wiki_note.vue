@@ -44,6 +44,26 @@ export default {
       required: false,
       default: false,
     },
+    resolvable: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    resolved: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    resolvedBy: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    discussionId: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -118,6 +138,11 @@ export default {
           'gl-bg-section gl-ml-8': !this.replyNote,
         },
       };
+    },
+    canResolve() {
+      if (!this.resolvable) return false;
+
+      return this.note.userPermissions?.resolveNote;
     },
   },
   mounted() {
@@ -299,6 +324,10 @@ export default {
             :note-url="note.url"
             :can-award-emoji="canAwardEmoji"
             :access-level="note.maxAccessLevelOfAuthor"
+            :can-resolve="canResolve"
+            :is-resolved="resolved"
+            :resolved-by="resolvedBy"
+            :discussion-id="discussionId"
             @reply="$emit('reply')"
             @edit="toggleEditing(true)"
             @delete="deleteNote"
