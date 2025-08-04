@@ -229,7 +229,9 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         allow(setting).to receive(:enabled_instance_verbose_ai_logs).and_return(enabled_instance_verbose_ai_logs)
       end
 
-      allow(service).to receive(:access_token).with(user).and_return(token)
+      allow(::CloudConnector::Tokens).to receive(:get)
+        .with(unit_primitive: service_name, resource: user)
+        .and_return(token)
       allow(user).to receive(:allowed_to_use).with(service_name).and_return(auth_response)
       allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
@@ -304,6 +306,18 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       let(:is_team_member) { true }
 
       it { is_expected.to match(expected_headers) }
+    end
+
+    context 'when cloud_connector_new_token_path FF is disabled' do
+      before do
+        stub_feature_flags(cloud_connector_new_token_path: false)
+      end
+
+      it 'obtains token through AvailableServices' do
+        expect(service).to receive(:access_token).with(user).and_return(token)
+
+        expect(headers).to match(expected_headers)
+      end
     end
   end
 
