@@ -3243,7 +3243,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           create(:group_member, :awaiting, role, source: public_group, user: user)
 
           expect_allowed(*public_permissions)
-          expect_disallowed(:upload_file)
+          expect_allowed(:upload_file)
           expect_disallowed(*reporter_permissions)
           expect_disallowed(*developer_permissions)
           expect_disallowed(*maintainer_permissions)
