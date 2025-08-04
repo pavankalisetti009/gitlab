@@ -8,7 +8,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
   let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
   let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
-  let(:prompt_version) { '1.1.0' }
+  let(:prompt_version) { '1.0.0' }
   let(:received_model_metadata) { nil }
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
@@ -117,6 +117,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     before do
       stub_feature_flags(ai_model_switching: false)
+      stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
       stub_feature_flags(duo_code_review_custom_instructions: false)
       stub_feature_flags(use_claude_code_completion: false)
 
@@ -372,6 +373,22 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           .and not_change { merge_request.notes.non_diff_notes.count }
 
         expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
+      end
+
+      context 'when using claude_4_0 for duo code review' do
+        let(:prompt_version) { '1.1.0' }
+
+        before do
+          stub_feature_flags(duo_code_review_claude_4_0_rollout: true)
+        end
+
+        # -- allow_next_instance_of Gitlab::Llm::AiGateway::Client
+        # in before clause will do the check
+        it 'successfully creates a note' do
+          completion.execute
+
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
+        end
       end
 
       context 'when draft_notes is empty after mapping DraftNote objects' do
@@ -1576,7 +1593,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       context 'when duo_code_review_custom_instructions feature flag is disabled' do
-        let(:prompt_version) { '1.1.0' }
+        let(:prompt_version) { '1.0.0' }
 
         let(:yaml_content) do
           <<~YAML
@@ -1616,7 +1633,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
         end
 
-        it 'uses prompt version 1.1.0' do
+        it 'uses prompt version 1.0.0' do
           allow_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
             service_name: :review_merge_request,
             tracking_context: tracking_context
@@ -1624,7 +1641,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             expect(client)
               .to receive(:complete_prompt)
               .with(
-                hash_including(prompt_version: '1.1.0')
+                hash_including(prompt_version: '1.0.0')
               )
           end
 
