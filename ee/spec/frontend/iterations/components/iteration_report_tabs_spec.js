@@ -45,6 +45,12 @@ describe('Iterations report tabs', () => {
           queries: { issues: { loading } },
         },
       },
+      provide: {
+        hasStatusFeature: true,
+      },
+      stubs: {
+        WorkItemStatusBadge: true,
+      },
     });
   };
 

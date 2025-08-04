@@ -12,11 +12,13 @@ import {
   GlTable,
 } from '@gitlab/ui';
 import { kebabCase } from 'lodash';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { STATUS_OPEN, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { isScopedLabel } from '~/lib/utils/common_utils';
 import { __, n__, sprintf } from '~/locale';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import WorkItemTypeIcon from '~/work_items/components/work_item_type_icon.vue';
 import iterationIssuesQuery from '../queries/iteration_issues.query.graphql';
 import iterationIssuesWithLabelFilterQuery from '../queries/iteration_issues_with_label_filter.query.graphql';
@@ -61,8 +63,11 @@ export default {
     GlPagination,
     GlSkeletonLoader,
     GlTable,
+    WorkItemStatusBadge,
     WorkItemTypeIcon,
   },
+  mixins: [glFeatureFlagMixin()],
+  inject: ['hasStatusFeature'],
   apollo: {
     issues: {
       query() {
@@ -331,8 +336,11 @@ export default {
         </div>
       </template>
 
-      <template #cell(status)="{ item: { state, assignees = [] } }">
-        {{ issueState(state, assignees.length) }}
+      <template #cell(status)="{ item: { status, state, assignees = [] } }">
+        <div class="gl-text-sm gl-text-default">
+          {{ issueState(state, assignees.length) }}
+        </div>
+        <work-item-status-badge v-if="hasStatusFeature && status" class="gl-mt-2" :item="status" />
       </template>
     </gl-table>
     <div v-show="isExpanded" class="gl-mt-3">
