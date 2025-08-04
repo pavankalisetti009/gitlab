@@ -6,9 +6,10 @@ module CodeSuggestions
       include Gitlab::Utils::StrongMemoize
       include ::Ai::ModelSelection::SelectionApplicable
 
-      def initialize(current_user:, feature_setting_name:, root_namespace: nil)
+      def initialize(current_user:, feature_setting_name:, unit_primitive_name:, root_namespace: nil)
         @current_user = current_user
         @feature_setting_name = feature_setting_name
+        @unit_primitive_name = unit_primitive_name
         @root_namespace = root_namespace
       end
 
@@ -26,6 +27,14 @@ module CodeSuggestions
         return :self_hosted_models if self_hosted?
 
         :code_suggestions
+      end
+
+      def unit_primitive_name
+        # We don't need to override this for SHM because this already happens
+        # in AvailableServices.find_by_name.
+        return :amazon_q_integration if ::Ai::AmazonQ.connected?
+
+        @unit_primitive_name
       end
 
       def licensed_feature

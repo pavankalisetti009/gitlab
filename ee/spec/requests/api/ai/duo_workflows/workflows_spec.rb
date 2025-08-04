@@ -60,7 +60,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       before do
         allow(Gitlab::AiGateway).to receive(:public_headers)
-          .with(user: user, service_name: :duo_workflow)
+          .with(user: user, ai_feature_name: :duo_workflow, service_name: :duo_workflow_execute_workflow)
           .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, project).and_return(true)
@@ -110,7 +110,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     context 'when success' do
       before do
         allow(Gitlab::AiGateway).to receive(:public_headers)
-          .with(user: user, service_name: :duo_workflow)
+          .with(user: user, ai_feature_name: :duo_workflow, service_name: :duo_workflow_execute_workflow)
           .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
       end
 

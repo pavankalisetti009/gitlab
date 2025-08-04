@@ -42,13 +42,15 @@ module API
         Gitlab::AiGateway.headers(
           user: current_user,
           service: service,
+          ai_feature_name: :code_suggestions,
           agent: headers["User-Agent"],
           lsp_version: headers["X-Gitlab-Language-Server-Version"]
         ).merge(saas_headers).merge(model_config_headers).transform_values { |v| Array(v) }
       end
 
-      def ai_gateway_public_headers(service_name)
-        Gitlab::AiGateway.public_headers(user: current_user, service_name: service_name)
+      def ai_gateway_public_headers(ai_feature_name, service_name)
+        Gitlab::AiGateway.public_headers(
+          user: current_user, ai_feature_name: ai_feature_name, service_name: service_name)
           .merge(saas_headers)
           .merge(model_config_headers)
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
@@ -175,10 +177,10 @@ module API
 
           unauthorized_with_origin_header! if task.feature_disabled?
 
-          service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
+          service = CloudConnector::AvailableServices.find_by_name(task.unit_primitive_name)
 
           unless current_user.allowed_to_use?(:code_suggestions,
-            service_name: task.feature_name,
+            service_name: task.unit_primitive_name,
             licensed_feature: task.licensed_feature
           )
             unauthorized_with_origin_header!
@@ -246,7 +248,10 @@ module API
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429
             token: token[:token],
             expires_at: token[:expires_at],
-            headers: ai_gateway_public_headers(completion_model_details.feature_name)
+            headers: ai_gateway_public_headers(
+              completion_model_details.feature_name,
+              completion_model_details.unit_primitive_name
+            )
           }.tap do |a|
             a[:model_details] = details_hash unless details_hash.blank?
           end
@@ -308,7 +313,8 @@ module API
 
           aigw_headers = Gitlab::AiGateway.public_headers(
             user: current_user,
-            service_name: completion_model_details.feature_name
+            ai_feature_name: completion_model_details.feature_name,
+            service_name: completion_model_details.unit_primitive_name
           )
 
           details = {

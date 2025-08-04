@@ -71,6 +71,36 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
         it_behaves_like 'uses self-signed path'
       end
 
+      context 'with code suggestions unit primitives' do
+        context 'with generate_code' do
+          let(:unit_primitive) { :generate_code }
+
+          it_behaves_like 'uses self-signed path'
+
+          context 'with FF disabled' do
+            before do
+              stub_feature_flags(code_suggestions_new_tokens_path: false)
+            end
+
+            it_behaves_like 'uses AvailableServices legacy path'
+          end
+        end
+
+        context 'with complete_code' do
+          let(:unit_primitive) { :complete_code }
+
+          it_behaves_like 'uses self-signed path'
+
+          context 'with FF disabled' do
+            before do
+              stub_feature_flags(code_suggestions_new_tokens_path: false)
+            end
+
+            it_behaves_like 'uses AvailableServices legacy path'
+          end
+        end
+      end
+
       context 'with unknown unit primitive' do
         let(:unit_primitive) { :not_rolled_out }
 

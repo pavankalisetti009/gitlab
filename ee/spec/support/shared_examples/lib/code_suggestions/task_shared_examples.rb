@@ -16,6 +16,10 @@ RSpec.shared_examples 'code suggestion task' do
     expect(task.feature_name).to eq expected_feature_name
   end
 
+  it 'has correct unit_primitive_name' do
+    expect(task.unit_primitive_name).to eq expected_unit_primitive_name
+  end
+
   it 'is not disabled' do
     expect(task.feature_disabled?).to eq false
   end

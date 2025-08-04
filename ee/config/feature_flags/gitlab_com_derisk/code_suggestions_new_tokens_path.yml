@@ -1,0 +1,10 @@
+---
+name: code_suggestions_new_tokens_path
+description: Use CloudConnector::Tokens for Code Suggestions, replacing a legacy implementation.
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/559256
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200349
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/560317
+milestone: '18.3'
+group: group::authentication
+type: gitlab_com_derisk
+default_enabled: false

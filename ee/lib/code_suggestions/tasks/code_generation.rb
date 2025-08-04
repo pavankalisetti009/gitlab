@@ -21,6 +21,7 @@ module CodeSuggestions
         @model_details ||= CodeSuggestions::ModelDetails::Base.new(
           current_user: current_user,
           feature_setting_name: :code_generations,
+          unit_primitive_name: :generate_code,
           root_namespace: params[:project]&.root_ancestor
         )
       end

@@ -6,7 +6,7 @@ module CodeSuggestions
       AI_GATEWAY_CONTENT_SIZE = 100_000
 
       delegate :base_url, :self_hosted?, :feature_setting, :feature_name, :feature_disabled?, :licensed_feature,
-        :namespace_feature_setting?, :vendored?, :duo_context_not_found?, to: :model_details
+        :namespace_feature_setting?, :vendored?, :duo_context_not_found?, :unit_primitive_name, to: :model_details
 
       def initialize(current_user:, params: {}, unsafe_passthrough_params: {}, client: nil)
         @params = params

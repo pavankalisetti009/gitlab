@@ -4,12 +4,14 @@ require 'spec_helper'
 
 RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_suggestions do
   let_it_be(:feature_setting_name) { 'code_generations' }
+  let_it_be(:unit_primitive_name) { 'generate_code' }
   let_it_be(:user) { create(:user) }
 
   let(:root_namespace) { nil }
 
-  let(:model_details) do
-    described_class.new(current_user: user, feature_setting_name: feature_setting_name, root_namespace: root_namespace)
+  subject(:model_details) do
+    described_class.new(current_user: user, feature_setting_name: feature_setting_name,
+      unit_primitive_name: unit_primitive_name, root_namespace: root_namespace)
   end
 
   shared_context 'with a default duo namespace assigned' do
@@ -272,15 +274,30 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     end
   end
 
+  describe '#unit_primitive_name' do
+    it 'matches the initializer argument' do
+      expect(model_details.unit_primitive_name).to eq(unit_primitive_name)
+    end
+  end
+
   context 'when Amazon Q is connected' do
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
 
-    it 'returns correct feature name and licensed feature' do
+    before do
       stub_licensed_features(amazon_q: true)
       Ai::Setting.instance.update!(amazon_q_ready: true)
+      allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+    end
 
+    it 'returns correct feature name and licensed feature' do
       expect(model_details.feature_name).to eq(:amazon_q_integration)
       expect(model_details.licensed_feature).to eq(:amazon_q)
+    end
+
+    describe '#unit_primitive_name' do
+      it 'is amazon_q_integration' do
+        expect(model_details.unit_primitive_name).to eq(:amazon_q_integration)
+      end
     end
   end
 end
