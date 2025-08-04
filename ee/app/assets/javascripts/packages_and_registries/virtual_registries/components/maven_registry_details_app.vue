@@ -41,9 +41,9 @@ export default {
      * The upstreams object
      */
     upstreams: {
-      type: Object,
+      type: Array,
       required: false,
-      default: () => ({}),
+      default: () => [],
     },
     /**
      * Whether the upstream can be tested
@@ -85,7 +85,7 @@ export default {
     return {
       createUpstreamError: '',
       createUpstreamMutationLoading: false,
-      upstreamItems: this.upstreams?.nodes || [],
+      upstreamItems: this.upstreams,
     };
   },
   computed: {
@@ -105,13 +105,16 @@ export default {
     toggleText() {
       return this.glAbilities.createVirtualRegistry ? s__('VirtualRegistry|Add upstream') : null;
     },
+    upstreamsCount() {
+      return this.upstreams.length;
+    },
     mavenVirtualRegistryID() {
       return convertToMavenRegistryGraphQLId(this.registry.id);
     },
   },
   watch: {
     upstreams(val) {
-      this.upstreamItems = val?.nodes || [];
+      this.upstreamItems = val || [];
     },
   },
   methods: {
@@ -203,15 +206,15 @@ export default {
           'VirtualRegistry|Use the arrow buttons to reorder upstreams. Artifacts are resolved from top to bottom.',
         )
       "
-      :count="upstreams.count"
+      :count="upstreamsCount"
     >
       <template #default>
-        <div v-if="upstreams.count" class="gl-flex gl-flex-col gl-gap-3">
+        <div v-if="upstreamsCount" class="gl-flex gl-flex-col gl-gap-3">
           <registry-upstream-item
             v-for="(upstream, index) in sortedUpstreamItems"
             :key="upstream.id"
             :upstream="upstream"
-            :upstreams-count="upstreams.count"
+            :upstreams-count="upstreamsCount"
             :index="index"
             @reorderUpstream="reorderUpstream"
             @clearCache="clearCache"
