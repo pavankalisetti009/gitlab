@@ -55,7 +55,7 @@ export default {
 
     <gl-empty-state
       v-else-if="isFlowNotFound"
-      :title="s__('AiCatalog|Flow not found.')"
+      :title="s__('AICatalog|Flow not found.')"
       :svg-path="$options.emptySearchSvg"
     />
 

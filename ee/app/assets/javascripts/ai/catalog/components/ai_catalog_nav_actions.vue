@@ -19,12 +19,12 @@ export default {
         case AI_CATALOG_AGENTS_ROUTE:
           return {
             route: AI_CATALOG_AGENTS_NEW_ROUTE,
-            label: s__('AICatalog|Create an agent'),
+            label: s__('AICatalog|Create agent'),
           };
         case AI_CATALOG_FLOWS_ROUTE:
           return {
             route: AI_CATALOG_FLOWS_NEW_ROUTE,
-            label: s__('AICatalog|Create a flow'),
+            label: s__('AICatalog|Create flow'),
           };
         default:
           return {

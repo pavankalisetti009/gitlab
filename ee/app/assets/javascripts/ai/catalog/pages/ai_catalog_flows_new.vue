@@ -61,7 +61,7 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Create new flow')" />
+    <page-heading :heading="s__('AICatalog|New flow')" />
 
     <ai-catalog-flow-form
       mode="create"

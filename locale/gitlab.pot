@@ -2458,22 +2458,10 @@ msgstr ""
 msgid "AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog."
 msgstr ""
 
-msgid "AICatalog|Create a flow"
-msgstr ""
-
 msgid "AICatalog|Create agent"
 msgstr ""
 
-msgid "AICatalog|Create an agent"
-msgstr ""
-
 msgid "AICatalog|Create flow"
-msgstr ""
-
-msgid "AICatalog|Create new agent"
-msgstr ""
-
-msgid "AICatalog|Create new flow"
 msgstr ""
 
 msgid "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks."
@@ -2506,6 +2494,9 @@ msgstr ""
 msgid "AICatalog|Flow created successfully."
 msgstr ""
 
+msgid "AICatalog|Flow not found."
+msgstr ""
+
 msgid "AICatalog|Flows"
 msgstr ""
 
@@ -2522,6 +2513,12 @@ msgid "AICatalog|Modify the flow settings and configuration."
 msgstr ""
 
 msgid "AICatalog|Name is required."
+msgstr ""
+
+msgid "AICatalog|New agent"
+msgstr ""
+
+msgid "AICatalog|New flow"
 msgstr ""
 
 msgid "AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners  of this project can edit or delete the agent."
@@ -6011,12 +6008,6 @@ msgid "AiAgents|Create your own AI Agents"
 msgstr ""
 
 msgid "AiAnalytics|the ClickHouse data store is not available"
-msgstr ""
-
-msgid "AiCatalog|Agent not found."
-msgstr ""
-
-msgid "AiCatalog|Flow not found."
 msgstr ""
 
 msgid "AiImpactAnalytics|Assigned Duo seat engagement"
