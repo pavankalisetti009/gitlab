@@ -1,4 +1,5 @@
 <script>
+import { isEmpty } from 'lodash';
 import { TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS, PIPELINE_SOURCE_OPTIONS } from '../constants';
 import RuleMultiSelect from '../../rule_multi_select.vue';
 
@@ -8,15 +9,15 @@ export default {
     RuleMultiSelect,
   },
   props: {
-    showAllSources: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     pipelineSources: {
       type: Object,
       required: false,
       default: () => ({}),
+    },
+    showAllSources: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
   },
   computed: {
@@ -29,13 +30,19 @@ export default {
         : TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS;
     },
     selectedSources() {
-      return this.pipelineSources?.including || this.sources;
+      // Not including pipelineSources is the same as selecting all
+      if (isEmpty(this.pipelineSources)) {
+        return this.sources;
+      }
+
+      // Return empty array if 'including' is null, which means none is selected
+      return this.pipelineSources.including ?? [];
     },
   },
   methods: {
     setPipelineSources(values) {
       // Early return for "select all" case
-      if (values.length === this.sources.length) {
+      if (values.length === Object.keys(PIPELINE_SOURCE_OPTIONS).length) {
         this.$emit('remove');
         return;
       }

@@ -9,11 +9,11 @@ import {
 describe('PipelineSourceSelector', () => {
   let wrapper;
 
-  const createComponent = ({ showAllSources = true, including = [] } = {}) => {
+  const createComponent = ({ showAllSources = true, pipelineSources = {} } = {}) => {
     wrapper = shallowMountExtended(PipelineSourceSelector, {
       propsData: {
         showAllSources,
-        pipelineSources: { including },
+        pipelineSources,
       },
     });
   };
@@ -25,24 +25,28 @@ describe('PipelineSourceSelector', () => {
       createComponent();
 
       const listbox = findListbox();
-      expect(listbox.exists()).toBe(true);
       expect(listbox.props('items')).toEqual(PIPELINE_SOURCE_OPTIONS);
-      expect(listbox.props('value')).toEqual([]);
+      expect(listbox.props('value')).toEqual([...Object.keys(PIPELINE_SOURCE_OPTIONS)]);
     });
 
     it('renders the dropdown with limited sources based on `showAllSources` prop', () => {
       createComponent({ showAllSources: false });
 
       const listbox = findListbox();
-      expect(listbox.exists()).toBe(true);
       expect(listbox.props('items')).toEqual(TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS);
-      expect(listbox.props('value')).toEqual([]);
+      expect(listbox.props('value')).toEqual([
+        ...Object.keys(TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS),
+      ]);
     });
 
-    it('renders selected sources in the dropdown', () => {
-      const selectedSources = ['web', 'api'];
-      createComponent({ including: selectedSources });
+    it('renders when no sources are selected', () => {
+      createComponent({ pipelineSources: { including: null } });
+      expect(findListbox().props('value')).toEqual([]);
+    });
 
+    it('renders when some sources are selected', () => {
+      const selectedSources = ['web', 'api'];
+      createComponent({ pipelineSources: { including: selectedSources } });
       expect(findListbox().props('value')).toEqual(selectedSources);
     });
   });
@@ -61,7 +65,7 @@ describe('PipelineSourceSelector', () => {
     });
 
     it('emits update event with multiple selected sources', () => {
-      createComponent({ including: ['web'] });
+      createComponent({ pipelineSources: { including: ['web'] } });
 
       const selectedSources = ['web', 'api'];
       findListbox().vm.$emit('input', selectedSources);
@@ -73,7 +77,7 @@ describe('PipelineSourceSelector', () => {
     });
 
     it('emits update event with empty array when all sources are deselected', () => {
-      createComponent({ including: ['web', 'api'] });
+      createComponent({ pipelineSources: { including: ['web', 'api'] } });
 
       findListbox().vm.$emit('input', []);
 
@@ -83,7 +87,7 @@ describe('PipelineSourceSelector', () => {
       });
     });
 
-    it('emits update event with all selected sources when user selects all sources', () => {
+    it('emits remove event with all selected sources when user selects all sources', () => {
       createComponent();
       const allSources = Object.keys(PIPELINE_SOURCE_OPTIONS);
 
@@ -91,6 +95,19 @@ describe('PipelineSourceSelector', () => {
 
       expect(wrapper.emitted('select')).toBe(undefined);
       expect(wrapper.emitted('remove')).toHaveLength(1);
+    });
+
+    it('emits update event if all sources are selected for when not all sources are shown', () => {
+      createComponent({ showAllSources: false, pipelineSources: { including: ['push'] } });
+      const selectedOptions = ['push', 'merge_request_event'];
+
+      findListbox().vm.$emit('input', selectedOptions);
+
+      expect(wrapper.emitted('remove')).toBe(undefined);
+      expect(wrapper.emitted('select')).toHaveLength(1);
+      expect(wrapper.emitted('select')[0][0]).toEqual({
+        pipeline_sources: { including: selectedOptions },
+      });
     });
   });
 });
