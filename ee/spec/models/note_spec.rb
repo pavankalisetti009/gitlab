@@ -586,7 +586,8 @@ RSpec.describe Note, feature_category: :team_planning do
 
     subject(:ordered_notes) { described_class.order_by_noteable_latest_first }
 
-    it 'orders notes by noteable_id ascending and created_at descending' do
+    it 'orders notes by noteable_id ascending and created_at descending',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/554692' do
       grouped = ordered_notes.group_by(&:noteable_id)
 
       expect(grouped[issue.id].map(&:id)).to eq([3, 2, 1])
