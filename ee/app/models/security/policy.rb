@@ -34,7 +34,11 @@ module Security
 
     has_many :projects, through: :security_policy_project_links
 
-    has_many :security_pipeline_execution_project_schedules, class_name: 'Security::PipelineExecutionProjectSchedule',
+    has_many :security_pipeline_execution_project_schedules,
+      class_name: 'Security::PipelineExecutionProjectSchedule',
+      foreign_key: :security_policy_id, inverse_of: :security_policy
+    has_many :approval_policy_merge_request_bypass_events,
+      class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent',
       foreign_key: :security_policy_id, inverse_of: :security_policy
 
     enum :type, {

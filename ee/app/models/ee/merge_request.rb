@@ -92,6 +92,8 @@ module EE
         'Security::ScanResultPolicyViolation', inverse_of: :merge_request
 
       has_many :merge_request_stage_events, class_name: 'Analytics::CycleAnalytics::MergeRequestStageEvent'
+      has_many :approval_policy_merge_request_bypass_events,
+        class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent', inverse_of: :merge_request
 
       # WIP v2 approval rules as part of https://gitlab.com/groups/gitlab-org/-/epics/12955
       has_many :v2_approval_rules_merge_requests, class_name: 'MergeRequests::ApprovalRulesMergeRequest',
