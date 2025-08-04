@@ -96,7 +96,12 @@ describe('EE WorkItemAttributesWrapper component', () => {
         hasSubepicsFeature,
         hasIssuableHealthStatusFeature: true,
         hasStatusFeature,
+        hasWorkItemStatusFeature: hasStatusFeature,
+        issuesSettings: '/groups/test-project-path/-/settings/issues',
         glFeatures: featureFlags,
+      },
+      stubs: {
+        WorkItemStatus,
       },
     });
   };

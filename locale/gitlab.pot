@@ -38023,6 +38023,9 @@ msgstr ""
 msgid "Manage security policy settings in your GitLab instance"
 msgstr ""
 
+msgid "Manage statuses"
+msgstr ""
+
 msgid "Manage templates…"
 msgstr ""
 
@@ -72096,6 +72099,9 @@ msgid "WorkItem|Something went wrong when fetching labels. Please try again."
 msgstr ""
 
 msgid "WorkItem|Something went wrong when fetching status. Please try again."
+msgstr ""
+
+msgid "WorkItem|Something went wrong when fetching user permissions"
 msgstr ""
 
 msgid "WorkItem|Something went wrong when fetching work item types. Please try again"
