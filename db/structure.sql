@@ -30194,6 +30194,9 @@ ALTER TABLE ONLY chat_names
 ALTER TABLE ONLY chat_teams
     ADD CONSTRAINT chat_teams_pkey PRIMARY KEY (id);
 
+ALTER TABLE gpg_signatures
+    ADD CONSTRAINT check_271c7cad6d CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
 
