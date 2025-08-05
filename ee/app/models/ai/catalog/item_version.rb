@@ -61,7 +61,7 @@ module Ai
       end
 
       def validate_json_schema
-        return errors.add(:definition, s_('AICatalog|unable to validate definition')) unless item
+        return errors.add(:definition, s_('AICatalog|unable to validate definition')) unless item && schema_version
 
         JsonSchemaValidator.new({
           attributes: :definition,
@@ -73,7 +73,7 @@ module Ai
       end
 
       def json_schema_filename
-        "#{item.item_type}_v#{schema_version || 1}"
+        "#{item.item_type}_v#{schema_version}"
       end
 
       def validate_readonly
