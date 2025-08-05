@@ -149,7 +149,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
 
   context 'for tables that do not already have a backfilled, non-nullable sharding key on their parent ' \
           'but only has a desired sharding key on their parent' do
-    it 'the parent.belongs_to must be a model with a desired_sharding_key' do
+    it 'the parent.belongs_to must be a model with a desired_sharding_key or have a backfill in progress' do
       desired_sharding_key_entries_awaiting_backfill_on_parent.each do |entry|
         model = entry.classes.first.constantize
         entry.desired_sharding_key.each do |column, details|
@@ -162,8 +162,13 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
           expect(parent_association).not_to be_nil,
             "Invalid backfill_via.parent.belongs_to: #{belongs_to} in db/docs for #{entry.table_name}"
 
-          expect(desired_sharding_keys_of(parent_table).keys).to include(column)
-          expect(desired_sharding_keys_of(parent_table).keys).to include(sharding_key_of_parent)
+          parent_desired_sharding_keys = desired_sharding_keys_of(parent_table)
+          if parent_desired_sharding_keys.present?
+            expect(parent_desired_sharding_keys.keys).to include(column)
+            expect(parent_desired_sharding_keys.keys).to include(sharding_key_of_parent)
+          else
+            expect(desired_sharding_key_migration_job_name_of(parent_table)).to be_present
+          end
         end
       end
     end
@@ -218,5 +223,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
 
   def desired_sharding_keys_of(table_name)
     Gitlab::Database::Dictionary.entries.find_by_table_name(table_name).desired_sharding_key
+  end
+
+  def desired_sharding_key_migration_job_name_of(table_name)
+    Gitlab::Database::Dictionary.entries.find_by_table_name(table_name).desired_sharding_key_migration_job_name
   end
 end
