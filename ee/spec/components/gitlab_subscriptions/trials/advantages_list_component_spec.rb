@@ -15,7 +15,7 @@ RSpec.describe GitlabSubscriptions::Trials::AdvantagesListComponent, :aggregate_
     expect(page).to have_content(s_('InProductMarketing|Experience the power of Ultimate + GitLab Duo Enterprise'))
     expect(page).to have_content(s_('InProductMarketing|No credit card required.'))
 
-    expected_advantage_count = 5
+    expected_advantage_count = 4
     expect(all_by_testid('advantage-item').count).to eq(expected_advantage_count)
     expect(all_by_testid('check-circle-icon').count).to eq(expected_advantage_count)
   end

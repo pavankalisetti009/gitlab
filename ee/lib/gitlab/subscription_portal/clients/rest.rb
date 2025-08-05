@@ -49,6 +49,10 @@ module Gitlab
             http_get('api/v1/gitlab/namespaces/trials/eligibility', admin_headers, params)
           end
 
+          def namespace_trial_types
+            http_get('api/v1/gitlab/namespaces/trials/trial_types', admin_headers)
+          end
+
           private
 
           def error_message

@@ -398,7 +398,13 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
   end
 
   describe 'Trial flow', :saas do
+    let(:trial_duration) { 60 }
+
     before do
+      allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
+        allow(instance).to receive(:execute).and_return(trial_duration)
+      end
+
       visit new_trial_registration_path
     end
 

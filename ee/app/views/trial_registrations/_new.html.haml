@@ -8,7 +8,7 @@
     %h1.gl-mt-0.gl-max-w-75
       = s_('InProductMarketing|Get Started with GitLab')
     %p.gl-text-lg.gl-max-w-75
-      = s_("InProductMarketing|Enjoy 60 days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate.")
+      = format(s_("InProductMarketing|Enjoy %{duration} days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate."), duration: @trial_duration)
     %p.gl-text-subtle
       = sprite_icon('question-o', css_class: 'gl-mr-1')
       = s_('InProductMarketing|Want to host GitLab on your servers?')
