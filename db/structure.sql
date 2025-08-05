@@ -44913,7 +44913,7 @@ ALTER TABLE ONLY user_admin_roles
     ADD CONSTRAINT fk_d3e201cb93 FOREIGN KEY (admin_role_id) REFERENCES admin_roles(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY resource_iteration_events
-    ADD CONSTRAINT fk_d405f1c11a FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
+    ADD CONSTRAINT fk_d405f1c11a FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ci_sources_pipelines
     ADD CONSTRAINT fk_d4e29af7d7_p FOREIGN KEY (source_partition_id, source_pipeline_id) REFERENCES p_ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
