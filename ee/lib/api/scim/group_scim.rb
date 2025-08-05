@@ -148,7 +148,7 @@ module API
           end
           post do
             group = find_and_authenticate_group!(params[:group])
-            parser = ::EE::Gitlab::Scim::ParamsParser.new(params)
+            parser = ::Gitlab::Scim::ParamsParser.new(params)
             result = ::EE::Gitlab::Scim::Group::ProvisioningService.new(parser.post_params, group).execute
 
             case result.status

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Gitlab::Scim::ValueParser do
+RSpec.describe Gitlab::Scim::ValueParser, feature_category: :system_access do
   using RSpec::Parameterized::TableSyntax
 
   describe '#type_cast' do
@@ -18,7 +18,7 @@ RSpec.describe EE::Gitlab::Scim::ValueParser do
     end
 
     with_them do
-      it do
+      it 'casts to the expected value' do
         expect(described_class.new(input).type_cast).to eq expected_output
       end
     end

@@ -21,7 +21,7 @@ module EE
           errors ||= objects.compact.flat_map { |obj| obj.errors.full_messages }
           conflict = errors.any? { |error| error.include?('has already been taken') }
 
-          ProvisioningResponse.new(status: conflict ? :conflict : :error, message: errors.to_sentence)
+          ::Gitlab::Scim::ProvisioningResponse.new(status: conflict ? :conflict : :error, message: errors.to_sentence)
         end
 
         def logger

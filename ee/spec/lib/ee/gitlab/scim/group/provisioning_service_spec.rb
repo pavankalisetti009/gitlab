@@ -315,7 +315,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
           end
 
           let(:provision_response) do
-            ::EE::Gitlab::Scim::ProvisioningResponse.new(identity: nil,
+            ::Gitlab::Scim::ProvisioningResponse.new(identity: nil,
               status: :error,
               message: "Extern uid can't be blank")
           end
@@ -339,7 +339,7 @@ RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
           it 'returns provision response error' do
             response = service.execute
 
-            expect(response).to be_a(::EE::Gitlab::Scim::ProvisioningResponse)
+            expect(response).to be_a(::Gitlab::Scim::ProvisioningResponse)
             expect(response.as_json).to match(hash_including('status' => 'error',
               'message' => /^undefined method `save' for nil/,
               'identity' => nil))

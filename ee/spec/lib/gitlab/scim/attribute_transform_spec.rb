@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Gitlab::Scim::AttributeTransform do
+RSpec.describe Gitlab::Scim::AttributeTransform, feature_category: :system_access do
   using RSpec::Parameterized::TableSyntax
 
   describe '#valid?' do
@@ -27,7 +27,7 @@ RSpec.describe EE::Gitlab::Scim::AttributeTransform do
     end
 
     with_them do
-      it do
+      it 'transforms to the correct key' do
         expect(described_class.new(scim_key).gitlab_key).to eq expected
       end
     end
