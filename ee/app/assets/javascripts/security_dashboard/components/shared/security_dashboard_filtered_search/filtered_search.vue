@@ -1,6 +1,7 @@
 <script>
 import { GlFilteredSearch } from '@gitlab/ui';
 import { isEqual } from 'lodash';
+import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 export default {
   components: {
@@ -38,7 +39,7 @@ export default {
 
       const newFilters = {};
       filterTokens.forEach(({ type, value }) => {
-        newFilters[type] = value.data;
+        newFilters[type] = value.data.filter((v) => v !== ALL_ID);
       });
 
       if (isEqual(this.filters, newFilters)) {

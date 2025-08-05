@@ -1,8 +1,13 @@
-query getProjectVulnerabilitiesOverTime($fullPath: ID!, $reportType: [VulnerabilityReportType!]) {
+query getProjectVulnerabilitiesOverTime(
+  $fullPath: ID!
+  $reportType: [VulnerabilityReportType!]
+  $startDate: ISO8601Date!
+  $endDate: ISO8601Date!
+) {
   project(fullPath: $fullPath) {
     id
-    securityMetrics(reportType: $reportType) @client {
-      vulnerabilitiesOverTime {
+    securityMetrics(reportType: $reportType) {
+      vulnerabilitiesOverTime(startDate: $startDate, endDate: $endDate) {
         nodes {
           date
           bySeverity {

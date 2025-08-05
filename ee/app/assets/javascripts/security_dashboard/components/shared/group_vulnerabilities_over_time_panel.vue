@@ -6,6 +6,7 @@ import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_group_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_formatters';
+import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
 
 export default {
   name: 'GroupVulnerabilitiesOverTimePanel',
@@ -22,16 +23,13 @@ export default {
       required: true,
     },
   },
-  defaultStartDate: 90,
   apollo: {
     vulnerabilitiesOverTime: {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       query: getVulnerabilitiesOverTime,
       variables() {
-        const startDate = formatDate(
-          getDateInPast(new Date(), this.$options.defaultStartDate),
-          'isoDate',
-        );
+        const lookbackDate = getDateInPast(new Date(), DASHBOARD_LOOKBACK_DAYS);
+        const startDate = formatDate(lookbackDate, 'isoDate');
         const endDate = formatDate(new Date(), 'isoDate');
 
         return {
