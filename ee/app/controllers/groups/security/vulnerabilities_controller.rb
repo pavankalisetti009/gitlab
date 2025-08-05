@@ -14,7 +14,6 @@ module Groups
         conditions: -> { dashboard_available? }
 
       before_action do
-        push_frontend_feature_flag(:reachability_es_filter, @group, type: :gitlab_com_derisk)
         push_frontend_feature_flag(:vulnerability_report_filtered_search_v2, @group, type: :wip)
         push_frontend_feature_flag(:hide_vulnerability_severity_override, @group.root_ancestor, type: :ops)
         push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action, @project, type: :wip)
