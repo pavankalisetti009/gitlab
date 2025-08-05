@@ -41,6 +41,8 @@ module GitlabSubscriptions
 
     scope :order_by_id_desc, -> { order(id: :desc) }
 
+    delegate :namespace, :namespace_id, to: :add_on_purchase
+
     def self.pluck_user_ids
       pluck(:user_id)
     end

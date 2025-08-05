@@ -36,11 +36,11 @@ module EE
     def user_duo_namespace_assignment_options
       return [] unless Ability.allowed?(current_user, :assign_default_duo_group, current_user)
 
-      duo_namespace_add_on_assignments = current_user.user_preference.eligible_duo_add_on_assignments
+      duo_namespace_add_on_assignments = current_user.user_preference.distinct_eligible_duo_add_on_assignments
 
       duo_namespace_add_on_assignments.map do |duo_namespace_add_on_assignment|
         [
-          duo_namespace_add_on_assignment.add_on_purchase.namespace.name,
+          duo_namespace_add_on_assignment.namespace.name,
           duo_namespace_add_on_assignment.id
         ]
       end
