@@ -1305,4 +1305,21 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
   def mutation_for(item)
     graphql_mutation(:workItemUpdate, input.merge('id' => item.to_global_id.to_s), fields)
   end
+
+  describe '.authorization' do
+    it 'allows ai_workflows scope token' do
+      expect(Mutations::WorkItems::Update.authorization.permitted_scopes).to include(:ai_workflows)
+    end
+  end
+
+  describe 'work_item field with :ai_workflows scope' do
+    let(:mutation_class) { Mutations::WorkItems::Create }
+
+    %w[errors workItem].each do |field_name|
+      it "includes :ai_workflows scope for the #{field_name} field" do
+        field = mutation_class.fields[field_name]
+        expect(field.instance_variable_get(:@scopes)).to include(:ai_workflows)
+      end
+    end
+  end
 end

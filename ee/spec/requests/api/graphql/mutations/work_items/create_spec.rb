@@ -1040,4 +1040,21 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
     end
   end
+
+  describe '.authorization' do
+    it 'allows ai_workflows scope token' do
+      expect(Mutations::WorkItems::Create.authorization.permitted_scopes).to include(:ai_workflows)
+    end
+  end
+
+  describe 'work_item field with :ai_workflows scope' do
+    let(:mutation_class) { Mutations::WorkItems::Create }
+
+    %w[errors workItem].each do |field_name|
+      it "includes :ai_workflows scope for the #{field_name} field" do
+        field = mutation_class.fields[field_name]
+        expect(field.instance_variable_get(:@scopes)).to include(:ai_workflows)
+      end
+    end
+  end
 end
