@@ -17715,6 +17715,9 @@ msgstr ""
 msgid "ContainerRegistry|CLI commands"
 msgstr ""
 
+msgid "ContainerRegistry|Changes saved."
+msgstr ""
+
 msgid "ContainerRegistry|Cleanup disabled"
 msgstr ""
 
@@ -18007,9 +18010,6 @@ msgid "ContainerRegistry|Protected container repositories"
 msgstr ""
 
 msgid "ContainerRegistry|Protection rule created."
-msgstr ""
-
-msgid "ContainerRegistry|Protection rule updated."
 msgstr ""
 
 msgid "ContainerRegistry|Protection type"
@@ -44621,6 +44621,9 @@ msgstr ""
 msgid "PackageRegistry|By default, the NuGet package validates the %{code_open}projectUrl%{code_close}, %{code_open}iconUrl%{code_close}, and %{code_open}licenseUrl%{code_close} metadata. In an offline environment, you cannot upload the NuGet package with this validation because these URLs cannot be resolved. You might want to select the checkbox to skip validation."
 msgstr ""
 
+msgid "PackageRegistry|Changes saved."
+msgstr ""
+
 msgid "PackageRegistry|Composer"
 msgstr ""
 
@@ -44954,9 +44957,6 @@ msgid "PackageRegistry|Package protection rule created."
 msgstr ""
 
 msgid "PackageRegistry|Package protection rule deleted."
-msgstr ""
-
-msgid "PackageRegistry|Package protection rule updated."
 msgstr ""
 
 msgid "PackageRegistry|Package registry"
