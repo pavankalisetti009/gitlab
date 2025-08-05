@@ -33,7 +33,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
     let(:mr_title) { 'Test MR Title' }
     let(:mr_description) { 'Test MR Description' }
-    let(:file_content) { "# Title\n\nNew content\n\nMore content" }
+    let(:files_content) { "# Title\n\nNew content\n\nMore content" }
     let(:headers) { {} }
 
     let(:body) do
@@ -41,12 +41,19 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         diffs: raw_diffs,
         mr_title: mr_title,
         mr_description: mr_description,
-        file_contents: { 'path.md' => file_content }
+        files_content: { 'path.md' => files_content }
       }
     end
 
     let(:review_prompt) { { messages: ['prompt'] } }
-    let(:review_response) { { content: [{ text: 'Review response' }] } }
+    let(:review_response) do
+      instance_double(
+        HTTParty::Response,
+        body: { content: 'Review response' }.to_json,
+        success?: true
+      )
+    end
+
     let(:expected_diffs_and_paths) do
       {
         'path.md' => raw_diffs
@@ -55,7 +62,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
     let(:expected_files_content) do
       {
-        'path.md' => file_content
+        'path.md' => files_content
       }
     end
 
@@ -69,28 +76,8 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
       allow(Gitlab).to receive(:dev_or_test_env?).and_return(dev_or_test_env?)
 
-      allow_next_instance_of(
-        ::Gitlab::Llm::Templates::ReviewMergeRequest,
-        hash_including(
-          mr_title: mr_title,
-          mr_description: mr_description,
-          diffs_and_paths: expected_diffs_and_paths,
-          files_content: expected_files_content,
-          user: authorized_user
-        )
-      ) do |prompt|
-        allow(prompt).to receive(:to_prompt).and_return(review_prompt)
-      end
-
-      allow_next_instance_of(
-        ::Gitlab::Llm::Anthropic::Client,
-        authorized_user,
-        unit_primitive: 'review_merge_request'
-      ) do |client|
-        allow(client)
-          .to receive(:messages_complete)
-          .with(review_prompt)
-          .and_return(review_response)
+      allow_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+        allow(client).to receive(:complete_prompt).and_return(review_response)
       end
 
       post_api
@@ -99,18 +86,6 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     it 'returns 201 with the review response' do
       expect(response).to have_gitlab_http_status(:created)
       expect(response.body).to eq({ review: 'Review response' }.to_json)
-    end
-
-    it 'passes file contents to the template' do
-      expect(::Gitlab::Llm::Templates::ReviewMergeRequest)
-        .to have_received(:new)
-        .with(hash_including(
-          mr_title: mr_title,
-          mr_description: mr_description,
-          diffs_and_paths: expected_diffs_and_paths,
-          files_content: expected_files_content,
-          user: authorized_user
-        ))
     end
 
     context 'when environment is not development or test' do
@@ -157,7 +132,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
           {
             diffs: raw_diffs,
             mr_description: mr_description,
-            file_contents: { 'path.md' => file_content }
+            files_content: { 'path.md' => files_content }
           }
         end
 
@@ -169,7 +144,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
           {
             diffs: raw_diffs,
             mr_title: mr_title,
-            file_contents: { 'path.md' => file_content }
+            files_content: { 'path.md' => files_content }
           }
         end
 
@@ -181,14 +156,14 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
           {
             mr_title: mr_title,
             mr_description: mr_description,
-            file_contents: { 'path.md' => file_content }
+            files_content: { 'path.md' => files_content }
           }
         end
 
         it { expect(response).to have_gitlab_http_status(:bad_request) }
       end
 
-      context 'when file_contents parameter is missing' do
+      context 'when files_content parameter is missing' do
         let(:body) do
           {
             diffs: raw_diffs,
@@ -229,7 +204,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
           diffs: raw_diffs,
           mr_title: mr_title,
           mr_description: mr_description,
-          file_contents: {
+          files_content: {
             'file1.rb' => file1_content,
             'file2.rb' => file2_content
           }
@@ -250,31 +225,8 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         }
       end
 
-      before do
-        allow_next_instance_of(
-          ::Gitlab::Llm::Templates::ReviewMergeRequest,
-          hash_including(
-            mr_title: mr_title,
-            mr_description: mr_description,
-            diffs_and_paths: expected_diffs_and_paths,
-            files_content: expected_files_content,
-            user: authorized_user
-          )
-        ) do |prompt|
-          allow(prompt).to receive(:to_prompt).and_return(review_prompt)
-        end
-      end
-
       it 'correctly processes multiple files' do
         expect(response).to have_gitlab_http_status(:created)
-        expect(::Gitlab::Llm::Templates::ReviewMergeRequest).to have_received(:new).with(
-          hash_including(
-            mr_title: mr_title,
-            mr_description: mr_description,
-            diffs_and_paths: expected_diffs_and_paths,
-            files_content: expected_files_content
-          )
-        )
       end
     end
   end
