@@ -1,0 +1,19 @@
+mutation linkProjectComplianceViolationIssue($input: LinkProjectComplianceViolationIssueInput!) {
+  linkProjectComplianceViolationIssue(input: $input) {
+    clientMutationId
+    errors
+    violation {
+      id
+      issues {
+        nodes {
+          id
+          iid
+          reference
+          state
+          title
+          webUrl
+        }
+      }
+    }
+  }
+}

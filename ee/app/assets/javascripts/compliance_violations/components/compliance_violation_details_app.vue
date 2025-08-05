@@ -9,6 +9,7 @@ import updateProjectComplianceViolation from '../graphql/mutations/update_projec
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
 import FixSuggestionSection from './fix_suggestion_section.vue';
+import RelatedIssues from './related_issues.vue';
 import ViolationSection from './violation_section.vue';
 
 Vue.use(GlToast);
@@ -21,6 +22,7 @@ export default {
     FixSuggestionSection,
     GlAlert,
     GlLoadingIcon,
+    RelatedIssues,
     ViolationSection,
     SystemNote,
   },
@@ -177,6 +179,12 @@ export default {
       class="gl-mt-5"
       :control-id="projectComplianceViolation.complianceControl.name"
       :project-path="projectComplianceViolation.project.webUrl"
+    />
+    <related-issues
+      class="gl-mt-5"
+      :issues="projectComplianceViolation.issues.nodes"
+      :violation-id="graphqlViolationId"
+      :project-path="projectComplianceViolation.project.fullPath"
     />
     <section v-if="hasSystemNotes" class="issuable-discussion gl-pt-6">
       <h2 class="gl-mb-4 gl-mt-0 gl-text-size-h1">{{ $options.i18n.activity }}</h2>

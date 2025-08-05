@@ -20,6 +20,16 @@ query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolatio
         }
       }
     }
+    issues {
+      nodes {
+        id
+        iid
+        reference
+        state
+        title
+        webUrl
+      }
+    }
     project {
       id
       nameWithNamespace
