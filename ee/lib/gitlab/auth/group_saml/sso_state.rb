@@ -30,8 +30,8 @@ module Gitlab
           active_session_data["#{provider_id}#{SESSION_EXPIRY_SUFFIX}"] = session_not_on_or_after
         end
 
-        def active_since?(cutoff, group: nil)
-          session_not_on_or_after = session_not_on_or_after_value(group: group).presence
+        def active_since?(cutoff)
+          session_not_on_or_after = session_not_on_or_after_value.presence
 
           return active? unless cutoff || session_not_on_or_after
           return true if sessionless?
@@ -42,9 +42,7 @@ module Gitlab
           last_signin_at >= cutoff
         end
 
-        def session_not_on_or_after_value(group: nil)
-          return unless Feature.enabled?(:saml_timeout_supplied_by_idp_override_group_saml, group)
-
+        def session_not_on_or_after_value
           active_session_data["#{provider_id}#{SESSION_EXPIRY_SUFFIX}"]
         end
 
