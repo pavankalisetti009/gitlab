@@ -1,5 +1,5 @@
 <script>
-import instanceRolesQuery from '../../graphql/instance_roles.query.graphql';
+import adminRolesQuery from '../../graphql/admin_roles.query.graphql';
 import RolesCrud from './roles_crud.vue';
 import { showRolesFetchError, createNewAdminRoleOption } from './utils';
 
@@ -18,8 +18,7 @@ export default {
   },
   apollo: {
     roles: {
-      query: instanceRolesQuery,
-      variables: { isSaas: true },
+      query: adminRolesQuery,
       update: (data) => data,
       error: showRolesFetchError,
     },
@@ -32,5 +31,6 @@ export default {
     :roles="roles"
     :loading="$apollo.queries.roles.loading"
     :new-role-options="newRoleOptions"
+    @deleted="() => $apollo.queries.roles.refetch()"
   />
 </template>

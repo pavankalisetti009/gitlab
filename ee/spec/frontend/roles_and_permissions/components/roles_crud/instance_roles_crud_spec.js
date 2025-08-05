@@ -25,13 +25,14 @@ describe('InstanceRolesCrud component', () => {
   const createComponent = ({
     rolesQueryHandler = defaultRolesQueryHandler,
     newRolePath = 'new/role/path',
+    customRoles = true,
     customAdminRoles = true,
   } = {}) => {
     wrapper = shallowMountExtended(InstanceRolesCrud, {
       apolloProvider: createMockApollo([[instanceRolesQuery, rolesQueryHandler]]),
       provide: {
         newRolePath,
-        glFeatures: { customAdminRoles },
+        glFeatures: { customRoles, customAdminRoles },
       },
       stubs: {
         RolesCrud: stubComponent(RolesCrud, { props: ['roles', 'loading', 'newRoleOptions'] }),
@@ -50,13 +51,30 @@ describe('InstanceRolesCrud component', () => {
 
     it('fetches instance roles', () => {
       expect(defaultRolesQueryHandler).toHaveBeenCalledTimes(1);
-      expect(defaultRolesQueryHandler).toHaveBeenCalledWith({ isSaas: false });
     });
 
     it('shows roles crud component', () => {
       expect(findRolesCrud().props()).toMatchObject({ roles: {}, loading: true });
     });
   });
+
+  it.each`
+    customRoles | customAdminRoles | includeCustomRoles | includeAdminRoles
+    ${true}     | ${true}          | ${true}            | ${true}
+    ${true}     | ${false}         | ${true}            | ${false}
+    ${false}    | ${true}          | ${false}           | ${false}
+    ${false}    | ${false}         | ${false}           | ${false}
+  `(
+    'calls roles query with expected variables when customRoles = $customRoles, customAdminRoles = $customAdminRoles',
+    ({ customRoles, customAdminRoles, includeCustomRoles, includeAdminRoles }) => {
+      createComponent({ customRoles, customAdminRoles });
+
+      expect(defaultRolesQueryHandler).toHaveBeenCalledWith({
+        includeCustomRoles,
+        includeAdminRoles,
+      });
+    },
+  );
 
   it.each`
     newRolePath        | customAdminRoles | expectedOptions
@@ -82,6 +100,12 @@ describe('InstanceRolesCrud component', () => {
 
     it('shows roles crud component as not loading', () => {
       expect(findRolesCrud().props('loading')).toBe(false);
+    });
+
+    it('refetches query when role is deleted', () => {
+      findRolesCrud().vm.$emit('deleted');
+
+      expect(defaultRolesQueryHandler).toHaveBeenCalledTimes(2);
     });
   });
 

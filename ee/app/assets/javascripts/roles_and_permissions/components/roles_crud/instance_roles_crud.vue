@@ -14,12 +14,15 @@ export default {
     };
   },
   computed: {
+    isCustomAdminRolesAvailable() {
+      return this.glFeatures.customRoles && this.glFeatures.customAdminRoles;
+    },
     newRoleOptions() {
       if (!this.newRolePath) return [];
 
       const items = [createNewCustomRoleOption(this.newRolePath)];
       // Add the ability to create admin roles if the feature is enabled.
-      if (this.glFeatures.customAdminRoles) {
+      if (this.isCustomAdminRolesAvailable) {
         items.push(createNewAdminRoleOption(this.newRolePath));
       }
 
@@ -29,7 +32,12 @@ export default {
   apollo: {
     roles: {
       query: instanceRolesQuery,
-      variables: { isSaas: false },
+      variables() {
+        return {
+          includeCustomRoles: this.glFeatures.customRoles,
+          includeAdminRoles: this.isCustomAdminRolesAvailable,
+        };
+      },
       update: (data) => data,
       error: showRolesFetchError,
     },
@@ -42,5 +50,6 @@ export default {
     :roles="roles"
     :loading="$apollo.queries.roles.loading"
     :new-role-options="newRoleOptions"
+    @deleted="() => $apollo.queries.roles.refetch()"
   />
 </template>

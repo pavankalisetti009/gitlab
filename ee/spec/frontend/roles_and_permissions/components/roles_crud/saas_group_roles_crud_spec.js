@@ -26,10 +26,11 @@ describe('SaasGroupRolesCrud component', () => {
     rolesQueryHandler = defaultRolesQueryHandler,
     newRolePath = 'new/role/path',
     groupFullPath = 'group/path',
+    customRoles = true,
   } = {}) => {
     wrapper = shallowMountExtended(SaasGroupRolesCrud, {
       apolloProvider: createMockApollo([[groupRolesQuery, rolesQueryHandler]]),
-      provide: { newRolePath, groupFullPath },
+      provide: { newRolePath, groupFullPath, glFeatures: { customRoles } },
       stubs: {
         RolesCrud: stubComponent(RolesCrud, { props: ['roles', 'loading', 'newRoleOptions'] }),
       },
@@ -47,13 +48,24 @@ describe('SaasGroupRolesCrud component', () => {
 
     it('fetches group roles', () => {
       expect(defaultRolesQueryHandler).toHaveBeenCalledTimes(1);
-      expect(defaultRolesQueryHandler).toHaveBeenCalledWith({ fullPath: 'group/path' });
     });
 
     it('shows roles crud component', () => {
       expect(findRolesCrud().props()).toMatchObject({ roles: {}, loading: true });
     });
   });
+
+  it.each([true, false])(
+    'calls roles query with expected data when customRoles is $customRoles',
+    (customRoles) => {
+      createComponent({ customRoles });
+
+      expect(defaultRolesQueryHandler).toHaveBeenCalledWith({
+        fullPath: 'group/path',
+        includeCustomRoles: customRoles,
+      });
+    },
+  );
 
   it.each`
     newRolePath        | expectedOptions
@@ -77,6 +89,12 @@ describe('SaasGroupRolesCrud component', () => {
 
     it('shows roles crud component as not loading', () => {
       expect(findRolesCrud().props('loading')).toBe(false);
+    });
+
+    it('refetches query when role is deleted', () => {
+      findRolesCrud().vm.$emit('deleted');
+
+      expect(defaultRolesQueryHandler).toHaveBeenCalledTimes(2);
     });
   });
 

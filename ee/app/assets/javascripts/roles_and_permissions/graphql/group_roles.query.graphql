@@ -1,6 +1,6 @@
 #import "./fragments/role.fragment.graphql"
 
-query getGroupRoles($fullPath: ID!) {
+query getGroupRoles($fullPath: ID!, $includeCustomRoles: Boolean!) {
   group(fullPath: $fullPath) {
     id
     # Filter out the Minimal Access role (business requirement).
@@ -9,7 +9,7 @@ query getGroupRoles($fullPath: ID!) {
         ...Role
       }
     }
-    memberRoles {
+    memberRoles @include(if: $includeCustomRoles) {
       nodes {
         ...Role
       }
