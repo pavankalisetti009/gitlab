@@ -76128,6 +76128,9 @@ msgstr ""
 msgid "only supports valid HTTP(S) URLs"
 msgstr ""
 
+msgid "opened"
+msgstr ""
+
 msgid "or"
 msgstr ""
 
