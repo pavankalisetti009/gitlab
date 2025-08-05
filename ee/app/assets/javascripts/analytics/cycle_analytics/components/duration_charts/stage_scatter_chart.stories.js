@@ -26,22 +26,8 @@ Default.args = {
   endDate,
 };
 
-export const Loading = Template.bind({});
-Loading.args = {
-  stageTitle,
-  isLoading: true,
-  startDate,
-  endDate,
-};
-
 export const NoData = Template.bind({});
 NoData.args = {
   ...Default.args,
   plottableData: [],
-};
-
-export const ErrorMessage = Template.bind({});
-ErrorMessage.args = {
-  ...Default.args,
-  errorMessage: 'Failed to load chart',
 };
