@@ -33,7 +33,6 @@ const defaultState = {
   createdAfter,
   createdBefore,
   stages: [],
-  features: {},
   activeStages,
   selectedValueStream,
   groupPath: currentGroup.fullPath,
@@ -61,24 +60,6 @@ describe('Value Stream Analytics actions', () => {
   afterEach(() => {
     mock.restore();
     state = { ...state, namespace: null };
-  });
-
-  it.each`
-    action           | type              | stateKey      | payload
-    ${'setFeatures'} | ${'SET_FEATURES'} | ${'features'} | ${{ someFeatureFlag: true }}
-  `('$action should set $stateKey with $payload and type $type', ({ action, type, payload }) => {
-    return testAction(
-      actions[action],
-      payload,
-      state,
-      [
-        {
-          type,
-          payload,
-        },
-      ],
-      [],
-    );
   });
 
   describe('with a project namespace', () => {

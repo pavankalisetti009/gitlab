@@ -4,8 +4,6 @@ import {
 } from '~/analytics/cycle_analytics/constants';
 
 export default () => ({
-  features: {},
-
   createdAfter: null,
   createdBefore: null,
   predefinedDateRange: null,
