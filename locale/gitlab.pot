@@ -1823,6 +1823,9 @@ msgstr ""
 msgid "(no user)"
 msgstr ""
 
+msgid "(open and assigned)"
+msgstr ""
+
 msgid "(open and unassigned)"
 msgstr ""
 
