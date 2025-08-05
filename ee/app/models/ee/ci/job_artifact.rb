@@ -87,7 +87,7 @@ module EE
           { verification_state_model_key => artifact.id, :partition_id => artifact.partition_id }
         end
 
-        verification_state_table_class.insert_all(rows)
+        verification_state_table_class.insert_all(rows, unique_by: %i[job_artifact_id partition_id])
       end
     end
 
