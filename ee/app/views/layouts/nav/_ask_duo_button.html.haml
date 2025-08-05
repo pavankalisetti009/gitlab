@@ -38,14 +38,17 @@
         %button{ class: 'js-ask-duo-hotspot gl-bg-transparent gl-border-none gl-p-0', aria: { label: 'Ask Duo hotspot button' } }
           = image_tag 'illustrations/hotspot.gif', size: 16, alt: 'Ask Duo hotspot image'
 
+  - duo_button_description = _('Open GitLab Duo Chat')
+  - duo_button_shortcut = 'd'
+  - duo_button_title = "#{duo_button_description} <kbd class='flat ml-1' aria-hidden=true>#{duo_button_shortcut}</kbd>"
   = render Pajamas::ButtonComponent.new(variant: :default,
     category: :secondary,
     icon: 'duo-chat',
     size: 'medium',
-    button_options: { class: 'enabled-button js-tanuki-bot-chat-toggle gl-hidden md:gl-inline', aria: { label: amazon_q_enabled ? duo_with_amazon_q_label : label }}) do
+    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle gl-hidden md:gl-inline', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title}) do
     = amazon_q_enabled ? duo_with_amazon_q_label : label
   = render Pajamas::ButtonComponent.new(variant: :default,
     category: :secondary,
     icon: 'duo-chat',
     size: 'medium',
-    button_options: { class: 'enabled-button js-tanuki-bot-chat-toggle md:gl-hidden', aria: { label: amazon_q_enabled ? duo_with_amazon_q_label : label }})
+    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle md:gl-hidden', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title})

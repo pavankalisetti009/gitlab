@@ -44025,6 +44025,9 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
+msgid "Open GitLab Duo Chat"
+msgstr ""
+
 msgid "Open Selection"
 msgstr ""
 
