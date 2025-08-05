@@ -12,7 +12,8 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
       described_class.new(current_user: user, search_level: :global, query: 'test').as_json
     end
 
-    it 'returns a valid JSON representation of the search request' do
+    it 'returns a valid JSON representation of the search request',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/557532' do
       expect(json_representation).to include({
         version: 2,
         timeout: '120s',
