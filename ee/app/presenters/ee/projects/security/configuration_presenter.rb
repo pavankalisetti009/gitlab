@@ -47,6 +47,12 @@ module EE
         def secret_detection_configuration_path
           project_security_configuration_secret_detection_path(project)
         end
+
+        override :license_configuration_source
+        def license_configuration_source
+          project_settings&.license_configuration_source&.upcase ||
+            ::Enums::Security::DEFAULT_CONFIGURATION_SOURCE.to_s.upcase
+        end
       end
     end
   end
