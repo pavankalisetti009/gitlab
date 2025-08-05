@@ -38226,6 +38226,8 @@ CREATE INDEX index_resource_label_events_on_label_id_and_action ON resource_labe
 
 CREATE INDEX index_resource_label_events_on_merge_request_id_label_id_action ON resource_label_events USING btree (merge_request_id, label_id, action);
 
+CREATE INDEX index_resource_label_events_on_namespace_id ON resource_label_events USING btree (namespace_id);
+
 CREATE INDEX index_resource_label_events_on_user_id ON resource_label_events USING btree (user_id);
 
 CREATE INDEX index_resource_link_events_on_child_work_item_id ON resource_link_events USING btree (child_work_item_id);
