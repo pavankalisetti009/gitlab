@@ -8,7 +8,10 @@ module Projects
       before_action :authorize_view_violations!
       before_action :check_violations_report_enabled!
 
-      def show; end
+      def show
+        @gfm_form = true
+        @noteable_type = 'Issue'
+      end
 
       private
 

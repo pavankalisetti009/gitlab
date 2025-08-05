@@ -17165,10 +17165,16 @@ msgstr ""
 msgid "ComplianceViolations|Your Compliance Violations CSV export for the group %{group_link} has been attached to this email."
 msgstr ""
 
+msgid "ComplianceViolation|Add existing issue"
+msgstr ""
+
 msgid "ComplianceViolation|Audit event captured"
 msgstr ""
 
 msgid "ComplianceViolation|Control"
+msgstr ""
+
+msgid "ComplianceViolation|Could not process %{issueReference}: %{errorMessage}."
 msgstr ""
 
 msgid "ComplianceViolation|Detected"
@@ -17192,13 +17198,22 @@ msgstr ""
 msgid "ComplianceViolation|Registered event IP"
 msgstr ""
 
+msgid "ComplianceViolation|Related issues"
+msgstr ""
+
 msgid "ComplianceViolation|Requirement"
 msgstr ""
 
 msgid "ComplianceViolation|Resolved"
 msgstr ""
 
+msgid "ComplianceViolation|Something went wrong while trying to unlink the issue. Please try again later."
+msgstr ""
+
 msgid "ComplianceViolation|Violation created based on associated framework"
+msgstr ""
+
+msgid "ComplianceViolation|invalid issue link or ID"
 msgstr ""
 
 msgid "Compliance|Framework deleted successfully"
