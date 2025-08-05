@@ -11,19 +11,18 @@ RSpec.shared_examples 'audit event for variable access' do |variable_type|
     let(:is_hidden_variable) { false }
     let(:is_masked_variable) { false }
 
-    it 'creates an audit event' do
-      expect do
-        make_request
-      end.to change { AuditEvent.count }.by(1)
+    it 'audits variable access' do
+      expected_audit_context = {
+        name: 'variable_viewed_api',
+        author: user,
+        scope: expected_entity,
+        target: audited_variable,
+        message: "CI/CD variable '#{audited_variable.key}' accessed with the API"
+      }
 
-      audit_event = AuditEvent.order(:id).last
-      expect(audit_event.details[:custom_message]).to eq(
-        "CI/CD variable '#{audited_variable.key}' accessed with the API"
-      )
-      expect(audit_event.details[:event_name]).to eq('variable_viewed_api')
-      expect(audit_event.details[:target_details]).to eq(audited_variable.key)
-      expect(audit_event.author_id).to eq(user.id)
-      expect(audit_event.entity_id).to eq(expected_entity_id)
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
+      make_request
     end
   end
 
@@ -31,19 +30,18 @@ RSpec.shared_examples 'audit event for variable access' do |variable_type|
     let(:is_hidden_variable) { true }
     let(:is_masked_variable) { true }
 
-    it 'creates an audit event with mention to hidden variable' do
-      expect do
-        make_request
-      end.to change { AuditEvent.count }.by(1)
+    it 'audits hidden variable access' do
+      expected_audit_context = {
+        name: 'variable_viewed_api',
+        author: user,
+        scope: expected_entity,
+        target: audited_variable,
+        message: "CI/CD variable '#{audited_variable.key}' accessed with the API (hidden variable, no value shown)"
+      }
 
-      audit_event = AuditEvent.order(:id).last
-      expect(audit_event.details[:custom_message]).to eq(
-        "CI/CD variable '#{audited_variable.key}' accessed with the API (hidden variable, no value shown)"
-      )
-      expect(audit_event.details[:event_name]).to eq('variable_viewed_api')
-      expect(audit_event.details[:target_details]).to eq(audited_variable.key)
-      expect(audit_event.author_id).to eq(user.id)
-      expect(audit_event.entity_id).to eq(expected_entity_id)
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
+      make_request
     end
   end
 end

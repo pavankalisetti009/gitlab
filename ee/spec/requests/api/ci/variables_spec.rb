@@ -15,7 +15,7 @@ RSpec.describe API::Ci::Variables, feature_category: :ci_variables do
   describe 'GET /projects/:id/variables/:key' do
     include_examples 'audit event for variable access', :ci_variable do
       let(:make_request) { get api("/projects/#{project.id}/variables/#{audited_variable.key}", user) }
-      let(:expected_entity_id) { project.id }
+      let(:expected_entity) { project }
       let(:variable_attributes) { { project: project, hidden: is_hidden_variable, masked: is_masked_variable } }
     end
   end
@@ -25,17 +25,18 @@ RSpec.describe API::Ci::Variables, feature_category: :ci_variables do
       post api("/projects/#{project.id}/variables", user), params: { key: 'new_variable', value: 'secret_value', protected: true }
     end
 
-    it 'logs audit event' do
-      expect { post_create }.to change(AuditEvent, :count).from(0).to(1)
-    end
+    it 'audits variable creation' do
+      expected_audit_context = {
+        name: 'ci_variable_created',
+        author: user,
+        scope: project,
+        target: an_instance_of(::Ci::Variable),
+        message: 'Added ci variable'
+      }
 
-    it 'logs variable creation' do
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
       post_create
-
-      audit_event = AuditEvent.last.present
-
-      expect(audit_event.action).to eq('Added ci variable')
-      expect(audit_event.target).to eq('new_variable')
     end
   end
 
@@ -46,17 +47,18 @@ RSpec.describe API::Ci::Variables, feature_category: :ci_variables do
       put api("/projects/#{project.id}/variables/#{variable.key}", user), params: { protected: true }
     end
 
-    it 'logs audit event' do
-      expect { put_update }.to change(AuditEvent, :count).from(0).to(1)
-    end
+    it 'audits variable protection update' do
+      expected_audit_context = {
+        name: 'ci_variable_updated',
+        author: user,
+        scope: project,
+        target: variable,
+        message: 'Changed variable protection from false to true'
+      }
 
-    it 'logs variable protection update' do
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
       put_update
-
-      audit_event = AuditEvent.last.present
-
-      expect(audit_event.action).to eq('Changed variable protection from false to true')
-      expect(audit_event.target).to eq(variable.key)
     end
   end
 
@@ -67,17 +69,22 @@ RSpec.describe API::Ci::Variables, feature_category: :ci_variables do
       delete api("/projects/#{project.id}/variables/#{variable.key}", user)
     end
 
-    it 'logs audit event' do
-      expect { delete_destroy }.to change(AuditEvent, :count).from(0).to(1)
-    end
+    it 'audits variable destruction' do
+      expected_audit_context = {
+        name: 'ci_variable_deleted',
+        author: user,
+        scope: project,
+        target: variable,
+        message: 'Removed ci variable',
+        additional_details: {
+          event_name: 'ci_variable_deleted',
+          remove: 'ci_variable'
+        }
+      }
 
-    it 'logs variable destruction' do
+      expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
+
       delete_destroy
-
-      audit_event = AuditEvent.last.present
-
-      expect(audit_event.action).to eq('Removed ci variable')
-      expect(audit_event.target).to eq(variable.key)
     end
   end
 end
