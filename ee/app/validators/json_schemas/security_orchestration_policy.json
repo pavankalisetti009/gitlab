@@ -81,7 +81,8 @@
           },
           "description": {
             "description": "Specifies the longer description of the policy.",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1000000
           },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
@@ -191,7 +192,8 @@
           },
           "description": {
             "description": "Specifies the longer description of the policy.",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1000000
           },
           "allowed_sources": {
             "description": "Specifies the projects or groups that can publish components.",
@@ -263,7 +265,8 @@
           },
           "description": {
             "description": "Specifies the longer description of the policy.",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1000000
           },
           "content": {
             "$ref": "#/$defs/pipeline_execution_content"
@@ -378,7 +381,8 @@
           },
           "description": {
             "description": "Specifies the longer description of the policy.",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1000000
           },
           "content": {
             "$ref": "#/$defs/pipeline_execution_content"
@@ -666,7 +670,8 @@
           },
           "description": {
             "description": "Specifies the longer description of the policy.",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1000000
           },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
@@ -1067,7 +1072,8 @@
           },
           "description": {
             "description": "Specifies the longer description of the policy.",
-            "type": "string"
+            "type": "string",
+            "maxLength": 1000000
           },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
