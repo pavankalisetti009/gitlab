@@ -36803,6 +36803,9 @@ msgstr ""
 msgid "LFS objects"
 msgstr ""
 
+msgid "LFS objects detected. Git supports adding a `.gitattributes` file in subdirectories, but GitLab only checks for this file in the root directory of the default branch. Dismiss this message if your LFS is configured in subdirectories, on a different branch, or is working correctly."
+msgstr ""
+
 msgid "LFSStatus|Disabled"
 msgstr ""
 
@@ -47556,9 +47559,6 @@ msgid "Popularity"
 msgstr ""
 
 msgid "Port"
-msgstr ""
-
-msgid "Possible LFS configuration issue. This project contains LFS objects but there is no .gitattributes file. You can ignore this message if you recently added a `.gitattributes` file."
 msgstr ""
 
 msgid "Possible to override in each project."
