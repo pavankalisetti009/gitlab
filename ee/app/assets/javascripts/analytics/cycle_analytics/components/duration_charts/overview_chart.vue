@@ -1,7 +1,6 @@
 <script>
 import { GlAreaChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
-import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
+import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { isNumeric } from '~/lib/utils/number_utils';
@@ -23,26 +22,15 @@ import NoDataAvailableState from '../no_data_available_state.vue';
 export default {
   name: 'OverviewChart',
   components: {
-    GlAlert,
     GlAreaChart,
     GlChartSeriesLabel,
     GlIcon,
     NoDataAvailableState,
-    ChartSkeletonLoader,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    isLoading: {
-      type: Boolean,
-      required: true,
-    },
-    errorMessage: {
-      type: String,
-      required: false,
-      default: '',
-    },
     plottableData: {
       type: Array,
       required: true,
@@ -58,10 +46,7 @@ export default {
   },
   computed: {
     hasData() {
-      return Boolean(
-        !this.isLoading &&
-          this.plottableData.some(({ data }) => data.some(([, metric]) => metric !== null)),
-      );
+      return this.plottableData.some(({ data }) => data.some(([, metric]) => metric !== null));
     },
     chartData() {
       const nonNullSeries = [];
@@ -182,8 +167,7 @@ export default {
 </script>
 
 <template>
-  <chart-skeleton-loader v-if="isLoading" size="md" class="gl-my-4 gl-py-4" />
-  <div v-else class="gl-flex gl-flex-col" data-testid="vsa-duration-overview-chart">
+  <div class="gl-flex gl-flex-col" data-testid="vsa-duration-overview-chart">
     <h4 class="gl-mt-0">
       {{ $options.i18n.title }}&nbsp;<gl-icon
         v-gl-tooltip.hover
@@ -218,9 +202,6 @@ export default {
         </div>
       </template>
     </gl-area-chart>
-    <gl-alert v-else-if="errorMessage" variant="info" :dismissible="false" class="gl-mt-3">
-      {{ errorMessage }}
-    </gl-alert>
     <no-data-available-state v-else />
   </div>
 </template>
