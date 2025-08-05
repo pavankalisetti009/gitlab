@@ -38,6 +38,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('DurationChartLoader', () => {
   let wrapper;
   let mock;
+  let store;
   let valueStreamStageMetricsQueryHandler;
 
   const [valueStream] = valueStreams;
@@ -79,13 +80,8 @@ describe('DurationChartLoader', () => {
     ...gqlTransformedFilters,
   });
 
-  const createWrapper = ({
-    isOverviewStageSelected = true,
-    isProjectNamespace = false,
-    features = {},
-    valueStreamStageMetricsResponseHandler,
-  } = {}) => {
-    const store = new Vuex.Store({
+  const createStore = ({ isOverviewStageSelected, isProjectNamespace }) =>
+    new Vuex.Store({
       state: {
         selectedStage,
         createdAfter,
@@ -111,9 +107,17 @@ describe('DurationChartLoader', () => {
       },
     });
 
+  const createWrapper = ({
+    isOverviewStageSelected = true,
+    isProjectNamespace = false,
+    features = {},
+    valueStreamStageMetricsResponseHandler,
+  } = {}) => {
     const apolloProvider = createMockApollo([
       [getValueStreamStageMetricsQuery, valueStreamStageMetricsResponseHandler],
     ]);
+
+    store = createStore({ isOverviewStageSelected, isProjectNamespace });
 
     wrapper = shallowMount(DurationChartLoader, {
       store,
@@ -240,7 +244,7 @@ describe('DurationChartLoader', () => {
           const [, newStage] = stages;
 
           beforeEach(async () => {
-            wrapper.vm.$store.commit('setSelectedStage', newStage);
+            store.commit('setSelectedStage', newStage);
 
             await waitForPromises();
           });
@@ -290,7 +294,7 @@ describe('DurationChartLoader', () => {
         const [, newStage] = stages;
 
         beforeEach(() => {
-          wrapper.vm.$store.commit('setSelectedStage', newStage);
+          store.commit('setSelectedStage', newStage);
         });
 
         it('clears the error alert', () => {
@@ -372,7 +376,7 @@ describe('DurationChartLoader', () => {
         const [, newStage] = stages;
 
         beforeEach(() => {
-          wrapper.vm.$store.commit('setSelectedStage', newStage);
+          store.commit('setSelectedStage', newStage);
         });
 
         it('clears the error alert', () => {
@@ -512,7 +516,7 @@ describe('DurationChartLoader', () => {
 
       it('when the selectedStage changes', async () => {
         const [, newStage] = stages;
-        wrapper.vm.$store.commit('setSelectedStage', newStage);
+        store.commit('setSelectedStage', newStage);
 
         await waitForPromises();
 
@@ -556,7 +560,7 @@ describe('DurationChartLoader', () => {
           const [, newStage] = stages;
 
           beforeEach(() => {
-            wrapper.vm.$store.commit('setSelectedStage', newStage);
+            store.commit('setSelectedStage', newStage);
           });
 
           it('clears the error alert', () => {
