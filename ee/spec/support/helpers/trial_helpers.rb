@@ -55,6 +55,24 @@ module TrialHelpers
     stub_apply_trial(user, namespace_id: group.id, success: true, extra_params: extra_params)
   end
 
+  def expect_apply_trial_async(user, namespace: nil, extra_params: {})
+    trial_user_information = extra_params.merge({
+      namespace_id: be_a(Integer),
+      gitlab_com_trial: true,
+      sync_to_gl: true,
+      namespace: anything
+    })
+
+    if namespace.present?
+      trial_user_information[:namespace_id] = namespace.id
+      trial_user_information[:namespace] = namespace.slice(:id, :name, :path, :kind, :trial_ends_on)
+      trial_user_information[:namespace][:plan] = namespace.actual_plan_name
+    end
+
+    expect(GitlabSubscriptions::Trials::ApplyTrialWorker)
+      .to receive(:perform_async).with(user.id, trial_user_information.deep_stringify_keys).and_call_original
+  end
+
   def expect_apply_trial_fail(user, group, extra_params: {})
     stub_apply_trial(user, namespace_id: group.id, success: false, extra_params: extra_params)
   end
