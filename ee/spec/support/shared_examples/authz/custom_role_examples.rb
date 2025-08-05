@@ -249,7 +249,7 @@ RSpec.shared_examples 'tracking custom role action' do |action|
   it 'tracks internal event and increments the metrics', :clean_gitlab_redis_shared_state do
     event_name = "#{action}_custom_role"
 
-    expect { result }.to trigger_internal_events(event_name).with(
+    expect { subject }.to trigger_internal_events(event_name).with(
       user: user,
       namespace: namespace,
       project: nil
