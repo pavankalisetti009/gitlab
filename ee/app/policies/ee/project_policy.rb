@@ -663,11 +663,18 @@ module EE
         prevent :destroy_iteration
       end
 
-      rule { dependency_scanning_enabled & can?(:download_code) }.enable :read_dependency
+      rule { auditor | can?(:reporter_access) }.policy do
+        enable :read_dependency
+        enable :read_licenses
+        enable :read_software_license_policy
+      end
 
-      rule { license_scanning_enabled & can?(:download_code) }.enable :read_licenses
+      rule { ~dependency_scanning_enabled }.prevent :read_dependency
 
-      rule { can?(:read_licenses) }.enable :read_software_license_policy
+      rule { ~license_scanning_enabled }.policy do
+        prevent :read_licenses
+        prevent :read_software_license_policy
+      end
 
       rule { repository_mirrors_enabled & ((mirror_available & can?(:admin_project)) | admin) }.enable :admin_mirror
 
@@ -986,9 +993,10 @@ module EE
         enable :read_vulnerability
       end
 
-      rule { custom_role_enables_read_dependency & dependency_scanning_enabled }.policy do
+      rule { custom_role_enables_read_dependency }.policy do
         enable :access_security_and_compliance
         enable :read_dependency
+        enable :read_licenses
       end
 
       rule { custom_role_enables_admin_compliance_framework }.policy do
