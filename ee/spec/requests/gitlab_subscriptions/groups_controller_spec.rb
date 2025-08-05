@@ -123,7 +123,6 @@ RSpec.describe GitlabSubscriptions::GroupsController, feature_category: :subscri
     context 'with an authenticated user' do
       before do
         sign_in(user)
-        current_organization.users << user
       end
 
       context 'with valid params' do

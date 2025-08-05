@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::StageAggregatorService, feature_category: :value_stream_management do
-  let_it_be(:root_group) { create(:group, :with_organization) }
+  let_it_be(:root_group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: root_group, organization_id: root_group.organization_id) }
   let_it_be(:project) { create(:project, namespace: subgroup) }
   let(:stage) { create(:cycle_analytics_stage, namespace: subgroup) }

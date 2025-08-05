@@ -6,7 +6,7 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
   include ExclusiveLeaseHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:namespace) { create(:group, :with_organization) }
+  let_it_be(:namespace) { create(:group) }
 
   let(:lease_key) { "gitlab_subscriptions:members_activity_event:#{namespace.id}:#{user.id}" }
   let(:instance) { described_class.new(user, namespace) }

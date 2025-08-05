@@ -1866,7 +1866,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         end
 
         context 'when the subgroup "Membership lock" is disabled' do
-          let(:subgroup) { create(:group) }
+          let(:subgroup) { create(:group, organization: organization) }
 
           it 'the subgroup "Membership lock" not changed' do
             subgroup.parent = root_group
@@ -1892,7 +1892,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         end
 
         context 'when the subgroup "Membership lock" is disabled' do
-          let(:subgroup) { create(:group) }
+          let(:subgroup) { create(:group, organization: organization) }
 
           it 'the subgroup "Membership lock" does not change' do
             subgroup.parent = root_group
