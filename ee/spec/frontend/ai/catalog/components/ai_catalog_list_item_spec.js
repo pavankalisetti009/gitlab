@@ -1,69 +1,105 @@
-import { GlBadge, GlLink, GlMarkdown, GlAvatar, GlDisclosureDropdownItem } from '@gitlab/ui';
-
+import { GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
+import {
+  AI_CATALOG_AGENTS_RUN_ROUTE,
+  AI_CATALOG_AGENTS_EDIT_ROUTE,
+  AI_CATALOG_SHOW_QUERY_PARAM,
+} from 'ee/ai/catalog/router/constants';
+import {
+  VISIBILITY_TYPE_ICON,
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+} from '~/visibility_level/constants';
+import ListItem from '~/vue_shared/components/resource_lists/list_item.vue';
 
 describe('AiCatalogListItem', () => {
   let wrapper;
 
+  const mockId = 1;
+
   const mockItem = {
-    id: 'gid://gitlab/Ai::Catalog::Item/1',
+    id: `gid://gitlab/Ai::Catalog::Item/${mockId}`,
     name: 'Test AI Agent',
     itemType: 'AGENT',
     description: 'A helpful AI assistant for testing purposes',
+    public: false,
   };
+
+  const mockUrl = '/agent/1';
+
+  const mockRouter = {
+    resolve: jest.fn().mockReturnValue({ href: `/agent/${mockId}` }),
+    push: jest.fn(),
+  };
+
+  const publicTooltip = 'Public Item';
+  const privateTooltip = 'Private Item';
 
   const createComponent = (item = mockItem) => {
     wrapper = shallowMountExtended(AiCatalogListItem, {
       propsData: {
         item,
+        itemTypeConfig: {
+          actionItems: (itemId) => [
+            {
+              text: 'Test Run',
+              to: {
+                name: AI_CATALOG_AGENTS_RUN_ROUTE,
+                params: { id: itemId },
+              },
+              icon: 'rocket-launch',
+            },
+            {
+              text: 'Edit',
+              to: {
+                name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+                params: { id: itemId },
+              },
+              icon: 'pencil',
+            },
+          ],
+          visibilityTooltip: {
+            public: publicTooltip,
+            private: privateTooltip,
+          },
+        },
       },
       mocks: {
         $route: {
           path: '/agents/:id',
         },
+        $router: mockRouter,
       },
     });
   };
 
-  const findAvatar = () => wrapper.findComponent(GlAvatar);
-  const findBadges = () => wrapper.findAllComponents(GlBadge);
-  const findTypeBadge = () => findBadges().at(0);
-  const findMarkdown = () => wrapper.findComponent(GlMarkdown);
+  const findListItem = () => wrapper.findComponent(ListItem);
+  const findIcon = () => wrapper.findComponent(GlIcon);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
-  const findLink = () => wrapper.findComponent(GlLink);
 
   beforeEach(() => {
     createComponent();
   });
 
   describe('component rendering', () => {
-    it('renders the list item container with correct attributes', () => {
-      const listItem = wrapper.findByTestId('ai-catalog-list-item');
+    it('renders the list item container with correct properties', () => {
+      const listItem = findListItem();
+      const expectedResource = {
+        ...mockItem,
+        id: mockId,
+        avatarLabel: mockItem.name,
+        avatarUrl: null,
+        descriptionHtml: mockItem.description,
+        fullName: mockItem.name,
+        relativeWebUrl: mockUrl,
+      };
 
       expect(listItem.exists()).toBe(true);
-      expect(listItem.element.tagName).toBe('LI');
+      expect(listItem.props('resource')).toEqual(expectedResource);
     });
 
-    it('renders avatar with correct props', () => {
-      const avatar = findAvatar();
-
-      expect(avatar.exists()).toBe(true);
-      expect(avatar.props('alt')).toBe('Test AI Agent avatar');
-      expect(avatar.props('entityName')).toBe('Test AI Agent');
-      expect(avatar.props('size')).toBe(48);
-    });
-
-    it('displays type badge with correct variant and text', () => {
-      const typeBadge = findTypeBadge();
-
-      expect(typeBadge.exists()).toBe(true);
-      expect(typeBadge.props('variant')).toBe('neutral');
-      expect(typeBadge.text()).toBe('Agent');
-    });
-
-    it('displays three actions in a disclosure dropdown', () => {
+    it('renders the actions passed in a prop in a disclosure dropdown', () => {
       const items = findDisclosureDropdownItems();
 
       expect(items).toHaveLength(3);
@@ -73,25 +109,42 @@ describe('AiCatalogListItem', () => {
       expect(items.at(2).attributes('variant')).toBe('danger');
     });
 
-    it('displays description', () => {
-      const markdown = findMarkdown();
+    describe('when the item is private', () => {
+      it('renders the private icon with a tooltip', () => {
+        const icon = findIcon();
 
-      expect(markdown.exists()).toBe(true);
-      expect(markdown.text()).toBe('A helpful AI assistant for testing purposes');
-      expect(markdown.props('compact')).toBe(true);
+        expect(icon.props('name')).toBe(VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PRIVATE_STRING]);
+        expect(icon.attributes('title')).toBe(privateTooltip);
+      });
     });
 
-    it('emits select-item event when clicking agent name', () => {
-      const link = findLink();
-
-      expect(link.exists()).toBe(true);
-      expect(link.text()).toBe('Test AI Agent');
-      expect(link.props('to')).toEqual({
-        query: { show: 1 },
+    describe('when the item is public', () => {
+      beforeEach(() => {
+        createComponent({ ...mockItem, public: true });
       });
 
-      link.vm.$emit('click');
-      expect(wrapper.emitted('select-item')).toHaveLength(1);
+      it('renders the public icon with a tooltip', () => {
+        const icon = findIcon();
+
+        expect(icon.props('name')).toBe(VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PUBLIC_STRING]);
+        expect(icon.attributes('title')).toBe(publicTooltip);
+      });
+    });
+  });
+
+  describe('on list item click', () => {
+    const mockEvent = {
+      preventDefault: jest.fn(),
+    };
+
+    it('emits click event', () => {
+      const listItem = findListItem();
+
+      listItem.vm.$emit('click-avatar', mockEvent);
+
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        query: { [AI_CATALOG_SHOW_QUERY_PARAM]: mockId },
+      });
     });
   });
 
