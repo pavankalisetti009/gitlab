@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'getting project flow metrics', feature_category: :value_stream_management do
   include GraphqlHelpers
 
-  let_it_be(:group) { create(:group, :with_organization) }
+  let_it_be(:group) { create(:group) }
   let(:full_path) { project1.full_path }
   let(:context) { :project }
   let_it_be(:project1) { create(:project, :repository, namespace: group) }

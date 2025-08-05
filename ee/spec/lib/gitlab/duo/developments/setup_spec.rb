@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, feature_category: :duo_chat do
   include RakeHelpers
 
-  let!(:group) { create(:group, :with_organization, path: 'gitlab-duo') }
+  let!(:group) { create(:group, path: 'gitlab-duo') }
   let!(:project) { create(:project, group: group) }
   let!(:user) { create(:user, maintainer_of: project, username: 'root') }
 

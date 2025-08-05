@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::StageFinder do
-  let_it_be(:group) { create(:group, :with_organization) }
+  let_it_be(:group) { create(:group) }
 
   let(:stage_id) { { id: Gitlab::Analytics::CycleAnalytics::DefaultStages.names.first } }
 

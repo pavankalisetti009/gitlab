@@ -5,8 +5,8 @@ RSpec.describe 'Value stream analytics charts', :js, feature_category: :value_st
   include CycleAnalyticsHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, :with_organization, name: 'CA-test-group', owners: user) }
-  let_it_be(:group2) { create(:group, :with_organization, name: 'CA-bad-test-group') }
+  let_it_be(:group) { create(:group, name: 'CA-test-group', owners: user) }
+  let_it_be(:group2) { create(:group, name: 'CA-bad-test-group') }
   let_it_be(:project) { create(:project, :repository, namespace: group, name: 'Cool fun project') }
   let_it_be(:group_label1) { create(:group_label, group: group) }
   let_it_be(:group_label2) { create(:group_label, group: group) }
