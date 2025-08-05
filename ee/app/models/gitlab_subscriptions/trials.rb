@@ -4,6 +4,7 @@ module GitlabSubscriptions
   module Trials
     FREE_TRIAL_TYPE = 'ultimate_with_gitlab_duo_enterprise'
     PREMIUM_TRIAL_TYPE = 'ultimate_on_premium_with_gitlab_duo_enterprise'
+    DUO_ENTERPRISE_TRIAL_TYPE = 'gitlab_duo_enterprise'
     TRIAL_TYPES = [FREE_TRIAL_TYPE, PREMIUM_TRIAL_TYPE].freeze
 
     def self.single_eligible_namespace?(eligible_namespaces)

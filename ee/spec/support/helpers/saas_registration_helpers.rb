@@ -127,6 +127,8 @@ module SaasRegistrationHelpers
   end
 
   def user_signs_up_through_trial_with_sso(params = {}, provider: 'google_oauth2', name: 'Registering User')
+    expect_to_receive_trial_duration
+
     user_signs_up_with_sso({}, provider: provider, name: name) do
       visit new_trial_registration_path(params)
 
@@ -143,6 +145,8 @@ module SaasRegistrationHelpers
   end
 
   def trial_registration_sign_up(params = {})
+    expect_to_receive_trial_duration
+
     visit new_trial_registration_path(params)
 
     expect_to_be_on_trial_user_registration
@@ -525,6 +529,12 @@ module SaasRegistrationHelpers
 
   def expect_not_to_send_iterable_request
     expect(::Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
+  end
+
+  def expect_to_receive_trial_duration
+    allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
+      expect(instance).to receive(:execute).and_return(60)
+    end
   end
 end
 

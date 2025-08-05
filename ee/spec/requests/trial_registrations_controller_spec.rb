@@ -26,6 +26,14 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
     end
 
     context 'when user is not authenticated' do
+      let(:trial_duration) { 60 }
+
+      before do
+        allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
+          allow(instance).to receive(:execute).and_return(trial_duration)
+        end
+      end
+
       it { is_expected.to have_gitlab_http_status(:ok) }
 
       context 'with tracking' do
