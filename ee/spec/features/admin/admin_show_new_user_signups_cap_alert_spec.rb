@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'displays new user signups cap alert', :js, feature_category: :acquisition, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/551896' do
+RSpec.describe 'displays new user signups cap alert', :js, feature_category: :acquisition do
   let_it_be(:admin) { create(:admin) }
 
   let(:help_page_href) { help_page_path('administration/settings/sign_up_restrictions.md') }
