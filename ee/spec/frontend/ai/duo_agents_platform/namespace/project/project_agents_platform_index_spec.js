@@ -1,0 +1,145 @@
+import { shallowMount } from '@vue/test-utils';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import ProjectAgentsPlatformIndex from 'ee/ai/duo_agents_platform/namespace/project/project_agents_platform_index.vue';
+import getProjectAgentFlows from 'ee/ai/duo_agents_platform/graphql/queries/get_agent_flows.query.graphql';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import DuoAgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agents_platform_index.vue';
+import { createAlert } from '~/alert';
+import { mockAgentFlowsResponse } from '../../../mocks';
+
+Vue.use(VueApollo);
+jest.mock('~/alert');
+
+describe('ProjectAgentsPlatformIndex', () => {
+  let wrapper;
+  const projectPath = 'some/project/path';
+
+  const getAgentFlowsHandler = jest.fn();
+  const handlers = [[getProjectAgentFlows, getAgentFlowsHandler]];
+
+  const createWrapper = () => {
+    wrapper = shallowMount(ProjectAgentsPlatformIndex, {
+      apolloProvider: createMockApollo(handlers),
+      provide: {
+        projectPath,
+      },
+    });
+
+    return waitForPromises();
+  };
+
+  const findIndexComponent = () => wrapper.findComponent(DuoAgentsPlatformIndex);
+
+  beforeEach(() => {
+    getAgentFlowsHandler.mockResolvedValue(mockAgentFlowsResponse);
+  });
+
+  it('passes correct props to DuoAgentsPlatformIndex', async () => {
+    await createWrapper();
+
+    expect(findIndexComponent().props()).toMatchObject({
+      isLoadingWorkflows: expect.any(Boolean),
+      workflows: expect.any(Array),
+      workflowsPageInfo: expect.any(Object),
+      workflowQuery: expect.objectContaining({
+        refetch: expect.any(Function),
+      }),
+    });
+  });
+
+  describe('Apollo queries', () => {
+    describe('workflows query', () => {
+      describe('when loading', () => {
+        beforeEach(() => {
+          // not awaiting simulates loading
+          createWrapper();
+        });
+
+        it('passes the loading prop true', () => {
+          expect(findIndexComponent().props('isLoadingWorkflows')).toBe(true);
+        });
+      });
+
+      describe('on successful fetch', () => {
+        beforeEach(async () => {
+          await createWrapper();
+        });
+
+        it('fetches workflows data', () => {
+          expect(getAgentFlowsHandler).toHaveBeenCalledTimes(1);
+          expect(getAgentFlowsHandler).toHaveBeenCalledWith({
+            projectPath,
+            before: null,
+            first: 20,
+            last: null,
+          });
+        });
+
+        it('passes workflows to DuoAgentsPlatformIndex component', () => {
+          const expectedWorkflows =
+            mockAgentFlowsResponse.data.project.duoWorkflowWorkflows.edges.map((w) => w.node);
+
+          expect(findIndexComponent().props('workflows')).toEqual(expectedWorkflows);
+        });
+      });
+
+      describe('when workflows query fails', () => {
+        const errorMessage = 'Network error';
+
+        beforeEach(async () => {
+          getAgentFlowsHandler.mockRejectedValue(new Error(errorMessage));
+          await createWrapper();
+        });
+
+        it('calls createAlert with the error message', () => {
+          expect(createAlert).toHaveBeenCalledWith({
+            message: errorMessage,
+            captureError: true,
+          });
+        });
+
+        it('passes empty array to DuoAgentsPlatformIndex component', () => {
+          expect(findIndexComponent().props('workflows')).toEqual([]);
+        });
+      });
+
+      describe('when workflows query returns empty edges', () => {
+        beforeEach(async () => {
+          getAgentFlowsHandler.mockResolvedValue({
+            data: {
+              project: {
+                id: 'gid://gitlab/Project/1',
+                duoWorkflowWorkflows: {
+                  pageInfo: {
+                    startCursor: null,
+                    endCursor: null,
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                  },
+                  edges: [],
+                },
+              },
+            },
+          });
+          await createWrapper();
+        });
+
+        it('passes empty array to DuoAgentsPlatformIndex component', () => {
+          expect(findIndexComponent().props('workflows')).toEqual([]);
+        });
+
+        it('passes correct page info to DuoAgentsPlatformIndex component', () => {
+          const expectedPageInfo = {
+            startCursor: null,
+            endCursor: null,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          };
+          expect(findIndexComponent().props('workflowsPageInfo')).toEqual(expectedPageInfo);
+        });
+      });
+    });
+  });
+});

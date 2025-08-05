@@ -1,4 +1,5 @@
 import { createRouter } from 'ee/ai/duo_agents_platform/router';
+import * as utils from 'ee/ai/duo_agents_platform/router/utils';
 
 describe('Agents Platform Router', () => {
   let router;
@@ -6,7 +7,7 @@ describe('Agents Platform Router', () => {
 
   describe('when router is created', () => {
     beforeEach(() => {
-      router = createRouter(baseRoute);
+      router = createRouter(baseRoute, 'project');
     });
 
     it('configures router with correct base path', () => {
@@ -19,7 +20,7 @@ describe('Agents Platform Router', () => {
     const customBase = '/custom-project/-/agents';
 
     beforeEach(() => {
-      router = createRouter(customBase);
+      router = createRouter(customBase, 'group');
     });
 
     it('uses the custom base path', () => {
@@ -28,9 +29,20 @@ describe('Agents Platform Router', () => {
     });
   });
 
+  describe('namespace logic', () => {
+    beforeEach(() => {
+      jest.spyOn(utils, 'getNamespaceIndexComponent');
+      router = createRouter(baseRoute, 'group');
+    });
+
+    it('calls getNamespaceIndexComponent with the namespace', () => {
+      expect(utils.getNamespaceIndexComponent).toHaveBeenCalledWith('group');
+    });
+  });
+
   describe('catchall redirect', () => {
     it('adds the * redirect path as the last route', () => {
-      router = createRouter(baseRoute);
+      router = createRouter(baseRoute, 'project');
       const { routes } = router.options;
       const lastRoute = routes[routes.length - 1];
 

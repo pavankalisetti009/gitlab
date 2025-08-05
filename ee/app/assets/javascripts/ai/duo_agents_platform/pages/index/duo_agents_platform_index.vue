@@ -1,9 +1,6 @@
 <script>
 import { GlButton, GlLoadingIcon } from '@gitlab/ui';
-import { s__ } from '~/locale';
-import { createAlert } from '~/alert';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
-import { getAgentFlows } from '../../graphql/queries/get_agent_flows.query.graphql';
 import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
 import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
 
@@ -14,47 +11,29 @@ export default {
     GlLoadingIcon,
     AgentFlowList,
   },
-  inject: ['emptyStateIllustrationPath', 'projectPath'],
-  data() {
-    return {
-      workflows: [],
-      workflowsPageInfo: {},
-    };
-  },
-  apollo: {
-    workflows: {
-      query: getAgentFlows,
-      variables() {
-        return {
-          projectPath: this.projectPath,
-          first: 20,
-          before: null,
-          last: null,
-        };
-      },
-      update(data) {
-        return data?.project?.duoWorkflowWorkflows?.edges?.map((w) => w.node) || [];
-      },
-      result({ data }) {
-        this.workflowsPageInfo = data?.project?.duoWorkflowWorkflows?.pageInfo || {};
-      },
-      error(error) {
-        createAlert({
-          message: error.message || s__('DuoAgentsPlatform|Failed to fetch workflows'),
-          captureError: true,
-        });
-      },
+  inject: ['emptyStateIllustrationPath'],
+  props: {
+    workflowQuery: {
+      required: true,
+      type: Object,
     },
-  },
-  computed: {
-    isLoadingWorkflows() {
-      return this.$apollo.queries.workflows.loading;
+    workflows: {
+      required: true,
+      type: Array,
+    },
+    workflowsPageInfo: {
+      required: true,
+      type: Object,
+    },
+    isLoadingWorkflows: {
+      required: true,
+      type: Boolean,
     },
   },
   methods: {
     handleNextPage() {
-      this.$apollo.queries.workflows.refetch({
-        projectPath: this.projectPath,
+      this.workflowQuery.refetch({
+        ...this.workflowQuery.variables,
         before: null,
         after: this.workflowsPageInfo.endCursor,
         first: 20,
@@ -62,8 +41,8 @@ export default {
       });
     },
     handlePrevPage() {
-      this.$apollo.queries.workflows.refetch({
-        projectPath: this.projectPath,
+      this.workflowQuery.refetch({
+        ...this.workflowQuery.variables,
         after: null,
         before: this.workflowsPageInfo.startCursor,
         first: null,
