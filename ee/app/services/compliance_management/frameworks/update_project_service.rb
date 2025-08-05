@@ -35,7 +35,7 @@ module ComplianceManagement
       attr_reader :project, :current_user, :frameworks
 
       def add_framework_setting(framework)
-        return unless project.root_namespace.self_and_descendants_ids.include?(framework.namespace_id)
+        return unless project_is_in_root_or_csp_namespace(framework)
 
         framework_project_setting = ComplianceManagement::ComplianceFramework::ProjectSettings.new(project: project,
           compliance_management_framework: framework)
@@ -52,6 +52,11 @@ module ComplianceManagement
         )
 
         track_event(::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:added], framework)
+      end
+
+      def project_is_in_root_or_csp_namespace(framework)
+        project.root_namespace.self_and_descendants_ids.include?(framework.namespace_id) ||
+          (project.csp_namespace && project.csp_namespace.self_and_descendants_ids.include?(framework.namespace_id))
       end
 
       def remove_framework_setting(framework)
