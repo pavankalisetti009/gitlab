@@ -1,3 +1,5 @@
+import { AGENT_PLATFORM_PROJECT_PAGE } from '../constants';
+import ProjectAgentsPlatformIndex from '../namespace/project/project_agents_platform_index.vue';
 import { updateActiveNavigation } from './dom_utils';
 
 export const extractNavScopeFromRoute = (route) => {
@@ -15,4 +17,16 @@ export const activeNavigationWatcher = (to, from, next) => {
   }
 
   next();
+};
+
+export const getNamespaceIndexComponent = (namespace) => {
+  if (!namespace) {
+    throw new Error(`The namespace argument must be passed to the Vue Router`);
+  }
+
+  const componentMappings = {
+    [AGENT_PLATFORM_PROJECT_PAGE]: ProjectAgentsPlatformIndex,
+  };
+
+  return componentMappings[namespace];
 };
