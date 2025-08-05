@@ -7,11 +7,13 @@ RSpec.describe Security::SecretDetection::TokenVerificationRequestService, featu
   let_it_be(:project) { create(:project) }
 
   let(:finding) do
-    build_stubbed(:vulnerabilities_finding,
+    create(:vulnerabilities_finding,
       project: project,
       report_type: 'secret_detection',
       raw_metadata: Gitlab::Json.dump(finding_metadata))
   end
+
+  let!(:token_status) { create(:finding_token_status, finding: finding) }
 
   let(:finding_metadata) do
     {
@@ -25,7 +27,6 @@ RSpec.describe Security::SecretDetection::TokenVerificationRequestService, featu
   let(:service) { described_class.new(user, finding) }
   let(:sdrs_url) { 'https://sdrs.example.com' }
   let(:jwt_token) { 'valid.jwt.token' }
-  let(:token_status) { instance_double(Vulnerabilities::FindingTokenStatus) }
 
   before do
     stub_licensed_features(secret_detection: true)
@@ -38,9 +39,6 @@ RSpec.describe Security::SecretDetection::TokenVerificationRequestService, featu
     allow(Ability).to receive(:allowed?).with(user, :read_vulnerability, project).and_return(true)
     allow(::Authz::SdrsAuthenticationService)
       .to receive(:generate_token).and_return(jwt_token)
-
-    allow(finding).to receive(:finding_token_status).and_return(token_status)
-    allow(token_status).to receive(:update!)
   end
 
   describe '#execute' do

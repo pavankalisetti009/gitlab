@@ -3814,8 +3814,18 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: security_secret_detection_update_token_status
-  :worker_name: Security::SecretDetection::UpdateTokenStatusWorker
+- :name: security_secret_detection_gitlab_token_verification
+  :worker_name: Security::SecretDetection::GitlabTokenVerificationWorker
+  :feature_category: :secret_detection
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_secret_detection_partner_token_verification
+  :worker_name: Security::SecretDetection::PartnerTokenVerificationWorker
   :feature_category: :secret_detection
   :has_external_dependencies: false
   :urgency: :low

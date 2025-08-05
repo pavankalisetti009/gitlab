@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::SecretDetection::UpdateTokenStatusWorker, feature_category: :secret_detection do
+RSpec.describe Security::SecretDetection::GitlabTokenVerificationWorker, feature_category: :secret_detection do
   describe '#perform' do
     subject(:perform) { described_class.new.perform(pipeline.id) }
 
