@@ -1,11 +1,9 @@
 import VueApollo from 'vue-apollo';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import { GlAlert } from '@gitlab/ui';
 
-import { updateHistory, removeParams } from '~/lib/utils/url_utility';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import setWindowLocation from 'helpers/set_window_location_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
@@ -14,7 +12,6 @@ import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
-import { AI_CATALOG_SHOW_QUERY_PARAM } from 'ee/ai/catalog/router/constants';
 import {
   mockAgents,
   mockCatalogItemsResponse,
@@ -37,13 +34,17 @@ describe('AiCatalogAgents', () => {
   let wrapper;
   let mockApollo;
 
+  const mockRouter = {
+    push: jest.fn(),
+  };
+
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
   const deleteCatalogItemMutationHandler = jest.fn();
   const mockToast = {
     show: jest.fn(),
   };
 
-  const createComponent = () => {
+  const createComponent = ({ $route = {} } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
       [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
@@ -53,6 +54,8 @@ describe('AiCatalogAgents', () => {
       apolloProvider: mockApollo,
       mocks: {
         $toast: mockToast,
+        $router: mockRouter,
+        $route,
       },
     });
 
@@ -123,57 +126,37 @@ describe('AiCatalogAgents', () => {
     });
   });
 
-  describe('on selecting an agent', () => {
-    beforeEach(async () => {
-      await createComponent();
-
-      findAiCatalogList().vm.$emit('select-item', mockAgents[0]);
-      return nextTick();
-    });
-
-    it('opens item drawer', () => {
-      expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
-    });
-
-    it('selects active item', () => {
-      expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
-    });
-
-    describe('when closing the drawer', () => {
-      beforeEach(() => {
-        findAiCatalogItemDrawer().vm.$emit('close');
-      });
-
-      it('closes the drawer on drawer `close` event', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-      });
-
-      it('removes active agent and updates URL', () => {
-        expect(findAiCatalogItemDrawer().props('activeItem')).toBe(null);
-
-        expect(updateHistory).toHaveBeenCalled();
-        expect(removeParams).toHaveBeenCalledWith([AI_CATALOG_SHOW_QUERY_PARAM]);
-      });
-    });
-  });
-
   describe('when linking directly to an agent via URL', () => {
     describe('when item id is found in list', () => {
       beforeEach(async () => {
-        setWindowLocation('?show=1');
-        await createComponent();
+        await createComponent({ $route: { query: { show: '1' } } });
       });
 
       it('opens the drawer and passes activeItem as prop', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
         expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
       });
+
+      describe('when closing the drawer', () => {
+        beforeEach(() => {
+          findAiCatalogItemDrawer().vm.$emit('close');
+        });
+
+        it('closes the drawer on drawer `close` event', () => {
+          expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+        });
+
+        it('removes active agent and updates URL', () => {
+          expect(findAiCatalogItemDrawer().props('activeItem')).toBe(null);
+
+          expect(mockRouter.push.mock.calls[0][0].query.show).toBeUndefined();
+        });
+      });
     });
 
     describe('when item id is not found in list', () => {
       beforeEach(async () => {
-        setWindowLocation('?show=98');
-        await createComponent();
+        await createComponent({ $route: { query: { show: '100' } } });
       });
 
       it('does not open the drawer', () => {

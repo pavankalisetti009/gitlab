@@ -1,7 +1,12 @@
 <script>
+import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
-import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
+import {
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+} from '~/visibility_level/constants';
+import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from 'ee/ai/catalog/constants';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
@@ -33,9 +38,29 @@ export default {
     isLoading() {
       return this.$apollo.queries.aiCatalogFlows.loading;
     },
+    itemTypeConfig() {
+      return {
+        actionItems: (itemId) => [
+          {
+            text: s__('AICatalog|Edit'),
+            to: {
+              name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+              params: { id: itemId },
+            },
+            icon: 'pencil',
+          },
+        ],
+        visibilityTooltip: {
+          [VISIBILITY_LEVEL_PUBLIC_STRING]:
+            FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+          [VISIBILITY_LEVEL_PRIVATE_STRING]:
+            FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+        },
+      };
+    },
   },
   watch: {
-    '$route.params.show': {
+    '$route.query.show': {
       handler() {
         this.checkDrawerParams();
       },
@@ -47,20 +72,21 @@ export default {
     },
     closeDrawer() {
       this.activeItem = null;
-      updateHistory({
-        url: removeParams([AI_CATALOG_SHOW_QUERY_PARAM]),
+      const { show, ...otherQuery } = this.$route.query;
+
+      this.$router.push({
+        path: this.$route.path,
+        query: otherQuery,
       });
     },
-    selectItem(item) {
-      this.activeItem = item;
-    },
     checkDrawerParams() {
-      const urlItemId = getParameterByName(AI_CATALOG_SHOW_QUERY_PARAM);
+      const urlItemId = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
       if (urlItemId) {
         // TODO: Fetch flow details from the API: https://gitlab.com/gitlab-org/gitlab/-/issues/557201
         this.activeItem =
-          this.aiCatalogFlows?.find((item) => this.formatId(item.id).toString() === urlItemId) ||
-          null;
+          this.aiCatalogFlows?.find(
+            (item) => this.formatId(item.id).toString() === urlItemId.toString(),
+          ) || null;
       } else {
         this.activeItem = null;
       }
@@ -72,7 +98,11 @@ export default {
 
 <template>
   <div>
-    <ai-catalog-list :is-loading="isLoading" :items="aiCatalogFlows" @select-item="selectItem" />
+    <ai-catalog-list
+      :is-loading="isLoading"
+      :items="aiCatalogFlows"
+      :item-type-config="itemTypeConfig"
+    />
     <ai-catalog-item-drawer
       :is-open="activeItem !== null"
       :active-item="activeItem"

@@ -2419,9 +2419,6 @@ msgstr ""
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
-msgid "AICatalog|Agent"
-msgstr ""
-
 msgid "AICatalog|Agent created successfully."
 msgstr ""
 
@@ -2438,6 +2435,9 @@ msgid "AICatalog|Agents"
 msgstr ""
 
 msgid "AICatalog|Anyone can view and use the agent without authorization. Only maintainers and owners of this project can edit or delete the agent."
+msgstr ""
+
+msgid "AICatalog|Anyone can view and use the flow without authorization. Only maintainers and owners of this project can edit or delete the flow."
 msgstr ""
 
 msgid "AICatalog|Are you sure you want to delete agent %{name}?"
@@ -2491,9 +2491,6 @@ msgstr ""
 msgid "AICatalog|Failed to run agent."
 msgstr ""
 
-msgid "AICatalog|Flow"
-msgstr ""
-
 msgid "AICatalog|Flow created successfully."
 msgstr ""
 
@@ -2527,13 +2524,13 @@ msgstr ""
 msgid "AICatalog|New flow"
 msgstr ""
 
-msgid "AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners  of this project can edit or delete the agent."
+msgid "AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners of this project can edit or delete the agent."
+msgstr ""
+
+msgid "AICatalog|Only developers, maintainers and owners of this project can view and use the flow. Only maintainers and owners of this project can edit or delete the flow."
 msgstr ""
 
 msgid "AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include..."
-msgstr ""
-
-msgid "AICatalog|Private"
 msgstr ""
 
 msgid "AICatalog|Project ID"
@@ -2546,9 +2543,6 @@ msgid "AICatalog|Provide default instructions or context that will be included w
 msgstr ""
 
 msgid "AICatalog|Provide instructions or context that will be included for this run."
-msgstr ""
-
-msgid "AICatalog|Public"
 msgstr ""
 
 msgid "AICatalog|Run"

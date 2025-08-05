@@ -1,8 +1,8 @@
-import { GlEmptyState, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import { GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
+import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { mockAgents } from '../mock_data';
 
@@ -15,6 +15,7 @@ describe('AiCatalogList', () => {
     wrapper = shallowMountExtended(AiCatalogList, {
       propsData: {
         items: mockItems,
+        itemTypeConfig: {},
         isLoading: false,
         ...props,
       },
@@ -25,7 +26,7 @@ describe('AiCatalogList', () => {
   };
 
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
+  const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findList = () => wrapper.find('ul');
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
   const findContainer = () => wrapper.findByTestId('ai-catalog-list');
@@ -47,9 +48,6 @@ describe('AiCatalogList', () => {
       const list = findList();
 
       expect(list.exists()).toBe(true);
-      expect(list.classes()).toContain('gl-list-style-none');
-      expect(list.classes()).toContain('gl-m-0');
-      expect(list.classes()).toContain('gl-p-0');
     });
 
     it('does not render skeleton loader and empty state when not loading and there are items', () => {
@@ -93,11 +91,6 @@ describe('AiCatalogList', () => {
       listItems.wrappers.forEach((listItem, index) => {
         expect(listItem.props('item')).toEqual(mockItems[index]);
       });
-    });
-
-    it('passes select-item event up from item components', () => {
-      findListItems().at(0).vm.$emit('select-item');
-      expect(wrapper.emitted('select-item')).toEqual([[mockItems[0]]]);
     });
 
     it('does not render confirm modal', () => {
