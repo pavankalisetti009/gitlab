@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/AnalyticsVisualization",
   "definitions": {
     "AnalyticsVisualization": {
@@ -245,7 +245,23 @@
           "type": "string"
         },
         "descriptionLink": {
-          "type": "string"
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "if": {
+        "properties": {
+          "descriptionLink": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "description": {
+            "pattern": ".*%\\{linkStart\\}.*%\\{linkEnd\\}.*"
+          }
         }
       },
       "required": [
