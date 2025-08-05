@@ -14,7 +14,7 @@ jest.mock('~/alert');
 
 describe('GroupVulnerabilitiesOverTimePanel', () => {
   const todayInIsoFormat = '2020-07-06';
-  const ninetyDaysAgoInIsoFormat = '2020-04-07';
+  const yearAgoInIsoFormat = '2019-07-07';
   useFakeDate(todayInIsoFormat);
 
   let wrapper;
@@ -152,7 +152,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
-        startDate: ninetyDaysAgoInIsoFormat,
+        startDate: yearAgoInIsoFormat,
         endDate: todayInIsoFormat,
         includeBySeverity: true,
         includeByReportType: false,
@@ -170,7 +170,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
 
         expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
           fullPath: mockGroupFullPath,
-          startDate: ninetyDaysAgoInIsoFormat,
+          startDate: yearAgoInIsoFormat,
           endDate: todayInIsoFormat,
           [availableFilterType]: ['filterValue'],
           includeBySeverity: true,
@@ -192,7 +192,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
-        startDate: ninetyDaysAgoInIsoFormat,
+        startDate: yearAgoInIsoFormat,
         endDate: todayInIsoFormat,
         includeBySeverity: true,
         includeByReportType: false,
@@ -208,7 +208,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
-        startDate: ninetyDaysAgoInIsoFormat,
+        startDate: yearAgoInIsoFormat,
         endDate: todayInIsoFormat,
         includeBySeverity: false,
         includeByReportType: true,

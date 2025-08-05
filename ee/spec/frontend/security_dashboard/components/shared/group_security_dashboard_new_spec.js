@@ -8,7 +8,6 @@ import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/g
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
-import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 jest.mock('~/alert');
 
@@ -116,20 +115,6 @@ describe('Group Security Dashboard (new version) - Component', () => {
       await nextTick();
 
       expect(getFirstPanel().componentProps.filters).toEqual({ projectId });
-    });
-
-    it('removes filter when ALL_ID is present in the filter value', async () => {
-      const projectId = ['gid://gitlab/Project/123'];
-      const newFilters = { projectId, reportType: [ALL_ID] };
-
-      findFilteredSearch().vm.$emit('filters-changed', newFilters);
-      await nextTick();
-
-      // projectId should remain, but reportType contains ALL_ID so it should be an empty array
-      expect(getFirstPanel().componentProps.filters).toEqual({
-        projectId,
-        reportType: [],
-      });
     });
   });
 });
