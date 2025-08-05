@@ -52,11 +52,10 @@ RSpec.describe API::ManagedLicenses, feature_category: :security_policy_manageme
     end
 
     context 'with unauthorized user' do
-      it 'returns an empty response' do
+      it 'returns a forbidden response' do
         get api("/projects/#{project.id}/managed_licenses")
 
-        expect(json_response).to be_a(Array)
-        expect(json_response).to be_empty
+        expect(response).to have_gitlab_http_status(:forbidden)
       end
 
       it 'responses with 404 Not Found for not existing project' do

@@ -8,6 +8,10 @@ module EE
       prepended do
         include TroubleshootJobPolicyHelper
 
+        condition(:project_allows_read_dependency) do
+          can?(:read_dependency, @subject.project)
+        end
+
         rule do
           # `troubleshoot_job_with_ai` with a pipeline as a subject should be sufficient to show
           # the troubleshoot button.
@@ -21,6 +25,10 @@ module EE
 
         rule { project.admin_custom_role_enables_read_admin_cicd }.policy do
           enable :read_pipeline_metadata
+        end
+
+        rule { project_allows_read_dependency }.policy do
+          enable :read_dependency
         end
       end
     end

@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe API::Dependencies, feature_category: :dependency_management do
-  let_it_be(:project) { create(:project, :public) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project, :private) }
+  let_it_be(:user) { create(:user, developer_of: project) }
 
   let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, :with_vulnerabilities, :mit, project: project) }
 
@@ -112,6 +112,11 @@ RSpec.describe API::Dependencies, feature_category: :dependency_management do
     end
 
     context 'without permissions to see vulnerabilities' do
+      before do
+        # The only way a user can access this API but not license scanning results is when the feature is disabled
+        stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: false)
+      end
+
       it 'returns empty vulnerabilities' do
         request
 

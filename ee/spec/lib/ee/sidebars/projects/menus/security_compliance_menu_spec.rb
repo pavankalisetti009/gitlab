@@ -52,7 +52,8 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
 
       before do
         stub_licensed_features(
-          security_dashboard: true, audit_events: true, dependency_scanning: true, custom_roles: true, license_scanning: true)
+          security_dashboard: true, audit_events: true, dependency_scanning: true, custom_roles: true, license_scanning: true
+        )
 
         create(:member_role, :guest, :read_vulnerability, namespace: project.group).tap do |role|
           role.members << create(:group_member, :guest, user: guest, source: project.group)
@@ -65,7 +66,7 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
       context 'with a public project' do
         let_it_be(:project) { create(:project, :public, :in_group) }
 
-        it { expect(renderable_items).to match_array([:dashboard, :dependency_list, :vulnerability_report]) }
+        it { expect(renderable_items).to match_array([:dashboard, :vulnerability_report]) }
       end
 
       context 'with a private project' do

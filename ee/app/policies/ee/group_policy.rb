@@ -88,6 +88,14 @@ module EE
         @subject.feature_available?(:security_dashboard)
       end
 
+      condition(:dependency_scanning_enabled, scope: :subject) do
+        @subject.feature_available?(:dependency_scanning)
+      end
+
+      condition(:license_scanning_enabled, scope: :subject) do
+        @subject.feature_available?(:license_scanning)
+      end
+
       condition(:security_inventory_available, scope: :subject) do
         @subject.licensed_feature_available?(:security_inventory) &&
           ::Feature.enabled?(:security_inventory_dashboard, @subject.root_ancestor)
@@ -631,10 +639,20 @@ module EE
         enable :update_security_orchestration_policy_project
       end
 
-      rule { security_dashboard_enabled & (auditor | developer) }.policy do
+      rule { auditor | can?(:developer_access) }.policy do
         enable :read_dependency
         enable :read_vulnerability
+        enable :read_licenses
       end
+
+      rule { custom_role_enables_read_dependency }.policy do
+        enable :read_dependency
+        enable :read_licenses
+      end
+
+      rule { ~dependency_scanning_enabled }.prevent :read_dependency
+
+      rule { ~license_scanning_enabled }.prevent :read_licenses
 
       rule { security_dashboard_enabled & can?(:maintainer_access) }.policy do
         enable :admin_vulnerability
@@ -648,10 +666,6 @@ module EE
 
       rule { ~security_inventory_available }.prevent :read_security_inventory
 
-      rule { custom_role_enables_read_dependency }.policy do
-        enable :read_dependency
-      end
-
       rule { custom_role_enables_read_vulnerability }.policy do
         enable :read_vulnerability
       end
@@ -659,6 +673,11 @@ module EE
       rule { custom_role_enables_admin_vulnerability }.policy do
         enable :admin_vulnerability
         enable :read_security_inventory
+      end
+
+      rule { ~security_dashboard_enabled }.policy do
+        prevent :read_vulnerability
+        prevent :admin_vulnerability
       end
 
       rule { custom_role_enables_admin_security_testing }.policy do
@@ -816,10 +835,6 @@ module EE
 
       rule { can?(:admin_vulnerability) }.policy do
         enable :read_vulnerability
-      end
-
-      rule { can?(:read_dependency) }.policy do
-        enable :read_licenses
       end
 
       rule { custom_role_enables_admin_runners }.policy do

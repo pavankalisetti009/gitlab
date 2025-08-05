@@ -14,9 +14,9 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
     context 'with HTML format' do
       subject(:show_dependency_list) { get group_dependencies_path(group_id: group.full_path) }
 
-      context 'when security dashboard feature is enabled' do
+      context 'when `dependency_scanning` feature is enabled' do
         before do
-          stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+          stub_licensed_features(dependency_scanning: true)
         end
 
         context 'and user is allowed to access group level dependencies' do
@@ -79,7 +79,11 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
         end
       end
 
-      context 'when security dashboard feature is disabled' do
+      context 'when `dependency_scanning` feature is disabled' do
+        before do
+          stub_licensed_features(dependency_scanning: false)
+        end
+
         it 'return http status :not_found' do
           subject
 
@@ -101,9 +105,9 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
       let(:params) { {} }
 
-      context 'when security dashboard feature is enabled' do
+      context 'when `dependency_scanning` is enabled' do
         before do
-          stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+          stub_licensed_features(dependency_scanning: true, license_scanning: true)
         end
 
         context 'and user is allowed to access group level dependencies' do
@@ -594,7 +598,11 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
         end
       end
 
-      context 'when security dashboard feature is disabled' do
+      context 'when `dependency_scanning` feature is disabled' do
+        before do
+          stub_licensed_features(dependency_scanning: false)
+        end
+
         it 'returns http status :forbidden' do
           subject
 
@@ -611,9 +619,9 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
     subject { get locations_group_dependencies_path(group_id: group.full_path), params: params, as: :json }
 
-    context 'when security dashboard feature is enabled' do
+    context 'when `dependency_scanning` feature is enabled' do
       before do
-        stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+        stub_licensed_features(dependency_scanning: true)
       end
 
       context 'and user is allowed to access group level dependencies' do
@@ -683,6 +691,10 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
       end
 
       context 'when user is not allowed to access group level dependencies' do
+        before do
+          stub_licensed_features(dependency_scanning: false)
+        end
+
         it 'returns http status :forbidden' do
           subject
 
@@ -691,7 +703,7 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
       end
     end
 
-    context 'when security dashboard feature is disabled' do
+    context 'when `dependency_scanning` feature is disabled' do
       it 'returns http status :forbidden' do
         subject
 
@@ -703,11 +715,11 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
   describe 'GET #licenses' do
     let_it_be(:project) { create(:project, namespace: group) }
 
-    subject { get licenses_group_dependencies_path(group_id: group.full_path), as: :json }
+    subject(:get_licenses) { get licenses_group_dependencies_path(group_id: group.full_path), as: :json }
 
-    context 'when security dashboard feature is enabled' do
+    context 'when `license_scanning` feature is enabled' do
       before do
-        stub_licensed_features(security_dashboard: true)
+        stub_licensed_features(dependency_scanning: true, license_scanning: true)
       end
 
       context 'and user is allowed to access group level dependencies' do
@@ -743,9 +755,9 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
       end
     end
 
-    context 'when security dashboard feature is disabled' do
+    context 'when `license_scanning` feature is disabled' do
       before do
-        stub_licensed_features(security_dashboard: false)
+        stub_licensed_features(license_scanning: false)
       end
 
       it 'returns http status :forbidden' do
