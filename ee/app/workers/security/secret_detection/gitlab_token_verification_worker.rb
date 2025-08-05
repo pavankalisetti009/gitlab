@@ -8,7 +8,7 @@
 #
 module Security
   module SecretDetection
-    class UpdateTokenStatusWorker
+    class GitlabTokenVerificationWorker
       include ApplicationWorker
 
       feature_category :secret_detection
