@@ -35,11 +35,20 @@ module SecretsManagement
       Gitlab.config.gitlab.base_url
     end
 
+    def self.internal_server_url
+      # Gitlab.com deployment configuration
+      if Gitlab.config.has_key?("openbao") && Gitlab.config.openbao.has_key?("internal_url")
+        return Gitlab.config.openbao.internal_url
+      end
+
+      server_url
+    end
+
     def self.server_url
-      # Allow setting an external secrets manager URL if necessary. This is
-      # useful for GitLab.Com's deployment.
+      # Gitlab.com deployment configuration
       return Gitlab.config.openbao.url if Gitlab.config.has_key?("openbao") && Gitlab.config.openbao.has_key?("url")
 
+      # Local configuration
       default_openbao_server_url
     end
 

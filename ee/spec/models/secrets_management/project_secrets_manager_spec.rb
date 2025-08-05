@@ -383,4 +383,82 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       end
     end
   end
+
+  describe '.internal_server_url' do
+    context 'when internal_url is configured' do
+      before do
+        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
+        allow(Gitlab.config).to receive(:openbao).and_return(
+          double(has_key?: true, internal_url: 'http://openbao-internal:8200')
+        )
+      end
+
+      it 'returns the internal_url' do
+        expect(described_class.internal_server_url).to eq('http://openbao-internal:8200')
+      end
+    end
+
+    context 'when openbao is configured but internal_url is not' do
+      before do
+        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
+        allow(Gitlab.config).to receive(:openbao).and_return(
+          double(has_key?: false, internal_url: nil)
+        )
+        allow(described_class).to receive(:server_url).and_return('http://localhost:8200')
+      end
+
+      it 'falls back to server_url' do
+        expect(described_class.internal_server_url).to eq('http://localhost:8200')
+      end
+    end
+
+    context 'when openbao is not configured' do
+      before do
+        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(false)
+        allow(described_class).to receive(:server_url).and_return('http://localhost:8200')
+      end
+
+      it 'falls back to server_url' do
+        expect(described_class.internal_server_url).to eq('http://localhost:8200')
+      end
+    end
+  end
+
+  describe '.server_url' do
+    context 'when openbao is configured with url' do
+      before do
+        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
+        allow(Gitlab.config).to receive(:openbao).and_return(
+          double(has_key?: true, url: 'http://openbao-external:8200')
+        )
+      end
+
+      it 'returns the configured url' do
+        expect(described_class.server_url).to eq('http://openbao-external:8200')
+      end
+    end
+
+    context 'when openbao is not configured' do
+      before do
+        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(false)
+      end
+
+      it 'returns the default url' do
+        expect(described_class.server_url).to eq('http://localhost:8200')
+      end
+    end
+
+    context 'when openbao is configured but url is nil' do
+      before do
+        allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
+        allow(Gitlab.config).to receive(:openbao).and_return(
+          double(has_key?: false, url: nil) # has_key? returns false when url key doesn't exist
+        )
+      end
+
+      it 'returns the default url' do
+        expect(described_class.server_url).to eq('http://localhost:8200')
+      end
+    end
+  end
 end
