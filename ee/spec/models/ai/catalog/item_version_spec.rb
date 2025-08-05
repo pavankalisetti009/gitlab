@@ -25,7 +25,7 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
         context 'when definition is invalid' do
           before do
-            version.definition['system_prompt'] = nil
+            version.definition['something'] = 1
           end
 
           it { is_expected.not_to be_valid }
@@ -43,6 +43,24 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
           end
 
           it { is_expected.not_to be_valid }
+        end
+      end
+
+      context 'when item is nil' do
+        it 'cannot validate definition schema' do
+          version.item = nil
+
+          expect(version).not_to be_valid
+          expect(version.errors[:definition]).to include('unable to validate definition')
+        end
+      end
+
+      context 'when schema_version is nil' do
+        it 'cannot validate definition schema' do
+          version.schema_version = nil
+
+          expect(version).not_to be_valid
+          expect(version.errors[:definition]).to include('unable to validate definition')
         end
       end
     end

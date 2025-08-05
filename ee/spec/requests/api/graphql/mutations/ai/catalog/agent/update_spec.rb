@@ -110,7 +110,9 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
     it 'returns the service error message' do
       execute
 
-      expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly("Schema version can't be blank")
+      expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly(
+        "Schema version can't be blank", 'Definition unable to validate definition'
+      )
     end
   end
 

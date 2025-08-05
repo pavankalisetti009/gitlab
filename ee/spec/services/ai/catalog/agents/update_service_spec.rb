@@ -139,7 +139,9 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           stub_const('Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION', nil)
         end
 
-        it_behaves_like 'an error response', "Schema version can't be blank"
+        it_behaves_like 'an error response', [
+          "Schema version can't be blank", 'Definition unable to validate definition'
+        ]
       end
 
       context 'when agent is not an agent' do
