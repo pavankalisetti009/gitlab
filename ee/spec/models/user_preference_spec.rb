@@ -8,14 +8,13 @@ RSpec.describe UserPreference do
   let(:user_preference) { create(:user_preference, user: user) }
 
   shared_context 'with multiple user add-on assignments' do
-    let_it_be(:groups) do
-      create_list(:group_with_plan, 2, plan: :ultimate_plan)
-    end
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+    let_it_be(:groups) { create_list(:group_with_plan, 2, plan: :ultimate_plan) }
 
-    let_it_be(:add_on_purchases) do
+    let!(:add_on_purchases) do
       [
         create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups.first),
-        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: groups.second)
+        create(:gitlab_subscription_add_on_purchase, namespace: groups.second, add_on: duo_pro_add_on)
       ]
     end
 
@@ -60,16 +59,45 @@ RSpec.describe UserPreference do
     include_context 'with multiple user add-on assignments'
 
     let!(:non_eligible_user_assignments) do
-      [
+      non_eligible_add_on = [
         create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: nil),
         create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: groups.first)
       ]
+
+      non_eligible_add_on.map do |add_on|
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
+      end
     end
 
     let(:eligible_user_assignments) { user_assignments }
 
-    it 'only retrieves eligible user assignments' do
+    it 'only retrieves eligible user assignments with disctinct namespaces' do
       expect(user_preference.eligible_duo_add_on_assignments).to match_array(eligible_user_assignments)
+    end
+  end
+
+  describe '#distinct_eligible_duo_add_on_assignments', :saas do
+    include_context 'with multiple user add-on assignments'
+
+    let!(:non_eligible_user_assignments) do
+      non_eligible_add_on = [
+        create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: nil),
+        create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: groups.second),
+        create(:gitlab_subscription_add_on_purchase, namespace: groups.first, add_on: duo_pro_add_on)
+      ]
+
+      non_eligible_add_on.map do |add_on|
+        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on, user: user)
+      end
+    end
+
+    let(:expected_eligible_namespaces) { user_assignments.map(&:namespace) }
+
+    it 'only retrieves eligible user assignments' do
+      actual_eligible_namespaces = user_preference.distinct_eligible_duo_add_on_assignments.map(&:namespace)
+
+      expect(actual_eligible_namespaces).to match_array(expected_eligible_namespaces)
+      expect(actual_eligible_namespaces.count).to eq(2)
     end
   end
 
@@ -78,7 +106,7 @@ RSpec.describe UserPreference do
       create_list(:group_with_plan, 2, plan: :ultimate_plan)
     end
 
-    let_it_be(:add_on_purchases) do
+    let!(:add_on_purchases) do
       [
         create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups.first),
         create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: groups.second)
@@ -240,7 +268,7 @@ RSpec.describe UserPreference do
       end
     end
 
-    context 'when there is only single eligible duo add-on assignments' do
+    context 'when there is only single assigning namespace' do
       let_it_be(:group) do
         create(:group_with_plan, plan: :ultimate_plan)
       end
@@ -254,8 +282,24 @@ RSpec.describe UserPreference do
       end
 
       context 'when default_duo_add_on_assignment is not present' do
-        it 'returns the namespace from the single eligible assignment' do
-          expect(user_preference.get_default_duo_namespace).to eq(group)
+        context 'with a single eligible duo add-on assignment' do
+          it 'returns the namespace from the single eligible assignment' do
+            expect(user_preference.get_default_duo_namespace).to eq(group)
+          end
+        end
+
+        context 'with multiple add-on assignments from the same namespace' do
+          let_it_be(:second_add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: group)
+          end
+
+          let!(:second_user_assignment) do
+            create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: second_add_on_purchase, user: user)
+          end
+
+          it 'returns the namespace from the single eligible assignment' do
+            expect(user_preference.get_default_duo_namespace).to eq(group)
+          end
         end
       end
 

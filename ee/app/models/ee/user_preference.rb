@@ -28,6 +28,10 @@ module EE
                                     .where.not(add_on_purchase: { namespace_id: nil })
       end
 
+      def distinct_eligible_duo_add_on_assignments
+        eligible_duo_add_on_assignments.select('DISTINCT ON (add_on_purchase.namespace_id) *')
+      end
+
       def check_seat_for_default_duo_assigment
         return if default_duo_add_on_assignment_id.nil?
 
@@ -42,9 +46,10 @@ module EE
       end
 
       def get_default_duo_namespace
-        return default_duo_add_on_assignment.add_on_purchase.namespace if default_duo_add_on_assignment.present?
+        return default_duo_add_on_assignment.namespace if default_duo_add_on_assignment.present?
 
-        assignments = eligible_duo_add_on_assignments.limit(2).to_a
+        assignments = distinct_eligible_duo_add_on_assignments.limit(2).to_a
+
         return if assignments.size != 1
 
         assignments.first.add_on_purchase.namespace

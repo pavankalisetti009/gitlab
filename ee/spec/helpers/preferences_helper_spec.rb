@@ -127,7 +127,7 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
     context 'when user can assign default duo group' do
       before do
         allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
-        allow(user.user_preference).to receive(:eligible_duo_add_on_assignments)
+        allow(user.user_preference).to receive(:distinct_eligible_duo_add_on_assignments)
            .and_return([user_assignments.first, user_assignments.second])
       end
 
