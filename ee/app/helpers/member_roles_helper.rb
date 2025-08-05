@@ -83,8 +83,13 @@ module MemberRolesHelper
     ::Gitlab::Auth::Ldap::Config.available_servers.map { |server| { text: server.label, value: server.provider_name } }
   end
 
+  # Presence of admin_mode_setting_path controls whether the admin mode recommendation is shown in Roles and permissions
+  # admin page
   def admin_mode_setting_path
-    return unless MemberRole.admin.any? && !Gitlab::CurrentSettings.admin_mode
+    return unless License.feature_available?(:custom_roles)
+    return unless Feature.enabled?(:custom_admin_roles, :instance)
+    return unless MemberRole.admin.any?
+    return if Gitlab::CurrentSettings.admin_mode
 
     general_admin_application_settings_path(anchor: 'js-signin-settings')
   end

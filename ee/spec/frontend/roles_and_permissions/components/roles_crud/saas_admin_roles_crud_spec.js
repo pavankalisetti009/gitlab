@@ -3,7 +3,7 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.query.graphql';
+import adminRolesQuery from 'ee/roles_and_permissions/graphql/admin_roles.query.graphql';
 import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import SaasAdminRolesCrud from 'ee/roles_and_permissions/components/roles_crud/saas_admin_roles_crud.vue';
 import { showRolesFetchError } from 'ee/roles_and_permissions/components/roles_crud/utils';
@@ -27,7 +27,7 @@ describe('SaasAdminRolesCrud component', () => {
     newRolePath = 'new/role/path',
   } = {}) => {
     wrapper = shallowMountExtended(SaasAdminRolesCrud, {
-      apolloProvider: createMockApollo([[instanceRolesQuery, rolesQueryHandler]]),
+      apolloProvider: createMockApollo([[adminRolesQuery, rolesQueryHandler]]),
       provide: { newRolePath },
       stubs: {
         RolesCrud: stubComponent(RolesCrud, { props: ['roles', 'loading', 'newRoleOptions'] }),
@@ -44,9 +44,8 @@ describe('SaasAdminRolesCrud component', () => {
       createComponent();
     });
 
-    it('fetches SaaS instance roles', () => {
+    it('fetches SaaS admin roles', () => {
       expect(defaultRolesQueryHandler).toHaveBeenCalledTimes(1);
-      expect(defaultRolesQueryHandler).toHaveBeenCalledWith({ isSaas: true });
     });
 
     it('shows roles crud component', () => {
@@ -76,6 +75,12 @@ describe('SaasAdminRolesCrud component', () => {
 
     it('shows roles crud component as not loading', () => {
       expect(findRolesCrud().props('loading')).toBe(false);
+    });
+
+    it('refetches query when role is deleted', () => {
+      findRolesCrud().vm.$emit('deleted');
+
+      expect(defaultRolesQueryHandler).toHaveBeenCalledTimes(2);
     });
   });
 

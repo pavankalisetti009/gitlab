@@ -8,6 +8,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import groupRolesQuery from '../../graphql/group_roles.query.graphql';
 import instanceRolesQuery from '../../graphql/instance_roles.query.graphql';
+import adminRolesQuery from '../../graphql/admin_roles.query.graphql';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import RolesTable from '../roles_table/roles_table.vue';
 import RolesExport from '../roles_table/roles_export.vue';
@@ -41,10 +42,20 @@ export default {
   apollo: {
     rolesData: {
       query() {
-        return this.groupFullPath ? groupRolesQuery : instanceRolesQuery;
+        if (this.isSaas) {
+          return this.groupFullPath ? groupRolesQuery : adminRolesQuery;
+        }
+
+        return instanceRolesQuery;
       },
       variables() {
-        return this.groupFullPath ? { fullPath: this.groupFullPath } : { isSaas: this.isSaas };
+        const { customRoles, customAdminRoles } = this.glFeatures;
+
+        return {
+          includeCustomRoles: customRoles,
+          includeAdminRoles: customRoles && customAdminRoles,
+          fullPath: this.groupFullPath,
+        };
       },
       update(data) {
         return this.groupFullPath ? data.group : data;

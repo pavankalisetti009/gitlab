@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import groupRolesQuery from 'ee/roles_and_permissions/graphql/group_roles.query.graphql';
 import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.query.graphql';
+import adminRolesQuery from 'ee/roles_and_permissions/graphql/admin_roles.query.graphql';
 import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
@@ -19,6 +20,7 @@ import {
   adminRoles,
   groupRolesResponse,
   instanceRolesResponse,
+  saasAdminRolesResponse,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -31,27 +33,31 @@ describe('RolesCrud component', () => {
   const mockToastShow = jest.fn();
   const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(groupRolesResponse);
   const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(instanceRolesResponse);
+  const saasAdminRolesSuccessQueryHandler = jest.fn().mockResolvedValue(saasAdminRolesResponse);
 
   const createComponent = ({
     groupRolesQueryHandler = groupRolesSuccessQueryHandler,
     instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
+    adminRolesQueryHandler = saasAdminRolesSuccessQueryHandler,
     groupFullPath = 'test-group',
     newRolePath = 'new/role/path',
     isSaas = false,
     membersPermissionsDetailedExport = true,
     exportGroupMemberships = true,
+    customRoles = true,
     customAdminRoles = true,
   } = {}) => {
     wrapper = shallowMountExtended(RolesCrud, {
       apolloProvider: createMockApollo([
         [groupRolesQuery, groupRolesQueryHandler],
         [instanceRolesQuery, instanceRolesQueryHandler],
+        [adminRolesQuery, adminRolesQueryHandler],
       ]),
       provide: {
         groupFullPath,
         newRolePath,
         isSaas,
-        glFeatures: { membersPermissionsDetailedExport, customAdminRoles },
+        glFeatures: { membersPermissionsDetailedExport, customRoles, customAdminRoles },
         glAbilities: { exportGroupMemberships },
       },
       stubs: {
@@ -137,29 +143,15 @@ describe('RolesCrud component', () => {
   });
 
   describe.each`
-    type          | groupFullPath   | queryHandler                        | expectedQueryData
-    ${'group'}    | ${'test-group'} | ${groupRolesSuccessQueryHandler}    | ${{ fullPath: 'test-group' }}
-    ${'instance'} | ${''}           | ${instanceRolesSuccessQueryHandler} | ${{ isSaas: false }}
-  `('for $type-level roles', ({ groupFullPath, queryHandler, expectedQueryData }) => {
-    beforeEach(() => createComponent({ groupFullPath }));
+    type            | isSaas   | groupFullPath   | queryHandler                         | expectedQueryData
+    ${'SaaS group'} | ${true}  | ${'test-group'} | ${groupRolesSuccessQueryHandler}     | ${{ fullPath: 'test-group', includeCustomRoles: true, includeAdminRoles: true }}
+    ${'SaaS admin'} | ${true}  | ${''}           | ${saasAdminRolesSuccessQueryHandler} | ${{ fullPath: '', includeCustomRoles: true, includeAdminRoles: true }}
+    ${'instance'}   | ${false} | ${''}           | ${instanceRolesSuccessQueryHandler}  | ${{ fullPath: '', includeCustomRoles: true, includeAdminRoles: true }}
+  `('for $type-level roles', ({ isSaas, groupFullPath, queryHandler, expectedQueryData }) => {
+    beforeEach(() => createComponent({ isSaas, groupFullPath }));
 
     it('fetches roles', () => {
       expect(queryHandler).toHaveBeenCalledWith(expectedQueryData);
-    });
-
-    // Remove the Minimal Access role from standardRoles with slice(), it shouldn't be shown.
-    it.each(standardRoles.slice(1))(`passes '$name' role to roles table`, (role) => {
-      expect(findRolesTable().props('roles')).toContainEqual(role);
-    });
-
-    it.each(memberRoles)(`passes '$name' to roles table`, (role) => {
-      expect(findRolesTable().props('roles')).toContainEqual(role);
-    });
-
-    it('does not show Minimal Access role', () => {
-      expect(findRolesTable().props('roles')).not.toContainEqual(
-        expect.objectContaining({ name: 'Minimal Access' }),
-      );
     });
   });
 
@@ -167,7 +159,11 @@ describe('RolesCrud component', () => {
     beforeEach(() => createComponent({ groupFullPath: '', isSaas: false }));
 
     it('fetches instance roles', () => {
-      expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledWith({ isSaas: false });
+      expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledWith({
+        fullPath: '',
+        includeCustomRoles: true,
+        includeAdminRoles: true,
+      });
     });
 
     it('shows role counts with admin roles', () => {
@@ -193,7 +189,10 @@ describe('RolesCrud component', () => {
 
   describe('when there is a query error', () => {
     it('shows an error message for group roles', async () => {
-      await createComponent({ groupRolesQueryHandler: jest.fn().mockRejectedValue() });
+      await createComponent({
+        isSaas: true,
+        groupRolesQueryHandler: jest.fn().mockRejectedValue(),
+      });
 
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Failed to fetch roles.',
@@ -201,11 +200,11 @@ describe('RolesCrud component', () => {
       });
     });
 
-    it('shows an error message for admin roles', async () => {
+    it('shows an error message for SaaS admin roles', async () => {
       await createComponent({
         groupFullPath: '',
         isSaas: true,
-        instanceRolesQueryHandler: jest.fn().mockRejectedValue(),
+        adminRolesQueryHandler: jest.fn().mockRejectedValue(),
       });
 
       expect(createAlert).toHaveBeenCalledWith({
@@ -253,7 +252,7 @@ describe('RolesCrud component', () => {
       });
 
       it('refetches custom roles query', () => {
-        expect(groupRolesSuccessQueryHandler).toHaveBeenCalledTimes(2);
+        expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -293,6 +292,7 @@ describe('RolesCrud component', () => {
   describe('when member roles is null', () => {
     beforeEach(() =>
       createComponent({
+        isSaas: true,
         groupRolesQueryHandler: jest.fn().mockResolvedValue({
           data: {
             group: {

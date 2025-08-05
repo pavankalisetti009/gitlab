@@ -117,6 +117,22 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             it 'has admin_mode_setting_path' do
               expect(data[:admin_mode_setting_path]).to eq '/admin/application_settings/general#js-signin-settings'
             end
+
+            context 'when the license does not have custom roles feature' do
+              before do
+                stub_licensed_features(custom_roles: false)
+              end
+
+              it_behaves_like 'does not have admin_mode_setting_path'
+            end
+
+            context 'when the custom admin roles feature flag is disabled' do
+              before do
+                stub_feature_flags(custom_admin_roles: false)
+              end
+
+              it_behaves_like 'does not have admin_mode_setting_path'
+            end
           end
         end
       end
