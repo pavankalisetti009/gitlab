@@ -1,4 +1,5 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import TypeOfWorkCharts from './type_of_work_charts.vue';
 import { tasksByTypeChartData } from './stories_constants';
 
@@ -8,9 +9,12 @@ export default {
   decorators: [withVuexStore],
 };
 
+const mockApolloProvider = () => createMockApollo();
+
 const createStoryWithState = () => {
   return (args, { argTypes, createVuexStore }) => ({
     components: { TypeOfWorkCharts },
+    apolloProvider: mockApolloProvider(),
     props: Object.keys(argTypes),
     template: '<type-of-work-charts v-bind="$props" />',
     store: createVuexStore({
