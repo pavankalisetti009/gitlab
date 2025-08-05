@@ -233,6 +233,7 @@ module EE
       has_many :analyzer_statuses, class_name: 'Security::AnalyzerProjectStatus'
 
       has_many :configured_ai_catalog_items, class_name: '::Ai::Catalog::ItemConsumer', inverse_of: :project
+      has_many :ai_flow_triggers, class_name: '::Ai::FlowTrigger', inverse_of: :project
 
       has_one :ready_active_context_code_repository,
         -> { ready_with_active_connection },
