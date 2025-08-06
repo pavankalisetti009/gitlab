@@ -6,8 +6,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
-import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status_settings.vue';
-import namespaceStatusesQuery from 'ee/groups/settings/work_items/namespace_lifecycles.query.graphql';
+import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status/custom_status_settings.vue';
+import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
 
 Vue.use(VueApollo);
 

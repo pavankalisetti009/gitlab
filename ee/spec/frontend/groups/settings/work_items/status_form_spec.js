@@ -1,7 +1,7 @@
 import { nextTick } from 'vue';
 import { GlDisclosureDropdown, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import InlineStatusForm from 'ee/groups/settings/work_items/status_form.vue';
+import InlineStatusForm from 'ee/groups/settings/work_items/custom_status/status_form.vue';
 
 describe('StatusForm', () => {
   let wrapper;
