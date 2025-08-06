@@ -833,14 +833,6 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
         subject { build(:approval_project_rule, :scan_finding, protected_branches: [], applies_to_all_protected_branches: false) }
 
         it { is_expected.to be_valid }
-
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(merge_request_approval_policies_create_approval_rules_without_protected_branches: false)
-          end
-
-          it { is_expected.to be_invalid }
-        end
       end
 
       context 'when protected branches are present and is not applied to all protected branches' do

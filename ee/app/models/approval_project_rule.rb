@@ -72,9 +72,6 @@ class ApprovalProjectRule < ApplicationRecord
   validates :vulnerabilities_allowed, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :severity_levels, inclusion: { in: ::Enums::Vulnerability.severity_levels.keys }
   validates :vulnerability_states, inclusion: { in: APPROVAL_VULNERABILITY_STATES.keys }
-  validates :protected_branches,
-    presence: true,
-    if: -> { Feature.disabled?(:merge_request_approval_policies_create_approval_rules_without_protected_branches, project) && scan_finding? && !applies_to_all_protected_branches? }
 
   delegate :vulnerability_attributes, to: :scan_result_policy_read, allow_nil: true
 
