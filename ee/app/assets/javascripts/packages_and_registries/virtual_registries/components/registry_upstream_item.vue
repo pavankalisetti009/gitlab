@@ -44,7 +44,7 @@ export default {
    * Emitted when an upstream is reordered
    * @event reorderUpstream
    * @property {string} direction - The direction to move the upstream ('up' or 'down')
-   * @property {string} upstreamId - The ID of the upstream to reorder
+   * @property {string} upstream - The upstream to reorder
    */
   /**
    * Emitted when the cache is cleared
@@ -138,7 +138,7 @@ export default {
   },
   methods: {
     reorderUpstream(direction) {
-      this.$emit('reorderUpstream', direction, this.id);
+      this.$emit('reorderUpstream', direction, this.upstream);
     },
     clearCache() {
       this.$emit('clearCache', this.id);

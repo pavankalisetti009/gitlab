@@ -10,9 +10,12 @@ import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
-import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
+import { updateMavenRegistryUpstreamPosition } from 'ee/api/virtual_registries_api';
+import { groupVirtualRegistry } from '../mock_data';
 
+jest.mock('ee/api/virtual_registries_api');
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
 Vue.use(VueApollo);
@@ -20,27 +23,15 @@ Vue.use(VueApollo);
 describe('MavenRegistryDetailsApp', () => {
   let wrapper;
 
+  const { upstreams } = groupVirtualRegistry.group.mavenVirtualRegistries.nodes[0];
+
   const defaultProps = {
     registry: {
       id: 1,
       name: 'Registry title',
       description: 'Registry description',
     },
-    upstreams: [
-      {
-        id: 1,
-        name: 'Upstream title',
-        description: 'Upstream description',
-        url: 'http://maven.org/test',
-        cacheValidityHours: 24,
-        position: 1,
-        cacheSize: '100 MB',
-        canClearCache: true,
-        warning: {
-          text: 'Example warning text',
-        },
-      },
-    ],
+    upstreams,
   };
 
   const defaultProvide = {
@@ -72,7 +63,7 @@ describe('MavenRegistryDetailsApp', () => {
     },
   });
 
-  const mockError = new Error('GraphQL error');
+  const mockGraphQLError = new Error('GraphQL error');
 
   const createUpstreamErrorHandler = jest.fn().mockResolvedValue({
     data: {
@@ -83,7 +74,7 @@ describe('MavenRegistryDetailsApp', () => {
     },
   });
 
-  const errorHandler = jest.fn().mockRejectedValue(mockError);
+  const errorHandler = jest.fn().mockRejectedValue(mockGraphQLError);
   const showToastSpy = jest.fn();
 
   const findDescription = () => wrapper.findByTestId('description');
@@ -94,7 +85,8 @@ describe('MavenRegistryDetailsApp', () => {
   const findMetadataItems = () => wrapper.findAllComponents(MetadataItem);
   const findCreateUpstreamForm = () => wrapper.findComponent(RegistryUpstreamForm);
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
-  const findUpstreams = () => wrapper.findAllComponents(RegistryUpstreamItem);
+  const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
+  const findPositionUpdateErrorAlert = () => wrapper.findByTestId('position-update-error-alert');
 
   const createComponent = ({
     mountFn = shallowMountExtended,
@@ -154,10 +146,10 @@ describe('MavenRegistryDetailsApp', () => {
     });
 
     it('renders the upstreams and passes correct props to each', () => {
-      const upstreams = findUpstreams();
+      const upstreamItems = findUpstreamItems();
 
-      expect(upstreams).toHaveLength(defaultProps.upstreams.length);
-      expect(upstreams.at(0).props()).toMatchObject({
+      expect(upstreamItems).toHaveLength(defaultProps.upstreams.length);
+      expect(upstreamItems.at(0).props()).toMatchObject({
         upstream: defaultProps.upstreams[0],
       });
     });
@@ -256,6 +248,98 @@ describe('MavenRegistryDetailsApp', () => {
           'Something went wrong while creating the upstream. Please try again.',
         );
         expect(findCreateUpstreamForm().props('loading')).toBe(false);
+        expect(showToastSpy).not.toHaveBeenCalled();
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'MavenRegistryDetailsApp',
+          error: mockGraphQLError,
+        });
+      });
+    });
+  });
+
+  describe('update upstream position action', () => {
+    beforeEach(() => {
+      updateMavenRegistryUpstreamPosition.mockReset();
+    });
+
+    describe('when API succeeds', () => {
+      beforeEach(() => {
+        updateMavenRegistryUpstreamPosition.mockResolvedValue();
+        createComponent();
+      });
+
+      it('when direction is `down` calculates the right position', async () => {
+        const upstreamItems = findUpstreamItems();
+
+        await upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
+
+        expect(updateMavenRegistryUpstreamPosition).toHaveBeenCalledWith({
+          id: 2,
+          position: 2,
+        });
+      });
+
+      it('when direction is `up`, calculates the right position', async () => {
+        const upstreamItems = findUpstreamItems();
+
+        await upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
+
+        expect(updateMavenRegistryUpstreamPosition).toHaveBeenCalledWith({
+          id: 3,
+          position: 1,
+        });
+      });
+
+      it('emits upstreamReordered when successful', async () => {
+        const upstreamItems = findUpstreamItems();
+
+        await upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
+
+        await waitForPromises();
+
+        expect(wrapper.emitted('upstreamReordered')).toHaveLength(1);
+        expect(showToastSpy).toHaveBeenCalledWith(
+          'Position of the upstream has been updated successfully',
+        );
+        expect(findPositionUpdateErrorAlert().exists()).toBe(false);
+        expect(captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when API fails', () => {
+      it('shows alert with message & reports error to Sentry', async () => {
+        const mockError = { error: 'position does not have a valid value' };
+        updateMavenRegistryUpstreamPosition.mockRejectedValue(mockError);
+        createComponent();
+
+        const upstreamItems = findUpstreamItems();
+
+        await upstreamItems.at(0).vm.$emit('reorderUpstream', 'up', upstreams[0]);
+
+        await waitForPromises();
+
+        expect(findPositionUpdateErrorAlert().text()).toBe('position does not have a valid value');
+        expect(showToastSpy).not.toHaveBeenCalled();
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'MavenRegistryDetailsApp',
+          error: mockError,
+        });
+      });
+
+      it('shows alert with default message & reports error to Sentry', async () => {
+        const mockError = new Error();
+        updateMavenRegistryUpstreamPosition.mockRejectedValue(mockError);
+        createComponent();
+
+        const upstreamItems = findUpstreamItems();
+
+        await upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
+
+        await waitForPromises();
+
+        expect(findPositionUpdateErrorAlert().text()).toBe(
+          'Failed to update position of the upstream. Please try again.',
+        );
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
           component: 'MavenRegistryDetailsApp',
