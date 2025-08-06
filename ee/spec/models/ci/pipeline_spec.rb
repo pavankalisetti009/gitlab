@@ -778,10 +778,21 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         context 'when the pipeline was created by a security policy' do
           let(:source) { :security_orchestration_policy }
 
-          it 'enqueues FailedPipelinesAuditWorker' do
-            expect(Security::Policies::FailedPipelinesAuditWorker).to receive(:perform_async).with(pipeline.id)
+          it_behaves_like 'enqueues FailedPipelinesAuditWorker'
+        end
 
-            transition_pipeline
+        context 'when the pipeline has errors messages' do
+          context 'when the errors are not related to security policies' do
+            let!(:error_message) { create(:ci_pipeline_message, pipeline: pipeline, content: 'error', severity: :error) }
+
+            it_behaves_like 'does not enqueue FailedPipelinesAuditWorker'
+          end
+
+          context 'when the errors are related to security policies' do
+            let(:security_policies_error_message) { 'Pipeline execution policy error: Cyclic dependencies detected when enforcing policies. Ensure stages across the project and policies are aligned.' }
+            let!(:error_message) { create(:ci_pipeline_message, pipeline: pipeline, content: security_policies_error_message, severity: :error) }
+
+            it_behaves_like 'enqueues FailedPipelinesAuditWorker'
           end
         end
       end
