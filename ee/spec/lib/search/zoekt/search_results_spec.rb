@@ -56,8 +56,9 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             current_user: user,
             page: 1,
             per_page: described_class::DEFAULT_PER_PAGE,
-            project_ids: [], # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/557418
             max_per_page: described_class::DEFAULT_PER_PAGE * 2,
+            project_id: nil,
+            group_id: nil,
             search_mode: :regex,
             multi_match: nil
           ).and_call_original
@@ -75,8 +76,9 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             current_user: user,
             page: 1,
             per_page: described_class::DEFAULT_PER_PAGE,
-            project_ids: [],
             max_per_page: described_class::DEFAULT_PER_PAGE * 2,
+            project_id: nil,
+            group_id: nil,
             search_mode: :regex,
             multi_match: an_instance_of(Search::Zoekt::MultiMatch)
           ).and_call_original

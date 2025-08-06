@@ -226,7 +226,8 @@ module Search
           current_user: current_user,
           page: page,
           per_page: per_page,
-          project_ids: limit_project_ids,
+          project_id: options[:project_id],
+          group_id: options[:group_id],
           max_per_page: DEFAULT_PER_PAGE * 2,
           search_mode: search_mode,
           multi_match: multi_match
