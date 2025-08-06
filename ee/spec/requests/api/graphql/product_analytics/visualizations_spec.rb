@@ -124,7 +124,9 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
                  "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", " \
                  "\"DoraProjectsComparison\", \"AiImpactTable\", \"ContributionsByUserTable\", " \
                  "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", " \
-                   "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", \"MergeRequestsThroughputTable\"]")
+                   "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
+                   "\"MergeRequestsThroughputTable\", " \
+                   "\"BarChart\"]")
       end
     end
   end

@@ -460,7 +460,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
         "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
         "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
         "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
-        "\"MergeRequestsThroughputTable\"]"]
+        "\"MergeRequestsThroughputTable\", \"BarChart\"]"]
       expect(vis&.errors).to match_array(expected)
     end
   end
