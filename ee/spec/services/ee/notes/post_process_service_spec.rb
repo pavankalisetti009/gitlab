@@ -110,5 +110,137 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
         it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
       end
     end
+
+    context 'for processing AI flow triggers' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:project) { create(:project, developers: [user]) }
+      let_it_be(:mentioned_user) { create(:user) }
+      let_it_be(:issue) { create(:issue, project: project) }
+      let_it_be(:note) { create(:note, project: project, noteable: issue, author: user) }
+      let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+      let_it_be(:flow_trigger) do
+        create(:ai_flow_trigger, project: project, user: mentioned_user)
+      end
+
+      subject(:execute) { described_class.new(note).execute }
+
+      before do
+        allow(note).to receive_messages({
+          mentioned_users: [mentioned_user],
+          note: "Test note content"
+        })
+      end
+
+      shared_examples_for 'not running AI flow trigger service' do
+        it 'does not call Ai::FlowTriggers::RunService' do
+          expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+          execute
+        end
+      end
+
+      context 'when author can trigger AI flow' do
+        let_it_be(:subscription_assignment) do
+          create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: subscription_purchase)
+        end
+
+        context 'when there is a matching flow trigger' do
+          it 'calls Ai::FlowTriggers::RunService with correct parameters' do
+            service_instance = instance_double('Ai::FlowTriggers::RunService')
+
+            expect(::Ai::FlowTriggers::RunService).to receive(:new).with(
+              project: project,
+              current_user: user,
+              resource: issue,
+              flow_trigger: flow_trigger
+            ).and_return(service_instance)
+
+            expect(service_instance).to receive(:execute).with({
+              input: "Test note content",
+              event: :mention
+            })
+
+            execute
+          end
+
+          context 'when multiple users are mentioned but only one has a trigger' do
+            let(:other_mentioned_user) { create(:user) }
+
+            before do
+              allow(note).to receive(:mentioned_users).and_return([mentioned_user, other_mentioned_user])
+            end
+
+            it 'still triggers the service for the matching user' do
+              service_instance = instance_double('Ai::FlowTriggers::RunService')
+
+              expect(::Ai::FlowTriggers::RunService).to receive(:new).and_return(service_instance)
+              expect(service_instance).to receive(:execute)
+
+              execute
+            end
+          end
+
+          context 'when multiple flow triggers exist but only one matches' do
+            let_it_be(:other_flow_trigger) do
+              create(:ai_flow_trigger, project: project, user: create(:user))
+            end
+
+            it 'uses the first matching flow trigger' do
+              service_instance = instance_double('Ai::FlowTriggers::RunService')
+
+              expect(::Ai::FlowTriggers::RunService).to receive(:new).with(
+                hash_including(flow_trigger: flow_trigger)
+              ).and_return(service_instance)
+
+              expect(service_instance).to receive(:execute)
+
+              execute
+            end
+          end
+        end
+
+        context 'when there is no matching flow trigger' do
+          before do
+            allow(note).to receive(:mentioned_users).and_return([create(:user)])
+          end
+
+          it_behaves_like 'not running AI flow trigger service'
+        end
+
+        context 'when no users are mentioned' do
+          before do
+            allow(note).to receive(:mentioned_users).and_return([])
+          end
+
+          it_behaves_like 'not running AI flow trigger service'
+        end
+
+        context 'when flow trigger exists but for different trigger type' do
+          before do
+            stub_const("::Ai::FlowTrigger::EVENT_TYPES", {
+              mention: 0,
+              comment: 1,
+              issue_created: 2
+            })
+
+            flow_trigger.update!(event_types: [1, 2])
+          end
+
+          it_behaves_like 'not running AI flow trigger service'
+        end
+
+        context 'when project has no ai_flow_triggers association' do
+          before do
+            flow_trigger.destroy!
+          end
+
+          it_behaves_like 'not running AI flow trigger service'
+        end
+      end
+
+      context 'when author cannot trigger AI flow' do
+        it_behaves_like 'not running AI flow trigger service'
+      end
+    end
   end
 end

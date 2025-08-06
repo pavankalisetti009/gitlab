@@ -14,6 +14,7 @@ module EE
 
         log_audit_event if note.author.project_bot?
         process_duo_code_review_chat
+        process_ai_flow_triggers
       end
 
       private
@@ -49,6 +50,20 @@ module EE
         return unless note.duo_bot_mentioned?
 
         ::MergeRequests::DuoCodeReviewChatWorker.perform_async(note.id)
+      end
+
+      def process_ai_flow_triggers
+        return unless note.author.can?(:trigger_ai_flow, note.project)
+
+        flow_trigger = note.project.ai_flow_triggers.triggered_on(:mention).by_users(note.mentioned_users).first
+        return unless flow_trigger
+
+        ::Ai::FlowTriggers::RunService.new(
+          project: note.project,
+          current_user: note.author,
+          resource: note.noteable,
+          flow_trigger: flow_trigger
+        ).execute({ input: note.note, event: :mention })
       end
     end
   end

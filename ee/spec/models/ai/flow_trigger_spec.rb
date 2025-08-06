@@ -191,4 +191,55 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
       end
     end
   end
+
+  describe '.triggered_on' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+
+    before do
+      stub_const("#{described_class}::EVENT_TYPES", {
+        mention: 0,
+        comment: 1,
+        issue_created: 2
+      })
+    end
+
+    context 'when filtering by mention event type' do
+      let!(:mention_trigger) do
+        create(:ai_flow_trigger,
+          project: project,
+          user: user,
+          event_types: [0],
+          description: 'Mention trigger')
+      end
+
+      let!(:multiple_types_trigger) do
+        create(:ai_flow_trigger,
+          project: project,
+          user: user,
+          event_types: [0, 1],
+          description: 'Multiple types trigger')
+      end
+
+      let!(:other_type_trigger) do
+        create(:ai_flow_trigger,
+          project: project,
+          user: user,
+          event_types: [1, 2],
+          description: 'Other type trigger')
+      end
+
+      it 'returns triggers that contain the mention event type' do
+        result = described_class.triggered_on(:mention)
+
+        expect(result).to contain_exactly(mention_trigger, multiple_types_trigger)
+      end
+
+      it 'returns triggers that contain the comment event type' do
+        result = described_class.triggered_on(:comment)
+
+        expect(result).to contain_exactly(multiple_types_trigger, other_type_trigger)
+      end
+    end
+  end
 end
