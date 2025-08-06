@@ -88,9 +88,11 @@ module EE
       # first we need to check if there are possibly more custom abilities than current user has
       return true if custom_role_abilities_too_high?(current_user, member_role_id)
 
-      # it is awlays allowed to downgrade member access level
-      # if there are not more custom abilities than current user has
-      return false if current_access_level && assigning_access_level < current_access_level
+      # check if it's a valid downgrade, if the member's current access level encompasses the target level
+      return false if Authz::Role.access_level_encompasses?(
+        current_access_level: current_access_level,
+        level_to_assign: assigning_access_level
+      )
 
       # prevent assignement in case the role access level is higher than current user's role
       group.assigning_role_too_high?(current_user, assigning_access_level)
