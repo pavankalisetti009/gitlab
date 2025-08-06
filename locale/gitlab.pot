@@ -23931,6 +23931,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Could not display logs. Please try again."
 msgstr ""
 
+msgid "DuoAgentsPlatform|Create a new automated AI workflow trigger."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Enter the path to your Jenkinsfile."
 msgstr ""
 
@@ -23940,7 +23943,16 @@ msgstr ""
 msgid "DuoAgentsPlatform|Fetching logs..."
 msgstr ""
 
+msgid "DuoAgentsPlatform|Flow trigger details"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Flow triggers"
+msgstr ""
+
 msgid "DuoAgentsPlatform|ID"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Manage automated AI workflows within your project."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Name"
@@ -23950,6 +23962,9 @@ msgid "DuoAgentsPlatform|New"
 msgstr ""
 
 msgid "DuoAgentsPlatform|New agent sessions will appear here."
+msgstr ""
+
+msgid "DuoAgentsPlatform|New flow trigger"
 msgstr ""
 
 msgid "DuoAgentsPlatform|New session"
@@ -23989,6 +24004,9 @@ msgid "DuoAgentsPlatform|Unknown"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Updated"
+msgstr ""
+
+msgid "DuoAgentsPlatform|View and manage this flow trigger."
 msgstr ""
 
 msgid "DuoChat|%{linkStart}Learn how%{linkEnd} to set up Code Suggestions and Chat in your IDE. You can also use Chat in GitLab. Ask questions about:"
@@ -27772,6 +27790,9 @@ msgid "FloC|Federated Learning of Cohorts (FLoC)"
 msgstr ""
 
 msgid "FloC|Participate in FLoC"
+msgstr ""
+
+msgid "Flow triggers"
 msgstr ""
 
 msgid "Focus file browser"

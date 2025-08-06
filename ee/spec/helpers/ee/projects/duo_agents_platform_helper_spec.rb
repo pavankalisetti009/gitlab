@@ -29,7 +29,8 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_wor
         project_path: project.full_path,
         project_id: project.id,
         duo_agents_invoke_path: api_v4_ai_duo_workflows_workflows_path,
-        empty_state_illustration_path: '/assets/illustrations/empty-state/empty-pipeline-md.svg'
+        empty_state_illustration_path: '/assets/illustrations/empty-state/empty-pipeline-md.svg',
+        flow_triggers_event_type_options: [{ 'text' => 'Mention', 'value' => 0 }].to_json
       }
 
       expect(helper_data).to eq(expected_data)

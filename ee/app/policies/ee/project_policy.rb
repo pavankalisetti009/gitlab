@@ -1150,6 +1150,18 @@ module EE
         enable :access_duo_agentic_chat
       end
 
+      condition(:ai_flow_triggers_enabled) do
+        ::Feature.enabled?(:ai_flow_triggers, @user)
+      end
+
+      rule { ai_flow_triggers_enabled & assigned_to_duo_enterprise & can?(:admin_project) }.policy do
+        enable :manage_ai_flow_triggers
+      end
+
+      rule { ai_flow_triggers_enabled & assigned_to_duo_enterprise & can?(:create_pipeline) }.policy do
+        enable :trigger_ai_flow
+      end
+
       rule { can?(:read_project) & duo_features_enabled }.enable :access_duo_features
 
       desc "Project has saved replies support"
