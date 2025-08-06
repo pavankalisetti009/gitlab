@@ -103,7 +103,13 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
           context "with a #{runner_type}", :enable_admin_mode do
             subject(:policy) { described_class.new(user, public_send(runner_type)) }
 
-            it { expect_disallowed(*abilities) }
+            let(:expected_disallowed) do
+              next abilities - [:read_runner] if runner_type == :instance_runner
+
+              abilities
+            end
+
+            it { expect_disallowed(*expected_disallowed) }
 
             context "when the user has the `#{params[:custom_permission]}` permission" do
               let!(:role) { create(:admin_member_role, custom_permission, user: user) }
@@ -115,7 +121,7 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
                   stub_licensed_features(custom_roles: false)
                 end
 
-                it { expect_disallowed(*abilities) }
+                it { expect_disallowed(*expected_disallowed) }
               end
             end
           end

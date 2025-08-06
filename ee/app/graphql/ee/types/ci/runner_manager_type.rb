@@ -11,6 +11,8 @@ module EE
         }.freeze
 
         prepended do
+          # NOTE: instance runners are exposed by default to any authenticated user,
+          # remember to protect any sensitive fields
           field :upgrade_status, ::Types::Ci::RunnerUpgradeStatusEnum,
             null: true,
             description: 'Availability of upgrades for the runner manager.'
