@@ -14,7 +14,6 @@ module EE
 
         before_action only: [:root] do
           push_frontend_feature_flag(:data_transfer_monitoring, group)
-          push_frontend_feature_flag(:enable_add_on_users_pagesize_selection, group)
           push_frontend_feature_flag(:product_analytics_usage_quota_annual_data, group)
           push_frontend_feature_flag(:product_analytics_billing, group, type: :development)
           push_frontend_feature_flag(:product_analytics_billing_override, group, type: :wip)
