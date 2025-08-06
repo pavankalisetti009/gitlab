@@ -110,14 +110,6 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
         it_behaves_like 'not recording audit event for violations'
       end
 
-      context 'when the collect merged with policy violations audit event feature is disabled' do
-        before do
-          stub_feature_flags(collect_merge_request_merged_with_policy_violations_audit_events: false)
-        end
-
-        it_behaves_like 'not recording audit event for violations'
-      end
-
       context 'when there are no running violations' do
         before do
           merge_request_violation.update!(status: :failed)
