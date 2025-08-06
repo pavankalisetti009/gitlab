@@ -28,10 +28,10 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
 
       it 'tracks 3 separate events' do
         expect(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event).exactly(3).times
-                                                                  .with('a_compliance_audit_events_api', values: current_user.id)
+                                                                                   .with('a_compliance_audit_events_api', values: current_user.id)
         # user activity tracking is also recorded
         expect(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
-                                                                  .with('unique_active_user', values: current_user.id)
+                                                                .with('unique_active_user', values: current_user.id)
         subject
       end
 
@@ -231,7 +231,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
           describe 'pagination' do
             context 'when using cursor pagination' do
               it 'paginates correctly through all pages' do
-                get api(url, admin, admin_mode: true), params: { per_page: 2 }
+                get api(url, admin, admin_mode: true), params: { per_page: 2, pagination: 'keyset' }
 
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response.size).to eq(2)
@@ -245,7 +245,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                 cursor_match = link_header.match(/cursor=([^&>]+)/)
                 cursor = CGI.unescape(cursor_match[1])
 
-                get api(url, admin, admin_mode: true), params: { cursor: cursor, per_page: 2 }
+                get api(url, admin, admin_mode: true), params: { cursor: cursor, per_page: 2, pagination: 'keyset' }
 
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response.size).to eq(2)
@@ -257,7 +257,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                 cursor_match = link_header.match(/cursor=([^&>]+)/)
                 cursor = CGI.unescape(cursor_match[1])
 
-                get api(url, admin, admin_mode: true), params: { cursor: cursor, per_page: 2 }
+                get api(url, admin, admin_mode: true), params: { cursor: cursor, per_page: 2, pagination: 'keyset' }
 
                 expect(response).to have_gitlab_http_status(:ok)
                 expect(json_response.size).to eq(2)
@@ -265,6 +265,283 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                 expect(json_response.pluck('id')).to eq(expected_page3)
 
                 expect(response.headers['Link']).to be_nil
+              end
+            end
+
+            context 'when using offset pagination' do
+              describe 'basic functionality' do
+                it 'returns all audit events sorted by id descending' do
+                  get api(url, admin, admin_mode: true), params: { pagination: 'offset' }
+
+                  # Offset pagination sorts by id DESC for performance
+                  all_events = [
+                    instance_audit_event,
+                    new_user_audit_event,
+                    new_group_audit_event1,
+                    new_project_audit_event1,
+                    new_group_audit_event2,
+                    new_project_audit_event2
+                  ].sort_by { |e| -e.id }
+
+                  expect(json_response.pluck('id')).to eq(all_events.map(&:id))
+                end
+
+                it 'defaults to offset pagination when pagination param is not provided' do
+                  get api(url, admin, admin_mode: true)
+
+                  expect(response.headers['X-Page']).to eq('1')
+                  expect(response.headers['X-Per-Page']).to be_present
+                  expect(response.headers).to have_key('X-Total')
+                  expect(response.headers).to have_key('X-Total-Pages')
+                end
+              end
+
+              describe 'pagination headers' do
+                context 'when on first page' do
+                  it 'includes correct pagination headers' do
+                    get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 1, per_page: 2 }
+
+                    expect(response.headers['X-Page']).to eq('1')
+                    expect(response.headers['X-Per-Page']).to eq('2')
+                    expect(response.headers['X-Next-Page']).to eq('2')
+                    expect(response.headers['X-Prev-Page']).to eq("")
+
+                    link_header = response.headers['Link']
+                    expect(link_header).to include('rel="next"')
+                    expect(link_header).to include('rel="first"')
+                    expect(link_header).not_to include('rel="prev"')
+                    expect(link_header).to include('rel="last"')
+                  end
+                end
+
+                context 'when on middle page' do
+                  it 'includes correct pagination headers' do
+                    get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 2, per_page: 2 }
+
+                    expect(response.headers['X-Page']).to eq('2')
+                    expect(response.headers['X-Per-Page']).to eq('2')
+                    expect(response.headers['X-Next-Page']).to eq('3')
+                    expect(response.headers['X-Prev-Page']).to eq('1')
+
+                    link_header = response.headers['Link']
+                    expect(link_header).to include('rel="next"')
+                    expect(link_header).to include('rel="prev"')
+                    expect(link_header).to include('rel="first"')
+                  end
+                end
+
+                context 'when on last page' do
+                  it 'includes correct pagination headers' do
+                    get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 3, per_page: 2 }
+
+                    expect(response.headers['X-Page']).to eq('3')
+                    expect(response.headers['X-Per-Page']).to eq('2')
+                    expect(response.headers['X-Next-Page']).to eq("")
+                    expect(response.headers['X-Prev-Page']).to eq('2')
+
+                    link_header = response.headers['Link']
+                    expect(link_header).not_to include('rel="next"')
+                    expect(link_header).to include('rel="prev"')
+                    expect(link_header).to include('rel="first"')
+                  end
+                end
+
+                context 'when page is beyond available data' do
+                  it 'returns empty results with correct headers' do
+                    get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 10, per_page: 20 }
+
+                    expect(json_response).to be_empty
+                    expect(response.headers['X-Page']).to eq('10')
+                    expect(response.headers['X-Per-Page']).to eq('20')
+                    expect(response.headers['X-Next-Page']).to eq("")
+                    expect(response.headers['X-Prev-Page']).to eq('9')
+                  end
+                end
+
+                context 'when total count is requested' do
+                  it 'includes total count headers' do
+                    get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 1, per_page: 2 }
+
+                    expect(response.headers['X-Total']).to eq('6')
+                    expect(response.headers['X-Total-Pages']).to eq('3')
+
+                    link_header = response.headers['Link']
+                    expect(link_header).to include('rel="last"')
+                    expect(link_header).to include('page=3')
+                  end
+                end
+              end
+
+              describe 'pagination functionality' do
+                it 'paginates correctly through all pages' do
+                  all_events = [
+                    instance_audit_event,
+                    new_user_audit_event,
+                    new_group_audit_event1,
+                    new_project_audit_event1,
+                    new_group_audit_event2,
+                    new_project_audit_event2
+                  ].sort_by { |e| -e.id }
+
+                  get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 1, per_page: 2 }
+                  expect(json_response.pluck('id')).to eq(all_events[0..1].map(&:id))
+
+                  get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 2, per_page: 2 }
+                  expect(json_response.pluck('id')).to eq(all_events[2..3].map(&:id))
+
+                  get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 3, per_page: 2 }
+                  expect(json_response.pluck('id')).to eq(all_events[4..5].map(&:id))
+
+                  get api(url, admin, admin_mode: true), params: { pagination: 'offset', page: 4, per_page: 2 }
+                  expect(json_response).to be_empty
+                end
+
+                it 'preserves filter parameters in pagination links' do
+                  get api(url, admin, admin_mode: true), params: {
+                    pagination: 'offset',
+                    page: 1,
+                    per_page: 1,
+                    entity_type: 'Group',
+                    created_after: '2024-01-15T05:00:00Z'
+                  }
+
+                  link_header = response.headers['Link']
+                  expect(link_header).to include('entity_type=Group')
+                  expect(link_header).to include('pagination=offset')
+                  expect(link_header).to include('per_page=1')
+                  expect(link_header).to include('created_after=')
+                end
+              end
+
+              describe 'filtering with offset pagination' do
+                context 'when filtering by entity type' do
+                  it 'returns only group events with correct pagination' do
+                    get api(url, admin, admin_mode: true), params: {
+                      pagination: 'offset',
+                      entity_type: 'Group',
+                      page: 1,
+                      per_page: 1
+                    }
+
+                    group_events = [new_group_audit_event1, new_group_audit_event2].sort_by { |e| -e.id }
+
+                    expect(json_response.pluck('id')).to eq([group_events[0].id])
+                    expect(response.headers['X-Next-Page']).to eq('2')
+
+                    get api(url, admin, admin_mode: true), params: {
+                      pagination: 'offset',
+                      entity_type: 'Group',
+                      page: 2,
+                      per_page: 1
+                    }
+
+                    expect(json_response.pluck('id')).to eq([group_events[1].id])
+                    expect(response.headers['X-Next-Page']).to eq("")
+                    expect(response.headers['X-Prev-Page']).to eq('1')
+                  end
+                end
+
+                context 'when filtering by date range' do
+                  it 'returns events within date range with pagination' do
+                    get api(url, admin, admin_mode: true), params: {
+                      pagination: 'offset',
+                      created_after: Time.zone.parse('2024-01-15 07:00:00'),
+                      created_before: Time.zone.parse('2024-01-15 09:00:00'),
+                      page: 1,
+                      per_page: 2
+                    }
+
+                    filtered_events = [
+                      new_user_audit_event,
+                      new_group_audit_event1,
+                      new_project_audit_event1
+                    ].sort_by { |e| -e.id }
+
+                    expect(json_response.pluck('id')).to eq(filtered_events[0..1].map(&:id))
+                    expect(response.headers['X-Next-Page']).to eq('2')
+
+                    link_header = response.headers['Link']
+                    expect(link_header).to include('created_after=')
+                    expect(link_header).to include('created_before=')
+                  end
+                end
+
+                context 'with combined filters' do
+                  it 'applies all filters correctly with pagination' do
+                    get api(url, admin, admin_mode: true), params: {
+                      pagination: 'offset',
+                      entity_type: 'Project',
+                      created_after: Time.zone.parse('2024-01-15 06:00:00'),
+                      page: 1,
+                      per_page: 1
+                    }
+
+                    expect(json_response.size).to eq(1)
+                    expect(json_response.first['entity_type']).to eq('Project')
+
+                    link_header = response.headers['Link']
+                    expect(link_header).to include('entity_type=Project')
+                    expect(link_header).to include('created_after=')
+                    expect(link_header).to include('pagination=offset')
+                  end
+                end
+              end
+
+              describe 'comparison with keyset pagination' do
+                it 'returns same records but in same order' do
+                  get api(url, admin, admin_mode: true), params: {
+                    pagination: 'keyset',
+                    per_page: 10
+                  }
+                  keyset_ids = json_response.pluck('id')
+
+                  get api(url, admin, admin_mode: true), params: {
+                    pagination: 'offset',
+                    per_page: 10
+                  }
+                  offset_ids = json_response.pluck('id')
+
+                  expect(offset_ids).to eq(keyset_ids)
+                end
+              end
+
+              describe 'sort parameter' do
+                it 'supports created_asc which sorts by id ASC' do
+                  get api(url, admin, admin_mode: true), params: {
+                    pagination: 'offset',
+                    sort: 'created_asc',
+                    per_page: 10
+                  }
+
+                  all_events = [
+                    instance_audit_event,
+                    new_user_audit_event,
+                    new_group_audit_event1,
+                    new_project_audit_event1,
+                    new_group_audit_event2,
+                    new_project_audit_event2
+                  ].sort_by(&:id) # ASC order
+
+                  expect(json_response.pluck('id')).to eq(all_events.map(&:id))
+                end
+
+                it 'defaults to created_desc which sorts by id DESC' do
+                  get api(url, admin, admin_mode: true), params: {
+                    pagination: 'offset',
+                    per_page: 10
+                  }
+
+                  all_events = [
+                    instance_audit_event,
+                    new_user_audit_event,
+                    new_group_audit_event1,
+                    new_project_audit_event1,
+                    new_group_audit_event2,
+                    new_project_audit_event2
+                  ].sort_by { |e| -e.id } # DESC order
+
+                  expect(json_response.pluck('id')).to eq(all_events.map(&:id))
+                end
               end
             end
 
@@ -330,6 +607,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                 get api(url, admin, admin_mode: true), params: {
                   created_before: base_time,
                   cursor: cursor_from_old_table,
+                  pagination: 'keyset',
                   per_page: 3
                 }
 
@@ -375,7 +653,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
 
               context 'with pagination' do
                 it 'paginates filtered results correctly' do
-                  get api(url, admin, admin_mode: true), params: { entity_type: 'Group', per_page: 1 }
+                  get api(url, admin, admin_mode: true), params: { entity_type: 'Group', per_page: 1, pagination: 'keyset' }
 
                   expect(json_response.pluck('id')).to eq([new_group_audit_event1.id])
                   expect(response.headers['Link']).to be_present
@@ -384,7 +662,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
                   cursor_match = link_header.match(/cursor=([^&>]+)/)
                   cursor = CGI.unescape(cursor_match[1])
 
-                  get api(url, admin, admin_mode: true), params: { entity_type: 'Group', cursor: cursor, per_page: 1 }
+                  get api(url, admin, admin_mode: true), params: { entity_type: 'Group', cursor: cursor, per_page: 1, pagination: 'keyset' }
 
                   expect(json_response.pluck('id')).to eq([new_group_audit_event2.id])
                   expect(response.headers['Link']).to be_nil
@@ -447,6 +725,7 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
             it 'returns empty result when no events match filters' do
               get api(url, admin, admin_mode: true), params: {
                 entity_type: 'User',
+                pagination: 'keyset',
                 created_before: Time.zone.parse('2024-01-15 04:00:00')
               }
 
