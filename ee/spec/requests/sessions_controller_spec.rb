@@ -2,9 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe SessionsController, feature_category: :system_access do
+RSpec.describe SessionsController, :with_organization_url_helpers, feature_category: :system_access do
   describe '#create' do
     let_it_be(:user) { create(:user, :unconfirmed) }
+    let_it_be(:current_organization) { user.organization }
 
     subject(:sign_in) do
       post user_session_path(user: { login: user.username, password: user.password })
