@@ -86,7 +86,7 @@ describe('RolesSelector', () => {
       await findRoleSelect().vm.$emit('select-items', roleApproversData);
 
       expect(wrapper.emitted('set-roles')).toEqual([
-        [{ custom_roles: [1], roles: ['maintainer'] }],
+        [{ custom_roles: [{ id: 1 }], roles: ['maintainer'] }],
       ]);
     });
 
@@ -113,7 +113,7 @@ describe('RolesSelector', () => {
       await roleSelect.vm.$emit('select-items', { role_approvers: ['maintainer', 'developer'] });
 
       expect(wrapper.emitted('set-roles')).toEqual([
-        [{ custom_roles: [1], roles: [] }],
+        [{ custom_roles: [{ id: 1 }], roles: [] }],
         [{ custom_roles: [], roles: ['maintainer', 'developer'] }],
       ]);
     });

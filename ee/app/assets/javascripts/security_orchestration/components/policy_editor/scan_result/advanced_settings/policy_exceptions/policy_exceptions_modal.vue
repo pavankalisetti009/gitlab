@@ -85,7 +85,10 @@ export default {
     },
     roles() {
       const roles = this.selectedExceptions?.roles || [];
-      const customRoles = this.selectedExceptions?.custom_roles || [];
+      const customRoles =
+        this.selectedExceptions?.custom_roles
+          ?.filter((role) => role && role.id)
+          .map(({ id }) => id) || [];
       return [...roles, ...customRoles];
     },
   },
