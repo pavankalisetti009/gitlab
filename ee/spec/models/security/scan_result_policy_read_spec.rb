@@ -408,10 +408,11 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
 
     context 'when on gitlab.com' do
       let_it_be(:role_with_permission) { create(:member_role, :admin_merge_request, namespace: group) }
-      let_it_be(:role_without_permission) { create(:member_role, namespace: group) }
+      let_it_be(:role_without_permission) { create(:member_role, :guest, namespace: group) }
+      let_it_be(:base_role_with_permission) { create(:member_role, :developer, namespace: group) }
       let_it_be(:scan_result_policy_read) do
         create(:scan_result_policy_read, project: project,
-          custom_roles: [role_with_permission.id, role_without_permission.id])
+          custom_roles: [role_with_permission.id, role_without_permission.id, base_role_with_permission.id])
       end
 
       before do
@@ -419,22 +420,23 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
         allow(project).to receive(:root_ancestor).and_return(group)
       end
 
-      it { is_expected.to contain_exactly(role_with_permission.id) }
+      it { is_expected.to contain_exactly(role_with_permission.id, base_role_with_permission.id) }
     end
 
     context 'when not on gitlab.com' do
       let_it_be(:role_with_permission) { create(:member_role, :admin_merge_request, :instance) }
-      let_it_be(:role_without_permission) { create(:member_role, :instance) }
+      let_it_be(:role_without_permission) { create(:member_role, :guest, :instance) }
+      let_it_be(:base_role_with_permission) { create(:member_role, :developer, :instance) }
       let_it_be(:scan_result_policy_read) do
         create(:scan_result_policy_read, project: project,
-          custom_roles: [role_with_permission.id, role_without_permission.id])
+          custom_roles: [role_with_permission.id, role_without_permission.id, base_role_with_permission.id])
       end
 
       before do
         allow(scan_result_policy_read).to receive(:gitlab_com_subscription?).and_return(false)
       end
 
-      it { is_expected.to contain_exactly(role_with_permission.id) }
+      it { is_expected.to contain_exactly(role_with_permission.id, base_role_with_permission.id) }
     end
   end
 

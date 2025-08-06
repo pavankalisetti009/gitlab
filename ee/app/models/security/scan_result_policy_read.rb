@@ -127,7 +127,9 @@ module Security
                        MemberRole.for_instance.id_in(custom_roles)
                      end
 
-      member_roles.permissions_where(admin_merge_request: true).pluck_primary_key
+      member_roles.permissions_where(admin_merge_request: true)
+                  .or(member_roles.where(base_access_level: Gitlab::Access::DEVELOPER..))
+                  .pluck_primary_key
     end
   end
 end
