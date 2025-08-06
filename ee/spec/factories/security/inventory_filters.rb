@@ -6,7 +6,7 @@ FactoryBot.define do
     archived { false }
 
     Enums::Security.extended_analyzer_types.each_key do |analyzer_type|
-      analyzer_type.to_sym { 0 }
+      analyzer_type.to_sym { :not_configured }
     end
 
     total { 0 }

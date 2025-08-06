@@ -12,6 +12,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
   let(:service) { described_class.new(pipeline) }
   let(:diff_service) { instance_double(Security::AnalyzersStatus::DiffService) }
   let(:ancestors_update_service) { class_double(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService) }
+  let(:inventory_filters_update_service) { class_double(Security::InventoryFilters::AnalyzerStatusUpdateService) }
   let(:status_diff) do
     {
       namespace_id: group.id,
@@ -26,6 +27,8 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
     stub_const('Security::AnalyzerNamespaceStatuses::AncestorsUpdateService', ancestors_update_service)
     allow(ancestors_update_service).to receive(:execute)
+    stub_const('Security::InventoryFilters::AnalyzerStatusUpdateService', inventory_filters_update_service)
+    allow(inventory_filters_update_service).to receive(:execute)
   end
 
   shared_examples 'calls namespace related services' do
@@ -92,6 +95,11 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
       it 'returns nil without processing' do
         expect(execute).to be_nil
       end
+
+      it 'does not call InventoryFilters service' do
+        expect(inventory_filters_update_service).not_to receive(:execute)
+        execute
+      end
     end
 
     context 'when project doesnt exist' do
@@ -102,6 +110,11 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
       it 'returns nil without processing' do
         expect(execute).to be_nil
       end
+
+      it 'does not call InventoryFilters service' do
+        expect(inventory_filters_update_service).not_to receive(:execute)
+        execute
+      end
     end
 
     context 'when post_pipeline_analyzer_status_updates feature flag is disabled' do
@@ -111,6 +124,11 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
       it 'returns nil without processing' do
         expect(execute).to be_nil
+      end
+
+      it 'does not call InventoryFilters service' do
+        expect(inventory_filters_update_service).not_to receive(:execute)
+        execute
       end
     end
 
@@ -165,6 +183,24 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
             expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning))
               .to have_attributes(status: 'failed', build_id: dependency_scanning_build.id)
+          end
+
+          it 'calls InventoryFilters service with project and analyzer statuses' do
+            expect(inventory_filters_update_service).to receive(:execute).once.with(
+              [project],
+              array_including(
+                hash_including(analyzer_type: :sast, status: :success),
+                hash_including(analyzer_type: :container_scanning_pipeline_based, status: :failed),
+                hash_including(analyzer_type: :container_scanning, status: :failed),
+                hash_including(analyzer_type: :secret_detection_pipeline_based, status: :success),
+                hash_including(analyzer_type: :secret_detection, status: :success),
+                hash_including(analyzer_type: :sast_iac, status: :success),
+                hash_including(analyzer_type: :sast_advanced, status: :success),
+                hash_including(analyzer_type: :dependency_scanning, status: :failed)
+              )
+            )
+
+            execute
           end
 
           it 'updates existing records for analyzers in the pipeline' do
@@ -236,6 +272,18 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
               .to eq('failed')
           end
 
+          it 'calls InventoryFilters service with analyzer statuses' do
+            expect(inventory_filters_update_service).to receive(:execute).once.with(
+              [project],
+              array_including(
+                hash_including(analyzer_type: :sast, status: :failed),
+                hash_including(analyzer_type: :sast_advanced, status: :failed)
+              )
+            )
+
+            execute
+          end
+
           include_examples 'calls namespace related services'
         end
 
@@ -258,6 +306,19 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
               .to eq('success')
             expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning)
               .status).to eq('success')
+          end
+
+          it 'calls InventoryFilters service with all analyzer types from the build' do
+            expect(inventory_filters_update_service).to receive(:execute).once.with(
+              [project],
+              array_including(
+                hash_including(analyzer_type: :sast, status: :success),
+                hash_including(analyzer_type: :dast, status: :success),
+                hash_including(analyzer_type: :dependency_scanning, status: :success)
+              )
+            )
+
+            execute
           end
 
           include_examples 'calls namespace related services'
@@ -293,6 +354,11 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             }.from(nil).to('not_configured')
           end
 
+          it 'does not call InventoryFilters service' do
+            expect(inventory_filters_update_service).not_to receive(:execute)
+            execute
+          end
+
           include_examples 'calls namespace related services'
         end
 
@@ -313,6 +379,11 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
             expect(ancestors_update_service).not_to have_received(:execute)
           end
+
+          it 'does not call InventoryFilters service' do
+            expect(inventory_filters_update_service).not_to receive(:execute)
+            execute
+          end
         end
 
         context 'with aggregated type handling' do
@@ -322,6 +393,18 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             context 'when only pipeline-based status exists' do
               include_examples 'creates aggregated status from pipeline-based status',
                 :secret_detection, :secret_detection_pipeline_based, :success
+
+              it 'calls InventoryFilters service with pipeline and aggregated statuses' do
+                expect(inventory_filters_update_service).to receive(:execute).once.with(
+                  [project],
+                  array_including(
+                    hash_including(analyzer_type: :secret_detection_pipeline_based, status: :success),
+                    hash_including(analyzer_type: :secret_detection, status: :success)
+                  )
+                )
+
+                execute
+              end
             end
 
             context 'when aggregated status already exists' do
@@ -338,6 +421,12 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
                 include_examples 'preserves higher priority aggregated status',
                   :secret_detection, :success
+
+                it 'calls InventoryFilters service' do
+                  expect(inventory_filters_update_service).to receive(:execute).once
+
+                  execute
+                end
               end
 
               context 'when pipeline-based has higher priority (failed)' do
@@ -360,6 +449,12 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
                 include_examples 'creates aggregated status from pipeline-based status',
                   :secret_detection, :secret_detection_pipeline_based, :success
+
+                it 'calls InventoryFilters service' do
+                  expect(inventory_filters_update_service).to receive(:execute).once
+
+                  execute
+                end
               end
 
               context 'when setting-based is not_configured' do
@@ -370,6 +465,12 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
                 include_examples 'creates aggregated status from pipeline-based status',
                   :secret_detection, :secret_detection_pipeline_based, :success
+
+                it 'calls InventoryFilters service' do
+                  expect(inventory_filters_update_service).to receive(:execute).once
+
+                  execute
+                end
               end
             end
           end
@@ -380,6 +481,18 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             context 'when only pipeline-based status exists' do
               include_examples 'creates aggregated status from pipeline-based status',
                 :container_scanning, :container_scanning_pipeline_based, :failed
+
+              it 'calls InventoryFilters service with pipeline and aggregated statuses' do
+                expect(inventory_filters_update_service).to receive(:execute).once.with(
+                  [project],
+                  array_including(
+                    hash_including(analyzer_type: :container_scanning_pipeline_based, status: :failed),
+                    hash_including(analyzer_type: :container_scanning, status: :failed)
+                  )
+                )
+
+                execute
+              end
             end
 
             context 'when aggregated status already exists' do
@@ -398,6 +511,12 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
                 include_examples 'preserves higher priority aggregated status',
                   :container_scanning, :failed
+
+                it 'calls InventoryFilters service' do
+                  expect(inventory_filters_update_service).to receive(:execute).once
+
+                  execute
+                end
               end
 
               context 'when pipeline-based has higher priority (failed)' do
@@ -462,6 +581,20 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
               expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
                 .to have_attributes(status: 'success', build_id: secret_detection_build.id)
+            end
+
+            it 'calls InventoryFilters service with correct types' do
+              expect(inventory_filters_update_service).to receive(:execute).once.with(
+                [project],
+                array_including(
+                  hash_including(analyzer_type: :secret_detection_pipeline_based),
+                  hash_including(analyzer_type: :secret_detection),
+                  hash_including(analyzer_type: :container_scanning_pipeline_based),
+                  hash_including(analyzer_type: :container_scanning)
+                )
+              )
+
+              execute
             end
           end
         end

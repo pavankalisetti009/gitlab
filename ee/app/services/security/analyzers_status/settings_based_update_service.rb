@@ -66,6 +66,7 @@ module Security
         return unless statuses_array.present?
 
         AnalyzerProjectStatus.upsert_all(statuses_array, unique_by: [:project_id, :analyzer_type])
+        InventoryFilters::AnalyzerStatusUpdateService.execute(projects, analyzers_statuses.values)
       end
 
       def status_to_symbol(status)

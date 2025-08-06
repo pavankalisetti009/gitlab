@@ -130,6 +130,7 @@ module Security
         return unless analyzers_statuses.present?
 
         AnalyzerProjectStatus.upsert_all(analyzers_statuses.values, unique_by: [:project_id, :analyzer_type])
+        InventoryFilters::AnalyzerStatusUpdateService.execute([project], analyzers_statuses.values)
       end
 
       def build_reports(build)

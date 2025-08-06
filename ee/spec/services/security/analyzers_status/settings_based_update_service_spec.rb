@@ -12,6 +12,20 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
   let(:project_ids) { [project1.id, project2.id] }
   let(:analyzer_type) { :secret_detection }
   let(:service) { described_class.new(project_ids, analyzer_type) }
+  let(:inventory_filters_update_service) { class_double(Security::InventoryFilters::AnalyzerStatusUpdateService) }
+
+  before do
+    stub_const('Security::InventoryFilters::AnalyzerStatusUpdateService', inventory_filters_update_service)
+    allow(inventory_filters_update_service).to receive(:execute)
+  end
+
+  shared_examples 'calls inventory filters service once' do
+    it 'calls InventoryFilters service with projects and their analyzer statuses' do
+      expect(inventory_filters_update_service).to receive(:execute).once
+
+      execute
+    end
+  end
 
   describe '.execute' do
     it 'creates a new instance and calls execute' do
@@ -55,6 +69,13 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
           .find_by(project: project_with_disabled_ff, analyzer_type: :secret_detection_secret_push_protection))
           .to be_nil
       end
+
+      it 'calls InventoryFilters service only with projects that have the feature flag enabled' do
+        expect(inventory_filters_update_service).to receive(:execute).once.with(
+          match_array([project1, project2]), anything)
+
+        execute
+      end
     end
 
     context 'when post_pipeline_analyzer_status_updates feature flag is enabled' do
@@ -63,6 +84,11 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
 
         it 'does not call upsert_analyzers_statuses' do
           expect(service).not_to receive(:upsert_analyzers_statuses)
+          execute
+        end
+
+        it 'does not call InventoryFilters service' do
+          expect(inventory_filters_update_service).not_to receive(:execute)
           execute
         end
       end
@@ -74,6 +100,11 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
           expect(service).not_to receive(:upsert_analyzers_statuses)
           execute
         end
+
+        it 'does not call InventoryFilters service' do
+          expect(inventory_filters_update_service).not_to receive(:execute)
+          execute
+        end
       end
 
       context 'when project_ids is nil' do
@@ -81,6 +112,11 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
 
         it 'does not call upsert_analyzers_statuses' do
           expect(service).not_to receive(:upsert_analyzers_statuses)
+          execute
+        end
+
+        it 'does not call InventoryFilters service' do
+          expect(inventory_filters_update_service).not_to receive(:execute)
           execute
         end
       end
@@ -105,6 +141,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
               expect(project1_status).to have_attributes(status: 'success', archived: false, build_id: nil)
               expect(project2_status).to have_attributes(status: 'success', archived: false, build_id: nil)
             end
+
+            include_examples 'calls inventory filters service once'
           end
 
           context 'when settings are mixed (true and false)' do
@@ -123,6 +161,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
               expect(project1_status).to have_attributes(status: 'success', archived: false, build_id: nil)
               expect(project2_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
             end
+
+            include_examples 'calls inventory filters service once'
           end
 
           context 'when both settings are disabled (false)' do
@@ -141,6 +181,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
               expect(project1_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
               expect(project2_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
             end
+
+            include_examples 'calls inventory filters service once'
           end
 
           context 'when project is archived' do
@@ -161,6 +203,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
               expect(project1_status).to have_attributes(status: 'success', archived: true)
               expect(project2_status).to have_attributes(status: 'not_configured', archived: false)
             end
+
+            include_examples 'calls inventory filters service once'
           end
         end
 
@@ -184,6 +228,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
             expect(existing_record1.reload).to have_attributes(status: 'success', archived: false, build_id: nil)
             expect(existing_record2.reload).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
           end
+
+          include_examples 'calls inventory filters service once'
         end
 
         context 'when some projects have existing records and others do not' do
@@ -205,6 +251,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
               .find_by(project: project2, analyzer_type: expected_analyzer_type)
             expect(new_record).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
           end
+
+          include_examples 'calls inventory filters service once'
         end
 
         context 'when aggregated type already exists with matching status' do
@@ -238,6 +286,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
           it 'creates status records for non-existing type' do
             expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
           end
+
+          include_examples 'calls inventory filters service once'
         end
 
         context 'when aggregated type exists with different status' do
@@ -273,6 +323,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
           it 'creates the correct number of records' do
             expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
           end
+
+          include_examples 'calls inventory filters service once'
         end
 
         context 'when aggregated type exists but other type has higher priority' do
@@ -320,6 +372,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
               expect(existing_aggregated_record.reload.status).to eq('failed')
             end
           end
+
+          include_examples 'calls inventory filters service once'
         end
       end
 
@@ -355,6 +409,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
           expect(setting_record).to have_attributes(status: 'not_configured')
           expect(aggregated_record).to have_attributes(status: 'not_configured')
         end
+
+        include_examples 'calls inventory filters service once'
       end
     end
 
@@ -414,6 +470,40 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
 
         execute
       end
+
+      it 'calls InventoryFilters service with projects and their statuses' do
+        expect(inventory_filters_update_service).to receive(:execute).once.with(
+          match_array([project1, project2]),
+          match_array([
+            hash_including(
+              secret_detection_secret_push_protection: hash_including(
+                project_id: project1.id,
+                analyzer_type: :secret_detection_secret_push_protection,
+                status: :success
+              ),
+              secret_detection: hash_including(
+                project_id: project1.id,
+                analyzer_type: :secret_detection,
+                status: :success
+              )
+            ),
+            hash_including(
+              secret_detection_secret_push_protection: hash_including(
+                project_id: project2.id,
+                analyzer_type: :secret_detection_secret_push_protection,
+                status: :not_configured
+              ),
+              secret_detection: hash_including(
+                project_id: project2.id,
+                analyzer_type: :secret_detection,
+                status: :not_configured
+              )
+            )
+          ])
+        )
+
+        execute
+      end
     end
 
     context 'with multiple namespaces' do
@@ -435,6 +525,15 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
 
         expect(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService).to receive(:execute)
           .with(hash_including(namespace_id: another_group.id)).once
+
+        execute
+      end
+
+      it 'calls InventoryFilters service with all projects from different namespaces' do
+        expect(inventory_filters_update_service).to receive(:execute).once.with(
+          match_array([project1, project_in_another_namespace]),
+          anything
+        )
 
         execute
       end
@@ -463,6 +562,8 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
 
         execute
       end
+
+      include_examples 'calls inventory filters service once'
     end
   end
 
