@@ -7,7 +7,6 @@ import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.
 import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import InstanceRolesCrud from 'ee/roles_and_permissions/components/roles_crud/instance_roles_crud.vue';
 import { showRolesFetchError } from 'ee/roles_and_permissions/components/roles_crud/utils';
-import { stubComponent } from 'helpers/stub_component';
 import { instanceRolesResponse, newCustomRoleOption, newAdminRoleOption } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -33,9 +32,6 @@ describe('InstanceRolesCrud component', () => {
       provide: {
         newRolePath,
         glFeatures: { customRoles, customAdminRoles },
-      },
-      stubs: {
-        RolesCrud: stubComponent(RolesCrud, { props: ['roles', 'loading', 'newRoleOptions'] }),
       },
     });
 

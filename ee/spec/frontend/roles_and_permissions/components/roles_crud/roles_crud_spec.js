@@ -1,71 +1,37 @@
 import { GlButton, GlSprintf, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
-import Vue, { nextTick } from 'vue';
-import VueApollo from 'vue-apollo';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import groupRolesQuery from 'ee/roles_and_permissions/graphql/group_roles.query.graphql';
-import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.query.graphql';
-import adminRolesQuery from 'ee/roles_and_permissions/graphql/admin_roles.query.graphql';
 import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import RolesExport from 'ee/roles_and_permissions/components/roles_table/roles_export.vue';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import { createAlert } from '~/alert';
-import {
-  standardRoles,
-  memberRoles,
-  adminRoles,
-  groupRolesResponse,
-  instanceRolesResponse,
-  saasAdminRolesResponse,
-} from '../../mock_data';
-
-Vue.use(VueApollo);
-
-jest.mock('~/alert');
+import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
+import { memberRoles, instanceRolesResponse } from '../../mock_data';
 
 describe('RolesCrud component', () => {
   let wrapper;
 
   const mockToastShow = jest.fn();
-  const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(groupRolesResponse);
-  const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(instanceRolesResponse);
-  const saasAdminRolesSuccessQueryHandler = jest.fn().mockResolvedValue(saasAdminRolesResponse);
 
   const createComponent = ({
-    groupRolesQueryHandler = groupRolesSuccessQueryHandler,
-    instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
-    adminRolesQueryHandler = saasAdminRolesSuccessQueryHandler,
-    groupFullPath = 'test-group',
-    newRolePath = 'new/role/path',
-    isSaas = false,
+    roles = instanceRolesResponse.data,
+    loading = false,
+    newRoleOptions = [],
     membersPermissionsDetailedExport = true,
     exportGroupMemberships = true,
-    customRoles = true,
-    customAdminRoles = true,
   } = {}) => {
     wrapper = shallowMountExtended(RolesCrud, {
-      apolloProvider: createMockApollo([
-        [groupRolesQuery, groupRolesQueryHandler],
-        [instanceRolesQuery, instanceRolesQueryHandler],
-        [adminRolesQuery, adminRolesQueryHandler],
-      ]),
+      propsData: { roles, loading, newRoleOptions },
       provide: {
-        groupFullPath,
-        newRolePath,
-        isSaas,
-        glFeatures: { membersPermissionsDetailedExport, customRoles, customAdminRoles },
+        glFeatures: { membersPermissionsDetailedExport },
         glAbilities: { exportGroupMemberships },
       },
       stubs: {
         GlSprintf,
-        PageHeading,
-        CrudComponent,
+        CrudComponent: stubComponent(CrudComponent, { template: RENDER_ALL_SLOTS_TEMPLATE }),
         GlDisclosureDropdown,
-        GlDisclosureDropdownItem,
       },
       mocks: { $toast: { show: mockToastShow } },
     });
@@ -74,143 +40,120 @@ describe('RolesCrud component', () => {
   };
 
   const findRolesTable = () => wrapper.findComponent(RolesTable);
-  const findRoleCounts = () => wrapper.findByTestId('role-counts');
+  const findCrudTitle = () => wrapper.findByTestId('slot-title');
   const findDeleteModal = () => wrapper.findComponent(DeleteRoleModal);
   const findRolesExport = () => wrapper.findComponent(RolesExport);
   const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
   const findNewRoleButton = () => wrapper.findComponent(GlButton);
 
-  describe('common behavior', () => {
-    beforeEach(() => {
-      createComponent();
-    });
+  describe('new role button', () => {
+    describe('when there are no new role options', () => {
+      beforeEach(() => createComponent());
 
-    it('shows the New role button', () => {
-      const button = wrapper.findComponent(GlButton);
-
-      expect(button.text()).toBe('New role');
-      expect(button.props('size')).toBe('small');
-      expect(button.attributes('href')).toBe('new/role/path');
-    });
-
-    describe('roles table busy state', () => {
-      it('shows table as busy on page load', () => {
-        expect(findRolesTable().props('busy')).toBe(true);
+      it('does not show new role button', () => {
+        expect(findNewRoleButton().exists()).toBe(false);
       });
 
-      it('shows table as not busy after roles data is loaded', async () => {
-        await waitForPromises();
+      it('does not show new role dropdown', () => {
+        expect(findDisclosureDropdown().exists()).toBe(false);
+      });
+    });
 
-        expect(findRolesTable().props('busy')).toBe(false);
+    describe('when there is one new role option', () => {
+      beforeEach(() =>
+        createComponent({ newRoleOptions: [{ text: 'new role', href: 'abc/123' }] }),
+      );
+
+      it('shows new role button', () => {
+        expect(findNewRoleButton().props('href')).toBe('abc/123');
+        expect(findNewRoleButton().text()).toBe('New role');
+      });
+
+      it('does not show new role dropdown', () => {
+        expect(findDisclosureDropdown().exists()).toBe(false);
+      });
+    });
+
+    describe('when there are multiple new role options', () => {
+      const newRoleOptions = [
+        { text: 'Custom role', description: 'New custom role' },
+        { text: 'Admin role', description: 'New admin role' },
+      ];
+
+      beforeEach(() => createComponent({ newRoleOptions }));
+
+      it('does not show new role button', () => {
+        expect(findNewRoleButton().exists()).toBe(false);
+      });
+
+      it('shows new role dropdown', () => {
+        expect(findDisclosureDropdown().props()).toMatchObject({
+          toggleText: 'New role',
+          items: newRoleOptions,
+          fluidWidth: true,
+        });
+      });
+
+      it('shows expected number of dropdown items', () => {
+        expect(findDropdownItems()).toHaveLength(newRoleOptions.length);
+      });
+
+      it.each(newRoleOptions)('shows dropdown item for option "$text"', (option) => {
+        const index = newRoleOptions.indexOf(option);
+
+        expect(findDropdownItems().at(index).text()).toContain(option.text);
+        expect(findDropdownItems().at(index).text()).toContain(option.description);
       });
     });
   });
 
-  describe('new role button', () => {
-    it('shows split dropdown button when admin roles can be created', () => {
-      createComponent({ groupFullPath: '' });
+  describe('crud title', () => {
+    it('shows Roles text in header', () => {
+      createComponent();
 
-      expect(findDisclosureDropdown().props()).toMatchObject({
-        toggleText: 'New role',
-        placement: 'bottom-end',
-        fluidWidth: true,
-        items: [
-          {
-            text: 'Member role',
-            href: 'new/role/path',
-            description: 'Create a role to manage member permissions for groups and projects.',
-          },
-          {
-            text: 'Admin role',
-            href: 'new/role/path?admin',
-            description: 'Create a role to manage permissions in the Admin area.',
-          },
-        ],
-      });
+      expect(findCrudTitle().text()).toContain('Roles');
     });
 
     it.each`
-      phrase                                  | options
-      ${'for groups'}                         | ${{ groupFullPath: 'group' }}
-      ${'when admin roles cannot be created'} | ${{ customAdminRoles: false }}
-    `('shows new role button $phrase', ({ options }) => {
-      createComponent(options);
+      standardRoles   | customRoles | adminRoles  | expectedCount
+      ${[{}, {}, {}]} | ${[{}, {}]} | ${[{}]}     | ${'3 Default 2 Custom 1 Admin'}
+      ${[]}           | ${[]}       | ${[]}       | ${'0 Default 0 Custom 0 Admin'}
+      ${[{}]}         | ${[{}]}     | ${null}     | ${'1 Default 1 Custom'}
+      ${[{}]}         | ${null}     | ${null}     | ${'1 Default'}
+      ${null}         | ${null}     | ${[{}, {}]} | ${'2 Admin'}
+    `(
+      'shows role count: $expectedCount',
+      ({ standardRoles, customRoles, adminRoles, expectedCount }) => {
+        createComponent({
+          roles: {
+            standardRoles: { nodes: standardRoles },
+            memberRoles: { nodes: customRoles },
+            adminMemberRoles: { nodes: adminRoles },
+          },
+        });
 
-      expect(findDisclosureDropdown().exists()).toBe(false);
-      expect(findNewRoleButton().text()).toBe('New role');
-      expect(findNewRoleButton().attributes('href')).toBe('new/role/path');
-    });
+        expect(findCrudTitle().text()).toContain(expectedCount);
+      },
+    );
   });
 
-  describe.each`
-    type            | isSaas   | groupFullPath   | queryHandler                         | expectedQueryData
-    ${'SaaS group'} | ${true}  | ${'test-group'} | ${groupRolesSuccessQueryHandler}     | ${{ fullPath: 'test-group', includeCustomRoles: true, includeAdminRoles: true }}
-    ${'SaaS admin'} | ${true}  | ${''}           | ${saasAdminRolesSuccessQueryHandler} | ${{ fullPath: '', includeCustomRoles: true, includeAdminRoles: true }}
-    ${'instance'}   | ${false} | ${''}           | ${instanceRolesSuccessQueryHandler}  | ${{ fullPath: '', includeCustomRoles: true, includeAdminRoles: true }}
-  `('for $type-level roles', ({ isSaas, groupFullPath, queryHandler, expectedQueryData }) => {
-    beforeEach(() => createComponent({ isSaas, groupFullPath }));
+  describe('roles table', () => {
+    it('passes roles to table', () => {
+      const { data } = instanceRolesResponse;
+      createComponent();
 
-    it('fetches roles', () => {
-      expect(queryHandler).toHaveBeenCalledWith(expectedQueryData);
-    });
-  });
-
-  describe('for Self-Managed roles', () => {
-    beforeEach(() => createComponent({ groupFullPath: '', isSaas: false }));
-
-    it('fetches instance roles', () => {
-      expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledWith({
-        fullPath: '',
-        includeCustomRoles: true,
-        includeAdminRoles: true,
-      });
+      expect(findRolesTable().props('roles')).toEqual([
+        ...data.standardRoles.nodes,
+        ...data.memberRoles.nodes,
+        ...data.adminMemberRoles.nodes,
+      ]);
     });
 
-    it('shows role counts with admin roles', () => {
-      expect(findRoleCounts().text()).toBe('6 Default 2 Custom 2 Admin');
-    });
+    it.each([true, false])('passes loading prop %s to table', (loading) => {
+      createComponent({ loading });
 
-    it('passes admin roles to roles table', () => {
-      expect(findRolesTable().props('roles')).toEqual(expect.arrayContaining(adminRoles));
-    });
-  });
-
-  describe('for SaaS instance-level roles', () => {
-    beforeEach(() => createComponent({ groupFullPath: '', isSaas: true }));
-
-    it('shows role counts with admin roles', () => {
-      expect(findRoleCounts().text()).toBe('0 Default 0 Custom 2 Admin');
-    });
-
-    it('passes admin roles to roles table', () => {
-      expect(findRolesTable().props('roles')).toEqual(expect.arrayContaining(adminRoles));
-    });
-  });
-
-  describe('when there is a query error', () => {
-    it('shows an error message for group roles', async () => {
-      await createComponent({
-        isSaas: true,
-        groupRolesQueryHandler: jest.fn().mockRejectedValue(),
-      });
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to fetch roles.',
-        dismissible: false,
-      });
-    });
-
-    it('shows an error message for SaaS admin roles', async () => {
-      await createComponent({
-        groupFullPath: '',
-        isSaas: true,
-        adminRolesQueryHandler: jest.fn().mockRejectedValue(),
-      });
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to fetch roles.',
-        dismissible: false,
-      });
+      expect(findRolesTable().props('busy')).toBe(loading);
     });
   });
 
@@ -251,21 +194,9 @@ describe('RolesCrud component', () => {
         expect(findDeleteModal().props('role')).toBe(null);
       });
 
-      it('refetches custom roles query', () => {
-        expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledTimes(2);
+      it('emits deleted event', () => {
+        expect(wrapper.emitted('deleted')).toHaveLength(1);
       });
-    });
-  });
-
-  describe('when newRolePath is not set', () => {
-    beforeEach(() => {
-      createComponent({ newRolePath: null });
-    });
-
-    it('does not show the New role button', () => {
-      const button = wrapper.findComponent(GlButton);
-
-      expect(button.exists()).toBe(false);
     });
   });
 
@@ -286,27 +217,6 @@ describe('RolesCrud component', () => {
       createComponent({ exportGroupMemberships: true });
 
       expect(findRolesExport().exists()).toBe(true);
-    });
-  });
-
-  describe('when member roles is null', () => {
-    beforeEach(() =>
-      createComponent({
-        isSaas: true,
-        groupRolesQueryHandler: jest.fn().mockResolvedValue({
-          data: {
-            group: {
-              id: 'gid://gitlab/Group/1',
-              standardRoles: { nodes: standardRoles },
-              memberRoles: null,
-            },
-          },
-        }),
-      }),
-    );
-
-    it('renders the standard roles', () => {
-      expect(findRolesTable().props('roles')).toHaveLength(standardRoles.length);
     });
   });
 });

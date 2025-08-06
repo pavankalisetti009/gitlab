@@ -3,25 +3,40 @@ import { GlTabs, GlTab, GlSprintf, GlLink } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import RolesCrud from './roles_crud/roles_crud.vue';
+import InstanceRolesCrud from './roles_crud/instance_roles_crud.vue';
+import SaasGroupRolesCrud from './roles_crud/saas_group_roles_crud.vue';
+import SaasAdminRolesCrud from './roles_crud/saas_admin_roles_crud.vue';
 import LdapSyncCrud from './ldap_sync/ldap_sync_crud.vue';
 
 export const LDAP_TAB_QUERYSTRING_VALUE = 'ldap';
 
 export default {
-  components: { PageHeading, GlTabs, GlTab, RolesCrud, GlSprintf, GlLink, LdapSyncCrud },
+  components: { PageHeading, GlTabs, GlTab, GlSprintf, GlLink, LdapSyncCrud },
   mixins: [glFeatureFlagsMixin()],
-  inject: ['ldapServers'],
+  inject: ['ldapServers', 'groupFullPath'],
   props: {
     adminModeSettingPath: {
       type: String,
       required: false,
       default: '',
     },
+    isSaas: {
+      type: Boolean,
+      required: true,
+    },
   },
   computed: {
     showTabs() {
       return Boolean(this.ldapServers) && this.glFeatures.customAdminRoles;
+    },
+    crudType() {
+      if (this.isSaas) {
+        // If there's a groupFullPath, this is the top-level group roles and permissions page.
+        // Otherwise, it's the admin area roles and permissions page.
+        return this.groupFullPath ? SaasGroupRolesCrud : SaasAdminRolesCrud;
+      }
+
+      return InstanceRolesCrud;
     },
   },
   userPermissionsDocPath: helpPagePath('user/permissions'),
@@ -68,7 +83,7 @@ export default {
 
     <gl-tabs v-if="showTabs" sync-active-tab-with-query-params>
       <gl-tab :title="__('Roles')" query-param-value="roles" lazy>
-        <roles-crud class="gl-mt-5" />
+        <component :is="crudType" class="gl-mt-5" />
       </gl-tab>
       <gl-tab
         :title="__('LDAP Synchronization')"
@@ -79,6 +94,6 @@ export default {
       </gl-tab>
     </gl-tabs>
 
-    <roles-crud v-else />
+    <component :is="crudType" v-else class="gl-mt-5" />
   </div>
 </template>
