@@ -9,6 +9,8 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
   let_it_be(:guest) { create(:user, guest_of: project) }
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:maintainer) { create(:user, maintainer_of: project) }
+  let_it_be(:lowercase_name_developer) { create(:user, developer_of: project, username: 'testuser123') }
+  let_it_be(:uppercase_name_developer) { create(:user, developer_of: project, username: 'UPPER') }
   let_it_be(:owner) { create(:user, owner_of: project) }
   let_it_be(:invalid_email) { 'not_a_user@mail.com' }
   let_it_be(:non_member_extra_email) { create(:email, :confirmed, :skip_validate, user: non_member).email }
@@ -25,8 +27,11 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
       non_member.username,
       external_group.full_path,
       developer.username,
+      lowercase_name_developer.username.upcase,
+      uppercase_name_developer.username.downcase,
       maintainer.username,
       invited_group.full_path,
+      invited_group.full_path.upcase,
       project_group.full_path,
       parent_group.full_path
     ]
@@ -39,7 +44,9 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
       guest.email,
       developer.email,
       maintainer.private_commit_email,
-      maintainer_extra_email
+      maintainer_extra_email,
+      lowercase_name_developer.email,
+      uppercase_name_developer.email
     ]
     described_class.new(project, names: names, emails: emails)
   end
@@ -59,7 +66,9 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
       expect(filter.output_users).to contain_exactly(
         guest,
         developer,
-        maintainer
+        maintainer,
+        lowercase_name_developer,
+        uppercase_name_developer
       )
     end
   end
@@ -96,10 +105,12 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
   end
 
   describe '#valid_usernames' do
-    it 'returns all names that match an accessible user' do
+    it 'returns all names that match an accessible user regardless of case' do
       expect(filter.valid_usernames).to contain_exactly(
         developer.username,
-        maintainer.username
+        maintainer.username,
+        lowercase_name_developer.username.upcase,
+        uppercase_name_developer.username.downcase
       )
     end
   end
@@ -110,7 +121,9 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
         guest.email,
         developer.email,
         maintainer.private_commit_email,
-        maintainer_extra_email
+        maintainer_extra_email,
+        lowercase_name_developer.email,
+        uppercase_name_developer.email
       )
     end
   end

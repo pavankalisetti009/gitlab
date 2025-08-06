@@ -28,7 +28,9 @@ module Gitlab
         strong_memoize_attr :output_users
 
         def invalid_usernames
-          input_usernames - output_users.map(&:username)
+          input_usernames.reject do |input_username|
+            output_users_username_set.include?(input_username.downcase)
+          end
         end
         strong_memoize_attr :invalid_usernames
 
@@ -59,6 +61,11 @@ module Gitlab
         def valid_references?(references, invalid_references)
           !references.intersect?(invalid_references)
         end
+
+        def output_users_username_set
+          output_users.map { |user| user.username.downcase }.to_set
+        end
+        strong_memoize_attr :output_users_username_set
       end
     end
   end
