@@ -3,6 +3,8 @@
 module Ai
   module Catalog
     class Item < ApplicationRecord
+      include ActiveRecord::Sanitization::ClassMethods
+
       self.table_name = "ai_catalog_items"
 
       validates :organization, :item_type, :description, :name, presence: true
@@ -43,13 +45,30 @@ module Ai
         update(deleted_at: Time.zone.now)
       end
 
-      def definition(version)
-        @definition = case item_type.to_sym
-                      when AGENT_TYPE
-                        AgentDefinition.new(self, version)
-                      when FLOW_TYPE
-                        FlowDefinition.new(self, version)
-                      end
+      def definition(pinned_version_prefix = nil, pinned_version_id = nil)
+        version = pinned_version_id ? ItemVersion.find(pinned_version_id) : resolve_version(pinned_version_prefix)
+
+        case item_type.to_sym
+        when AGENT_TYPE
+          AgentDefinition.new(self, version)
+        when FLOW_TYPE
+          raise ArgumentError, "pinned_version_id is not supported for flows" if pinned_version_id
+
+          FlowDefinition.new(self, version)
+        end
+      end
+
+      def resolve_version(pinned_version_prefix = nil)
+        # TODO: filter only released versions once possible!
+        if pinned_version_prefix.nil?
+          latest_version
+        elsif pinned_version_prefix.to_s.count('.') == 2
+          versions.find_by(version: pinned_version_prefix)
+        else
+          sanitized_prefix = sanitize_sql_like(pinned_version_prefix)
+          # TODO: switch to VersionSorter https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200213#note_2668488811
+          versions.where('version LIKE ?', "#{sanitized_prefix}.%").order(id: :desc).first
+        end
       end
 
       private

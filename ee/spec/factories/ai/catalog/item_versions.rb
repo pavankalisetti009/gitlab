@@ -31,7 +31,7 @@ FactoryBot.define do
         {
           'triggers' => [1],
           'steps' => [
-            { 'agent_id' => 1 }
+            { 'agent_id' => 1, 'current_version_id' => 10, 'pinned_version_prefix' => nil }
           ]
         }
       end

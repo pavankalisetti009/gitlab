@@ -176,13 +176,13 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   end
 
   describe '#definition' do
-    let(:version) { '1.0.0' }
+    let(:version) { item.latest_version }
 
     context 'when item_type is agent' do
-      let(:item) { build_stubbed(:ai_catalog_item, :agent) }
+      let(:item) { create(:ai_catalog_agent, :with_version) }
 
       it 'returns an AgentDefinition instance' do
-        result = item.definition(version)
+        result = item.definition(version.version)
 
         expect(result).to be_an_instance_of(Ai::Catalog::AgentDefinition)
       end
@@ -190,15 +190,15 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       it 'passes the item and version to AgentDefinition' do
         expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, version)
 
-        item.definition(version)
+        item.definition(version.version)
       end
     end
 
     context 'when item_type is flow' do
-      let(:item) { build_stubbed(:ai_catalog_item, :flow) }
+      let(:item) { create(:ai_catalog_flow, :with_version) }
 
       it 'returns a FlowDefinition instance' do
-        result = item.definition(version)
+        result = item.definition(version.version)
 
         expect(result).to be_an_instance_of(Ai::Catalog::FlowDefinition)
       end
@@ -206,19 +206,79 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       it 'passes the item and version to FlowDefinition' do
         expect(Ai::Catalog::FlowDefinition).to receive(:new).with(item, version)
 
-        item.definition(version)
+        item.definition(version.version)
+      end
+
+      context 'when pinned_version_id is provided' do
+        it 'raises an ArgumentError' do
+          expect { item.definition(nil, item.versions.first.id) }.to raise_error(
+            ArgumentError, 'pinned_version_id is not supported for flows'
+          )
+        end
       end
     end
 
-    context 'with different versions for the same item' do
-      let(:item) { build_stubbed(:ai_catalog_item, :agent) }
+    describe 'version resolution' do
+      let_it_be(:item) { create(:ai_catalog_agent) }
+      let_it_be(:v1_1) { create(:ai_catalog_agent_version, item: item, version: '1.1.0') }
+      let_it_be(:v2) { create(:ai_catalog_agent_version, item: item, version: '2.0.0') }
 
-      it 'creates separate definitions for different versions' do
-        expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, '1.0.0').once
-        expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, '2.0.0').once
+      context 'when no version_prefix is pinned' do
+        it 'resolves to the latest version' do
+          expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, v2).once
 
-        item.definition('1.0.0')
-        item.definition('2.0.0')
+          item.definition
+        end
+      end
+
+      context 'when a version_prefix is pinned' do
+        it 'resolves the correct version' do
+          expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, v1_1).once
+
+          item.definition('1.1.0')
+        end
+      end
+
+      context 'when a version_id is pinned' do
+        it 'returns the version by its id' do
+          expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, v1_1).once
+
+          item.definition(nil, v1_1.id)
+        end
+      end
+    end
+  end
+
+  describe '#resolve_version' do
+    let_it_be(:item) { create(:ai_catalog_agent) }
+    let_it_be(:v1) { create(:ai_catalog_agent_version, item: item, version: '1.0.0') }
+    let_it_be(:v1_1) { create(:ai_catalog_agent_version, item: item, version: '1.1.0') }
+    let_it_be(:v1_1_1) { create(:ai_catalog_agent_version, item: item, version: '1.1.1') }
+    let_it_be(:v1_10) { create(:ai_catalog_agent_version, item: item, version: '1.10.0') }
+    let_it_be(:v1_2) { create(:ai_catalog_agent_version, item: item, version: '1.2.0') }
+    let_it_be(:v2) { create(:ai_catalog_agent_version, item: item, version: '2.0.0') }
+
+    context 'when no version_prefix is pinned' do
+      it 'resolves to the latest version' do
+        expect(item.resolve_version).to eq(v2)
+      end
+    end
+
+    context 'when a major version_prefix is pinned' do
+      it 'resolves the correct version' do
+        expect(item.resolve_version('1')).to eq(v1_2)
+      end
+    end
+
+    context 'when a minor version_prefix is pinned' do
+      it 'resolves the correct version' do
+        expect(item.resolve_version('1.1')).to eq(v1_1_1)
+      end
+    end
+
+    context 'when a specific version_prefix (patch) is pinned' do
+      it 'resolves the correct version' do
+        expect(item.resolve_version('1.1.0')).to eq(v1_1)
       end
     end
   end

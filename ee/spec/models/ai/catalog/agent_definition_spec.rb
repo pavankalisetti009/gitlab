@@ -18,7 +18,7 @@ RSpec.describe Ai::Catalog::AgentDefinition, feature_category: :workflow_catalog
     create(:ai_catalog_agent_version, item: agent_item, definition: definition, version: '1.1.0')
   end
 
-  subject(:agent_definition) { described_class.new(agent_item, nil) }
+  subject(:agent_definition) { described_class.new(agent_item, agent_version) }
 
   describe 'inheritance' do
     it 'inherits from BaseDefinition' do

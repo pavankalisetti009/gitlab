@@ -10,7 +10,7 @@ module Ai
       private
 
       def tool_ids
-        Array(resolved_version.def_tools)
+        Array(version.def_tools)
       end
     end
   end
