@@ -1,8 +1,9 @@
 import Vue from 'vue';
-import { GlIcon } from '@gitlab/ui';
+import { GlIcon, GlPopover, GlTooltip } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WorkItemRolledUpData from '~/work_items/components/work_item_links/work_item_rolled_up_data.vue';
+import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -32,6 +33,7 @@ describe('WorkItemRolledUpData', () => {
     workItemIid = '2',
     workItemQueryHandler = workItemSuccessQueryHandler,
     rolledUpHealthStatus = mockRolledUpHealthStatus,
+    useCachedRolledUpWeights = false,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemRolledUpData, {
       propsData: {
@@ -42,6 +44,9 @@ describe('WorkItemRolledUpData', () => {
         rolledUpHealthStatus,
       },
       apolloProvider: createMockApollo([[workItemByIidQuery, workItemQueryHandler]]),
+      provide: {
+        glFeatures: { useCachedRolledUpWeights },
+      },
     });
   };
 
@@ -81,6 +86,48 @@ describe('WorkItemRolledUpData', () => {
       expect(findRolledUpWeight().exists()).toBe(true);
       expect(findRolledUpWeight().findComponent(GlIcon).props('name')).toBe('weight');
       expect(findRolledUpWeightValue().text()).toBe('10');
+    });
+
+    describe('tooltip text', () => {
+      const workItemResponse = workItemByIidResponseFactory({
+        canUpdate: true,
+        rolledUpWeight: 10,
+        editableWeightWidget: false,
+      });
+
+      describe('when work item type is an epic', () => {
+        it('mentions issue weight when useCachedRolledUpWeights is false', async () => {
+          createComponent({
+            workItemType: WORK_ITEM_TYPE_NAME_EPIC,
+            useCachedRolledUpWeights: false,
+            workItemQueryHandler: jest.fn().mockResolvedValue(workItemResponse),
+          });
+
+          await waitForPromises();
+
+          expect(findRolledUpWeight().exists()).toBe(true);
+          expect(findRolledUpWeight().findComponent(GlTooltip).text()).toBe('Issue weight');
+          expect(findRolledUpProgress().findComponent(GlPopover).text()).toMatch(
+            /0\/10\s+issue weight completed/,
+          );
+        });
+
+        it('does not mention issue weight when useCachedRolledUpWeights is true', async () => {
+          createComponent({
+            workItemType: WORK_ITEM_TYPE_NAME_EPIC,
+            useCachedRolledUpWeights: true,
+            workItemQueryHandler: jest.fn().mockResolvedValue(workItemResponse),
+          });
+
+          await waitForPromises();
+
+          expect(findRolledUpWeight().exists()).toBe(true);
+          expect(findRolledUpWeight().findComponent(GlTooltip).text()).toBe('Weight');
+          expect(findRolledUpProgress().findComponent(GlPopover).text()).toMatch(
+            /0\/10\s+weight completed/,
+          );
+        });
+      });
     });
   });
 

@@ -77,9 +77,6 @@ export default {
     hasProgress() {
       return Number.isInteger(this.progress);
     },
-    isWeightRollup() {
-      return this.metadataWidgets[WIDGET_TYPE_WEIGHT]?.widgetDefinition?.rollUp;
-    },
     weight() {
       return this.metadataWidgets[WIDGET_TYPE_WEIGHT]?.weight;
     },
@@ -87,7 +84,7 @@ export default {
       return this.metadataWidgets[WIDGET_TYPE_WEIGHT]?.rolledUpWeight;
     },
     workItemWeight() {
-      return this.isWeightRollup ? this.rolledUpWeight : this.weight;
+      return this.rolledUpWeight || this.weight;
     },
     shouldShowWeight() {
       return this.showWeight && Boolean(this.workItemWeight);
