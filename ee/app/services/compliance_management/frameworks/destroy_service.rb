@@ -40,7 +40,7 @@ module ComplianceManagement
       end
 
       def enqueue_project_settings_deletion_worker
-        ComplianceManagement::ProjectSettingsDestroyWorker.perform_async(framework.id)
+        ComplianceManagement::ProjectSettingsDestroyWorker.perform_async(nil, framework.id)
       end
 
       def error
