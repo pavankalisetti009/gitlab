@@ -25,6 +25,24 @@ For additional information for Helm chart installations, see
 
 - [PostgreSQL 14 is not supported starting from GitLab 18](../deprecations.md#postgresql-14-and-15-no-longer-supported). Upgrade PostgreSQL to at least version 16.8 before upgrading to GitLab 18.0 or later.
 
+## Issues to be aware of when upgrading from 17.11
+
+- **Known issue:** The feature flag `ci_only_one_persistent_ref_creation` causes pipeline failures during zero-downtime upgrades when Rails is upgraded but Sidekiq remains on version 17.11 (see details at [here](https://gitlab.com/gitlab-org/gitlab/-/issues/558808)).
+
+  **Prevention:** Open the Rails console and enable the feature flag before upgrading:
+
+  ```shell
+  $ sudo gitlab-rails console
+  Feature.enable(:ci_only_one_persistent_ref_creation)
+  ```
+
+  **If already affected:** Run this command and retry the failed pipelines:
+
+  ```shell
+  $ sudo gitlab-rails console
+  Rails.cache.delete_matched("pipeline:*:create_persistent_ref_service")
+  ```
+
 ## 18.1.0
 
 ### Geo installations 18.1.0
