@@ -106,10 +106,13 @@ RSpec.describe UserPreference do
       create_list(:group_with_plan, 2, plan: :ultimate_plan)
     end
 
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+
     let!(:add_on_purchases) do
       [
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups.first),
-        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: groups.second)
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: groups.first),
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: groups.second),
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups.first)
       ]
     end
 
@@ -119,8 +122,8 @@ RSpec.describe UserPreference do
       end
     end
 
-    let(:first_assignment_id) { user_assignments.first.id }
-    let(:second_assignment_id) { user_assignments.second.id }
+    let(:first_assignment_id) { user_preference.distinct_eligible_duo_add_on_assignments.to_a.first.id }
+    let(:second_assignment_id) { user_preference.distinct_eligible_duo_add_on_assignments.to_a.second.id }
 
     context 'when default_duo_add_on_assignment_id has not changed?' do
       it 'does call #check_seat_for_default_duo_namespace' do
