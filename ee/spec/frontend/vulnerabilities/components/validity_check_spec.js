@@ -180,18 +180,29 @@ describe('ValidityCheck', () => {
     });
 
     describe('with errors', () => {
-      it.each`
-        scenario                | mutationHandler
-        ${'GraphQL errors'}     | ${() => jest.fn().mockResolvedValue(errorResponse)}
-        ${'mutation exception'} | ${() => jest.fn().mockRejectedValue(new Error('Network error'))}
-      `('shows error alert when $scenario occur', async ({ mutationHandler }) => {
-        createWrapperWithApollo({ mutationHandler: mutationHandler() });
+      it('shows error alert with the error message when GraphQL errors occur', async () => {
+        createWrapperWithApollo({ mutationHandler: jest.fn().mockResolvedValue(errorResponse) });
 
         await findRetryButton().vm.$emit('click');
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Could not refresh the validity check. Please try again.',
+          message: 'Validation failed. Token expired',
+          captureError: true,
+          error: expect.any(Error),
+        });
+      });
+
+      it('shows error alert with the error message when mutation exception occurs', async () => {
+        createWrapperWithApollo({
+          mutationHandler: jest.fn().mockRejectedValue(new Error('Network error')),
+        });
+
+        await findRetryButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Network error',
           captureError: true,
           error: expect.any(Error),
         });
