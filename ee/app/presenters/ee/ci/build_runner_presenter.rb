@@ -11,10 +11,6 @@ module EE
           secret['azure_key_vault']['server'] = azure_key_vault_server(secret) if secret['azure_key_vault']
           secret['gcp_secret_manager']['server'] = gcp_secret_manager_server(secret) if secret['gcp_secret_manager']
 
-          if ::Feature.enabled?(:ci_akeyless_secret, project) && (secret['akeyless'])
-            secret['akeyless']['server'] = akeyless_server(secret)
-          end
-
           if ::Feature.enabled?(:ci_aws_secrets_manager, project) && (secret['aws_secrets_manager'])
             secret['aws_secrets_manager']['server'] = aws_secrets_manager_server(secret)
           end
@@ -116,23 +112,6 @@ module EE
           'workload_identity_federation_pool_id' => variables['GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID']&.value,
           'workload_identity_federation_provider_id' =>
             variables['GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID']&.value,
-          'jwt' => secret['token']
-        }
-      end
-
-      def akeyless_server(secret)
-        @akeyless_server ||= {
-          'access_id' => variables['AKEYLESS_ACCESS_ID']&.value,
-          'access_key' => secret.dig('akeyless', 'akeyless_access_key'),
-          'akeyless_api_url' => secret.dig('akeyless', 'akeyless_api_url') || "https://api.akeyless.io",
-          'akeyless_access_type' => secret.dig('akeyless', 'akeyless_access_type') || "jwt",
-          'akeyless_token' => secret.dig('akeyless', 'akeyless_token') || "",
-          'uid_token' => secret.dig('akeyless', 'uid_token') || "",
-          'gcp_audience' => secret.dig('akeyless', 'gcp_audience') || "",
-          'azure_object_id' => secret.dig('akeyless', 'azure_object_id') || "",
-          'k8s_service_account_token' => secret.dig('akeyless', 'k8s_service_account_token') || "",
-          'k8s_auth_config_name' => secret.dig('akeyless', 'k8s_auth_config_name') || "",
-          'gateway_ca_certificate' => secret.dig('akeyless', 'gateway_ca_certificate') || "",
           'jwt' => secret['token']
         }
       end
