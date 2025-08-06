@@ -10,22 +10,18 @@ import waitForPromises from 'helpers/wait_for_promises';
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
+import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import {
+  mockAgent,
   mockAgents,
   mockCatalogItemsResponse,
   mockCatalogItemDeleteResponse,
   mockCatalogItemDeleteErrorResponse,
+  mockAiCatalogAgentResponse,
 } from '../mock_data';
 
-jest.mock('~/lib/utils/url_utility', () => {
-  return {
-    ...jest.requireActual('~/lib/utils/url_utility'),
-    removeParams: jest.fn(),
-    updateHistory: jest.fn(),
-  };
-});
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
@@ -38,6 +34,7 @@ describe('AiCatalogAgents', () => {
     push: jest.fn(),
   };
 
+  const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
   const deleteCatalogItemMutationHandler = jest.fn();
   const mockToast = {
@@ -46,6 +43,7 @@ describe('AiCatalogAgents', () => {
 
   const createComponent = ({ $route = {} } = {}) => {
     mockApollo = createMockApollo([
+      [aiCatalogAgentQuery, mockAgentQueryHandler],
       [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
       [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
     ]);
@@ -58,8 +56,6 @@ describe('AiCatalogAgents', () => {
         $route,
       },
     });
-
-    return waitForPromises();
   };
 
   const findGlAlert = () => wrapper.findComponent(GlAlert);
@@ -132,9 +128,29 @@ describe('AiCatalogAgents', () => {
         await createComponent({ $route: { query: { show: '1' } } });
       });
 
-      it('opens the drawer and passes activeItem as prop', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
-        expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockAgents[0]);
+      it('fetches full agent details', () => {
+        expect(mockAgentQueryHandler).toHaveBeenCalledTimes(1);
+        expect(mockAgentQueryHandler).toHaveBeenCalledWith({
+          id: mockAgents[0].id,
+        });
+      });
+
+      it('opens the drawer and passes found activeItem while loading', () => {
+        expect(findAiCatalogItemDrawer().props()).toMatchObject({
+          isOpen: true,
+          isItemDetailsLoading: true,
+          activeItem: mockAgents[0],
+        });
+      });
+
+      it('passes full details to drawer when loading is complete', async () => {
+        await waitForPromises();
+
+        expect(findAiCatalogItemDrawer().props()).toMatchObject({
+          isOpen: true,
+          isItemDetailsLoading: false,
+          activeItem: mockAgent,
+        });
       });
 
       describe('when closing the drawer', () => {
@@ -146,9 +162,7 @@ describe('AiCatalogAgents', () => {
           expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
         });
 
-        it('removes active agent and updates URL', () => {
-          expect(findAiCatalogItemDrawer().props('activeItem')).toBe(null);
-
+        it('updates router', () => {
           expect(mockRouter.push.mock.calls[0][0].query.show).toBeUndefined();
         });
       });
@@ -159,9 +173,12 @@ describe('AiCatalogAgents', () => {
         await createComponent({ $route: { query: { show: '100' } } });
       });
 
+      it('does not fetch full agent details', () => {
+        expect(mockAgentQueryHandler).not.toHaveBeenCalled();
+      });
+
       it('does not open the drawer', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-        expect(findAiCatalogItemDrawer().props('activeItem')).toBeNull();
       });
     });
   });

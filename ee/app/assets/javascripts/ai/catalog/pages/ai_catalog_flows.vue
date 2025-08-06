@@ -1,4 +1,5 @@
 <script>
+import { GlAlert } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -7,7 +8,9 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from 'ee/ai/catalog/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
+import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
@@ -15,6 +18,7 @@ import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../rou
 export default {
   name: 'AiCatalogFlows',
   components: {
+    GlAlert,
     AiCatalogList,
     AiCatalogItemDrawer,
   },
@@ -27,16 +31,42 @@ export default {
         this.checkDrawerParams();
       },
     },
+    aiCatalogFlow: {
+      query: aiCatalogFlowQuery,
+      skip() {
+        return !this.isItemSelected;
+      },
+      variables() {
+        return {
+          id: this.activeItem.id,
+        };
+      },
+      update(data) {
+        return data?.aiCatalogItem || {};
+      },
+      error(error) {
+        this.errorMessage = error.message;
+        Sentry.captureException(error);
+      },
+    },
   },
   data() {
     return {
       aiCatalogFlows: [],
+      aiCatalogFlow: {},
       activeItem: null,
+      errorMessage: null,
     };
   },
   computed: {
     isLoading() {
       return this.$apollo.queries.aiCatalogFlows.loading;
+    },
+    isItemDetailsLoading() {
+      return this.$apollo.queries.aiCatalogFlow.loading;
+    },
+    isItemSelected() {
+      return Boolean(this.activeItem?.id);
     },
     itemTypeConfig() {
       return {
@@ -57,6 +87,13 @@ export default {
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
       };
+    },
+    activeFlow() {
+      if (this.isItemDetailsLoading) {
+        return this.activeItem;
+      }
+
+      return this.aiCatalogFlow;
     },
   },
   watch: {
@@ -82,7 +119,6 @@ export default {
     checkDrawerParams() {
       const urlItemId = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
       if (urlItemId) {
-        // TODO: Fetch flow details from the API: https://gitlab.com/gitlab-org/gitlab/-/issues/557201
         this.activeItem =
           this.aiCatalogFlows?.find(
             (item) => this.formatId(item.id).toString() === urlItemId.toString(),
@@ -98,14 +134,22 @@ export default {
 
 <template>
   <div>
+    <gl-alert
+      v-if="errorMessage"
+      class="gl-mb-3 gl-mt-5"
+      variant="danger"
+      @dismiss="errorMessage = null"
+      >{{ errorMessage }}
+    </gl-alert>
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
     />
     <ai-catalog-item-drawer
-      :is-open="activeItem !== null"
-      :active-item="activeItem"
+      :is-open="isItemSelected"
+      :is-item-details-loading="isItemDetailsLoading"
+      :active-item="activeFlow"
       :edit-route="$options.editRoute"
       @close="closeDrawer"
     />

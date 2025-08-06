@@ -2461,6 +2461,9 @@ msgstr ""
 msgid "AICatalog|Delete agent"
 msgstr ""
 
+msgid "AICatalog|Description"
+msgstr ""
+
 msgid "AICatalog|Description is required."
 msgstr ""
 
@@ -2554,6 +2557,9 @@ msgstr ""
 msgid "AICatalog|System Prompt is required."
 msgstr ""
 
+msgid "AICatalog|System prompt"
+msgstr ""
+
 msgid "AICatalog|Test Run"
 msgstr ""
 
@@ -2582,6 +2588,9 @@ msgid "AICatalog|User Prompt"
 msgstr ""
 
 msgid "AICatalog|User Prompt is required."
+msgstr ""
+
+msgid "AICatalog|User prompt"
 msgstr ""
 
 msgid "AICatalog|Visibility level is required."

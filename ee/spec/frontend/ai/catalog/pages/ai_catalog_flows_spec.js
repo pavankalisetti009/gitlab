@@ -8,9 +8,15 @@ import waitForPromises from 'helpers/wait_for_promises';
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
+import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import aiCatalogFlowsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flows.query.graphql';
 
-import { mockCatalogFlowsResponse, mockFlows } from '../mock_data';
+import {
+  mockFlow,
+  mockAiCatalogFlowResponse,
+  mockCatalogFlowsResponse,
+  mockFlows,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -22,10 +28,14 @@ describe('AiCatalogFlows', () => {
     push: jest.fn(),
   };
 
+  const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogFlowsResponse);
 
   const createComponent = ({ $route = {} } = {}) => {
-    mockApollo = createMockApollo([[aiCatalogFlowsQuery, mockCatalogItemsQueryHandler]]);
+    mockApollo = createMockApollo([
+      [aiCatalogFlowQuery, mockFlowQueryHandler],
+      [aiCatalogFlowsQuery, mockCatalogItemsQueryHandler],
+    ]);
 
     wrapper = shallowMountExtended(AiCatalogFlows, {
       apolloProvider: mockApollo,
@@ -34,8 +44,6 @@ describe('AiCatalogFlows', () => {
         $route,
       },
     });
-
-    return waitForPromises();
   };
 
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
@@ -98,9 +106,29 @@ describe('AiCatalogFlows', () => {
         await createComponent({ $route: { query: { show: '4' } } });
       });
 
-      it('opens the drawer and passes activeItem as prop', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
-        expect(findAiCatalogItemDrawer().props('activeItem')).toEqual(mockFlows[0]);
+      it('fetches full flow details', () => {
+        expect(mockFlowQueryHandler).toHaveBeenCalledTimes(1);
+        expect(mockFlowQueryHandler).toHaveBeenCalledWith({
+          id: mockFlows[0].id,
+        });
+      });
+
+      it('opens the drawer and passes found activeItem while loading', () => {
+        expect(findAiCatalogItemDrawer().props()).toMatchObject({
+          isOpen: true,
+          isItemDetailsLoading: true,
+          activeItem: mockFlows[0],
+        });
+      });
+
+      it('passes full details to drawer when loading is complete', async () => {
+        await waitForPromises();
+
+        expect(findAiCatalogItemDrawer().props()).toMatchObject({
+          isOpen: true,
+          isItemDetailsLoading: false,
+          activeItem: mockFlow,
+        });
       });
 
       describe('when closing the drawer', () => {
@@ -112,9 +140,7 @@ describe('AiCatalogFlows', () => {
           expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
         });
 
-        it('removes active flow and updates URL', () => {
-          expect(findAiCatalogItemDrawer().props('activeItem')).toBe(null);
-
+        it('updates router', () => {
           expect(mockRouter.push.mock.calls[0][0].query.show).toBeUndefined();
         });
       });
@@ -125,9 +151,12 @@ describe('AiCatalogFlows', () => {
         await createComponent({ $route: { query: { show: '100' } } });
       });
 
+      it('does not fetch full flow details', () => {
+        expect(mockFlowQueryHandler).not.toHaveBeenCalled();
+      });
+
       it('does not open the drawer', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-        expect(findAiCatalogItemDrawer().props('activeItem')).toBeNull();
       });
     });
   });
