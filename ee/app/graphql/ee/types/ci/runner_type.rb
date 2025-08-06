@@ -11,6 +11,8 @@ module EE
         }.freeze
 
         prepended do
+          # NOTE: instance runners are exposed by default to any authenticated user,
+          # remember to protect any sensitive fields
           field :public_projects_minutes_cost_factor, GraphQL::Types::Float,
             null: true,
             description: 'Public projects\' "compute cost factor" associated with the runner (GitLab.com only).'
