@@ -140,14 +140,16 @@ module Groups
     def log_membership_update(group_id:, action:, prior_access_level:, access_level:, prior_member_role_id:, member_role_id:)
       @updated_membership[action] += 1
 
-      Gitlab::AppLogger.debug(message: "#{self.class.name} " \
-                                       "User: #{current_user.username} (#{current_user.id}), " \
-                                       "Action: #{action}, " \
-                                       "Group: #{group_id}, " \
-                                       "Prior Access: #{prior_access_level}, " \
-                                       "New Access: #{access_level}, " \
-                                       "Prior Member Role ID: #{prior_member_role_id}, " \
-                                       "New Member Role ID: #{member_role_id}")
+      Gitlab::AppLogger.info(
+        class: self.class.name,
+        user_id: current_user.id,
+        action: action,
+        group_id: group_id,
+        prior_access_level: prior_access_level,
+        new_access_level: access_level,
+        prior_member_role_id: prior_member_role_id,
+        new_member_role_id: member_role_id
+      )
     end
   end
 end
