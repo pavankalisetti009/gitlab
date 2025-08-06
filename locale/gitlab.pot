@@ -69976,6 +69976,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Name is a required field"
 msgstr ""
 
+msgid "VulnerabilityManagement|No data available"
+msgstr ""
+
 msgid "VulnerabilityManagement|No longer detected %{timeago} as of commit %{commitShaLink}"
 msgstr ""
 
@@ -70064,9 +70067,6 @@ msgid "VulnerabilityManagement|Will not fix or a false-positive"
 msgstr ""
 
 msgid "VulnerabilityManagement|invalid issue link or ID"
-msgstr ""
-
-msgid "VulnerabilityManagement|not available"
 msgstr ""
 
 msgid "VulnerabilityStatusTypes|Confirmed"
