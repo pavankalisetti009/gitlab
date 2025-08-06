@@ -3,11 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
-  let_it_be(:group) { create :group }
-
   context 'when current user is an admin', feature_category: :hosted_runners do
     include ::Ci::MinutesHelpers
 
+    let_it_be(:group) { create :group }
     let_it_be(:admin) { create(:admin) }
     let_it_be(:project, reload: true) { create(:project, namespace: group) }
 
@@ -64,7 +63,6 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
     let_it_be(:role) { create(:admin_member_role, :read_admin_groups, user: current_user) }
 
     before do
-      stub_feature_flags(admin_groups_vue: false)
       stub_licensed_features(custom_roles: true)
 
       enable_admin_mode!(current_user)
@@ -73,26 +71,80 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
     end
 
     describe 'list' do
-      before do
-        stub_feature_flags(admin_groups_vue: false)
+      let_it_be(:group) { create(:group, owners: [current_user]) }
+
+      it 'does not render admin-only buttons' do
+        visit admin_groups_path
+
+        expect(page).not_to have_content("New group")
       end
 
-      it 'renders without admin-only buttons' do
+      it 'does not render admin-only action buttons' do
         visit admin_groups_path
 
         expect(page).to have_content(group.name)
-        expect(page).not_to have_content("New group")
-        expect(page).not_to have_content("Edit")
-        expect(page).not_to have_content("Delete")
+
+        within_testid("groups-list-item-#{group.id}") do
+          expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
+        end
+      end
+
+      context 'when admin_groups_vue is disabled' do
+        before do
+          stub_feature_flags(admin_groups_vue: false)
+        end
+
+        it 'does not render admin-only action buttons' do
+          visit admin_groups_path
+
+          expect(page).to have_content(group.name)
+
+          expect(page).not_to have_content("Edit")
+          expect(page).not_to have_content("Delete")
+        end
       end
     end
 
     describe 'show', :aggregate_failures do
+      let_it_be(:group) { create :group }
+
       it 'shows the group without admin-only buttons' do
         visit admin_group_path(group)
 
         expect(page).to have_content group.name
         expect(page).not_to have_content("Edit")
+      end
+    end
+  end
+
+  context 'when current user is an admin', :js do
+    let_it_be(:current_user) { create(:admin) }
+
+    before do
+      enable_admin_mode!(current_user)
+      sign_in(current_user)
+    end
+
+    describe 'list' do
+      let_it_be(:group) { create(:group) }
+
+      it 'renders admin-only buttons' do
+        visit admin_groups_path
+
+        expect(page).to have_content("New group")
+      end
+
+      it 'renders admin-only action buttons' do
+        visit admin_groups_path
+
+        expect(page).to have_content(group.name)
+
+        find_by_testid('groups-projects-more-actions-dropdown').click
+
+        within_testid('groups-projects-more-actions-dropdown') do
+          expect(page).to have_content('Edit')
+          expect(page).to have_content('Delete')
+        end
       end
     end
   end
