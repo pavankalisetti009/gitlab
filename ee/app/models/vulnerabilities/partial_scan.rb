@@ -20,6 +20,14 @@ module Vulnerabilities
 
     before_validation :set_attributes_from_scan
 
+    scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
+
+    def self.distinct_scan_types
+      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- This is limited by the number of scan types that exist
+      select(:scan_type).distinct.pluck(:scan_type)
+      # rubocop:enable Database/AvoidUsingPluckWithoutLimit
+    end
+
     def set_attributes_from_scan
       # Since this happens before validation it is possible that there is no scan
       return unless scan

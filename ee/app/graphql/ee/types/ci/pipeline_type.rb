@@ -39,6 +39,18 @@ module EE
             description: 'Vulnerability finding reported on the pipeline.',
             resolver: ::Resolvers::SecurityReport::FindingResolver
 
+          field :enabled_security_scans,
+            ::Types::Security::EnabledScansType,
+            description: 'Security scans present in the pipeline and its descendents for each report type',
+            resolver: ::Resolvers::Security::EnabledScansResolver,
+            experiment: { milestone: '18.3' }
+
+          field :enabled_partial_security_scans,
+            ::Types::Security::EnabledScansType,
+            description: 'Partial scans present in the pipeline and its descendents for each report type',
+            resolver: ::Resolvers::Security::EnabledPartialScansResolver,
+            experiment: { milestone: '18.3' }
+
           field :code_quality_reports,
             ::Types::Ci::CodeQualityDegradationType.connection_type,
             null: true,
