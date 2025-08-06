@@ -7,7 +7,7 @@ class Groups::Security::MergeCommitReportsController < Groups::ApplicationContro
   feature_category :compliance_management
 
   def index
-    Groups::ComplianceReportCsvService.new(
+    ::Groups::ComplianceReportCsvService.new(
       current_user,
       group,
       filter_params

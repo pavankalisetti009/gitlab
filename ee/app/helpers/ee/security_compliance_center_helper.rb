@@ -7,17 +7,17 @@ module EE
 
       group = container.is_a?(Group) ? container : container.group
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
-      violations_report = can?(current_user, :read_compliance_violations_report, container)
-      compliance_status_report_export_path =
-        group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
 
       if container.is_a?(Group)
+        compliance_status_report_export_path =
+          group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
+
         {
           feature_frameworks_report_enabled: true.to_s,
           feature_security_policies_enabled: can?(current_user, :read_security_orchestration_policies, group).to_s,
           framework_import_url: import_group_security_compliance_frameworks_path(group),
-          violations_csv_export_path: violations_report && group_security_compliance_violation_reports_path(
-            group, format: :csv),
+          compliance_violations_csv_export_path: _compliance_violations_csv_export_path(group),
+          violations_csv_export_path: _violations_csv_export_path(group),
           project_frameworks_csv_export_path: group_security_compliance_project_framework_reports_path(group,
             format: :csv),
           adherences_csv_export_path: adherence_report && group_security_compliance_standards_adherence_reports_path(
@@ -41,6 +41,20 @@ module EE
     end
 
     private
+
+    def _compliance_violations_csv_export_path(group)
+      return unless ::Feature.enabled?(:compliance_violations_report, group)
+      return unless can?(current_user, :read_compliance_violations_report, group)
+
+      group_security_compliance_dashboard_exports_violations_report_path(group, format: :csv)
+    end
+
+    # merge request violations (legacy)
+    def _violations_csv_export_path(group)
+      return unless can?(current_user, :read_compliance_violations_report, group)
+
+      group_security_compliance_violation_reports_path(group, format: :csv)
+    end
 
     def general_app_data(container)
       project = container.is_a?(Project) ? container : nil

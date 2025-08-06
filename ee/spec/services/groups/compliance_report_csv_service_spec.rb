@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::ComplianceReportCsvService, :freeze_time, feature_category: :compliance_management do
+RSpec.describe ::Groups::ComplianceReportCsvService, :freeze_time, feature_category: :compliance_management do
   subject(:service) { described_class.new(user, group, filters) }
 
   let(:from) { DateTime.parse('2014-01-01') }

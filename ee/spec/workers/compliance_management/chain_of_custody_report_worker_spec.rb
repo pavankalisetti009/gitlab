@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ChainOfCustodyReportWorker, feature_category: :compliance_management do
   let(:worker) { described_class.new }
-  let(:service) { instance_double(Groups::ComplianceReportCsvService, csv_data: 'data') }
+  let(:service) { instance_double(::Groups::ComplianceReportCsvService, csv_data: 'data') }
   let(:csv_data) { 'foo,bar,baz' }
   let(:service_response) { ServiceResponse.success(payload: csv_data) }
   let(:job_args) do
@@ -16,7 +16,7 @@ RSpec.describe ComplianceManagement::ChainOfCustodyReportWorker, feature_categor
 
   describe "#perform" do
     before do
-      allow(Groups::ComplianceReportCsvService).to receive(:new)
+      allow(::Groups::ComplianceReportCsvService).to receive(:new)
                                                      .with(user, group, {})
                                                      .and_return(service)
       allow(service).to receive(:csv_data).and_return(service_response)
@@ -30,7 +30,7 @@ RSpec.describe ComplianceManagement::ChainOfCustodyReportWorker, feature_categor
       it 'calls the service' do
         worker.perform(job_args)
 
-        expect(Groups::ComplianceReportCsvService).to have_received(:new)
+        expect(::Groups::ComplianceReportCsvService).to have_received(:new)
         expect(service).to have_received(:csv_data)
       end
 
@@ -67,7 +67,7 @@ RSpec.describe ComplianceManagement::ChainOfCustodyReportWorker, feature_categor
                                              .with(ActiveRecord::RecordNotFound)
           subject
 
-          expect(Groups::ComplianceReportCsvService).not_to have_received(:new)
+          expect(::Groups::ComplianceReportCsvService).not_to have_received(:new)
         end
       end
 
@@ -81,7 +81,7 @@ RSpec.describe ComplianceManagement::ChainOfCustodyReportWorker, feature_categor
 
           subject
 
-          expect(Groups::ComplianceReportCsvService).not_to have_received(:new)
+          expect(::Groups::ComplianceReportCsvService).not_to have_received(:new)
         end
       end
     end

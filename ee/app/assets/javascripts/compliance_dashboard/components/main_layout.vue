@@ -34,6 +34,7 @@ export default {
     'complianceStatusReportExportPath',
     'mergeCommitsCsvExportPath',
     'projectFrameworksCsvExportPath',
+    'complianceViolationsCsvExportPath',
     'violationsCsvExportPath',
     'adherencesCsvExportPath',
     'frameworksCsvExportPath',
@@ -156,6 +157,7 @@ export default {
           :compliance-status-report-export-path="complianceStatusReportExportPath"
           :project-frameworks-csv-export-path="projectFrameworksCsvExportPath"
           :merge-commits-csv-export-path="mergeCommitsCsvExportPath"
+          :compliance-violations-csv-export-path="complianceViolationsCsvExportPath"
           :violations-csv-export-path="violationsCsvExportPath"
           :adherences-csv-export-path="adherencesCsvExportPath"
           :frameworks-csv-export-path="frameworksCsvExportPath"

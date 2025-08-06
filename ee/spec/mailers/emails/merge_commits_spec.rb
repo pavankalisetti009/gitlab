@@ -23,7 +23,7 @@ RSpec.describe Emails::MergeCommits, feature_category: :compliance_management do
     end
 
     let(:csv_data) do
-      Groups::ComplianceReportCsvService.new(
+      ::Groups::ComplianceReportCsvService.new(
         current_user,
         group
       ).csv_data.payload

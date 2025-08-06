@@ -257,7 +257,7 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
         click_button _('Export')
 
         expect(page).to have_content('Send email of the chosen report as CSV')
-        expect(page).to have_content('Export violations report')
+        expect(page).to have_content('Export merge request violations report')
         expect(page).to have_content('Export list of project frameworks')
         expect(page).to have_content('Export custody report of a specific commit')
       end

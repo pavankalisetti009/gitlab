@@ -36,7 +36,7 @@ module ComplianceManagement
     private
 
     def csv_response
-      Groups::ComplianceReportCsvService.new(
+      ::Groups::ComplianceReportCsvService.new(
         @user,
         @group,
         @filter_params
