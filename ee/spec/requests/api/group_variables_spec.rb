@@ -53,7 +53,7 @@ RSpec.describe API::GroupVariables, feature_category: :ci_variables do
 
     include_examples 'audit event for variable access', :ci_group_variable do
       let(:make_request) { get api("/groups/#{group.id}/variables/#{audited_variable.key}", user) }
-      let(:expected_entity_id) { group.id }
+      let(:expected_entity) { group }
       let(:variable_attributes) { { group: group, hidden: is_hidden_variable, masked: is_masked_variable } }
     end
   end
