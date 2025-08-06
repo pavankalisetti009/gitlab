@@ -121,6 +121,9 @@ class EpicsFinder < IssuableFinder
   end
 
   def with_confidentiality_access_check(epics, groups)
+    # We can skip the expensive confidentiality checks here if we're filtering by confidential: false
+    # Any confidential items will be filtered out later in Epics::Findable#by_confidential
+    return epics if params[:confidential] == false
     return epics if can_read_all_epics_in_related_groups?
 
     group_set =

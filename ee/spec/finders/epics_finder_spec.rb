@@ -927,6 +927,32 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
               expect(execute).to match_array([base_epic2, public_epic1, public_epic2, internal_epic])
             end
           end
+
+          context 'for checking group confidential permission' do
+            it 'checks permission when confidential is true' do
+              finder = described_class.new(search_user, group_id: base_group.id, confidential: true)
+
+              expect(finder).to receive(:groups_with_confidential_access)
+
+              finder.execute
+            end
+
+            it 'checks permission when confidential is not set' do
+              finder = described_class.new(search_user, group_id: base_group.id)
+
+              expect(finder).to receive(:groups_with_confidential_access)
+
+              finder.execute
+            end
+
+            it 'does not check permission when confidential is false' do
+              finder = described_class.new(search_user, group_id: base_group.id, confidential: false)
+
+              expect(finder).not_to receive(:groups_with_confidential_access)
+
+              finder.execute
+            end
+          end
         end
 
         context 'with negated labels' do
