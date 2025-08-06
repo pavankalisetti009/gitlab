@@ -73,6 +73,17 @@ module EE
               ::Ci::Minutes::UpdateBuildMinutesService.new(build.project, nil).execute(build)
             end
           end
+
+          after_transition any => ::Ci::Build.completed_statuses do |build|
+            if ::Feature.enabled?(:ingest_sec_reports_when_sec_jobs_completed, build.project) &&
+                build.security_job?
+              build.run_after_commit do
+                ::Gitlab::EventStore.publish(
+                  ::Ci::JobSecurityScanCompletedEvent.new(data: { job_id: build.id })
+                )
+              end
+            end
+          end
         end
       end
 
@@ -203,7 +214,18 @@ module EE
       end
       strong_memoize_attr :pages
 
+      def security_job?
+        return false unless publishes_artifacts_reports?
+
+        ::EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types.intersect?(reports_file_types)
+      end
+      strong_memoize_attr :security_job?
+
       private
+
+      def reports_file_types
+        reports_definitions&.keys&.map(&:to_s)
+      end
 
       def expand_pages_variables
         pages_config

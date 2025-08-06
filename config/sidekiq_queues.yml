@@ -1009,6 +1009,8 @@
   - 1
 - - security_scans
   - 2
+- - security_scans_ingest_reports
+  - 1
 - - security_scans_purge_by_job_id
   - 1
 - - security_secret_detection_gitlab_token_verification

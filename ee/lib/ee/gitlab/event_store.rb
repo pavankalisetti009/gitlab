@@ -24,6 +24,7 @@ module EE
           # Add EE only subscriptions here:
 
           store.subscribe ::Security::Scans::PurgeByJobIdWorker, to: ::Ci::JobArtifactsDeletedEvent
+          store.subscribe ::Security::Scans::IngestReportsWorker, to: ::Ci::JobSecurityScanCompletedEvent
           store.subscribe ::Geo::CreateRepositoryUpdatedEventWorker,
             to: ::Repositories::KeepAroundRefsCreatedEvent,
             if: ->(_) { ::Gitlab::Geo.primary? }

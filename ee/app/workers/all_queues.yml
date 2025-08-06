@@ -3814,6 +3814,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_scans_ingest_reports
+  :worker_name: Security::Scans::IngestReportsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scans_purge_by_job_id
   :worker_name: Security::Scans::PurgeByJobIdWorker
   :feature_category: :vulnerability_management
