@@ -1,5 +1,4 @@
 <script>
-import { isEmpty } from 'lodash';
 import { GlAlert } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
@@ -11,6 +10,7 @@ import {
 } from '~/visibility_level/constants';
 import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from 'ee/ai/catalog/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
+import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
@@ -36,10 +36,29 @@ export default {
         this.checkDrawerParams();
       },
     },
+    aiCatalogAgent: {
+      query: aiCatalogAgentQuery,
+      skip() {
+        return !this.isItemSelected;
+      },
+      variables() {
+        return {
+          id: this.activeItem.id,
+        };
+      },
+      update(data) {
+        return data?.aiCatalogItem || {};
+      },
+      error(error) {
+        this.errorMessage = error.message;
+        Sentry.captureException(error);
+      },
+    },
   },
   data() {
     return {
       aiCatalogAgents: [],
+      aiCatalogAgent: {},
       activeItem: null,
       errorMessage: null,
     };
@@ -48,8 +67,11 @@ export default {
     isLoading() {
       return this.$apollo.queries.aiCatalogAgents.loading;
     },
+    isItemDetailsLoading() {
+      return this.$apollo.queries.aiCatalogAgent.loading;
+    },
     isItemSelected() {
-      return !isEmpty(this.activeItem);
+      return Boolean(this.activeItem?.id);
     },
     itemTypeConfig() {
       return {
@@ -78,6 +100,13 @@ export default {
             AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
       };
+    },
+    activeAgent() {
+      if (this.isItemDetailsLoading) {
+        return this.activeItem;
+      }
+
+      return this.aiCatalogAgent;
     },
   },
   watch: {
@@ -126,7 +155,6 @@ export default {
     checkDrawerParams() {
       const urlItemId = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
       if (urlItemId) {
-        // TODO: Fetch agent details from the API: https://gitlab.com/gitlab-org/gitlab/-/issues/557201
         this.activeItem =
           this.aiCatalogAgents.find(
             (item) => this.formatId(item.id).toString() === urlItemId.toString(),
@@ -159,7 +187,8 @@ export default {
     />
     <ai-catalog-item-drawer
       :is-open="isItemSelected"
-      :active-item="activeItem"
+      :is-item-details-loading="isItemDetailsLoading"
+      :active-item="activeAgent"
       :edit-route="$options.editRoute"
       @close="closeDrawer"
     />

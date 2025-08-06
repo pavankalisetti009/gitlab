@@ -1,8 +1,16 @@
 <script>
-import { GlButton, GlDrawer, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlDrawer, GlLoadingIcon, GlTooltipDirective } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import { AI_CATALOG_TYPE_AGENT, AI_CATALOG_TYPE_FLOW } from '../constants';
+import AiCatalogAgentDetails from './ai_catalog_agent_details.vue';
+import AiCatalogFlowDetails from './ai_catalog_flow_details.vue';
+
+const DETAILS_COMPONENT_MAP = {
+  [AI_CATALOG_TYPE_AGENT]: AiCatalogAgentDetails,
+  [AI_CATALOG_TYPE_FLOW]: AiCatalogFlowDetails,
+};
 
 export default {
   name: 'AiCatalogItemDrawer',
@@ -10,6 +18,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   components: {
+    GlLoadingIcon,
     GlButton,
     GlDrawer,
   },
@@ -17,6 +26,11 @@ export default {
     isOpen: {
       type: Boolean,
       required: true,
+    },
+    isItemDetailsLoading: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     activeItem: {
       type: Object,
@@ -35,6 +49,9 @@ export default {
     },
     activeItemId() {
       return this.activeItem ? getIdFromGraphQLId(this.activeItem.id) : '';
+    },
+    detailsComponent() {
+      return DETAILS_COMPONENT_MAP[this.activeItem.itemType];
     },
   },
   DRAWER_Z_INDEX,
@@ -67,12 +84,13 @@ export default {
       </div>
     </template>
     <template #default>
-      <div class="xl:!gl-px-6">
-        <div>
-          <p>
-            {{ activeItem.description }}
-          </p>
-        </div>
+      <div class="xl:!gl-px-6" data-testid="ai-catalog-item-drawer-content">
+        <dl>
+          <dt>{{ s__('AICatalog|Description') }}</dt>
+          <dd>{{ activeItem.description }}</dd>
+          <gl-loading-icon v-if="isItemDetailsLoading" size="lg" class="gl-my-5" />
+          <component :is="detailsComponent" :item="activeItem" />
+        </dl>
       </div>
     </template>
   </gl-drawer>

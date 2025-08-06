@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlButton } from '@gitlab/ui';
 import AiCatalogFormButtons from 'ee/ai/catalog/components/ai_catalog_form_buttons.vue';
 
-describe('AiCatalogAgentForm', () => {
+describe('AiCatalogFormButtons', () => {
   let wrapper;
 
   const findButton = () => wrapper.findComponent(GlButton);
