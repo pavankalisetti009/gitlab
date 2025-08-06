@@ -289,13 +289,14 @@ describe('PolicyExceptionsModal', () => {
         propsData: {
           exceptions: {
             roles: mockRoles,
+            custom_roles: [{ id: 1 }],
           },
           selectedTab: ROLES,
         },
       });
 
       expect(findRolesSelector().exists()).toBe(true);
-      expect(findRolesSelector().props('selectedRoles')).toEqual(mockRoles);
+      expect(findRolesSelector().props('selectedRoles')).toEqual([...mockRoles, 1]);
 
       expect(findModalTitle().text()).toBe('Roles');
       expect(findModalSubtitle().text()).toBe(

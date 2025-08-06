@@ -27,8 +27,10 @@ export default {
     selectRoles({ role_approvers: roles = [] }) {
       const payload = roles.reduce(
         (acc, roleId) => {
-          const targetArray = this.isCustomRole(roleId) ? 'custom_roles' : 'roles';
-          acc[targetArray].push(roleId);
+          const isCustom = this.isCustomRole(roleId);
+          const targetArray = isCustom ? 'custom_roles' : 'roles';
+          const id = isCustom ? { id: roleId } : roleId;
+          acc[targetArray].push(id);
           return acc;
         },
         { roles: [], custom_roles: [] },
