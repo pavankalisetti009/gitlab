@@ -10,6 +10,7 @@ import getAvailableBulkEditWidgets from '~/work_items/graphql/list/get_available
 import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
 import WorkItemBulkEditLabels from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_labels.vue';
 import { createAlert } from '~/alert';
+import WorkItemBulkEditStatus from 'ee_component/work_items/components/work_item_bulk_edit/work_item_bulk_edit_status.vue';
 import WorkItemBulkEditIteration from 'ee_component/work_items/components/list/work_item_bulk_edit_iteration.vue';
 import { BULK_EDIT_NO_VALUE, WIDGET_TYPE_ITERATION } from '~/work_items/constants';
 import { availableBulkEditWidgetsQueryResponse } from '../../mock_data';
@@ -73,6 +74,7 @@ describe('WorkItemBulkEditSidebar component EE', () => {
       provide: {
         hasIssuableHealthStatusFeature: true,
         hasIterationsFeature: true,
+        hasStatusFeature: true,
         ...provide,
       },
       propsData: {
@@ -88,6 +90,7 @@ describe('WorkItemBulkEditSidebar component EE', () => {
   };
 
   const findForm = () => wrapper.findComponent(GlForm);
+  const findStatusComponent = () => wrapper.findComponent(WorkItemBulkEditStatus);
   const findIterationComponent = () => wrapper.findComponent(WorkItemBulkEditIteration);
   const findAddLabelsComponent = () => wrapper.findAllComponents(WorkItemBulkEditLabels).at(0);
   const findRemoveLabelsComponent = () => wrapper.findAllComponents(WorkItemBulkEditLabels).at(1);
@@ -138,9 +141,12 @@ describe('WorkItemBulkEditSidebar component EE', () => {
 
   describe('when work_items_bulk_edit is enabled', () => {
     it('calls mutation to bulk edit ee attributes', async () => {
+      const status = 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2';
+      const iterationId = 'gid://gitlab/Iteration/1215';
       createComponent({
         provide: {
           glFeatures: {
+            workItemStatusFeatureFlag: true,
             workItemsBulkEdit: true,
           },
         },
@@ -148,7 +154,8 @@ describe('WorkItemBulkEditSidebar component EE', () => {
       });
       await waitForPromises();
 
-      findIterationComponent().vm.$emit('input', 'gid://gitlab/Iteration/1215');
+      findIterationComponent().vm.$emit('input', iterationId);
+      findStatusComponent().vm.$emit('input', status);
       findForm().vm.$emit('submit', { preventDefault: () => {} });
 
       expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
@@ -156,7 +163,10 @@ describe('WorkItemBulkEditSidebar component EE', () => {
           fullPath: 'group/project',
           ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
           iterationWidget: {
-            iterationId: 'gid://gitlab/Iteration/1215',
+            iterationId,
+          },
+          statusWidget: {
+            status,
           },
           assigneesWidget: undefined,
           confidential: undefined,
@@ -191,6 +201,27 @@ describe('WorkItemBulkEditSidebar component EE', () => {
           },
         },
       });
+    });
+  });
+
+  describe('"Status" component', () => {
+    it('renders status dropdown when required feature is available and feature-flags are enabled', async () => {
+      createComponent({
+        provide: {
+          glFeatures: {
+            workItemStatusFeatureFlag: true,
+            workItemsBulkEdit: true,
+          },
+        },
+        props: {
+          isEpicsList: false,
+        },
+      });
+
+      await nextTick();
+      await advanceApolloTimers();
+
+      expect(findStatusComponent().exists()).toBe(true);
     });
   });
 
