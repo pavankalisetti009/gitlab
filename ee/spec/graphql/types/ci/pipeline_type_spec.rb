@@ -9,6 +9,8 @@ RSpec.describe GitlabSchema.types['Pipeline'], feature_category: :vulnerability_
     expected_fields = %w[
       security_report_summary
       security_report_findings
+      enabled_security_scans
+      enabled_partial_security_scans
       code_quality_reports
       dast_profile
     ]

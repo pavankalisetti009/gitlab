@@ -32,7 +32,6 @@ module Security
 
     scope :by_scan_types, ->(scan_types) { where(scan_type: sanitize_scan_types(scan_types)) }
     scope :by_project, ->(project) { where(project: project) }
-    scope :distinct_scan_types, -> { select(:scan_type).distinct.pluck(:scan_type) }
     scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
     scope :latest, -> { where(latest: true) }
     scope :latest_successful, -> { latest.succeeded }
@@ -49,6 +48,10 @@ module Security
     alias_attribute :type, :scan_type
 
     before_save :ensure_project_id_pipeline_id
+
+    def self.distinct_scan_types
+      select(:scan_type).distinct.pluck(:scan_type)
+    end
 
     def self.sanitize_scan_types(given_types)
       scan_types.keys & Array(given_types).map(&:to_s)
