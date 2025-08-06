@@ -50740,6 +50740,9 @@ msgstr ""
 msgid "Promotions|Keep track of events in your project"
 msgstr ""
 
+msgid "Promotions|Learn more"
+msgstr ""
+
 msgid "Promotions|Merge request approvals"
 msgstr ""
 
@@ -50777,6 +50780,12 @@ msgid "Promotions|This feature is locked."
 msgstr ""
 
 msgid "Promotions|Try it for free"
+msgstr ""
+
+msgid "Promotions|Unlock epics, advanced boards, status, weight, iterations, and more to seamlessly tie your strategy to your DevSecOps workflows with GitLab."
+msgstr ""
+
+msgid "Promotions|Upgrade for advanced agile planning"
 msgstr ""
 
 msgid "Promotions|Upgrade plan"
