@@ -24531,6 +24531,7 @@ CI/CD variables for a GitLab instance.
 | <a id="cijobrefname"></a>`refName` | [`String`](#string) | Ref name of the job. |
 | <a id="cijobrefpath"></a>`refPath` | [`String`](#string) | Path to the ref. |
 | <a id="cijobretried"></a>`retried` | [`Boolean`](#boolean) | Indicates that the job has been retried. |
+| <a id="cijobretrypath"></a>`retryPath` | [`String`](#string) | Retry path of the job. |
 | <a id="cijobretryable"></a>`retryable` | [`Boolean!`](#boolean) | Indicates the job can be retried. |
 | <a id="cijobrunner"></a>`runner` | [`CiRunner`](#cirunner) | Runner assigned to execute the job. |
 | <a id="cijobrunnermanager"></a>`runnerManager` | [`CiRunnerManager`](#cirunnermanager) | Runner manager assigned to the job. |
@@ -24598,6 +24599,7 @@ CI/CD variables for a GitLab instance.
 | <a id="cijobminimalaccessrefname"></a>`refName` | [`String`](#string) | Ref name of the job. |
 | <a id="cijobminimalaccessrefpath"></a>`refPath` | [`String`](#string) | Path to the ref. |
 | <a id="cijobminimalaccessretried"></a>`retried` | [`Boolean`](#boolean) | Indicates that the job has been retried. |
+| <a id="cijobminimalaccessretrypath"></a>`retryPath` | [`String`](#string) | Retry path of the job. |
 | <a id="cijobminimalaccessretryable"></a>`retryable` | [`Boolean`](#boolean) | Indicates the job can be retried. |
 | <a id="cijobminimalaccessrunner"></a>`runner` | [`CiRunner`](#cirunner) | Runner assigned to execute the job. |
 | <a id="cijobminimalaccessscheduled"></a>`scheduled` | [`Boolean`](#boolean) | Indicates the job is scheduled. |
@@ -51086,6 +51088,7 @@ Implementations:
 | <a id="cijobinterfacerefname"></a>`refName` | [`String`](#string) | Ref name of the job. |
 | <a id="cijobinterfacerefpath"></a>`refPath` | [`String`](#string) | Path to the ref. |
 | <a id="cijobinterfaceretried"></a>`retried` | [`Boolean`](#boolean) | Indicates that the job has been retried. |
+| <a id="cijobinterfaceretrypath"></a>`retryPath` | [`String`](#string) | Retry path of the job. |
 | <a id="cijobinterfaceretryable"></a>`retryable` | [`Boolean`](#boolean) | Indicates the job can be retried. |
 | <a id="cijobinterfacerunner"></a>`runner` | [`CiRunner`](#cirunner) | Runner assigned to execute the job. |
 | <a id="cijobinterfacescheduled"></a>`scheduled` | [`Boolean`](#boolean) | Indicates the job is scheduled. |
