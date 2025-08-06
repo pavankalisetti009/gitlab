@@ -1,0 +1,10 @@
+---
+name: ingest_sec_reports_when_sec_jobs_completed
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/513326
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195012
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/554222
+milestone: '18.3'
+group: group::security infrastructure
+type: gitlab_com_derisk
+default_enabled: false

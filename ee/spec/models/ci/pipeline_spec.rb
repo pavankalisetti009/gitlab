@@ -218,26 +218,46 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         allow(redis_spy).to receive(:ttl).and_return(10) # to allow event tracking Redis call
       end
 
-      it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
-        expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
-
-        transition_pipeline
-
-        expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer))
-      end
-
-      context 'when the security scans can not be stored for the pipeline' do
+      context "when ingest_sec_reports_when_sec_jobs_completed set to true" do
         before do
-          allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: true)
         end
 
-        it 'deletes the polling cache key' do
-          expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:twice)
+        it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
+          expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
 
           transition_pipeline
 
-          expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer)).once
-          expect(redis_spy).to have_received(:del).with(cache_key).once
+          expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer))
+        end
+      end
+
+      context "when ingest_sec_reports_when_sec_jobs_completed set to false" do
+        before do
+          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: false)
+        end
+
+        it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
+          expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
+
+          transition_pipeline
+
+          expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer))
+        end
+
+        context 'when the security scans can not be stored for the pipeline' do
+          before do
+            allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+          end
+
+          it 'deletes the polling cache key' do
+            expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:twice)
+
+            transition_pipeline
+
+            expect(redis_spy).to have_received(:set).with(cache_key, pipeline_id, ex: kind_of(Integer)).once
+            expect(redis_spy).to have_received(:del).with(cache_key).once
+          end
         end
       end
     end
@@ -258,23 +278,55 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         allow(pipeline).to receive(:can_store_security_reports?).and_return(can_store_security_reports)
       end
 
-      context 'when the security scans can be stored for the pipeline' do
-        let(:can_store_security_reports) { true }
+      context 'when ingest_sec_reports_when_sec_jobs_completed flag is disabled' do
+        before do
+          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: false)
+        end
 
-        it 'schedules store security scans job' do
-          transition_pipeline
+        context 'when the security scans can be stored for the pipeline' do
+          let(:can_store_security_reports) { true }
 
-          expect(::Security::StoreScansWorker).to have_received(:perform_async).with(pipeline.id)
+          it 'schedules store security scans job' do
+            transition_pipeline
+
+            expect(::Security::StoreScansWorker).to have_received(:perform_async).with(pipeline.id)
+          end
+        end
+
+        context 'when the security scans can not be stored for the pipeline' do
+          let(:can_store_security_reports) { false }
+
+          it 'does not schedule store security scans job' do
+            transition_pipeline
+
+            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+          end
         end
       end
 
-      context 'when the security scans can not be stored for the pipeline' do
-        let(:can_store_security_reports) { false }
+      context 'when ingest_sec_reports_when_sec_jobs_completed flag is enabled' do
+        before do
+          stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: true)
+        end
 
-        it 'does not schedule store security scans job' do
-          transition_pipeline
+        context 'when the security scans can be stored for the pipeline' do
+          let(:can_store_security_reports) { true }
 
-          expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+          it 'does not schedule store security scans job' do
+            transition_pipeline
+
+            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+          end
+        end
+
+        context 'when the security scans can not be stored for the pipeline' do
+          let(:can_store_security_reports) { false }
+
+          it 'does not schedule store security scans job' do
+            transition_pipeline
+
+            expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
+          end
         end
       end
     end
@@ -349,57 +401,123 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
       allow(::Sbom::ScheduleIngestReportsService).to receive(:new).with(pipeline).and_return(sbom_ingestion_scheduler)
     end
 
-    shared_examples_for 'ingesting sbom reports' do
-      context 'when security reports are available' do
-        before do
-          allow(pipeline).to receive(:can_store_security_reports?).and_return(true)
+    context 'when ingest_sec_reports_when_sec_jobs_completed flag is disabled' do
+      before do
+        stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: false)
+      end
+
+      shared_examples_for 'ingesting sbom reports' do
+        context 'when security reports are available' do
+          before do
+            allow(pipeline).to receive(:can_store_security_reports?).and_return(true)
+          end
+
+          it 'does not try to ingest the SBOM reports' do
+            transition_pipeline
+
+            expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          end
         end
 
-        it 'does not try to ingest the SBOM reports' do
-          transition_pipeline
+        context 'when security reports are not available' do
+          before do
+            allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+          end
 
-          expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          it 'tries to ingest sbom reports' do
+            transition_pipeline
+
+            expect(::Sbom::ScheduleIngestReportsService).to have_received(:new).with(pipeline)
+            expect(sbom_ingestion_scheduler).to have_received(:execute)
+          end
         end
       end
 
-      context 'when security reports are not available' do
-        before do
-          allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+      context 'when transitioning to completed or blocked status' do
+        where(:transition) { %i[succeed drop skip cancel block] }
+
+        with_them do
+          it_behaves_like 'ingesting sbom reports'
+        end
+      end
+
+      context 'when transitioning to a non-completed status except block' do
+        where(:transition) do
+          %i[
+            enqueue
+            request_resource
+            prepare
+            run
+            delay
+          ]
         end
 
-        it 'tries to ingest sbom reports' do
-          transition_pipeline
+        with_them do
+          it 'does not try to ingest sbom reports' do
+            transition_pipeline
 
-          expect(::Sbom::ScheduleIngestReportsService).to have_received(:new).with(pipeline)
-          expect(sbom_ingestion_scheduler).to have_received(:execute)
+            expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          end
         end
       end
     end
 
-    context 'when transitioning to completed or blocked status' do
-      where(:transition) { %i[succeed drop skip cancel block] }
-
-      with_them do
-        it_behaves_like 'ingesting sbom reports'
-      end
-    end
-
-    context 'when transitioning to a non-completed status except block' do
-      where(:transition) do
-        %i[
-          enqueue
-          request_resource
-          prepare
-          run
-          delay
-        ]
+    context 'when ingest_sec_reports_when_sec_jobs_completed flag is enabled' do
+      before do
+        stub_feature_flags(ingest_sec_reports_when_sec_jobs_completed: true)
       end
 
-      with_them do
-        it 'does not try to ingest sbom reports' do
-          transition_pipeline
+      shared_examples_for 'ingesting sbom reports' do
+        context 'when security reports are available' do
+          before do
+            allow(pipeline).to receive(:can_store_security_reports?).and_return(true)
+          end
 
-          expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          it 'does not try to ingest the SBOM reports' do
+            transition_pipeline
+
+            expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          end
+        end
+
+        context 'when security reports are not available' do
+          before do
+            allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+          end
+
+          it 'tries to ingest sbom reports' do
+            transition_pipeline
+
+            expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          end
+        end
+      end
+
+      context 'when transitioning to completed or blocked status' do
+        where(:transition) { %i[succeed drop skip cancel block] }
+
+        with_them do
+          it_behaves_like 'ingesting sbom reports'
+        end
+      end
+
+      context 'when transitioning to a non-completed status except block' do
+        where(:transition) do
+          %i[
+            enqueue
+            request_resource
+            prepare
+            run
+            delay
+          ]
+        end
+
+        with_them do
+          it 'does not try to ingest sbom reports' do
+            transition_pipeline
+
+            expect(::Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+          end
         end
       end
     end

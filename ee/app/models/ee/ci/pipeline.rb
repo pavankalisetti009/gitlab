@@ -74,13 +74,15 @@ module EE
           end
 
           after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            pipeline.run_after_commit do
-              if pipeline.can_store_security_reports?
-                ::Security::StoreScansWorker.perform_async(pipeline.id)
-                ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
-              else
-                ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
-                ::Ci::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
+            if ::Feature.disabled?(:ingest_sec_reports_when_sec_jobs_completed, pipeline.project)
+              pipeline.run_after_commit do
+                if pipeline.can_store_security_reports?
+                  ::Security::StoreScansWorker.perform_async(pipeline.id)
+                  ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
+                else
+                  ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
+                  ::Ci::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
+                end
               end
             end
           end
@@ -329,9 +331,15 @@ module EE
       end
 
       def has_security_reports?
-        security_and_license_scanning_file_types = EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types | %w[license_scanning]
+        security_and_license_scanning_file_types = EE::Enums::Ci::JobArtifact.all_security_report_file_types
 
         complete_or_manual_and_has_reports?(::Ci::JobArtifact.with_file_types(security_and_license_scanning_file_types))
+      end
+
+      def all_security_jobs_complete?
+        security_builds = builds.select(&:security_job?)
+        blocking_manual_jobs = security_builds.select(&:manual?).reject(&:allow_failure?)
+        security_builds.reject(&:manual?).all?(&:complete?) && blocking_manual_jobs.empty?
       end
 
       def has_all_security_policies_reports?

@@ -372,6 +372,28 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     end
   end
 
+  describe '#security_job?' do
+    subject { job.security_job? }
+
+    context 'when build does not publish artifacts reports' do
+      it { is_expected.to be false }
+    end
+
+    context 'when build publishes artifacts reports' do
+      context 'when build has multiple security report artifact' do
+        let(:job) { create(:ci_build, :sast, pipeline: pipeline) }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when build has no security report artifacts' do
+        let(:job) { create(:ci_build, :coverage_report_cobertura, pipeline: pipeline) }
+
+        it { is_expected.to be false }
+      end
+    end
+  end
+
   describe '#unmerged_security_reports' do
     subject(:security_reports) { job.unmerged_security_reports }
 
@@ -1262,6 +1284,82 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       it "doesn't increment license management metrics" do
         expect { create_ci_build }
           .not_to increment_usage_metrics(*metrics)
+      end
+    end
+  end
+
+  describe 'JobSecurityScanCompletedEvent publishing' do
+    let(:build) { create(:ci_build, :running, pipeline: pipeline) }
+
+    context 'when build is a security job' do
+      before do
+        allow(build).to receive(:security_job?).and_return(true)
+      end
+
+      context "when actions aren't complete statuses" do
+        where(:transition_method, :transition_description) do
+          [
+            [:process, 'created'],
+            [:enqueue, 'pending'],
+            [:run, 'running']
+          ]
+        end
+
+        with_them do
+          context "when transitioning to #{params[:transition_description]}" do
+            it 'does not publish the JobSecurityScanCompletedEvent' do
+              expect(::Gitlab::EventStore).not_to receive(:publish)
+
+              build.public_send(transition_method)
+            end
+          end
+        end
+      end
+
+      context "when actions are complete statuses" do
+        where(:transition_method, :transition_description) do
+          [
+            [:success, 'success'],
+            [:drop, 'failed'],
+            [:cancel, 'canceled']
+          ]
+        end
+
+        with_them do
+          context "when transitioning to #{params[:transition_description]}" do
+            it 'publishes JobSecurityScanCompletedEvent' do
+              expect(::Gitlab::EventStore).to receive(:publish) do |event|
+                expect(event).to be_an_instance_of(::Ci::JobSecurityScanCompletedEvent)
+                expect(event.data).to eq({ "job_id" => build.id })
+              end
+              build.public_send(transition_method)
+            end
+          end
+        end
+      end
+    end
+
+    context 'when build is not a security job' do
+      before do
+        allow(build).to receive(:security_job?).and_return(false)
+      end
+
+      where(:transition_method, :transition_description) do
+        [
+          [:success, 'success'],
+          [:drop, 'failed'],
+          [:cancel, 'canceled']
+        ]
+      end
+
+      with_them do
+        context "when transitioning to #{params[:transition_description]}" do
+          it 'does not publish the JobSecurityScanCompletedEvent' do
+            expect(::Gitlab::EventStore).not_to receive(:publish)
+
+            build.public_send(transition_method)
+          end
+        end
       end
     end
   end

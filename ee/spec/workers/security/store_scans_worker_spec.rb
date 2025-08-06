@@ -13,7 +13,8 @@ RSpec.describe Security::StoreScansWorker, feature_category: :vulnerability_mana
     before do
       allow(Security::StoreScansService).to receive(:execute)
       allow_next_found_instance_of(Ci::Pipeline) do |record|
-        allow(record).to receive(:can_store_security_reports?).and_return(can_store_security_reports)
+        allow(record).to receive_message_chain(:project,
+          :can_store_security_reports?).and_return(can_store_security_reports)
       end
     end
 

@@ -13,6 +13,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Ai::ActiveContext::Code::SaasInitialIndexingEvent,
         ::Ci::JobArtifactsDeletedEvent,
         ::Ci::PipelineCreatedEvent,
+        ::Ci::JobSecurityScanCompletedEvent,
         ::Repositories::KeepAroundRefsCreatedEvent,
         ::MergeRequests::ApprovedEvent,
         ::MergeRequests::MergedEvent,
