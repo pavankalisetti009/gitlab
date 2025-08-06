@@ -25,7 +25,7 @@ module Ai
         end
 
         def build_components
-          agent_version_mappings.filter_map { |agent_mapping| build_agent_component(agent_mapping) }
+          steps_with_agents_preloaded.filter_map { |step| build_agent_component(step) }
         end
 
         def build_routers
@@ -48,10 +48,10 @@ module Ai
           { 'entry_point' => agent_unique_identifier(agents.first) }
         end
 
-        def build_agent_component(agent_mapping)
-          agent = agent_mapping[:agent]
-          version = agent_mapping[:version]
-          definition = agent.definition(version)
+        def build_agent_component(step)
+          agent = step[:agent]
+          pinned_version_id = pinned_to_specific_version? ? step[:current_version_id] : nil
+          definition = agent.definition(step[:pinned_version_prefix], pinned_version_id)
 
           {
             'name' => agent_unique_identifier(agent),

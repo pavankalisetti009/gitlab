@@ -7,7 +7,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   let_it_be(:flow_item) { create(:ai_catalog_flow, project: project) }
   let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
-  let_it_be(:tool_ids) { [1, 2, 5] }
+  let_it_be(:tool_ids) { [1, 2, 5] } # 1 => "gitlab_blob_search" 2 => 'ci_linter', 5 =>  'create_epic'
 
   let_it_be(:agent_definition) do
     {
@@ -17,12 +17,25 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
     }
   end
 
+  let_it_be(:agent1_v1) do
+    create(:ai_catalog_agent_version, item: agent_item_1, definition: agent_definition, version: '1.1.0')
+  end
+
+  let_it_be(:agent2_v1) do
+    create(:ai_catalog_agent_version, item: agent_item_2, definition: agent_definition, version: '1.1.1')
+  end
+
+  let_it_be(:agent2_v2) do
+    definition = agent_definition.merge('tools' => [3]) # 3 => 'run_git_comand'
+    create(:ai_catalog_agent_version, item: agent_item_2, definition: definition, version: '1.2.0')
+  end
+
   let_it_be(:flow_definition) do
     {
       'triggers' => [1],
       'steps' => [
-        { 'agent_id' => agent_item_1.id },
-        { 'agent_id' => agent_item_2.id }
+        { 'agent_id' => agent_item_1.id, 'current_version_id' => agent1_v1.id, 'pinned_version_prefix' => nil },
+        { 'agent_id' => agent_item_2.id, 'current_version_id' => agent2_v1.id, 'pinned_version_prefix' => nil }
       ]
     }
   end
@@ -31,15 +44,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
     create(:ai_catalog_flow_version, item: flow_item, definition: flow_definition, version: '2.1.0')
   end
 
-  let_it_be(:agent_version_1) do
-    create(:ai_catalog_agent_version, item: agent_item_1, definition: agent_definition, version: '1.1.0')
-  end
-
-  let_it_be(:agent_version_2) do
-    create(:ai_catalog_agent_version, item: agent_item_2, definition: agent_definition, version: '1.1.1')
-  end
-
-  subject(:builder) { described_class.new(flow_item.id, nil) }
+  subject(:builder) { described_class.new(flow_item.id) }
 
   describe 'inheritance' do
     it 'inherits from Base' do
@@ -91,7 +96,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   describe '#build' do
     context 'when flow has no versions' do
       let_it_be(:empty_flow) { create(:ai_catalog_flow, project: project) }
-      let_it_be(:builder) { described_class.new(empty_flow.id, nil) }
+      let_it_be(:builder) { described_class.new(empty_flow.id) }
 
       it_behaves_like 'invalid flow configuration'
     end
@@ -104,7 +109,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           version: '2.1.0')
       end
 
-      let_it_be(:builder) { described_class.new(empty_steps_flow.id, nil) }
+      let_it_be(:builder) { described_class.new(empty_steps_flow.id) }
 
       it_behaves_like 'invalid flow configuration'
     end
@@ -113,7 +118,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       let_it_be(:single_agent_flow_definition) do
         {
           'triggers' => [1],
-          'steps' => [{ 'agent_id' => agent_item_1.id }]
+          'steps' => [{
+            'agent_id' => agent_item_1.id, 'current_version_id' => agent1_v1.id, 'pinned_version_prefix' => nil
+          }]
         }
       end
 
@@ -123,7 +130,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           version: '2.2.0')
       end
 
-      let_it_be(:builder) { described_class.new(single_agent_flow.id) }
+      let(:builder) { described_class.new(single_agent_flow.id) }
 
       include_examples 'builds valid flow configuration'
 
@@ -135,6 +142,46 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
         expect(result['routers']).to eq([
           { 'from' => agent_item_1.id.to_s, 'to' => 'end' }
         ])
+      end
+
+      describe 'version handling' do
+        let_it_be(:new_flow_version) do
+          definition = {
+            'triggers' => [],
+            'steps' => [{
+              'agent_id' => agent_item_2.id, 'current_version_id' => agent2_v1.id, 'pinned_version_prefix' => nil
+            }]
+          }
+          create(:ai_catalog_flow_version, item: single_agent_flow, definition: definition, version: '2.3.0')
+        end
+
+        context 'when no version is pinned' do
+          it 'selects the latest flow version' do
+            result = builder.build
+
+            expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
+          end
+        end
+
+        context 'when flow version prefix is pinned' do
+          it 'selects the correct flow version' do
+            result = described_class.new(single_agent_flow.id, '2.3').build
+
+            expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
+            expect(result['components'].first['toolset']).to contain_exactly('run_git_command')
+          end
+        end
+
+        context 'when flow version is fully pinned' do
+          it 'selects the correct flow version and child versions' do
+            result = described_class.new(single_agent_flow.id, '2.3.0').build
+
+            expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
+            expect(result['components'].first['toolset']).to contain_exactly(
+              'ci_linter', 'create_epic', 'gitlab_blob_search'
+            )
+          end
+        end
       end
     end
 

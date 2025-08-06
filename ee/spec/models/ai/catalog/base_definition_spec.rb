@@ -22,14 +22,4 @@ RSpec.describe Ai::Catalog::BaseDefinition, feature_category: :workflow_catalog 
       expect(base_definition.instance_variable_get(:@version)).to eq(version)
     end
   end
-
-  describe '#resolved_version' do
-    context 'when version is nil (latest requested)' do
-      let(:version) { nil }
-
-      it 'returns the latest version' do
-        expect(base_definition.resolved_version).to eq(item_version_2)
-      end
-    end
-  end
 end

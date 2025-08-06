@@ -3,14 +3,11 @@
 module Ai
   module Catalog
     class FlowDefinition < BaseDefinition
-      def agent_version_mappings
-        workflow_steps.filter_map do |step|
+      def steps_with_agents_preloaded
+        steps.filter_map do |step|
           agent = agent_map[step['agent_id']]
 
-          {
-            agent: agent,
-            version: resolve_agent_version(step)
-          }
+          step.except('agent_id').merge('agent' => agent).symbolize_keys
         end
       end
 
@@ -24,18 +21,14 @@ module Ai
         @agent_map ||= preload_agents_by_id
       end
 
-      def workflow_steps
-        resolved_version.def_steps
+      def steps
+        version.def_steps
       end
 
       def preload_agents_by_id
-        agent_ids = workflow_steps.pluck('agent_id') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- this is fetching data from a jsonb column.
+        agent_ids = steps.pluck('agent_id') # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- this is fetching data from a jsonb column.
         agents = Ai::Catalog::Item.where(id: agent_ids)
         agents.index_by(&:id)
-      end
-
-      def resolve_agent_version(step)
-        step['pinned_version_prefix']
       end
     end
   end

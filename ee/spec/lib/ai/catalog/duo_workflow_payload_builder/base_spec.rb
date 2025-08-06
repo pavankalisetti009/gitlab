@@ -9,9 +9,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Base, feature_category: :
   let_it_be(:agent_item_2) { create(:ai_catalog_agent, project: project) }
 
   let(:flow_id) { flow_item.id }
-  let(:version) { nil }
+  let(:pinned_version_prefix) { '1.1' }
 
-  subject(:builder) { described_class.new(flow_id, version) }
+  subject(:builder) { described_class.new(flow_id, pinned_version_prefix) }
 
   describe 'includes' do
     it 'includes Gitlab::Utils::StrongMemoize' do
@@ -24,9 +24,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Base, feature_category: :
   end
 
   describe '#initialize' do
-    it 'sets flow_id and version' do
+    it 'sets flow_id and pinned_version_prefix' do
       expect(builder.instance_variable_get(:@flow_id)).to eq(flow_id)
-      expect(builder.instance_variable_get(:@version)).to eq(version)
+      expect(builder.instance_variable_get(:@pinned_version_prefix)).to eq(pinned_version_prefix)
     end
   end
 

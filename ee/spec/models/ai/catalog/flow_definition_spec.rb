@@ -4,16 +4,16 @@ require 'spec_helper'
 
 RSpec.describe Ai::Catalog::FlowDefinition, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
-  let_it_be(:flow_item) { create(:ai_catalog_item, :flow, :with_version) }
-  let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, :with_version) }
-  let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, :with_version) }
+  let_it_be(:flow_item) { create(:ai_catalog_flow, :with_version) }
+  let_it_be(:agent_1) { create(:ai_catalog_agent, :with_version) }
+  let_it_be(:agent_2) { create(:ai_catalog_agent, :with_version) }
   let_it_be(:definition) do
     {
       'triggers' => [1],
       'steps' =>
       [
-        { 'agent_id' => agent_item_1.id },
-        { 'agent_id' => agent_item_2.id }
+        { 'agent_id' => agent_1.id, 'current_version_id' => agent_1.latest_version.id, 'pinned_version_prefix' => nil },
+        { 'agent_id' => agent_2.id, 'current_version_id' => agent_2.latest_version.id, 'pinned_version_prefix' => nil }
       ]
     }
   end
@@ -22,7 +22,7 @@ RSpec.describe Ai::Catalog::FlowDefinition, feature_category: :workflow_catalog 
     create(:ai_catalog_flow_version, item: flow_item, definition: definition, version: '1.1.0')
   end
 
-  subject(:flow_definition) { described_class.new(flow_item, nil) }
+  subject(:flow_definition) { described_class.new(flow_item, flow_version) }
 
   describe 'inheritance' do
     it 'inherits from BaseDefinition' do
@@ -30,13 +30,13 @@ RSpec.describe Ai::Catalog::FlowDefinition, feature_category: :workflow_catalog 
     end
   end
 
-  describe '#agent_version_mappings' do
+  describe '#steps_with_agents_preloaded' do
     it 'returns agent version mappings for existing agents' do
-      mappings = flow_definition.agent_version_mappings
+      mappings = flow_definition.steps_with_agents_preloaded
 
       expect(mappings).to contain_exactly(
-        { agent: agent_item_1, version: nil },
-        { agent: agent_item_2, version: nil }
+        { agent: agent_1, current_version_id: agent_1.latest_version.id, pinned_version_prefix: nil },
+        { agent: agent_2, current_version_id: agent_2.latest_version.id, pinned_version_prefix: nil }
       )
     end
   end
@@ -45,7 +45,7 @@ RSpec.describe Ai::Catalog::FlowDefinition, feature_category: :workflow_catalog 
     it 'returns unique agents from the workflow steps' do
       agents = flow_definition.agents
 
-      expect(agents).to contain_exactly(agent_item_1, agent_item_2)
+      expect(agents).to contain_exactly(agent_1, agent_2)
     end
   end
 end
