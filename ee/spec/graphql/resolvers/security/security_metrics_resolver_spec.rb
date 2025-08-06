@@ -115,6 +115,26 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
       end
     end
 
+    context 'when operated on an object other than group or project' do
+      let_it_be(:operate_on) { InstanceSecurityDashboard.new(current_user, project_ids: [project.id]) }
+
+      let(:filter_args) do
+        {
+          project_id: [project.to_global_id.to_s]
+        }
+      end
+
+      context 'when the current user has access' do
+        before_all do
+          project.add_developer(current_user)
+        end
+
+        it 'returns nil' do
+          expect(resolved_metrics).to be_nil
+        end
+      end
+    end
+
     context 'when security_dashboard feature flag is disabled' do
       let(:operate_on) { group }
 

@@ -8,6 +8,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
   subject(:resolved_metrics) do
     context = { current_user: current_user }
     context[:report_type] = report_type_filter if defined?(report_type_filter)
+    context[:project_id] = project_id_filter if defined?(project_id_filter)
     resolve(described_class, obj: operate_on, args: args, ctx: context)
   end
 
@@ -65,9 +66,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
       stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     end
 
-    context 'when operated on a group' do
-      let(:operate_on) { group }
-
+    shared_examples 'returns vulnerability metrics' do
       context 'when the current user has access' do
         before_all do
           group.add_maintainer(current_user)
@@ -102,9 +101,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
             {
               start_date: start_date,
               end_date: end_date,
-              project_id: [project.to_global_id.to_s],
-              severity: ['critical'],
-              report_type: %w[sast dast]
+              severity: ['critical']
             }
           end
 
@@ -117,8 +114,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
             let(:args) do
               {
                 start_date: start_date,
-                end_date: end_date,
-                report_type: %w[SAST DAST]
+                end_date: end_date
               }
             end
 
@@ -138,6 +134,7 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
         context 'when filtering on page-level' do
           context 'with single report type filtering' do
             let(:report_type_filter) { ['sast'] }
+
             let(:args) do
               {
                 start_date: start_date,
@@ -159,7 +156,8 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
           end
 
           context 'with multiple report types filtering' do
-            let(:report_type_filter) { %w[sast dast dependency_scanning] }
+            let(:report_type_filter) { %w[sast dast] }
+
             let(:args) do
               {
                 start_date: start_date,
@@ -175,17 +173,18 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
                 next unless item[:by_report_type].present?
 
                 report_types = item[:by_report_type].map { |rt| rt[:report_type] } # rubocop:disable Rails/Pluck -- Not a ActiveRecord object
-                expect(report_types).to all(be_in(%w[sast dast dependency_scanning]))
+                expect(report_types).to match_array(report_type_filter)
               end
             end
           end
 
           context 'when filtering on a single project' do
+            let(:project_id_filter) { [project.id] }
+
             let(:args) do
               {
                 start_date: start_date,
-                end_date: end_date,
-                project_id: [project.to_global_id.to_s]
+                end_date: end_date
               }
             end
 
@@ -205,16 +204,12 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
           end
 
           context 'with multiple projects filtering' do
+            let(:project_id_filter) { [project.id, project_2.id, project_3.id, project_4.id] }
+
             let(:args) do
               {
                 start_date: start_date,
-                end_date: end_date,
-                project_id: [
-                  project.to_global_id.to_s,
-                  project_2.to_global_id.to_s,
-                  project_3.to_global_id.to_s,
-                  project_4.to_global_id.to_s
-                ]
+                end_date: end_date
               }
             end
 
@@ -282,13 +277,14 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
 
         context 'when combining multiple filters' do
           context 'with mixed page and panel level filters' do
+            let(:report_type_filter) { ['sast'] }
+
             let(:args) do
               {
                 start_date: start_date,
                 end_date: end_date,
                 project_id: [project.to_global_id.to_s],
-                severity: ['critical'],
-                report_type: ['sast']
+                severity: ['critical']
               }
             end
 
@@ -311,11 +307,28 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
           end
         end
       end
+    end
+
+    shared_examples 'returns resource not available' do
+      it 'returns a resource not available error' do
+        expect(resolved_metrics).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
+      end
+    end
+
+    shared_examples 'returns empty array' do
+      it 'returns an empty array connection' do
+        expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
+        expect(resolved_metrics.items).to be_empty
+      end
+    end
+
+    context 'when operated on a group' do
+      let(:operate_on) { group }
+
+      it_behaves_like 'returns vulnerability metrics'
 
       context 'when the current user does not have access' do
-        it 'returns a resource not available error' do
-          expect(resolved_metrics).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
-        end
+        it_behaves_like 'returns resource not available'
       end
 
       context 'when group_security_dashboard_new feature flag is disabled' do
@@ -329,26 +342,47 @@ RSpec.describe Resolvers::Security::VulnerabilitiesOverTimeResolver, :elastic_de
           stub_feature_flags(group_security_dashboard_new: false)
         end
 
-        it 'returns an empty array connection' do
-          expect(resolved_metrics).to be_a(Gitlab::Graphql::Pagination::ArrayConnection)
-          expect(resolved_metrics.items).to be_empty
+        it_behaves_like 'returns empty array'
+      end
+
+      context 'when security_dashboard feature flag is disabled' do
+        before do
+          stub_licensed_features(security_dashboard: false)
         end
+
+        it_behaves_like 'returns resource not available'
       end
     end
 
-    context 'when security_dashboard feature flag is disabled' do
-      let(:operate_on) { group }
+    context 'when operated on a project' do
+      let(:operate_on) { project }
 
-      before_all do
-        group.add_maintainer(current_user)
+      it_behaves_like 'returns vulnerability metrics'
+
+      context 'when the current user does not have access' do
+        it_behaves_like 'returns resource not available'
       end
 
-      before do
-        stub_licensed_features(security_dashboard: false)
+      context 'when group_security_dashboard_new feature flag is disabled' do
+        before_all do
+          group.add_maintainer(current_user)
+          Elastic::ProcessBookkeepingService.track!(*vulnerabilities, *additional_project_vulnerabilities)
+          ensure_elasticsearch_index!
+        end
+
+        before do
+          stub_feature_flags(project_security_dashboard_new: false)
+        end
+
+        it_behaves_like 'returns empty array'
       end
 
-      it 'returns a resource not available error' do
-        expect(resolved_metrics).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
+      context 'when security_dashboard feature flag is disabled' do
+        before do
+          stub_licensed_features(security_dashboard: false)
+        end
+
+        it_behaves_like 'returns resource not available'
       end
     end
   end

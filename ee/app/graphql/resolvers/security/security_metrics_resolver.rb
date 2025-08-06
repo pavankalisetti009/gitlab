@@ -14,7 +14,7 @@ module Resolvers
 
       argument :project_id, [GraphQL::Types::ID],
         required: false,
-        description: 'Filter by project IDs.'
+        description: 'Filter by project IDs in a group. This argument is ignored when we are querying for a project.'
 
       argument :report_type, [Types::VulnerabilityReportTypeEnum],
         required: false,
@@ -31,7 +31,7 @@ module Resolvers
           return
         end
 
-        context[:project_id] = args[:project_id] if args[:project_id].present?
+        context[:project_id] = args[:project_id] if args[:project_id].present? && object.is_a?(Group)
         context[:report_type] = args[:report_type] if args[:report_type].present?
 
         object
