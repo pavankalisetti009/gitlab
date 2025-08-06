@@ -68,6 +68,11 @@ export default {
       validator: (size) => ['small', 'medium', 'large'].includes(size),
     },
   },
+  data() {
+    return {
+      isStartingFlow: false,
+    };
+  },
   methods: {
     successAlert(id) {
       return this.projectPath && id
@@ -113,6 +118,8 @@ export default {
         requestData.source_branch = this.currentRef;
       }
 
+      this.isStartingFlow = true;
+
       axios
         .post(this.duoWorkflowInvokePath, requestData)
         .then(({ data }) => {
@@ -126,6 +133,9 @@ export default {
             captureError: true,
             error,
           });
+        })
+        .finally(() => {
+          this.isStartingFlow = false;
         });
     },
   },
@@ -136,6 +146,7 @@ export default {
     v-gl-tooltip.hover.focus.viewport="{ placement: 'top' }"
     category="primary"
     icon="tanuki-ai"
+    :loading="isStartingFlow"
     :title="hoverMessage"
     :size="size"
     data-testid="duo-workflow-action-button"
