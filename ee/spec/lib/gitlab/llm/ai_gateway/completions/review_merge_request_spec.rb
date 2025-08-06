@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_category: :code_review_workflow do
   let(:review_prompt_class) { Gitlab::Llm::Templates::ReviewMergeRequest }
   let(:summarize_review_class) { Gitlab::Llm::AiGateway::Completions::SummarizeReview }
-  let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
+  let(:tracking_context) { { request_id: 'uuid', action: :review_merge_request } }
   let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
   let(:prompt_version) { '1.0.0' }
@@ -57,6 +57,11 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
   let(:review_prompt_message) do
     build(:ai_message, :review_merge_request, user: user, resource: merge_request, request_id: 'uuid')
+  end
+
+  let(:help_page_link) do
+    ::Gitlab::Utils.append_path(Gitlab::Routing.url_helpers.root_url,
+      Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context_exclusion.md'))
   end
 
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
@@ -120,6 +125,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
       stub_feature_flags(duo_code_review_custom_instructions: false)
       stub_feature_flags(use_claude_code_completion: false)
+      stub_feature_flags(use_duo_context_exclusion: false)
       stub_feature_flags(duo_code_review_prompt_updates: false)
 
       allow_next_instance_of(
@@ -189,6 +195,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         [
           instance_double(Gitlab::Diff::File,
             new_path: 'UPDATED.md',
+            file_path: 'UPDATED.md',
             new_file?: false,
             deleted_file?: false,
             old_path: 'UPDATED.md',
@@ -196,12 +203,14 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             raw_diff: '@@ -1,2 +1,2 @@ existing line'),
           instance_double(Gitlab::Diff::File,
             new_path: 'NEW.md',
+            file_path: 'NEW.md',
             new_file?: true,
             deleted_file?: false,
             old_path: 'NEW.md',
             raw_diff: '@@ -0,0 +1,2 @@ new line'),
           instance_double(Gitlab::Diff::File,
             new_path: 'DELETED.md',
+            file_path: 'DELETED.md',
             new_file?: false,
             deleted_file?: true,
             old_path: 'DELETED.md',
@@ -1226,6 +1235,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       before do
         allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([instance_double(Gitlab::Diff::File,
           new_path: 'UPDATED.md',
+          file_path: 'UPDATED.md',
           new_file?: false,
           old_path: 'UPDATED.md',
           old_blob: instance_double(Blob, data: 'content'),
@@ -1534,6 +1544,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               [
                 instance_double(Gitlab::Diff::File,
                   new_path: 'app/components/button.ts',
+                  file_path: 'app/components/button.ts',
                   new_file?: false,
                   deleted_file?: false,
                   old_path: 'app/components/button.ts',
@@ -1541,6 +1552,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
                   raw_diff: '@@ -1,2 +1,2 @@ existing line'),
                 instance_double(Gitlab::Diff::File,
                   new_path: 'app/components/button.test.ts',
+                  file_path: 'app/components/button.test.ts',
                   new_file?: false,
                   deleted_file?: false,
                   old_path: 'app/components/button.test.ts',
@@ -1578,6 +1590,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
               [
                 instance_double(Gitlab::Diff::File,
                   new_path: 'app/components/button.test.ts',
+                  file_path: 'app/components/button.test.ts',
                   new_file?: false,
                   deleted_file?: false,
                   old_path: 'app/components/button.test.ts',
@@ -1705,6 +1718,259 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
 
         it_behaves_like 'review merge request with prompt version'
+      end
+    end
+
+    context 'with excluded files functionality' do
+      let(:combined_review_response) { '<review></review>' }
+
+      before do
+        allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
+      end
+
+      context 'when use_duo_context_exclusion feature flag is enabled' do
+        before do
+          stub_feature_flags(use_duo_context_exclusion: true)
+        end
+
+        context 'when FileExclusionService returns excluded files' do
+          let(:excluded_files) { ['app/logs/application.log', 'secret_key.txt'] }
+          let(:file_paths) { ['app/models/user.rb', 'app/logs/application.log', 'secret_key.txt'] }
+          let(:exclusion_service_result) do
+            ServiceResponse.success(payload: [
+              { path: 'app/models/user.rb', excluded: false },
+              { path: 'app/logs/application.log', excluded: true },
+              { path: 'secret_key.txt', excluded: true }
+            ])
+          end
+
+          before do
+            # Mock the diff files to simulate files in the merge request
+            diff_files = file_paths.map do |file_path|
+              instance_double(Gitlab::Diff::File, file_path: file_path)
+            end
+
+            allow(merge_request).to receive_message_chain(:diffs, :diff_files).and_return(diff_files)
+
+            # Mock the FileExclusionService
+            exclusion_service = instance_double(::Ai::FileExclusionService)
+            allow(::Ai::FileExclusionService).to receive(:new).with(merge_request.project).and_return(exclusion_service)
+            allow(exclusion_service).to receive(:execute).with(file_paths).and_return(exclusion_service_result)
+          end
+
+          it 'includes exclusion message in the progress note' do
+            expected_message = <<~MESSAGE.chomp
+              I do not have access to the following files due to an active context exclusion policy:
+              * app/logs/application.log
+              * secret_key.txt
+              [Learn more](#{help_page_link})
+
+              #{described_class.nothing_to_review_msg}
+            MESSAGE
+
+            expect(completion).to receive(:update_progress_note).with(expected_message)
+
+            completion.execute
+          end
+
+          it 'tracks excluded files internal event' do
+            expect { completion.execute }
+              .to trigger_internal_events('excluded_files_from_duo_code_review')
+              .with(user: user, project: merge_request.project)
+              .exactly(1).times
+          end
+
+          context 'when there are reviewable files and excluded files' do
+            before do
+              diff_file = instance_double(Gitlab::Diff::File,
+                new_path: 'app/models/user.rb',
+                file_path: 'app/models/user.rb',
+                new_file?: false,
+                deleted_file?: false,
+                old_path: 'app/models/user.rb',
+                old_blob: instance_double(Blob, data: 'class User'),
+                raw_diff: '@@ -1,2 +1,2 @@ class User',
+                diff_lines: [instance_double(Gitlab::Diff::Line, old_line: nil, new_line: 1)]
+              )
+
+              allow(diff_file).to receive(:line_for_position).and_return(instance_double(Gitlab::Diff::Line,
+                old_line: nil, new_line: 1))
+
+              allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([diff_file])
+            end
+
+            it 'includes exclusion message in the summary note' do
+              expected_exclusion_message = <<~MESSAGE.chomp
+                I do not have access to the following files due to an active context exclusion policy:
+                * app/logs/application.log
+                * secret_key.txt
+                [Learn more](#{help_page_link})
+              MESSAGE
+
+              expected_full_message = "#{expected_exclusion_message}\n\n#{described_class.no_comment_msg}"
+
+              expect(completion).to receive(:update_progress_note).with(expected_full_message, with_todo: true)
+
+              completion.execute
+            end
+          end
+
+          context 'when there are comments and excluded files' do
+            let(:combined_review_response) do
+              <<~RESPONSE
+                        <review>
+                        <comment file="app/models/user.rb" old_line="" new_line="1">Good code structure</comment>
+                        </review>
+              RESPONSE
+            end
+
+            let(:summary_answer) { 'Review completed successfully' }
+
+            before do
+              diff_file = instance_double(Gitlab::Diff::File,
+                new_path: 'app/models/user.rb',
+                file_path: 'app/models/user.rb',
+                new_file?: false,
+                deleted_file?: false,
+                old_path: 'app/models/user.rb',
+                old_blob: instance_double(Blob, data: 'class User'),
+                raw_diff: '@@ -1,2 +1,2 @@ class User',
+                diff_lines: [instance_double(Gitlab::Diff::Line, old_line: nil, new_line: 1)]
+              )
+
+              allow(diff_file).to receive(:line_for_position).and_return(instance_double(Gitlab::Diff::Line,
+                old_line: nil, new_line: 1))
+              allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([diff_file])
+              allow(DraftNotes::PublishService).to receive_message_chain(:new, :execute)
+            end
+
+            it 'includes exclusion message in the summary note with AI response' do
+              expected_exclusion_message = <<~MESSAGE.chomp
+                I do not have access to the following files due to an active context exclusion policy:
+                * app/logs/application.log
+                * secret_key.txt
+                [Learn more](#{help_page_link})
+              MESSAGE
+
+              expected_full_message = "#{expected_exclusion_message}\n\n#{summary_answer}"
+
+              completion.execute
+
+              expect(merge_request.notes.non_diff_notes.last.note).to eq(expected_full_message)
+            end
+          end
+        end
+
+        context 'when FileExclusionService returns no excluded files' do
+          let(:file_paths) { ['app/models/user.rb', 'app/controllers/users_controller.rb'] }
+          let(:exclusion_service_result) do
+            ServiceResponse.success(payload: [
+              { path: 'app/models/user.rb', excluded: false },
+              { path: 'app/controllers/users_controller.rb', excluded: false }
+            ])
+          end
+
+          before do
+            diff_files = file_paths.map do |file_path|
+              instance_double(Gitlab::Diff::File, file_path: file_path)
+            end
+
+            allow(merge_request).to receive_message_chain(:diffs, :diff_files).and_return(diff_files)
+
+            exclusion_service = instance_double(::Ai::FileExclusionService)
+            allow(::Ai::FileExclusionService).to receive(:new).with(merge_request.project).and_return(exclusion_service)
+            allow(exclusion_service).to receive(:execute).with(file_paths).and_return(exclusion_service_result)
+          end
+
+          it 'does not include exclusion message' do
+            expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+
+            completion.execute
+          end
+
+          it 'does not track excluded files internal event' do
+            expect { completion.execute }
+              .not_to trigger_internal_events('excluded_files_from_duo_code_review')
+          end
+        end
+
+        context 'when FileExclusionService returns an error' do
+          let(:file_paths) { ['app/models/user.rb'] }
+          let(:exclusion_service_result) do
+            ServiceResponse.error(message: 'Service unavailable')
+          end
+
+          before do
+            diff_files = file_paths.map do |file_path|
+              instance_double(Gitlab::Diff::File, file_path: file_path)
+            end
+
+            allow(merge_request).to receive_message_chain(:diffs, :diff_files).and_return(diff_files)
+
+            exclusion_service = instance_double(::Ai::FileExclusionService)
+            allow(::Ai::FileExclusionService).to receive(:new).with(merge_request.project).and_return(exclusion_service)
+            allow(exclusion_service).to receive(:execute).with(file_paths).and_return(exclusion_service_result)
+          end
+
+          it 'does not include exclusion message when service fails' do
+            expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+
+            completion.execute
+          end
+
+          it 'does not track excluded files internal event' do
+            expect { completion.execute }
+              .not_to trigger_internal_events('excluded_files_from_duo_code_review')
+          end
+        end
+
+        context 'when merge request has no diff files' do
+          before do
+            allow(merge_request).to receive_message_chain(:diffs, :diff_files).and_return([])
+          end
+
+          it 'does not call FileExclusionService' do
+            expect(::Ai::FileExclusionService).not_to receive(:new)
+
+            completion.execute
+          end
+
+          it 'does not include exclusion message' do
+            expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+
+            completion.execute
+          end
+        end
+      end
+
+      context 'when use_duo_context_exclusion feature flag is disabled' do
+        before do
+          stub_feature_flags(use_duo_context_exclusion: false)
+
+          # Mock diff files
+          diff_files = [
+            instance_double(Gitlab::Diff::File, file_path: 'app/logs/application.log')
+          ]
+
+          allow(merge_request).to receive_message_chain(:diffs, :diff_files).and_return(diff_files)
+        end
+
+        it 'does not call FileExclusionService' do
+          expect(::Ai::FileExclusionService).not_to receive(:new)
+
+          completion.execute
+        end
+
+        it 'does not include exclusion message even with potential excluded files' do
+          expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
+
+          completion.execute
+        end
+
+        it 'does not track excluded files internal event' do
+          expect { completion.execute }
+            .not_to trigger_internal_events('excluded_files_from_duo_code_review')
+        end
       end
     end
   end
