@@ -61,10 +61,10 @@ module Gitlab
 
             update_review_state('review_started')
 
-            if merge_request.ai_reviewable_diff_files.blank?
+            if ai_reviewable_diff_files.blank?
               log_duo_code_review_internal_event('find_nothing_to_review_duo_code_review_on_mr')
 
-              update_progress_note(self.class.nothing_to_review_msg)
+              update_progress_note(exclusion_message_for_excluded_files + self.class.nothing_to_review_msg)
             else
               perform_review
             end
@@ -111,9 +111,7 @@ module Gitlab
             @draft_notes = []
             @comment_metrics = COMMENT_METRICS.index_with(0)
 
-            diff_files = merge_request.ai_reviewable_diff_files
-
-            if diff_files.blank?
+            if ai_reviewable_diff_files.blank?
               log_duo_code_review_internal_event('find_nothing_to_review_duo_code_review_on_mr')
 
               update_progress_note(self.class.nothing_to_review_msg)
@@ -122,7 +120,7 @@ module Gitlab
             end
 
             mr_diff_refs = merge_request.diff_refs
-            return unless process_files(diff_files, mr_diff_refs)
+            return unless process_files(ai_reviewable_diff_files, mr_diff_refs)
 
             if @draft_notes.empty?
               update_progress_note(review_summary, with_todo: true)
@@ -514,7 +512,7 @@ module Gitlab
 
               self.class.error_msg
             else
-              ai_message.content
+              exclusion_message_for_excluded_files + ai_message.content
             end
           end
 
@@ -525,7 +523,7 @@ module Gitlab
           # rubocop: enable CodeReuse/ActiveRecord
 
           def review_summary
-            [self.class.no_comment_msg, @review_description].compact.join("\n\n")
+            [exclusion_message_for_excluded_files + self.class.no_comment_msg, @review_description].compact.join("\n\n")
           end
 
           def publish_draft_notes
@@ -587,6 +585,47 @@ module Gitlab
             TodoService.new
           end
           strong_memoize_attr :todo_service
+
+          def collect_excluded_files
+            return [] unless Feature.enabled?(:use_duo_context_exclusion, merge_request.project)
+
+            file_paths = merge_request.diffs.diff_files.map(&:file_path)
+            return [] if file_paths.empty?
+
+            result = ::Ai::FileExclusionService.new(merge_request.project).execute(file_paths)
+            return [] unless result.success?
+
+            result.payload.filter_map { |file_result| file_result[:path] if file_result[:excluded] }
+          end
+          strong_memoize_attr :collect_excluded_files
+
+          def ai_reviewable_diff_files
+            excluded_files = collect_excluded_files
+            merge_request.ai_reviewable_diff_files.filter_map do |diff_file|
+              diff_file unless excluded_files.include?(diff_file.file_path)
+            end
+          end
+          strong_memoize_attr :ai_reviewable_diff_files
+
+          def exclusion_message_for_excluded_files
+            excluded_files = collect_excluded_files
+
+            # Add exclusion message if there are excluded files
+            return "" unless excluded_files&.any?
+
+            log_duo_code_review_internal_event('excluded_files_from_duo_code_review')
+            <<~MESSAGE
+               I do not have access to the following files due to an active context exclusion policy:
+               #{excluded_files.map { |file| "* #{file}" }.join("\n")}
+               [Learn more](#{_context_exclusion_help_path})
+
+            MESSAGE
+          end
+
+          def _context_exclusion_help_path
+            ::Gitlab::Utils.append_path(Gitlab::Routing.url_helpers.root_url,
+              Gitlab::Routing.url_helpers.help_page_path('user/gitlab_duo/context_exclusion.md'))
+          end
         end
       end
     end
