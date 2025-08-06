@@ -56,6 +56,7 @@ describe('FeatureSettings', () => {
   const findOtherDuoFeaturesTable = () => wrapper.findByTestId('other-duo-features-table');
   const findDuoMergeRequestTable = () => wrapper.findByTestId('duo-merge-requests-table');
   const findDuoIssuesTable = () => wrapper.findByTestId('duo-issues-table');
+  const findDuoAgentPlatformTable = () => wrapper.findByTestId('duo-agent-platform-table');
   const findAllSettingsBlock = () => wrapper.findAllComponents(FeatureSettingsBlock);
   const findAllSettingsDescriptions = () => wrapper.findAllComponents(GlSprintf);
   const findBetaAlert = () => wrapper.findComponent(BetaFeaturesAlert);
@@ -87,12 +88,13 @@ describe('FeatureSettings', () => {
     });
 
     describe.each`
-      section                         | index | expectedTitle                      | expectedDescription                                                                                      | findSectionTableFn           | expectedFeatureSettings
-      ${'Code Suggestions'}           | ${0}  | ${'Code Suggestions'}              | ${'Assists developers by generating and completing code in real-time.'}                                  | ${findCodeSuggestionsTable}  | ${[['code_generations', 'GA'], ['code_completions', 'GA']]}
-      ${'Duo Chat'}                   | ${1}  | ${'GitLab Duo Chat'}               | ${'An AI assistant that helps users accelerate software development using real-time conversational AI.'} | ${findDuoChatTable}          | ${[['duo_chat', 'GA'], ['duo_chat_explain_code', 'BETA'], ['duo_chat_troubleshoot_job', 'EXPERIMENT']]}
-      ${'Duo merge request features'} | ${2}  | ${'GitLab Duo for merge requests'} | ${'AI-native features that help users accomplish tasks during the lifecycle of a merge request.'}        | ${findDuoMergeRequestTable}  | ${[['summarize_review', 'BETA'], ['generate_commit_message', 'BETA']]}
-      ${'Duo issues'}                 | ${3}  | ${'GitLab Duo for issues'}         | ${'An AI-native feature that generates a summary of discussions on an issue.'}                           | ${findDuoIssuesTable}        | ${[['duo_chat_summarize_comments', 'BETA']]}
-      ${'Other Duo features'}         | ${4}  | ${'Other GitLab Duo features'}     | ${'AI-native features that support users outside of Chat or Code Suggestions.'}                          | ${findOtherDuoFeaturesTable} | ${[['glab_ask_git_command', 'BETA']]}
+      section                         | index | expectedTitle                      | expectedDescription                                                                                             | findSectionTableFn           | expectedFeatureSettings
+      ${'Code Suggestions'}           | ${0}  | ${'Code Suggestions'}              | ${'Assists developers by generating and completing code in real-time.'}                                         | ${findCodeSuggestionsTable}  | ${[['code_generations', 'GA'], ['code_completions', 'GA']]}
+      ${'Duo Chat'}                   | ${1}  | ${'GitLab Duo Chat'}               | ${'An AI assistant that helps users accelerate software development using real-time conversational AI.'}        | ${findDuoChatTable}          | ${[['duo_chat', 'GA'], ['duo_chat_explain_code', 'BETA'], ['duo_chat_troubleshoot_job', 'EXPERIMENT']]}
+      ${'Duo merge request features'} | ${2}  | ${'GitLab Duo for merge requests'} | ${'AI-native features that help users accomplish tasks during the lifecycle of a merge request.'}               | ${findDuoMergeRequestTable}  | ${[['summarize_review', 'BETA'], ['generate_commit_message', 'BETA']]}
+      ${'Duo issues'}                 | ${3}  | ${'GitLab Duo for issues'}         | ${'An AI-native feature that generates a summary of discussions on an issue.'}                                  | ${findDuoIssuesTable}        | ${[['duo_chat_summarize_comments', 'BETA']]}
+      ${'GitLab Duo Agent Platform'}  | ${4}  | ${'GitLab Duo Agent Platform'}     | ${'AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously.'} | ${findDuoAgentPlatformTable} | ${[['duo_agent_platform', 'EXPERIMENT']]}
+      ${'Other Duo features'}         | ${5}  | ${'Other GitLab Duo features'}     | ${'AI-native features that support users outside of Chat or Code Suggestions.'}                                 | ${findOtherDuoFeaturesTable} | ${[['glab_ask_git_command', 'BETA']]}
     `(
       '$section',
       ({
@@ -143,6 +145,7 @@ describe('FeatureSettings', () => {
 
       expect(findAllSettingsBlock()).toHaveLength(2);
       expect(findOtherDuoFeaturesTable().exists()).toBe(false);
+      expect(findDuoAgentPlatformTable().exists()).toBe(false);
     });
   });
 
