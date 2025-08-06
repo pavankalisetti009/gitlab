@@ -230,7 +230,7 @@ describe('ScopedGroupsDropdown', () => {
       expect(findPopover().text()).toContain('No linked groups');
       expect(wrapper.emitted('loaded')).toEqual([[[]]]);
       expect(findPopover().findComponent(GlLink).attributes('href')).toBe(
-        '/help/user/application_security/policies/security_policy_projects.md',
+        '/help/user/application_security/policies/enforcement/security_policy_projects.md',
       );
     });
   });
