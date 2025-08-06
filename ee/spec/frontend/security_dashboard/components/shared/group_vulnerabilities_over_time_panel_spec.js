@@ -13,8 +13,8 @@ Vue.use(VueApollo);
 jest.mock('~/alert');
 
 describe('GroupVulnerabilitiesOverTimePanel', () => {
-  const todayInIsoFormat = '2020-07-06';
-  const yearAgoInIsoFormat = '2019-07-07';
+  const todayInIsoFormat = '2022-07-06';
+  const yearAgoInIsoFormat = '2021-07-06';
   useFakeDate(todayInIsoFormat);
 
   let wrapper;
