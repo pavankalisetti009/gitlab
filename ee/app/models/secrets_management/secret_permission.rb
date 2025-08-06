@@ -32,7 +32,7 @@ module SecretsManagement
     VALID_PRINCIPAL_TYPES = %w[User Role Group MemberRole].freeze
     VALID_RESOURCE_TYPES = %w[Project Group].freeze
     VALID_PERMISSIONS = %w[read update delete create].freeze
-    VALID_ROLES = Gitlab::Access.sym_options.freeze
+    VALID_ROLES = Gitlab::Access.sym_options.except(:guest, :planner).freeze
 
     delegate :secrets_manager, to: :project
 
