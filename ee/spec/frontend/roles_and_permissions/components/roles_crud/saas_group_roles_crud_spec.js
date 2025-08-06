@@ -7,7 +7,6 @@ import groupRolesQuery from 'ee/roles_and_permissions/graphql/group_roles.query.
 import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import SaasGroupRolesCrud from 'ee/roles_and_permissions/components/roles_crud/saas_group_roles_crud.vue';
 import { showRolesFetchError } from 'ee/roles_and_permissions/components/roles_crud/utils';
-import { stubComponent } from 'helpers/stub_component';
 import { groupRolesResponse, newCustomRoleOption } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -31,9 +30,6 @@ describe('SaasGroupRolesCrud component', () => {
     wrapper = shallowMountExtended(SaasGroupRolesCrud, {
       apolloProvider: createMockApollo([[groupRolesQuery, rolesQueryHandler]]),
       provide: { newRolePath, groupFullPath, glFeatures: { customRoles } },
-      stubs: {
-        RolesCrud: stubComponent(RolesCrud, { props: ['roles', 'loading', 'newRoleOptions'] }),
-      },
     });
 
     return waitForPromises();

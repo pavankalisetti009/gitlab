@@ -43,14 +43,13 @@ export const initCustomRolesApp = () => {
       newRolePath,
       ldapUsersPath,
       ldapServers: JSON.parse(ldapServers),
-      isSaas: parseBoolean(isSaas),
     },
     mounted() {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');
     },
     render(createElement) {
       return createElement(RoleTabs, {
-        props: { adminModeSettingPath },
+        props: { adminModeSettingPath, isSaas: parseBoolean(isSaas) },
       });
     },
   });

@@ -2,7 +2,9 @@ import { GlLink, GlSprintf, GlTabs, GlTab } from '@gitlab/ui';
 import RoleTabs from 'ee/roles_and_permissions/components/role_tabs.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
+import InstanceRolesCrud from 'ee/roles_and_permissions/components/roles_crud/instance_roles_crud.vue';
+import SaasGroupRolesCrud from 'ee/roles_and_permissions/components/roles_crud/saas_group_roles_crud.vue';
+import SaasAdminRolesCrud from 'ee/roles_and_permissions/components/roles_crud/saas_admin_roles_crud.vue';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 import { ldapServers as ldapServersData } from '../mock_data';
 
@@ -13,11 +15,14 @@ describe('RoleTabs component', () => {
     ldapServers = ldapServersData,
     customAdminRoles = true,
     adminModeSettingPath = '',
+    isSaas = false,
+    groupFullPath = null,
   } = {}) => {
     wrapper = shallowMountExtended(RoleTabs, {
-      propsData: { adminModeSettingPath },
+      propsData: { adminModeSettingPath, isSaas },
       provide: {
         ldapServers,
+        groupFullPath,
         glFeatures: { customAdminRoles },
       },
       stubs: { GlSprintf },
@@ -26,7 +31,7 @@ describe('RoleTabs component', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findDocsLink = () => findPageHeading().findComponent(GlLink);
-  const findRolesCrud = () => wrapper.findComponent(RolesCrud);
+  const findRolesCrud = () => wrapper.findComponent(InstanceRolesCrud);
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findTabAt = (index) => wrapper.findAllComponents(GlTab).at(index);
   const findLdapSyncCrud = () => wrapper.findComponent(LdapSyncCrud);
@@ -53,6 +58,20 @@ describe('RoleTabs component', () => {
       });
     });
   });
+
+  it.each`
+    name            | isSaas   | groupFullPath      | rolesCrud
+    ${'instance'}   | ${false} | ${null}            | ${InstanceRolesCrud}
+    ${'SaaS group'} | ${true}  | ${'groupFullPath'} | ${SaasGroupRolesCrud}
+    ${'SaaS admin'} | ${true}  | ${null}            | ${SaasAdminRolesCrud}
+  `(
+    'shows expected roles crud component on $name roles and permissions page',
+    ({ isSaas, groupFullPath, rolesCrud }) => {
+      createWrapper({ isSaas, groupFullPath });
+
+      expect(wrapper.findComponent(rolesCrud).exists()).toBe(true);
+    },
+  );
 
   describe.each`
     phrase                                                | options
@@ -92,7 +111,7 @@ describe('RoleTabs component', () => {
     });
 
     it('shows roles crud in roles tab', () => {
-      expect(findTabAt(0).findComponent(RolesCrud).exists()).toBe(true);
+      expect(findTabAt(0).findComponent(InstanceRolesCrud).exists()).toBe(true);
     });
 
     it('shows ldap sync crud in ldap tab', () => {

@@ -7,7 +7,6 @@ import adminRolesQuery from 'ee/roles_and_permissions/graphql/admin_roles.query.
 import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import SaasAdminRolesCrud from 'ee/roles_and_permissions/components/roles_crud/saas_admin_roles_crud.vue';
 import { showRolesFetchError } from 'ee/roles_and_permissions/components/roles_crud/utils';
-import { stubComponent } from 'helpers/stub_component';
 import { saasAdminRolesResponse, newAdminRoleOption } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -29,9 +28,6 @@ describe('SaasAdminRolesCrud component', () => {
     wrapper = shallowMountExtended(SaasAdminRolesCrud, {
       apolloProvider: createMockApollo([[adminRolesQuery, rolesQueryHandler]]),
       provide: { newRolePath },
-      stubs: {
-        RolesCrud: stubComponent(RolesCrud, { props: ['roles', 'loading', 'newRoleOptions'] }),
-      },
     });
 
     return waitForPromises();

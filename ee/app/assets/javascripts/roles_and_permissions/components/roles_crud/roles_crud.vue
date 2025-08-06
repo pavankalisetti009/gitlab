@@ -1,27 +1,15 @@
 <script>
 import { GlSprintf, GlButton, GlDisclosureDropdown } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { createAlert } from '~/alert';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import groupRolesQuery from '../../graphql/group_roles.query.graphql';
-import instanceRolesQuery from '../../graphql/instance_roles.query.graphql';
-import adminRolesQuery from '../../graphql/admin_roles.query.graphql';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import RolesTable from '../roles_table/roles_table.vue';
 import RolesExport from '../roles_table/roles_export.vue';
 
 export default {
-  i18n: {
-    roleCrudTitle: __('Roles'),
-    roleCount: s__(`MemberRole|%{defaultCount} Default %{customCount} Custom`),
-    roleCountAdmin: s__(`MemberRole|%{adminCount} Admin`),
-    newRoleText: s__('MemberRole|New role'),
-    fetchRolesError: s__('MemberRole|Failed to fetch roles.'),
-    roleDeletedText: s__('MemberRole|Role successfully deleted.'),
-  },
   components: {
     GlSprintf,
     GlButton,
@@ -32,54 +20,41 @@ export default {
     CrudComponent,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
-  inject: ['groupFullPath', 'newRolePath', 'isSaas'],
+  props: {
+    roles: {
+      type: Object,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
+      required: true,
+    },
+    newRoleOptions: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return {
-      rolesData: null,
       roleToDelete: null,
     };
   },
-  apollo: {
-    rolesData: {
-      query() {
-        if (this.isSaas) {
-          return this.groupFullPath ? groupRolesQuery : adminRolesQuery;
-        }
-
-        return instanceRolesQuery;
-      },
-      variables() {
-        const { customRoles, customAdminRoles } = this.glFeatures;
-
-        return {
-          includeCustomRoles: customRoles,
-          includeAdminRoles: customRoles && customAdminRoles,
-          fullPath: this.groupFullPath,
-        };
-      },
-      update(data) {
-        return this.groupFullPath ? data.group : data;
-      },
-      error() {
-        createAlert({ message: this.$options.i18n.fetchRolesError, dismissible: false });
-      },
-    },
-  },
   computed: {
-    isLoading() {
-      return this.$apollo.queries.rolesData.loading;
-    },
     defaultRoles() {
-      return this.rolesData?.standardRoles?.nodes || [];
+      return this.roles?.standardRoles?.nodes;
     },
     customRoles() {
-      return this.rolesData?.memberRoles?.nodes || [];
+      return this.roles?.memberRoles?.nodes;
     },
     adminRoles() {
-      return this.rolesData?.adminMemberRoles?.nodes || [];
+      return this.roles?.adminMemberRoles?.nodes;
     },
-    roles() {
-      return [...this.defaultRoles, ...this.customRoles, ...this.adminRoles];
+    rolesList() {
+      return [
+        ...(this.defaultRoles || []),
+        ...(this.customRoles || []),
+        ...(this.adminRoles || []),
+      ];
     },
     canExportRoles() {
       // Check that the backend feature is enabled and that the current user can export members.
@@ -87,31 +62,12 @@ export default {
         this.glFeatures.membersPermissionsDetailedExport && this.glAbilities.exportGroupMemberships
       );
     },
-    canCreateAdminRole() {
-      return this.glFeatures.customAdminRoles && this.newRolePath && !this.groupFullPath;
-    },
-    newRoleItems() {
-      return [
-        {
-          text: s__('MemberRole|Member role'),
-          href: this.newRolePath,
-          description: s__(
-            'MemberRole|Create a role to manage member permissions for groups and projects.',
-          ),
-        },
-        {
-          text: s__('MemberRole|Admin role'),
-          href: `${this.newRolePath}?admin`,
-          description: s__('MemberRole|Create a role to manage permissions in the Admin area.'),
-        },
-      ];
-    },
   },
   methods: {
     processRoleDeletion() {
       this.roleToDelete = null;
-      this.$toast.show(this.$options.i18n.roleDeletedText);
-      this.$apollo.queries.rolesData.refetch();
+      this.$toast.show(s__('MemberRole|Role successfully deleted.'));
+      this.$emit('deleted');
     },
   },
   userPermissionsDocPath: helpPagePath('user/permissions'),
@@ -122,23 +78,31 @@ export default {
   <crud-component>
     <template #title>
       <div>
-        {{ $options.i18n.roleCrudTitle }}
+        {{ __('Roles') }}
 
-        <span data-testid="role-counts" class="gl-ml-2 gl-text-sm gl-font-normal gl-text-subtle">
-          <gl-sprintf :message="$options.i18n.roleCount">
-            <template #defaultCount>
-              <span class="gl-font-bold">{{ defaultRoles.length }}</span>
-            </template>
-            <template #customCount>
-              <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
-            </template>
-          </gl-sprintf>
-          <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
-            <template #adminCount>
-              <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
-            </template>
-          </gl-sprintf>
-        </span>
+        <div class="gl-ml-3 gl-inline-flex gl-gap-3 gl-text-sm gl-font-normal gl-text-subtle">
+          <div v-if="defaultRoles">
+            <gl-sprintf :message="s__('MemberRole|%{count} Default')">
+              <template #count>
+                <span class="gl-font-bold">{{ defaultRoles.length }}</span>
+              </template>
+            </gl-sprintf>
+          </div>
+          <div v-if="customRoles">
+            <gl-sprintf :message="s__('MemberRole|%{count} Custom')">
+              <template #count>
+                <span class="gl-font-bold">{{ customRoles.length }}</span>
+              </template>
+            </gl-sprintf>
+          </div>
+          <div v-if="adminRoles">
+            <gl-sprintf :message="s__('MemberRole|%{count} Admin')">
+              <template #count>
+                <span class="gl-font-bold">{{ adminRoles.length }}</span>
+              </template>
+            </gl-sprintf>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -146,9 +110,9 @@ export default {
       <roles-export v-if="canExportRoles" />
 
       <gl-disclosure-dropdown
-        v-if="canCreateAdminRole"
-        :items="newRoleItems"
-        :toggle-text="$options.i18n.newRoleText"
+        v-if="newRoleOptions.length > 1"
+        :items="newRoleOptions"
+        :toggle-text="s__('MemberRole|New role')"
         placement="bottom-end"
         fluid-width
       >
@@ -159,12 +123,16 @@ export default {
           </div>
         </template>
       </gl-disclosure-dropdown>
-      <gl-button v-else-if="newRolePath" :href="newRolePath" size="small">
-        {{ $options.i18n.newRoleText }}
+      <gl-button
+        v-else-if="newRoleOptions.length === 1"
+        :href="newRoleOptions[0].href"
+        size="small"
+      >
+        {{ s__('MemberRole|New role') }}
       </gl-button>
     </template>
 
-    <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />
+    <roles-table :roles="rolesList" :busy="loading" @delete-role="roleToDelete = $event" />
 
     <delete-role-modal
       :role="roleToDelete"

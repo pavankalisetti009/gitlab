@@ -38749,16 +38749,19 @@ msgstr ""
 msgid "MemberInviteEmail|Invitation to join the %{project_or_group} %{project_or_group_name}"
 msgstr ""
 
-msgid "MemberRole|%{adminCount} Admin"
+msgid "MemberRole|%{count} Admin"
+msgstr ""
+
+msgid "MemberRole|%{count} Custom"
+msgstr ""
+
+msgid "MemberRole|%{count} Default"
 msgstr ""
 
 msgid "MemberRole|%{count} of %{total} permissions added"
 msgstr ""
 
 msgid "MemberRole|%{count} of %{total} permissions selected"
-msgstr ""
-
-msgid "MemberRole|%{defaultCount} Default %{customCount} Custom"
 msgstr ""
 
 msgid "MemberRole|%{requirement} has to be enabled in order to enable %{permission}"
