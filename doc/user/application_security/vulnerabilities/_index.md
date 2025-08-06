@@ -45,6 +45,7 @@ the top of the vulnerability's page.
 - Tier: Ultimate
 - Add-on: GitLab Duo Enterprise, GitLab Duo with Amazon Q
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
+- Available on [GitLab Duo with self-hosted models](../../../administration/gitlab_duo_self_hosted/_index.md): Yes
 - LLM: Anthropic [Claude 3.7 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-7-sonnet)
 - LLM for Amazon Q: Amazon Q Developer
 
@@ -71,7 +72,7 @@ Prerequisites:
 
 - You must have the GitLab Ultimate subscription tier.
 - Have a paid GitLab Duo Enterprise seat.
-- [GitLab Duo](../../ai_features_enable.md) must be enabled for the group or instance.
+- [GitLab Duo](../../gitlab_duo/turn_on_off.md) must be enabled for the group or instance.
 - You must be a member of the project.
 - The vulnerability must be from a SAST scanner.
 
@@ -111,6 +112,7 @@ The following data is shared with third-party AI APIs:
 - Tier: Ultimate
 - Add-on: GitLab Duo Enterprise, GitLab Duo with Amazon Q
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
+- Available on [GitLab Duo with self-hosted models](../../../administration/gitlab_duo_self_hosted/_index.md): Yes
 - LLM for GitLab Self-Managed, GitLab Dedicated: Anthropic [Claude 3.5 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-5-sonnet)
 - LLM for GitLab.com: Anthropic [Claude 3.7 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-7-sonnet)
 - LLM for Amazon Q: Amazon Q Developer
@@ -145,7 +147,7 @@ Prerequisites:
   - A properly integrated third-party SAST scanner that reports the vulnerability location and a CWE Identifier for each vulnerability.
 - The vulnerability must be of a [supported type](#supported-vulnerabilities-for-vulnerability-resolution).
 
-Learn more about [how to enable all GitLab Duo features](../../ai_features_enable.md).
+Learn more about [how to enable all GitLab Duo features](../../gitlab_duo/turn_on_off.md).
 
 To resolve the vulnerability:
 

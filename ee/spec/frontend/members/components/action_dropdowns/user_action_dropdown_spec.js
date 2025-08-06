@@ -17,6 +17,7 @@ describe('UserActionDropdown', () => {
     wrapper = shallowMount(UserActionDropdown, {
       stubs: {
         BanMemberDropdownItem: stubComponent(BanMemberDropdownItem),
+        DisableTwoFactorDropdownItem: stubComponent(DisableTwoFactorDropdownItem),
       },
       provide: {
         namespace: MEMBERS_TAB_TYPES.user,

@@ -34,10 +34,6 @@ export default {
       type: Boolean,
       required: true,
     },
-    workItemNotificationsSubscribed: {
-      type: Boolean,
-      required: true,
-    },
     showWorkItemCurrentUserTodos: {
       type: Boolean,
       required: false,
@@ -47,6 +43,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    isDrawer: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   computed: {
@@ -78,11 +79,12 @@ export default {
     <transition name="issuable-header-slide">
       <div
         v-if="isStickyHeaderShowing"
-        class="issue-sticky-header gl-border-b gl-fixed gl-z-3 gl-bg-default gl-py-2"
+        class="issue-sticky-header gl-border-b gl-z-3 gl-bg-default gl-py-2"
+        :class="{ 'gl-absolute gl-left-0 gl-top-10': isDrawer, 'gl-fixed': !isDrawer }"
         data-testid="work-item-sticky-header"
       >
         <div
-          class="work-item-sticky-header-text gl-mx-auto gl-flex gl-items-center gl-gap-2 gl-px-5 xl:gl-px-6"
+          class="work-item-sticky-header-text gl-mx-auto gl-flex gl-items-center gl-gap-3 gl-px-5 xl:gl-px-6"
         >
           <work-item-state-badge
             v-if="workItemState"
@@ -127,7 +129,6 @@ export default {
           <work-item-notifications-widget
             v-if="newTodoAndNotificationsEnabled"
             :work-item-id="workItem.id"
-            :subscribed-to-notifications="workItemNotificationsSubscribed"
             @error="$emit('error')"
           />
           <slot name="actions"></slot>

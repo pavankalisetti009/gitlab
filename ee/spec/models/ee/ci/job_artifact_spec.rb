@@ -487,4 +487,90 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
       expect(::Gitlab::Ci::Reports::Security::Report).to have_received(:new).twice
     end
   end
+
+  describe '.create_verification_details_for' do
+    let_it_be(:job_with_partition) { create(:ci_build, partition_id: 100) }
+    let_it_be(:artifact1) { create(:ci_job_artifact, :archive, job: job_with_partition, partition_id: 100) }
+    let_it_be(:artifact2) { create(:ci_job_artifact, :junit, job: job_with_partition, partition_id: 100) }
+
+    context 'when creating verification details for multiple artifacts' do
+      it 'creates verification state records without duplicates' do
+        primary_keys = [artifact1.id, artifact2.id]
+
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .to change { Geo::JobArtifactState.count }.by(2)
+
+        # Verify the records were created with correct attributes
+        state1 = Geo::JobArtifactState.find_by(job_artifact_id: artifact1.id, partition_id: 100)
+        state2 = Geo::JobArtifactState.find_by(job_artifact_id: artifact2.id, partition_id: 100)
+
+        expect(state1).to be_present
+        expect(state2).to be_present
+        expect(state1.partition_id).to eq(100)
+        expect(state2.partition_id).to eq(100)
+      end
+
+      it 'handles duplicate creation attempts gracefully' do
+        primary_keys = [artifact1.id, artifact2.id]
+
+        # First call should create records
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .to change { Geo::JobArtifactState.count }.by(2)
+
+        # Second call with same keys should not raise error or create duplicates
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .not_to change { Geo::JobArtifactState.count }
+
+        # Verify no constraint violations occurred
+        expect(Geo::JobArtifactState.where(job_artifact_id: [artifact1.id, artifact2.id]).count).to eq(2)
+      end
+
+      it 'handles mixed scenarios with existing and new records' do
+        # Create verification state for first artifact only
+        described_class.create_verification_details_for([artifact1.id])
+        expect(Geo::JobArtifactState.count).to eq(1)
+
+        # Now try to create for both (one existing, one new)
+        primary_keys = [artifact1.id, artifact2.id]
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .to change { Geo::JobArtifactState.count }.by(1)
+
+        expect(Geo::JobArtifactState.count).to eq(2)
+      end
+
+      it 'prevents database constraint violations when attempting to insert duplicates' do
+        primary_keys = [artifact1.id]
+
+        # Create initial record
+        described_class.create_verification_details_for(primary_keys)
+        expect(Geo::JobArtifactState.count).to eq(1)
+
+        # This test would fail without the unique_by parameter, as it would attempt
+        # to insert a duplicate record and raise a database constraint violation.
+        # With unique_by: [:job_artifact_id, :partition_id], the duplicate is ignored.
+        expect { described_class.create_verification_details_for(primary_keys) }
+          .not_to raise_error
+
+        expect(Geo::JobArtifactState.count).to eq(1)
+      end
+
+      context 'demonstrating the need for unique_by parameter' do
+        it 'shows that insert_all without unique_by fails when duplicates exist' do
+          # Create the initial record using the method
+          described_class.create_verification_details_for([artifact1.id])
+
+          # Try to insert the same record directly without unique_by
+          rows = [{ job_artifact_id: artifact1.id, partition_id: artifact1.partition_id }]
+
+          # This fails because Rails doesn't know how to handle the conflict
+          expect { Geo::JobArtifactState.insert_all(rows) }
+            .to raise_error(ArgumentError, /No unique index found/)
+
+          # But with unique_by (as used in the actual method), it works
+          expect { Geo::JobArtifactState.insert_all(rows, unique_by: %i[job_artifact_id partition_id]) }
+            .not_to raise_error
+        end
+      end
+    end
+  end
 end

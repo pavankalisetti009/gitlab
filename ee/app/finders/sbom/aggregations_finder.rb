@@ -238,7 +238,8 @@ module Sbom
     strong_memoize_attr :orderings
 
     def sort_by
-      sort_by = params[:sort_by]
+      sort_by = params[:sort_by]&.to_sym
+      sort_by = :primary_license_spdx_identifier if sort_by == :license
 
       return unless sort_by && SUPPORTED_SORT_COLUMNS.include?(sort_by)
 

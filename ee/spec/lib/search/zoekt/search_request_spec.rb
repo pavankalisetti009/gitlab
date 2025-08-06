@@ -12,7 +12,8 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
       described_class.new(current_user: user, search_level: :global, query: 'test').as_json
     end
 
-    it 'returns a valid JSON representation of the search request' do
+    it 'returns a valid JSON representation of the search request',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/557532' do
       expect(json_representation).to include({
         version: 2,
         timeout: '120s',
@@ -57,18 +58,60 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
           forward_to: [
             {
               query: {
-                and: { children: [{ query_string: { query: 'test' } }, { repo_ids: [1, 2, 3] }] }
+                and: { children: [{ query_string: { query: 'test' } }, { or: { children: [
+                  { meta: { key: 'project_id', value: '^1$' } },
+                  { meta: { key: 'project_id', value: '^2$' } },
+                  { meta: { key: 'project_id', value: '^3$' } }
+                ] } }] }
               },
               endpoint: node1.search_base_url
             },
             {
               query: {
-                and: { children: [{ query_string: { query: 'test' } }, { repo_ids: [4, 5, 6] }] }
+                and: { children: [{ query_string: { query: 'test' } }, { or: { children: [
+
+                  { meta: { key: 'project_id', value: '^4$' } },
+                  { meta: { key: 'project_id', value: '^5$' } },
+                  { meta: { key: 'project_id', value: '^6$' } }
+                ] } }] }
               },
               endpoint: node2.search_base_url
             }
           ]
         })
+      end
+
+      context 'and zoekt_search_meta_project_ids feature flag is disabled' do
+        before do
+          stub_feature_flags(zoekt_search_meta_project_ids: false)
+        end
+
+        it 'returns a valid JSON representation of the search request' do
+          expect(json_representation).to eq({
+            version: 2,
+            timeout: '120s',
+            num_context_lines: 20,
+            max_file_match_window: 1000,
+            max_file_match_results: 5,
+            max_line_match_window: 500,
+            max_line_match_results: 10,
+            max_line_match_results_per_file: 3,
+            forward_to: [
+              {
+                query: {
+                  and: { children: [{ query_string: { query: 'test' } }, { repo_ids: [1, 2, 3] }] }
+                },
+                endpoint: node1.search_base_url
+              },
+              {
+                query: {
+                  and: { children: [{ query_string: { query: 'test' } }, { repo_ids: [4, 5, 6] }] }
+                },
+                endpoint: node2.search_base_url
+              }
+            ]
+          })
+        end
       end
     end
   end

@@ -32,6 +32,16 @@ describe('TokenValidityBadge', () => {
       });
     });
 
+    it.each([
+      ['ACTIVE', 'Active secret'],
+      ['INACTIVE', 'Inactive secret'],
+      ['UNKNOWN', 'Possibly active secret'],
+    ])('handles case-insensitive status when status is "%s"', (status, expectedStatus) => {
+      createComponent({ status });
+
+      expect(findGlLabel().props('title')).toBe(expectedStatus);
+    });
+
     it('uses unknown status by default', () => {
       createComponent();
 

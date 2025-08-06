@@ -46,6 +46,14 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     )
   end
 
+  context 'when the item is already configured in the project' do
+    before do
+      create(:ai_catalog_item_consumer, project: consumer_project, item: item)
+    end
+
+    it_behaves_like 'a failure', 'Item already configured'
+  end
+
   context 'when the consumer is a group' do
     let(:container) { consumer_group }
 
@@ -59,6 +67,14 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         enabled: true,
         locked: true
       )
+    end
+
+    context 'when the item is already configured in the group' do
+      before do
+        create(:ai_catalog_item_consumer, group: consumer_group, item: item)
+      end
+
+      it_behaves_like 'a failure', 'Item already configured'
     end
   end
 
@@ -88,6 +104,24 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     let(:item) { create(:ai_catalog_item, item_type: :agent, project: item_project) }
 
     it_behaves_like 'a failure', 'Catalog item is not a flow'
+  end
+
+  context 'when save fails' do
+    context 'when the model is invalid' do
+      let(:params) { super().merge(pinned_version_prefix: '1' * 51) }
+
+      it_behaves_like 'a failure', 'Pinned version prefix is too long (maximum is 50 characters)'
+    end
+
+    context 'when something else goes wrong' do
+      before do
+        allow_next_instance_of(Ai::Catalog::ItemConsumer) do |instance|
+          allow(instance).to receive(:save).and_return(false)
+        end
+      end
+
+      it_behaves_like 'a failure', 'Failed to create item consumer'
+    end
   end
 
   context 'when global_ai_catalog feature flag is disabled' do

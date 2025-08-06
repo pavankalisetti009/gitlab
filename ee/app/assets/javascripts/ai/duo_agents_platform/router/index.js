@@ -2,7 +2,6 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import NestedRouteApp from '../nested_route_app.vue';
-import AgentsPlatformIndex from '../pages/index/duo_agents_platform_index.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
 import {
@@ -11,10 +10,11 @@ import {
   AGENTS_PLATFORM_SHOW_ROUTE,
   WORKFLOW_END_PAGE_LINK,
 } from './constants';
+import { getNamespaceIndexComponent } from './utils';
 
 Vue.use(VueRouter);
 
-export const createRouter = (base) => {
+export const createRouter = (base, namespace) => {
   return new VueRouter({
     base,
     mode: 'history',
@@ -29,7 +29,7 @@ export const createRouter = (base) => {
           {
             name: AGENTS_PLATFORM_INDEX_ROUTE,
             path: '',
-            component: AgentsPlatformIndex,
+            component: getNamespaceIndexComponent(namespace),
           },
           {
             name: AGENTS_PLATFORM_NEW_ROUTE,

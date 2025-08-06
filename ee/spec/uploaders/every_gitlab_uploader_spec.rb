@@ -61,6 +61,7 @@ RSpec.describe 'Every GitLab uploader' do
         Packages::Debian::ComponentFileUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/333611.",
         Packages::Debian::DistributionReleaseFileUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/333615.",
         Packages::Rpm::RepositoryFileUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/379055.",
+        Packages::BaseMetadataCacheUploader => "This is a abstract class. We won't use it directly, no need to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/work_items/555047.",
         Packages::Npm::MetadataCacheUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/408278.",
         Packages::Helm::MetadataCacheUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/545919.",
         Packages::Nuget::SymbolUploader => 'This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/422929.',

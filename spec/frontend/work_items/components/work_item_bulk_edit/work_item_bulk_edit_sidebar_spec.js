@@ -13,9 +13,11 @@ import WorkItemBulkEditLabels from '~/work_items/components/work_item_bulk_edit/
 import WorkItemBulkEditMilestone from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_milestone.vue';
 import WorkItemBulkEditParent from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_parent.vue';
 import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
+import WorkItemBulkMove from '~/work_items/components/work_item_bulk_edit/work_item_bulk_move.vue';
 import workItemBulkUpdateMutation from '~/work_items/graphql/list/work_item_bulk_update.mutation.graphql';
 import getAvailableBulkEditWidgets from '~/work_items/graphql/list/get_available_bulk_edit_widgets.query.graphql';
 import {
+  BULK_EDIT_NO_VALUE,
   WIDGET_TYPE_ASSIGNEES,
   WIDGET_TYPE_HEALTH_STATUS,
   WIDGET_TYPE_HIERARCHY,
@@ -71,6 +73,7 @@ describe('WorkItemBulkEditSidebar component', () => {
     props = {},
     mutationHandler = workItemBulkUpdateHandler,
     availableWidgetsHandler = defaultAvailableWidgetsHandler,
+    items = checkedItems,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemBulkEditSidebar, {
       apolloProvider: createMockApollo([
@@ -83,7 +86,7 @@ describe('WorkItemBulkEditSidebar component', () => {
         ...provide,
       },
       propsData: {
-        checkedItems,
+        checkedItems: items,
         fullPath: 'group/project',
         isGroup: false,
         ...props,
@@ -102,6 +105,7 @@ describe('WorkItemBulkEditSidebar component', () => {
     wrapper.findComponentByTestId('bulk-edit-confidentiality');
   const findMilestoneComponent = () => wrapper.findComponent(WorkItemBulkEditMilestone);
   const findParentComponent = () => wrapper.findComponent(WorkItemBulkEditParent);
+  const findBulkMoveComponent = () => wrapper.findComponent(WorkItemBulkMove);
 
   beforeEach(() => {
     axiosMock = new MockAdapter(axios);
@@ -170,6 +174,42 @@ describe('WorkItemBulkEditSidebar component', () => {
           });
           expect(findAddLabelsComponent().props('selectedLabelsIds')).toEqual([]);
           expect(findRemoveLabelsComponent().props('selectedLabelsIds')).toEqual([]);
+        });
+
+        it('calls mutation with null values to bulk edit when "No value" is chosen', async () => {
+          createComponent({
+            provide: {
+              hasIssuableHealthStatusFeature: true,
+              glFeatures: { workItemsBulkEdit: true },
+            },
+            props: { isEpicsList: false, fullPath: 'group/project' },
+          });
+          await waitForPromises();
+
+          findAssigneeComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
+          findHealthStatusComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
+          findMilestoneComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
+          findParentComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
+          findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+          expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
+            input: {
+              fullPath: 'group/project',
+              ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
+              assigneesWidget: {
+                assigneeIds: [null],
+              },
+              healthStatusWidget: {
+                healthStatus: null,
+              },
+              milestoneWidget: {
+                milestoneId: null,
+              },
+              hierarchyWidget: {
+                parentId: null,
+              },
+            },
+          });
         });
 
         it('calls mutation with namespace fullPath', async () => {
@@ -279,6 +319,65 @@ describe('WorkItemBulkEditSidebar component', () => {
     });
   });
 
+  describe('widget visibility', () => {
+    it('shows the correct widgets when GraphQL is disabled', () => {
+      createComponent({ provide: { hasIssuableHealthStatusFeature: true } });
+
+      // visible
+      expect(findStateComponent().exists()).toBe(true);
+      expect(findAssigneeComponent().exists()).toBe(true);
+      expect(findAddLabelsComponent().exists()).toBe(true);
+      expect(findRemoveLabelsComponent().exists()).toBe(true);
+      expect(findHealthStatusComponent().exists()).toBe(true);
+      expect(findSubscriptionComponent().exists()).toBe(true);
+      expect(findConfidentialityComponent().exists()).toBe(true);
+
+      // hidden
+      expect(findMilestoneComponent().exists()).toBe(false);
+      expect(findParentComponent().exists()).toBe(false);
+      expect(findBulkMoveComponent().exists()).toBe(false);
+    });
+
+    it('shows the correct widgets when GraphQL is enabled', () => {
+      createComponent({
+        provide: { hasIssuableHealthStatusFeature: true, glFeatures: { workItemsBulkEdit: true } },
+      });
+
+      // visible
+      expect(findStateComponent().exists()).toBe(true);
+      expect(findAssigneeComponent().exists()).toBe(true);
+      expect(findAddLabelsComponent().exists()).toBe(true);
+      expect(findRemoveLabelsComponent().exists()).toBe(true);
+      expect(findHealthStatusComponent().exists()).toBe(true);
+      expect(findSubscriptionComponent().exists()).toBe(true);
+      expect(findConfidentialityComponent().exists()).toBe(true);
+      expect(findMilestoneComponent().exists()).toBe(true);
+      expect(findParentComponent().exists()).toBe(true);
+      expect(findBulkMoveComponent().exists()).toBe(true);
+    });
+
+    it('shows the correct widgets when GraphQL is enabled and on epics list', () => {
+      createComponent({
+        props: { isEpicsList: true },
+        provide: { hasIssuableHealthStatusFeature: true, glFeatures: { workItemsBulkEdit: true } },
+      });
+
+      // visible
+      expect(findAssigneeComponent().exists()).toBe(true);
+      expect(findAddLabelsComponent().exists()).toBe(true);
+      expect(findRemoveLabelsComponent().exists()).toBe(true);
+      expect(findHealthStatusComponent().exists()).toBe(true);
+      expect(findSubscriptionComponent().exists()).toBe(true);
+      expect(findConfidentialityComponent().exists()).toBe(true);
+      expect(findMilestoneComponent().exists()).toBe(true);
+
+      // hidden
+      expect(findStateComponent().exists()).toBe(false);
+      expect(findParentComponent().exists()).toBe(false);
+      expect(findBulkMoveComponent().exists()).toBe(false);
+    });
+  });
+
   describe('getAvailableBulkEditWidgets query', () => {
     beforeEach(() => {
       createComponent({ provide: { glFeatures: { workItemsBulkEdit: true } } });
@@ -326,12 +425,6 @@ describe('WorkItemBulkEditSidebar component', () => {
   });
 
   describe('"Assignee" component', () => {
-    it.each([true, false])('renders depending on isEpicsList prop', (isEpicsList) => {
-      createComponent({ props: { isEpicsList } });
-
-      expect(findAssigneeComponent().exists()).toBe(!isEpicsList);
-    });
-
     it('updates assignee when "Assignee" component emits "input" event', async () => {
       createComponent();
 
@@ -486,18 +579,19 @@ describe('WorkItemBulkEditSidebar component', () => {
   });
 
   describe('"Health status" component', () => {
-    it.each`
-      isEpicsList | hasIssuableHealthStatusFeature | expected
-      ${false}    | ${false}                       | ${false}
-      ${false}    | ${true}                        | ${true}
-      ${true}     | ${false}                       | ${false}
-      ${true}     | ${true}                        | ${false}
-    `(
-      'renders only when isEpicsList=false and hasIssuableHealthStatusFeature=true',
-      ({ isEpicsList, hasIssuableHealthStatusFeature, expected }) => {
-        createComponent({ provide: { hasIssuableHealthStatusFeature }, props: { isEpicsList } });
+    it.each([true, false])(
+      'renders depending on hasIssuableHealthStatusFeature feature',
+      (hasIssuableHealthStatusFeature) => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              workItemsBulkEdit: true,
+            },
+            hasIssuableHealthStatusFeature,
+          },
+        });
 
-        expect(findHealthStatusComponent().exists()).toBe(expected);
+        expect(findHealthStatusComponent().exists()).toBe(hasIssuableHealthStatusFeature);
       },
     );
 
@@ -549,12 +643,6 @@ describe('WorkItemBulkEditSidebar component', () => {
   });
 
   describe('"Subscription" component', () => {
-    it.each([true, false])('renders depending on isEpicsList prop', (isEpicsList) => {
-      createComponent({ props: { isEpicsList } });
-
-      expect(findSubscriptionComponent().exists()).toBe(!isEpicsList);
-    });
-
     it('updates subscription when "Subscription" component emits "input" event', async () => {
       createComponent();
 
@@ -566,12 +654,6 @@ describe('WorkItemBulkEditSidebar component', () => {
   });
 
   describe('"Confidentiality" component', () => {
-    it.each([true, false])('renders depending on isEpicsList prop', (isEpicsList) => {
-      createComponent({ props: { isEpicsList } });
-
-      expect(findConfidentialityComponent().exists()).toBe(!isEpicsList);
-    });
-
     it('updates confidentiality when "Confidentiality" component emits "input" event', async () => {
       createComponent();
 
@@ -583,19 +665,6 @@ describe('WorkItemBulkEditSidebar component', () => {
   });
 
   describe('"Milestone" component', () => {
-    it.each([true, false])('renders depending on isEpicsList prop', (isEpicsList) => {
-      createComponent({
-        provide: {
-          glFeatures: {
-            workItemsBulkEdit: true,
-          },
-        },
-        props: { isEpicsList },
-      });
-
-      expect(findMilestoneComponent().exists()).toBe(!isEpicsList);
-    });
-
     it('updates milestone when "Milestone" component emits "input" event', async () => {
       createComponent({
         provide: {
@@ -711,6 +780,78 @@ describe('WorkItemBulkEditSidebar component', () => {
       await waitForPromises();
 
       expect(findParentComponent().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('bulk move', () => {
+    const mountForBulkMove = (items = checkedItems) => {
+      createComponent({
+        items,
+        provide: {
+          glFeatures: {
+            workItemsBulkEdit: true,
+          },
+        },
+        props: { isEpicsList: false },
+      });
+    };
+
+    it('renders bulk move when available', () => {
+      mountForBulkMove();
+
+      expect(findBulkMoveComponent().exists()).toBe(true);
+    });
+
+    it('passes checked items and fullPath as a prop', () => {
+      mountForBulkMove();
+
+      expect(findBulkMoveComponent().props('checkedItems')).toBe(checkedItems);
+      expect(findBulkMoveComponent().props('fullPath')).toBe('group/project');
+    });
+
+    it('disables bulk move when there are no checked items', () => {
+      mountForBulkMove([]);
+
+      expect(findBulkMoveComponent().props('disabled')).toBe(true);
+    });
+
+    it('disables bulk move when there are other bulk edit properties set', async () => {
+      mountForBulkMove();
+
+      expect(findBulkMoveComponent().props('disabled')).toBe(false);
+
+      findConfidentialityComponent().vm.$emit('input', 'true');
+
+      await nextTick();
+
+      expect(findBulkMoveComponent().props('disabled')).toBe(true);
+    });
+
+    it('emits "start" when bulk move emits "moveStart"', () => {
+      mountForBulkMove();
+
+      findBulkMoveComponent().vm.$emit('moveStart');
+
+      expect(wrapper.emitted('start')).toHaveLength(1);
+    });
+
+    it('emits "success" when bulk move emits "moveSuccess"', () => {
+      mountForBulkMove();
+
+      findBulkMoveComponent().vm.$emit('moveSuccess', { toastMessage: 'hello!' });
+
+      const events = wrapper.emitted('success');
+
+      expect(events).toHaveLength(1);
+      expect(events[0][0]).toEqual({ refetchCounts: true, toastMessage: 'hello!' });
+    });
+
+    it('emits "finish" when bulk move emits "moveFinish"', () => {
+      mountForBulkMove();
+
+      findBulkMoveComponent().vm.$emit('moveFinish');
+
+      expect(wrapper.emitted('finish')).toHaveLength(1);
     });
   });
 });

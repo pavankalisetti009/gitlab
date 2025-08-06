@@ -12,6 +12,7 @@ module EE
         mount ::API::Admin::Search::Zoekt
         mount ::API::Admin::Search::Migrations
         mount ::API::Admin::Security::CompliancePolicySettings
+        mount ::API::Admin::DataManagement
         mount ::API::AuditEvents
         mount ::API::Clusters::AgentUrlConfigurations
         mount ::API::ProjectApprovalRules

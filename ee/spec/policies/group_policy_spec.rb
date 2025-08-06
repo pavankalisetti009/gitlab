@@ -219,41 +219,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     it { is_expected.to be_disallowed(:read_custom_field, :admin_custom_field) }
   end
 
-  context 'when work item statuses are available' do
-    before do
-      stub_licensed_features(work_item_status: true)
-    end
-
-    context 'when user is a guest' do
-      let(:current_user) { guest }
-
-      it { is_expected.to be_allowed(:read_work_item_lifecycle, :read_work_item_status) }
-      it { is_expected.to be_disallowed(:admin_work_item_lifecycle) }
-    end
-
-    context 'when user is a maintainer' do
-      let(:current_user) { maintainer }
-
-      it { is_expected.to be_allowed(:read_work_item_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
-    end
-
-    context 'when user is logged out' do
-      let(:current_user) { nil }
-
-      it { is_expected.to be_disallowed(:read_work_item_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
-    end
-  end
-
-  context 'when work item statuses are not available' do
-    let(:current_user) { guest }
-
-    before do
-      stub_licensed_features(work_item_status: false)
-    end
-
-    it { is_expected.to be_disallowed(:read_work_item_lifecycle, :read_work_item_status, :admin_work_item_lifecycle) }
-  end
-
   context 'when cluster deployments is available' do
     let(:current_user) { maintainer }
 
@@ -919,8 +884,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
 
       context 'when the group is a subgroup' do
-        let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
         before do
           stub_group_saml_config(true)
         end
@@ -1034,8 +997,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
 
           context 'when the group is a subgroup' do
-            let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
             let(:current_user) { owner }
 
             subject { described_class.new(current_user, subgroup) }
@@ -1943,15 +1904,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :admin_vulnerability           | :maintainer | nil   | true
       :admin_vulnerability           | :owner      | nil   | true
       :admin_vulnerability           | :reporter   | nil   | false
-      :read_dependency               | :admin      | false | false
-      :read_dependency               | :admin      | true  | true
-      :read_dependency               | :auditor    | nil   | true
-      :read_dependency               | :developer  | nil   | true
-      :read_dependency               | :guest      | nil   | false
-      :read_dependency               | :planner    | nil   | false
-      :read_dependency               | :maintainer | nil   | true
-      :read_dependency               | :owner      | nil   | true
-      :read_dependency               | :reporter   | nil   | false
       :read_group_security_dashboard | :admin      | false | false
       :read_group_security_dashboard | :admin      | true  | true
       :read_group_security_dashboard | :auditor    | nil   | true
@@ -1961,15 +1913,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       :read_group_security_dashboard | :maintainer | nil   | true
       :read_group_security_dashboard | :owner      | nil   | true
       :read_group_security_dashboard | :reporter   | nil   | false
-      :read_licenses                 | :admin      | false | false
-      :read_licenses                 | :admin      | true  | true
-      :read_licenses                 | :auditor    | nil   | true
-      :read_licenses                 | :developer  | nil   | true
-      :read_licenses                 | :guest      | nil   | false
-      :read_licenses                 | :planner    | nil   | false
-      :read_licenses                 | :maintainer | nil   | true
-      :read_licenses                 | :owner      | nil   | true
-      :read_licenses                 | :reporter   | nil   | false
       :read_vulnerability            | :admin      | false | false
       :read_vulnerability            | :admin      | true  | true
       :read_vulnerability            | :auditor    | nil   | true
@@ -2075,45 +2018,89 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'admin_vulnerability' do
-    before do
-      stub_licensed_features(security_dashboard: true)
+  describe ':read_dependency' do
+    let(:policy) { :read_dependency }
+
+    where(:role, :admin_mode, :allowed) do
+      :guest      | nil   | false
+      :planner    | nil   | false
+      :reporter   | nil   | false
+      :developer  | nil   | true
+      :maintainer | nil   | true
+      :owner      | nil   | true
+      :auditor    | nil   | true
+      :admin      | true  | true
+      :admin      | false | false
     end
 
-    context 'with developer' do
-      let(:current_user) { developer }
+    with_them do
+      let(:current_user) { public_send(role) }
 
-      it { is_expected.to be_disallowed(:admin_vulnerability) }
+      before do
+        enable_admin_mode!(current_user) if admin_mode
+      end
+
+      context 'when licensed feature `dependency_scanning` is enabled' do
+        before do
+          stub_licensed_features(dependency_scanning: true)
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+
+      context 'when licensed feature `dependency_scanning` is disabled' do
+        before do
+          stub_licensed_features(dependency_scanning: false)
+        end
+
+        it { is_expected.to be_disallowed(policy) }
+      end
+    end
+  end
+
+  describe ':read_licenses' do
+    let(:policy) { :read_licenses }
+
+    where(:role, :admin_mode, :allowed) do
+      :guest      | nil   | false
+      :planner    | nil   | false
+      :reporter   | nil   | false
+      :developer  | nil   | true
+      :maintainer | nil   | true
+      :owner      | nil   | true
+      :auditor    | nil   | true
+      :admin      | true  | true
+      :admin      | false | false
     end
 
-    context 'with auditor' do
-      let(:current_user) { auditor }
+    with_them do
+      let(:current_user) { public_send(role) }
 
-      context "when auditor is not a group member" do
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+      before do
+        enable_admin_mode!(current_user) if admin_mode
       end
 
-      context "when developer doesn't have developer-level access to a group" do
+      context 'when licensed feature `license_scanning` is enabled' do
         before do
-          group.add_reporter(auditor)
+          stub_licensed_features(license_scanning: true)
         end
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
       end
 
-      context 'when auditor has developer-level access to a group' do
+      context 'when licensed feature `license_scanning` is disabled' do
         before do
-          group.add_developer(auditor)
+          stub_licensed_features(license_scanning: false)
         end
 
-        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { is_expected.to be_disallowed(policy) }
       end
     end
   end
 
   describe 'read_group_security_dashboard & create_vulnerability_export' do
     let(:abilities) do
-      %i[read_group_security_dashboard create_vulnerability_export read_security_resource read_dependency read_licenses]
+      %i[read_group_security_dashboard create_vulnerability_export read_security_resource]
     end
 
     before do
@@ -3282,7 +3269,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           create(:group_member, :awaiting, role, source: public_group, user: user)
 
           expect_allowed(*public_permissions)
-          expect_disallowed(:upload_file)
+          expect_allowed(:upload_file)
           expect_disallowed(*reporter_permissions)
           expect_disallowed(*developer_permissions)
           expect_disallowed(*maintainer_permissions)
@@ -3744,8 +3731,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
 
           context 'for subgroup' do
-            let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
             subject { described_class.new(current_user, subgroup) }
 
             it { is_expected.to be_allowed(:admin_service_accounts) }
@@ -3756,8 +3741,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
 
         context 'for subgroup' do
-          let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
           subject { described_class.new(current_user, subgroup) }
 
           it { is_expected.to be_allowed(:admin_service_accounts) }
@@ -3799,8 +3782,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
 
           context 'for subgroup' do
-            let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
             subject { described_class.new(current_user, subgroup) }
 
             it { is_expected.to be_allowed(:admin_service_accounts) }
@@ -4185,7 +4166,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context 'for a member role with the `read_dependency` ability' do
       let(:member_role_abilities) { { read_dependency: true } }
-      let(:licensed_features) { { security_dashboard: true } }
+      let(:licensed_features) { { dependency_scanning: true, license_scanning: true } }
       let(:allowed_abilities) { [:read_dependency, :read_licenses] }
 
       it_behaves_like 'custom roles abilities'

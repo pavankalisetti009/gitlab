@@ -515,6 +515,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
       context 'for SaaS', :saas do
         before do
+          stub_licensed_features(domain_verification: true, disable_personal_access_tokens: true)
           stub_saas_features(disable_personal_access_tokens: true)
         end
 

@@ -93,6 +93,8 @@ module EE
             params_ee << :disable_invite_members
           end
 
+          params_ee << :hide_email_on_profile if current_group&.enterprise_user_settings_available?(current_user)
+
           if enterprise_bypass_placeholders_allowed?
             params_ee << :allow_enterprise_bypass_placeholder_confirmation
             params_ee << :enterprise_bypass_expires_at

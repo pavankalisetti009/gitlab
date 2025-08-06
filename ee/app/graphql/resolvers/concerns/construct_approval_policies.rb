@@ -30,7 +30,7 @@ module ConstructApprovalPolicies
       enabled: policy[:enabled],
       policy_scope: policy_scope(policy[:policy_scope]),
       yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES, :actions, :rules, :approval_settings,
-        :fallback_behavior, :metadata, :policy_tuning).deep_stringify_keys),
+        :fallback_behavior, :metadata, :policy_tuning, :bypass_settings).deep_stringify_keys),
       updated_at: policy[:config].policy_last_updated_at,
       csp: policy[:csp]
     }

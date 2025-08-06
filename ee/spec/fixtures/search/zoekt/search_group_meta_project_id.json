@@ -1,0 +1,151 @@
+{
+  "query": {
+    "and": {
+      "children": [
+        {
+          "query_string": {
+            "query": "test"
+          }
+        },
+        {
+          "or": {
+            "children": [
+              {
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "20"
+                      }
+                    }
+                  ]
+                },
+                "_context": {
+                  "name": "public_branch"
+                }
+              },
+              {
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "10"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20"
+                      }
+                    }
+                  ]
+                },
+                "_context": {
+                  "name": "internal_branch"
+                }
+              },
+              {
+                "and": {
+                  "children": [
+                    {
+                      "or": {
+                        "children": [
+                          {
+                            "meta": {
+                              "key": "repository_access_level",
+                              "value": "10"
+                            }
+                          },
+                          {
+                            "meta": {
+                              "key": "repository_access_level",
+                              "value": "20"
+                            }
+                          }
+                        ]
+                      },
+                      "_context": {
+                        "name": "admin_branch"
+                      }
+                    },
+                    {
+                      "or": {
+                        "children": [
+                          {
+                            "meta": {
+                              "key": "traversal_ids",
+                              "value": "^9970-457-"
+                            }
+                          },
+                          {
+                            "meta": {
+                              "key": "traversal_ids",
+                              "value": "^9970-123-"
+                            }
+                          },
+                          {
+                            "or": {
+                              "children": [
+                                {
+                                  "meta": {
+                                    "key": "project_id",
+                                    "value": "^1$"
+                                  }
+                                },
+                                {
+                                  "meta": {
+                                    "key": "project_id",
+                                    "value": "^56$"
+                                  }
+                                },
+                                {
+                                  "meta": {
+                                    "key": "project_id",
+                                    "value": "^99$"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "_context": {
+                        "name": "user_authorizations"
+                      }
+                    }
+                  ]
+                },
+                "_context": {
+                  "name": "private_branch"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "meta": {
+            "key": "archived",
+            "value": "f"
+          }
+        },
+        {
+          "meta": {
+            "key": "traversal_ids",
+            "value": "^9970-"
+          },
+          "_context": {
+            "name": "traversal_ids_for_group"
+          }
+        }
+      ]
+    }
+  }
+}

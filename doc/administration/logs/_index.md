@@ -26,7 +26,7 @@ The log system:
 
 System log files are typically plain text in a standard log file format.
 
-The log system is similar to [audit events](../audit_event_reports.md).
+The log system is similar to [audit events](../compliance/audit_event_reports.md).
 For more information, see also:
 
 - [Customizing logging on Linux package installations](https://docs.gitlab.com/omnibus/settings/logs.html)
@@ -1168,7 +1168,7 @@ can be used.
 {{< /history >}}
 
 The `llm.log` file logs information related to
-[AI features](../../user/ai_features.md). Logging includes information about AI events.
+[AI features](../../user/gitlab_duo/_index.md). Logging includes information about AI events.
 
 ### LLM input and output logging
 
@@ -1186,7 +1186,8 @@ This feature is available for testing, but not ready for production use.
 
 {{< /alert >}}
 
-LLM prompt input and response output can be logged by enabling the `expanded_ai_logging` feature flag.
+To log the LLM prompt input and response output, enable the `expanded_ai_logging` feature flag. This flag is intended for use on GitLab.com only, and not on GitLab Self-Managed instances.
+
 This flag is disabled by default and can only be enabled:
 
 - For GitLab.com, when you provide consent through a GitLab [Support Ticket](https://about.gitlab.com/support/portal/).
@@ -1365,7 +1366,7 @@ It contains JSON-formatted logs of product usage events tracked through Snowplow
 }
 ```
 
-To inspect these logs, you can use the [Rake task](../../raketasks/_index.md) `product_usage_data:format` which formats the JSON output and decodes base64-encoded context data for better readability:
+To inspect these logs, you can use the [Rake task](../raketasks/_index.md) `product_usage_data:format` which formats the JSON output and decodes base64-encoded context data for better readability:
 
 ```shell
 gitlab-rake "product_usage_data:format[log/product_usage_data.log]"

@@ -6,16 +6,13 @@ require "spec_helper"
 RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_category: :workspaces do
   let_it_be(:organization) { create(:organization) }
 
-  let_it_be(:user) do
-    create(:user).tap do |u|
-      create(:organization_user, organization: organization, user: u)
-    end
-  end
+  let_it_be(:user) { create(:user, organization: organization) }
 
   let(:filter) { :directly_mapped }
 
   let_it_be(:mapped_agent_in_org) do
-    project = create(:project, organization: organization, namespace: create(:group))
+    group = create(:group, organization: organization)
+    project = create(:project, namespace: group)
     create(:ee_cluster_agent, project: project, name: "agent-in-org-group-mapped").tap do |agent|
       create(:workspaces_agent_config, agent: agent)
       create(:organization_cluster_agent_mapping, user: user, agent: agent, organization: organization)
@@ -47,6 +44,14 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
 
     context 'when user does not have adequate permissions' do
       let(:user) { create(:user) }
+
+      it 'returns an empty response' do
+        expect(response).to eq([])
+      end
+    end
+
+    context 'when user is empty' do
+      let(:user) { nil }
 
       it 'returns an empty response' do
         expect(response).to eq([])

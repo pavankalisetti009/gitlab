@@ -42,10 +42,28 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
         end
 
         it { is_expected.to be_present }
+
+        context 'when in SaaS mode', :saas do
+          context 'when custom_admin_roles feature flag is disabled' do
+            before do
+              stub_feature_flags(custom_admin_roles: false)
+            end
+
+            it { is_expected.not_to be_present }
+          end
+
+          context 'when custom_admin_roles feature flag is enabled' do
+            before do
+              stub_feature_flags(custom_admin_roles: true)
+            end
+
+            it { is_expected.to be_present }
+          end
+        end
       end
     end
 
-    describe 'Usage Quotas' do
+    describe 'Usage quotas' do
       let(:item_id) { :admin_usage_quotas }
 
       context 'when the instance is a Dedicated instance' do

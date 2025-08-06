@@ -198,6 +198,12 @@
 .if-default-branch-schedule-weekly: &if-default-branch-schedule-weekly
   if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "weekly"'
 
+.if-ruby-branch-schedule: &if-ruby-branch-schedule
+  if: '$CI_COMMIT_BRANCH == "ruby-next" && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "maintenance"'
+
+.if-rails-branch-schedule: &if-rails-branch-schedule
+  if: '$CI_COMMIT_BRANCH == "rails-next" && $CI_PIPELINE_SOURCE == "schedule" && $RUN_WITH_NEXT_RAILS_VERSION == "true"'
+
 .if-ruby-branch-schedule-nightly: &if-ruby-branch-schedule-nightly
   if: '$CI_COMMIT_BRANCH == "ruby-next" && $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_TYPE == "nightly"'
 
@@ -519,7 +525,7 @@
 .qa-patterns: &qa-patterns
   - ".dockerignore"
   - "{,jh/}qa/**/*"
-  - ".gitlab/ci/{test-on-omnibus,qa-common,test-on-cng,test-on-gdk}/*"
+  - ".gitlab/ci/{test-on-omnibus,qa-common,test-on-cng,test-on-gdk,performance-on-cng}/*"
 
 # See https://gitlab.com/gitlab-org/quality/engineering-productivity/team/-/issues/470
 # for the reasons why we only match those patterns.
@@ -1061,6 +1067,13 @@
     - <<: *if-merge-request-labels-update-caches
     - <<: *if-default-refs
       changes: *gitaly-patterns
+
+# This rule is used by new cache implementation which updates cache automatically when cache is invalidated by changes
+.shared:rules:update-cache-v2:
+  rules:
+    - <<: *if-merge-train
+      when: never
+    - when: always
 
 ######################
 # Build images rules #
@@ -2054,6 +2067,29 @@
     - <<: *if-dot-com-gitlab-org-schedule
       variables: *qa-e2e-test-schedule-variables
 
+.qa:rules:e2e:perf-on-cng:
+  rules:
+    - <<: *if-merge-request-targeting-stable-branch
+      when: never
+    - if: '$CI_PROJECT_NAMESPACE == "gitlab-org/security"'
+      when: never
+    - <<: *if-not-canonical-namespace
+      when: never
+    # Do not run for scheduled pipeline for ruby-next branch
+    - <<: *if-ruby-branch-schedule
+      when: never
+    # Do not run for scheduled pipeline for rails-next branch
+    - <<: *if-rails-branch-schedule
+      when: never
+    - <<: *if-merge-request
+      changes: *cng-dependency-patterns
+      when: manual
+    - !reference [".qa:rules:e2e-blocking-base-before", rules]
+    - !reference [".prevent-tier-2-and-below", rules]
+    - !reference [".qa:rules:e2e-blocking-base-after", rules]
+    - !reference [".qa:rules:e2e-schedule-nightly", rules]
+    - *if-dot-com-gitlab-org-schedule
+
 .qa:rules:test-on-omnibus-nightly:
   rules:
     - !reference [".qa:rules:e2e-test-never-run", rules]
@@ -3026,16 +3062,12 @@
 ###############
 # Setup rules #
 ###############
-.setup:rules:cache-gems:
+.setup:rules:backup-gems:
   rules:
     - <<: *if-not-canonical-namespace
       when: never
     - <<: *if-default-branch-or-tag
       changes: *code-backstage-qa-patterns
-    - <<: *if-dot-com-gitlab-org-merge-request
-      changes: [".gitlab/ci/setup.gitlab-ci.yml"]
-      when: manual
-      allow_failure: true
 
 .setup:rules:dont-interrupt-me:
   rules:
@@ -3370,7 +3402,7 @@
   rules:
     - if: '$AIGW_TAGGING_ACCESS_TOKEN == null'
       when: never
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-ee)?$/'
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.0-ee$/'
       # Only run when a version tag is created (release is cut)
 
 ###################

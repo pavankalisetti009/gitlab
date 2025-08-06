@@ -53,7 +53,6 @@ module EE
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
-          experiment: { milestone: '16.11' },
           description: "Time taken for CI jobs to be picked up by this group's runners by percentile. " \
             "Available to users with Maintainer role for the group. " \
             'Enable the ClickHouse database backend to use this query.',

@@ -10,13 +10,5 @@ module GitlabSubscriptions
         add_on: :duo_core
       ).execute.any?
     end
-
-    def self.available?(user, namespace)
-      if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
-        user.can?(:access_duo_core_features, namespace)
-      else
-        user.can?(:access_duo_core_features)
-      end
-    end
   end
 end

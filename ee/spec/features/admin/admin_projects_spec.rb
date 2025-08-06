@@ -10,7 +10,6 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
     let_it_be(:role) { create(:admin_member_role, :read_admin_projects, user: current_user) }
 
     before do
-      stub_feature_flags(admin_projects_vue: false)
       stub_licensed_features(custom_roles: true)
 
       enable_admin_mode!(current_user)
@@ -19,7 +18,8 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
     end
 
     describe 'list' do
-      it 'renders without admin-only buttons' do
+      it 'renders without admin-only buttons',
+        pending: "Not supported in new Vue dashboard: https://gitlab.com/gitlab-org/gitlab/-/issues/557844" do
         visit admin_projects_path
 
         expect(page).to have_content(project.name)

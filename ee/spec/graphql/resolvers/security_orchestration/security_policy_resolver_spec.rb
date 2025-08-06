@@ -146,7 +146,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           approval_settings: approval_policy[:approval_settings],
           fallback_behavior: approval_policy[:fallback_behavior],
           metadata: approval_policy[:metadata],
-          policy_tuning: approval_policy[:policy_tuning]
+          policy_tuning: approval_policy[:policy_tuning],
+          bypass_settings: approval_policy[:bypass_settings]
         }.compact.deep_stringify_keys)
       }]
     end

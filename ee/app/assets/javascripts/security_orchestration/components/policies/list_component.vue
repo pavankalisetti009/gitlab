@@ -7,8 +7,8 @@ import {
   GlLoadingIcon,
   GlSprintf,
   GlTable,
-  GlTooltip,
   GlKeysetPagination,
+  GlPopover,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -75,9 +75,9 @@ export default {
     GlLink,
     GlLoadingIcon,
     GlKeysetPagination,
+    GlPopover,
     GlSprintf,
     GlTable,
-    GlTooltip,
     EmptyState,
     ListComponentScope,
     SourceFilter,
@@ -431,6 +431,7 @@ export default {
     groupTypeLabel: s__('SecurityOrchestration|This group'),
     projectTypeLabel: s__('SecurityOrchestration|This project'),
     openPolicyActionsDropdown: s__('SecurityOrchestration|Open policy actions dropdown'),
+    popoverTitle: s__('SecurityOrchestration|Inherited policy'),
   },
   BREAKING_CHANGES_POPOVER_CONTENTS,
 };
@@ -544,10 +545,11 @@ export default {
             />
           </span>
         </gl-button-group>
-        <gl-tooltip
+        <gl-popover
           v-if="isPolicyInherited(item.source) && policyHasNamespace(item.source)"
           :target="() => $refs[item.editPath]"
         >
+          <template #title>{{ $options.i18n.popoverTitle }}</template>
           <gl-sprintf :message="$options.i18n.actionsDisabled">
             <template #link>
               <gl-link
@@ -558,7 +560,7 @@ export default {
               </gl-link>
             </template>
           </gl-sprintf>
-        </gl-tooltip>
+        </gl-popover>
       </template>
 
       <template #table-busy>

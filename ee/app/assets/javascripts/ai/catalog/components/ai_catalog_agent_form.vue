@@ -11,13 +11,21 @@ import {
   GlIcon,
 } from '@gitlab/ui';
 import {
+  VISIBILITY_LEVEL_LABELS,
+  VISIBILITY_TYPE_ICON,
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+} from '~/visibility_level/constants';
+import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
   MAX_LENGTH_PROMPT,
   VISIBILITY_LEVEL_PRIVATE,
   VISIBILITY_LEVEL_PUBLIC,
+  AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
+import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -89,19 +97,15 @@ export default {
       return [
         {
           value: VISIBILITY_LEVEL_PRIVATE,
-          label: s__('AICatalog|Private'),
-          text: s__(
-            'AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners  of this project can edit or delete the agent.',
-          ),
-          icon: 'lock',
+          label: VISIBILITY_LEVEL_LABELS[VISIBILITY_LEVEL_PRIVATE_STRING],
+          text: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+          icon: VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
         {
           value: VISIBILITY_LEVEL_PUBLIC,
-          label: s__('AICatalog|Public'),
-          text: s__(
-            'AICatalog|Anyone can view and use the agent without authorization. Only maintainers and owners of this project can edit or delete the agent.',
-          ),
-          icon: 'earth',
+          label: VISIBILITY_LEVEL_LABELS[VISIBILITY_LEVEL_PUBLIC_STRING],
+          text: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+          icon: VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PUBLIC_STRING],
         },
       ];
     },
@@ -207,7 +211,7 @@ export default {
   },
   methods: {
     handleSubmit() {
-      const trimmedFormValues = {
+      const transformedValues = {
         projectId: this.formValues.projectId.trim(),
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
@@ -215,9 +219,10 @@ export default {
         userPrompt: this.formValues.userPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
       };
-      this.$emit('submit', trimmedFormValues);
+      this.$emit('submit', transformedValues);
     },
   },
+  indexRoute: AI_CATALOG_AGENTS_ROUTE,
 };
 </script>
 
@@ -329,7 +334,7 @@ export default {
           </gl-alert>
         </template>
       </gl-form-fields>
-      <ai-catalog-form-buttons :is-disabled="isLoading">
+      <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
         <gl-button
           class="js-no-auto-disable"
           type="submit"

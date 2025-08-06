@@ -37,7 +37,6 @@ describe('DetailsIndex', () => {
     const detailsCmp = wrapper.findComponent(TracingDetails);
     expect(detailsCmp.exists()).toBe(true);
     expect(detailsCmp.props('traceId')).toBe(props.traceId);
-    expect(detailsCmp.props('tracingIndexUrl')).toBe(props.tracingIndexUrl);
     expect(detailsCmp.props('logsIndexUrl')).toBe(props.logsIndexUrl);
     expect(detailsCmp.props('metricsIndexUrl')).toBe(props.metricsIndexUrl);
     expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);

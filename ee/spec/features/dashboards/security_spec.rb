@@ -2,8 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Security dashboard', :js, feature_category: :shared do
+RSpec.describe 'Security dashboard', :js, :with_organization_url_helpers, feature_category: :shared do
   let_it_be(:user) { create(:user) }
+  let_it_be(:current_organization) { user.organization }
 
   before do
     stub_licensed_features(security_dashboard: true)

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_failures, :api, feature_category: :"add-on_provisioning" do
   include GitlabSubscriptions::InternalApiHelpers
 
-  let_it_be_with_reload(:namespace) { create(:group, :with_organization) }
+  let_it_be_with_reload(:namespace) { create(:group) }
 
   let!(:add_on) { create(:gitlab_subscription_add_on, add_on_name.to_sym) }
 

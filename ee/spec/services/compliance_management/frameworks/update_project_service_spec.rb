@@ -60,6 +60,60 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateProjectService, feature_c
           end
         end
 
+        context "when given a framework from another group" do
+          let_it_be(:csp_group) { create(:group, name: "CSP Group") }
+          let_it_be(:csp_framework) { create(:compliance_framework, name: 'CSP Framework', namespace: csp_group) }
+
+          let(:service) { described_class.new(project, user, [csp_framework]) }
+
+          context "when the group is not the CSP Group" do
+            it "does not add the framework association" do
+              expect { update_framework }.not_to change {
+                project.reload.compliance_management_frameworks.to_a
+              }
+            end
+          end
+
+          context "when the group is the CSP Group" do
+            include Security::PolicyCspHelpers
+
+            before do
+              project.clear_memoization(:organization_policy_setting)
+              stub_csp_group(csp_group)
+            end
+
+            it "adds the framework association for the CSP framework" do
+              expect { update_framework }.to change {
+                project.reload.compliance_management_frameworks
+              }.from([]).to(
+                match_array([csp_framework])
+              )
+            end
+
+            it 'logs audit events' do
+              expect { update_framework }.to change {
+                AuditEvent.where("details LIKE ?", "%compliance_framework_added%").count
+              }.by(1)
+            end
+
+            it 'enqueues the ProjectComplianceEvaluatorWorker' do
+              expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+                ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+                csp_framework.id, [project.id]
+              ).and_call_original
+
+              update_framework
+            end
+
+            it 'publishes Projects::ComplianceFrameworkChangedEvent' do
+              expect(::Gitlab::EventStore).to receive(:publish)
+                .with(an_instance_of(::Projects::ComplianceFrameworkChangedEvent))
+
+              update_framework
+            end
+          end
+        end
+
         context 'when project already has some frameworks associated with it' do
           before do
             create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework2)

@@ -47,19 +47,16 @@ describe('WorkItemRolledUpData', () => {
 
   describe('rolled up weight', () => {
     it.each`
-      isRollUp | rolledUpWeight | rollUpWeightVisible | expected
-      ${false} | ${0}           | ${false}            | ${'rollup weight is not displayed'}
-      ${false} | ${10}          | ${false}            | ${'rollup weight is not displayed'}
-      ${true}  | ${0}           | ${true}             | ${'rollup weight is displayed'}
-      ${true}  | ${null}        | ${false}            | ${'rollup weight is not displayed'}
-      ${true}  | ${10}          | ${true}             | ${'rollup weight is displayed'}
+      rolledUpWeight | rollUpWeightVisible | expected
+      ${0}           | ${true}             | ${'rollup weight is displayed'}
+      ${null}        | ${false}            | ${'rollup weight is not displayed'}
+      ${10}          | ${true}             | ${'rollup weight is displayed'}
     `(
       'When the roll up weight is $isRollUp and rolledUpWeight is $rolledUpWeight, $expected',
-      async ({ isRollUp, rollUpWeightVisible, rolledUpWeight }) => {
+      async ({ rollUpWeightVisible, rolledUpWeight }) => {
         const workItemResponse = workItemByIidResponseFactory({
           canUpdate: true,
           rolledUpWeight,
-          editableWeightWidget: !isRollUp,
         });
         createComponent({
           workItemQueryHandler: jest.fn().mockResolvedValue(workItemResponse),

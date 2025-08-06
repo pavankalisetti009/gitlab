@@ -251,24 +251,6 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
           expect(created_user.onboarding_in_progress).to be_truthy
         end
 
-        it 'step_url points to trial welcome path' do
-          create_user
-          user = User.find_by_username(user_attrs[:username])
-          expect(user.onboarding_status[:step_url]).to eq(users_sign_up_welcome_path)
-        end
-
-        context 'with LightweightTrialRegistrationRedesignExperiment candidate experience' do
-          before do
-            stub_experiments(lightweight_trial_registration_redesign: :candidate)
-          end
-
-          it 'step_url points to trial welcome path' do
-            create_user
-            user = User.find_by_username(user_attrs[:username])
-            expect(user.onboarding_status[:step_url]).to eq(new_users_sign_up_trial_welcome_path)
-          end
-        end
-
         context 'and the user is eligible to be an enterprise user', :saas do
           let_it_be(:pages_domain) { create(:pages_domain, project: create(:project, group: create(:group))) }
           let_it_be(:user_attrs) do

@@ -6,7 +6,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::InternalPoststart
   include_context "with remote development shared fixtures"
 
   let(:input_processed_devfile) do
-    read_devfile("example.main-container-updated-devfile.yaml.erb")
+    read_devfile("example.container-commands-updated-devfile.yaml.erb")
   end
 
   let(:expected_processed_devfile_name) { "example.internal-poststart-commands-inserted-devfile.yaml.erb" }

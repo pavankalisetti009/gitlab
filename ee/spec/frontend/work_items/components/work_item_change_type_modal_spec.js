@@ -163,6 +163,19 @@ describe('WorkItemChangeTypeModal component', () => {
     expect(findGlFormSelect().findAll('option')).toHaveLength(5);
   });
 
+  it('emits "error" event when unable to fetch work item types', async () => {
+    const error = new Error('Uh oh!');
+
+    createComponent({
+      workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+      typesQuerySuccessHandler: jest.fn().mockRejectedValue(error),
+    });
+
+    await waitForPromises();
+
+    expect(wrapper.emitted('error')[0]).toEqual([error]);
+  });
+
   describe('when widget data has difference', () => {
     // These are possible use cases of conflicts among issues EE widgets
     // Other widgets are shared between all the work item types

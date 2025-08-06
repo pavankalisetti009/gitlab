@@ -107,7 +107,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
     RSpec.shared_examples "organization_workspaces_authorized_agent policy enforcement" do |ability|
       let_it_be(:project) { create(:project) }
       let_it_be(:organization) { project.organization }
-      let_it_be(:user) { create(:user) }
+      let_it_be(:user) { create(:user, organizations: []) }
 
       let_it_be(:agent_with_no_remote_development_config) do
         create(:ee_cluster_agent, project: project, name: "agent-with-no-workspace-config")

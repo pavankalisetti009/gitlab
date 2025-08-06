@@ -10,7 +10,7 @@ import {
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import SectionLayout from '../../section_layout.vue';
 import { getDefaultRule } from '../lib';
-import BranchSelection from './branch_selection.vue';
+import BranchSelection from '../../branch_selection.vue';
 import ScanTypeSelect from './scan_type_select.vue';
 
 const COMMIT_LISTBOX_ITEMS = [

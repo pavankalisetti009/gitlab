@@ -12,6 +12,8 @@ module Elastic
     urgency :throttled
 
     def perform(project_id, old_namespace_id, new_namespace_id)
+      return unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+
       project = Project.find_by_id(project_id)
       return unless project
 

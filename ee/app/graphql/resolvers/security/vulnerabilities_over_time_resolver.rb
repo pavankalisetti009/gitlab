@@ -19,6 +19,10 @@ module Resolvers
         required: true,
         description: 'End date for the vulnerability metrics time range.'
 
+      argument :severity, [Types::VulnerabilitySeverityEnum],
+        required: false,
+        description: 'Filter vulnerabilities by severity.'
+
       def resolve(start_date:, end_date:, **args)
         authorize!(object) unless resolve_vulnerabilities_for_instance_security_dashboard?
         validate_date_range!(start_date, end_date)
@@ -36,10 +40,15 @@ module Resolvers
       private
 
       def build_base_params(start_date, end_date, args)
+        project_ids = context[:project_id]
+        report_type = context[:report_type]
+
         {
-          start_date: start_date,
-          end_date: end_date,
-          project_id: args[:project_id]
+          created_after: start_date,
+          created_before: end_date,
+          project_id: project_ids,
+          report_type: report_type,
+          severity: args[:severity]
         }.compact
       end
 
@@ -69,7 +78,9 @@ module Resolvers
           entry[:by_report_type] = transform_report_type_data(result[:by_report_type])
         end
 
-        date_map.values
+        date_map.values.select do |entry|
+          entry[:by_severity].any? || entry[:by_report_type].any?
+        end
       end
 
       def get_value(hash, key)
@@ -80,7 +91,9 @@ module Resolvers
 
       def process_results(results, date_map)
         results.each do |result|
-          date_value = result[:date] || Time.zone.today # todo: what do we do if date is missing?
+          date_value = get_value(result, :date)
+          next unless date_value
+
           date_key = date_value.to_s
 
           date_map[date_key] ||= {
@@ -106,7 +119,7 @@ module Resolvers
 
           {
             field_name.to_sym => value,
-            count: get_value(item, :count).to_i || 0
+            count: get_value(item, :count).to_i
           }
         end
       end

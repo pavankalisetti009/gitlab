@@ -166,6 +166,7 @@ module Vulnerabilities
     scope :eager_load_comparison_entities, -> { includes(:scanner, :primary_identifier) }
     scope :by_primary_identifiers, ->(identifier_ids) { where(primary_identifier: identifier_ids) }
     scope :by_latest_pipeline, ->(pipeline_id) { where(latest_pipeline_id: pipeline_id) }
+    scope :with_project, -> { includes(:project) }
 
     scope :all_preloaded, -> do
       preload(:scanner, :identifiers, :feedbacks, project: [:namespace, :project_feature])
@@ -347,6 +348,10 @@ module Vulnerabilities
       return unless metadata['identifiers']
 
       metadata['identifiers'].find { |hash| hash['type'] == 'gitleaks_rule_id' }&.dig('value')
+    end
+
+    def token_value
+      metadata['raw_source_code_extract']
     end
 
     def cve_enrichment

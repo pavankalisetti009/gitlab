@@ -3,6 +3,7 @@ import { GlButton, GlForm, GlCollapsibleListbox, GlBadge, GlTooltipDirective } f
 import { s__, __ } from '~/locale';
 import { EMPTY_TYPE, GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
+import RoleSelect from 'ee/security_orchestration/components/shared/role_select.vue';
 import SectionLayout from '../../section_layout.vue';
 import {
   ADD_APPROVER_LABEL,
@@ -10,7 +11,6 @@ import {
   DEFAULT_APPROVER_DROPDOWN_TEXT,
 } from '../lib/actions';
 import GroupSelect from './group_select.vue';
-import RoleSelect from './role_select.vue';
 
 export default {
   name: 'ApproverSelect',

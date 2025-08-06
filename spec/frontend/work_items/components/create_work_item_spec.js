@@ -80,7 +80,6 @@ describe('Create work item component', () => {
   const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse());
   const namespaceWorkItemTypes =
     namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes;
-  const { webUrl: namespaceWebUrl } = namespaceWorkItemTypesQueryResponse.data.workspace;
   const mockRelatedItem = {
     id: 'gid://gitlab/WorkItem/22',
     type: 'Issue',
@@ -147,6 +146,7 @@ describe('Create work item component', () => {
         hasIssuableHealthStatusFeature: false,
         hasIterationsFeature: true,
         hasIssueWeightsFeature: false,
+        issuesSettings: '/groups/twitter/-/settings/issues',
         ...provide,
       },
       stubs: {
@@ -1112,18 +1112,4 @@ describe('Create work item component', () => {
       });
     });
   });
-
-  it.each`
-    isGroupWorkItem | uploadsPath
-    ${true}         | ${`${namespaceWebUrl}/-/uploads`}
-    ${false}        | ${`${namespaceWebUrl}/uploads`}
-  `(
-    'passes correct uploads path for markdown editor when isGroupWorkItem is $isGroupWorkItem',
-    async ({ isGroupWorkItem, uploadsPath }) => {
-      createComponent({ isGroupWorkItem });
-      await waitForPromises();
-
-      expect(findDescriptionWidget().props('uploadsPath')).toBe(uploadsPath);
-    },
-  );
 });

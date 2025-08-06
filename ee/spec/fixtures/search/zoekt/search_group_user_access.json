@@ -26,6 +26,9 @@
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "public_branch"
                 }
               },
               {
@@ -44,6 +47,9 @@
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "internal_branch"
                 }
               },
               {
@@ -65,6 +71,9 @@
                             }
                           }
                         ]
+                      },
+                      "_context": {
+                        "name": "admin_branch"
                       }
                     },
                     {
@@ -73,13 +82,13 @@
                           {
                             "meta": {
                               "key": "traversal_ids",
-                              "value": "9970-457-"
+                              "value": "^9970-457-"
                             }
                           },
                           {
                             "meta": {
                               "key": "traversal_ids",
-                              "value": "9970-123-"
+                              "value": "^9970-123-"
                             }
                           },
                           {
@@ -90,9 +99,15 @@
                             ]
                           }
                         ]
+                      },
+                      "_context": {
+                        "name": "user_authorizations"
                       }
                     }
                   ]
+                },
+                "_context": {
+                  "name": "private_branch"
                 }
               }
             ]
@@ -107,7 +122,10 @@
         {
           "meta": {
             "key": "traversal_ids",
-            "value": "9970-"
+            "value": "^9970-"
+          },
+          "_context": {
+            "name": "traversal_ids_for_group"
           }
         }
       ]

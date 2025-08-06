@@ -24,6 +24,8 @@ query EEgetWorkItemStateCounts(
   $types: [IssueType!]
   $updatedAfter: Time
   $updatedBefore: Time
+  $crmOrganizationId: String
+  $crmContactId: String
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
   $in: [IssuableSearchableField!]
   $not: NegatedWorkItemFilterInput
@@ -31,6 +33,7 @@ query EEgetWorkItemStateCounts(
   $weight: String
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
+  $status: WorkItemWidgetStatusFilterInput
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -58,11 +61,14 @@ query EEgetWorkItemStateCounts(
       types: $types
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
+      crmOrganizationId: $crmOrganizationId
+      crmContactId: $crmContactId
       customField: $customField
       in: $in
       not: $not
       or: $or
       healthStatusFilter: $healthStatusFilter
+      status: $status
     ) {
       all
       closed
@@ -93,12 +99,15 @@ query EEgetWorkItemStateCounts(
       types: $types
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
+      crmOrganizationId: $crmOrganizationId
+      crmContactId: $crmContactId
       in: $in
       not: $not
       or: $or
       weight: $weight
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
+      status: $status
     ) {
       all
       closed

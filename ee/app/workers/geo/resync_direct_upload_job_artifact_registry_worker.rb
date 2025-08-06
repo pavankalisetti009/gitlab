@@ -24,7 +24,7 @@ module Geo
     def perform(start, finish)
       query = <<~SQL.squish
         UPDATE #{REGISTRY_TABLE_NAME}
-        SET state = #{PENDING_STATE_ENUM}, last_synced_at = NULL
+        SET state = #{PENDING_STATE_ENUM}
         WHERE state = #{SYNCED_STATE_ENUM}
         AND last_synced_at BETWEEN '#{SYNCED_AFTER}' AND '#{SYNCED_BEFORE}'
         AND id BETWEEN #{start} AND #{finish}

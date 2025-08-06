@@ -2,15 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Edit group settings', feature_category: :groups_and_projects do
+RSpec.describe 'Edit group settings', :with_current_organization, feature_category: :groups_and_projects do
   include Spec::Support::Helpers::ModalHelpers
   include Features::WebIdeSpecHelpers
 
-  let(:user)  { create(:user) }
-  let(:group) { create(:group, path: 'foo') }
+  let_it_be(:user) { create(:user, organization: current_organization) }
+  let_it_be_with_reload(:group) { create(:group, path: 'foo', owners: [user]) }
 
   before do
-    group.add_owner(user)
     sign_in(user)
   end
 
@@ -129,15 +128,35 @@ RSpec.describe 'Edit group settings', feature_category: :groups_and_projects do
     it 'has a root URL label for top-level group' do
       visit edit_group_path(group)
 
-      expect(find(:css, '.group-root-path').text).to eq(root_url)
+      expect(find(:css, '.group-root-path').text).to eq(unscoped_root_url)
     end
 
-    it 'has a parent group URL label for a subgroup group' do
-      subgroup = create(:group, parent: group)
+    context 'with scoped paths' do
+      before do
+        allow(current_organization).to receive(:scoped_paths?).and_return(true)
+      end
 
-      visit edit_group_path(subgroup)
+      it 'has a parent group URL label for a subgroup group' do
+        subgroup = create(:group, parent: group)
 
-      expect(find(:css, '.group-root-path').text).to eq(group_url(subgroup.parent) + '/')
+        visit edit_group_path(subgroup)
+
+        expect(find(:css, '.group-root-path').text).to eq(group_url(subgroup.parent) + '/')
+      end
+    end
+
+    context 'without scoped paths' do
+      before do
+        allow(current_organization).to receive(:scoped_paths?).and_return(false)
+      end
+
+      it 'has a parent group URL label for a subgroup group' do
+        subgroup = create(:group, parent: group)
+
+        visit edit_group_path(subgroup)
+
+        expect(find(:css, '.group-root-path').text).to eq(group_url(subgroup.parent) + '/')
+      end
     end
   end
 
@@ -248,8 +267,6 @@ RSpec.describe 'Edit group settings', feature_category: :groups_and_projects do
   end
 
   describe 'group README', :js do
-    let_it_be(:group) { create(:group) }
-
     context 'with gitlab-profile project and README.md' do
       let_it_be(:project) { create(:project, :readme, namespace: group) }
 
@@ -309,48 +326,64 @@ RSpec.describe 'Edit group settings', feature_category: :groups_and_projects do
   end
 
   describe 'archive', :js do
-    let(:parent) { group }
-    let(:subgroup) { create(:group, parent: group) }
+    let_it_be_with_reload(:ancestor) { group }
+    let_it_be_with_reload(:subgroup) { create(:group, parent: ancestor) }
 
-    context 'when group is archived' do
+    shared_examples 'does not render archive settings when `archive_group` flag is disabled' do
+      before do
+        stub_feature_flags(archive_group: false)
+
+        visit edit_group_path(subgroup)
+      end
+
+      specify { expect(page).not_to have_button(s_('GroupProjectArchiveSettings|Archive')) }
+      specify { expect(page).not_to have_button(s_('GroupProjectUnarchiveSettings|Unarchive')) }
+    end
+
+    context 'when group is archived',
+      skip: 'Returns a 404 in CE due to a bug: https://gitlab.com/gitlab-org/gitlab/-/issues/558811' do
       before do
         subgroup.archive
 
         visit edit_group_path(subgroup)
       end
 
-      specify { expect(page).not_to have_button(_('Archive')) }
+      it 'can unarchive group', :aggregate_failures do
+        click_button s_('GroupProjectUnarchiveSettings|Unarchive')
+
+        expect(page).to have_current_path(group_path(subgroup))
+        expect(subgroup.reload.archived).to be(false)
+      end
+
+      it_behaves_like 'does not render archive settings when `archive_group` flag is disabled'
     end
 
-    context 'when parent is archived' do
+    context 'when ancestor is archived' do
       before do
-        parent.archive
+        ancestor.archive
 
         visit edit_group_path(subgroup)
       end
 
-      specify { expect(page).not_to have_button(_('Archive')) }
+      it 'cannot archive or unarchive group', :aggregate_failures do
+        expect(page).not_to have_button(s_('GroupProjectArchiveSettings|Archive'))
+        expect(page).not_to have_button(s_('GroupProjectUnarchiveSettings|Unarchive'))
+      end
     end
 
     context 'when group and parent is not archived' do
-      it 'can archive group' do
+      before do
         visit edit_group_path(subgroup)
+      end
 
-        click_button _('Archive')
+      it 'can archive group', :aggregate_failures do
+        click_button s_('GroupProjectArchiveSettings|Archive')
 
         expect(page).to have_current_path(group_path(subgroup))
         expect(subgroup.reload.archived).to be(true)
       end
 
-      context 'when `archive_group` flag is disabled' do
-        before do
-          stub_feature_flags(archive_group: false)
-
-          visit edit_group_path(subgroup)
-        end
-
-        specify { expect(page).not_to have_button(_('Archive')) }
-      end
+      it_behaves_like 'does not render archive settings when `archive_group` flag is disabled'
     end
   end
 
@@ -385,7 +418,7 @@ RSpec.describe 'Edit group settings', feature_category: :groups_and_projects do
   end
 
   describe 'update pages access control' do
-    let_it_be(:group) { create(:group) }
+    let_it_be(:group) { create(:group, owners: [user]) }
     let_it_be(:project) { create(:project, :pages_published, namespace: group, pages_access_level: ProjectFeature::PUBLIC) }
 
     before do

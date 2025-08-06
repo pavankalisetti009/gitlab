@@ -78,10 +78,6 @@ export const TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS = {
   push: s__('SecurityOrchestration|Code push'),
 };
 
-export const TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS = Object.entries(
-  TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS,
-).map(([value, text]) => ({ value, text }));
-
 export const PIPELINE_SOURCE_OPTIONS = {
   api: s__('SecurityOrchestration|API request'),
   chat: s__('SecurityOrchestration|ChatOps command'),
@@ -96,11 +92,9 @@ export const PIPELINE_SOURCE_OPTIONS = {
   unknown: s__('SecurityOrchestration|Unknown source'),
 };
 
-export const PIPELINE_SOURCE_LISTBOX_OPTIONS = Object.entries(PIPELINE_SOURCE_OPTIONS).map(
-  ([value, text]) => ({ value, text }),
-);
-
 export const SELECTION_CONFIG_CUSTOM = 'custom';
 export const SELECTION_CONFIG_DEFAULT = 'default';
 
 export const DEFAULT_CONDITION_STRATEGY = 'merge-request';
+
+export const PIPELINE_SOURCES_KEY = 'pipeline_sources';

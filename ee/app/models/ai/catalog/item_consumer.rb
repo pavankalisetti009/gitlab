@@ -11,6 +11,13 @@ module Ai
 
       validate :validate_exactly_one_sharding_key_present
 
+      validates :item, uniqueness: { scope: :organization_id, message: 'already configured' },
+        if: -> { organization.present? }
+      validates :item, uniqueness: { scope: :group_id, message: 'already configured' },
+        if: -> { group.present? }
+      validates :item, uniqueness: { scope: :project_id, message: 'already configured' },
+        if: -> { project.present? }
+
       belongs_to :item, class_name: 'Ai::Catalog::Item',
         foreign_key: :ai_catalog_item_id, inverse_of: :consumers, optional: false
 

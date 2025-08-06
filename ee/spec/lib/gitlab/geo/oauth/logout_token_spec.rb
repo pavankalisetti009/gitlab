@@ -8,7 +8,7 @@ RSpec.describe Gitlab::Geo::Oauth::LogoutToken, feature_category: :geo_replicati
   let(:node) { create(:geo_node) }
   let(:access_token) { create(:oauth_access_token, resource_owner_id: user.id, application_id: node.oauth_application_id) }
   let(:return_to) { '/project/test' }
-  let(:state) { Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token, return_to: return_to).encode }
+  let(:state) { Gitlab::Geo::Oauth::LogoutState.new(token: access_token.plaintext_token, return_to: return_to).encode }
 
   describe '#valid?' do
     it 'returns false when current user is nil' do
@@ -103,7 +103,7 @@ RSpec.describe Gitlab::Geo::Oauth::LogoutToken, feature_category: :geo_replicati
 
     context 'when state return_to param is nil' do
       it 'returns the Geo node URL associated with the OAuth application' do
-        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token, return_to: nil).encode
+        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.plaintext_token, return_to: nil).encode
         token = described_class.new(user, state)
 
         expect(token.return_to).to eq(node.url)
@@ -112,7 +112,7 @@ RSpec.describe Gitlab::Geo::Oauth::LogoutToken, feature_category: :geo_replicati
 
     context 'when state return_to param is empty' do
       it 'returns the Geo node URL associated with the OAuth application' do
-        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token, return_to: '').encode
+        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.plaintext_token, return_to: '').encode
         token = described_class.new(user, state)
 
         expect(token.return_to).to eq(node.url)
@@ -130,7 +130,7 @@ RSpec.describe Gitlab::Geo::Oauth::LogoutToken, feature_category: :geo_replicati
 
       it 'replaces the host with the Geo node associated with the OAuth application' do
         fake_return_to = 'http://fake-secondary/project/test'
-        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token, return_to: fake_return_to).encode
+        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.plaintext_token, return_to: fake_return_to).encode
         token = described_class.new(user, state)
 
         expect(token.return_to).to eq(return_to_url)
@@ -138,7 +138,7 @@ RSpec.describe Gitlab::Geo::Oauth::LogoutToken, feature_category: :geo_replicati
 
       it 'handles leading and trailing slashes correctly' do
         return_to = '//project/test'
-        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.token, return_to: return_to).encode
+        state = Gitlab::Geo::Oauth::LogoutState.new(token: access_token.plaintext_token, return_to: return_to).encode
         token = described_class.new(user, state)
 
         expect(token.return_to).to eq(return_to_url)

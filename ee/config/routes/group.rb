@@ -157,8 +157,6 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
         post :toggle_subscription
       end
 
-      resources :epic_issues, only: [:index, :create, :destroy, :update], as: 'issues', path: 'issues'
-
       scope module: :epics do
         resources :notes, only: [:index, :create, :destroy, :update], concerns: :awardable, constraints: { id: /\d+/ }
       end

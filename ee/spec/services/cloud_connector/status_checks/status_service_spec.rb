@@ -25,6 +25,14 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
       ]
     end
 
+    let(:self_hosted_probes) do
+      [
+        an_instance_of(CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe)
+      ]
+    end
+
     context 'when no probes are passed' do
       it 'creates default probes' do
         service_probes = service.probes
@@ -39,17 +47,43 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
         allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(ai_gateway_url)
       end
 
-      it 'uses a different set of probes' do
+      it 'uses self-hosted probes' do
         service_probes = service.probes
 
         expect(service_probes.count).to eq(3)
-        expect(service_probes[0]).to be_an_instance_of(
-          CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe
-        )
-        expect(service_probes[1]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe)
-        expect(service_probes[2]).to be_an_instance_of(
-          CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe
-        )
+        expect(service_probes).to match(self_hosted_probes)
+      end
+
+      context 'when 1 or more vendored models are in use' do
+        before do
+          create(:ai_feature_setting, provider: :vendored)
+        end
+
+        context 'when the ai_self_hosted_vendored_features feature flag is enabled' do
+          before do
+            stub_feature_flags(ai_self_hosted_vendored_features: true)
+          end
+
+          it 'adds default probes to the list of probes' do
+            service_probes = service.probes
+
+            expect(service_probes.count).to eq(9)
+            expect(service_probes).to match(default_probes + self_hosted_probes)
+          end
+        end
+
+        context 'when the ai_self_hosted_vendored_features feature flag is disabled' do
+          before do
+            stub_feature_flags(ai_self_hosted_vendored_features: false)
+          end
+
+          it 'does not add default probes to the list of probes' do
+            service_probes = service.probes
+
+            expect(service_probes.count).to eq(3)
+            expect(service_probes).to match(self_hosted_probes)
+          end
+        end
       end
     end
 

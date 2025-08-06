@@ -6,14 +6,12 @@ scope module: :gitlab_subscriptions do
     resource :duo_enterprise, only: [:new, :create]
   end
 
-  resources :groups, only: [:new, :edit, :update, :create], path: 'subscriptions/groups',
-    as: :gitlab_subscriptions_groups
+  resources :groups, only: [:new, :create], path: 'subscriptions/groups', as: :gitlab_subscriptions_groups
   resources :trials, only: [:new, :create]
   resource :subscriptions, only: [:new] do
     get :buy_minutes
     get :buy_storage
     get :payment_form
-    get :payment_method
     post :validate_payment_method
   end
   resources :hand_raise_leads, only: :create, path: 'gitlab_subscriptions/hand_raise_leads',

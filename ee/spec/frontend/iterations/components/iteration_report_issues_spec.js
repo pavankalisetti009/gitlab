@@ -13,6 +13,13 @@ import { nextTick } from 'vue';
 import IterationReportIssues from 'ee/iterations/components/iteration_report_issues.vue';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import WorkItemTypeIcon from '~/work_items/components/work_item_type_icon.vue';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
+
+jest.mock('ee/work_items/components/shared/work_item_status_badge.vue', () => ({
+  name: 'WorkItemStatusBadge',
+  template: '<div class="work-item-status-badge-mock"></div>',
+  props: ['item'],
+}));
 
 describe('Iterations report issues', () => {
   let wrapper;
@@ -57,6 +64,12 @@ describe('Iterations report issues', () => {
         $apollo: {
           queries: { issues: { loading } },
         },
+      },
+      provide: {
+        hasStatusFeature: true,
+      },
+      stubs: {
+        WorkItemStatusBadge,
       },
     });
   };
@@ -135,6 +148,11 @@ describe('Iterations report issues', () => {
         labels,
         weight: i,
         type: 'ISSUE',
+        status: {
+          name: i % 2 ? 'In Progress' : 'Open',
+          iconName: i % 2 ? 'status-in-progress' : 'status-open',
+          color: i % 2 ? '#00b140' : '#418644',
+        },
       }));
 
     const findIssues = () => wrapper.findAll('table tbody tr');
@@ -148,7 +166,16 @@ describe('Iterations report issues', () => {
       beforeEach(() => {
         const data = {
           issues: {
-            list: issues,
+            list: issues.map((issue) => ({
+              ...issue,
+              status: issue.status
+                ? {
+                    name: issue.status.name,
+                    iconName: issue.status.iconName,
+                    color: issue.status.color,
+                  }
+                : null,
+            })),
             pageInfo: {
               hasNextPage: true,
               hasPreviousPage: false,
@@ -159,7 +186,13 @@ describe('Iterations report issues', () => {
           },
         };
 
-        mountComponent({ data, mountFunction: mount });
+        mountComponent({
+          data,
+          mountFunction: mount,
+          provide: {
+            hasStatusFeature: true,
+          },
+        });
       });
 
       it('shows issue list in table', () => {
@@ -190,6 +223,16 @@ describe('Iterations report issues', () => {
         expect(findWeightsForIssue(0).text()).toBe('0');
         expect(findWeightsForIssue(5).text()).toBe('5');
         expect(findWeightsForIssue(8).text()).toBe('8');
+      });
+
+      it('shows status badges', () => {
+        const statusBadges = wrapper.findAllComponents(WorkItemStatusBadge);
+        expect(statusBadges).toHaveLength(issues.length);
+        expect(statusBadges.at(0).props().item).toEqual({
+          name: 'Open',
+          iconName: 'status-open',
+          color: '#418644',
+        });
       });
     });
 

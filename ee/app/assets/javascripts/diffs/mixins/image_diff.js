@@ -1,5 +1,5 @@
 import { mapActions } from 'pinia';
-import { useNotes } from '~/notes/store/legacy_notes';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 
 export default {
   computed: {
@@ -8,11 +8,9 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useNotes, ['toggleDiscussion']),
+    ...mapActions(useLegacyDiffs, ['toggleFileDiscussion']),
     clickedToggle(discussion) {
-      if (!discussion.isDraft) {
-        this.toggleDiscussion({ discussionId: discussion.id });
-      }
+      this.toggleFileDiscussion(discussion);
     },
     toggleText(discussion, index) {
       const count = index + 1;

@@ -10,6 +10,7 @@ module EE
 
           override :resolve_redirect_url
           def resolve_redirect_url
+            root_namespace_id = request.query_parameters['root_namespace_id']
             return super if root_namespace_id.blank?
 
             group = ::Group.find_by_id(root_namespace_id)
@@ -17,7 +18,11 @@ module EE
             return super unless ::Feature.enabled?(:ff_oauth_redirect_to_sso_login, group.root_ancestor)
 
             sso_url = build_sso_redirect_url(group)
-            sso_url.presence || super
+
+            return super if sso_url.blank?
+
+            session[:user_sso_return_to] = request.fullpath
+            sso_url
           end
 
           private

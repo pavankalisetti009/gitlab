@@ -6,7 +6,7 @@ RSpec.describe 'Update value stream', feature_category: :value_stream_management
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:group) { create(:group, :with_organization) }
+  let_it_be(:group) { create(:group) }
   let_it_be(:project_1) { create(:project, namespace: group) }
   let_it_be_with_refind(:value_stream) do
     create(

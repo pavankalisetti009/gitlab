@@ -5,7 +5,7 @@ import { n__, s__, __, sprintf } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { isNumeric } from '~/lib/utils/number_utils';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
 import { PROJECT_DEFAULT_BRANCH } from '../../constants';

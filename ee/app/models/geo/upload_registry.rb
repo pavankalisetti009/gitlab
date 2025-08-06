@@ -30,17 +30,6 @@ class Geo::UploadRegistry < Geo::BaseRegistry
     [untracked, unused_tracked]
   end
 
-  def self.with_status(status)
-    case status
-    when 'synced', 'failed'
-      self.public_send(status) # rubocop: disable GitlabSecurity/PublicSend
-    when 'pending'
-      never_attempted_sync
-    else
-      all
-    end
-  end
-
   def file
     upload&.path || (s_('Removed upload with id %{id}') % { id: file_id })
   end

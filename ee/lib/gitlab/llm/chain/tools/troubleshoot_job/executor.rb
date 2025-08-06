@@ -15,7 +15,7 @@ module Gitlab
             # https://gitlab.com/gitlab-org/gitlab/-/issues/474146
             APPROX_MAX_INPUT_CHARS = 100_000
 
-            DEFAULT_PROMPT_VERSION = '1.0.2'
+            DEFAULT_PROMPT_VERSION = '^1.0.0'
 
             NAME = 'TroubleshootJob'
             RESOURCE_NAME = 'Ci::Build'
@@ -98,8 +98,6 @@ module Gitlab
 
             override :prompt_version
             def prompt_version
-              return '1.1.0-dev' if Feature.enabled?(:rca_claude_4_upgrade, context.current_user)
-
               DEFAULT_PROMPT_VERSION
             end
 

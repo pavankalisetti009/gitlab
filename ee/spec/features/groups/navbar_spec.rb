@@ -303,7 +303,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
 
         insert_after_nav_item(_('Observability'), new_nav_item: settings_nav_item)
         insert_after_sub_nav_item(
-          s_('UsageQuota|Usage Quotas'),
+          s_('UsageQuota|Usage quotas'),
           within: _('Settings'),
           new_sub_nav_item_name: _('SAML SSO')
         )
@@ -334,7 +334,8 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
           security_dashboard: true,
           group_level_compliance_dashboard: true,
           domain_verification: true,
-          security_inventory: true
+          security_inventory: true,
+          dependency_scanning: true
         )
 
         insert_after_nav_item(_('Observability'), new_nav_item: settings_nav_item)

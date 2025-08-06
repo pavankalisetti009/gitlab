@@ -5,12 +5,20 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
-import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
+import {
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+} from '~/visibility_level/constants';
+import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from 'ee/ai/catalog/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
-import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_AGENTS_EDIT_ROUTE } from '../router/constants';
+import {
+  AI_CATALOG_AGENTS_EDIT_ROUTE,
+  AI_CATALOG_AGENTS_RUN_ROUTE,
+  AI_CATALOG_SHOW_QUERY_PARAM,
+} from '../router/constants';
 
 export default {
   name: 'AiCatalogAgents',
@@ -43,9 +51,37 @@ export default {
     isItemSelected() {
       return !isEmpty(this.activeItem);
     },
+    itemTypeConfig() {
+      return {
+        actionItems: (itemId) => [
+          {
+            text: s__('AICatalog|Test Run'),
+            to: {
+              name: AI_CATALOG_AGENTS_RUN_ROUTE,
+              params: { id: itemId },
+            },
+            icon: 'rocket-launch',
+          },
+          {
+            text: s__('AICatalog|Edit'),
+            to: {
+              name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+              params: { id: itemId },
+            },
+            icon: 'pencil',
+          },
+        ],
+        visibilityTooltip: {
+          [VISIBILITY_LEVEL_PUBLIC_STRING]:
+            AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+          [VISIBILITY_LEVEL_PRIVATE_STRING]:
+            AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+        },
+      };
+    },
   },
   watch: {
-    '$route.params.show': {
+    '$route.query.show': {
       handler() {
         this.checkDrawerParams();
       },
@@ -57,12 +93,12 @@ export default {
     },
     closeDrawer() {
       this.activeItem = null;
-      updateHistory({
-        url: removeParams([AI_CATALOG_SHOW_QUERY_PARAM]),
+      const { show, ...otherQuery } = this.$route.query;
+
+      this.$router.push({
+        path: this.$route.path,
+        query: otherQuery,
       });
-    },
-    selectItem(item) {
-      this.activeItem = item;
     },
     async deleteAgent(id) {
       try {
@@ -88,12 +124,13 @@ export default {
       }
     },
     checkDrawerParams() {
-      const urlItemId = getParameterByName(AI_CATALOG_SHOW_QUERY_PARAM);
+      const urlItemId = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
       if (urlItemId) {
         // TODO: Fetch agent details from the API: https://gitlab.com/gitlab-org/gitlab/-/issues/557201
         this.activeItem =
-          this.aiCatalogAgents.find((item) => this.formatId(item.id).toString() === urlItemId) ||
-          null;
+          this.aiCatalogAgents.find(
+            (item) => this.formatId(item.id).toString() === urlItemId.toString(),
+          ) || null;
       } else {
         this.activeItem = null;
       }
@@ -112,14 +149,13 @@ export default {
       @dismiss="errorMessage = null"
       >{{ errorMessage }}
     </gl-alert>
-
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogAgents"
+      :item-type-config="itemTypeConfig"
       :delete-confirm-title="s__('AICatalog|Delete agent')"
       :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
       :delete-fn="deleteAgent"
-      @select-item="selectItem"
     />
     <ai-catalog-item-drawer
       :is-open="isItemSelected"

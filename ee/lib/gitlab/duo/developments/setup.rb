@@ -11,7 +11,7 @@ module Gitlab
           ## Gitlab Duo test group and project already seeded
           ## If you want to destroy and re-create them, you can re-run the seed task
           ## SEED_GITLAB_DUO=1 FILTER=gitlab_duo bundle exec rake db:seed_fu
-          ## See https://docs.gitlab.com/development/ai_features/testing_and_validation/#seed-project-and-group-resources-for-testing-and-evaluation
+          ## See https://docs.gitlab.com/development/development_seed_files/#seed-project-and-group-resources-for-gitlab-duo
           ================================================================================
           TXT
         else

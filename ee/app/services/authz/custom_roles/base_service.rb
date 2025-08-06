@@ -4,6 +4,7 @@ module Authz
   module CustomRoles
     class BaseService
       include Gitlab::Allowable
+      include Gitlab::InternalEventsTracking
 
       def initialize(current_user, params = {})
         @current_user = current_user
@@ -36,9 +37,9 @@ module Authz
       def audit_event_attributes(action)
         if role.admin_related_role?
           {
-            name: "admin_role_#{action}",
+            name: "custom_admin_role_#{action}",
             scope: Gitlab::Audit::InstanceScope.new,
-            message: "Admin role was #{action}"
+            message: "Custom admin role was #{action}"
           }
         else
           {
@@ -47,6 +48,15 @@ module Authz
             message: "Member role was #{action}"
           }
         end
+      end
+
+      def collect_metrics
+        track_internal_event(
+          event_name,
+          project: nil,
+          namespace: namespace,
+          user: current_user
+        )
       end
 
       def namespace

@@ -23,7 +23,6 @@ module Projects
     def observability_tracing_details_model(project, trace_id)
       generate_model(project) do |model|
         model[:traceId] = trace_id
-        model[:tracingIndexUrl] = namespace_project_tracing_index_path(project.group, project)
         model[:logsIndexUrl] = namespace_project_logs_path(project.group, project)
         model[:createIssueUrl] = new_namespace_project_issue_path(project.group, project)
         model[:metricsIndexUrl] = namespace_project_metrics_path(project.group, project)

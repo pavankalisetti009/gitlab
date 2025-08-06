@@ -6,12 +6,14 @@ import {
   ROLES,
   GROUPS,
   TOKENS,
+  USERS,
   SOURCE_BRANCH_PATTERNS,
   EXCEPTIONS_FULL_OPTIONS_MAP,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import RolesSelector from './roles_selector.vue';
 import GroupsSelector from './groups_selector.vue';
 import TokensSelector from './tokens_selector.vue';
+import UsersSelector from './users_selector.vue';
 import BranchPatternSelector from './branch_pattern_selector.vue';
 import PolicyExceptionsSelector from './policy_exceptions_selector.vue';
 import ServiceAccountsSelector from './service_accounts_selector.vue';
@@ -20,6 +22,7 @@ export default {
   ROLES,
   GROUPS,
   ACCOUNTS,
+  USERS,
   SOURCE_BRANCH_PATTERNS,
   EXCEPTIONS_FULL_OPTIONS_MAP,
   TOKENS,
@@ -39,6 +42,7 @@ export default {
     RolesSelector,
     PolicyExceptionsSelector,
     ServiceAccountsSelector,
+    UsersSelector,
   },
   props: {
     exceptions: {
@@ -75,6 +79,14 @@ export default {
     },
     groups() {
       return this.selectedExceptions?.groups || [];
+    },
+    users() {
+      return this.selectedExceptions?.users || [];
+    },
+    roles() {
+      const roles = this.selectedExceptions?.roles || [];
+      const customRoles = this.selectedExceptions?.custom_roles || [];
+      return [...roles, ...customRoles];
     },
   },
   watch: {
@@ -117,6 +129,19 @@ export default {
         groups,
       };
     },
+    setUsers(users) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        users,
+      };
+    },
+    setRoles({ roles, custom_roles }) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        roles,
+        custom_roles,
+      };
+    },
     setAccessTokens(accessTokens) {
       this.selectedExceptions = {
         ...this.selectedExceptions,
@@ -155,7 +180,16 @@ export default {
       v-if="selectedTab"
       class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
     >
-      <roles-selector v-if="tabSelected($options.ROLES)" />
+      <roles-selector
+        v-if="tabSelected($options.ROLES)"
+        :selected-roles="roles"
+        @set-roles="setRoles"
+      />
+      <users-selector
+        v-if="tabSelected($options.USERS)"
+        :selected-users="users"
+        @set-users="setUsers"
+      />
       <groups-selector
         v-if="tabSelected($options.GROUPS)"
         :selected-groups="groups"

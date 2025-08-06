@@ -22,11 +22,12 @@ FactoryBot.define do
       if @overrides[:organization]
         association(:namespace, organization: @overrides[:organization])
       else
-        association(:namespace)
+        # rubocop:disable RSpec/FactoryBot/InlineAssociation -- Fit current code structure
+        association(:namespace, organization: create(:common_organization))
+        # rubocop:enable RSpec/FactoryBot/InlineAssociation
       end
     end
 
-    organization { namespace&.organization }
     creator { group ? association(:user) : namespace&.owner }
 
     transient do
@@ -85,6 +86,9 @@ FactoryBot.define do
     end
 
     after(:build) do |project, evaluator|
+      project.organization ||= project.namespace&.organization
+      project.organization ||= create(:common_organization)
+
       # Builds and MRs can't have higher visibility level than repository access level.
       builds_access_level = [evaluator.builds_access_level, evaluator.repository_access_level].min
       merge_requests_access_level = [evaluator.merge_requests_access_level, evaluator.repository_access_level].min
@@ -672,7 +676,7 @@ FactoryBot.define do
   end
 
   trait :in_group do
-    namespace factory: :group
+    namespace { association :group, organization: organization }
   end
 
   trait :in_subgroup do
@@ -694,8 +698,16 @@ FactoryBot.define do
   end
 
   trait :import_user_mapping_enabled do
-    import_data_attributes do
-      { data: { user_contribution_mapping_enabled: true } }
+    after(:build) do |project|
+      project.import_data ||= project.build_import_data
+      project.import_data.merge_data({ user_contribution_mapping_enabled: true })
+    end
+  end
+
+  trait :user_mapping_to_personal_namespace_owner_enabled do
+    after(:build) do |project|
+      project.import_data ||= project.build_import_data
+      project.import_data.merge_data({ user_mapping_to_personal_namespace_owner_enabled: true })
     end
   end
 end

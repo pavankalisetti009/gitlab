@@ -8,6 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import StatusLifecycleModal from 'ee/groups/settings/work_items/status_modal.vue';
 import StatusForm from 'ee/groups/settings/work_items/status_form.vue';
+import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/lifecycle_update.mutation.graphql';
 import namespaceMetadataQuery from 'ee/groups/settings/work_items/namespace_metadata.query.graphql';
 import { mockNamespaceMetadata, deleteStatusErrorResponse } from './mock_data';
@@ -232,6 +233,14 @@ describe('StatusLifecycleModal', () => {
       expect(
         findCategorySection('to_do').find('[data-testid="category-description"]').exists(),
       ).toBe(true);
+    });
+
+    it('shows state of category when `workItemState` is CLOSED', () => {
+      expect(findCategorySection('done').findComponent(WorkItemStateBadge).exists()).toBe(true);
+    });
+
+    it('does not show state of category when `workItemState` is OPEN', () => {
+      expect(findCategorySection('to_do').findComponent(WorkItemStateBadge).exists()).toBe(false);
     });
 
     it('shows default status badges for default statuses', () => {

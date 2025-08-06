@@ -6,7 +6,7 @@ module Security
       allow(Security::PolicySetting)
         .to receive(:for_organization).with(an_instance_of(Organizations::Organization))
                                       .and_return(
-                                        Security::PolicySetting.new(csp_namespace_id: group.id)
+                                        Security::PolicySetting.new(csp_namespace_id: group&.id)
                                       )
     end
   end

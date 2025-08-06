@@ -217,6 +217,7 @@ RSpec.describe "User creates issue", :js, feature_category: :team_planning do
         fill_in 'Title', with: issue.title
 
         expect(page).to have_text('Similar items')
+
         expect(page).to have_css('.suggestion-item', text: issue.title, count: 1)
       end
     end
@@ -286,6 +287,8 @@ RSpec.describe "User creates issue", :js, feature_category: :team_planning do
     before do
       sign_in(user)
       visit(new_project_issue_path(project))
+
+      wait_for_all_requests
     end
 
     it_behaves_like 'rich text editor - autocomplete'

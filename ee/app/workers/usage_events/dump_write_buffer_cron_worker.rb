@@ -13,7 +13,14 @@ module UsageEvents
     MAX_RUNTIME = 200.seconds
     BATCH_SIZE = 1000
 
-    MODELS = [Ai::DuoChatEvent, Ai::CodeSuggestionEvent, Ai::TroubleshootJobEvent, Ai::UsageEvent].freeze
+    UPSERT_OPTIONS = {
+      Ai::DuoChatEvent => { unique_by: %i[id timestamp] },
+      Ai::CodeSuggestionEvent => { unique_by: %i[id timestamp] },
+      Ai::TroubleshootJobEvent => { unique_by: %i[id timestamp] },
+      Ai::UsageEvent => { unique_by: %i[namespace_id user_id event timestamp] }
+    }.freeze
+
+    MODELS = UPSERT_OPTIONS.keys.freeze
 
     def perform
       total_inserted_rows = 0
@@ -45,10 +52,8 @@ module UsageEvents
       Ai::UsageEventWriteBuffer.pop(current_model.name, BATCH_SIZE)
     end
 
-    def upsert_options
-      {
-        unique_by: %i[id timestamp]
-      }
+    def upsert_options(model)
+      UPSERT_OPTIONS.fetch(model)
     end
   end
 end

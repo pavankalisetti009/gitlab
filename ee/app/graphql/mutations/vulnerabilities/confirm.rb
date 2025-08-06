@@ -9,6 +9,10 @@ module Mutations
         "confirmed"
       end
 
+      def self.authorization_scopes
+        [:api, :read_api, :ai_workflows]
+      end
+
       prepend Mutations::VulnerabilityStateTransitions
 
       private

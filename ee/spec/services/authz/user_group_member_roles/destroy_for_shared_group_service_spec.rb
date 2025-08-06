@@ -23,12 +23,29 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForSharedGroupService, featur
     create(:user_group_member_role, group: shared_group, shared_with_group: shared_with_group)
   end
 
-  it 'destroys UserGroupMemberRole records for the shared_group through shared_with_group' do
-    expect { execute }.to change {
+  it 'destroys UserGroupMemberRole records for the shared_group through shared_with_group in batches' do
+    stub_const("#{described_class}::BATCH_SIZE", 1)
+
+    target1, target2 = Authz::UserGroupMemberRole.where(group: shared_group, shared_with_group: shared_with_group)
+
+    expected_queries = [
+      %r{^DELETE FROM "user_group_member_roles" WHERE .*#{target1.id}},
+      %r{^DELETE FROM "user_group_member_roles" WHERE .*#{target2.id}}
+    ].flatten
+
+    expect(
       Authz::UserGroupMemberRole.where(group: shared_group, shared_with_group: shared_with_group).count
-    }.from(2).to(0)
+    ).to eq 2
+
+    query_recorder = ActiveRecord::QueryRecorder.new { execute }
+
+    expect(
+      Authz::UserGroupMemberRole.where(group: shared_group, shared_with_group: shared_with_group).count
+    ).to eq 0
 
     expect(Authz::UserGroupMemberRole.where(id: [other1.id, other2.id]).count).to be 2
+
+    expect(query_recorder.log).to include(*expected_queries)
   end
 
   it 'logs event data' do

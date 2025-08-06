@@ -241,7 +241,7 @@
   - 1
 - - ci_safe_disable_pipeline_variables
   - 1
-- - ci_slsa_publish_statement
+- - ci_slsa_publish_provenance
   - 1
 - - ci_unlock_pipelines_in_queue
   - 1
@@ -300,6 +300,8 @@
 - - compliance_management_project_compliance_evaluator
   - 1
 - - compliance_management_project_framework_export_mailer
+  - 1
+- - compliance_management_project_settings_destroy
   - 1
 - - compliance_management_standards_adherence_export_mailer
   - 1
@@ -967,6 +969,10 @@
   - 1
 - - security_policies_failed_pipelines_audit
   - 1
+- - security_policies_group_project_transfer
+  - 1
+- - security_policies_group_transfer
+  - 1
 - - security_policies_project_transfer
   - 1
 - - security_policies_skip_pipelines_audit
@@ -1005,7 +1011,9 @@
   - 2
 - - security_scans_purge_by_job_id
   - 1
-- - security_secret_detection_update_token_status
+- - security_secret_detection_gitlab_token_verification
+  - 1
+- - security_secret_detection_partner_token_verification
   - 1
 - - security_sync_linked_pipeline_execution_policy_configs
   - 1

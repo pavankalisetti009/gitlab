@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :duo_chat do
+RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_catalog do
   subject(:policy) { described_class.new(nil, item_consumer) }
 
   context 'when item consumer belongs to a project' do
@@ -18,7 +18,7 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :duo_chat do
   context 'when item consumer belongs to a group' do
     let(:item_consumer) { build_stubbed(:ai_catalog_item_consumer, group: build_stubbed(:group)) }
 
-    it 'delegates to ProjectPolicy' do
+    it 'delegates to GroupPolicy' do
       delegations = policy.delegated_policies
 
       expect(delegations.values).to include(an_instance_of(::GroupPolicy))

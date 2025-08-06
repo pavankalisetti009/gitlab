@@ -63,6 +63,10 @@ module EE
             # parent_id
             return unless target_work_item.sync_object.present?
 
+            # We only need to sync the hierarchy to legacy epics, when the source work item was also an epic.
+            # In the case of promoting an issue to an epic, and copy over the data, this is not necessary.
+            return if work_item.sync_object.nil?
+
             # ensure that the parent and the work_item_parent_link are being copied to the
             # targeted work item's legacy epic
             target_work_item.sync_object.update!(
@@ -77,13 +81,24 @@ module EE
             # Workstream 5: https://gitlab.com/groups/gitlab-org/-/epics/13356
             return unless work_item.epic_issue.present?
 
-            epic_issue_attributes = work_item.epic_issue.attributes.except("id").tap do |attributes|
-              attributes["issue_id"] = target_work_item.id
-              attributes["namespace_id"] = target_work_item.namespace_id
-              attributes["work_item_parent_link_id"] = target_work_item.parent_link.id
-            end
+            # When the new type is an epic with synced legacy epic, we need to sync the epic-epic relationship.
+            # This happens when an issue with an epic_issue relationship gets promoted to an epic.
+            # The Epic <> Issue relation, becomes an Epic <> Epic relationship.
+            if target_work_item.sync_object.present?
+              target_work_item.sync_object.update!(
+                parent: target_work_item.parent_link.work_item_parent.sync_object,
+                work_item_parent_link: target_work_item.parent_link,
+                relative_position: target_work_item.parent_link.relative_position
+              )
+            else
+              epic_issue_attributes = work_item.epic_issue.attributes.except("id").tap do |attributes|
+                attributes["issue_id"] = target_work_item.id
+                attributes["namespace_id"] = target_work_item.namespace_id
+                attributes["work_item_parent_link_id"] = target_work_item.parent_link.id
+              end
 
-            EpicIssue.create!(epic_issue_attributes)
+              EpicIssue.create!(epic_issue_attributes)
+            end
           end
         end
       end

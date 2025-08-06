@@ -5,6 +5,9 @@ require 'spec_helper'
 RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions do
   let_it_be(:user) { create(:admin) }
 
+  # used in tracking custom role action shard examples
+  let(:namespace) { nil }
+
   describe '#execute' do
     let(:abilities) { Gitlab::CustomRoles::Definition.admin.keys.sample(1).index_with(true) }
 
@@ -36,9 +39,11 @@ RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions 
             allow(Ability).to receive(:allowed?).and_return(false)
           end
 
-          let(:audit_event_message) { 'Admin role was created' }
-          let(:audit_event_type) { 'admin_role_created' }
+          let(:audit_event_message) { 'Custom admin role was created' }
+          let(:audit_event_type) { 'custom_admin_role_created' }
         end
+
+        it_behaves_like 'tracking custom role action', 'create_admin'
 
         context 'with a missing param' do
           let(:error_message) { "Name can't be blank" }

@@ -97,9 +97,9 @@ module EE
           !user_dismissed?(callouts_feature_name)
       end
 
-      def show_explore_duo_core_banner?(merge_request, namespace)
+      def show_explore_duo_core_banner?(merge_request)
         merge_request.assignees.include?(current_user) &&
-          ::GitlabSubscriptions::DuoCore.available?(current_user, namespace) &&
+          current_user.allowed_to_use(:duo_chat).authorized_by_duo_core &&
           !user_dismissed?(EXPLORE_DUO_CORE_BANNER)
       end
 

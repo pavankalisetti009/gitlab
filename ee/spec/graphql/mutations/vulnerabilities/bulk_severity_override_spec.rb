@@ -127,4 +127,18 @@ RSpec.describe Mutations::Vulnerabilities::BulkSeverityOverride, feature_categor
       expect { mutation_result }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
     end
   end
+
+  describe '.authorization_scopes' do
+    it 'includes api, read_api, ai_workflows scope' do
+      expect(described_class.authorization_scopes).to eq([:api, :read_api, :ai_workflows])
+    end
+  end
+
+  describe 'field scopes' do
+    it 'includes api, read_api, ai_workflows scope for vulnerabilities field' do
+      vulnerabilities_field = described_class.fields['vulnerabilities']
+      scopes = vulnerabilities_field.instance_variable_get(:@scopes)
+      expect(scopes).to include(:api, :read_api, :ai_workflows)
+    end
+  end
 end

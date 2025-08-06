@@ -4,8 +4,11 @@ import VueApollo from 'vue-apollo';
 import Vuex from 'vuex';
 import MockAdapter from 'axios-mock-adapter';
 import { shallowMount } from '@vue/test-utils';
+import { GlAlert } from '@gitlab/ui';
 import axios from '~/lib/utils/axios_utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
+import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createdAfter, createdBefore } from 'jest/analytics/cycle_analytics/mock_data';
@@ -14,7 +17,6 @@ import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/
 import StageScatterChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_scatter_chart.vue';
 import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
 import getValueStreamStageMetricsQuery from 'ee/analytics/cycle_analytics/graphql/queries/get_value_stream_stage_metrics.query.graphql';
-import { createAlert } from '~/alert';
 import {
   allowedStages as stages,
   transformedDurationData,
@@ -31,11 +33,12 @@ import {
 Vue.use(Vuex);
 Vue.use(VueApollo);
 
-jest.mock('~/alert');
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('DurationChartLoader', () => {
   let wrapper;
   let mock;
+  let store;
   let valueStreamStageMetricsQueryHandler;
 
   const [valueStream] = valueStreams;
@@ -77,13 +80,8 @@ describe('DurationChartLoader', () => {
     ...gqlTransformedFilters,
   });
 
-  const createWrapper = ({
-    isOverviewStageSelected = true,
-    isProjectNamespace = false,
-    features = {},
-    valueStreamStageMetricsResponseHandler,
-  } = {}) => {
-    const store = new Vuex.Store({
+  const createStore = ({ isOverviewStageSelected, isProjectNamespace }) =>
+    new Vuex.Store({
       state: {
         selectedStage,
         createdAfter,
@@ -109,9 +107,17 @@ describe('DurationChartLoader', () => {
       },
     });
 
+  const createWrapper = ({
+    isOverviewStageSelected = true,
+    isProjectNamespace = false,
+    features = {},
+    valueStreamStageMetricsResponseHandler,
+  } = {}) => {
     const apolloProvider = createMockApollo([
       [getValueStreamStageMetricsQuery, valueStreamStageMetricsResponseHandler],
     ]);
+
+    store = createStore({ isOverviewStageSelected, isProjectNamespace });
 
     wrapper = shallowMount(DurationChartLoader, {
       store,
@@ -121,6 +127,8 @@ describe('DurationChartLoader', () => {
     return waitForPromises();
   };
 
+  const findLoader = () => wrapper.findComponent(ChartSkeletonLoader);
+  const findAlert = () => wrapper.findComponent(GlAlert);
   const findOverviewChart = () => wrapper.findComponent(OverviewChart);
   const findStageChart = () => wrapper.findComponent(StageChart);
   const findStageScatterChart = () => wrapper.findComponent(StageScatterChart);
@@ -236,7 +244,7 @@ describe('DurationChartLoader', () => {
           const [, newStage] = stages;
 
           beforeEach(async () => {
-            wrapper.vm.$store.commit('setSelectedStage', newStage);
+            store.commit('setSelectedStage', newStage);
 
             await waitForPromises();
           });
@@ -264,7 +272,7 @@ describe('DurationChartLoader', () => {
       });
 
       it('shows the loading state', () => {
-        expect(findOverviewChart().props('isLoading')).toBe(true);
+        expect(findLoader().exists()).toBe(true);
       });
     });
 
@@ -275,9 +283,23 @@ describe('DurationChartLoader', () => {
       });
 
       it('shows the error message', () => {
-        expect(findOverviewChart().props('errorMessage')).toBe(
-          'Request failed with status code 404',
-        );
+        expect(findAlert().text()).toBe('Request failed with status code 404');
+      });
+
+      it('logs the error to sentry', () => {
+        expect(Sentry.captureException).toHaveBeenCalled();
+      });
+
+      describe('when selected stage is changed', () => {
+        const [, newStage] = stages;
+
+        beforeEach(() => {
+          store.commit('setSelectedStage', newStage);
+        });
+
+        it('clears the error alert', () => {
+          expect(findAlert().exists()).toBe(false);
+        });
       });
     });
 
@@ -300,8 +322,6 @@ describe('DurationChartLoader', () => {
 
       it('shows the chart with the plottable data', () => {
         expect(findOverviewChart().props()).toMatchObject({
-          isLoading: false,
-          errorMessage: '',
           plottableData: expect.arrayContaining(durationOverviewChartPlottableData),
         });
       });
@@ -326,7 +346,7 @@ describe('DurationChartLoader', () => {
       });
 
       it('shows the loading state', () => {
-        expect(findStageScatterChart().props('isLoading')).toBe(true);
+        expect(findLoader().exists()).toBe(true);
       });
     });
 
@@ -340,20 +360,28 @@ describe('DurationChartLoader', () => {
         });
       });
 
-      it('renders an alert', () => {
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'There was an error while fetching data for the stage time chart.',
-          error,
-          captureError: true,
-        });
-      });
-
       it('passes error message to chart', () => {
-        expect(findStageScatterChart().props('errorMessage')).toBe('Something went wrong');
+        expect(findAlert().text()).toBe('Something went wrong');
       });
 
-      it('does not show chart in loading state', () => {
-        expect(findStageScatterChart().props('isLoading')).toBe(false);
+      it('does not show loading state', () => {
+        expect(findLoader().exists()).toBe(false);
+      });
+
+      it('logs the error to sentry', () => {
+        expect(Sentry.captureException).toHaveBeenCalled();
+      });
+
+      describe('when selected stage is changed', () => {
+        const [, newStage] = stages;
+
+        beforeEach(() => {
+          store.commit('setSelectedStage', newStage);
+        });
+
+        it('clears the error alert', () => {
+          expect(findAlert().exists()).toBe(false);
+        });
       });
     });
 
@@ -377,7 +405,6 @@ describe('DurationChartLoader', () => {
             ['2025-04-29T04:47:24Z', '58606000'],
             ['2025-04-29T05:09:00Z', '668182000'],
           ]),
-          isLoading: false,
           startDate: new Date('2018-12-15'),
           endDate: new Date('2019-01-14'),
         });
@@ -391,12 +418,23 @@ describe('DurationChartLoader', () => {
         expect(findStageChart().exists()).toBe(false);
       });
 
-      describe('additional page of data', () => {
+      describe('multiple pages of data', () => {
+        let resolveFirstPage;
+        let resolveSecondPage;
+
         beforeEach(() => {
           valueStreamStageMetricsQueryHandler = jest
             .fn()
-            .mockResolvedValueOnce(mockGroupValueStreamStageMetricsPaginatedResponse)
-            .mockResolvedValueOnce(mockGroupValueStreamStageMetricsResponse);
+            .mockResolvedValueOnce(
+              new Promise((resolve) => {
+                resolveFirstPage = resolve;
+              }),
+            )
+            .mockResolvedValueOnce(
+              new Promise((resolve) => {
+                resolveSecondPage = resolve;
+              }),
+            );
 
           return createWrapper({
             isOverviewStageSelected: false,
@@ -404,20 +442,28 @@ describe('DurationChartLoader', () => {
           });
         });
 
-        it('shows the chart with plottable data from all pages', () => {
-          expect(findStageScatterChart().props()).toMatchObject({
-            stageTitle: selectedStage.title,
-            issuableType: 'Issue',
-            plottableData: expect.arrayContaining([
-              ['2025-04-13T04:33:20Z', '719706000'],
-              ['2025-04-16T16:28:27Z', '1019305000'],
-              ['2025-04-29T04:47:24Z', '58606000'],
-              ['2025-04-29T05:09:00Z', '668182000'],
-            ]),
-            isLoading: false,
-            startDate: new Date('2018-12-15'),
-            endDate: new Date('2019-01-14'),
-          });
+        it('renders the first page of data before lazy loading subsequent pages', async () => {
+          expect(findLoader().exists()).toBe(true);
+          expect(findStageScatterChart().exists()).toBe(false);
+
+          resolveFirstPage(mockGroupValueStreamStageMetricsPaginatedResponse);
+          await waitForPromises();
+
+          expect(findLoader().exists()).toBe(false);
+          expect(findStageScatterChart().props().plottableData).toEqual([
+            ['2025-04-13T04:33:20Z', '719706000'],
+            ['2025-04-16T16:28:27Z', '1019305000'],
+          ]);
+
+          resolveSecondPage(mockGroupValueStreamStageMetricsResponse);
+          await waitForPromises();
+
+          expect(findStageScatterChart().props().plottableData).toEqual([
+            ['2025-04-13T04:33:20Z', '719706000'],
+            ['2025-04-16T16:28:27Z', '1019305000'],
+            ['2025-04-29T04:47:24Z', '58606000'],
+            ['2025-04-29T05:09:00Z', '668182000'],
+          ]);
         });
       });
     });
@@ -436,7 +482,6 @@ describe('DurationChartLoader', () => {
         expect(findStageScatterChart().props()).toMatchObject({
           stageTitle: selectedStage.title,
           plottableData: [],
-          isLoading: false,
         });
       });
 
@@ -471,7 +516,7 @@ describe('DurationChartLoader', () => {
 
       it('when the selectedStage changes', async () => {
         const [, newStage] = stages;
-        wrapper.vm.$store.commit('setSelectedStage', newStage);
+        store.commit('setSelectedStage', newStage);
 
         await waitForPromises();
 
@@ -490,7 +535,7 @@ describe('DurationChartLoader', () => {
         });
 
         it('shows the loading state', () => {
-          expect(findStageChart().props('isLoading')).toBe(true);
+          expect(findLoader().exists()).toBe(true);
         });
       });
 
@@ -504,9 +549,23 @@ describe('DurationChartLoader', () => {
         });
 
         it('shows the error message', () => {
-          expect(findStageChart().props('errorMessage')).toBe(
-            'Request failed with status code 404',
-          );
+          expect(findAlert().text()).toBe('Request failed with status code 404');
+        });
+
+        it('logs the error to sentry', () => {
+          expect(Sentry.captureException).toHaveBeenCalled();
+        });
+
+        describe('when selected stage is changed', () => {
+          const [, newStage] = stages;
+
+          beforeEach(() => {
+            store.commit('setSelectedStage', newStage);
+          });
+
+          it('clears the error alert', () => {
+            expect(findAlert().exists()).toBe(false);
+          });
         });
       });
 
@@ -536,8 +595,6 @@ describe('DurationChartLoader', () => {
         it('shows the chart with the plottable data', () => {
           expect(findStageChart().props()).toMatchObject({
             stageTitle: selectedStage.title,
-            isLoading: false,
-            errorMessage: '',
             plottableData: expect.arrayContaining([
               ['2019-01-01', 1134000],
               ['2019-01-02', 2321000],

@@ -160,4 +160,22 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
       end
     end
   end
+
+  describe '#deactivate!' do
+    context 'when the connection is already inactive' do
+      let!(:connection) { create(:ai_active_context_connection, :inactive) }
+
+      it 'does not make any changes' do
+        expect { connection.deactivate! }.not_to change { connection.reload.active }
+      end
+    end
+
+    context 'when the connection is active' do
+      let!(:connection) { create(:ai_active_context_connection) }
+
+      it 'deactivates the connection' do
+        expect { connection.deactivate! }.to change { connection.reload.active }.from(true).to(false)
+      end
+    end
+  end
 end

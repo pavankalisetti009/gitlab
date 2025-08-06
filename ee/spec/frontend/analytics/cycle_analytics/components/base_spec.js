@@ -48,7 +48,13 @@ describe('EE Value Stream Analytics component', () => {
   const setPredefinedDateRange = jest.fn();
   const updateStageTablePagination = jest.fn();
 
-  const createWrapper = ({ props = {}, state = {}, getters = {}, actions = {} } = {}) => {
+  const createWrapper = ({
+    props = {},
+    state = {},
+    getters = {},
+    actions = {},
+    glLicensedFeatures = {},
+  } = {}) => {
     const store = new Vuex.Store({
       actions: {
         setSelectedProjects,
@@ -81,7 +87,6 @@ describe('EE Value Stream Analytics component', () => {
         isLoadingValueStreams: false,
         selectedStageError: '',
         pagination: {},
-        features: {},
         canEdit: false,
         predefinedDateRange: null,
         enableVsdLink: false,
@@ -101,6 +106,12 @@ describe('EE Value Stream Analytics component', () => {
 
     wrapper = shallowMount(Component, {
       store,
+      provide: {
+        glLicensedFeatures: {
+          groupLevelAnalyticsDashboard: false,
+          ...glLicensedFeatures,
+        },
+      },
       propsData: {
         emptyStateSvgPath,
         noDataSvgPath: 'path/to/no/data',
@@ -422,9 +433,11 @@ describe('EE Value Stream Analytics component', () => {
   describe('with`groupLevelAnalyticsDashboard=true`', () => {
     it('renders a link to the value streams dashboard', () => {
       createWrapper({
+        glLicensedFeatures: {
+          groupLevelAnalyticsDashboard: true,
+        },
         state: {
           enableVsdLink: true,
-          features: { groupLevelAnalyticsDashboard: true },
         },
       });
 
@@ -451,9 +464,11 @@ describe('EE Value Stream Analytics component', () => {
   describe('with `enableCustomizableStages=false`', () => {
     beforeEach(() => {
       createWrapper({
+        glLicensedFeatures: {
+          groupLevelAnalyticsDashboard: true,
+        },
         state: {
           enableCustomizableStages: false,
-          features: { groupLevelAnalyticsDashboard: true },
         },
       });
     });
@@ -466,9 +481,11 @@ describe('EE Value Stream Analytics component', () => {
   describe('with `enableProjectsFilter=false`', () => {
     beforeEach(() => {
       createWrapper({
+        glLicensedFeatures: {
+          groupLevelAnalyticsDashboard: true,
+        },
         state: {
           enableProjectsFilter: false,
-          features: { groupLevelAnalyticsDashboard: true },
         },
       });
     });
@@ -481,12 +498,14 @@ describe('EE Value Stream Analytics component', () => {
   describe('with a project namespace', () => {
     beforeEach(() => {
       createWrapper({
+        glLicensedFeatures: {
+          groupLevelAnalyticsDashboard: true,
+        },
         state: {
           enableProjectsFilter: false,
           enableVsdLink: true,
           namespace: projectNamespace,
           project: 'fake-id',
-          features: { groupLevelAnalyticsDashboard: true },
         },
         getters: {
           isProjectNamespace: () => true,
@@ -504,12 +523,14 @@ describe('EE Value Stream Analytics component', () => {
   describe('when dashboard link is disabled for the project namespace`', () => {
     beforeEach(() => {
       createWrapper({
+        glLicensedFeatures: {
+          groupLevelAnalyticsDashboard: true,
+        },
         state: {
           enableProjectsFilter: false,
           enableVsdLink: false,
           namespace: projectNamespace,
           project: 'fake-id',
-          features: { groupLevelAnalyticsDashboard: true },
         },
         getters: {
           isProjectNamespace: () => true,

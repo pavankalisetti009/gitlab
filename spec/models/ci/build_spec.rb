@@ -2544,6 +2544,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
           { key: 'CI_PROJECT_NAME', value: project.path, public: true, masked: false },
           { key: 'CI_PROJECT_TITLE', value: project.title, public: true, masked: false },
           { key: 'CI_PROJECT_DESCRIPTION', value: project.description, public: true, masked: false },
+          { key: 'CI_PROJECT_TOPICS', value: project.topic_list.first(20).join(',').downcase, public: true, masked: false },
           { key: 'CI_PROJECT_PATH', value: project.full_path, public: true, masked: false },
           { key: 'CI_PROJECT_PATH_SLUG', value: project.full_path_slug, public: true, masked: false },
           { key: 'CI_PROJECT_NAMESPACE', value: project.namespace.full_path, public: true, masked: false },
@@ -2668,7 +2669,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
           end
 
           before do
-            create(:environment, project: build.project, name: 'staging')
+            environment = create(:environment, project: build.project, name: 'staging')
 
             build.yaml_variables = [{ key: 'YAML_VARIABLE', value: 'var', public: true }]
             build.environment = 'staging'
@@ -2685,6 +2686,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
             insert_expected_predefined_variables(
               [
                 { key: 'YAML_VARIABLE', value: 'staging', public: true, masked: false },
+                { key: 'CI_ENVIRONMENT_ID', value: environment.id, public: true, masked: false },
                 { key: 'CI_ENVIRONMENT_SLUG', value: 'start', public: true, masked: false },
                 { key: 'CI_ENVIRONMENT_URL', value: 'https://gitlab.com', public: true, masked: false }
               ],
@@ -2799,6 +2801,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     context 'when build has an environment' do
       let(:expected_environment_variables) do
         [
+          { key: 'CI_ENVIRONMENT_ID', value: build.persisted_environment.id.to_s, public: true, masked: false },
           { key: 'CI_ENVIRONMENT_NAME', value: 'production', public: true, masked: false },
           { key: 'CI_ENVIRONMENT_ACTION', value: 'start', public: true, masked: false },
           { key: 'CI_ENVIRONMENT_TIER', value: 'production', public: true, masked: false },

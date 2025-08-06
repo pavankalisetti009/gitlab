@@ -1546,6 +1546,10 @@ module EE
     end
     strong_memoize_attr :has_container_registry_immutable_tag_rules?
 
+    def csp_namespace
+      organization_policy_setting.csp_namespace
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key

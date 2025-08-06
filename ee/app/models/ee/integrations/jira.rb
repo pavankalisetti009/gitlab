@@ -8,6 +8,8 @@ module EE
 
       MAX_URL_LENGTH = 4000
 
+      SECTION_TYPE_JIRA_VERIFICATION = 'jira_verification'
+
       API_ENDPOINTS = {
         create_issue: "/rest/api/2/issue",
         find_project: "/rest/api/2/project/%s"
@@ -51,6 +53,77 @@ module EE
             s_('JiraIntegration|When set to `true`, opens a prefilled form on the Jira instance' \
               'when creating a Jira issue from a vulnerability.')
           }
+
+        field :jira_check_enabled,
+          section: SECTION_TYPE_JIRA_VERIFICATION,
+          type: :checkbox,
+          title: -> { s_('JiraService|Enable Jira verification') },
+          description: -> {
+            s_('JiraIntegration|Verify Jira issues referenced in commit messages exist before allowing the push.')
+          }
+
+        field :jira_exists_check_enabled,
+          section: SECTION_TYPE_JIRA_VERIFICATION,
+          type: :checkbox,
+          title: -> { s_('JiraService|Check issue exists') },
+          description: -> { s_('JiraIntegration|Verify the Jira issues referenced in commit messages exist in Jira.') }
+
+        field :jira_assignee_check_enabled,
+          section: SECTION_TYPE_JIRA_VERIFICATION,
+          type: :checkbox,
+          title: -> { s_('JiraService|Check assignee') },
+          description: -> {
+            s_('JiraIntegration|Verify the committer is the assignee of the Jira issues referenced in commit messages.')
+          }
+
+        field :jira_status_check_enabled,
+          section: SECTION_TYPE_JIRA_VERIFICATION,
+          type: :checkbox,
+          title: -> { s_('JiraService|Check issue status') },
+          description: -> { s_('JiraIntegration|Verify the status of Jira issues referenced in commit messages.') }
+
+        field :jira_allowed_statuses_as_string,
+          section: SECTION_TYPE_JIRA_VERIFICATION,
+          type: :text,
+          title: -> { s_('JiraService|Allowed statuses') },
+          description: -> { s_('JiraIntegration|Comma-separated list of allowed Jira issue statuses.') },
+          placeholder: 'Ready, In Progress, Review'
+
+        data_field :jira_check_enabled
+        data_field :jira_exists_check_enabled
+        data_field :jira_assignee_check_enabled
+        data_field :jira_status_check_enabled
+        data_field :jira_allowed_statuses_string
+        data_field :jira_allowed_statuses_as_string
+      end
+
+      class_methods do
+        def instance_level
+          where(instance: true).first
+        end
+      end
+
+      def sections
+        sections = super
+
+        # Add Jira verification section for non-instance level integrations
+        unless instance_level?
+          # Find the index where to insert the verification section
+          # Insert it before the Jira issues section
+          jira_issues_index = sections.find_index { |section| section[:type] == 'jira_issues' } || sections.length
+
+          verification_section = {
+            type: SECTION_TYPE_JIRA_VERIFICATION,
+            title: s_('JiraService|Jira verification'),
+            description: s_('JiraService|Verify Jira issues referenced in commit messages against ' \
+              'specific rules before allowing the push.'),
+            plan: 'premium'
+          }
+
+          sections.insert(jira_issues_index, verification_section)
+        end
+
+        sections
       end
 
       def jira_vulnerabilities_integration_available?

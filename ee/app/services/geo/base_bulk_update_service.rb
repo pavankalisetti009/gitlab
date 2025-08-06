@@ -61,8 +61,8 @@ module Geo
 
       # We save the latest registry ID processed in Redis so we can keep track of it
       # to avoid updating the same batch of rows again if other jobs
-      # like Geo::RepositorySyncWorker, Geo::RegistrySyncWorker or Geo::VerificationBatchWorker change
-      # the state of those rows while the batch update was executing
+      # like Geo::RepositoryRegistrySyncWorker, Geo::RegistrySyncWorker or Geo::VerificationBatchWorker
+      # change the state of those rows while the batch update was executing
       set_bulk_mark_update_cursor(last_id)
 
       rows_updated

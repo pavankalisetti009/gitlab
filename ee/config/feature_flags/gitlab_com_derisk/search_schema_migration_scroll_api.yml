@@ -1,0 +1,10 @@
+---
+name: search_schema_migration_scroll_api
+description: controls whether MigrationReindexBasedOnSchemaVersion uses search or scroll API
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556128
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/199022
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557425
+milestone: '18.3'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false

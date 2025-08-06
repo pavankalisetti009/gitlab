@@ -15,13 +15,9 @@ module Types
           required: false,
           description: 'Filter by project IDs.'
 
-        argument :severity, [Types::VulnerabilitySeverityEnum],
+        argument :report_type, [Types::VulnerabilityReportTypeEnum],
           required: false,
-          description: 'Filter by vulnerability severity levels.'
-
-        argument :scanner, [GraphQL::Types::String],
-          required: false,
-          description: 'Filter by scanner types.'
+          description: 'Filter by report types.'
       end
     end
   end

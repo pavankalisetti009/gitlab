@@ -51,6 +51,44 @@ RSpec.describe ComplianceManagement::Frameworks::DestroyService, feature_categor
         expect(response.success?).to be false
         expect(response.errors).to match_array(["Cannot delete the default framework"])
       end
+
+      context 'when the worker is enqueued' do
+        context 'when framework does not belong to CSP group' do
+          it 'does not enqueue the ProjectSettingsDestroyWorker' do
+            expect(ComplianceManagement::ProjectSettingsDestroyWorker)
+              .not_to receive(:perform_async)
+
+            subject.execute
+          end
+        end
+
+        context 'when framework belongs to CSP group' do
+          before do
+            create(:security_policy_settings, organization: namespace.organization, csp_namespace: namespace)
+          end
+
+          it 'enqueues the ProjectSettingsDestroyWorker' do
+            expect(ComplianceManagement::ProjectSettingsDestroyWorker)
+              .to receive(:perform_async)
+              .with(framework.id)
+
+            subject.execute
+          end
+        end
+
+        context 'when include_csp_frameworks is disabled' do
+          before_all do
+            stub_feature_flags(include_csp_frameworks: false)
+          end
+
+          it 'does not enqueue the ProjectSettingsDestroyWorker' do
+            expect(ComplianceManagement::ProjectSettingsDestroyWorker)
+              .not_to receive(:perform_async)
+
+            subject.execute
+          end
+        end
+      end
     end
 
     context 'when current user is not the namespace owner' do

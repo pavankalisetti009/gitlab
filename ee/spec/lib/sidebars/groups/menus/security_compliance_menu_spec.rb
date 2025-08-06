@@ -315,9 +315,9 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
 
       it { is_expected.to be_nil }
 
-      context 'when security_dashboard feature is enabled' do
+      context 'when `security_dashboard` & `dependency_scanning` feature is enabled' do
         before do
-          stub_licensed_features(security_dashboard: true)
+          stub_licensed_features(security_dashboard: true, dependency_scanning: true)
         end
 
         it { is_expected.not_to be_nil }

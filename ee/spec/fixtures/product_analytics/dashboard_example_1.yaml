@@ -16,6 +16,9 @@ filters:
         maxSuggestions: 20
 panels:
   - title: Overall Conversion Rate
+    tooltip:
+      description: 'Percentage of visitors who complete a desired action. %{linkStart}Learn more%{linkEnd}.'
+      descriptionLink: 'https://gitlab.com'
     gridAttributes:
       yPos: 4
       xPos: 1

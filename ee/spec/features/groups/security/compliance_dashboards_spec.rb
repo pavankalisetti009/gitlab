@@ -25,9 +25,7 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
     group.add_owner(user)
     sign_in(user)
 
-    stub_feature_flags(
-      compliance_violations_report: false,
-      compliance_group_dashboard: false)
+    stub_feature_flags(compliance_violations_report: false)
   end
 
   context 'tab selection' do
@@ -36,9 +34,19 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
       wait_for_all_requests
     end
 
-    it 'has the `Status` tab selected by default' do
+    it 'has the `Overview` tab selected by default' do
       page.within('.gl-tabs') do
-        expect(find('[aria-selected="true"]').text).to eq('Status')
+        expect(find('[aria-selected="true"]').text).to eq('Overview')
+      end
+    end
+
+    context 'when `Status` tab is clicked' do
+      it 'has the status tab selected' do
+        page.within('.gl-tabs') do
+          click_link _('Status')
+
+          expect(find('[aria-selected="true"]').text).to eq('Status')
+        end
       end
     end
 
@@ -95,14 +103,14 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
     end
   end
 
-  context 'status tab' do
-    let(:expected_path) { group_security_compliance_dashboard_path(group, vueroute: :standards_adherence) }
+  context 'overview tab' do
+    let(:expected_path) { group_security_compliance_dashboard_path(group, vueroute: :dashboard) }
 
     before do
       visit group_security_compliance_dashboard_path(group)
     end
 
-    it 'shows the status tab by default' do
+    it 'shows the overview tab by default' do
       expect(page).to have_current_path(expected_path)
     end
   end

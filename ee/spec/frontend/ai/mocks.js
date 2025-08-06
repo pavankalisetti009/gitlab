@@ -23,14 +23,17 @@ export const mockAgentFlows = mockAgentFlowEdges.map((edge) => edge.node);
 
 export const mockAgentFlowsResponse = {
   data: {
-    duoWorkflowWorkflows: {
-      pageInfo: {
-        startCursor: 'start',
-        endCursor: 'end',
-        hasNextPage: true,
-        hasPreviousPage: false,
+    project: {
+      id: 'gid://gitlab/Project/1',
+      duoWorkflowWorkflows: {
+        pageInfo: {
+          startCursor: 'start',
+          endCursor: 'end',
+          hasNextPage: true,
+          hasPreviousPage: false,
+        },
+        edges: mockAgentFlowEdges,
       },
-      edges: mockAgentFlowEdges,
     },
   },
 };

@@ -331,6 +331,13 @@ description: with missing properties
         }]
       })
     end
+
+    it 'is expected to contain a panel with the correct tooltip' do
+      expect(panels.first.tooltip).to eq({
+        'description' => 'Percentage of visitors who complete a desired action. %{linkStart}Learn more%{linkEnd}.',
+        'descriptionLink' => 'https://gitlab.com'
+      })
+    end
   end
 
   describe '#==' do

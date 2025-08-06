@@ -47,7 +47,10 @@ module EE
           end
 
           def roles_and_permissions_available?
-            can?(current_user, :view_member_roles)
+            return false unless can?(current_user, :view_member_roles)
+
+            # In SaaS only custom admin roles are shown, so we need to check if the feature flag is enabled.
+            gitlab_com_subscription? ? ::Feature.enabled?(:custom_admin_roles, :instance) : true
           end
 
           def service_accounts_available?
@@ -101,7 +104,7 @@ module EE
             return unless dedicated?
 
             ::Sidebars::MenuItem.new(
-              title: _('Usage Quotas'),
+              title: _('Usage quotas'),
               link: usage_quotas_admin_application_settings_path,
               active_routes: { path: 'admin/application_settings#usage_quotas' },
               item_id: :admin_usage_quotas,

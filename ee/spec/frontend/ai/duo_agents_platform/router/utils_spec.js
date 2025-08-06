@@ -1,8 +1,10 @@
 import {
   extractNavScopeFromRoute,
   activeNavigationWatcher,
+  getNamespaceIndexComponent,
 } from 'ee/ai/duo_agents_platform/router/utils';
 import * as domUtils from 'ee/ai/duo_agents_platform/router/dom_utils';
+import ProjectAgentsPlatformIndex from 'ee/ai/duo_agents_platform/namespace/project/project_agents_platform_index.vue';
 
 describe('extractNavScopeFromRoute', () => {
   describe('when route is empty', () => {
@@ -86,4 +88,26 @@ describe('activeNavigationWatcher', () => {
       expect(next).toHaveBeenCalled();
     });
   });
+});
+
+describe('getNamespaceIndexComponent', () => {
+  describe('when namespace is not provided', () => {
+    it('throws an error', () => {
+      expect(() => getNamespaceIndexComponent()).toThrow(
+        'The namespace argument must be passed to the Vue Router',
+      );
+    });
+  });
+
+  it.each`
+    namespace    | expectedComponent
+    ${'project'} | ${ProjectAgentsPlatformIndex}
+    ${'group'}   | ${undefined}
+    ${'unknown'} | ${undefined}
+  `(
+    'returns $expectedComponent when namespace is $namespace',
+    ({ namespace, expectedComponent }) => {
+      expect(getNamespaceIndexComponent(namespace)).toBe(expectedComponent);
+    },
+  );
 });

@@ -16,6 +16,8 @@ import {
 import VueDraggable from 'vuedraggable';
 import { s__, __, sprintf } from '~/locale';
 import { validateHexColor } from '~/lib/utils/color_utils';
+import { STATE_OPEN, STATE_CLOSED } from '~/work_items/constants';
+import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
@@ -36,6 +38,7 @@ const CATEGORY_MAP = {
     color: '#995715',
     label: s__('WorkItem|Triage'),
     defaultState: 'open',
+    workItemState: STATE_OPEN,
     description: s__(
       'WorkItem|Use for items that are still in a proposal or ideation phase, not yet accepted or planned for work.',
     ),
@@ -45,6 +48,7 @@ const CATEGORY_MAP = {
     color: '#737278',
     label: s__('WorkItem|To do'),
     defaultState: 'open',
+    workItemState: STATE_OPEN,
     description: s__('WorkItem|Use for planned work that is not actively being worked on.'),
   },
   [STATUS_CATEGORIES.IN_PROGRESS]: {
@@ -52,6 +56,7 @@ const CATEGORY_MAP = {
     color: '#1f75cb',
     label: s__('WorkItem|In progress'),
     defaultState: 'open',
+    workItemState: STATE_OPEN,
     description: s__('WorkItem|Use for items that are actively being worked on.'),
   },
   [STATUS_CATEGORIES.DONE]: {
@@ -59,6 +64,7 @@ const CATEGORY_MAP = {
     color: '#108548',
     label: s__('WorkItem|Done'),
     defaultState: 'closed',
+    workItemState: STATE_CLOSED,
     description: s__(
       'WorkItem|Use for items that have been completed. Applying a done status will close the item.',
     ),
@@ -68,6 +74,7 @@ const CATEGORY_MAP = {
     color: '#dd2b0e',
     label: s__('WorkItem|Canceled'),
     defaultState: 'duplicate',
+    workItemState: STATE_CLOSED,
     description: s__(
       'WorkItem|Use for items that are no longer relevant and will not be completed. Applying a canceled status will close the item.',
     ),
@@ -94,6 +101,7 @@ export default {
     VueDraggable,
     GlLink,
     HelpPageLink,
+    WorkItemStateBadge,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -201,6 +209,12 @@ export default {
     },
     getCategoryDefaultState(category) {
       return CATEGORY_MAP[category].defaultState || '';
+    },
+    getCategoryWorkItemState(category) {
+      return CATEGORY_MAP[category].workItemState || '';
+    },
+    showWorkItemStateBadge(category) {
+      return this.getCategoryWorkItemState(category) === STATE_CLOSED;
     },
     startAddingStatus(category) {
       this.cancelForm();
@@ -596,9 +610,17 @@ export default {
           :data-testid="`category-${category.toLowerCase()}`"
         >
           <div class="gl-mb-2 gl-flex gl-flex-col gl-gap-1">
-            <h3 class="gl-m-0 gl-text-size-reset gl-font-bold">
-              {{ getCategoryLabel(category) }}
-            </h3>
+            <div class="gl-flex gl-items-center gl-gap-3">
+              <h3 class="gl-m-0 gl-text-size-reset gl-font-bold">
+                {{ getCategoryLabel(category) }}
+              </h3>
+              <work-item-state-badge
+                v-if="showWorkItemStateBadge(category)"
+                :work-item-state="getCategoryWorkItemState(category)"
+                :show-icon="false"
+              />
+            </div>
+
             <p data-testid="category-description" class="!gl-mb-0 gl-text-sm gl-text-subtle">
               {{ getCategoryDescription(category) }}
             </p>

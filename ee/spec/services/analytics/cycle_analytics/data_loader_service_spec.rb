@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::DataLoaderService, feature_category: :value_stream_management do
-  let_it_be_with_refind(:top_level_group) { create(:group, :with_organization) }
-  let_it_be(:other_group) { create(:group, :with_organization) }
+  let_it_be_with_refind(:top_level_group) { create(:group) }
+  let_it_be(:other_group) { create(:group) }
   let_it_be(:project_outside) { create(:project, namespace: other_group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:user_project) { create(:project, :public, namespace: user.namespace) }

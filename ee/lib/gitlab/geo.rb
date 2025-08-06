@@ -161,9 +161,10 @@ module Gitlab
     end
 
     def self.current_node_enabled?
-      # No caching of the enabled! If we cache it and an admin disables
-      # this node, an active Geo::RepositorySyncWorker would keep going for up
-      # to max run time after the node was disabled.
+      # No caching of the enabled! If we cache it and an admin
+      # disables this node, an active Geo::RepositoryRegistrySyncWorker
+      # and Geo::RegistrySyncWorker would keep going for up to
+      # max run time after the node was disabled.
       Gitlab::Geo.current_node.reset.enabled?
     end
 

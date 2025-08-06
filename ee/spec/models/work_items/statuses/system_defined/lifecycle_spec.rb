@@ -116,8 +116,6 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
   describe 'included modules' do
     subject { described_class }
 
-    it { is_expected.to include(ActiveModel::Model) }
-    it { is_expected.to include(ActiveModel::Attributes) }
     # AR like methods are tested in this module
     it { is_expected.to include(ActiveRecord::FixedItemsModel::Model) }
     it { is_expected.to include(GlobalID::Identification) }

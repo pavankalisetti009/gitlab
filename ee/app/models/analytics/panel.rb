@@ -2,7 +2,7 @@
 
 module Analytics
   class Panel
-    attr_reader :title, :grid_attributes, :visualization, :config_project, :query_overrides, :container
+    attr_reader :title, :tooltip, :grid_attributes, :visualization, :config_project, :query_overrides, :container
 
     def self.from_data(panel_yaml, config_project, container)
       return if panel_yaml.nil?
@@ -10,6 +10,7 @@ module Analytics
       panel_yaml.map do |panel|
         new(
           title: panel['title'],
+          tooltip: panel['tooltip'],
           config_project: config_project,
           container: container,
           grid_attributes: panel['gridAttributes'],
@@ -19,8 +20,11 @@ module Analytics
       end
     end
 
-    def initialize(title:, container:, grid_attributes:, visualization_config:, config_project:, query_overrides:)
+    def initialize(
+      title:, container:, grid_attributes:, visualization_config:, config_project:,
+      query_overrides:, tooltip:)
       @title = title
+      @tooltip = tooltip
       @config_project = config_project
       @container = container
       @grid_attributes = grid_attributes

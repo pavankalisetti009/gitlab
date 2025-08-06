@@ -89,14 +89,6 @@ describe('AnalyticsDashboardPanel', () => {
         loading: true,
         showAlertState: false,
         alertPopoverTitle: '',
-        actions: [
-          {
-            text: 'Delete',
-            action: expect.any(Function),
-            icon: 'remove',
-          },
-        ],
-        editing: false,
       });
     });
 
@@ -121,21 +113,6 @@ describe('AnalyticsDashboardPanel', () => {
       );
     });
   });
-
-  describe('when editing', () => {
-    beforeEach(() => {
-      createWrapper({
-        props: { editing: true },
-      });
-    });
-
-    it('sets editing to true on the panels base', () => {
-      expect(findExtendedDashboardPanel().props()).toMatchObject({
-        editing: true,
-      });
-    });
-  });
-
   describe('when the visualization is licensed invalid', () => {
     describe('with the correct license', () => {
       it('renders the visualization', () => {

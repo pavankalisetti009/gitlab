@@ -10,7 +10,7 @@
       %h1.gl-text-center.gl-m-0.gl-pb-3
         = s_('InProductMarketing|Get Started with GitLab')
       %p.gl-text-center.gl-m-0.gl-pb-6
-        = s_("InProductMarketing|Enjoy 60 days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate.")
+        = format(s_("InProductMarketing|Enjoy %{duration} days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate."), duration: @trial_duration)
       .signup-box
         = render 'signup_box_form_lightweight',
           url: trial_registrations_path(::Onboarding::StatusPresenter.glm_tracking_params(params)),

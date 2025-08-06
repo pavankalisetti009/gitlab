@@ -2,6 +2,7 @@ import { GlFilteredSearch } from '@gitlab/ui';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
+import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 
 const TEST_TOKEN_DEFINITION = {
@@ -64,5 +65,12 @@ describe('Security Dashboard Filtered Search', () => {
     findFilteredSearch().vm.$emit('input', []);
 
     expect(wrapper.emitted('filters-changed')).toEqual([[{}]]);
+  });
+
+  it('removes ALL_ID value from token value', () => {
+    const input = [{ type: 'testTokenId', value: { data: [ALL_ID] } }];
+    findFilteredSearch().vm.$emit('input', input);
+
+    expect(wrapper.emitted('filters-changed')).toEqual([[{ testTokenId: [] }]]);
   });
 });

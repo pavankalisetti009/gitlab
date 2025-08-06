@@ -596,6 +596,7 @@ module Ci
       Gitlab::Ci::Variables::Collection.new.tap do |variables|
         break variables unless persisted? && persisted_environment.present?
 
+        variables.append(key: 'CI_ENVIRONMENT_ID', value: persisted_environment.id.to_s)
         variables.append(key: 'CI_ENVIRONMENT_SLUG', value: environment_slug)
 
         # Here we're passing unexpanded environment_url for runner to expand,
@@ -751,14 +752,6 @@ module Ci
 
     def ensure_trace_metadata!
       Ci::BuildTraceMetadata.find_or_upsert_for!(id, partition_id, project_id)
-    end
-
-    def artifacts_expose_as
-      options.dig(:artifacts, :expose_as)
-    end
-
-    def artifacts_paths
-      options.dig(:artifacts, :paths)
     end
 
     def needs_touch?

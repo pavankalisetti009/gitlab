@@ -143,4 +143,26 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       )
     end
   end
+
+  describe '#maven_upstream_data' do
+    let(:maven_upstream) { build_stubbed(:virtual_registries_packages_maven_upstream) }
+    let(:maven_upstream_attributes) do
+      {
+        'id' => maven_upstream.id,
+        'name' => maven_upstream.name,
+        'url' => maven_upstream.url,
+        'description' => maven_upstream.description,
+        'cacheEntriesCount' => 0
+      }
+    end
+
+    it 'returns maven upstream template data' do
+      json_data = ::Gitlab::Json.parse(helper.maven_upstream_data(maven_upstream))
+      expect(json_data).to include(
+        'upstream' => maven_upstream_attributes,
+        'editUpstreamPath' =>
+          edit_group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
+      )
+    end
+  end
 end

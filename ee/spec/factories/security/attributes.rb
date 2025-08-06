@@ -2,8 +2,8 @@
 
 FactoryBot.define do
   factory :security_attribute, class: 'Security::Attribute' do
+    sequence(:name) { |n| "Test name #{n}" }
     editable_state { :locked }
-    name { 'Test Label' }
     description { 'Informative description' }
     color { '#ff0000' }
   end

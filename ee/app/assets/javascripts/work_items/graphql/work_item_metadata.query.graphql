@@ -12,6 +12,7 @@ query workItemMetadataEE($fullPath: ID!) {
       hasQualityManagementFeature
       hasLinkedItemsEpicsFeature
       hasIssueDateFilterFeature
+      hasWorkItemStatusFeature @gl_introduced(version: "18.3.0-pre")
     }
     linkPaths {
       issuesList
@@ -24,6 +25,7 @@ query workItemMetadataEE($fullPath: ID!) {
       register
       reportAbuse
       signIn
+      issuesSettings @gl_introduced(version: "18.3.0-pre")
     }
   }
 }

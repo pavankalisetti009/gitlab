@@ -13,6 +13,7 @@ module API
 
     before do
       authenticate!
+      set_current_organization
 
       Feature.enabled?(:duo_evaluation_ready, :instance) # no-op
       not_found! unless Feature.enabled?(:access_rest_chat, current_user)
@@ -92,7 +93,8 @@ module API
 
           not_found! unless user_allowed?(resource)
 
-          ai_response = ::Gitlab::Duo::Chat::Completions.new(current_user, resource: resource)
+          ai_response = ::Gitlab::Duo::Chat::Completions.new(current_user, organization: ::Current.organization,
+            resource: resource)
                                                         .execute(safe_params: safe_params)
 
           present ai_response.response_body

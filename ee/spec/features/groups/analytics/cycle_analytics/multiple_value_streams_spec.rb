@@ -4,9 +4,9 @@ require 'spec_helper'
 RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_management do
   include CycleAnalyticsHelpers
 
-  let_it_be(:group) { create(:group, :with_organization, name: 'CA-test-group') }
+  let_it_be(:group) { create(:group, name: 'CA-test-group') }
   let_it_be(:project) { create(:project, :repository, namespace: group, name: 'Cool fun project') }
-  let_it_be(:sub_group) { create(:group, name: 'CA-sub-group', parent: group, organization_id: group.organization_id) }
+  let_it_be(:sub_group) { create(:group, name: 'CA-sub-group', parent: group) }
   let_it_be(:group_label1) { create(:group_label, group: group) }
   let_it_be(:group_label2) { create(:group_label, group: group) }
   let_it_be(:user) do
@@ -21,7 +21,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
   let(:empty_state_selector) { '[data-testid="vsa-empty-state"]' }
 
   3.times do |i|
-    let_it_be("issue_#{i}".to_sym) { create(:issue, title: "New Issue #{i}", project: project, created_at: 2.days.ago) }
+    let_it_be(:"issue_#{i}") { create(:issue, title: "New Issue #{i}", project: project, created_at: 2.days.ago) }
   end
 
   before do

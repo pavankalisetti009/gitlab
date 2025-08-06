@@ -9,7 +9,6 @@ import {
 } from 'ee/analytics/analytics_dashboards/constants';
 import {
   dashboard,
-  mockFilterOptions,
   TEST_CUSTOM_DASHBOARDS_PROJECT,
   getGraphQLDashboard,
   TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
@@ -20,96 +19,6 @@ import {
 import { createMockClient } from 'helpers/mock_apollo_helper';
 
 describe('Analytics dashboard utils', () => {
-  describe('getMetricSchema', () => {
-    it.each`
-      metric                        | expected
-      ${'Sessions.count'}           | ${'Sessions'}
-      ${'TrackedEvents.count'}      | ${'TrackedEvents'}
-      ${'ReturningUsers.something'} | ${'ReturningUsers'}
-    `('returns "$expected" for metric "$metric"', ({ metric, expected }) => {
-      expect(utils.getMetricSchema(metric)).toBe(expected);
-    });
-
-    it.each([undefined, null])('returns undefined for "%s"', (value) => {
-      expect(utils.getMetricSchema(value)).toBeUndefined();
-    });
-  });
-
-  describe('getDimensionsForSchema', () => {
-    it('returns an empty array when no schema is provided', () => {
-      expect(
-        utils.getDimensionsForSchema(null, mockFilterOptions.availableDimensions),
-      ).toStrictEqual([]);
-    });
-
-    it('returns an empty array when the schema does not match any dimensions', () => {
-      expect(
-        utils.getDimensionsForSchema('InvalidSchema', mockFilterOptions.availableDimensions),
-      ).toStrictEqual([]);
-    });
-
-    it('returns the expected dimensions for a schema', () => {
-      expect(
-        utils
-          .getDimensionsForSchema('TrackedEvents', mockFilterOptions.availableDimensions)
-          .map(({ name }) => name),
-      ).toStrictEqual(['TrackedEvents.pageTitle', 'TrackedEvents.pageUrl']);
-    });
-  });
-
-  describe('getTimeDimensionForSchema', () => {
-    it('returns null when no schema is provided', () => {
-      expect(
-        utils.getTimeDimensionForSchema(null, mockFilterOptions.availableTimeDimensions),
-      ).toBeNull();
-    });
-
-    it('returns null when the schema does not match any time dimensions', () => {
-      expect(
-        utils.getTimeDimensionForSchema('InvalidSchema', mockFilterOptions.availableTimeDimensions),
-      ).toBeNull();
-    });
-
-    it('returns the expected time dimension for a schema with a single time dimension', () => {
-      expect(
-        utils.getTimeDimensionForSchema('TrackedEvents', mockFilterOptions.availableTimeDimensions),
-      ).toStrictEqual({
-        name: 'TrackedEvents.derivedTstamp',
-        title: 'Tracked Events Derived Tstamp',
-        type: 'time',
-        shortTitle: 'Derived Tstamp',
-        suggestFilterValues: true,
-        isVisible: true,
-        public: true,
-        primaryKey: false,
-      });
-    });
-
-    it('returns null for a schema with multiple time dimensions', () => {
-      expect(
-        utils.getTimeDimensionForSchema('UnknownSchema', [
-          { name: 'UnknownSchema.createdAt' },
-          { name: 'UnknownSchema.updatedAt' },
-        ]),
-      ).toBeNull();
-    });
-
-    it('returns the "Sessions.startAt" time dimension for the "Sessions" schema', () => {
-      expect(
-        utils.getTimeDimensionForSchema('Sessions', mockFilterOptions.availableTimeDimensions),
-      ).toStrictEqual({
-        name: 'Sessions.startAt',
-        title: 'Sessions Start at',
-        type: 'time',
-        shortTitle: 'Start at',
-        suggestFilterValues: true,
-        isVisible: true,
-        public: true,
-        primaryKey: false,
-      });
-    });
-  });
-
   describe('updateApolloCache', () => {
     let apolloClient;
     let mockReadQuery;

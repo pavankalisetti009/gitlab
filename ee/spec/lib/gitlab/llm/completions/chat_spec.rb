@@ -539,32 +539,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       end
     end
 
-    describe "duo chat prompt caching" do
-      before do
-        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
-
-        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
-          allow(instance).to receive(:execute).and_return(answer)
-        end
-      end
-
-      it 'pushes duo chat prompt caching FF to AI Gateway when enabled' do
-        stub_feature_flags(enable_anthropic_prompt_caching: true)
-
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag).with(:enable_anthropic_prompt_caching, user)
-
-        subject
-      end
-
-      it "doesn't push duo chat prompt caching FF to AI Gateway when disabled" do
-        stub_feature_flags(enable_anthropic_prompt_caching: false)
-
-        expect(::Gitlab::AiGateway).not_to receive(:push_feature_flag).with(:enable_anthropic_prompt_caching, user)
-
-        subject
-      end
-    end
-
     context 'when is_duo_code_review is true' do
       let(:options) do
         {

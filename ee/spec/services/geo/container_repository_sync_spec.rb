@@ -99,7 +99,7 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
       next unless missing
 
       stub_request(:get, "#{primary_repository_url}/blobs/#{digest}")
-        .to_return(status: 200, body: File.new(Rails.root.join('ee/spec/fixtures/ee_sample_schema.json')), headers: {})
+        .to_return(status: 200, body: File.new(Rails.root.join('ee/spec/fixtures/sample_schema.json')), headers: {})
     end
   end
 

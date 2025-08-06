@@ -1,16 +1,16 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
+import {
+  mockSecurityAttributeCategories,
+  mockSecurityAttributes,
+} from 'ee/security_configuration/security_attributes/graphql/resolvers';
 import ConfigureAttributes from 'ee/security_configuration/components/security_attributes/configure_attributes.vue';
 import CategoryList from 'ee/security_configuration/components/security_attributes/category_list.vue';
 import CategoryForm from 'ee/security_configuration/components/security_attributes/category_form.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getSecurityAttributesQuery from 'ee/security_configuration/graphql/client/security_attributes.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
-import {
-  mockSecurityAttributeCategories,
-  mockSecurityAttributes,
-} from 'ee/security_configuration/graphql/resolvers';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 Vue.use(VueApollo);

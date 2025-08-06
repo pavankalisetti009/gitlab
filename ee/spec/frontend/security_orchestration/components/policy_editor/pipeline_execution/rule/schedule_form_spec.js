@@ -1,6 +1,6 @@
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
 import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
 import SnoozeForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/snooze_form.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';

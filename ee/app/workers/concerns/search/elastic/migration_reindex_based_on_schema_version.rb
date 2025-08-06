@@ -10,7 +10,7 @@ module Search
 
       UPDATE_BATCH_SIZE = 100
       QUEUE_THRESHOLD = 50_000
-      DOC_TYPES_WITH_NON_ID_PK = [Vulnerability].freeze
+      SCROLL_TIMEOUT = '5m'
 
       def migrate
         if completed?
@@ -29,7 +29,9 @@ module Search
 
         document_references = process_batch!
 
-        log 'Reindexing batch has been processed', index_name: index_name, documents_count: document_references.size
+        log 'Reindexing batch has been processed', index_name: index_name, batch_size: document_references.size
+
+        log 'Migration complete', index_name: index_name if completed?
       rescue StandardError => e
         log_raise 'migrate failed', error_class: e.class, error_message: e.message
       end
@@ -75,9 +77,63 @@ module Search
       end
 
       def process_batch!
+        if use_scroll_api?
+          process_batch_with_scroll!
+        else
+          process_batch_with_search!
+        end
+      end
+
+      def process_batch_with_search!
         results = client.search(index: index_name, body: query_with_old_schema_version.merge(size: query_batch_size))
         hits = results.dig('hits', 'hits') || []
-        document_references = hits.map! do |hit|
+        process_hits(hits)
+      end
+
+      def process_batch_with_scroll!
+        document_references = []
+        scroll_id = current_scroll_id
+
+        response = if scroll_id.nil?
+                     client.search(
+                       index: index_name,
+                       scroll: SCROLL_TIMEOUT,
+                       body: query_with_old_schema_version.merge(
+                         size: query_batch_size,
+                         sort: [{ reference_primary_key => { order: 'asc' } }]
+                       )
+                     )
+                   else
+                     begin
+                       client.scroll(
+                         body: { scroll_id: scroll_id },
+                         scroll: SCROLL_TIMEOUT
+                       )
+                     rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+                       log_warn('scroll_id expired, will restart scroll in next migration run',
+                         exception_class: e.class, exception_message: e.message, scroll_id: scroll_id)
+
+                       { '_scroll_id' => nil, 'hits' => { 'hits' => [] } }
+                     end
+                   end
+
+        scroll_id = response['_scroll_id']
+
+        hits = response&.dig('hits', 'hits') || []
+
+        if hits.any?
+          document_references = process_hits(hits)
+          set_migration_state(scroll_id: scroll_id, last_processed_id: get_last_processed_id(hits))
+        else
+          cleanup_scroll(scroll_id)
+          set_migration_state(scroll_id: nil, last_processed_id: nil)
+        end
+
+        document_references
+      end
+
+      def process_hits(hits)
+        document_references = hits.map do |hit|
           id = hit.dig('_source', reference_primary_key)
           es_id = hit['_id']
 
@@ -94,6 +150,37 @@ module Search
         document_references
       end
 
+      def cleanup_scroll(scroll_id)
+        return unless scroll_id
+
+        client.clear_scroll(body: { scroll_id: scroll_id })
+      rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+        log_warn('scroll_id not found while trying to clear_scroll',
+          exception_class: e.class, exception_message: e.message, scroll_id: scroll_id)
+      rescue StandardError => e
+        log_warn('clear_scroll failed', exception_class: e.class, exception_message: e.message, scroll_id: scroll_id)
+      end
+
+      def use_scroll_api?
+        return false unless Feature.enabled?(:search_schema_migration_scroll_api, :instance)
+
+        current_scroll_id.present? || remaining_documents_count > query_batch_size
+      end
+
+      def current_scroll_id
+        migration_state[:scroll_id]
+      end
+
+      def last_processed_id
+        migration_state[:last_processed_id]
+      end
+
+      def get_last_processed_id(hits)
+        return if hits.empty?
+
+        hits.last.dig('_source', reference_primary_key)
+      end
+
       def query_batch_size
         return batch_size if respond_to?(:batch_size)
 
@@ -105,12 +192,10 @@ module Search
       end
 
       def reference_primary_key
-        if DOC_TYPES_WITH_NON_ID_PK.include?(self.class::DOCUMENT_TYPE)
-          ::Search::Elastic::References.const_get(self.class::DOCUMENT_TYPE.to_s,
-            false).model_klass.primary_key
-        else
-          'id'
-        end
+        ref_klass = Gitlab::Elastic::Helper.ref_class(self.class::DOCUMENT_TYPE.to_s)
+        return ref_klass.model_klass.primary_key if ref_klass
+
+        self.class::DOCUMENT_TYPE.primary_key
       end
     end
   end

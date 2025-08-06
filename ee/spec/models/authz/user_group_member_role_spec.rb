@@ -112,4 +112,24 @@ RSpec.describe Authz::UserGroupMemberRole, feature_category: :permissions do
       expect(results).to match_array([user_in_shared_group, user2_in_shared_group])
     end
   end
+
+  describe '.with_attrs' do
+    let_it_be(:group1) { create(:group) }
+    let_it_be(:group2) { create(:group) }
+    let_it_be(:group3) { create(:group) }
+
+    let_it_be(:target1) { create(:user_group_member_role, group: group1, shared_with_group: group2) }
+    let_it_be(:target2) { create(:user_group_member_role, group: group1, shared_with_group: group3) }
+    let_it_be(:non_target) { create(:user_group_member_role, group: group2, shared_with_group: group3) }
+
+    subject(:results) do
+      attrs = [:group_id, :shared_with_group_id]
+      values = [[group1.id, group2.id], [group1.id, group3.id]]
+      described_class.with_attrs(attrs, values)
+    end
+
+    it 'returns only records with attrs matching the given attr values' do
+      expect(results).to match_array([target1, target2])
+    end
+  end
 end

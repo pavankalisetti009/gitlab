@@ -51,6 +51,18 @@ components:
           value: "my-secret-pw"
       dedicatedPod: false
       mountSources: true
+  - name: user-defined-entrypoint-cmd-component
+    attributes:
+      overrideCommand: false
+    container:
+      image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+      command: ["echo"]
+      args: ["-n", "user-defined entrypoint command"]
+      volumeMounts:
+        - name: gl-workspace-data
+          path: /projects
+      dedicatedPod: false
+      mountSources: true
   - name: gl-tools-injector
     container:
       image: <%= WORKSPACE_TOOLS_IMAGE %>

@@ -9,7 +9,7 @@ GitLab Duo Chat aims to assist users with AI in ideation and creation tasks as
 well as in learning tasks across the entire Software Development Lifecycle
 (SDLC) to make them faster and more efficient.
 
-[Chat](../../user/gitlab_duo_chat/_index.md) is a part of the [GitLab Duo](../../user/ai_features.md)
+[Chat](../../user/gitlab_duo_chat/_index.md) is a part of the [GitLab Duo](../../user/gitlab_duo/_index.md)
 offering.
 
 Chat can answer different questions and perform certain tasks. It's done with
@@ -613,7 +613,7 @@ See the video ([internal link](https://drive.google.com/file/d/1X6CARf0gebFYX4Rc
 
 {{< alert type="note" >}}
 
-This section is deprecated in favor of the [development seed file](testing_and_validation.md#seed-project-and-group-resources-for-testing-and-evaluation).
+This section is deprecated in favor of the [development seed file](../development_seed_files.md#seed-project-and-group-resources-for-gitlab-duo).
 
 {{< /alert >}}
 
@@ -634,7 +634,7 @@ desired.
 
 {{< alert type="note" >}}
 
-This section is deprecated in favor of the [development seed file](testing_and_validation.md#seed-project-and-group-resources-for-testing-and-evaluation).
+This section is deprecated in favor of the [development seed file](../development_seed_files.md#seed-project-and-group-resources-for-gitlab-duo).
 
 {{< /alert >}}
 

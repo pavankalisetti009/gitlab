@@ -922,7 +922,7 @@ from the rest of the configuration with `---`.
 
 #### `spec:inputs`
 
-You can use `spec:inputs` to define [inputs](inputs.md) for the CI/CD configuration.
+You can use `spec:inputs` to define [inputs](../inputs/_index.md) for the CI/CD configuration.
 
 Use the interpolation format `$[[ inputs.input-id ]]` to reference the values outside of the header section.
 Inputs are evaluated and interpolated when the configuration is fetched during pipeline creation.
@@ -3281,7 +3281,7 @@ This example creates four paths of execution:
 - The maximum number of jobs that a single job can have in the `needs` array is limited:
   - For GitLab.com, the limit is 50. For more information, see
     [issue 350398](https://gitlab.com/gitlab-org/gitlab/-/issues/350398).
-  - For GitLab Self-Managed, the default limit is 50. This limit [can be changed](../../administration/cicd/_index.md#set-the-needs-job-limit).
+  - For GitLab Self-Managed and GitLab Dedicated, the default limit is 50. This limit can be changed by [updating the CI/CD limits in the Admin area](../../administration/settings/continuous_integration.md#set-cicd-limits).
 - If `needs` refers to a job that uses the [`parallel`](#parallel) keyword,
   it depends on all jobs created in parallel, not just one job. It also downloads
   artifacts from all the parallel jobs by default. If the artifacts have the same
@@ -6107,7 +6107,10 @@ In this example, the script:
 {{< /history >}}
 
 Use `manual_confirmation` with [`when: manual`](#when) to define a custom confirmation message for manual jobs.
-If there is no manual job defined with `when: manual`, this keyword has no effect.
+If no manual job is defined with `when: manual`, this keyword has no effect.
+
+Manual confirmation works with all manual jobs, including environment stop jobs that use
+[`environment:action: stop`](#environmentaction).
 
 **Keyword type**: Job keyword. You can use it only as part of a job.
 
@@ -6124,6 +6127,16 @@ delete_job:
     - make delete
   when: manual
   manual_confirmation: 'Are you sure you want to delete this environment?'
+
+stop_production:
+  stage: cleanup
+  script:
+    - echo "Stopping production environment"
+  environment:
+    name: production
+    action: stop
+  when: manual
+  manual_confirmation: "Are you sure you want to stop the production environment?"
 ```
 
 ## `variables`

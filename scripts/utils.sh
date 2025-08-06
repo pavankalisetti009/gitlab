@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+export STABLE_BRANCH_PATTERN="^[0-9-]+-stable(-ee)?$"
+export VERSION_TAG_PATTERN="^v([0-9]+)\.([0-9]+)\.([0-9]+).+(ee)$"
+
 function retry() {
   retry_times_sleep 2 3 "$@"
 }
@@ -85,16 +89,7 @@ function rspec_section() {
 }
 
 function bundle_install_script() {
-  local extra_install_args="${1}"
-
-  if [[ "${extra_install_args}" =~ "--without" ]]; then
-    echoerr "The '--without' flag shouldn't be passed as it would replace the default \${BUNDLE_WITHOUT} (currently set to '${BUNDLE_WITHOUT}')."
-    echoerr "Set the 'BUNDLE_WITHOUT' variable instead, e.g. '- export BUNDLE_WITHOUT=\"\${BUNDLE_WITHOUT}:any:other:group:not:to:install\"'."
-    exit 1;
-  fi;
-
-  section_start "bundle-install" "Installing gems"
-
+  section_start "bundle-info" "Ruby env info and bundle config"
   gem --version
   bundle --version
   test -d jh && bundle config set --local gemfile 'jh/Gemfile'
@@ -103,18 +98,31 @@ function bundle_install_script() {
 
   echo "${BUNDLE_WITHOUT}"
   bundle config
+  section_end "bundle-info"
 
-  # Call `eval` explicitly to run the shell functions stored inside BUNDLE_INSTALL_FLAGS
-  eval "bundle install ${BUNDLE_INSTALL_FLAGS} ${extra_install_args}"
+  section_start "bundle-install" "Installing gems"
 
-  if [[ $(bundle info pg) ]]; then
-    # Bundler will complain about replacing gems in world-writeable directories, so lock down access.
-    # This appears to happen when the gems are uncached, since the Runner uses a restrictive umask.
-    find vendor -type d -exec chmod 700 {} +
-    # When we test multiple versions of PG in the same pipeline, we have a single `setup-test-env`
-    # job but the `pg` gem needs to be rebuilt since it includes extensions (https://guides.rubygems.org/gems-with-extensions).
-    # Uncomment the following line if multiple versions of PG are tested in the same pipeline.
-    bundle pristine pg
+  echo "Checking if all dependencies are satisfied"
+  if ! bundle check; then
+    # Call `eval` explicitly to run the shell functions stored inside BUNDLE_INSTALL_FLAGS
+    eval "bundle install ${BUNDLE_INSTALL_FLAGS}"
+  fi
+
+  # pg 1.6+ comes with precompiled extensions which should allow us to remove this after it is upgraded
+  if [[ "$GLCI_BUNDLE_SKIP_PG_REINSTALL" != "true" && $(bundle info pg) ]]; then
+    # If a job overrides default postgres version, reinstall pg gem to compile native extensions correctly
+    if [[ "$PG_VERSION" != "$DEFAULT_PG_VERSION" ]]; then
+      echo "Reinstalling pg gem to ensure native extensions match postgres version"
+      # Bundler will complain about replacing gems in world-writeable directories, so lock down access.
+      # This appears to happen when the gems are uncached, since the Runner uses a restrictive umask.
+      find vendor -type d -exec chmod 700 {} +
+      # When we test multiple versions of PG in the same pipeline, we have a single `setup-test-env`
+      # job but the `pg` gem needs to be rebuilt since it includes extensions (https://guides.rubygems.org/gems-with-extensions).
+      # Uncomment the following line if multiple versions of PG are tested in the same pipeline.
+      bundle pristine pg
+    else
+      echo "Default version of postgres in use, skipping reinstallation of pg gem"
+    fi
   fi
 
   section_end "bundle-install"
@@ -485,12 +493,22 @@ function download_local_gems() {
 }
 
 function define_trigger_branch_in_build_env() {
-  target_branch_name="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_REF_NAME}}"
-  stable_branch_regex="^[0-9-]+-stable(-ee)?$"
+  target_branch_name="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-${CI_COMMIT_BRANCH}}"
+
+  # If target_branch_name is empty and CI_COMMIT_TAG has version format, derive from tag
+  if [[ -z "$target_branch_name" && -n "$CI_COMMIT_TAG" ]]; then
+    # Match pattern like v42.2.0-rc42-ee and extract version parts
+    if [[ $CI_COMMIT_TAG =~ $VERSION_TAG_PATTERN ]]; then
+      major="${BASH_REMATCH[1]}"
+      minor="${BASH_REMATCH[2]}"
+      ee_suffix="${BASH_REMATCH[4]}"
+      target_branch_name="${major}-${minor}-stable-${ee_suffix}"
+    fi
+  fi
 
   echo "target_branch_name: ${target_branch_name}"
 
-  if [[ $target_branch_name =~ $stable_branch_regex  ]]
+  if [[ $target_branch_name =~ $STABLE_BRANCH_PATTERN  ]]
   then
     export TRIGGER_BRANCH="${target_branch_name%-ee}"
   else

@@ -238,6 +238,17 @@ RSpec.describe Resolvers::WorkItemsResolver do
         end
       end
 
+      describe 'filtering by negated iteration wildcard' do
+        it 'returns work items not in current iteration' do
+          expect(resolve_items(not: { iteration_wildcard_id: 'CURRENT' }))
+            .to contain_exactly(
+              work_item1, work_item2, work_item3,
+              work_item_with_iteration1, work_item_with_iteration2, work_item_without_iteration,
+              work_item_with_upcoming_iteration
+            )
+        end
+      end
+
       it 'handles invalid global IDs gracefully' do
         invalid_id = 'invalid_global_id_format'
 
@@ -277,6 +288,31 @@ RSpec.describe Resolvers::WorkItemsResolver do
         expect(resolve_items(
           requirement_legacy_widget: { legacy_iids: ['nonsense'] }
         )).to be_empty
+      end
+    end
+
+    context 'when filtering by parent_ids' do
+      let(:epic_work_item)  { create(:work_item, :epic) }
+      let(:issue_work_item) { create(:work_item, :issue, project: project) }
+      let(:task_work_item)  { create(:work_item, :task, project: project) }
+
+      before do
+        create(:parent_link, work_item_parent: epic_work_item, work_item: issue_work_item)
+        create(:parent_link, work_item_parent: issue_work_item, work_item: task_work_item)
+      end
+
+      context 'when include_descendant_work_items is true' do
+        it 'returns items from descendant work items' do
+          expect(resolve_items(parent_ids: [epic_work_item], include_descendant_work_items: true))
+            .to contain_exactly(issue_work_item, task_work_item)
+        end
+      end
+
+      context 'when include_descendant_work_items is false' do
+        it 'does not return items from descendant work items' do
+          expect(resolve_items(parent_ids: [epic_work_item], include_descendant_work_items: false))
+            .to contain_exactly(issue_work_item)
+        end
       end
     end
   end

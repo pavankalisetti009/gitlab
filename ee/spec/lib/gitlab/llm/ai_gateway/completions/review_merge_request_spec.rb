@@ -120,6 +120,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
       stub_feature_flags(duo_code_review_custom_instructions: false)
       stub_feature_flags(use_claude_code_completion: false)
+      stub_feature_flags(duo_code_review_prompt_updates: false)
 
       allow_next_instance_of(
         review_prompt_class,
@@ -382,12 +383,23 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           stub_feature_flags(duo_code_review_claude_4_0_rollout: true)
         end
 
-        # rubocop:disable RSpec/NoExpectationExample -- allow_next_instance_of Gitlab::Llm::AiGateway::Client
+        # -- allow_next_instance_of Gitlab::Llm::AiGateway::Client
         # in before clause will do the check
         it 'successfully creates a note' do
           completion.execute
+
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
         end
-        # rubocop:enable RSpec/NoExpectationExample
+      end
+
+      context 'when duo_code_review_prompt_updates feature flag is enabled' do
+        before do
+          stub_feature_flags(duo_code_review_prompt_updates: true)
+        end
+
+        it_behaves_like 'review merge request with prompt version' do
+          let(:prompt_version) { '1.3.0' }
+        end
       end
 
       context 'when draft_notes is empty after mapping DraftNote objects' do

@@ -11,13 +11,8 @@ module RemoteDevelopment
       # Since this is called after flattening the devfile, we can safely assume that it has valid syntax
       # as per devfile standard. If you are validating something that is not available across all devfile versions,
       # add additional guard clauses.
-      # Devfile standard only allows name/id to be of the format /'^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'/
-      # Hence, we do no need to restrict the prefix `gl_`.
-      # However, we do that for the 'variables' in the devfile since they do not have any such restriction
-      RESTRICTED_PREFIX = "gl-"
 
       # Currently, we only support 'container' and 'volume' type components.
-      # For container components, ensure no endpoint name starts with restricted_prefix
       UNSUPPORTED_COMPONENT_TYPES = %i[kubernetes openshift image].freeze
 
       # Currently, we only support 'exec' and 'apply' for validation
@@ -31,6 +26,9 @@ module RemoteDevelopment
 
       # Currently, we only support the default value `false` for the `hotReloadCapable` option
       SUPPORTED_HOT_RELOAD_VALUE = false
+
+      # Override command must be a boolean value
+      SUPPORTED_OVERRIDE_COMMAND_VALUE = [true, false].freeze
 
       # @param [Hash] parent_context
       # @return [Gitlab::Fp::Result]
@@ -233,6 +231,34 @@ module RemoteDevelopment
             append_err(format(_("Property 'dedicatedPod' of component '%{component}' is not yet supported"),
               component: component_name), context)
           end
+
+          attributes = component.fetch(:attributes, {})
+          unless attributes.is_a?(Hash)
+            return append_err(
+              format(_("'attributes' in component '%{component}' must be a Hash"), component: component_name), context)
+          end
+
+          override_command = attributes.fetch(:overrideCommand, true)
+          unless SUPPORTED_OVERRIDE_COMMAND_VALUE.include?(override_command)
+            return append_err(
+              format(
+                _("Property 'overrideCommand' of component '%{name}' must be a boolean (true or false)"),
+                name: component.fetch(:name)
+              ),
+              context
+            )
+          end
+
+          if override_command == true && (container[:command].present? || container[:args].present?)
+            return append_err(
+              format(
+                _("Properties 'command', 'args' for component '%{name}' can only be specified " \
+                  "when the 'overrideCommand' attribute is set to false"),
+                name: component.fetch(:name)
+              ),
+              context
+            )
+          end
         end
 
         context
@@ -359,8 +385,19 @@ module RemoteDevelopment
 
             # ===== postStart specific validations =====
 
-            # Check if the referenced command is an exec command
             referenced_command = commands.find { |cmd| cmd[:id] == command_name }
+            # Check if referenced command is defined in the command section
+            unless referenced_command.is_a?(Hash)
+              append_err(
+                format(_("PostStart event references command '%{command}' which has no command definition."),
+                  command: command_name
+                ),
+                context
+              )
+              next
+            end
+
+            # Check if the referenced command is an exec command
             next if referenced_command[:exec].present?
 
             append_err(

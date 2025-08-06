@@ -22,7 +22,6 @@ RSpec.describe 'Groups > Billing', :js, :saas, feature_category: :subscription_m
   before do
     stub_signing_key
     stub_application_setting(check_namespace_plan: true)
-    stub_get_billing_account_details
 
     sign_in(user)
   end

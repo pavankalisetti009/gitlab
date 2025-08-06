@@ -13,6 +13,7 @@ import {
   generateSkeletonTableData,
   isMetricInTimePeriods,
   generateMetricComparisons,
+  sanitizeSparklineData,
   generateSparklineCharts,
   mergeTableData,
   hasTrailingDecimalZero,
@@ -153,6 +154,21 @@ describe('Analytics Dashboards utils', () => {
           twoMonthsAgo: expect.any(Object),
         });
       });
+    });
+  });
+
+  describe('sanitizeSparklineData', () => {
+    it.each`
+      input        | output
+      ${null}      | ${0}
+      ${undefined} | ${0}
+      ${'-'}       | ${null}
+      ${0}         | ${0}
+      ${0.1}       | ${0.1}
+      ${0.01}      | ${0}
+      ${0.09}      | ${0.1}
+    `('for input $input, outputs $output', ({ input, output }) => {
+      expect(sanitizeSparklineData(input)).toEqual(output);
     });
   });
 

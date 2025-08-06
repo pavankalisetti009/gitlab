@@ -35,10 +35,6 @@ module Gitlab
             http_get("payment_forms/#{payment_type}", admin_headers, { user_id: user_id }.compact)
           end
 
-          def payment_method(id)
-            http_get("api/payment_methods/#{id}", admin_headers)
-          end
-
           def validate_payment_method(id, params)
             http_post("api/payment_methods/#{id}/validate", admin_headers, params)
           end
@@ -51,6 +47,10 @@ module Gitlab
 
           def namespace_eligible_trials(params)
             http_get('api/v1/gitlab/namespaces/trials/eligibility', admin_headers, params)
+          end
+
+          def namespace_trial_types
+            http_get('api/v1/gitlab/namespaces/trials/trial_types', admin_headers)
           end
 
           private

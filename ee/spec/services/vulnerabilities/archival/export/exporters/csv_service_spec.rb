@@ -8,7 +8,7 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
       create(:vulnerability_archived_record, :dismissed, :with_issues, :with_merge_requests)
     end
 
-    let(:export_csv_service) { described_class.new([archived_record.data]) }
+    let(:export_csv_service) { described_class.new([archived_record]) }
 
     context 'when block is not given' do
       it 'renders csv to string' do
@@ -30,7 +30,7 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
           ['Tool', 'Scanner Name', 'Status', 'Vulnerability', 'Details', 'Severity', 'CVE', 'CWE', 'Other Identifiers',
             'Dismissed At', 'Dismissed By', 'Confirmed At', 'Confirmed By', 'Resolved At', 'Resolved By', 'Detected At',
             'Location', 'Issues', 'Merge Requests', 'Activity', 'Comments', 'Full Path', 'CVSS Vectors',
-            'Dismissal Reason']
+            'Dismissal Reason', 'Vulnerability ID']
         end
 
         it 'contains the expected headers' do
@@ -71,7 +71,8 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
               'Comments' => 'Test notes summary',
               'Full Path' => 'Test full path',
               'CVSS Vectors' => 'GitLab=CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N',
-              'Dismissal Reason' => 'False positive'
+              'Dismissal Reason' => 'False positive',
+              'Vulnerability ID' => archived_record.vulnerability_identifier.to_s
             }
           )
         end

@@ -542,11 +542,6 @@ Returns [`CiStage`](#cistage).
 
 ### `Query.ciQueueingHistory`
 
-{{< details >}}
-**Introduced** in GitLab 16.4.
-**Status**: Experiment.
-{{< /details >}}
-
 Time taken for CI jobs to be picked up by runner by percentile. Enable the ClickHouse database backend to use this query.
 
 Returns [`QueueingDelayHistory`](#queueingdelayhistory).
@@ -1048,6 +1043,23 @@ This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
 `before: String`, `after: String`, `first: Int`, and `last: Int`.
 
+### `Query.mavenVirtualRegistry`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Find a Maven virtual registry. Returns null if the `maven_virtual_registry` feature flag is disabled.
+
+Returns [`MavenVirtualRegistry`](#mavenvirtualregistry).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="querymavenvirtualregistryid"></a>`id` | [`VirtualRegistriesPackagesMavenRegistryID!`](#virtualregistriespackagesmavenregistryid) | Global ID of the Maven virtual registry. |
+
 ### `Query.memberRole`
 
 {{< details >}}
@@ -1457,7 +1469,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="queryrunnersactive"></a>`active` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated** in GitLab 14.8. This was renamed. Use: `paused`. |
 | <a id="queryrunnerscreatorid"></a>`creatorId` | [`UserID`](#userid) | Filter runners by creator ID. |
-| <a id="queryrunnerscreatorusername"></a>`creatorUsername` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.7. **Status**: Experiment. Filter runners by creator username. |
+| <a id="queryrunnerscreatorusername"></a>`creatorUsername` | [`String`](#string) | Filter runners by creator username. |
 | <a id="queryrunnersownerfullpath"></a>`ownerFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Filter runners by owning project or group. |
 | <a id="queryrunnerspaused"></a>`paused` | [`Boolean`](#boolean) | Filter runners by `paused` (true) or `active` (false) status. |
 | <a id="queryrunnerssearch"></a>`search` | [`String`](#string) | Filter by full token or partial text in description field. |
@@ -1466,7 +1478,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryrunnerstaglist"></a>`tagList` | [`[String!]`](#string) | Filter by tags associated with the runner (comma-separated or array). |
 | <a id="queryrunnerstype"></a>`type` | [`CiRunnerType`](#cirunnertype) | Filter runners by type. |
 | <a id="queryrunnersupgradestatus"></a>`upgradeStatus` | [`CiRunnerUpgradeStatus`](#cirunnerupgradestatus) | Filter by upgrade status. |
-| <a id="queryrunnersversionprefix"></a>`versionPrefix` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.6. **Status**: Experiment. Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
+| <a id="queryrunnersversionprefix"></a>`versionPrefix` | [`String`](#string) | Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
 
 ### `Query.secretPermissions`
 
@@ -11378,6 +11390,28 @@ Input type: `SetGroupSecretPushProtectionInput`
 | <a id="mutationsetgroupsecretpushprotectionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationsetgroupsecretpushprotectionerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 
+### `Mutation.setLicenseConfigurationSource`
+
+Set the license information source for a given project.
+
+Input type: `SetLicenseConfigurationSourceInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetlicenseconfigurationsourceclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetlicenseconfigurationsourceprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project. |
+| <a id="mutationsetlicenseconfigurationsourcesource"></a>`source` | [`SecurityPreferredLicenseSourceConfiguration!`](#securitypreferredlicensesourceconfiguration) | Preferred source of license information for dependencies. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetlicenseconfigurationsourceclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetlicenseconfigurationsourceerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsetlicenseconfigurationsourcelicenseconfigurationsource"></a>`licenseConfigurationSource` | [`SecurityPreferredLicenseSourceConfiguration`](#securitypreferredlicensesourceconfiguration) | Preferred source of license information for dependencies. |
+
 ### `Mutation.setPagesForceHttps`
 
 Input type: `SetPagesForceHttpsInput`
@@ -13671,8 +13705,10 @@ Input type: `WorkItemExportInput`
 | <a id="mutationworkitemexportdueafter"></a>`dueAfter` | [`Time`](#time) | Work items due after the timestamp. |
 | <a id="mutationworkitemexportduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="mutationworkitemexporthealthstatusfilter"></a>`healthStatusFilter` {{< icon name="warning-solid" >}} | [`HealthStatusFilter`](#healthstatusfilter) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
+| <a id="mutationworkitemexporthierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.3. |
 | <a id="mutationworkitemexportiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="mutationworkitemexportin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
+| <a id="mutationworkitemexportincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.3. |
 | <a id="mutationworkitemexportiterationcadenceid"></a>`iterationCadenceId` {{< icon name="warning-solid" >}} | [`[IterationsCadenceID!]`](#iterationscadenceid) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitemexportiterationid"></a>`iterationId` {{< icon name="warning-solid" >}} | [`[ID]`](#id) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitemexportiterationwildcardid"></a>`iterationWildcardId` {{< icon name="warning-solid" >}} | [`IterationWildcardId`](#iterationwildcardid) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
@@ -13889,8 +13925,10 @@ Input type: `WorkItemsCsvExportInput`
 | <a id="mutationworkitemscsvexportdueafter"></a>`dueAfter` | [`Time`](#time) | Work items due after the timestamp. |
 | <a id="mutationworkitemscsvexportduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="mutationworkitemscsvexporthealthstatusfilter"></a>`healthStatusFilter` {{< icon name="warning-solid" >}} | [`HealthStatusFilter`](#healthstatusfilter) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
+| <a id="mutationworkitemscsvexporthierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.3. |
 | <a id="mutationworkitemscsvexportiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="mutationworkitemscsvexportin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
+| <a id="mutationworkitemscsvexportincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.3. |
 | <a id="mutationworkitemscsvexportiterationcadenceid"></a>`iterationCadenceId` {{< icon name="warning-solid" >}} | [`[IterationsCadenceID!]`](#iterationscadenceid) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitemscsvexportiterationid"></a>`iterationId` {{< icon name="warning-solid" >}} | [`[ID]`](#id) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 | <a id="mutationworkitemscsvexportiterationwildcardid"></a>`iterationWildcardId` {{< icon name="warning-solid" >}} | [`IterationWildcardId`](#iterationwildcardid) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
@@ -24780,7 +24818,7 @@ CI/CD variables for a project.
 | <a id="cirunnercreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp of creation of the runner. |
 | <a id="cirunnercreatedby"></a>`createdBy` | [`UserCore`](#usercore) | User that created the runner. |
 | <a id="cirunnercreationmethod"></a>`creationMethod` {{< icon name="warning-solid" >}} | [`CiRunnerCreationMethod`](#cirunnercreationmethod) | **Introduced** in GitLab 17.0. **Status**: Experiment. Type of runner registration. |
-| <a id="cirunnercreationstate"></a>`creationState` {{< icon name="warning-solid" >}} | [`CiRunnerCreationState`](#cirunnercreationstate) | **Introduced** in GitLab 17.11. **Status**: Experiment. Runner creation state. Used to determine if a runner has been registered and has contacted the GitLab instance. |
+| <a id="cirunnercreationstate"></a>`creationState` | [`CiRunnerCreationState`](#cirunnercreationstate) | Runner creation state. Used to determine if a runner has been registered and has contacted the GitLab instance. |
 | <a id="cirunnerdescription"></a>`description` | [`String`](#string) | Description of the runner. |
 | <a id="cirunnereditadminurl"></a>`editAdminUrl` | [`String`](#string) | Admin form URL of the runner. Only available for administrators. |
 | <a id="cirunnerephemeralauthenticationtoken"></a>`ephemeralAuthenticationToken` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 15.9. **Status**: Experiment. Ephemeral authentication token used for runner manager registration. Only available for the creator of the runner for a limited time during registration. |
@@ -24820,7 +24858,7 @@ Returns [`Int`](#int).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="cirunnerjobcountstatuses"></a>`statuses` {{< icon name="warning-solid" >}} | [`[CiJobStatus!]`](#cijobstatus) | **Introduced** in GitLab 16.2. **Status**: Experiment. Filter jobs by status. |
+| <a id="cirunnerjobcountstatuses"></a>`statuses` | [`[CiJobStatus!]`](#cijobstatus) | Filter jobs by status. |
 
 ##### `CiRunner.jobs`
 
@@ -26585,7 +26623,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserrunnersactive"></a>`active` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated** in GitLab 14.8. This was renamed. Use: `paused`. |
 | <a id="currentuserrunnersassignabletoprojectpath"></a>`assignableToProjectPath` | [`ID`](#id) | Path of a project. When set, returns runners that can be assigned to a project, are not locked, and not already assigned to the project. |
 | <a id="currentuserrunnerscreatorid"></a>`creatorId` | [`UserID`](#userid) | Filter runners by creator ID. |
-| <a id="currentuserrunnerscreatorusername"></a>`creatorUsername` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.7. **Status**: Experiment. Filter runners by creator username. |
+| <a id="currentuserrunnerscreatorusername"></a>`creatorUsername` | [`String`](#string) | Filter runners by creator username. |
 | <a id="currentuserrunnersownerfullpath"></a>`ownerFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Filter runners by owning project or group. |
 | <a id="currentuserrunnerspaused"></a>`paused` | [`Boolean`](#boolean) | Filter runners by `paused` (true) or `active` (false) status. |
 | <a id="currentuserrunnerssearch"></a>`search` | [`String`](#string) | Filter by full token or partial text in description field. |
@@ -26594,7 +26632,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserrunnerstaglist"></a>`tagList` | [`[String!]`](#string) | Filter by tags associated with the runner (comma-separated or array). |
 | <a id="currentuserrunnerstype"></a>`type` | [`CiRunnerType`](#cirunnertype) | Filter runners by type. |
 | <a id="currentuserrunnersupgradestatus"></a>`upgradeStatus` | [`CiRunnerUpgradeStatus`](#cirunnerupgradestatus) | Filter by upgrade status. |
-| <a id="currentuserrunnersversionprefix"></a>`versionPrefix` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.6. **Status**: Experiment. Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
+| <a id="currentuserrunnersversionprefix"></a>`versionPrefix` | [`String`](#string) | Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
 
 ##### `CurrentUser.savedReply`
 
@@ -26761,8 +26799,10 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserworkitemscrmorganizationid"></a>`crmOrganizationId` | [`String`](#string) | Filter by ID of CRM contact organization. |
 | <a id="currentuserworkitemsdueafter"></a>`dueAfter` | [`Time`](#time) | Work items due after the timestamp. |
 | <a id="currentuserworkitemsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
+| <a id="currentuserworkitemshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="currentuserworkitemsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="currentuserworkitemsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
+| <a id="currentuserworkitemsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="currentuserworkitemslabelname"></a>`labelName` | [`[String!]`](#string) | Labels applied to the work item. |
 | <a id="currentuserworkitemsmilestonetitle"></a>`milestoneTitle` | [`[String!]`](#string) | Milestone applied to the work item. |
 | <a id="currentuserworkitemsmilestonewildcardid"></a>`milestoneWildcardId` | [`MilestoneWildcardId`](#milestonewildcardid) | Filter by milestone ID wildcard. Incompatible with `milestoneTitle`. |
@@ -26927,7 +26967,19 @@ Represents a customizable dashboard panel.
 | <a id="customizabledashboardpanelgridattributes"></a>`gridAttributes` | [`JSON`](#json) | Description of the position and size of the panel. |
 | <a id="customizabledashboardpanelqueryoverrides"></a>`queryOverrides` | [`JSON`](#json) | Overrides for the visualization query object. |
 | <a id="customizabledashboardpaneltitle"></a>`title` | [`String`](#string) | Title of the panel. |
+| <a id="customizabledashboardpaneltooltip"></a>`tooltip` | [`CustomizableDashboardPanelTooltip`](#customizabledashboardpaneltooltip) | Tooltip for the panel containing descriptive text and an optional link. |
 | <a id="customizabledashboardpanelvisualization"></a>`visualization` | [`CustomizableDashboardVisualization`](#customizabledashboardvisualization) | Visualization of the panel. |
+
+### `CustomizableDashboardPanelTooltip`
+
+Tooltip for a customizable dashboard panel.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="customizabledashboardpaneltooltipdescription"></a>`description` | [`String!`](#string) | Popover text content. When `descriptionLink` is provided, must include %{linkStart} and %{linkEnd} placeholders around the link text. |
+| <a id="customizabledashboardpaneltooltipdescriptionlink"></a>`descriptionLink` | [`String`](#string) | Optional URL for link insertion in the `description` between %{linkStart} and %{linkEnd} placeholders. |
 
 ### `CustomizableDashboardVisualization`
 
@@ -29718,11 +29770,6 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.ciQueueingHistory`
 
-{{< details >}}
-**Introduced** in GitLab 16.11.
-**Status**: Experiment.
-{{< /details >}}
-
 Time taken for CI jobs to be picked up by this group's runners by percentile. Available to users with Maintainer role for the group. Enable the ClickHouse database backend to use this query.
 
 Returns [`QueueingDelayHistory`](#queueingdelayhistory).
@@ -30619,10 +30666,10 @@ Returns [`PipelineAnalytics`](#pipelineanalytics).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="grouppipelineanalyticsfromtime"></a>`fromTime` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. Start of the requested time (in UTC). Defaults to the pipelines started in the past week. |
-| <a id="grouppipelineanalyticsref"></a>`ref` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.5. **Status**: Experiment. Branch that triggered the pipeline. |
-| <a id="grouppipelineanalyticssource"></a>`source` {{< icon name="warning-solid" >}} | [`CiPipelineSources`](#cipipelinesources) | **Introduced** in GitLab 17.5. **Status**: Experiment. Source of the pipeline. |
-| <a id="grouppipelineanalyticstotime"></a>`toTime` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. End of the requested time (in UTC). Defaults to the pipelines started before the current date. |
+| <a id="grouppipelineanalyticsfromtime"></a>`fromTime` | [`Time`](#time) | Start of the requested time (in UTC). Defaults to the pipelines started in the past week. |
+| <a id="grouppipelineanalyticsref"></a>`ref` | [`String`](#string) | Branch that triggered the pipeline. |
+| <a id="grouppipelineanalyticssource"></a>`source` | [`CiPipelineSources`](#cipipelinesources) | Source of the pipeline. |
+| <a id="grouppipelineanalyticstotime"></a>`toTime` | [`Time`](#time) | End of the requested time (in UTC). Defaults to the pipelines started before the current date. |
 
 ##### `Group.pipelineExecutionPolicies`
 
@@ -30799,7 +30846,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="grouprunnersactive"></a>`active` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated** in GitLab 14.8. This was renamed. Use: `paused`. |
 | <a id="grouprunnerscreatorid"></a>`creatorId` | [`UserID`](#userid) | Filter runners by creator ID. |
-| <a id="grouprunnerscreatorusername"></a>`creatorUsername` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.7. **Status**: Experiment. Filter runners by creator username. |
+| <a id="grouprunnerscreatorusername"></a>`creatorUsername` | [`String`](#string) | Filter runners by creator username. |
 | <a id="grouprunnersmembership"></a>`membership` | [`CiRunnerMembershipFilter`](#cirunnermembershipfilter) | Control which runners to include in the results. |
 | <a id="grouprunnersownerfullpath"></a>`ownerFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Filter runners by owning project or group. |
 | <a id="grouprunnerspaused"></a>`paused` | [`Boolean`](#boolean) | Filter runners by `paused` (true) or `active` (false) status. |
@@ -30809,7 +30856,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="grouprunnerstaglist"></a>`tagList` | [`[String!]`](#string) | Filter by tags associated with the runner (comma-separated or array). |
 | <a id="grouprunnerstype"></a>`type` | [`CiRunnerType`](#cirunnertype) | Filter runners by type. |
 | <a id="grouprunnersupgradestatus"></a>`upgradeStatus` | [`CiRunnerUpgradeStatus`](#cirunnerupgradestatus) | Filter by upgrade status. |
-| <a id="grouprunnersversionprefix"></a>`versionPrefix` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.6. **Status**: Experiment. Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
+| <a id="grouprunnersversionprefix"></a>`versionPrefix` | [`String`](#string) | Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
 
 ##### `Group.savedReplies`
 
@@ -30897,8 +30944,7 @@ Returns [`SecurityMetrics`](#securitymetrics).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
-| <a id="groupsecuritymetricsscanner"></a>`scanner` | [`[String!]`](#string) | Filter by scanner names. |
-| <a id="groupsecuritymetricsseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter by vulnerability severity levels. |
+| <a id="groupsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
 
 ##### `Group.securityPolicies`
 
@@ -31234,10 +31280,12 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="groupworkitemstatecountsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="groupworkitemstatecountsexcludeprojects"></a>`excludeProjects` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 17.5. **Status**: Experiment. Exclude work items from projects within the group. Ignored for project namespaces. |
 | <a id="groupworkitemstatecountshealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the work item, "none" and "any" values are supported. |
+| <a id="groupworkitemstatecountshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="groupworkitemstatecountsiid"></a>`iid` | [`String`](#string) | IID of the work item. For example, "1". |
 | <a id="groupworkitemstatecountsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="groupworkitemstatecountsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
 | <a id="groupworkitemstatecountsincludeancestors"></a>`includeAncestors` | [`Boolean`](#boolean) | Include work items from ancestor groups. Ignored for project namespaces. |
+| <a id="groupworkitemstatecountsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="groupworkitemstatecountsincludedescendants"></a>`includeDescendants` | [`Boolean`](#boolean) | Include work items from descendant groups and projects. Ignored for project namespaces. |
 | <a id="groupworkitemstatecountsiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="groupworkitemstatecountsiterationid"></a>`iterationId` | [`[ID]`](#id) | List of iteration Global IDs applied to the issue. |
@@ -31315,10 +31363,12 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupworkitemsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="groupworkitemsexcludeprojects"></a>`excludeProjects` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 17.5. **Status**: Experiment. Exclude work items from projects within the group. Ignored for project namespaces. |
 | <a id="groupworkitemshealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the work item, "none" and "any" values are supported. |
+| <a id="groupworkitemshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="groupworkitemsiid"></a>`iid` | [`String`](#string) | IID of the work item. For example, "1". |
 | <a id="groupworkitemsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="groupworkitemsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
 | <a id="groupworkitemsincludeancestors"></a>`includeAncestors` | [`Boolean`](#boolean) | Include work items from ancestor groups. Ignored for project namespaces. |
+| <a id="groupworkitemsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="groupworkitemsincludedescendants"></a>`includeDescendants` | [`Boolean`](#boolean) | Include work items from descendant groups and projects. Ignored for project namespaces. |
 | <a id="groupworkitemsiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="groupworkitemsiterationid"></a>`iterationId` | [`[ID]`](#id) | List of iteration Global IDs applied to the issue. |
@@ -31545,6 +31595,7 @@ Limited group data accessible to users without full group read access (e.g. non-
 | <a id="groupnamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="groupnamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="groupnamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="groupnamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="groupnamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="groupnamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="groupnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
@@ -31565,15 +31616,14 @@ Limited group data accessible to users without full group read access (e.g. non-
 
 ##### `GroupNamespaceMarkdownPaths.autocompleteSourcesPath`
 
-Path for autocomplete sources for a given namespace.
+Supported paths for autocomplete sources for a given namespace.
 
-Returns [`String`](#string).
+Returns [`JSON`](#json).
 
 ###### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="groupnamespacemarkdownpathsautocompletesourcespathautocompletetype"></a>`autocompleteType` | [`AutocompleteType!`](#autocompletetype) | Type of autocomplete source (e.g., members, labels, etc.). |
 | <a id="groupnamespacemarkdownpathsautocompletesourcespathiid"></a>`iid` | [`String`](#string) | IID of the work item. |
 | <a id="groupnamespacemarkdownpathsautocompletesourcespathworkitemtypeid"></a>`workItemTypeId` | [`String`](#string) | ID of the work item type. |
 
@@ -31595,7 +31645,9 @@ Returns [`String`](#string).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="grouppermissionsadminallresources"></a>`adminAllResources` | [`Boolean!`](#boolean) | If `true`, the user is an instance administrator. |
 | <a id="grouppermissionsadminissue"></a>`adminIssue` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_issue` on this resource. |
+| <a id="grouppermissionsadminworkitemlifecycle"></a>`adminWorkItemLifecycle` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_work_item_lifecycle` on this resource. |
 | <a id="grouppermissionscanleave"></a>`canLeave` | [`Boolean!`](#boolean) | If `true`, the user can leave this group. |
 | <a id="grouppermissionscreatecustomemoji"></a>`createCustomEmoji` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_custom_emoji` on this resource. |
 | <a id="grouppermissionscreateprojects"></a>`createProjects` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_projects` on this resource. |
@@ -35617,10 +35669,12 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="namespaceworkitemstatecountsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="namespaceworkitemstatecountsexcludeprojects"></a>`excludeProjects` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 17.5. **Status**: Experiment. Exclude work items from projects within the group. Ignored for project namespaces. |
 | <a id="namespaceworkitemstatecountshealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the work item, "none" and "any" values are supported. |
+| <a id="namespaceworkitemstatecountshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="namespaceworkitemstatecountsiid"></a>`iid` | [`String`](#string) | IID of the work item. For example, "1". |
 | <a id="namespaceworkitemstatecountsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="namespaceworkitemstatecountsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
 | <a id="namespaceworkitemstatecountsincludeancestors"></a>`includeAncestors` | [`Boolean`](#boolean) | Include work items from ancestor groups. Ignored for project namespaces. |
+| <a id="namespaceworkitemstatecountsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="namespaceworkitemstatecountsincludedescendants"></a>`includeDescendants` | [`Boolean`](#boolean) | Include work items from descendant groups and projects. Ignored for project namespaces. |
 | <a id="namespaceworkitemstatecountsiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="namespaceworkitemstatecountsiterationid"></a>`iterationId` | [`[ID]`](#id) | List of iteration Global IDs applied to the issue. |
@@ -35703,10 +35757,12 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="namespaceworkitemsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="namespaceworkitemsexcludeprojects"></a>`excludeProjects` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 17.5. **Status**: Experiment. Exclude work items from projects within the group. Ignored for project namespaces. |
 | <a id="namespaceworkitemshealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the work item, "none" and "any" values are supported. |
+| <a id="namespaceworkitemshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="namespaceworkitemsiid"></a>`iid` | [`String`](#string) | IID of the work item. For example, "1". |
 | <a id="namespaceworkitemsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="namespaceworkitemsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
 | <a id="namespaceworkitemsincludeancestors"></a>`includeAncestors` | [`Boolean`](#boolean) | Include work items from ancestor groups. Ignored for project namespaces. |
+| <a id="namespaceworkitemsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="namespaceworkitemsincludedescendants"></a>`includeDescendants` | [`Boolean`](#boolean) | Include work items from descendant groups and projects. Ignored for project namespaces. |
 | <a id="namespaceworkitemsiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="namespaceworkitemsiterationid"></a>`iterationId` | [`[ID]`](#id) | List of iteration Global IDs applied to the issue. |
@@ -39017,10 +39073,10 @@ Returns [`PipelineAnalytics`](#pipelineanalytics).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectpipelineanalyticsfromtime"></a>`fromTime` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. Start of the requested time (in UTC). Defaults to the pipelines started in the past week. |
-| <a id="projectpipelineanalyticsref"></a>`ref` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.5. **Status**: Experiment. Branch that triggered the pipeline. |
-| <a id="projectpipelineanalyticssource"></a>`source` {{< icon name="warning-solid" >}} | [`CiPipelineSources`](#cipipelinesources) | **Introduced** in GitLab 17.5. **Status**: Experiment. Source of the pipeline. |
-| <a id="projectpipelineanalyticstotime"></a>`toTime` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 17.5. **Status**: Experiment. End of the requested time (in UTC). Defaults to the pipelines started before the current date. |
+| <a id="projectpipelineanalyticsfromtime"></a>`fromTime` | [`Time`](#time) | Start of the requested time (in UTC). Defaults to the pipelines started in the past week. |
+| <a id="projectpipelineanalyticsref"></a>`ref` | [`String`](#string) | Branch that triggered the pipeline. |
+| <a id="projectpipelineanalyticssource"></a>`source` | [`CiPipelineSources`](#cipipelinesources) | Source of the pipeline. |
+| <a id="projectpipelineanalyticstotime"></a>`toTime` | [`Time`](#time) | End of the requested time (in UTC). Defaults to the pipelines started before the current date. |
 
 ##### `Project.pipelineCounts`
 
@@ -39255,7 +39311,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="projectrunnersactive"></a>`active` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated** in GitLab 14.8. This was renamed. Use: `paused`. |
 | <a id="projectrunnerscreatorid"></a>`creatorId` | [`UserID`](#userid) | Filter runners by creator ID. |
-| <a id="projectrunnerscreatorusername"></a>`creatorUsername` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.7. **Status**: Experiment. Filter runners by creator username. |
+| <a id="projectrunnerscreatorusername"></a>`creatorUsername` | [`String`](#string) | Filter runners by creator username. |
 | <a id="projectrunnersownerfullpath"></a>`ownerFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Filter runners by owning project or group. |
 | <a id="projectrunnerspaused"></a>`paused` | [`Boolean`](#boolean) | Filter runners by `paused` (true) or `active` (false) status. |
 | <a id="projectrunnerssearch"></a>`search` | [`String`](#string) | Filter by full token or partial text in description field. |
@@ -39264,7 +39320,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectrunnerstaglist"></a>`tagList` | [`[String!]`](#string) | Filter by tags associated with the runner (comma-separated or array). |
 | <a id="projectrunnerstype"></a>`type` | [`CiRunnerType`](#cirunnertype) | Filter runners by type. |
 | <a id="projectrunnersupgradestatus"></a>`upgradeStatus` | [`CiRunnerUpgradeStatus`](#cirunnerupgradestatus) | Filter by upgrade status. |
-| <a id="projectrunnersversionprefix"></a>`versionPrefix` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 16.6. **Status**: Experiment. Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
+| <a id="projectrunnersversionprefix"></a>`versionPrefix` | [`String`](#string) | Filter runners by version. Runners that contain runner managers with the version at the start of the search term are returned. For example, the search term '14.' returns runner managers with versions '14.11.1' and '14.2.3'. |
 
 ##### `Project.savedReply`
 
@@ -39362,6 +39418,24 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectsecurityexclusionsactive"></a>`active` | [`Boolean`](#boolean) | Filter entries by active status. |
 | <a id="projectsecurityexclusionsscanner"></a>`scanner` | [`ExclusionScannerEnum`](#exclusionscannerenum) | Filter entries by scanner. |
 | <a id="projectsecurityexclusionstype"></a>`type` | [`ExclusionTypeEnum`](#exclusiontypeenum) | Filter entries by exclusion type. |
+
+##### `Project.securityMetrics`
+
+{{< details >}}
+**Introduced** in GitLab 18.3.
+**Status**: Experiment.
+{{< /details >}}
+
+Security metrics.This feature is currently under development and not yet available for general use.
+
+Returns [`SecurityMetrics`](#securitymetrics).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectsecuritymetricsprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
+| <a id="projectsecuritymetricsreporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
 
 ##### `Project.securityPolicies`
 
@@ -39733,9 +39807,11 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="projectworkitemstatecountsdueafter"></a>`dueAfter` | [`Time`](#time) | Work items due after the timestamp. |
 | <a id="projectworkitemstatecountsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="projectworkitemstatecountshealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the work item, "none" and "any" values are supported. |
+| <a id="projectworkitemstatecountshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="projectworkitemstatecountsiid"></a>`iid` | [`String`](#string) | IID of the work item. For example, "1". |
 | <a id="projectworkitemstatecountsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="projectworkitemstatecountsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
+| <a id="projectworkitemstatecountsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="projectworkitemstatecountsiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="projectworkitemstatecountsiterationid"></a>`iterationId` | [`[ID]`](#id) | List of iteration Global IDs applied to the issue. |
 | <a id="projectworkitemstatecountsiterationwildcardid"></a>`iterationWildcardId` | [`IterationWildcardId`](#iterationwildcardid) | Filter by iteration ID wildcard. |
@@ -39810,9 +39886,11 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectworkitemsdueafter"></a>`dueAfter` | [`Time`](#time) | Work items due after the timestamp. |
 | <a id="projectworkitemsduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
 | <a id="projectworkitemshealthstatusfilter"></a>`healthStatusFilter` | [`HealthStatusFilter`](#healthstatusfilter) | Health status of the work item, "none" and "any" values are supported. |
+| <a id="projectworkitemshierarchyfilters"></a>`hierarchyFilters` {{< icon name="warning-solid" >}} | [`HierarchyFilterInput`](#hierarchyfilterinput) | **Introduced** in GitLab 18.3. **Status**: Experiment. Filtering options related to the work item hierarchy. |
 | <a id="projectworkitemsiid"></a>`iid` | [`String`](#string) | IID of the work item. For example, "1". |
 | <a id="projectworkitemsiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
 | <a id="projectworkitemsin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
+| <a id="projectworkitemsincludedescendantworkitems"></a>`includeDescendantWorkItems` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Whether to include work items of descendant parents when filtering by parent_ids. |
 | <a id="projectworkitemsiterationcadenceid"></a>`iterationCadenceId` | [`[IterationsCadenceID!]`](#iterationscadenceid) | Filter by a list of iteration cadence IDs. |
 | <a id="projectworkitemsiterationid"></a>`iterationId` | [`[ID]`](#id) | List of iteration Global IDs applied to the issue. |
 | <a id="projectworkitemsiterationwildcardid"></a>`iterationWildcardId` | [`IterationWildcardId`](#iterationwildcardid) | Filter by iteration ID wildcard. |
@@ -39999,6 +40077,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectnamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="projectnamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="projectnamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="projectnamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="projectnamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="projectnamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="projectnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
@@ -40020,15 +40099,14 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 
 ##### `ProjectNamespaceMarkdownPaths.autocompleteSourcesPath`
 
-Path for autocomplete sources for a given namespace.
+Supported paths for autocomplete sources for a given namespace.
 
-Returns [`String`](#string).
+Returns [`JSON`](#json).
 
 ###### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectnamespacemarkdownpathsautocompletesourcespathautocompletetype"></a>`autocompleteType` | [`AutocompleteType!`](#autocompletetype) | Type of autocomplete source (e.g., members, labels, etc.). |
 | <a id="projectnamespacemarkdownpathsautocompletesourcespathiid"></a>`iid` | [`String`](#string) | IID of the work item. |
 | <a id="projectnamespacemarkdownpathsautocompletesourcespathworkitemtypeid"></a>`workItemTypeId` | [`String`](#string) | ID of the work item type. |
 
@@ -40050,12 +40128,14 @@ Returns [`String`](#string).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="projectpermissionsadminallresources"></a>`adminAllResources` | [`Boolean!`](#boolean) | If `true`, the user is an instance administrator. |
 | <a id="projectpermissionsadminissue"></a>`adminIssue` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_issue` on this resource. |
 | <a id="projectpermissionsadminoperations"></a>`adminOperations` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_operations` on this resource. |
 | <a id="projectpermissionsadminpathlocks"></a>`adminPathLocks` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_path_locks` on this resource. |
 | <a id="projectpermissionsadminproject"></a>`adminProject` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_project` on this resource. |
 | <a id="projectpermissionsadminremotemirror"></a>`adminRemoteMirror` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_remote_mirror` on this resource. |
 | <a id="projectpermissionsadminwiki"></a>`adminWiki` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_wiki` on this resource. |
+| <a id="projectpermissionsadminworkitemlifecycle"></a>`adminWorkItemLifecycle` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_work_item_lifecycle` on this resource. |
 | <a id="projectpermissionsarchiveproject"></a>`archiveProject` | [`Boolean!`](#boolean) | If `true`, the user can perform `archive_project` on this resource. |
 | <a id="projectpermissionschangenamespace"></a>`changeNamespace` | [`Boolean!`](#boolean) | If `true`, the user can perform `change_namespace` on this resource. |
 | <a id="projectpermissionschangevisibilitylevel"></a>`changeVisibilityLevel` | [`Boolean!`](#boolean) | If `true`, the user can perform `change_visibility_level` on this resource. |
@@ -41310,8 +41390,8 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="securitymetricsvulnerabilitiesovertimeenddate"></a>`endDate` | [`ISO8601Date!`](#iso8601date) | End date for the vulnerability metrics time range. |
 | <a id="securitymetricsvulnerabilitiesovertimeprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs. |
-| <a id="securitymetricsvulnerabilitiesovertimescanner"></a>`scanner` | [`[String!]`](#string) | Filter by scanner types. |
-| <a id="securitymetricsvulnerabilitiesovertimeseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter by vulnerability severity levels. |
+| <a id="securitymetricsvulnerabilitiesovertimereporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
+| <a id="securitymetricsvulnerabilitiesovertimeseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter vulnerabilities by severity. |
 | <a id="securitymetricsvulnerabilitiesovertimestartdate"></a>`startDate` | [`ISO8601Date!`](#iso8601date) | Start date for the vulnerability metrics time range. |
 
 ### `SecurityPolicyType`
@@ -42921,6 +43001,7 @@ fields relate to interactions between the two entities.
 | <a id="usernamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="usernamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="usernamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="usernamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="usernamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="usernamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="usernamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
@@ -42941,15 +43022,14 @@ fields relate to interactions between the two entities.
 
 ##### `UserNamespaceMarkdownPaths.autocompleteSourcesPath`
 
-Path for autocomplete sources for a given namespace.
+Supported paths for autocomplete sources for a given namespace.
 
-Returns [`String`](#string).
+Returns [`JSON`](#json).
 
 ###### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="usernamespacemarkdownpathsautocompletesourcespathautocompletetype"></a>`autocompleteType` | [`AutocompleteType!`](#autocompletetype) | Type of autocomplete source (e.g., members, labels, etc.). |
 | <a id="usernamespacemarkdownpathsautocompletesourcespathiid"></a>`iid` | [`String`](#string) | IID of the work item. |
 | <a id="usernamespacemarkdownpathsautocompletesourcespathworkitemtypeid"></a>`workItemTypeId` | [`String`](#string) | ID of the work item type. |
 
@@ -45265,6 +45345,7 @@ AI features that can be configured through the Duo self-hosted feature settings.
 | <a id="aifeaturesgenerate_commit_message"></a>`GENERATE_COMMIT_MESSAGE` | Generate commit message feature setting. |
 | <a id="aifeaturesglab_ask_git_command"></a>`GLAB_ASK_GIT_COMMAND` | Glab ask git command feature setting. |
 | <a id="aifeaturesresolve_vulnerability"></a>`RESOLVE_VULNERABILITY` | Resolve vulnerability feature setting. |
+| <a id="aifeaturesreview_merge_request"></a>`REVIEW_MERGE_REQUEST` | Review merge request feature setting. |
 | <a id="aifeaturessummarize_new_merge_request"></a>`SUMMARIZE_NEW_MERGE_REQUEST` | Summarize new merge request feature setting. |
 | <a id="aifeaturessummarize_review"></a>`SUMMARIZE_REVIEW` | Summarize review feature setting. |
 
@@ -45526,22 +45607,6 @@ Auto stop setting.
 | ----- | ----------- |
 | <a id="autostopsettingalways"></a>`ALWAYS` | Always. |
 | <a id="autostopsettingwith_action"></a>`WITH_ACTION` | With Action. |
-
-### `AutocompleteType`
-
-Type of autocomplete source.
-
-| Value | Description |
-| ----- | ----------- |
-| <a id="autocompletetypecommands"></a>`COMMANDS` | Commands autocomplete source. |
-| <a id="autocompletetypecontacts"></a>`CONTACTS` | Contacts autocomplete source (projects only). |
-| <a id="autocompletetypeissues"></a>`ISSUES` | Issues autocomplete source. |
-| <a id="autocompletetypelabels"></a>`LABELS` | Labels autocomplete source. |
-| <a id="autocompletetypemembers"></a>`MEMBERS` | Members autocomplete source. |
-| <a id="autocompletetypemerge_requests"></a>`MERGE_REQUESTS` | Merge requests autocomplete source. |
-| <a id="autocompletetypemilestones"></a>`MILESTONES` | Milestones autocomplete source. |
-| <a id="autocompletetypesnippets"></a>`SNIPPETS` | Snippets autocomplete source (projects only). |
-| <a id="autocompletetypewikis"></a>`WIKIS` | Wikis autocomplete source (projects only). |
 
 ### `AvailabilityEnum`
 
@@ -48345,6 +48410,13 @@ Type of search.
 | <a id="securitypolicyrelationtypeinherited"></a>`INHERITED` | Policies defined for the project/group and ancestor groups. |
 | <a id="securitypolicyrelationtypeinherited_only"></a>`INHERITED_ONLY` | Policies defined for the project/group's ancestor groups only. |
 
+### `SecurityPreferredLicenseSourceConfiguration`
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="securitypreferredlicensesourceconfigurationpmdb"></a>`PMDB` | Use internal instance license database as a source of license information for dependencies. |
+| <a id="securitypreferredlicensesourceconfigurationsbom"></a>`SBOM` | Use the SBOM as a source of license information for dependencies. |
+
 ### `SecurityReportTypeEnum`
 
 | Value | Description |
@@ -48421,6 +48493,7 @@ State of a Sentry error.
 | <a id="servicetypejenkins_service"></a>`JENKINS_SERVICE` | Jenkins integration. |
 | <a id="servicetypejira_cloud_app_service"></a>`JIRA_CLOUD_APP_SERVICE` | GitLab for Jira Cloud app integration. |
 | <a id="servicetypejira_service"></a>`JIRA_SERVICE` | Jira issues integration. |
+| <a id="servicetypelinear_service"></a>`LINEAR_SERVICE` | Linear integration. |
 | <a id="servicetypematrix_service"></a>`MATRIX_SERVICE` | Matrix notifications integration. |
 | <a id="servicetypemattermost_service"></a>`MATTERMOST_SERVICE` | Mattermost notifications integration. |
 | <a id="servicetypemattermost_slash_commands_service"></a>`MATTERMOST_SLASH_COMMANDS_SERVICE` | Mattermost slash commands integration. |
@@ -51330,15 +51403,14 @@ Implementations:
 
 ###### `MarkdownPaths.autocompleteSourcesPath`
 
-Path for autocomplete sources for a given namespace.
+Supported paths for autocomplete sources for a given namespace.
 
-Returns [`String`](#string).
+Returns [`JSON`](#json).
 
 ####### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="markdownpathsautocompletesourcespathautocompletetype"></a>`autocompleteType` | [`AutocompleteType!`](#autocompletetype) | Type of autocomplete source (e.g., members, labels, etc.). |
 | <a id="markdownpathsautocompletesourcespathiid"></a>`iid` | [`String`](#string) | IID of the work item. |
 | <a id="markdownpathsautocompletesourcespathworkitemtypeid"></a>`workItemTypeId` | [`String`](#string) | ID of the work item type. |
 
@@ -51419,6 +51491,7 @@ Implementations:
 | <a id="namespaceslinkpathsepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="namespaceslinkpathsgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="namespaceslinkpathsissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
+| <a id="namespaceslinkpathsissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="namespaceslinkpathslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="namespaceslinkpathslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
 | <a id="namespaceslinkpathsnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
@@ -52752,6 +52825,15 @@ Labels for the Node Pool of a GKE cluster.
 | <a id="groupprojectrequirementcompliancestatusinputprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Filter compliance requirement statuses by project. |
 | <a id="groupprojectrequirementcompliancestatusinputrequirementid"></a>`requirementId` | [`ComplianceManagementComplianceFrameworkComplianceRequirementID`](#compliancemanagementcomplianceframeworkcompliancerequirementid) | Filter compliance requirement statuses by compliance requirement. |
 
+### `HierarchyFilterInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="hierarchyfilterinputincludedescendantworkitems"></a>`includeDescendantWorkItems` | [`Boolean`](#boolean) | Whether to include work items of descendant parents when filtering by parent_ids. |
+| <a id="hierarchyfilterinputparentids"></a>`parentIds` | [`[WorkItemID!]!`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
+
 ### `ItemConsumerTargetInput`
 
 #### Arguments
@@ -52911,6 +52993,7 @@ A year and month input for querying product analytics usage data.
 | <a id="negatedworkitemfilterinputauthorusername"></a>`authorUsername` | [`[String!]`](#string) | Username of a user who didn't author the work item. |
 | <a id="negatedworkitemfilterinputhealthstatusfilter"></a>`healthStatusFilter` | [`[HealthStatus!]`](#healthstatus) | Health status not applied to the work items. Includes work items where health status is not set. |
 | <a id="negatedworkitemfilterinputiterationid"></a>`iterationId` | [`[ID!]`](#id) | List of iteration Global IDs not applied to the work items. |
+| <a id="negatedworkitemfilterinputiterationwildcardid"></a>`iterationWildcardId` | [`IterationWildcardId`](#iterationwildcardid) | Filter by negated iteration ID wildcard. |
 | <a id="negatedworkitemfilterinputlabelname"></a>`labelName` | [`[String!]`](#string) | Labels not applied to the work item. |
 | <a id="negatedworkitemfilterinputmilestonetitle"></a>`milestoneTitle` | [`[String!]`](#string) | Milestone not applied to the work item. |
 | <a id="negatedworkitemfilterinputmilestonewildcardid"></a>`milestoneWildcardId` | [`NegatedMilestoneWildcardId`](#negatedmilestonewildcardid) | Filter by negated milestone wildcard values. |
@@ -53351,8 +53434,10 @@ Attributes for value stream setting.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="workitemwidgetcustomfieldfilterinputtypecustomfieldid"></a>`customFieldId` | [`IssuablesCustomFieldID!`](#issuablescustomfieldid) | Global ID of the custom field. |
+| <a id="workitemwidgetcustomfieldfilterinputtypecustomfieldid"></a>`customFieldId` | [`IssuablesCustomFieldID`](#issuablescustomfieldid) | Global ID of the custom field. |
+| <a id="workitemwidgetcustomfieldfilterinputtypecustomfieldname"></a>`customFieldName` | [`String`](#string) | Name of the custom field. |
 | <a id="workitemwidgetcustomfieldfilterinputtypeselectedoptionids"></a>`selectedOptionIds` | [`[IssuablesCustomFieldSelectOptionID!]`](#issuablescustomfieldselectoptionid) | Global IDs of the selected options for custom fields with select type. |
+| <a id="workitemwidgetcustomfieldfilterinputtypeselectedoptionvalues"></a>`selectedOptionValues` | [`[String!]`](#string) | Values of the selected options for custom fields with select type. |
 
 ### `WorkItemWidgetCustomFieldValueInputType`
 

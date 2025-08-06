@@ -22,7 +22,12 @@ module EE
         :workload_identity_federation_project_number,
         :workload_identity_pool_id,
         :workload_identity_pool_project_number,
-        :workload_identity_pool_provider_id
+        :workload_identity_pool_provider_id,
+        :jira_check_enabled,
+        :jira_exists_check_enabled,
+        :jira_assignee_check_enabled,
+        :jira_status_check_enabled,
+        :jira_allowed_statuses_as_string
       ].freeze
 
       override :integration_params

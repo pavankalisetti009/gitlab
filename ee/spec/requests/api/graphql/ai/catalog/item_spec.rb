@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog do
+RSpec.describe 'getting an AI catalog item', :with_current_organization, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
@@ -166,11 +166,11 @@ RSpec.describe 'getting an AI catalog item', feature_category: :workflow_catalog
     )
   end
 
-  it 'returns an empty array when definition.tools is nil' do
-    latest_version.update!(definition: latest_version.definition.except('tools'))
+  context 'when item belongs to another organization' do
+    before do
+      catalog_item.update!(organization: create(:organization))
+    end
 
-    post_graphql(query, current_user: nil)
-
-    expect(graphql_dig_at(data, :latest_version, :tools, :nodes)).to be_empty
+    it_behaves_like 'an unsuccessful query'
   end
 end

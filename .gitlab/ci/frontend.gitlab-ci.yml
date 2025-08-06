@@ -7,9 +7,6 @@
   needs:
     - "graphql-schema-dump"
 
-.with-ci-node-image:
-  image: ${REGISTRY_HOST}/${REGISTRY_GROUP}/gitlab-build-images/ci/${BUILD_OS}-${OS_VERSION}-slim-ruby-${RUBY_VERSION}-node-${NODE_VERSION}:rubygems-${RUBYGEMS_VERSION}-git-${GIT_VERSION}-lfs-${LFS_VERSION}-yarn-${YARN_VERSION}-graphicsmagick-${GRAPHICSMAGICK_VERSION}
-
 .compile-assets-base:
   extends:
     - .default-retry
@@ -24,14 +21,14 @@
     BROWSERSLIST_IGNORE_OLD_DATA: "true"
     WEBPACK_COMPILE_LOG_PATH: "tmp/webpack-output.log"
   stage: prepare
-  needs: []
+  needs:
+    - job: cache:ruby-gems
+      optional: true
+    - job: cache:node-modules
+      optional: true
   script:
     - run_with_custom_exit_code scripts/compile_assets
     - run_with_custom_exit_code scripts/build_assets_image
-
-.update-cache-base:
-  after_script:
-    - yarn patch-package --reverse  # To avoid caching patched modules
 
 compile-production-assets:
   image: ${REGISTRY_HOST}/${REGISTRY_GROUP}/gitlab-build-images/ci/${BUILD_OS}-${OS_VERSION}-slim-ruby-${RUBY_VERSION}-node-${NODE_VERSION}:rubygems-${RUBYGEMS_VERSION}-git-${GIT_VERSION}-lfs-${LFS_VERSION}-yarn-${YARN_VERSION}-graphicsmagick-${GRAPHICSMAGICK_VERSION}-docker-${DOCKER_VERSION}
@@ -50,6 +47,7 @@ compile-production-assets:
     - !reference [.compile-assets-base, before_script]
     - !reference [.buildx-setup, before_script]
   after_script:
+    - !reference [.compile-assets-base, after_script]
     - source scripts/utils.sh
     - echo "GLCI_ASSETS_IMAGE_TAG=$(assets_image_tag)" > $GLCI_ASSETS_TAG_ENV_FILE_PATH
   artifacts:
@@ -88,18 +86,21 @@ build-vite-prod:
     - .production
     - .default-retry
     - .with-ci-node-image
+    - .yarn-cache
     - .frontend:rules:compile-production-assets
-  artifacts:
-    expire_in: 1h
-    paths:
-      - public/vite-dev/
   stage: prepare
-  needs: []
+  needs:
+    - job: cache:node-modules
+      optional: true
   script:
     - source scripts/utils.sh
     - yarn_install_script
     - yarn vite-prod
   allow_failure: true
+  artifacts:
+    expire_in: 1h
+    paths:
+      - public/vite-dev/
 
 gdk:compile-test-assets:
   extends:
@@ -109,7 +110,6 @@ gdk:compile-test-assets:
 update-assets-compile-production-cache:
   extends:
     - compile-production-assets
-    - .update-cache-base
     - .assets-compile-cache-push
     - .shared:rules:update-cache
   artifacts: {}  # This job's purpose is only to update the cache.
@@ -117,7 +117,6 @@ update-assets-compile-production-cache:
 update-assets-compile-test-cache:
   extends:
     - compile-test-assets
-    - .update-cache-base
     - .assets-compile-cache-push
     - .shared:rules:update-cache
   artifacts: {}  # This job's purpose is only to update the cache.
@@ -126,7 +125,6 @@ update-storybook-yarn-cache:
   extends:
     - .default-retry
     - .default-utils-before_script
-    - .update-cache-base
     - .storybook-yarn-cache-push
     - .shared:rules:update-cache
   stage: prepare
@@ -258,7 +256,9 @@ graphql-schema-dump:
     - .default-before_script
     - .frontend:rules:default-frontend-jobs
   stage: fixtures
-  needs: []
+  needs:
+    - job: cache:ruby-gems
+      optional: true
   script:
     - run_with_custom_exit_code bundle exec rake gitlab:graphql:schema:dump
   artifacts:

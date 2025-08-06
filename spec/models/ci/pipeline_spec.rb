@@ -46,6 +46,8 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
   it { is_expected.to have_many(:triggered_pipelines) }
   it { is_expected.to have_many(:pipeline_artifacts) }
 
+  it { is_expected.to have_many(:job_environments).class_name('Environments::Job').inverse_of(:pipeline) }
+
   it do
     is_expected.to have_many(:failed_builds).class_name('Ci::Build')
       .with_foreign_key(:commit_id).inverse_of(:pipeline)
@@ -751,6 +753,17 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
 
     it 'contains all unprotected pipelines' do
       is_expected.to contain_exactly(unprotected_pipeline, protected_unspecified_pipeline)
+    end
+  end
+
+  describe '.unlocked' do
+    subject { described_class.unlocked }
+
+    let_it_be(:unlocked_pipeline) { create(:ci_pipeline, locked: :unlocked) }
+    let_it_be(:artifacts_locked_pipeline) { create(:ci_pipeline, locked: :artifacts_locked) }
+
+    it 'contains all unlocked pipelines' do
+      is_expected.to contain_exactly(unlocked_pipeline)
     end
   end
 
@@ -2708,12 +2721,16 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
   describe '#has_exposed_artifacts?' do
     let(:pipeline) { create(:ci_pipeline, :success) }
     let(:options) { nil }
+    let!(:job) do
+      create(:ci_build, options: options, pipeline: pipeline).tap do |job|
+        create(:ci_job_artifact, :metadata, job: job)
+      end
+    end
 
     subject { pipeline.has_exposed_artifacts? }
 
     before do
-      create(:ci_build, pipeline: pipeline)
-      create(:ci_build, options: options, pipeline: pipeline)
+      create(:ci_build, pipeline: pipeline) # Job without artifacts
     end
 
     it { is_expected.to eq(false) }
@@ -2733,6 +2750,44 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
         let(:pipeline) { create(:ci_pipeline, :running) }
 
         it { is_expected.to eq(false) }
+      end
+
+      context 'when job_artifacts_metadata.exposed_as is not populated' do
+        before do
+          job.job_artifacts_metadata.update!(exposed_as: nil)
+        end
+
+        it 'reads from job options' do
+          is_expected.to eq(true)
+        end
+      end
+
+      context 'when job metadata record is deleted' do
+        before do
+          job.metadata.delete
+        end
+
+        it 'reads from job_artifacts_metadata' do
+          is_expected.to eq(true)
+        end
+
+        context 'when FF `ci_use_job_artifacts_table_for_exposed_artifacts` is disabled' do
+          before do
+            stub_feature_flags(ci_use_job_artifacts_table_for_exposed_artifacts: false)
+          end
+
+          it { is_expected.to eq(false) }
+        end
+      end
+
+      context 'when FF `ci_use_job_artifacts_table_for_exposed_artifacts` is disabled' do
+        before do
+          stub_feature_flags(ci_use_job_artifacts_table_for_exposed_artifacts: false)
+        end
+
+        it 'reads from job options' do
+          is_expected.to eq(true)
+        end
       end
     end
   end
@@ -3153,12 +3208,12 @@ RSpec.describe Ci::Pipeline, :mailer, factory_default: :keep, feature_category: 
       subject(:latest_successful_for_refs) { described_class.latest_successful_for_refs(refs) }
 
       context 'when refs are specified' do
-        let(:refs) { %w[first_ref second_ref third_ref] }
-
         before do
           create(:ci_empty_pipeline, status: :success, ref: 'first_ref', sha: 'sha')
           create(:ci_empty_pipeline, status: :success, ref: 'second_ref', sha: 'sha')
         end
+
+        let(:refs) { %w[first_ref second_ref third_ref] }
 
         let!(:latest_successful_pipeline_for_first_ref) do
           create(:ci_empty_pipeline, status: :success, ref: 'first_ref', sha: 'sha')

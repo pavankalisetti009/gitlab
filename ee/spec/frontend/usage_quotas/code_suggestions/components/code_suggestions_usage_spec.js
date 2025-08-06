@@ -200,7 +200,7 @@ describe('GitLab Duo Usage', () => {
 
   describe('with code suggestions data', () => {
     describe('when instance is SaaS', () => {
-      describe('when on the `Usage Quotas` page', () => {
+      describe('when on the `Usage quotas` page', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedDuoProAddOnDataHandler,

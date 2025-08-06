@@ -7,7 +7,7 @@ title: Development of GitLab Duo Agent Platform
 
 {{< history >}}
 
-- [Name changed](https://gitlab.com/gitlab-org/gitlab/-/issues/551382) from `Workflow` to `Agent Platform` in GitLab 18.2. 
+- [Name changed](https://gitlab.com/gitlab-org/gitlab/-/issues/551382) from `Workflow` to `Agent Platform` in GitLab 18.2.
 
 {{< /history >}}
 
@@ -60,7 +60,7 @@ Allow to define which Duo Workflow executor is selected. Accepts:
 
 - `shell` - Current default, runs the go binary directly on the user's machine
 - `docker` - Runs the go binary inside a Docker container (deprecated)
-- `node` - Runs a nodeJs/TypeScript executor directly inside the languge server. Expected to become the default.
+- `node` - Runs a nodeJs/TypeScript executor directly inside the language server. Expected to become the default.
 
 `"gitlab.duo.workflow.executor": "node",`
 

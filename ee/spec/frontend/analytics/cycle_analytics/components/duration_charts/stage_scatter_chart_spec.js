@@ -1,9 +1,7 @@
 import { GlChartLegend, GlDiscreteScatterChart } from '@gitlab/ui/dist/charts';
-import { GlAlert } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import StageScatterChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_scatter_chart.vue';
-import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
 import { TYPENAME_ISSUE, TYPENAME_MERGE_REQUEST } from '~/graphql_shared/constants';
 import { allowedStages as stages } from '../../mock_data';
@@ -69,79 +67,13 @@ describe('StageScatterChart', () => {
 
   const findScatterChart = () => wrapper.findComponent(GlDiscreteScatterChart);
   const findChartLegend = () => wrapper.findComponent(GlChartLegend);
-  const findLoader = () => wrapper.findComponent(ChartSkeletonLoader);
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findEmptyState = () => wrapper.findComponent(NoDataAvailableState);
 
   const emitChartCreated = () => findScatterChart().vm.$emit('created', mockChartInstance);
 
-  describe('when loading', () => {
+  describe('when there is plottable data', () => {
     beforeEach(() => {
-      createWrapper({ props: { isLoading: true } });
-    });
-
-    it('renders loader', () => {
-      expect(findLoader().exists()).toBe(true);
-    });
-
-    it('does not render chart title', () => {
-      expect(wrapper.findByText(chartTitle).exists()).toBe(false);
-    });
-
-    it('does not render chart', () => {
-      expect(findScatterChart().exists()).toBe(false);
-    });
-
-    it('does not render chart legend', () => {
-      expect(findChartLegend().exists()).toBe(false);
-    });
-
-    it('does not render empty state', () => {
-      expect(findEmptyState().exists()).toBe(false);
-    });
-
-    it('does not render error alert', () => {
-      expect(findAlert().exists()).toBe(false);
-    });
-  });
-
-  describe('when there is an error', () => {
-    beforeEach(() => {
-      createWrapper({ props: { errorMessage: 'Something went wrong' } });
-    });
-
-    it('renders an alert', () => {
-      expect(findAlert().props()).toMatchObject({
-        variant: 'danger',
-        dismissible: false,
-      });
-      expect(findAlert().text()).toBe('Something went wrong');
-    });
-
-    it('renders the stage title', () => {
-      expect(wrapper.findByText(chartTitle).exists()).toBe(true);
-    });
-
-    it('does not render chart', () => {
-      expect(findScatterChart().exists()).toBe(false);
-    });
-
-    it('does not render chart legend', () => {
-      expect(findChartLegend().exists()).toBe(false);
-    });
-
-    it('does not render empty state', () => {
-      expect(findEmptyState().exists()).toBe(false);
-    });
-
-    it('does not render loader', () => {
-      expect(findLoader().exists()).toBe(false);
-    });
-  });
-
-  describe.each([true, false])('when there is plottable data and isLoading=%s', (isLoading) => {
-    beforeEach(() => {
-      createWrapper({ props: { plottableData, isLoading } });
+      createWrapper({ props: { plottableData } });
     });
 
     it('renders the stage title', () => {
@@ -204,14 +136,6 @@ describe('StageScatterChart', () => {
     it('does not render empty state', () => {
       expect(findEmptyState().exists()).toBe(false);
     });
-
-    it('does not render loader', () => {
-      expect(findLoader().exists()).toBe(false);
-    });
-
-    it('does not render error alert', () => {
-      expect(findAlert().exists()).toBe(false);
-    });
   });
 
   describe('when there is no plottable data', () => {
@@ -229,14 +153,6 @@ describe('StageScatterChart', () => {
 
     it('does not render chart legend', () => {
       expect(findChartLegend().exists()).toBe(false);
-    });
-
-    it('does not render loader', () => {
-      expect(findLoader().exists()).toBe(false);
-    });
-
-    it('does not render error alert', () => {
-      expect(findAlert().exists()).toBe(false);
     });
   });
 });

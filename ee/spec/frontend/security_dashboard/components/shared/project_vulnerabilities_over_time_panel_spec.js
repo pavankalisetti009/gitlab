@@ -7,11 +7,16 @@ import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/component
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useFakeDate } from 'helpers/fake_date';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
 describe('ProjectVulnerabilitiesOverTimePanel', () => {
+  const todayInIsoFormat = '2020-07-06';
+  const yearAgoInIsoFormat = '2019-07-07';
+  useFakeDate(todayInIsoFormat);
+
   let wrapper;
 
   const mockProjectFullPath = 'project-1';
@@ -75,6 +80,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
+  const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
 
   beforeEach(() => {
     createComponent();
@@ -85,7 +91,8 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(findExtendedDashboardPanel().props('title')).toBe('Vulnerabilities over time');
     });
 
-    it('renders the vulnerabilities over time chart', () => {
+    it('renders the vulnerabilities over time chart', async () => {
+      await waitForPromises();
       expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
     });
   });
@@ -97,6 +104,8 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,
         reportType: mockFilters.reportType,
+        startDate: yearAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
 
@@ -110,18 +119,26 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,
         reportType: ['API_FUZZING', 'SAST'],
+        startDate: yearAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
 
-    it('does not include reportType when filters are empty', () => {
+    it.each`
+      condition                | filters
+      ${'empty filters'}       | ${{}}
+      ${'unsupported filters'} | ${{ unsupportedFilter: ['filterValue'] }}
+    `('does not add filters to the GraphQL query when given $condition', ({ filters }) => {
       const { vulnerabilitiesOverTimeHandler } = createComponent({
         props: {
-          filters: {},
+          filters,
         },
       });
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,
+        startDate: yearAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
   });
@@ -185,7 +202,8 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       });
       await waitForPromises();
 
-      expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual([]);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('No data available.');
     });
   });
 

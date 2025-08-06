@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Usage Quotas > Storage tab', :js, :saas, feature_category: :consumables_cost_management do
+RSpec.describe 'Groups > Usage quotas > Storage tab', :js, :saas, feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
   include SubscriptionPortalHelpers
 

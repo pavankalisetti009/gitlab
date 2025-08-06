@@ -5,11 +5,12 @@ components:
   - name: tooling-container
     attributes:
       gl/inject-editor: true
+      overrideCommand: true
     container:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
       args:
         - |
-          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_CONTAINER_ARGS, 10) %>
+          <%= indent_yaml_literal(CONTAINER_KEEPALIVE_COMMAND_ARGS, 10) %>
       command:
         - "/bin/sh"
         - "-c"
@@ -40,6 +41,8 @@ components:
       dedicatedPod: false
       mountSources: true
   - name: database-container
+    attributes:
+      overrideCommand: false
     container:
       image: mysql
       volumeMounts:
@@ -50,7 +53,21 @@ components:
           value: "my-secret-pw"
       dedicatedPod: false
       mountSources: true
+  - name: user-defined-entrypoint-cmd-component
+    attributes:
+      overrideCommand: false
+    container:
+      image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+      volumeMounts:
+        - name: gl-workspace-data
+          path: /projects
+      command: ["echo"]
+      args: ["-n", "user-defined entrypoint command"]
+      dedicatedPod: false
+      mountSources: true
   - name: gl-tools-injector
+    attributes:
+      overrideCommand: false
     container:
       image: <%= WORKSPACE_TOOLS_IMAGE %>
       volumeMounts:

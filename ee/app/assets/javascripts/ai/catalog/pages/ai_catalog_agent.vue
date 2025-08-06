@@ -41,7 +41,7 @@ export default {
     isLoading() {
       return this.$apollo.queries.aiCatalogAgent.loading;
     },
-    agentNotFound() {
+    isAgentNotFound() {
       return this.aiCatalogAgent && Object.keys(this.aiCatalogAgent).length === 0;
     },
   },
@@ -54,8 +54,8 @@ export default {
     <gl-loading-icon v-if="isLoading" size="lg" class="gl-my-5" />
 
     <gl-empty-state
-      v-else-if="agentNotFound"
-      :title="s__('AiCatalog|Agent not found.')"
+      v-else-if="isAgentNotFound"
+      :title="s__('AICatalog|Agent not found.')"
       :svg-path="$options.emptySearchSvg"
     />
 

@@ -1,10 +1,12 @@
 import { uniqueId, get } from 'lodash';
 import {
   ACCOUNTS,
+  CUSTOM_ROLES,
   EXCEPTIONS_FULL_OPTIONS_MAP,
   GROUPS,
   ROLES,
   TOKENS,
+  USERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 export const createSourceBranchPatternObject = ({ id = '', source = {}, target = {} } = {}) => ({
@@ -16,12 +18,6 @@ export const createSourceBranchPatternObject = ({ id = '', source = {}, target =
 export const createServiceAccountObject = ({ id = '' } = {}) => ({
   id: id || uniqueId('account_'),
 });
-/**
- * Extract username from account
- * @param item
- * @returns {*}
- */
-export const getUserName = (item) => get(item, 'account.username', '');
 
 /**
  * validate that account has all required properties
@@ -52,7 +48,9 @@ export const renderOptionsList = ({
 
   if (!securityPoliciesBypassOptionsGroupRoles) {
     delete allOptions[ROLES];
+    delete allOptions[CUSTOM_ROLES];
     delete allOptions[GROUPS];
+    delete allOptions[USERS];
   }
 
   return allOptions;
@@ -74,4 +72,18 @@ export const onlyValidKeys = (keys) => {
     }),
   );
   return keys.filter((key) => validKeys.includes(key));
+};
+
+export const countItemsLength = ({ source, key }) => {
+  const getLength = (item) => (Array.isArray(item) ? item.length : 0);
+
+  const baseCount = getLength(get(source, key, []));
+
+  // For roles, include custom roles in the count
+  if (key === ROLES) {
+    const customRolesCount = getLength(get(source, CUSTOM_ROLES, []));
+    return baseCount + customRolesCount;
+  }
+
+  return baseCount;
 };

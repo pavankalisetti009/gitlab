@@ -33,6 +33,11 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
       it 'does not update the flow' do
         expect { execute_service }.not_to change { flow.reload.attributes }
       end
+
+      it 'does not trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { execute_service }
+          .not_to trigger_internal_events('update_ai_catalog_item')
+      end
     end
 
     context 'when user lacks permissions' do
@@ -63,6 +68,12 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
 
         expect(result).to be_success
         expect(result[:flow]).to eq(flow)
+      end
+
+      it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+        expect { execute_service }
+         .to trigger_internal_events('update_ai_catalog_item')
+         .with(user: user, project: project, additional_properties: { label: 'flow' })
       end
 
       context 'when updated flow is invalid' do

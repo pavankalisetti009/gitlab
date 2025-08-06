@@ -547,6 +547,62 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           expect(created_project.project_setting.duo_features_enabled).to be true
         end
       end
+
+      context 'when project is created in a group with duo_features_enabled locked by ancestor' do
+        let(:extra_params) { { namespace_id: group.id } }
+
+        before_all do
+          group.namespace_settings.update!(duo_features_enabled: false, lock_duo_features_enabled: true)
+        end
+
+        it 'has the correct settings values through the cascading framework' do
+          # The project setting should inherit the locked value through cascading
+          expect(created_project.project_setting.duo_features_enabled).to be false
+          expect(created_project.project_setting.duo_features_enabled_locked_by_ancestor?).to be true
+        end
+
+        it 'does not raise validation errors during project creation' do
+          expect { response }.not_to raise_error
+          expect(created_project).to be_persisted
+        end
+
+        it 'creates compliance standards adherence records when licensed', :sidekiq_inline do
+          stub_licensed_features(group_level_compliance_dashboard: true)
+
+          expect(created_project.compliance_standards_adherence.count).to eq(4)
+        end
+
+        context 'when group has security orchestration policy configuration' do
+          let(:policy) { build(:approval_policy, branches: []) }
+          let_it_be(:group_configuration, reload: true) do
+            create(:security_orchestration_policy_configuration, project: nil, namespace: group)
+          end
+
+          before do
+            create(:security_policy, :approval_policy,
+              security_orchestration_policy_configuration: group_configuration)
+
+            allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
+              allow(configuration).to receive(:policy_last_updated_by).and_return(user)
+            end
+
+            allow_next_instance_of(Repository) do |repository|
+              allow(repository).to receive(:blob_data_at).and_return({ approval_policy: [policy] }.to_yaml)
+            end
+          end
+
+          it 'creates approval rules from group scan result policies', :sidekiq_inline do
+            expect(created_project.approval_rules.count).to eq(1)
+            expect(created_project.approval_rules.first.security_orchestration_policy_configuration_id).to eq(
+              group_configuration.id
+            )
+          end
+
+          it 'creates security policy project bot', :sidekiq_inline do
+            expect(created_project.security_policy_bot).to be_present
+          end
+        end
+      end
     end
 
     context 'with set_default_compliance_framework' do

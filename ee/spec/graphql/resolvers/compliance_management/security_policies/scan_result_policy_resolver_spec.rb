@@ -57,7 +57,8 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
               approval_settings: policy[:approval_settings],
               fallback_behavior: policy[:fallback_behavior],
               metadata: policy[:metadata],
-              policy_tuning: policy[:policy_tuning]
+              policy_tuning: policy[:policy_tuning],
+              bypass_settings: policy[:bypass_settings]
             }.compact.deep_stringify_keys),
             updated_at: policy_configuration.policy_last_updated_at,
             action_approvers: [{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }],

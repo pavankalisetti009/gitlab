@@ -347,12 +347,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
             get :search
           end
 
-          resources :deployments, only: [:index, :show] do
-            member do
-              get :metrics
-              get :additional_metrics
-            end
-          end
+          resources :deployments, only: [:index, :show]
         end
 
         resources :alert_management, only: [:index] do
@@ -415,7 +410,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           to: 'snippets/blobs#raw',
           format: false,
           as: :snippet_blob_raw,
-          constraints: { snippet_id: /\d+/ }
+          constraints: { snippet_id: /\d+/, ref: %r{[^\/]+} }
 
         draw :issues
         draw :merge_requests

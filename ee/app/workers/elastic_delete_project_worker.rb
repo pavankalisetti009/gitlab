@@ -3,16 +3,17 @@
 class ElasticDeleteProjectWorker
   include ApplicationWorker
   include Search::Worker
-
-  data_consistency :always
   prepend ::Geo::SkipSecondary
 
+  data_consistency :always
   sidekiq_options retry: 2
   urgency :throttled
   idempotent!
   pause_control :advanced_search
 
   def perform(project_id, es_id, options = {})
+    return unless Gitlab::CurrentSettings.elasticsearch_indexing?
+
     options = options.with_indifferent_access
     remove_project_document(project_id, es_id, options) if options.fetch(:delete_project, true)
     return if options.fetch(:project_only, false)

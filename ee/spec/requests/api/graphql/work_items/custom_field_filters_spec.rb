@@ -131,6 +131,73 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:items) { graphql_data.dig('project', 'workItems', 'nodes') }
 
     it_behaves_like 'returns filtered items'
+
+    context 'when filtering using custom field names and values' do
+      let(:params) do
+        {
+          custom_field: [
+            {
+              custom_field_name: select_field.name,
+              selected_option_values: [
+                select_option_2.value
+              ]
+            }
+          ]
+        }
+      end
+
+      it_behaves_like 'returns filtered items'
+
+      context 'when both name and id are given' do
+        let(:params) do
+          {
+            custom_field: [
+              {
+                custom_field_id: select_field.to_global_id.to_s,
+                custom_field_name: select_field.name,
+                selected_option_values: [
+                  select_option_2.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'returns an error' do
+          post_graphql(query, current_user: current_user)
+
+          expect_graphql_errors_to_include(
+            'One and only one of [customFieldId, customFieldName] arguments is required.'
+          )
+        end
+      end
+
+      context 'when both select option id and value are given' do
+        let(:params) do
+          {
+            custom_field: [
+              {
+                custom_field_name: select_field.name,
+                selected_option_ids: [
+                  select_option_2.to_global_id.to_s
+                ],
+                selected_option_values: [
+                  select_option_2.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'returns an error' do
+          post_graphql(query, current_user: current_user)
+
+          expect_graphql_errors_to_include(
+            'One and only one of [selectedOptionIds, selectedOptionValues] arguments is required.'
+          )
+        end
+      end
+    end
   end
 
   context 'when querying group.workItems' do

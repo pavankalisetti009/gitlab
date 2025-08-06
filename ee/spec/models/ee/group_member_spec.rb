@@ -155,14 +155,32 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
         group.add_maintainer(maintainer)
       end
 
-      subject(:approver_ids) do
-        described_class
-          .eligible_approvers_by_groups([group])
-          .pluck_user_ids
-      end
+      subject(:approver_ids) { described_class.eligible_approvers_ids_by_groups([group]).map(&:user_id) }
 
       it 'returns IDs of users with sufficient access level' do
         expect(approver_ids).to contain_exactly(developer.id, maintainer.id)
+      end
+
+      describe '.eligible_approvers_ids_by_group_ids_and_custom_roles' do
+        let_it_be(:group) { create(:group) }
+
+        let(:guest) { create(:user) }
+        let(:developer) { create(:user) }
+        let(:maintainer) { create(:user) }
+        let(:custom_roles) { [guest_role_admin_mr] }
+
+        let(:guest_role_admin_mr) { create(:member_role, :guest, :admin_merge_request, namespace: nil) }
+        let!(:guest_with_role) { create(:group_member, :guest, source: group, member_role: guest_role_admin_mr).user }
+
+        subject(:approver_ids) do
+          described_class
+            .eligible_approvers_ids_by_group_ids_and_custom_roles([group.id], custom_roles)
+            .map(&:user_id)
+        end
+
+        it 'returns members with the custom role' do
+          expect(approver_ids).to contain_exactly(guest_with_role.id)
+        end
       end
     end
   end

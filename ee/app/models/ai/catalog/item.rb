@@ -23,6 +23,7 @@ module Ai
 
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
+      scope :for_organization, ->(organization) { where(organization: organization) }
 
       before_destroy :prevent_deletion_if_consumers_exist
 
@@ -40,6 +41,15 @@ module Ai
 
       def soft_delete
         update(deleted_at: Time.zone.now)
+      end
+
+      def definition(version)
+        @definition = case item_type.to_sym
+                      when AGENT_TYPE
+                        AgentDefinition.new(self, version)
+                      when FLOW_TYPE
+                        FlowDefinition.new(self, version)
+                      end
       end
 
       private

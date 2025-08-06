@@ -12,6 +12,13 @@ components:
       env:
         - name: MYSQL_ROOT_PASSWORD
           value: "my-secret-pw"
+  - name: user-defined-entrypoint-cmd-component
+    attributes:
+      overrideCommand: false
+    container:
+      image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+      command: ["echo"]
+      args: ["-n", "user-defined entrypoint command"]
 commands:
   - id: user-defined-command
     exec:

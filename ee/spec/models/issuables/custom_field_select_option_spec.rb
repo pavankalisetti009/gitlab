@@ -52,6 +52,47 @@ RSpec.describe Issuables::CustomFieldSelectOption, feature_category: :team_plann
     end
   end
 
+  describe 'scopes' do
+    let_it_be(:group) { create(:group) }
+
+    let_it_be(:custom_field_1) { create(:custom_field, :multi_select, namespace: group) }
+    let_it_be(:custom_field_2) { create(:custom_field, :multi_select, namespace: group) }
+
+    let_it_be(:field_1_option_1) do
+      create(:custom_field_select_option, custom_field: custom_field_1, value: 'Option 1')
+    end
+
+    let_it_be(:field_1_option_2) do
+      create(:custom_field_select_option, custom_field: custom_field_1, value: 'Option 2')
+    end
+
+    let_it_be(:field_2_option_1) do
+      create(:custom_field_select_option, custom_field: custom_field_2, value: 'Option 1')
+    end
+
+    let_it_be(:field_2_option_2) do
+      create(:custom_field_select_option, custom_field: custom_field_2, value: 'Option 2')
+    end
+
+    let_it_be(:field_2_option_3) do
+      create(:custom_field_select_option, custom_field: custom_field_2, value: 'Option 3')
+    end
+
+    describe '.of_field' do
+      it 'returns select options of the given custom field' do
+        expect(described_class.of_field(custom_field_1)).to contain_exactly(field_1_option_1, field_1_option_2)
+      end
+    end
+
+    describe '.with_case_insensitive_values' do
+      it 'returns select options with matching values case-insensitively' do
+        expect(described_class.with_case_insensitive_values(['OPTION 1', 'option 2'])).to contain_exactly(
+          field_1_option_1, field_2_option_1, field_1_option_2, field_2_option_2
+        )
+      end
+    end
+  end
+
   describe '#copy_namespace_from_custom_field' do
     let(:custom_field) { build(:custom_field) }
 

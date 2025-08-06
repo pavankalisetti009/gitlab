@@ -243,6 +243,7 @@ class Project < ApplicationRecord
   has_one :jenkins_integration, class_name: 'Integrations::Jenkins'
   has_one :jira_integration, class_name: 'Integrations::Jira'
   has_one :jira_cloud_app_integration, class_name: 'Integrations::JiraCloudApp'
+  has_one :linear_integration, class_name: 'Integrations::Linear'
   has_one :mattermost_integration, class_name: 'Integrations::Mattermost'
   has_one :mattermost_slash_commands_integration, class_name: 'Integrations::MattermostSlashCommands'
   has_one :matrix_integration, class_name: 'Integrations::Matrix'
@@ -2727,6 +2728,7 @@ class Project < ApplicationRecord
     end
   end
 
+  # rubocop: disable Metrics/AbcSize -- TODO: Method size will be reduced in follow-up MR, see https://gitlab.com/gitlab-org/gitlab/-/merge_requests/199182#note_2655958320
   def predefined_project_variables
     strong_memoize(:predefined_project_variables) do
       Gitlab::Ci::Variables::Collection.new
@@ -2735,6 +2737,7 @@ class Project < ApplicationRecord
         .append(key: 'CI_PROJECT_NAME', value: path)
         .append(key: 'CI_PROJECT_TITLE', value: title)
         .append(key: 'CI_PROJECT_DESCRIPTION', value: description)
+        .append(key: 'CI_PROJECT_TOPICS', value: topic_list.first(20).join(',').downcase)
         .append(key: 'CI_PROJECT_PATH', value: full_path)
         .append(key: 'CI_PROJECT_PATH_SLUG', value: full_path_slug)
         .append(key: 'CI_PROJECT_NAMESPACE', value: namespace.full_path)
@@ -2750,6 +2753,7 @@ class Project < ApplicationRecord
         .append(key: 'CI_CONFIG_PATH', value: ci_config_path_or_default)
     end
   end
+  # rubocop: enable Metrics/AbcSize
 
   def predefined_ci_server_variables
     Gitlab::Ci::Variables::Collection.new
@@ -3262,6 +3266,8 @@ class Project < ApplicationRecord
     ids
   end
 
+  # TODO: remove this with the rollout of
+  # https://gitlab.com/gitlab-org/gitlab/-/issues/558119
   def package_already_taken?(package_name, package_version, package_type:)
     Packages::Package.with_name(package_name)
       .with_version(package_version)

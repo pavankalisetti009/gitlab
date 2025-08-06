@@ -1,4 +1,4 @@
-import { GlAlert, GlEmptyState, GlIntersectionObserver } from '@gitlab/ui';
+import { GlAlert, GlEmptyState, GlIntersectionObserver, GlButton } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -81,10 +81,7 @@ describe('WorkItemDetail component', () => {
   const successHandlerWithNoPermissions = jest
     .fn()
     .mockResolvedValue(workItemQueryResponseWithNoPermissions);
-  const {
-    id,
-    namespace: { webUrl },
-  } = workItemByIidQueryResponse.data.workspace.workItem;
+  const { id } = workItemByIidQueryResponse.data.workspace.workItem;
   const workItemUpdatedSubscriptionHandler = jest
     .fn()
     .mockResolvedValue({ data: { workItemUpdated: null } });
@@ -146,6 +143,7 @@ describe('WorkItemDetail component', () => {
   const findWorkItemDetailInfo = () => wrapper.findByTestId('info-alert');
   const findShowSidebarButton = () => wrapper.findByTestId('work-item-show-sidebar-button');
   const findRootNode = () => wrapper.findByTestId('work-item-detail');
+  const findRefetchAlert = () => wrapper.findByTestId('work-item-refetch-alert');
 
   const mockDragEvent = ({ types = ['Files'], files = [], items = [] }) => {
     return { dataTransfer: { types, files, items } };
@@ -1232,11 +1230,11 @@ describe('WorkItemDetail component', () => {
       expect(findStickyHeader().exists()).toBe(true);
     });
 
-    it('sticky header is not visible if is drawer view', async () => {
+    it('sticky header is visible in drawer view', async () => {
       createComponent({ isDrawer: true });
       await waitForPromises();
 
-      expect(findStickyHeader().exists()).toBe(false);
+      expect(findStickyHeader().exists()).toBe(true);
     });
   });
 
@@ -1435,20 +1433,6 @@ describe('WorkItemDetail component', () => {
         );
       });
     });
-
-    it.each`
-      isGroupWorkItem | uploadsPath
-      ${true}         | ${`${webUrl}/-/uploads`}
-      ${false}        | ${`${webUrl}/uploads`}
-    `(
-      'passes correct uploads path for markdown editor when isGroupWorkItem is $isGroupWorkItem',
-      async ({ isGroupWorkItem, uploadsPath }) => {
-        createComponent({ modalIsGroup: isGroupWorkItem });
-        await waitForPromises();
-
-        expect(findWorkItemDescription().props('uploadsPath')).toBe(uploadsPath);
-      },
-    );
   });
 
   it('sets `canPasteDesign` to true on work item notes focus event', async () => {
@@ -1504,5 +1488,58 @@ describe('WorkItemDetail component', () => {
 
       expect(successHandler).toHaveBeenCalledTimes(1);
     });
+  });
+
+  describe('when refetching work item fails', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+
+      successHandler.mockRejectedValueOnce(new Error('Refetch failed'));
+      // unfortunately, calling refetch this way here is the only way to prevent Jest spec from failing
+      // if we try refetching via user action, we cannot handle refetch Apollo error properly
+      await wrapper.vm.$apollo.queries.workItem.refetch().catch(() => {});
+      await waitForPromises();
+    });
+
+    it('renders refetch alert', () => {
+      expect(findRefetchAlert().exists()).toBe(true); // Just to ensure the test runs without errors
+    });
+
+    it('applies correct classes to refetch alert', () => {
+      expect(findRefetchAlert().classes()).toEqual([
+        'flash-container',
+        'flash-container-page',
+        'sticky',
+      ]);
+    });
+
+    it('hides refetch alert when it is dismissed', async () => {
+      findRefetchAlert().findComponent(GlAlert).vm.$emit('dismiss');
+      await nextTick();
+
+      expect(findRefetchAlert().exists()).toBe(false);
+    });
+
+    it('hides refetch alert on successful refetch', async () => {
+      successHandler.mockResolvedValueOnce(workItemByIidQueryResponse);
+      findRefetchAlert().findComponent(GlButton).vm.$emit('click');
+      await waitForPromises();
+
+      expect(findRefetchAlert().exists()).toBe(false);
+    });
+  });
+
+  it('applied correct classes to refetch error banner in the drawer', async () => {
+    createComponent({ isDrawer: true });
+    await waitForPromises();
+
+    successHandler.mockRejectedValueOnce(new Error('Refetch failed'));
+    // unfortunately, calling refetch this way here is the only way to prevent Jest spec from failing
+    // if we try refetching via user action, we cannot handle refetch Apollo error properly
+    await wrapper.vm.$apollo.queries.workItem.refetch().catch(() => {});
+    await waitForPromises();
+
+    expect(findRefetchAlert().classes()).toEqual(['gl-sticky', 'gl-top-0']);
   });
 });

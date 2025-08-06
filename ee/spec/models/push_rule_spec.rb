@@ -24,6 +24,28 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   end
 
   describe "Validations" do
+    subject { build(:push_rule) }
+
+    context 'uniqueness' do
+      it { is_expected.to validate_uniqueness_of(:project_id).allow_nil.on(:create) }
+
+      it 'prevents creating duplicate push rules for the same project' do
+        create(:push_rule, project: project)
+
+        duplicate_rule = build(:push_rule, project: project)
+
+        expect(duplicate_rule).not_to be_valid
+        expect(duplicate_rule.errors[:project_id]).to include('has already been taken')
+      end
+
+      it 'allows multiple push rules with nil project_id' do
+        create(:push_rule, project: nil)
+        duplicate_rule = build(:push_rule, project: nil)
+
+        expect(duplicate_rule).to be_valid
+      end
+    end
+
     it 'validates RE2 regex syntax' do
       push_rule = build(:push_rule, branch_name_regex: '(ee|ce).*\1')
 

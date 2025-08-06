@@ -1,9 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
-import { GlIcon, GlAlert } from '@gitlab/ui';
+import { GlIcon } from '@gitlab/ui';
 import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
-import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import {
   DURATION_TOTAL_TIME_DESCRIPTION,
   DURATION_OVERVIEW_CHART_NO_DATA_LEGEND_ITEM,
@@ -22,8 +21,6 @@ describe('OverviewChart', () => {
 
   const findChartDescription = () => wrapper.findComponent(GlIcon);
   const findOverviewChart = () => wrapper.findComponent(GlAreaChart);
-  const findLoader = () => wrapper.findComponent(ChartSkeletonLoader);
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findNoDataAvailableState = (_wrapper) => _wrapper.findComponent(NoDataAvailableState);
 
   const emitChartCreated = () => findOverviewChart().vm.$emit('created', mockEChartInstance);
@@ -43,12 +40,8 @@ describe('OverviewChart', () => {
 
     wrapper = shallowMount(OverviewChart, {
       propsData: {
-        isLoading: false,
         plottableData: mockOverviewChartPlottableData,
         ...props,
-      },
-      stubs: {
-        ChartSkeletonLoader: true,
       },
     });
   };
@@ -89,42 +82,14 @@ describe('OverviewChart', () => {
   });
 
   describe('with no chart data', () => {
-    describe('if there is error', () => {
-      const errorMessage = 'Error message!';
-
-      beforeEach(() => {
-        createComponent({
-          errorMessage,
-          plottableData: [],
-        });
-      });
-
-      it('renders the alert with the error message', () => {
-        expect(findAlert().exists()).toBe(true);
-        expect(findAlert().text()).toBe(errorMessage);
-      });
-    });
-
-    describe('if there is no error', () => {
-      beforeEach(() => {
-        createComponent({
-          plottableData: [],
-        });
-      });
-
-      it('renders the no data available message', () => {
-        expect(findNoDataAvailableState(wrapper).exists()).toBe(true);
-      });
-    });
-  });
-
-  describe('when isLoading=true', () => {
     beforeEach(() => {
-      createComponent({ isLoading: true });
+      createComponent({
+        plottableData: [],
+      });
     });
 
-    it('renders a loader', () => {
-      expect(findLoader().exists()).toBe(true);
+    it('renders the no data available message', () => {
+      expect(findNoDataAvailableState(wrapper).exists()).toBe(true);
     });
   });
 });

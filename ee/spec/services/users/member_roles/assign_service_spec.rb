@@ -97,13 +97,13 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
                   entity_id: user.id,
                   entity_type: 'User',
                   details: {
-                    event_name: 'admin_role_assigned_to_user',
+                    event_name: 'custom_admin_role_assigned_to_user',
                     author_name: current_user.name,
                     author_class: 'User',
                     target_id: admin_role_1.id,
                     target_type: admin_role_1.class.name,
                     target_details: admin_role_1.name,
-                    custom_message: 'Admin role assigned to user'
+                    custom_message: 'Custom admin role assigned to user'
                   }
                 }
               end
@@ -151,13 +151,13 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
                   entity_id: user.id,
                   entity_type: 'User',
                   details: {
-                    event_name: 'admin_role_assigned_to_user',
+                    event_name: 'custom_admin_role_assigned_to_user',
                     author_name: current_user.name,
                     author_class: 'User',
                     target_id: admin_role_2.id,
                     target_type: admin_role_2.class.name,
                     target_details: admin_role_2.name,
-                    custom_message: 'Admin role assigned to user'
+                    custom_message: 'Custom admin role assigned to user'
                   }
                 }
               end
@@ -202,13 +202,13 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
                   entity_id: user.id,
                   entity_type: 'User',
                   details: {
-                    event_name: 'admin_role_unassigned_from_user',
+                    event_name: 'custom_admin_role_unassigned_from_user',
                     author_name: current_user.name,
                     author_class: 'User',
                     target_id: admin_role_1.id,
                     target_type: admin_role_1.class.name,
                     target_details: admin_role_1.name,
-                    custom_message: 'Admin role unassigned from user'
+                    custom_message: 'Custom admin role unassigned from user'
                   }
                 }
               end

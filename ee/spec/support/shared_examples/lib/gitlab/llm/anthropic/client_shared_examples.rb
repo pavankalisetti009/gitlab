@@ -5,7 +5,6 @@ RSpec.shared_examples 'anthropic client' do
 
   let_it_be(:user) { create(:user) }
 
-  let(:api_key) { 'api-key' }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:enablement_type) { 'add_on' }
   let(:options) { {} }
@@ -15,17 +14,13 @@ RSpec.shared_examples 'anthropic client' do
       namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
   end
 
+  let(:aigw_headers) { { 'header' => 'value' } }
   let(:expected_request_headers) do
-    {
+    aigw_headers.merge({
       'Accept' => 'application/json',
-      'Content-Type' => 'application/json',
       'anthropic-version' => '2023-06-01',
-      'Authorization' => "Bearer #{api_key}",
-      "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
-      'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-      'X-Gitlab-Authentication-Type' => 'oidc',
       'X-Gitlab-Unit-Primitive' => unit_primitive
-    }
+    })
   end
 
   let(:default_body_params) do
@@ -58,15 +53,17 @@ RSpec.shared_examples 'anthropic client' do
 
   before do
     Ai::Setting.instance.update!(ai_gateway_url: ai_gateway_url)
-    available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, name: service_name,
-      access_token: api_key)
+    service = instance_double(CloudConnector::BaseAvailableServiceData, name: service_name)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
-      .and_return(available_service_data)
+      .and_return(service)
+    allow(Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: service)
+      .and_return(aigw_headers)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
 
     stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/complete")
       .with(
-        body: expected_request_body,
+        body: expected_request_body.to_json,
         headers: expected_request_headers
       )
       .to_return(
@@ -409,7 +406,7 @@ RSpec.shared_examples 'anthropic client' do
     before do
       stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/messages")
         .with(
-          body: expected_request_body,
+          body: expected_request_body.to_json,
           headers: expected_request_headers
         )
         .to_return(
@@ -576,7 +573,7 @@ RSpec.shared_examples 'anthropic client' do
     before do
       stub_request(:post, "#{ai_gateway_url}/v1/proxy/anthropic/v1/messages")
         .with(
-          body: expected_request_body,
+          body: expected_request_body.to_json,
           headers: expected_request_headers
         )
         .to_return(

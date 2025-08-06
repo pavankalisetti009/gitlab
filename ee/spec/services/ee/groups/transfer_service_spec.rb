@@ -405,6 +405,46 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
     end
   end
 
+  describe 'security policy synchronization' do
+    subject(:transfer) { transfer_service.execute(new_group) }
+
+    context 'with licensed feature' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
+      it 'synchronizes security policies' do
+        expect(::Security::Policies::GroupTransferWorker).to receive(:perform_async).with(group.id, user.id)
+
+        transfer
+      end
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(security_policies_group_transfer_sync: false)
+        end
+
+        it 'does not synchronize security policies' do
+          expect(::Security::Policies::GroupTransferWorker).not_to receive(:perform_async)
+
+          transfer
+        end
+      end
+    end
+
+    context 'without licensed feature' do
+      before do
+        stub_licensed_features(security_orchestration_policies: false)
+      end
+
+      it 'does not synchronize security policies' do
+        expect(::Security::Policies::GroupTransferWorker).not_to receive(:perform_async)
+
+        transfer
+      end
+    end
+  end
+
   context 'with epics' do
     context 'when epics feature is disabled' do
       it 'transfers a group successfully' do

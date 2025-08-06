@@ -12,10 +12,10 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
   username = 'joebloggs'
   project_id = 1337
 
-  let_it_be(:group) { create(:group, :with_organization) }
+  let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user, username: username) }
   let_it_be(:project) { create(:project, :repository, id: project_id, namespace: group, name: 'Cool fun project') }
-  let_it_be(:sub_group) { create(:group, name: 'CA-sub-group', parent: group, organization_id: group.organization_id) }
+  let_it_be(:sub_group) { create(:group, name: 'CA-sub-group', parent: group) }
   let_it_be(:sub_group_project) { create(:project, :repository, namespace: group, name: 'Cool sub group project') }
   let_it_be(:group_label1) { create(:group_label, title: group_label1_title, group: group) }
   let_it_be(:group_label2) { create(:group_label, title: group_label2_title, group: group) }
@@ -35,7 +35,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
   let(:empty_state_selector) { '[data-testid="vsa-empty-state"]' }
 
   3.times do |i|
-    let_it_be("issue_#{i}".to_sym) { create(:issue, title: "New Issue #{i}", project: sub_group_project, created_at: 2.days.ago) }
+    let_it_be(:"issue_#{i}") { create(:issue, title: "New Issue #{i}", project: sub_group_project, created_at: 2.days.ago) }
   end
 
   def select_stage(name)

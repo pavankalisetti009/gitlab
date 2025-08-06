@@ -39,6 +39,20 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
     it 'includes validity_checks_available' do
       expect(result).to have_key(:validity_checks_available)
     end
+
+    it 'includes license_configuration_source' do
+      expect(result[:license_configuration_source]).to eq('SBOM')
+    end
+
+    context 'when security setting is nil' do
+      before do
+        allow(project).to receive(:security_setting).and_return(nil)
+      end
+
+      it 'returns the default value' do
+        expect(result[:license_configuration_source]).to eq('SBOM')
+      end
+    end
   end
 
   describe '#to_html_data_attribute' do

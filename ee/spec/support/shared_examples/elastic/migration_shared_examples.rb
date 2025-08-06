@@ -209,6 +209,9 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
     describe 'migration process' do
       before do
         update_by_query(objects, { source: "ctx._source.schema_version=#{described_class::NEW_SCHEMA_VERSION.pred}" })
+
+        # reset data
+        migration.set_migration_state(documents_remaining: nil, scroll_id: nil, last_processed_id: nil)
       end
 
       context 'when an error is raised' do
@@ -234,71 +237,89 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
         end
       end
 
-      context 'when all documents needs to be updated' do
-        it 'updates all documents' do
-          # track calls are batched in groups of 100
-          expect(bookkeeping_service).to receive(:track!).once.and_call_original do |*tracked_refs|
-            expect(tracked_refs.count).to eq(objects.size)
+      shared_examples 'a working migration' do
+        context 'when all documents needs to be updated' do
+          it 'updates all documents' do
+            # track calls are batched in groups of 100
+            expect(bookkeeping_service).to receive(:track!).once.and_call_original do |*tracked_refs|
+              expect(tracked_refs.count).to eq(objects.size)
+            end
+
+            subject
+
+            ensure_elasticsearch_index!
+
+            assert_objects_have_new_schema_version(objects)
+            expect(migration.completed?).to be_truthy
+          end
+        end
+
+        context 'when some documents needs to be updated' do
+          let(:sample_object) { objects.last }
+
+          before do
+            # Set the new schema_version for all the objects except sample_object
+            schema_ver = described_class::NEW_SCHEMA_VERSION
+            update_by_query(objects.excluding(sample_object), { source: "ctx._source.schema_version=#{schema_ver}" })
           end
 
-          subject
+          it 'only updates documents whose schema_version is old', :aggregate_failures do
+            expect(bookkeeping_service).to receive(:track!)
+              .once.and_call_original do |*tracked_refs|
+              expect(tracked_refs.count).to eq(1)
+              ref = ::Search::Elastic::Reference.deserialize(tracked_refs.first)
+              expect(ref.identifier).to eq(sample_object.id)
+              expect(ref.routing).to eq(sample_object.es_parent)
+            end
+
+            subject
+
+            ensure_elasticsearch_index!
+
+            assert_objects_have_new_schema_version(objects)
+            expect(migration.completed?).to be_truthy
+          end
+        end
+
+        it 'processes in batches', :aggregate_failures do
+          allow(migration).to receive_messages(batch_size: 2, update_batch_size: 1)
+
+          # the migration is run two times, so expect at most 4 calls to track!
+          expected_track_calls = [objects.size, 4].min
+
+          expect(bookkeeping_service).to receive(:track!).exactly(expected_track_calls).times.and_call_original
+
+          # cannot use subject in spec because it is memoized
+          migration.migrate
+
+          ensure_elasticsearch_index!
+
+          migration.migrate
 
           ensure_elasticsearch_index!
 
           assert_objects_have_new_schema_version(objects)
-          expect(migration.completed?).to be_truthy
+
+          # if more than 4 objects exist, running 2 batches of 2 records won't finish the migration
+          should_be_completed = objects.size <= 4
+          expect(migration.completed?).to eq(should_be_completed)
         end
       end
 
-      context 'when some documents needs to be updated' do
-        let(:sample_object) { objects.last }
-
+      context 'when using scroll API' do
         before do
-          # Set the new schema_version for all the objects except sample_object
-          schema_ver = described_class::NEW_SCHEMA_VERSION
-          update_by_query(objects.excluding(sample_object), { source: "ctx._source.schema_version=#{schema_ver}" })
+          allow(migration).to receive(:use_scroll_api?).and_return(true)
         end
 
-        it 'only updates documents whose schema_version is old', :aggregate_failures do
-          expect(bookkeeping_service).to receive(:track!)
-            .once.and_call_original do |*tracked_refs|
-            expect(tracked_refs.count).to eq(1)
-            ref = ::Search::Elastic::Reference.deserialize(tracked_refs.first)
-            expect(ref.identifier).to eq(sample_object.id)
-            expect(ref.routing).to eq(sample_object.es_parent)
-          end
-
-          subject
-
-          ensure_elasticsearch_index!
-
-          assert_objects_have_new_schema_version(objects)
-          expect(migration.completed?).to be_truthy
-        end
+        it_behaves_like 'a working migration'
       end
 
-      it 'processes in batches', :aggregate_failures do
-        allow(migration).to receive_messages(batch_size: 2, update_batch_size: 1)
+      context 'when using search API' do
+        before do
+          allow(migration).to receive(:use_scroll_api?).and_return(false)
+        end
 
-        # the migration is run two times, so expect at most 4 calls to track!
-        expected_track_calls = [objects.size, 4].min
-
-        expect(bookkeeping_service).to receive(:track!).exactly(expected_track_calls).times.and_call_original
-
-        # cannot use subject in spec because it is memoized
-        migration.migrate
-
-        ensure_elasticsearch_index!
-
-        migration.migrate
-
-        ensure_elasticsearch_index!
-
-        assert_objects_have_new_schema_version(objects)
-
-        # if more than 4 objects exist, running 2 batches of 2 records won't finish the migration
-        should_be_completed = objects.size <= 4
-        expect(migration.completed?).to eq(should_be_completed)
+        it_behaves_like 'a working migration'
       end
     end
 
@@ -595,6 +616,7 @@ RSpec.shared_examples 'migration reindexes all data' do
           .once.and_call_original do |*tracked_refs|
           expect(tracked_refs.count).to eq(expected_count)
         end
+
         subject
 
         ensure_elasticsearch_index!
