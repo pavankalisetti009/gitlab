@@ -8,45 +8,41 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
   include UserHelpers
 
   describe 'visibility', :sidekiq_inline do
+    using RSpec::Parameterized::TableSyntax
     include_context 'ProjectPolicyTable context'
 
     let_it_be(:group) { create(:group) }
     let_it_be_with_reload(:project) { create(:project, :repository, namespace: group) }
 
-    let(:user_in_group) { create_user_from_membership(group, membership) }
     let(:user) { create_user_from_membership(project, membership) }
 
     let(:projects) { [project] }
     let(:search_level) { project }
 
-    where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-      permission_table_for_guest_feature_access_and_non_private_project_only
-    end
+    context 'for blobs' do
+      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_guest_feature_access_and_non_private_project_only
+      end
 
-    with_them do
-      context 'when using advanced search', :elastic_delete_by_query do
-        before do
-          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-        end
-
-        context 'for commits' do
-          it_behaves_like 'search respects visibility' do
-            let(:scope) { 'commits' }
-            let(:search) { 'initial' }
+      with_them do
+        context 'when using advanced search', :elastic_delete_by_query do
+          before do
+            stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+            project.repository.index_commits_and_blobs
           end
-        end
 
-        context 'for blobs' do
           it_behaves_like 'search respects visibility' do
             let(:scope) { 'blobs' }
             let(:search) { '.gitmodules' }
           end
         end
-      end
 
-      context 'when using zoekt', :zoekt_settings_enabled, :zoekt_cache_disabled do
-        context 'for blobs' do
-          it_behaves_like 'search respects visibility', group_access: false do
+        context 'when using zoekt', :zoekt_settings_enabled, :zoekt_cache_disabled do
+          before do
+            zoekt_ensure_namespace_indexed!(group)
+          end
+
+          it_behaves_like 'search respects visibility', group_access: false, group_access_shared_group: false do
             let(:scope) { 'blobs' }
             let(:search) { '.gitmodules' }
           end

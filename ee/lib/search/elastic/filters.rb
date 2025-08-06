@@ -12,6 +12,7 @@ module Search
       TRAVERSAL_IDS_FIELD = :traversal_ids
 
       class << self
+        include ::Gitlab::Utils::StrongMemoize
         include ::Elastic::Latest::QueryContext::Aware
         include Search::Elastic::Concerns::FilterUtils
         include Search::Elastic::Concerns::AuthorizationUtils
@@ -1336,7 +1337,7 @@ module Search
         end
 
         def add_group_membership_filters(membership_filters, user, options)
-          groups = ::Search::GroupsFinder.new(user: user).execute
+          groups = groups_for_user(user: user)
 
           return unless groups.exists?
 
@@ -1344,7 +1345,7 @@ module Search
           if features.empty?
             add_filter(membership_filters, :should) do
               traversal_id_field = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-              traversal_ids = groups.map(&:elastic_namespace_ancestry)
+              traversal_ids = get_traversal_ids_for_search_level(groups, options)
 
               ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field)
             end
@@ -1364,23 +1365,19 @@ module Search
         def process_features_for_groups(membership_filters:, user:, groups:, features:, options:)
           user_abilities = ::Authz::Group.new(user, scope: groups).permitted
 
-          required_feature_access_levels = build_required_feature_access_levels(features)
-          group_ids_by_access_level = required_feature_access_levels.index_with do |level|
-            groups.by_min_access_level(user, level).pluck_primary_key
-          end
-
           features.each do |feature|
             access_levels = get_feature_access_levels(feature)
 
-            allowed_group_ids = group_ids_by_access_level[access_levels[:project]]
+            allowed_group_ids = groups_for_user(user: user,
+              min_access_level: access_levels[:project]).pluck_primary_key
             allowed_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
 
-            private_allowed_group_ids = if access_levels[:project] != access_levels[:private_project]
-                                          group_ids_by_access_level[access_levels[:private_project]] +
-                                            allowed_ids_by_ability(feature:, user_abilities:)
-                                        else
-                                          []
-                                        end
+            private_allowed_group_ids = []
+            if access_levels[:project] != access_levels[:private_project]
+              private_allowed_group_ids.concat(groups_for_user(user: user,
+                min_access_level: access_levels[:private_project]).pluck_primary_key)
+              private_allowed_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+            end
 
             add_feature_access_filter_for_groups(
               membership_filters: membership_filters,

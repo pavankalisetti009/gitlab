@@ -34,7 +34,7 @@ RSpec.describe Search::ProjectService, '#visibility', feature_category: :global_
       end
 
       with_them do
-        it_behaves_like 'search respects visibility', group_access: false
+        it_behaves_like 'search respects visibility', group_access: false, group_access_shared_group: false
       end
 
       it 'adds correct routing field in the elasticsearch request' do

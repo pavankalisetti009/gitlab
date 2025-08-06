@@ -4,8 +4,10 @@
 # spec/support/shared_contexts/policies/project_policy_table_shared_context.rb
 #
 # The shared examples checks access when user has access to the project and group separately
-# `group_access` can be provided to not run the group check
-# `project_access` can be provided to not run the project check
+# `group_access` can be provided to not check access through group, direct access
+# `project_access` can be provided to not check access through project, direct access,
+# `group_access_shared_group` can be provided to not check access through group, shared group
+# `project_access_shared_group` can be provided to not check access through project, shared group
 # `project_feature_setup` can be provided to not run the project feature access setup
 #
 # requires the following to be defined in test context
@@ -19,8 +21,8 @@
 #  - `search` - the search term
 #  - `scope` - the scope of the search results
 #  - `expected_count` - the expected search result count
-RSpec.shared_examples 'search respects visibility' do |group_access: true, project_access: true,
-  project_feature_setup: true|
+RSpec.shared_examples 'search respects visibility' do |group_access: true,
+  project_access: true, group_access_shared_group: true, project_access_shared_group: true, project_feature_setup: true|
   before do
     set_project_visibility_and_feature_access_level if project_feature_setup && project_access
     set_group_visibility_level if group_access
@@ -47,6 +49,7 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true, proje
   it 'respects visibility with access at group level', :sidekiq_inline do
     skip unless group_access
 
+    user_in_group = create_user_from_membership(group, membership)
     enable_admin_mode!(user_in_group) if admin_mode
 
     expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
@@ -54,6 +57,59 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true, proje
         described_class.new(user, search: search, scope: scope).execute
       else
         described_class.new(user, search_level, search: search, scope: scope).execute
+      end
+    end
+  end
+
+  it 'respects visibility with access at project level through a shared group', :sidekiq_inline do
+    skip unless project_access_shared_group
+
+    shared_with_group = create(:group)
+    user_in_shared_group = create_user_from_membership(shared_with_group, membership)
+
+    if Gitlab::Access.sym_options_with_owner.key?(membership)
+      create(:project_group_link,
+        group_access: Gitlab::Access.sym_options_with_owner[membership],
+        project: project,
+        group: shared_with_group
+      )
+    end
+
+    enable_admin_mode!(user_in_shared_group) if admin_mode
+
+    expect_search_results(user_in_shared_group, scope, expected_count: expected_count) do |u|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(u, search: search, scope: scope).execute
+      else
+        described_class.new(u, search_level, search: search, scope: scope).execute
+      end
+    end
+  end
+
+  it 'respects visibility with access at group level through a shared group', :sidekiq_inline do
+    skip unless group_access_shared_group
+
+    shared_with_group = create(:group)
+    user_in_shared_group = create_user_from_membership(shared_with_group, membership)
+
+    if Gitlab::Access.sym_options_with_owner.key?(membership)
+      create(:group_group_link,
+        group_access: Gitlab::Access.sym_options_with_owner[membership],
+        shared_group: group,
+        shared_with_group: shared_with_group
+      )
+    end
+
+    enable_admin_mode!(user_in_shared_group) if admin_mode
+
+    # ensure project authorizations are updated
+    group.refresh_members_authorized_projects
+
+    expect_search_results(user_in_shared_group, scope, expected_count: expected_count) do |u|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(u, search: search, scope: scope).execute
+      else
+        described_class.new(u, search_level, search: search, scope: scope).execute
       end
     end
   end
