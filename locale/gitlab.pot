@@ -14510,12 +14510,6 @@ msgstr ""
 msgid "ClusterIntegration|Instance cluster"
 msgstr ""
 
-msgid "ClusterIntegration|Integration disabled"
-msgstr ""
-
-msgid "ClusterIntegration|Integration enabled"
-msgstr ""
-
 msgid "ClusterIntegration|Invalid configuration project"
 msgstr ""
 
