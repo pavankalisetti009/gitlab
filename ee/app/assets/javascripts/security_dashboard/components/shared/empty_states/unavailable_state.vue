@@ -30,5 +30,6 @@ export default {
     :description="$options.i18n.description"
     :primary-button-link="$options.DOC_PATH_SECURITY_CONFIGURATION"
     :primary-button-text="$options.i18n.primaryButtonText"
+    data-testid="security-dashboard-unavailable-state"
   />
 </template>

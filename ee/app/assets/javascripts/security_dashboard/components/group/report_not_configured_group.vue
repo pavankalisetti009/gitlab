@@ -27,5 +27,6 @@ export default {
     :description="$options.i18n.description"
     :secondary-button-text="$options.i18n.secondaryButtonText"
     :secondary-button-link="$options.DOC_PATH_SECURITY_CONFIGURATION"
+    data-testid="report-not-configured-group"
   />
 </template>

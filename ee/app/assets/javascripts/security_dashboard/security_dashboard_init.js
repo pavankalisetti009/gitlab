@@ -41,11 +41,13 @@ export default async (el, dashboardType) => {
     securityDashboardEmptySvgPath,
     instanceDashboardSettingsPath,
     vulnerabilitiesPdfExportEndpoint,
+    newVulnerabilityPath,
   } = el.dataset;
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
   const hasVulnerabilities = parseBoolean(el.dataset.hasVulnerabilities);
   const hideThirdPartyOffers = parseBoolean(el.dataset.hideThirdPartyOffers);
+  const canAdminVulnerability = parseBoolean(el.dataset.canAdminVulnerability);
   const provide = {
     emptyStateSvgPath,
     groupFullPath,
@@ -54,6 +56,8 @@ export default async (el, dashboardType) => {
     securityDashboardEmptySvgPath,
     instanceDashboardSettingsPath,
     vulnerabilitiesPdfExportEndpoint,
+    canAdminVulnerability,
+    newVulnerabilityPath,
     dashboardType,
   };
 
