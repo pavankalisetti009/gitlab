@@ -81,7 +81,7 @@ export default {
   },
   data() {
     return {
-      workItemParticipants: [],
+      workItemParticipants: {},
       allowedParentTypes: [],
     };
   },
@@ -98,12 +98,14 @@ export default {
         return !this.workItem.iid;
       },
       update({ workspace }) {
-        if (!workspace?.workItem) return [];
+        if (!workspace?.workItem) return {};
 
-        return (
-          this.isWidgetPresent(WIDGET_TYPE_PARTICIPANTS, workspace.workItem)?.participants?.nodes ||
-          []
+        const workItemParticipantData = this.isWidgetPresent(
+          WIDGET_TYPE_PARTICIPANTS,
+          workspace.workItem,
         );
+
+        return workItemParticipantData?.participants || {};
       },
       error(e) {
         Sentry.captureException(e);
@@ -134,6 +136,12 @@ export default {
     },
     canUpdateMetadata() {
       return this.workItem?.userPermissions?.setWorkItemMetadata;
+    },
+    workItemParticipantNodes() {
+      return this.workItemParticipants.nodes || [];
+    },
+    workItemParticipantCount() {
+      return this.workItemParticipants.count || 0;
     },
     workItemAssignees() {
       return this.isWidgetPresent(WIDGET_TYPE_ASSIGNEES);
@@ -229,7 +237,7 @@ export default {
       :is-group="isGroup"
       :work-item-id="workItem.id"
       :assignees="workItemAssignees.assignees.nodes"
-      :participants="workItemParticipants"
+      :participants="workItemParticipantNodes"
       :allows-multiple-assignees="workItemAssignees.allowsMultipleAssignees"
       :work-item-type="workItemType"
       :can-invite-members="workItemAssignees.canInviteMembers"
@@ -372,9 +380,11 @@ export default {
       :work-item-type="workItemType"
     />
     <participants
-      v-if="workItemParticipants.length"
+      v-if="workItemParticipantNodes.length"
       class="work-item-attributes-item"
-      :participants="workItemParticipants"
+      data-testid="work-item-participants"
+      :participants="workItemParticipantNodes"
+      :participant-count="workItemParticipantCount"
     />
   </div>
 </template>

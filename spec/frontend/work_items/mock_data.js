@@ -750,6 +750,7 @@ export const mockParticipantWidget = {
   __typename: 'WorkItemWidgetParticipants',
   type: 'PARTICIPANTS',
   participants: {
+    count: 1,
     nodes: [
       {
         __typename: 'UserCore',
@@ -1937,6 +1938,7 @@ export const workItemResponseFactory = ({
               __typename: 'WorkItemWidgetParticipants',
               type: 'PARTICIPANTS',
               participants: {
+                count: 1,
                 nodes: [
                   {
                     __typename: 'UserCore',
