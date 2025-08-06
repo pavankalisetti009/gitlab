@@ -34,11 +34,10 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
   it 'avoids N+1 queries', :request_store do
     allow(pipeline).to receive(:available_licensed_report_type?).and_return(true)
     allow(merge_request).to receive_messages(base_pipeline: pipeline, head_pipeline: pipeline)
-    create_all_artifacts
+
     serializer = MergeRequestSerializer.new(current_user: user, project: project)
 
-    serializer.represent(merge_request)
-
+    create_all_artifacts
     RequestStore.clear!
 
     control = ActiveRecord::QueryRecorder.new { serializer.represent(merge_request) }

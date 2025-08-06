@@ -11,10 +11,10 @@ RSpec.describe 'Project Quality Summary (GraphQL fixtures)' do
 
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:current_user) { create(:user) }
-    let_it_be(:pipeline) { create(:ci_pipeline, :with_test_reports, :with_codequality_reports, :with_report_results, project: project) }
+    let_it_be_with_reload(:pipeline) { create(:ci_pipeline, :with_test_reports, :with_codequality_reports, :with_report_results, project: project) }
 
     let!(:coverage) { create(:ci_build, :success, pipeline: pipeline, coverage: 78) }
-    let!(:build) { create(:ci_build, pipeline: pipeline) }
+    let!(:build) { create(:ci_build, :test_reports, pipeline: pipeline) }
     let!(:report_result) { create(:ci_build_report_result, :with_junit_success, build: build) }
 
     project_quality_summary_query_path = 'project_quality_summary/graphql/queries/get_project_quality.query.graphql'
