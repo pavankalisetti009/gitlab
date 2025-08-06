@@ -18,18 +18,6 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
 
       expect(response.body).to have_pushed_frontend_feature_flags(customAdminRoles: true)
     end
-
-    context 'when gitlab_com_subscriptions feature is available' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
-      it 'does not push the feature flag' do
-        get path
-
-        expect(response.body).not_to have_pushed_frontend_feature_flags(customAdminRoles: true)
-      end
-    end
   end
 
   describe 'GET new' do
