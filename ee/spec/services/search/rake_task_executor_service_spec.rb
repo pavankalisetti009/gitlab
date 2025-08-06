@@ -256,75 +256,94 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   end
 
   describe '#estimate_shard_sizes' do
-    let(:counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000, 5_000, 5_000] }
-    let(:counted_items) { described_class::CLASSES_TO_COUNT }
+    let(:db_counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000, 5_000, 5_000] }
 
     before do
       allow(logger).to receive(:info)
       allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
-      allow(::Gitlab::Database::Count).to receive(:approximate_counts).with(counted_items).and_return(
-        Hash[counted_items.zip(counts)]
-      )
+      allow(::Gitlab::Database::Count).to receive(:approximate_counts).with(described_class::DB_CLASSES)
+        .and_return(Hash[described_class::DB_CLASSES.zip(db_counts)])
+
+      allow(Namespace::RootStorageStatistics).to receive(:sum).with(:repository_size).and_return(1000.gigabytes)
+      allow(Namespace::RootStorageStatistics).to receive(:sum).with(:wiki_size).and_return(10.gigabytes)
     end
 
     it 'outputs shard size estimates' do
       expected_work_items = <<~ESTIMATE
         - gitlab-test-work_items:
-          document count: 5,000
           recommended shards: 5
           recommended replicas: 1
+          document count: 5,000
       ESTIMATE
 
       expected_issues = <<~ESTIMATE
         - gitlab-test-issues:
-          document count: 400
           recommended shards: 5
           recommended replicas: 1
+          document count: 400
       ESTIMATE
 
       expected_notes = <<~ESTIMATE.chomp
         - gitlab-test-notes:
-          document count: 1,500
           recommended shards: 5
           recommended replicas: 1
+          document count: 1,500
       ESTIMATE
 
       expected_merge_requests = <<~ESTIMATE.chomp
         - gitlab-test-merge_requests:
-          document count: 10,000,000
-          recommended shards: 7
+          recommended shards: 5
           recommended replicas: 1
+          document count: 10,000,000
       ESTIMATE
 
       expected_epics = <<~ESTIMATE.chomp
         - gitlab-test-epics:
-          document count: 50,000,000
-          recommended shards: 15
+          recommended shards: 10
           recommended replicas: 1
+          document count: 50,000,000
       ESTIMATE
 
       expected_users = <<~ESTIMATE.chomp
         - gitlab-test-users:
-          document count: 100,000,000
-          recommended shards: 25
+          recommended shards: 20
           recommended replicas: 1
+          document count: 100,000,000
       ESTIMATE
 
       expected_projects = <<~ESTIMATE.chomp
         - gitlab-test-projects:
-          document count: 4,000
           recommended shards: 5
           recommended replicas: 1
+          document count: 4,000
       ESTIMATE
 
       expected_vulnerabilities = <<~ESTIMATE.chomp
         - gitlab-test-vulnerabilities:
+          recommended shards: 5
+          recommended replicas: 1
           document count: 5,000
+      ESTIMATE
+
+      expected_main_index = <<~ESTIMATE.chomp
+        - gitlab-test:
+          recommended shards: 16
+          recommended replicas: 1
+      ESTIMATE
+
+      expected_commits = <<~ESTIMATE.chomp
+        - gitlab-test-commits:
+          recommended shards: 10
+          recommended replicas: 1
+      ESTIMATE
+
+      expected_wikis = <<~ESTIMATE.chomp
+        - gitlab-test-wikis:
           recommended shards: 5
           recommended replicas: 1
       ESTIMATE
 
-      expect(logger).to receive(:info).with(%r{#{expected_issues}})
+      expect(logger).to receive(:info).with(/#{expected_issues}/)
       expect(logger).to receive(:info).with(/#{expected_notes}/)
       expect(logger).to receive(:info).with(/#{expected_merge_requests}/)
       expect(logger).to receive(:info).with(/#{expected_epics}/)
@@ -332,6 +351,9 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       expect(logger).to receive(:info).with(/#{expected_projects}/)
       expect(logger).to receive(:info).with(/#{expected_work_items}/)
       expect(logger).to receive(:info).with(/#{expected_vulnerabilities}/)
+      expect(logger).to receive(:info).with(/#{expected_main_index}/)
+      expect(logger).to receive(:info).with(/#{expected_commits}/)
+      expect(logger).to receive(:info).with(/#{expected_wikis}/)
 
       service.execute(:estimate_shard_sizes)
     end

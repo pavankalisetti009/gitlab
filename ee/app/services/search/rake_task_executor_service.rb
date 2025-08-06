@@ -33,7 +33,27 @@ module Search
       resume_indexing
     ].freeze
 
-    CLASSES_TO_COUNT = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - [Repository, Commit, ::Wiki].freeze
+    REPOSITORY_CLASSES = [Repository, Commit, ::Wiki].freeze
+    DB_CLASSES = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - REPOSITORY_CLASSES
+
+    REPOSITORY_CLASS_TO_SIZE_CALCULATION_MAP = {
+      Repository: :repository_size,
+      Commit: :repository_size,
+      Wiki: :wiki_size
+    }.freeze
+
+    REPOSITORY_SIZE_MULTIPLIER = {
+      Repository: 0.5,
+      Commit: 0.05,
+      Wiki: 0.5
+    }.freeze
+
+    REPOSITORY_SHARD_DIVISOR = {
+      Repository: 30.gigabytes,
+      Commit: 5.gigabytes,
+      Wiki: 5.gigabytes
+    }.freeze
+
     SHARDS_MIN = 5
     SHARDS_DIVISOR = 5_000_000
     REPOSITORY_MULTIPLIER = 0.5
@@ -179,36 +199,45 @@ module Search
     def estimate_shard_sizes
       estimates = {}
 
-      klasses = CLASSES_TO_COUNT
-
-      counts = ::Gitlab::Database::Count.approximate_counts(klasses)
-
-      klasses.each do |klass|
-        shards = (counts[klass] / SHARDS_DIVISOR) + SHARDS_MIN
-        formatted_doc_count = number_with_delimiter(counts[klass], delimiter: ',')
+      db_counts = ::Gitlab::Database::Count.approximate_counts(DB_CLASSES)
+      DB_CLASSES.each do |klass|
+        shards = [(db_counts[klass] / SHARDS_DIVISOR).to_i, SHARDS_MIN].max
+        formatted_doc_count = number_with_delimiter(db_counts[klass], delimiter: ',')
         estimates[helper.klass_to_alias_name(klass: klass)] = { document_count: formatted_doc_count, shards: shards }
+      end
+
+      REPOSITORY_CLASSES.each do |klass|
+        key = klass.name.to_sym
+        total_repo_size = Namespace::RootStorageStatistics.sum(REPOSITORY_CLASS_TO_SIZE_CALCULATION_MAP[key]).to_i
+        calculated_shards = (total_repo_size * REPOSITORY_SIZE_MULTIPLIER[key] / REPOSITORY_SHARD_DIVISOR[key]).to_i
+        shards = [calculated_shards, SHARDS_MIN].max
+        estimates[helper.klass_to_alias_name(klass: klass)] = { shards: shards }
       end
 
       sizing_url = Rails.application.routes.url_helpers
         .help_page_url('integration/advanced_search/elasticsearch.md', anchor: 'number-of-elasticsearch-shards')
-      logger.info('Using approximate counts to estimate shard counts for data indexed from database. ' \
-        "This does not include repository data. For single-node cluster recommendations, see #{sizing_url}.\n" \
-        'The approximate document counts, recommended shard size, and replica size for each index are:')
+      limit_indexing_url = Rails.application.routes.url_helpers
+        .help_page_url('integration/advanced_search/elasticsearch.md',
+          anchor: 'limit-the-amount-of-namespace-and-project-data-to-index')
+
+      logger.info('Using database and storage statistics to estimate shard counts and approximate document counts. ' \
+        'Approximate document counts are not available for repository data. ' \
+        "This estimate does not take into account advanced search indexing restrictions, see #{limit_indexing_url}." \
+        "For single-node cluster recommendations, see #{sizing_url}.\n" \
+        "\nThe approximate document counts, recommended shard size, and replica size for each index are:\n")
 
       estimates.each do |index_name, estimate|
-        estimate = <<~ESTIMATE
+        estimate_text = <<~ESTIMATE
           - #{index_name}:
-            document count: #{estimate[:document_count]}
             recommended shards: #{estimate[:shards]}
             recommended replicas: 1
+            #{estimate[:document_count] ? "document count: #{estimate[:document_count]}" : ''}
         ESTIMATE
 
-        logger.info(estimate)
-      end
+        estimate_text = estimate_text.lines.reject(&:blank?).join
 
-      logger.info('Please note that it is possible to index only selected namespaces/projects by using ' \
-        'Advanced search indexing restrictions. This estimate does not take into account indexing ' \
-        'restrictions.')
+        logger.info(estimate_text)
+      end
     end
 
     def estimate_cluster_size
