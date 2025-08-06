@@ -4,11 +4,17 @@ import { s__ } from '~/locale';
 import NestedRouteApp from '../nested_route_app.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
+import FlowTriggersIndex from '../pages/flow_triggers/flow_triggers_index.vue';
+import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
+import FlowTriggersShow from '../pages/flow_triggers/flow_triggers_show.vue';
 import {
   AGENTS_PLATFORM_INDEX_ROUTE,
   AGENTS_PLATFORM_NEW_ROUTE,
   AGENTS_PLATFORM_SHOW_ROUTE,
   WORKFLOW_END_PAGE_LINK,
+  FLOW_TRIGGERS_INDEX_ROUTE,
+  FLOW_TRIGGERS_NEW_ROUTE,
+  FLOW_TRIGGERS_SHOW_ROUTE,
 } from './constants';
 import { getNamespaceIndexComponent } from './utils';
 
@@ -53,6 +59,33 @@ export const createRouter = (base, namespace) => {
             name: AGENTS_PLATFORM_SHOW_ROUTE,
             path: ':id(\\d+)',
             component: AgentsPlatformShow,
+          },
+        ],
+      },
+      {
+        component: NestedRouteApp,
+        path: '/flow-triggers',
+        meta: {
+          text: s__('DuoAgentsPlatform|Flow triggers'),
+        },
+        children: [
+          {
+            name: FLOW_TRIGGERS_INDEX_ROUTE,
+            path: '',
+            component: FlowTriggersIndex,
+          },
+          {
+            name: FLOW_TRIGGERS_NEW_ROUTE,
+            path: 'new',
+            component: FlowTriggersNew,
+            meta: {
+              text: s__('DuoAgentsPlatform|New'),
+            },
+          },
+          {
+            name: FLOW_TRIGGERS_SHOW_ROUTE,
+            path: ':id(\\d+)',
+            component: FlowTriggersShow,
           },
         ],
       },

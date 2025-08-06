@@ -31,6 +31,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           get '/(*vueroute)' => 'duo_agents_platform#show', as: :automate, format: false
           # Additional named routes for helpers
           get 'agent-sessions', to: 'duo_agents_platform#show', as: :automate_agent_sessions, format: false
+          get 'flow-triggers', to: 'duo_agents_platform#show', as: :automate_flow_triggers, format: false
         end
 
         namespace :quality do

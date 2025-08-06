@@ -5342,4 +5342,97 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
   end
+
+  describe 'AI flow triggers permissions' do
+    let(:project) { private_project }
+
+    context 'with duo enterprise subscription' do
+      let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+      let!(:subscription_assignment) do
+        create(:gitlab_subscription_user_add_on_assignment, user: current_user, add_on_purchase: subscription_purchase)
+      end
+
+      describe 'manage_ai_flow_triggers permission' do
+        where(:role, :allowed) do
+          :guest      | false
+          :planner    | false
+          :reporter   | false
+          :developer  | false
+          :maintainer | true
+          :owner      | true
+          :admin      | true
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            enable_admin_mode!(current_user) if role == :admin
+          end
+
+          it { is_expected.to(allowed ? be_allowed(:manage_ai_flow_triggers) : be_disallowed(:manage_ai_flow_triggers)) }
+        end
+      end
+
+      describe 'trigger_ai_flow permission' do
+        where(:role, :allowed) do
+          :guest      | false
+          :planner    | false
+          :reporter   | false
+          :developer  | true
+          :maintainer | true
+          :owner      | true
+          :admin      | true
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            enable_admin_mode!(current_user) if role == :admin
+          end
+
+          it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+        end
+      end
+    end
+
+    context 'without duo enterprise subscription' do
+      where(:role) do
+        [:guest, :planner, :reporter, :developer, :maintainer, :owner, :admin]
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          enable_admin_mode!(current_user) if role == :admin
+        end
+
+        it { is_expected.to be_disallowed(:manage_ai_flow_triggers) }
+        it { is_expected.to be_disallowed(:trigger_ai_flow) }
+      end
+    end
+
+    context 'when ai_flow_triggers feature flag is disabled' do
+      context 'with duo enterprise subscription' do
+        where(:role) do
+          [:guest, :planner, :reporter, :developer, :maintainer, :owner, :admin]
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            stub_feature_flags(ai_flow_triggers: false)
+            enable_admin_mode!(current_user) if role == :admin
+          end
+
+          it { is_expected.to be_disallowed(:manage_ai_flow_triggers) }
+          it { is_expected.to be_disallowed(:trigger_ai_flow) }
+        end
+      end
+    end
+  end
 end
