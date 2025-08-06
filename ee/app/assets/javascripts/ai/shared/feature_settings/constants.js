@@ -12,6 +12,7 @@ export const DUO_MAIN_FEATURES = {
   MERGE_REQUESTS: 'GitLab Duo for merge requests',
   ISSUES: 'GitLab Duo for issues',
   OTHER_GITLAB_DUO_FEATURES: 'Other GitLab Duo features',
+  AGENT_PLATFORM: 'GitLab Duo Agent Platform',
 };
 
 export const PROVIDERS = {

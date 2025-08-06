@@ -132,6 +132,21 @@ export const mockIssueFeatureSettings = [
   },
 ];
 
+export const mockDuoAgentPlatformFeatureSettings = [
+  {
+    feature: 'duo_agent_platform',
+    title: 'GitLab Duo Agent Platform - all agents',
+    mainFeature: 'GitLab Duo Agent Platform',
+    releaseState: 'EXPERIMENT',
+    provider: 'self_hosted',
+    selfHostedModel: {
+      id: 'gid://gitlab/Ai::SelfHostedModel/1',
+      releaseState: 'GA',
+    },
+    validModels: { nodes: mockSelfHostedModels },
+  },
+];
+
 export const mockOtherDuoFeaturesSettings = [
   {
     feature: 'glab_ask_git_command',
@@ -149,5 +164,6 @@ export const mockAiFeatureSettings = [
   ...mockDuoChatFeatureSettings,
   ...mockMergeRequestFeatureSettings,
   ...mockIssueFeatureSettings,
+  ...mockDuoAgentPlatformFeatureSettings,
   ...mockOtherDuoFeaturesSettings,
 ];

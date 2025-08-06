@@ -213,8 +213,8 @@ review_merge_request:
   unit_primitives:
     - review_merge_request
 duo_agent_platform:
-  title: Duo Agent Platform
-  release_state: BETA
+  title: GitLab Duo Agent Platform - all agents
+  release_state: EXPERIMENT
   main_feature: GitLab Duo Agent Platform
   compatible_llms:
     - claude_3

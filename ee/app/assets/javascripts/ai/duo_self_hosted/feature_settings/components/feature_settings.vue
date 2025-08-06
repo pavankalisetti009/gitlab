@@ -27,6 +27,7 @@ export default {
   issuesHelpPage: helpPagePath('user/discussions/_index', {
     anchor: 'summarize-issue-discussions-with-duo-chat',
   }),
+  duoAgentPlatformHelpPage: helpPagePath('user/duo_agent_platform/_index'),
   otherGitLabDuoHelpPage: helpPagePath('user/get_started/getting_started_gitlab_duo', {
     anchor: 'step-3-try-other-gitlab-duo-features',
   }),
@@ -45,6 +46,7 @@ export default {
       );
       const mergeRequestFeatures = this.getSubFeatures(DUO_MAIN_FEATURES.MERGE_REQUESTS);
       const issuesFeatures = this.getSubFeatures(DUO_MAIN_FEATURES.ISSUES);
+      const duoAgentPlatformFeatures = this.getSubFeatures(DUO_MAIN_FEATURES.AGENT_PLATFORM);
 
       return [
         {
@@ -91,7 +93,17 @@ export default {
           hasBetaFeatures: false,
           show: issuesFeatures.length,
         },
-
+        {
+          id: 'duo-agent-platform',
+          title: s__('AdminAIPoweredFeatures|GitLab Duo Agent Platform'),
+          description: s__(
+            'AdminAIPoweredFeatures|AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously. %{linkStart}Learn more.%{linkEnd}',
+          ),
+          link: this.$options.duoAgentPlatformHelpPage,
+          features: duoAgentPlatformFeatures,
+          hasBetaFeatures: true,
+          show: duoAgentPlatformFeatures.length,
+        },
         {
           id: 'other-duo-features',
           title: s__('AdminAIPoweredFeatures|Other GitLab Duo features'),
