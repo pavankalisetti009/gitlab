@@ -93,6 +93,12 @@ module Search
           end
         end
 
+        def groups_for_user(user:, min_access_level: nil)
+          strong_memoize_with(:groups_for_user, user, min_access_level) do
+            ::Search::GroupsFinder.new(user: user, params: { min_access_level: min_access_level }).execute
+          end
+        end
+
         def traversal_ids_for_user(user, options)
           return [] unless user
 

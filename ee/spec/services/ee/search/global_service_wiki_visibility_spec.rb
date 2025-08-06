@@ -38,7 +38,7 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
             project.wiki.index_wiki_blobs
           end
 
-          it_behaves_like 'search respects visibility', group_access: false
+          it_behaves_like 'search respects visibility', group_access: false, group_access_shared_group: false
         end
       end
 

@@ -28,7 +28,7 @@
                       "prefix": {
                         "traversal_ids": {
                           "_name": "filters:permissions:group:public_and_internal_access:ancestry_filter:descendants",
-                          "value": "NAMESPACE_ANCESTRY"
+                          "value": "__NAMESPACE_ANCESTRY__"
                         }
                       }
                     }

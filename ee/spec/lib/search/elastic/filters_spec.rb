@@ -1040,7 +1040,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       let(:expected_query) do
         json = File.read(Rails.root.join(fixtures_path, fixture_file))
         # the traversal_id for the group the user has access to
-        json.gsub!('NAMESPACE_ANCESTRY', namespace_ancestry) if defined?(namespace_ancestry)
+        json.gsub!('__NAMESPACE_ANCESTRY__', namespace_ancestry) if defined?(namespace_ancestry)
         # the project for the project the user has access to
         json.gsub!('PROJECT_ID', project_id) if defined?(project_id)
         # group search: the traversal_id for the searched group
@@ -1059,16 +1059,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       it { is_expected.to eq(expected_query) }
-
-      context 'when search_refactor_membership_filter feature flag is false' do
-        let(:fixture_file) { 'global_search_user_no_read_cross_project.json' }
-
-        before do
-          stub_feature_flags(search_refactor_membership_filter: false)
-        end
-
-        it { is_expected.to eq(expected_query) }
-      end
     end
 
     context 'when user.can_read_all_resources? is true' do
@@ -3061,11 +3051,18 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       described_class.by_search_level_and_membership(query_hash: query_hash, options: options)
     end
 
+    before do
+      # ensure the memoized value doesn't pollute tests
+      described_class.clear_memoization(:groups_for_user)
+    end
+
     let(:fixtures_path) { 'ee/spec/fixtures/search/elastic/filters/by_search_level_and_membership' }
     let(:expected_query) do
       json = File.read(Rails.root.join(fixtures_path, fixture_file))
       # the traversal_id for the group the user has access to
-      json.gsub!('NAMESPACE_ANCESTRY', namespace_ancestry) if defined?(namespace_ancestry)
+      json.gsub!('__NAMESPACE_ANCESTRY__', namespace_ancestry) if defined?(namespace_ancestry)
+      # the traversal_id for the shared group the user has access to
+      json.gsub!('__SHARED_NAMESPACE_ANCESTRY__', shared_namespace_ancestry) if defined?(shared_namespace_ancestry)
       # the project for the project the user has access to
       json.gsub!('PROJECT_ID', project_id.to_s) if defined?(project_id)
       # group search: the traversal_id for the searched group
@@ -3124,16 +3121,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         end
 
         it { is_expected.to eq(expected_query) }
-
-        context 'when search_refactor_membership_filter feature flag is false' do
-          let(:fixture_file) { 'global_search_user_no_read_cross_project.json' }
-
-          before do
-            stub_feature_flags(search_refactor_membership_filter: false)
-          end
-
-          it { is_expected.to eq(expected_query) }
-        end
       end
 
       context 'when user has access' do
@@ -3195,6 +3182,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           let(:namespace_ancestry) { group.elastic_namespace_ancestry }
           let(:fixture_file) { 'global_search_user_access_to_group_with_custom_role.json' }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'in group when access is shared through another group' do
+          let_it_be(:group_shared) { create(:group, :private, reporters: user) }
+          let(:shared_namespace_ancestry) { group_shared.elastic_namespace_ancestry }
+          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+          let(:fixture_file) { 'global_search_user_access_to_group_with_shared_group.json' }
+
+          before_all do
+            create(:group_group_link, :reporter, shared_group: group, shared_with_group: group_shared)
+          end
 
           it { is_expected.to eq(expected_query) }
         end
@@ -3329,6 +3329,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
+        context 'in group when access is shared through another group' do
+          let_it_be(:group_shared) { create(:group, :private, reporters: user) }
+          let(:shared_namespace_ancestry) { group_shared.elastic_namespace_ancestry }
+          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+          let(:fixture_file) { 'group_search_user_access_to_group_with_shared_group.json' }
+
+          before_all do
+            create(:group_group_link, :reporter, shared_group: group, shared_with_group: group_shared)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
+
         context 'in project when access is shared through another group' do
           let(:fixture_file) { 'group_search_user_access_to_project_with_shared_group.json' }
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
@@ -3437,6 +3450,18 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           let(:namespace_ancestry) { project.namespace.elastic_namespace_ancestry }
           let(:fixture_file) { 'project_search_user_access_to_group_with_custom_role.json' }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'in group when access is shared through another group' do
+          let_it_be(:group_shared) { create(:group, :private, reporters: user) }
+          let(:namespace_ancestry) { project.group.elastic_namespace_ancestry }
+          let(:fixture_file) { 'project_search_user_access_to_group_with_shared_group.json' }
+
+          before_all do
+            create(:group_group_link, :reporter, shared_group: group, shared_with_group: group_shared)
+          end
 
           it { is_expected.to eq(expected_query) }
         end
