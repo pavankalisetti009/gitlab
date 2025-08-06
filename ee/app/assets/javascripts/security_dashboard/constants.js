@@ -138,4 +138,4 @@ export const EXPORT_ERROR_MESSAGE_CHART_FAILURE = s__(
   'SecurityReports|Chart failed to initialize. Please refresh the page and try again.',
 );
 
-export const DASHBOARD_LOOKBACK_DAYS = 365;
+export const DASHBOARD_LOOKBACK_DAYS = 90;
