@@ -1,7 +1,9 @@
 <script>
+import { camelCase } from 'lodash';
 import { GlLink } from '@gitlab/ui';
 import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
+import { COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 
 export default {
   components: {
@@ -35,6 +37,25 @@ export default {
     },
     shouldShowTooltipLink() {
       return Boolean(this.securityVulnerabilitiesPath && this.groupedBy);
+    },
+    chartSeriesWithColors() {
+      return this.chartSeries.map((series) => {
+        const color = COLORS[camelCase(series.id)];
+
+        if (color) {
+          return {
+            ...series,
+            itemStyle: {
+              color,
+            },
+            lineStyle: {
+              color,
+            },
+          };
+        }
+
+        return series;
+      });
     },
     chartOptions() {
       return {
@@ -85,10 +106,12 @@ export default {
 
 <template>
   <gl-line-chart
-    :data="chartSeries"
+    :data="chartSeriesWithColors"
     :option="chartOptions"
     :include-legend-avg-max="false"
     :click-to-pin-tooltip="shouldShowTooltipLink"
+    responsive
+    height="auto"
   >
     <template #tooltip-content="{ params }">
       <div

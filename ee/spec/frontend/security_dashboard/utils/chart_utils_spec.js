@@ -15,7 +15,7 @@ describe('Security Dashboard - Chart Utils', () => {
     'API Fuzzing',
     'Cluster Image Scanning',
     'Container Scanning for Registry',
-    'Generic',
+    'Manually added',
   ];
 
   const mockVulnerabilitiesData = [

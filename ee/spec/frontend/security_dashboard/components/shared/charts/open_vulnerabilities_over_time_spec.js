@@ -4,6 +4,7 @@ import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import { shallowMount } from '@vue/test-utils';
 import { stubComponent } from 'helpers/stub_component';
 import OpenVulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
+import { COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 
 describe('OpenVulnerabilitiesOverTimeChart', () => {
   let wrapper;
@@ -57,10 +58,14 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
     });
   };
 
-  it('passes chart data to GlLineChart via props', () => {
+  it.each(mockChartSeries)('passes chart data to GlLineChart via props', (expectedSeries) => {
     createComponent();
 
-    expect(findLineChart().props('data')).toBe(mockChartSeries);
+    const chartData = findLineChart().props('data');
+    const chartSeries = chartData.find((series) => series.name === expectedSeries.name);
+
+    // Note: using `toMatchObject`, because in some cases we dynamically augment the series with additional data (e.g. color). This is tested separately below
+    expect(chartSeries).toMatchObject(expectedSeries);
   });
 
   it('does not include legend avg/max values', () => {
@@ -176,6 +181,41 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
       await nextTick();
 
       expect(findLineChart().props('option').dataZoom).toBeUndefined();
+    });
+  });
+
+  describe('custom chart line- and label colors', () => {
+    it.each([
+      ['Critical', 'CRITICAL', COLORS.critical],
+      ['High', 'HIGH', COLORS.high],
+      ['Medium', 'MEDIUM', COLORS.medium],
+      ['Low', 'LOW', COLORS.low],
+      ['Info', 'INFO', COLORS.info],
+      ['Unknown', 'UNKNOWN', COLORS.unknown],
+      ['ApiFuzzing', 'API_FUZZING', COLORS.apiFuzzing],
+      ['ContainerScanning', 'CONTAINER_SCANNING', COLORS.containerScanning],
+      ['CoverageFuzzing', 'COVERAGE_FUZZING', COLORS.coverageFuzzing],
+      ['Dast', 'DAST', COLORS.dast],
+      ['DependencyScanning', 'DEPENDENCY_SCANNING', COLORS.dependencyScanning],
+      ['Sast', 'SAST', COLORS.sast],
+      ['SecretDetection', 'SECRET_DETECTION', COLORS.secretDetection],
+    ])('applies the correct color for "%s" series', (seriesName, seriesId, expectedColor) => {
+      const series = [{ name: seriesName, id: seriesId, data: [] }];
+
+      createComponent({ props: { chartSeries: series } });
+      const [coloredSeries] = findLineChart().props('data');
+
+      expect(coloredSeries.itemStyle.color).toBe(expectedColor);
+      expect(coloredSeries.lineStyle.color).toBe(expectedColor);
+    });
+
+    it('returns the original series if there is no color defined so the chart can set the color', () => {
+      const customSeries = [{ name: 'No color defined', id: 'NO_COLOR_DEFINED', data: [] }];
+
+      createComponent({ props: { chartSeries: customSeries } });
+      const [coloredSeries] = findLineChart().props('data');
+
+      expect(coloredSeries).toEqual(customSeries[0]);
     });
   });
 });
