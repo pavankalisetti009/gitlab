@@ -127,7 +127,8 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         jwt_ci_cd_job_token_enabled jwt_ci_cd_job_token_opted_out require_dpop_for_manage_api_endpoints
         disable_invite_members security_policies duo_nano_features_enabled
         lock_model_prompt_cache_enabled model_prompt_cache_enabled lock_web_based_commit_signing_enabled
-        web_based_commit_signing_enabled allow_enterprise_bypass_placeholder_confirmation enterprise_bypass_expires_at]
+        web_based_commit_signing_enabled allow_enterprise_bypass_placeholder_confirmation enterprise_bypass_expires_at
+        allow_personal_snippets]
 
       columns_to_audit = Namespaces::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 
