@@ -29,7 +29,9 @@ module EE
       end
 
       def distinct_eligible_duo_add_on_assignments
-        eligible_duo_add_on_assignments.select('DISTINCT ON (add_on_purchase.namespace_id) *')
+        distinct_query = 'DISTINCT ON (add_on_purchase.namespace_id) subscription_user_add_on_assignments.*'
+
+        eligible_duo_add_on_assignments.select(distinct_query)
       end
 
       def check_seat_for_default_duo_assigment
