@@ -12,7 +12,7 @@ class ProcessCommitWorker
 
   MAX_TIME_TRACKING_REFERENCES = 5
 
-  data_consistency :sticky, feature_flag: :process_commit_worker_sticky
+  data_consistency :sticky
 
   sidekiq_options retry: 3
 
