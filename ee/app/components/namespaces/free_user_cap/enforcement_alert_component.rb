@@ -19,14 +19,22 @@ module Namespaces
         false
       end
 
+      def trial_duration
+        ::GitlabSubscriptions::TrialDurationService.new.execute
+      end
+
       def alert_attributes
         {
           title: alert_title,
           body: safe_format(_("To remove the %{link_start}read-only%{link_end} state and regain write access, " \
                   "you can reduce the number of users in your top-level group to %{free_limit} users or " \
                   "less. You can also upgrade to a paid tier, which do not have user limits. If you " \
-                  "need additional time, you can start a free 60-day trial which includes unlimited " \
-                  "users."), link_start: free_user_limit_link_start, link_end: link_end, free_limit: free_user_limit),
+                  "need additional time, you can start a free %{duration}-day trial which includes unlimited " \
+                  "users."),
+            link_start: free_user_limit_link_start,
+            link_end: link_end,
+            free_limit: free_user_limit,
+            duration: trial_duration),
           primary_cta: namespace_primary_cta,
           secondary_cta: namespace_secondary_cta
         }

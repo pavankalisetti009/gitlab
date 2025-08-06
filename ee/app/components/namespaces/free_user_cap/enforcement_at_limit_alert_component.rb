@@ -11,6 +11,10 @@ module Namespaces
         ::Namespaces::FreeUserCap::Enforcement.new(namespace).at_limit?
       end
 
+      def trial_duration
+        ::GitlabSubscriptions::TrialDurationService.new.execute
+      end
+
       def feature_name
         ENFORCEMENT_AT_LIMIT_ALERT
       end
@@ -28,15 +32,16 @@ module Namespaces
             n_("To invite more users, you can reduce the number of users in your " \
                "top-level group to %{free_limit} user or less. You can also upgrade to " \
                "a paid tier which do not have user limits. If you need additional " \
-               "time, you can start a free 60-day trial which includes unlimited users.", \
+               "time, you can start a free %{duration}-day trial which includes unlimited users.", \
               "To invite more users, you can reduce the number of users in your " \
               "top-level group to %{free_limit} users or less. You can also upgrade to " \
               "a paid tier which do not have user limits. If you need additional " \
-              "time, you can start a free 60-day trial which includes unlimited users.",
+              "time, you can start a free %{duration}-day trial which includes unlimited users.",
               free_user_limit
             ),
             free_limit: free_user_limit,
-            link_end: link_end
+            link_end: link_end,
+            duration: trial_duration
           ).html_safe,
           primary_cta: namespace_primary_cta,
           secondary_cta: namespace_secondary_cta

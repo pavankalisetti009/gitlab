@@ -13,13 +13,13 @@ module Namespaces
       )
     end
 
-    def over_limit_body_secondary_text(start_trial_url, upgrade_url, html_tags: true)
+    def over_limit_body_secondary_text(start_trial_url, upgrade_url, trial_duration, html_tags: true)
       result = safe_format(
         s_(
           'FreeUserCap|To remove the %{link_start}read-only%{link_end} state and regain write access, ' \
           'you can reduce the number of users in your top-level group to %{free_user_limit} users or less. ' \
           'You can also %{upgrade_start}upgrade%{upgrade_end} to a paid tier, which do not have user limits. ' \
-          'If you need additional time, you can %{trial_start}start a free 60-day trial%{trial_end} which ' \
+          'If you need additional time, you can %{trial_start}start a free %{duration}-day trial%{trial_end} which ' \
           'includes unlimited users.'
         ),
         tag_pair(
@@ -27,7 +27,8 @@ module Namespaces
         ),
         tag_pair(link_to('', start_trial_url), :trial_start, :trial_end),
         tag_pair(link_to('', upgrade_url), :upgrade_start, :upgrade_end),
-        free_user_limit: Namespaces::FreeUserCap.dashboard_limit
+        free_user_limit: Namespaces::FreeUserCap.dashboard_limit,
+        duration: trial_duration
       )
 
       return result if html_tags
