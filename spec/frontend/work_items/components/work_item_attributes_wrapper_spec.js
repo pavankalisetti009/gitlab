@@ -271,6 +271,18 @@ describe('WorkItemAttributesWrapper component', () => {
 
       expect(findWorkItemParticipants().exists()).toBe(exists);
     });
+
+    it('passed correct participant count to participant component', async () => {
+      // Mocking the participant count to be 20
+      mockParticipantWidget.participants.count = 20;
+
+      createComponent({ workItemParticipantsQuerySuccessHandler });
+
+      await waitForPromises();
+
+      expect(findWorkItemParticipants().exists()).toBe(true);
+      expect(findWorkItemParticipants().props('participantCount')).toBe(20);
+    });
   });
 
   describe('upgrade banner', () => {
