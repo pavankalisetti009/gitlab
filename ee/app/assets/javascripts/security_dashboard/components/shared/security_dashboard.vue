@@ -53,7 +53,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div data-testid="security-dashboard">
     <page-heading :heading="s__('SecurityReports|Security dashboard')">
       <template #actions>
         <pdf-export-button v-if="showExportButton" :get-report-data="getReportData" />

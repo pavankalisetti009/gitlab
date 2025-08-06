@@ -33,7 +33,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div data-testid="report-not-configured-project">
     <div v-if="shouldShowNewVulnerabilityButton" class="gl-my-4 gl-text-right">
       <gl-button :href="newVulnerabilityPath" class="gl-ml-auto" icon="plus">
         {{ $options.i18n.submitVulnerability }}

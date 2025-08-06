@@ -206,7 +206,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div data-testid="project-security-dashboard">
     <security-training-promo-banner v-if="shouldShowPromoBanner" />
 
     <page-heading :heading="s__('SecurityReports|Security dashboard')">

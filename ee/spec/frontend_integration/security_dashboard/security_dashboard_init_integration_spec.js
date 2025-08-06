@@ -1,3 +1,4 @@
+import { within } from '@testing-library/dom';
 import initSecurityDashboard from 'ee/security_dashboard/security_dashboard_init';
 import {
   DASHBOARD_TYPE_GROUP,
@@ -56,11 +57,31 @@ describe('Security Dashboard', () => {
     vm = await initSecurityDashboard(null, null);
   };
 
-  describe('default states', () => {
-    it('sets up group-level', async () => {
-      await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
+  const getByTestId = (testId) => within(root).getByTestId(testId);
 
-      expect(root).toMatchSnapshot();
+  const findNewGroupDashboard = () => getByTestId('group-security-dashboard-new');
+  const findNewProjectDashboard = () => getByTestId('project-security-dashboard-new');
+  const findSecurityDashboard = () => getByTestId('security-dashboard');
+  const findProjectDashboard = () => getByTestId('project-security-dashboard');
+  const findNotConfiguredGroup = () => getByTestId('report-not-configured-group');
+  const findNotConfiguredProject = () => getByTestId('report-not-configured-project');
+  const findNotConfiguredInstance = () => getByTestId('report-not-configured-instance');
+  const findUnavailableState = () => getByTestId('security-dashboard-unavailable-state');
+
+  describe('group level', () => {
+    const GROUP_OPTIONS = { data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP };
+
+    it('shows not configured component if there are no projects', async () => {
+      await createComponent({
+        ...GROUP_OPTIONS,
+        data: { ...GROUP_OPTIONS.data, hasProjects: 'false' },
+      });
+      expect(findNotConfiguredGroup()).toBeInstanceOf(HTMLElement);
+    });
+
+    it('shows security dashboard if there are projects', async () => {
+      await createComponent(GROUP_OPTIONS);
+      expect(findSecurityDashboard()).toBeInstanceOf(HTMLElement);
     });
 
     describe('`groupSecurityDashboardNew` feature flag enabled', () => {
@@ -68,32 +89,42 @@ describe('Security Dashboard', () => {
         window.gon.features.groupSecurityDashboardNew = true;
       });
 
-      it('sets up old dashboard when elastic search is disabled', async () => {
-        await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
-
-        expect(root).toMatchSnapshot();
+      it('sets up old dashboard when advanced search is disabled', async () => {
+        await createComponent(GROUP_OPTIONS);
+        expect(findSecurityDashboard()).toBeInstanceOf(HTMLElement);
       });
 
-      it('sets up new dashboard when elastic search is enabled', async () => {
+      it('sets up new dashboard when advanced search is enabled', async () => {
         window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
-
-        await createComponent({ data: { groupFullPath: '/test/' }, type: DASHBOARD_TYPE_GROUP });
-
-        expect(root).toMatchSnapshot();
+        await createComponent(GROUP_OPTIONS);
+        expect(findNewGroupDashboard()).toBeInstanceOf(HTMLElement);
       });
     });
+  });
 
-    it('sets up project-level', async () => {
+  describe('project level', () => {
+    const PROJECT_OPTIONS = {
+      data: {
+        projectFullPath: '/test/project',
+        hasVulnerabilities: 'true',
+        securityConfigurationPath: '/test/configuration',
+        newVulnerabilityPath: '/vulnerabilities/new',
+        canAdminVulnerability: 'true',
+      },
+      type: DASHBOARD_TYPE_PROJECT,
+    };
+
+    it('shows not configured component if there are no vulnerabilities', async () => {
       await createComponent({
-        data: {
-          projectFullPath: '/test/project',
-          hasVulnerabilities: 'true',
-          securityConfigurationPath: '/test/configuration',
-        },
-        type: DASHBOARD_TYPE_PROJECT,
+        ...PROJECT_OPTIONS,
+        data: { ...PROJECT_OPTIONS.data, hasVulnerabilities: false },
       });
+      expect(findNotConfiguredProject()).toBeInstanceOf(HTMLElement);
+    });
 
-      expect(root).toMatchSnapshot();
+    it('shows security dashboard if there are vulnerabilities', async () => {
+      await createComponent(PROJECT_OPTIONS);
+      expect(findProjectDashboard()).toBeInstanceOf(HTMLElement);
     });
 
     describe('`projectSecurityDashboardNew` feature flag enabled', () => {
@@ -101,42 +132,39 @@ describe('Security Dashboard', () => {
         window.gon.features.projectSecurityDashboardNew = true;
       });
 
-      it('sets up old dashboard when elastic search is disabled', async () => {
-        await createComponent({
-          data: {
-            projectFullPath: '/test/project',
-            hasVulnerabilities: 'true',
-            securityConfigurationPath: '/test/configuration',
-          },
-          type: DASHBOARD_TYPE_PROJECT,
-        });
+      it('sets up old dashboard when advanced search is disabled', async () => {
+        await createComponent(PROJECT_OPTIONS);
 
-        expect(root).toMatchSnapshot();
+        expect(findProjectDashboard()).toBeInstanceOf(HTMLElement);
       });
 
-      it('sets up new dashboard when elastic search is enabled', async () => {
+      it('sets up new dashboard when advanced search is enabled', async () => {
         window.gon.abilities.accessAdvancedVulnerabilityManagement = true;
 
-        await createComponent({
-          data: {
-            projectFullPath: '/test/project',
-            hasVulnerabilities: 'true',
-            securityConfigurationPath: '/test/configuration',
-          },
-          type: DASHBOARD_TYPE_PROJECT,
-        });
+        await createComponent(PROJECT_OPTIONS);
 
-        expect(root).toMatchSnapshot();
+        expect(findNewProjectDashboard()).toBeInstanceOf(HTMLElement);
       });
     });
+  });
 
-    it('sets up instance-level', async () => {
+  describe('instance level', () => {
+    const INSTANCE_OPTIONS = {
+      data: { instanceDashboardSettingsPath: '/instance/settings_page' },
+      type: DASHBOARD_TYPE_INSTANCE,
+    };
+
+    it('shows not configured component if there are no projects', async () => {
       await createComponent({
-        data: { instanceDashboardSettingsPath: '/instance/settings_page' },
-        type: DASHBOARD_TYPE_INSTANCE,
+        ...INSTANCE_OPTIONS,
+        data: { ...INSTANCE_OPTIONS.data, hasProjects: false },
       });
+      expect(findNotConfiguredInstance()).toBeInstanceOf(HTMLElement);
+    });
 
-      expect(root).toMatchSnapshot();
+    it('shows security dashboard if there are projects', async () => {
+      await createComponent(INSTANCE_OPTIONS);
+      expect(findSecurityDashboard()).toBeInstanceOf(HTMLElement);
     });
   });
 
@@ -150,7 +178,7 @@ describe('Security Dashboard', () => {
     it('has unavailable pages', async () => {
       await createComponent({ data: { isUnavailable: true } });
 
-      expect(root).toMatchSnapshot();
+      expect(findUnavailableState()).toBeInstanceOf(HTMLElement);
     });
   });
 });
