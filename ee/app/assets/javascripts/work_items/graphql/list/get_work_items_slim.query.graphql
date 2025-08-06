@@ -41,6 +41,8 @@ query getWorkItemsSlimEE(
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
   $status: WorkItemWidgetStatusFilterInput
+  $releaseTag: [String!]
+  $releaseTagWildcardId: ReleaseTagWildcardId
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -83,6 +85,8 @@ query getWorkItemsSlimEE(
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
       status: $status
+      releaseTag: $releaseTag
+      releaseTagWildcardId: $releaseTagWildcardId
     ) {
       pageInfo {
         ...PageInfo

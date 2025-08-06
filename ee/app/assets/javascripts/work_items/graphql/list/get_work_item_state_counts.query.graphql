@@ -34,6 +34,8 @@ query EEgetWorkItemStateCounts(
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
   $status: WorkItemWidgetStatusFilterInput
+  $releaseTag: [String!]
+  $releaseTagWildcardId: ReleaseTagWildcardId
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -108,6 +110,8 @@ query EEgetWorkItemStateCounts(
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
       status: $status
+      releaseTag: $releaseTag
+      releaseTagWildcardId: $releaseTagWildcardId
     ) {
       all
       closed
