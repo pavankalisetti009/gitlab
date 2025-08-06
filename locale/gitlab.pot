@@ -15573,6 +15573,12 @@ msgstr ""
 msgid "Compliance Center Export|Export chain of custody report of a specific commit as a CSV file (limited to 15MB)."
 msgstr ""
 
+msgid "Compliance Center Export|Export compliance violations as a CSV file."
+msgstr ""
+
+msgid "Compliance Center Export|Export compliance violations report"
+msgstr ""
+
 msgid "Compliance Center Export|Export contents of the compliance frameworks report as a CSV file."
 msgstr ""
 
@@ -15597,13 +15603,16 @@ msgstr ""
 msgid "Compliance Center Export|Export merge request violations as a CSV file."
 msgstr ""
 
+msgid "Compliance Center Export|Export merge request violations report"
+msgstr ""
+
+msgid "Compliance Center Export|Export merge request violations report (legacy)"
+msgstr ""
+
 msgid "Compliance Center Export|Export standards adherence report"
 msgstr ""
 
 msgid "Compliance Center Export|Export status report"
-msgstr ""
-
-msgid "Compliance Center Export|Export violations report"
 msgstr ""
 
 msgid "Compliance Center Export|Invalid hash"

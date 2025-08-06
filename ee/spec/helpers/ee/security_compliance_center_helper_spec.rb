@@ -88,6 +88,8 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
           group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
 
         is_expected.to include(
+          compliance_violations_csv_export_path: group_security_compliance_dashboard_exports_violations_report_path(
+            group, format: :csv),
           violations_csv_export_path: group_security_compliance_violation_reports_path(group, format: :csv),
           project_frameworks_csv_export_path: group_security_compliance_project_framework_reports_path(group,
             format: :csv),

@@ -399,6 +399,18 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
     end
   end
 
+  describe '.including_controls' do
+    it 'preloads associations to avoid N+1 queries' do
+      create_list(:project_compliance_violation, 3)
+
+      expect do
+        described_class.including_controls.each do |v|
+          v.compliance_control.compliance_requirement.framework
+        end
+      end.to make_queries_matching(/SELECT/, 4)
+    end
+  end
+
   describe '#readable_by?' do
     let_it_be(:namespace) { create(:group) }
     let_it_be(:project) { create(:project, namespace: namespace) }
@@ -445,7 +457,7 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
     end
   end
 
-  describe '#name' do
+  describe 'public getter methods' do
     let_it_be(:namespace) { create(:group) }
     let_it_be(:project) { create(:project, namespace: namespace) }
     let_it_be(:compliance_control) { create(:compliance_requirements_control, namespace: namespace) }
@@ -461,8 +473,22 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
       )
     end
 
-    it 'returns the formatted name with the violation ID' do
-      expect(violation.name).to eq("Compliance Violation ##{violation.id}")
+    describe '#name' do
+      it 'returns the formatted name with the violation ID' do
+        expect(violation.name).to eq("Compliance Violation ##{violation.id}")
+      end
+    end
+
+    describe '#requirement' do
+      it 'returns the requirement' do
+        expect(violation.requirement).to eq(compliance_control.compliance_requirement)
+      end
+    end
+
+    describe '#framework' do
+      it 'returns the framework' do
+        expect(violation.framework).to eq(compliance_control.compliance_requirement.framework)
+      end
     end
   end
 end

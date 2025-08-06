@@ -42,6 +42,11 @@ export default {
       required: false,
       default: null,
     },
+    complianceViolationsCsvExportPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     violationsCsvExportPath: {
       type: String,
       required: false,
@@ -65,6 +70,13 @@ export default {
     };
   },
   computed: {
+    legacyViolationsTitle() {
+      if (this.complianceViolationsCsvExportPath) {
+        return this.$options.i18n.legacyViolationsExportTitle;
+      }
+
+      return this.$options.i18n.violationsExportTitle;
+    },
     exportItems() {
       const items = [];
 
@@ -94,16 +106,29 @@ export default {
         });
       }
 
+      if (this.complianceViolationsCsvExportPath) {
+        items.push({
+          value: 'compliance_violations_export',
+          text: this.$options.i18n.complianceViolationsExportTitle,
+          href: this.complianceViolationsCsvExportPath,
+          extraAttrs: {
+            'data-track-action': 'click_export',
+            'data-track-label': 'export_all_compliance_violations',
+          },
+          tooltipText: `${this.$options.i18n.tooltipTexts.violations} ${this.$options.i18n.tooltipTexts.ending}`,
+        });
+      }
+
       if (this.violationsCsvExportPath) {
         items.push({
           value: 'violations_export',
-          text: this.$options.i18n.violationsExportTitle,
+          text: this.legacyViolationsTitle,
           href: this.violationsCsvExportPath,
           extraAttrs: {
             'data-track-action': 'click_export',
             'data-track-label': 'export_all_violations',
           },
-          tooltipText: `${this.$options.i18n.tooltipTexts.violations} ${this.$options.i18n.tooltipTexts.ending}`,
+          tooltipText: `${this.$options.i18n.tooltipTexts.legacyViolations} ${this.$options.i18n.tooltipTexts.ending}`,
         });
       }
 
@@ -182,7 +207,13 @@ export default {
     ),
     adherencesExportTitle: s__('Compliance Center Export|Export standards adherence report'),
     frameworksExportTitle: s__('Compliance Center Export|Export frameworks report'),
-    violationsExportTitle: s__('Compliance Center Export|Export violations report'),
+    complianceViolationsExportTitle: s__(
+      'Compliance Center Export|Export compliance violations report',
+    ),
+    violationsExportTitle: s__('Compliance Center Export|Export merge request violations report'),
+    legacyViolationsExportTitle: s__(
+      'Compliance Center Export|Export merge request violations report (legacy)',
+    ),
     complianceStatusReportExportTitle: s__('Compliance Center Export|Export status report'),
     projectFrameworksExportTitle: s__('Compliance Center Export|Export list of project frameworks'),
     custodyCommitsExportTitle: s__('Compliance Center Export|Export chain of custody report'),
@@ -193,7 +224,10 @@ export default {
     mergeCommitInvalidMessage: s__('Compliance Center Export|Invalid hash'),
     mergeCommitButtonText: s__('Compliance Center Export|Export custody report'),
     tooltipTexts: {
-      violations: s__('Compliance Center Export|Export merge request violations as a CSV file.'),
+      violations: s__('Compliance Center Export|Export compliance violations as a CSV file.'),
+      legacyViolations: s__(
+        'Compliance Center Export|Export merge request violations as a CSV file.',
+      ),
       adherence: s__(
         'Compliance Center Export|Export contents of the standards adherence report as a CSV file.',
       ),

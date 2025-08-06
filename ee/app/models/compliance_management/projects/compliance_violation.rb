@@ -51,6 +51,10 @@ module ComplianceManagement
         where(arel_table[:id].eq(id_expression))
       }
 
+      scope :including_controls, -> {
+        includes(:compliance_control, compliance_control: { compliance_requirement: :framework })
+      }
+
       def audit_event
         @audit_event ||= audit_event_class&.find_by(id: audit_event_id)
       end
@@ -62,6 +66,14 @@ module ComplianceManagement
 
       def name
         "Compliance Violation ##{id}"
+      end
+
+      def framework
+        requirement&.framework
+      end
+
+      def requirement
+        compliance_control&.compliance_requirement
       end
 
       private

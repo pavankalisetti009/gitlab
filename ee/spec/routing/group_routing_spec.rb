@@ -156,5 +156,25 @@ RSpec.describe 'Group routing', "routing" do
         vueroute: 'some/nested/path'
       )
     end
+
+    describe 'exports' do
+      it 'routes compliance status report export' do
+        expect(get: '/groups/gitlabhq/-/security/compliance_dashboard/exports/compliance_status_report.csv').to route_to(
+          controller: 'groups/security/compliance_dashboard/exports',
+          action: 'compliance_status_report',
+          group_id: 'gitlabhq',
+          format: 'csv'
+        )
+      end
+
+      it 'routes violations report export' do
+        expect(get: '/groups/gitlabhq/-/security/compliance_dashboard/exports/violations_report.csv').to route_to(
+          controller: 'groups/security/compliance_dashboard/exports',
+          action: 'violations_report',
+          group_id: 'gitlabhq',
+          format: 'csv'
+        )
+      end
+    end
   end
 end
