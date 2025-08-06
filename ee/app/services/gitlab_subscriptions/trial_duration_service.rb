@@ -4,10 +4,9 @@ module GitlabSubscriptions
   class TrialDurationService
     include ReactiveCaching
 
-    DEFAULT_DURATION = {
-      duration_days: 60,
-      next_duration_days: 30,
-      next_active_time: "2125-12-30 00:00:00 UTC" # To change when product management determined the time
+    DEFAULT_DURATIONS = {
+      GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: 30 },
+      GitlabSubscriptions::Trials::DUO_ENTERPRISE_TRIAL_TYPE => { duration_days: 60 }
     }.freeze
 
     attr_reader :trial_type
@@ -23,7 +22,7 @@ module GitlabSubscriptions
     end
 
     def execute
-      duration = find_trial_types[trial_type] || DEFAULT_DURATION
+      duration = find_trial_types[trial_type] || default_duration
 
       return duration[:duration_days] unless duration[:next_active_time]
       return duration[:duration_days] if Time.zone.parse(duration[:next_active_time]).future?
@@ -42,6 +41,10 @@ module GitlabSubscriptions
 
     def find_trial_types
       with_reactive_cache { |data| data } || {}
+    end
+
+    def default_duration
+      DEFAULT_DURATIONS[trial_type] || DEFAULT_DURATIONS[GitlabSubscriptions::Trials::FREE_TRIAL_TYPE]
     end
 
     def calculate_reactive_cache

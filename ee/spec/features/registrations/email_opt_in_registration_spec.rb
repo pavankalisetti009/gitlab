@@ -102,13 +102,6 @@ RSpec.describe 'Registration with the email opt in value', :js, :saas_registrati
       let(:path) { new_trial_registration_path }
       let(:sign_up_method) { -> { trial_registration_sign_up } }
       let(:create_path) { trial_registrations_path }
-      let(:trial_duration) { 60 }
-
-      before do
-        allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
-          allow(instance).to receive(:execute).and_return(trial_duration)
-        end
-      end
     end
   end
 end

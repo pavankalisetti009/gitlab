@@ -5,14 +5,9 @@ require 'spec_helper'
 RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_category: :acquisition do
   before do
     stub_application_setting(require_admin_approval_after_user_signup: false)
-
-    allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
-      allow(instance).to receive(:execute).and_return(trial_duration)
-    end
   end
 
   let_it_be(:new_user) { build_stubbed(:user) }
-  let_it_be(:trial_duration) { 60 }
 
   describe 'on GitLab.com' do
     context 'with invalid email', :js do

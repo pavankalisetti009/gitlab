@@ -16,7 +16,7 @@ describe('SubscriptionUpgradeInfoCard', () => {
     wrapper = mount(SubscriptionUpgradeInfoCard, {
       propsData: { ...defaultProps, ...props },
       provide: {
-        trialDuration: 60,
+        trialDuration: 30,
       },
     });
   };
@@ -41,7 +41,7 @@ describe('SubscriptionUpgradeInfoCard', () => {
 
     it('renders description message with max number of seats', () => {
       expect(findDescription().text()).toContain(
-        'Start a free 60-day trial or upgrade to a paid tier to get an unlimited number of seats.',
+        'Start a free 30-day trial or upgrade to a paid tier to get an unlimited number of seats.',
       );
     });
 

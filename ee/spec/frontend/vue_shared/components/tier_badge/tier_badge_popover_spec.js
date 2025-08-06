@@ -8,9 +8,9 @@ describe('TierBadgePopover', () => {
   const primaryCTALink = '#trials/new';
   const secondaryCTALink = '#/groups/foobar-group/-/billings?source=overview-free-tier-highlight';
   const popoverContentForGroup =
-    'This group and all its related projects use the Free GitLab tier. Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 60 days. No credit card required.';
+    'This group and all its related projects use the Free GitLab tier. Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 30 days. No credit card required.';
   const popoverContentForProject =
-    'This project uses the Free GitLab tier. Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 60 days. No credit card required.';
+    'This project uses the Free GitLab tier. Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 30 days. No credit card required.';
   const primaryCTAText = 'Start a free trial';
   const secondaryCTAText = 'Explore paid plans';
   const findPrimaryCTA = () => wrapper.findByTestId('tier-badge-popover-primary-cta');
@@ -22,7 +22,7 @@ describe('TierBadgePopover', () => {
         primaryCtaLink: primaryCTALink,
         secondaryCtaLink: secondaryCTALink,
         isProject: false,
-        trialDuration: 60,
+        trialDuration: 30,
         ...provide,
       },
       propsData: {

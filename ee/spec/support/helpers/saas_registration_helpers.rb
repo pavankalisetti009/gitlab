@@ -253,7 +253,7 @@ module SaasRegistrationHelpers
   end
 
   def expect_to_be_on_trial_user_registration
-    expect(page).to have_content('Enjoy 60 days of full access to our best plan')
+    expect(page).to have_content('Enjoy 30 days of full access to our best plan')
   end
 
   def expect_to_be_on_user_sign_in
@@ -533,7 +533,7 @@ module SaasRegistrationHelpers
 
   def expect_to_receive_trial_duration
     allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
-      expect(instance).to receive(:execute).and_return(60)
+      expect(instance).to receive(:execute).and_return(30)
     end
   end
 end

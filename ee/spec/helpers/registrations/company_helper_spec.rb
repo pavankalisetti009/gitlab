@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
   describe '#create_company_form_data' do
     let(:user) { build_stubbed(:user, onboarding_status_registration_type: 'trial') }
-    let(:trial_duration) { 60 }
+    let(:trial_duration) { 30 }
     let(:extra_params) do
       {
         jobs_to_be_done_other: '_params_jobs_to_be_done_other'
