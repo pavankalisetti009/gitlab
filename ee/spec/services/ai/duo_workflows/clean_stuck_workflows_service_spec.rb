@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::CleanStuckWorkflowsService, feature_category: :duo_workflow do
+  subject(:execute) { described_class.new.execute }
+
   describe '#execute' do
     using RSpec::Parameterized::TableSyntax
 
@@ -35,7 +37,20 @@ RSpec.describe Ai::DuoWorkflows::CleanStuckWorkflowsService, feature_category: :
         updated_at = updated_when == "old" ? 2.days.ago : 1.minute.ago
         workflow = create(:duo_workflows_workflow, status: status_enum(current_status), updated_at: updated_at)
         expect(workflow.reload.status).to eq(status_enum(current_status))
-        described_class.new.execute
+
+        if current_status != expected_status
+          expect { execute }.to trigger_internal_events("cleanup_stuck_agent_platform_session")
+                                  .with(category: "Ai::DuoWorkflows::CleanStuckWorkflowsService",
+                                    user: workflow.user,
+                                    project: workflow.project,
+                                    additional_properties: {
+                                      label: "workflow_finish_event",
+                                      value: workflow.id,
+                                      property: "failed",
+                                      category: workflow.workflow_definition
+                                    })
+        end
+
         expect(workflow.reload.status).to eq(status_enum(expected_status))
       end
     end

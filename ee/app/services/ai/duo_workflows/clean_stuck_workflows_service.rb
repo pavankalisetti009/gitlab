@@ -4,6 +4,7 @@ module Ai
   module DuoWorkflows
     class CleanStuckWorkflowsService
       include ::Services::ReturnServiceResponses
+      include ::Gitlab::InternalEventsTracking
 
       EXPIRATION_IN_MINUTES = 10
       BATCH_LIMIT = 1000
@@ -14,7 +15,22 @@ module Ai
         iterator = Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
 
         iterator.each_batch(of: BATCH_LIMIT) do |workflows|
-          workflows.to_a.each(&:drop)
+          workflows.to_a.each do |w|
+            w.drop
+
+            track_internal_event(
+              "cleanup_stuck_agent_platform_session",
+              user: w.user,
+              project: w.project,
+              name: w.project.namespace,
+              additional_properties: {
+                label: "workflow_finish_event",
+                value: w.id,
+                property: "failed",
+                category: w.workflow_definition
+              }
+            )
+          end
         end
 
         success(:processed)
