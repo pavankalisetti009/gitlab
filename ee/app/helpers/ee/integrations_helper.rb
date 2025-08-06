@@ -135,6 +135,19 @@ module EE
       }
     end
 
+    override :jira_specific_form_data
+    def jira_specific_form_data(integration)
+      return {} unless integration.is_a?(Integrations::Jira)
+
+      super.merge!({
+        jira_check_enabled: integration.jira_check_enabled.to_s,
+        jira_exists_check_enabled: integration.jira_exists_check_enabled.to_s,
+        jira_assignee_check_enabled: integration.jira_assignee_check_enabled.to_s,
+        jira_status_check_enabled: integration.jira_status_check_enabled.to_s,
+        jira_allowed_statuses_as_string: integration.jira_allowed_statuses_as_string
+      })
+    end
+
     private
 
     # Use this method when dealing with issue data from external services

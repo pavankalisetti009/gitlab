@@ -27,8 +27,8 @@ module GitlabSubscriptions
 
         def user_data
           {
-            firstName: params[:first_name] || user.first_name,
-            lastName: params[:last_name] || user.last_name,
+            firstName: params[:first_name] || '',
+            lastName: params[:last_name] || '',
             emailDomain: user.email_domain,
             companyName: params[:company_name] || user.user_detail_organization,
             country: params[:country] || '',

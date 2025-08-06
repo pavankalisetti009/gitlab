@@ -1165,6 +1165,45 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
 
+    describe '#token_value' do
+      subject { finding.token_value }
+
+      context 'with raw_source_code_extract in metadata' do
+        let(:finding) { build(:vulnerabilities_finding, raw_metadata: metadata.to_json) }
+        let(:metadata) { { 'raw_source_code_extract' => 'glb_test123abc' } }
+
+        it 'returns the raw_source_code_extract value' do
+          is_expected.to eq('glb_test123abc')
+        end
+      end
+
+      context 'without raw_source_code_extract in metadata' do
+        let(:finding) { build(:vulnerabilities_finding, raw_metadata: metadata.to_json) }
+        let(:metadata) { { 'other_field' => 'value' } }
+
+        it 'returns nil' do
+          is_expected.to be_nil
+        end
+      end
+
+      context 'with empty raw_source_code_extract' do
+        let(:finding) { build(:vulnerabilities_finding, raw_metadata: metadata.to_json) }
+        let(:metadata) { { 'raw_source_code_extract' => '' } }
+
+        it 'returns empty string' do
+          is_expected.to eq('')
+        end
+      end
+
+      context 'with nil metadata' do
+        let(:finding) { build(:vulnerabilities_finding, raw_metadata: nil) }
+
+        it 'returns nil' do
+          is_expected.to be_nil
+        end
+      end
+    end
+
     describe '#evidence' do
       subject { finding.evidence }
 

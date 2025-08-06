@@ -84,6 +84,20 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
                   imagePullPolicy: Always
                   name: database-container
                   resources: {}
+                - args:
+                  - -n
+                  - user-defined entrypoint command
+                  command:
+                  - echo
+                  env:
+                  - name: PROJECTS_ROOT
+                    value: /projects
+                  - name: PROJECT_SOURCE
+                    value: /projects
+                  image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
+                  imagePullPolicy: Always
+                  name: user-defined-entrypoint-cmd-component
+                  resources: {}
           status: {}
           ---
           apiVersion: v1

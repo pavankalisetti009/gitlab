@@ -1,7 +1,6 @@
 ---
 # Cop supports --autocorrect.
 RSpec/RedundantMetatagType:
-  Details: grace period
   Exclude:
     - 'ee/spec/components/billing/free_plan_component_spec.rb'
     - 'ee/spec/components/billing/plan_component_spec.rb'
@@ -223,7 +222,6 @@ RSpec/RedundantMetatagType:
     - 'ee/spec/requests/projects/security/secret_detection_configuration_controller_spec.rb'
     - 'ee/spec/requests/registrations/groups_controller_spec.rb'
     - 'ee/spec/requests/repositories/git_http_controller_spec.rb'
-    - 'ee/spec/requests/search_controller_spec.rb'
     - 'ee/spec/requests/smartcard_controller_spec.rb'
     - 'ee/spec/requests/users/targeted_message_dismissals_controller_spec.rb'
     - 'ee/spec/routing/project_routing_spec.rb'
@@ -462,7 +460,6 @@ RSpec/RedundantMetatagType:
     - 'spec/models/packages/nuget/package_spec.rb'
     - 'spec/models/packages/nuget/symbol_spec.rb'
     - 'spec/models/packages/package_file_build_info_spec.rb'
-    - 'spec/models/packages/package_spec.rb'
     - 'spec/models/packages/protection/rule_spec.rb'
     - 'spec/models/packages/pypi/metadatum_spec.rb'
     - 'spec/models/packages/pypi/package_spec.rb'

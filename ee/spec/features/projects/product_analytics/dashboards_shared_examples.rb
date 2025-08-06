@@ -4,7 +4,7 @@ require 'spec_helper'
 
 # Shared examples for testing that the product analytics dashboards functionality works as expected
 #
-# The tests will check that a user can view the dashboards list, create/edit dashboards, and view dashboards.
+# The tests will check that a user can view the dashboards list and view dashboards.
 # They also test that new dashboard data sources can be set up.
 #
 # The following let variables can be used to set up the testing environment:
@@ -58,16 +58,6 @@ RSpec.shared_examples 'product analytics dashboards' do
 
     it do
       expect(page).to have_content(s_('ProductAnalytics|Waiting for events'))
-    end
-  end
-
-  shared_examples 'renders the new dashboard button' do
-    before do
-      visit_page
-    end
-
-    it do
-      expect(page).to have_content(s_('Analytics|New dashboard'))
     end
   end
 
@@ -272,33 +262,6 @@ RSpec.shared_examples 'product analytics dashboards' do
                     href: "#"
                   )
                 end
-              end
-            end
-
-            context 'and a custom dashboard pointer is set' do
-              before do
-                create(:analytics_dashboards_pointer, :project_based, project: project)
-              end
-
-              it_behaves_like 'renders the new dashboard button'
-            end
-
-            context 'and the default custom dashboard location is used' do
-              it_behaves_like 'renders the new dashboard button'
-
-              it 'user can clone existing dashboard' do
-                visit_page
-
-                within first("[data-testid='dashboard-actions-dropdown']") do
-                  click_button
-                  within_testid('base-dropdown-menu') do
-                    click_button 'Clone'
-                  end
-                end
-
-                wait_for_requests
-
-                expect(page).to have_content('Audience (Copy)')
               end
             end
           end

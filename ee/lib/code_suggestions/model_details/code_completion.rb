@@ -3,6 +3,8 @@
 module CodeSuggestions
   module ModelDetails
     class CodeCompletion < Base
+      include ::Ai::ModelSelection::Concerns::GitlabDefaultModelParams
+
       FEATURE_SETTING_NAME = 'code_completions'
 
       def initialize(current_user:, root_namespace: nil)
@@ -21,6 +23,7 @@ module CodeSuggestions
       def current_model
         # if self-hosted, the model details are provided by the client
         return {} if self_hosted?
+        return params_as_if_gitlab_default_model(FEATURE_SETTING_NAME) if vendored?
 
         return vertex_codestral_2501_model_details if code_completion_opt_out_fireworks?
 

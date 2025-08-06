@@ -118,6 +118,21 @@ RSpec.describe SystemNotes::EpicsService, feature_category: :portfolio_managemen
       end
     end
 
+    context 'note on the epic when it is a work item' do
+      let_it_be(:work_item) { create(:work_item, :issue, project: project) }
+
+      subject { described_class.new(noteable: epic, author: author).issue_promoted(work_item, direction: :from) }
+
+      it_behaves_like 'a system note', exclude_project: true do
+        let(:action) { 'moved' }
+        let(:expected_noteable) { epic }
+      end
+
+      it 'sets the note text' do
+        expect(subject.note).to eq("promoted from issue #{work_item.to_reference(group)}")
+      end
+    end
+
     context 'note on the issue' do
       subject { described_class.new(noteable: issue, author: author).issue_promoted(epic, direction: :to) }
 

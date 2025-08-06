@@ -592,7 +592,7 @@ This is a code block that uses Markdown to demonstrate **bold** and `backticks`.
 When you use code blocks:
 
 - Add a blank line above and below code blocks.
-- Use one of the [supported syntax names](https://github.com/alecthomas/chroma?tab=readme-ov-file#supported-languages).
+- Use one of the [supported syntax names](https://gohugo.io/content-management/syntax-highlighting/#languages).
   Use `plaintext` if no better option is available.
 - Use quadruple backticks (````` ```` `````) when the code block contains another (nested) code block
   which has triple backticks already. The example above uses quadruple backticks internally
@@ -1893,37 +1893,16 @@ For more information, see [Promising features in future versions](#promising-fea
 
 ## Blockquotes
 
-For highlighting a text inside a blockquote, use this format:
+Avoid using [blockquotes](../../../user/markdown.md#blockquotes) in the product documentation.
+They can make text difficult to scan. Instead of a blockquote, consider using:
 
-```markdown
-> This is a blockquote.
-```
+- A [code block](#code-blocks).
+- An [alert box](#alert-boxes).
+- No special styling at all.
 
-It renders on the GitLab documentation site as:
-
-> This is a blockquote.
-
-If the text spans multiple lines, split them.
-
-For multiple paragraphs, use the symbol `>` before every line:
-
-```markdown
-> This is the first paragraph.
->
-> This is the second paragraph.
->
-> - This is a list item
-> - Second item in the list
-```
-
-It renders on the GitLab documentation site as:
-
-> This is the first paragraph.
->
-> This is the second paragraph.
->
-> - This is a list item
-> - Second item in the list
+The [GitLab Flavored Markdown (GLFM)](../../../user/markdown.md) page is a rare case that
+uses blockquotes to differentiate between plain text and rendered examples. However, in most cases,
+you should avoid them.
 
 ## Tabs
 

@@ -21,16 +21,15 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
 
         it 'marks registries as never attempted to sync' do
           records = [
-            create(registry_factory, :started, last_synced_at: 9.hours.ago),
-            create(registry_factory, :synced, last_synced_at: 1.hour.ago),
-            create(registry_factory, :failed, last_synced_at: Time.current)
+            create(registry_factory, :started),
+            create(registry_factory, :synced),
+            create(registry_factory, :failed)
           ]
 
           service.mark_one_batch_to_update_with_lease!
 
           records.each do |record|
             expect(record.reload.state).to eq registry_class::STATE_VALUES[:pending]
-            expect(record.last_synced_at).to be_nil
           end
         end
       end
@@ -40,7 +39,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
 
         context 'when there are remaining batches for pending registries' do
           it 'returns the number of remaining batches' do
-            create(registry_factory, :started, last_synced_at: 9.hours.ago)
+            create(registry_factory, :started)
 
             expect(service.remaining_batches_to_bulk_mark_update(max_batch_count: max_running_jobs)).to eq(1)
           end
@@ -73,15 +72,14 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
           service = described_class.new(registry_class.name, { 'replication_state' => 'failed' })
           service.set_bulk_mark_update_cursor(0)
           records = {
-            started: create(registry_factory, :started, last_synced_at: 9.hours.ago),
-            synced: create(registry_factory, :synced, last_synced_at: 1.hour.ago),
-            failed: create(registry_factory, :failed, last_synced_at: Time.current)
+            started: create(registry_factory, :started),
+            synced: create(registry_factory, :synced),
+            failed: create(registry_factory, :failed)
           }
 
           service.mark_one_batch_to_update_with_lease!
 
           expect(records[:failed].reload.state).to eq registry_class::STATE_VALUES[:pending]
-          expect(records[:failed].last_synced_at).to be_nil
 
           expect(records[:started].reload.state).to eq registry_class::STATE_VALUES[:started]
           expect(records[:synced].reload.state).to eq registry_class::STATE_VALUES[:synced]
@@ -89,9 +87,9 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
 
         it 'marks selected IDs registries as never attempted to sync' do
           records = {
-            started: create(registry_factory, :started, last_synced_at: 9.hours.ago),
-            synced: create(registry_factory, :synced, last_synced_at: 1.hour.ago),
-            failed: create(registry_factory, :failed, last_synced_at: Time.current)
+            started: create(registry_factory, :started),
+            synced: create(registry_factory, :synced),
+            failed: create(registry_factory, :failed)
           }
           service = described_class.new(registry_class.name, { 'ids' => [records[:started].id, records[:synced].id] })
           service.set_bulk_mark_update_cursor(0)
@@ -101,9 +99,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
           expect(records[:failed].reload.state).to eq registry_class::STATE_VALUES[:failed]
 
           expect(records[:started].reload.state).to eq registry_class::STATE_VALUES[:pending]
-          expect(records[:started].last_synced_at).to be_nil
           expect(records[:synced].reload.state).to eq registry_class::STATE_VALUES[:pending]
-          expect(records[:synced].last_synced_at).to be_nil
         end
 
         it 'marks replication failed registries as never attempted to sync' do
@@ -113,18 +109,16 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
           service = described_class.new(registry_class.name, { 'verification_state' => 'verification_failed' })
           service.set_bulk_mark_update_cursor(0)
           records = {
-            fail1: create(registry_factory, :verification_failed, last_synced_at: 9.hours.ago),
-            fail2: create(registry_factory, :verification_failed, last_synced_at: 1.hour.ago),
-            synced: create(registry_factory, :verification_succeeded, last_synced_at: Time.current)
+            fail1: create(registry_factory, :verification_failed),
+            fail2: create(registry_factory, :verification_failed),
+            synced: create(registry_factory, :verification_succeeded)
           }
 
           service.mark_one_batch_to_update_with_lease!
 
           if registry_class.replicator_class.verification_enabled?
             expect(records[:fail1].reload.state).to eq registry_class::STATE_VALUES[:pending]
-            expect(records[:fail1].last_synced_at).to be_nil
             expect(records[:fail2].reload.state).to eq registry_class::STATE_VALUES[:pending]
-            expect(records[:fail2].last_synced_at).to be_nil
 
             expect(records[:synced].reload.state).to eq registry_class::STATE_VALUES[:synced]
           else
@@ -137,9 +131,9 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
 
         it 'marks selected registries from multiple parameters as never attempted to sync' do
           records = {
-            started: create(registry_factory, :started, last_synced_at: 9.hours.ago),
-            synced: create(registry_factory, :synced, last_synced_at: 1.hour.ago),
-            failed: create(registry_factory, :failed, last_synced_at: Time.current)
+            started: create(registry_factory, :started),
+            synced: create(registry_factory, :synced),
+            failed: create(registry_factory, :failed)
           }
           service = described_class.new(
             registry_class.name,
@@ -150,7 +144,6 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
           service.mark_one_batch_to_update_with_lease!
 
           expect(records[:failed].reload.state).to eq registry_class::STATE_VALUES[:pending]
-          expect(records[:failed].last_synced_at).to be_nil
 
           expect(records[:started].reload.state).to eq registry_class::STATE_VALUES[:started]
           expect(records[:synced].reload.state).to eq registry_class::STATE_VALUES[:synced]

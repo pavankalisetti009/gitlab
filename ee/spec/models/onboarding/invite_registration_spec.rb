@@ -68,4 +68,8 @@ RSpec.describe Onboarding::InviteRegistration, type: :undefined, feature_categor
   describe '.ignore_oauth_in_welcome_submit_text?' do
     it { is_expected.to be_ignore_oauth_in_welcome_submit_text }
   end
+
+  describe '.new_registration_design?' do
+    it { is_expected.not_to be_new_registration_design }
+  end
 end

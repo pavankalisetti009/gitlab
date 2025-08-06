@@ -8,11 +8,15 @@ import UpgradeBanner from 'ee/security_configuration/components/upgrade_banner.v
 import VulnerabilityArchives from 'ee/security_configuration/components/vulnerability_archives.vue';
 import { securityFeaturesMock, provideMock } from 'jest/security_configuration/mock_data';
 import { SERVICE_PING_SECURITY_CONFIGURATION_THREAT_MANAGEMENT_VISIT } from '~/tracking/constants';
-import { TAB_VULNERABILITY_MANAGEMENT_INDEX } from '~/security_configuration/constants';
+import {
+  TAB_VULNERABILITY_MANAGEMENT_INDEX,
+  LICENSE_INFORMATION_SOURCE,
+} from '~/security_configuration/constants';
 import { REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY } from '~/vue_shared/security_reports/constants';
 import FeatureCard from '~/security_configuration/components/feature_card.vue';
 import ContainerScanningForRegistryFeatureCard from 'ee_component/security_configuration/components/container_scanning_for_registry_feature_card.vue';
 import ApplySecurityAttributes from 'ee/security_configuration/security_attributes/components/apply_security_attributes.vue';
+import LicenseInformationSourceFeatureCard from 'ee/security_configuration/components/license_information_source_feature_card.vue';
 import { stubComponent } from 'helpers/stub_component';
 
 jest.mock('~/api.js');
@@ -58,6 +62,8 @@ describe('~/security_configuration/components/app', () => {
   const findFeatureCards = () => wrapper.findAllComponents(FeatureCard);
   const findContainerScanningForRegistry = () =>
     wrapper.findComponent(ContainerScanningForRegistryFeatureCard);
+  const findLicenseInformationSource = () =>
+    wrapper.findComponent(LicenseInformationSourceFeatureCard);
 
   describe('upgrade banner', () => {
     const makeAvailable = (available) => (feature) => ({ ...feature, available });
@@ -165,6 +171,30 @@ describe('~/security_configuration/components/app', () => {
       expect(findContainerScanningForRegistry().exists()).toBe(true);
       expect(findContainerScanningForRegistry().props('feature')).toEqual({
         type: REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY,
+      });
+    });
+  });
+
+  describe('with license information source', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          augmentedSecurityFeatures: [
+            {
+              type: LICENSE_INFORMATION_SOURCE,
+            },
+          ],
+        },
+      });
+    });
+
+    it('does not render the feature card component', () => {
+      expect(findFeatureCards()).toHaveLength(0);
+    });
+
+    it('renders the component', () => {
+      expect(findLicenseInformationSource().props('feature')).toEqual({
+        type: LICENSE_INFORMATION_SOURCE,
       });
     });
   });

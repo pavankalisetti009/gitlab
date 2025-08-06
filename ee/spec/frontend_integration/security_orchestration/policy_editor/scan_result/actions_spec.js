@@ -3,7 +3,7 @@ import * as urlUtils from '~/lib/utils/url_utility';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import ApproverAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_action.vue';
 import GroupSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/group_select.vue';
-import RoleSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/role_select.vue';
+import RoleSelect from 'ee/security_orchestration/components/shared/role_select.vue';
 import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
 import {
   GROUP_TYPE,

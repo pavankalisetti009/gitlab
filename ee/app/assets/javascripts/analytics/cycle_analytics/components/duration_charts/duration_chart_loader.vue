@@ -1,17 +1,17 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapGetters } from 'vuex';
-import { __, s__ } from '~/locale';
+import { GlAlert } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import { getDurationChart } from 'ee/api/analytics_api';
-import { createAlert } from '~/alert';
 import { transformFilters } from 'ee/analytics/shared/utils';
 import { DEFAULT_RENAMED_FILTER_KEYS } from 'ee/analytics/shared/constants';
 import {
   getDurationOverviewChartData,
   getDurationChartData,
   checkForDataError,
-  alertErrorIfStatusNotOk,
   getValueStreamGraphQLId,
   getValueStreamStageGraphQLId,
 } from '../../utils';
@@ -23,6 +23,8 @@ import StageScatterChart from './stage_scatter_chart.vue';
 export default {
   name: 'DurationChartLoader',
   components: {
+    ChartSkeletonLoader,
+    GlAlert,
     OverviewChart,
     StageChart,
     StageScatterChart,
@@ -35,8 +37,6 @@ export default {
       errorMessage: '',
       stageMetricsItems: [],
       stageMetricsItemsPageInfo: {},
-      isLoadingScatterChart: false,
-      scatterChartErrorMessage: '',
     };
   },
   computed: {
@@ -91,18 +91,24 @@ export default {
     this.fetchChartData();
   },
   methods: {
-    fetchChartData() {
-      if (this.shouldFetchScatterChartData) {
-        this.initializeScatterChart();
-      } else {
-        this.fetchDurationData();
-      }
-    },
-    fetchDurationData() {
+    async fetchChartData() {
       this.isLoading = true;
       this.errorMessage = '';
 
-      Promise.all(
+      if (this.shouldFetchScatterChartData) {
+        // Reset scatter chart data
+        this.stageMetricsItems = [];
+        this.stageMetricsItemsPageInfo = {};
+
+        await this.fetchScatterChartData();
+      } else {
+        await this.fetchDurationData();
+      }
+
+      this.isLoading = false;
+    },
+    async fetchDurationData() {
+      await Promise.all(
         this.activeStages.map(({ id, name }) => {
           return getDurationChart({
             stageId: id,
@@ -120,22 +126,10 @@ export default {
         .catch((error) => {
           this.durationData = [];
           this.errorMessage = error.message;
-          alertErrorIfStatusNotOk({
-            error,
-            message: __('There was an error while fetching value stream analytics duration data.'),
-          });
-        })
-        .finally(() => {
-          this.isLoading = false;
+          Sentry.captureException(error);
         });
     },
-    resetScatterChartData() {
-      this.stageMetricsItems = [];
-      this.stageMetricsItemsPageInfo = {};
-    },
     async fetchScatterChartData(endCursor) {
-      this.isLoadingScatterChart = true;
-
       const filters = transformFilters({
         filters: this.cycleAnalyticsRequestParams,
         renamedKeys: {
@@ -168,55 +162,45 @@ export default {
         this.stageMetricsItems = [...this.stageMetricsItems, ...edges.map(({ node }) => node)];
         this.stageMetricsItemsPageInfo = pageInfo;
 
+        // Lazy load additional pages
         if (pageInfo?.hasNextPage) {
+          this.isLoading = false;
           await this.fetchScatterChartData(pageInfo.endCursor);
-        } else {
-          this.isLoadingScatterChart = false;
         }
       } catch (error) {
-        this.isLoadingScatterChart = false;
-        this.scatterChartErrorMessage = error.message;
-
-        createAlert({
-          message: s__(
-            'CycleAnalytics|There was an error while fetching data for the stage time chart.',
-          ),
-          error,
-          captureError: true,
-        });
+        this.errorMessage = error.message;
+        Sentry.captureException(error);
       }
-    },
-    initializeScatterChart() {
-      this.resetScatterChartData();
-      this.fetchScatterChartData();
     },
   },
 };
 </script>
 <template>
+  <chart-skeleton-loader v-if="isLoading" size="md" class="gl-my-4 gl-py-4" />
+  <gl-alert
+    v-else-if="errorMessage"
+    :title="s__('CycleAnalytics|Failed to load chart data.')"
+    variant="danger"
+    :dismissible="false"
+    class="gl-mt-3"
+  >
+    {{ errorMessage }}
+  </gl-alert>
   <overview-chart
-    v-if="isOverviewStageSelected"
-    :is-loading="isLoading"
-    :error-message="errorMessage"
+    v-else-if="isOverviewStageSelected"
     :plottable-data="overviewChartPlottableData"
   />
-  <div v-else>
-    <stage-scatter-chart
-      v-if="stageScatterChartEnabled"
-      :stage-title="selectedStage.title"
-      :issuable-type="stageScatterChartIssuableType"
-      :is-loading="isLoadingScatterChart"
-      :plottable-data="stageScatterChartPlottableData"
-      :error-message="scatterChartErrorMessage"
-      :start-date="createdAfter"
-      :end-date="createdBefore"
-    />
-    <stage-chart
-      v-else
-      :stage-title="selectedStage.title"
-      :is-loading="isLoading"
-      :error-message="errorMessage"
-      :plottable-data="stageChartPlottableData"
-    />
-  </div>
+  <stage-scatter-chart
+    v-else-if="stageScatterChartEnabled"
+    :stage-title="selectedStage.title"
+    :issuable-type="stageScatterChartIssuableType"
+    :plottable-data="stageScatterChartPlottableData"
+    :start-date="createdAfter"
+    :end-date="createdBefore"
+  />
+  <stage-chart
+    v-else
+    :stage-title="selectedStage.title"
+    :plottable-data="stageChartPlottableData"
+  />
 </template>

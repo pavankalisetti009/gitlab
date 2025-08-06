@@ -22,7 +22,7 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
         .with(:phone_verification_send_code, scope: user).and_return(false)
 
       %i[soft hard].each do |prefix|
-        rate_limit_name = "#{prefix}_phone_verification_transactions_limit".to_sym
+        rate_limit_name = :"#{prefix}_phone_verification_transactions_limit"
         allow(Gitlab::ApplicationRateLimiter)
           .to receive(:throttled?).with(rate_limit_name, scope: nil).and_return(false)
       end

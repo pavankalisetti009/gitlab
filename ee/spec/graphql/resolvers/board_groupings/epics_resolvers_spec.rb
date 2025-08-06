@@ -135,52 +135,7 @@ RSpec.describe Resolvers::BoardGroupings::EpicsResolver do
     end
   end
 
-  context 'when board_grouped_by_epic_performance is turned on' do
-    before do
-      stub_feature_flags(board_grouped_by_epic_performance: true)
-    end
-
-    it_behaves_like '#resolve'
-
-    context 'with issue filters' do
-      before do
-        stub_licensed_features(epics: true)
-        parent_group.add_developer(current_user)
-      end
-
-      context 'when issue filters are set' do
-        it 'does not call the Epics::WithIssuesFinder' do
-          filters = { label_name: ['foo'] }
-
-          expect(::Epics::WithIssuesFinder).not_to receive(:new)
-
-          resolve_board_epics(group_board, { issue_filters: filters })
-        end
-      end
-
-      context 'when there are no issue filters' do
-        it 'call the Epics::WithIssuesFinder and orders the result' do
-          expect(::Epics::WithIssuesFinder).to receive(:new).and_call_original
-
-          resolve_board_epics(group_board)
-        end
-
-        it 'orders by descending epics.id' do
-          result = resolve_board_epics(group_board)
-
-          expect(result).to eq([epic3, epic2, epic1])
-        end
-      end
-    end
-  end
-
-  context 'when board_grouped_by_epic_performance is turned off' do
-    before do
-      stub_feature_flags(board_grouped_by_epic_performance: false)
-    end
-
-    it_behaves_like '#resolve'
-  end
+  it_behaves_like '#resolve'
 
   def resolve_board_epics(object, args = {})
     resolve(described_class, obj: object, args: args, ctx: context)

@@ -52,7 +52,11 @@ module Sbom
     scope :order_by_spdx_identifier, ->(direction, depth: 1) do
       order(Gitlab::Pagination::Keyset::Order.build(
         0.upto(depth).map do |index|
-          sql = Arel.sql("(licenses#>'{#{index},spdx_identifier}')::text")
+          sql = Arel.sql(
+            "COALESCE((licenses -> #{index} ->> 'spdx_identifier'), " \
+              "(licenses -> #{index} ->> 'name')) COLLATE \"C\""
+          )
+
           Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
             attribute_name: "spdx_identifier_#{index}",
             order_expression: direction == "desc" ? sql.desc : sql.asc,

@@ -176,7 +176,6 @@ module EE
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
-          experiment: { milestone: '16.4' },
           description: 'Time taken for CI jobs to be picked up by runner by percentile. ' \
             'Enable the ClickHouse database backend to use this query.',
           resolver: ::Resolvers::Ci::InstanceQueueingHistoryResolver,
@@ -362,6 +361,17 @@ module EE
             required: true,
             description: 'Global ID of the project compliance violation.'
         end
+
+        field :maven_virtual_registry, EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType,
+          null: true,
+          description: 'Find a Maven virtual registry. ' \
+            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
+          experiment: { milestone: '18.3' } do
+          argument :id,
+            type: ::Types::GlobalIDType[::VirtualRegistries::Packages::Maven::Registry],
+            required: true,
+            description: 'Global ID of the Maven virtual registry.'
+        end
       end
 
       def vulnerability(id:)
@@ -417,6 +427,14 @@ module EE
         ::Ai::Catalog::BuiltInTool.all
       end
 
+      def maven_virtual_registry(id:)
+        return unless ::Gitlab.config.dependency_proxy.enabled
+
+        ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry|
+          registry if maven_virtual_registry_available?(registry)
+        end
+      end
+
       private
 
       def get_enabled_permissions(permission_keys)
@@ -430,6 +448,13 @@ module EE
         return unless namespace&.root?
 
         namespace
+      end
+
+      def maven_virtual_registry_available?(registry)
+        return false unless registry&.group
+
+        ::Feature.enabled?(:maven_virtual_registry, registry.group) &&
+          registry.group.licensed_feature_available?(:packages_virtual_registry)
       end
     end
   end

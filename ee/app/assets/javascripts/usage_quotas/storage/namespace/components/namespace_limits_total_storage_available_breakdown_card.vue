@@ -8,7 +8,7 @@ import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 /**
  * NamespaceLimitsTotalStorageAvailableBreakdownCard
  *
- * This card is used on Namespace Usage Quotas
+ * This card is used on Namespace Usage quotas
  * when the namespace has Namespace-level storage limits
  * https://docs.gitlab.com/ee/user/storage_usage_quotas#namespace-storage-limit
  * It breaks down the storage available: included in the plan & purchased storage

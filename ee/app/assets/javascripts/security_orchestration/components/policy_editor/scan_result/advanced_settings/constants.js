@@ -15,11 +15,13 @@ export const PATTERN = 'pattern';
 export const SOURCE = 'source';
 export const TARGET = 'target';
 
+export const CUSTOM_ROLES = 'custom_roles';
 export const ROLES = 'roles';
 export const GROUPS = 'groups';
 export const ACCOUNTS = 'service_accounts';
 export const TOKENS = 'access_tokens';
 export const SOURCE_BRANCH_PATTERNS = 'branches';
+export const USERS = 'users';
 
 export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   [ROLES]: {
@@ -44,6 +46,18 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
     ),
     example: s__(
       'ScanResultPolicy|If your DevOps Team frequently needs to push infrastructure configuration changes that trigger policy violations but are pre-approved through your change management process, add the DevOps Team group to bypass infrastructure policies.',
+    ),
+  },
+  [USERS]: {
+    header: s__('ScanResultPolicy|Users'),
+    subHeader: s__(
+      'ScanResultPolicy|Select users exceptions. Choose which users can bypass this policy.',
+    ),
+    description: s__(
+      'ScanResultPolicy|Allow specific users to bypass policies for their specialized workflows.',
+    ),
+    example: s__(
+      'ScanResultPolicy|If Team frequently needs to push infrastructure configuration changes that trigger policy violations but are pre-approved through your change management process, add specific users to bypass infrastructure policies.',
     ),
   },
   [ACCOUNTS]: {

@@ -117,7 +117,7 @@ gem 'openid_connect', '~> 2.3.0', feature_category: :system_access
 gem 'omniauth-salesforce', '~> 1.0.5', path: 'vendor/gems/omniauth-salesforce', feature_category: :system_access
 gem 'omniauth-atlassian-oauth2', '~> 0.2.0', feature_category: :system_access
 gem 'rack-oauth2', '~> 2.2.1', feature_category: :system_access
-gem 'jwt', '~> 2.9.3', feature_category: :system_access
+gem 'jwt', '~> 2.10.0', feature_category: :system_access
 
 # Kerberos authentication. EE-only
 gem 'gssapi', '~> 1.3.1', group: :kerberos, feature_category: :system_access
@@ -221,15 +221,15 @@ gem 'google-apis-storage_v1', '~> 0.29', feature_category: :shared
 gem 'google-cloud-storage', '~> 1.45.0', feature_category: :shared
 # We need >= 0.11.1 because that's when match_glob support is added to list_objects
 gem 'google-apis-core', '~> 0.18.0', '>= 0.18.0', feature_category: :shared
-gem 'google-apis-compute_v1', '~> 0.57.0', feature_category: :shared
-gem 'google-apis-container_v1', '~> 0.43.0', feature_category: :shared
+gem 'google-apis-compute_v1', '~> 0.125.0', feature_category: :shared
+gem 'google-apis-container_v1', '~> 0.100.0', feature_category: :shared
 gem 'google-apis-container_v1beta1', '~> 0.43.0', feature_category: :shared
 gem 'google-apis-cloudbilling_v1', '~> 0.22.0', feature_category: :shared
 gem 'google-apis-cloudresourcemanager_v1', '~> 0.31.0', feature_category: :shared
-gem 'google-apis-iam_v1', '~> 0.72.0', feature_category: :shared
+gem 'google-apis-iam_v1', '~> 0.73.0', feature_category: :shared
 gem 'google-apis-serviceusage_v1', '~> 0.28.0', feature_category: :shared
 gem 'google-apis-sqladmin_v1beta4', '~> 0.41.0', feature_category: :shared
-gem 'google-apis-androidpublisher_v3', '~> 0.83.0', feature_category: :shared
+gem 'google-apis-androidpublisher_v3', '~> 0.84.0', feature_category: :shared
 
 gem 'googleauth', '~> 1.14', feature_category: :shared
 gem 'google-cloud-artifact_registry-v1', '~> 0.11.0', feature_category: :shared
@@ -287,7 +287,7 @@ gem 'rack', '~> 2.2.9', feature_category: :shared
 gem 'rack-timeout', '~> 0.7.0', require: 'rack/timeout/base', feature_category: :shared
 
 group :puma do
-  gem 'puma', '= 6.6.0', require: false, feature_category: :shared
+  gem 'puma', '= 6.6.1', require: false, feature_category: :shared
   gem 'sd_notify', '~> 0.1.0', require: false, feature_category: :shared
 end
 
@@ -502,7 +502,7 @@ end
 group :development, :test do
   gem 'deprecation_toolkit', '~> 2.2.3', require: false, feature_category: :shared
   gem 'bullet', '~> 8.0.0', feature_category: :shared
-  gem 'parser', '= 3.3.8.0', feature_category: :shared
+  gem 'parser', '= 3.3.9.0', feature_category: :shared
   gem 'pry-byebug', feature_category: :shared
   gem 'pry-rails', '~> 0.3.9', feature_category: :shared
   gem 'pry-shell', '~> 0.6.4', feature_category: :shared
@@ -588,6 +588,11 @@ group :test do
 
   gem 'graphlyte', '~> 1.0.0', feature_category: :shared
 
+  # Upload CI metrics to a GCP BigQuery instance
+  #
+  # We only use this gem in CI.
+  gem 'google-cloud-bigquery', '~> 1.0', feature_category: :tooling
+
   gem 'shoulda-matchers', '~> 6.4.0', require: false, feature_category: :shared
   gem 'email_spec', '~> 2.3.0', feature_category: :shared
   gem 'webmock', '~> 3.25.0', feature_category: :shared
@@ -617,7 +622,6 @@ gem 'html2text', feature_category: :shared
 gem 'stackprof', '~> 0.2.26', require: false, feature_category: :shared
 gem 'rbtrace', '~> 0.4', require: false, feature_category: :shared
 gem 'memory_profiler', '~> 1.0', require: false, feature_category: :shared
-gem 'activerecord-explain-analyze', '~> 0.1', require: false, feature_category: :shared
 
 # OAuth
 gem 'oauth2', '~> 2.0', feature_category: :system_access
@@ -753,4 +757,4 @@ gem 'paper_trail', '~> 16.0', feature_category: :shared
 
 gem "i18n_data", "~> 0.13.1", feature_category: :system_access
 
-gem "gitlab-cloud-connector", "~> 1.23", require: 'gitlab/cloud_connector', feature_category: :plan_provisioning
+gem "gitlab-cloud-connector", "~> 1.24", require: 'gitlab/cloud_connector', feature_category: :plan_provisioning

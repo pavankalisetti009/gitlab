@@ -51,6 +51,8 @@ RSpec.describe GitlabSchema.types['CurrentUser'], feature_category: :user_profil
         updatedAfter
         updatedBefore
         parentIds
+        hierarchyFilters
+        includeDescendantWorkItems
         crmContactId
         crmOrganizationId
         releaseTagWildcardId

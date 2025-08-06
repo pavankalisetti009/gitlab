@@ -1,0 +1,45 @@
+# frozen_string_literal: true
+
+module Security
+  module Categories
+    class UpdateService < BaseService
+      def initialize(category:, params:, current_user:)
+        @category = category
+        @params = params
+        @current_user = current_user
+      end
+
+      def execute
+        return ServiceResponse.error(message: 'Not permitted to update security category') unless permitted?
+        return ServiceResponse.error(message: 'This category is not editable') unless editable?
+
+        update_params = params.except(:namespace, :editable_state, :template_type)
+        return error unless update_params.present? && category.update(update_params)
+
+        success
+      end
+
+      attr_reader :category, :params, :current_user
+
+      private
+
+      def permitted?
+        current_user.can?(:admin_security_attributes, category.namespace)
+      end
+
+      def editable?
+        category&.editable_state == "editable"
+      end
+
+      def success
+        ServiceResponse.success(payload: { category: category })
+      end
+
+      def error
+        message = 'Failed to update security category'
+        message += ": #{category.errors.full_messages.join(', ')}" if category.errors.present?
+        ServiceResponse.error(message: _(message), payload: category.errors)
+      end
+    end
+  end
+end

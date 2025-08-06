@@ -26,6 +26,14 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
     end
 
     context 'when user is not authenticated' do
+      let(:trial_duration) { 60 }
+
+      before do
+        allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
+          allow(instance).to receive(:execute).and_return(trial_duration)
+        end
+      end
+
       it { is_expected.to have_gitlab_http_status(:ok) }
 
       context 'with tracking' do
@@ -129,8 +137,6 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
           post_create
 
           expect(response).to redirect_to(new_users_sign_up_trial_welcome_path)
-          created_user = User.find_by_email(new_user_email)
-          expect(created_user.onboarding_status_step_url).to eq(new_users_sign_up_trial_welcome_path)
         end
       end
     end

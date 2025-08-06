@@ -74,6 +74,8 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
 
       # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
       where(:input_devfile_name, :error_str) do
+        "example.invalid-attributes-override-command-with-command-args-present-devfile.yaml.erb" | "Properties 'command', 'args' for component 'tooling-container' can only be specified when the 'overrideCommand' attribute is set to false"
+        "example.invalid-attributes-override-command-with-non-boolean-value-devfile.yaml.erb" | "Property 'overrideCommand' of component 'tooling-container' must be a boolean (true or false)"
         "example.invalid-attributes-tools-injector-absent-devfile.yaml.erb" | "No component has '#{main_component_indicator_attribute}' attribute"
         "example.invalid-attributes-tools-injector-multiple-devfile.yaml.erb" | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute"
         "example.invalid-component-missing-name.yaml.erb" | "A component must have a 'name'"
@@ -112,6 +114,7 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-unsupported-command-exec-options-devfile.yaml.erb" | "Unsupported options 'unsupportedOption' for exec command 'unsupported-options'. Only 'commandLine, component, label, hotReloadCapable' are supported."
         "example.invalid-unsupported-command-type-devfile.yaml.erb" | "Command 'composite-command' must have one of the supported command types: exec, apply"
         "example.invalid-unsupported-command-type-poststart-event-devfile.yaml.erb" | "PostStart event references command 'apply-command' which is not an exec command. Only exec commands are supported in postStart events"
+        "example.invalid-poststart-event-nonexistent-command-devfile.yaml.erb" | "PostStart event references command 'nonexistent-command' which has no command definition."
         "example.invalid-unsupported-component-container-dedicated-pod-devfile.yaml.erb" | "Property 'dedicatedPod' of component 'example' is not yet supported"
         "example.invalid-unsupported-component-type-image-devfile.yaml.erb" | "Component type 'image' is not yet supported"
         "example.invalid-unsupported-component-type-kubernetes-devfile.yaml.erb" | "Component type 'kubernetes' is not yet supported"

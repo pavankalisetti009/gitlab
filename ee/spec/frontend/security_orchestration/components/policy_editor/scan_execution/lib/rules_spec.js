@@ -7,8 +7,9 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/rules';
 import {
   ALL_PROTECTED_BRANCHES,
-  SPECIFIC_BRANCHES,
   PROJECT_DEFAULT_BRANCH,
+  SPECIFIC_BRANCHES,
+  TARGET_BRANCHES,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
   DEFAULT_CONDITION_STRATEGY,
@@ -146,11 +147,11 @@ describe('handleBranchTypeSelect', () => {
   });
 
   describe('pipeline_sources handling', () => {
-    it('removes pipeline_sources', () => {
+    it('does not modify the pipeline_sources property when switching between non-target branches', () => {
       const rule = {
-        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
         branches: ['feature/*'],
-        pipeline_sources: ['web', 'api'],
+        pipeline_sources: { including: ['web', 'api'] },
+        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
       };
 
       const result = handleBranchTypeSelect({
@@ -159,7 +160,55 @@ describe('handleBranchTypeSelect', () => {
         pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
       });
 
+      expect(result.pipeline_sources.including).toEqual(['web', 'api']);
+    });
+
+    it('modifies the pipeline_sources property when switching between non-target branch type and target branch type', () => {
+      const rule = {
+        branch_type: 'protected',
+        pipeline_sources: { including: ['push'] },
+        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+      };
+
+      const result = handleBranchTypeSelect({
+        branchType: TARGET_BRANCHES[0],
+        rule,
+        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+      });
+
+      expect(result.pipeline_sources.including).toEqual(['merge_request_event', 'push']);
+    });
+
+    it('modifies the pipeline_sources property when switching between target branch type and non-target branch type', () => {
+      const rule = {
+        branch_type: TARGET_BRANCHES[0],
+        pipeline_sources: { including: ['push'] },
+        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+      };
+
+      const result = handleBranchTypeSelect({
+        branchType: 'default',
+        rule,
+        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+      });
+
       expect(result.pipeline_sources).toBeUndefined();
+    });
+
+    it('does not modify the pipeline_sources property when switching between target branch type', () => {
+      const rule = {
+        branch_type: TARGET_BRANCHES[0],
+        pipeline_sources: { including: ['push'] },
+        type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+      };
+
+      const result = handleBranchTypeSelect({
+        branchType: TARGET_BRANCHES[1],
+        rule,
+        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+      });
+
+      expect(result.pipeline_sources.including).toEqual(['push']);
     });
   });
 });

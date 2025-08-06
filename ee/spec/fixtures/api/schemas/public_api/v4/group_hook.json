@@ -20,6 +20,7 @@
     "job_events",
     "deployment_events",
     "releases_events",
+    "milestone_events",
     "subgroup_events",
     "emoji_events",
     "feature_flag_events",
@@ -113,6 +114,9 @@
       "type": "boolean"
     },
     "releases_events": {
+      "type": "boolean"
+    },
+    "milestone_events": {
       "type": "boolean"
     },
     "subgroup_events": {

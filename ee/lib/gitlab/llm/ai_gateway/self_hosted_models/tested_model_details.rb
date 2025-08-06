@@ -28,6 +28,10 @@ module Gitlab
             true
           end
 
+          def vendored?
+            false
+          end
+
           attr_reader :current_user, :self_hosted_model
         end
       end

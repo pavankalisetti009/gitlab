@@ -17,6 +17,7 @@ RSpec.describe Types::Namespaces::LinkPaths::GroupNamespaceLinksType, feature_ca
       :labels_fetch | lazy do
         "/groups/#{namespace.full_path}/-/labels.json?include_ancestor_groups=true&only_group_labels=true"
       end
+      :issues_settings | lazy { "/groups/#{namespace.root_ancestor.full_path}/-/settings/issues" }
     end
 
     with_them do

@@ -1604,6 +1604,17 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           expect(updates[:status]).to have_attributes(expected_status_attributes)
         end
 
+        context 'when name has whitespace' do
+          let(:content) { '/status  in progress  ' }
+
+          it 'adds status reference to updates with message' do
+            _, updates, message = execute_command
+
+            expect(message).to eq(expected_message)
+            expect(updates[:status]).to have_attributes(expected_status_attributes)
+          end
+        end
+
         context 'when name has surrounding quotes' do
           let(:content) { '/status "in progress"' }
 

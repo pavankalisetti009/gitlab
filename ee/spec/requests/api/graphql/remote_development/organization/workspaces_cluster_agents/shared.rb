@@ -8,13 +8,13 @@ require_relative "../../shared"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.shared_context "with agents and users setup in an organization" do
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:organization) { create(:common_organization) }
 
   let_it_be(:authorized_user) do
     create(:user, owner_of: organization)
   end
 
-  let_it_be(:unauthorized_user) { create(:user) }
+  let_it_be(:unauthorized_user) { create(:user, organization: create(:organization)) }
 
   let_it_be(:mapped_agent) do
     project = create(:project, organization: organization, namespace: create(:group))
@@ -103,9 +103,7 @@ RSpec.shared_examples "multiple agents in organization query" do
   # noinspection RubyArgCount -- Rubymine detecting wrong types, thinks some #create are from Minitest, not FactoryBot
   context "when the user is authorized only on mapped agents" do
     let_it_be(:current_user) do
-      create(:user).tap do |u|
-        create(:organization_user, organization: organization, user: u)
-      end
+      create(:user, organization: organization)
     end
 
     it_behaves_like "query is a working graphql query"

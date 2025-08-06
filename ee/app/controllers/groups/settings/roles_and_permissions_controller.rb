@@ -16,6 +16,7 @@ module Groups
       before_action do
         push_frontend_feature_flag(:members_permissions_detailed_export, group)
         push_frontend_ability(ability: :export_group_memberships, resource: group, user: current_user)
+        push_licensed_feature(:custom_roles, group)
       end
 
       private

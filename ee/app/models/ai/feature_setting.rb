@@ -26,7 +26,8 @@ module Ai
       summarize_review: 12,
       glab_ask_git_command: 13,
       duo_chat_summarize_comments: 14,
-      duo_agent_platform: 15
+      review_merge_request: 15,
+      duo_agent_platform: 16
     }.freeze
 
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)

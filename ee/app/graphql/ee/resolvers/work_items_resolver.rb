@@ -28,8 +28,7 @@ module EE
         argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
           required: false,
           experiment: { milestone: '17.10' },
-          description: 'Filter by custom fields.',
-          prepare: ->(custom_fields, _ctx) { Array(custom_fields).inject({}, :merge) }
+          description: 'Filter by custom fields.'
         argument :status, ::Types::WorkItems::Widgets::StatusFilterInputType,
           required: false,
           description: 'Filter by status.',
@@ -68,6 +67,10 @@ module EE
         args[:iteration_cadence_id] = iteration_cadence_ids_from_args(args) if args[:iteration_cadence_id].present?
 
         rewrite_param_name(params, :iteration_wildcard_id, :iteration_id)
+
+        rewrite_param_name(params[:not], :iteration_wildcard_id, :iteration_id) if params.dig(:not,
+          :iteration_wildcard_id).present?
+
         params
       end
 

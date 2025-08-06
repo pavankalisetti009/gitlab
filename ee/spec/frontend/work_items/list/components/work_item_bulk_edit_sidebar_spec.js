@@ -11,7 +11,7 @@ import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit
 import WorkItemBulkEditLabels from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_labels.vue';
 import { createAlert } from '~/alert';
 import WorkItemBulkEditIteration from 'ee_component/work_items/components/list/work_item_bulk_edit_iteration.vue';
-import { WIDGET_TYPE_ITERATION } from '~/work_items/constants';
+import { BULK_EDIT_NO_VALUE, WIDGET_TYPE_ITERATION } from '~/work_items/constants';
 import { availableBulkEditWidgetsQueryResponse } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -166,6 +166,29 @@ describe('WorkItemBulkEditSidebar component EE', () => {
           milestoneWidget: undefined,
           stateEvent: undefined,
           subscriptionEvent: undefined,
+        },
+      });
+    });
+
+    it('calls mutation with null values to bulk edit when "No value" is chosen', async () => {
+      createComponent({
+        provide: {
+          glFeatures: { workItemsBulkEdit: true },
+        },
+        props: { isEpicsList: false },
+      });
+      await waitForPromises();
+
+      findIterationComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
+      findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+      expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
+        input: {
+          fullPath: 'group/project',
+          ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
+          iterationWidget: {
+            iterationId: null,
+          },
         },
       });
     });

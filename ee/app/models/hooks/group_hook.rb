@@ -28,6 +28,7 @@ class GroupHook < WebHook
     :project_hooks,
     :push_hooks,
     :release_hooks,
+    :milestone_hooks,
     :resource_access_token_hooks,
     :subgroup_hooks,
     :tag_push_hooks,

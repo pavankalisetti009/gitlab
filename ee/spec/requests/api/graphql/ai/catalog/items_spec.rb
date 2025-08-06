@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog do
+RSpec.describe 'getting AI catalog items', :with_current_organization, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
@@ -111,5 +111,14 @@ RSpec.describe 'getting AI catalog items', feature_category: :workflow_catalog d
         expect(nodes).to contain_exactly(a_graphql_entity_for(agent_type_item))
       end
     end
+  end
+
+  it 'returns only items in the current organization' do
+    item = create(:ai_catalog_item, public: true, organization: current_organization)
+    create(:ai_catalog_item, public: true, organization: create(:organization))
+
+    post_graphql(query, current_user: nil)
+
+    expect(nodes).to contain_exactly(a_graphql_entity_for(item))
   end
 end

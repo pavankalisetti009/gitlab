@@ -14,8 +14,8 @@ module Resolvers
         packager_asc: { sort_by: 'packager', sort: 'asc' },
         severity_desc: { sort_by: 'severity', sort: 'desc' },
         severity_asc: { sort_by: 'severity', sort: 'asc' },
-        license_asc: { sort_by: 'primary_license_spdx_identifier', sort: 'asc' },
-        license_desc: { sort_by: 'primary_license_spdx_identifier', sort: 'desc' }
+        license_asc: { sort_by: 'license', sort: 'asc' },
+        license_desc: { sort_by: 'license', sort: 'desc' }
       }.freeze
 
       authorize :read_dependency

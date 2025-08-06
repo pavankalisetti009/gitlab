@@ -50,31 +50,96 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :aggregate_failures, :s
     end
   end
 
-  context 'for extensions marketplace settings' do
-    let_it_be(:section_title) { _('Web IDE and workspaces') }
-    let_it_be(:checkbox_label) { s_('GroupSettings|Enable extension marketplace') }
+  context 'for enterprise users section' do
+    let_it_be(:section_title) { s_('GroupSettings|Enterprise users') }
+    let_it_be(:section_description) do
+      s_('GroupSettings|Settings that apply only to enterprise users associated with this group.')
+    end
 
-    context 'when cannot manage extensions marketplace for enterprise users' do
-      it 'renders nothing', :aggregate_failures do
-        allow(group).to receive(:can_manage_extensions_marketplace_for_enterprise_users?).and_return(false)
+    context 'when group is not root' do
+      before do
+        allow(group).to receive(:root?).and_return(false)
+      end
 
+      it 'does not render enterprise users section' do
         render
 
-        expect(rendered).to render_template('groups/settings/_extensions_marketplace')
         expect(rendered).not_to have_content(section_title)
-        expect(rendered).not_to have_field(checkbox_label, type: 'checkbox')
+        expect(rendered).not_to have_content(section_description)
       end
     end
 
-    context 'when can manage extensions marketplace for enterprise users' do
-      it 'renders checkbox', :aggregate_failures do
-        allow(group).to receive(:can_manage_extensions_marketplace_for_enterprise_users?).and_return(true)
+    context 'when domain verification is not available' do
+      before do
+        allow(group).to receive(:root?).and_return(true)
+        allow(group).to receive(:domain_verification_available?).and_return(false)
+      end
 
+      it 'does not render enterprise users section' do
         render
 
-        expect(rendered).to render_template('groups/settings/_extensions_marketplace')
+        expect(rendered).not_to have_content(section_title)
+        expect(rendered).not_to have_content(section_description)
+      end
+    end
+
+    context 'when user does not have owner access' do
+      before do
+        allow(group).to receive(:root?).and_return(true)
+        allow(group).to receive(:domain_verification_available?).and_return(true)
+        allow(view).to receive(:can?).with(anything, :owner_access, group).and_return(false)
+      end
+
+      it 'does not render enterprise users section' do
+        render
+
+        expect(rendered).not_to have_content(section_title)
+        expect(rendered).not_to have_content(section_description)
+      end
+    end
+
+    context 'when all conditions are met' do
+      before do
+        allow(group).to receive(:enterprise_user_settings_available?).and_return(true)
+      end
+
+      it 'renders enterprise users section with description' do
+        render
+
         expect(rendered).to have_content(section_title)
-        expect(rendered).to have_unchecked_field(checkbox_label, type: 'checkbox')
+        expect(rendered).to have_content(section_description)
+      end
+
+      it 'renders enterprise user partials' do
+        render
+
+        expect(rendered).to render_template('groups/settings/_enterprise_users_pats')
+        expect(rendered).to render_template('groups/settings/_hide_email_on_profile')
+        expect(rendered).to render_template('groups/settings/_extensions_marketplace')
+      end
+
+      context 'when extensions marketplace can be managed' do
+        before do
+          allow(group).to receive(:can_manage_extensions_marketplace_for_enterprise_users?).and_return(true)
+        end
+
+        it 'renders extensions marketplace checkbox' do
+          render
+
+          expect(rendered).to have_unchecked_field(s_('GroupSettings|Enable extension marketplace'), type: 'checkbox')
+        end
+      end
+
+      context 'when extensions marketplace cannot be managed' do
+        before do
+          allow(group).to receive(:can_manage_extensions_marketplace_for_enterprise_users?).and_return(false)
+        end
+
+        it 'does not render extensions marketplace checkbox' do
+          render
+
+          expect(rendered).not_to have_field(s_('GroupSettings|Enable extension marketplace'), type: 'checkbox')
+        end
       end
     end
   end

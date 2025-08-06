@@ -16,18 +16,23 @@ module Resolvers
         required: false,
         description: 'Filter by project IDs.'
 
-      argument :severity, [Types::VulnerabilitySeverityEnum],
+      argument :report_type, [Types::VulnerabilityReportTypeEnum],
         required: false,
-        description: 'Filter by vulnerability severity levels.'
+        description: 'Filter by report types.'
 
-      argument :scanner, [GraphQL::Types::String],
-        required: false,
-        description: 'Filter by scanner names.'
-
-      def resolve(**_args)
+      def resolve(**args)
         authorize!(object)
 
-        return unless Feature.enabled?(:group_security_dashboard_new, object)
+        if object.is_a?(Project)
+          return unless Feature.enabled?(:project_security_dashboard_new, object)
+        elsif object.is_a?(Group)
+          return unless Feature.enabled?(:group_security_dashboard_new, object)
+        else
+          return
+        end
+
+        context[:project_id] = args[:project_id] if args[:project_id].present?
+        context[:report_type] = args[:report_type] if args[:report_type].present?
 
         object
       end

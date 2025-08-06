@@ -46,7 +46,7 @@ RSpec.describe API::DependencyProxy::Packages::Npm, :aggregate_failures, feature
             end
 
             before do
-              project.send("add_#{user_role}".to_sym, user) unless user_role == :anonymous
+              project.send(:"add_#{user_role}", user) unless user_role == :anonymous
             end
 
             it_behaves_like 'returning response status', params[:expected_status]
@@ -274,6 +274,14 @@ RSpec.describe API::DependencyProxy::Packages::Npm, :aggregate_failures, feature
             it_behaves_like 'a user pulling files'
           end
         end
+      end
+
+      it_behaves_like 'updating personal access token last used' do
+        let_it_be(:package) { create(:npm_package, project: project) }
+        let(:package_file) { package.package_files.with_format('tgz').take }
+        let(:package_name) { package.name }
+        let(:file_name) { package_file.file_name }
+        let(:headers) { build_token_auth_header(personal_access_token.token) }
       end
     end
 

@@ -10,7 +10,7 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
 
   let_it_be_with_refind(:package_settings) { create(:namespace_package_setting, :group) }
   let_it_be_with_refind(:group) { package_settings.namespace }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, organization: group.organization) }
   let_it_be(:project, reload: true) { create(:project, :public, namespace: group, developers: user) }
   let_it_be(:package, reload: true) { create(:maven_package, project: project, name: project.full_path) }
   let_it_be(:maven_metadatum, reload: true) { package.maven_metadatum }
@@ -492,6 +492,10 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
       end
     end
 
+    it_behaves_like 'updating personal access token last used' do
+      subject { download_file_with_token(file_name: package_file.file_name) }
+    end
+
     def download_file(file_name:, params: {}, request_headers: headers, path: maven_metadatum.path)
       get api("/packages/maven/#{path}/#{file_name}"), params: params, headers: request_headers
     end
@@ -726,6 +730,8 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
 
         it_behaves_like 'successfully returning the file'
       end
+
+      it_behaves_like 'updating personal access token last used'
     end
 
     context 'maven metadata file' do
@@ -779,6 +785,10 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
           subject
         end
       end
+    end
+
+    it_behaves_like 'updating personal access token last used' do
+      subject { download_file_with_token(file_name: package_file.file_name) }
     end
 
     def download_file(file_name:, params: {}, request_headers: headers, path: maven_metadatum.path, group_id: group.id)
@@ -892,6 +902,10 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
     end
 
     it_behaves_like 'forwarding package requests'
+
+    it_behaves_like 'updating personal access token last used' do
+      subject { download_file_with_token(file_name: package_file.file_name) }
+    end
 
     def download_file(file_name:, params: {}, request_headers: headers, path: maven_metadatum.path)
       get api("/projects/#{project.id}/packages/maven/" \
@@ -1066,6 +1080,10 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
           it_behaves_like params[:shared_examples_name]
         end
       end
+    end
+
+    it_behaves_like 'updating personal access token last used' do
+      subject { authorize_upload_with_token }
     end
 
     def authorize_upload(params = {}, request_headers = headers)
@@ -1448,6 +1466,8 @@ RSpec.describe API::MavenPackages, feature_category: :package_registry do
           end
         end
       end
+
+      it_behaves_like 'updating personal access token last used'
     end
 
     def upload_file(params: {}, request_headers: headers, file_extension: 'jar', file_name: 'my-app-1.0-20180724.124855-1')

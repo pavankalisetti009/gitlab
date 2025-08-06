@@ -1144,134 +1144,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'read_software_license_policy' do
-      context 'without license scanning feature available' do
-        before do
-          stub_licensed_features(license_scanning: false)
-        end
-
-        let(:current_user) { admin }
-
-        it { is_expected.to be_disallowed(:read_software_license_policy) }
-      end
-    end
-
-    describe 'read_dependency' do
-      context 'when dependency scanning feature available' do
-        before do
-          stub_licensed_features(dependency_scanning: true)
-        end
-
-        context 'with public project' do
-          let(:current_user) { create(:user) }
-
-          context 'with public access to repository' do
-            let(:project) { public_project }
-
-            it { is_expected.to be_allowed(:read_dependency) }
-          end
-
-          context 'with limited access to repository' do
-            let(:project) { create(:project, :public, :repository_private) }
-
-            it { is_expected.not_to be_allowed(:read_dependency) }
-          end
-        end
-
-        context 'with private project' do
-          let(:project) { private_project }
-
-          context 'with admin' do
-            let(:current_user) { admin }
-
-            context 'when admin mode enabled', :enable_admin_mode do
-              it { is_expected.to be_allowed(:read_dependency) }
-            end
-
-            context 'when admin mode disabled' do
-              it { is_expected.to be_disallowed(:read_dependency) }
-            end
-          end
-
-          %w[owner maintainer developer reporter].each do |role|
-            context "with #{role}" do
-              let(:current_user) { send(role) }
-
-              it { is_expected.to be_allowed(:read_dependency) }
-            end
-          end
-
-          %w[anonymous non_member guest planner].each do |role|
-            context "with #{role}" do
-              let(:current_user) { send(role) }
-
-              it { is_expected.to be_disallowed(:read_dependency) }
-            end
-          end
-        end
-      end
-
-      context 'when dependency list feature not available' do
-        let(:current_user) { admin }
-
-        it { is_expected.not_to be_allowed(:read_dependency) }
-      end
-    end
-
-    describe 'read_licenses' do
-      context 'when license management feature available' do
-        context 'with public project' do
-          let(:current_user) { non_member }
-
-          context 'with public access to repository' do
-            it { is_expected.to be_allowed(:read_licenses) }
-          end
-        end
-
-        context 'with private project' do
-          let(:project) { private_project }
-
-          where(role: %w[owner maintainer developer reporter])
-
-          with_them do
-            let(:current_user) { public_send(role) }
-
-            it { is_expected.to be_allowed(:read_licenses) }
-          end
-
-          context 'with admin' do
-            let(:current_user) { admin }
-
-            context 'when admin mode enabled', :enable_admin_mode do
-              it { is_expected.to be_allowed(:read_licenses) }
-            end
-
-            context 'when admin mode disabled' do
-              it { is_expected.to be_disallowed(:read_licenses) }
-            end
-          end
-
-          %w[anonymous non_member guest planner].each do |role|
-            context "with #{role}" do
-              let(:current_user) { send(role) }
-
-              it { is_expected.to be_disallowed(:read_licenses) }
-            end
-          end
-        end
-      end
-
-      context 'when license management feature in not available' do
-        before do
-          stub_licensed_features(license_scanning: false)
-        end
-
-        let(:current_user) { admin }
-
-        it { is_expected.to be_disallowed(:read_licenses) }
-      end
-    end
-
     describe 'publish_status_page' do
       let(:feature) { :status_page }
       let(:policy) { :publish_status_page }
@@ -3052,13 +2924,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       context 'for a member role with the `read_dependency` ability' do
         let(:member_role_abilities) { { read_dependency: true } }
-        let(:allowed_abilities) { [:access_security_and_compliance, :read_dependency] }
-        let(:licensed_features) { { dependency_scanning: true } }
+        let(:allowed_abilities) { [:access_security_and_compliance, :read_dependency, :read_licenses] }
+        let(:licensed_features) { { dependency_scanning: true, license_scanning: true } }
 
         it_behaves_like 'custom roles abilities'
 
-        # TODO: will enable this spec in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195573
-        # it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
+        it_behaves_like 'does not call custom role query', [:developer, :maintainer, :owner]
       end
 
       context 'for a member role with the `admin_merge_request` true' do
@@ -4878,6 +4749,86 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe ':read_dependency' do
+    let(:policy) { :read_dependency }
+
+    where(:role, :admin_mode, :allowed) do
+      :guest      | nil   | false
+      :planner    | nil   | false
+      :reporter   | nil   | true
+      :developer  | nil   | true
+      :maintainer | nil   | true
+      :owner      | nil   | true
+      :auditor    | nil   | true
+      :admin      | true  | true
+      :admin      | false | false
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if admin_mode
+      end
+
+      context 'when licensed feature `dependency_scanning` is enabled' do
+        before do
+          stub_licensed_features(dependency_scanning: true)
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+
+      context 'when licensed feature `dependency_scanning` is disabled' do
+        before do
+          stub_licensed_features(dependency_scanning: false)
+        end
+
+        it { is_expected.to be_disallowed(policy) }
+      end
+    end
+  end
+
+  describe ':read_licenses, :read_software_license_policy' do
+    let(:policies) { %i[read_licenses read_software_license_policy] }
+
+    where(:role, :admin_mode, :allowed) do
+      :guest      | nil   | false
+      :planner    | nil   | false
+      :reporter   | nil   | true
+      :developer  | nil   | true
+      :maintainer | nil   | true
+      :owner      | nil   | true
+      :auditor    | nil   | true
+      :admin      | true  | true
+      :admin      | false | false
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if admin_mode
+      end
+
+      context 'when licensed feature `license_scanning` is enabled' do
+        before do
+          stub_licensed_features(license_scanning: true)
+        end
+
+        it { is_expected.to(allowed ? be_allowed(*policies) : be_disallowed(*policies)) }
+      end
+
+      context 'when licensed feature `license_scanning` is disabled' do
+        before do
+          stub_licensed_features(license_scanning: false)
+        end
+
+        it { is_expected.to be_disallowed(*policies) }
+      end
+    end
+  end
+
   describe 'invite_group_members policy' do
     let(:app_setting) { :disable_invite_members }
     let(:policy) { :invite_project_members }
@@ -5352,6 +5303,43 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     with_them do
       it { is_expected.to send(expected_result, :create_container_registry_protection_immutable_tag_rule) }
+    end
+  end
+
+  describe 'set_license_information_source' do
+    let(:license_information_source_feature) { true }
+
+    before do
+      stub_licensed_features(security_dashboard: true, license_information_source: license_information_source_feature)
+    end
+
+    context 'when user has a lesser role' do
+      let(:current_user) { developer }
+
+      it { is_expected.to be_disallowed(:set_license_information_source) }
+    end
+
+    context 'when user is a maintainer' do
+      let(:current_user) { maintainer }
+
+      context 'with admin_security_testing enabled' do
+        it { is_expected.to be_allowed(:set_license_information_source) }
+      end
+
+      context 'when admin_security_testing is disabled' do
+        before do
+          allow(Ability).to receive(:allowed?).with(current_user, :admin_all_resources, :global)
+          allow(Ability).to receive(:allowed?).with(current_user, :admin_security_testing, project).and_return(false)
+        end
+
+        it { is_expected.to be_allowed(:set_license_information_source) }
+      end
+
+      context 'when the licensed feature is disabled' do
+        let(:license_information_source_feature) { false }
+
+        it { is_expected.to be_disallowed(:set_license_information_source) }
+      end
     end
   end
 end

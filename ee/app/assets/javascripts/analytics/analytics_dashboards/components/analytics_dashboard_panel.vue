@@ -106,11 +106,6 @@ export default {
       required: false,
       default: () => ({}),
     },
-    editing: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     const validationErrors = this.visualization?.errors;
@@ -127,13 +122,6 @@ export default {
       data: null,
       loading: false,
       loadingDelayed: false,
-      dropdownItems: [
-        {
-          text: __('Delete'),
-          action: () => this.$emit('delete'),
-          icon: 'remove',
-        },
-      ],
       currentRequestNumber: 0,
       visualizationOptionOverrides: {},
       visualizationQueryOverrides: {},
@@ -345,8 +333,6 @@ export default {
     :show-alert-state="showAlertState"
     :alert-variant="alertVariant"
     :alert-popover-title="alertTitle"
-    :actions="dropdownItems"
-    :editing="editing"
     :body-content-classes="bodyContentClasses"
   >
     <template #body>

@@ -287,7 +287,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
       it 'receives the default prompt version' do
         expect(ai_request_double).to receive(:request).with(
-          hash_including(options: hash_including(prompt_version: '1.1.0-dev')),
+          hash_including(options: hash_including(prompt_version: described_class::DEFAULT_PROMPT_VERSION)),
           unit_primitive: 'troubleshoot_job'
         )
 
@@ -299,28 +299,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
           tracking_context: { request_id: nil, action: 'troubleshoot_job' },
           root_namespace: project.root_ancestor
         )
-      end
-
-      context 'when rca_claude_4_upgrade is disabled' do
-        before do
-          stub_feature_flags(rca_claude_4_upgrade: false)
-        end
-
-        it 'receives the upgraded prompt version' do
-          expect(ai_request_double).to receive(:request).with(
-            hash_including(options: hash_including(prompt_version: described_class::DEFAULT_PROMPT_VERSION)),
-            unit_primitive: 'troubleshoot_job'
-          )
-
-          tool.execute
-
-          expect(Gitlab::Llm::Chain::Requests::AiGateway).to have_received(:new).with(
-            user,
-            service_name: :troubleshoot_job,
-            tracking_context: { request_id: nil, action: 'troubleshoot_job' },
-            root_namespace: project.root_ancestor
-          )
-        end
       end
     end
   end

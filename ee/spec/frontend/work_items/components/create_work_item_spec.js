@@ -109,10 +109,15 @@ describe('EE Create work item component', () => {
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
         hasStatusFeature: true,
+        hasWorkItemStatusFeature: true,
         workItemPlanningViewEnabled,
+        issuesSettings: '/groups/twitter/-/settings/issues',
         glFeatures: {
           workItemStatusFeatureFlag,
         },
+      },
+      stubs: {
+        WorkItemStatus,
       },
     });
   };

@@ -8,7 +8,7 @@ module Users
     include ::Gitlab::InternalEventsTracking
     extend ::Gitlab::Utils::Override
 
-    helper_method :onboarding_status_presenter, :trial_registration?
+    helper_method :onboarding_status_presenter
 
     skip_before_action :authenticate_user!
 
@@ -146,10 +146,6 @@ module Users
 
     def required_params
       params.require(controller_name.to_sym)
-    end
-
-    def trial_registration?
-      @user.onboarding_status_initial_registration_type == ::Onboarding::REGISTRATION_TYPE[:trial]
     end
   end
 end

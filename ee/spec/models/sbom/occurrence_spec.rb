@@ -302,9 +302,9 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
             apache_and_mit_occurrence.licenses,
             apache_and_mpl_occurrence.licenses,
             apache_occurrence.licenses,
+            occurrence_license_without_spdx_id.licenses,
             mit_and_mpl_occurrence.licenses,
-            mit_occurrence.licenses,
-            occurrence_license_without_spdx_id.licenses
+            mit_occurrence.licenses
           ])
         end
       end
@@ -314,9 +314,9 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
 
         it 'returns the sorted records' do
           expect(relation.map(&:licenses)).to eq([
-            occurrence_license_without_spdx_id.licenses,
             mit_occurrence.licenses,
             mit_and_mpl_occurrence.licenses,
+            occurrence_license_without_spdx_id.licenses,
             apache_occurrence.licenses,
             apache_and_mpl_occurrence.licenses,
             apache_and_mit_occurrence.licenses

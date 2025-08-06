@@ -70,4 +70,39 @@ RSpec.describe Ci::PipelinePolicy, feature_category: :continuous_integration do
       end
     end
   end
+
+  describe 'read_dependency' do
+    let_it_be(:developer) { create(:user, developer_of: project) }
+    let_it_be(:guest) { create(:user, guest_of: project) }
+
+    context 'when licensed feature `dependency_scanning` is enabled' do
+      before do
+        stub_licensed_features(dependency_scanning: true)
+      end
+
+      context 'when user is allowed to read project dependencies' do
+        let(:user) { developer }
+
+        it { is_expected.to be_allowed(:read_dependency) }
+      end
+
+      context 'when user is not allowed to read project dependencies' do
+        let(:user) { guest }
+
+        it { is_expected.to be_disallowed(:read_dependency) }
+      end
+    end
+
+    context 'when licensed feature `dependency_scanning` is disabled' do
+      before do
+        stub_licensed_features(dependency_scanning: false)
+      end
+
+      context 'when user is allowed to read project dependencies' do
+        let(:user) { developer }
+
+        it { is_expected.to be_disallowed(:read_dependency) }
+      end
+    end
+  end
 end

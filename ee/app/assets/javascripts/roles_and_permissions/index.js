@@ -28,6 +28,7 @@ export const initCustomRolesApp = () => {
     ldapUsersPath,
     isSaas,
     ldapServers = null,
+    adminModeSettingPath,
   } = el.dataset;
 
   return new Vue({
@@ -48,7 +49,9 @@ export const initCustomRolesApp = () => {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');
     },
     render(createElement) {
-      return createElement(RoleTabs);
+      return createElement(RoleTabs, {
+        props: { adminModeSettingPath },
+      });
     },
   });
 };

@@ -20,7 +20,7 @@ module Analytics
 
     private
 
-    def upsert_options
+    def upsert_options(_)
       {
         unique_by: %i[user_id],
         on_duplicate: Arel.sql(<<~SQL.squish)

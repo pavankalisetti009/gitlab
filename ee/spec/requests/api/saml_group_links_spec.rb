@@ -36,8 +36,8 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
       expect(json_response).to(
         match([
           { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group1", "provider" => nil },
-                { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group2", "provider" => nil },
-                { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group3", "provider" => nil }
+          { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group2", "provider" => nil },
+          { "access_level" => ::Gitlab::Access::GUEST, "name" => "saml-group3", "provider" => nil }
         ])
       )
     end

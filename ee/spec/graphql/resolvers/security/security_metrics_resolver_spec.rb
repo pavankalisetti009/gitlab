@@ -56,7 +56,37 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
       let(:operate_on) { group }
       let(:filter_args) do
         {
-          project_id: [project.to_global_id.to_s],
+          project_id: [project.to_global_id.to_s]
+        }
+      end
+
+      context 'when the current user has access' do
+        before_all do
+          group.add_maintainer(current_user)
+        end
+
+        it_behaves_like 'returns the object when authorized'
+
+        context 'when group level feature flag is disabled' do
+          before do
+            stub_feature_flags(group_security_dashboard_new: false)
+          end
+
+          it 'returns nil' do
+            expect(resolved_metrics).to be_nil
+          end
+        end
+      end
+
+      context 'when the current user does not have access' do
+        it_behaves_like 'returns resource not available error when unauthorized'
+      end
+    end
+
+    context 'when operated on a project' do
+      let(:operate_on) { project }
+      let(:filter_args) do
+        {
           severity: ['critical'],
           scanner: ['sast']
         }
@@ -68,6 +98,16 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
         end
 
         it_behaves_like 'returns the object when authorized'
+
+        context 'when group level feature flag is disabled' do
+          before do
+            stub_feature_flags(project_security_dashboard_new: false)
+          end
+
+          it 'returns nil' do
+            expect(resolved_metrics).to be_nil
+          end
+        end
       end
 
       context 'when the current user does not have access' do

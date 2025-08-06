@@ -86,6 +86,7 @@ glab mr merge
 - Tier: Premium, Ultimate
 - Add-on: GitLab Duo Enterprise
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
+- Available on [GitLab Duo with self-hosted models](../../administration/gitlab_duo_self_hosted/_index.md): Yes
 - LLM: Anthropic [Claude 3 Haiku](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-haiku)
 
 {{< /details >}}
@@ -97,7 +98,7 @@ glab mr merge
 
 {{< /history >}}
 
-The GitLab CLI includes features powered by [GitLab Duo](../../user/ai_features.md). These include:
+The GitLab CLI includes features powered by [GitLab Duo](../../user/gitlab_duo/_index.md). These include:
 
 - [`glab duo ask`](https://gitlab.com/gitlab-org/cli/-/blob/main/docs/source/duo/ask.md)
 

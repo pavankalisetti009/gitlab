@@ -16,11 +16,11 @@ import ScanFilterSelector from '../../scan_filter_selector.vue';
 import RuleMultiSelect from '../../rule_multi_select.vue';
 import SectionLayout from '../../section_layout.vue';
 import { buildFiltersFromRule, getDefaultRule, groupVulnerabilityStatesWithDefaults } from '../lib';
+import BranchSelection from '../../branch_selection.vue';
 import SeverityFilter from './scan_filters/severity_filter.vue';
 import AgeFilter from './scan_filters/age_filter.vue';
 import StatusFilters from './scan_filters/status_filters.vue';
 import AttributeFilters from './scan_filters/attribute_filters.vue';
-import BranchSelection from './branch_selection.vue';
 import {
   FILTERS,
   NEWLY_DETECTED,

@@ -2,6 +2,7 @@
 import { isEmpty } from 'lodash';
 import { GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { ROLES } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import PolicyExceptionsModal from './policy_exceptions_modal.vue';
 import PolicyExceptionsSelectedList from './policy_exceptions_selected_list.vue';
 
@@ -50,6 +51,11 @@ export default {
     },
     removeException(key) {
       const { [key]: removed, ...exceptions } = this.exceptions;
+
+      if (key === ROLES) {
+        delete exceptions.custom_roles;
+      }
+
       this.emitChanges(exceptions);
     },
   },

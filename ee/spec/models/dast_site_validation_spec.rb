@@ -4,10 +4,9 @@ require 'spec_helper'
 
 RSpec.describe DastSiteValidation, type: :model do
   let_it_be(:dast_site_token) { create(:dast_site_token) }
+  let_it_be(:another_dast_site_validation) { create(:dast_site_validation) }
 
   subject { create(:dast_site_validation, dast_site_token: dast_site_token) }
-
-  let_it_be(:another_dast_site_validation) { create(:dast_site_validation) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:dast_site_token) }

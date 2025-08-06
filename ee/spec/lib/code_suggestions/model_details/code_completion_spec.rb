@@ -31,6 +31,14 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
   let(:completions_model_details) { described_class.new(current_user: user) }
 
+  before do
+    allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(group1)
+    # we add default namespaces to account for no context calls
+    # For model selection see https://gitlab.com/gitlab-org/gitlab/-/issues/552082
+    # Is test in ee/spec/lib/code_suggestions/model_details/base_spec.rb
+    # And CodeSuggestions::ModelDetails::Base#model_selection_feature_setting for more context
+  end
+
   shared_examples 'selects the correct model' do
     before do
       stub_feature_flags(use_claude_code_completion: false)
@@ -92,11 +100,12 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
           describe 'executed queries for user_duo_groups' do
             it 'executes the expected number of queries' do
-              # We are only expecting 3 queries:
+              # We are only expecting 4 queries:
               # 1 - for ModelDetails::Completions#feature_setting
-              # 2 - for current_user#duo_available_namespace_ids in ModelDetails::Completions#user_duo_groups
-              # 3 - for Group.by_id(<group ids>) in ModelDetails::Completions#user_duo_groups
-              expect { actual_result }.not_to exceed_query_limit(3)
+              # 2 - for UserPreference#get_default_duo_namespace
+              # 3 - for current_user#duo_available_namespace_ids in ModelDetails::Completions#user_duo_groups
+              # 4 - for Group.by_id(<group ids>) in ModelDetails::Completions#user_duo_groups
+              expect { actual_result }.not_to exceed_query_limit(4)
             end
           end
         end
@@ -147,6 +156,14 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       let(:expected_claude_result) { {} }
 
       let(:expected_self_hosted_model_result) { {} }
+
+      context 'when code_completions is vendored' do
+        it 'returns the vendored model' do
+          create(:ai_feature_setting, :code_completions, provider: :vendored)
+
+          expect(actual_result).to eq({ model_provider: 'gitlab', model_name: '' })
+        end
+      end
     end
   end
 

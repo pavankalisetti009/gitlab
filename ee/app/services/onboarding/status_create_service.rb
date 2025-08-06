@@ -41,13 +41,22 @@ module Onboarding
 
     def user_attributes
       {
-        onboarding_in_progress: true,
+        onboarding_in_progress: onboarding_in_progress,
         onboarding_status_step_url: step_url,
         onboarding_status_initial_registration_type: registration_type,
         onboarding_status_registration_type: registration_type,
         onboarding_status_glm_content: glm_content,
         onboarding_status_glm_source: glm_source
       }
+    end
+
+    def onboarding_in_progress
+      return true unless trial_registration_type?
+
+      experiment(:lightweight_trial_registration_redesign, actor: user) do |e|
+        e.control { true }
+        e.candidate { false }
+      end.run
     end
 
     def registration_type

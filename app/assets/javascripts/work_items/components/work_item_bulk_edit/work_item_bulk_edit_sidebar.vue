@@ -7,7 +7,7 @@ import axios from '~/lib/utils/axios_utils';
 import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
-  BULK_UPDATE_UNASSIGNED,
+  BULK_EDIT_NO_VALUE,
   WIDGET_TYPE_ASSIGNEES,
   WIDGET_TYPE_HEALTH_STATUS,
   WIDGET_TYPE_HIERARCHY,
@@ -22,6 +22,7 @@ import WorkItemBulkEditDropdown from './work_item_bulk_edit_dropdown.vue';
 import WorkItemBulkEditLabels from './work_item_bulk_edit_labels.vue';
 import WorkItemBulkEditMilestone from './work_item_bulk_edit_milestone.vue';
 import WorkItemBulkEditParent from './work_item_bulk_edit_parent.vue';
+import WorkItemBulkMove from './work_item_bulk_move.vue';
 
 const WorkItemBulkEditIteration = () =>
   import('ee_component/work_items/components/list/work_item_bulk_edit_iteration.vue');
@@ -53,6 +54,7 @@ export default {
     WorkItemBulkEditIteration,
     WorkItemBulkEditMilestone,
     WorkItemBulkEditParent,
+    WorkItemBulkMove,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: ['hasIssuableHealthStatusFeature', 'hasIterationsFeature'],
@@ -109,6 +111,20 @@ export default {
     },
   },
   computed: {
+    hasAttributeValuesSelected() {
+      return [
+        this.addLabelIds.length > 0,
+        this.removeLabelIds.length > 0,
+        this.assigneeId !== undefined,
+        this.confidentiality !== undefined,
+        this.healthStatus !== undefined,
+        this.state !== undefined,
+        this.subscription !== undefined,
+        this.iterationId !== undefined,
+        this.milestoneId !== undefined,
+        this.parentId !== undefined,
+      ].includes(true);
+    },
     legacyBulkEditEndpoint() {
       const domain = gon.relative_url_root || '';
       const basePath = this.isGroup ? `groups/${this.fullPath}` : this.fullPath;
@@ -144,6 +160,9 @@ export default {
     canEditParent() {
       return this.availableWidgets.includes(WIDGET_TYPE_HIERARCHY);
     },
+    shouldDisableMove() {
+      return !this.hasItemsSelected || this.hasAttributeValuesSelected;
+    },
   },
   methods: {
     async handleFormSubmitted() {
@@ -168,7 +187,7 @@ export default {
     },
     performBulkEdit() {
       let assigneeIds;
-      if (this.assigneeId === BULK_UPDATE_UNASSIGNED) {
+      if (this.assigneeId === BULK_EDIT_NO_VALUE) {
         assigneeIds = [null];
       } else if (this.assigneeId) {
         assigneeIds = [this.assigneeId];
@@ -192,23 +211,34 @@ export default {
                 }
               : undefined,
             confidential: this.confidentiality ? this.confidentiality === 'true' : undefined,
-            healthStatusWidget: this.healthStatus
-              ? {
-                  healthStatus: camelCase(this.healthStatus),
-                }
-              : undefined,
-            iterationWidget: this.iterationId ? { iterationId: this.iterationId } : undefined,
-            milestoneWidget: this.milestoneId ? { milestoneId: this.milestoneId } : undefined,
+            healthStatusWidget: this.formatValue({
+              name: 'healthStatus',
+              value: this.healthStatus,
+            }),
+            iterationWidget: this.formatValue({ name: 'iterationId', value: this.iterationId }),
+            milestoneWidget: this.formatValue({ name: 'milestoneId', value: this.milestoneId }),
             stateEvent: this.state && this.state.toUpperCase(),
             subscriptionEvent: this.subscription && this.subscription.toUpperCase(),
-            hierarchyWidget: this.parentId ? { parentId: this.parentId } : undefined,
+            hierarchyWidget: this.formatValue({ name: 'parentId', value: this.parentId }),
           },
         },
       });
     },
+    formatValue({ name, value }) {
+      if (!value) {
+        return undefined;
+      }
+      if (value === BULK_EDIT_NO_VALUE) {
+        return { [name]: null };
+      }
+      if (name === 'healthStatus') {
+        return { [name]: camelCase(value) };
+      }
+      return { [name]: value };
+    },
     performLegacyBulkEdit() {
       let assigneeIds;
-      if (this.assigneeId === BULK_UPDATE_UNASSIGNED) {
+      if (this.assigneeId === BULK_EDIT_NO_VALUE) {
         assigneeIds = [0];
       } else if (this.assigneeId) {
         assigneeIds = [getIdFromGraphQLId(this.assigneeId)];
@@ -227,6 +257,9 @@ export default {
 
       return axios.post(this.legacyBulkEditEndpoint, { update });
     },
+    handleMoveSuccess({ toastMessage }) {
+      this.$emit('success', { refetchCounts: true, toastMessage });
+    },
   },
 };
 </script>
@@ -243,7 +276,6 @@ export default {
       data-testid="bulk-edit-state"
     />
     <work-item-bulk-edit-assignee
-      v-if="isEditableUnlessEpicList"
       v-model="assigneeId"
       :full-path="fullPath"
       :is-group="isGroup"
@@ -269,16 +301,16 @@ export default {
       @select="removeLabelIds = $event"
     />
     <work-item-bulk-edit-dropdown
-      v-if="hasIssuableHealthStatusFeature && isEditableUnlessEpicList"
+      v-if="hasIssuableHealthStatusFeature"
       v-model="healthStatus"
       :header-text="__('Select health status')"
       :items="$options.healthStatusItems"
       :label="__('Health status')"
+      :no-value-text="s__('WorkItem|No health status')"
       :disabled="!hasItemsSelected || !canEditHealthStatus"
       data-testid="bulk-edit-health-status"
     />
     <work-item-bulk-edit-dropdown
-      v-if="isEditableUnlessEpicList"
       v-model="subscription"
       :header-text="__('Select subscription')"
       :items="$options.subscriptionItems"
@@ -287,7 +319,6 @@ export default {
       data-testid="bulk-edit-subscription"
     />
     <work-item-bulk-edit-dropdown
-      v-if="isEditableUnlessEpicList"
       v-model="confidentiality"
       :header-text="__('Select confidentiality')"
       :items="$options.confidentialityItems"
@@ -303,7 +334,7 @@ export default {
       :disabled="!hasItemsSelected || !canEditIteration"
     />
     <work-item-bulk-edit-milestone
-      v-if="shouldUseGraphQLBulkEdit && !isEpicsList"
+      v-if="shouldUseGraphQLBulkEdit"
       v-model="milestoneId"
       :full-path="fullPath"
       :is-group="isGroup"
@@ -316,5 +347,16 @@ export default {
       :is-group="isGroup"
       :disabled="!hasItemsSelected || !canEditParent"
     />
+    <template v-if="shouldUseGraphQLBulkEdit && !isEpicsList">
+      <hr />
+      <work-item-bulk-move
+        :checked-items="checkedItems"
+        :full-path="fullPath"
+        :disabled="shouldDisableMove"
+        @moveStart="$emit('start')"
+        @moveSuccess="handleMoveSuccess"
+        @moveFinish="$emit('finish')"
+      />
+    </template>
   </gl-form>
 </template>

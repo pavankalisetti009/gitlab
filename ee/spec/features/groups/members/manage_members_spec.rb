@@ -468,4 +468,34 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       end
     end
   end
+
+  context 'with custom roles', :saas do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:member_role) { create(:member_role, namespace: group, name: 'Custom role', description: 'description') }
+
+    let_it_be(:group_owner) { create(:user, owner_of: group) }
+
+    let(:access_levels) { %w[Guest Planner Reporter Developer Maintainer Owner] }
+    let(:member_role_text) { "#{member_role.name}\n#{member_role.description}" }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+
+      sign_in(group_owner)
+    end
+
+    it 'shows member role in the `Invite Members` dropdown' do
+      visit group_group_members_path(group)
+
+      click_on 'Invite members'
+
+      page.within invite_modal_selector do
+        page.within role_dropdown_selector do
+          wait_for_requests
+          toggle_listbox
+          expect_listbox_items(access_levels << member_role_text)
+        end
+      end
+    end
+  end
 end

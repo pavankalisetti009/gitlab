@@ -1,4 +1,4 @@
-import { GlPagination } from '@gitlab/ui';
+import { GlKeysetPagination } from '@gitlab/ui';
 import { defaultDataIdFromObject } from '@apollo/client/core';
 import VueApollo from 'vue-apollo';
 
@@ -155,7 +155,7 @@ describe('RequirementsRoot', () => {
   const findExportRequirementsModal = () => wrapper.findComponent(ExportRequirementsModal);
   const findRequirementsTabs = () => wrapper.findComponent(RequirementsTabs);
   const findRequirementsEmptyState = () => wrapper.findComponent(RequirementsEmptyState);
-  const findGlPagination = () => wrapper.findComponent(GlPagination);
+  const findGlKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
   const findFilteredSearchBarRoot = () => wrapper.findComponent(FilteredSearchBarRoot);
   const findRequirementForm = () => wrapper.findComponent(RequirementForm);
 
@@ -228,7 +228,7 @@ describe('RequirementsRoot', () => {
         });
 
         await waitForPromises();
-        expect(findGlPagination().exists()).toBe(true);
+        expect(findGlKeysetPagination().exists()).toBe(true);
       });
 
       it('does not display pagination for one page', () => {
@@ -241,7 +241,7 @@ describe('RequirementsRoot', () => {
           }),
         });
 
-        expect(findGlPagination().exists()).toBe(false);
+        expect(findGlKeysetPagination().exists()).toBe(false);
       });
 
       it.each`
@@ -267,51 +267,9 @@ describe('RequirementsRoot', () => {
 
           await waitForPromises();
 
-          expect(findGlPagination().exists()).toBe(isVisible);
+          expect(findGlKeysetPagination().exists()).toBe(isVisible);
         },
       );
-    });
-
-    describe('prevPage', () => {
-      it('renders correct previous button', async () => {
-        createComponentWithApollo({
-          props: { page: 3 },
-          handlers: buildHandlers({ pageInfo: mockPageInfo }),
-        });
-
-        await waitForPromises();
-        expect(findGlPagination().props('prevPage')).toBe(2);
-      });
-    });
-
-    describe('nextPage', () => {
-      it('renders correct next button', async () => {
-        createComponentWithApollo({
-          props: { page: 1 },
-          handlers: buildHandlers({
-            opened: 20,
-            pageInfo: {
-              ...mockPageInfo,
-              hasNextPage: true,
-            },
-          }),
-        });
-
-        await waitForPromises();
-
-        expect(findGlPagination().props('nextPage')).toBe(2);
-      });
-
-      it('does not render next page if current page is last one', async () => {
-        createComponentWithApollo({
-          props: { page: 2 },
-          handlers: buildHandlers({ pageInfo: mockPageInfo }),
-        });
-
-        await waitForPromises();
-
-        expect(findGlPagination().props('nextPage')).toEqual(null);
-      });
     });
   });
 
@@ -770,8 +728,6 @@ describe('RequirementsRoot', () => {
         expect(status).toEqual({ type: 'status', value: { data: 'satisfied' } });
         expect(search).toEqual({ type: 'filtered-search-term', value: { data: 'foo' } });
 
-        expect(findGlPagination().props('value')).toBe(1);
-        expect(findGlPagination().props('nextPage')).toEqual(null);
         expect(global.window.location.href).toBe(
           `${TEST_HOST}/?page=1&state=opened&search=foo&sort=created_desc&author_username%5B%5D=root&author_username%5B%5D=john.doe&status=satisfied`,
         );
@@ -819,8 +775,7 @@ describe('RequirementsRoot', () => {
         await nextTick();
 
         expect(findFilteredSearchBarRoot().props('initialSortBy')).toBe('updated_desc');
-        expect(findGlPagination().props('value')).toBe(1);
-        expect(findGlPagination().props('nextPage')).toEqual(null);
+
         expect(global.window.location.href).toBe(
           `${TEST_HOST}/?page=1&state=opened&sort=updated_desc`,
         );
@@ -840,7 +795,7 @@ describe('RequirementsRoot', () => {
 
         await waitForPromises();
 
-        findGlPagination().vm.$emit('input', 2);
+        findGlKeysetPagination().vm.$emit('next', 'next');
         await nextTick();
 
         expect(queryToObject(window.location.search)).toEqual({
@@ -866,7 +821,7 @@ describe('RequirementsRoot', () => {
 
         await waitForPromises();
 
-        findGlPagination().vm.$emit('input', 1);
+        findGlKeysetPagination().vm.$emit('prev', 'prev');
         await nextTick();
 
         expect(queryToObject(window.location.search)).toEqual({
@@ -951,12 +906,9 @@ describe('RequirementsRoot', () => {
       });
       await waitForPromises();
 
-      const pagination = findGlPagination();
+      const pagination = findGlKeysetPagination();
 
       expect(pagination.exists()).toBe(true);
-      expect(pagination.props('value')).toBe(1);
-      expect(pagination.props('perPage')).toBe(2);
-      expect(pagination.props('align')).toBe('center');
     });
   });
 

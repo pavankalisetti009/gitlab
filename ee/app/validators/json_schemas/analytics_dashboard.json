@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/AnalyticsDashboard",
   "definitions": {
     "AnalyticsDashboard": {
@@ -131,6 +131,9 @@
         "title": {
           "type": "string"
         },
+        "tooltip": {
+          "$ref": "#/definitions/Tooltip"
+        },
         "gridAttributes": {
           "$ref": "#/definitions/GridAttributes"
         },
@@ -255,6 +258,37 @@
       },
       "required": [],
       "title": "Filters"
+    },
+    "Tooltip": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "descriptionLink": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "if": {
+        "properties": {
+          "descriptionLink": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "description": {
+            "pattern": ".*%\\{linkStart\\}.*%\\{linkEnd\\}.*"
+          }
+        }
+      },
+      "required": [
+        "description"
+      ]
     },
     "DateRangeFilterOptions": {
       "type": "array",

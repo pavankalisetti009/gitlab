@@ -18,13 +18,16 @@ module Ai
           version_params = {
             schema_version: SCHEMA_VERSION,
             version: DEFAULT_VERSION,
-            definition: { triggers: [] }
+            definition: { triggers: [], steps: [] }
           }
 
           item = Ai::Catalog::Item.new(item_params)
           item.versions.build(version_params)
 
-          return ServiceResponse.success(payload: { item: item }) if item.save
+          if item.save
+            track_ai_item_events('create_ai_catalog_item', item.item_type)
+            return ServiceResponse.success(payload: { item: item })
+          end
 
           error_creating(item)
         end

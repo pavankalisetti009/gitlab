@@ -66,7 +66,9 @@ export default {
 
 <template>
   <div>
-    <h2 class="settings-title gl-heading-3 gl-mb-1 gl-mt-5">{{ s__('WorkItem|Statuses') }}</h2>
+    <h2 id="statuses" class="settings-title gl-heading-3 gl-mb-1 gl-mt-5">
+      {{ s__('WorkItem|Statuses') }}
+    </h2>
     <p class="gl-mb-3 gl-text-subtle">
       {{
         s__(

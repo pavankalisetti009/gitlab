@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
-  let_it_be(:authorized_user) { create(:user) }
+RSpec.describe API::Chat, :saas, :with_current_organization, feature_category: :duo_chat do
+  let_it_be(:authorized_user) { create(:user, organizations: [current_organization]) }
   let_it_be(:tokens) do
     {
       api: create(:personal_access_token, scopes: %w[api], user: authorized_user),
@@ -13,8 +13,8 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
     }
   end
 
-  let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
-  let_it_be(:project) { create(:project, :repository,  group: group) }
+  let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan, organization: current_organization) }
+  let_it_be(:project) { create(:project, :repository,  group: group, organization: current_organization) }
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:commit) { project.commit }
@@ -169,6 +169,7 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
             role: ::Gitlab::Llm::AiMessage::ROLE_USER,
             ai_action: 'chat',
             user: current_user,
+            thread: an_instance_of(Ai::Conversation::Thread),
             context: an_object_having_attributes(resource: resource),
             client_subscription_id: nil,
             additional_context: an_object_having_attributes(
@@ -180,9 +181,8 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
         it 'saves question in the chat storage' do
           post_api
 
-          expect(Gitlab::Llm::ChatStorage.new(authorized_user)
-                                         .last_conversation
-                                         .reverse.find { |message| message.role == 'user' }.content).to eq(content)
+          thread = authorized_user.ai_conversation_threads.last
+          expect(thread.messages.reverse.find { |message| message.role == 'user' }.content).to eq(content)
         end
 
         context 'with a referer URL' do

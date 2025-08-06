@@ -69,9 +69,27 @@ RSpec.describe WorkItems::Widgets::Weight, feature_category: :team_planning do
       context 'when work item does not support rolled up weight' do
         let(:widget_options) { { editable: false, rollup: false } }
 
-        it 'returns nil' do
-          expect(rolled_up_weight).to be_nil
-          expect(rolled_up_completed_weight).to be_nil
+        before_all do
+          # Update cached weights from leaf nodes. This also computes the cached weights of their ancestors
+          WorkItems::Weights::UpdateWeightsService.new([
+            sub_epic_issue_task, direct_child_issue
+          ]).execute
+        end
+
+        context 'when use_cached_rolled_up_weights is disabled' do
+          before do
+            stub_feature_flags(use_cached_rolled_up_weights: false)
+          end
+
+          it 'returns nil' do
+            expect(rolled_up_weight).to be_nil
+            expect(rolled_up_completed_weight).to be_nil
+          end
+        end
+
+        it 'returns the cached roll up weights' do
+          expect(rolled_up_weight).to eq(6)
+          expect(rolled_up_completed_weight).to eq(0)
         end
       end
 

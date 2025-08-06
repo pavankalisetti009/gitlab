@@ -30,6 +30,10 @@ module ComplianceManagement
         by_project_id(project_ids).distinct.count(:project_id)
       end
 
+      def self.delete_by_framework(framework_ids)
+        delete_by(framework_id: framework_ids)
+      end
+
       private
 
       def frameworks_count_per_project

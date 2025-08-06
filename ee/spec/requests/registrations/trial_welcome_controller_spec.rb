@@ -48,7 +48,7 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
           end
         end
 
-        it 'tracks complete_identity_verification_success' do
+        it 'tracks render_welcome' do
           expect(experiment).to receive(:track).with(:render_welcome)
 
           get_new
@@ -100,6 +100,32 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
         end
 
         expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace_id, project_id))
+      end
+
+      context 'with experiment lightweight_trial_registration_redesign' do
+        let(:experiment) { instance_double(ApplicationExperiment) }
+
+        before do
+          allow_next_instance_of(described_class) do |controller|
+            allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+              actor: user).and_return(experiment)
+          end
+        end
+
+        it 'tracks completed_group_project_creation' do
+          expect_next_instance_of(GitlabSubscriptions::Trials::WelcomeCreateService,
+            hash_including(params: params)) do |instance|
+            result = ServiceResponse.success(
+              message: 'Trial applied',
+              payload: { namespace_id: group_for_trial.id, project_id: project_id, add_on_purchase: add_on_purchase }
+            )
+            expect(instance).to receive(:execute).and_return(result)
+          end
+
+          expect(experiment).to receive(:track).with(:completed_group_project_creation, namespace: group_for_trial)
+
+          post_create
+        end
       end
 
       it "when group creation fails" do

@@ -8,6 +8,7 @@ module MemberRoles
       @role = build_role
       if role.save
         log_audit_event(action: :created)
+        collect_metrics
 
         success
       else
@@ -25,6 +26,13 @@ module MemberRoles
     def allowed?
       subject = namespace || :global
       can?(current_user, :admin_member_role, subject)
+    end
+
+    def event_name
+      # TODO: Remove this as part of https://gitlab.com/gitlab-org/gitlab/-/issues/555681
+      return 'create_admin_custom_role' if role.admin_related_role?
+
+      'create_custom_role'
     end
   end
 end

@@ -1,8 +1,6 @@
 <script>
 import { GlDiscreteScatterChart, GlChartLegend } from '@gitlab/ui/dist/charts';
 import { isNil } from 'lodash';
-import { GlAlert } from '@gitlab/ui';
-import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import { DURATION_STAGE_TIME_LABEL } from 'ee/analytics/cycle_analytics/constants';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { sprintf, __, s__ } from '~/locale';
@@ -28,8 +26,6 @@ export default {
     NoDataAvailableState,
     GlDiscreteScatterChart,
     GlChartLegend,
-    GlAlert,
-    ChartSkeletonLoader,
   },
   props: {
     stageTitle: {
@@ -43,20 +39,10 @@ export default {
       validator: (value) =>
         [TYPENAME_ISSUE, TYPENAME_MERGE_REQUEST, TYPENAME_WORK_ITEM].includes(value),
     },
-    isLoading: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     plottableData: {
       type: Array,
       required: false,
       default: () => [],
-    },
-    errorMessage: {
-      type: String,
-      required: false,
-      default: '',
     },
     startDate: {
       type: Date,
@@ -158,13 +144,9 @@ export default {
 </script>
 
 <template>
-  <chart-skeleton-loader v-if="isLoading && !hasPlottableData" />
-  <div v-else data-testid="vsa-duration-chart">
+  <div data-testid="vsa-duration-chart">
     <h2 class="gl-heading-3">{{ chartTitle }}</h2>
-    <gl-alert v-if="errorMessage" variant="danger" :dismissible="false">{{
-      errorMessage
-    }}</gl-alert>
-    <div v-else-if="hasPlottableData">
+    <div v-if="hasPlottableData">
       <gl-discrete-scatter-chart
         :data="chartData"
         :x-axis-title="$options.i18n.xAxisTitle"

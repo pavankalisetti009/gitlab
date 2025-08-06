@@ -113,6 +113,15 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         expect(result).to contain_exactly(agent_type_item)
       end
     end
+
+    describe '.for_organization' do
+      let_it_be(:item_1) { create(:ai_catalog_item, organization: create(:organization)) }
+      let_it_be(:item_2) { create(:ai_catalog_item, organization: create(:organization)) }
+
+      it 'returns items for the specified organization' do
+        expect(described_class.for_organization(item_1.organization)).to contain_exactly(item_1)
+      end
+    end
   end
 
   describe 'callbacks' do
@@ -163,6 +172,54 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       item = create(:ai_catalog_item)
 
       expect { item.soft_delete }.to change { item.deleted_at }.from(nil)
+    end
+  end
+
+  describe '#definition' do
+    let(:version) { '1.0.0' }
+
+    context 'when item_type is agent' do
+      let(:item) { build_stubbed(:ai_catalog_item, :agent) }
+
+      it 'returns an AgentDefinition instance' do
+        result = item.definition(version)
+
+        expect(result).to be_an_instance_of(Ai::Catalog::AgentDefinition)
+      end
+
+      it 'passes the item and version to AgentDefinition' do
+        expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, version)
+
+        item.definition(version)
+      end
+    end
+
+    context 'when item_type is flow' do
+      let(:item) { build_stubbed(:ai_catalog_item, :flow) }
+
+      it 'returns a FlowDefinition instance' do
+        result = item.definition(version)
+
+        expect(result).to be_an_instance_of(Ai::Catalog::FlowDefinition)
+      end
+
+      it 'passes the item and version to FlowDefinition' do
+        expect(Ai::Catalog::FlowDefinition).to receive(:new).with(item, version)
+
+        item.definition(version)
+      end
+    end
+
+    context 'with different versions for the same item' do
+      let(:item) { build_stubbed(:ai_catalog_item, :agent) }
+
+      it 'creates separate definitions for different versions' do
+        expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, '1.0.0').once
+        expect(Ai::Catalog::AgentDefinition).to receive(:new).with(item, '2.0.0').once
+
+        item.definition('1.0.0')
+        item.definition('2.0.0')
+      end
     end
   end
 end

@@ -828,6 +828,16 @@ RSpec.describe API::Groups, :with_current_organization, feature_category: :group
           get api("/groups/#{group1.id}", user1)
         end.not_to exceed_query_limit(control)
       end
+
+      context 'with oauth token that has ai_workflows scope' do
+        let(:token) { create(:oauth_access_token, user: user1, scopes: [:ai_workflows]) }
+
+        it "allows access" do
+          get api("/groups/#{group1.id}", oauth_access_token: token)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
     end
 
     context "when authenticated as admin" do
@@ -3364,7 +3374,7 @@ RSpec.describe API::Groups, :with_current_organization, feature_category: :group
       context 'when using a group path in URL' do
         context 'with a valid group path' do
           it "transfers project to group" do
-            post api("/groups/#{group1.path}/projects/#{project_path}", admin, admin_mode: true)
+            post api("/groups/#{group1.reload.path}/projects/#{project_path}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:created)
           end

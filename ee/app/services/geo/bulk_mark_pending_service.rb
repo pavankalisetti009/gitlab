@@ -19,8 +19,7 @@ module Geo
     override :attributes_to_update
     def attributes_to_update
       {
-        state: registry_class.state_value(:pending),
-        last_synced_at: nil
+        state: registry_class.state_value(:pending)
       }
     end
 

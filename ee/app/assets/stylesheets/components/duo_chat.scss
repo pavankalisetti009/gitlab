@@ -16,6 +16,7 @@ $popover-arrow-color: #c4bae2;
 
 .duo-chat-callout-popover {
   width: $gl-spacing-scale-48;
+  z-index: $zindex-duo-callout;
 
   &.bs-popover-bottom {
     .arrow {

@@ -132,9 +132,7 @@ describe('ee/ml/ai_agents/views/edit_agent', () => {
     });
 
     it('displays an error', () => {
-      expect(findErrorAlert().text()).toBe(
-        'GraphQL error: An error has occurred when loading the agent.',
-      );
+      expect(findErrorAlert().text()).toContain('An error has occurred when loading the agent.');
     });
   });
 

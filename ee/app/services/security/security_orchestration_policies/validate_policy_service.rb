@@ -139,7 +139,9 @@ module Security
         return false if project_container?
         return false if compliance_framework_ids.blank?
 
-        container.root_ancestor.compliance_management_frameworks.id_in(compliance_framework_ids).count != compliance_framework_ids.count
+        valid_count = (container.compliance_framework_ids_with_csp & compliance_framework_ids).count
+
+        valid_count != compliance_framework_ids.count
       end
 
       def required_approvals_exceed_eligible_approvers?
@@ -179,7 +181,8 @@ module Security
         approvals_required = action[:approvals_required] || 0
 
         eligible_user_ids = Set.new
-        users, groups, roles = approvers.values_at(:users, :all_groups, :roles)
+        users, groups, roles, custom_roles = approvers.values_at(:users, :all_groups, :roles, :custom_roles)
+
         eligible_user_ids.merge(users.pluck(:id)) # rubocop:disable CodeReuse/ActiveRecord
         return false if eligible_user_ids.size >= approvals_required
 
@@ -187,13 +190,19 @@ module Security
         return false if eligible_user_ids.size >= approvals_required
 
         eligible_user_ids.merge(user_ids_by_roles(roles))
+        return false if eligible_user_ids.size >= approvals_required
+
+        eligible_user_ids.merge(user_ids_by_project_and_custom_roles(custom_roles))
+        return false if eligible_user_ids.size >= approvals_required
+
+        eligible_user_ids.merge(user_ids_by_groups_and_custom_roles(custom_roles))
         eligible_user_ids.size < approvals_required
       end
 
       def user_ids_by_groups(groups)
         return [] if groups.empty?
 
-        GroupMember.eligible_approvers_by_groups(groups.self_and_ancestors).pluck_user_ids
+        GroupMember.eligible_approvers_ids_by_groups(groups.self_and_ancestors)
       end
 
       def user_ids_by_roles(roles)
@@ -203,6 +212,22 @@ module Security
         access_levels = roles.filter_map { |role| roles_map[role.to_sym] }
 
         ProjectAuthorization.eligible_approvers_by_project_id_and_access_levels(project.id, access_levels).pluck_user_ids
+      end
+
+      def user_ids_by_project_and_custom_roles(custom_roles)
+        return [] if custom_roles.empty? || group_container?
+
+        ProjectMember.eligible_approvers_ids_by_project_id_and_custom_roles(project.id, custom_roles)
+      end
+
+      def user_ids_by_groups_and_custom_roles(custom_roles)
+        return [] if custom_roles.empty?
+
+        group = project_container? ? project.group : container
+
+        return [] if group.blank?
+
+        GroupMember.eligible_approvers_ids_by_group_ids_and_custom_roles(group.self_and_ancestor_ids, custom_roles)
       end
 
       def missing_branch_names

@@ -15,6 +15,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   ALL_PROJECTS_IN_GROUP,
   CSP_SCOPE_TYPE_LISTBOX_ITEMS,
+  CSP_SCOPE_TYPE_WITHOUT_GROUP_LISTBOX_ITEMS,
   PROJECTS_WITH_FRAMEWORK,
   SPECIFIC_PROJECTS,
   EXCEPT_PROJECTS,
@@ -789,7 +790,9 @@ describe('PolicyScope', () => {
       });
 
       it('renders CSP scope dropdown items', () => {
-        expect(findProjectScopeTypeDropdown().props('items')).toEqual(CSP_SCOPE_TYPE_LISTBOX_ITEMS);
+        expect(findProjectScopeTypeDropdown().props('items')).toEqual(
+          CSP_SCOPE_TYPE_WITHOUT_GROUP_LISTBOX_ITEMS,
+        );
       });
 
       it('displays CSP scope text as toggle text', () => {
@@ -805,6 +808,15 @@ describe('PolicyScope', () => {
       it('displays exception dropdown by default', () => {
         expect(findScopeProjectSelector().exists()).toBe(true);
       });
+    });
+
+    it('shows CSP group scope dropdown items if groups are present', () => {
+      createComponent({
+        propsData: { policyScope: { groups: { including: [{ id: 3 }] } } },
+        provide: { designatedAsCsp: true },
+      });
+
+      expect(findProjectScopeTypeDropdown().props('items')).toEqual(CSP_SCOPE_TYPE_LISTBOX_ITEMS);
     });
 
     describe('scope selection behavior', () => {

@@ -24,8 +24,14 @@ module SystemNotes
 
       project = noteable.project
 
-      cross_reference = noteable_ref.to_reference(project || noteable.group)
-      body = "promoted #{direction} #{noteable_ref.class.to_s.downcase} #{cross_reference}"
+      noteable_type = if noteable_ref.is_a?(::WorkItem)
+                        noteable_ref.work_item_type.name.downcase
+                      else
+                        noteable_ref.class.to_s.downcase
+                      end
+
+      cross_reference = noteable_ref.to_reference(project || noteable.try(:group) || noteable.namespace)
+      body = "promoted #{direction} #{noteable_type} #{cross_reference}"
 
       create_note(NoteSummary.new(noteable, project, author, body, action: 'moved'))
     end

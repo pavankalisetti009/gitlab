@@ -483,6 +483,30 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         expect(task.feature_disabled?).to eq(true)
       end
     end
+
+    context 'when code_completions is vendored' do
+      let_it_be(:ai_feature_setting) do
+        create(:ai_feature_setting, :code_completions, provider: :vendored)
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_body) do
+          {
+            "current_file" => {
+              "file_name" => "test.py",
+              "content_above_cursor" => "sor",
+              "content_below_cursor" => "som"
+            },
+            "telemetry" => [],
+            "stream" => false,
+            "model_provider" => "gitlab",
+            "model_name" => ""
+          }
+        end
+
+        let(:expected_feature_name) { :code_suggestions }
+      end
+    end
   end
 
   describe 'when amazon q is connected' do

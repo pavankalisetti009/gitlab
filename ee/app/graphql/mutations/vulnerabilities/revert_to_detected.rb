@@ -5,6 +5,10 @@ module Mutations
     class RevertToDetected < BaseMutation
       graphql_name 'VulnerabilityRevertToDetected'
 
+      def self.authorization_scopes
+        [:api, :read_api, :ai_workflows]
+      end
+
       def self.state_transition_name_past_tense
         "reverted to detected"
       end

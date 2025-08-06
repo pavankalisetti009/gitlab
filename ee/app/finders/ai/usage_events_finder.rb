@@ -27,7 +27,7 @@ module Ai
     private
 
     def array_scope
-      resource.self_and_descendants(skope: Namespace).select(:id)
+      resource.self_and_descendant_ids(skope: Namespace)
     end
 
     def in_operator_scope

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::TokenInstrumentation, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::TokenInstrumentation, feature_category: :system_access do
   describe '.instrument' do
     let_it_be(:jwk) { build(:cloud_connector_keys).to_jwk }
     let(:operation_type) { 'self_signed' }

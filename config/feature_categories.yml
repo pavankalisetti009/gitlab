@@ -28,7 +28,6 @@
 - cell
 - ci_scaling
 - ci_variables
-- cloud_connector
 - cloud_native_installation
 - code_quality
 - code_review_workflow
@@ -102,6 +101,7 @@
 - organization
 - package_registry
 - pages
+- performance_tooling
 - permissions
 - pipeline_composition
 - pipeline_reports

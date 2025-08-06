@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'SaaS registration from an invite', :with_current_organization, :js, :saas_registration, feature_category: :onboarding do
+  include_context 'with lightweight trial registration redesign turned on' # rubocop:disable Gitlab/RSpec/AvoidSetup -- temporary during the experiment
   include Features::TwoFactorHelpers
 
   context 'when user has not completed welcome step before being added to group', :sidekiq_inline do

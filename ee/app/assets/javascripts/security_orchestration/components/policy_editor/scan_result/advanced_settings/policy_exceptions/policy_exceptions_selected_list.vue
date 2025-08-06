@@ -1,6 +1,9 @@
 <script>
 import { EXCEPTIONS_FULL_OPTIONS_MAP } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
-import { onlyValidKeys } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
+import {
+  countItemsLength,
+  onlyValidKeys,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
 import PolicyExceptionsSelectedItem from './policy_exceptions_selected_item.vue';
 
 export default {
@@ -21,13 +24,9 @@ export default {
     },
     formattedSelectedExceptions() {
       return onlyValidKeys(Object.keys(this.selectedExceptions)).map((key) => {
-        const count = Array.isArray(this.selectedExceptions[key])
-          ? this.selectedExceptions[key].length
-          : 0;
-
         return {
           title: EXCEPTIONS_FULL_OPTIONS_MAP[key]?.header,
-          count,
+          count: countItemsLength({ source: this.selectedExceptions, key }),
           key,
         };
       });

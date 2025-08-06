@@ -64,10 +64,10 @@ RSpec.describe 'Setting the epic of an issue', feature_category: :team_planning 
   end
 
   it 'returns an error if issue can not be updated' do
-    issue.update_column(:author_id, nil)
+    issue.update!(promoted_to_epic: create(:epic, group: group))
     post_graphql_mutation(mutation, current_user: current_user)
 
-    expect(mutation_response["errors"]).to eq(["Author can't be blank"])
+    expect(mutation_response["errors"]).to eq(["Issue already promoted to epic."])
   end
 
   it 'promotes the issue to epic' do

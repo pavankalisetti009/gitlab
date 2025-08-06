@@ -220,7 +220,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
               it_behaves_like 'scan discarded secrets because they match exclusions'
 
               it 'tracks and recovers errors when getting diff' do
-                expect(repository).to receive(:diff_blobs).and_raise(::GRPC::InvalidArgument)
+                expect(repository).to receive(:diff_blobs_with_raw_info).and_raise(::GRPC::InvalidArgument)
                 expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(::GRPC::InvalidArgument))
                 expect(secret_detection_logger).to receive(:error)
                   .once

@@ -37,7 +37,9 @@ module Gitlab
         strong_memoize_attr :valid_usernames
 
         def invalid_names
-          group_filtered_input_names - output_users.map(&:username)
+          group_filtered_input_names.reject do |input_name|
+            output_users_username_set.include?(input_name.downcase)
+          end
         end
         strong_memoize_attr :invalid_names
 
@@ -60,10 +62,22 @@ module Gitlab
 
         attr_reader :project, :input_names, :input_emails
 
+        def output_users_username_set
+          output_users.map { |user| user.username.downcase }.to_set
+        end
+        strong_memoize_attr :output_users_username_set
+
         def group_filtered_input_names
-          input_names - valid_group_names
+          input_names.reject do |input_name|
+            valid_group_names_set.include?(input_name.downcase)
+          end
         end
         strong_memoize_attr :group_filtered_input_names
+
+        def valid_group_names_set
+          valid_group_names.map(&:downcase).to_set
+        end
+        strong_memoize_attr :valid_group_names_set
 
         def valid_references?(references, invalid_references)
           !references.intersect?(invalid_references)

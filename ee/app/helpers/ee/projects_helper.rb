@@ -238,7 +238,8 @@ module EE
           new_project_pipeline_path: new_project_pipeline_path(project),
           scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
           can_view_false_positive: can_view_false_positive?,
-          vulnerability_quota: vulnerability_quota_information(project)
+          vulnerability_quota: vulnerability_quota_information(project),
+          validity_checks_enabled: project&.security_setting&.validity_checks_enabled&.to_s || 'false'
         }
       )
     end
@@ -292,17 +293,6 @@ module EE
 
     def compliance_center_path(project)
       project_security_compliance_dashboard_path(project, vueroute: "frameworks")
-    end
-
-    def project_compliance_framework_app_data(project, can_edit)
-      group = project.root_ancestor
-      {
-        group_name: group.name,
-        group_path: group_path(group),
-        empty_state_svg_path: image_path('illustrations/welcome/ee_trial.svg')
-      }.tap do |data|
-        data[:add_framework_path] = "#{edit_group_path(group)}#js-compliance-frameworks-settings" if can_edit
-      end
     end
 
     def proxied_site

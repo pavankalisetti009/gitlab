@@ -1,8 +1,7 @@
-import { GlIcon, GlTruncateText, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
-import { nextTick } from 'vue';
+import { GlIcon, GlTruncateText } from '@gitlab/ui';
 import { visitUrl } from '~/lib/utils/url_utility';
 import DashboardListItem from 'ee/analytics/analytics_dashboards/components/list/dashboard_list_item.vue';
-import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
   TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
   mockInvalidDashboardErrors,
@@ -49,9 +48,6 @@ describe('DashboardsListItem', () => {
   const findDescriptionTruncate = () => wrapper.findComponent(GlTruncateText);
   const findStatusBadge = () => wrapper.findByTestId('dashboard-status-badge');
   const findErrorsBadge = () => wrapper.findByTestId('dashboard-errors-badge');
-  const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
-  const findDisclosureDropdownItem = (index) =>
-    wrapper.findAllComponents(GlDisclosureDropdownItem).at(index).find('button');
 
   const $router = {
     push: jest.fn(),
@@ -60,7 +56,6 @@ describe('DashboardsListItem', () => {
   const createWrapper = (props, mountFn = shallowMountExtended) => {
     wrapper = mountFn(DashboardListItem, {
       propsData: {
-        showUserActions: true,
         ...props,
       },
       stubs: {
@@ -89,27 +84,6 @@ describe('DashboardsListItem', () => {
       expect(findIcon().props()).toMatchObject({
         name: 'dashboard',
         size: 16,
-      });
-    });
-
-    it('renders the disclosure dropdown', () => {
-      expect(findDropdown().props()).toMatchObject({
-        toggleText: 'More actions',
-        textSrOnly: true,
-        category: 'tertiary',
-        icon: 'ellipsis_v',
-        items: [
-          {
-            name: 'More actions',
-            items: [
-              {
-                text: 'Clone',
-                icon: 'duplicate',
-                action: expect.any(Function),
-              },
-            ],
-          },
-        ],
       });
     });
 
@@ -190,48 +164,6 @@ describe('DashboardsListItem', () => {
         variant: 'danger',
       });
       expect(findErrorsBadge().text()).toBe('Contains errors');
-    });
-  });
-
-  describe('when showUserActions is false', () => {
-    beforeEach(() => {
-      createWrapper({ dashboard: USER_DEFINED_DASHBOARD, showUserActions: false });
-    });
-
-    it('does not render the disclosure dropdown', () => {
-      expect(findDropdown().exists()).toBe(false);
-    });
-
-    it('routes to the dashboard when a list item is clicked', async () => {
-      await findListItem().trigger('click');
-
-      expect($router.push).toHaveBeenCalledWith(USER_DEFINED_DASHBOARD.slug);
-    });
-
-    describe('with a redirected dashboard', () => {
-      beforeEach(() => {
-        createWrapper({ dashboard: REDIRECTED_DASHBOARD, showUserActions: false });
-      });
-
-      it('redirects to the dashboard when the list item is clicked', async () => {
-        await findListItem().trigger('click');
-
-        expect(visitUrl).toHaveBeenCalledWith(expect.stringContaining(REDIRECTED_DASHBOARD.slug));
-      });
-    });
-  });
-
-  describe('when the clone action is clicked', () => {
-    beforeEach(async () => {
-      createWrapper({ dashboard: USER_DEFINED_DASHBOARD }, mountExtended);
-
-      await nextTick();
-
-      return findDisclosureDropdownItem(0).trigger('click');
-    });
-
-    it('emits a "clone" event with the dashboard slug', () => {
-      expect(wrapper.emitted('clone')).toStrictEqual([[USER_DEFINED_DASHBOARD.slug]]);
     });
   });
 });

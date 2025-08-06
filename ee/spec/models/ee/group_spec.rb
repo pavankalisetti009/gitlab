@@ -2980,6 +2980,71 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#has_active_hooks?' do
+    let_it_be_with_reload(:parent_group) { create(:group) }
+    let_it_be_with_reload(:group) { create(:group, parent: parent_group) }
+    let(:hooks_scope) { :push_hooks }
+
+    subject { group.has_active_hooks?(hooks_scope) }
+
+    context 'when group_webhooks feature is available' do
+      before do
+        stub_licensed_features(group_webhooks: true)
+      end
+
+      context 'when no hooks exist' do
+        it 'returns false' do
+          expect(subject).to be false
+        end
+      end
+
+      context 'when hook exists for the group' do
+        let_it_be_with_reload(:group_hook) { create(:group_hook, group: group, push_events: true) }
+
+        it 'returns true for push_hooks scope' do
+          expect(subject).to be true
+        end
+
+        context 'with different hook scope' do
+          let(:hooks_scope) { :issues_hooks }
+
+          it 'returns false' do
+            expect(subject).to be false
+          end
+        end
+      end
+
+      context 'when hook exists for the ancestor group' do
+        let!(:parent_hook) { create(:group_hook, group: parent_group, push_events: true) }
+
+        it 'returns true when checking group that inherits hooks from ancestor' do
+          expect(subject).to be true
+        end
+      end
+
+      context 'when hook exists for unrelated group' do
+        let!(:unrelated_group) { create(:group) }
+        let!(:unrelated_group_hook) { create(:group_hook, group: unrelated_group, push_events: true) }
+
+        it 'returns false' do
+          expect(subject).to be false
+        end
+      end
+    end
+
+    context 'when group_webhooks feature is not available' do
+      before do
+        stub_licensed_features(group_webhooks: false)
+      end
+
+      let!(:group_hook) { create(:group_hook, group: group, push_events: true) }
+
+      it 'returns false even when hook exists' do
+        expect(subject).to be false
+      end
+    end
+  end
+
   context 'when resource access token hooks for expiry notification' do
     let(:group) { create(:group) }
     let(:group_hook) { create(:group_hook, group: group, resource_access_token_events: true) }
@@ -3040,6 +3105,24 @@ RSpec.describe Group, feature_category: :groups_and_projects do
             end
           end
         end
+      end
+    end
+
+    describe '#hide_email_on_profile?' do
+      it 'returns false by default' do
+        expect(group.hide_email_on_profile?).to be_falsey
+      end
+
+      it 'returns true when enabled' do
+        group.update!(hide_email_on_profile: true)
+        expect(group.hide_email_on_profile?).to be_truthy
+      end
+    end
+
+    describe '#hide_email_on_profile=' do
+      it 'delegates to namespace_settings' do
+        expect(group.namespace_settings).to receive(:hide_email_on_profile=).with(true)
+        group.hide_email_on_profile = true
       end
     end
 
@@ -4282,6 +4365,49 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to eq(false) }
+    end
+  end
+
+  describe '#enterprise_user_settings_available?' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: root_group) }
+
+    context 'when all conditions are met' do
+      before do
+        allow(root_group).to receive(:domain_verification_available?).and_return(true)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, root_group).and_return(true)
+      end
+
+      it 'returns true for root group' do
+        expect(root_group.enterprise_user_settings_available?(current_user)).to be_truthy
+      end
+
+      it 'returns false for subgroup' do
+        expect(subgroup.enterprise_user_settings_available?(current_user)).to be_falsey
+      end
+    end
+
+    context 'when domain verification is not available' do
+      before do
+        allow(root_group).to receive(:domain_verification_available?).and_return(false)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, root_group).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(root_group.enterprise_user_settings_available?(current_user)).to be_falsey
+      end
+    end
+
+    context 'when user does not have owner access' do
+      before do
+        allow(root_group).to receive(:domain_verification_available?).and_return(true)
+        allow(Ability).to receive(:allowed?).with(current_user, :owner_access, root_group).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(root_group.enterprise_user_settings_available?(current_user)).to be_falsey
+      end
     end
   end
 

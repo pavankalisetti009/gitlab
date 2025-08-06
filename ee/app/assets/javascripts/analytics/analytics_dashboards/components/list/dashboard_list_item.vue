@@ -1,9 +1,8 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
-import { GlIcon, GlBadge, GlLink, GlTruncateText, GlDisclosureDropdown } from '@gitlab/ui';
+import { GlIcon, GlBadge, GlLink, GlTruncateText } from '@gitlab/ui';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { visitUrl, joinPaths } from '~/lib/utils/url_utility';
-import { __ } from '~/locale';
 
 const TRUNCATE_BUTTON_ID = `desc-truncate-btn-${uuidv4()}`;
 
@@ -14,33 +13,12 @@ export default {
     GlBadge,
     GlLink,
     GlTruncateText,
-    GlDisclosureDropdown,
   },
   props: {
     dashboard: {
       type: Object,
       required: true,
     },
-    showUserActions: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      dropdownItems: [
-        {
-          name: __('More actions'),
-          items: [
-            {
-              text: __('Clone'),
-              icon: 'duplicate',
-              action: () => this.$emit('clone', this.dashboard.slug),
-            },
-          ],
-        },
-      ],
-    };
   },
   computed: {
     isBuiltInDashboard() {
@@ -134,24 +112,6 @@ export default {
             >{{ s__('Analytics|Created by GitLab') }}</gl-badge
           >
         </div>
-        <gl-disclosure-dropdown
-          v-if="showUserActions"
-          ref="dropdown"
-          data-testid="dashboard-actions-dropdown"
-          icon="ellipsis_v"
-          :toggle-text="__('More actions')"
-          text-sr-only
-          :items="dropdownItems"
-          category="tertiary"
-          no-caret
-        >
-          <template #list-item="{ item }">
-            <span class="gl-flex gl-items-center gl-gap-3">
-              <gl-icon :name="item.icon" variant="subtle" />
-              {{ item.text }}
-            </span>
-          </template>
-        </gl-disclosure-dropdown>
       </div>
     </div>
   </li>

@@ -8,6 +8,7 @@ module Gitlab
 
     FEATURE_FLAG_CACHE_KEY = "gitlab_ai_gateway_feature_flags"
     CURRENT_CONTEXT_CACHE_KEY = "gitlab_ai_gateway_current_context"
+    ACCESS_TOKEN_PATH = "/v1/code/user_access_token"
 
     def self.url
       self_hosted_url || cloud_connector_url
@@ -17,10 +18,18 @@ module Gitlab
       "#{::CloudConnector::Config.base_url}/ai"
     end
 
-    def self.access_token_url
-      base_url = self_hosted_url || "#{::CloudConnector::Config.base_url}/auth"
+    def self.cloud_connector_auth_url
+      "#{::CloudConnector::Config.base_url}/auth"
+    end
 
-      "#{base_url}/v1/code/user_access_token"
+    def self.access_token_url(code_completions_feature_setting)
+      base_url = if code_completions_feature_setting&.vendored?
+                   cloud_connector_auth_url
+                 else
+                   self_hosted_url || cloud_connector_auth_url
+                 end
+
+      "#{base_url}#{ACCESS_TOKEN_PATH}"
     end
 
     def self.self_hosted_url
@@ -41,6 +50,14 @@ module Gitlab
 
       return unless enabled
 
+      # We don't want the `expanded_ai_logging` feature flag to be pushed to AIGW
+      # on any kind of self-managed instance (including instances running Self-hosted Duo)
+      # Expanded logging will work via `enabled_instance_verbose_ai_logs` for self-hosted Duo
+      # And, expanded logging should not work at all for self-managed instances connected to cloud AIGW.
+      # Essentially, `expanded_ai_logging` FF should only work on gitlab.com, for
+      # debugging purposes.
+      return if expanded_ai_logging_on_self_managed?(name)
+
       enabled_feature_flags.append(name)
     end
 
@@ -55,10 +72,18 @@ module Gitlab
       Gitlab::SafeRequestStore.fetch(FEATURE_FLAG_CACHE_KEY) { [] }
     end
 
+    def self.expanded_ai_logging_on_self_managed?(name)
+      # cloud_connector_static_catalog is only available on GitLab.com (SaaS)
+      # so its absence indicates a self-managed instance
+      self_managed_instance = !::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+
+      name.to_sym == :expanded_ai_logging && self_managed_instance
+    end
+
     def self.headers(user:, service:, agent: nil, lsp_version: nil)
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
-        'Authorization' => "Bearer #{service.access_token(user)}",
+        'Authorization' => "Bearer #{cloud_connector_token(service, user)}",
         'Content-Type' => 'application/json',
         'X-Gitlab-Is-Team-Member' =>
           (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s,
@@ -102,6 +127,15 @@ module Gitlab
         'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
         'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
+    end
+
+    def self.cloud_connector_token(service, user)
+      return service.access_token(user) unless Feature.enabled?(:cloud_connector_new_token_path, user)
+
+      # Until https://gitlab.com/groups/gitlab-org/-/epics/15639 is complete, we generate service
+      # definitions for each UP, so passing the service name here should be safe, even if `service`
+      # is not defined explicitly.
+      ::CloudConnector::Tokens.get(unit_primitive: service.name, resource: user)
     end
   end
 end

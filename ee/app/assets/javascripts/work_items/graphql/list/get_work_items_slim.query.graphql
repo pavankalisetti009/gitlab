@@ -27,6 +27,8 @@ query getWorkItemsSlimEE(
   $types: [IssueType!]
   $updatedAfter: Time
   $updatedBefore: Time
+  $crmOrganizationId: String
+  $crmContactId: String
   $in: [IssuableSearchableField!]
   $not: NegatedWorkItemFilterInput
   $or: UnionedWorkItemFilterInput
@@ -38,6 +40,7 @@ query getWorkItemsSlimEE(
   $weight: String
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
+  $status: WorkItemWidgetStatusFilterInput
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -66,6 +69,8 @@ query getWorkItemsSlimEE(
       types: $types
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
+      crmOrganizationId: $crmOrganizationId
+      crmContactId: $crmContactId
       in: $in
       not: $not
       or: $or
@@ -77,6 +82,7 @@ query getWorkItemsSlimEE(
       weight: $weight
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
+      status: $status
     ) {
       pageInfo {
         ...PageInfo

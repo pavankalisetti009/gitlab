@@ -4,7 +4,7 @@ import { uniqueId } from 'lodash';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
-import { visitUrl, setUrlParams, getNormalizedURL } from '~/lib/utils/url_utility';
+import { setUrlParams, getNormalizedURL } from '~/lib/utils/url_utility';
 import { logsQueryFromAttributes } from 'ee/logs/list/filter_bar/filters';
 import { metricsListQueryFromAttributes } from 'ee/metrics/list/filters';
 import { TIME_RANGE_OPTIONS_VALUES } from '~/observability/constants';
@@ -42,10 +42,6 @@ export default {
       type: Object,
     },
     traceId: {
-      required: true,
-      type: String,
-    },
-    tracingIndexUrl: {
       required: true,
       type: String,
     },
@@ -125,9 +121,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-    goToTracingIndex() {
-      visitUrl(this.tracingIndexUrl);
     },
     onToggleDrawer({ spanId }) {
       if (this.selectedSpan?.span_id === spanId) {

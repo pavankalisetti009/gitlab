@@ -24,9 +24,9 @@ export default {
     canManageSelfHostedModels: { default: false },
     duoSelfHostedPath: { default: '' },
     isSaaS: {},
+    isAdminInstanceDuoHome: { default: false },
     modelSwitchingEnabled: { default: false },
     modelSwitchingPath: { default: '' },
-    showDuoWorkflowSettings: { default: false },
   },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
@@ -62,6 +62,19 @@ export default {
 
       return {};
     },
+    shouldShowCodeSuggestionsUsage() {
+      /* Show when in self-managed admin instance settings */
+      if (!this.isSaaS) {
+        return true;
+      }
+
+      /*
+       * Do not show when in SaaS admin instance settings.
+       * For SaaS, these configs are managed via the Duo home page under namespace settings.
+       * i.e /groups/<group-name>/-/settings/gitlab_duo
+       */
+      return this.isSaaS && !this.isAdminInstanceDuoHome;
+    },
   },
   methods: {
     shouldShowDuoCoreUpgradeCard(activeDuoTier) {
@@ -77,6 +90,7 @@ export default {
 <template>
   <div>
     <code-suggestions-usage
+      v-if="shouldShowCodeSuggestionsUsage"
       :title="$options.i18n.gitlabDuoHomeTitle"
       :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
       :force-hide-title="false"
@@ -103,6 +117,6 @@ export default {
         />
       </template>
     </code-suggestions-usage>
-    <duo-workflow-settings v-if="showDuoWorkflowSettings" />
+    <duo-workflow-settings v-if="isAdminInstanceDuoHome" />
   </div>
 </template>

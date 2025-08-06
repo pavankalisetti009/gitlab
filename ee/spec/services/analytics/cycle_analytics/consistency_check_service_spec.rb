@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_failures, feature_category: :value_stream_management do
-  let_it_be_with_refind(:group) { create(:group, :with_organization) }
+  let_it_be_with_refind(:group) { create(:group) }
   let_it_be_with_refind(:subgroup) { create(:group, parent: group, organization_id: group.organization_id) }
 
   let_it_be(:project1) { create(:project, namespace: group) }

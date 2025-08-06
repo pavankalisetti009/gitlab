@@ -153,6 +153,9 @@ export default {
 
       return updatedWidgetDefinitions;
     },
+    throwError(message) {
+      this.$emit('error', message);
+    },
   },
 };
 </script>

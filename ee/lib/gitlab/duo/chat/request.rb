@@ -59,7 +59,7 @@ module Gitlab
         def query_chat(query, db_record)
           data = { content: query, with_clean_history: true }
 
-          ::Gitlab::Duo::Chat::Completions.new(@owner, resource: db_record)
+          ::Gitlab::Duo::Chat::Completions.new(@owner, organization: @owner.organization, resource: db_record)
                                           .execute(safe_params: data)
         end
 

@@ -287,6 +287,7 @@ merge_requests:
 - running_scan_result_policy_violations
 - failed_scan_result_policy_violations
 - approval_metrics
+- approval_policy_merge_request_bypass_events
 external_pull_requests:
 - project
 merge_request_diff:
@@ -347,6 +348,7 @@ ci_pipelines: &pipeline_definition
 - external_pull_request
 - deployments
 - environments
+- job_environments
 - chat_data
 - source_pipeline
 - ref_status
@@ -424,6 +426,7 @@ builds:
 - trigger
 - erased_by
 - deployment
+- job_environment
 - pending_state
 - queuing_entry
 - runtime_metadata
@@ -466,6 +469,8 @@ builds:
 - job_artifacts_cyclonedx
 - job_artifacts_requirements_v2
 - job_artifacts_repository_xray
+- job_definition
+- job_definition_instance
 - runner_manager
 - runner_manager_build
 - runner_session
@@ -491,10 +496,13 @@ bridges:
 - pipeline
 - auto_canceled_by
 - ci_stage
+- job_definition
+- job_definition_instance
 - needs
 - resource
 - sourced_pipeline
 - deployment
+- job_environment
 - resource_group
 - metadata
 - trigger
@@ -668,6 +676,7 @@ project:
 - ewm_integration
 - clickup_integration
 - external_wiki_integration
+- linear_integration
 - mock_ci_integration
 - mock_monitoring_integration
 - squash_tm_integration

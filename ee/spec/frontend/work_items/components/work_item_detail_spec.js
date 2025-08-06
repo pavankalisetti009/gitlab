@@ -119,7 +119,7 @@ describe('EE WorkItemDetail component', () => {
         hoverMessage: 'Generate merge request with Duo',
         goal: workItem.webUrl,
         workflowDefinition: 'issue_to_merge_request',
-        agentPrivileges: [1, 2, 5],
+        agentPrivileges: [1, 2, 3, 4, 5],
         duoWorkflowInvokePath: '/api/v4/ai/duo_workflows/workflows',
         size: 'medium',
       });

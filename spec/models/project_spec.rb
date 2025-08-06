@@ -8198,7 +8198,7 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
   end
 
   describe '#parent_organization_match' do
-    let_it_be(:group) { create(:group, :with_organization) }
+    let_it_be(:group) { create(:group) }
 
     subject(:project) { build(:project, namespace: group, organization: organization) }
 
@@ -8795,6 +8795,8 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
     end
   end
 
+  # TODO: remove this with the rollout of
+  # https://gitlab.com/gitlab-org/gitlab/-/issues/558119
   describe '#package_already_taken?' do
     let_it_be(:namespace) { create(:namespace, path: 'test') }
     let_it_be(:project) { create(:project, :public, namespace: namespace) }

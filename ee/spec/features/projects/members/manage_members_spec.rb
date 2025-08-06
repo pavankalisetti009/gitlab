@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :groups_and_projects do
+  include ListboxHelpers
   include Features::InviteMembersModalHelpers
+  include Spec::Support::Helpers::ModalHelpers
   include SubscriptionPortalHelpers
 
   context 'with free user limit', :saas do
@@ -105,6 +107,38 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
         expect(page).to have_content 'During your trial, you can invite as many members to active-trial-project'
         expect(page).to have_link(text: 'upgrade to a paid plan', href: group_billings_path(group.root_ancestor))
         expect(page).to have_content 'Cancel'
+      end
+    end
+  end
+
+  context 'with custom roles', :saas do
+    let_it_be(:project) { create(:project, :in_group) }
+    let_it_be(:member_role) do
+      create(:member_role, namespace: project.group, name: 'Custom role', description: 'description')
+    end
+
+    let_it_be(:project_owner) { create(:user, owner_of: project) }
+
+    let(:access_levels) { %w[Guest Planner Reporter Developer Maintainer Owner] }
+    let(:member_role_text) { "#{member_role.name}\n#{member_role.description}" }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+
+      sign_in(project_owner)
+    end
+
+    it 'shows member role in the `Invite Members` dropdown' do
+      visit project_project_members_path(project)
+
+      click_on 'Invite members'
+
+      page.within invite_modal_selector do
+        page.within role_dropdown_selector do
+          wait_for_requests
+          toggle_listbox
+          expect_listbox_items(access_levels << member_role_text)
+        end
       end
     end
   end

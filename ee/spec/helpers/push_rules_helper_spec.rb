@@ -7,7 +7,7 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:project_owner) { project.first_owner }
 
-  let(:global_push_rule) { create(:push_rule_sample, project: project) }
+  let(:global_push_rule) { create(:push_rule_sample) }
   let(:push_rule) { create(:push_rule, project: project) }
 
   let(:possible_help_texts) do
@@ -60,7 +60,7 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
 
         it "has the correct help text" do
           rule = global_setting ? global_push_rule : push_rule
-          message = possible_help_texts["#{rule_attr}_#{help_text}".to_sym].presence || possible_help_texts[help_text]
+          message = possible_help_texts[:"#{rule_attr}_#{help_text}"].presence || possible_help_texts[help_text]
 
           expect(helper.public_send("#{rule_attr}_description", rule)).to match(message)
 

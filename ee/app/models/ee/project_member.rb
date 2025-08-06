@@ -15,6 +15,12 @@ module EE
 
       before_destroy :delete_member_branch_protection
       before_destroy :delete_protected_environment_acceses
+
+      scope :eligible_approvers_ids_by_project_id_and_custom_roles, ->(project_id, custom_roles) do
+        where(source_id: project_id, member_role_id: custom_roles)
+          .select(:user_id)
+          .limit(Security::ScanResultPolicy::APPROVERS_LIMIT)
+      end
     end
 
     def validate_only_one_security_policy_bot_per_source

@@ -27,8 +27,23 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
         let(:current_user) { maintainer }
 
         it 'deletes the item consumer' do
+          expect { response }.to change { Ai::Catalog::ItemConsumer.count }.by(-1)
           expect(response).to be_success
-          expect { Ai::Catalog::ItemConsumer.find(item_consumer.id) }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+
+        context 'when destroy fails' do
+          before do
+            allow(item_consumer).to receive(:destroy) do
+              item_consumer.errors.add(:base, 'Deletion failed')
+              false
+            end
+          end
+
+          it 'returns an error' do
+            expect { response }.not_to change { Ai::Catalog::ItemConsumer.count }
+            expect(response).to be_error
+            expect(response.message).to contain_exactly('Deletion failed')
+          end
         end
       end
     end
@@ -49,8 +64,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
         let(:current_user) { maintainer }
 
         it 'deletes the item consumer' do
+          expect { response }.to change { Ai::Catalog::ItemConsumer.count }.by(-1)
           expect(response).to be_success
-          expect { Ai::Catalog::ItemConsumer.find(item_consumer.id) }.to raise_error(ActiveRecord::RecordNotFound)
         end
       end
     end

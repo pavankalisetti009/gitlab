@@ -1,51 +1,54 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
-import { s__ } from '~/locale';
-import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import {
-  PIPELINE_SOURCE_LISTBOX_OPTIONS,
-  TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS,
-} from '../constants';
+import { isEmpty } from 'lodash';
+import { TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS, PIPELINE_SOURCE_OPTIONS } from '../constants';
+import RuleMultiSelect from '../../rule_multi_select.vue';
 
 export default {
-  PIPELINE_SOURCE_LISTBOX_OPTIONS,
-  TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS,
   name: 'PipelineSourceSelector',
   components: {
-    GlCollapsibleListbox,
+    RuleMultiSelect,
   },
   props: {
-    allSources: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     pipelineSources: {
       type: Object,
       required: false,
       default: () => ({}),
     },
+    showAllSources: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
-    items() {
-      return this.allSources
-        ? this.$options.PIPELINE_SOURCE_LISTBOX_OPTIONS
-        : this.$options.TARGETS_BRANCHES_PIPELINE_SOURCE_LISTBOX_OPTIONS;
-    },
-    pipelineSourcesText() {
-      return getSelectedOptionsText({
-        options: PIPELINE_SOURCE_LISTBOX_OPTIONS,
-        selected: this.sources,
-        placeholder: s__('SecurityOrchestration|All pipeline sources'),
-        maxOptionsShown: 2,
-      });
-    },
     sources() {
-      return this.pipelineSources?.including || [];
+      return Object.keys(this.items);
+    },
+    items() {
+      return this.showAllSources
+        ? PIPELINE_SOURCE_OPTIONS
+        : TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS;
+    },
+    selectedSources() {
+      // Not including pipelineSources is the same as selecting all
+      if (isEmpty(this.pipelineSources)) {
+        return this.sources;
+      }
+
+      // Return empty array if 'including' is null, which means none is selected
+      return this.pipelineSources.including ?? [];
     },
   },
   methods: {
-    setPipelineSources(including) {
+    setPipelineSources(values) {
+      // Early return for "select all" case
+      if (values.length === Object.keys(PIPELINE_SOURCE_OPTIONS).length) {
+        this.$emit('remove');
+        return;
+      }
+
+      // Emit selection with null for empty arrays, otherwise use the values
+      const including = values.length ? values : null;
       this.$emit('select', { pipeline_sources: { including } });
     },
   },
@@ -53,12 +56,12 @@ export default {
 </script>
 
 <template>
-  <gl-collapsible-listbox
-    multiple
+  <rule-multi-select
+    class="!gl-inline gl-align-middle"
     data-testid="pipeline-source"
+    :item-type-name="s__('SecurityOrchestration|pipeline sources')"
     :items="items"
-    :selected="sources"
-    :toggle-text="pipelineSourcesText"
-    @select="setPipelineSources"
+    :value="selectedSources"
+    @input="setPipelineSources"
   />
 </template>

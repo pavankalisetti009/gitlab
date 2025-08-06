@@ -10,6 +10,7 @@ import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
 import SystemNote from '~/work_items/components/notes/system_note.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
+import RelatedIssues from 'ee/compliance_violations/components/related_issues.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
 import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
@@ -48,6 +49,18 @@ describe('ComplianceViolationDetailsApp', () => {
               description: 'Test framework description',
             },
           },
+        },
+        issues: {
+          nodes: [
+            {
+              id: '1',
+              iid: '1',
+              reference: '#1',
+              state: 'opened',
+              title: 'Test',
+              webUrl: 'https://localhost:3000/gitlab/org/gitlab-test/-/issues/1',
+            },
+          ],
         },
         project: {
           id: 'gid://gitlab/Project/2',
@@ -233,6 +246,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findAuditEvent = () => wrapper.findComponent(AuditEvent);
   const findViolationSection = () => wrapper.findComponent(ViolationSection);
   const findFixSuggestionSection = () => wrapper.findComponent(FixSuggestionSection);
+  const findRelatedIssues = () => wrapper.findComponent(RelatedIssues);
   const findErrorMessage = () => wrapper.findComponent(GlAlert);
   const findSystemNotes = () => wrapper.findAllComponents(SystemNote);
   const findActivitySection = () => wrapper.find('.issuable-discussion');
@@ -307,7 +321,7 @@ describe('ComplianceViolationDetailsApp', () => {
       });
     });
 
-    it('displays the project location with link', () => {
+    it('displays the project with link', () => {
       const { project } = mockComplianceViolation;
       const projectLink = wrapper.findByTestId('compliance-violation-location-link');
       expect(projectLink.exists()).toBe(true);
@@ -333,6 +347,12 @@ describe('ComplianceViolationDetailsApp', () => {
       expect(fixSuggestionSectionComponent.props('projectPath')).toBe(
         mockComplianceViolation.project.webUrl,
       );
+    });
+
+    it('renders the related issues section', () => {
+      const relatedIssuesComponent = findRelatedIssues();
+      expect(relatedIssuesComponent.exists()).toBe(true);
+      expect(relatedIssuesComponent.props('issues')).toEqual(mockComplianceViolation.issues.nodes);
     });
 
     describe('when violation has an audit event', () => {

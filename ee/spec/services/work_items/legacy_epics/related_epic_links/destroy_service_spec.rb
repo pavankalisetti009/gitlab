@@ -43,43 +43,6 @@ RSpec.describe WorkItems::LegacyEpics::RelatedEpicLinks::DestroyService, feature
   end
 
   describe '#execute' do
-    context 'when no work item link exists for related epic link' do
-      let_it_be(:related_epic_link) do
-        create(:related_epic_link, source: source_epic, target: target_epic)
-      end
-
-      before do
-        related_work_item_link = related_epic_link.related_work_item_link
-        related_epic_link.update!(related_work_item_link: nil)
-        related_work_item_link.destroy!
-      end
-
-      it 'calls the legacy service and destroys the related epic link' do
-        allow(Epics::RelatedEpicLinks::DestroyService).to receive(:new).and_call_original
-        expect(Epics::RelatedEpicLinks::DestroyService).to receive(:new)
-          .with(related_epic_link, epic, user, synced_epic: false).and_call_original
-
-        expect { execute }
-          .to change { Epic::RelatedEpicLink.count }.by(-1)
-          .and not_change { WorkItems::RelatedWorkItemLink.count }
-
-        expect(execute[:status]).to eq(:success)
-        expect(execute[:message]).to eq('Relation was removed')
-      end
-    end
-
-    context 'when work item link exists for related epic link without a foreign key' do
-      let_it_be(:related_epic_link) do
-        create(:related_epic_link, source: source_epic, target: target_epic)
-      end
-
-      before do
-        related_epic_link.update!(related_work_item_link: nil)
-      end
-
-      it_behaves_like 'success'
-    end
-
     context 'when related epic link has a work item link associated' do
       let_it_be(:related_epic_link) do
         create(:related_epic_link, source: source_epic, target: target_epic)

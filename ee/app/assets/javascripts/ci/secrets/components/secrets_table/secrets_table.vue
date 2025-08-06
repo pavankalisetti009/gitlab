@@ -4,11 +4,13 @@ import {
   GlEmptyState,
   GlIcon,
   GlLabel,
-  GlSprintf,
+  GlLoadingIcon,
+  GlLink,
   GlTableLite,
   GlKeysetPagination,
 } from '@gitlab/ui';
 import EmptySecretsSvg from '@gitlab/svgs/dist/illustrations/chat-sm.svg?url';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
@@ -23,7 +25,6 @@ import {
   NEW_ROUTE_NAME,
   PAGE_SIZE,
   SCOPED_LABEL_COLOR,
-  SECRET_STATUS,
 } from '../../constants';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import ActionsCell from './secret_actions_cell.vue';
@@ -38,7 +39,8 @@ export default {
     GlIcon,
     GlKeysetPagination,
     GlLabel,
-    GlSprintf,
+    GlLoadingIcon,
+    GlLink,
     GlTableLite,
     SecretDeleteModal,
     TimeAgo,
@@ -95,11 +97,11 @@ export default {
     hasPreviousPage() {
       return this.startCursor !== null;
     },
-    onSecretsPage() {
-      return window.location.pathname.includes('/-/secrets');
+    isLoading() {
+      return this.$apollo.queries.secrets.loading;
     },
     showEmptyState() {
-      return !this.$apollo.queries.secrets.loading && this.secrets.length === 0;
+      return this.secrets.length === 0;
     },
     showPagination() {
       return this.hasPreviousPage || this.hasNextPage;
@@ -161,28 +163,29 @@ export default {
     },
   ],
   EmptySecretsSvg,
+  LEARN_MORE_LINK: helpPagePath('ci/secrets/secrets_manager/_index'),
   NEW_ROUTE_NAME,
   SCOPED_LABEL_COLOR,
-  SECRET_STATUS,
 };
 </script>
 <template>
   <div>
-    <h1 v-if="onSecretsPage" class="page-title gl-text-size-h-display">
+    <h1 class="page-title gl-text-size-h-display">
       {{ s__('Secrets|Secrets') }}
     </h1>
     <p>
-      <gl-sprintf
-        :message="
-          s__(
-            'Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job.',
-          )
-        "
-      />
+      {{
+        s__(
+          'Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job.',
+        )
+      }}
+      <gl-link :href="$options.LEARN_MORE_LINK">
+        {{ __('Learn more.') }}
+      </gl-link>
     </p>
-
+    <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-5" />
     <gl-empty-state
-      v-if="showEmptyState"
+      v-else-if="showEmptyState"
       :title="s__('Secrets|Secure your sensitive information')"
       :description="
         s__(

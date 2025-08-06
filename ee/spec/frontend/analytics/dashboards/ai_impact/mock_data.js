@@ -43,7 +43,7 @@ export const mockTimePeriods = [
     key: '3-months-ago',
     label: 'Dec',
     start: new Date('2023-12-01T00:00:00.000Z'),
-    end: new Date('2024-12-31T23:59:59.000Z'),
+    end: new Date('2023-12-31T23:59:59.000Z'),
     thClass: 'gl-w-1/10',
     deployment_frequency: {
       identifier: 'deployment_frequency',

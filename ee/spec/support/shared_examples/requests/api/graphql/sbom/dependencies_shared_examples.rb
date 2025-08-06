@@ -72,23 +72,104 @@ RSpec.shared_examples 'when dependencies graphql query sorted by severity' do
 end
 
 RSpec.shared_examples 'when dependencies graphql query sorted by license' do
-  context 'with sort as an argument' do
-    let(:asc_query) { pagination_query({ sort: :LICENSE_ASC }) }
-    let(:desc_query) { pagination_query({ sort: :LICENSE_DESC }) }
+  let_it_be(:test_dependencies) do
+    components = create_list(:sbom_component, 6)
 
-    it 'sorts by license ascending' do
-      post_graphql(asc_query, current_user: current_user)
+    [
+      create(:sbom_occurrence, project: project, component: components[0], licenses: []),
+      create(:sbom_occurrence, project: project, component: components[1], licenses: [
+        { "name" => "Apache License 2.0", "spdx_identifier" => "Apache-2.0", "url" => "https://spdx.org/licenses/Apache-2.0.html" }
+      ]),
+      create(:sbom_occurrence, project: project, component: components[2], licenses: [
+        { "name" => "BSD 2-Clause License", "spdx_identifier" => "BSD-2-Clause", "url" => "https://spdx.org/licenses/BSD-2-Clause.html" }
+      ]),
+      create(:sbom_occurrence, project: project, component: components[3], licenses: [
+        { "name" => "MIT License", "spdx_identifier" => "MIT", "url" => "https://spdx.org/licenses/MIT.html" }
+      ]),
+      create(:sbom_occurrence, project: project, component: components[4], licenses: [
+        { "name" => "Unknown License", "spdx_identifier" => "NOASSERTION", "url" => nil }
+      ]),
+      create(:sbom_occurrence, project: project, component: components[5], licenses: [
+        { "name" => "Custom License", "spdx_identifier" => nil, "url" => "https://example.com/license" }
+      ])
+    ]
+  end
 
-      licenses = graphql_data_at(*nodes_path).pluck('license')
-      expect(licenses).to eq(licenses.sort)
+  let(:desc_query) { pagination_query({ sort: :LICENSE_DESC }) }
+  let(:asc_query) { pagination_query({ sort: :LICENSE_ASC }) }
+
+  before do
+    test_dependencies.each(&:reload)
+  end
+
+  it 'sorts by license ascending' do
+    post_graphql(asc_query, current_user: current_user)
+
+    spdx_identifiers = graphql_data_at(*nodes_path).map do |node|
+      licenses = node['licenses']
+      next nil if licenses.nil? || licenses.empty?
+
+      licenses.first&.dig('spdxIdentifier')
     end
 
-    it 'sorts by license descending' do
-      post_graphql(desc_query, current_user: current_user)
+    non_null_identifiers = spdx_identifiers.compact
+    expect(non_null_identifiers).to eq(non_null_identifiers.sort)
 
-      licenses = graphql_data_at(*nodes_path).pluck('license')
-      expect(licenses).to eq(licenses.sort.reverse)
+    expected_non_null_order = ["Apache-2.0", "BSD-2-Clause", "MIT", "NOASSERTION"]
+    expect(non_null_identifiers).to eq(expected_non_null_order)
+  end
+
+  it 'sorts by license descending' do
+    post_graphql(desc_query, current_user: current_user)
+
+    spdx_identifiers = graphql_data_at(*nodes_path).map do |node|
+      licenses = node['licenses']
+      next nil if licenses.nil? || licenses.empty?
+
+      licenses.first&.dig('spdxIdentifier')
     end
+
+    non_null_identifiers = spdx_identifiers.compact
+    expect(non_null_identifiers).to eq(non_null_identifiers.sort.reverse)
+
+    null_count = spdx_identifiers.count(&:nil?)
+    expect(null_count).to be > 0
+
+    expected_non_null_order = ["NOASSERTION", "MIT", "BSD-2-Clause", "Apache-2.0"]
+    expect(non_null_identifiers).to eq(expected_non_null_order)
+  end
+
+  it 'produces different results for ASC and DESC' do
+    post_graphql(asc_query, current_user: current_user)
+    asc_results = graphql_data_at(*nodes_path).pluck('id')
+
+    post_graphql(desc_query, current_user: current_user)
+    desc_results = graphql_data_at(*nodes_path).pluck('id')
+
+    expect(asc_results).not_to eq(desc_results)
+  end
+
+  it 'handles empty licenses consistently' do
+    post_graphql(asc_query, current_user: current_user)
+
+    results = graphql_data_at(*nodes_path)
+    empty_license_nodes = results.select { |node| node['licenses'].empty? }
+
+    expect(empty_license_nodes).not_to be_empty
+  end
+
+  it 'handles null spdx_identifier values' do
+    post_graphql(asc_query, current_user: current_user)
+
+    results = graphql_data_at(*nodes_path)
+    null_spdx_nodes = results.select do |node|
+      licenses = node['licenses']
+      next false if licenses.nil? || licenses.empty?
+
+      licenses.any? { |license| license['spdxIdentifier'].nil? }
+    end
+
+    expect(null_spdx_nodes).not_to be_empty
   end
 end
 

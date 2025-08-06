@@ -151,7 +151,6 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
     context 'with an authenticated user' do
       before do
         sign_in(user)
-        current_organization.users << user
       end
 
       it_behaves_like 'hides email confirmation warning'

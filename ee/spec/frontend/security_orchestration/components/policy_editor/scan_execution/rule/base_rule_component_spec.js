@@ -13,8 +13,9 @@ import {
 import {
   ALL_PROTECTED_BRANCHES,
   SPECIFIC_BRANCHES,
-  VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
+  TARGET_BRANCHES,
   TARGET_DEFAULT,
+  VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
@@ -167,20 +168,21 @@ describe('BaseRuleComponent', () => {
   });
 
   describe('branch types', () => {
-    it.each(VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS)('should select branch type', (branchType) => {
-      createComponent();
+    it.each(VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS)(
+      'should select branch type %s',
+      (branchType) => {
+        createComponent();
 
-      findBranchTypeSelector().vm.$emit('set-branch-type', branchType);
+        findBranchTypeSelector().vm.$emit('set-branch-type', branchType);
 
-      expect(wrapper.emitted('changed')).toEqual([
-        [
-          {
-            type: SCAN_EXECUTION_SCHEDULE_RULE,
-            branch_type: branchType,
-          },
-        ],
-      ]);
-    });
+        const expected = { type: SCAN_EXECUTION_SCHEDULE_RULE, branch_type: branchType };
+        if (TARGET_BRANCHES.includes(branchType)) {
+          expected.pipeline_sources = { including: ['merge_request_event', 'push'] };
+        }
+
+        expect(wrapper.emitted('changed')).toEqual([[expected]]);
+      },
+    );
 
     it.each`
       type                            | emittedValue
@@ -297,7 +299,7 @@ describe('BaseRuleComponent', () => {
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
         expect(findPipelineSourceSelector().props()).toEqual({
-          allSources: true,
+          showAllSources: true,
           pipelineSources: {},
         });
       });
@@ -315,7 +317,7 @@ describe('BaseRuleComponent', () => {
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
         expect(findPipelineSourceSelector().props()).toEqual({
-          allSources: false,
+          showAllSources: false,
           pipelineSources: {},
         });
       });
@@ -336,6 +338,22 @@ describe('BaseRuleComponent', () => {
         await findPipelineSourceSelector().vm.$emit('select', pipelineSources);
 
         expect(wrapper.emitted('changed')[0][0]).toEqual(expect.objectContaining(pipelineSources));
+      });
+
+      it('should remove selection from rule', () => {
+        const pipelineRule = {
+          type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+          branch_type: TARGET_DEFAULT,
+        };
+
+        createComponent({
+          props: {
+            initRule: { ...pipelineRule, pipeline_sources: { including: ['api'] } },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        findPipelineSourceSelector().vm.$emit('remove');
+        expect(wrapper.emitted('changed')).toEqual([[{ ...pipelineRule }]]);
       });
     });
 

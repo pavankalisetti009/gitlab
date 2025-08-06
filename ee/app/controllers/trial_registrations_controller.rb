@@ -25,6 +25,8 @@ class TrialRegistrationsController < RegistrationsController
     @resource =
       Users::AuthorizedBuildService.new(nil, { email: email_param }).execute
 
+    @trial_duration = GitlabSubscriptions::TrialDurationService.new.execute
+
     ::Gitlab::Tracking.event(
       self.class.name,
       'render_registration_page',

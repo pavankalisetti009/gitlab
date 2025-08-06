@@ -42,6 +42,10 @@ module Search
         self.class.name.demodulize
       end
 
+      def model_klass
+        self.class.model_klass
+      end
+
       class << self
         def ref(item, klass = ::Search::Elastic::References::Legacy)
           klass.serialize(item)
@@ -97,6 +101,10 @@ module Search
         end
 
         def preload_indexing_data(_)
+          raise NotImplementedError
+        end
+
+        def model_klass
           raise NotImplementedError
         end
       end

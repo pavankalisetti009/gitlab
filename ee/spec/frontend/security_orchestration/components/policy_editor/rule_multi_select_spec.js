@@ -42,7 +42,12 @@ describe('Rule Multi Select', () => {
       expect(findDropdown().props('toggleText')).toBe('Select demo items');
     });
 
-    describe('Without any selected item', () => {
+    it('updates the selected property when the value prop updates', async () => {
+      await wrapper.setProps({ value: ['start'] });
+      expect(findDropdown().props('selected')).toEqual(['start']);
+    });
+
+    describe('without any selected item', () => {
       it('does not have any selected item', () => {
         expect(findDropdownItems().filter((element) => element.props('isChecked'))).toHaveLength(0);
       });
@@ -52,7 +57,7 @@ describe('Rule Multi Select', () => {
       });
     });
 
-    describe('With one selected item', () => {
+    describe('with one selected item', () => {
       const expectedKey = 'start';
       const expectedValue = items[expectedKey];
 
@@ -71,7 +76,7 @@ describe('Rule Multi Select', () => {
       });
     });
 
-    describe('With multiple selected items', () => {
+    describe('with multiple selected items', () => {
       const expectedKeys = ['start', 'middle'];
       const expectedLength = expectedKeys.length;
       const expectedValue = 'Start now, Almost there';
@@ -91,7 +96,7 @@ describe('Rule Multi Select', () => {
       });
     });
 
-    describe('With all selected items', () => {
+    describe('with all selected items', () => {
       const expectedValue = 'All demo items';
 
       beforeEach(() => {

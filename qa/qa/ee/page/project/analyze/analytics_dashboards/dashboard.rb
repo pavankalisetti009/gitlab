@@ -13,11 +13,6 @@ module QA
               end
 
               view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/' \
-                   'analytics_customizable_dashboard.vue' do
-                element 'dashboard-edit-btn'
-              end
-
-              view 'ee/app/assets/javascripts/analytics/analytics_dashboards/components/' \
                      'analytics_dashboard.vue' do
                 element 'analytics-dashboard-invalid-config-alert'
               end
@@ -74,10 +69,6 @@ module QA
                 within_element_by_index('grid-stack-panel', panel_index) do
                   find_element('gl-chart-legend').text
                 end
-              end
-
-              def edit_dashboard
-                click_element 'dashboard-edit-btn'
               end
 
               def has_invalid_config_alert?(wait: 1)

@@ -5,6 +5,7 @@ module Geo
     extend ActiveSupport::Concern
     include Checksummable
     include HasReplicator
+    include Orderable
     include ::Gitlab::Geo::LogHelpers
     include ::Gitlab::Utils::StrongMemoize
 

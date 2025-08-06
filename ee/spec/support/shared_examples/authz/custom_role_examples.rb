@@ -245,34 +245,20 @@ RSpec.shared_examples 'deleting a role' do
   end
 end
 
-RSpec.shared_examples 'tracking regular custom role deletion' do
+RSpec.shared_examples 'tracking custom role action' do |action|
   it 'tracks internal event and increments the metrics', :clean_gitlab_redis_shared_state do
-    expect { result }.to trigger_internal_events('delete_custom_role').with(
-      user: user,
-      namespace: nil,
-      project: nil
-    ).and increment_usage_metrics(
-      'redis_hll_counters.count_distinct_user_id_from_delete_custom_role_monthly',
-      'redis_hll_counters.count_distinct_user_id_from_delete_custom_role_weekly',
-      'counts.count_total_delete_custom_role_monthly',
-      'counts.count_total_delete_custom_role_weekly',
-      'counts.count_total_delete_custom_role'
-    )
-  end
-end
+    event_name = "#{action}_custom_role"
 
-RSpec.shared_examples 'tracking admin custom role deletion' do
-  it 'tracks internal event and increments the metrics', :clean_gitlab_redis_shared_state do
-    expect { result }.to trigger_internal_events('delete_admin_custom_role').with(
+    expect { subject }.to trigger_internal_events(event_name).with(
       user: user,
-      namespace: nil,
+      namespace: namespace,
       project: nil
     ).and increment_usage_metrics(
-      'redis_hll_counters.count_distinct_user_id_from_delete_admin_custom_role_monthly',
-      'redis_hll_counters.count_distinct_user_id_from_delete_admin_custom_role_weekly',
-      'counts.count_total_delete_admin_custom_role_monthly',
-      'counts.count_total_delete_admin_custom_role_weekly',
-      'counts.count_total_delete_admin_custom_role'
+      "redis_hll_counters.count_distinct_user_id_from_#{event_name}_monthly",
+      "redis_hll_counters.count_distinct_user_id_from_#{event_name}_weekly",
+      "counts.count_total_#{event_name}_monthly",
+      "counts.count_total_#{event_name}_weekly",
+      "counts.count_total_#{event_name}"
     )
   end
 end

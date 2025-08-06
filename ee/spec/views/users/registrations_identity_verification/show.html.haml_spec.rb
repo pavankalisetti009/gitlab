@@ -16,7 +16,8 @@ RSpec.describe 'user/registrations_identity_verification/show', feature_category
 
   context 'with lightweight_trial_registration_redesign experiment' do
     let(:onboarding_status_presenter) do
-      instance_double(::Onboarding::StatusPresenter, tracking_label: 'trial_registration')
+      instance_double(::Onboarding::StatusPresenter, tracking_label: 'trial_registration',
+        new_registration_design?: true)
     end
 
     let(:trial_registration) { true }

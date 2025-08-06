@@ -6088,12 +6088,29 @@ export const updateWorkItemMutationResponseFactory = (options) => {
   };
 };
 
+export const workItemNotificationsResponse = (subscribed) => ({
+  data: {
+    workItem: {
+      __typename: 'WorkItem',
+      id: 'gid://gitlab/WorkItem/1',
+      iid: 1,
+      widgets: [
+        {
+          __typename: 'WorkItemWidgetNotifications',
+          type: 'NOTIFICATIONS',
+          subscribed,
+        },
+      ],
+    },
+  },
+});
+
 export const updateWorkItemNotificationsMutationResponse = (subscribed) => ({
   data: {
     workItemSubscribe: {
       workItem: {
         id: 'gid://gitlab/WorkItem/1',
-
+        iid: 1,
         widgets: [
           {
             __typename: 'WorkItemWidgetNotifications',
@@ -6702,6 +6719,19 @@ export const mockProjectPermissionsQueryResponse = ({
         __typename: 'ProjectPermissions',
       },
       __typename: 'Project',
+    },
+  },
+});
+
+export const mockGroupPermissionsQueryResponse = ({ adminWorkItemLifecycle = true } = {}) => ({
+  data: {
+    workspace: {
+      id: 'gid://gitlab/Group/24',
+      userPermissions: {
+        adminWorkItemLifecycle,
+        __typename: 'GroupPermissions',
+      },
+      __typename: 'Group',
     },
   },
 });
@@ -8931,6 +8961,20 @@ export const availableBulkEditWidgetsQueryResponse = {
         'VULNERABILITIES',
         'WEIGHT',
       ],
+    },
+  },
+};
+
+export const namespacePathsQueryResponse = {
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Namespaces::ProjectNamespace/34',
+      markdownPaths: {
+        markdownPreviewPath: '/flightjs/Flight/-/preview_markdown?target_type=WorkItem',
+        uploadsPath: '/flightjs/Flight/uploads',
+        __typename: 'ProjectNamespaceMarkdownPaths',
+      },
+      __typename: 'Namespace',
     },
   },
 };

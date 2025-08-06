@@ -1,0 +1,11 @@
+query getUserWorkflows($type: String, $first: Int) {
+  duoWorkflowWorkflows(type: $type, first: $first) {
+    edges {
+      node {
+        id
+        lastUpdatedAt: updatedAt
+        title: goal
+      }
+    }
+  }
+}

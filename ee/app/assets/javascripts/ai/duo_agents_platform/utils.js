@@ -12,3 +12,10 @@ export const formatAgentFlowName = (agentDefinition, id) => {
 export const formatAgentStatus = (status) => {
   return status ? humanize(status.toLowerCase()) : s__('DuoAgentsPlatform|Unknown');
 };
+
+export const getNamespaceDatasetProperties = (dataset, properties) => {
+  return properties.reduce((acc, prop) => {
+    acc[prop] = dataset[prop];
+    return acc;
+  }, {});
+};

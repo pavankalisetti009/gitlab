@@ -9,7 +9,6 @@ const defaultProps = {
   canAddCatalogResource: false,
   confirmationPhrase: 'my-fake-project',
   membersPagePath: '/my-fake-project/-/project_members',
-  projectId: 123,
 };
 
 describe('Settings Panel', () => {
@@ -51,7 +50,6 @@ describe('Settings Panel', () => {
       expect(findSecretsManagerSettings().props()).toMatchObject({
         canManageSecretsManager: true,
         fullPath: 'my-fake-project',
-        projectId: 123,
       });
     });
   });

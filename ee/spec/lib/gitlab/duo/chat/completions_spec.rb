@@ -36,6 +36,7 @@ RSpec.describe Gitlab::Duo::Chat::Completions, feature_category: :duo_chat do
       role: ::Gitlab::Llm::AiMessage::ROLE_USER,
       ai_action: 'chat',
       user: current_user,
+      thread: an_instance_of(::Ai::Conversation::Thread),
       context: an_object_having_attributes(resource: resource),
       client_subscription_id: nil,
       additional_context: an_object_having_attributes(
@@ -45,7 +46,8 @@ RSpec.describe Gitlab::Duo::Chat::Completions, feature_category: :duo_chat do
   end
 
   subject(:chat_completions) do
-    described_class.new(current_user, resource: resource).execute(safe_params: completions_params)
+    described_class.new(current_user, organization: organization,
+      resource: resource).execute(safe_params: completions_params)
   end
 
   before do
@@ -57,8 +59,11 @@ RSpec.describe Gitlab::Duo::Chat::Completions, feature_category: :duo_chat do
 
     chat_completions
 
-    last_user_message = Gitlab::Llm::ChatStorage.new(current_user)
-      .last_conversation.reverse.find { |message| message.role == 'user' }
+    last_user_message = Gitlab::Llm::ChatStorage.new(
+      current_user,
+      nil,
+      current_user.ai_conversation_threads.last
+    ).last_conversation.reverse.find { |message| message.role == 'user' }
 
     expect(last_user_message.content).to eq(content)
     expect(last_user_message.extras['additional_context']).to eq(

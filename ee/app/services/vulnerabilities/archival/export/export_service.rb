@@ -80,7 +80,7 @@ module Vulnerabilities
 
           def yield_archived_records_of(archive)
             archive.archived_records.each_batch do |batch|
-              batch.each { |archived_record| yield archived_record.data }
+              batch.each { |archived_record| yield archived_record }
             end
           end
 

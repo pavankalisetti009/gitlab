@@ -54,6 +54,7 @@ module Gitlab
               current_user: current_user,
               query: format_query(query, source: options[:source], search_mode: search_mode),
               num_context_lines: CONTEXT_LINES_COUNT,
+              max_file_match_results: num,
               max_line_match_results: num,
               search_mode: search_mode,
               **options

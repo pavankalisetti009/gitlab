@@ -619,6 +619,12 @@ module EE
     end
     strong_memoize_attr :designated_as_csp?
 
+    def organization_csp_namespace
+      return unless csp_enabled?(self)
+
+      organization_policy_setting.csp_namespace
+    end
+
     def all_projects_with_csp_in_batches(of: 1000, only_active: false, &block)
       relation = designated_as_csp? ? ::Project.all : all_projects
       relation = relation.not_aimed_for_deletion.non_archived if only_active
@@ -637,6 +643,14 @@ module EE
       [*self_and_ancestor_ids, organization_policy_setting.csp_namespace_id].compact.uniq
     end
     strong_memoize_attr :self_and_ancestor_ids_with_csp
+
+    def compliance_framework_ids_with_csp
+      direct_ids = root_ancestor.compliance_management_frameworks.pluck_primary_key
+      return direct_ids if !csp_enabled?(self) || designated_as_csp? || ::Feature.disabled?(:include_csp_frameworks,
+        root_ancestor)
+
+      [*direct_ids, *organization_policy_setting.csp_namespace.compliance_management_frameworks.pluck_primary_key]
+    end
 
     def ancestor_ids_with_csp
       return ancestor_ids unless csp_enabled?(self)

@@ -250,4 +250,63 @@ RSpec.describe UserPolicy do
       it { is_expected.to(allowed? ? be_allowed(:read_user_profile) : be_disallowed(:read_user_profile)) }
     end
   end
+
+  describe ':assign_default_duo_group' do
+    let_it_be(:first_group) { create(:group) }
+    let_it_be(:second_group) { create(:group) }
+
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+
+    let_it_be(:add_on_purchases) do
+      [
+        create(:gitlab_subscription_add_on_purchase, namespace: first_group, add_on: duo_pro_add_on),
+        create(:gitlab_subscription_add_on_purchase, namespace: second_group, add_on: duo_pro_add_on),
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: second_group)
+      ]
+    end
+
+    before do
+      stub_feature_flags(ai_model_switching: false)
+    end
+
+    context 'with no user assignments' do
+      before do
+        stub_application_setting(duo_features_enabled: true)
+      end
+
+      it { is_expected.to be_disallowed(:assign_default_duo_group) }
+    end
+
+    context 'with duo user assignments' do
+      using RSpec::Parameterized::TableSyntax
+
+      let!(:user_assignments) do
+        add_on_purchases.map do |purchase|
+          create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase, user: current_user)
+        end
+      end
+
+      where(:group_index, :duo_features_enabled, :allowed?) do
+        0 | false | false
+        0 | true | true
+        1 | false | false
+        1 | true | true
+        nil | true | false
+        nil | false | false
+      end
+
+      with_them do
+        before do
+          enabled_namespaces = group_index.nil? ? nil : [first_group, second_group].at(group_index)
+
+          stub_feature_flags(ai_model_switching: enabled_namespaces || false)
+          stub_application_setting(duo_features_enabled: duo_features_enabled)
+        end
+
+        it 'allows the user accordingly' do
+          is_expected.to(allowed? ? be_allowed(:assign_default_duo_group) : be_disallowed(:assign_default_duo_group))
+        end
+      end
+    end
+  end
 end

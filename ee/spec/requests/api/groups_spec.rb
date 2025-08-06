@@ -223,6 +223,42 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     end
   end
 
+  describe 'POST /groups/:id/archive' do
+    let(:path) { "/groups/#{group.id}/archive" }
+
+    context 'when group archiving fails' do
+      it 'does not log an audit event' do
+        expect { post api(path, another_user) }.not_to change { AuditEvent.count }
+      end
+    end
+
+    context 'when project archiving succeeds' do
+      it 'logs an audit event' do
+        expect { post api(path, user) }.to change { AuditEvent.count }.by(1)
+      end
+    end
+  end
+
+  describe 'POST /groups/:id/unarchive' do
+    let(:path) { "/groups/#{group.id}/unarchive" }
+
+    context 'when group unarchiving fails' do
+      it 'does not log an audit event' do
+        expect { post api(path, another_user) }.not_to change { AuditEvent.count }
+      end
+    end
+
+    context 'when group unarchiving succeeds' do
+      before do
+        group.namespace_settings.update!(archived: true)
+      end
+
+      it 'logs an audit event' do
+        expect { post api(path, user) }.to change { AuditEvent.count }.by(1)
+      end
+    end
+  end
+
   describe 'PUT /groups/:id' do
     let_it_be(:admin_mode) { false }
 

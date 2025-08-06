@@ -8,6 +8,9 @@ RSpec.describe Authz::AdminRoles::UpdateService, feature_category: :permissions 
 
   let(:user) { regular_user }
 
+  # used in tracking custom role action shard examples
+  let(:namespace) { nil }
+
   describe '#execute' do
     let_it_be(:existing_abilities) { Gitlab::CustomRoles::Definition.admin.keys.sample(3).index_with(true) }
     let(:updated_abilities) { existing_abilities.merge(existing_abilities.each_key.first => false) }
@@ -43,9 +46,11 @@ RSpec.describe Authz::AdminRoles::UpdateService, feature_category: :permissions 
         let(:user) { admin }
 
         it_behaves_like 'custom role update' do
-          let(:audit_event_message) { 'Admin role was updated' }
-          let(:audit_event_type) { 'admin_role_updated' }
+          let(:audit_event_message) { 'Custom admin role was updated' }
+          let(:audit_event_type) { 'custom_admin_role_updated' }
         end
+
+        it_behaves_like 'tracking custom role action', 'update_admin'
       end
     end
   end

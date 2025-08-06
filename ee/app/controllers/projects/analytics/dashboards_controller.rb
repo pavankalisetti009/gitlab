@@ -11,7 +11,6 @@ module Projects
       before_action :authorize_read_customizable_dashboards!
       before_action :authorize_read_combined_project_analytics_dashboards!
       before_action do
-        push_frontend_feature_flag(:customizable_dashboards, project.group)
         push_frontend_feature_flag(:duo_rca_usage_rate, project.group)
         push_frontend_feature_flag(:dora_metrics_dashboard, project.group)
 

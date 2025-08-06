@@ -18,25 +18,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   end
 
   let(:expected_feature_name) { :duo_chat }
-  let(:expected_access_token) { '123' }
-  let(:expected_gitlab_realm) { ::CloudConnector::GITLAB_REALM_SELF_MANAGED }
-  let(:expected_gitlab_host_name) { Gitlab.config.gitlab.host }
-  let(:expected_instance_id) { Gitlab::GlobalAnonymousId.instance_id }
-  let(:expected_user_id) { Gitlab::GlobalAnonymousId.user_id(user) }
-  let(:expected_request_headers) do
-    {
-      'X-Gitlab-Instance-Id' => expected_instance_id,
-      'X-Gitlab-Global-User-Id' => expected_user_id,
-      'X-Gitlab-Host-Name' => expected_gitlab_host_name,
-      'X-Gitlab-Realm' => expected_gitlab_realm,
-      'X-Gitlab-Authentication-Type' => 'oidc',
-      'Authorization' => "Bearer #{expected_access_token}",
-      "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
-      'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-      'Content-Type' => 'application/json',
-      'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
-    }
-  end
+  let(:expected_request_headers) { { 'header' => 'value' } }
 
   let(:default_body_params) do
     {
@@ -66,19 +48,21 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   before do
     service = instance_double(CloudConnector::BaseAvailableServiceData)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_feature_name).and_return(service)
-    allow(service).to receive_messages(access_token: expected_access_token, name: expected_feature_name)
-    allow(user).to receive(:allowed_to_use).and_return(auth_response)
+    allow(Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: service)
+      .and_return(expected_request_headers)
     allow(Gitlab::AiGateway).to receive_messages(
       self_hosted_url: self_hosted_url,
       cloud_connector_url: cloud_connector_url
     )
+    allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
   describe '#search', :with_cloud_connector do
     before do
       stub_request(:post, request_url)
         .with(
-          body: expected_request_body,
+          body: expected_request_body.to_json,
           headers: expected_request_headers
         )
         .to_return(

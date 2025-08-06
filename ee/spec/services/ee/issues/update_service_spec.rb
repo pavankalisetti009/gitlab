@@ -834,14 +834,14 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
       context 'when promote_to_epic param is present' do
         it 'promotes issue to epic' do
           expect { update_issue(promote_to_epic: true) }.to change { Epic.count }.by(1)
-          expect(issue.promoted_to_epic_id).not_to be_nil
+          expect(issue.reload.promoted_to_epic_id).to be_present
         end
       end
 
       context 'when promote_to_epic param is not present' do
         it 'does not promote issue to epic' do
           expect { update_issue(promote_to_epic: false) }.not_to change { Epic.count }
-          expect(issue.promoted_to_epic_id).to be_nil
+          expect(issue.reload.promoted_to_epic_id).to be_nil
         end
       end
     end

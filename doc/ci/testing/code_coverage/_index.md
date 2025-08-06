@@ -71,7 +71,7 @@ See: https://docs.gitlab.com/user/markdown/#tables
 | Tool       | Language | Command        | Regex pattern |
 |------------|----------|----------------|---------------|
 | pytest-cov | Python   | `pytest --cov` | `/TOTAL.*? (100(?:\.0+)?\%\|[1-9]?\d(?:\.\d+)?\%)$/` |
-| Simplecov  | Ruby     | `rspec spec`   | `/(?:LOC\s\(\d+\.\d+%|Line Coverage:\s\d+\.\d+%)/` |
+| Simplecov  | Ruby     | `rspec spec`   | `/(?:LOC\s\(\d+\.\d+%\|Line Coverage:\s\d+\.\d+%)/` |
 
 {{< /tab >}}
 
@@ -220,6 +220,12 @@ To add a `Coverage-Check` approval rule:
 1. Set the number of **Required number of approvals**.
 1. Select the **Users** or **Groups** to provide approval.
 1. Select **Save changes**.
+
+{{< alert type="note" >}}
+
+The `Coverage-Check` approval rule requires approval when the merge base pipeline contains no coverage data, even if the merge request improves overall coverage.
+
+{{< /alert >}}
 
 ## View coverage results
 

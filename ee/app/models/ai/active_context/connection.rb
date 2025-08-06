@@ -32,12 +32,18 @@ module Ai
       end
 
       def activate!
-        return true if active?
+        return if active?
 
         self.class.transaction do
-          self.class.active&.update!(active: false)
+          self.class.active&.deactivate!
           update!(active: true)
         end
+      end
+
+      def deactivate!
+        return unless active?
+
+        update!(active: false)
       end
 
       def options

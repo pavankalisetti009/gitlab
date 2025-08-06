@@ -27,9 +27,12 @@ module Search
         when :project
           raise ArgumentError, 'Project ID cannot be empty for project search' if project_id.blank?
 
-          children << Filters.by_repo_ids([project_id])
+          children << by_repo_ids([project_id], context: { name: 'project_id_search' })
         when :group
-          children << Filters.by_meta(key: "traversal_ids", value: auth.get_traversal_ids_for_group(group_id))
+          children << Filters.by_traversal_ids(
+            auth.get_traversal_ids_for_group(group_id),
+            context: { name: 'traversal_ids_for_group' }
+          )
         when :global
           # no additional filters needed
         else
@@ -42,7 +45,7 @@ module Search
       def build_repo_ids_payload(base_query)
         raise ArgumentError, 'Repo ids cannot be empty' if options[:repo_ids].blank?
 
-        Filters.and_filters(base_query, Filters.by_repo_ids(options[:repo_ids]))
+        Filters.and_filters(base_query, by_repo_ids(options[:repo_ids]))
       end
 
       def access_branches
@@ -56,11 +59,11 @@ module Search
         private_branch_filters = []
         if authorized_traversal_ids.present?
           private_branch_filters.concat authorized_traversal_ids.map { |t|
-            Filters.by_meta(key: 'traversal_ids', value: t)
+            Filters.by_traversal_ids(t)
           }
         end
 
-        private_branch_filters << Filters.by_repo_ids(authorized_project_ids) if authorized_project_ids.present?
+        private_branch_filters << by_repo_ids(authorized_project_ids) if authorized_project_ids.present?
 
         return [public_branch, internal_branch] if private_branch_filters.empty?
 
@@ -70,33 +73,47 @@ module Search
       def admin_branch
         Filters.or_filters(
           Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
-          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED)
+          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
+          context: { name: 'admin_branch' }
         )
       end
 
       def public_branch
         Filters.and_filters(
           Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
-          Filters.by_meta(key: 'visibility_level', value: VIS_PUBLIC)
+          Filters.by_meta(key: 'visibility_level', value: VIS_PUBLIC),
+          context: { name: 'public_branch' }
         )
       end
 
       def internal_branch
         Filters.and_filters(
           Filters.by_meta(key: 'visibility_level', value: VIS_INTERNAL),
-          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED)
+          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
+          context: { name: 'internal_branch' }
         )
       end
 
       def private_branch(filters)
         Filters.and_filters(
           admin_branch,
-          Filters.or_filters(*filters)
+          Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
+          context: { name: 'private_branch' }
         )
+      end
+
+      def by_repo_ids(ids, context: nil)
+        return Filters.by_project_ids(ids, context: context) if use_meta_project_ids?
+
+        Filters.by_repo_ids(ids, context: context)
       end
 
       def use_zoekt_traversal_id_query?
         Feature.enabled?(:zoekt_traversal_id_queries, current_user)
+      end
+
+      def use_meta_project_ids?
+        Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
       end
     end
   end

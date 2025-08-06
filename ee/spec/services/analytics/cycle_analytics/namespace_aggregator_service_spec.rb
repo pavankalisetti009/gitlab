@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::NamespaceAggregatorService, feature_category: :value_stream_management do
-  let!(:group) { create(:group, :with_organization) }
+  let!(:group) { create(:group) }
   let!(:aggregation) { create(:cycle_analytics_aggregation, :enabled, namespace: group) }
   let(:mode) { :incremental }
 
@@ -32,7 +32,7 @@ RSpec.describe Analytics::CycleAnalytics::NamespaceAggregatorService, feature_ca
   end
 
   context 'when a subgroup is given' do
-    let(:parent_group) { create(:group, :with_organization) }
+    let(:parent_group) { create(:group) }
     let(:group) { create(:group, parent: parent_group, organization_id: parent_group.organization_id) }
 
     it 'sets the aggregation record disabled' do

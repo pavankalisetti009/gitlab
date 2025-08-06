@@ -1056,7 +1056,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
     end
 
     context 'when filtering on a select field' do
-      let(:params) { { group_id: group.id, custom_field: { select_field.id => select_option_2.id } } }
+      let(:params) { { group_id: group.id, custom_field: [{ custom_field_id: select_field.id, selected_option_ids: [select_option_2.id] }] } }
 
       before_all do
         create(:work_item_select_field_value, work_item_id: epics[0].issue_id, custom_field: select_field, custom_field_select_option: select_option_1)
@@ -1080,7 +1080,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
     end
 
     context 'filtering on a multi-select field' do
-      let(:params) { { group_id: group.id, custom_field: { multi_select_field.id => [multi_select_option_1.id, multi_select_option_2.id] } } }
+      let(:params) { { group_id: group.id, custom_field: [{ custom_field_id: multi_select_field.id, selected_option_ids: [multi_select_option_1.id, multi_select_option_2.id] }] } }
 
       before do
         create(:work_item_select_field_value, work_item_id: epics[0].issue_id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_1)

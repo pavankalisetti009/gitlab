@@ -6,15 +6,12 @@ RSpec.describe Ai::Catalog::BuiltInTool, feature_category: :workflow_catalog do
   describe 'included modules' do
     subject { described_class }
 
-    it { is_expected.to include(ActiveModel::Model) }
-    it { is_expected.to include(ActiveModel::Attributes) }
     it { is_expected.to include(ActiveRecord::FixedItemsModel::Model) }
     it { is_expected.to include(GlobalID::Identification) }
     it { is_expected.to include(Ai::Catalog::BuiltInToolDefinitions) }
   end
 
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:id) }
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_presence_of(:title) }
     it { is_expected.to validate_presence_of(:description) }

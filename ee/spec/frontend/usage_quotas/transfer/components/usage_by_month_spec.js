@@ -85,7 +85,8 @@ describe('UsageByMonth', () => {
       });
 
       it('displays title and value as human size', () => {
-        expect(findGlAreaChart().text()).toBe('Feb 2023 (Month)  6.2 GiB');
+        expect(findGlAreaChart().text()).toContain('Feb 2023 (Month)');
+        expect(findGlAreaChart().text()).toContain('6.2 GiB');
       });
     });
   });

@@ -14,14 +14,19 @@ module Gitlab
         end
 
         def to_prompt_inputs
-          {
+          inputs = {
             mr_title: mr_title,
             mr_description: mr_description,
             diff_lines: all_diffs_formatted,
-            full_file_intro: files_content.present? ? full_file_intro_text : "",
             full_content_section: files_content.present? ? full_content_section_text : "",
             custom_instructions_section: format_custom_instructions_section
           }
+
+          unless Feature.enabled?(:duo_code_review_prompt_updates, user)
+            inputs[:full_file_intro] = files_content.present? ? full_file_intro_text : ""
+          end
+
+          inputs
         end
 
         private

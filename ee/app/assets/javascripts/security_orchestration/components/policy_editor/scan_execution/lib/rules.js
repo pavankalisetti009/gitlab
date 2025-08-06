@@ -1,11 +1,15 @@
 import { isEqual, uniqueId } from 'lodash';
 import { s__ } from '~/locale';
-import { SPECIFIC_BRANCHES } from 'ee/security_orchestration/components/policy_editor/constants';
+import {
+  SPECIFIC_BRANCHES,
+  TARGET_BRANCHES,
+} from 'ee/security_orchestration/components/policy_editor/constants';
 import { policyBodyToYaml } from '../../utils';
 import {
   DEFAULT_CONDITION_STRATEGY,
   SCAN_EXECUTION_PIPELINE_RULE,
   SCAN_EXECUTION_SCHEDULE_RULE,
+  TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS,
 } from '../constants';
 import { CRON_DEFAULT_TIME } from './cron';
 
@@ -29,6 +33,27 @@ export const buildDefaultScheduleRule = () => {
 export const RULE_KEY_MAP = {
   [SCAN_EXECUTION_PIPELINE_RULE]: buildDefaultPipeLineRule,
   [SCAN_EXECUTION_SCHEDULE_RULE]: buildDefaultScheduleRule,
+};
+
+const hasBranchTypeChanged = (curr, prev) =>
+  TARGET_BRANCHES.includes(curr) !== TARGET_BRANCHES.includes(prev);
+
+const updatePipelineSources = ({ branchType, previousBranchType, rule }) => {
+  if (!hasBranchTypeChanged(branchType, previousBranchType)) {
+    return rule;
+  }
+
+  const updatedRule = { ...rule };
+
+  if (TARGET_BRANCHES.includes(branchType)) {
+    updatedRule.pipeline_sources = {
+      including: Object.keys(TARGETS_BRANCHES_PIPELINE_SOURCE_OPTIONS),
+    };
+  } else {
+    delete updatedRule.pipeline_sources;
+  }
+
+  return updatedRule;
 };
 
 /**
@@ -61,8 +86,11 @@ export const handleBranchTypeSelect = ({ branchType, rule, pipelineRuleKey }) =>
     delete updatedRule.branches;
   }
 
-  delete updatedRule.pipeline_sources;
-  return updatedRule;
+  return updatePipelineSources({
+    branchType,
+    previousBranchType: rule.branch_type,
+    rule: updatedRule,
+  });
 };
 
 export const STRATEGIES = [

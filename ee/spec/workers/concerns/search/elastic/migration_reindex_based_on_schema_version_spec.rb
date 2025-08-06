@@ -30,8 +30,8 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
     let(:new_schema_version) { 2 }
     let(:document_type) { WorkItem }
 
-    let(:client) { Elasticsearch::Client }
     let(:helper) { ::Gitlab::Elastic::Helper.default }
+    let(:client) { helper.client }
 
     let(:migration_klass) do
       migration_klass = Class.new(Elastic::Migration) do
@@ -51,7 +51,7 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
     subject(:migration) { MigrationKlass.new(version) }
 
     before do
-      migration_klass.const_set(:DOCUMENT_TYPE, WorkItem)
+      migration_klass.const_set(:DOCUMENT_TYPE, document_type)
       migration_klass.const_set(:NEW_SCHEMA_VERSION, 2)
 
       allow(migration).to receive_messages(client: client, helper: helper, index_name: 'test-index')
@@ -123,7 +123,7 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
         it 'logs the reindexing process' do
           expect(migration).to receive(:log).with('Start reindexing', hash_including(:index_name, :batch_size))
           expect(migration).to receive(:log)
-            .with('Reindexing batch has been processed', hash_including(:index_name, :documents_count))
+            .with('Reindexing batch has been processed', hash_including(:index_name, :batch_size))
 
           migration.migrate
         end
@@ -159,36 +159,228 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
       before do
         allow(client).to receive(:search).and_return(search_results)
         allow(migration.send(:bookkeeping_service)).to receive(:track!)
+        allow(migration).to receive(:use_scroll_api?).and_return(false)
       end
 
-      it 'searches for documents with old schema version' do
-        expect(client).to receive(:search).with(
-          hash_including(
-            index: 'test-index',
-            body: hash_including(query: instance_of(Hash), size: instance_of(Integer))
+      context 'when using regular search' do
+        it 'searches for documents with old schema version' do
+          expect(client).to receive(:search).with(
+            hash_including(
+              index: 'test-index',
+              body: hash_including(query: instance_of(Hash), size: instance_of(Integer))
+            )
           )
+
+          migration.send(:process_batch!)
+        end
+
+        it 'creates document references from search results' do
+          expect(Search::Elastic::Reference).to receive(:init).with(document_type, 1, 'es_id_1', 'parent_1')
+          expect(Search::Elastic::Reference).to receive(:init).with(document_type, 2, 'es_id_2', nil)
+
+          migration.send(:process_batch!)
+        end
+
+        it 'tracks document references for reindexing' do
+          expect(migration.send(:bookkeeping_service)).to receive(:track!).once
+
+          migration.send(:process_batch!)
+        end
+
+        it 'returns the document references' do
+          refs = migration.send(:process_batch!)
+
+          expect(refs.size).to eq(2)
+        end
+      end
+
+      context 'when using scroll API' do
+        let(:scroll_response) do
+          {
+            '_scroll_id' => 'scroll_123',
+            'hits' => { 'hits' => hits }
+          }
+        end
+
+        before do
+          allow(migration).to receive_messages(use_scroll_api?: true, current_scroll_id: nil)
+          allow(client).to receive(:search).and_return(scroll_response)
+        end
+
+        it 'initializes scroll search when no scroll_id exists' do
+          expect(client).to receive(:search).with(
+            hash_including(
+              index: 'test-index',
+              scroll: described_class::SCROLL_TIMEOUT,
+              body: hash_including(
+                query: instance_of(Hash),
+                size: instance_of(Integer),
+                sort: [{ 'id' => { order: 'asc' } }]
+              )
+            )
+          )
+
+          migration.send(:process_batch!)
+        end
+
+        it 'updates migration state with scroll_id and last_processed_id' do
+          expect(migration).to receive(:set_migration_state).with(
+            scroll_id: 'scroll_123',
+            last_processed_id: 2
+          )
+
+          migration.send(:process_batch!)
+        end
+
+        context 'when continuing existing scroll' do
+          before do
+            allow(migration).to receive(:current_scroll_id).and_return('existing_scroll_123')
+            allow(client).to receive(:scroll).and_return(scroll_response)
+          end
+
+          it 'continues with existing scroll' do
+            expect(client).to receive(:scroll).with(
+              body: { scroll_id: 'existing_scroll_123' },
+              scroll: described_class::SCROLL_TIMEOUT
+            )
+
+            migration.send(:process_batch!)
+          end
+
+          context 'when the scroll_id has expired' do
+            it 'resets the migration state and does not raise an exception' do
+              allow(client).to receive(:scroll).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
+
+              expect(migration).to receive(:log_warn)
+                .with('scroll_id expired, will restart scroll in next migration run',
+                  hash_including(:exception_class, :exception_message, :scroll_id))
+              expect(migration).to receive(:set_migration_state).with(scroll_id: nil, last_processed_id: nil)
+
+              expect { migration.send(:process_batch!) }.not_to raise_exception
+            end
+          end
+        end
+
+        context 'when no more results' do
+          let(:empty_scroll_response) do
+            {
+              '_scroll_id' => 'scroll_123',
+              'hits' => { 'hits' => [] }
+            }
+          end
+
+          before do
+            allow(client).to receive(:search).and_return(empty_scroll_response)
+            allow(migration).to receive(:cleanup_scroll)
+          end
+
+          it 'cleans up scroll and resets state' do
+            expect(migration).to receive(:cleanup_scroll).with('scroll_123')
+            expect(migration).to receive(:set_migration_state).with(
+              scroll_id: nil,
+              last_processed_id: nil
+            )
+
+            migration.send(:process_batch!)
+          end
+        end
+      end
+    end
+
+    describe '#use_scroll_api?' do
+      before do
+        allow(migration).to receive_messages(current_scroll_id: nil, remaining_documents_count: 5000,
+          query_batch_size: 1000)
+      end
+
+      subject(:use_scroll_api) { migration.send(:use_scroll_api?) }
+
+      context 'when there is an existing scroll session' do
+        before do
+          allow(migration).to receive(:current_scroll_id).and_return('scroll_123')
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'when search_schema_migration_scroll_api is false' do
+          before do
+            stub_feature_flags(search_schema_migration_scroll_api: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'when remaining_documents_count exceed batch size' do
+        before do
+          allow(migration).to receive(:remaining_documents_count).and_return(15000)
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'when search_schema_migration_scroll_api is false' do
+          before do
+            stub_feature_flags(search_schema_migration_scroll_api: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'when remaining_documents_count are within batch size' do
+        before do
+          allow(migration).to receive(:remaining_documents_count).and_return(500)
+        end
+
+        it { is_expected.to be(false) }
+
+        context 'when search_schema_migration_scroll_api is false' do
+          before do
+            stub_feature_flags(search_schema_migration_scroll_api: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+
+    describe '#cleanup_scroll' do
+      context 'when scroll_id is present in migration_state' do
+        it 'clears the scroll' do
+          expect(client).to receive(:clear_scroll).with(body: { scroll_id: 'scroll_123' })
+
+          migration.send(:cleanup_scroll, 'scroll_123')
+        end
+
+        context 'when the scroll_id has expired' do
+          it 'logs a warning and does not raise an exception' do
+            allow(client).to receive(:clear_scroll).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
+
+            expect(migration).to receive(:log_warn)
+              .with('scroll_id not found while trying to clear_scroll',
+                hash_including(:exception_class, :exception_message, :scroll_id))
+
+            expect { migration.send(:cleanup_scroll, 'scroll_123') }.not_to raise_exception
+          end
+        end
+      end
+
+      context 'when scroll_id is not present in migration_state' do
+        it 'does not clear the scroll' do
+          expect(client).not_to receive(:clear_scroll)
+
+          migration.send(:cleanup_scroll, nil)
+        end
+      end
+
+      it 'logs error when clear_scroll fails' do
+        allow(client).to receive(:clear_scroll).and_raise(StandardError.new('Connection error'))
+        expect(migration).to receive(:log_warn).with(
+          'clear_scroll failed',
+          hash_including(:exception_class, :exception_message, :scroll_id)
         )
 
-        migration.send(:process_batch!)
-      end
-
-      it 'creates document references from search results' do
-        expect(Search::Elastic::Reference).to receive(:init).with(document_type, 1, 'es_id_1', 'parent_1')
-        expect(Search::Elastic::Reference).to receive(:init).with(document_type, 2, 'es_id_2', nil)
-
-        migration.send(:process_batch!)
-      end
-
-      it 'tracks document references for reindexing' do
-        expect(migration.send(:bookkeeping_service)).to receive(:track!).once
-
-        migration.send(:process_batch!)
-      end
-
-      it 'returns the document references' do
-        refs = migration.send(:process_batch!)
-
-        expect(refs.size).to eq(2)
+        migration.send(:cleanup_scroll, 'scroll_123')
       end
     end
 
@@ -249,7 +441,7 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
     end
 
     let(:version) { 30231204134928 }
-    let(:objects) { create_list(object, 3) }
+    let(:objects) { create_list(object, 5) }
 
     before do
       migration_klass.const_set(:DOCUMENT_TYPE, document_type)
@@ -273,19 +465,47 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
       end
 
       context 'when records exist with old schema' do
-        it 'processes records' do
+        before do
           # make sure new indexed records get the correct schema_version
           stub_const('Search::Elastic::References::WorkItem::SCHEMA_VERSION', current_schema_version + 1)
+        end
 
-          expected_count = objects.size
-          expect(migration.send(:bookkeeping_service)).to receive(:track!).once.and_call_original do |*refs|
-            expect(refs.count).to eq(expected_count)
+        context 'when using search API' do
+          it 'processes records' do
+            expected_count = objects.size
+            expect(migration.send(:bookkeeping_service)).to receive(:track!).once.and_call_original do |*refs|
+              expect(refs.count).to eq(expected_count)
+            end
+
+            migration.migrate
+
+            ensure_elasticsearch_index!
+
+            expect(migration.completed?).to be(true)
           end
-          migration.migrate
+        end
 
-          ensure_elasticsearch_index!
+        context 'when using scroll API' do
+          before do
+            allow(migration).to receive(:query_batch_size).and_return(objects.size - 2)
+          end
 
-          expect(migration.completed?).to be(true)
+          it 'processes records using scroll API' do
+            expect(migration.send(:bookkeeping_service)).to receive(:track!).twice.and_call_original
+
+            migration.migrate
+
+            ensure_elasticsearch_index!
+
+            state_after_first_run = migration.migration_state
+            expect(state_after_first_run[:scroll_id]).to be_present
+            expect(state_after_first_run[:last_processed_id]).to be_present
+
+            migration.migrate
+            ensure_elasticsearch_index!
+
+            expect(migration.completed?).to be(true)
+          end
         end
       end
 

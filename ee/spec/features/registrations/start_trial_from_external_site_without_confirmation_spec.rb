@@ -2,11 +2,24 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Start trial from external site without confirmation', :with_current_organization, :saas, :js, feature_category: :onboarding do
+RSpec.describe 'Start trial from external site without confirmation', :with_current_organization,
+  :saas, :js, :sidekiq_inline, feature_category: :onboarding do
   include SaasRegistrationHelpers
 
   let_it_be(:glm_params) do
     { glm_source: 'some_source', glm_content: 'some_content' }
+  end
+
+  let_it_be(:trials_eligibility_url) do
+    %r{#{subscription_portal_url}/api/v1/gitlab/namespaces/trials/eligibility\?namespace_ids.*}
+  end
+
+  let_it_be(:trial_types_response) do
+    {
+      trial_types: {
+        GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: 60 }
+      }
+    }
   end
 
   before do
@@ -21,10 +34,22 @@ RSpec.describe 'Start trial from external site without confirmation', :with_curr
     subscription_portal_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
 
     stub_request(:post, "#{subscription_portal_url}/trials")
+    stub_request(:get, trials_eligibility_url)
+
+    stub_request(:get, "#{subscription_portal_url}/api/v1/gitlab/namespaces/trials/trial_types").to_return(
+      status: 200,
+      body: trial_types_response.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
   end
 
   it 'passes glm parameters until user is onboarded' do
     user = build_stubbed(:user)
+
+    expect(Gitlab::SubscriptionPortal::Client)
+      .to receive(:namespace_trial_types)
+      .and_call_original
+
     visit new_trial_registration_path(glm_params)
 
     fill_in_sign_up_form(user)

@@ -158,7 +158,10 @@ class Group < Namespace
       .where(group_deletion_schedules: { marked_for_deletion_on: date })
   end
 
+  scope :with_integrations, -> { joins(:integrations) }
+
   has_one :harbor_integration, class_name: 'Integrations::Harbor'
+  has_one :jira_integration, class_name: 'Integrations::Jira'
 
   # debian_distributions and associated component_files must be destroyed by ruby code in order to properly remove carrierwave uploads
   has_many :debian_distributions, class_name: 'Packages::Debian::GroupDistribution', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
@@ -1126,6 +1129,16 @@ class Group < Namespace
 
   # overriden in EE
   def supports_group_work_items?
+    false
+  end
+
+  # overriden in EE
+  def has_active_hooks?(hooks_scope = :push_hooks)
+    false
+  end
+
+  # overriden in EE
+  def enterprise_user_settings_available?(user = nil)
     false
   end
 

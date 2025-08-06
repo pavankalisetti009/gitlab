@@ -31,16 +31,29 @@ RSpec.describe Ai::ModelSelection::Concerns::GitlabDefaultModelParams, feature_c
   end
 
   describe '#params_as_if_gitlab_default_model' do
-    let(:feature_name) { :code_completions }
-
     subject(:params) { test_instance.test_params_as_if_gitlab_default_model(feature_name) }
 
-    it 'returns expected hash' do
-      expect(params).to eq(
-        provider: described_class::MODEL_PROVIDER,
-        identifier: described_class::IDENTIFIER_FOR_DEFAULT_MODEL,
-        feature_setting: feature_name.to_s
-      )
+    context 'when feature_name is code_completions' do
+      let(:feature_name) { :code_completions }
+
+      it 'returns expected hash' do
+        expect(params).to eq(
+          model_name: described_class::IDENTIFIER_FOR_DEFAULT_MODEL,
+          model_provider: described_class::MODEL_PROVIDER
+        )
+      end
+    end
+
+    context 'when feature_name is not code_completions' do
+      let(:feature_name) { :duo_chat }
+
+      it 'returns expected hash' do
+        expect(params).to eq(
+          provider: described_class::MODEL_PROVIDER,
+          identifier: described_class::IDENTIFIER_FOR_DEFAULT_MODEL,
+          feature_setting: feature_name.to_s
+        )
+      end
     end
   end
 end
