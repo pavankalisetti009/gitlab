@@ -14,7 +14,7 @@ jest.mock('~/alert');
 
 describe('ProjectVulnerabilitiesOverTimePanel', () => {
   const todayInIsoFormat = '2022-07-06';
-  const yearAgoInIsoFormat = '2021-07-06';
+  const ninetyDaysAgoInIsoFormat = '2022-04-07';
   useFakeDate(todayInIsoFormat);
 
   let wrapper;
@@ -104,7 +104,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,
         reportType: mockFilters.reportType,
-        startDate: yearAgoInIsoFormat,
+        startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
       });
     });
@@ -119,7 +119,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,
         reportType: ['API_FUZZING', 'SAST'],
-        startDate: yearAgoInIsoFormat,
+        startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
       });
     });
@@ -137,7 +137,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockProjectFullPath,
-        startDate: yearAgoInIsoFormat,
+        startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
       });
     });
