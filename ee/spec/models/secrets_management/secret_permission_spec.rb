@@ -96,7 +96,7 @@ RSpec.describe SecretsManagement::SecretPermission, feature_category: :secrets_m
     end
 
     it 'validates role_id when principal_type is Role' do
-      e_msg = 'must be one of: {:guest=>10, :planner=>15, :reporter=>20, ' \
+      e_msg = 'must be one of: {:reporter=>20, ' \
         ':developer=>30, :maintainer=>40} for Role type'
 
       permission.principal_type = 'Role'
