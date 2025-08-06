@@ -97,7 +97,7 @@ export default {
           <time-ago-tooltip :time="lastCheckedAt" />
         </template>
         <template v-else>
-          <span>{{ s__('VulnerabilityManagement|not available') }}</span>
+          <span>{{ s__('VulnerabilityManagement|No data available') }}</span>
         </template>
       </span>
       <gl-button

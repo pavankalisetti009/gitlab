@@ -55,7 +55,7 @@ describe('ValidityCheck', () => {
     });
 
     it('does not display the "not available" text', () => {
-      expect(findLastCheckedTimestamp().text()).not.toContain('not available');
+      expect(findLastCheckedTimestamp().text()).not.toContain('No data available');
     });
 
     it('renders TimeAgoTooltip with the updatedAt value', () => {
@@ -70,7 +70,7 @@ describe('ValidityCheck', () => {
 
     it('displays the unavailable text', () => {
       expect(findLastCheckedTimestamp().text()).toMatchInterpolatedText(
-        'Last checked: not available',
+        'Last checked: No data available',
       );
     });
 
