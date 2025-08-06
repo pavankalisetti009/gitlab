@@ -9,25 +9,41 @@ module AuditEvents
   # - ProjectAuditEvent (project-specific events)
   # - GroupAuditEvent (group-specific events)
   #
-  # How it works:
-  # 1. Builds individual scopes for each audit event model with filters applied
-  # 2. Optionally filters scopes to a specific entity type (User/Project/Group/Instance)
-  # 3. Applies keyset pagination to each scope independently
-  # 4. Executes a UNION query to combine results from all scopes
-  # 5. Preloads full records using (created_at, id) pairs for efficiency
-  # 6. Returns paginated results with a cursor for the next page
+  # Supports both keyset and offset-based pagination:
+  # - Keyset pagination: Set `pagination: 'keyset'` with `cursor` and `per_page` parameters
+  #   Orders by created_at DESC for chronological ordering
+  # - Offset pagination: Set `pagination: 'offset'` (or any other value) with `page` and `per_page` parameters
+  #   Orders by ID DESC for performance (or ID ASC if sort: 'created_asc')
+  #   Note: Offset pagination uses ID ordering for performance reasons, which may differ from keyset ordering
+  #
   # Example usage:
+  #   # Keyset pagination
   #   finder = AuditEvents::CombinedAuditEventFinder.new(
   #     params: {
   #       entity_type: 'Project',
   #       author_id: 123,
   #       created_after: 1.week.ago,
   #       per_page: 20,
-  #       cursor: 'eyJpZCI6MTIzfQ=='
+  #       cursor: 'eyJpZCI6MTIzfQ==',
+  #       pagination: 'keyset'
   #     }
   #   )
   #   result = finder.execute
   #   # => { records: [...], cursor_for_next_page: '...' }
+  #
+  #   # Offset pagination
+  #   finder = AuditEvents::CombinedAuditEventFinder.new(
+  #     params: {
+  #       entity_type: 'Project',
+  #       author_id: 123,
+  #       created_after: 1.week.ago,
+  #       page: 20,
+  #       per_page: 100,
+  #       pagination: 'offset'
+  #     }
+  #   )
+  #   result = finder.execute
+  #   # => { records: [...], page: 20, per_page: 100, total_count: 1234 }
   class CombinedAuditEventFinder < BaseAuditEventFinder
     include FromUnion
 
@@ -49,25 +65,19 @@ module AuditEvents
       super
       @per_page = params[:per_page]
       @cursor = params[:cursor]
+      @page = params[:page]
+      @pagination = params[:pagination]
+      @sort = params[:sort] || 'created_desc'
     end
 
     # Executes the main query flow:
-    # 1. Build filtered scopes for each model
-    # 2. Apply keyset pagination to each scope
-    # 3. Execute UNION query
-    # 4. Preload full records
-    # 5. Return paginated result set
+    # Determines pagination type and executes appropriate strategy
     def execute
-      scopes = build_model_scopes
-      scopes = filter_scopes_by_entity_type(scopes) if params[:entity_type].present?
-      keyset_scopes = build_keyset_scopes(scopes)
-      union_results = execute_union_query(keyset_scopes)
-      preloaded_records = preload_records(union_results)
-
-      has_next_page = union_results.size > per_page
-      next_cursor = has_next_page ? generate_next_cursor(preloaded_records) : nil
-
-      { records: preloaded_records, cursor_for_next_page: next_cursor }
+      if pagination == 'keyset'
+        execute_keyset_pagination
+      else
+        execute_offset_pagination
+      end
     end
 
     def find(id)
@@ -81,7 +91,55 @@ module AuditEvents
 
     private
 
-    attr_reader :per_page, :cursor
+    attr_reader :per_page, :cursor, :page, :pagination, :sort
+
+    # Keyset pagination implementation
+    def execute_keyset_pagination
+      scopes = build_model_scopes
+      scopes = filter_scopes_by_entity_type(scopes) if params[:entity_type].present?
+      keyset_scopes = build_keyset_scopes(scopes)
+      union_results = execute_union_query(keyset_scopes)
+      preloaded_records = preload_records(union_results)
+
+      has_next_page = union_results.size > per_page
+      next_cursor = has_next_page ? generate_next_cursor(preloaded_records) : nil
+
+      { records: preloaded_records, cursor_for_next_page: next_cursor }
+    end
+
+    # Offset pagination implementation as specified:
+    # 1. Build keyset paginated queries with only id and model name
+    # 2. Add LIMIT based on page position
+    # 3. Union and re-sort by id
+    # 4. Apply OFFSET and LIMIT
+    def execute_offset_pagination
+      scopes = build_model_scopes
+      scopes = filter_scopes_by_entity_type(scopes) if params[:entity_type].present?
+
+      total_count = calculate_total_count(scopes)
+
+      page_num = [page.to_i, 1].max
+      page_size = [per_page.to_i, 1].max
+      offset = (page_num - 1) * page_size
+
+      max_position = page_num * page_size
+
+      offset_scopes = build_offset_scopes(scopes, max_position)
+
+      union_results = execute_offset_union_query(offset_scopes, offset, page_size)
+
+      preloaded_records = preload_records_offset(union_results)
+
+      total_pages = total_count > 0 ? (total_count.to_f / page_size).ceil : 0
+
+      {
+        records: preloaded_records,
+        page: page_num,
+        per_page: page_size,
+        total_count: total_count,
+        total_pages: total_pages
+      }
+    end
 
     def build_model_scopes
       AUDIT_EVENT_MODELS.map do |model|
@@ -112,6 +170,17 @@ module AuditEvents
         keyset_scope = build_keyset_order(scope)
         cursor_scope = apply_cursor_if_present(keyset_scope)
         add_select_and_limit(cursor_scope, scope.model)
+      end
+    end
+
+    def build_offset_scopes(scopes, limit)
+      return [] if scopes.empty?
+
+      scopes.map do |scope|
+        keyset_scope = build_keyset_order(scope)
+        keyset_scope
+          .limit(limit)
+          .select(:id, "'#{scope.model}' AS ar_class")
       end
     end
 
@@ -158,6 +227,23 @@ module AuditEvents
         .to_a
     end
 
+    def execute_offset_union_query(offset_scopes, offset, limit)
+      return [] if offset_scopes.empty?
+
+      base_model = AUDIT_EVENT_MODELS.first
+
+      sort_order = sort == 'created_asc' ? :asc : :desc
+
+      # rubocop: disable CodeReuse/ActiveRecord -- complex query building, not used anywhere else.
+      base_model
+        .from_union(offset_scopes, remove_order: false)
+        .reorder(id: sort_order)
+        .offset(offset)
+        .limit(limit)
+        .to_a
+      # rubocop: enable CodeReuse/ActiveRecord
+    end
+
     # Preloads full audit event records from their respective tables.
     # The UNION query only selects minimal columns (id, created_at, ar_class),
     # so we need to load the complete records using (created_at, id) pairs
@@ -173,6 +259,17 @@ module AuditEvents
       preloaded_records.sort_by { |record| sorted_index[record.id] || Float::INFINITY }
     end
 
+    # Preload records for offset pagination
+    def preload_records_offset(union_results)
+      return [] if union_results.empty?
+
+      grouped_records = union_results.group_by(&:ar_class)
+      sorted_index = create_sorted_index(union_results)
+      preloaded_records = load_grouped_records_by_id(grouped_records)
+
+      preloaded_records.sort_by { |record| sorted_index[record.id] || Float::INFINITY }
+    end
+
     def create_sorted_index(records)
       records.each_with_index.to_h { |record, index| [record.id, index] }
     end
@@ -181,6 +278,15 @@ module AuditEvents
       grouped_records.flat_map do |ar_class_name, record_group|
         model_class = ar_class_name.constantize
         load_records_by_pairs(model_class, record_group).to_a
+      end
+    end
+
+    # Load records by ID only (for offset pagination)
+    def load_grouped_records_by_id(grouped_records)
+      grouped_records.flat_map do |ar_class_name, record_group|
+        model_class = ar_class_name.constantize
+        ids = record_group.map(&:id)
+        model_class.id_in(ids).to_a
       end
     end
 
@@ -238,6 +344,14 @@ module AuditEvents
 
     def valid_entity_id?
       params[:entity_id].to_i.nonzero?
+    end
+
+    def calculate_total_count(scopes)
+      return 0 if scopes.empty?
+
+      total = scopes.sum(&:count)
+
+      total.to_i
     end
   end
 end

@@ -51,13 +51,33 @@ module API
       end
       get do
         if use_new_audit_tables?
-          finder = ::AuditEvents::CombinedAuditEventFinder.new(params: params)
+          finder_params = params.merge(pagination: params[:pagination] || 'offset')
+          finder = ::AuditEvents::CombinedAuditEventFinder.new(params: finder_params)
           result = finder.execute
 
-          if result[:cursor_for_next_page]
-            Gitlab::Pagination::Keyset::HeaderBuilder
-              .new(self)
-              .add_next_page_header({ cursor: result[:cursor_for_next_page] })
+          if params[:pagination] == 'keyset'
+            if result[:cursor_for_next_page]
+              Gitlab::Pagination::Keyset::HeaderBuilder
+                .new(self)
+                .add_next_page_header({ cursor: result[:cursor_for_next_page] })
+            end
+          else
+            current_page = result[:page]
+            per_page = result[:per_page]
+            total_pages = result[:total_pages]
+
+            next_page = current_page < total_pages ? current_page + 1 : nil
+            prev_page = current_page > 1 ? current_page - 1 : nil
+
+            Gitlab::Pagination::OffsetHeaderBuilder.new(
+              request_context: self,
+              per_page: per_page,
+              page: current_page,
+              next_page: next_page,
+              prev_page: prev_page,
+              total: result[:total_count],
+              total_pages: total_pages
+            ).execute(data_without_counts: result[:total_count].nil?)
           end
 
           present result[:records], with: EE::API::Entities::AuditEvent
