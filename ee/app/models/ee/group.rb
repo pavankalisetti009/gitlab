@@ -1043,9 +1043,9 @@ module EE
       return false if current_user.can_admin_all_resources?
       return false unless access_level
 
-      current_user_role = max_member_access(current_user)
+      max_access_level = max_member_access(current_user)
 
-      access_level > current_user_role
+      !Authz::Role.access_level_encompasses?(current_access_level: max_access_level, level_to_assign: access_level)
     end
 
     def can_manage_extensions_marketplace_for_enterprise_users?
