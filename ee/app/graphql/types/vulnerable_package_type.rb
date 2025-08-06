@@ -8,5 +8,8 @@ module Types
 
     field :name, GraphQL::Types::String, null: true,
       description: 'Name of the vulnerable package.'
+
+    field :path, GraphQL::Types::String, null: true,
+      description: 'Path of the vulnerable package.'
   end
 end
