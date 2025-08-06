@@ -76,6 +76,25 @@ describe('VirtualRegistriesApi', () => {
     });
   });
 
+  describe('updateMavenRegistryUpstreamPosition', () => {
+    it('updates the maven upstream registry position', () => {
+      const requestPath = 'virtual_registries/packages/maven/registry_upstreams';
+      const registryUpstreamId = 1;
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${registryUpstreamId}`;
+      const expectedParams = {
+        id: registryUpstreamId,
+        position: 2,
+      };
+      mock.onPatch(expectedUrl).reply(HTTP_STATUS_OK, 200);
+
+      return VirtualRegistryApi.updateMavenRegistryUpstreamPosition(expectedParams).then(
+        ({ data }) => {
+          expect(data).toEqual(200);
+        },
+      );
+    });
+  });
+
   describe('deleteMavenUpstream', () => {
     it('deletes the maven upstream', () => {
       const requestPath = 'virtual_registries/packages/maven/upstreams';

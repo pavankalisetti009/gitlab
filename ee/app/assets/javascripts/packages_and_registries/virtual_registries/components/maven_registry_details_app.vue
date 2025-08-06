@@ -1,10 +1,12 @@
 <script>
 import { GlAlert, GlButton } from '@gitlab/ui';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sprintf, s__ } from '~/locale';
+import { updateMavenRegistryUpstreamPosition } from 'ee/api/virtual_registries_api';
 import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_upstream.mutation.graphql';
 import { convertToMavenRegistryGraphQLId } from '../utils';
 import { captureException } from '../sentry_utils';
@@ -56,9 +58,7 @@ export default {
   },
   /**
    * Emitted when an upstream is reordered
-   * @event reorderUpstream
-   * @property {string} direction - The direction to move the upstream ('up' or 'down')
-   * @property {string} upstreamId - The ID of the upstream to reorder
+   * @event upstreamReordered
    */
   /**
    * Emitted when a new upstream is created
@@ -80,12 +80,13 @@ export default {
    * @event deleteUpstream
    * @property {string} upstreamId - The ID of the upstream to delete
    */
-  emits: ['reorderUpstream', 'upstreamCreated', 'testUpstream', 'clearCache', 'deleteUpstream'],
+  emits: ['upstreamReordered', 'upstreamCreated', 'testUpstream', 'clearCache', 'deleteUpstream'],
   data() {
     return {
       createUpstreamError: '',
       createUpstreamMutationLoading: false,
       upstreamItems: this.upstreams,
+      upstreamPositionUpdateErrorMessage: '',
     };
   },
   computed: {
@@ -118,8 +119,25 @@ export default {
     },
   },
   methods: {
-    reorderUpstream(direction, upstreamId) {
-      this.$emit('reorderUpstream', direction, upstreamId);
+    async reorderUpstream(direction, upstream) {
+      const [registryUpstream] = upstream.registryUpstreams;
+      const position = registryUpstream.position + (direction === 'up' ? -1 : 1);
+
+      const id = getIdFromGraphQLId(registryUpstream.id);
+      this.upstreamPositionUpdateErrorMessage = '';
+
+      try {
+        await updateMavenRegistryUpstreamPosition({ id, position });
+        this.$emit('upstreamReordered');
+        this.$toast.show(
+          s__('VirtualRegistry|Position of the upstream has been updated successfully'),
+        );
+      } catch (error) {
+        this.upstreamPositionUpdateErrorMessage =
+          error.error ||
+          s__('VirtualRegistry|Failed to update position of the upstream. Please try again.');
+        captureException({ error, component: this.$options.name });
+      }
     },
     async upstreamAction(name, mutationData) {
       this.createUpstreamMutationLoading = true;
@@ -210,6 +228,14 @@ export default {
     >
       <template #default>
         <div v-if="upstreamsCount" class="gl-flex gl-flex-col gl-gap-3">
+          <gl-alert
+            v-if="upstreamPositionUpdateErrorMessage"
+            data-testid="position-update-error-alert"
+            variant="danger"
+            @dismiss="upstreamPositionUpdateErrorMessage = ''"
+          >
+            {{ upstreamPositionUpdateErrorMessage }}
+          </gl-alert>
           <registry-upstream-item
             v-for="(upstream, index) in sortedUpstreamItems"
             :key="upstream.id"

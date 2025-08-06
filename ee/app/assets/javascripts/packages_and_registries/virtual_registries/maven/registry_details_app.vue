@@ -59,5 +59,6 @@ export default {
     :registry="registry"
     :upstreams="upstreams"
     @upstreamCreated="refetchMavenVirtualRegistryQuery"
+    @upstreamReordered="refetchMavenVirtualRegistryQuery"
   />
 </template>

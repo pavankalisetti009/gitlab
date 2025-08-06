@@ -1,4 +1,3 @@
-import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 
@@ -11,11 +10,17 @@ const defaultProps = {
     description: 'Upstream description',
     url: 'http://maven.org/test',
     cacheValidityHours: 24,
-    position: 1,
     cacheSize: '100 MB',
     canClearCache: true,
     editPath: 'http://maven.org/test/edit',
     artifactCount: 100,
+    registryUpstreams: [
+      {
+        __typename: 'MavenRegistryUpstream',
+        id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/6',
+        position: 1,
+      },
+    ],
     warning: {
       text: 'Example warning text',
     },
@@ -169,30 +174,26 @@ describe('RegistryUpstreamItem', () => {
       createComponent();
     });
 
-    it('emits reorderUp when reorder up button is clicked', async () => {
+    it('emits reorderUp when reorder up button is clicked', () => {
       findReorderUpButton().vm.$emit('click');
-      await nextTick();
       expect(Boolean(wrapper.emitted('reorderUpstream'))).toBe(true);
-      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['up', defaultProps.upstream.id]);
+      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['up', defaultProps.upstream]);
     });
 
-    it('emits reorderDown when reorder down button is clicked', async () => {
+    it('emits reorderDown when reorder down button is clicked', () => {
       findReorderDownButton().vm.$emit('click');
-      await nextTick();
       expect(Boolean(wrapper.emitted('reorderUpstream'))).toBe(true);
-      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['down', defaultProps.upstream.id]);
+      expect(wrapper.emitted('reorderUpstream')[0]).toEqual(['down', defaultProps.upstream]);
     });
 
-    it('emits clearCache when clear cache button is clicked', async () => {
+    it('emits clearCache when clear cache button is clicked', () => {
       findClearCacheButton().vm.$emit('click');
-      await nextTick();
       expect(Boolean(wrapper.emitted('clearCache'))).toBe(true);
       expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.upstream.id]);
     });
 
-    it('emits deleteUpstream when delete button is clicked', async () => {
+    it('emits deleteUpstream when delete button is clicked', () => {
       findDeleteButton().vm.$emit('click');
-      await nextTick();
       expect(Boolean(wrapper.emitted('deleteUpstream'))).toBe(true);
       expect(wrapper.emitted('deleteUpstream')[0]).toEqual([defaultProps.upstream.id]);
     });

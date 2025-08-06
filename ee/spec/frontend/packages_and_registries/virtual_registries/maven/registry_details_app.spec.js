@@ -104,4 +104,17 @@ describe('MavenRegistryDetailsApp', () => {
       });
     });
   });
+
+  describe('When an upstream has been reordered', () => {
+    it('refetches upstreams query', async () => {
+      createComponent({
+        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
+      });
+
+      await waitForPromises();
+      await findMavenRegistryDetails().vm.$emit('upstreamReordered');
+
+      expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
+    });
+  });
 });
