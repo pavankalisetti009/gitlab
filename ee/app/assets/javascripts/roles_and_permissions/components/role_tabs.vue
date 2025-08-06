@@ -2,7 +2,6 @@
 import { GlTabs, GlTab, GlSprintf, GlLink } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import InstanceRolesCrud from './roles_crud/instance_roles_crud.vue';
 import SaasGroupRolesCrud from './roles_crud/saas_group_roles_crud.vue';
 import SaasAdminRolesCrud from './roles_crud/saas_admin_roles_crud.vue';
@@ -12,7 +11,6 @@ export const LDAP_TAB_QUERYSTRING_VALUE = 'ldap';
 
 export default {
   components: { PageHeading, GlTabs, GlTab, GlSprintf, GlLink, LdapSyncCrud },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['ldapServers', 'groupFullPath'],
   props: {
     adminModeSettingPath: {
@@ -27,7 +25,7 @@ export default {
   },
   computed: {
     showTabs() {
-      return Boolean(this.ldapServers) && this.glFeatures.customAdminRoles;
+      return Boolean(this.ldapServers);
     },
     crudType() {
       if (this.isSaas) {

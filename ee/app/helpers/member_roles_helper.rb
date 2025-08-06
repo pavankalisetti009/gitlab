@@ -10,7 +10,7 @@ module MemberRolesHelper
       group_full_path: group&.full_path,
       group_id: group&.id,
       current_user_email: current_user.notification_email_or_default,
-      ldap_users_path: ldap_enabled? ? admin_users_path(filter: 'ldap_sync') : nil,
+      ldap_users_path: ldap_admin_role_sync_available? ? admin_users_path(filter: 'ldap_sync') : nil,
       ldap_servers: ldap_servers&.to_json,
       is_saas: gitlab_com_subscription?.to_s,
       admin_mode_setting_path: (admin_mode_setting_path unless group)
@@ -73,12 +73,19 @@ module MemberRolesHelper
     end
   end
 
-  def ldap_enabled?
-    !gitlab_com_subscription? && Gitlab::Auth::Ldap::Config.enabled? && can?(current_user, :manage_ldap_admin_links)
+  # LDAP admin role sync is only available if the instance is self-managed, at least one LDAP server is configured,
+  # the user can manage LDAP admin roles, the license has custom roles (Ultimate-only feature), and the
+  # custom_admin_roles feature flag is enabled.
+  def ldap_admin_role_sync_available?
+    !gitlab_com_subscription? &&
+      Gitlab::Auth::Ldap::Config.enabled? &&
+      can?(current_user, :manage_ldap_admin_links) &&
+      License.feature_available?(:custom_roles) &&
+      Feature.enabled?(:custom_admin_roles, :instance)
   end
 
   def ldap_servers
-    return unless ldap_enabled?
+    return unless ldap_admin_role_sync_available?
 
     ::Gitlab::Auth::Ldap::Config.available_servers.map { |server| { text: server.label, value: server.provider_name } }
   end

@@ -63,6 +63,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             stub_licensed_features(custom_roles: false)
           end
 
+          it_behaves_like 'no LDAP data'
           it { is_expected.not_to have_key(:new_role_path) }
         end
 
@@ -77,6 +78,14 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         context 'when LDAP is not enabled for the instance' do
           before do
             allow(Gitlab.config.ldap).to receive(:enabled).and_return(false)
+          end
+
+          it_behaves_like 'no LDAP data'
+        end
+
+        context 'when custom admin roles feature flag is disabled' do
+          before do
+            stub_feature_flags(custom_admin_roles: false)
           end
 
           it_behaves_like 'no LDAP data'
