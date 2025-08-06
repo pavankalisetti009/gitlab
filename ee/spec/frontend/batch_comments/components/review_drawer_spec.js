@@ -22,8 +22,6 @@ describe('ReviewDrawer', () => {
   let wrapper;
   let pinia;
 
-  const findPlaceholderField = () => wrapper.findByTestId('placeholder-input-field');
-
   const createComponent = ({ canApprove = true } = {}) => {
     const requestHandlers = [
       [
@@ -73,8 +71,6 @@ describe('ReviewDrawer', () => {
       useBatchComments().drawerOpened = true;
 
       createComponent({ requirePasswordToApprove });
-
-      await findPlaceholderField().vm.$emit('focus');
 
       await waitForPromises();
 
