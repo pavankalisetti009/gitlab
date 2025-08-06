@@ -5,19 +5,20 @@ module EE
     module Checks
       class PushRuleCheck < ::Gitlab::Checks::BaseBulkChecker
         def validate!
-          return unless push_rule
+          return unless push_rule.present? || project.jira_integration.present?
 
           if ::Feature.enabled?(:parallel_push_checks, project, type: :ops)
             run_checks_in_parallel!
           else
-            check_tag_or_branch!
+            check_tag_or_branch! if push_rule.present?
+            check_jira_verification!
           end
+
+          nil
         end
 
         private
 
-        # @return [Nil] returns nil unless an error is raised
-        # @raise [Gitlab::GitAccess::ForbiddenError] if check fails
         def check_tag_or_branch!
           changes_access.single_change_accesses.each do |single_change_access|
             if single_change_access.tag_ref?
@@ -26,8 +27,10 @@ module EE
               PushRules::BranchCheck.new(single_change_access).validate!
             end
           end
+        end
 
-          nil
+        def check_jira_verification!
+          ::Gitlab::Checks::PushRules::JiraVerificationCheck.new(changes_access).validate!
         end
 
         # Run the checks in separate threads for performance benefits.
@@ -44,6 +47,10 @@ module EE
 
           parallelize(git_env) do
             check_tag_or_branch!
+          end
+
+          parallelize(git_env) do
+            check_jira_verification!
           end
 
           # Block whilst waiting for threads, however if one errors

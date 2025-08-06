@@ -2,6 +2,7 @@
 # This downstream pipeline should only be run in the security mirror repository.
 ---
 include:
+  - local: .gitlab/ci/ci-images.gitlab-ci.yml
   - local: .gitlab/ci/cng/main.gitlab-ci.yml
     inputs:
       cng_path: 'charts/components/images'
@@ -22,9 +23,6 @@ stages:
       - GIT_DEPTH
       - GIT_STRATEGY
 
-.ruby-image:
-  image: ${REGISTRY_HOST}/${REGISTRY_GROUP}/gitlab-build-images/ci/${BUILD_OS}-${OS_VERSION}-slim-ruby-${RUBY_VERSION}:rubygems-${RUBYGEMS_VERSION}-git-${GIT_VERSION}
-
 workflow:
   auto_cancel:
     on_new_commit: none
@@ -35,6 +33,11 @@ variables:
 
 release-environments-build-cng-env:
   extends: .build-cng-env
+  before_script:
+    - !reference [.build-cng-env, before_script]
+    - define_trigger_branch_in_build_env
+    - export CNG_BRANCH=$TRIGGER_BRANCH
+    - unset CI_COMMIT_TAG # Do not use tag for CNG build
 
 release-environments-build-cng:
   extends: .build-cng
@@ -45,7 +48,7 @@ release-environments-build-cng:
 release-environments-build-omnibus-env:
   stage: prepare
   extends:
-    - .ruby-image
+    - .with-ruby-slim-image
   variables:
     BUILD_ENV: build.env
   before_script:

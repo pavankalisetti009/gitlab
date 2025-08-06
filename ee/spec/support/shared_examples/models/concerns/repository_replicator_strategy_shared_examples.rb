@@ -224,7 +224,6 @@ RSpec.shared_examples 'a repository replicator' do
         expect do
           replicator.consume(::Geo::ReplicatorEvents::EVENT_UPDATED)
         end.to change { registry.reload.pending? }.from(false).to(true)
-          .and change { registry.reload.last_synced_at }.to(nil)
       end
     end
   end

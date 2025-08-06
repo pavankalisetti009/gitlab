@@ -51,6 +51,29 @@ RSpec.describe ProjectMember, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'scopes' do
+    describe '.eligible_approvers_ids_by_project_id_and_custom_roles' do
+      let_it_be(:project) { create(:project) }
+
+      let(:guest) { create(:user) }
+      let(:developer) { create(:user) }
+      let(:maintainer) { create(:user) }
+      let(:custom_roles) { [guest_role_admin_mr] }
+
+      let(:guest_role_admin_mr) { create(:member_role, :guest, :admin_merge_request, namespace: nil) }
+      let!(:guest_with_role) { create(:project_member, :guest, source: project, member_role: guest_role_admin_mr).user }
+
+      subject(:approver_ids) do
+        described_class
+          .eligible_approvers_ids_by_project_id_and_custom_roles(project.id, custom_roles).map(&:user_id)
+      end
+
+      it 'returns members with the custom role' do
+        expect(approver_ids).to contain_exactly(guest_with_role.id)
+      end
+    end
+  end
+
   describe '#group_domain_validations' do
     let(:member_type) { :project_member }
     let(:source) { create(:project, namespace: group) }

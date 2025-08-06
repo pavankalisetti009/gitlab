@@ -1,7 +1,7 @@
 import { GlBadge, GlButton } from '@gitlab/ui';
+import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CategoryList from 'ee/security_configuration/components/security_attributes/category_list.vue';
-import { mockSecurityAttributeCategories } from 'ee/security_configuration/graphql/resolvers';
 
 const firstCategory = mockSecurityAttributeCategories[0];
 const secondCategory = mockSecurityAttributeCategories[1];

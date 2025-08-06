@@ -10,7 +10,53 @@ import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import waitForPromises from 'helpers/wait_for_promises';
 import { iterationsMock } from 'ee_jest/gfm_auto_complete/mock_data';
 import { ISSUABLE_EPIC } from '~/work_items/constants';
+import { availableStatuses } from '~/graphql_shared/issuable_client';
 import AjaxCache from '~/lib/utils/ajax_cache';
+
+jest.mock('~/graphql_shared/issuable_client', () => ({
+  availableStatuses: jest.fn().mockReturnValue({
+    'gitlab-org/gitlab-test': {
+      'gid://gitlab/WorkItems::Type/1': [
+        {
+          __typename: 'WorkItemStatus',
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/1',
+          name: 'To do',
+          description: null,
+          iconName: 'status-waiting',
+          color: '#737278',
+          position: 0,
+        },
+        {
+          __typename: 'WorkItemStatus',
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/2',
+          name: 'In progress',
+          description: null,
+          iconName: 'status-running',
+          color: '#1f75cb',
+          position: 0,
+        },
+        {
+          __typename: 'WorkItemStatus',
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/3',
+          name: 'Done',
+          description: null,
+          iconName: 'status-success',
+          color: '#108548',
+          position: 0,
+        },
+        {
+          __typename: 'WorkItemStatus',
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/4',
+          name: "Won't do",
+          description: null,
+          iconName: 'status-cancelled',
+          color: '#DD2B0E',
+          position: 0,
+        },
+      ],
+    },
+  }),
+}));
 
 const mockSpriteIcons = '/icons.svg';
 
@@ -204,5 +250,103 @@ describe('GfmAutoCompleteEE', () => {
         });
       },
     );
+  });
+
+  describe('Statuses', () => {
+    const mockWorkItemFullPath = 'gitlab-org/gitlab-test';
+    const mockWorkItemTypeId = 'gid://gitlab/WorkItems::Type/1';
+    const originalGon = window.gon;
+
+    beforeEach(() => {
+      window.gon = {
+        features: {
+          workItemViewForIssues: true,
+        },
+      };
+      document.body.dataset.page = 'projects:issues:show';
+      setHTMLFixture(`
+        <section>
+          <div class="js-gfm-wrapper"
+            data-work-item-full-path="${mockWorkItemFullPath}"
+            data-work-item-type-id="${mockWorkItemTypeId}">
+            <textarea></textarea>
+          </div>
+        </section>
+      `);
+      $textarea = $('textarea');
+      instance = new GfmAutoCompleteEE(dataSources);
+      instance.setup($textarea, { statuses: true });
+    });
+
+    afterEach(() => {
+      window.gon = originalGon;
+    });
+
+    it('should list statuses when `/status "` is typed', () => {
+      const expectedDropdownItems = ['To do', 'In progress', 'Done', "Won't do"];
+
+      triggerDropdown('/status "');
+
+      expect(availableStatuses).toHaveBeenCalled();
+      expect(getDropdownItems('at-view-statuses').map((x) => x.textContent.trim())).toEqual(
+        expectedDropdownItems,
+      );
+    });
+
+    describe('templateFunction', () => {
+      const { templateFunction } = GfmAutoCompleteEE.Statuses;
+      const mockStatus = {
+        id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/1',
+        name: 'To do',
+        iconName: 'status-waiting',
+        color: '#737278',
+      };
+
+      it('should return html with status icon and name', () => {
+        expect(templateFunction({ ...mockStatus })).toMatchInlineSnapshot(`
+          <li
+            data-id="gid://gitlab/WorkItems::Statuses::Custom::Status/1"
+          >
+            <svg
+              class="gl-fill-current gl-mr-2 s12"
+              style="color: #737278;"
+            >
+              <use
+                xlink:href="undefined#status-waiting"
+              />
+            </svg>
+            <span>
+              To do
+            </span>
+          </li>
+        `);
+      });
+
+      it.each`
+        xssPayload                                           | escapedPayload
+        ${'<script>alert(1)</script>'}                       | ${'&lt;script&gt;alert(1)&lt;/script&gt;'}
+        ${'%3Cscript%3E alert(1) %3C%2Fscript%3E'}           | ${'&lt;script&gt; alert(1) &lt;/script&gt;'}
+        ${'%253Cscript%253E alert(1) %253C%252Fscript%253E'} | ${'&lt;script&gt; alert(1) &lt;/script&gt;'}
+      `('escapes name correctly for "$xssPayload"', ({ xssPayload, escapedPayload }) => {
+        // eslint-disable-next-line jest/no-interpolation-in-snapshots
+        expect(templateFunction({ ...mockStatus, name: xssPayload })).toMatchInlineSnapshot(`
+          <li
+            data-id="gid://gitlab/WorkItems::Statuses::Custom::Status/1"
+          >
+            <svg
+              class="gl-fill-current gl-mr-2 s12"
+              style="color: #737278;"
+            >
+              <use
+                xlink:href="undefined#status-waiting"
+              />
+            </svg>
+            <span>
+              ${escapedPayload}
+            </span>
+          </li>
+        `);
+      });
+    });
   });
 });

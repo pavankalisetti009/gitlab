@@ -5,7 +5,6 @@ import {
   GlLink,
   GlPopover,
   GlTable,
-  GlTooltip,
   GlKeysetPagination,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
@@ -102,7 +101,7 @@ describe('List component', () => {
   const findTypeCells = () => wrapper.findAllByTestId('policy-type-cell');
   const findDrawer = () => wrapper.findByTestId('policyDrawer');
   const findScopeCells = () => wrapper.findAllByTestId('policy-scope-cell');
-  const findTooltip = (root) => root.findComponent(GlTooltip);
+  const findPopover = (root) => root.findComponent(GlPopover);
   const findInheritedPolicyCell = (findMethod) => findMethod().at(1);
   const findInstancePolicyBadge = (cell) => cell.findComponent(GlBadge);
   const findNonInheritedPolicyCell = (findMethod) => findMethod().at(0);
@@ -459,14 +458,14 @@ describe('List component', () => {
           const policyCell = findNonInheritedPolicyCell(findActionCells);
           expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
           expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(false);
-          expect(findTooltip(policyCell).exists()).toBe(false);
+          expect(findPopover(policyCell).exists()).toBe(false);
         });
 
         it('renders inherited policy actions', () => {
           const policyCell = findInheritedPolicyCell(findActionCells);
           expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
           expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(true);
-          expect(findTooltip(policyCell).exists()).toBe(true);
+          expect(findPopover(policyCell).exists()).toBe(true);
         });
 
         it('renders items', () => {

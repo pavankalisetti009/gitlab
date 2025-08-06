@@ -27,6 +27,8 @@ query getWorkItemsSlim(
   $types: [IssueType!]
   $updatedAfter: Time
   $updatedBefore: Time
+  $crmOrganizationId: String
+  $crmContactId: String
   $in: [IssuableSearchableField!]
   $not: NegatedWorkItemFilterInput
   $or: UnionedWorkItemFilterInput
@@ -62,6 +64,8 @@ query getWorkItemsSlim(
       types: $types
       updatedAfter: $updatedAfter
       updatedBefore: $updatedBefore
+      crmContactId: $crmContactId
+      crmOrganizationId: $crmOrganizationId
       in: $in
       not: $not
       or: $or

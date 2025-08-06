@@ -319,15 +319,20 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
       let_it_be(:member_role) { create(:member_role, namespace: group) }
 
       shared_examples 'does not enqueue a DestroyForGroupWorker job' do
-        it 'does not enqueue a ::Authz::UserGroupMemberRoles::DestroyForGroupWorker job' do
+        specify do
           expect(::Authz::UserGroupMemberRoles::DestroyForGroupWorker).not_to receive(:perform_async)
 
           destroy_service.execute(member)
         end
       end
 
-      context 'when membership has no member role assigned' do
-        it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
+      shared_examples 'enqueues a DestroyForGroupWorker job' do
+        specify do
+          expect(::Authz::UserGroupMemberRoles::DestroyForGroupWorker)
+            .to receive(:perform_async).with(member.user_id, member.source_id)
+
+          destroy_service.execute(member)
+        end
       end
 
       context 'when membership has a member role assigned' do
@@ -335,14 +340,7 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
           member.update!(member_role: member_role)
         end
 
-        it 'enqueues a ::Authz::UserGroupMemberRoles::DestroyForGroupWorker job' do
-          allow(::Authz::UserGroupMemberRoles::DestroyForGroupWorker).to receive(:perform_async)
-
-          destroy_service.execute(member)
-
-          expect(::Authz::UserGroupMemberRoles::DestroyForGroupWorker)
-            .to have_received(:perform_async).with(member.user_id, member.source_id)
-        end
+        it_behaves_like 'enqueues a DestroyForGroupWorker job'
 
         context 'when feature flag is disabled' do
           before do
@@ -357,6 +355,18 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
           let(:member) { create(:project_member, :developer, user: member_user, project: project) }
 
           it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
+        end
+      end
+
+      context 'when membership has no member role assigned' do
+        it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
+
+        context 'when Authz::UserGroupMemberRole records exists for the user through member.source' do
+          before do
+            create(:user_group_member_role, user: member.user, shared_with_group: member.source)
+          end
+
+          it_behaves_like 'enqueues a DestroyForGroupWorker job'
         end
       end
     end

@@ -23,9 +23,12 @@ import {
   TOKEN_TYPE_WEIGHT,
   TOKEN_TYPE_HEALTH,
   TOKEN_TITLE_HEALTH,
+  TOKEN_TYPE_STATUS,
+  TOKEN_TITLE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
+import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import { mockNamespaceCustomFieldsResponse } from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
 
 const skipReason = new SkipReason({
@@ -60,6 +63,7 @@ describeSkipVue3(skipReason, () => {
     isGroup = true,
     workItemType = WORK_ITEM_TYPE_NAME_EPIC,
     props = {},
+    hasStatusFeature = true,
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
       apolloProvider: createMockApollo([[namespaceCustomFieldsQuery, customFieldsQueryHandler]]),
@@ -71,6 +75,7 @@ describeSkipVue3(skipReason, () => {
         showNewWorkItem,
         isGroup,
         workItemType,
+        hasStatusFeature,
         ...baseProvide,
       },
       stubs: {
@@ -315,6 +320,51 @@ describeSkipVue3(skipReason, () => {
           token: expect.any(Function),
           unique: true,
         });
+      });
+    });
+
+    describe('status token', () => {
+      it('excludes status token when feature is disabled and group work items list', async () => {
+        mountComponent({
+          hasStatusFeature: false,
+          isGroup: true,
+        });
+        await waitForPromises();
+
+        const statusToken = findToken(TOKEN_TYPE_STATUS);
+
+        expect(statusToken).toBeUndefined();
+      });
+
+      it('includes status token when feature is enabled and group work item lists', async () => {
+        mountComponent({
+          hasStatusFeature: true,
+          isGroup: true,
+          workItemType: null,
+        });
+        await waitForPromises();
+
+        const statusToken = findToken(TOKEN_TYPE_STATUS);
+
+        expect(statusToken).toMatchObject({
+          type: TOKEN_TYPE_STATUS,
+          title: TOKEN_TITLE_STATUS,
+          icon: 'status',
+          token: WorkItemStatusToken,
+          unique: true,
+        });
+      });
+
+      it('excludes status token when feature is enabled and epic lists', async () => {
+        mountComponent({
+          hasStatusFeature: true,
+          isGroup: true,
+        });
+        await waitForPromises();
+
+        const statusToken = findToken(TOKEN_TYPE_STATUS);
+
+        expect(statusToken).toBeUndefined();
       });
     });
   });

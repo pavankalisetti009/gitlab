@@ -6,7 +6,6 @@ import ProductAnalyticsOnboardingView from 'ee/product_analytics/onboarding/onbo
 import ProductAnalyticsOnboardingSetup from 'ee/product_analytics/onboarding/onboarding_setup.vue';
 import DashboardsList from './components/dashboards_list.vue';
 import AnalyticsDashboard from './components/analytics_dashboard.vue';
-import AnalyticsDataExplorer from './components/analytics_data_explorer.vue';
 
 Vue.use(VueRouter);
 
@@ -22,14 +21,6 @@ export default (base, breadcrumbState, permissions = {}) => {
         meta: {
           getName: () => s__('Analytics|Analytics dashboards'),
           root: true,
-        },
-      },
-      {
-        name: 'data-explorer',
-        path: '/data-explorer',
-        component: AnalyticsDataExplorer,
-        meta: {
-          getName: () => s__('Analytics|Data explorer'),
         },
       },
       ...(permissions.canConfigureProjectSettings
@@ -48,21 +39,6 @@ export default (base, breadcrumbState, permissions = {}) => {
               component: ProductAnalyticsOnboardingSetup,
               meta: {
                 getName: () => s__('ProductAnalytics|Product analytics onboarding'),
-              },
-            },
-          ]
-        : []),
-      ...(permissions.canCreateNewDashboard
-        ? [
-            {
-              name: 'dashboard-new',
-              path: '/new',
-              component: AnalyticsDashboard,
-              props: {
-                isNewDashboard: true,
-              },
-              meta: {
-                getName: () => s__('Analytics|New dashboard'),
               },
             },
           ]

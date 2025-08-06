@@ -3,7 +3,7 @@ import { GlSprintf } from '@gitlab/ui';
 import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import DefaultRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/default_rule_builder.vue';
-import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import {

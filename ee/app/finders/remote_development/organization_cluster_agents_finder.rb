@@ -7,8 +7,8 @@ module RemoteDevelopment
     # @param [User] user
     # @return [ActiveRecord::Relation]
     def self.execute(organization:, filter:, user:)
-      return Clusters::Agent.none unless organization && user.can?(:read_organization_cluster_agent_mapping,
-        organization)
+      return Clusters::Agent.none unless organization &&
+        Ability.allowed?(user, :read_organization_cluster_agent_mapping, organization)
 
       fetch_agents(filter: filter, organization: organization).ordered_by_name
     end

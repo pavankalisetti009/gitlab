@@ -17,6 +17,25 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
 
     it { is_expected.to validate_length_of(:pinned_version_prefix).is_at_most(50) }
 
+    it 'uniqueness of item for organization' do
+      item_consumer = create(:ai_catalog_item_consumer, organization: create(:organization))
+
+      expect(item_consumer).to validate_uniqueness_of(:item).scoped_to(:organization_id)
+        .with_message('already configured')
+    end
+
+    it 'uniqueness of item for group' do
+      item_consumer = create(:ai_catalog_item_consumer, group: create(:group))
+
+      expect(item_consumer).to validate_uniqueness_of(:item).scoped_to(:group_id).with_message('already configured')
+    end
+
+    it 'uniqueness of item for project' do
+      item_consumer = create(:ai_catalog_item_consumer, project: create(:project))
+
+      expect(item_consumer).to validate_uniqueness_of(:item).scoped_to(:project_id).with_message('already configured')
+    end
+
     describe '#validate_exactly_one_sharding_key_present' do
       let(:organization_stub) { build_stubbed(:organization) }
       let(:group_stub) { build_stubbed(:group) }

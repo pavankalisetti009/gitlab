@@ -3,11 +3,11 @@
 import { mapActions, mapState } from 'vuex';
 import { AgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle } from '@gitlab/ui';
+import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
-import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import { parseGid } from '~/graphql_shared/utils';
 import {
   GENIE_CHAT_RESET_MESSAGE,
@@ -15,17 +15,17 @@ import {
   GENIE_CHAT_NEW_MESSAGE,
   DUO_WORKFLOW_CHAT_DEFINITION,
   DUO_WORKFLOW_CLIENT_VERSION,
-  DUO_WORKFLOW_AGENT_PRIVILEGES,
-  DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
-  CHAT_MESSAGE_TYPES,
-  GENIE_CHAT_MODEL_ROLES,
+  DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
+import { fetchPolicies } from '~/lib/graphql';
 import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
+import { WorkflowUtils } from '../utils/workflow_utils';
+import { ApolloUtils } from '../utils/apollo_utils';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -61,6 +61,25 @@ export default {
     },
   },
   apollo: {
+    agenticWorkflows: {
+      query: getUserWorkflows,
+      skip() {
+        return !this.duoChatGlobalState.isAgenticChatShown;
+      },
+      variables() {
+        return {
+          type: 'chat',
+          first: 99999,
+        };
+      },
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
+      update(data) {
+        return data?.duoWorkflowWorkflows?.edges?.map((edge) => edge.node) || [];
+      },
+      error(err) {
+        this.onError(err);
+      },
+    },
     contextPresets: {
       query: getAiChatContextPresets,
       skip() {
@@ -99,6 +118,10 @@ export default {
       workflowId: null,
       workflowStatus: null,
       isProcessingToolApproval: false,
+      agenticWorkflows: [],
+      activeThread: undefined,
+      multithreadedView: DUO_CHAT_VIEWS.CHAT,
+      chatMessageHistory: [],
     };
   },
   computed: {
@@ -213,11 +236,6 @@ export default {
         question,
       );
     },
-    onNewChat() {
-      clearDuoChatCommands();
-      this.setMessages([]);
-      this.cleanupState();
-    },
     onChatCancel() {
       this.cleanupState(false);
     },
@@ -267,25 +285,18 @@ export default {
         }
 
         const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
-        const messages = checkpoint.channel_values.ui_chat_log.map((msg, i) => {
-          const requestId = `${this.workflowId}-${i}`;
-          const role = [CHAT_MESSAGE_TYPES.agent, CHAT_MESSAGE_TYPES.request].includes(
-            msg.message_type,
-          )
-            ? GENIE_CHAT_MODEL_ROLES.assistant
-            : msg.message_type;
-
-          return {
-            ...msg,
-            requestId,
-            role,
-          };
-        });
+        const messages = WorkflowUtils.transformChatMessages(
+          checkpoint.channel_values.ui_chat_log,
+          this.workflowId,
+        );
 
         this.setMessages(messages);
 
         // Update workflow status and pending tool call
         this.workflowStatus = action.newCheckpoint.status;
+        if (action.newCheckpoint.goal && !this.activeThread) {
+          this.activeThread = action.newCheckpoint.goal;
+        }
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {
           this.setLoading(false);
@@ -307,35 +318,26 @@ export default {
 
       if (!this.workflowId) {
         try {
-          const { data: { aiDuoWorkflowCreate: { workflow = {} } = {} } = {} } =
-            await this.$apollo.mutate({
-              mutation: duoWorkflowMutation,
-              variables: {
-                goal: question,
-                workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
-                agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
-                preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
-                ...(this.projectId && { projectId: this.projectId }),
-                ...(this.namespaceId && { namespaceId: this.namespaceId }),
-              },
-              context: {
-                headers: {
-                  'X-GitLab-Interface': 'duo_chat',
-                  'X-GitLab-Client-Type': 'web_browser',
-                },
-              },
-            });
-          this.workflowId = parseGid(workflow.id).id;
+          const { workflowId, threadId } = await ApolloUtils.createWorkflow(this.$apollo, {
+            projectId: this.projectId,
+            namespaceId: this.namespaceId,
+            goal: question,
+            activeThread: this.activeThread,
+          });
+
+          this.workflowId = workflowId;
+          if (threadId) {
+            this.activeThread = threadId;
+          }
         } catch (err) {
           this.onError(err);
+          this.setLoading(false);
           return;
         }
       }
 
-      const requestId = `${this.workflowId}-${this.messages?.length || 0}`;
-
+      const requestId = `${this.workflowId}-${this.chatMessageHistory.length + (this.messages?.length || 0)}`;
       const userMessage = { content: question, role: 'user', requestId };
-
       this.startWorkflow(question, {}, this.additionalContext);
       this.addDuoChatMessage(userMessage);
     },
@@ -361,6 +363,59 @@ export default {
         this.additionalContext,
       );
     },
+    async onThreadSelected(thread) {
+      this.activeThread = thread.id;
+      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      this.chatMessageHistory = [];
+      this.cleanupState(false);
+      this.workflowId = parseGid(thread.id).id;
+
+      try {
+        this.setLoading(true);
+        const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, thread.id);
+
+        const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
+        const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
+        const messages = WorkflowUtils.transformChatMessages(uiChatLog, this.workflowId);
+
+        this.chatMessageHistory = messages;
+        this.setMessages([]);
+      } catch (err) {
+        this.onError(err);
+      } finally {
+        this.setLoading(false);
+      }
+    },
+    onBackToList() {
+      this.multithreadedView = DUO_CHAT_VIEWS.LIST;
+      this.activeThread = undefined;
+      this.chatMessageHistory = [];
+      try {
+        if (this.$apollo?.queries?.agenticWorkflows) {
+          this.$apollo.queries.agenticWorkflows.refetch();
+        }
+      } catch (err) {
+        this.onError(err);
+      }
+    },
+    async onDeleteThread(threadId) {
+      try {
+        const success = await ApolloUtils.deleteWorkflow(this.$apollo, threadId);
+        if (success) {
+          this.$apollo.queries.agenticWorkflows?.refetch();
+        }
+      } catch (err) {
+        this.onError(err);
+      }
+    },
+    onNewChat() {
+      clearDuoChatCommands();
+      this.setMessages([]);
+      this.activeThread = undefined;
+      this.chatMessageHistory = [];
+      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      this.cleanupState();
+    },
   },
 };
 </script>
@@ -371,9 +426,13 @@ export default {
       <agentic-duo-chat
         id="duo-chat"
         :title="s__('DuoAgenticChat|GitLab Duo Agentic Chat')"
-        :messages="messages"
+        :messages="messages.length > 0 ? messages : chatMessageHistory"
         :is-loading="loading"
         :predefined-prompts="predefinedPrompts"
+        :thread-list="agenticWorkflows"
+        :multi-threaded-view="multithreadedView"
+        :active-thread-id="activeThread"
+        :is-multithreaded="true"
         :enable-code-insertion="false"
         :should-render-resizable="true"
         :with-feedback="false"
@@ -388,6 +447,9 @@ export default {
         @chat-resize="onChatResize"
         @approve-tool="handleApproveToolCall"
         @deny-tool="handleDenyToolCall"
+        @thread-selected="onThreadSelected"
+        @back-to-list="onBackToList"
+        @delete-thread="onDeleteThread"
         ><template #footer-controls>
           <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
             <gl-toggle

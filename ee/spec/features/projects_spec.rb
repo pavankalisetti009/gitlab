@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
+RSpec.describe 'Project', :js, :with_current_organization, feature_category: :groups_and_projects do
   def confirm_deletion(project)
     fill_in 'confirm_name_input', with: project.path_with_namespace
     click_button 'Yes, delete project'
@@ -14,7 +14,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
   end
 
   describe 'delete project' do
-    let_it_be(:user) { create(:user) }
+    let_it_be(:user) { create(:user, organization: current_organization) }
     let_it_be(:group) { create(:group, :public, owners: user) }
     let_it_be(:project) { create(:project, group: group) }
 

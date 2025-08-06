@@ -8,6 +8,7 @@ import { createAlert } from '~/alert';
 import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
 import WorkItemBulkEditIteration from 'ee_component/work_items/components/list/work_item_bulk_edit_iteration.vue';
 import { groupIterationsResponse } from 'jest/work_items/mock_data';
+import { BULK_EDIT_NO_VALUE } from '~/work_items/constants';
 
 jest.mock('~/alert');
 
@@ -137,13 +138,20 @@ describe('WorkItemBulkEditIteration component', () => {
   });
 
   describe('listbox items', () => {
-    it('renders all iterations grouped by cadence', async () => {
+    it('renders all iterations grouped by cadence and "No iteration" by default', async () => {
       createComponent();
 
       findListbox().vm.$emit('shown');
       await waitForPromises();
 
-      expect(findListbox().props('items')).toEqual(listResults);
+      expect(findListbox().props('items')).toEqual([
+        {
+          text: 'No iteration',
+          textSrOnly: true,
+          options: [{ text: 'No iteration', value: BULK_EDIT_NO_VALUE }],
+        },
+        ...listResults,
+      ]);
     });
 
     describe('with search', () => {
@@ -180,6 +188,16 @@ describe('WorkItemBulkEditIteration component', () => {
         await openListboxAndSelect('gid://gitlab/Iteration/1124');
 
         expect(findListbox().props('toggleText')).toBe('Jun 22 – Jul 19, 2022');
+      });
+    });
+
+    describe('with "No iteration"', () => {
+      it('renders "No iteration"', async () => {
+        createComponent();
+
+        await openListboxAndSelect(BULK_EDIT_NO_VALUE);
+
+        expect(findListbox().props('toggleText')).toBe('No iteration');
       });
     });
   });

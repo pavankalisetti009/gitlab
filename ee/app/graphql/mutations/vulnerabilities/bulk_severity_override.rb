@@ -24,7 +24,12 @@ module Mutations
 
       field :vulnerabilities, [Types::VulnerabilityType],
         null: false,
-        description: 'Vulnerabilities after severity change.'
+        description: 'Vulnerabilities after severity change.',
+        scopes: [:api, :read_api, :ai_workflows]
+
+      def self.authorization_scopes
+        [:api, :read_api, :ai_workflows]
+      end
 
       def resolve(vulnerability_ids: [], severity: nil, comment: nil)
         ids = vulnerability_ids.map(&:model_id).uniq

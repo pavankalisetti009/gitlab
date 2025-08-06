@@ -6,7 +6,8 @@ RSpec.shared_examples_for 'page with unconfirmed user deletion information' do
   describe 'delete unconfirmed users is set' do
     let_it_be(:delete_after_days) { 7 }
     let(:onboarding_status_presenter) do
-      instance_double(::Onboarding::StatusPresenter, tracking_label: 'free_registration')
+      instance_double(::Onboarding::StatusPresenter, tracking_label: 'free_registration',
+        new_registration_design?: false)
     end
 
     before do

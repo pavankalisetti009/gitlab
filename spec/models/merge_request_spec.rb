@@ -4804,8 +4804,6 @@ RSpec.describe MergeRequest, factory_default: :keep, feature_category: :code_rev
     context "with diffs" do
       let(:project) { create(:project, :repository) }
 
-      subject { create(:merge_request, source_project: project) }
-
       let(:expected_diff_refs) do
         Gitlab::Diff::DiffRefs.new(
           base_sha: subject.merge_request_diff.base_commit_sha,
@@ -4813,6 +4811,8 @@ RSpec.describe MergeRequest, factory_default: :keep, feature_category: :code_rev
           head_sha: subject.merge_request_diff.head_commit_sha
         )
       end
+
+      subject { create(:merge_request, source_project: project) }
 
       it "does not touch the repository" do
         subject # Instantiate the object
@@ -5013,6 +5013,56 @@ RSpec.describe MergeRequest, factory_default: :keep, feature_category: :code_rev
     end
   end
 
+  describe '#create_merge_request_diff' do
+    let_it_be(:merge_request) { create(:merge_request) }
+
+    context 'when preload_gitaly is true' do
+      subject(:create_merge_request_diff) { merge_request.create_merge_request_diff(preload_gitaly: true) }
+
+      it 'fetches the ref' do
+        expect(merge_request).to receive(:fetch_ref!).and_call_original
+
+        create_merge_request_diff
+      end
+
+      it 'reloads the diff' do
+        expect { create_merge_request_diff }
+          .to change { merge_request.merge_request_diff }
+      end
+
+      it 'preload the gitaly data' do
+        expect_next_instance_of(MergeRequestDiff) do |diff|
+          expect(diff).to receive(:preload_gitaly_data).and_call_original
+        end
+
+        create_merge_request_diff
+      end
+    end
+
+    context 'when preload_gitaly defaults to false' do
+      subject(:create_merge_request_diff) { merge_request.create_merge_request_diff }
+
+      it 'fetches the ref' do
+        expect(merge_request).to receive(:fetch_ref!).and_call_original
+
+        create_merge_request_diff
+      end
+
+      it 'reloads the diff' do
+        expect { create_merge_request_diff }
+          .to change { merge_request.merge_request_diff }
+      end
+
+      it 'does not preload the gitaly data' do
+        expect_next_instance_of(MergeRequestDiff) do |diff|
+          expect(diff).not_to receive(:preload_gitaly_data).and_call_original
+        end
+
+        create_merge_request_diff
+      end
+    end
+  end
+
   describe '#pipeline_coverage_delta' do
     let!(:merge_request) { create(:merge_request) }
 
@@ -5198,11 +5248,11 @@ RSpec.describe MergeRequest, factory_default: :keep, feature_category: :code_rev
   describe '#merge_request_diff_for' do
     let(:project) { create(:project, :repository) }
 
-    subject { create(:merge_request, importing: true, source_project: project) }
-
     let!(:merge_request_diff1) { subject.merge_request_diffs.create!(head_commit_sha: '6f6d7e7ed97bb5f0054f2b1df789b39ca89b6ff9') }
     let!(:merge_request_diff2) { subject.merge_request_diffs.create!(head_commit_sha: nil) }
     let!(:merge_request_diff3) { subject.merge_request_diffs.create!(head_commit_sha: '5937ac0a7beb003549fc5fd26fc247adbce4a52e') }
+
+    subject { create(:merge_request, importing: true, source_project: project) }
 
     context 'with diff refs' do
       it 'returns the diffs' do
@@ -5231,11 +5281,11 @@ RSpec.describe MergeRequest, factory_default: :keep, feature_category: :code_rev
   describe '#version_params_for' do
     let(:project) { create(:project, :repository) }
 
-    subject { create(:merge_request, importing: true, source_project: project) }
-
     let!(:merge_request_diff1) { subject.merge_request_diffs.create!(head_commit_sha: '6f6d7e7ed97bb5f0054f2b1df789b39ca89b6ff9') }
     let!(:merge_request_diff2) { subject.merge_request_diffs.create!(head_commit_sha: nil) }
     let!(:merge_request_diff3) { subject.merge_request_diffs.create!(head_commit_sha: '5937ac0a7beb003549fc5fd26fc247adbce4a52e') }
+
+    subject { create(:merge_request, importing: true, source_project: project) }
 
     context 'when the diff refs are for an older merge request version' do
       let(:diff_refs) { merge_request_diff1.diff_refs }

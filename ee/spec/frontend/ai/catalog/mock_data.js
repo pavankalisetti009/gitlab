@@ -5,12 +5,15 @@ const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
+const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_PROJECT = 'Project';
 
 const mockProject = {
   id: 'gid://gitlab/Project/1',
   __typename: TYPENAME_PROJECT,
 };
+
+/* AGENTS */
 
 const mockAgentFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::Item/1',
@@ -75,6 +78,26 @@ export const mockAiCatalogAgentNullResponse = {
   },
 };
 
+export const mockCatalogItemDeleteResponse = {
+  data: {
+    aiCatalogAgentDelete: {
+      errors: [],
+      success: true,
+      __typename: TYPENAME_AI_CATALOG_AGENT_DELETE,
+    },
+  },
+};
+
+export const mockCatalogItemDeleteErrorResponse = {
+  data: {
+    aiCatalogAgentDelete: {
+      errors: ['You do not have permission to delete this AI agent.'],
+      success: false,
+      __typename: TYPENAME_AI_CATALOG_AGENT_DELETE,
+    },
+  },
+};
+
 export const mockCreateAiCatalogAgentSuccessMutation = {
   data: {
     aiCatalogAgentCreate: {
@@ -113,33 +136,13 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
   },
 };
 
-export const mockCatalogItemDeleteResponse = {
-  data: {
-    aiCatalogAgentDelete: {
-      errors: [],
-      success: true,
-      __typename: TYPENAME_AI_CATALOG_AGENT_DELETE,
-    },
-  },
-};
+/* FLOWS */
 
-export const mockCatalogItemDeleteErrorResponse = {
-  data: {
-    aiCatalogAgentDelete: {
-      errors: ['You do not have permission to delete this AI agent.'],
-      success: false,
-      __typename: TYPENAME_AI_CATALOG_AGENT_DELETE,
-    },
-  },
+const mockFlowVersion = {
+  id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+  versionName: 'v1.0.0-draft',
+  __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
-
-const mockFlowVersions = [
-  {
-    id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-    versionName: 'v1.0.0-draft',
-    __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
-  },
-];
 
 const mockFlowFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::Item/4',
@@ -148,21 +151,19 @@ const mockFlowFactory = (overrides = {}) => ({
   description: 'A helpful AI flow for testing purposes',
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
-  versions: {
-    nodes: mockFlowVersions,
-  },
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
 });
 
 export const mockFlow = mockFlowFactory({
-  versions: {
-    nodes: mockFlowVersions,
-  },
+  project: mockProject,
+  latestVersion: mockFlowVersion,
 });
 
+export const mockBaseFlow = mockFlowFactory();
+
 export const mockFlows = [
-  mockFlow,
+  mockBaseFlow,
   mockFlowFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/5',
     name: 'Test AI Flow 2',
@@ -183,5 +184,36 @@ export const mockCatalogFlowsResponse = {
       nodes: mockFlows,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
     },
+  },
+};
+
+export const mockCreateAiCatalogFlowSuccessMutation = {
+  data: {
+    aiCatalogFlowCreate: {
+      errors: [],
+      item: mockBaseFlow,
+      __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
+    },
+  },
+};
+
+export const mockCreateAiCatalogFlowErrorMutation = {
+  data: {
+    aiCatalogFlowCreate: {
+      errors: ['Some error'],
+      item: null,
+    },
+  },
+};
+
+export const mockAiCatalogFlowResponse = {
+  data: {
+    aiCatalogItem: mockFlow,
+  },
+};
+
+export const mockAiCatalogFlowNullResponse = {
+  data: {
+    aiCatalogItem: null,
   },
 };

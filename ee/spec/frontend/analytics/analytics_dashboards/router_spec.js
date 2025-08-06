@@ -3,7 +3,6 @@ import DashboardsList from 'ee/analytics/analytics_dashboards/components/dashboa
 import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/analytics_dashboard.vue';
 import ProductAnalyticsOnboardingView from 'ee/product_analytics/onboarding/onboarding_view.vue';
 import ProductAnalyticsOnboardingSetup from 'ee/product_analytics/onboarding/onboarding_setup.vue';
-import AnalyticsDataExplorer from 'ee/analytics/analytics_dashboards/components/analytics_data_explorer.vue';
 
 describe('Dashboards list router', () => {
   const base = '/dashboard';
@@ -33,7 +32,6 @@ describe('Dashboards list router', () => {
     it.each`
       path                               | component                          | name
       ${'/'}                             | ${DashboardsList}                  | ${'Analytics dashboards'}
-      ${'/data-explorer'}                | ${AnalyticsDataExplorer}           | ${'Data explorer'}
       ${'/product-analytics-onboarding'} | ${ProductAnalyticsOnboardingView}  | ${'Product analytics onboarding'}
       ${'/product-analytics-setup'}      | ${ProductAnalyticsOnboardingSetup} | ${'Product analytics onboarding'}
       ${'/test-dashboard-1'}             | ${AnalyticsDashboard}              | ${'Test dashboard 1'}
@@ -89,38 +87,5 @@ describe('Dashboards list router', () => {
         expect(productAnalyticsOnboardingRoute).toBeUndefined();
       },
     );
-  });
-
-  describe('/new route', () => {
-    const getNewRoute = () => router.options.routes.find((route) => route.path === '/new');
-
-    describe('when canCreateNewDashboard is true', () => {
-      beforeEach(() => {
-        router = createRouter(base, breadcrumbState, {
-          canCreateNewDashboard: true,
-        });
-      });
-
-      it('includes the /new route', () => {
-        const newDashboardRoute = getNewRoute();
-
-        expect(newDashboardRoute).toBeDefined();
-        expect(newDashboardRoute.meta.getName()).toBe('New dashboard');
-      });
-    });
-
-    describe('when canCreateNewDashboard is false', () => {
-      beforeEach(() => {
-        router = createRouter(base, breadcrumbState, {
-          canCreateNewDashboard: false,
-        });
-      });
-
-      it('does not include the /new route', () => {
-        const newDashboardRoute = getNewRoute();
-
-        expect(newDashboardRoute).toBeUndefined();
-      });
-    });
   });
 });

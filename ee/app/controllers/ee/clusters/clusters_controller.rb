@@ -9,22 +9,6 @@ module EE
         before_action :expire_etag_cache, only: [:show]
       end
 
-      def metrics
-        return render_404 unless prometheus_adapter&.can_query?
-
-        respond_to do |format|
-          format.json do
-            metrics = prometheus_adapter.query(:cluster) || {}
-
-            if metrics.any?
-              render json: metrics
-            else
-              head :no_content
-            end
-          end
-        end
-      end
-
       def environments
         respond_to do |format|
           format.json do
@@ -60,12 +44,6 @@ module EE
           .new(cluster: cluster, current_user: current_user)
           .with_pagination(request, response)
           .represent(environments)
-      end
-
-      def prometheus_adapter
-        return unless cluster&.integration_prometheus_available?
-
-        cluster.integration_prometheus
       end
     end
   end

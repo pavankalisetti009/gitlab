@@ -84,7 +84,7 @@ module API
 
           def duo_workflow_token
             duo_workflow_token_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
-              duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url,
+              duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
               current_user: current_user,
               secure: Gitlab::DuoWorkflow::Client.secure?
             ).generate_token
@@ -168,7 +168,7 @@ module API
                     token_expires_at: oauth_token.expires_at
                   },
                   duo_workflow_service: {
-                    base_url: Gitlab::DuoWorkflow::Client.url,
+                    base_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
                     token: workflow_token[:token],
                     token_expires_at: workflow_token[:expires_at],
                     headers: Gitlab::DuoWorkflow::Client.headers(user: current_user),
@@ -199,7 +199,7 @@ module API
               push_feature_flags
 
               if Feature.enabled?(:agent_platform_model_selection) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This is an instance level feature flag
-                duo_agent_platform_setting = ::Ai::FeatureSetting.find_or_initialize_by_feature(:duo_agent_platform)
+                duo_agent_platform_setting = ::Ai::FeatureSetting.find_by_feature(:duo_agent_platform)
 
                 model_metadata_headers = Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata.new(
                   feature_setting: duo_agent_platform_setting
@@ -219,7 +219,7 @@ module API
               {
                 DuoWorkflow: {
                   Headers: headers,
-                  ServiceURI: Gitlab::DuoWorkflow::Client.url,
+                  ServiceURI: Gitlab::DuoWorkflow::Client.url(user: current_user),
                   Secure: Gitlab::DuoWorkflow::Client.secure?
                 }
               }

@@ -28,8 +28,6 @@ export const setPaths = ({
   });
 };
 
-export const setFeatures = ({ commit }, features) => commit(types.SET_FEATURES, features);
-
 export const requestCycleAnalyticsData = ({ commit }) => commit(types.REQUEST_VALUE_STREAM_DATA);
 
 export const receiveCycleAnalyticsDataSuccess = ({ commit }) => {
@@ -62,7 +60,6 @@ export const initializeCycleAnalytics = ({ dispatch, commit }, initialData = {})
   commit(types.INITIALIZE_VSA, initialData);
 
   const {
-    features = {},
     selectedAuthor,
     selectedMilestone,
     selectedAssigneeList,
@@ -70,7 +67,6 @@ export const initializeCycleAnalytics = ({ dispatch, commit }, initialData = {})
     stage: selectedStage,
     namespace,
   } = initialData;
-  commit(types.SET_FEATURES, features);
 
   if (namespace?.restApiRequestPath) {
     let promises = [

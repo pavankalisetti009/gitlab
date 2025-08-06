@@ -5,6 +5,7 @@ module QA
     module Resource
       module GroupBase
         include DoraMetrics
+        include QA::Resource::Errors
 
         # Get group epics
         #
@@ -90,7 +91,7 @@ module QA
 
         def api_delete_path
           if self_deletion_scheduled?
-            "#{super}?permanently_remove=true&full_path=#{CGI.escape(full_path)}"
+            "#{super}?permanently_remove=true&full_path=#{CGI.escape(updated_full_path)}"
           else
             super
           end
@@ -100,7 +101,14 @@ module QA
         #
         # @return [Boolean]
         def self_deletion_scheduled?
-          reload!.api_response[:marked_for_deletion_on].present?
+          reload_with_fallback![:marked_for_deletion_on].present?
+        end
+
+        # Get updated full_path after deletion scheduled
+        #
+        # @return [String]
+        def updated_full_path
+          reload_with_fallback![:full_path]
         end
 
         # Remove the group unless it's already scheduled for deletion.
@@ -159,6 +167,16 @@ module QA
               framework.pipeline_configuration_full_path = node[:pipelineConfigurationFullPath]
             end.reload!
           end
+        end
+
+        private
+
+        def reload_with_fallback!
+          reload!.api_response
+        rescue ResourceNotFoundError => e
+          raise e unless respond_to?(:id) && id
+
+          parse_body(api_get_from("/groups/#{id}"))
         end
       end
     end

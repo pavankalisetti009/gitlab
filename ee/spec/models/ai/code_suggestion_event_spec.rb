@@ -6,8 +6,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   subject(:event) { described_class.new(attributes) }
 
   let(:attributes) { { event: 'code_suggestion_shown_in_ide' } }
-  let_it_be(:organization) { create(:organization) }
-  let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:user) { create(:user) }
 
   it { is_expected.to belong_to(:organization) }
 
@@ -22,7 +21,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   end
 
   describe '.for' do
-    let_it_be(:group) { create(:group, :with_organization) }
+    let_it_be(:group) { create(:group) }
     let_it_be(:sub_group) { create(:group, parent: group) }
     let_it_be(:project_1) { create(:project, group: group) }
     let_it_be(:project_2) { create(:project, group: sub_group) }
@@ -66,7 +65,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   describe '#organization_id' do
     subject { described_class.new(user: user) }
 
-    it { is_expected.to populate_sharding_key(:organization_id).with(organization.id) }
+    it { is_expected.to populate_sharding_key(:organization_id).with(user.organization_id) }
   end
 
   describe '#to_clickhouse_csv_row', :freeze_time do
@@ -125,7 +124,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
             event: 'code_suggestion_shown_in_ide',
             timestamp: 1.day.ago,
             user_id: user.id,
-            organization_id: organization.id,
+            organization_id: user.organization.id,
             payload: {
               suggestion_size: 3,
               language: 'foo',

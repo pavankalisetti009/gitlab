@@ -3,6 +3,9 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import '~/lib/utils/jquery_at_who';
 import GfmAutoComplete, { showAndHideHelper, escape, setupSubcommands } from '~/gfm_auto_complete';
 import { s__ } from '~/locale';
+import { spriteIcon } from '~/lib/utils/common_utils';
+import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
+import { availableStatuses } from '~/graphql_shared/issuable_client';
 import { MERGE_REQUEST_NOTEABLE_TYPE } from '~/notes/constants';
 
 /**
@@ -24,6 +27,7 @@ export {
 const EPICS_ALIAS = 'epics';
 const ITERATIONS_ALIAS = 'iterations';
 const VULNERABILITIES_ALIAS = 'vulnerabilities';
+const STATUSES_ALIAS = 'statuses';
 
 export const Q_ISSUE_SUB_COMMANDS = {
   dev: {
@@ -79,6 +83,13 @@ GfmAutoComplete.Iterations = {
   },
 };
 
+GfmAutoComplete.Statuses = {
+  templateFunction({ id, name, color, iconName }) {
+    const icon = spriteIcon(iconName, 's12 gl-mr-2 gl-fill-current', getAdaptiveStatusColor(color));
+    return `<li data-id="${id}">${icon}<span>${escape(name)}</span></li>`;
+  },
+};
+
 class GfmAutoCompleteEE extends GfmAutoComplete {
   setupAtWho($input) {
     if (this.enableMap.epics) {
@@ -91,6 +102,10 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
 
     if (this.enableMap.vulnerabilities) {
       this.setupAutoCompleteVulnerabilities($input, this.getDefaultCallbacks());
+    }
+
+    if (this.enableMap.statuses) {
+      this.setupAutoCompleteStatuses($input, this.getDefaultCallbacks());
     }
 
     super.setupAtWho($input);
@@ -213,6 +228,73 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
       },
     });
     showAndHideHelper($input, VULNERABILITIES_ALIAS);
+  };
+
+  // eslint-disable-next-line class-methods-use-this
+  setupAutoCompleteStatuses = ($input, defaultCallbacks) => {
+    const MEMBER_COMMAND = {
+      STATUS: '/status',
+    };
+    let command = '';
+    $input.atwho({
+      at: '"',
+      alias: STATUSES_ALIAS,
+      delay: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      searchKey: 'search',
+      limit: 100,
+      displayTpl(value) {
+        let tmpl = GfmAutoComplete.Loading.template;
+        if (value.id != null) {
+          tmpl = GfmAutoComplete.Statuses.templateFunction(value);
+        }
+        return tmpl;
+      },
+      data: GfmAutoComplete.defaultLoadingData,
+      // eslint-disable-next-line no-template-curly-in-string
+      insertTpl: '${atwho-at}${name}${atwho-at}',
+      skipSpecialCharacterTest: true,
+      callbacks: {
+        ...defaultCallbacks,
+        beforeSave(merges) {
+          return merges.map((m) => {
+            if (m.name == null) {
+              return m;
+            }
+            return {
+              id: m.id,
+              name: m.name,
+              search: `${m.id} ${m.name}`,
+            };
+          });
+        },
+        matcher(flag, subtext) {
+          const subtextNodes = subtext.split(/\n+/g).pop().split(GfmAutoComplete.regexSubtext);
+
+          // Check if " is followed by '/status' command.
+          command = subtextNodes.find((node) => {
+            if (Object.values(MEMBER_COMMAND).includes(node)) {
+              return node;
+            }
+            return null;
+          });
+
+          const match = GfmAutoComplete.defaultMatcher(flag, subtext, this.app.controllers);
+          return match && match.length ? match[1] : null;
+        },
+        filter() {
+          if (command === MEMBER_COMMAND.STATUS) {
+            const { workItemFullPath, workItemTypeId } = this.$inputor
+              .get(0)
+              .closest('.js-gfm-wrapper').dataset;
+
+            const statuses = availableStatuses()[workItemFullPath];
+            return statuses?.[workItemTypeId] || [];
+          }
+          return [];
+        },
+      },
+    });
+    showAndHideHelper($input, STATUSES_ALIAS);
   };
 }
 

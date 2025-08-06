@@ -14,6 +14,7 @@ module Mutations
 
           argument :item_id, ::Types::GlobalIDType[::Ai::Catalog::Item],
             required: true,
+            loads: ::Types::Ai::Catalog::ItemInterface,
             description: 'Item to configure.'
 
           argument :enabled, GraphQL::Types::Boolean,
@@ -30,12 +31,11 @@ module Mutations
 
           authorize :admin_ai_catalog_item_consumer
 
-          def resolve(item_id:, target:, enabled: true, locked: true)
+          def resolve(item:, target:, enabled: true, locked: true)
             group_id = target[:group_id]
             group = group_id ? authorized_find!(id: group_id) : nil
             project_id = target[:project_id]
             project = project_id ? authorized_find!(id: project_id) : nil
-            item = GitlabSchema.find_by_gid(item_id).sync
 
             raise_resource_not_available_error! unless item.flow? && allowed?(item)
 

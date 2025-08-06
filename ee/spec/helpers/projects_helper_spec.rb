@@ -397,7 +397,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
             critical: 'true',
             exceeded: 'false',
             full: 'false'
-          }
+          },
+          validity_checks_enabled: 'false'
         }
       end
 
@@ -483,6 +484,34 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           end
 
           it { is_expected.to match(base_values.merge(sbom_pipeline_values, pipeline_values)) }
+        end
+      end
+
+      context 'with validity checks configuration' do
+        context 'when project has validity checks enabled' do
+          before do
+            security_setting = instance_double(ProjectSecuritySetting, validity_checks_enabled: true)
+            allow(project).to receive(:security_setting).and_return(security_setting)
+          end
+
+          it { is_expected.to include(validity_checks_enabled: 'true') }
+        end
+
+        context 'when project has validity checks disabled' do
+          before do
+            security_setting = instance_double(ProjectSecuritySetting, validity_checks_enabled: false)
+            allow(project).to receive(:security_setting).and_return(security_setting)
+          end
+
+          it { is_expected.to include(validity_checks_enabled: 'false') }
+        end
+
+        context 'when project has no security setting' do
+          before do
+            allow(project).to receive(:security_setting).and_return(nil)
+          end
+
+          it { is_expected.to include(validity_checks_enabled: 'false') }
         end
       end
     end
@@ -745,44 +774,6 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         project_id: project.id,
         status_checks_path: expose_path(api_v4_projects_external_status_checks_path(id: project.id))
       })
-    end
-  end
-
-  describe '#project_compliance_framework_app_data' do
-    let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
-
-    let(:can_edit) { false }
-
-    subject(:data) { helper.project_compliance_framework_app_data(project, can_edit) }
-
-    before do
-      allow(helper).to receive(:image_path).and_return('#empty_state_svg_path')
-    end
-
-    context 'when the user cannot edit' do
-      let(:can_edit) { false }
-
-      it 'returns the correct data' do
-        expect(data).to eq({
-          group_name: group.name,
-          group_path: group_path(group),
-          empty_state_svg_path: '#empty_state_svg_path'
-        })
-      end
-    end
-
-    context 'when the user can edit' do
-      let(:can_edit) { true }
-
-      it 'includes the framework edit path' do
-        expect(data).to eq({
-          group_name: group.name,
-          group_path: group_path(group),
-          empty_state_svg_path: '#empty_state_svg_path',
-          add_framework_path: "#{edit_group_path(group)}#js-compliance-frameworks-settings"
-        })
-      end
     end
   end
 

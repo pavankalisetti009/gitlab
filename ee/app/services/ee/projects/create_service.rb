@@ -215,6 +215,10 @@ module EE
 
         return if inherited_value # no need to update from default if inherited value will be `true`
 
+        # Check if the setting is locked by an ancestor before attempting to update
+        # If locked, the cascading framework will handle inheritance automatically
+        return if project.project_setting.duo_features_enabled_locked_by_ancestor?
+
         project.project_setting.update!(duo_features_enabled: inherited_value)
       end
     end

@@ -12,7 +12,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
 
   before do
     stub_signing_key
-    stub_get_billing_account_details
     allow(view).to receive(:current_user).and_return(user)
     assign(:group, group)
     assign(:plans_data, plans_data)

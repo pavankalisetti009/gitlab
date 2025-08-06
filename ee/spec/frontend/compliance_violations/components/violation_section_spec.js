@@ -2,12 +2,13 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import { statusesInfo } from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/statuses_info';
 
 describe('ViolationSection', () => {
   let wrapper;
 
   const mockControl = {
-    name: 'Merge request controls',
+    name: 'merge_request_prevent_committers_approval',
     complianceRequirement: {
       name: 'basic code regulation',
       framework: {
@@ -62,11 +63,37 @@ describe('ViolationSection', () => {
       expect(requirement.exists()).toBe(true);
       expect(requirement.text()).toContain(mockControl.complianceRequirement.name);
     });
+  });
 
-    it('renders correct control', () => {
+  describe('control title', () => {
+    it('renders control title from statusesInfo when available', () => {
       const control = findControl();
       expect(control.exists()).toBe(true);
-      expect(control.text()).toContain(mockControl.name);
+      expect(control.text()).toContain(statusesInfo[mockControl.name].title);
+    });
+
+    it('renders control name when title is not found in statusesInfo', () => {
+      const controlName = 'unknown_control';
+      createComponent({
+        control: {
+          ...mockControl,
+          name: controlName,
+        },
+      });
+
+      const control = findControl();
+      expect(control.text()).toContain(controlName);
+    });
+
+    it('renders empty string when control has no name', () => {
+      createComponent({
+        control: {
+          complianceRequirement: mockControl.complianceRequirement,
+        },
+      });
+
+      const control = findControl();
+      expect(control.text()).toBe('Control:');
     });
   });
 });

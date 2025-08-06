@@ -2,9 +2,7 @@
 RSpec/VerifiedDoubles:
   Exclude:
     - 'ee/spec/controllers/concerns/ee/routable_actions/sso_enforcement_redirect_spec.rb'
-    - 'ee/spec/controllers/groups/clusters_controller_spec.rb'
     - 'ee/spec/controllers/oauth/geo_auth_controller_spec.rb'
-    - 'ee/spec/controllers/projects/clusters_controller_spec.rb'
     - 'ee/spec/db/production/license_spec.rb'
     - 'ee/spec/features/admin/groups/admin_subscription_alerts_spec.rb'
     - 'ee/spec/features/profiles/account_spec.rb'
@@ -149,7 +147,6 @@ RSpec/VerifiedDoubles:
     - 'ee/spec/services/vulnerability_external_issue_links/create_service_spec.rb'
     - 'ee/spec/support/helpers/ee/ldap_helpers.rb'
     - 'ee/spec/support/shared_examples/controllers/analytics/cycle_analytics/shared_stage_shared_examples.rb'
-    - 'ee/spec/support/shared_examples/controllers/cluster_metrics_shared_examples.rb'
     - 'ee/spec/support/shared_examples/models/concerns/blob_replicator_strategy_shared_examples.rb'
     - 'ee/spec/support/shared_examples/models/concerns/verifiable_replicator_shared_examples.rb'
     - 'ee/spec/support/shared_examples/models/geo_verifiable_registry_shared_examples.rb'
@@ -660,7 +657,6 @@ RSpec/VerifiedDoubles:
     - 'spec/models/key_spec.rb'
     - 'spec/models/merge_request_diff_commit_spec.rb'
     - 'spec/models/merge_request_spec.rb'
-    - 'spec/models/packages/package_spec.rb'
     - 'spec/models/plan_limits_spec.rb'
     - 'spec/models/project_spec.rb'
     - 'spec/models/release_highlight_spec.rb'
@@ -791,7 +787,6 @@ RSpec/VerifiedDoubles:
     - 'spec/services/projects/create_service_spec.rb'
     - 'spec/services/projects/destroy_service_spec.rb'
     - 'spec/services/projects/import_service_spec.rb'
-    - 'spec/services/projects/operations/update_service_spec.rb'
     - 'spec/services/projects/overwrite_project_service_spec.rb'
     - 'spec/services/projects/update_pages_service_spec.rb'
     - 'spec/services/projects/update_remote_mirror_service_spec.rb'
@@ -902,3 +897,4 @@ RSpec/VerifiedDoubles:
     - 'spec/workers/propagate_integration_project_worker_spec.rb'
     - 'spec/workers/purge_dependency_proxy_cache_worker_spec.rb'
     - 'spec/workers/system_hook_push_worker_spec.rb'
+    - 'ee/spec/models/secrets_management/project_secrets_manager_spec.rb'

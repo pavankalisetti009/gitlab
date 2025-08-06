@@ -21,6 +21,7 @@ module RemoteDevelopment
               .map(VolumeDefiner.method(:define))
               .map(ToolsInjectorComponentInserter.method(:insert))
               .map(MainComponentUpdater.method(:update))
+              .map(ContainerCommandUpdater.method(:update))
               .map(InternalPoststartCommandsInserter.method(:insert))
               .map(VolumeComponentInserter.method(:insert))
               .and_then(Creator.method(:create))

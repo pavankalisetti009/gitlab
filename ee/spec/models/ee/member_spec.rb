@@ -961,31 +961,30 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
           member_role: group_role)
       end
 
-      context 'when `custom_role_for_group_link_enabled` is true' do
-        it 'returns minimum access level and expected member role' do
-          members = invited_group
-                      .members
-                      .with_group_group_sharing_access(shared_group, true)
-                      .id_in(member.id)
-                      .to_a
+      subject(:members) do
+        invited_group
+          .members.with_group_group_sharing_access(shared_group, custom_roles_enabled)
+          .id_in(member.id).to_a
+      end
 
+      # more specs for group-sharing with custom roles are in Authz::MemberRoleInSharedGroup
+      context 'when custom roles are enabled' do
+        let(:custom_roles_enabled) { true }
+
+        it 'returns minimum access level and expected member role' do
           expect(members.size).to eq(1)
           expect(members.first.access_level).to eq(expected_access_level)
           expect(members.first.member_role_id).to eq expected_member_role.id
         end
       end
 
-      context 'when `custom_role_for_group_link_enabled` is false' do
-        it 'returns  minimum access level and ignores member role of the group link' do
-          members = invited_group
-                      .members
-                      .with_group_group_sharing_access(shared_group, false)
-                      .id_in(member.id)
-                      .to_a
+      context 'when custom roles are not enabled' do
+        let(:custom_roles_enabled) { false }
 
+        it 'returns minimum access level and nil member role' do
           expect(members.size).to eq(1)
           expect(members.first.access_level).to eq(expected_access_level)
-          expect(members.first.member_role_id).to eq(member.member_role_id)
+          expect(members.first.member_role_id).to be_nil
         end
       end
     end

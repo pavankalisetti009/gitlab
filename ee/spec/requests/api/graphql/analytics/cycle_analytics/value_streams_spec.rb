@@ -478,7 +478,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
   context 'for projects' do
     let(:resource_type) { 'project' }
 
-    let_it_be(:resource) { create(:project, namespace: create(:group, :with_organization)) }
+    let_it_be(:resource) { create(:project, namespace: create(:group)) }
     let_it_be(:project) { resource }
     let_it_be(:namespace) { resource.project_namespace }
     let_it_be(:start_label) { create(:label, project: resource, title: 'Start Label') }

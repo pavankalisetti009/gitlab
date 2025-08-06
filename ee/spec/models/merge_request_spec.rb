@@ -26,6 +26,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it { is_expected.to have_many(:approved_by_users) }
     it { is_expected.to have_one(:merge_train_car) }
     it { is_expected.to have_many(:approval_rules) }
+    it { is_expected.to have_many(:approval_policy_merge_request_bypass_events) }
     it { is_expected.to have_many(:approval_merge_request_rule_sources).through(:approval_rules) }
     it { is_expected.to have_many(:approval_project_rules).through(:approval_merge_request_rule_sources) }
     it { is_expected.to have_many(:status_check_responses).class_name('MergeRequests::StatusCheckResponse').inverse_of(:merge_request) }

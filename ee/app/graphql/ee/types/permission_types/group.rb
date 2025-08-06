@@ -8,7 +8,7 @@ module EE
         extend ActiveSupport::Concern
 
         prepended do
-          ability_field :generate_description
+          abilities :generate_description, :admin_work_item_lifecycle
         end
       end
     end

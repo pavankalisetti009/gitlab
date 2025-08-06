@@ -1,6 +1,7 @@
 #import "~/graphql_shared/fragments/label.fragment.graphql"
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "~/graphql_shared/fragments/user.fragment.graphql"
+#import "ee/work_items/graphql/work_item_status.fragment.graphql"
 
 fragment IterationIssuesWithLabels on IssueConnection {
   count
@@ -19,6 +20,9 @@ fragment IterationIssuesWithLabels on IssueConnection {
     webUrl
     state
     type
+    status {
+      ...WorkItemStatusFragment
+    }
     assignees {
       nodes {
         ...User

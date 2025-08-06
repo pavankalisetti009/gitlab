@@ -13,6 +13,18 @@ module Geo
     include ::Geo::VerificationState
 
     included do
+      # We need lazy loaded states when querying the model for the data management
+      # endpoint `api/v4/admin/data_management/{model} to avoid N+1 queries
+      scope :with_state_details, -> do
+        return includes(:merge_request_diff_detail) if klass == MergeRequestDiff
+
+        state_association = self.reflect_on_all_associations(:has_one).detect do |association|
+          association.klass.include?(::Geo::VerificationStateDefinition)
+        end
+
+        includes(state_association.name) if state_association
+      end
+
       def save_verification_details
         return unless Gitlab::Geo.primary?
         return unless self.class.replicator_class.verification_enabled?

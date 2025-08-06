@@ -16,7 +16,7 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            '1.2.0'
+            ::Ai::AmazonQ.enabled? ? 'amazon_q/1.0.0' : '1.2.0'
           end
 
           override :root_namespace

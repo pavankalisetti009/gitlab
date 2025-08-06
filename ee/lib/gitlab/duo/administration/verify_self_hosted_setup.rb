@@ -18,7 +18,11 @@ module Gitlab
             GitLab Duo Self-Hosted Setup Verification
             ═══════════════════════════════════════════════════════════════
             This task will help you debug issues with your self-hosted Duo installation.
-            For additional logs, enable 'expanded_ai_logging' Feature flag
+            For additional logs, enable 'enabled_instance_verbose_ai_logs' instance setting via
+            Rails console:
+            ```
+            ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: true)
+            ```
 
           MSG
 

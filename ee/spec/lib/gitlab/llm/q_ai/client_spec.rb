@@ -8,10 +8,12 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
   let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:oauth_app) { create(:doorkeeper_application) }
 
-  let(:service_data) { instance_double(CloudConnector::SelfManaged::AvailableServiceData) }
-
   let(:ai_settings) { ::Ai::Setting.instance }
-  let(:cc_token) { 'cc_token' }
+  let(:aigw_headers) { { "header" => "value" } }
+  let(:expected_headers) do
+    aigw_headers.merge({ 'X-Gitlab-Unit-Primitive' => 'amazon_q_integration' })
+  end
+
   let(:response) { 'response' }
   let(:role_arn) { 'role_arn' }
   let(:event_id) { 'Quick Action' }
@@ -21,6 +23,13 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
   before do
     allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
     allow(Doorkeeper::OAuth::Helpers::UniqueToken).to receive(:generate).and_return('1234')
+
+    service = instance_double(CloudConnector::BaseAvailableServiceData)
+    allow(::CloudConnector::AvailableServices).to receive(:find_by_name)
+      .with(:amazon_q_integration).and_return(service)
+    allow(Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: service)
+      .and_return(aigw_headers)
   end
 
   describe '#create_event' do
@@ -44,7 +53,7 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
           code: '1234',
           role_arn: '5678',
           event_id: event_id
-        }.to_json).to_return(body: body, status: status, headers: headers)
+        }.to_json, headers: expected_headers).to_return(body: body, status: status, headers: headers)
 
       ai_settings.update!(
         amazon_q_service_account_user_id: service_account.id,
@@ -53,13 +62,6 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     end
 
     it 'makes expected HTTP post request' do
-      expect(service_data).to receive_messages(
-        name: 'amazon_q_integration',
-        access_token: 'cc_token'
-      )
-      expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
-        .with(:amazon_q_integration).and_return(service_data)
-
       expect(logger).to receive(:conditional_info)
         .with(user, a_hash_including(
           message: "Received successful response from AI Gateway",
@@ -115,7 +117,7 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
         .with(body: {
           role_arn: role_arn,
           code: '1234'
-        }.to_json).to_return(body: body, status: status, headers: headers)
+        }.to_json, headers: expected_headers).to_return(body: body, status: status, headers: headers)
 
       ai_settings.update!(
         amazon_q_service_account_user_id: service_account.id,
@@ -124,13 +126,6 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     end
 
     it 'makes expected HTTP post request' do
-      expect(service_data).to receive_messages(
-        name: 'amazon_q_integration',
-        access_token: 'cc_token'
-      )
-      expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
-        .with(:amazon_q_integration).and_return(service_data)
-
       expect(logger).to receive(:conditional_info)
         .with(user, a_hash_including(
           message: "Received successful response from AI Gateway",
@@ -194,13 +189,6 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     end
 
     it 'makes expected HTTP post request' do
-      expect(service_data).to receive_messages(
-        name: 'amazon_q_integration',
-        access_token: 'cc_token'
-      )
-      expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
-        .with(:amazon_q_integration).and_return(service_data)
-
       expect(logger).to receive(:conditional_info)
         .with(user, a_hash_including(
           message: "Received successful response from AI Gateway",
@@ -228,13 +216,6 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     end
 
     it 'makes expected HTTP post request' do
-      expect(service_data).to receive_messages(
-        name: 'amazon_q_integration',
-        access_token: 'cc_token'
-      )
-      expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
-        .with(:amazon_q_integration).and_return(service_data)
-
       expect(logger).to receive(:conditional_info)
         .with(user, a_hash_including(
           message: 'Received successful response from AI Gateway',

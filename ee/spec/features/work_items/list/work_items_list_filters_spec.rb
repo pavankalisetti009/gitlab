@@ -40,7 +40,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
   context 'for signed in user' do
     before do
       stub_licensed_features(epics: true, quality_management: true, subepics: true, issue_weights: true,
-        issuable_health_status: true)
+        issuable_health_status: true, work_item_status: true)
       sign_in(user)
       visit group_work_items_path(group)
     end
@@ -261,6 +261,49 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
           click_filtered_search_bar
 
           expect(page).not_to have_css('[data-testid="filtered-search-token-segment"]', text: 'Health')
+        end
+      end
+    end
+
+    describe 'status' do
+      before do
+        visit project_work_items_path(project)
+      end
+
+      describe 'behavior' do
+        it 'loads all the statuses when opened' do
+          select_tokens 'Status'
+
+          # Expect default system defined statuses
+          expect_suggestion_count 5
+        end
+      end
+
+      describe 'only status' do
+        it 'filters work items by in progress status' do
+          select_tokens 'Status', 'In progress', submit: true
+
+          expect_work_items_list_count(0)
+        end
+
+        it 'filters work items by to do status' do
+          select_tokens 'Status', 'To do', submit: true
+
+          expect_work_items_list_count(10)
+        end
+      end
+
+      context 'when status feature is not available' do
+        before do
+          stub_licensed_features(epics: true, quality_management: true, subepics: true, issue_weights: false,
+            work_item_status: false)
+          visit group_work_items_path(group)
+        end
+
+        it 'does not show status filter token' do
+          click_filtered_search_bar
+
+          expect(page).not_to have_css('[data-testid="filtered-search-token-segment"]', text: 'Status')
         end
       end
     end

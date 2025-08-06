@@ -148,14 +148,13 @@ module Mutations
       def check_feature_flag_enabled!(method)
         return if Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(method)
 
-        raise Gitlab::Graphql::Errors::ResourceNotAvailable, 'required feature flag is disabled.'
+        raise_resource_not_available_error! 'required feature flag is disabled.'
       end
 
       def verify_rate_limit!
         return unless Gitlab::ApplicationRateLimiter.throttled?(:ai_action, scope: [current_user])
 
-        raise Gitlab::Graphql::Errors::ResourceNotAvailable,
-          'This endpoint has been requested too many times. Try again later.'
+        raise_resource_not_available_error! 'This endpoint has been requested too many times. Try again later.'
       end
 
       def methods(args)

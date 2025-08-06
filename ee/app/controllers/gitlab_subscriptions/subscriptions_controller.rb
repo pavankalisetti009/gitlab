@@ -38,11 +38,6 @@ module GitlabSubscriptions
       render json: response[:data]
     end
 
-    def payment_method
-      response = client.payment_method(params[:id])
-      render json: response[:data]
-    end
-
     def validate_payment_method
       user_id = identity_verification_request? ? identity_verification_user.id : current_user.id
 

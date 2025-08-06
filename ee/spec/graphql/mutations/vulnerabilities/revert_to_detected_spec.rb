@@ -59,4 +59,10 @@ RSpec.describe Mutations::Vulnerabilities::RevertToDetected, feature_category: :
       end
     end
   end
+
+  describe '.authorization_scopes' do
+    it 'includes api, read_api, ai_workflows scope' do
+      expect(described_class.authorization_scopes).to match_array([:api, :read_api, :ai_workflows])
+    end
+  end
 end

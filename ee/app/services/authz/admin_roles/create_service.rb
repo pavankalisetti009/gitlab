@@ -9,6 +9,7 @@ module Authz
         @role = build_role
         if role.save
           log_audit_event(action: :created)
+          collect_metrics
 
           success
         else
@@ -25,6 +26,10 @@ module Authz
 
       def allowed?
         can?(current_user, :create_admin_role)
+      end
+
+      def event_name
+        'create_admin_custom_role'
       end
     end
   end

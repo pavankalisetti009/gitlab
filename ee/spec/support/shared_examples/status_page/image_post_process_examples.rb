@@ -9,7 +9,7 @@ RSpec.shared_examples "img upload tags for status page" do
     secret = '50b7a196557cf72a98e86a7ab4b1ac3b'
     filename = 'tanuki.png'
     markdown = "![tanuki](/uploads/#{secret}/#{filename})"
-    object.send("#{field}=".to_sym, markdown)
+    object.send(:"#{field}=", markdown)
 
     result_img_tag = Nokogiri::HTML(json[field]).css('img')[0]
     result_link_tag = result_img_tag.parent

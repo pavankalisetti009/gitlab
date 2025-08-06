@@ -11,6 +11,9 @@ module Issuables
     validates :value, presence: true, length: { maximum: 255 }
     validate :unique_values
 
+    scope :of_field, ->(field) { where(custom_field_id: field) }
+    scope :with_case_insensitive_values, ->(values) { where('LOWER(value) IN (?)', values&.map(&:downcase)) }
+
     private
 
     def copy_namespace_from_custom_field

@@ -107,12 +107,12 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::RemoveAllFromProject
         mount_mutation ::Mutations::Vulnerabilities::Dismiss, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::Resolve
-        mount_mutation ::Mutations::Vulnerabilities::Confirm
-        mount_mutation ::Mutations::Vulnerabilities::RevertToDetected
+        mount_mutation ::Mutations::Vulnerabilities::Confirm, scopes: [:api, :read_api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::RevertToDetected, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink
         mount_mutation ::Mutations::Vulnerabilities::CreateExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
-        mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride
+        mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssue, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
@@ -243,6 +243,7 @@ module EE
         mount_mutation ::Mutations::Security::CiConfiguration::SetGroupSecretPushProtection
         mount_mutation ::Mutations::Security::CiConfiguration::SetValidityChecks
         mount_mutation ::Mutations::Security::CiConfiguration::SetContainerScanningForRegistry
+        mount_mutation ::Mutations::Security::CiConfiguration::SetLicenseConfigurationSource
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Destroy
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Update
         mount_mutation ::Mutations::DependencyProxy::Packages::Settings::Update

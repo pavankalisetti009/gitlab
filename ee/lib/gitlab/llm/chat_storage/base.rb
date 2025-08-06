@@ -16,14 +16,6 @@ module Gitlab
         MAX_TEXT_LIMIT = 20_000
 
         def initialize(user, agent_version_id = nil, thread = nil, thread_fallback: true)
-          if thread.nil?
-            log_error(
-              message: 'thread absent',
-              event_name: 'thread_absent',
-              ai_component: 'duo_chat'
-            )
-          end
-
           @thread = thread
           @agent_version_id = agent_version_id
           @user = user

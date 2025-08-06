@@ -229,7 +229,7 @@ To enable additional triggers for these webhooks:
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Settings > General**.
 1. Expand the **Permissions and group features** section.
-1. Select the **Extended Group Access Tokens Expiry Webhook execution** checkbox.
+1. Select the **Add additional webhook triggers for group access token expiration** checkbox.
 1. Select **Save changes**.
 
 ## Disable group mentions
@@ -444,7 +444,7 @@ Prerequisites:
 To approve members that are pending because they've exceeded the user cap:
 
 1. On the left sidebar, select **Search or go to** and find your group.
-1. Select **Settings > Usage Quotas**.
+1. Select **Settings > Usage quotas**.
 1. On the **Seats** tab, under the alert, select **View pending approvals**.
 1. For each member you want to approve, select **Approve**.
 

@@ -179,7 +179,6 @@ class GroupPolicy < Namespaces::GroupProjectNamespaceSharedPolicy
 
   rule { guest }.policy do
     enable :read_group
-    enable :upload_file
     enable :guest_access
     enable :read_release
     enable :award_emoji
@@ -237,7 +236,10 @@ class GroupPolicy < Namespaces::GroupProjectNamespaceSharedPolicy
     enable :read_namespace
     enable :read_upload
     enable :read_group_metadata
+    enable :upload_file
   end
+
+  rule { anonymous }.prevent :upload_file
 
   rule { ~achievements_enabled }.policy do
     prevent :read_achievement
@@ -277,6 +279,7 @@ class GroupPolicy < Namespaces::GroupProjectNamespaceSharedPolicy
     enable :read_cluster # Deprecated as certificate-based cluster integration (`Clusters::Cluster`).
     enable :read_cluster_agent
     enable :read_group_all_available_runners
+    enable :read_observability_portal
     enable :use_k8s_proxies
   end
 

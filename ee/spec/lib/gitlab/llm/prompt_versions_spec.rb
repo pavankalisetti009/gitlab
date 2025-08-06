@@ -109,6 +109,7 @@ RSpec.describe Gitlab::Llm::PromptVersions, feature_category: :ai_abstraction_la
     "code_suggestions/generations" | "mistral" | "^1.0.0"
     "code_suggestions/generations" | "mixtral" | "^1.0.0"
     "generate_commit_message" | nil | "^1.0.0"
+    "generate_commit_message" | "amazon_q" | "^1.0.0"
     "generate_description" | nil | "^1.0.0"
     "generate_description" | "claude_3" | "^1.0.0"
     "glab_ask_git_command" | nil | "^1.0.0"

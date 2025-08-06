@@ -27,8 +27,7 @@ module Types
       argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
         required: false,
         experiment: { milestone: '17.10' },
-        description: 'Filter by custom fields.',
-        prepare: ->(custom_fields, _ctx) { Array(custom_fields).inject({}, :merge) }
+        description: 'Filter by custom fields.'
     end
   end
 end

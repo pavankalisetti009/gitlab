@@ -181,16 +181,7 @@ export default {
       }
 
       const statusInfo = statusesInfo[control.name];
-      if (
-        statusInfo &&
-        statusInfo.fixes &&
-        statusInfo.fixes.length > 0 &&
-        statusInfo.fixes[0].linkTitle
-      ) {
-        return statusInfo.fixes[0].linkTitle;
-      }
-
-      return control.name;
+      return statusInfo?.title || control.name;
     },
   },
   apollo: {

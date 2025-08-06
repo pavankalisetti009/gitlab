@@ -65,6 +65,8 @@ export const initWorkItemsRoot = ({ workItemType, workspaceType, withTabs } = {}
     timeTrackingLimitToHours,
     hasStatusFeature,
     workItemPlanningViewEnabled,
+    canReadCrmOrganization,
+    canReadCrmContact,
   } = el.dataset;
 
   const isGroup = workspaceType === WORKSPACE_GROUP;
@@ -140,6 +142,8 @@ export const initWorkItemsRoot = ({ workItemType, workspaceType, withTabs } = {}
       timeTrackingLimitToHours: parseBoolean(timeTrackingLimitToHours),
       hasStatusFeature: parseBoolean(hasStatusFeature),
       workItemPlanningViewEnabled: parseBoolean(workItemPlanningViewEnabled),
+      canReadCrmOrganization: parseBoolean(canReadCrmOrganization),
+      canReadCrmContact: parseBoolean(canReadCrmContact),
     },
     mounted() {
       performanceMarkAndMeasure({

@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :admin_role, class: 'Authz::AdminRole' do
-    name { FFaker::Lorem.word }
+    name { FFaker::Lorem.unique.word }
     description { FFaker::Lorem.sentence }
 
     transient do

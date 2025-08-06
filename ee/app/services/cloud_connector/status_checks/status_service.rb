@@ -34,12 +34,20 @@ module CloudConnector
         # We consider the instance to be using self-hosted Duo
         # if they register a self-hosted AIGW URL.
         elsif ::Gitlab::AiGateway.self_hosted_url.present?
-          ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
+          if Feature.enabled?(:ai_self_hosted_vendored_features, :instance) && at_least_one_vendored_feature?
+            default_probes + self_hosted_probes
+          else
+            self_hosted_probes
+          end
         elsif ::Ai::AmazonQ.connected?
           default_probes + amazon_q_probes
         else
           default_probes
         end
+      end
+
+      def at_least_one_vendored_feature?
+        ::Ai::FeatureSetting.vendored.exists?
       end
 
       def default_probes
@@ -65,6 +73,10 @@ module CloudConnector
         [
           CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe.new(@user)
         ]
+      end
+
+      def self_hosted_probes
+        ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
       end
     end
   end

@@ -231,6 +231,10 @@ RSpec.describe Notify, feature_category: :shared do
     describe 'for epics' do
       let_it_be(:epic) { create(:epic, group: group) }
 
+      before do
+        stub_licensed_features(epics: true)
+      end
+
       context 'that are new' do
         subject { described_class.new_epic_email(recipient.id, epic.id) }
 

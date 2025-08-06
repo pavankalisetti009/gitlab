@@ -2041,8 +2041,8 @@ RSpec.describe User, feature_category: :system_access do
   end
 
   describe '#using_gitlab_com_seat?' do
-    let(:user) { create(:user) }
-    let(:namespace) { create(:group) }
+    let_it_be_with_refind(:user) { create(:user) }
+    let_it_be_with_refind(:namespace) { create(:group) }
 
     subject { user.using_gitlab_com_seat?(namespace) }
 
@@ -2055,7 +2055,9 @@ RSpec.describe User, feature_category: :system_access do
     end
 
     context 'when user is not active' do
-      let(:user) { create(:user, :blocked) }
+      before do
+        user.block!
+      end
 
       it { is_expected.to be_falsey }
     end
@@ -2072,8 +2074,10 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       context 'when namespace is on a ultimate plan' do
+        let_it_be(:ultimate_plan, freeze: true) { create(:ultimate_plan) }
+
         before do
-          create(:gitlab_subscription, namespace: namespace.root_ancestor, hosted_plan: create(:ultimate_plan))
+          create(:gitlab_subscription, namespace: namespace.root_ancestor, hosted_plan: ultimate_plan)
         end
 
         context 'user is a guest' do
@@ -2093,23 +2097,15 @@ RSpec.describe User, feature_category: :system_access do
         end
 
         context 'when user is within project' do
-          let(:group) { create(:group) }
-          let(:namespace) { create(:project, namespace: group) }
-
-          before do
-            namespace.add_developer(user)
-          end
+          let_it_be(:group) { create(:group) }
+          let_it_be(:namespace) { create(:project, namespace: group, developers: user) }
 
           it { is_expected.to be_truthy }
         end
 
         context 'when user is within subgroup' do
-          let(:group) { create(:group) }
-          let(:namespace) { create(:group, parent: group) }
-
-          before do
-            namespace.add_developer(user)
-          end
+          let_it_be(:group) { create(:group) }
+          let_it_be(:namespace) { create(:group, parent: group, developers: user) }
 
           it { is_expected.to be_truthy }
         end

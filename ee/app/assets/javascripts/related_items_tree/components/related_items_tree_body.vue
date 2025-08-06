@@ -1,5 +1,10 @@
 <script>
+import TreeRoot from 'ee/related_items_tree/components/tree_root.vue';
+
 export default {
+  components: {
+    TreeRoot,
+  },
   props: {
     parentItem: {
       type: Object,
@@ -15,6 +20,5 @@ export default {
 </script>
 
 <template>
-  <!-- eslint-disable-next-line vue/no-undef-components -->
   <tree-root :parent-item="parentItem" :children="children" />
 </template>

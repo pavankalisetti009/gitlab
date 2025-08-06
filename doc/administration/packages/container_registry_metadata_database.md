@@ -156,9 +156,9 @@ You can import your existing container registry metadata in one step or three st
 A few factors affect the duration of the import:
 
 - The size of your existing registry data.
-- The specifications of your PostgresSQL instance.
+- The specifications of your PostgreSQL instance.
 - The number of registry instances running.
-- Network latency between the registry, PostgresSQL and your configured Object Storage.
+- Network latency between the registry, PostgreSQL and your configured Object Storage.
 
 {{< alert type="note" >}}
 
@@ -854,9 +854,9 @@ they are associated with an image and tag.
 During a registry migration, you might get one of the following errors:
 
 - `ERROR: permission denied for schema public (SQLSTATE 42501)`
-- `ERROR: relation "public.blobs" does not exist (SQLSTATE 42P01)` 
+- `ERROR: relation "public.blobs" does not exist (SQLSTATE 42P01)`
 
-These types of errors are due to a change in PostgreSQL 15+, which removes the default CREATE privileges on the public schema for security reasons. 
+These types of errors are due to a change in PostgreSQL 15+, which removes the default CREATE privileges on the public schema for security reasons.
 By default, only database owners can create objects in the public schema in PostgreSQL 15+.
 
 To resolve the error, run the following command to give a registry user owner privileges of the registry database:

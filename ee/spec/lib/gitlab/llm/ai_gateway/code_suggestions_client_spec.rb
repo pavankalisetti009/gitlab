@@ -13,6 +13,12 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
   end
 
+  let(:cloud_connector_auth_endpoint_url) do
+    "#{Gitlab::AiGateway.cloud_connector_auth_url}#{Gitlab::AiGateway::ACCESS_TOKEN_PATH}"
+  end
+
+  let(:self_hosted_auth_endpoint_url) { "#{Gitlab::AiGateway.self_hosted_url}#{Gitlab::AiGateway::ACCESS_TOKEN_PATH}" }
+
   let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
   let(:code) { 200 }
 
@@ -20,6 +26,11 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(service).to receive(:access_token).and_return(instance_token&.token)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
+    allow(Gitlab::AiGateway).to receive_messages(
+      self_hosted_url: 'http://local-aigw:5052',
+      cloud_connector_url: 'https://cloud-connector.gitlab.com',
+      cloud_connector_auth_url: 'https://cloud-connector.gitlab.com/auth'
+    )
   end
 
   shared_examples "error response" do |message|
@@ -158,10 +169,12 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       }
     end
 
+    let(:auth_url) { self_hosted_auth_endpoint_url }
+
     subject(:result) { client.direct_access_token }
 
     before do
-      stub_request(:post, Gitlab::AiGateway.access_token_url)
+      stub_request(:post, auth_url)
         .with(
           body: nil,
           headers: expected_request_headers
@@ -174,6 +187,24 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     end
 
     it { is_expected.to match({ status: :success, token: expected_token, expires_at: expires_at }) }
+
+    context 'when code_completions is vendored' do
+      before do
+        create(:ai_feature_setting, :code_completions, provider: :vendored)
+      end
+
+      let(:auth_url) { cloud_connector_auth_endpoint_url }
+
+      it { is_expected.to match({ status: :success, token: expected_token, expires_at: expires_at }) }
+    end
+
+    context 'when code_completions is self-hosted' do
+      before do
+        create(:ai_feature_setting, :code_completions, provider: :self_hosted)
+      end
+
+      it { is_expected.to match({ status: :success, token: expected_token, expires_at: expires_at }) }
+    end
 
     context 'when direct access token creation request fails' do
       let(:http_status) { 401 }
@@ -217,7 +248,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       let(:http_status) { 503 }
 
       before do
-        stub_request(:post, Gitlab::AiGateway.access_token_url)
+        stub_request(:post, auth_url)
           .with(
             body: nil,
             headers: expected_request_headers

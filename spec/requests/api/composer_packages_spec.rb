@@ -63,16 +63,6 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
               it_behaves_like 'Composer package index', member_role: params[:member_role], expected_status: :success, package_returned: params[:package_returned]
             end
           end
-
-          context 'when packages_composer_finder_refactor is disabled' do
-            before do
-              stub_feature_flags(packages_composer_finder_refactor: false)
-            end
-
-            include_context 'Composer api project access', auth_method: :basic, project_visibility_level: 'PUBLIC', token_type: :user, valid_token: true do
-              it_behaves_like 'Composer package index', member_role: :developer, expected_status: :success, package_returned: true
-            end
-          end
         end
 
         context 'with token auth' do
@@ -155,6 +145,10 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
           end
         end
       end
+
+      it_behaves_like 'updating personal access token last used' do
+        let(:headers) { build_token_auth_header(personal_access_token.token) }
+      end
     end
 
     it_behaves_like 'rejects Composer access with unknown group id'
@@ -197,16 +191,6 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
             it_behaves_like params[:shared_examples_name], member_role: params[:member_role], expected_status: params[:expected_status]
           end
         end
-
-        context 'when packages_composer_finder_refactor is disabled' do
-          before do
-            stub_feature_flags(packages_composer_finder_refactor: false)
-          end
-
-          include_context 'Composer api group access', auth_method: :basic, project_visibility_level: 'PUBLIC', token_type: :user, valid_token: true do
-            it_behaves_like 'Composer provider index', member_role: :developer, expected_status: :success
-          end
-        end
       end
 
       context 'with token auth' do
@@ -238,6 +222,10 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
             it_behaves_like params[:shared_examples_name], member_role: params[:member_role], expected_status: params[:expected_status]
           end
         end
+      end
+
+      it_behaves_like 'updating personal access token last used' do
+        let(:headers) { build_token_auth_header(personal_access_token.token) }
       end
 
       it_behaves_like 'Composer access with deploy tokens'
@@ -291,16 +279,6 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
             it_behaves_like params[:shared_examples_name], member_role: params[:member_role], expected_status: params[:expected_status]
           end
         end
-
-        context 'when packages_composer_finder_refactor is disabled' do
-          before do
-            stub_feature_flags(packages_composer_finder_refactor: false)
-          end
-
-          include_context 'Composer api group access', auth_method: :basic, project_visibility_level: 'PUBLIC', token_type: :user, valid_token: true do
-            it_behaves_like 'Composer package api request', member_role: :developer, expected_status: :success
-          end
-        end
       end
 
       context 'with token auth' do
@@ -340,6 +318,10 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
         include_context 'Composer api group access', project_visibility_level: 'PRIVATE', token_type: :user, auth_method: :token do
           it_behaves_like 'process Composer api request', member_role: :developer, expected_status: :not_found
         end
+      end
+
+      it_behaves_like 'updating personal access token last used' do
+        let(:headers) { build_token_auth_header(personal_access_token.token) }
       end
 
       it_behaves_like 'Composer access with deploy tokens'
@@ -392,16 +374,6 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
             it_behaves_like params[:shared_examples_name], member_role: params[:member_role], expected_status: params[:expected_status]
           end
         end
-
-        context 'when packages_composer_finder_refactor is disabled' do
-          before do
-            stub_feature_flags(packages_composer_finder_refactor: false)
-          end
-
-          include_context 'Composer api group access', auth_method: :basic, project_visibility_level: 'PUBLIC', token_type: :user, valid_token: true do
-            it_behaves_like 'Composer package api request', member_role: :developer, expected_status: :success
-          end
-        end
       end
 
       context 'with token auth' do
@@ -433,6 +405,10 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
             it_behaves_like params[:shared_examples_name], member_role: params[:member_role], expected_status: params[:expected_status]
           end
         end
+      end
+
+      it_behaves_like 'updating personal access token last used' do
+        let(:headers) { build_token_auth_header(personal_access_token.token) }
       end
 
       it_behaves_like 'Composer access with deploy tokens'
@@ -585,6 +561,11 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
         it_behaves_like 'process Composer api request', member_role: :developer, expected_status: :unprocessable_entity
       end
     end
+
+    it_behaves_like 'updating personal access token last used' do
+      let(:headers) { basic_auth_header(user.username, personal_access_token.token) }
+      let(:params) { { tag: 'v1.2.99' } }
+    end
   end
 
   describe 'GET /api/v4/projects/:id/packages/composer/archives/*package_name?sha=:sha' do
@@ -698,16 +679,6 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
               end
             end
           end
-
-          context 'when packages_composer_finder_refactor is disabled' do
-            before do
-              stub_feature_flags(packages_composer_finder_refactor: false)
-            end
-
-            include_context 'Composer api project access', auth_method: :basic, project_visibility_level: 'PUBLIC', token_type: :user, valid_token: true do
-              it_behaves_like 'process Composer api request', member_role: :developer, expected_status: :success
-            end
-          end
         end
 
         context 'with token auth' do
@@ -768,6 +739,10 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
 
           it_behaves_like 'returning response status', :success
         end
+      end
+
+      it_behaves_like 'updating personal access token last used' do
+        let(:headers) { basic_auth_header(user.username, personal_access_token.token) }
       end
     end
 

@@ -2,11 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe Users::IdentityVerificationController, :clean_gitlab_redis_sessions,
+RSpec.describe Users::IdentityVerificationController, :with_organization_url_helpers, :clean_gitlab_redis_sessions,
   :clean_gitlab_redis_rate_limiting, feature_category: :instance_resiliency do
   include SessionHelpers
 
   let_it_be(:user) { create(:user, :low_risk) }
+  let_it_be(:current_organization) { user.organization }
 
   before do
     allow(user).to receive(:verification_method_allowed?).and_return(true)

@@ -15,28 +15,11 @@ const Template = (args, { argTypes }) => ({
 export const Default = Template.bind({});
 Default.args = {
   stageTitle: 'VSA stage',
-  isLoading: false,
   plottableData: stageChartData,
-};
-
-export const Loading = Template.bind({});
-Loading.args = {
-  stageTitle: 'VSA stage',
-  isLoading: true,
-  plottableData: [],
 };
 
 export const NoData = Template.bind({});
 NoData.args = {
   stageTitle: 'VSA stage',
-  isLoading: false,
   plottableData: [],
-};
-
-export const ErrorMessage = Template.bind({});
-ErrorMessage.args = {
-  stageTitle: 'VSA stage',
-  isLoading: false,
-  plottableData: [],
-  errorMessage: 'Failed to load chart',
 };

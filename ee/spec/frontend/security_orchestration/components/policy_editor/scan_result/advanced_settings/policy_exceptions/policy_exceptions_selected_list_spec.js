@@ -96,6 +96,7 @@ describe('PolicyExceptionsSelectedList', () => {
       createComponent({
         selectedExceptions: {
           roles: ['maintainer'],
+          custom_roles: ['maintainer'],
           invalidKey: ['value'],
           branches: [],
           tokens: [{ id: 1 }],

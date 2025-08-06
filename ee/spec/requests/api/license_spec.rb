@@ -293,12 +293,12 @@ RSpec.describe API::License, :aggregate_failures, :api, feature_category: :plan_
     let(:endpoint) { '/licenses' }
     let(:gl_licenses) do
       [build(:gitlab_license, starts_at: Date.today - 10, expires_at: Date.today - 1, restrictions: { add_ons: { 'GitLab_FileLocks' => 1 }, active_user_count: 10 }),
-       build(:gitlab_license, starts_at: Date.today - 20, expires_at: Date.today + 1, restrictions: { add_ons: { 'GitLab_DeployBoard' => 1 }, active_user_count: 20 })]
+        build(:gitlab_license, starts_at: Date.today - 20, expires_at: Date.today + 1, restrictions: { add_ons: { 'GitLab_DeployBoard' => 1 }, active_user_count: 20 })]
     end
 
     let!(:licenses) do
       [create(:license, created_at: Time.now + 30, data: gl_licenses[0].export),
-       create(:license, created_at: Time.now + 20, data: gl_licenses[1].export)]
+        create(:license, created_at: Time.now + 20, data: gl_licenses[1].export)]
     end
 
     it_behaves_like 'GET request permissions for admin mode' do

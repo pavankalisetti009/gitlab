@@ -51,6 +51,7 @@ export function mountGitlabDuoHomeApp() {
     provide: {
       aiGatewayUrl,
       isSaaS: parseBoolean(isSaas),
+      isAdminInstanceDuoHome: true,
       addDuoProHref: addDuoProSeatsUrl,
       duoSeatUtilizationPath,
       isBulkAddOnAssignmentEnabled: parseBoolean(isBulkAddOnAssignmentEnabled),
@@ -81,7 +82,6 @@ export function mountGitlabDuoHomeApp() {
       duoWorkflowSettingsPath,
       redirectPath,
       duoWorkflowDisablePath,
-      showDuoWorkflowSettings: true,
     },
     render: (h) => h(GitlabDuoHome),
   });

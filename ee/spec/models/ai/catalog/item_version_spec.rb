@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
+  subject(:version) { build_stubbed(:ai_catalog_item_version) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:organization) }
     it { is_expected.to belong_to(:item).required }
@@ -15,11 +17,52 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
     it { is_expected.to validate_length_of(:version).is_at_most(50) }
 
-    it 'definition validates json_schema' do
-      validator = described_class.validators_on(:definition).find { |v| v.is_a?(JsonSchemaValidator) }
+    describe 'definition json_schema' do
+      context 'when item is an agent' do
+        subject(:version) { build_stubbed(:ai_catalog_agent_version) }
 
-      expect(validator.options[:filename]).to eq('ai_catalog_item_version_definition')
-      expect(validator.instance_variable_get(:@size_limit)).to eq(64.kilobytes)
+        it { is_expected.to be_valid }
+
+        context 'when definition is invalid' do
+          before do
+            version.definition['something'] = 1
+          end
+
+          it { is_expected.not_to be_valid }
+        end
+      end
+
+      context 'when item is a flow' do
+        subject(:version) { build_stubbed(:ai_catalog_flow_version) }
+
+        it { is_expected.to be_valid }
+
+        context 'when definition is invalid' do
+          before do
+            version.definition['something'] = 1
+          end
+
+          it { is_expected.not_to be_valid }
+        end
+      end
+
+      context 'when item is nil' do
+        it 'cannot validate definition schema' do
+          version.item = nil
+
+          expect(version).not_to be_valid
+          expect(version.errors[:definition]).to include('unable to validate definition')
+        end
+      end
+
+      context 'when schema_version is nil' do
+        it 'cannot validate definition schema' do
+          version.schema_version = nil
+
+          expect(version).not_to be_valid
+          expect(version.errors[:definition]).to include('unable to validate definition')
+        end
+      end
     end
 
     describe '#validate_readonly' do
@@ -100,6 +143,30 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
     it 'returns false when release_date is present' do
       expect(build(:ai_catalog_item_version, release_date: Time.zone.now)).not_to be_draft
+    end
+  end
+
+  describe '#respond_to?' do
+    subject(:version) { build_stubbed(:ai_catalog_item_version) }
+
+    context 'when method starts with "def_"' do
+      it 'returns true' do
+        expect(version.respond_to?(:def_system_prompt)).to be(true)
+      end
+    end
+
+    context 'when method does not start with "def_"' do
+      it 'returns false' do
+        expect(version.respond_to?(:unknown_method)).to be(false)
+      end
+    end
+  end
+
+  describe '#method_missing' do
+    subject(:version) { build_stubbed(:ai_catalog_item_version) }
+
+    it 'provides access to top level definition attributes' do
+      expect(version.def_system_prompt).to eq('Talk like a pirate!')
     end
   end
 end

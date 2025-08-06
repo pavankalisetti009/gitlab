@@ -7,9 +7,6 @@ import { transformRawStages, formatMedianValues } from '../utils';
 import * as types from './mutation_types';
 
 export default {
-  [types.SET_FEATURES](state, features) {
-    state.features = features;
-  },
   [types.SET_SELECTED_PROJECTS](state, projects) {
     state.selectedProjects = projects;
   },

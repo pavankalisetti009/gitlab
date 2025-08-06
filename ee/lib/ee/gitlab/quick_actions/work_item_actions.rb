@@ -35,14 +35,14 @@ module EE
             format(s_("WorkItemStatus|Set status to %{status_name}."), status_name: status_name)
           end
           types WorkItem
-          params 'Name of the status'
+          params '"Name of the status"'
           condition do
             quick_action_target.resource_parent&.root_ancestor&.work_item_status_feature_available? &&
               current_user.can?(:"update_#{quick_action_target.to_ability_name}", quick_action_target)
           end
           parse_params do |status_name|
             namespace = quick_action_target.resource_parent&.root_ancestor
-            status = ::WorkItems::Statuses::Finder.new(namespace, { 'name' => status_name }).execute
+            status = ::WorkItems::Statuses::Finder.new(namespace, { 'name' => status_name.strip }).execute
             [status, status_name]
           end
           command :status do |status, status_name|
@@ -70,7 +70,7 @@ module EE
           return super unless command == :promote_to && new_type.epic?
 
           begin
-            Epics::IssuePromoteService
+            ::WorkItems::LegacyEpics::IssuePromoteService
               .new(container: quick_action_target.container, current_user: current_user)
               .execute(quick_action_target)
 

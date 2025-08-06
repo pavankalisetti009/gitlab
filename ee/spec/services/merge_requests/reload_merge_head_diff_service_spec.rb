@@ -43,7 +43,7 @@ RSpec.describe MergeRequests::ReloadMergeHeadDiffService, feature_category: :cod
 
       context 'when reloading failed' do
         before do
-          allow(merge_request).to receive(:create_merge_head_diff!).and_raise('fail')
+          allow(merge_request).to receive(:build_merge_head_diff).and_raise('fail')
         end
 
         it 'does not sync code owner approval rules' do

@@ -74,6 +74,7 @@ module Search
           Timeout: '10s',
           Force: true,
           Metadata: {
+            project_id: project.id,
             traversal_ids: project.namespace_ancestry,
             visibility_level: project.visibility_level,
             repository_access_level: project.repository_access_level,

@@ -26,6 +26,16 @@ cache-workhorse:
     paths:
       - ${TMP_TEST_GITLAB_WORKHORSE_PATH}/
 
+.cache-pull-push-base:
+  stage: sync
+  extends:
+    - .default-retry
+    - .shared:rules:update-cache-v2
+  variables:
+    GIT_DEPTH: 1
+    GIT_STRATEGY: fetch
+  allow_failure: true
+
 .cache-assets-base:
   extends:
     - .compile-assets-base
@@ -50,10 +60,43 @@ packages-cleanup:
   extends:
     - .default-retry
     - .caching:rules:packages-cleanup
-  image: ${GITLAB_DEPENDENCY_PROXY_ADDRESS}ruby:${RUBY_VERSION}
+    - .with-ruby-slim-image
   stage: prepare
   before_script:
     - source scripts/utils.sh
     - install_gitlab_gem
   script:
     - scripts/packages/automated_cleanup.rb
+
+cache:ruby-gems:
+  extends:
+    - .with-ruby-postgres-slim-image
+    - .cache-pull-push-base
+    - .ruby-cache-pull-push
+  stage: sync
+  variables:
+    BUNDLE_WITHOUT: ""
+    GLCI_BUNDLE_SKIP_PG_REINSTALL: "true"
+  before_script:
+    - source scripts/utils.sh
+  script:
+    - bundle_install_script
+
+cache:node-modules:
+  extends:
+    - .cache-pull-push-base
+    - .with-ci-node-image
+    - .yarn-cache-pull-push
+  variables:
+    GLCI_SKIP_NODE_MODULES_PATCHING: "true"
+  before_script:
+    - source scripts/utils.sh
+  script:
+    - yarn_install_script
+
+# separate production cache is needed for jobs that run yarn install with NODE_ENV=production
+# if cache generated with NODE_ENV=test is used, yarn install will still take substantial amount of time to run
+cache:node-modules-production:
+  extends: cache:node-modules
+  variables:
+    NODE_ENV: production

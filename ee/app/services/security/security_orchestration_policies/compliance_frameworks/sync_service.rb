@@ -55,8 +55,12 @@ module Security
         strong_memoize_attr :configuration
 
         def linked_compliance_frameworks(framework_ids)
+          accessible_namespaces = linked_source_root_namespaces
+
+          accessible_namespaces += [csp_namespace] if csp_namespace
+
           ComplianceManagement::Framework
-            .with_namespaces(linked_source_root_namespaces)
+            .with_namespaces(accessible_namespaces.uniq)
             .id_in(framework_ids)
         end
 
@@ -68,6 +72,11 @@ module Security
             .uniq
         end
         strong_memoize_attr :linked_source_root_namespaces
+
+        def csp_namespace
+          linked_source_root_namespaces.first&.organization_csp_namespace
+        end
+        strong_memoize_attr :csp_namespace
       end
     end
   end

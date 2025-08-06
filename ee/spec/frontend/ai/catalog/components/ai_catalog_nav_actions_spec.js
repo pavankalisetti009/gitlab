@@ -6,16 +6,17 @@ import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_FLOWS_NEW_ROUTE,
 } from 'ee/ai/catalog/router/constants';
 
 describe('AiCatalogNavTabs', () => {
   let wrapper;
 
-  const createComponent = ({ routePath = AI_CATALOG_AGENTS_ROUTE } = {}) => {
+  const createComponent = ({ routeName = AI_CATALOG_AGENTS_ROUTE } = {}) => {
     wrapper = shallowMountExtended(AiCatalogNavActions, {
       mocks: {
         $route: {
-          path: routePath,
+          name: routeName,
         },
       },
     });
@@ -23,7 +24,7 @@ describe('AiCatalogNavTabs', () => {
 
   const findButton = () => wrapper.findComponent(GlButton);
 
-  describe('When on the agents list route', () => {
+  describe('when on agents route', () => {
     beforeEach(() => {
       createComponent();
     });
@@ -37,9 +38,23 @@ describe('AiCatalogNavTabs', () => {
     });
   });
 
-  describe('When not on the agents list route', () => {
+  describe('when on flows route', () => {
     beforeEach(() => {
-      createComponent({ routePath: AI_CATALOG_FLOWS_ROUTE });
+      createComponent({ routeName: AI_CATALOG_FLOWS_ROUTE });
+    });
+
+    it('renders button', () => {
+      expect(findButton().exists()).toBe(true);
+    });
+
+    it('passes correct route to button', () => {
+      expect(findButton().props('to')).toEqual({ name: AI_CATALOG_FLOWS_NEW_ROUTE });
+    });
+  });
+
+  describe('when on other route', () => {
+    beforeEach(() => {
+      createComponent({ routeName: AI_CATALOG_FLOWS_NEW_ROUTE });
     });
 
     it('does not render button', () => {

@@ -10,12 +10,13 @@ export const TABLE_FIELDS = [
   {
     key: 'usersCount',
     label: s__('MemberRole|Direct users assigned'),
-    thClass: 'gl-whitespace-nowrap',
+    thClass: 'gl-whitespace-nowrap gl-w-0',
     tdClass: 'gl-text-right',
   },
   {
     key: 'actions',
     label: s__('MemberRole|Actions'),
+    thClass: 'gl-w-0',
     tdClass: 'gl-text-right',
   },
 ];

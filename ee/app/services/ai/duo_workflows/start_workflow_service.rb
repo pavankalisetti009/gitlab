@@ -70,7 +70,7 @@ module Ai
           DUO_WORKFLOW_GOAL: @params[:goal],
           DUO_WORKFLOW_WORKFLOW_ID: String(@params[:workflow_id]),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
-          DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url,
+          DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url(user: @current_user),
           DUO_WORKFLOW_SERVICE_TOKEN: @params[:workflow_service_token],
           DUO_WORKFLOW_SERVICE_REALM: ::CloudConnector.gitlab_realm,
           DUO_WORKFLOW_GLOBAL_USER_ID: Gitlab::GlobalAnonymousId.user_id(@current_user),

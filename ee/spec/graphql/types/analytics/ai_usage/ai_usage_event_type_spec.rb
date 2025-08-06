@@ -6,7 +6,7 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventType, feature_category: :v
   include GraphqlHelpers
 
   let_it_be(:namespace) { create(:namespace) }
-  let_it_be(:user) { create(:user, :with_organization, namespace: namespace) }
+  let_it_be(:user) { create(:user, namespace: namespace) }
   let_it_be(:usage_event) { create(:ai_usage_event, user: user, namespace: namespace) }
 
   let(:batch_loader) { instance_double(Gitlab::Graphql::Loaders::BatchModelLoader) }

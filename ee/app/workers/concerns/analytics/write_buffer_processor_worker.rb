@@ -35,7 +35,7 @@ module Analytics
       grouped_attributes = prepare_attributes(valid_objects).group_by(&:keys).values
 
       grouped_attributes.sum do |attributes|
-        res = current_model.upsert_all(attributes, **upsert_options)
+        res = current_model.upsert_all(attributes, **upsert_options(current_model))
 
         res ? res.rows.size : 0
       end

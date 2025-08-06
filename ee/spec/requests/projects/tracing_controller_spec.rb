@@ -105,7 +105,6 @@ RSpec.describe Projects::TracingController, feature_category: :observability do
           projectFullPath: project.full_path,
           projectId: project.id,
           traceId: 'test-trace-id',
-          tracingIndexUrl: project_tracing_index_path(project),
           logsIndexUrl: namespace_project_logs_path(project.group, project),
           createIssueUrl: new_namespace_project_issue_path(project.group, project),
           metricsIndexUrl: namespace_project_metrics_path(project.group, project)

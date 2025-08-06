@@ -40,6 +40,7 @@ export function initCadenceApp({ namespaceType }) {
     previewMarkdownPath,
     noIssuesSvgPath,
     instanceTimezone,
+    hasStatusFeature,
   } = el.dataset;
   const router = createRouter({
     base: cadencesListPath,
@@ -67,6 +68,7 @@ export function initCadenceApp({ namespaceType }) {
       canCreateIteration: parseBoolean(canCreateIteration),
       canEditIteration: parseBoolean(canEditIteration),
       hasScopedLabelsFeature: parseBoolean(hasScopedLabelsFeature),
+      hasStatusFeature: parseBoolean(hasStatusFeature),
       labelsFetchPath,
       previewMarkdownPath,
       noIssuesSvgPath,

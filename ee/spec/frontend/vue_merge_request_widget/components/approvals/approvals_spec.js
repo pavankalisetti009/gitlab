@@ -349,4 +349,32 @@ describe('MRWidget approvals', () => {
       );
     });
   });
+
+  describe('approvals isCollapsible', () => {
+    const findBaseApprovals = () => wrapper.findComponent({ name: 'MRWidgetApprovals' });
+
+    describe('when approvalsWidgetType is base', () => {
+      beforeEach(async () => {
+        mr.approvalsWidgetType = 'base';
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('passes isCollapsible as false to base Approvals component', () => {
+        expect(findBaseApprovals().props('isCollapsible')).toBe(false);
+      });
+    });
+
+    describe('when approvalsWidgetType is not base', () => {
+      beforeEach(async () => {
+        mr.approvalsWidgetType = 'full';
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('passes isCollapsible as true to base Approvals component', () => {
+        expect(findBaseApprovals().props('isCollapsible')).toBe(true);
+      });
+    });
+  });
 });

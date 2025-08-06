@@ -3,11 +3,15 @@
 module Gitlab
   module DuoWorkflow
     class Client
-      def self.url
-        Gitlab.config.duo_workflow.service_url || default_service_url
+      def self.url(user:)
+        Gitlab.config.duo_workflow.service_url || default_service_url(user: user)
       end
 
-      def self.default_service_url
+      def self.default_service_url(user:)
+        if Feature.enabled?(:duo_workflow_cloud_connector_url, user)
+          return "#{::CloudConnector::Config.host}:#{::CloudConnector::Config.port}"
+        end
+
         subdomain = ::CloudConnector::Config.host.include?('staging') ? '.staging' : ''
 
         # Cloudflare has been disabled untill

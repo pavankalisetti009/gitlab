@@ -167,13 +167,18 @@ export default async function fetch({
       const recordedAt = usageOverviewData
         ? getMostRecentRecordedAt(extractUsageMetrics(usageOverviewData))
         : null;
-      const namespaceUsageText = s__(
-        'Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
-      );
-      const lastUpdatedText = s__('Analytics| Last updated: %{recordedAt}');
       const visualizationOptionOverrides = {
         tooltip: {
-          description: `${namespaceUsageText}${recordedAt ? sprintf(lastUpdatedText, { recordedAt }) : ''}`,
+          description: recordedAt
+            ? sprintf(
+                s__(
+                  'Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly. Last updated: %{recordedAt}',
+                ),
+                { recordedAt },
+              )
+            : s__(
+                'Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
+              ),
         },
       };
 

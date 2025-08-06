@@ -115,16 +115,12 @@ describe('LdapOverrideConfirmationModal', () => {
       });
 
       it('sets primary button to loading state while waiting for `updateLdapOverride` to resolve', async () => {
-        expect(getEditPermissionsButton().element.closest('button[disabled="disabled"]')).not.toBe(
-          null,
-        );
+        expect(findModal().props('actionPrimary').attributes.loading).toBe(true);
 
         resolveUpdateLdapOverride();
         await waitForPromises();
 
-        expect(getEditPermissionsButton().element.closest('button[disabled="disabled"]')).toBe(
-          null,
-        );
+        expect(findModal().props('actionPrimary').attributes.loading).toBe(false);
       });
     });
   });

@@ -4,8 +4,6 @@ module WorkItems
   module Statuses
     module SystemDefined
       class Status
-        include ActiveModel::Model
-        include ActiveModel::Attributes
         include ActiveRecord::FixedItemsModel::Model
         include GlobalID::Identification
         include WorkItems::Statuses::Status
@@ -45,7 +43,6 @@ module WorkItems
           }
         ].freeze
 
-        attribute :id, :integer
         attribute :name, :string
         attribute :color, :string
         attribute :category

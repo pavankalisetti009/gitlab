@@ -57,6 +57,11 @@ export default {
       return Object.keys(this.items);
     },
   },
+  watch: {
+    value(newValue) {
+      this.selected = newValue;
+    },
+  },
   methods: {
     setSelected(items) {
       this.selected = [...items];

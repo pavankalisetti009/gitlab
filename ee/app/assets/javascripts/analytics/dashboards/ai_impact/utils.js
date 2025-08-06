@@ -8,9 +8,17 @@ import {
   formatDate,
 } from '~/lib/utils/datetime_utility';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
-import { formatMetric, percentChange, isMetricInTimePeriods } from '../utils';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
+import {
+  formatMetric,
+  percentChange,
+  isMetricInTimePeriods,
+  sanitizeSparklineData,
+} from '../utils';
+import { CHART_TOOLTIP_UNITS } from '../constants';
 import { AI_IMPACT_TABLE_METRICS } from './constants';
 
+const currentMonthColumnKey = 'this-month';
 const getColumnKeyForMonth = (monthsAgo) => `${monthsAgo}-months-ago`;
 const getStartOfMonth = (now) => dateAtFirstDayOfMonth(getStartOfDay(now));
 
@@ -24,7 +32,7 @@ export const generateDateRanges = (now) => {
   const formatDateHeader = (date) => formatDate(date, 'mmm yyyy');
 
   const currentMonth = {
-    key: 'this-month',
+    key: currentMonthColumnKey,
     label: formatDateHeader(now),
     start: getStartOfMonth(now),
     end: now,
@@ -152,11 +160,26 @@ const buildTableRow = ({ identifier, units, timePeriods }) => {
     });
   }, {});
 
+  // Calculate the % change between 5 months ago > 1 month ago. We don't
+  // use the current month since it does not contain a full month dataset.
   const firstMonth = timePeriods.find((timePeriod) => timePeriod.key === getColumnKeyForMonth(1));
   const lastMonth = timePeriods.find((timePeriod) => timePeriod.key === getColumnKeyForMonth(5));
   const change = calculateChange(firstMonth[identifier]?.value, lastMonth[identifier]?.value);
 
-  return { ...row, change };
+  // Format the trend line data for the previous 5 months. We don't render
+  // the current month in the trend line since it does not contain a full
+  // month of data, which could skew the rendered chart.
+  const chart = {
+    tooltipLabel: CHART_TOOLTIP_UNITS[units],
+    data: timePeriods
+      .filter((timePeriod) => timePeriod.key !== currentMonthColumnKey)
+      .map((timePeriod) => [
+        localeDateFormat.asDateWithoutYear.formatRange(timePeriod.start, timePeriod.end),
+        sanitizeSparklineData(timePeriod[identifier]?.value),
+      ]),
+  };
+
+  return { ...row, change, chart };
 };
 
 /**

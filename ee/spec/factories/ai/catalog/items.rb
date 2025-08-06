@@ -18,7 +18,10 @@ FactoryBot.define do
     end
 
     trait :with_version do
-      versions { build_list(:ai_catalog_item_version, 1) }
+      after(:build) do |item|
+        version_factory = item.agent? ? :ai_catalog_agent_version : :ai_catalog_flow_version
+        item.versions = build_list(version_factory, 1)
+      end
     end
 
     after(:build) do |item, _|

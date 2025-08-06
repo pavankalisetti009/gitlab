@@ -6,7 +6,7 @@ RSpec.describe Resolvers::Analytics::AiUsage::UsageEventsResolver, feature_categ
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
-  let_it_be(:user) { create(:user, :with_organization, namespace: group) }
+  let_it_be(:user) { create(:user, namespace: group) }
   let(:subgroup) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:usage_event) { create(:ai_usage_event, user: user, namespace: group, timestamp: 2.days.ago) }

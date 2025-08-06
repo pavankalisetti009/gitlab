@@ -31,7 +31,7 @@ module Mutations
         project = authorized_find!(project_path)
 
         unless project.licensed_feature_available?(:file_locks)
-          raise Gitlab::Graphql::Errors::ResourceNotAvailable, 'FileLocks feature disabled'
+          raise_resource_not_available_error! 'FileLocks feature disabled'
         end
 
         path_lock = project.path_locks.for_path(file_path)

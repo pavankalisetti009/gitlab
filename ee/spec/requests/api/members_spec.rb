@@ -2231,9 +2231,9 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
           expect_paginated_array_response(*[
             pending_group_member.id,
-                                            pending_subgroup_member.id,
-                                            pending_project_member.id,
-                                            pending_invited_member.id
+            pending_subgroup_member.id,
+            pending_project_member.id,
+            pending_invited_member.id
           ])
         end
 

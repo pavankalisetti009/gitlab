@@ -337,7 +337,7 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
               issues = described_class.new(parent, user, params).execute
 
               expect(issues).to match_array([opened_issue1, list1_issue1,
-                                             list1_issue3, list2_issue1, closed_issue3])
+                list1_issue3, list2_issue1, closed_issue3])
             end
           end
         end

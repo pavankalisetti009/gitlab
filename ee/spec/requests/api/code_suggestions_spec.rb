@@ -17,6 +17,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     }
   end
 
+  let_it_be(:top_level_namespace) { create(:group) }
+  let_it_be(:token) { 'generated-jwt' }
+
   let(:enabled_by_namespace_ids) { [] }
   let(:enablement_type) { '' }
   let(:current_user) { nil }
@@ -28,7 +31,16 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:gitlab_realm) { 'saas' }
   let(:service_name) { :code_suggestions }
   let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
-  let_it_be(:token) { 'generated-jwt' }
+
+  subject(:default_namespace_example_state) do
+    # rubocop:disable RSpec/AnyInstanceOf -- It's a parent and all the children are tested here...
+    allow_any_instance_of(CodeSuggestions::ModelDetails::Base)
+      .to receive(:model_selection_scoped_namespace).and_return(top_level_namespace)
+
+    allow_any_instance_of(CodeSuggestions::ModelDetails::Base)
+      .to receive(:duo_context_not_found?).and_return(false)
+    # rubocop:enable RSpec/AnyInstanceOf
+  end
 
   before do
     allow(Gitlab).to receive(:com?).and_return(is_saas)
@@ -50,6 +62,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       receive_message_chain(:for_active_add_ons, :assigned_to_user).and_return(purchases)
     )
     allow(purchases).to receive_messages(any?: true, uniq_namespace_ids: enabled_by_namespace_ids, last: mock_purchase)
+
+    default_namespace_example_state
 
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(use_claude_code_completion: false)
@@ -253,6 +267,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     shared_examples 'code completions endpoint' do
+      let(:gitlab_enabled_feature_flgs) { [""] }
+
       context 'when feature is disabled' do
         include_examples 'code suggestions feature disabled'
       end
@@ -308,7 +324,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'x-gitlab-feature-enabled-by-namespace-ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12'],
-            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+            "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
           )
         end
 
@@ -385,7 +401,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
-              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
             )
           end
         end
@@ -434,7 +450,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-realm' => [gitlab_realm],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2'],
-              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
             })
           end
         end
@@ -518,6 +534,35 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               ).and_call_original
 
             post_api
+          end
+        end
+
+        context 'when the task raises an DuoNamespaceUnassigned exception' do
+          let(:additional_params) { { project_path: nil } }
+
+          subject(:default_namespace_example_state) do
+            # rubocop:disable RSpec/AnyInstanceOf -- It's a parent and all the children are tested here...
+            allow_any_instance_of(CodeSuggestions::ModelDetails::Base)
+              .to receive(:model_selection_scoped_namespace)
+              .and_return nil
+
+            allow_any_instance_of(CodeSuggestions::ModelDetails::Base)
+              .to receive(:duo_context_not_found?).and_return(true)
+            # rubocop:enable RSpec/AnyInstanceOf
+          end
+
+          it 'responds with an unauthorized request with a special error message' do
+            msg = 'No default Duo group found. Select a default Duo group in your user preferences and try again.'
+            post_api
+
+            expect(response).to have_gitlab_http_status(:unprocessable_entity)
+            expect(response.body).to eq(
+              {
+                'error' => 'missing_default_duo_group',
+                'error_description' => msg,
+                'message' => { error: msg }
+              }.to_json
+            )
           end
         end
 
@@ -697,7 +742,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           context 'when the task is code generation' do
-            let(:current_user) { authorized_user }
             let(:content_above_cursor) do
               <<~CONTENT_ABOVE_CURSOR
                 def is_even(n: int) ->
@@ -772,16 +816,16 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               PROMPT
             end
 
-            let(:prompt) do
-              [
-                { role: :system, content: system_prompt },
-                { role: :user, content: 'Generate the best possible code based on instructions.' },
-                { role: :assistant, content: '<new_code>' }
-              ]
-            end
-
             it 'sends requests to the code generation v3 endpoint' do
-              expected_body = body.merge(v3_saas_code_generation_prompt_components)
+              model_selection_body = {
+                "model_metadata" => {
+                  "provider" => "gitlab",
+                  "feature_setting" => "code_generations",
+                  "identifier" => nil
+                }
+              }
+
+              expected_body = body.merge(v3_saas_code_generation_prompt_components, model_selection_body)
               expect(Gitlab::Workhorse)
                 .to receive(:send_url)
                 .with(
@@ -850,7 +894,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             end
           end
 
-          it_behaves_like 'code completions endpoint'
+          it_behaves_like 'code completions endpoint' do
+            let(:gitlab_enabled_feature_flgs) { ["expanded_ai_logging"] }
+          end
 
           it_behaves_like 'an endpoint authenticated with token', :ok
 
@@ -905,6 +951,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         end
 
         context 'when code suggestions feature is self hosted' do
+          let(:top_level_namespace) { nil }
           let(:service_name) { :self_hosted_models }
 
           before do
@@ -982,13 +1029,21 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
           end
 
+          let(:base_url) { ::Gitlab::AiGateway.url }
+          let(:model_details) do
+            {
+              'model_name' => 'codestral-2501',
+              'model_provider' => 'fireworks_ai'
+            }
+          end
+
           let(:expected_response) do
             {
-              'base_url' => ::Gitlab::AiGateway.url,
+              'base_url' => base_url,
               'expires_at' => expected_expiration,
               'token' => token,
               'headers' => expected_headers,
-              'model_details' => { 'model_name' => 'codestral-2501', 'model_provider' => 'fireworks_ai' }
+              'model_details' => model_details
             }
           end
 
@@ -1011,6 +1066,12 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           context 'when code completions is self-hosted' do
+            let(:top_level_namespace) { nil }
+
+            before do
+              allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http://local-aigw:5052')
+            end
+
             it 'does not include the model metadata in the direct access details' do
               create(:ai_feature_setting, provider: :self_hosted, feature: :code_completions)
 
@@ -1026,6 +1087,26 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 post_api
 
                 expect(response).to have_gitlab_http_status(:unauthorized)
+              end
+            end
+
+            context 'when code completions is vendored' do
+              let(:model_details) do
+                {
+                  'model_name' => '',
+                  'model_provider' => 'gitlab'
+                }
+              end
+
+              let(:base_url) { ::Gitlab::AiGateway.cloud_connector_url }
+
+              it 'returns access details' do
+                create(:ai_feature_setting, provider: :vendored, feature: :code_completions)
+
+                post_api
+
+                expect(response).to have_gitlab_http_status(:created)
+                expect(json_response).to match(expected_response)
               end
             end
           end
@@ -1368,6 +1449,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       end
 
       context 'when code completions is disabled' do
+        let(:top_level_namespace) { nil }
+
         it 'returns unauthorized' do
           create(:ai_feature_setting, provider: :disabled, feature: :code_completions)
 

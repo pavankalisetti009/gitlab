@@ -9,7 +9,6 @@ module GitlabSubscriptions
 
       def advantages
         [
-          s_('InProductMarketing|60-day trial period'),
           s_('InProductMarketing|Invite unlimited colleagues'),
           s_('InProductMarketing|Free guest users'),
           s_('InProductMarketing|Ensure compliance'),

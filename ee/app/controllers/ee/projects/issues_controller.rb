@@ -84,9 +84,15 @@ module EE
       def finder_options
         options = super
 
-        return super if project.feature_available?(:issue_weights)
+        options.delete(:weight) unless project.feature_available?(:issue_weights)
 
-        options.reject { |key| key == 'weight' }
+        if options[:custom_field]
+          options[:custom_field] = options[:custom_field].to_h.map do |id, option_ids|
+            { custom_field_id: id, selected_option_ids: Array(option_ids) }
+          end
+        end
+
+        options
       end
 
       def disable_query_limiting_ee

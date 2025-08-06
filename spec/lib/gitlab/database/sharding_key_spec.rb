@@ -21,10 +21,8 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
     [
       'analytics_devops_adoption_segments.namespace_id',
       *['badges.project_id', 'badges.group_id'],
-      'ci_pipeline_schedules.project_id',
       'ci_sources_pipelines.project_id',
       'ci_triggers.project_id',
-      'gpg_signatures.project_id',
       *['internal_ids.project_id', 'internal_ids.namespace_id'], # https://gitlab.com/gitlab-org/gitlab/-/issues/451900
       'member_roles.namespace_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/444161
       *['todos.project_id', 'todos.group_id'],
@@ -290,6 +288,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       "vulnerability_remediation_uploads" => "https://gitlab.com/gitlab-org/gitlab/-/issues/398199",
       # End of uploads related tables
       "ci_runner_machines" => "https://gitlab.com/gitlab-org/gitlab/-/issues/525293",
+      "clusters" => "https://gitlab.com/gitlab-org/gitlab/-/issues/553452",
       "instance_type_ci_runners" => "https://gitlab.com/gitlab-org/gitlab/-/issues/525293",
       "group_type_ci_runner_machines" => "https://gitlab.com/gitlab-org/gitlab/-/issues/525293",
       "project_type_ci_runner_machines" => "https://gitlab.com/gitlab-org/gitlab/-/issues/525293",

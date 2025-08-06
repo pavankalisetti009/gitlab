@@ -3,6 +3,8 @@ import {
   GlDisclosureDropdownItem,
   GlEmptyState,
   GlKeysetPagination,
+  GlLoadingIcon,
+  GlLink,
   GlTableLite,
 } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
@@ -30,6 +32,8 @@ describe('SecretsTable component', () => {
   const findDeleteModal = () => wrapper.findComponent(SecretDeleteModal);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findEmptyStateButton = () => findEmptyState().findComponent(GlButton);
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findLearnMoreLink = () => wrapper.findComponent(GlLink);
   const findNewSecretButton = () => wrapper.findByTestId('new-secret-button');
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
   const findSecretsTableRows = () => findSecretsTable().find('tbody').findAll('tr');
@@ -45,7 +49,7 @@ describe('SecretsTable component', () => {
       .at(1)
       .find('button');
 
-  const createComponent = async ({ props } = {}) => {
+  const createComponent = async ({ props, isLoading = false } = {}) => {
     const handlers = [
       [getSecretManagerStatusQuery, mockSecretManagerStatus],
       [getProjectSecrets, mockProjectSecretsResponse],
@@ -63,7 +67,9 @@ describe('SecretsTable component', () => {
       },
     });
 
-    await waitForPromises();
+    if (!isLoading) {
+      await waitForPromises();
+    }
   };
 
   const mockPaginatedProjectSecrets = ({
@@ -99,15 +105,31 @@ describe('SecretsTable component', () => {
     apolloProvider = null;
   });
 
-  describe('project secrets table', () => {
+  describe('when secrets query is loading', () => {
+    beforeEach(() => {
+      createComponent({ isLoading: true });
+    });
+
+    it('shows loading icon', () => {
+      expect(findLoadingIcon().exists()).toBe(true);
+    });
+
+    it('does not show empty state or table', () => {
+      expect(findEmptyState().exists()).toBe(false);
+      expect(findSecretsTable().exists()).toBe(false);
+    });
+  });
+
+  describe('when secrets are fetched', () => {
     const secret = mockProjectSecretsData[0].node;
 
     beforeEach(async () => {
       await createComponent();
     });
 
-    it('does not show the empty state', () => {
+    it('does not show the empty state or loading icon', () => {
       expect(findEmptyState().exists()).toBe(false);
+      expect(findLoadingIcon().exists()).toBe(false);
     });
 
     it('shows a link to the new secret page', () => {
@@ -136,6 +158,12 @@ describe('SecretsTable component', () => {
     it('hides the delete secret modal', () => {
       expect(findDeleteModal().props('showModal')).toBe(false);
     });
+
+    it('renders learn more link', () => {
+      expect(findLearnMoreLink().attributes('href')).toBe(
+        '/help/ci/secrets/secrets_manager/_index',
+      );
+    });
   });
 
   describe('when there are no secrets', () => {
@@ -146,7 +174,11 @@ describe('SecretsTable component', () => {
 
     it('shows empty state', () => {
       expect(findEmptyState().exists()).toBe(true);
+    });
+
+    it('does not show table or loading icon', () => {
       expect(findSecretsTable().exists()).toBe(false);
+      expect(findLoadingIcon().exists()).toBe(false);
     });
 
     it('renders link to secret form', () => {

@@ -16,6 +16,10 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
 
   describe '#execute' do
     context 'with custom roles' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
       let_it_be(:group)                { create(:group) }
       let_it_be(:sub_group)            { create(:group, parent: group) }
       let_it_be(:sub_sub_group)        { create(:group, parent: sub_group) }

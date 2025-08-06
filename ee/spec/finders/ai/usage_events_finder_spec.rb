@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::UsageEventsFinder, feature_category: :value_stream_management do
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
-  let_it_be(:user) { create(:user, :with_organization, namespace: group) }
+  let_it_be(:user) { create(:user, namespace: group) }
 
   let(:allowed) { false }
 

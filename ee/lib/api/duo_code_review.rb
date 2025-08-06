@@ -54,35 +54,27 @@ module API
     namespace 'duo_code_review' do
       resources :evaluations do
         params do
-          requires :diffs, type: String, desc: 'Raw diffs to review'
-          requires :mr_title, type: String, desc: 'Title of the merge request'
-          requires :mr_description, type: String, desc: 'Description of the merge request'
-          requires :file_contents, type: Hash,
+          requires :diffs, type: String,
+            desc: 'Raw diffs to review'
+          requires :mr_title, type: String,
+            desc: 'Title of the merge request'
+          requires :mr_description, type: String,
+            desc: 'Description of the merge request'
+          requires :files_content, type: Hash,
             desc: 'Full file contents, where keys are file paths and values are the file contents'
         end
 
         post do
-          # Parse the raw diffs to extract individual files
-          diffs_and_paths = parse_raw_diffs(declared_params[:diffs])
+          evaluation_response = Gitlab::Llm::Evaluators::ReviewMergeRequest.new(
+            user: current_user,
+            tracking_context: {
+              request_id: SecureRandom.uuid,
+              action: 'review_merge_request'
+            },
+            options: declared_params
+          ).execute
 
-          prompt = ::Gitlab::Llm::Templates::ReviewMergeRequest
-            .new(
-              mr_title: declared_params[:mr_title],
-              mr_description: declared_params[:mr_description],
-              diffs_and_paths: diffs_and_paths,
-              files_content: declared_params[:file_contents],
-              user: current_user
-            )
-            .to_prompt
-
-          response = ::Gitlab::Llm::Anthropic::Client.new(
-            current_user,
-            unit_primitive: 'review_merge_request'
-          ).messages_complete(**prompt)
-
-          response_modifier = ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
-
-          review_response = { review: response_modifier.response_body }
+          review_response = { review: evaluation_response }
 
           present review_response, with: Grape::Presenters::Presenter
         end

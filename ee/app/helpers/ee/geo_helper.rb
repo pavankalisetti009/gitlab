@@ -79,42 +79,6 @@ module EE
       ::Gitlab::Geo.verification_enabled_replicator_classes
     end
 
-    def geo_filter_nav_options(replicable_controller, replicable_name)
-      [
-        {
-          value: '',
-          text: sprintf(s_('Geo|All %{replicable_name}'), { replicable_name: replicable_name }),
-          href: url_for(
-            controller: replicable_controller,
-            replicable_name_plural: replicable_name)
-        },
-        {
-          value: 'pending',
-          text: s_('Geo|In progress'),
-          href: url_for(
-            controller: replicable_controller,
-            replicable_name_plural: replicable_name,
-            sync_status: 'pending')
-        },
-        {
-          value: 'failed',
-          text: s_('Geo|Failed'),
-          href: url_for(
-            controller: replicable_controller,
-            replicable_name_plural: replicable_name,
-            sync_status: 'failed')
-        },
-        {
-          value: 'synced',
-          text: s_('Geo|Synced'),
-          href: url_for(
-            controller: replicable_controller,
-            replicable_name_plural: replicable_name,
-            sync_status: 'synced')
-        }
-      ]
-    end
-
     def format_file_size_for_checksum(file_size)
       return file_size if file_size.length.even?
 

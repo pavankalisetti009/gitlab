@@ -23,6 +23,7 @@ import ScopeGroupSelector from './scope_group_selector.vue';
 import ScopeProjectSelector from './scope_project_selector.vue';
 import {
   CSP_SCOPE_TYPE_LISTBOX_ITEMS,
+  CSP_SCOPE_TYPE_WITHOUT_GROUP_LISTBOX_ITEMS,
   CSP_SCOPE_TYPE_TEXTS,
   PROJECTS_WITH_FRAMEWORK,
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
@@ -41,7 +42,7 @@ import {
 } from './constants';
 
 export default {
-  COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/group/compliance_frameworks.md'),
+  COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/compliance/compliance_frameworks/_index'),
   SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/_index.md'),
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {
@@ -294,7 +295,18 @@ export default {
       return this.complianceFrameworksEmpty && this.isFormDirty;
     },
     scopeDropdownItems() {
-      return this.designatedAsCsp ? CSP_SCOPE_TYPE_LISTBOX_ITEMS : PROJECT_SCOPE_TYPE_LISTBOX_ITEMS;
+      // Non-CSP projects use standard project scope items
+      if (!this.designatedAsCsp) {
+        return PROJECT_SCOPE_TYPE_LISTBOX_ITEMS;
+      }
+
+      // CSP with groups: show all options
+      if (this.hasGroups) {
+        return CSP_SCOPE_TYPE_LISTBOX_ITEMS;
+      }
+
+      // CSP without groups: exclude "all projects in linked groups" option
+      return CSP_SCOPE_TYPE_WITHOUT_GROUP_LISTBOX_ITEMS;
     },
   },
   methods: {

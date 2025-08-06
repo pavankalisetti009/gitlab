@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe API::GitlabSubscriptions::AddOnPurchases, :aggregate_failures, feature_category: :plan_provisioning do
   include GitlabSubscriptions::InternalApiHelpers
 
-  let_it_be(:namespace) { create(:group, :with_organization) }
+  let_it_be(:namespace) { create(:group) }
   let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
 
   def add_on_purchase_path(namespace_id, add_on_name, user = nil, options = {})

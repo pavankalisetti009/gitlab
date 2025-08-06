@@ -8,6 +8,14 @@ module Gitlab
         MAX_MESSAGES = 50
 
         def add(message)
+          unless thread
+            log_error(
+              message: 'thread absent',
+              event_name: 'thread_absent',
+              ai_component: 'duo_chat'
+            )
+          end
+
           # Message is stored only partially. Some data might be missing after reloading from storage.
           data = message.to_h.slice(*%w[role referer_url])
 
@@ -40,6 +48,14 @@ module Gitlab
         strong_memoize_attr :messages
 
         def clear!
+          unless thread
+            log_error(
+              message: 'thread absent',
+              event_name: 'thread_absent',
+              ai_component: 'duo_chat'
+            )
+          end
+
           @current_thread = current_thread.to_new_thread!
           clear_memoization(:messages)
         end

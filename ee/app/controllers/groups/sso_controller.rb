@@ -23,7 +23,7 @@ class Groups::SsoController < Groups::ApplicationController
 
   def saml
     session_redirect = if ::Feature.enabled?(:ff_oauth_redirect_to_sso_login, group.root_ancestor)
-                         session[:user_return_to]
+                         session.delete(:user_sso_return_to)
                        end
 
     @redirect_path = session_redirect || safe_redirect_path(params[:redirect]) || group_path(unauthenticated_group)

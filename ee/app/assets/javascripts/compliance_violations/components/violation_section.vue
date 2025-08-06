@@ -3,6 +3,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { joinPaths } from '~/lib/utils/url_utility';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import FrameworkBadge from '../../compliance_dashboard/components/shared/framework_badge.vue';
+import { statusesInfo } from '../../compliance_dashboard/components/standards_adherence_report/components/details_drawer/statuses_info';
 
 export default {
   name: 'ViolationSection',
@@ -33,6 +34,14 @@ export default {
     requirement() {
       return this.control.complianceRequirement?.name || '';
     },
+    controlTitle() {
+      if (!this.control || !this.control.name) {
+        return '';
+      }
+
+      const statusInfo = statusesInfo[this.control.name];
+      return statusInfo?.title || this.control.name;
+    },
   },
 };
 </script>
@@ -60,7 +69,7 @@ export default {
 
       <div data-testid="violation-control">
         {{ s__('ComplianceViolation|Control') }}:
-        {{ control.name }}
+        {{ controlTitle }}
       </div>
     </template>
   </crud-component>

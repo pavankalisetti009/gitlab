@@ -132,6 +132,12 @@ export const TOGGLE_CANARY = {
   defaultKeys: ['g x'], // eslint-disable-line @gitlab/require-i18n-strings
 };
 
+export const DUO_CHAT = {
+  id: 'globalShortcuts.duoChat',
+  description: __('Open GitLab Duo Chat'),
+  defaultKeys: ['d'],
+};
+
 export const BOLD_TEXT = {
   id: 'editing.boldText',
   description: __('Bold text'),
@@ -460,19 +466,19 @@ export const MR_GO_TO_FILE = {
   customizable: false,
 };
 
-export const MR_TOGGLE_FILE_BROWSER_DEPRECATED = {
-  id: 'mergeRequests.toggleFileBrowserDeprecated',
-  description: __('Toggle file browser'),
+export const MR_FOCUS_FILE_BROWSER = {
+  id: 'mergeRequests.focusFileBrowser',
+  description: __('Focus file browser'),
   defaultKeys: ['f'],
   customizable: false,
-  // TODO: remap https://gitlab.com/gitlab-org/gitlab/-/issues/533312#note_2433282146
+  // there's no filtered search on the page, instead we focus the file browser search manually
   overrideGlobalHotkey: true,
 };
 
 export const MR_TOGGLE_FILE_BROWSER = {
   id: 'mergeRequests.toggleFileBrowser',
   description: __('Toggle file browser'),
-  defaultKeys: ['mod+b'],
+  defaultKeys: ['shift+f'],
   customizable: false,
 };
 
@@ -617,6 +623,7 @@ const GLOBAL_SHORTCUTS_GROUP = {
     TOGGLE_PERFORMANCE_BAR,
     HIDE_APPEARING_CONTENT,
     TOGGLE_SUPER_SIDEBAR,
+    DUO_CHAT,
   ],
 };
 
@@ -720,6 +727,7 @@ const MR_SHORTCUTS_GROUP = {
     MR_NEXT_UNRESOLVED_DISCUSSION,
     MR_PREVIOUS_UNRESOLVED_DISCUSSION,
     MR_COPY_SOURCE_BRANCH_NAME,
+    MR_FOCUS_FILE_BROWSER,
     MR_TOGGLE_FILE_BROWSER,
     MR_ADD_TO_REVIEW,
     MR_ADD_COMMENT_NOW,

@@ -1,6 +1,7 @@
 <script>
-import { GlToggle } from '@gitlab/ui';
+import { GlLink, GlToggle } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   ACTION_ENABLE_SECRET_MANAGER,
   SECRET_MANAGER_STATUS_ACTIVE,
@@ -16,12 +17,13 @@ export const POLL_INTERVAL = 2000;
 export default {
   name: 'SecretsManagerSettings',
   components: {
+    GlLink,
     GlToggle,
     PermissionsSettings,
   },
   provide() {
-    const { fullPath, projectId } = this;
-    return { fullPath, projectId };
+    const { fullPath } = this;
+    return { fullPath };
   },
   props: {
     canManageSecretsManager: {
@@ -30,10 +32,6 @@ export default {
     },
     fullPath: {
       type: String,
-      required: true,
-    },
-    projectId: {
-      type: Number,
       required: true,
     },
   },
@@ -133,6 +131,7 @@ export default {
       }
     },
   },
+  LEARN_MORE_LINK: helpPagePath('ci/secrets/secrets_manager/_index'),
 };
 </script>
 
@@ -147,6 +146,9 @@ export default {
           'Secrets|Enable the Secrets Manager to securely store and manage sensitive information for this project.',
         )
       }}
+      <gl-link :href="$options.LEARN_MORE_LINK">
+        {{ __('Learn more.') }}
+      </gl-link>
     </p>
     <gl-toggle
       :value="isActive"

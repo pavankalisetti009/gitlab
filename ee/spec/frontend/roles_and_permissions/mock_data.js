@@ -186,7 +186,7 @@ export const instanceRolesResponse = {
   },
 };
 
-export const adminRolesResponse = {
+export const saasAdminRolesResponse = {
   data: {
     adminMemberRoles: { nodes: adminRoles },
   },
@@ -298,4 +298,16 @@ export const ROLE_LINK_FAILED = {
   ...ROLE_LINK_SUCCESSFUL,
   syncStatus: 'FAILED',
   syncError: 'oh no',
+};
+
+export const newCustomRoleOption = {
+  text: 'Member role',
+  href: 'new/role/path',
+  description: 'Create a role to manage member permissions for groups and projects.',
+};
+
+export const newAdminRoleOption = {
+  text: 'Admin role',
+  href: 'new/role/path?admin',
+  description: 'Create a role to manage permissions in the Admin area.',
 };

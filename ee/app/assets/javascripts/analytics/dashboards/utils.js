@@ -198,7 +198,7 @@ export const generateMetricComparisons = (timePeriods) =>
  * @param {Number|'-'|null|undefined} value
  * @returns {Number|null}
  */
-const sanitizeSparklineData = (value) => {
+export const sanitizeSparklineData = (value) => {
   if (!value) return 0;
 
   // The API returns '-' when it's unable to calculate the metric.

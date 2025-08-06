@@ -107,6 +107,32 @@ RSpec.describe Groups::VirtualRegistries::Maven::UpstreamsController, feature_ca
 
           it_behaves_like 'returning response status', :not_found
         end
+
+        context 'when updateVirtualRegistry ability is not allowed' do
+          before do
+            get_show
+          end
+
+          it 'sets the frontend ability to false' do
+            expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: false)
+          end
+        end
+
+        context 'when user is maintainer' do
+          before_all do
+            group.add_maintainer(user)
+          end
+
+          context 'when updateVirtualRegistry ability is allowed' do
+            before do
+              get_show
+            end
+
+            it 'sets the frontend ability to true' do
+              expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: true)
+            end
+          end
+        end
       end
     end
   end

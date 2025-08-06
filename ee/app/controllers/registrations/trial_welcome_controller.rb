@@ -25,6 +25,11 @@ module Registrations
         user: current_user, **progress_params).execute
 
       if result.success?
+        namespace = Namespace.find_by(id: result.payload[:namespace_id]) # rubocop: disable CodeReuse/ActiveRecord -- Using `find` would raise error
+
+        experiment(:lightweight_trial_registration_redesign, actor: current_user).track(
+          :completed_group_project_creation, namespace: namespace)
+
         redirect_to namespace_project_learn_gitlab_path(result.payload[:namespace_id], result.payload[:project_id])
       elsif result.reason == GitlabSubscriptions::Trials::UltimateCreateService::NOT_FOUND
         render_404

@@ -163,6 +163,16 @@ module API
             unsafe_passthrough_params: params.except(:private_token)
           ).task
 
+          if task.duo_context_not_found?
+            msg = _('No default Duo group found. Select a default Duo group in your user preferences and try again.')
+
+            render_structured_api_error!({
+              'error' => 'missing_default_duo_group',
+              'error_description' => msg,
+              'message' => { error: msg }
+            }, 422)
+          end
+
           unauthorized_with_origin_header! if task.feature_disabled?
 
           service = CloudConnector::AvailableServices.find_by_name(task.feature_name)
@@ -233,7 +243,7 @@ module API
           details_hash = completion_model_details.current_model
 
           access = {
-            base_url: ::Gitlab::AiGateway.url,
+            base_url: completion_model_details.base_url,
             # for development purposes we just return instance JWT, this should not be used in production
             # until we generate a short-term token for user
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429

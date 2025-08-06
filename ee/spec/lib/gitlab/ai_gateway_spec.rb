@@ -75,9 +75,68 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     end
   end
 
+  describe '.access_token_url' do
+    before do
+      stub_env('AI_GATEWAY_URL', 'http://local-aigw:5052')
+      allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+    end
+
+    let(:cloud_connector_auth_full_url) { "#{url}/auth/v1/code/user_access_token" }
+    let(:self_hosted_auth_full_url) { "http://local-aigw:5052/v1/code/user_access_token" }
+
+    context 'when no code_completions_feature_setting is provided' do
+      it 'returns the cloud connector auth url' do
+        expect(described_class.access_token_url(nil)).to eq(self_hosted_auth_full_url)
+      end
+    end
+
+    context 'when code_completions_feature_setting is not vendored' do
+      it 'returns the self hosted auth url' do
+        feature_setting = create(:ai_feature_setting, :code_completions, provider: :self_hosted)
+
+        expect(described_class.access_token_url(feature_setting)).to eq(self_hosted_auth_full_url)
+      end
+    end
+
+    context 'when code_completions_feature_setting is vendored' do
+      it 'returns the cloud connector auth url' do
+        feature_setting = create(:ai_feature_setting, :code_completions, provider: :vendored)
+
+        expect(described_class.access_token_url(feature_setting)).to eq(cloud_connector_auth_full_url)
+      end
+    end
+  end
+
+  describe '.cloud_connector_auth_url' do
+    before do
+      stub_env('AI_GATEWAY_URL', 'http://local-aigw:5052')
+      allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+    end
+
+    it 'returns the cloud connector auth url' do
+      expect(described_class.cloud_connector_auth_url).to eq("#{url}/auth")
+    end
+  end
+
   describe '.push_feature_flag', :request_store do
     before do
       allow(::Feature).to receive(:enabled?).and_return(true)
+    end
+
+    context 'when expanded_ai_logging feature flag on self-managed instance' do
+      it 'does not push the feature flag' do
+        described_class.push_feature_flag('expanded_ai_logging')
+
+        expect(described_class.enabled_feature_flags).to be_empty
+      end
+    end
+
+    context 'when expanded_ai_logging feature flag on GitLab.com', :saas do
+      it 'pushes the feature flag' do
+        described_class.push_feature_flag('expanded_ai_logging')
+
+        expect(described_class.enabled_feature_flags).to contain_exactly('expanded_ai_logging')
+      end
     end
 
     it 'push feature flag' do
@@ -86,6 +145,34 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       described_class.push_feature_flag("feature_c")
 
       expect(described_class.enabled_feature_flags).to match_array(%w[feature_a feature_b feature_c])
+    end
+  end
+
+  describe '.expanded_ai_logging_on_self_managed?' do
+    subject { described_class.expanded_ai_logging_on_self_managed?(feature_name) }
+
+    context 'when feature name is expanded_ai_logging' do
+      let(:feature_name) { :expanded_ai_logging }
+
+      context 'when instance is self-managed' do
+        it { is_expected.to be true }
+      end
+
+      context 'when instance is GitLab.com', :saas do
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when feature name is not expanded_ai_logging' do
+      let(:feature_name) { :some_other_feature }
+
+      context 'when instance is self-managed' do
+        it { is_expected.to be false }
+      end
+
+      context 'when instance is GitLab.com', :saas do
+        it { is_expected.to be false }
+      end
     end
   end
 
@@ -142,7 +229,9 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         allow(setting).to receive(:enabled_instance_verbose_ai_logs).and_return(enabled_instance_verbose_ai_logs)
       end
 
-      allow(service).to receive(:access_token).with(user).and_return(token)
+      allow(::CloudConnector::Tokens).to receive(:get)
+        .with(unit_primitive: service_name, resource: user)
+        .and_return(token)
       allow(user).to receive(:allowed_to_use).with(service_name).and_return(auth_response)
       allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
@@ -217,6 +306,18 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       let(:is_team_member) { true }
 
       it { is_expected.to match(expected_headers) }
+    end
+
+    context 'when cloud_connector_new_token_path FF is disabled' do
+      before do
+        stub_feature_flags(cloud_connector_new_token_path: false)
+      end
+
+      it 'obtains token through AvailableServices' do
+        expect(service).to receive(:access_token).with(user).and_return(token)
+
+        expect(headers).to match(expected_headers)
+      end
     end
   end
 

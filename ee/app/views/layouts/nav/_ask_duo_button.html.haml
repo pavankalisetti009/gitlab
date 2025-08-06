@@ -10,7 +10,7 @@
   - translated_reason = chat_disabled_reason == 'project' ? translated_project : translated_group
   - tooltip_text = safe_format(s_('DuoChat|An administrator has turned off GitLab Duo for this %{reason}'), reason: translated_reason)
 
-  - experiment(:hotspot_duo_chat_during_trial, actor: current_user) do |e|
+  - experiment(:hotspot_duo_chat_during_trial, actor: current_user, namespace: @group || @project&.namespace, project: @project) do |e|
     - e.candidate do
       - if show_ask_duo_hotspot
         %button{ class: 'js-ask-duo-hotspot gl-bg-transparent gl-border-none gl-p-0', aria: { label: 'Ask Duo hotspot button' } }
@@ -32,20 +32,23 @@
       button_options: { class: 'disabled-button-2 js-tanuki-bot-chat-toggle md:gl-hidden', data: { chat_disabled_reason: chat_disabled_reason }, aria: { label: label, disabled: "true" }, disabled: true })
 
 - else
-  - experiment(:hotspot_duo_chat_during_trial, actor: current_user) do |e|
+  - experiment(:hotspot_duo_chat_during_trial, actor: current_user, namespace: @group || @project&.namespace, project: @project) do |e|
     - e.candidate do
       - if show_ask_duo_hotspot
         %button{ class: 'js-ask-duo-hotspot gl-bg-transparent gl-border-none gl-p-0', aria: { label: 'Ask Duo hotspot button' } }
           = image_tag 'illustrations/hotspot.gif', size: 16, alt: 'Ask Duo hotspot image'
 
+  - duo_button_description = _('Open GitLab Duo Chat')
+  - duo_button_shortcut = 'd'
+  - duo_button_title = "#{duo_button_description} <kbd class='flat ml-1' aria-hidden=true>#{duo_button_shortcut}</kbd>"
   = render Pajamas::ButtonComponent.new(variant: :default,
     category: :secondary,
     icon: 'duo-chat',
     size: 'medium',
-    button_options: { class: 'enabled-button js-tanuki-bot-chat-toggle gl-hidden md:gl-inline', aria: { label: amazon_q_enabled ? duo_with_amazon_q_label : label }}) do
+    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle gl-hidden md:gl-inline', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title}) do
     = amazon_q_enabled ? duo_with_amazon_q_label : label
   = render Pajamas::ButtonComponent.new(variant: :default,
     category: :secondary,
     icon: 'duo-chat',
     size: 'medium',
-    button_options: { class: 'enabled-button js-tanuki-bot-chat-toggle md:gl-hidden', aria: { label: amazon_q_enabled ? duo_with_amazon_q_label : label }})
+    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle md:gl-hidden', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title})

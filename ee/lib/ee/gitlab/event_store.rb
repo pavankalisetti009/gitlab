@@ -316,16 +316,13 @@ module EE
 
         def subscribe_to_analytics_events(store)
           store.subscribe ::Analytics::DuoChatEventsBackfillWorker,
-            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
-            if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
+            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
 
           store.subscribe ::Analytics::CodeSuggestionsEventsBackfillWorker,
-            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
-            if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
+            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
 
           store.subscribe ::Analytics::AiUsageEventsBackfillWorker,
-            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
-            if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
+            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
         end
       end
     end

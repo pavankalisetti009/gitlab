@@ -15,9 +15,20 @@ title: Manage users and seats
 
 ## Billable users
 
-Billable users count toward the number of subscription seats purchased in your subscription.
+Billable users are users with access to a namespace in a subscription, such as direct [members](../user/project/members/_index.md#membership-types),
+inherited members, and invited users, with one of the following roles:
+
+- Guest (billable on Premium, non-billable on Free and Ultimate)
+- Planner
+- Reporter
+- Developer
+- Maintainer
+- Owner
+
+Billable users count toward the number of seats purchased in your subscription.
 The number of billable users changes when you block, deactivate, or add
 users to your instance or group during your current subscription period.
+If a user is in multiple groups or projects that belong to the same top-level group that holds the subscription, they are counted only once.
 
 Seat usage is reviewed [quarterly or annually](quarterly_reconciliation.md).
 On GitLab Self-Managed, the amount of **Billable users** is reported once a day in the **Admin** area.
@@ -28,6 +39,11 @@ and that group does not have a paid subscription, the user does not see any of t
 
 A user can belong to two different top-level groups with different subscriptions.
 In this case, the user sees only the features available to that subscription.
+
+To prevent unexpectedly adding new billable users, which may result in overage fees, you should:
+
+- [Prevent inviting groups outside the group hierarchy](../user/project/members/sharing_projects_groups.md#prevent-inviting-groups-outside-the-group-hierarchy).
+- [Turn on restricted access](../user/group/manage.md#turn-on-restricted-access).
 
 ## Criteria for non-billable users
 
@@ -341,7 +357,7 @@ This setting restricts groups from adding new billable users when there are no s
 To view a list of seats being used:
 
 1. On the left sidebar, select **Search or go to** and find your group.
-1. Select **Settings > Usage Quotas**.
+1. Select **Settings > Usage quotas**.
 1. Select the **Seats** tab.
 
 For each user, a list shows groups and projects where the user is a direct member.
@@ -360,7 +376,7 @@ To view your subscription information and a summary of seat counts:
 1. Select **Settings > Billing**.
 
 - The usage statistics are updated once per day, which may cause a difference between the information
-  in the **Usage Quotas** page and the **Billing page**.
+  in the **Usage quotas** page and the **Billing page**.
 - The **Last login** field is updated when a user signs in after they have signed out. If there is an active session
   when a user re-authenticates (for example, after a 24 hour SAML session timeout), this field is not updated.
 
@@ -397,7 +413,7 @@ amounts at which the alert displays.
 To export seat usage data as a CSV file:
 
 1. On the left sidebar, select **Search or go to** and find your group.
-1. Select **Settings > Usage Quotas**.
+1. Select **Settings > Usage quotas**.
 1. In the **Seats** tab, select **Export list**.
 
 ### Export seat usage history
@@ -409,7 +425,7 @@ Prerequisites:
 To export seat usage history as a CSV file:
 
 1. On the left sidebar, select **Search or go to** and find your group.
-1. Select **Settings > Usage Quotas**.
+1. Select **Settings > Usage quotas**.
 1. In the **Seats** tab, select **Export seat usage history**.
 
 The generated list contains all seats being used,

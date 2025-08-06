@@ -29,6 +29,14 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
         expect(response).to render_template(:index)
       end
     end
+
+    describe "#licenses" do
+      it 'user has access via a custom role' do
+        get licenses_project_dependencies_path(project)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
   end
 
   describe Groups::DependenciesController do
@@ -42,6 +50,14 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response).to render_template(:index)
+      end
+    end
+
+    describe "#licenses" do
+      it 'user has access via a custom role' do
+        get licenses_group_dependencies_path(group_id: project.group.full_path)
+
+        expect(response).to have_gitlab_http_status(:ok)
       end
     end
   end

@@ -44,6 +44,8 @@ import {
   TOKEN_TYPE_SUBSCRIBED,
   TOKEN_TYPE_TYPE,
   TOKEN_TYPE_UPDATED,
+  TOKEN_TYPE_ORGANIZATION,
+  TOKEN_TYPE_CONTACT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
@@ -76,6 +78,8 @@ import {
 jest.mock('~/lib/utils/scroll_utils', () => ({ scrollUp: jest.fn() }));
 jest.mock('~/sentry/sentry_browser_wrapper');
 jest.mock('~/lib/utils/url_utility');
+
+const showToast = jest.fn();
 
 const skipReason = new SkipReason({
   name: 'WorkItemsListApp component',
@@ -125,6 +129,8 @@ describeSkipVue3(skipReason, () => {
     workItemPlanningView = false,
     props = {},
     additionalHandlers = [],
+    canReadCrmOrganization = true,
+    canReadCrmContact = true,
   } = {}) => {
     window.gon = {
       ...window.gon,
@@ -148,6 +154,8 @@ describeSkipVue3(skipReason, () => {
           okrsMvc: true,
           workItemPlanningView,
         },
+        canReadCrmOrganization,
+        canReadCrmContact,
         autocompleteAwardEmojisPath: 'autocomplete/award/emojis/path',
         canBulkUpdate: true,
         canBulkEditEpics: true,
@@ -165,6 +173,7 @@ describeSkipVue3(skipReason, () => {
         isSignedIn: true,
         showNewWorkItem: true,
         workItemType: null,
+        hasStatusFeature: true,
         ...provide,
       },
       propsData: {
@@ -173,6 +182,11 @@ describeSkipVue3(skipReason, () => {
       },
       stubs: {
         WorkItemBulkEditSidebar: true,
+      },
+      mocks: {
+        $toast: {
+          show: showToast,
+        },
       },
     });
   };
@@ -493,10 +507,12 @@ describeSkipVue3(skipReason, () => {
         TOKEN_TYPE_ASSIGNEE,
         TOKEN_TYPE_AUTHOR,
         TOKEN_TYPE_CONFIDENTIAL,
+        TOKEN_TYPE_CONTACT,
         TOKEN_TYPE_GROUP,
         TOKEN_TYPE_LABEL,
         TOKEN_TYPE_MILESTONE,
         TOKEN_TYPE_MY_REACTION,
+        TOKEN_TYPE_ORGANIZATION,
         TOKEN_TYPE_SEARCH_WITHIN,
         TOKEN_TYPE_SUBSCRIBED,
         TOKEN_TYPE_TYPE,
@@ -528,12 +544,14 @@ describeSkipVue3(skipReason, () => {
           TOKEN_TYPE_AUTHOR,
           TOKEN_TYPE_CLOSED,
           TOKEN_TYPE_CONFIDENTIAL,
+          TOKEN_TYPE_CONTACT,
           TOKEN_TYPE_CREATED,
           TOKEN_TYPE_DUE_DATE,
           TOKEN_TYPE_GROUP,
           TOKEN_TYPE_LABEL,
           TOKEN_TYPE_MILESTONE,
           TOKEN_TYPE_MY_REACTION,
+          TOKEN_TYPE_ORGANIZATION,
           TOKEN_TYPE_SEARCH_WITHIN,
           TOKEN_TYPE_SUBSCRIBED,
           TOKEN_TYPE_TYPE,
@@ -559,15 +577,103 @@ describeSkipVue3(skipReason, () => {
           TOKEN_TYPE_ASSIGNEE,
           TOKEN_TYPE_AUTHOR,
           TOKEN_TYPE_CONFIDENTIAL,
+          TOKEN_TYPE_CONTACT,
           customToken.type,
           TOKEN_TYPE_GROUP,
           TOKEN_TYPE_LABEL,
           TOKEN_TYPE_MILESTONE,
           TOKEN_TYPE_MY_REACTION,
+          TOKEN_TYPE_ORGANIZATION,
           TOKEN_TYPE_SEARCH_WITHIN,
           TOKEN_TYPE_SUBSCRIBED,
           TOKEN_TYPE_TYPE,
         ]);
+      });
+    });
+
+    describe('Organization filter token', () => {
+      describe('when canReadCrmOrganization is true', () => {
+        beforeEach(async () => {
+          mountComponent({ provide: { isGroup: false } });
+          await waitForPromises();
+        });
+
+        it('configures organization token with correct properties', () => {
+          const organizationToken = findIssuableList()
+            .props('searchTokens')
+            .find((token) => token.type === TOKEN_TYPE_ORGANIZATION);
+
+          expect(organizationToken).toMatchObject({
+            fullPath: 'full/path',
+            isProject: true,
+            recentSuggestionsStorageKey: 'full/path-issues-recent-tokens-crm-organizations',
+            operators: [{ description: 'is', value: '=' }],
+          });
+        });
+      });
+
+      describe('when canReadCrmOrganization is false', () => {
+        beforeEach(async () => {
+          mountComponent({ provide: { isGroup: false, canReadCrmOrganization: false } });
+          await waitForPromises();
+        });
+
+        it('does not include organization token in available tokens', () => {
+          const tokens = findIssuableList()
+            .props('searchTokens')
+            .map((token) => token.type);
+
+          expect(tokens).not.toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                type: TOKEN_TYPE_ORGANIZATION,
+              }),
+            ]),
+          );
+        });
+      });
+    });
+
+    describe('Contact filter token', () => {
+      describe('when canReadCrmOrganization is true', () => {
+        beforeEach(async () => {
+          mountComponent({ provide: { isGroup: false } });
+          await waitForPromises();
+        });
+
+        it('configures contact token with correct properties', () => {
+          const contactToken = findIssuableList()
+            .props('searchTokens')
+            .find((token) => token.type === TOKEN_TYPE_CONTACT);
+
+          expect(contactToken).toMatchObject({
+            fullPath: 'full/path',
+            isProject: true,
+            recentSuggestionsStorageKey: 'full/path-issues-recent-tokens-crm-contacts',
+            operators: [{ description: 'is', value: '=' }],
+          });
+        });
+      });
+
+      describe('when canReadCrmContact is false', () => {
+        beforeEach(async () => {
+          mountComponent({ provide: { isGroup: false, canReadCrmContact: false } });
+          await waitForPromises();
+        });
+
+        it('does not include contact token in available tokens', () => {
+          const tokens = findIssuableList()
+            .props('searchTokens')
+            .map((token) => token.type);
+
+          expect(tokens).not.toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                type: TOKEN_TYPE_CONTACT,
+              }),
+            ]),
+          );
+        });
       });
     });
   });
@@ -1312,6 +1418,21 @@ describeSkipVue3(skipReason, () => {
       await nextTick();
 
       expect(findIssuableList().props('showBulkEditSidebar')).toBe(true);
+    });
+
+    it('creates a toast when the success event includes a toast message', async () => {
+      mountComponent();
+      await waitForPromises();
+
+      findBulkEditStartButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(findIssuableList().props('showBulkEditSidebar')).toBe(true);
+
+      findBulkEditSidebar().vm.$emit('success', { toastMessage: 'hello!' });
+      await nextTick();
+
+      expect(showToast).toHaveBeenCalledWith('hello!');
     });
   });
 

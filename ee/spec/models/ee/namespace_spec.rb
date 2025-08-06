@@ -1866,7 +1866,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         end
 
         context 'when the subgroup "Membership lock" is disabled' do
-          let(:subgroup) { create(:group) }
+          let(:subgroup) { create(:group, organization: organization) }
 
           it 'the subgroup "Membership lock" not changed' do
             subgroup.parent = root_group
@@ -1892,7 +1892,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         end
 
         context 'when the subgroup "Membership lock" is disabled' do
-          let(:subgroup) { create(:group) }
+          let(:subgroup) { create(:group, organization: organization) }
 
           it 'the subgroup "Membership lock" does not change' do
             subgroup.parent = root_group
@@ -2918,6 +2918,51 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it 'returns custom statuses' do
         expect(namespace.statuses).to contain_exactly(custom_status_1, custom_status_2)
+      end
+    end
+  end
+
+  describe '#compliance_framework_ids_with_csp' do
+    include Security::PolicyCspHelpers
+
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:csp_group) { create(:group) }
+
+    let_it_be(:direct_framework) { create(:compliance_framework, namespace: namespace) }
+
+    subject(:framework_ids_with_csp) { namespace.compliance_framework_ids_with_csp }
+
+    before do
+      stub_csp_group(csp_group)
+    end
+
+    context 'when include_csp_frameworks feature flag is disabled' do
+      before do
+        stub_feature_flags(include_csp_frameworks: false)
+      end
+
+      it 'returns only direct compliance framework IDs' do
+        expect(framework_ids_with_csp).to contain_exactly(direct_framework.id)
+      end
+    end
+
+    context 'when CSP namespace has frameworks along with the current group' do
+      it 'returns combined compliance framework IDs from both namespaces' do
+        csp_framework = create(:compliance_framework, namespace: csp_group)
+
+        expect(framework_ids_with_csp).to contain_exactly(direct_framework.id, csp_framework.id)
+      end
+    end
+
+    context 'when CSP namespace has no frameworks' do
+      let(:empty_csp_group) { create(:group) }
+
+      before do
+        stub_csp_group(empty_csp_group)
+      end
+
+      it 'returns only direct compliance framework IDs' do
+        expect(framework_ids_with_csp).to contain_exactly(direct_framework.id)
       end
     end
   end

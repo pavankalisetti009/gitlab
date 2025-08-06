@@ -15,6 +15,7 @@ import ScanFilterSelector from '../../scan_filter_selector.vue';
 import { SCAN_RESULT_BRANCH_TYPE_OPTIONS, BRANCH_EXCEPTIONS_KEY } from '../../constants';
 import RuleMultiSelect from '../../rule_multi_select.vue';
 import SectionLayout from '../../section_layout.vue';
+import BranchSelection from '../../branch_selection.vue';
 import StatusFilter from './scan_filters/status_filter.vue';
 import LicenseFilter from './scan_filters/license_filter.vue';
 import DenyAllowList from './deny_allow_list.vue';
@@ -27,7 +28,6 @@ import {
   TYPE,
 } from './scan_filters/constants';
 import ScanTypeSelect from './scan_type_select.vue';
-import BranchSelection from './branch_selection.vue';
 
 export default {
   STATUS,

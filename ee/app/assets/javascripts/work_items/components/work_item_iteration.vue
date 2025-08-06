@@ -5,6 +5,7 @@ import { newWorkItemId } from '~/work_items/utils';
 import { getIterationPeriod, groupOptionsByIterationCadences } from 'ee/iterations/utils';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import projectIterationsQuery from 'ee/work_items/graphql/project_iterations.query.graphql';
 import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
 import { STATUS_OPEN } from '~/issues/constants';
@@ -106,6 +107,9 @@ export default {
     },
     localIterationId() {
       return this.localIteration ? this.localIteration?.id : null;
+    },
+    localIterationNumericId() {
+      return this.localIterationId ? getIdFromGraphQLId(this.localIterationId) : '';
     },
   },
   watch: {
@@ -242,13 +246,15 @@ export default {
         {{ selectedIterationCadenceName }}
       </div>
       <gl-link
-        class="!gl-text-default"
+        class="has-popover !gl-text-default"
+        :data-milestone="localIterationNumericId"
+        :data-namespace-path="fullPath"
+        data-reference-type="iteration"
+        data-placement="left"
         :href="localIteration.webUrl"
         data-testid="work-item-iteration-link"
       >
-        <div>
-          {{ iterationPeriod }}
-        </div>
+        {{ iterationPeriod }}
         <iteration-title v-if="localIteration.title" :title="localIteration.title" />
       </gl-link>
     </template>

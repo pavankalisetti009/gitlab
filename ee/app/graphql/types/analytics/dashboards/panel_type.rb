@@ -13,6 +13,11 @@ module Types
           null: true,
           description: 'Title of the panel.'
 
+        field :tooltip,
+          type: Types::Analytics::Dashboards::PanelTooltipType,
+          null: true,
+          description: 'Tooltip for the panel containing descriptive text and an optional link.'
+
         field :grid_attributes,
           type: GraphQL::Types::JSON,
           null: true,

@@ -170,6 +170,8 @@ For example:
 
 Do not use title case for **GitLab Agent** or **GitLab Agent for Kubernetes**.
 
+When referring to the specific component in technical contexts, use `agentk` in backticks.
+
 ## agent access token
 
 The token generated when you create an agent for Kubernetes. Use **agent access token**, not:
@@ -510,8 +512,10 @@ However, you can make an exception for **right-click** and **click-through demo*
 
 ## cloud licensing
 
-Do not use the phrase **cloud licensing**. Instead, focus on the fact
-that this subscription is synchronized with GitLab.
+Avoid the phrase **cloud licensing**, except when you have to describe the process
+of synchronizing an activation code over the internet.
+
+If you can, rather focus on the fact that this subscription is synchronized with GitLab.
 
 For example:
 
@@ -884,12 +888,11 @@ Do not use **easily**. If the user doesn't find the process to be easy, we lose 
 
 Use **edit** for UI documentation and user actions.
 
-Use **update** for API documentation and programmatic changes.
-
 For example:
 
 - To edit your profile settings, select **Edit**.
-- Use this endpoint to update user permissions.
+
+For API documentation and programmatic changes, use **[update](#update)**.
 
 ## e.g.
 
@@ -1459,7 +1462,7 @@ Use lowercase for **issue weights**.
 
 ## IP address
 
-Use **IP address** when refering to addresses used with Internet Protocal (IP). Do not refer to an IP address as an
+Use **IP address** when referring to addresses used with Internet Protocol (IP). Do not refer to an IP address as an
 **IP**.
 
 ## it
@@ -1555,13 +1558,17 @@ Licenses are different than subscriptions.
 - A license grants users access to the subscription they purchased. The license includes information like the number of seats and subscription dates.
 - A subscription is the subscription tier that the user purchases.
 
-Do not use the term [**cloud license**](#cloud-licensing).
+Avoid the terms [**cloud license** or **cloud licensing**](#cloud-licensing) if possible.
 
 The following terms are displayed in the UI and in emails. You can use them when necessary:
 
 - **Online license** - a license synchronized with GitLab
 - **Offline license** - a license not synchronized with GitLab
 - **Legacy license** - a license created before synchronization was possible
+
+You can also use the terms **legacy license file** and **offline license file** when
+describing the files that customers receive by email as part of the overall
+licensing and synchronization process.
 
 However, if you can, rather than the relying on the term, use the more specific description instead.
 
@@ -2439,7 +2446,7 @@ Do not use **slave**. Another option is **secondary**. ([Vale](../testing/vale.m
 In the context of:
 
 - Gitaly, storage is physical and must be called a **storage**.
-- Gitaly Cluster, storage can be either:
+- Gitaly Cluster (Praefect), storage can be either:
   - Virtual and must be called a **virtual storage**.
   - Physical and must be called a **physical storage**.
 
@@ -2628,9 +2635,13 @@ For more information, see the
 
 ## update
 
-Use **update** for installing a newer **patch** version of the software only. For example:
+Use **update** for installing a newer **patch** version of the software,
+or for documenting API and programmatic changes.
+
+For example:
 
 - Update GitLab from 14.9 to 14.9.1.
+- Use this endpoint to update user permissions.
 
 Do not use **update** for any other case. Instead, use **[upgrade](#upgrade)** or **[edit](#edit)**.
 
@@ -2753,6 +2764,18 @@ For example:
 - The workaround is to temporarily pin your template to the deprecated version.
 
 See also [resolution](#resolution-resolve).
+
+## agent for workspace
+
+Use lowercase **agent for workspace** when referring to the component that runs
+in a workspace and is used to access the workspace. Do not use title case for **Workspace**. For example:
+
+- The agent for workspace handles GitLab integration tasks in the workspace.
+- Configure the agent for workspace to connect your development environment.
+
+When referring to the specific component in technical contexts, use `agentw` in backticks.
+
+Do not confuse with [agent for Kubernetes](#agent-for-kubernetes).
 
 ## while
 

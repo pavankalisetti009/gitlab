@@ -10,8 +10,9 @@ title: GitLab Duo Agentic Chat
 - Tier: Premium, Ultimate
 - Add-on: GitLab Duo Core, Pro, or Enterprise
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
+- Available on [GitLab Duo with self-hosted models](../../administration/gitlab_duo_self_hosted/_index.md): No
 - Status: Beta
-- LLMs: Anthropic [Claude Sonnet 4](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-sonnet-4)
+- LLM: Anthropic [Claude Sonnet 4](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-sonnet-4)
 
 {{< /details >}}
 
@@ -96,7 +97,7 @@ To use Agentic Chat:
 1. On the left sidebar, select **GitLab Duo Agent Platform (Beta)** ({{< icon name="duo-agentic-chat" >}}).
 1. Select the **Chat** tab.
 1. Select **Refresh page** if prompted.
-1. In the message box, enter your question and press **Enter** or select **Send**.
+1. In the message box, enter your question and press <kbd>Enter</kbd> or select **Send**.
 <!-- markdownlint-enable MD044 -->
 Conversations in Agentic Chat do not expire and are stored permanently. You cannot delete these conversations.
 
@@ -118,9 +119,55 @@ To use Agentic Chat:
 1. Restart your IDE if prompted.
 1. On the left sidebar, select **GitLab Duo Agent Platform (Beta)** ({{< icon name="duo-agentic-chat" >}}).
 1. Select the **Chat** tab.
-1. In the message box, enter your question and press **Enter** or select **Send**.
+1. In the message box, enter your question and press <kbd>Enter</kbd> or select **Send**.
 <!-- markdownlint-enable MD044 -->
 Conversations in Agentic Chat do not expire and are stored permanently. You cannot delete these conversations.
+
+### Have multiple conversations
+
+{{< history >}}
+
+- Multiple conversations and conversation history [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/556875) in GitLab 18.3.
+
+{{< /history >}}
+
+You can have an unlimited number of simultaneous conversations with Agentic Chat.
+
+Your conversations synchronize across Agentic Chat in the GitLab UI and your IDE:
+
+- In the GitLab UI, all of the conversations in your Agentic Chat history are visible.
+- In your IDE, the last 20 conversations are visible.
+  [Issue 1308](https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp/-/issues/1308)
+  proposes to change this.
+
+To manage your conversations and view your Agentic Chat history:
+
+1. Open Agentic Chat in the GitLab UI or your IDE.
+1. Enter your question and press <kbd>Enter</kbd> or select **Send**.
+1. Create a new Agentic Chat conversation:
+
+   - In the GitLab UI: In the upper-right corner of the drawer, select **New chat**
+     ({{< icon name="duo-chat-new" >}}).
+   - In your IDE: In the upper-right corner of the message box, select **New chat**
+     ({{< icon name="plus" >}}).
+
+1. Enter your question and press <kbd>Enter</kbd> or select **Send**.
+1. To view your Agentic Chat history:
+
+   - In the GitLab UI: In the upper-right corner of the Chat drawer, select
+     **Chat history** ({{< icon name="history" >}}).
+   - In your IDE: In the upper-right corner of the message box, select
+     **Chat history** ({{< icon name="history" >}}).
+
+1. To switch between conversations, in your Agentic Chat history, select the
+   appropriate conversation.
+1. IDE only: To search your Chat history, in the **Search chats** text box, enter
+   your search term.
+
+#### Truncation of conversation content
+
+Because of LLM context window limits, conversations are truncated to 200,000 tokens
+(roughly 800,000 characters).
 
 ### Create custom rules
 
@@ -230,6 +277,17 @@ might impact its functionality.
 To help resolve Agentic Chat networking issues, see the
 [GitLab Duo Agent Platform network issue troubleshooting documentation](../duo_agent_platform/troubleshooting.md#network-issues).
 
+### Agentic Chat does not show up in the IDE
+
+You might find that Agentic Chat is not visible in your IDE. To resolve this, make sure that:
+
+1. You have enabled Agentic Chat in the [VS Code](#use-agentic-chat-in-vs-code) or [JetBrains IDE](#use-agentic-chat-in-jetbrains-ides) settings.
+1. You have one project open in your IDE workspace, and that [project is connected to a GitLab project](../duo_agent_platform/troubleshooting.md#view-the-project-in-the-gitlab-workflow-extension).
+1. The [GitLab project is in a group namespace](../duo_agent_platform/troubleshooting.md#project-not-in-a-group-namespace).
+1. You have a Premium or Ultimate subscription.
+1. [GitLab Duo is turned on](../gitlab_duo/turn_on_off.md).
+1. [GitLab Duo experimental and beta features are turned on](../gitlab_duo/turn_on_off.md#turn-on-beta-and-experimental-features) for your top-level group on GitLab.com, or your instance on GitLab Self-Managed. Contact your administrator if necessary.
+
 ### Slow response times
 
 Agentic Chat has significant latency when processing requests.
@@ -250,7 +308,7 @@ used in the search.
 
 ## Feedback
 
-Because this is an experimental feature, your feedback is valuable in helping us improve it.
+Because this is a beta feature, your feedback is valuable in helping us improve it.
 Share your experiences, suggestions, or issues in [issue 542198](https://gitlab.com/gitlab-org/gitlab/-/issues/542198).
 
 ## Related topics

@@ -9,7 +9,7 @@ RSpec.describe 'Project > Value stream analytics', :js, feature_category: :value
   let_it_be(:user) { create(:user) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:auditor) { create(:user, auditor: true) }
-  let_it_be(:group) { create(:group, :with_organization, name: 'CA-test-group', owners: user) }
+  let_it_be(:group) { create(:group, name: 'CA-test-group', owners: user) }
   let_it_be(:project) { create(:project, :repository, namespace: group, name: 'Cool fun project') }
   let_it_be(:project_namespace) { project.project_namespace }
 
@@ -46,7 +46,7 @@ RSpec.describe 'Project > Value stream analytics', :js, feature_category: :value
   end
 
   context 'with cycle_analytics_for_projects licensed feature available' do
-    let_it_be(:group) { create(:group, :with_organization, name: 'Project with custom value streams available') }
+    let_it_be(:group) { create(:group, name: 'Project with custom value streams available') }
     let_it_be(:project) do
       create(:project, :repository, namespace: group, name: 'Important project')
     end

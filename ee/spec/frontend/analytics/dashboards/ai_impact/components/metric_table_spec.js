@@ -18,7 +18,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   DASHBOARD_LOADING_FAILURE,
-  CHART_LOADING_FAILURE,
   SUPPORTED_DORA_METRICS,
   SUPPORTED_VULNERABILITY_METRICS,
   SUPPORTED_CONTRIBUTOR_METRICS,
@@ -277,21 +276,15 @@ describe('Metric table', () => {
         });
       });
 
-      it('emits `set-alerts` with table and chart warnings', () => {
+      it('emits `set-alerts` with table warnings', () => {
         expect(wrapper.emitted('set-alerts')).toHaveLength(1);
-        expect(wrapper.emitted('set-alerts')[0][0].warnings).toHaveLength(2);
+        expect(wrapper.emitted('set-alerts')[0][0].warnings).toHaveLength(1);
       });
 
       it('lists name of the failed metric in the table metrics warning', () => {
         const [tableMetrics] = wrapper.emitted('set-alerts')[0][0].warnings;
         expect(tableMetrics).toContain(DASHBOARD_LOADING_FAILURE);
         expect(tableMetrics).toContain(name);
-      });
-
-      it('lists name of the failed metric in the chart metrics warning', () => {
-        const [, chartMetrics] = wrapper.emitted('set-alerts')[0][0].warnings;
-        expect(chartMetrics).toContain(CHART_LOADING_FAILURE);
-        expect(chartMetrics).toContain(name);
       });
     });
 

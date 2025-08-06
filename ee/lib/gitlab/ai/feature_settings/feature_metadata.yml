@@ -202,10 +202,14 @@ glab_ask_git_command:
     - glab_ask_git_command
 review_merge_request:
   title: Code Review
-  release_state: EXPERIMENT
+  release_state: BETA
   main_feature: GitLab Duo for merge requests
   compatible_llms:
     - claude_3
+    - mistral
+    - mixtral
+    - gpt
+    - llama3
   unit_primitives:
     - review_merge_request
 duo_agent_platform:

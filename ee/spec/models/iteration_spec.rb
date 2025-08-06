@@ -58,10 +58,9 @@ RSpec.describe Iteration, feature_category: :team_planning do
     let_it_be(:group) { create(:group) }
     let_it_be(:iteration_cadence) { create(:iterations_cadence, group: group) }
     let_it_be(:project) { create(:project, group: group) }
+    let(:captures) { subject.match(reference).named_captures }
 
     subject { described_class.reference_pattern }
-
-    let(:captures) { subject.match(reference).named_captures }
 
     context 'when iteration id is provided' do
       let(:reference) { 'gitlab-org/gitlab-ce*iteration:123' }

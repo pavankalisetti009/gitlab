@@ -64,6 +64,8 @@ import {
   TOKEN_TITLE_SUBSCRIBED,
   TOKEN_TITLE_TYPE,
   TOKEN_TITLE_UPDATED,
+  TOKEN_TITLE_ORGANIZATION,
+  TOKEN_TITLE_CONTACT,
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_CLOSED,
@@ -79,6 +81,8 @@ import {
   TOKEN_TYPE_SUBSCRIBED,
   TOKEN_TYPE_TYPE,
   TOKEN_TYPE_UPDATED,
+  TOKEN_TYPE_ORGANIZATION,
+  TOKEN_TYPE_CONTACT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import DateToken from '~/vue_shared/components/filtered_search_bar/tokens/date_token.vue';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
@@ -116,6 +120,10 @@ const MilestoneToken = () =>
   import('~/vue_shared/components/filtered_search_bar/tokens/milestone_token.vue');
 const UserToken = () => import('~/vue_shared/components/filtered_search_bar/tokens/user_token.vue');
 const LocalBoard = () => import('./local_board/local_board.vue');
+const CrmOrganizationToken = () =>
+  import('~/vue_shared/components/filtered_search_bar/tokens/crm_organization_token.vue');
+const CrmContactToken = () =>
+  import('~/vue_shared/components/filtered_search_bar/tokens/crm_contact_token.vue');
 
 const statusMap = {
   [STATUS_OPEN]: STATE_OPEN,
@@ -159,6 +167,9 @@ export default {
     'isSignedIn',
     'showNewWorkItem',
     'workItemType',
+    'canReadCrmOrganization',
+    'hasStatusFeature',
+    'canReadCrmContact',
   ],
   props: {
     eeWorkItemUpdateCount: {
@@ -350,6 +361,7 @@ export default {
     apiFilterParams() {
       return convertToApiParams(this.filterTokens, {
         hasCustomFieldsFeature: this.hasCustomFieldsFeature,
+        hasStatusFeature: this.hasStatusFeature,
       });
     },
     defaultWorkItemTypes() {
@@ -604,6 +616,34 @@ export default {
         });
       }
 
+      if (this.canReadCrmOrganization) {
+        tokens.push({
+          type: TOKEN_TYPE_ORGANIZATION,
+          title: TOKEN_TITLE_ORGANIZATION,
+          icon: 'organization',
+          token: CrmOrganizationToken,
+          fullPath: this.rootPageFullPath,
+          isProject: !this.isGroup,
+          recentSuggestionsStorageKey: `${this.rootPageFullPath}-issues-recent-tokens-crm-organizations`,
+          operators: OPERATORS_IS,
+          unique: true,
+        });
+      }
+
+      if (this.canReadCrmContact) {
+        tokens.push({
+          type: TOKEN_TYPE_CONTACT,
+          title: TOKEN_TITLE_CONTACT,
+          icon: 'user',
+          token: CrmContactToken,
+          fullPath: this.rootPageFullPath,
+          isProject: !this.isGroup,
+          recentSuggestionsStorageKey: `${this.rootPageFullPath}-issues-recent-tokens-crm-contacts`,
+          operators: OPERATORS_IS,
+          unique: true,
+        });
+      }
+
       if (this.eeSearchTokens.length) {
         tokens.push(...this.eeSearchTokens);
       }
@@ -810,6 +850,9 @@ export default {
     async handleBulkEditSuccess(event) {
       this.showBulkEditSidebar = false;
       this.refetchItems(event);
+      if (event?.toastMessage) {
+        this.$toast.show(event.toastMessage);
+      }
     },
     handleClickTab(state) {
       if (this.state === state) {
@@ -1156,16 +1199,18 @@ export default {
         </template>
 
         <template #sidebar-items="{ checkedIssuables }">
-          <work-item-bulk-edit-sidebar
-            v-if="showBulkEditSidebar"
-            :checked-items="checkedIssuables"
-            :full-path="rootPageFullPath"
-            :is-epics-list="isEpicsList"
-            :is-group="isGroup"
-            @finish="bulkEditInProgress = false"
-            @start="bulkEditInProgress = true"
-            @success="handleBulkEditSuccess"
-          />
+          <div class="gl-h-[calc(100%-57px)] gl-overflow-y-auto">
+            <work-item-bulk-edit-sidebar
+              v-if="showBulkEditSidebar"
+              :checked-items="checkedIssuables"
+              :full-path="rootPageFullPath"
+              :is-epics-list="isEpicsList"
+              :is-group="isGroup"
+              @finish="bulkEditInProgress = false"
+              @start="bulkEditInProgress = true"
+              @success="handleBulkEditSuccess"
+            />
+          </div>
         </template>
 
         <template #health-status="{ issuable = {} }">

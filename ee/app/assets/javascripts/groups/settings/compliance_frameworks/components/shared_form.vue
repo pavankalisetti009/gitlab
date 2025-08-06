@@ -150,7 +150,9 @@ export default {
     pipelineConfigurationInputDisabledPopoverContent: s__(
       'ComplianceFrameworks|Set compliance pipeline configuration for projects that use this framework. %{linkStart}How do I create the configuration?%{linkEnd}',
     ),
-    pipelineConfigurationInputDisabledPopoverLink: helpPagePath('user/group/compliance_pipelines'),
+    pipelineConfigurationInputDisabledPopoverLink: helpPagePath(
+      'user/compliance/compliance_pipelines',
+    ),
     pipelineConfigurationInputInvalidFormat: s__('ComplianceFrameworks|Invalid format'),
     pipelineConfigurationInputUnknownFile: s__('ComplianceFrameworks|Configuration not found'),
     colorInputLabel: s__('ComplianceFrameworks|Background color'),

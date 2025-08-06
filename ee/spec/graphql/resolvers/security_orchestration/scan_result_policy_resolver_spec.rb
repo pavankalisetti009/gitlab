@@ -42,7 +42,8 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
           approval_settings: policy[:approval_settings],
           fallback_behavior: policy[:fallback_behavior],
           metadata: policy[:metadata],
-          policy_tuning: policy[:policy_tuning]
+          policy_tuning: policy[:policy_tuning],
+          bypass_settings: policy[:bypass_settings]
         }.compact.deep_stringify_keys),
         updated_at: policy_last_updated_at,
         action_approvers: action_approvers,

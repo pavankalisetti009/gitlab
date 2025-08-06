@@ -208,6 +208,7 @@ export default {
     'rssPath',
     'showNewIssueLink',
     'groupId',
+    'hasStatusFeature',
   ],
   props: {
     eeSearchTokens: {
@@ -370,6 +371,7 @@ export default {
     apiFilterParams() {
       return convertToApiParams(this.filterTokens, {
         hasCustomFieldsFeature: this.hasCustomFieldsFeature,
+        hasStatusFeature: this.hasStatusFeature,
       });
     },
     urlFilterParams() {
@@ -558,7 +560,7 @@ export default {
         tokens.push({
           type: TOKEN_TYPE_ORGANIZATION,
           title: TOKEN_TITLE_ORGANIZATION,
-          icon: 'users',
+          icon: 'organization',
           token: CrmOrganizationToken,
           fullPath: this.fullPath,
           isProject: this.isProject,

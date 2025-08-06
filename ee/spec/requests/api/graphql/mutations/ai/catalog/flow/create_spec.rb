@@ -90,6 +90,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       schema_version: 1,
       version: '1.0.0',
       definition: {
+        steps: [],
         triggers: []
       }.stringify_keys
     )

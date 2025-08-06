@@ -56,6 +56,19 @@ module VirtualRegistryHelper
     }.to_json
   end
 
+  def maven_upstream_data(upstream)
+    {
+      upstream: {
+        id: upstream.id,
+        name: upstream.name,
+        url: upstream.url,
+        description: upstream.description,
+        cacheEntriesCount: upstream.cache_entries.size
+      },
+      editUpstreamPath: edit_group_virtual_registries_maven_upstream_path(upstream.group, upstream)
+    }.to_json
+  end
+
   private
 
   def maven_upstream_attributes(maven_upstream)
@@ -67,18 +80,6 @@ module VirtualRegistryHelper
       username: maven_upstream.username,
       cacheValidityHours: maven_upstream.cache_validity_hours
     }
-  end
-
-  def maven_upstream_data(upstream)
-    {
-      upstream: {
-        id: upstream.id,
-        name: upstream.name,
-        url: upstream.url,
-        description: upstream.description,
-        cacheEntriesCount: upstream.cache_entries.size
-      }
-    }.to_json
   end
 
   def maven_registry_data(group, maven_registry)

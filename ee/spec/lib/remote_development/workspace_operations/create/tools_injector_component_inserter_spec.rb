@@ -47,7 +47,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
     let(:tools_injector_image_from_settings) { 'my/awesome/image:42' }
 
     it 'uses image override' do
-      image_from_processed_devfile = returned_value.dig(:processed_devfile, :components, 2, :container, :image)
+      components = returned_value.dig(:processed_devfile, :components)
+      gl_tools_component = components.find do |component|
+        component[:name] == create_constants_module::TOOLS_INJECTOR_COMPONENT_NAME
+      end
+      image_from_processed_devfile = gl_tools_component.dig(:container, :image)
+
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
     end
   end

@@ -14,13 +14,12 @@ export default {
         },
       },
     },
-    createUpstream: {
+    upstreamCreated: {
       description: 'Emitted when a new upstream is created',
-      action: 'createUpstream',
+      action: 'upstreamCreated',
       table: {
         type: {
-          summary:
-            '(upstream: { name: string, url: string, cacheValidityHours?: number, description?: string, username?: string, password?: string }) => void',
+          summary: '() => void',
         },
       },
     },
@@ -89,45 +88,36 @@ Default.args = {
     description: 'Registry description',
     storageSize: '0 B',
   },
-  upstreams: {
-    count: 2,
-    nodes: [
-      {
-        id: 1,
-        name: 'Upstream title',
-        description: 'Upstream description',
-        url: 'http://maven.org/test',
-        cacheValidityHours: 24,
-        cacheSize: '100 MB',
-        canClearCache: true,
-        artifactCount: 100,
-        position: 1,
-        warning: {
-          text: 'There is a problem with this cached upstream',
-        },
+  upstreams: [
+    {
+      id: 1,
+      name: 'Upstream title',
+      description: 'Upstream description',
+      url: 'http://maven.org/test',
+      cacheValidityHours: 24,
+      cacheSize: '100 MB',
+      canClearCache: true,
+      artifactCount: 100,
+      position: 1,
+      warning: {
+        text: 'There is a problem with this cached upstream',
       },
-      {
-        id: 2,
-        name: 'Upstream title 2',
-        description: 'Upstream description 2',
-        url: 'http://maven.org/test2',
-        cacheValidityHours: 1,
-        cacheSize: '11.2 GB',
-        canClearCache: false,
-        artifactCount: 1,
-        position: 2,
-      },
-    ],
-    pageInfo: {
-      startCursor: 'eyJ1cHN0cmVhbV9pZCI6IjEifQ',
-      hasNextPage: false,
-      hasPreviousPage: false,
-      endCursor: 'eyJ1cHN0cmVhbV9pZCI6IjEifQ',
     },
-  },
+    {
+      id: 2,
+      name: 'Upstream title 2',
+      description: 'Upstream description 2',
+      url: 'http://maven.org/test2',
+      cacheValidityHours: 1,
+      cacheSize: '11.2 GB',
+      canClearCache: false,
+      artifactCount: 1,
+      position: 2,
+    },
+  ],
   canTestUpstream: true,
-  createUpstream: (upstream) => {
-    showToast(`Upstream create called for "${upstream.name}"`);
+  createUpstream: () => {
+    showToast(`Upstream created`);
   },
   testUpstream: (upstream) => {
     showToast(`Upstream test called for "${upstream.name}"`);

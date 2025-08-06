@@ -2,15 +2,20 @@ import { GlLink, GlSprintf, GlTabs, GlTab } from '@gitlab/ui';
 import RoleTabs from 'ee/roles_and_permissions/components/role_tabs.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import RolesCrud from 'ee/roles_and_permissions/components/roles_table/roles_crud.vue';
+import RolesCrud from 'ee/roles_and_permissions/components/roles_crud/roles_crud.vue';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 import { ldapServers as ldapServersData } from '../mock_data';
 
 describe('RoleTabs component', () => {
   let wrapper;
 
-  const createWrapper = ({ ldapServers = ldapServersData, customAdminRoles = true } = {}) => {
+  const createWrapper = ({
+    ldapServers = ldapServersData,
+    customAdminRoles = true,
+    adminModeSettingPath = '',
+  } = {}) => {
     wrapper = shallowMountExtended(RoleTabs, {
+      propsData: { adminModeSettingPath },
       provide: {
         ldapServers,
         glFeatures: { customAdminRoles },
@@ -25,6 +30,7 @@ describe('RoleTabs component', () => {
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findTabAt = (index) => wrapper.findAllComponents(GlTab).at(index);
   const findLdapSyncCrud = () => wrapper.findComponent(LdapSyncCrud);
+  const findAdminRoleRecommendation = () => wrapper.findByTestId('admin-mode-recommendation');
 
   describe('page heading', () => {
     beforeEach(() => createWrapper());
@@ -91,6 +97,29 @@ describe('RoleTabs component', () => {
 
     it('shows ldap sync crud in ldap tab', () => {
       expect(findTabAt(1).findComponent(LdapSyncCrud).exists()).toBe(true);
+    });
+  });
+
+  it('does not show admin mode recommendation alert by default', () => {
+    createWrapper();
+
+    expect(findAdminRoleRecommendation().exists()).toBe(false);
+  });
+
+  describe('when enabling admin mode is recommended', () => {
+    beforeEach(() => createWrapper({ adminModeSettingPath: 'path/to/admin/mode/setting' }));
+
+    it('shows admin mode recommendation alert', () => {
+      expect(findAdminRoleRecommendation().text()).toMatchInterpolatedText(
+        'To enhance security, we recommend enabling Admin mode when using custom admin roles. Enabling Admin mode will require users to re-authenticate in GitLab before accessing the Admin area.',
+      );
+    });
+
+    it('shows link to admin mode setting', () => {
+      const link = findAdminRoleRecommendation().findComponent(GlLink);
+
+      expect(link.text()).toBe('enabling Admin mode');
+      expect(link.props('href')).toBe('path/to/admin/mode/setting');
     });
   });
 });

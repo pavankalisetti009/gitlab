@@ -13,7 +13,7 @@ export default {
     GlButton,
   },
   inject: {
-    registryPath: {
+    upstreamPath: {
       default: '',
     },
   },
@@ -195,7 +195,7 @@ export default {
         {{ saveButtonText }}
       </gl-button>
       <gl-button
-        :href="registryPath"
+        :href="upstreamPath"
         data-testid="cancel-button"
         category="secondary"
         @click="cancel"
