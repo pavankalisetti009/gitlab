@@ -183,7 +183,6 @@ export default {
           <merge-trains-table
             v-if="hasActiveCars"
             :train="activeMergeTrains.train"
-            :cursor="activeCursor"
             is-active-tab
             data-testid="active-merge-trains-table"
             @pageChange="activeCursor = $event"
@@ -200,7 +199,6 @@ export default {
           <merge-trains-table
             v-if="hasMergedCars"
             :train="completedMergeTrains.train"
-            :cursor="mergedCursor"
             data-testid="completed-merge-trains-table"
             @pageChange="mergedCursor = $event"
           />

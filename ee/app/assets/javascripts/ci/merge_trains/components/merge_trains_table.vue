@@ -42,10 +42,6 @@ export default {
       type: Object,
       required: true,
     },
-    cursor: {
-      type: Object,
-      required: true,
-    },
     // used in conjunction with userPermissions to ensure
     // the remove car button is only showed for active cars
     isActiveTab: {
@@ -56,7 +52,6 @@ export default {
   },
   data() {
     return {
-      items: [],
       carToRemoveId: null,
       mergeRequestTitle: '',
     };

@@ -5,7 +5,7 @@ import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { EDIT_ROUTE_NAME, DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
+import { EDIT_ROUTE_NAME } from 'ee/ci/secrets/constants';
 import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
@@ -24,8 +24,6 @@ describe('SecretDetailsWrapper component', () => {
   };
 
   const defaultProps = {
-    fullPath: 'path/to/project',
-    routeName: 'details',
     secretName: 'SECRET_KEY',
   };
 
@@ -34,7 +32,6 @@ describe('SecretDetailsWrapper component', () => {
     stubs = { GlDisclosureDropdown, GlDisclosureDropdownItem, SecretDeleteModal },
     isLoading = false,
     mountFn = shallowMountExtended,
-    routeName = DETAILS_ROUTE_NAME,
   } = {}) => {
     mockApollo = createMockApollo([[getSecretDetailsQuery, mockSecretQuery]]);
 
@@ -50,7 +47,6 @@ describe('SecretDetailsWrapper component', () => {
       },
       mocks: {
         $router: mockRouter,
-        $route: { name: routeName },
       },
     });
 

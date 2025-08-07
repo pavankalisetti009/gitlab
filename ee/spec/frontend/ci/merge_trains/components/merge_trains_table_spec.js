@@ -3,7 +3,6 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import MergeTrainsTable from 'ee/ci/merge_trains/components/merge_trains_table.vue';
 import CiIcon from '~/vue_shared/components/ci_icon/ci_icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
-import { DEFAULT_CURSOR } from 'ee/ci/merge_trains/constants';
 import {
   activeTrain,
   mergedTrain,
@@ -16,7 +15,6 @@ describe('MergeTrainsTable', () => {
 
   const defaultProps = {
     train: activeTrain.data.project.mergeTrains.nodes[0],
-    cursor: DEFAULT_CURSOR,
   };
 
   const car = defaultProps.train.cars.nodes[0];
@@ -85,7 +83,6 @@ describe('MergeTrainsTable', () => {
     it('displays merged by text', () => {
       createComponent({
         train: mergedTrain.data.project.mergeTrains.nodes[0],
-        cursor: DEFAULT_CURSOR,
       });
 
       expect(findTimeAgoTrainText().text()).toContain('Merged');
@@ -97,7 +94,6 @@ describe('MergeTrainsTable', () => {
     beforeEach(() => {
       createComponent({
         train: trainWithPagination.data.project.mergeTrains.nodes[0],
-        cursor: DEFAULT_CURSOR,
       });
     });
 
@@ -136,7 +132,6 @@ describe('MergeTrainsTable', () => {
     it('does display remove button on active tab with permissions', () => {
       createComponent({
         train: trainWithPagination.data.project.mergeTrains.nodes[0],
-        cursor: DEFAULT_CURSOR,
         isActiveTab: true,
       });
 
@@ -146,7 +141,6 @@ describe('MergeTrainsTable', () => {
     it('does not display remove button on merged tab', () => {
       createComponent({
         train: trainWithPagination.data.project.mergeTrains.nodes[0],
-        cursor: DEFAULT_CURSOR,
       });
 
       expect(findRemoveButton().exists()).toBe(false);
@@ -155,7 +149,6 @@ describe('MergeTrainsTable', () => {
     it('does not display remove button on active tab without permissions', () => {
       createComponent({
         train: trainWithoutPermissions.data.project.mergeTrains.nodes[0],
-        cursor: DEFAULT_CURSOR,
         isActiveTab: true,
       });
 

@@ -12,7 +12,6 @@ import {
   GlModal,
   GlSprintf,
 } from '@gitlab/ui';
-import { isDate } from 'lodash';
 import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { getDateInFuture } from '~/lib/utils/datetime_utility';
@@ -108,9 +107,6 @@ export default {
     },
     isEnvironmentScopeValid() {
       return this.secret.environment.length > 0;
-    },
-    isExpirationValid() {
-      return isDate(this.secret.expiration);
     },
     isNameValid() {
       return this.secret.name?.length > 0;

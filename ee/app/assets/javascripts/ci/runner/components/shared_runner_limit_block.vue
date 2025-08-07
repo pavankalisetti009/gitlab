@@ -24,9 +24,6 @@ export default {
     },
   },
   computed: {
-    isExpired() {
-      return this.artifact.expired;
-    },
     runnersWarningMessage() {
       return sprintf(
         s__(

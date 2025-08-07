@@ -1,10 +1,8 @@
 <script>
 import { GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
-import { __, sprintf } from '~/locale';
+import { __ } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { createAlert } from '~/alert';
-import { localeDateFormat } from '~/lib/utils/datetime_utility';
-import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import { EDIT_ROUTE_NAME, FAILED_TO_LOAD_ERROR_MESSAGE } from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from '../secret_delete_modal.vue';
@@ -24,10 +22,6 @@ export default {
       type: String,
       required: false,
       default: null,
-    },
-    routeName: {
-      type: String,
-      required: true,
     },
     secretName: {
       type: String,
@@ -62,10 +56,6 @@ export default {
     };
   },
   computed: {
-    createdAtText() {
-      const date = localeDateFormat.asDate.format(new Date(this.secret.createdAt));
-      return sprintf(__('Created on %{date}'), { date });
-    },
     disclosureDropdownOptions() {
       return [
         {
@@ -77,11 +67,6 @@ export default {
         },
       ];
     },
-    environmentLabelText() {
-      const { environment } = this.secret;
-      const environmentText = convertEnvironmentScope(environment).toLowerCase();
-      return `${__('env')}::${environmentText}`;
-    },
     isSecretLoading() {
       return this.$apollo.queries.secret.loading;
     },
@@ -89,11 +74,6 @@ export default {
   methods: {
     goToEdit() {
       this.$router.push({ name: EDIT_ROUTE_NAME, params: { secretName: this.secretName } });
-    },
-    goTo(name) {
-      if (this.routeName !== name) {
-        this.$router.push({ name });
-      }
     },
     hideModal() {
       this.showDeleteModal = false;
@@ -129,7 +109,7 @@ export default {
           />
         </div>
       </div>
-      <secret-details :full-path="fullPath" :secret="secret" />
+      <secret-details :secret="secret" />
     </div>
   </div>
 </template>

@@ -19634,9 +19634,6 @@ msgstr ""
 msgid "Created on %{created_at}"
 msgstr ""
 
-msgid "Created on %{date}"
-msgstr ""
-
 msgid "Created on:"
 msgstr ""
 

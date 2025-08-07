@@ -1,7 +1,6 @@
 <script>
 import { GlIcon, GlLabel, GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
-import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import { SCOPED_LABEL_COLOR } from '../../constants';
 
@@ -15,20 +14,12 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    fullPath: {
-      type: String,
-      required: false,
-      default: null,
-    },
     secret: {
       type: Object,
       required: true,
     },
   },
   computed: {
-    createdAtText() {
-      return localeDateFormat.asDate.format(new Date(this.secret.createdAt));
-    },
     descriptionText() {
       return this.secret.description || __('None');
     },

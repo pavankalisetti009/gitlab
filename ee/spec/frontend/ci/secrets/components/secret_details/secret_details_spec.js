@@ -6,10 +6,6 @@ import { mockSecret } from '../../mock_data';
 describe('SecretDetails component', () => {
   let wrapper;
 
-  const defaultProps = {
-    fullPath: 'root/banana',
-  };
-
   const findBranches = () => wrapper.findByTestId('secret-details-branches');
   const findDescription = () => wrapper.findByTestId('secret-details-description');
   const findEnvironments = () => wrapper.findComponent(GlLabel);
@@ -17,7 +13,6 @@ describe('SecretDetails component', () => {
   const createComponent = ({ customSecret } = {}) => {
     wrapper = shallowMountExtended(SecretDetails, {
       propsData: {
-        ...defaultProps,
         secret: {
           ...mockSecret(),
           ...customSecret,
