@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Project, feature_category: :groups_and_projects do
+  include AdminModeHelper
   include ProjectForksHelper
   include ::EE::GeoHelpers
   include ::ProjectHelpers
@@ -5538,6 +5539,29 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it 'updates Security::InventoryFilter with new name' do
       expect { update_name }.to change { inventory_filter.reload.project_name }.from(old_name).to(new_name)
+    end
+  end
+
+  describe '.public_or_visible_to_user' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:role) { create(:admin_member_role, :read_admin_projects, user: user) }
+
+    let_it_be(:private_authorized_project) { create(:project, :private, creator: user) }
+    let_it_be(:private_unauthorized_project) { create(:project, :private) } # project the user is not a member of
+    let_it_be(:internal_project) { create(:project, :internal) }
+    let_it_be(:public_project) { create(:project, :public) }
+
+    subject(:projects) { described_class.all.public_or_visible_to_user(user) }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+      enable_admin_mode!(user)
+    end
+
+    it 'returns all projects' do
+      expect(projects).to match_array(
+        [private_authorized_project, private_unauthorized_project, internal_project, public_project]
+      )
     end
   end
 end

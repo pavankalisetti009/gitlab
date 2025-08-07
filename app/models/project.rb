@@ -1035,9 +1035,20 @@ class Project < ApplicationRecord
       where(
         'EXISTS (?) OR projects.visibility_level IN (?)',
         user.authorizations_for_projects(min_access_level: min_access_level),
-        Gitlab::VisibilityLevel.levels_for_user(user)
+        self.visibility_levels_for_user(user)
       )
     end
+  end
+
+  # Auditors can :read_all_resources while admins can :read_all_resources and
+  # read_admin_projects. In EE, a regular user can read_admin_projects through
+  # custom admin roles.
+  def self.visibility_levels_for_user(user)
+    can_read_all_projects = user&.can_read_all_resources? || user&.can?(:read_admin_projects)
+
+    return ::Gitlab::VisibilityLevel::LEVELS_FOR_ADMINS if can_read_all_projects
+
+    Gitlab::VisibilityLevel.levels_for_user(user)
   end
 
   # Define two instance methods:
