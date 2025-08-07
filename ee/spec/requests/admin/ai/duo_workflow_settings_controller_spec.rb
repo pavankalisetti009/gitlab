@@ -35,7 +35,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :with_current_organizat
           post admin_ai_duo_workflow_settings_path
 
           expect(response).to redirect_to(admin_gitlab_duo_path)
-          expect(flash[:notice]).to eq('Duo Workflow Settings have been saved')
+          expect(flash[:notice]).to eq('Duo Agent Platform Settings have been saved')
         end
 
         it 'handles failure to unblock service account' do
@@ -66,7 +66,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :with_current_organizat
           post admin_ai_duo_workflow_settings_path
 
           expect(response).to redirect_to(admin_gitlab_duo_path)
-          expect(flash[:notice]).to eq('Duo Workflow Settings have been saved')
+          expect(flash[:notice]).to eq('Duo Agent Platform Settings have been saved')
         end
 
         it 'handles onboarding service failure' do
@@ -86,7 +86,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :with_current_organizat
           post admin_ai_duo_workflow_settings_path
 
           expect(response).to redirect_to(admin_gitlab_duo_path)
-          expect(flash[:alert]).to eq('Something went wrong saving Duo Workflow settings')
+          expect(flash[:alert]).to eq('Something went wrong saving Duo Agent Platform settings')
         end
       end
     end

@@ -50,7 +50,7 @@ RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_cate
 
         expect(Doorkeeper::Application).to receive(:new).with(
           {
-            name: 'GitLab Duo Workflow Composite OAuth Application',
+            name: 'GitLab Duo Agent Platform Composite OAuth Application',
             redirect_uri: Gitlab::Routing.url_helpers.root_url,
             scopes: [:ai_workflows, :"user:*"],
             trusted: true,

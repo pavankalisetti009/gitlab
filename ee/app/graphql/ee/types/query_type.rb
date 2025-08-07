@@ -165,7 +165,7 @@ module EE
         field :duo_workflow_events, ::Types::Ai::DuoWorkflows::WorkflowEventType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowEventsResolver,
           experiment: { milestone: '17.2' },
-          description: 'List the events for a Duo Workflow.'
+          description: 'List the events for a Duo Agent Platform.'
 
         field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
           resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver,

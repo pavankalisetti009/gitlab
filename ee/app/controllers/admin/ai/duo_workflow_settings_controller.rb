@@ -19,9 +19,12 @@ module Admin
 
         message =
           if response.success?
-            { notice: s_('Duo Workflow|Duo Workflow Settings have been saved') }
+            { notice: s_('Duo Agent Platform|Duo Agent Platform Settings have been saved') }
           else
-            { alert: response.message.presence || s_('Duo Workflow|Something went wrong saving Duo Workflow settings') }
+            {
+              alert: response.message.presence ||
+                s_('Duo Agent Platform|Something went wrong saving Duo Agent Platform settings')
+            }
           end
 
         redirect_to(

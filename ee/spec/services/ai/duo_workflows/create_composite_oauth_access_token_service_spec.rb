@@ -38,7 +38,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
         it 'raises CompositeIdentityEnforcedError' do
           expect { response }.to raise_error(
             ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::CompositeIdentityEnforcedError,
-            "The Duo Workflow service account must have composite identity enabled."
+            "The Duo Agent Platform service account must have composite identity enabled."
           )
         end
       end
@@ -59,7 +59,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
       it 'raises exception' do
         expect { response }.to raise_error(
           ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::IncompleteOnboardingError,
-          'Duo Workflow onboarding is incomplete. Please complete onboarding to proceed further.'
+          'Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
         )
       end
     end

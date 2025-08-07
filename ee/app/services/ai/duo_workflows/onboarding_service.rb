@@ -19,7 +19,7 @@ module Ai
 
         if update_settings
           enable_feature_flags
-          ServiceResponse.success(message: 'Duo Workflow onboarding for the instance is complete')
+          ServiceResponse.success(message: 'Duo Agent Platform onboarding for the instance is complete')
         else
           ServiceResponse.error(message: ai_settings.errors.full_messages.to_sentence)
         end
@@ -55,7 +55,7 @@ module Ai
           ::Users::ServiceAccounts::CreateService.new(
             @current_user, # instance admin
             {
-              name: 'Duo Workflow Service',
+              name: 'Duo Agent Platform Service',
               composite_identity_enforced: true,
               organization_id: @organization.id,
               private_profile: true
@@ -83,7 +83,7 @@ module Ai
         return oauth_application if oauth_application
 
         Doorkeeper::Application.create!(
-          name: 'GitLab Duo Workflow Composite OAuth Application',
+          name: 'GitLab Duo Agent Platform Composite OAuth Application',
           redirect_uri: oauth_callback_url,
           scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::DYNAMIC_USER],
           trusted: true,

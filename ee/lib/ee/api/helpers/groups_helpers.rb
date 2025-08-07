@@ -19,7 +19,7 @@ module EE
             optional :experiment_features_enabled, type: ::Grape::API::Boolean, desc: 'Enable experiment features for this group'
             optional :model_prompt_cache_enabled, type: ::Grape::API::Boolean, desc: 'Enable model prompt cache for this group'
             optional :ai_settings_attributes, type: Hash, desc: 'AI-related settings' do
-              optional :duo_workflow_mcp_enabled, type: ::Grape::API::Boolean, desc: 'Enable MCP support for Duo Workflow'
+              optional :duo_workflow_mcp_enabled, type: ::Grape::API::Boolean, desc: 'Enable MCP support for Duo Agent Platform'
             end
             all_or_none_of :ldap_cn, :ldap_access
           end
