@@ -47521,12 +47521,6 @@ ALTER TABLE ONLY work_item_hierarchy_restrictions
 ALTER TABLE ONLY work_item_hierarchy_restrictions
     ADD CONSTRAINT fk_work_item_hierarchy_restrictions_parent_type_id FOREIGN KEY (parent_type_id) REFERENCES work_item_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE ONLY work_item_related_link_restrictions
-    ADD CONSTRAINT fk_work_item_related_link_restrictions_source_type_id FOREIGN KEY (source_type_id) REFERENCES work_item_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY work_item_related_link_restrictions
-    ADD CONSTRAINT fk_work_item_related_link_restrictions_target_type_id FOREIGN KEY (target_type_id) REFERENCES work_item_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
 ALTER TABLE ONLY work_item_type_custom_fields
     ADD CONSTRAINT fk_work_item_type_custom_fields_on_work_item_type_id FOREIGN KEY (work_item_type_id) REFERENCES work_item_types(id) ON DELETE CASCADE;
 
