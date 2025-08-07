@@ -125,15 +125,6 @@ class Groups::OmniauthCallbacksController < OmniauthCallbacksController
     redirect_to_group_sso(alert: error_message)
   end
 
-  # we can delete this override once feature flag is deleted and have a single method in the base class
-  override :session_not_on_or_after_attribute
-  def session_not_on_or_after_attribute
-    return unless ::Feature.enabled?(:saml_timeout_supplied_by_idp_override_group_saml, @unauthenticated_group)
-    return unless saml_response.present? # response object can be nil in case authentication fails
-
-    saml_response.session_expires_at
-  end
-
   def redirect_to_login_or_register
     notice = s_("SAML|There is already a GitLab account associated with this email address. Sign in with your existing credentials to connect your organization's account")
 

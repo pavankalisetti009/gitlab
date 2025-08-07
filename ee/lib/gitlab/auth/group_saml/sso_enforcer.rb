@@ -15,21 +15,13 @@ module Gitlab
               next if key.to_s.end_with?(SsoState::SESSION_EXPIRY_SUFFIX)
               next unless last_sign_in_at
 
-              # rubocop: disable CodeReuse/ActiveRecord -- This method is not dealing with many records and can still be optimized in one query
-              group = SamlProvider.includes(:group).where(id: key).first&.group
-              # rubocop: enable CodeReuse/ActiveRecord
+              # Check for SAML-specific session expiry
+              saml_expiry_key = "#{key}#{SsoState::SESSION_EXPIRY_SUFFIX}"
+              saml_expires_at = active_sessions[saml_expiry_key]
 
-              if ::Feature.enabled?(:saml_timeout_supplied_by_idp_override_group_saml, group)
-                # Check for SAML-specific session expiry
-                saml_expiry_key = "#{key}#{SsoState::SESSION_EXPIRY_SUFFIX}"
-                saml_expires_at = active_sessions[saml_expiry_key]
-
-                determine_time_remaining_with_session_not_on_or_after(
-                  key, last_sign_in_at, saml_expires_at
-                )
-              else
-                determine_time_remaining(key, last_sign_in_at)
-              end
+              determine_time_remaining_with_session_not_on_or_after(
+                key, last_sign_in_at, saml_expires_at
+              )
             end
           end
 
@@ -82,15 +74,6 @@ module Gitlab
 
             { provider_id: key, time_remaining: time_remaining_for_expiry }
           end
-
-          def determine_time_remaining(key, last_sign_in_at)
-            expires_at = last_sign_in_at + DEFAULT_SESSION_TIMEOUT
-
-            # expires_at is DateTime; convert to Time; Time - Time yields a Float
-            time_remaining_for_expiry = expires_at.to_time - Time.current
-
-            { provider_id: key, time_remaining: time_remaining_for_expiry }
-          end
         end
 
         attr_reader :saml_provider, :user, :session_timeout
@@ -106,7 +89,7 @@ module Gitlab
         end
 
         def active_session?
-          SsoState.new(saml_provider.id).active_since?(session_timeout.ago, group: group)
+          SsoState.new(saml_provider.id).active_since?(session_timeout.ago)
         end
 
         def access_restricted?

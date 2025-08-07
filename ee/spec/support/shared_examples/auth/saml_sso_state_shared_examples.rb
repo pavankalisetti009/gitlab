@@ -137,22 +137,11 @@ RSpec.shared_examples_for 'SAML SSO State checks for session_not_on_or_after' do
         let(:future_time) { 1.hour.from_now.iso8601 }
 
         before do
-          stub_feature_flags(saml_timeout_supplied_by_idp_override_group_saml: false) if saml_type == 'group'
-
           stub_feature_flags(saml_timeout_supplied_by_idp_override: false) if saml_type == 'instance'
         end
 
         it 'considers cutoff value to decide sso_state active' do
           cutoff = 2.hours.ago
-
-          if saml_type == 'group'
-            Gitlab::Session.with_session(active_group_sso_sign_ins: {
-              saml_provider_id => last_signin_time,
-              "#{saml_provider_id}_session_not_on_or_after" => future_time
-            }) do
-              is_expected.not_to be_active_since(cutoff)
-            end
-          end
 
           if saml_type == 'instance'
             Gitlab::Session.with_session(active_instance_sso_sign_ins: {
