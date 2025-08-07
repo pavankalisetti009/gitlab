@@ -101,7 +101,7 @@ describe('EE WorkItemDetail component', () => {
 
   describe('Duo Workflow Action', () => {
     beforeEach(async () => {
-      createComponent({ glFeatures: { aiDuoAgentIssueToMr: true } });
+      createComponent({ glFeatures: { duoWorkflowInCi: true } });
       await waitForPromises();
     });
 
@@ -135,9 +135,9 @@ describe('EE WorkItemDetail component', () => {
       expect(buildApiUrl).toHaveBeenCalledWith('/api/:version/ai/duo_workflows/workflows');
     });
 
-    describe('when aiDuoAgentIssueToMr feature flag is disabled', () => {
+    describe('when duoWorkflowInCi feature flag is disabled', () => {
       beforeEach(async () => {
-        createComponent({ glFeatures: { aiDuoAgentIssueToMr: false } });
+        createComponent({ glFeatures: { duoWorkflowInCi: false } });
         await waitForPromises();
       });
 
