@@ -48,7 +48,6 @@ export default {
     'app/assets/javascripts/diffs/components/diff_row.vue',
     'app/assets/javascripts/diffs/components/diff_view.vue',
     'app/assets/javascripts/diffs/components/image_diff_overlay.vue',
-    'app/assets/javascripts/groups/components/invite_members_banner.vue',
     'app/assets/javascripts/integrations/beyond_identity/components/exclusions_list.vue',
     'app/assets/javascripts/integrations/edit/components/integration_form_actions.vue',
     'app/assets/javascripts/invite_members/components/group_select.vue',
