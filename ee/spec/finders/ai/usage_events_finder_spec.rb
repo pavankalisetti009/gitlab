@@ -9,13 +9,16 @@ RSpec.describe Ai::UsageEventsFinder, feature_category: :value_stream_management
 
   let(:allowed) { false }
 
-  subject(:finder) { described_class.new(user, resource: group).execute }
+  let_it_be(:to) { Time.current }
+  let_it_be(:from) { 20.days.ago(to) }
+
+  subject(:finder) { described_class.new(user, resource: group, from: from, to: to).execute }
 
   describe '#execute' do
     before do
       allow(Ability).to receive(:allowed?)
-        .with(user, :read_enterprise_ai_analytics, group)
-        .and_return(allowed)
+                          .with(user, :read_enterprise_ai_analytics, group)
+                          .and_return(allowed)
     end
 
     context 'when user cannot read AI Usage events' do
@@ -38,77 +41,47 @@ RSpec.describe Ai::UsageEventsFinder, feature_category: :value_stream_management
       end
 
       context 'when there are events' do
-        let_it_be(:usage_event) do
-          create(:ai_usage_event, user: user, namespace: group)
+        let_it_be(:event1) do
+          create(:ai_usage_event, user: user, namespace: group, timestamp: 2.days.ago)
         end
 
-        it 'returns an array with ai usage events' do
-          expect(finder).to contain_exactly(usage_event)
-        end
-      end
-
-      context 'with keyset pagination' do
-        it 'uses QueryBuilder with correct parameters' do
-          expect(::Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder)
-            .to receive(:new)
-            .with(
-              scope: be_a(ActiveRecord::Relation),
-              array_scope: be_a(ActiveRecord::Relation),
-              array_mapping_scope: Ai::UsageEvent.method(:in_optimization_array_mapping_scope),
-              finder_query: Ai::UsageEvent.method(:in_optimization_finder_query)
-            )
-            .and_call_original
-
-          finder
+        let_it_be(:event2) do
+          create(:ai_usage_event, user: user, namespace: group, timestamp: 1.day.ago)
         end
 
-        it 'applies the default limit of 100' do
-          # Create a few events to test the limit
-          create_list(:ai_usage_event, 3, user: user, namespace: group)
+        let_it_be(:too_old_event) do
+          create(:ai_usage_event, user: user, namespace: group, timestamp: from - 1.day)
+        end
 
-          result = finder
-          expect(result.limit_value).to eq(100)
+        let_it_be(:too_new_event) do
+          create(:ai_usage_event, user: user, namespace: group, timestamp: to + 1.day)
+        end
+
+        it 'returns an array with ai usage events matching time range filter' do
+          expect(finder).to contain_exactly(event1, event2)
         end
 
         it 'orders by timestamp desc' do
-          # Create events with different timestamps
-          old_event = create(:ai_usage_event, user: user, namespace: group, timestamp: 2.days.ago)
-          new_event = create(:ai_usage_event, user: user, namespace: group, timestamp: 1.day.ago)
-
-          result = finder.to_a
-          expect(result.first).to eq(new_event)
-          expect(result.last).to eq(old_event)
+          expect(finder.to_a).to eq([event2, event1])
         end
 
         it 'includes events from descendant namespaces' do
-          parent_event = create(:ai_usage_event, user: user, namespace: group)
-          child_event = create(:ai_usage_event, user: user, namespace: subgroup)
-          other_namespace_event = create(:ai_usage_event, user: user, namespace: create(:group))
+          child_event = create(:ai_usage_event, user: user, namespace: subgroup, timestamp: to)
+          _other_namespace_event = create(:ai_usage_event, user: user, namespace: create(:group), timestamp: to)
 
-          result = finder
-          expect(result).to contain_exactly(parent_event, child_event)
-          expect(result).not_to include(other_namespace_event)
-        end
-
-        it 'ignores events with future timestamps' do
-          # Create events with different timestamps
-          old_event = create(:ai_usage_event, user: user, namespace: group, timestamp: 2.days.ago)
-          create(:ai_usage_event, user: user, namespace: group, timestamp: 2.days.from_now)
-
-          result = finder.to_a
-          expect(result).to contain_exactly(old_event)
+          expect(finder).to contain_exactly(event1, event2, child_event)
         end
       end
 
       context 'when retrieving an unrecognized enum' do
         let_it_be(:usage_event) do
-          create(:ai_usage_event, :with_unknown_event, user: user, namespace: group)
+          create(:ai_usage_event, :with_unknown_event, user: user, namespace: group, timestamp: to)
         end
 
         it 'returns an array with the event and an empty event type' do
           result = finder
           expect(result).to contain_exactly(usage_event)
-          expect(usage_event.event).to be_nil
+          expect(result.first.event).to be_nil
         end
       end
     end

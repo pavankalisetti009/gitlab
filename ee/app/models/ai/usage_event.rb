@@ -29,13 +29,25 @@ module Ai
     before_validation :floor_timestamp
 
     scope :with_namespace, -> { includes(:namespace) }
-    scope :exclude_future_events, -> { where(arel_table[:timestamp].lteq(Time.current)) }
     scope :sort_by_timestamp_id, ->(dir: :desc) { order(timestamp: dir, id: dir) }
 
-    # Keyset pagination optimization scopes
-    scope :in_optimization_array_mapping_scope, ->(id_expression) { where(arel_table[:namespace_id].eq(id_expression)) }
-    scope :in_optimization_finder_query, ->(timestamp_expression, id_expression) do
-      where(arel_table[:timestamp].eq(timestamp_expression)).where(arel_table[:id].eq(id_expression))
+    scope :in_timeframe, ->(range) { where(timestamp: range) }
+    scope :for_namespace_hierarchy, ->(namespace) do
+      base_usage_events = sort_by_timestamp_id
+      related_namespaces = namespace.self_and_descendant_ids(skope: Namespace)
+      namespace_mapping_scope = ->(namespace_ids) do
+        ::Ai::UsageEvent.where(arel_table[:namespace_id].eq(namespace_ids))
+      end
+      finder_query = ->(_timestamp_expression, id_expression) do
+        ::Ai::UsageEvent.where(arel_table[:id].eq(id_expression))
+      end
+
+      Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder.new(
+        scope: base_usage_events,
+        array_scope: related_namespaces,
+        array_mapping_scope: namespace_mapping_scope,
+        finder_query: finder_query
+      ).execute
     end
 
     def store_to_pg
