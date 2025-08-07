@@ -291,21 +291,6 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
           .with(session_not_on_or_after: Time.parse('2024-07-17T09:01:48Z'))
         post :saml, params: { SAMLResponse: mock_saml_response }
       end
-
-      context 'when feature flag saml_timeout_supplied_by_idp_override is disabled' do
-        before do
-          stub_feature_flags(saml_timeout_supplied_by_idp_override: false)
-        end
-
-        it 'is called with default time' do
-          sso_state = instance_double(::Gitlab::Auth::Saml::SsoState)
-          allow(::Gitlab::Auth::Saml::SsoState).to receive(:new).and_return(sso_state)
-
-          expect(sso_state).to receive(:update_active).with(session_not_on_or_after: nil)
-
-          post :saml, params: { SAMLResponse: mock_saml_response }
-        end
-      end
     end
   end
 

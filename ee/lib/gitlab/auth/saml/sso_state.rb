@@ -42,7 +42,6 @@ module Gitlab
         private
 
         def session_not_on_or_after_value
-          return unless Feature.enabled?(:saml_timeout_supplied_by_idp_override, :instance)
           return if active_session_data[provider_id].nil?
 
           active_session_data[provider_id]["session_not_on_or_after"]
