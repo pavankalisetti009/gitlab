@@ -20,8 +20,11 @@ export default {
       'SecurityOrchestration|Use the format %{schemaStart}path-to-package@package-version%{schemaEnd}. For multiple packages, separate paths with commas. For example: npm/lodash@4.17.21, maven/org.apache.commons/commons-lang3@3.12.0, pypi/requests',
     ),
     duplicatesError: s__('ScanResultPolicy|Duplicates will be removed'),
-    exceptionsPlaceholder: s__(
+    allowExceptionsPlaceholder: s__(
       'ScanResultPolicy|Specify the packages where this license requires approval before use',
+    ),
+    denyExceptionsPlaceholder: s__(
+      'ScanResultPolicy|Specify the packages where this license does not require approval before use',
     ),
   },
   EXCEPTION_TYPE_ITEMS: [
@@ -56,6 +59,11 @@ export default {
       required: false,
       default: () => [],
     },
+    isDeniedList: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     const { parsedExceptions = [] } = parseExceptionsStringToItems(this.exceptions);
@@ -78,6 +86,11 @@ export default {
       const items = new Set(splitItemsByCommaOrSpace(this.convertedToStringPackages));
 
       return items.size < this.parsedExceptions.length;
+    },
+    placeholder() {
+      return this.isDeniedList
+        ? this.$options.i18n.denyExceptionsPlaceholder
+        : this.$options.i18n.allowExceptionsPlaceholder;
     },
   },
   created() {
@@ -119,7 +132,7 @@ export default {
     <div v-if="withExceptions" class="gl-mt-4">
       <gl-form-textarea
         no-resize
-        :placeholder="$options.i18n.exceptionsPlaceholder"
+        :placeholder="placeholder"
         :value="convertedToStringPackages"
         @input="debouncedSetExceptions"
       />
