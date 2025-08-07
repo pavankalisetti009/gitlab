@@ -33,9 +33,7 @@ module Mutations
             .execute_for_finding(finding.id)
 
           token_status = finding.reset.finding_token_status
-          unless token_status
-            return { errors: [], finding_token_status: "Token status not found for finding #{finding.id}" }
-          end
+          return { errors: ["Token status not found."], finding_token_status: nil } unless token_status
 
           { errors: [], finding_token_status: token_status }
         end
