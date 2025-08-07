@@ -318,6 +318,7 @@ namespace :gitlab do
         workflow = Ai::DuoWorkflows::Workflow.create!(
           user_id: user_id,
           project_id: target_project.id,
+          environment: 'web',
           goal: goal,
           status: workflow_status,
           workflow_definition: workflow_definitions.sample,
