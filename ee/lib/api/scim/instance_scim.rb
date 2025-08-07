@@ -71,7 +71,7 @@ module API
           before { check_instance_requirements! }
 
           desc 'Get SCIM users' do
-            success ::EE::API::Entities::Scim::Users
+            success ::API::Entities::Scim::Users
           end
 
           get do
@@ -85,13 +85,13 @@ module API
               items_per_page: per_page(params[:count]),
               start_index: params[:startIndex]
             }
-            present result_set, with: ::EE::API::Entities::Scim::Users
+            present result_set, with: ::API::Entities::Scim::Users
           rescue ScimFinder::UnsupportedFilter
             scim_error!(message: 'Unsupported Filter')
           end
 
           desc 'Get a SCIM user' do
-            success ::EE::API::Entities::Scim::Users
+            success ::API::Entities::Scim::Users
           end
 
           get ':id', requirements: USER_ID_REQUIREMENTS do
@@ -100,11 +100,11 @@ module API
 
             status 200
 
-            present identity, with: ::EE::API::Entities::Scim::User
+            present identity, with: ::API::Entities::Scim::User
           end
 
           desc 'Create a SCIM user' do
-            success ::EE::API::Entities::Scim::Users
+            success ::API::Entities::Scim::Users
           end
 
           post do
@@ -117,7 +117,7 @@ module API
             when :success
               status 201
 
-              present result.identity, with: ::EE::API::Entities::Scim::User
+              present result.identity, with: ::API::Entities::Scim::User
             when :conflict
               scim_conflict!(
                 message: "Error saving user with #{sanitize_request_parameters(params).inspect}: #{result.message}"
@@ -181,7 +181,7 @@ module API
 
           desc 'Create a SCIM group' do
             detail 'Associates SCIM group ID with existing SAML group link'
-            success ::EE::API::Entities::Scim::Group
+            success ::API::Entities::Scim::Group
           end
           params do
             requires :displayName, type: String, desc: 'Name of the group as configured in GitLab'
@@ -196,7 +196,7 @@ module API
             case result.status
             when :success
               status 201
-              present result.group_link, with: ::EE::API::Entities::Scim::Group
+              present result.group_link, with: ::API::Entities::Scim::Group
             when :error
               scim_error!(message: result.message)
             end
@@ -204,18 +204,18 @@ module API
 
           desc 'Get a SCIM group' do
             detail 'Retrieves a SCIM group by its ID'
-            success ::EE::API::Entities::Scim::Group
+            success ::API::Entities::Scim::Group
           end
           params do
             requires :id, type: String, desc: 'The SCIM group ID'
           end
           get ':id' do
             group_link = find_group_link(params[:id])
-            present group_link, with: ::EE::API::Entities::Scim::Group
+            present group_link, with: ::API::Entities::Scim::Group
           end
 
           desc 'Get SCIM groups' do
-            success ::EE::API::Entities::Scim::Groups
+            success ::API::Entities::Scim::Groups
           end
           params do
             optional :filter, type: String, desc: 'Filter string (e.g. displayName eq "Engineering")'
@@ -237,7 +237,7 @@ module API
             }
 
             status :ok
-            present result_set, with: ::EE::API::Entities::Scim::Groups, excluded_attributes: excluded_attributes
+            present result_set, with: ::API::Entities::Scim::Groups, excluded_attributes: excluded_attributes
           rescue Authn::ScimGroupFinder::UnsupportedFilter
             scim_error!(message: 'Unsupported Filter')
           end
@@ -283,7 +283,7 @@ module API
               display_name: params[:displayName]
             ).execute
 
-            present saml_group_links.first, with: ::EE::API::Entities::Scim::Group, excluded_attributes: ['members']
+            present saml_group_links.first, with: ::API::Entities::Scim::Group, excluded_attributes: ['members']
           end
 
           desc 'Delete a SCIM group'

@@ -844,7 +844,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         let(:filter_query) { '?excludedAttributes=members,meta' }
 
         it 'passes excluded attributes to the presenter' do
-          expect(::EE::API::Entities::Scim::Groups).to receive(:represent)
+          expect(::API::Entities::Scim::Groups).to receive(:represent)
             .with(anything, hash_including(excluded_attributes: %w[members meta]))
             .and_call_original
 
