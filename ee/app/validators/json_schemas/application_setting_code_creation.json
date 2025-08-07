@@ -7,6 +7,16 @@
     "disabled_direct_code_suggestions": {
       "type": "boolean",
       "description": "If direct connection for code suggestions should be disabled"
+    },
+    "model_prompt_cache_enabled": {
+      "type": "boolean",
+      "description": "If model prompt cache is enabled",
+      "default": true
+    },
+    "lock_model_prompt_cache_enabled": {
+      "type": "boolean",
+      "description": "If lock model prompt cache is enabled",
+      "default": false
     }
   }
 }

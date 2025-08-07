@@ -119,6 +119,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         license_usage_data_exported: false,
         lock_memberships_to_ldap: false,
         lock_memberships_to_saml: false,
+        lock_model_prompt_cache_enabled: false,
         maintenance_mode: false,
         max_number_of_repository_downloads: 0,
         max_number_of_repository_downloads_within_time_period: 0,
@@ -127,6 +128,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         mirror_capacity_threshold: Settings.gitlab['mirror_capacity_threshold'],
         mirror_max_capacity: Settings.gitlab['mirror_max_capacity'],
         mirror_max_delay: Settings.gitlab['mirror_max_delay'],
+        model_prompt_cache_enabled: true,
         phone_verification_enabled: true,
         pipeline_execution_policies_per_configuration_limit: 5,
         product_analytics_configurator_connection_string: nil,
@@ -956,6 +958,115 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it { is_expected.to allow_value(nil).for(:cube_api_key) }
         it { is_expected.to allow_value(nil).for(:product_analytics_data_collector_host) }
         it { is_expected.to allow_value(nil).for(:product_analytics_configurator_connection_string) }
+      end
+    end
+
+    describe 'code_creation settings', feature_category: :code_suggestions do
+      describe 'model_prompt_cache_enabled' do
+        it { is_expected.to allow_value(true).for(:model_prompt_cache_enabled) }
+        it { is_expected.to allow_value(false).for(:model_prompt_cache_enabled) }
+
+        context 'when value is invalid' do
+          it 'shows a validation error for nil' do
+            setting.model_prompt_cache_enabled = nil
+            expect(setting).not_to be_valid
+            expect(setting.errors[:code_creation]).to be_present
+          end
+
+          it 'shows a validation error for empty string' do
+            setting.model_prompt_cache_enabled = ''
+            expect(setting).not_to be_valid
+            expect(setting.errors[:code_creation]).to be_present
+          end
+        end
+      end
+
+      describe 'lock_model_prompt_cache_enabled' do
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:project) { create(:project, group: parent_group) }
+
+        it { is_expected.to allow_value(true).for(:lock_model_prompt_cache_enabled) }
+        it { is_expected.to allow_value(false).for(:lock_model_prompt_cache_enabled) }
+
+        context 'when value is invalid' do
+          it 'shows a validation error for nil' do
+            setting.lock_model_prompt_cache_enabled = nil
+            expect(setting).not_to be_valid
+            expect(setting.errors[:code_creation]).to be_present
+          end
+
+          it 'shows a validation error for empty string' do
+            setting.lock_model_prompt_cache_enabled = ''
+            expect(setting).not_to be_valid
+            expect(setting.errors[:code_creation]).to be_present
+          end
+        end
+
+        context 'when lock_model_prompt_cache_enabled is set to true' do
+          before do
+            setting.update!(model_prompt_cache_enabled: false)
+            setting.update!(lock_model_prompt_cache_enabled: true)
+
+            allow(Gitlab::CurrentSettings).to receive_messages(
+              lock_model_prompt_cache_enabled: true,
+              model_prompt_cache_enabled: false
+            )
+          end
+
+          it 'prevents child records from changing locked values with validation error' do
+            ps = project.project_setting
+
+            expect(ps.model_prompt_cache_enabled_locked_by_application_setting?).to be_truthy
+            expect(ps.model_prompt_cache_enabled_locked?).to be_truthy
+
+            ps.model_prompt_cache_enabled = true
+
+            # Should prevent save
+            expect(ps.save).to be_falsey
+            expect(ps.errors.full_messages).to include(match(/Model prompt cache enabled cannot be changed/))
+          end
+
+          it 'ensures child records inherit the locked value' do
+            ps = project.project_setting
+
+            expect(ps.model_prompt_cache_enabled_locked?).to be_truthy
+          end
+        end
+
+        context 'when lock_model_prompt_cache_enabled is set to false' do
+          before do
+            setting.update!(lock_model_prompt_cache_enabled: false)
+            allow(Gitlab::CurrentSettings).to receive(:lock_model_prompt_cache_enabled).and_return(false)
+          end
+
+          it 'allows child records to change the value' do
+            ps = project.project_setting
+
+            ps.model_prompt_cache_enabled = true
+
+            expect(ps.save).to be_truthy
+            expect(ps.reload.model_prompt_cache_enabled).to be(true)
+          end
+        end
+      end
+
+      describe 'disabled_direct_code_suggestions' do
+        it { is_expected.to allow_value(true).for(:disabled_direct_code_suggestions) }
+        it { is_expected.to allow_value(false).for(:disabled_direct_code_suggestions) }
+
+        context 'when value is invalid' do
+          it 'shows a validation error for nil' do
+            setting.disabled_direct_code_suggestions = nil
+            expect(setting).not_to be_valid
+            expect(setting.errors[:code_creation]).to be_present
+          end
+
+          it 'shows a validation error for empty string' do
+            setting.disabled_direct_code_suggestions = ''
+            expect(setting).not_to be_valid
+            expect(setting.errors[:code_creation]).to be_present
+          end
+        end
       end
     end
 
