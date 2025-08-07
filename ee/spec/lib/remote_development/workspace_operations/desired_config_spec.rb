@@ -46,7 +46,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
         end
       end
 
-      it 'fails' do
+      it 'fails', :unlimited_max_formatted_output_length do
         expect(desired_config).to be_invalid
 
         # This validation does not fail for other kinds except for ConfigMap
@@ -54,8 +54,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
         expect(desired_config.errors[:desired_config_array])
           .to include(
             "object property at `/0/invalid-field` is a disallowed additional property",
-            "object property at `/6/invalid-field` is a disallowed additional property",
-            "object property at `/7/invalid-field` is a disallowed additional property"
+            "object property at `/7/invalid-field` is a disallowed additional property",
+            "object property at `/8/invalid-field` is a disallowed additional property"
           )
       end
     end
@@ -122,7 +122,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::DesiredConfig, feature_ca
       let(:expected_difference) do
         [
           [
-            "-", "[10]",
+            "-", "[11]",
             {
               apiVersion: "v1",
               data: {},

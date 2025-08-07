@@ -1,131 +1,44 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "This schema contains the objects created by devfile-gem in the order they are supposed to appear.",
-  "anyOf": [
-    {
-      "type": "array",
-      "unevaluatedItems": false,
-      "prefixItems": [
-        {
-          "$ref": "#/definitions/workspace_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/deployment"
-        },
-        {
-          "$ref": "#/definitions/service"
-        },
-        {
-          "$ref": "#/definitions/persistent_volume_claim"
-        },
-        {
-          "$ref": "#/definitions/service_account"
-        },
-        {
-          "$ref": "#/definitions/network_policy"
-        },
-        {
-          "$ref": "#/definitions/scripts_config_map"
-        },
-        {
-          "$ref": "#/definitions/secrets_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/resource_quota"
-        },
-        {
-          "$ref": "#/definitions/env_var_secret"
-        },
-        {
-          "$ref": "#/definitions/file_secret"
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "unevaluatedItems": false,
-      "prefixItems": [
-        {
-          "$ref": "#/definitions/workspace_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/deployment"
-        },
-        {
-          "$ref": "#/definitions/service"
-        },
-        {
-          "$ref": "#/definitions/persistent_volume_claim"
-        },
-        {
-          "$ref": "#/definitions/service_account"
-        },
-        {
-          "$ref": "#/definitions/network_policy"
-        },
-        {
-          "$ref": "#/definitions/scripts_config_map"
-        },
-        {
-          "$ref": "#/definitions/secrets_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/env_var_secret"
-        },
-        {
-          "$ref": "#/definitions/file_secret"
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "unevaluatedItems": false,
-      "prefixItems": [
-        {
-          "$ref": "#/definitions/workspace_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/secrets_inventory_config_map"
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "unevaluatedItems": false,
-      "prefixItems": [
-        {
-          "$ref": "#/definitions/workspace_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/deployment"
-        },
-        {
-          "$ref": "#/definitions/service"
-        },
-        {
-          "$ref": "#/definitions/persistent_volume_claim"
-        },
-        {
-          "$ref": "#/definitions/service_account"
-        },
-        {
-          "$ref": "#/definitions/network_policy"
-        },
-        {
-          "$ref": "#/definitions/secrets_inventory_config_map"
-        },
-        {
-          "$ref": "#/definitions/resource_quota"
-        },
-        {
-          "$ref": "#/definitions/env_var_secret"
-        },
-        {
-          "$ref": "#/definitions/file_secret"
-        }
-      ]
-    }
-  ],
+  "type": "array",
+  "items": {
+    "anyOf": [
+      {
+        "$ref": "#/definitions/workspace_inventory_config_map"
+      },
+      {
+        "$ref": "#/definitions/deployment"
+      },
+      {
+        "$ref": "#/definitions/service"
+      },
+      {
+        "$ref": "#/definitions/persistent_volume_claim"
+      },
+      {
+        "$ref": "#/definitions/service_account"
+      },
+      {
+        "$ref": "#/definitions/network_policy"
+      },
+      {
+        "$ref": "#/definitions/scripts_config_map"
+      },
+      {
+        "$ref": "#/definitions/secrets_inventory_config_map"
+      },
+      {
+        "$ref": "#/definitions/resource_quota"
+      },
+      {
+        "$ref": "#/definitions/env_var_secret"
+      },
+      {
+        "$ref": "#/definitions/file_secret"
+      }
+    ]
+  },
   "additionalProperties": false,
   "definitions": {
     "workspace_inventory_config_map": {
