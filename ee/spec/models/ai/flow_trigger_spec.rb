@@ -179,4 +179,16 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
       end
     end
   end
+
+  describe 'scopes' do
+    describe 'with_ids' do
+      it 'filters triggers by id' do
+        triggers = create_list(:ai_flow_trigger, 3, project: project)
+
+        expect(project.ai_flow_triggers.with_ids([triggers[0].id, triggers[1].id])).to contain_exactly(
+          triggers[0], triggers[1]
+        )
+      end
+    end
+  end
 end

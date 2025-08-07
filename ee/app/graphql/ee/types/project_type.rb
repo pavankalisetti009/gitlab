@@ -661,6 +661,13 @@ module EE
           'This feature is currently under development and not yet available for general use.',
           resolver: ::Resolvers::Security::SecurityMetricsResolver,
           experiment: { milestone: '18.3' }
+
+        field :ai_flow_triggers,
+          type: ::Types::Ai::FlowTriggerType.connection_type,
+          null: true,
+          description: 'AI flow triggers of the project. This field can only be resolved for one project per request.',
+          resolver: ::Resolvers::Ai::FlowTriggersResolver,
+          experiment: { milestone: '18.3' }
       end
 
       def tracking_key
