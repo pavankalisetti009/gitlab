@@ -7,14 +7,9 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   let_it_be(:user) { create(:user) }
 
   let(:root_namespace) { nil }
-  let(:has_no_seat_assignments) { false }
 
   let(:model_details) do
     described_class.new(current_user: user, feature_setting_name: feature_setting_name, root_namespace: root_namespace)
-  end
-
-  before do
-    allow(user.user_preference).to receive(:no_eligible_duo_add_on_assignments?).and_return(has_no_seat_assignments)
   end
 
   shared_context 'with a default duo namespace assigned' do
@@ -142,18 +137,18 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   end
 
   describe '#duo_context_not_found?' do
-    let(:default_namespace_ff_state) { true }
+    let(:duo_default_required) { true }
 
     before do
-      stub_feature_flags(ai_default_duo_namespace_user: default_namespace_ff_state)
+      allow(model_details).to receive(:default_duo_namespace_required?).and_return(duo_default_required)
     end
 
-    context 'when no duo context can be found' do
+    context 'when no duo context can be found and it is required' do
       it_behaves_like 'feature_setting cannot be inferred for method', :duo_context_not_found?, true
     end
 
-    context 'when the ai_default_duo_namespace_user ff is disabled' do
-      let(:default_namespace_ff_state) { false }
+    context 'when no duo context can be found and it is not required' do
+      let(:duo_default_required) { false }
 
       it 'returns false' do
         expect(model_details.duo_context_not_found?).to be(false)
@@ -172,14 +167,6 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       it 'returns false' do
         create(:ai_feature_setting, feature: feature_setting_name)
 
-        expect(model_details.duo_context_not_found?).to be(false)
-      end
-    end
-
-    context 'when there no seats assigned for the user' do
-      let(:has_no_seat_assignments) { true }
-
-      it 'returns false' do
         expect(model_details.duo_context_not_found?).to be(false)
       end
     end
