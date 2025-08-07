@@ -62,6 +62,7 @@ describe('Edit Framework Form', () => {
     featureSecurityPoliciesEnabled: true,
     migratePipelineToPolicyPath: '/migratepipelinetopolicypath',
     pipelineExecutionPolicyPath: '/policypath',
+    namespaceId: 'gid://gitlab/Group/123',
   };
   const requirementsData = [
     {
@@ -1537,6 +1538,125 @@ describe('Edit Framework Form', () => {
 
       const sortedRequirements = wrapper.vm.requirements;
       expect(sortedRequirements.map((r) => r.name)).toEqual(['First', 'Second', 'Third']);
+    });
+  });
+
+  describe('CSP framework behavior', () => {
+    describe('isFrameworkInherited computed property', () => {
+      it('returns false when namespaceIds match', async () => {
+        const mockResponse = createComplianceFrameworksReportResponse();
+        mockResponse.data.namespace.id = 'gid://gitlab/Group/123';
+        mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId =
+          'gid://gitlab/Types::Namespace/123';
+
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+        expect(wrapper.findComponent(BasicInformationSection).props('isInherited')).toBe(false);
+      });
+
+      it('returns true when namespaceIds differ', async () => {
+        const mockResponse = createComplianceFrameworksReportResponse();
+        mockResponse.data.namespace.id = 'gid://gitlab/Group/123';
+        mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId =
+          'gid://gitlab/Types::Namespace/456';
+
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+        expect(wrapper.findComponent(BasicInformationSection).props('isInherited')).toBe(true);
+      });
+
+      it('returns false when namespaceIds are missing', async () => {
+        const mockResponse = createComplianceFrameworksReportResponse();
+        delete mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId;
+
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+        expect(wrapper.findComponent(BasicInformationSection).props('isInherited')).toBe(false);
+      });
+    });
+
+    describe('delete button for inherited frameworks', () => {
+      it('disables delete button for inherited frameworks', async () => {
+        const mockResponse = createFrameworkResponseWithEmptyPolicies();
+        mockResponse.data.namespace.id = 'gid://gitlab/Group/123';
+        mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId =
+          'gid://gitlab/Types::Namespace/456';
+
+        wrapper = createComponent(shallowMountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+        expect(findDeleteButton().props('disabled')).toBe(true);
+      });
+
+      it('enables delete button for non-inherited frameworks', async () => {
+        const mockResponse = createFrameworkResponseWithEmptyPolicies();
+        mockResponse.data.namespace.id = 'gid://gitlab/Group/123';
+        mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId =
+          'gid://gitlab/Types::Namespace/123';
+
+        wrapper = createComponent(shallowMountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+        expect(findDeleteButton().props('disabled')).toBe(false);
+      });
+    });
+
+    describe('passing isInherited prop to child components', () => {
+      it('passes isInherited=true when framework is inherited', async () => {
+        const mockResponse = createComplianceFrameworksReportResponse();
+        mockResponse.data.namespace.id = 'gid://gitlab/Group/123';
+        mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId =
+          'gid://gitlab/Types::Namespace/456';
+
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+
+        expect(wrapper.findComponent(BasicInformationSection).props('isInherited')).toBe(true);
+        expect(wrapper.findComponent(RequirementsSection).props('isInherited')).toBe(true);
+        expect(wrapper.findComponent(PoliciesSection).props('isInherited')).toBe(true);
+      });
+
+      it('passes isInherited=false when framework is not inherited', async () => {
+        const mockResponse = createComplianceFrameworksReportResponse();
+        mockResponse.data.namespace.id = 'gid://gitlab/Group/123';
+        mockResponse.data.namespace.complianceFrameworks.nodes[0].namespaceId =
+          'gid://gitlab/Types::Namespace/123';
+
+        wrapper = createComponent(mountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+        });
+
+        await waitForPromises();
+
+        expect(wrapper.findComponent(BasicInformationSection).props('isInherited')).toBe(false);
+        expect(wrapper.findComponent(RequirementsSection).props('isInherited')).toBe(false);
+        expect(wrapper.findComponent(PoliciesSection).props('isInherited')).toBe(false);
+      });
+    });
+
+    describe('new framework creation', () => {
+      it('isFrameworkInherited should be false for new frameworks', async () => {
+        wrapper = createComponent(mountExtended, { routeParams: {} });
+        await waitForPromises();
+
+        expect(wrapper.findComponent(BasicInformationSection).props('isInherited')).toBe(false);
+      });
     });
   });
 });

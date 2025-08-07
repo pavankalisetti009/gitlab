@@ -62,6 +62,7 @@ export default {
         after: null,
       },
       sortKey: 'UPDATED_AT_DESC',
+      namespaceId: null,
     };
   },
   apollo: {
@@ -80,6 +81,8 @@ export default {
         };
       },
       update(data) {
+        this.namespaceId = data.namespace.id;
+
         return data.namespace.complianceFrameworks;
       },
       error(e) {
@@ -219,6 +222,7 @@ export default {
         :project-path="projectPath"
         :is-loading="isLoading"
         :frameworks="frameworks.nodes"
+        :namespace-id="namespaceId"
         @search="onSearch"
         @sortChanged="onSortChanged"
         @delete-framework="deleteFramework"

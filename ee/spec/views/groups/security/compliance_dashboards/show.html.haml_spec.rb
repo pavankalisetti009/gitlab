@@ -19,6 +19,7 @@ RSpec.describe "groups/security/compliance_dashboards/show", type: :view, featur
     allow(Ability).to receive(:allowed?).and_call_original
     allow(Ability).to receive(:allowed?).with(user, :read_compliance_adherence_report, group).and_return(true)
     allow(Ability).to receive(:allowed?).with(user, :read_compliance_violations_report, group).and_return(true)
+    allow(group).to receive(:designated_as_csp?).and_return(false)
 
     assign(:group, group)
   end

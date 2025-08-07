@@ -60,6 +60,7 @@ export default {
     'featureSecurityPoliciesEnabled',
     'pipelineExecutionPolicyPath',
     'migratePipelineToPolicyPath',
+    'namespaceId',
   ],
   data() {
     return {
@@ -72,6 +73,7 @@ export default {
       isDeleting: false,
       hasMigratedPipeline: false,
       showMigrationPopup: false,
+      currentNamespaceId: null,
     };
   },
   apollo: {
@@ -82,6 +84,8 @@ export default {
         return this.queryVariables;
       },
       result({ data }) {
+        this.currentNamespaceId = data?.namespace?.id;
+
         const [complianceFramework] = data?.namespace?.complianceFrameworks?.nodes || [];
         if (complianceFramework) {
           const { complianceRequirements, ...rest } = complianceFramework;
@@ -159,10 +163,10 @@ export default {
       };
     },
     deleteBtnDisabled() {
-      return this.hasLinkedPolicies || this.isDefaultFramework;
+      return this.hasLinkedPolicies || this.isDefaultFramework || this.isFrameworkInherited;
     },
     deleteBtnDisabledTooltip() {
-      return this.isDefaultFramework
+      return this.isDefaultFramework || this.isFrameworkInherited
         ? i18n.deleteButtonDefaultFrameworkDisabledTooltip
         : i18n.deleteButtonLinkedPoliciesDisabledTooltip;
     },
@@ -211,6 +215,16 @@ export default {
     },
     hasPipeline() {
       return this.formData.pipelineConfigurationFullPath;
+    },
+    isFrameworkInherited() {
+      if (!this.formData.namespaceId || !this.currentNamespaceId) {
+        return false;
+      }
+
+      const frameworkNsId = getIdFromGraphQLId(this.formData.namespaceId);
+      const currentNsId = getIdFromGraphQLId(this.currentNamespaceId);
+
+      return frameworkNsId !== currentNsId;
     },
   },
   methods: {
@@ -668,11 +682,13 @@ export default {
           :is-expanded="isNewFramework"
           :has-migrated-pipeline="hasMigratedPipeline"
           :show-validation="showValidation"
+          :is-inherited="isFrameworkInherited"
         />
 
         <requirements-section
           :requirements="requirements"
           :is-new-framework="isNewFramework"
+          :is-inherited="isFrameworkInherited"
           @[$options.requirementEvents.create]="handleCreateRequirement"
           @[$options.requirementEvents.update]="handleUpdateRequirement"
           @[$options.requirementEvents.delete]="handleDeleteRequirement"
@@ -684,6 +700,7 @@ export default {
           :is-expanded="isNewFramework"
           :full-path="groupPath"
           :graphql-id="graphqlId"
+          :is-inherited="isFrameworkInherited"
         />
 
         <projects-section

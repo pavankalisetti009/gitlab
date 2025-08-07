@@ -51,6 +51,7 @@ export default () => {
     violationsV2Enabled,
     policyDisplayLimit,
     activeComplianceFrameworks,
+    designatedAsCsp,
   } = el.dataset;
 
   Vue.use(VueApollo);
@@ -114,6 +115,7 @@ export default () => {
       violationsV2Enabled: parseBoolean(violationsV2Enabled),
       policyDisplayLimit: Number(policyDisplayLimit),
       activeComplianceFrameworks: parseBoolean(activeComplianceFrameworks),
+      designatedAsCsp: parseBoolean(designatedAsCsp),
     },
 
     render: (createElement) => createElement('router-view'),

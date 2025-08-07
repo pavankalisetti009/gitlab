@@ -390,4 +390,44 @@ describe('Requirements section', () => {
       expect(wrapper.vm.currentPage).toBe(2);
     });
   });
+
+  describe('CSP framework behavior', () => {
+    beforeEach(() => {
+      controlsQueryHandler = jest.fn().mockResolvedValue({
+        data: {
+          complianceRequirementControls: {
+            controlExpressions: mockGitLabStandardControls,
+          },
+        },
+      });
+    });
+
+    describe('when framework is inherited', () => {
+      beforeEach(async () => {
+        await createComponent({
+          controlsQueryHandlerMockResponse: controlsQueryHandler,
+          isInherited: true,
+        });
+
+        await wrapper.setProps({ isInherited: true });
+      });
+
+      it('passes isInherited prop correctly', () => {
+        expect(wrapper.props('isInherited')).toBe(true);
+      });
+    });
+
+    describe('when framework is not inherited', () => {
+      beforeEach(async () => {
+        await createComponent({
+          controlsQueryHandlerMockResponse: controlsQueryHandler,
+          isInherited: false,
+        });
+      });
+
+      it('passes isInherited prop correctly', () => {
+        expect(wrapper.props('isInherited')).toBe(false);
+      });
+    });
+  });
 });

@@ -28,6 +28,7 @@ describe('ComplianceReportsApp component', () => {
     adherencesCsvExportPath: '/compliance_standards_adherences.csv',
     frameworksCsvExportPath: '/compliance_frameworks_report.csv',
     canAccessRootAncestorComplianceCenter: true,
+    designatedAsCsp: false,
     glAbilities: {
       adminComplianceFramework: true,
     },
@@ -45,6 +46,7 @@ describe('ComplianceReportsApp component', () => {
   const findMergeCommitsExportButton = () => wrapper.findByText('Export chain of custody report');
   const findComplianceViolationsExportButton = () =>
     wrapper.findByText('Export compliance violations report');
+  const findCspBadge = () => wrapper.findByTestId('csp-badge');
 
   const findViolationsExportButton = () =>
     wrapper.findByText('Export merge request violations report');
@@ -175,7 +177,7 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('passes the expected values to the header', () => {
-      expect(findHeader().props('heading')).toBe('Compliance center');
+      expect(findHeader().text()).toContain('Compliance center');
       expect(findHeader().text()).toContain(
         'Report and manage compliance status, violations, and compliance frameworks for the group. Learn more.',
       );
@@ -230,7 +232,7 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('passes the expected values to the header', () => {
-      expect(findHeader().props('heading')).toBe('Compliance center');
+      expect(findHeader().text()).toContain('Compliance center');
       expect(findHeader().text()).toContain(
         'Report and manage compliance status, violations, and compliance frameworks for the group. Learn more.',
       );
@@ -401,6 +403,18 @@ describe('ComplianceReportsApp component', () => {
       expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_report_tab', {
         label: 'violations',
       });
+    });
+  });
+
+  describe('CSP group', () => {
+    it('displays the csp badge when designated as CSP', () => {
+      wrapper = createComponent(mountExtended, {}, { designatedAsCsp: true });
+      expect(findCspBadge().exists()).toBe(true);
+    });
+
+    it('does not display the csp badge when not designated as CSP', () => {
+      wrapper = createComponent(mountExtended, {}, { designatedAsCsp: false });
+      expect(findCspBadge().exists()).toBe(false);
     });
   });
 });
