@@ -376,6 +376,21 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
     it { is_expected.to contain_exactly(scan_1) }
   end
 
+  describe '.processing' do
+    let_it_be(:created_scan) { create(:security_scan, status: :created) }
+    let_it_be(:preparing_scan) { create(:security_scan, status: :preparing) }
+
+    before_all do
+      ::Security::Scan.statuses.except('created', 'preparing').each_key do |status|
+        create(:security_scan, status: status)
+      end
+    end
+
+    subject { described_class.processing }
+
+    it { is_expected.to match_array([created_scan, preparing_scan]) }
+  end
+
   describe '#report_findings' do
     let(:artifact) { create(:ee_ci_job_artifact, :dast) }
     let(:scan) { create(:security_scan, build: artifact.job) }

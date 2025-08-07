@@ -42,6 +42,7 @@ module Security
     scope :with_warnings, -> { where("jsonb_array_length(COALESCE(info->'warnings', '[]'::jsonb)) > 0") }
     scope :with_errors, -> { where("jsonb_array_length(COALESCE(info->'errors', '[]'::jsonb)) > 0") }
     scope :not_in_terminal_state, -> { where.not(status: Security::ScanStatusEnum::TERMINAL_STATUSES) }
+    scope :processing, -> { where(status: %i[created preparing]) }
 
     delegate :name, to: :build
     delegate :mode, to: :partial_scan, prefix: true, allow_nil: true
