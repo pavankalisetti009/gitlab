@@ -58,9 +58,13 @@ module GitlabSubscriptions
         response = Groups::CreateService.new(user, group_params).execute
         namespace = response[:group]
 
-        # We need to stick to the primary database in order to allow the following request
-        # fetch the namespace from an up-to-date replica or a primary database.
-        ::Namespace.sticking.stick(:namespace, namespace.id) if response.success?
+        if response.success?
+          ::Onboarding::Progress.onboard(namespace)
+          # We need to stick to the primary database in order to allow the following request
+          # fetch the namespace from an up-to-date replica or a primary database.
+          ::Namespace.sticking.stick(:namespace, namespace.id)
+        end
+
         namespace
       end
 
@@ -79,21 +83,17 @@ module GitlabSubscriptions
       end
 
       def submit_trial
-        result = GitlabSubscriptions::Trials::ApplyTrialService.new(uid: user.id,
-          trial_user_information: trial_params).execute
-        result[:add_on_purchase]
+        GitlabSubscriptions::Trials::ApplyTrialService.new(uid: user.id,
+          trial_user_information: trial_params).execute.success?
       end
 
       def setup_trial
         @lead_created = submit_lead.success? unless lead_created
 
         return error unless lead_created
+        return error unless submit_trial
 
-        add_on_purchase = submit_trial
-
-        return error unless add_on_purchase.present?
-
-        success(add_on_purchase)
+        success
       end
 
       def trial_params
@@ -104,7 +104,7 @@ module GitlabSubscriptions
         }
 
         params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id)
-          .merge(gl_com_params, namespace_params).to_h.symbolize_keys
+          .merge(gl_com_params).merge(namespace_params).to_h.symbolize_keys
       end
 
       def lead_params
@@ -157,10 +157,10 @@ module GitlabSubscriptions
         )
       end
 
-      def success(add_on_purchase)
+      def success
         ServiceResponse.success(
           message: 'Trial applied',
-          payload: { namespace_id: namespace.id, add_on_purchase: add_on_purchase }
+          payload: { namespace: namespace, project: project }
         )
       end
     end

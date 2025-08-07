@@ -58,7 +58,9 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
   end
 
   describe 'POST create' do
-    let_it_be(:group_for_trial, reload: true) { create(:group_with_plan, plan: :free_plan, owners: user) }
+    let_it_be(:namespace, reload: true) { create(:group_with_plan, plan: :free_plan, owners: user) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+
     let(:default_params) do
       {
         first_name: '_first_name_',
@@ -73,8 +75,6 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
     end
 
     let(:params) { default_params }
-    let(:namespace_id) { 1 }
-    let(:project_id) { 1 }
 
     subject(:post_create) do
       post users_sign_up_trial_welcome_path, params: params
@@ -93,13 +93,13 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
 
           result = ServiceResponse.success(
             message: 'Trial applied',
-            payload: { namespace_id: namespace_id, project_id: project_id, add_on_purchase: add_on_purchase }
+            payload: { namespace: namespace, project: project }
           )
           expect(instance).to receive(:execute).and_return(result)
           instance
         end
 
-        expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace_id, project_id))
+        expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace, project))
       end
 
       context 'with experiment lightweight_trial_registration_redesign' do
@@ -117,12 +117,12 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
             hash_including(params: params)) do |instance|
             result = ServiceResponse.success(
               message: 'Trial applied',
-              payload: { namespace_id: group_for_trial.id, project_id: project_id, add_on_purchase: add_on_purchase }
+              payload: { namespace: namespace, project: project }
             )
             expect(instance).to receive(:execute).and_return(result)
           end
 
-          expect(experiment).to receive(:track).with(:completed_group_project_creation, namespace: group_for_trial)
+          expect(experiment).to receive(:track).with(:completed_group_project_creation, namespace: namespace)
 
           post_create
         end
@@ -171,7 +171,7 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
 
           result = ServiceResponse.error(
             message: 'Trial creation failed in project stage',
-            payload: { namespace_id: namespace_id, project_id: nil, lead_created: false,
+            payload: { namespace_id: namespace.id, project_id: nil, lead_created: false,
                        model_errors: [projectName: ["project creation failed"]] }
           )
           expect(instance).to receive(:execute).and_return(result)
@@ -183,7 +183,7 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
       end
 
       context "when resubmission" do
-        let(:params) { default_params.merge(namespace_id: namespace_id) }
+        let(:params) { default_params.merge(namespace_id: namespace.id) }
 
         it "when project creation success" do
           expect(GitlabSubscriptions::Trials::WelcomeCreateService).to receive(:new).and_wrap_original do |method, args|
@@ -192,13 +192,13 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
 
             result = ServiceResponse.success(
               message: 'Trial applied',
-              payload: { namespace_id: namespace_id, project_id: project_id, lead_created: true }
+              payload: { namespace: namespace, project: project, lead_created: true }
             )
             expect(instance).to receive(:execute).and_return(result)
             instance
           end
 
-          expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace_id, project_id))
+          expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace, project))
         end
       end
     end

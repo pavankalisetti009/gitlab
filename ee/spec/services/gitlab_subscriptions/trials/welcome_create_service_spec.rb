@@ -80,7 +80,7 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect { execute }.to change { Group.count }.by(1).and change { Project.count }.by(1)
         expect(execute).to be_success
         expect(execute.message).to eq('Trial applied')
-        expect(execute.payload).to eq({ namespace_id: Group.last.id, add_on_purchase: add_on_purchase })
+        expect(execute.payload).to eq({ namespace: Group.last, project: Project.last })
       end
 
       context 'when retrying' do
@@ -99,7 +99,7 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
             expect { execute }.to not_change { Group.count }.and change { Project.count }.by(1)
             expect(execute).to be_success
             expect(execute.message).to eq('Trial applied')
-            expect(execute.payload).to eq({ namespace_id: existing_group.id, add_on_purchase: add_on_purchase })
+            expect(execute.payload).to eq({ namespace: existing_group, project: Project.last })
           end
         end
 
@@ -115,7 +115,7 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
             expect { execute }.to not_change { Group.count }.and not_change { Project.count }
             expect(execute).to be_success
             expect(execute.message).to eq('Trial applied')
-            expect(execute.payload).to eq({ namespace_id: existing_group.id, add_on_purchase: add_on_purchase })
+            expect(execute.payload).to eq({ namespace: existing_group, project: existing_project })
           end
         end
 
@@ -131,7 +131,7 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
             expect { execute }.to not_change { Group.count }.and not_change { Project.count }
             expect(execute).to be_success
             expect(execute.message).to eq('Trial applied')
-            expect(execute.payload).to eq({ namespace_id: existing_group.id, add_on_purchase: add_on_purchase })
+            expect(execute.payload).to eq({ namespace: existing_group, project: existing_project })
           end
         end
 

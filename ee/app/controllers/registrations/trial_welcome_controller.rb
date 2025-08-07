@@ -25,12 +25,12 @@ module Registrations
         user: current_user, **progress_params).execute
 
       if result.success?
-        namespace = Namespace.find_by(id: result.payload[:namespace_id]) # rubocop: disable CodeReuse/ActiveRecord -- Using `find` would raise error
+        namespace = result.payload[:namespace]
 
         experiment(:lightweight_trial_registration_redesign, actor: current_user).track(
           :completed_group_project_creation, namespace: namespace)
 
-        redirect_to namespace_project_learn_gitlab_path(result.payload[:namespace_id], result.payload[:project_id])
+        redirect_to namespace_project_learn_gitlab_path(namespace, result.payload[:project])
       elsif result.reason == GitlabSubscriptions::Trials::UltimateCreateService::NOT_FOUND
         render_404
       elsif result.payload[:model_errors].present?
@@ -46,7 +46,7 @@ module Registrations
     end
 
     def resubmit_params(result)
-      { namespace_id: result.payload[:namespace_id],
+      { namespace_id: result.payload[:namespace].try(:id),
         errors: result.payload[:model_errors] }.merge(create_params).to_h.symbolize_keys
     end
 
