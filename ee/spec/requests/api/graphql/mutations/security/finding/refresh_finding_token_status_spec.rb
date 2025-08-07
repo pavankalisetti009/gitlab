@@ -124,9 +124,9 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
             result = execute
 
             expect(other_finding.finding_token_status).to be_nil
-            expect(result[:errors]).to be_empty
+            expect(result[:errors]).to eq(["Token status not found."])
             expect(result[:finding_token_status])
-              .to eq("Token status not found for finding #{other_finding.id}")
+              .to be_nil
           end
         end
       end
