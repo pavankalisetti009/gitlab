@@ -61,6 +61,15 @@ export default {
       type: String,
       required: true,
     },
+    border: {
+      type: Boolean,
+      required: true,
+    },
+    canCreateGroup: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
   },
   data() {
     return {
@@ -84,7 +93,7 @@ export default {
       );
     },
     showCreateGroupButton() {
-      return this.formValues.group !== CREATE_GROUP_OPTION_VALUE;
+      return this.canCreateGroup && this.formValues.group !== CREATE_GROUP_OPTION_VALUE;
     },
     stateRequired() {
       return COUNTRIES_WITH_STATES_ALLOWED.includes(this.formValues.country);
@@ -302,7 +311,7 @@ export default {
     ref="form"
     :action="submitPath"
     method="post"
-    class="gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6"
+    :class="['gl-p-6', { 'gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6': border }]"
     data-testid="trial-form"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />

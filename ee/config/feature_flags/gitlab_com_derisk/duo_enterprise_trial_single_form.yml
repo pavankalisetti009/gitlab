@@ -1,0 +1,10 @@
+---
+name: duo_enterprise_trial_single_form
+description: Convert duo enterprise trial in-app to single step
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/543764
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/199033
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557167
+milestone: '18.3'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false

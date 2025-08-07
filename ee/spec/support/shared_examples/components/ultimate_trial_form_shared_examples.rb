@@ -31,7 +31,9 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Ultimate::TrialFormComponent 
           state: ''
         },
         submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content'),
-        gtmSubmitEventLabel: 'saasTrialSubmit'
+        gtmSubmitEventLabel: 'saasTrialSubmit',
+        border: true,
+        canCreateGroup: true
       }.with_indifferent_access
     end
 

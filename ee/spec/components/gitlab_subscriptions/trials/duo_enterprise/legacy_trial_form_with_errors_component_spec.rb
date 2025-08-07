@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::TrialFormWithErrorsComponent, :saas, :aggregate_failures, type: :component, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::LegacyTrialFormWithErrorsComponent, :saas, :aggregate_failures, feature_category: :acquisition do
   let(:errors) { ['some CDOT error'] }
   let(:reason) { nil }
   let(:additional_kwargs) { { errors: errors, reason: reason } }
 
-  it_behaves_like GitlabSubscriptions::Trials::DuoEnterprise::TrialFormComponent do
+  it_behaves_like GitlabSubscriptions::Trials::DuoEnterprise::LegacyTrialFormComponent do
     it { is_expected.to have_text('some CDOT error') }
 
     context 'when it is a generic error' do
