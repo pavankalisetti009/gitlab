@@ -17731,7 +17731,7 @@ CREATE TABLE merge_request_diff_files (
     too_large boolean NOT NULL,
     a_mode character varying NOT NULL,
     b_mode character varying NOT NULL,
-    new_path text NOT NULL,
+    new_path text,
     old_path text NOT NULL,
     diff text,
     "binary" boolean,
