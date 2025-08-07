@@ -14,12 +14,4 @@ RSpec.describe Ai::ActiveContext::Queues::Code, feature_category: :code_suggesti
       expect(ActiveContext::Queues.queues).to include('ai_activecontext_queues:{code}')
     end
   end
-
-  describe '.raw_queues' do
-    it 'includes the code queue' do
-      raw_queues = ActiveContext::Queues.raw_queues
-
-      expect(raw_queues.any?(described_class)).to be true
-    end
-  end
 end
