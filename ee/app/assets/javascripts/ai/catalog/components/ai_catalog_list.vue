@@ -1,8 +1,9 @@
 <script>
-import { GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
+import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogListItem from './ai_catalog_list_item.vue';
 
 export default {
@@ -10,8 +11,8 @@ export default {
   components: {
     AiCatalogListItem,
     ConfirmActionModal,
-    GlSkeletonLoader,
     GlSprintf,
+    ResourceListsLoadingStateList,
     ResourceListsEmptyState,
   },
   props: {
@@ -60,8 +61,8 @@ export default {
 </script>
 
 <template>
-  <div data-testid="ai-catalog-list">
-    <gl-skeleton-loader v-if="isLoading" :lines="2" />
+  <div>
+    <resource-lists-loading-state-list v-if="isLoading" />
 
     <template v-else-if="items.length > 0">
       <ul class="gl-list-none gl-p-0">

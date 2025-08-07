@@ -1,8 +1,9 @@
-import { GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
+import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { mockAgents } from '../mock_data';
 
@@ -25,11 +26,9 @@ describe('AiCatalogList', () => {
     });
   };
 
-  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
+  const findLoadingStateList = () => wrapper.findComponent(ResourceListsLoadingStateList);
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
-  const findList = () => wrapper.find('ul');
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
-  const findContainer = () => wrapper.findByTestId('ai-catalog-list');
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
 
   describe('component rendering', () => {
@@ -37,49 +36,11 @@ describe('AiCatalogList', () => {
       createComponent();
     });
 
-    it('renders the container with correct test id', () => {
-      const container = findContainer();
-
-      expect(container.exists()).toBe(true);
-      expect(container.element.tagName).toBe('DIV');
+    it('does not render the loading state component', () => {
+      expect(findLoadingStateList().exists()).toBe(false);
     });
 
-    it('renders list when not loading', () => {
-      const list = findList();
-
-      expect(list.exists()).toBe(true);
-    });
-
-    it('does not render skeleton loader and empty state when not loading and there are items', () => {
-      expect(findSkeletonLoader().exists()).toBe(false);
-      expect(findEmptyState().exists()).toBe(false);
-    });
-  });
-
-  describe('loading state', () => {
-    it('shows skeleton loader and hides list and empty state when loading is true', () => {
-      createComponent({ isLoading: true });
-
-      expect(findSkeletonLoader().exists()).toBe(true);
-      expect(findEmptyState().exists()).toBe(false);
-      expect(findList().exists()).toBe(false);
-    });
-
-    it('shows list and hides skeleton loader when loading is false and there are items', () => {
-      createComponent({ isLoading: false });
-
-      expect(findSkeletonLoader().exists()).toBe(false);
-      expect(findEmptyState().exists()).toBe(false);
-      expect(findList().exists()).toBe(true);
-    });
-  });
-
-  describe('list items rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('renders correct number of list items', () => {
+    it('does render list items', () => {
       const listItems = findListItems();
 
       expect(listItems).toHaveLength(3);
@@ -93,20 +54,52 @@ describe('AiCatalogList', () => {
       });
     });
 
-    it('does not render confirm modal', () => {
+    it('does not render empty state', () => {
+      expect(findEmptyState().exists()).toBe(false);
+    });
+
+    it('does not render the confirm modal by default', () => {
       expect(findConfirmModal().exists()).toBe(false);
     });
-  });
 
-  describe('empty items', () => {
-    beforeEach(() => {
-      createComponent({ items: [] });
+    describe('when loading data', () => {
+      beforeEach(() => {
+        createComponent({ isLoading: true });
+      });
+
+      it('renders loading state component', () => {
+        expect(findLoadingStateList().exists()).toBe(true);
+      });
+
+      it('does not render list items', () => {
+        const listItems = findListItems();
+
+        expect(listItems).toHaveLength(0);
+      });
+
+      it('does not render empty state', () => {
+        expect(findEmptyState().exists()).toBe(false);
+      });
     });
 
-    it('does render the empty state, but no list and skeleton loader when no items provided', () => {
-      expect(findEmptyState().exists()).toBe(true);
-      expect(findList().exists()).toBe(false);
-      expect(findSkeletonLoader().exists()).toBe(false);
+    describe('when data is loaded and there are no items', () => {
+      beforeEach(() => {
+        createComponent({ items: [] });
+      });
+
+      it('does not render the loading state component', () => {
+        expect(findLoadingStateList().exists()).toBe(false);
+      });
+
+      it('does not render list items', () => {
+        const listItems = findListItems();
+
+        expect(listItems).toHaveLength(0);
+      });
+
+      it('renders empty state', () => {
+        expect(findEmptyState().exists()).toBe(true);
+      });
     });
   });
 

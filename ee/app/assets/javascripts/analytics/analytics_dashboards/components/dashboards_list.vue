@@ -1,9 +1,10 @@
 <script>
-import { GlLink, GlAlert, GlButton, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import { GlLink, GlAlert, GlButton, GlSprintf } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import getAllCustomizableDashboardsQuery from '../graphql/queries/get_all_customizable_dashboards.query.graphql';
 import DashboardListItem from './list/dashboard_list_item.vue';
 
@@ -16,13 +17,13 @@ const ONBOARDING_FEATURE_COMPONENTS = {
 export default {
   name: 'DashboardsList',
   components: {
-    PageHeading,
+    DashboardListItem,
+    GlAlert,
     GlButton,
     GlLink,
-    GlAlert,
-    GlSkeletonLoader,
-    DashboardListItem,
     GlSprintf,
+    PageHeading,
+    ResourceListsLoadingStateList,
   },
   mixins: [InternalEvents.mixin()],
   inject: {
@@ -147,12 +148,7 @@ export default {
         @complete="onboardingComplete(feature)"
         @error="onError"
       />
-
-      <template v-if="isLoading">
-        <li v-for="n in 2" :key="n" class="!gl-px-5">
-          <gl-skeleton-loader :lines="2" />
-        </li>
-      </template>
+      <resource-lists-loading-state-list v-if="isLoading" />
       <template v-else>
         <dashboard-list-item
           v-for="dashboard in dashboards"
