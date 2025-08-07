@@ -4,15 +4,15 @@ module API
   module Helpers
     module ScimHelpers
       def scim_not_found!(message:)
-        render_scim_error(::EE::API::Entities::Scim::NotFound, message)
+        render_scim_error(::API::Entities::Scim::NotFound, message)
       end
 
       def scim_error!(message:)
-        render_scim_error(::EE::API::Entities::Scim::Error, message)
+        render_scim_error(::API::Entities::Scim::Error, message)
       end
 
       def scim_conflict!(message:)
-        render_scim_error(::EE::API::Entities::Scim::Conflict, message)
+        render_scim_error(::API::Entities::Scim::Conflict, message)
       end
 
       def render_scim_error(error_class, message)

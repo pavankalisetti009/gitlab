@@ -123,7 +123,7 @@ module API
               items_per_page: per_page(params[:count]),
               start_index: params[:startIndex]
             }
-            present result_set, with: ::EE::API::Entities::Scim::Users
+            present result_set, with: ::API::Entities::Scim::Users
           rescue Authn::GroupScimFinder::UnsupportedFilter, ScimFinder::UnsupportedFilter
             scim_error!(message: 'Unsupported Filter')
           end
@@ -140,7 +140,7 @@ module API
 
             status 200
 
-            present identity, with: ::EE::API::Entities::Scim::User
+            present identity, with: ::API::Entities::Scim::User
           end
 
           desc 'Create a SCIM user' do
@@ -155,7 +155,7 @@ module API
             when :success
               status 201
 
-              present result.identity, with: ::EE::API::Entities::Scim::User
+              present result.identity, with: ::API::Entities::Scim::User
             when :conflict
               scim_conflict!(
                 message: "Error saving user with #{sanitize_request_parameters(params).inspect}: #{result.message}"

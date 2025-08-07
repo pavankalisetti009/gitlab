@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::API::Entities::Scim::Group, feature_category: :system_access do
+RSpec.describe ::API::Entities::Scim::Group, feature_category: :system_access do
   let(:group_link) { build(:saml_group_link, saml_group_name: 'engineering', scim_group_uid: 'group-123') }
   let(:entity) { described_class.new(group_link) }
 

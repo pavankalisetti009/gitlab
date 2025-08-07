@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::API::Entities::Scim::Groups, feature_category: :system_access do
+RSpec.describe API::Entities::Scim::Groups, feature_category: :system_access do
   let_it_be(:group1) { build(:saml_group_link, saml_group_name: 'Engineering', scim_group_uid: SecureRandom.uuid) }
   let_it_be(:group2) { build(:saml_group_link, saml_group_name: 'Marketing', scim_group_uid: SecureRandom.uuid) }
 
@@ -44,7 +44,7 @@ RSpec.describe EE::API::Entities::Scim::Groups, feature_category: :system_access
     let(:options) { { excluded_attributes: ['members'] } }
 
     it 'passes excluded_attributes to the Group entity' do
-      expect(EE::API::Entities::Scim::Group).to receive(:represent)
+      expect(API::Entities::Scim::Group).to receive(:represent)
         .with(anything, hash_including(excluded_attributes: ['members']))
         .and_call_original
 
