@@ -68079,7 +68079,7 @@ msgstr ""
 msgid "Use this token to validate received payloads."
 msgstr ""
 
-msgid "Use webhook"
+msgid "Use webhook (POST requests only)"
 msgstr ""
 
 msgid "Use your global notification setting"
@@ -70573,6 +70573,9 @@ msgstr ""
 msgid "Webhook"
 msgstr ""
 
+msgid "Webhook (POST requests only):"
+msgstr ""
+
 msgid "Webhook created"
 msgstr ""
 
@@ -70592,9 +70595,6 @@ msgid "Webhook settings"
 msgstr ""
 
 msgid "Webhook updated"
-msgstr ""
-
-msgid "Webhook:"
 msgstr ""
 
 msgid "Webhooks"
