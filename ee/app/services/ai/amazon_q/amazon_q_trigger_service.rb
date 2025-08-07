@@ -144,7 +144,19 @@ module Ai
 
       def failure_message(error_string = nil)
         request_id = Labkit::Correlation::CorrelationId.current_id
-        base_message = s_("AmazonQ|Sorry, I'm not able to complete the request at this moment. Please try again later.")
+
+        # Check if this is a ResourceNotFoundException error
+        base_message = if resource_not_found_error?(error_string)
+                         s_('AmazonQ|Your Amazon Q connection is missing or has been deleted. ' \
+                           "You'll need to reconnect to use this feature. " \
+                           'Please see [Set up GitLab Duo with Amazon Q]' \
+                           '(https://docs.gitlab.com/user/duo_amazon_q/setup/#setup) ' \
+                           'for how to reconnect your Amazon Q developer plugin.')
+                       else
+                         s_("AmazonQ|Sorry, I'm not able to complete the request at this moment. " \
+                           'Please try again later.')
+                       end
+
         request_id_message = format(s_("AmazonQ|Request ID: %{request_id}"), request_id: request_id)
 
         message_parts = ["> [!warning]", ">", "> #{base_message}", ">", "> #{request_id_message}"]
@@ -155,6 +167,17 @@ module Ai
         end
 
         message_parts.join("\n")
+      end
+
+      # Detects if the error is related to Amazon Q ResourceNotFoundException
+      # This typically occurs when the Amazon Q connection is missing or deleted
+      def resource_not_found_error?(error_string)
+        return false if error_string.blank?
+
+        error_message = error_string.is_a?(Hash) ? error_string.to_s : error_string
+
+        error_message.include?('ResourceNotFoundException') &&
+          error_message.include?('SendEvent operation')
       end
 
       def amazon_q_service_account

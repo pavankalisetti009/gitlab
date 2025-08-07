@@ -495,4 +495,57 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       end
     end
   end
+
+  describe '#failure_message' do
+    let(:service) { described_class.new(user: user, command: 'dev', source: issue) }
+    let(:request_id) { 'test-request-id-123' }
+
+    before do
+      allow(Labkit::Correlation::CorrelationId).to receive(:current_id).and_return(request_id)
+    end
+
+    context 'when error is ResourceNotFoundException' do
+      let(:error_string) do
+        'An error occurred (ResourceNotFoundException) when calling the SendEvent operation: Resource not found.'
+      end
+
+      it 'returns user-friendly reconnection message' do
+        result = service.send(:failure_message, error_string)
+
+        expect(result).to include('Your Amazon Q connection is missing or has been deleted')
+        expect(result).to include("Request ID: #{request_id}")
+      end
+    end
+
+    context 'when error is not ResourceNotFoundException' do
+      let(:error_string) { 'Some other error occurred' }
+
+      it 'returns generic error message' do
+        result = service.send(:failure_message, error_string)
+
+        expect(result).to include("Sorry, I'm not able to complete the request at this moment")
+        expect(result).to include("Request ID: #{request_id}")
+      end
+    end
+  end
+
+  describe '#resource_not_found_error?' do
+    let(:service) { described_class.new(user: user, command: 'dev', source: issue) }
+
+    it 'returns true for ResourceNotFoundException with SendEvent operation' do
+      error_string = 'An error occurred (ResourceNotFoundException) when calling ' \
+        'the SendEvent operation: Resource not found.'
+      expect(service.send(:resource_not_found_error?, error_string)).to be true
+    end
+
+    it 'returns false for other errors' do
+      error_string = 'An error occurred (AccessDeniedException) when calling the SendEvent operation: Access denied.'
+      expect(service.send(:resource_not_found_error?, error_string)).to be false
+    end
+
+    it 'returns false for nil or blank strings' do
+      expect(service.send(:resource_not_found_error?, nil)).to be false
+      expect(service.send(:resource_not_found_error?, '')).to be false
+    end
+  end
 end
