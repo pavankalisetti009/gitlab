@@ -27,6 +27,10 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
   let(:edit_board) { find_by_testid('boards-config-button') }
   let(:view_scope) { find_by_testid('boards-config-button') }
 
+  before do
+    stub_feature_flags(work_item_view_for_issues: true)
+  end
+
   context 'display epics in board' do
     before do
       stub_licensed_features(epics: true)
@@ -418,8 +422,8 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
     end
 
     it 'allows user to traverse cards forward and backward across board columns' do
-      find('a.board-card-button[aria-label="Epic3"]').click
-
+      click_link(epic3.title, match: :first)
+      send_keys :escape
       send_keys :right
 
       expect(page).to have_selector('.board-card-button[data-col-index="1"]', focused: true)
