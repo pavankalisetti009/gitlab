@@ -6,6 +6,7 @@ RSpec.describe MergeRequests::BaseService, feature_category: :code_review_workfl
   include ProjectForksHelper
 
   let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:status_checks) { create_list(:external_status_check, 3, project: project) }
 
   let(:user) { project.first_owner }
   let(:title) { 'Awesome merge_request' }
@@ -19,8 +20,6 @@ RSpec.describe MergeRequests::BaseService, feature_category: :code_review_workfl
   end
 
   subject { MergeRequests::CreateService.new(project: project, current_user: user, params: params) }
-
-  let_it_be(:status_checks) { create_list(:external_status_check, 3, project: project) }
 
   it 'does not fire compliance hooks' do
     expect(project).not_to receive(:execute_external_compliance_hooks)

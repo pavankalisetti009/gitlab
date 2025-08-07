@@ -12,14 +12,14 @@ RSpec.describe AppSec::Dast::ScanConfigs::FetchService, feature_category: :dynam
     create(:project, :custom_repo, namespace: namespace, files: { '.gitlab-ci.yml' => gitlab_ci_yml })
   end
 
-  before do
-    stub_licensed_features(security_on_demand_scans: true)
-  end
-
   let(:profile_name_included) { 'site_profile_name_included' }
   let(:profile_name_policy) { 'Site Profile' }
   let(:scanner_profile_name_included) { 'scanner_profile_name_included' }
   let(:scanner_profile_name_policy) { 'Scanner Profile' }
+
+  before do
+    stub_licensed_features(security_on_demand_scans: true)
+  end
 
   shared_examples 'an error occurred' do
     it 'communicates failure', :aggregate_failures do
@@ -90,16 +90,16 @@ RSpec.describe AppSec::Dast::ScanConfigs::FetchService, feature_category: :dynam
         )
       end
 
-      before do
-        policy_configuration
-        stub_licensed_features(security_orchestration_policies: true, security_on_demand_scans: true)
-      end
-
       let(:payload) do
         {
           site_profile: profile_name_policy,
           scanner_profile: scanner_profile_name_policy
         }
+      end
+
+      before do
+        policy_configuration
+        stub_licensed_features(security_orchestration_policies: true, security_on_demand_scans: true)
       end
 
       context 'and site profile and scanner profile is configured in ci yml file' do

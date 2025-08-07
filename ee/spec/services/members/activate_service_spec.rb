@@ -273,10 +273,10 @@ RSpec.describe Members::ActivateService, feature_category: :groups_and_projects 
 
       context 'when there are other awaiting members for invite' do
         let_it_be(:invite_email) { 'test@example.com' }
-        subject(:execute) { described_class.for_invite(root_group, invite_email: invite_email).execute(current_user: current_user) }
-
         let_it_be(:member) { create(:group_member, :awaiting, :invited, group: root_group, invite_email: invite_email) }
         let_it_be(:other_awaiting_member) { create(:group_member, :awaiting, group: root_group) }
+
+        subject(:execute) { described_class.for_invite(root_group, invite_email: invite_email).execute(current_user: current_user) }
 
         it 'activates only provided members' do
           result = execute

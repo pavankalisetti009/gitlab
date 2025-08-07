@@ -6,9 +6,7 @@ RSpec.describe AuditEventService, :request_store, feature_category: :audit_event
   let(:project) { build_stubbed(:project) }
   let_it_be(:user) { create(:user, current_sign_in_ip: '192.168.68.104') }
   let_it_be(:project_member) { create(:project_member, user: user, expires_at: 1.day.from_now) }
-
   let(:request_ip_address) { '127.0.0.1' }
-
   let(:details) { { action: :destroy } }
   let(:service) { described_class.new(user, project, details) }
 
@@ -457,14 +455,13 @@ RSpec.describe AuditEventService, :request_store, feature_category: :audit_event
 
   describe '#for_project' do
     let(:current_user) { create(:user) }
+    let(:event) { service.security_event }
     let(:project) { create(:project) }
     let(:options) { { action: action } }
 
     before do
       stub_licensed_features(extended_audit_events: true, admin_audit_log: true)
     end
-
-    let(:event) { service.security_event }
 
     subject(:service) { described_class.new(current_user, project, options).for_project }
 
