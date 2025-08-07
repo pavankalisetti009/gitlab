@@ -20,13 +20,16 @@ module WorkItems
       ].freeze
 
       def self.can_handle?(event)
+        # For delete events, always trigger weight updates since we can't know whether the deleted item has weight
+        return true if event.is_a?(WorkItems::WorkItemDeletedEvent)
+
         # For update events, check if weight-related attributes/widgets were updated
         if event.data.key?(:updated_widgets) || event.data.key?(:updated_attributes)
           return UPDATE_TRIGGER_WIDGETS.any? { |widget| event.data.fetch(:updated_widgets, []).include?(widget) } ||
               UPDATE_TRIGGER_ATTRIBUTES.any? { |attr| event.data.fetch(:updated_attributes, []).include?(attr) }
         end
 
-        # For other events (create, delete, close, reopen), check if work item has weight
+        # For other events (create, close, reopen), check if work item has weight
         work_item_id = event.data[:id]
         return false unless work_item_id
 
@@ -37,12 +40,22 @@ module WorkItems
       end
 
       def handle_event(event)
-        work_item_id = event.data[:id]
-        return unless work_item_id
+        work_item_ids = []
 
-        work_item_ids = [work_item_id]
+        work_item_ids << if event.is_a?(WorkItems::WorkItemDeletedEvent)
+                           # For WorkItemDeletedEvent, the work item would no longer exist,
+                           # so we start updating from the parent.
+                           event.data[:work_item_parent_id]
+                         else
+                           # If the work item exists, we don't need to add the parent as UpdateWeightsWorker
+                           # will also update the ancestors of the given work item id.
+                           event.data[:id]
+                         end
 
         work_item_ids << event.data[:previous_work_item_parent_id] if event.data[:previous_work_item_parent_id]
+
+        work_item_ids.compact!
+        return if work_item_ids.blank?
 
         UpdateWeightsWorker.perform_async(work_item_ids)
       end
