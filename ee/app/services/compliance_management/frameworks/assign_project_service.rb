@@ -34,7 +34,14 @@ module ComplianceManagement
 
         return error unless framework
 
-        return project_framework_mismatch_error(framework) unless project_framework_same_namespace?(framework)
+        # rubocop: disable Gitlab/AvoidGitlabInstanceChecks -- The only API using this service is deprecated
+        # and going to be removed in 18.5 https://gitlab.com/gitlab-org/gitlab/-/issues/534217.
+        # We need to temporarily enable the feature for self managed only and hence not using
+        # Gitlab::Saas.feature_available?.
+        if Gitlab.com? && project_framework_different_namespace?(framework)
+          return project_framework_mismatch_error(framework)
+        end
+        # rubocop: enable Gitlab/AvoidGitlabInstanceChecks
 
         framework_setting = ComplianceManagement::ComplianceFramework::ProjectSettings
           .find_or_create_by_project(project, framework)
@@ -99,8 +106,8 @@ module ComplianceManagement
           'one associated framework.'))
       end
 
-      def project_framework_same_namespace?(framework)
-        project.root_ancestor&.id == framework.namespace_id
+      def project_framework_different_namespace?(framework)
+        project.root_ancestor&.id != framework.namespace_id
       end
 
       def project_framework_mismatch_error(framework)
