@@ -4,11 +4,12 @@ require 'spec_helper'
 
 RSpec.describe Llm::ChatService, feature_category: :duo_chat do
   let_it_be(:user) { create(:user) }
+  let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
 
   let(:resource) { issue }
   let(:stage_check_available) { true }
   let(:content) { "Summarize issue" }
-  let(:default_options) { { content: content } }
+  let(:default_options) { { content: content, thread: thread } }
   let(:options) { default_options }
   let(:action_name) { :chat }
 
@@ -91,11 +92,12 @@ RSpec.describe Llm::ChatService, feature_category: :duo_chat do
           end
         end
 
-        context 'when thread is in the option' do
-          let!(:thread) { create(:ai_conversation_thread, user: user) }
-          let(:options) { { content: content, thread: thread } }
+        context 'when thread is absent' do
+          let(:options) { { content: content } }
 
-          it_behaves_like 'schedules completion worker'
+          it 'raises an error' do
+            expect { subject.execute }.to raise_error("thread_absent")
+          end
         end
       end
 

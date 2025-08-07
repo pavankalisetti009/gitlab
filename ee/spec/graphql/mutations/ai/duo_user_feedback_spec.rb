@@ -6,13 +6,14 @@ RSpec.describe Mutations::Ai::DuoUserFeedback, :clean_gitlab_redis_chat, feature
   include GraphqlHelpers
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
   let_it_be(:agent_version) { create(:ai_agent_version) }
 
   subject(:mutation) { described_class.new(object: nil, context: query_context(user: user), field: nil) }
 
   describe '#resolve' do
-    let(:chat_storage) { Gitlab::Llm::ChatStorage.new(user, agent_version.id) }
-    let(:messages) { create_list(:ai_chat_message, 3, user: user, agent_version_id: agent_version.id) }
+    let(:chat_storage) { Gitlab::Llm::ChatStorage.new(user, agent_version.id, thread) }
+    let(:messages) { create_list(:ai_chat_message, 3, user: user, agent_version_id: agent_version.id, thread: thread) }
     let(:ai_message_id) { messages.first.id }
     let(:input) { { agent_version_id: agent_version.to_gid, ai_message_id: ai_message_id } }
 

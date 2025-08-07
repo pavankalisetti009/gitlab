@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:thread) { create(:ai_conversation_thread) }
 
-  subject { build(:ai_chat_message, user: user, agent_version_id: 1) }
+  subject { build(:ai_chat_message, user: user, agent_version_id: 1, thread: thread) }
 
   describe '#conversation_reset?' do
     it 'returns true for reset message' do
@@ -50,40 +51,17 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
 
   describe '#save!' do
     it 'saves the message to chat storage' do
-      expect_next_instance_of(Gitlab::Llm::ChatStorage, subject.user, subject.agent_version_id, nil) do |instance|
+      expect_next_instance_of(Gitlab::Llm::ChatStorage, subject.user, subject.agent_version_id, thread) do |instance|
         expect(instance).to receive(:add).with(subject)
       end
 
       subject.save!
     end
 
-    it 'creates a new thread and assign it to the message' do
-      expect(subject.thread).to be_nil
+    it 'raises error if thread is absent' do
+      subject.thread = nil
 
-      expect { subject.save! }.to change { user.ai_conversation_threads.count }.by(1)
-
-      expect(subject.thread).to be_an_instance_of(::Ai::Conversation::Thread)
-    end
-
-    context 'when a thread exists for the user' do
-      let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy) }
-
-      it 'fetches the thread and assign it to the message' do
-        expect(subject.thread).to be_nil
-
-        expect { subject.save! }.not_to change { user.ai_conversation_threads.count }
-
-        expect(subject.thread).to eq(thread)
-      end
-
-      it 'unchanges the assigned thread when thread is specified' do
-        message = build(:ai_chat_message, user: user, agent_version_id: 1, thread: thread)
-        create(:ai_conversation_thread, user: user)
-
-        expect { subject.save! }.not_to change { user.ai_conversation_threads.count }
-
-        expect(message.thread).to eq(thread)
-      end
+      expect { subject.save! }.to raise_error "thread_absent"
     end
 
     context 'for /reset message' do
