@@ -45,13 +45,13 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
       it 'updates the framework' do
         expect { update_framework }.to change {
           project.reload.compliance_management_frameworks
-        }.from(old_framework).to([framework])
+        }.from(old_framework).to([new_framework])
       end
 
       it 'publishes Projects::ComplianceFrameworkChangedEvent' do
         expect { update_framework }
           .to publish_event(::Projects::ComplianceFrameworkChangedEvent)
-                .with(project_id: project.id, compliance_framework_id: framework.id, event_type: 'added')
+                .with(project_id: project.id, compliance_framework_id: new_framework.id, event_type: 'added')
       end
 
       it 'logs audit event' do
@@ -62,7 +62,7 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
       it 'enqueues the ProjectComplianceEvaluatorWorker' do
         expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
           ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
-          framework.id, [project.id]
+          new_framework.id, [project.id]
         ).once.and_call_original
 
         update_framework
@@ -100,7 +100,9 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
           context 'when no framework is assigned' do
             let(:old_framework) { [] }
 
-            it_behaves_like 'framework update'
+            it_behaves_like 'framework update' do
+              let(:new_framework) { framework }
+            end
 
             it 'does not enqueue the ProjectComplianceStatusesRemovalWorker' do
               expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
@@ -120,7 +122,9 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
                 project: project, compliance_management_framework: other_framework)
             end
 
-            it_behaves_like 'framework update'
+            it_behaves_like 'framework update' do
+              let(:new_framework) { framework }
+            end
           end
 
           context 'when more than 1 framework is assigned' do
@@ -132,17 +136,35 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
 
             let(:params) { { framework: other_framework.id } }
 
-            it_behaves_like 'no framework update'
+            context 'when on GitLab.com' do
+              before do
+                allow(Gitlab).to receive(:com?).and_return(true)
+              end
 
-            it 'returns an error response' do
-              response = update_framework
+              it_behaves_like 'no framework update'
 
-              expect(response).to be_error
-              expect(response.message).to eq(
-                format(_('Project %{project_name} and framework %{framework_name} are not from same namespace.'),
-                  project_name: project.name, framework_name: other_framework.name
+              it 'returns an error response' do
+                response = update_framework
+
+                expect(response).to be_error
+                expect(response.message).to eq(
+                  format(_('Project %{project_name} and framework %{framework_name} are not from same namespace.'),
+                    project_name: project.name, framework_name: other_framework.name
+                  )
                 )
-              )
+              end
+            end
+
+            context 'when on self-managed instance' do
+              let(:old_framework) { [] }
+
+              before do
+                allow(Gitlab).to receive(:com?).and_return(false)
+              end
+
+              it_behaves_like 'framework update' do
+                let(:new_framework) { other_framework }
+              end
             end
           end
         end
