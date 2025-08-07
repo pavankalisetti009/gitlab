@@ -43,4 +43,12 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
       expect(glm_source).to eq(host)
     end
   end
+
+  describe '#trial_duration' do
+    let(:trial_duration) { 60 }
+
+    subject { helper.trial_duration }
+
+    it { is_expected.to eq(trial_duration) }
+  end
 end

@@ -65,6 +65,7 @@ describe('CompanyForm', () => {
         submitPath: SUBMIT_PATH,
         user,
         trackActionForErrors: '_trackActionForErrors_',
+        trialDuration: 60,
         showFormFooter: true,
         ...provideData,
       },

@@ -22,6 +22,7 @@ describe('TierBadgePopover', () => {
         primaryCtaLink: primaryCTALink,
         secondaryCtaLink: secondaryCTALink,
         isProject: false,
+        trialDuration: 60,
         ...provide,
       },
       propsData: {

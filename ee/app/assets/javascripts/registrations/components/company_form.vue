@@ -49,6 +49,10 @@ export default {
       type: String,
       required: true,
     },
+    trialDuration: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -301,8 +305,11 @@ export default {
     <div v-if="showFormFooter" class="gl-mt-4">
       <span data-testid="footer_description_text" class="gl-text-sm gl-text-subtle">
         {{
-          s__(
-            'Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for 60 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
+          sprintf(
+            s__(
+              'Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for %{duration} days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
+            ),
+            { duration: trialDuration },
           )
         }}
       </span>

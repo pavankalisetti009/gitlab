@@ -48,6 +48,7 @@ RSpec.describe 'Start trial from external site without confirmation', :with_curr
 
     expect(Gitlab::SubscriptionPortal::Client)
       .to receive(:namespace_trial_types)
+      .twice
       .and_call_original
 
     visit new_trial_registration_path(glm_params)

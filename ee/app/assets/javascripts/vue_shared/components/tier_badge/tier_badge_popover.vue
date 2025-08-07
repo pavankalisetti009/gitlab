@@ -10,7 +10,7 @@ export default {
     GlButton,
   },
   mixins: [Tracking.mixin({ label: 'tier_badge' })],
-  inject: ['primaryCtaLink', 'secondaryCtaLink', 'isProject'],
+  inject: ['primaryCtaLink', 'secondaryCtaLink', 'isProject', 'trialDuration'],
   props: {
     popoverId: {
       type: String,
@@ -26,7 +26,7 @@ export default {
       const { groupCopyStart, projectCopyStart, copyEnd } = this.$options.i18n;
       const copyStart = this.isProject ? projectCopyStart : groupCopyStart;
 
-      return sprintf(copyStart, { tier: this.tier, copyEnd });
+      return sprintf(copyStart, { tier: this.tier, copyEnd: copyEnd(this.trialDuration) });
     },
   },
   methods: {
@@ -43,9 +43,13 @@ export default {
       `TierBadgePopover|This group and all its related projects use the %{tier} GitLab tier. %{copyEnd}`,
     ),
     projectCopyStart: s__(`TierBadgePopover|This project uses the %{tier} GitLab tier. %{copyEnd}`),
-    copyEnd: s__(
-      'TierBadgePopover|Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 60 days. No credit card required.',
-    ),
+    copyEnd: (duration) =>
+      sprintf(
+        s__(
+          'TierBadgePopover|Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for %{duration} days. No credit card required.',
+        ),
+        { duration },
+      ),
     primaryCtaText: s__('TierBadgePopover|Start a free trial'),
     secondaryCtaText: s__('TierBadgePopover|Explore paid plans'),
   },

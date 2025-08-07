@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
   describe '#create_company_form_data' do
     let(:user) { build_stubbed(:user, onboarding_status_registration_type: 'trial') }
+    let(:trial_duration) { 60 }
     let(:extra_params) do
       {
         jobs_to_be_done_other: '_params_jobs_to_be_done_other'
@@ -35,7 +36,8 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
         },
         submitPath: "/users/sign_up/company?#{extra_params.to_query}",
         showFormFooter: true,
-        trackActionForErrors: 'trial_registration'
+        trackActionForErrors: 'trial_registration',
+        trialDuration: trial_duration
       }.deep_stringify_keys
 
       expect(form_data).to match(::Gitlab::Json.generate(attributes))
@@ -58,7 +60,8 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
           },
           submitPath: "/users/sign_up/company?#{extra_params.to_query}",
           showFormFooter: true,
-          trackActionForErrors: 'trial_registration'
+          trackActionForErrors: 'trial_registration',
+          trialDuration: trial_duration
         }.deep_stringify_keys
 
         expect(form_data).to match(::Gitlab::Json.generate(attributes))

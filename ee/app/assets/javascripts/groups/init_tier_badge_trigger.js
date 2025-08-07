@@ -9,7 +9,7 @@ export default function initTierBadgeTrigger() {
     return false;
   }
 
-  const { primaryCtaLink, secondaryCtaLink, isProject } = el.dataset;
+  const { primaryCtaLink, secondaryCtaLink, trialDuration, isProject } = el.dataset;
 
   return new Vue({
     el,
@@ -20,6 +20,7 @@ export default function initTierBadgeTrigger() {
     provide: {
       primaryCtaLink,
       secondaryCtaLink,
+      trialDuration,
       isProject: parseBoolean(isProject),
     },
     render(createElement) {

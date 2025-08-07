@@ -20,6 +20,8 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
         ensure_onboarding { expect_to_see_welcome_form }
         expect_not_to_send_iterable_request
 
+        expect_to_receive_trial_duration
+
         fills_in_welcome_form
         click_on 'Continue'
 
@@ -44,6 +46,8 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
       sso_sign_up(name: 'Registering')
 
       ensure_onboarding { expect_to_see_welcome_form }
+
+      expect_to_receive_trial_duration
 
       fills_in_welcome_form
       click_on 'Continue'
