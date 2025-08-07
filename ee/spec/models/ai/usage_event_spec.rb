@@ -25,67 +25,57 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     end
   end
 
-  describe 'scopes' do
-    describe 'order by timestamp and id' do
-      let_it_be(:old_event) do
-        create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.ago)
-      end
-
-      let_it_be(:new_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 1.day.ago) }
-
-      it 'returns the usage events in default desc order' do
-        result = described_class.sort_by_timestamp_id.to_a
-
-        expect(result).to eq([new_event, old_event])
-      end
-
-      it 'the order can be changed' do
-        result = described_class.sort_by_timestamp_id(dir: :asc).to_a
-
-        expect(result).to eq([old_event, new_event])
-      end
+  describe '.sort_by_timestamp_id' do
+    let_it_be(:old_event) do
+      create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.ago)
     end
 
-    describe 'exclude future events' do
-      let_it_be(:old_event) do
-        create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.ago)
-      end
+    let_it_be(:new_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 1.day.ago) }
 
-      let_it_be(:today_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: Time.current) }
-      let_it_be(:future_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 2.days.from_now) }
+    it 'returns the usage events in default desc order' do
+      result = described_class.sort_by_timestamp_id.to_a
 
-      it 'does not return future event' do
-        result = described_class.exclude_future_events
-
-        expect(result).to match_array([old_event, today_event])
-      end
+      expect(result).to eq([new_event, old_event])
     end
 
-    describe 'keyset pagination optimization scopes' do
-      describe '.in_optimization_array_mapping_scope' do
-        let_it_be(:namespace2) { create(:namespace) }
-        let_it_be(:usage_event1) { create(:ai_usage_event, user: user, namespace: namespace) }
-        let_it_be(:usage_event2) { create(:ai_usage_event, user: user, namespace: namespace2) }
+    it 'the order can be changed' do
+      result = described_class.sort_by_timestamp_id(dir: :asc).to_a
 
-        it 'filters by namespace_id using the provided expression' do
-          result = described_class.in_optimization_array_mapping_scope(namespace.id)
+      expect(result).to eq([old_event, new_event])
+    end
+  end
 
-          expect(result).to contain_exactly(usage_event1)
-          expect(result).not_to include(usage_event2)
-        end
-      end
+  describe '.in_timeframe' do
+    let_it_be(:old_event) do
+      create(:ai_usage_event, user: user, namespace: namespace, timestamp: 20.days.ago)
+    end
 
-      describe '.in_optimization_finder_query' do
-        let_it_be(:usage_event1) { create(:ai_usage_event, user: user, namespace: namespace) }
-        let_it_be(:usage_event2) { create(:ai_usage_event, user: user, namespace: namespace) }
+    let_it_be(:event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 10.days.ago) }
+    let_it_be(:lower_bound_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 15.days.ago) }
+    let_it_be(:upper_bound_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 5.days.ago) }
+    let_it_be(:too_new_event) { create(:ai_usage_event, user: user, namespace: namespace, timestamp: 1.day.ago) }
 
-        it 'finds record by timestamp and id using the provided expressions' do
-          result = described_class.in_optimization_finder_query(usage_event1.timestamp, usage_event1.id)
+    it 'returns events matching provided time range' do
+      expect(described_class.in_timeframe(lower_bound_event.timestamp..upper_bound_event.timestamp).to_a)
+        .to match_array([lower_bound_event, event, upper_bound_event])
+    end
+  end
 
-          expect(result).to contain_exactly(usage_event1)
-          expect(result).not_to include(usage_event2)
-        end
-      end
+  describe '.for_namespace_hierarchy' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: group) }
+    let_it_be(:project) { create(:project, namespace: subgroup) }
+
+    let_it_be(:group_event) { create(:ai_usage_event, user: user, namespace: group) }
+    let_it_be(:subgroup_event) { create(:ai_usage_event, user: user, namespace: subgroup) }
+    let_it_be(:project_event) { create(:ai_usage_event, user: user, namespace: project.project_namespace) }
+    let_it_be(:unrelated_event) { create(:ai_usage_event, user: user) }
+
+    it 'returns all events matched to namespace subtree' do
+      expect(described_class.for_namespace_hierarchy(group)).to match_array([group_event, subgroup_event,
+        project_event])
+      expect(described_class.for_namespace_hierarchy(subgroup)).to match_array([subgroup_event, project_event])
+      expect(described_class.for_namespace_hierarchy(project.project_namespace)).to match_array([project_event])
     end
   end
 

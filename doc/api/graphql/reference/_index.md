@@ -22686,8 +22686,26 @@ Usage data for events stored in the default PostgreSQL database. Data retained f
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aiusagedataall"></a>`all` | [`AiUsageEventConnection`](#aiusageeventconnection) | All Duo usage events. (see [Connections](#connections)) |
 | <a id="aiusagedatacodesuggestionevents"></a>`codeSuggestionEvents` | [`CodeSuggestionEventConnection`](#codesuggestioneventconnection) | Events related to code suggestions. (see [Connections](#connections)) |
+
+#### Fields with arguments
+
+##### `AiUsageData.all`
+
+All Duo usage events.
+
+Returns [`AiUsageEventConnection`](#aiusageeventconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiusagedataallenddate"></a>`endDate` | [`Date`](#date) | Date range to end at. Default is the end of current day. |
+| <a id="aiusagedataallstartdate"></a>`startDate` | [`Date`](#date) | Date range to start from. Default is 7 days ago. |
 
 ### `AiUsageEvent`
 

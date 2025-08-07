@@ -4,34 +4,19 @@ module Ai
   class UsageEventsFinder
     include Gitlab::Utils::StrongMemoize
 
-    attr_reader :resource, :current_user
+    attr_reader :current_user, :resource, :from, :to
 
-    DEFAULT_LIMIT = 100
-
-    def initialize(current_user, resource:)
+    def initialize(current_user, resource:, from:, to:)
       @current_user = current_user
       @resource = resource
+      @from = from
+      @to = to
     end
 
     def execute
       return ::Ai::UsageEvent.none unless Ability.allowed?(current_user, :read_enterprise_ai_analytics, resource)
 
-      Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder.new(
-        scope: in_operator_scope,
-        array_scope: array_scope,
-        array_mapping_scope: ::Ai::UsageEvent.method(:in_optimization_array_mapping_scope),
-        finder_query: ::Ai::UsageEvent.method(:in_optimization_finder_query)
-      ).execute.limit(DEFAULT_LIMIT)
-    end
-
-    private
-
-    def array_scope
-      resource.self_and_descendant_ids(skope: Namespace)
-    end
-
-    def in_operator_scope
-      ::Ai::UsageEvent.exclude_future_events.sort_by_timestamp_id
+      ::Ai::UsageEvent.in_timeframe(from..to).for_namespace_hierarchy(resource)
     end
   end
 end
