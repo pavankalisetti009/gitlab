@@ -22,7 +22,7 @@ module EE
       end
 
       override :execute
-      def execute(request)
+      def execute
         super.tap do |application|
           audit_oauth_application_creation(application, request.remote_ip)
         end
