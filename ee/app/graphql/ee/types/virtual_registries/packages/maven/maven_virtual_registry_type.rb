@@ -23,6 +23,9 @@ module EE
             field :description, GraphQL::Types::String, null: true,
               description: 'Description of the virtual registry.'
 
+            field :updated_at, ::Types::TimeType, null: true,
+              description: 'Timestamp of when the virtual registry was updated.'
+
             field :upstreams,
               [EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType],
               null: true,

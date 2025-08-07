@@ -7,7 +7,7 @@ RSpec.describe GitlabSchema.types['MavenVirtualRegistry'], feature_category: :vi
 
   subject { described_class }
 
-  let_it_be(:fields) { %i[id name description upstreams] }
+  let_it_be(:fields) { %i[id name description updated_at upstreams] }
 
   it { is_expected.to require_graphql_authorizations(:read_virtual_registry) }
   it { is_expected.to have_graphql_fields(fields) }
