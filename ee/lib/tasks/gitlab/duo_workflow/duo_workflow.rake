@@ -25,12 +25,11 @@ namespace :gitlab do
       def create_checkpoint_data(workflow_goal, workflow_status, step = 0)
         # rubocop:enable Rake/TopLevelMethodDefinition
         timestamp = Time.current.iso8601(6)
-        thread_ts = timestamp
 
         # Create checkpoint JSONB data
         checkpoint_data = {
           "v" => 1,
-          "id" => SecureRandom.uuid,
+          "id" => SecureRandom.uuid_v7,
           "ts" => timestamp,
           "pending_sends" => [],
           "versions_seen" => {
@@ -125,8 +124,8 @@ namespace :gitlab do
         }
 
         {
-          thread_ts: thread_ts,
-          parent_ts: step > 0 ? (Time.current - step.minutes).iso8601(6) : nil,
+          parent_ts: step > 0 ? SecureRandom.uuid_v7 : nil,
+          thread_ts: SecureRandom.uuid_v7,
           checkpoint: checkpoint_data,
           metadata: metadata
         }
