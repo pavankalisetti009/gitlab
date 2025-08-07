@@ -38,7 +38,7 @@ export default {
   data() {
     return {
       action: null,
-      hasError: false,
+      errorMessage: '',
       secretManagerStatus: SECRET_MANAGER_STATUS_INACTIVE,
     };
   },
@@ -63,9 +63,11 @@ export default {
 
         return newStatus;
       },
-      error() {
+      error(e) {
         this.$apollo.queries.secretManagerStatus.stopPolling(POLL_INTERVAL);
-        this.hasError = true;
+        this.errorMessage =
+          e.graphQLErrors?.[0]?.message ||
+          s__('Secrets|An error occurred while fetching the Secret manager status.');
 
         if (this.isEnablingSecretsManager) {
           this.secretManagerStatus = SECRET_MANAGER_STATUS_INACTIVE;
@@ -91,17 +93,26 @@ export default {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
     },
     isToggleDisabled() {
+      // Note: The logic for disabling the secret manager settings toggle is a work in progress
+      // as discussed in this issue https://gitlab.com/gitlab-org/gitlab/-/issues/479992#note_2062593578
       return (
-        this.isLoading || this.isProvisioning || this.isActive || !this.canManageSecretsManager
+        this.isLoading ||
+        this.isProvisioning ||
+        this.isActive ||
+        this.hasError ||
+        !this.canManageSecretsManager
       );
     },
     isToggleLoading() {
       return this.isLoading || this.isProvisioning;
     },
+    hasError() {
+      return this.errorMessage.length > 0;
+    },
   },
   methods: {
     async enableProjectSecretsManager() {
-      this.hasError = false;
+      this.errorMessage = '';
       try {
         const {
           data: {
@@ -121,7 +132,8 @@ export default {
         this.secretManagerStatus = projectSecretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
         this.$apollo.queries.secretManagerStatus.startPolling(POLL_INTERVAL);
       } catch (error) {
-        this.hasError = true;
+        this.errorMessage =
+          error?.message || s__('Secrets|An error occurred while enabling the Secrets Manager.');
       }
     },
     onToggleSecretManager() {
@@ -161,7 +173,7 @@ export default {
       @change="onToggleSecretManager"
     />
     <p v-if="hasError" class="gl-mt-2 gl-text-danger" data-testid="secret-manager-error">
-      {{ __('Something went wrong. Please try again.') }}
+      {{ errorMessage }}
     </p>
     <permissions-settings v-if="isActive" :can-manage-secrets-manager="canManageSecretsManager" />
   </div>
