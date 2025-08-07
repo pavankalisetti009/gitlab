@@ -125,40 +125,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::Remove
         end
       end
 
-      context 'when project and framework does not belong to the same top-level namespace' do
-        let_it_be(:project) { create(:project) }
-
-        it 'returns an error service response' do
-          response = service.execute
-
-          expect(response.success?).to be false
-          expect(response.message)
-            .to include(format(_("Project %{project_name} and framework are not from same namespace."),
-              project_name: project.name))
-        end
-
-        it 'does not remove any project setting records' do
-          expect { service.execute }.not_to change { ComplianceManagement::ComplianceFramework::ProjectSettings.count }
-        end
-
-        it 'does not publish an event' do
-          expect(::Gitlab::EventStore).not_to receive(:publish)
-
-          service.execute
-        end
-
-        it 'does not create an audit event' do
-          expect { service.execute }.not_to change { AuditEvent.count }
-        end
-
-        it 'does not enqueue the ProjectComplianceStatusesRemovalWorker' do
-          expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
-            .not_to receive(:perform_in)
-
-          service.execute
-        end
-      end
-
       context 'when the project does not exist' do
         let(:project_id) { non_existing_record_id }
         let(:service) { described_class.new(project_id: project_id, current_user: current_user, framework: framework) }

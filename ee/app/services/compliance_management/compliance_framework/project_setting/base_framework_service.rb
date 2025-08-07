@@ -14,7 +14,6 @@ module ComplianceManagement
           return ServiceResponse.error(message: 'Not permitted to create framework') unless permitted?
 
           @project = Project.find(@project_id)
-          project_framework_mismatch_error unless project_framework_same_namespace?
         end
 
         private
@@ -23,10 +22,6 @@ module ComplianceManagement
 
         def permitted?
           can? current_user, :admin_compliance_framework, framework
-        end
-
-        def project_framework_same_namespace?
-          project.root_ancestor&.id == framework.namespace_id
         end
 
         def publish_event(event_type)
@@ -59,14 +54,6 @@ module ComplianceManagement
 
         def success
           ServiceResponse.success
-        end
-
-        def project_framework_mismatch_error
-          ServiceResponse.error(
-            message: format(_('Project %{project_name} and framework are not from same namespace.'),
-              project_name: project.name
-            )
-          )
         end
       end
     end
