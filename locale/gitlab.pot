@@ -43409,6 +43409,9 @@ msgstr ""
 msgid "Observability|Filter data by month:"
 msgstr ""
 
+msgid "Observability|Group is required"
+msgstr ""
+
 msgid "Observability|Includes Logs, Traces and Metrics. %{learnMoreLink}"
 msgstr ""
 
@@ -43466,6 +43469,9 @@ msgstr ""
 msgid "Observability|Permanently delete the observability service configuration."
 msgstr ""
 
+msgid "Observability|Project not found"
+msgstr ""
+
 msgid "Observability|Related issues"
 msgstr ""
 
@@ -43496,7 +43502,13 @@ msgstr ""
 msgid "Observability|User Email"
 msgstr ""
 
+msgid "Observability|User is required"
+msgstr ""
+
 msgid "Observability|View our %{documentation} for further instructions on how to use these features."
+msgstr ""
+
+msgid "Observability|You are not authorized to request observability access"
 msgstr ""
 
 msgid "Observability|allowedMessageType must be a non-empty string"
