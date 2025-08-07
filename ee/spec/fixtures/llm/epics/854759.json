@@ -28,7 +28,6 @@
     "state_id": 1,
     "start_date_sourcing_epic_id": 909555,
     "due_date_sourcing_epic_id": 909556,
-    "external_key": null,
     "confidential": false,
     "color": "#1068bf",
     "total_opened_issue_weight": 6,
@@ -41,9 +40,7 @@
     "username": "jackib",
     "name": "Jacki Bauer"
   },
-  "labels": [
-
-  ],
+  "labels": [],
   "start_date_sourcing_milestone": null,
   "due_date_sourcing_milestone": null,
   "notes": [

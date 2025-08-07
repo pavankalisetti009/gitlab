@@ -27,7 +27,6 @@ RSpec.shared_examples 'basic epic and work item attributes in sync' do
     expect(work_item.author).to eq(epic.author), "work_item author mismatched"
     expect(work_item.created_at).to eq(epic.created_at), "work_item created_at mismatched"
     expect(work_item.updated_at).to eq(epic.updated_at), "work_item updated_at mismatched"
-    expect(work_item.external_key).to eq(epic.external_key), "work_item external_key mismatched"
     expect(work_item.lock_version).to eq(epic.lock_version), "work_item lock_version mismatched"
     expect(work_item.relative_position).to eq(epic.id), "work_item relative_position mismatched with epic.id"
   end

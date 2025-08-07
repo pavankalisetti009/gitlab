@@ -437,8 +437,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
       let(:params) do
         {
           confidential: true,
-          title: 'new title',
-          external_key: 'external_key'
+          title: 'new title'
         }
       end
 

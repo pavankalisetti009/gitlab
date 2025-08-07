@@ -299,7 +299,7 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
     end
 
     let(:opts) do
-      { title: 'new title', external_key: 'external_key', confidential: true, work_item_type: type }
+      { title: 'new title', confidential: true, work_item_type: type }
     end
 
     let(:current_user) { reporter }

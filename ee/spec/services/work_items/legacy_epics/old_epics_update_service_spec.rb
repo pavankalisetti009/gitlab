@@ -446,7 +446,6 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfol
                   title: 'New title',
                   description: 'New description',
                   confidential: true,
-                  external_key: 'external_test_key',
                   color: '#CC0000',
                   parent: parent_epic,
                   start_date_is_fixed: true,
