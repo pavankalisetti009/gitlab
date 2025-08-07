@@ -3,6 +3,7 @@
 module GitlabSubscriptions
   module DuoEnterpriseAlert
     class UltimateComponent < BaseComponent
+      include SafeFormatHelper
       extend ::Gitlab::Utils::Override
 
       private
@@ -17,10 +18,18 @@ module GitlabSubscriptions
 
       def body
         [
-          s_('BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end ' \
-            'AI capabilities from GitLab. You can try it for free for 60 days, no ' \
-            'credit card required.')
+          safe_format(s_('BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end ' \
+            'AI capabilities from GitLab. You can try it for free for %{duration} days, no ' \
+            'credit card required.'), duration: trial_duration)
         ]
+      end
+
+      def trial_type
+        GitlabSubscriptions::Trials::DUO_ENTERPRISE_TRIAL_TYPE
+      end
+
+      def trial_duration
+        GitlabSubscriptions::TrialDurationService.new(trial_type).execute
       end
 
       override :primary_link

@@ -10108,7 +10108,7 @@ msgstr ""
 msgid "BillingPlans|See all %{plan_name} features"
 msgstr ""
 
-msgid "BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end AI capabilities from GitLab. You can try it for free for 60 days, no credit card required."
+msgid "BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end AI capabilities from GitLab. You can try it for free for %{duration} days, no credit card required."
 msgstr ""
 
 msgid "BillingPlans|Start a free GitLab Duo Enterprise Trial"
@@ -28962,7 +28962,7 @@ msgstr ""
 msgid "Get a support subscription"
 msgstr ""
 
-msgid "Get access to all Ultimate and GitLab Duo AI-native features, free for 60 days. No credit card required."
+msgid "Get access to all Ultimate and GitLab Duo AI-native features, free for %{duration} days. No credit card required."
 msgstr ""
 
 msgid "Get free trial"
@@ -65149,7 +65149,7 @@ msgstr ""
 msgid "TierBadgePopover|This project uses the %{tier} GitLab tier. %{copyEnd}"
 msgstr ""
 
-msgid "TierBadgePopover|Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for 60 days. No credit card required."
+msgid "TierBadgePopover|Want to enhance team productivity and access advanced features like Merge Approvals, Push rules, Epics, Code Review Analytics, and Container Scanning? Try all GitLab has to offer for free for %{duration} days. No credit card required."
 msgstr ""
 
 msgid "TierBadge|Free"
@@ -66691,7 +66691,7 @@ msgstr ""
 msgid "Trial|Welcome to GitLab"
 msgstr ""
 
-msgid "Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for 60 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan."
+msgid "Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for %{duration} days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan."
 msgstr ""
 
 msgid "Trigger"

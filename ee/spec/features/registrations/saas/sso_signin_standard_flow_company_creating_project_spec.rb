@@ -11,6 +11,8 @@ RSpec.describe 'Single sign on for signing up through sign in flow for user pick
 
       ensure_onboarding { expect_to_see_welcome_form }
 
+      expect_to_receive_trial_duration
+
       fills_in_welcome_form
       click_on 'Continue'
 

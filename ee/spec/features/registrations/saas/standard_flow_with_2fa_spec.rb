@@ -67,6 +67,8 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
       ensure_onboarding { expect_to_see_welcome_form }
 
+      expect_to_receive_trial_duration
+
       fill_in_welcome_form(minimal: false)
       click_on 'Continue'
 

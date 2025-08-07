@@ -6,16 +6,18 @@ RSpec.shared_examples 'dashboard ultimate trial callout' do
   end
 
   it 'hides promotion callout if not .com' do
-    allow(Gitlab).to receive(:com?).and_return(false)
-
     visit page_path
 
     expect(page).not_to have_selector '[data-testid="start-trial-banner"]'
   end
 
-  describe '.com' do
+  describe '.com', :saas do
+    let_it_be(:trial_duration) { 60 }
+
     before do
-      allow(Gitlab).to receive(:com?).and_return(true)
+      allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
+        allow(instance).to receive(:execute).and_return(trial_duration)
+      end
     end
 
     it 'shows dismissable promotion callout if default dashboard for an owner', :js do

@@ -52,6 +52,7 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
       click_on 'Create project'
 
       expect_to_be_in_learn_gitlab
+      expect_to_receive_trial_duration
 
       visit root_path
       click_on 'Member'

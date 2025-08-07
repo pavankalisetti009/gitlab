@@ -20,7 +20,8 @@ module Registrations
           ),
           submitPath: users_sign_up_company_path(::Onboarding::StatusPresenter.passed_through_params(params)),
           showFormFooter: onboarding_status_presenter.show_company_form_footer?,
-          trackActionForErrors: onboarding_status_presenter.tracking_label
+          trackActionForErrors: onboarding_status_presenter.tracking_label,
+          trialDuration: ::GitlabSubscriptions::TrialDurationService.new.execute
         }
       )
     end

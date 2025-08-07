@@ -14,6 +14,10 @@ module GitlabSubscriptions
         can?(user, :read_billing, namespace)
     end
 
+    def trial_duration
+      GitlabSubscriptions::TrialDurationService.new.execute
+    end
+
     private
 
     def support_link
