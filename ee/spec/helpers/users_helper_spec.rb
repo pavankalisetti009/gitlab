@@ -57,6 +57,34 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
   end
 
   describe '#user_badges_in_admin_section' do
+    shared_examples 'shows admin role badge when user is assigned admin role' do
+      let_it_be(:member_role) { build_stubbed(:member_role, name: 'Admin role') }
+
+      before do
+        allow(user).to receive(:member_role).and_return(member_role)
+        stub_licensed_features(custom_roles: true)
+        stub_feature_flags(custom_admin_roles: true)
+      end
+
+      it { is_expected.to include({ text: 'Admin role', variant: 'info', icon: 'admin' }) }
+
+      context 'when license does not have access to custom roles' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it { is_expected.not_to include({ text: 'Admin role', variant: 'info', icon: 'admin' }) }
+      end
+
+      context 'when custom_admin_roles feature flag is disabled' do
+        before do
+          stub_feature_flags(custom_admin_roles: false)
+        end
+
+        it { is_expected.not_to include({ text: 'Admin role', variant: 'info', icon: 'admin' }) }
+      end
+    end
+
     subject { helper.user_badges_in_admin_section(user) }
 
     before do
@@ -101,21 +129,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
         end
       end
 
-      context 'when user is assigned an admin role' do
-        let_it_be(:member_role) { build_stubbed(:member_role, name: 'Admin role') }
-
-        before do
-          allow(user).to receive(:member_role).and_return(member_role)
-        end
-
-        it 'returns the admin role badge' do
-          expect(subject).to eq(
-            [
-              { text: 'Admin role', variant: 'info', icon: 'admin' }
-            ]
-          )
-        end
-      end
+      it_behaves_like 'shows admin role badge when user is assigned admin role'
 
       it { expect(subject).not_to eq([text: 'Is using seat', variant: 'light']) }
     end
@@ -160,23 +174,6 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
           end
         end
 
-        context 'when user is assigned an admin role' do
-          let_it_be(:member_role) { build_stubbed(:member_role, name: 'Admin role') }
-
-          before do
-            allow(user).to receive(:member_role).and_return(member_role)
-          end
-
-          it 'returns the admin role badge' do
-            expect(subject).to eq(
-              [
-                { text: 'Admin role', variant: 'info', icon: 'admin' },
-                { text: 'Is using seat', variant: 'neutral' }
-              ]
-            )
-          end
-        end
-
         it { expect(subject).to eq([text: 'Is using seat', variant: 'neutral']) }
       end
 
@@ -187,6 +184,8 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
         it { expect(subject).to eq([]) }
       end
+
+      it_behaves_like 'shows admin role badge when user is assigned admin role'
     end
   end
 
