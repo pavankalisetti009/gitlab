@@ -25,7 +25,7 @@ describe('Compliance Violation related issues component', () => {
   const issue1 = {
     id: 'gid://gitlab/Issue/3',
     iid: '3',
-    reference: '#3',
+    referencePath: 'project/path#3',
     state: 'opened',
     title: 'First issue',
     webUrl: 'http://gitlab.com/issues/3',
@@ -33,7 +33,7 @@ describe('Compliance Violation related issues component', () => {
   const issue2 = {
     id: 'gid://gitlab/Issue/25',
     iid: '25',
-    reference: '#3',
+    referencePath: 'other/project#25',
     state: 'closed',
     title: 'Second issue',
     webUrl: 'http://gitlab.com/issues/25',
@@ -57,7 +57,7 @@ describe('Compliance Violation related issues component', () => {
               {
                 id: 'gid://gitlab/Issue/99',
                 iid: '99',
-                reference: '#99',
+                referencePath: 'project/path#99',
                 state: 'opened',
                 title: 'New issue',
                 webUrl: 'http://gitlab.com/issues/99',
@@ -161,6 +161,16 @@ describe('Compliance Violation related issues component', () => {
         iid: 3, // converted from string
         state: issue1.state,
         path: issue1.webUrl, // webUrl is mapped to path
+        reference: issue1.reference,
+        projectPath: 'project/path',
+      });
+      expect(blockProp('relatedIssues')[1]).toMatchObject({
+        id: 25,
+        iid: 25,
+        state: issue2.state,
+        path: issue2.webUrl,
+        reference: issue2.referencePath, // shows different project reference path
+        projectPath: 'other/project',
       });
     });
 
@@ -318,14 +328,57 @@ describe('Compliance Violation related issues component', () => {
       createWrapper({ unlinkMutationHandler });
     });
 
-    it('removes related issue successfully', async () => {
+    it('removes related issue successfully using the correct project path', async () => {
       blockEmit('relatedIssueRemoveRequest', 3);
       await waitForPromises();
 
       expect(unlinkMutationHandler).toHaveBeenCalledWith({
         input: {
           violationId,
-          projectPath,
+          projectPath: 'project/path',
+          issueIid: '3',
+        },
+      });
+    });
+
+    it('removes issue from different project using its project path', async () => {
+      blockEmit('relatedIssueRemoveRequest', 25);
+      await waitForPromises();
+
+      expect(unlinkMutationHandler).toHaveBeenCalledWith({
+        input: {
+          violationId,
+          projectPath: 'other/project',
+          issueIid: '25',
+        },
+      });
+    });
+
+    it('falls back to component project path when issue project path is not available', async () => {
+      // Create an issue without projectPath to test fallback
+      const issueWithoutProjectPath = {
+        id: 3,
+        iid: 3,
+        projectPath: null, // No project path available
+      };
+
+      createWrapper({
+        data: {
+          state: {
+            relatedIssues: [issueWithoutProjectPath],
+            pendingReferences: [],
+          },
+        },
+        unlinkMutationHandler,
+      });
+
+      blockEmit('relatedIssueRemoveRequest', 3);
+      await waitForPromises();
+
+      expect(unlinkMutationHandler).toHaveBeenCalledWith({
+        input: {
+          violationId,
+          projectPath, // Falls back to component's project path
           issueIid: '3',
         },
       });
