@@ -405,37 +405,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#product_analytics_usage_quota_app_data' do
-    subject(:product_analytics_usage_quota_app_data) { helper.product_analytics_usage_quota_app_data(group) }
-
-    before do
-      allow(helper).to receive(:image_path).and_return('illustrations/empty-state/empty-dashboard-md.svg')
-    end
-
-    let(:data) do
-      {
-        namespace_path: group.full_path,
-        empty_state_illustration_path: "illustrations/empty-state/empty-dashboard-md.svg"
-      }
-    end
-
-    context 'when product analytics is disabled' do
-      before do
-        stub_application_setting(product_analytics_enabled?: false)
-      end
-
-      it { is_expected.to eql(data.merge({ product_analytics_enabled: "false" })) }
-    end
-
-    context 'when product analytics is enabled' do
-      before do
-        stub_application_setting(product_analytics_enabled?: true)
-      end
-
-      it { is_expected.to eql(data.merge({ product_analytics_enabled: "true" })) }
-    end
-  end
-
   describe '#show_usage_quotas_tab?' do
     context 'when tab does not exist' do
       it { expect(helper.show_usage_quotas_tab?(group, :nonexistent_tab)).to be false }
@@ -511,18 +480,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         end
 
         it { expect(helper.show_usage_quotas_tab?(group, :transfer)).to eq(result) }
-      end
-    end
-
-    context 'when on product analytics tab' do
-      where(license_feature_available: [true, false])
-
-      with_them do
-        before do
-          stub_licensed_features(product_analytics_usage_quotas: license_feature_available)
-        end
-
-        it { expect(helper.show_usage_quotas_tab?(group, :product_analytics)).to eq(license_feature_available) }
       end
     end
   end
