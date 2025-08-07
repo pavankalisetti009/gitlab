@@ -27792,6 +27792,9 @@ msgstr ""
 msgid "Focus file browser"
 msgstr ""
 
+msgid "Focus file tree browser filter bar"
+msgstr ""
+
 msgid "Focus filter bar"
 msgstr ""
 
@@ -52877,7 +52880,7 @@ msgstr ""
 msgid "Repository: %{counter_repositories} / Wikis: %{counter_wikis} / Build Artifacts: %{counter_build_artifacts} / Pipeline Artifacts: %{counter_pipeline_artifacts} / LFS: %{counter_lfs_objects} / Snippets: %{counter_snippets} / Packages: %{counter_packages} / Uploads: %{counter_uploads}"
 msgstr ""
 
-msgid "Repository|Filter (e.g. *.vue) (f)"
+msgid "Repository|Filter (e.g. *.vue)"
 msgstr ""
 
 msgid "Repository|New branch"
