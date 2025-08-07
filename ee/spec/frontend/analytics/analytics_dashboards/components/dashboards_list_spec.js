@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 import { mockTracking } from 'helpers/tracking_helper';
 import ProductAnalyticsOnboarding from 'ee/product_analytics/onboarding/components/onboarding_list_item.vue';
 import DashboardsList from 'ee/analytics/analytics_dashboards/components/dashboards_list.vue';
@@ -9,6 +9,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { InternalEvents } from '~/tracking';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
 import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -39,7 +40,7 @@ describe('DashboardsList', () => {
   let trackingSpy;
 
   const findListItems = () => wrapper.findAllComponents(DashboardListItem);
-  const findListLoadingSkeletons = () => wrapper.findAllComponents(GlSkeletonLoader);
+  const findLoadingStateList = () => wrapper.findComponent(ResourceListsLoadingStateList);
   const findProductAnalyticsOnboarding = () => wrapper.findComponent(ProductAnalyticsOnboarding);
   const findPageTitle = () => wrapper.findByTestId('page-heading');
   const findPageDescription = () => wrapper.findByTestId('page-heading-description');
@@ -130,7 +131,7 @@ describe('DashboardsList', () => {
     });
 
     it('renders a loading state', () => {
-      expect(findListLoadingSkeletons()).toHaveLength(2);
+      expect(findLoadingStateList().exists()).toBe(true);
     });
   });
 
@@ -205,8 +206,11 @@ describe('DashboardsList', () => {
       });
 
       it('refetches the list of dashboards', () => {
-        expect(findListLoadingSkeletons()).toHaveLength(2);
         expect(mockAnalyticsDashboardsHandler).toHaveBeenCalledTimes(2);
+      });
+
+      it('renders a loading state', () => {
+        expect(findLoadingStateList().exists()).toBe(true);
       });
     });
 
@@ -253,7 +257,7 @@ describe('DashboardsList', () => {
       });
 
       it('does not render a loading state', () => {
-        expect(findListLoadingSkeletons()).toHaveLength(0);
+        expect(findLoadingStateList().exists()).toBe(false);
       });
 
       it('renders a list item for each custom dashboard', () => {
@@ -286,7 +290,7 @@ describe('DashboardsList', () => {
       });
 
       it('does not render a loading state', () => {
-        expect(findListLoadingSkeletons()).toHaveLength(0);
+        expect(findLoadingStateList().exists()).toBe(false);
       });
 
       it('does not render any list items', () => {
