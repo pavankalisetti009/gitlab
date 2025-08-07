@@ -56,6 +56,7 @@ describe('ComplianceViolationDetailsApp', () => {
               id: '1',
               iid: '1',
               reference: '#1',
+              referencePath: 'gitlab-org/gitlab-test#1',
               state: 'opened',
               title: 'Test',
               webUrl: 'https://localhost:3000/gitlab/org/gitlab-test/-/issues/1',

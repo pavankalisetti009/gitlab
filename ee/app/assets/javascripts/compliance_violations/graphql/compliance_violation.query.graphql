@@ -25,6 +25,7 @@ query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolatio
         id
         iid
         reference
+        referencePath: reference(full: true)
         state
         title
         webUrl

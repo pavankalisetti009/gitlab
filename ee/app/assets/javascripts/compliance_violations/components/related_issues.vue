@@ -50,7 +50,9 @@ export default {
   },
   methods: {
     setInitialRelatedIssues() {
-      const formattedIssues = this.issues.map(getFormattedIssue);
+      const formattedIssues = this.issues.map((issue) =>
+        getFormattedIssue(issue, this.projectPath),
+      );
       this.store.setRelatedIssues(formattedIssues);
     },
     toggleFormVisibility() {
@@ -137,7 +139,7 @@ export default {
           variables: {
             input: {
               violationId: this.violationId,
-              projectPath: this.projectPath,
+              projectPath: issue.projectPath || this.projectPath,
               issueIid: issue.iid.toString(),
             },
           },

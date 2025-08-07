@@ -9,6 +9,7 @@ mutation linkProjectComplianceViolationIssue($input: LinkProjectComplianceViolat
           id
           iid
           reference
+          referencePath: reference(full: true)
           state
           title
           webUrl
