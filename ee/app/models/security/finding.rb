@@ -41,6 +41,10 @@ module Security
 
     has_one :build, through: :scan, disable_joins: true
     has_one :vulnerability, through: :vulnerability_finding
+    has_one :token_status,
+      class_name: 'Security::FindingTokenStatus',
+      foreign_key: 'security_finding_id',
+      inverse_of: :security_finding
 
     has_many :state_transitions, through: :vulnerability
     has_many :issue_links, through: :vulnerability

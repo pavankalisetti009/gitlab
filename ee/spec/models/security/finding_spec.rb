@@ -14,6 +14,14 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     it { is_expected.to belong_to(:vulnerability_finding).class_name('Vulnerabilities::Finding') }
     it { is_expected.to have_one(:build).through(:scan) }
     it { is_expected.to have_one(:vulnerability).through(:vulnerability_finding) }
+
+    it do
+      is_expected.to have_one(:token_status)
+                                .class_name('Security::FindingTokenStatus')
+                                .with_foreign_key('security_finding_id')
+                                .inverse_of(:security_finding)
+    end
+
     it { is_expected.to have_many(:state_transitions).through(:vulnerability) }
     it { is_expected.to have_many(:issue_links).through(:vulnerability) }
     it { is_expected.to have_many(:external_issue_links).through(:vulnerability) }
