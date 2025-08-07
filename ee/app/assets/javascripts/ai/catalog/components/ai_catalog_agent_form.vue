@@ -172,9 +172,9 @@ export default {
           },
         },
         systemPrompt: {
-          label: s__('AICatalog|System Prompt'),
+          label: s__('AICatalog|System prompt'),
           validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|System Prompt is required.'),
+            requiredLabel: s__('AICatalog|System prompt is required.'),
             maxLength: MAX_LENGTH_PROMPT,
           }),
           groupAttrs: {
@@ -184,9 +184,9 @@ export default {
           },
         },
         userPrompt: {
-          label: s__('AICatalog|User Prompt'),
+          label: s__('AICatalog|User prompt'),
           validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|User Prompt is required.'),
+            requiredLabel: s__('AICatalog|User prompt is required.'),
             maxLength: MAX_LENGTH_PROMPT,
           }),
           groupAttrs: {
