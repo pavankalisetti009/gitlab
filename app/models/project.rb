@@ -3271,20 +3271,6 @@ class Project < ApplicationRecord
     ids
   end
 
-  # TODO: remove this with the rollout of
-  # https://gitlab.com/gitlab-org/gitlab/-/issues/558119
-  def package_already_taken?(package_name, package_version, package_type:)
-    Packages::Package.with_name(package_name)
-      .with_version(package_version)
-      .with_package_type(package_type)
-      .not_pending_destruction
-      .for_projects(
-        root_ancestor.all_projects
-          .id_not_in(id)
-          .select(:id)
-      ).exists?
-  end
-
   def default_branch_or_main
     return default_branch if default_branch
 
