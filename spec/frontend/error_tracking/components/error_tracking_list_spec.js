@@ -12,6 +12,7 @@ import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import stubChildren from 'helpers/stub_children';
+import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import ErrorTrackingActions from '~/error_tracking/components/error_tracking_actions.vue';
 import ErrorTrackingList from '~/error_tracking/components/error_tracking_list.vue';
@@ -596,7 +597,7 @@ describe('ErrorTrackingList', () => {
           errorId: 1,
           status,
         });
-        await nextTick();
+        await waitForPromises();
 
         expect(trackEventSpy).toHaveBeenCalledWith(
           'update_ignored_status',
