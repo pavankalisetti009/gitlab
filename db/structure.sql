@@ -39459,6 +39459,8 @@ CREATE INDEX index_zoekt_repos_with_missing_project_id ON zoekt_repositories USI
 
 CREATE INDEX index_zoekt_repositories_on_project_id ON zoekt_repositories USING btree (project_id);
 
+CREATE INDEX index_zoekt_repositories_on_schema_version ON zoekt_repositories USING btree (schema_version);
+
 CREATE INDEX index_zoekt_repositories_on_state ON zoekt_repositories USING btree (state);
 
 CREATE INDEX index_zoekt_tasks_on_state ON ONLY zoekt_tasks USING btree (state);

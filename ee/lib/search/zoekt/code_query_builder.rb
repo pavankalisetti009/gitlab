@@ -109,7 +109,7 @@ module Search
       end
 
       def use_zoekt_traversal_id_query?
-        Feature.enabled?(:zoekt_traversal_id_queries, current_user)
+        ::Search::Zoekt.use_traversal_id_queries?(current_user)
       end
 
       def use_meta_project_ids?

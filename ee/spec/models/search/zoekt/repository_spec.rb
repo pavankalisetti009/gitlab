@@ -185,4 +185,16 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       end
     end
   end
+
+  describe '.minimum_schema_version' do
+    it 'returns the minimum schema_version among all repositories' do
+      allow(described_class).to receive(:minimum).with(:schema_version).and_return(50)
+      expect(described_class.minimum_schema_version).to eq(50)
+    end
+
+    it 'returns nil when there are no repositories' do
+      allow(described_class).to receive(:minimum).with(:schema_version).and_return(nil)
+      expect(described_class.minimum_schema_version).to be_nil
+    end
+  end
 end

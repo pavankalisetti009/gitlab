@@ -61,6 +61,10 @@ module Search
       scope :indexable, -> { where(state: INDEXABLE_STATES) }
       scope :searchable, -> { where(state: SEARCHABLE_STATES) }
 
+      def self.minimum_schema_version
+        minimum(:schema_version)
+      end
+
       # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Limit is on the call. It is temporary debugging code.
       # rubocop:disable Metrics/AbcSize -- Temporary debugging code.
       def self.create_bulk_tasks(task_type: :index_repo, perform_at: Time.zone.now)

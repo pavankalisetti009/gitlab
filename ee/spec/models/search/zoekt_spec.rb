@@ -370,4 +370,65 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
     it { is_expected.to eq('tmp/tests/gitlab-zoekt/bin/gitlab-zoekt') }
   end
+
+  describe '.traversal_id_searchable?' do
+    let(:min_version) { described_class::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH }
+
+    before do
+      Rails.cache.clear
+    end
+
+    it 'returns true when minimum_schema_version is greater than or equal to required minimum' do
+      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
+      expect(described_class.traversal_id_searchable?).to be true
+    end
+
+    it 'returns false when minimum_schema_version is less than required minimum' do
+      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version - 1)
+      expect(described_class.traversal_id_searchable?).to be false
+    end
+
+    it 'caches the result' do
+      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
+      expect(Rails.cache).to receive(:fetch).with('zoekt_traversal_id_searchable',
+        expires_in: 30.minutes).and_call_original
+      described_class.traversal_id_searchable?
+    end
+  end
+
+  describe '.use_traversal_id_queries?' do
+    let(:min_version) { described_class::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH }
+    let(:user) { build(:user) }
+
+    before do
+      Rails.cache.clear
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(zoekt_traversal_id_queries: false)
+      end
+
+      it 'returns false regardless of schema version' do
+        allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
+        expect(described_class.use_traversal_id_queries?(user)).to be false
+      end
+    end
+
+    context 'when feature flag is enabled' do
+      before do
+        stub_feature_flags(zoekt_traversal_id_queries: true)
+      end
+
+      it 'returns true if minimum_schema_version is sufficient' do
+        allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
+        expect(described_class.use_traversal_id_queries?(user)).to be true
+      end
+
+      it 'returns false if minimum_schema_version is insufficient' do
+        allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version - 1)
+        expect(described_class.use_traversal_id_queries?(user)).to be false
+      end
+    end
+  end
 end

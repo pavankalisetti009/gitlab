@@ -333,11 +333,7 @@ module Search
       end
 
       def use_traversal_id_queries?
-        use_ast_search_payload? && Feature.enabled?(:zoekt_traversal_id_queries, current_user)
-      end
-
-      def use_ast_search_payload?
-        Feature.enabled?(:zoekt_ast_search_payload, current_user)
+        ::Search::Zoekt.use_traversal_id_queries?(current_user)
       end
 
       def logger
