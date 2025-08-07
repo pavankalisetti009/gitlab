@@ -41,10 +41,10 @@ module Ai
       def ensure_onboarding_complete!
         if ai_settings.duo_workflow_service_account_user.nil? || ai_settings.duo_workflow_oauth_application.nil?
           raise IncompleteOnboardingError,
-            'Duo Workflow onboarding is incomplete. Please complete onboarding to proceed further.'
+            'Duo Agent Platform onboarding is incomplete. Please complete onboarding to proceed further.'
         elsif !ai_settings.duo_workflow_service_account_user.composite_identity_enforced?
           raise CompositeIdentityEnforcedError,
-            'The Duo Workflow service account must have composite identity enabled.'
+            'The Duo Agent Platform service account must have composite identity enabled.'
         end
       end
 

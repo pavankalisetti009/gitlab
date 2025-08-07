@@ -48,7 +48,7 @@ module Ai
           next if oauth_application
 
           application = Doorkeeper::Application.new(
-            name: 'GitLab Duo Workflow',
+            name: 'GitLab Duo Agent Platform',
             redirect_uri: oauth_callback_url,
             scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES,
             trusted: true,

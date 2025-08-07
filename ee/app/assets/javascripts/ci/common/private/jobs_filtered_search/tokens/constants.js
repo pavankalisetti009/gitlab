@@ -27,7 +27,7 @@ const EE_JOB_SOURCES = [
     value: 'SCAN_EXECUTION_POLICY',
   },
   {
-    text: s__('JobSource|Duo Workflow'),
+    text: s__('JobSource|Duo Agent Platform'),
     value: 'DUO_WORKFLOW',
   },
 ];

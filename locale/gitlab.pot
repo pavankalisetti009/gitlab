@@ -23812,10 +23812,10 @@ msgstr ""
 msgid "Due to inactivity, this project is scheduled to be deleted on %{deletion_date}. %{link_start}Why is this scheduled?%{link_end}"
 msgstr ""
 
-msgid "Duo Workflow|Duo Workflow Settings have been saved"
+msgid "Duo Agent Platform|Duo Agent Platform Settings have been saved"
 msgstr ""
 
-msgid "Duo Workflow|Something went wrong saving Duo Workflow settings"
+msgid "Duo Agent Platform|Something went wrong saving Duo Agent Platform settings"
 msgstr ""
 
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
@@ -35795,9 +35795,6 @@ msgid "JobSource|Container Registry Push"
 msgstr ""
 
 msgid "JobSource|Duo Agent Platform"
-msgstr ""
-
-msgid "JobSource|Duo Workflow"
 msgstr ""
 
 msgid "JobSource|External"

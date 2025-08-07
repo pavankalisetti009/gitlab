@@ -116,9 +116,9 @@ module API
             optional :workflow_definition, type: String, desc: 'workflow type based on its capability',
               documentation: { example: 'software_developer' }
             optional :allow_agent_to_request_user, type: Boolean,
-              desc: 'When this is enabled Duo Workflow may stop to ask the user questions before proceeding. ' \
-                'When it is disabled Duo Workflow will always just run through the workflow without ever asking ' \
-                'for user input. Defaults to true.',
+              desc: 'When this is enabled Duo Agent Platform may stop to ask the user questions before proceeding. ' \
+                'When it is disabled Duo Agent Platform will always just run through the workflow without ever ' \
+                'asking for user input. Defaults to true.',
               documentation: { example: true }
             optional :image, type: String, desc: 'Container image to use for running the workflow in CI pipeline.',
               documentation: { example: 'registry.gitlab.com/gitlab-org/duo-workflow/custom-image:latest' }
@@ -136,7 +136,7 @@ module API
         namespace :ai do
           namespace :duo_workflows do
             resources :direct_access do
-              desc 'Connection details for accessing Duo Workflow Service directly' do
+              desc 'Connection details for accessing Duo Agent Platform Service directly' do
                 detail 'This feature is experimental.'
                 success code: 201
                 failure [
