@@ -138,7 +138,7 @@ describe('DashboardsListItem', () => {
     });
 
     it('renders the `Beta` badge', () => {
-      expect(findStatusBadge().text()).toBe('Beta');
+      expect(findStatusBadge().props('type')).toBe('beta');
     });
   });
 
@@ -148,7 +148,7 @@ describe('DashboardsListItem', () => {
     });
 
     it('renders the `Experiment` badge', () => {
-      expect(findStatusBadge().text()).toBe('Experiment');
+      expect(findStatusBadge().props('type')).toBe('experiment');
     });
   });
 

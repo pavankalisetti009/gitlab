@@ -1,7 +1,6 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
-import { GlIcon, GlBadge, GlLink, GlTruncateText } from '@gitlab/ui';
-import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
+import { GlIcon, GlBadge, GlLink, GlTruncateText, GlExperimentBadge } from '@gitlab/ui';
 import { visitUrl, joinPaths } from '~/lib/utils/url_utility';
 
 const TRUNCATE_BUTTON_ID = `desc-truncate-btn-${uuidv4()}`;
@@ -11,6 +10,7 @@ export default {
   components: {
     GlIcon,
     GlBadge,
+    GlExperimentBadge,
     GlLink,
     GlTruncateText,
   },
@@ -24,8 +24,8 @@ export default {
     isBuiltInDashboard() {
       return 'userDefined' in this.dashboard && !this.dashboard.userDefined;
     },
-    statusBadge() {
-      return this.dashboard?.status ? capitalizeFirstCharacter(this.dashboard.status) : null;
+    statusBadgeType() {
+      return this.dashboard?.status || null;
     },
     showErrorsBadge() {
       return this.dashboard?.errors?.length > 0;
@@ -57,7 +57,7 @@ export default {
 
 <template>
   <li
-    class="!gl-flex gl-items-center !gl-px-5 hover:gl-cursor-pointer hover:gl-bg-blue-50"
+    class="!gl-flex gl-items-center !gl-px-5 hover:gl-cursor-pointer hover:gl-bg-feedback-info"
     data-testid="dashboard-list-item"
     @click="routeToDashboard"
   >
@@ -81,9 +81,12 @@ export default {
             :to="dashboard.slug"
             >{{ dashboard.title }}</router-link
           >
-          <gl-badge v-if="statusBadge" data-testid="dashboard-status-badge" class="gl-ml-2">
-            {{ statusBadge }}
-          </gl-badge>
+          <gl-experiment-badge
+            v-if="statusBadgeType"
+            data-testid="dashboard-status-badge"
+            class="gl-ml-3"
+            :type="statusBadgeType"
+          />
           <gl-badge
             v-if="showErrorsBadge"
             data-testid="dashboard-errors-badge"
