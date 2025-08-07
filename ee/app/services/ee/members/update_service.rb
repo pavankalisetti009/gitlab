@@ -138,7 +138,8 @@ module EE
             expiry_from: old_expiry,
             expiry_to: member.expires_at,
             as: member.human_access_labeled,
-            member_id: member.id
+            member_id: member.id,
+            member_role_id: member.member_role_id
           }
         }
 

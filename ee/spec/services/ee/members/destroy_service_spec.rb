@@ -7,6 +7,7 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
   let(:current_user) { create(:user) }
   let(:member_user) { create(:user) }
   let(:member) { group.members.find_by(user_id: member_user.id) }
+  let(:member_role) { nil }
 
   before do
     group.add_owner(current_user)
@@ -16,7 +17,13 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
   shared_examples_for 'logs an audit event' do
     specify do
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
-        hash_including(name: "member_destroyed")
+        hash_including(
+          name: "member_destroyed",
+          additional_details: hash_including(
+            remove: "user_access",
+            member_role_id: member_role&.id
+          )
+        )
       ).and_call_original
 
       expect { event }.to change { AuditEvent.count }.by(1)
@@ -338,6 +345,10 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
       context 'when membership has a member role assigned' do
         before do
           member.update!(member_role: member_role)
+        end
+
+        it_behaves_like 'logs an audit event' do
+          let(:event) { subject.execute(member) }
         end
 
         it_behaves_like 'enqueues a DestroyForGroupWorker job'

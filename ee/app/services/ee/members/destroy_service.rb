@@ -42,7 +42,8 @@ module EE
           additional_details: {
             remove: "user_access",
             as: member.human_access_labeled,
-            member_id: member.id
+            member_id: member.id,
+            member_role_id: member.member_role_id
           }
         }
 
