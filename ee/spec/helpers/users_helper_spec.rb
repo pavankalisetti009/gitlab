@@ -226,6 +226,29 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
       it { is_expected.to be false }
     end
+
+    context 'when user is an enterprise user' do
+      let_it_be(:enterprise_group) { create(:group) }
+      let_it_be(:enterprise_user) { create(:user, :public_email, enterprise_group: enterprise_group) }
+
+      subject { helper.display_public_email?(enterprise_user) }
+
+      context 'when enterprise group has hide_email_on_profile enabled' do
+        before do
+          enterprise_group.update!(hide_email_on_profile: true)
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when enterprise group has hide_email_on_profile disabled' do
+        before do
+          enterprise_group.update!(hide_email_on_profile: false)
+        end
+
+        it { is_expected.to be true }
+      end
+    end
   end
 
   describe '#impersonation_enabled?' do
