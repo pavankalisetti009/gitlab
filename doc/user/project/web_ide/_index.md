@@ -141,7 +141,28 @@ To create a branch from the current branch in the Web IDE:
 1. From the dropdown list, select **Create new branch**.
 1. Enter the new branch name.
 
+The Web IDE creates a branch using the checked out branch as base. Alternatively, you can follow
+these steps to create a branch from a different base:
+
+1. On the left side of the Web IDE, select **Source Control** ({{< icon name="branch" >}}), or
+   press <kbd>Control</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>.
+1. Select the ellipsis menu ({{< icon name="ellipsis_h" >}}) on the top-right side of the
+   Source Control panel.
+1. From the dropdown list, select **Branch** -> **Create branch from...**. 
+1. From the dropdown list, select the branch that you want to use as base.
+
 If you do not have write access to the repository, **Create new branch** is not visible.
+
+### Delete a branch
+
+1. On the left side of the Web IDE, select **Source Control** ({{< icon name="branch" >}}), or
+   press <kbd>Control</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>.
+1. Select the ellipsis menu ({{< icon name="ellipsis_h" >}}) on the top-right side of the
+   Source Control panel.
+1. From the dropdown list, select **Branch** -> **Delete branch**. 
+1. From the dropdown list, select the branch that you want to delete.
+
+You can't delete protected branches from the Web IDE.
 
 ### Commit changes
 
