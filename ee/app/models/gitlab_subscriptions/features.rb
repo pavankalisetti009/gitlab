@@ -41,7 +41,6 @@ module GitlabSubscriptions
       seat_usage_quotas
       pipelines_usage_quotas
       transfer_usage_quotas
-      product_analytics_usage_quotas
       zoekt_code_search
       disable_private_profiles
       observability_alerts
@@ -75,7 +74,6 @@ module GitlabSubscriptions
       seat_usage_quotas
       pipelines_usage_quotas
       transfer_usage_quotas
-      product_analytics_usage_quotas
       wip_limits
       zoekt_code_search
       seat_control

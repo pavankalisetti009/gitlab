@@ -132,14 +132,6 @@ module EE
       }
     end
 
-    def product_analytics_usage_quota_app_data(group)
-      {
-        namespace_path: group.full_path,
-        empty_state_illustration_path: image_path('illustrations/empty-state/empty-dashboard-md.svg'),
-        product_analytics_enabled: ::Gitlab::CurrentSettings.product_analytics_enabled?.to_s
-      }
-    end
-
     def show_usage_quotas_tab?(group, tab)
       case tab
       when :seats
@@ -152,8 +144,6 @@ module EE
       when :transfer
         ::Feature.enabled?(:data_transfer_monitoring, group) &&
           License.feature_available?(:transfer_usage_quotas)
-      when :product_analytics
-        License.feature_available?(:product_analytics_usage_quotas)
       when :pages
         group.root_ancestor == group && License.feature_available?(:pages_multiple_versions)
       else
