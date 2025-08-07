@@ -3,7 +3,7 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
-import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_formatters';
+import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
 
 export default {

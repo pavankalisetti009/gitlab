@@ -1,10 +1,15 @@
 <script>
-import { GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlLink } from '@gitlab/ui';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
 
 export default {
   components: {
     GlLineChart,
+    GlChartSeriesLabel,
+    GlLink,
   },
+  inject: ['securityVulnerabilitiesPath'],
   props: {
     chartSeries: {
       type: Array,
@@ -16,12 +21,20 @@ export default {
         });
       },
     },
+    groupedBy: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   computed: {
     chartStartDate() {
       // Chart data structure: chartSeries = [{ name: 'Series Name', data: [[date, value], [date, value], ...] }, ...]
       // This extracts the date (first element) from the first data point of the first series
       return this.chartSeries?.[0]?.data?.[0]?.[0] ?? null;
+    },
+    shouldShowTooltipLink() {
+      return Boolean(this.securityVulnerabilitiesPath && this.groupedBy);
     },
     chartOptions() {
       return {
@@ -58,9 +71,42 @@ export default {
       };
     },
   },
+  methods: {
+    vulnerabilitiesReportWithFiltersPath(seriesId) {
+      return constructVulnerabilitiesReportWithFiltersPath({
+        securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
+        seriesId,
+        filterKey: this.groupedBy,
+      });
+    },
+  },
 };
 </script>
 
 <template>
-  <gl-line-chart :data="chartSeries" :option="chartOptions" :include-legend-avg-max="false" />
+  <gl-line-chart
+    :data="chartSeries"
+    :option="chartOptions"
+    :include-legend-avg-max="false"
+    :click-to-pin-tooltip="shouldShowTooltipLink"
+  >
+    <template #tooltip-content="{ params }">
+      <div
+        v-for="{ seriesName, seriesId, color, value } in params && params.seriesData"
+        :key="seriesName"
+        class="gl-flex gl-justify-between"
+      >
+        <gl-chart-series-label class="gl-mr-7 gl-text-sm" :color="color">
+          {{ seriesName }}
+        </gl-chart-series-label>
+        <gl-link
+          v-if="shouldShowTooltipLink"
+          :href="vulnerabilitiesReportWithFiltersPath(seriesId)"
+          target="_blank"
+          class="gl-font-bold"
+          >{{ value[1] }}</gl-link
+        >
+      </div>
+    </template>
+  </gl-line-chart>
 </template>

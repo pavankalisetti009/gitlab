@@ -42,6 +42,7 @@ export default async (el, dashboardType) => {
     instanceDashboardSettingsPath,
     vulnerabilitiesPdfExportEndpoint,
     newVulnerabilityPath,
+    groupSecurityVulnerabilitiesPath,
   } = el.dataset;
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
@@ -59,6 +60,7 @@ export default async (el, dashboardType) => {
     canAdminVulnerability,
     newVulnerabilityPath,
     dashboardType,
+    securityVulnerabilitiesPath: null,
   };
 
   let props;
@@ -76,6 +78,7 @@ export default async (el, dashboardType) => {
       const { default: GroupSecurityDashboardNew } = await import(
         './components/shared/group_security_dashboard_new.vue'
       );
+      provide.securityVulnerabilitiesPath = groupSecurityVulnerabilitiesPath;
       component = GroupSecurityDashboardNew;
     } else {
       component = SecurityDashboard;

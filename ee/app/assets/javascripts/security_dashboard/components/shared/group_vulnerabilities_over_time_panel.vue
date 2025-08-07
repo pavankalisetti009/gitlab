@@ -5,7 +5,7 @@ import { fetchPolicies } from '~/lib/graphql';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_group_vulnerabilities_over_time.query.graphql';
-import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_formatters';
+import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
 
 export default {
@@ -108,6 +108,7 @@ export default {
         v-if="!fetchError && hasChartData"
         class="gl-h-full gl-overflow-hidden gl-p-2"
         :chart-series="vulnerabilitiesOverTime"
+        :grouped-by="groupedBy"
       />
       <p
         v-else
