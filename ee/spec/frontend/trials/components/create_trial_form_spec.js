@@ -79,6 +79,8 @@ describe('CreateTrialForm', () => {
         namespaceData,
         submitPath,
         gtmSubmitEventLabel,
+        border: true,
+        canCreateGroup: true,
         ...propsData,
       },
       stubs: {

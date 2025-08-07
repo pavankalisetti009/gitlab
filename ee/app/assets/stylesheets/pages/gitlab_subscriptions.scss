@@ -7,11 +7,20 @@
   }
 }
 
-.duo-enterprise-trials {
+.legacy-duo-enterprise-trials {
   .bg-decorations {
     @include gl-media-breakpoint-up(md) {
       background-image: url('illustrations/bg-decorations.svg');
       background-position: top 85% left 200px;
+    }
+  }
+}
+
+.duo-enterprise-trials {
+  .bg-decorations {
+    @include gl-media-breakpoint-up(md) {
+      background-image: url('illustrations/bg-decorations.svg');
+      background-position: bottom 7% right 75px;
     }
   }
 }

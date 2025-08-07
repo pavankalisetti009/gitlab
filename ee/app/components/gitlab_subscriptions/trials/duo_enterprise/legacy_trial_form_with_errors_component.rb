@@ -3,7 +3,7 @@
 module GitlabSubscriptions
   module Trials
     module DuoEnterprise
-      class TrialFormWithErrorsComponent < TrialFormComponent
+      class LegacyTrialFormWithErrorsComponent < LegacyTrialFormComponent
         extend ::Gitlab::Utils::Override
 
         def initialize(**kwargs)

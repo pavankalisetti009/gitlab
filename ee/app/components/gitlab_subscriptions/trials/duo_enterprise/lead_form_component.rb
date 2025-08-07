@@ -30,7 +30,7 @@ module GitlabSubscriptions
         delegate :page_title, :sprite_icon, to: :helpers
 
         def before_render
-          content_for :body_class, 'duo-enterprise-trials gl-bg-brand-charcoal'
+          content_for :body_class, 'legacy-duo-enterprise-trials gl-bg-brand-charcoal'
         end
 
         def before_form_content

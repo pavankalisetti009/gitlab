@@ -22,7 +22,9 @@ module GitlabSubscriptions
               userData: user_data,
               namespaceData: namespace_data,
               submitPath: submit_path,
-              gtmSubmitEventLabel: 'saasTrialSubmit'
+              gtmSubmitEventLabel: 'saasTrialSubmit',
+              border: true,
+              canCreateGroup: true
             }
           )
         end

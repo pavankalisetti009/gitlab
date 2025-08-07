@@ -3,10 +3,23 @@
 module GitlabSubscriptions
   module Trials
     module DuoEnterprise
-      class AdvantagesListComponent < ViewComponent::Base
-        private
+      class LegacyAdvantagesListComponent < ViewComponent::Base
+        def call
+          render(GitlabSubscriptions::TrialAdvantagesComponent.new) do |c|
+            c.with_header do
+              s_('DuoEnterpriseTrial|GitLab Duo Enterprise is your end-to-end AI ' \
+                'partner for faster, more secure software development.')
+            end
 
-        delegate :sprite_icon, to: :helpers
+            c.with_advantages(advantages)
+
+            c.with_footer do
+              s_('DuoEnterpriseTrial|GitLab Duo Enterprise is only available for purchase for Ultimate customers.')
+            end
+          end
+        end
+
+        private
 
         def advantages
           [

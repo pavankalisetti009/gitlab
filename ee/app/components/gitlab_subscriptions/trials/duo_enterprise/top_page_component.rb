@@ -2,7 +2,7 @@
 
 module GitlabSubscriptions
   module Trials
-    module Ultimate
+    module DuoEnterprise
       class TopPageComponent < Trials::TopPageComponent
         extend ::Gitlab::Utils::Override
 
@@ -10,7 +10,7 @@ module GitlabSubscriptions
 
         override :title
         def title
-          s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
+          s_('DuoEnterpriseTrial|Start your free GitLab Duo Enterprise trial')
         end
       end
     end
