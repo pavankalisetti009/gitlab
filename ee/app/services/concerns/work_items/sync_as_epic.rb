@@ -15,7 +15,7 @@ module WorkItems
 
     BASE_ATTRIBUTE_PARAMS = %i[
       iid author_id created_at updated_at title title_html description description_html
-      confidential state_id last_edited_by_id last_edited_at external_key updated_by_id
+      confidential state_id last_edited_by_id last_edited_at updated_by_id
       closed_at closed_by_id imported_from
     ].freeze
 

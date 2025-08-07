@@ -28,7 +28,6 @@
     "state_id": 1,
     "start_date_sourcing_epic_id": null,
     "due_date_sourcing_epic_id": null,
-    "external_key": null,
     "confidential": false,
     "color": "#1068bf",
     "total_opened_issue_weight": 7,

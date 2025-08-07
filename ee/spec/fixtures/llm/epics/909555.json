@@ -28,7 +28,6 @@
     "state_id": 1,
     "start_date_sourcing_epic_id": null,
     "due_date_sourcing_epic_id": null,
-    "external_key": null,
     "confidential": false,
     "color": "#1068bf",
     "total_opened_issue_weight": 0,
@@ -41,9 +40,7 @@
     "username": "gweaver",
     "name": "Gabe Weaver"
   },
-  "labels": [
-
-  ],
+  "labels": [],
   "start_date_sourcing_milestone": {
     "id": 2969682,
     "title": "16.3",

@@ -10,7 +10,6 @@ module Gitlab
         confidential
         created_at
         description
-        external_key
         iid
         imported_from
         last_edited_at
