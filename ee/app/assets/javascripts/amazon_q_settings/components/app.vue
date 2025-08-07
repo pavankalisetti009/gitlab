@@ -355,7 +355,7 @@ export default {
           :loading="isDisconnecting"
           @click="showDisconnectWarning"
         >
-          {{ s__('AmazonQ|Remove') }}
+          {{ s__('AmazonQ|Disconnect') }}
         </gl-button>
       </div>
     </gl-form-group>

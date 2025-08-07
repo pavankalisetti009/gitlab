@@ -396,7 +396,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
     });
 
     it('renders disconnect button', () => {
-      expect(findDisconnectButton().text()).toBe('Remove');
+      expect(findDisconnectButton().text()).toBe('Disconnect');
       expect(findDisconnectButton().props()).toMatchObject({
         variant: 'danger',
         category: 'secondary',
