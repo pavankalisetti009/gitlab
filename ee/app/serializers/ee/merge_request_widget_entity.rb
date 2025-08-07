@@ -49,7 +49,7 @@ module EE
         end
 
         expose :full_report_path, if: ->(mr, _) { mr.head_pipeline } do |merge_request|
-          licenses_project_pipeline_path(merge_request.project, merge_request.head_pipeline)
+          licenses_project_pipeline_path(merge_request.source_project, merge_request.head_pipeline)
         end
       end
 

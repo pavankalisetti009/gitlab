@@ -17,8 +17,19 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
     project.add_developer(user)
   end
 
-  subject(:entity) do
-    described_class.new(merge_request, current_user: user, request: request)
+  subject(:entity_json) do
+    described_class.new(
+      merge_request,
+      current_user: user,
+      request: request
+    ).as_json
+  end
+
+  def stub_merge_request_pipelines(base: pipeline, head: nil)
+    allow(merge_request).to receive_messages(
+      base_pipeline: base,
+      head_pipeline: head || base
+    )
   end
 
   def create_all_artifacts
@@ -33,7 +44,9 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
 
   it 'avoids N+1 queries', :request_store do
     allow(pipeline).to receive(:available_licensed_report_type?).and_return(true)
-    allow(merge_request).to receive_messages(base_pipeline: pipeline, head_pipeline: pipeline)
+
+    stub_merge_request_pipelines
+    create_all_artifacts
 
     serializer = MergeRequestSerializer.new(current_user: user, project: project)
 
@@ -59,10 +72,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
 
     with_them do
       before do
-        allow(merge_request).to receive_messages(
-          base_pipeline: pipeline,
-          head_pipeline: pipeline
-        )
+        stub_merge_request_pipelines
       end
 
       context 'when feature is available' do
@@ -76,16 +86,16 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
           end
 
           it "has data entry" do
-            expect(subject.as_json).to include(json_entry)
+            expect(entity_json).to include(json_entry)
             exposures.each do |exposure|
-              expect(subject.as_json[json_entry]).to include(exposure)
+              expect(entity_json[json_entry]).to include(exposure)
             end
           end
         end
 
         context "without artifacts" do
           it "does not have data entry" do
-            expect(subject.as_json).not_to include(json_entry)
+            expect(entity_json).not_to include(json_entry)
           end
         end
       end
@@ -96,10 +106,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
     let!(:head_pipeline) { create(:ci_empty_pipeline, project: project) }
 
     before do
-      allow(merge_request).to receive_messages(
-        base_pipeline: pipeline,
-        head_pipeline: head_pipeline
-      )
+      stub_merge_request_pipelines(head: head_pipeline)
 
       allow(head_pipeline).to receive(:available_licensed_report_type?).and_return(true)
     end
@@ -114,7 +121,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
         end
 
         it "returns the value of the variable" do
-          expect(subject.as_json[:browser_performance][:degradation_threshold]).to eq(5)
+          expect(entity_json[:browser_performance][:degradation_threshold]).to eq(5)
         end
       end
 
@@ -126,7 +133,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
         end
 
         it "returns nil" do
-          expect(subject.as_json[:browser_performance][:degradation_threshold]).to be_nil
+          expect(entity_json[:browser_performance][:degradation_threshold]).to be_nil
         end
       end
     end
@@ -159,24 +166,63 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
   end
 
   describe '#license_scanning', :request_store do
-    before do
-      stub_licensed_features(license_scanning: true)
+    let(:license_scanning_json) do
+      entity_json[:license_scanning]
     end
 
-    context 'when report artifact is defined' do
+    context 'when feature is licensed' do
       before do
-        create(:ee_ci_build, :license_scanning, pipeline: pipeline)
+        stub_licensed_features(license_scanning: true)
+        stub_merge_request_pipelines
       end
 
-      it 'is included' do
-        allow(merge_request).to receive_messages(head_pipeline: pipeline, target_project: project)
+      context 'when report artifact is defined' do
+        before do
+          create(:ee_ci_build, :license_scanning, pipeline: pipeline)
+        end
 
-        expect(subject.as_json[:license_scanning]).to include(:can_manage_licenses)
-        expect(subject.as_json[:license_scanning]).to include(:full_report_path)
-      end
+        it 'is included' do
+          expect(license_scanning_json).to include(:can_manage_licenses)
+          expect(license_scanning_json).to include(:full_report_path)
+        end
 
-      it '#settings_path should not be included for developers' do
-        expect(subject.as_json[:license_scanning]).not_to include(:settings_path)
+        it '#settings_path should not be included for developers' do
+          expect(license_scanning_json).not_to include(:settings_path)
+        end
+
+        it 'the full report leads to the project path' do
+          expect(license_scanning_json[:full_report_path]).to include(project.full_path)
+        end
+
+        context "when a report artifact is produced from a forked project" do
+          let(:source_project) { fork_project(project, user, repository: true) }
+
+          let(:fork_merge_request) do
+            create(
+              :merge_request,
+              source_project: source_project,
+              target_project: project
+            )
+          end
+
+          let(:fork_pipeline) { create(:ci_empty_pipeline, project: source_project) }
+
+          let(:subject_json) do
+            described_class.new(
+              fork_merge_request,
+              current_user: user,
+              request: request
+            ).as_json
+          end
+
+          specify { expect(subject_json).to include(:license_scanning) }
+
+          it 'the full report leads to the fork project' do
+            allow(fork_merge_request).to receive_messages(head_pipeline: fork_pipeline)
+
+            expect(subject_json[:license_scanning][:full_report_path]).to include(source_project.full_path)
+          end
+        end
       end
 
       context 'when feature is not licensed' do
@@ -185,35 +231,16 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
         end
 
         it 'is not included' do
-          expect(subject.as_json).not_to include(:license_scanning)
-        end
-      end
-
-      context "when a report artifact is produced from a forked project" do
-        let(:source_project) { fork_project(project, user, repository: true) }
-        let(:fork_merge_request) { create(:merge_request, source_project: source_project, target_project: project) }
-        let(:fork_pipeline) { create(:ci_empty_pipeline, project: source_project) }
-        let(:subject_json) { described_class.new(fork_merge_request, current_user: user, request: request).as_json }
-
-        specify { expect(subject_json).to include(:license_scanning) }
-
-        it 'the full report leads to the fork project' do
-          allow(fork_merge_request).to receive_messages(
-            head_pipeline: fork_pipeline,
-            project: source_project,
-            target_project: project
-          )
-
-          expect(subject_json[:license_scanning][:full_report_path]).to include(source_project.full_path)
+          expect(entity_json).not_to include(:license_scanning)
         end
       end
     end
   end
 
   it 'has vulnerability feedback paths' do
-    expect(subject.as_json).to include(:create_vulnerability_feedback_issue_path)
-    expect(subject.as_json).to include(:create_vulnerability_feedback_merge_request_path)
-    expect(subject.as_json).to include(:create_vulnerability_feedback_dismissal_path)
+    expect(entity_json).to include(:create_vulnerability_feedback_issue_path)
+    expect(entity_json).to include(:create_vulnerability_feedback_merge_request_path)
+    expect(entity_json).to include(:create_vulnerability_feedback_dismissal_path)
   end
 
   describe '#can_read_vulnerabilities' do
@@ -223,7 +250,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
       end
 
       it 'is set to true' do
-        expect(subject.as_json[:can_read_vulnerabilities]).to eq(true)
+        expect(entity_json[:can_read_vulnerabilities]).to eq(true)
       end
     end
 
@@ -233,7 +260,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
       end
 
       it 'is set to false' do
-        expect(subject.as_json[:can_read_vulnerabilities]).to eq(false)
+        expect(entity_json[:can_read_vulnerabilities]).to eq(false)
       end
     end
   end
@@ -246,7 +273,7 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
       end
 
       it 'is set to true' do
-        expect(subject.as_json[:can_read_vulnerability_feedback]).to eq(true)
+        expect(entity_json[:can_read_vulnerability_feedback]).to eq(true)
       end
     end
 
@@ -256,30 +283,30 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
       end
 
       it 'is set to false' do
-        expect(subject.as_json[:can_read_vulnerability_feedback]).to eq(false)
+        expect(entity_json[:can_read_vulnerability_feedback]).to eq(false)
       end
     end
   end
 
   it 'has can_read_vulnerability_feedback property' do
-    expect(subject.as_json).to include(:can_read_vulnerability_feedback)
+    expect(entity_json).to include(:can_read_vulnerability_feedback)
   end
 
   it 'has discover project security path' do
-    expect(subject.as_json).to include(:discover_project_security_path)
+    expect(entity_json).to include(:discover_project_security_path)
   end
 
   it 'has pipeline id' do
-    allow(merge_request).to receive(:head_pipeline).and_return(pipeline)
+    stub_merge_request_pipelines
 
-    expect(subject.as_json).to include(:pipeline_id)
+    expect(entity_json).to include(:pipeline_id)
   end
 
   it 'exposes saml_approval_path', :request_store do
-    expect(subject.as_json).to include(:saml_approval_path)
+    expect(entity_json).to include(:saml_approval_path)
   end
 
   it 'exposes require_saml_auth_to_approve' do
-    expect(subject.as_json).to include(:require_saml_auth_to_approve)
+    expect(entity_json).to include(:require_saml_auth_to_approve)
   end
 end
