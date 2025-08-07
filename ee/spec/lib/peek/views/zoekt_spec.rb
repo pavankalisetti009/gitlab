@@ -9,6 +9,7 @@ RSpec.describe Peek::Views::Zoekt, :zoekt, :request_store, feature_category: :gl
   before do
     ::Gitlab::Instrumentation::Zoekt.detail_store # Create store in redis
     allow(::Gitlab::PerformanceBar).to receive(:enabled_for_request?).and_return(true)
+    allow(::Search::Zoekt).to receive(:traversal_id_searchable?).and_return(true)
   end
 
   describe '#results' do

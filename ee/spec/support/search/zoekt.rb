@@ -123,6 +123,8 @@ module Search
       stub_const('Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD', 1.day)
       # This feature flag is by default disabled and should be used to disable Zoekt search for SaaS customers on demand
       stub_feature_flags(disable_zoekt_search_for_saas: false)
+      # This is to ensure that the traversal ID search feature is always enabled in tests
+      stub_const('Search::Zoekt::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH', 0)
     end
 
     # DEPRECATED: Do not use this tag.

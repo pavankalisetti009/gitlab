@@ -4,6 +4,9 @@ module Search
   module Zoekt
     EXPIRED_SUBSCRIPTION_GRACE_PERIOD = 30.days
     MAX_INDICES_PER_REPLICA = 10
+    MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH = 2531
+    TRAVERSAL_ID_CHECK_CACHE_KEY = 'zoekt_traversal_id_searchable'
+    TRAVERSAL_ID_CHECK_CACHE_PERIOD = 30.minutes
 
     class << self
       include Gitlab::Utils::StrongMemoize
@@ -46,6 +49,19 @@ module Search
         return true unless user # anonymous users have access, the final check is the user's preference setting
 
         user.enabled_zoekt?
+      end
+
+      def use_traversal_id_queries?(user)
+        Feature.enabled?(:zoekt_ast_search_payload, user) &&
+          Feature.enabled?(:zoekt_traversal_id_queries, user) &&
+          traversal_id_searchable?
+      end
+
+      def traversal_id_searchable?
+        Rails.cache.fetch(TRAVERSAL_ID_CHECK_CACHE_KEY, expires_in: TRAVERSAL_ID_CHECK_CACHE_PERIOD) do
+          min_version = ::Search::Zoekt::Repository.minimum_schema_version.to_i
+          min_version >= MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH
+        end
       end
 
       def index_async(project_id)
