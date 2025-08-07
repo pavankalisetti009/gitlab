@@ -20,6 +20,8 @@ module Ai
 
     validate :event_types_are_valid
 
+    scope :with_ids, ->(ids) { where(id: ids) }
+
     private
 
     def event_types_are_valid

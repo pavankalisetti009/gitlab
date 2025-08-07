@@ -1,0 +1,54 @@
+# frozen_string_literal: true
+
+module Mutations
+  module Ai
+    module FlowTriggers
+      class Create < BaseMutation
+        graphql_name 'AiFlowTriggerCreate'
+
+        include FindsProject
+
+        authorize :manage_ai_flow_triggers
+
+        argument :project_path, GraphQL::Types::ID,
+          required: true,
+          description: 'Full path of the project the AI flow trigger is associated with.'
+
+        argument :user_id, ::Types::GlobalIDType[::User],
+          prepare: ->(global_id, _ctx) { global_id.model_id.to_i },
+          required: true,
+          description: 'Owner of the AI flow trigger.'
+
+        argument :description, GraphQL::Types::String,
+          required: true,
+          description: 'Description of the AI flow trigger.'
+
+        argument :event_types, [GraphQL::Types::Int],
+          required: false,
+          description: 'Event types that triggers the AI flow.'
+
+        argument :config_path, GraphQL::Types::String,
+          required: false,
+          description: 'Path to the configuration file for the AI flow trigger.'
+
+        field :ai_flow_trigger,
+          Types::Ai::FlowTriggerType,
+          description: 'Created AI flow trigger.'
+
+        def resolve(project_path:, **params)
+          project = authorized_find!(project_path)
+          trigger = project.ai_flow_triggers.create(params)
+
+          if trigger.valid?
+            { ai_flow_trigger: trigger, errors: [] }
+          else
+            {
+              ai_flow_trigger: nil,
+              errors: trigger.errors
+            }
+          end
+        end
+      end
+    end
+  end
+end

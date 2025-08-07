@@ -1,0 +1,112 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :duo_workflow do
+  include GraphqlHelpers
+
+  let_it_be(:maintainer) { create(:user) }
+  let_it_be(:project) { create(:project, :repository, maintainers: maintainer) }
+  let_it_be_with_reload(:trigger) { create(:ai_flow_trigger, project: project) }
+  let_it_be(:original) { trigger.attributes.dup }
+
+  let(:current_user) { maintainer }
+  let(:mutation) { graphql_mutation(:ai_flow_trigger_update, params) }
+  let(:description) { 'New' }
+  let(:event_types) { [Ai::FlowTrigger::EVENT_TYPES[:mention]] }
+  let(:params) do
+    {
+      id: trigger.to_global_id,
+      user_id: current_user.to_global_id,
+      description: description,
+      event_types: event_types,
+      config_path: '.gitlab/duo_agents.yml'
+    }
+  end
+
+  subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
+
+  before do
+    allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+      :for_duo_enterprise,
+      :active,
+      :by_namespace,
+      :assigned_to_user,
+      :exists?
+    ).and_return(true)
+  end
+
+  shared_examples 'an authorization failure' do
+    it_behaves_like 'a mutation that returns a top-level access error'
+
+    it 'does not modify the trigger' do
+      expect { execute }.not_to change { trigger.attributes }
+    end
+  end
+
+  context 'when user does not have permission' do
+    let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+
+    it_behaves_like 'an authorization failure'
+  end
+
+  context 'when ai_flow_triggers feature flag is disabled' do
+    before do
+      stub_feature_flags(ai_flow_triggers: false)
+    end
+
+    it_behaves_like 'an authorization failure'
+  end
+
+  context 'when graphql params are invalid' do
+    let(:params) { super().merge(user_id: 'gid://gitlab/Project/1') }
+
+    it 'returns the validation error' do
+      execute
+
+      expect(graphql_errors.first['message']).to include('does not represent an instance of User')
+    end
+  end
+
+  context 'when model params are invalid' do
+    let(:description) { 'a' * 256 }
+
+    it 'returns the validation error' do
+      execute
+
+      expect(graphql_data_at(:ai_flow_trigger_update, :errors)).to contain_exactly(
+        'Description is too long (maximum is 255 characters)'
+      )
+      expect(graphql_data_at(:ai_flow_trigger_update, :ai_flow_trigger)).to be_nil
+    end
+  end
+
+  it 'creates a flow trigger with expected data' do
+    expect { execute }.to change { trigger.reload.attributes }.from(
+      a_hash_including(
+        'description' => original['description'],
+        'user_id' => original['user_id'],
+        'config_path' => original['config_path']
+      )
+    ).to(
+      a_hash_including(
+        'description' => 'New',
+        'user_id' => current_user.id,
+        'config_path' => '.gitlab/duo_agents.yml'
+      )
+    )
+  end
+
+  it 'returns the new trigger' do
+    execute
+
+    expect(graphql_data_at(:ai_flow_trigger_update, :ai_flow_trigger)).to match a_hash_including(
+      'description' => description,
+      'eventTypes' => event_types,
+      'configPath' => '.gitlab/duo_agents.yml',
+      'configUrl' => "/#{project.full_path}/-/blob/#{project.default_branch}/.gitlab/duo_agents.yml",
+      'project' => a_hash_including('id' => project.to_global_id.to_s),
+      'user' => a_hash_including('id' => current_user.to_global_id.to_s)
+    )
+  end
+end
