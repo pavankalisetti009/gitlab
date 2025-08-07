@@ -450,7 +450,7 @@ on Rails for this effort.
 
 ### CORS issues
 
-The Web IDE requires specific Cross-Origin Resource Sharing (CORS) configuration to function properly on self-managed instances.
+The Web IDE requires specific Cross-Origin Resource Sharing (CORS) configuration to function properly on GitLab Self-Managed instances.
 GitLab API endpoints (`/api/*`) must include the following HTTP response headers to support the Web IDE: 
 
 | Header | Value | Description |
@@ -473,9 +473,9 @@ instance is behind an HTTP reverse proxy server or it uses a custom CORS policy 
 
 {{< alert type="note" >}}
 
-If these headers are not provided, the Web IDE will still work on GitLab self-managed although 
+If these headers are not provided, the Web IDE will still work on GitLab Self-Managed although 
 features such as Extension Marketplace will be disabled for security reasons. The Web IDE uses
-the `https://*.cdn.web-ide.gitlab-static.net` origin to run 3rd-party extensions in a sandboxed
+the `https://*.cdn.web-ide.gitlab-static.net` origin to run third-party extensions in a sandboxed
 environment.
 
 {{< /alert >}}
@@ -484,7 +484,7 @@ environment.
 
 The Web IDE disables the Extension Marketplace and Web Views in air-gapped or offline environments where a
 user's web browser can't connect to the `https://*.cdn.web-ide.gitlab-static.net` external assets host. 
-The Web IDE uses the external assets host to run 3rd-party code coming from VSCode Extensions and Web Views
+The Web IDE uses the external assets host to run third-party code coming from VSCode Extensions and Web Views
 in a sandboxed environment to secure user data.
 
 The Web IDE engineering team will provide better support for air-gapped environments in the future. 
