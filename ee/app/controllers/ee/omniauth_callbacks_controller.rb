@@ -141,7 +141,6 @@ module EE
     end
 
     def session_not_on_or_after_attribute
-      return unless ::Feature.enabled?(:saml_timeout_supplied_by_idp_override, :instance)
       return unless saml_response.present? # response object can be nil in case authentication fails
 
       saml_response.session_expires_at
