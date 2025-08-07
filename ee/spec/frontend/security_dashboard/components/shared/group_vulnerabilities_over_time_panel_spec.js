@@ -81,6 +81,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       },
       provide: {
         groupFullPath: mockGroupFullPath,
+        securityVulnerabilitiesPath: '/group/security/vulnerabilities',
       },
     });
 
@@ -224,6 +225,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       const expectedChartData = [
         {
           name: 'Critical',
+          id: 'CRITICAL',
           data: [
             ['2025-06-01', 5],
             ['2025-06-02', 6],
@@ -231,6 +233,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'High',
+          id: 'HIGH',
           data: [
             ['2025-06-01', 10],
             ['2025-06-02', 9],
@@ -238,6 +241,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'Medium',
+          id: 'MEDIUM',
           data: [
             ['2025-06-01', 15],
             ['2025-06-02', 14],
@@ -245,6 +249,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'Low',
+          id: 'LOW',
           data: [
             ['2025-06-01', 8],
             ['2025-06-02', 7],
@@ -255,6 +260,12 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
     });
 
+    it('passes the correct grouped-by prop for severity grouping', async () => {
+      await waitForPromises();
+
+      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('severity');
+    });
+
     it('correctly formats chart data from the API response for report type grouping', async () => {
       await findReportTypeButton().vm.$emit('click');
       await waitForPromises();
@@ -263,6 +274,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       const expectedChartData = [
         {
           name: 'SAST',
+          id: 'SAST',
           data: [
             ['2025-06-01', 8],
             ['2025-06-02', 6],
@@ -270,23 +282,35 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'Dependency Scanning',
+          id: 'DEPENDENCY_SCANNING',
           data: [['2025-06-01', 12]],
         },
         {
           name: 'Container Scanning',
+          id: 'CONTAINER_SCANNING',
           data: [['2025-06-01', 10]],
         },
         {
           name: 'DAST',
+          id: 'DAST',
           data: [['2025-06-02', 5]],
         },
         {
           name: 'API Fuzzing',
+          id: 'API_FUZZING',
           data: [['2025-06-02', 3]],
         },
       ];
 
       expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
+    });
+
+    it('passes the correct grouped-by prop for report type grouping', async () => {
+      await findReportTypeButton().vm.$emit('click');
+      await waitForPromises();
+      await nextTick();
+
+      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('reportType');
     });
 
     it('returns empty chart data when no vulnerabilities data is available', async () => {

@@ -1,6 +1,9 @@
-import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_formatters';
+import {
+  formatVulnerabilitiesOverTimeData,
+  constructVulnerabilitiesReportWithFiltersPath,
+} from 'ee/security_dashboard/utils/chart_utils';
 
-describe('chart_formatters', () => {
+describe('Security Dashboard - Chart Utils', () => {
   const severities = ['Critical', 'High', 'Medium', 'Low', 'Info', 'Unknown'];
   const reportTypes = [
     'SAST',
@@ -51,20 +54,26 @@ describe('chart_formatters', () => {
     },
   ];
 
-  const findSeriesByName = (name, result) => result.find((series) => series.name === name)?.data;
+  const getSeriesByName = (name, result) => result.find((series) => series.name === name);
   const getSeriesNames = (result) => result.map((series) => series.name);
 
   describe('formatVulnerabilitiesOverTimeData', () => {
     describe('when groupBy is "severity" (default)', () => {
+      it.each(severities)('includes the correct id for "%s"', (severity) => {
+        const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData);
+
+        expect(getSeriesByName(severity, result).id).toEqual(severity.toUpperCase());
+      });
+
       it('includes correct data points for all severities', () => {
         const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData);
 
         expect(getSeriesNames(result)).toEqual(severities);
-        expect(findSeriesByName('Critical', result)).toEqual([
+        expect(getSeriesByName('Critical', result).data).toEqual([
           ['2024-01-01', 5],
           ['2024-01-02', 3],
         ]);
-        expect(findSeriesByName('High', result)).toEqual([
+        expect(getSeriesByName('High', result).data).toEqual([
           ['2024-01-01', 10],
           ['2024-01-02', 8],
         ]);
@@ -87,8 +96,8 @@ describe('chart_formatters', () => {
 
         const result = formatVulnerabilitiesOverTimeData(edgeCaseData);
 
-        expect(findSeriesByName('Critical', result)).toEqual([['2024-01-01', 0]]);
-        expect(findSeriesByName('nonexistent', result)).toBeUndefined();
+        expect(getSeriesByName('Critical', result).data).toEqual([['2024-01-01', 0]]);
+        expect(getSeriesByName('nonexistent', result)).toBeUndefined();
       });
     });
 
@@ -97,11 +106,11 @@ describe('chart_formatters', () => {
         const result = formatVulnerabilitiesOverTimeData(mockVulnerabilitiesData, 'reportType');
 
         expect(getSeriesNames(result)).toEqual(reportTypes);
-        expect(findSeriesByName('SAST', result)).toEqual([
+        expect(getSeriesByName('SAST', result).data).toEqual([
           ['2024-01-01', 8],
           ['2024-01-02', 6],
         ]);
-        expect(findSeriesByName('DAST', result)).toEqual([['2024-01-02', 5]]);
+        expect(getSeriesByName('DAST', result).data).toEqual([['2024-01-02', 5]]);
       });
 
       it('handles edge cases correctly', () => {
@@ -121,8 +130,8 @@ describe('chart_formatters', () => {
 
         const result = formatVulnerabilitiesOverTimeData(edgeCaseData, 'reportType');
 
-        expect(findSeriesByName('SAST', result)).toEqual([['2024-01-01', 0]]);
-        expect(findSeriesByName('nonexistent', result)).toBeUndefined();
+        expect(getSeriesByName('SAST', result).data).toEqual([['2024-01-01', 0]]);
+        expect(getSeriesByName('nonexistent', result)).toBeUndefined();
       });
     });
 
@@ -142,6 +151,35 @@ describe('chart_formatters', () => {
       it.each([[], null, undefined])('returns an empty array when the input is "%s"', (input) => {
         expect(formatVulnerabilitiesOverTimeData(input)).toEqual([]);
         expect(formatVulnerabilitiesOverTimeData(input, 'reportType')).toEqual([]);
+      });
+    });
+  });
+
+  describe('constructVulnerabilitiesReportWithFiltersPath', () => {
+    const securityVulnerabilitiesPath = '/security/vulnerabilities';
+
+    it('constructs path with filter key and series ID', () => {
+      const result = constructVulnerabilitiesReportWithFiltersPath({
+        seriesId: 'SAST',
+        filterKey: 'report_type',
+        securityVulnerabilitiesPath,
+      });
+
+      expect(result).toBe(
+        `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED,DETECTED&report_type=SAST`,
+      );
+    });
+
+    describe('special cases', () => {
+      it('constructs path with operational tab suffix', () => {
+        const result = constructVulnerabilitiesReportWithFiltersPath({
+          seriesId: 'CLUSTER_IMAGE_SCANNING',
+          securityVulnerabilitiesPath,
+        });
+
+        expect(result).toBe(
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED,DETECTED&tab=OPERATIONAL`,
+        );
       });
     });
   });

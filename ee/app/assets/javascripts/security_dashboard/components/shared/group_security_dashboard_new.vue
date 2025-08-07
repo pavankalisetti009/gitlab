@@ -75,10 +75,15 @@ export default {
 <template>
   <gl-dashboard-layout :config="dashboard" data-testid="group-security-dashboard-new">
     <template #filters>
-      <filtered-search :tokens="$options.filteredSearchTokens" @filters-changed="updateFilters" />
+      <!-- creating a new stacking context and setting the z-index higher than the panels to make sure the filter-dropdowns are on top -->
+      <filtered-search
+        :tokens="$options.filteredSearchTokens"
+        class="gl-isolate gl-z-2"
+        @filters-changed="updateFilters"
+      />
     </template>
     <template #panel="{ panel }">
-      <component :is="panel.component" v-bind="panel.componentProps" />
+      <component :is="panel.component" v-bind="panel.componentProps" class="gl-isolate gl-z-1" />
     </template>
   </gl-dashboard-layout>
 </template>

@@ -152,6 +152,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       const expectedChartData = [
         {
           name: 'Critical',
+          id: 'CRITICAL',
           data: [
             ['2025-06-01', 5],
             ['2025-06-02', 6],
@@ -159,6 +160,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'High',
+          id: 'HIGH',
           data: [
             ['2025-06-01', 10],
             ['2025-06-02', 9],
@@ -166,6 +168,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'Medium',
+          id: 'MEDIUM',
           data: [
             ['2025-06-01', 15],
             ['2025-06-02', 14],
@@ -173,6 +176,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         },
         {
           name: 'Low',
+          id: 'LOW',
           data: [
             ['2025-06-01', 8],
             ['2025-06-02', 7],
