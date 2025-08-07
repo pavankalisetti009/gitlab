@@ -6,7 +6,7 @@ class QueueBackfillRolledUpWeightForWorkItemsV2 < Gitlab::Database::Migration[2.
   restrict_gitlab_migration gitlab_schema: :gitlab_main
 
   def up
-    # no-op: re-enqueued in a new migration
+    # no-op: re-enqueued in a new migration: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200713
   end
 
   def down
