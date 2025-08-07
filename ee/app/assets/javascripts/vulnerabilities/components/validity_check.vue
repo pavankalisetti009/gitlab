@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlTooltip } from '@gitlab/ui';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { createAlert } from '~/alert';
@@ -15,9 +15,7 @@ export default {
     GlButton,
     TimeAgoTooltip,
     TokenValidityBadge,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
+    GlTooltip,
   },
   mixins: [glFeatureFlagMixin()],
   props: {
@@ -61,7 +59,7 @@ export default {
         const { errors, findingTokenStatus } = data?.refreshFindingTokenStatus || {};
 
         if (errors?.length) {
-          this.createErrorAlert(new Error(errors.join('. ')));
+          throw new Error(errors.join('. '));
         } else if (findingTokenStatus) {
           const { updatedAt, status } = findingTokenStatus;
 
@@ -93,23 +91,28 @@ export default {
     <div v-if="glFeatures.validityRefresh" class="gl-mt-4">
       <span class="gl-font-sm gl-ml-2 gl-mr-2" data-testid="validity-last-checked">
         {{ s__('VulnerabilityManagement|Last checked:') }}
-        <template v-if="lastCheckedAt">
-          <time-ago-tooltip :time="lastCheckedAt" />
-        </template>
-        <template v-else>
-          <span>{{ s__('VulnerabilityManagement|No data available') }}</span>
-        </template>
+        <span class="gl-inline-block gl-min-w-[5.2rem]">
+          <template v-if="lastCheckedAt"><time-ago-tooltip :time="lastCheckedAt" /></template>
+          <template v-else> {{ s__('VulnerabilityManagement|No data available') }}</template>
+        </span>
       </span>
       <gl-button
-        v-gl-tooltip
+        id="vulnerability-validity-check-button"
         :loading="isLoading"
         category="tertiary"
         size="small"
         icon="retry"
-        :title="s__('VulnerabilityManagement|Retry')"
         :aria-label="s__('VulnerabilityManagement|Retry')"
         @click="refreshValidityCheck"
       />
+      <gl-tooltip
+        v-if="!isLoading"
+        target="vulnerability-validity-check-button"
+        placement="top"
+        triggers="hover focus"
+      >
+        {{ s__('VulnerabilityManagement|Retry') }}
+      </gl-tooltip>
     </div>
   </span>
 </template>

@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlTooltip } from '@gitlab/ui';
 import ValidityCheck from 'ee/vulnerabilities/components/validity_check.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -14,16 +14,39 @@ Vue.use(VueApollo);
 
 jest.mock('~/alert');
 
+const defaultProps = {
+  findingTokenStatus: {
+    status: 'ACTIVE',
+    updatedAt: '2023-01-01T00:00:00Z',
+  },
+  vulnerabilityId: 123,
+};
+
+const successResponse = {
+  data: {
+    refreshFindingTokenStatus: {
+      errors: [],
+      findingTokenStatus: {
+        id: 'gid://gitlab/Vulnerability/123',
+        status: 'INACTIVE',
+        createdAt: '2023-01-01T00:00:00Z',
+        updatedAt: '2023-01-02T00:00:00Z',
+      },
+    },
+  },
+};
+
+const errorResponse = {
+  data: {
+    refreshFindingTokenStatus: {
+      errors: ['Validation failed', 'Token expired'],
+      findingTokenStatus: null,
+    },
+  },
+};
+
 describe('ValidityCheck', () => {
   let wrapper;
-
-  const defaultProps = {
-    findingTokenStatus: {
-      status: 'ACTIVE',
-      updatedAt: '2023-01-01T00:00:00Z',
-    },
-    vulnerabilityId: 123,
-  };
 
   const createWrapper = (props = {}, { apolloProvider, validityRefresh = true } = {}) => {
     wrapper = shallowMountExtended(ValidityCheck, {
@@ -43,7 +66,14 @@ describe('ValidityCheck', () => {
   const findLastCheckedTimestamp = () => wrapper.findByTestId('validity-last-checked');
   const findTimeAgoTooltip = () => wrapper.findComponent(TimeAgoTooltip);
   const findRetryButton = () => wrapper.findComponent(GlButton);
+  const findTooltip = () => wrapper.findComponent(GlTooltip);
   const findTokenValidityBadge = () => wrapper.findComponent(TokenValidityBadge);
+
+  const createWrapperWithApollo = ({ props = {}, mutationHandler } = {}) => {
+    const apolloProvider = createMockApollo([[refreshFindingTokenStatusMutation, mutationHandler]]);
+
+    createWrapper(props, { apolloProvider });
+  };
 
   describe('when findingTokenStatus has updatedAt', () => {
     beforeEach(() => {
@@ -95,37 +125,6 @@ describe('ValidityCheck', () => {
   });
 
   describe('when user clicks retry button', () => {
-    const createWrapperWithApollo = ({ props = {}, mutationHandler } = {}) => {
-      const apolloProvider = createMockApollo([
-        [refreshFindingTokenStatusMutation, mutationHandler],
-      ]);
-
-      createWrapper(props, { apolloProvider });
-    };
-
-    const successResponse = {
-      data: {
-        refreshFindingTokenStatus: {
-          errors: [],
-          findingTokenStatus: {
-            id: 'gid://gitlab/Vulnerability/123',
-            status: 'INACTIVE',
-            createdAt: '2023-01-01T00:00:00Z',
-            updatedAt: '2023-01-02T00:00:00Z',
-          },
-        },
-      },
-    };
-
-    const errorResponse = {
-      data: {
-        refreshFindingTokenStatus: {
-          errors: ['Validation failed', 'Token expired'],
-          findingTokenStatus: null,
-        },
-      },
-    };
-
     describe('loading', () => {
       it.each`
         scenario            | mutationHandler
@@ -211,6 +210,32 @@ describe('ValidityCheck', () => {
       createWrapper({ findingTokenStatus: null });
 
       expect(findTokenValidityBadge().props('status')).toBe('unknown');
+    });
+  });
+
+  describe('tooltip', () => {
+    it('is rendered correctly', () => {
+      createWrapper();
+
+      const tooltip = findTooltip();
+      expect(tooltip.text()).toBe('Retry');
+      expect(tooltip.attributes()).toMatchObject({
+        target: 'vulnerability-validity-check-button',
+        placement: 'top',
+        triggers: 'hover focus',
+      });
+    });
+
+    it('does not render when loading', async () => {
+      createWrapperWithApollo({
+        mutationHandler: jest.fn().mockResolvedValue(successResponse),
+      });
+
+      await findRetryButton().vm.$emit('click');
+      expect(findTooltip().exists()).toBe(false);
+
+      await waitForPromises();
+      expect(findTooltip().exists()).toBe(true);
     });
   });
 
