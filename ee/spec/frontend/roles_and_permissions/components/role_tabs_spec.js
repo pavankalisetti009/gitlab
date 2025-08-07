@@ -13,18 +13,13 @@ describe('RoleTabs component', () => {
 
   const createWrapper = ({
     ldapServers = ldapServersData,
-    customAdminRoles = true,
     adminModeSettingPath = '',
     isSaas = false,
     groupFullPath = null,
   } = {}) => {
     wrapper = shallowMountExtended(RoleTabs, {
       propsData: { adminModeSettingPath, isSaas },
-      provide: {
-        ldapServers,
-        groupFullPath,
-        glFeatures: { customAdminRoles },
-      },
+      provide: { ldapServers, groupFullPath },
       stubs: { GlSprintf },
     });
   };
@@ -73,12 +68,8 @@ describe('RoleTabs component', () => {
     },
   );
 
-  describe.each`
-    phrase                                                | options
-    ${'when ldap is disabled'}                            | ${{ ldapServers: null }}
-    ${'when custom admin roles feature flag is disabled'} | ${{ customAdminRoles: false }}
-  `('$phrase', ({ options }) => {
-    beforeEach(() => createWrapper(options));
+  describe('when ldap servers are not available', () => {
+    beforeEach(() => createWrapper({ ldapServers: null }));
 
     it('shows roles crud', () => {
       expect(findRolesCrud().exists()).toBe(true);
@@ -93,7 +84,7 @@ describe('RoleTabs component', () => {
     });
   });
 
-  describe('when ldap is enabled', () => {
+  describe('when ldap servers are available', () => {
     beforeEach(() => createWrapper());
 
     it('shows tabs', () => {
