@@ -26,7 +26,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   end
 
   let_it_be(:agent2_v2) do
-    definition = agent_definition.merge('tools' => [3]) # 3 => 'run_git_comand'
+    definition = agent_definition.merge('tools' => [3]) # 3 => 'run_git_command'
     create(:ai_catalog_agent_version, item: agent_item_2, definition: definition, version: '1.2.0')
   end
 
