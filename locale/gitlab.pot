@@ -7046,6 +7046,9 @@ msgstr ""
 msgid "AmazonQ|Delete the IAM role."
 msgstr ""
 
+msgid "AmazonQ|Disconnect"
+msgstr ""
+
 msgid "AmazonQ|Enter the IAM role's ARN."
 msgstr ""
 
@@ -7119,9 +7122,6 @@ msgid "AmazonQ|Provider URL"
 msgstr ""
 
 msgid "AmazonQ|Provider type"
-msgstr ""
-
-msgid "AmazonQ|Remove"
 msgstr ""
 
 msgid "AmazonQ|Remove IAM role's ARN"
