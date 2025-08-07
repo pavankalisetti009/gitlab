@@ -85,6 +85,30 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
       before do
         stub_application_setting_enum('email_confirmation_setting', 'hard')
         stub_experiments(lightweight_trial_registration_redesign: :candidate)
+
+        # The groups_and_projects_controller (on `click_on 'Create project'`) is over
+        # the query limit threshold, so we have to adjust it.
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/340302
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(163)
+
+        subscription_portal_url = ::Gitlab::Routing.url_helpers.subscription_portal_url
+
+        stub_request(:post, "#{subscription_portal_url}/trials")
+
+        allow_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+          allow(service).to receive(:execute)
+            .and_return(ServiceResponse.success(
+              message: 'Trial applied',
+              payload: {
+                namespace: 1,
+                project: 1
+              }
+            ))
+        end
+
+        allow_next_instance_of(GitlabSubscriptions::Trials::ApplyTrialService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success)
+        end
       end
 
       it 'goes through the experiment trial registration flow' do
@@ -115,9 +139,28 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
         wait_for_all_requests
 
         # Step 4
-        # To be updated once Step 4 is completed in https://gitlab.com/gitlab-org/gitlab/-/issues/550313
         expect(page).to have_content('Welcome to GitLab')
+        expect(page).to have_content('We need a few more details from you to activate your trial.')
         expect(page).to have_current_path(new_users_sign_up_trial_welcome_path)
+
+        wait_for_all_requests
+
+        fill_in 'first_name', with: 'John'
+        fill_in 'last_name', with: 'Doe'
+        fill_in 'company_name', with: 'My Company'
+
+        select 'United States of America', from: 'country'
+        wait_for_all_requests
+        select 'California', from: 'state'
+
+        fill_in 'group_name', with: 'My Group'
+        fill_in 'project_name', with: 'My Project'
+
+        click_button _('Continue to GitLab')
+
+        wait_for_all_requests
+
+        expect(page).to have_content('Learn GitLab')
       end
     end
   end
