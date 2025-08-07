@@ -11,7 +11,6 @@ import {
   GlModalDirective,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { capitalize } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   getStartOfWeek,
@@ -221,9 +220,6 @@ export default {
       this.presetType = type;
       this.timeframeStartDate =
         type === PRESET_TYPES.WEEKS ? getStartOfWeek(new Date()) : new Date();
-    },
-    formatPresetType(type) {
-      return capitalize(type);
     },
     updateToViewPreviousTimeframe() {
       switch (this.presetType) {

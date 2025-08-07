@@ -54,28 +54,6 @@ describe('AddEditScheduleForm', () => {
     expect(wrapper.element).toMatchSnapshot();
   });
 
-  describe('isTimezoneSelected', () => {
-    beforeEach(() => {
-      createComponent({
-        props: {
-          form: { name: '', description: '', timezone: mockTimezones[0] },
-        },
-      });
-    });
-
-    it('returns true if a given timezone is selected within a form', () => {
-      const isTimezoneSelected = wrapper.vm.isTimezoneSelected(mockTimezones[0]);
-
-      expect(isTimezoneSelected).toEqual(true);
-    });
-
-    it('returns false if a different timezone is selected within a form', () => {
-      const isTimezoneSelected = wrapper.vm.isTimezoneSelected(mockTimezones[1]);
-
-      expect(isTimezoneSelected).toEqual(false);
-    });
-  });
-
   describe('setTimezone', () => {
     beforeEach(() => {
       createComponent();

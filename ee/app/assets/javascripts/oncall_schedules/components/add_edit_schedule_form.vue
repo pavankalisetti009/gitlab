@@ -1,6 +1,6 @@
 <script>
 import { GlForm, GlFormGroup, GlFormInput } from '@gitlab/ui';
-import { isEqual, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { s__, __ } from '~/locale';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
@@ -53,7 +53,6 @@ export default {
   },
   data() {
     return {
-      tzSearchTerm: '',
       selectedDropdownTimezone: null,
     };
   },
@@ -63,9 +62,6 @@ export default {
     },
   },
   methods: {
-    isTimezoneSelected(tz) {
-      return isEqual(tz, this.form.timezone);
-    },
     setTimezone(selectedTz) {
       this.$emit('update-schedule-form', { type: 'timezone', value: selectedTz });
       this.selectedDropdownTimezone = selectedTz;
