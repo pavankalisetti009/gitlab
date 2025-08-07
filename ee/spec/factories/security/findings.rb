@@ -114,5 +114,15 @@ FactoryBot.define do
         }
       end
     end
+
+    trait :with_token_status do
+      transient do
+        token_status { :unknown } # Default to unknown, but can be overridden
+      end
+
+      after(:create) do |finding, evaluator|
+        finding.create_token_status(status: evaluator.token_status)
+      end
+    end
   end
 end
