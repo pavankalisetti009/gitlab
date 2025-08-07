@@ -56100,7 +56100,13 @@ msgstr ""
 msgid "Secrets|Add secret"
 msgstr ""
 
+msgid "Secrets|An error occurred while enabling the Secrets Manager."
+msgstr ""
+
 msgid "Secrets|An error occurred while fetching secrets. Please try again."
+msgstr ""
+
+msgid "Secrets|An error occurred while fetching the Secret manager status."
 msgstr ""
 
 msgid "Secrets|An error occurred while fetching the Secret manager status. Please try again."

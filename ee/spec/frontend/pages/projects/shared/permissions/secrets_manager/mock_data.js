@@ -1,7 +1,7 @@
 const TYPENAME_SECRET_PERMISSION_UPDATE_PAYLOAD = 'SecretPermissionUpdatePayload';
 const TYPENAME_SECRET_PERMISSION = 'SecretPermission';
 
-export const secretManagerSettingsResponse = (status) => {
+export const secretManagerSettingsResponse = (status, errors = undefined) => {
   return {
     data: {
       projectSecretsManager: {
@@ -9,6 +9,7 @@ export const secretManagerSettingsResponse = (status) => {
         __typename: 'ProjectSecretsManager',
       },
     },
+    errors,
   };
 };
 

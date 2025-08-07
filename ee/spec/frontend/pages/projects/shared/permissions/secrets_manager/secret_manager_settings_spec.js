@@ -31,6 +31,8 @@ describe('SecretManagerSettings', () => {
   const provisioningResponse = secretManagerSettingsResponse(SECRET_MANAGER_STATUS_PROVISIONING);
   // secrets manager has not been provisioned yet, so status would be NULL when it's inactive
   const inactiveResponse = secretManagerSettingsResponse(null);
+  const errorResponse = secretManagerSettingsResponse(null, [{ message: 'Some error occurred' }]);
+
   const fullPath = 'gitlab-org/gitlab';
 
   const createComponent = async ({ props } = {}) => {
@@ -162,6 +164,25 @@ describe('SecretManagerSettings', () => {
     });
   });
 
+  describe('when query receives an error', () => {
+    beforeEach(async () => {
+      mockSecretManagerStatus.mockResolvedValue(errorResponse);
+      await createComponent();
+    });
+
+    it('disables toggle', () => {
+      expect(findToggle().props('disabled')).toBe(true);
+    });
+
+    it('shows error message', () => {
+      expect(findError().text()).toBe('Some error occurred');
+    });
+
+    it('does not render permission settings', () => {
+      expect(findPermissionsSettings().exists()).toBe(false);
+    });
+  });
+
   describe('when enabling the secrets manager', () => {
     beforeEach(async () => {
       mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
@@ -176,10 +197,11 @@ describe('SecretManagerSettings', () => {
       });
     });
 
-    it('shows error message on failure', async () => {
+    it('shows error message on failure and disables toggle', async () => {
       await toggleSetting(['Error encountered']);
 
       expect(findError().exists()).toBe(true);
+      expect(findToggle().props('disabled')).toBe(true);
     });
 
     it('starts polling for a new status while status is PROVISIONING', async () => {
