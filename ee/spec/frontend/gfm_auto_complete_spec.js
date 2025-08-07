@@ -282,10 +282,21 @@ describe('GfmAutoCompleteEE', () => {
       window.gon = originalGon;
     });
 
-    it('should list statuses when `/status "` is typed', () => {
+    it('should list all statuses when `/status "` is typed', () => {
       const expectedDropdownItems = ['To do', 'In progress', 'Done', "Won't do"];
 
       triggerDropdown('/status "');
+
+      expect(availableStatuses).toHaveBeenCalled();
+      expect(getDropdownItems('at-view-statuses').map((x) => x.textContent.trim())).toEqual(
+        expectedDropdownItems,
+      );
+    });
+
+    it('should list only matching statuses when `/status "do` is typed', () => {
+      const expectedDropdownItems = ['To do', "Won't do", 'Done'];
+
+      triggerDropdown('/status "do');
 
       expect(availableStatuses).toHaveBeenCalled();
       expect(getDropdownItems('at-view-statuses').map((x) => x.textContent.trim())).toEqual(

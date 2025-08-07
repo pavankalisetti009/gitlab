@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import '~/lib/utils/jquery_at_who';
 import GfmAutoComplete, { showAndHideHelper, escape, setupSubcommands } from '~/gfm_auto_complete';
@@ -230,8 +231,8 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
     showAndHideHelper($input, VULNERABILITIES_ALIAS);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   setupAutoCompleteStatuses = ($input, defaultCallbacks) => {
+    const instance = this;
     const MEMBER_COMMAND = {
       STATUS: '/status',
     };
@@ -278,6 +279,19 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
             return null;
           });
 
+          const statuses = instance.cachedData[flag];
+          if (statuses?.length) {
+            if (!subtext.includes(flag)) {
+              // Do not match if there is no `"` before the cursor
+              return null;
+            }
+
+            const lastCandidate = subtext.split(flag).pop().toLowerCase();
+            if (statuses.find((status) => status.name.toLowerCase().startsWith(lastCandidate))) {
+              return lastCandidate;
+            }
+          }
+
           const match = GfmAutoComplete.defaultMatcher(flag, subtext, this.app.controllers);
           return match && match.length ? match[1] : null;
         },
@@ -288,9 +302,25 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
               .closest('.js-gfm-wrapper').dataset;
 
             const statuses = availableStatuses()[workItemFullPath];
-            return statuses?.[workItemTypeId] || [];
+            const statusesForType = statuses?.[workItemTypeId] || [];
+            instance.cachedData[this.at] = statusesForType;
+
+            return statusesForType;
           }
           return [];
+        },
+        sorter(query, items) {
+          this.setting.highlightFirst = this.setting.alwaysHighlightFirst;
+          if (GfmAutoComplete.isLoading(items)) {
+            this.setting.highlightFirst = false;
+            return items;
+          }
+
+          if (query.trim()) {
+            return fuzzaldrinPlus.filter(items, query, { key: 'name' });
+          }
+
+          return items;
         },
       },
     });
