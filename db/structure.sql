@@ -43760,6 +43760,9 @@ ALTER TABLE ONLY namespaces
 ALTER TABLE ONLY saml_providers
     ADD CONSTRAINT fk_351dde3a84 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY approval_merge_request_rules_users
+    ADD CONSTRAINT fk_35e88790f5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE NOT VALID;
+
 ALTER TABLE ONLY epics
     ADD CONSTRAINT fk_3654b61b03 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE;
 
