@@ -195,6 +195,7 @@ describe('DenyAllowListModal', () => {
       });
 
       expect(findExceptions().at(0).props('exceptions')).toEqual(VALID_EXCEPTIONS);
+      expect(findExceptions().at(0).props('isDeniedList')).toBe(true);
       expect(findExceptions().at(1).props('exceptions')).toEqual(VALID_EXCEPTIONS);
     });
 

@@ -108,4 +108,21 @@ describe('DenyAllowExceptions', () => {
       expect(findDuplicateErrorMessage().text()).toBe('Duplicates will be removed');
     });
   });
+
+  describe('exceptions placeholder', () => {
+    it.each`
+      isDeniedList | placeholder
+      ${true}      | ${'Specify the packages where this license does not require approval before use'}
+      ${false}     | ${'Specify the packages where this license requires approval before use'}
+    `('renders correct placeholder for deny and allow list', ({ isDeniedList, placeholder }) => {
+      createComponent({
+        propsData: {
+          isDeniedList,
+          exceptionType: EXCEPTION_KEY,
+        },
+      });
+
+      expect(findTextArea().attributes('placeholder')).toBe(placeholder);
+    });
+  });
 });

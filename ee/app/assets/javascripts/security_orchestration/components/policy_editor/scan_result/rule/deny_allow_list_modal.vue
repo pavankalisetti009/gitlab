@@ -219,6 +219,7 @@ export default {
           :disabled="!hasSelectedLicense(item)"
           :exception-type="item.exceptionsType"
           :exceptions="item.exceptions"
+          :is-denied-list="isDeniedList"
           @select-exception-type="selectExceptionType($event, item)"
           @input="setExceptions($event, item)"
         />
