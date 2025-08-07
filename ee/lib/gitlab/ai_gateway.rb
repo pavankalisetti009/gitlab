@@ -130,8 +130,6 @@ module Gitlab
     end
 
     def self.cloud_connector_token(service, user)
-      return service.access_token(user) unless Feature.enabled?(:cloud_connector_new_token_path, user)
-
       # Until https://gitlab.com/groups/gitlab-org/-/epics/15639 is complete, we generate service
       # definitions for each UP, so passing the service name here should be safe, even if `service`
       # is not defined explicitly.
