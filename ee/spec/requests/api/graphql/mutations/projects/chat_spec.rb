@@ -148,7 +148,8 @@ RSpec.describe 'AiAction for chat', :saas, :with_current_organization, feature_c
     end
 
     let(:params) do
-      { chat: { resource_id: resource&.to_gid, content: "summarize", additional_context: additional_context } }
+      { chat: { resource_id: resource&.to_gid, content: "summarize", additional_context: additional_context },
+        thread_id: thread.to_gid }
     end
 
     it 'successfully performs a chat request' do
@@ -178,7 +179,7 @@ RSpec.describe 'AiAction for chat', :saas, :with_current_organization, feature_c
 
       post_graphql_mutation(mutation, current_user: current_user)
 
-      last_message = Gitlab::Llm::ChatStorage.new(current_user).messages.last
+      last_message = Gitlab::Llm::ChatStorage.new(current_user, nil, thread).messages.last
       expect(last_message.extras['additional_context']).to eq(expected_additional_context.map(&:stringify_keys))
     end
   end

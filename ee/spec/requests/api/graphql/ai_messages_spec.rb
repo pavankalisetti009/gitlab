@@ -7,7 +7,12 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
 
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user, organizations: [organization]) }
+  let_it_be(:thread) do
+    create(:ai_conversation_thread, user: user, conversation_type: 'duo_chat', organization: organization)
+  end
+
   let_it_be(:other_user) { create(:user, organizations: [organization]) }
+  let_it_be(:other_thread) { create(:ai_conversation_thread, user: other_user, organization: organization) }
 
   let_it_be(:external_issue) { create(:issue) }
   let_it_be(:external_issue_url) do
@@ -35,7 +40,7 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
     GRAPHQL
   end
 
-  let(:arguments) { { requestIds: 'uuid1' } }
+  let(:arguments) { { requestIds: 'uuid1', threadId: thread.to_global_id.to_s } }
   let(:query) { graphql_query_for('aiMessages', arguments, fields) }
 
   let(:response_content) do
@@ -51,15 +56,18 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
       role: 'user',
       content: 'question 1',
       user: user,
+      thread: thread,
       extras: {
         additional_context: [
           { category: 'file', id: 'hello.rb', content: 'puts "hello"', metadata: { "file_name" => "hello.rb" } }
         ]
       }
     )
-    create(:ai_chat_message, request_id: 'uuid1', role: 'assistant', content: response_content, user: user)
+    create(:ai_chat_message, request_id: 'uuid1', role: 'assistant', content: response_content, user: user,
+      thread: thread)
     # should not be included in response because it's for other user
-    create(:ai_chat_message, request_id: 'uuid1', role: 'user', content: 'question 2', user: other_user)
+    create(:ai_chat_message, request_id: 'uuid1', role: 'user', content: 'question 2', user: other_user,
+      thread: other_thread)
   end
 
   context 'when user is not logged in' do

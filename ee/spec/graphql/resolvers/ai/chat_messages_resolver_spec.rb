@@ -62,6 +62,17 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, :with_current_organization, 
         end
       end
 
+      context 'when conversation_type is not specified, and thread of same type is absent' do
+        let(:args) { {} }
+        let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat) }
+
+        it 'returns empty and creates fallback thread' do
+          expect do
+            expect(resolver).to eq([])
+          end.to change { Ai::Conversation::Thread.count }.by(1)
+        end
+      end
+
       context 'when conversation_type is specified' do
         let(:args) { { conversation_type: 'duo_chat_legacy' } }
 
@@ -70,20 +81,10 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, :with_current_organization, 
         context 'when duo_chat_legacy thread is not found' do
           let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat) }
 
-          it 'returns empty and creates fallback thread' do
+          it 'returns empty and does not create fallback thread' do
             expect do
               expect(resolver).to eq([])
-            end.to change { Ai::Conversation::Thread.count }.by(1)
-          end
-
-          context 'when conversation_type is not specified' do
-            let(:args) { { conversation_type: nil } }
-
-            it 'returns empty and creates fallback thread' do
-              expect do
-                expect(resolver).to eq([])
-              end.to change { Ai::Conversation::Thread.count }.by(1)
-            end
+            end.not_to change { Ai::Conversation::Thread.count }
           end
         end
 

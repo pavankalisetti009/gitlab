@@ -85,31 +85,12 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     end
 
     context 'when thread is nil' do
-      subject(:storage) { described_class.new(user, agent_version_id) }
+      subject(:storage) { described_class.new(user) }
 
-      it 'adds new legacy message', :aggregate_failures do
-        uuid = 'unique_id'
-
-        allow(SecureRandom).to receive(:uuid).and_return(uuid)
-        expect(storage.messages).to be_empty
-
-        result = storage.add(message)
-
-        last = storage.messages.last
-        expect(last.message_xid).to eq(uuid)
-        expect(last.user).to eq(user)
-        expect(last.request_id).to eq(request_id)
-        expect(last.error_details).to match_array(['some error1', 'another error'])
-        expect(last.content).to eq('response')
-        expect(last.role).to eq('user')
-        expect(last.ai_action).to eq('chat')
-        expect(last.timestamp).not_to be_nil
-        expect(last.referer_url).to eq('http://127.0.0.1:3000')
-        expect(last.extras['additional_context']).to eq(payload[:additional_context].to_a)
-
-        expect(result).to be_a(Ai::Conversation::Message)
-        expect(result.thread.conversation_type).to eq('duo_chat_legacy')
-        expect(result).to eq(last)
+      it 'raises error' do
+        expect do
+          storage.add(build(:ai_chat_message, payload.merge(content: 'msg1')))
+        end.to raise_error('thread_absent')
       end
     end
   end
@@ -139,12 +120,10 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
   end
 
   describe '#clear!' do
-    before do
+    it 'creates a new thread' do
       storage.add(build(:ai_chat_message, payload.merge(content: 'msg1')))
       storage.add(build(:ai_chat_message, payload.merge(content: 'msg2')))
-    end
 
-    it 'creates a new thread' do
       expect(storage.messages.count).to eq(2)
 
       expect { storage.clear! }.to change { user.ai_conversation_threads.count }.by(1)
@@ -153,59 +132,19 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     end
 
     context 'when thread is nil' do
-      subject(:storage) { described_class.new(user, agent_version_id) }
+      subject(:storage) { described_class.new(user) }
 
-      it 'creates a new thread' do
-        expect(storage.messages.count).to eq(2)
-
-        expect { storage.clear! }.to change { user.ai_conversation_threads.count }.by(1)
-
-        expect(storage.messages).to be_empty
+      it 'raises error' do
+        expect do
+          storage.clear!
+        end.to raise_error('thread_absent')
       end
     end
   end
 
   describe '#current_thread' do
-    let(:storage) { described_class.new(user, agent_version_id, thread) }
-
-    subject(:current_thread) { storage.current_thread }
-
-    context 'when thread is specified' do
-      let(:thread) { create(:ai_conversation_thread, user: user) }
-
-      it 'returns the specified thread' do
-        expect(current_thread).to eq(thread)
-      end
-    end
-
-    context 'when thread is not specified' do
-      let(:storage) { described_class.new(user, agent_version_id) }
-
-      context 'when no threads exist for the user' do
-        it 'returns a new thread' do
-          expect { current_thread }.to change { user.ai_conversation_threads.count }.by(1)
-
-          expect(current_thread).to be_an_instance_of ::Ai::Conversation::Thread
-        end
-
-        context 'when thread_fallback is false' do
-          subject(:storage) { described_class.new(user, thread_fallback: false) }
-
-          it 'does not create a new thread' do
-            expect { current_thread }.not_to change { user.ai_conversation_threads.count }
-
-            expect(current_thread).to be_nil
-          end
-        end
-      end
-
-      context 'when a thread exists for the user' do
-        let!(:existing_thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy) }
-
-        it 'returns the latest thread' do
-          expect(current_thread).to eq(existing_thread)
-        end
-      end
+    it 'returns the specified thread' do
+      expect(storage.current_thread).to eq(thread)
     end
   end
 end
