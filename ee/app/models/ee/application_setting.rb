@@ -43,7 +43,12 @@ module EE
         zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }],
         zoekt_lost_node_threshold: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD }]
 
-      jsonb_accessor :code_creation, disabled_direct_code_suggestions: [:boolean, { default: false }]
+      jsonb_accessor :code_creation,
+        disabled_direct_code_suggestions: [:boolean, { default: false }],
+        model_prompt_cache_enabled: [:boolean, { default: true }],
+        lock_model_prompt_cache_enabled: [:boolean, { default: false }]
+
+      validates :code_creation, json_schema: { filename: "application_setting_code_creation" }
 
       jsonb_accessor :duo_workflow, duo_workflow_oauth_application_id: [:integer]
 
