@@ -8,6 +8,7 @@ fragment ComplianceFrameworkConnectionDetails on ComplianceFrameworkConnection {
     description
     color
     updatedAt
+    namespaceId
     pipelineConfigurationFullPath
     scanExecutionPolicies(first: 100) {
       nodes {

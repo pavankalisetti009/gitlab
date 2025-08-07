@@ -183,4 +183,97 @@ describe('Basic information section', () => {
       );
     });
   });
+
+  describe('CSP framework behavior', () => {
+    describe('when framework is inherited', () => {
+      beforeEach(() => {
+        createComponent({ isInherited: true });
+      });
+
+      it('disables the name input', () => {
+        const nameInput = wrapper.findByLabelText('Name');
+        expect(nameInput.attributes('disabled')).toBeDefined();
+      });
+
+      it('disables the description input', () => {
+        const descriptionInput = wrapper.findByLabelText('Description');
+        expect(descriptionInput.attributes('disabled')).toBeDefined();
+      });
+
+      it('disables the pipeline configuration input', () => {
+        const pipelineInput = wrapper.find('[data-testid="pipeline-configuration-input"]');
+        expect(pipelineInput.attributes('disabled')).toBeDefined();
+      });
+
+      it('disables the default checkbox', () => {
+        const defaultCheckbox = wrapper.find('input[name="default"]');
+        expect(defaultCheckbox.attributes('disabled')).toBeDefined();
+      });
+
+      it('shows readonly color input as disabled', () => {
+        const colorDisplayGroup = wrapper.find('[data-testid="color-display-group"]');
+        const colorInput = colorDisplayGroup.find('input');
+
+        expect(colorInput.attributes('disabled')).toBeDefined();
+        expect(colorInput.attributes('readonly')).toBeDefined();
+      });
+    });
+
+    describe('when framework is not inherited', () => {
+      beforeEach(() => {
+        createComponent({ isInherited: false });
+      });
+
+      it('does not disable the name input', () => {
+        const nameInput = wrapper.findByLabelText('Name');
+        expect(nameInput.attributes('disabled')).toBeUndefined();
+      });
+
+      it('does not disable the description input', () => {
+        const descriptionInput = wrapper.findByLabelText('Description');
+        expect(descriptionInput.attributes('disabled')).toBeUndefined();
+      });
+
+      it('does not disable the default checkbox', () => {
+        const defaultCheckbox = wrapper.find('input[name="default"]');
+        expect(defaultCheckbox.attributes('disabled')).toBeUndefined();
+      });
+
+      it('does not apply pipeline configuration disabled state', () => {
+        createComponent({
+          isInherited: false,
+          value: { ...fakeFramework, pipelineConfigurationFullPath: 'some/path.yml' },
+        });
+
+        const pipelineInput = findPipelineInput();
+        if (pipelineInput.exists()) {
+          expect(pipelineInput.attributes('disabled')).toBeUndefined();
+        }
+      });
+
+      it('shows the color picker and hides readonly color display', () => {
+        const colorPicker = wrapper.findComponent({ name: 'ColorPicker' });
+        const colorDisplayGroup = wrapper.find('[data-testid="color-display-group"]');
+
+        expect(colorPicker.exists()).toBe(true);
+        expect(colorDisplayGroup.exists()).toBe(false);
+      });
+    });
+
+    describe('when isInherited prop is not provided', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('defaults to non-inherited behavior', () => {
+        const nameInput = wrapper.findByLabelText('Name');
+        const descriptionInput = wrapper.findByLabelText('Description');
+        const pipelineInput = findPipelineInput();
+
+        expect(nameInput.attributes('disabled')).toBeUndefined();
+        expect(descriptionInput.attributes('disabled')).toBeUndefined();
+        expect(pipelineInput.attributes('disabled')).toBeUndefined();
+      });
+    });
+  });
 });

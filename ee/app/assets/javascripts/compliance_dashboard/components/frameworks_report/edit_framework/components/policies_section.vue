@@ -55,6 +55,11 @@ export default {
       type: Number,
       required: true,
     },
+    isInherited: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
 
   data() {
@@ -265,11 +270,12 @@ export default {
     },
 
     openPolicyDrawerFromRow(rows) {
-      if (rows.length === 0) return;
+      if (this.isInherited || rows.length === 0) return;
       this.openPolicyDrawer(rows[0]);
     },
 
     openPolicyDrawer(policy) {
+      if (this.isInherited) return;
       this.selectedPolicy = policy;
     },
 
@@ -328,7 +334,7 @@ export default {
       responsive
       stacked="md"
       hover
-      selectable
+      :selectable="!isInherited"
       select-mode="single"
       selected-variant="primary"
       class="gl-mb-6"
@@ -341,7 +347,7 @@ export default {
         </gl-badge>
       </template>
       <template #cell(action)="{ item }">
-        <gl-button variant="link" @click="openPolicyDrawer(item)">
+        <gl-button v-if="!isInherited" variant="link" @click="openPolicyDrawer(item)">
           {{ __('View details') }}
         </gl-button>
       </template>
@@ -351,6 +357,7 @@ export default {
       </template>
     </gl-table>
     <drawer-wrapper
+      v-if="!isInherited"
       container-class=".content-wrapper"
       :open="Boolean(selectedPolicy)"
       :policy="selectedPolicy"

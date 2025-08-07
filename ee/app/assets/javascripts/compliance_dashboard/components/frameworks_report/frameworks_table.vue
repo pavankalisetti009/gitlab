@@ -72,6 +72,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    namespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   data() {
     return {
@@ -222,7 +227,10 @@ export default {
         .join(',');
     },
     shouldDisableDeleteAction(framework) {
-      return framework.default || Boolean(this.getPoliciesList(framework).length);
+      const isInherited =
+        this.getIdFromGraphQLId(framework.namespaceId) !==
+        this.getIdFromGraphQLId(this.namespaceId);
+      return framework.default || Boolean(this.getPoliciesList(framework).length) || isInherited;
     },
     getDeleteActionTooltipTitle(framework) {
       if (this.shouldDisableDeleteAction(framework)) {
@@ -241,6 +249,14 @@ export default {
     lastVisiblePolicyIndex(requirements) {
       return Math.min(requirements.length, this.policyDisplayLimit) - 1;
     },
+    isFrameworkInherited(framework) {
+      if (!framework.namespaceId || !this.namespaceId) {
+        return false;
+      }
+      return (
+        this.getIdFromGraphQLId(framework.namespaceId) !== this.getIdFromGraphQLId(this.namespaceId)
+      );
+    },
   },
   fields: [
     {
@@ -249,6 +265,13 @@ export default {
       thClass: 'md:gl-max-w-26 !gl-align-middle',
       tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
       sortable: true,
+    },
+    {
+      key: 'source',
+      label: __('Source'),
+      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
+      sortable: false,
     },
     {
       key: 'requirements',
@@ -325,6 +348,8 @@ export default {
       'ComplianceFrameworksReport|Failed to remove default framework',
     ),
     removeAsDefaultFrameworkTooltip: s__('ComplianceFrameworksReport|Remove as default framework'),
+    sourceThisGroupText: __('This group'),
+    sourceCspGroupText: __('CSP group'),
   },
   CREATE_FRAMEWORKS_DOCS_URL,
 };
@@ -365,7 +390,19 @@ export default {
       @sort-changed="$emit('sortChanged', $event)"
     >
       <template #cell(name)="{ item }">
-        <framework-badge :framework="item" :popover-mode="isTopLevelGroup ? 'edit' : 'details'" />
+        <framework-badge
+          :framework="item"
+          :popover-mode="isTopLevelGroup ? 'edit' : 'details'"
+          :show-default="!isFrameworkInherited(item)"
+        />
+      </template>
+      <template #cell(source)="{ item }">
+        <span v-if="!isFrameworkInherited(item)">
+          {{ $options.i18n.sourceThisGroupText }}
+        </span>
+        <span v-else>
+          {{ $options.i18n.sourceCspGroupText }}
+        </span>
       </template>
       <template #cell(requirements)="{ item: { complianceRequirements: requirements } }">
         <div
@@ -464,6 +501,7 @@ export default {
                 class="!gl-justify-start !gl-border-none"
                 category="tertiary"
                 :block="true"
+                :disabled="isFrameworkInherited(item)"
                 @click="updateDefaultFramework({ framework: item, isDefault: !item.default })"
               >
                 {{

@@ -199,14 +199,6 @@ describe('PoliciesSection component', () => {
         ],
       });
     });
-
-    it('does not fetch policies', () => {
-      const namespaceQuery = wrapper.vm.$apollo.queries.namespacePolicies;
-      const complianceQuery = wrapper.vm.$apollo.queries.complianceFrameworkPolicies;
-
-      expect(namespaceQuery.skip).toBe(true);
-      expect(complianceQuery.skip).toBe(true);
-    });
   });
 
   describe('when section is expanded', () => {
@@ -372,6 +364,79 @@ describe('PoliciesSection component', () => {
         findDrawer().vm.$emit('close');
         await nextTick();
         expect(findDrawer().props('policy')).toBeNull();
+      });
+    });
+  });
+
+  describe('CSP framework behavior', () => {
+    describe('when framework is inherited', () => {
+      beforeEach(async () => {
+        createComponent({
+          requestHandlers: [
+            [namespacePoliciesQuery, jest.fn().mockResolvedValue(makeNamespacePoliciesResponse())],
+            [
+              complianceFrameworkPoliciesQuery,
+              jest.fn().mockResolvedValue(makeCompliancePoliciesResponse()),
+            ],
+          ],
+        });
+
+        await wrapper.setProps({ isInherited: true });
+        wrapper.findComponent(EditSection).vm.$emit('toggle', true);
+        await nextTick();
+        await waitForPromises();
+      });
+
+      it('hides the view details buttons', () => {
+        const policyButtons = findPoliciesTable().findAllComponents(GlButton);
+        expect(policyButtons).toHaveLength(0);
+      });
+
+      it('hides the drawer', () => {
+        expect(findDrawer().exists()).toBe(false);
+      });
+
+      it('does not open drawer when row is clicked', async () => {
+        await wrapper.find('table tbody tr').trigger('click');
+        await nextTick();
+
+        expect(findDrawer().exists()).toBe(false);
+      });
+    });
+
+    describe('when framework is not inherited', () => {
+      beforeEach(async () => {
+        createComponent({
+          requestHandlers: [
+            [namespacePoliciesQuery, jest.fn().mockResolvedValue(makeNamespacePoliciesResponse())],
+            [
+              complianceFrameworkPoliciesQuery,
+              jest.fn().mockResolvedValue(makeCompliancePoliciesResponse()),
+            ],
+          ],
+        });
+
+        await wrapper.setProps({ isInherited: false });
+        wrapper.findComponent(EditSection).vm.$emit('toggle', true);
+        await nextTick();
+        await waitForPromises();
+      });
+
+      it('shows the view details buttons', () => {
+        const policyButtons = findPoliciesTable().findAllComponents(GlButton);
+        expect(policyButtons.length).toBeGreaterThan(0);
+      });
+
+      it('shows the drawer', () => {
+        expect(findDrawer().exists()).toBe(true);
+      });
+
+      it('opens drawer when row is clicked', async () => {
+        await wrapper.find('table tbody tr').trigger('click');
+        await nextTick();
+
+        expect(findDrawer().props('policy')).not.toBeNull();
+        expect(findDrawer().props('policy').name).toBe('test');
       });
     });
   });

@@ -33,7 +33,8 @@ module EE
             anchor: 'pipeline-execution-policies-migration'),
           pipeline_execution_policy_path: new_group_security_policy_url(group, type: :pipeline_execution_policy),
           group_security_policies_path: group_security_policies_path(group),
-          disable_scan_policy_update: !can_modify_security_policy?(group).to_s
+          disable_scan_policy_update: !can_modify_security_policy?(group).to_s,
+          designated_as_csp: group.designated_as_csp?.to_s
         }.merge(general_app_data(container))
       else
         general_app_data(container)

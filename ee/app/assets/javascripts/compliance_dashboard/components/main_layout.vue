@@ -1,5 +1,5 @@
 <script>
-import { GlTab, GlTabs, GlButton, GlPopover, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlTab, GlTabs, GlButton, GlPopover, GlSprintf, GlLink, GlBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import Tracking from '~/tracking';
@@ -26,6 +26,7 @@ export default {
     GlPopover,
     GlSprintf,
     GlLink,
+    GlBadge,
     ReportsExport,
     PageHeading,
   },
@@ -39,6 +40,7 @@ export default {
     'adherencesCsvExportPath',
     'frameworksCsvExportPath',
     'canAccessRootAncestorComplianceCenter',
+    'designatedAsCsp',
   ],
   props: {
     availableTabs: {
@@ -138,7 +140,16 @@ export default {
 </script>
 <template>
   <div>
-    <page-heading :heading="$options.i18n.heading">
+    <page-heading>
+      <template #heading>
+        <div class="gl-flex gl-items-center">
+          <span>{{ $options.i18n.heading }}</span>
+          <gl-badge v-if="designatedAsCsp" class="gl-ml-2" data-testid="csp-badge">
+            {{ s__('SecurityOrchestration|Compliance and security policy group') }}
+          </gl-badge>
+        </div>
+      </template>
+
       <template #description>
         <gl-sprintf :message="$options.i18n.subheading">
           <template #link="{ content }">
@@ -151,6 +162,7 @@ export default {
           </template>
         </gl-sprintf>
       </template>
+
       <template #actions>
         <reports-export
           v-if="hasAtLeastOneExportAvailable"

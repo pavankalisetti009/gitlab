@@ -43,6 +43,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    isInherited: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     complianceRequirementControls: {
@@ -99,9 +104,14 @@ export default {
     showPagination() {
       return this.requirements.length > this.perPage;
     },
+    addRequirementDisabled() {
+      return this.isInherited || this.addingRequirementsDisabled;
+    },
   },
   methods: {
     showRequirementModal(requirement, index = null) {
+      if (this.isInherited) return;
+
       this.requirementToEdit = { ...requirement, index };
       this.$nextTick(() => {
         this.$refs.requirementModal.show();
@@ -114,6 +124,10 @@ export default {
     handleUpdate({ requirement, index }) {
       this.$emit(requirementEvents.update, { requirement, index });
       this.requirementToEdit = null;
+    },
+    handleDelete(index) {
+      if (this.isInherited) return;
+      this.$emit(this.$options.requirementEvents.delete, index);
     },
     getControls(requirementControlNodes) {
       return getControls(requirementControlNodes, this.complianceRequirementControls);
@@ -169,6 +183,7 @@ export default {
     :description="$options.i18n.requirementsDescription"
     :items-count="requirements.length"
     :initially-expanded="isNewFramework"
+    :is-inherited="isInherited"
     @toggle="isExpanded = $event"
   >
     <gl-table
@@ -205,6 +220,7 @@ export default {
 
       <template #cell(action)="{ item, index }">
         <gl-disclosure-dropdown
+          v-if="!isInherited"
           icon="ellipsis_v"
           text-sr-only
           category="tertiary"
@@ -221,10 +237,7 @@ export default {
             </template>
           </gl-disclosure-dropdown-item>
 
-          <gl-disclosure-dropdown-item
-            data-testid="delete-action"
-            @action="$emit($options.requirementEvents.delete, index)"
-          >
+          <gl-disclosure-dropdown-item data-testid="delete-action" @action="handleDelete(index)">
             <template #list-item>
               {{ $options.i18n.actionDelete }}
             </template>
@@ -249,7 +262,7 @@ export default {
     />
 
     <gl-tooltip
-      v-if="addingRequirementsDisabled"
+      v-if="addRequirementDisabled"
       placement="right"
       :target="() => $refs.addRequirementBtn"
       :title="disabledAddRequirementBtnText"
@@ -261,14 +274,14 @@ export default {
         size="small"
         class="gl-ml-5"
         data-testid="add-requirement-button"
-        :disabled="addingRequirementsDisabled"
+        :disabled="addRequirementDisabled"
         @click="showRequirementModal($options.emptyRequirement)"
       >
         {{ $options.i18n.newRequirement }}
       </gl-button>
     </div>
     <requirement-modal
-      v-if="requirementToEdit"
+      v-if="requirementToEdit && !isInherited"
       ref="requirementModal"
       :gitlab-standard-controls="complianceRequirementControls"
       :requirement="requirementToEdit"

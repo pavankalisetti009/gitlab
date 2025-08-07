@@ -36,6 +36,7 @@ query getComplianceFrameworkWithPolicies(
         default
         description
         color
+        namespaceId
         pipelineConfigurationFullPath
         complianceRequirements {
           nodes {

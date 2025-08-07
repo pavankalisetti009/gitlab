@@ -70,6 +70,11 @@ export default {
       required: false,
       default: false,
     },
+    isInherited: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
 
   data() {
@@ -186,6 +191,22 @@ export default {
     isColorFeedbackVisible() {
       return this.getValidationState(this.isValidColor);
     },
+
+    nameInputDisabled() {
+      return this.isInherited;
+    },
+
+    descriptionInputDisabled() {
+      return this.isInherited;
+    },
+
+    pipelineConfigDisabled() {
+      return this.isInherited;
+    },
+
+    setAsDefaultDisabled() {
+      return this.isInherited;
+    },
   },
 
   watch: {
@@ -234,6 +255,7 @@ export default {
     :initially-expanded="isExpanded"
     is-required
     :is-completed="isValid"
+    :is-inherited="isInherited"
   >
     <div class="gl-px-4">
       <gl-form-group
@@ -248,6 +270,7 @@ export default {
           v-model="formData.name"
           name="name"
           :state="isNameFeedbackVisible"
+          :disabled="nameInputDisabled"
           data-testid="name-input"
         />
       </gl-form-group>
@@ -264,16 +287,44 @@ export default {
           v-model="formData.description"
           name="description"
           :state="isDescriptionFeedbackVisible"
+          :disabled="descriptionInputDisabled"
           data-testid="description-input"
           :no-resize="false"
           :rows="5"
         />
       </gl-form-group>
       <color-picker
+        v-if="!isInherited"
         v-model="formData.color"
         :label="$options.i18n.colorInputLabel"
         :state="isColorFeedbackVisible"
       />
+      <gl-form-group
+        v-else
+        :label="$options.i18n.colorInputLabel"
+        data-testid="color-display-group"
+      >
+        <div
+          class="input-group gl-align-center gl-max-w-26 gl-rounded-none gl-rounded-br-base gl-rounded-tr-base"
+        >
+          <div class="input-group-prepend">
+            <div
+              class="gl-relative gl-w-7 gl-rounded-bl-base gl-rounded-tl-base gl-border-1 gl-border-solid gl-bg-subtle"
+              :style="{
+                backgroundColor: formData.color,
+                borderColor: 'var(--gl-control-border-color-default)',
+              }"
+            ></div>
+          </div>
+          <gl-form-input
+            :value="formData.color"
+            disabled
+            readonly
+            class="GLFormInput form-control"
+            maxlength="7"
+          />
+        </div>
+      </gl-form-group>
       <gl-accordion :auto-collapse="false" :header-level="1">
         <gl-accordion-item
           :title="$options.i18n.pipelineConfigurationInputLabel"
@@ -359,6 +410,7 @@ export default {
               v-model="formData.pipelineConfigurationFullPath"
               name="pipeline_configuration_full_path"
               :state="isPipelineConfigurationFeedbackVisible"
+              :disabled="pipelineConfigDisabled"
               data-testid="pipeline-configuration-input"
             />
           </gl-form-group>
@@ -400,7 +452,12 @@ export default {
           </p>
         </gl-popover>
       </template>
-      <gl-form-checkbox v-model="formData.default" name="default" class="gl-mt-5">
+      <gl-form-checkbox
+        v-model="formData.default"
+        name="default"
+        class="gl-mt-5"
+        :disabled="setAsDefaultDisabled"
+      >
         <span class="gl-font-bold">{{ $options.i18n.setAsDefault }}</span>
         <template #help>
           <div>

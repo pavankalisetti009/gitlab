@@ -39,6 +39,7 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
 
       before do
         allow(helper).to receive(:current_user) { user }
+        allow(group).to receive(:designated_as_csp?).and_return(false)
         allow(helper).to receive(:can?).with(user, :read_compliance_adherence_report, project).and_return(true)
         allow(helper).to receive(:can?).with(user, :read_compliance_violations_report, project).and_return(true)
         allow(helper).to receive(:can?).with(user, :admin_compliance_framework, project).and_return(true)
@@ -66,6 +67,7 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       end
 
       before do
+        allow(group).to receive(:designated_as_csp?).and_return(false)
         allow(helper).to receive(:current_user) { user }
 
         allow(helper).to receive(:can?).with(user, :read_compliance_adherence_report, group).and_return(true)
@@ -81,6 +83,10 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
 
       it 'includes group path' do
         is_expected.to include(group_path: group.full_path)
+      end
+
+      it 'includes designated_as_csp flag' do
+        is_expected.to include(designated_as_csp: 'false')
       end
 
       it 'includes export paths' do
@@ -101,6 +107,16 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       end
 
       it_behaves_like 'includes compliance center app data'
+
+      context 'when group is designated as CSP' do
+        before do
+          allow(group).to receive(:designated_as_csp?).and_return(true)
+        end
+
+        it 'includes designated_as_csp as true' do
+          is_expected.to include(designated_as_csp: 'true')
+        end
+      end
     end
   end
 end

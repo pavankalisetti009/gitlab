@@ -298,6 +298,7 @@ export const createFramework = ({
   description: `This is a framework ${id}`,
   color: `#3cb37${id}`,
   updatedAt: '2025-04-03T02:01:00Z',
+  namespaceId: `gid://gitlab/Types::Namespace/${id}`,
   complianceRequirements: {
     nodes: [],
   },

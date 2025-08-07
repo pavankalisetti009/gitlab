@@ -83,7 +83,7 @@ describe('FrameworksTable component', () => {
   const findSetAsDefaultActionTooltip = () => wrapper.findByTestId('set-as-default-tooltip');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
   const findBadge = () => wrapper.findComponent(FrameworkBadge);
-  const findRequirementsColumn = (idx) => findTableRowData(idx).at(1);
+  const findRequirementsColumn = (idx) => findTableRowData(idx).at(2);
 
   const toggleSidebar = async () => {
     findTableRow(rowCheckIndex).trigger('click');
@@ -163,6 +163,7 @@ describe('FrameworksTable component', () => {
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
       expect(headerTexts).toStrictEqual([
         'Frameworks',
+        'Source',
         'Requirements',
         'Associated projects',
         'Policies',
@@ -203,6 +204,7 @@ describe('FrameworksTable component', () => {
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
       expect(headerTexts).toStrictEqual([
         'Frameworks',
+        'Source',
         'Requirements',
         'Policies',
         'Last updated',
@@ -316,7 +318,7 @@ describe('FrameworksTable component', () => {
         });
 
         frameworks.forEach((framework, idx) => {
-          const date = findTableRowData(idx).at(4);
+          const date = findTableRowData(idx).at(5);
           expect(date.text()).toBe('4 weeks ago');
         });
       });
@@ -330,7 +332,7 @@ describe('FrameworksTable component', () => {
         });
 
         frameworks.forEach((framework, idx) => {
-          const date = findTableRowData(idx).at(3);
+          const date = findTableRowData(idx).at(4);
           expect(date.text()).toBe('4 weeks ago');
         });
       });
@@ -348,7 +350,7 @@ describe('FrameworksTable component', () => {
         });
 
         frameworks.forEach((framework, idx) => {
-          const date = findTableRowData(idx).at(4);
+          const date = findTableRowData(idx).at(5);
           expect(date.text()).toBe('Apr 3, 2025, 2:01 AM');
         });
       });
@@ -362,7 +364,7 @@ describe('FrameworksTable component', () => {
         });
 
         frameworks.forEach((framework, idx) => {
-          const date = findTableRowData(idx).at(3);
+          const date = findTableRowData(idx).at(4);
           expect(date.text()).toBe('Apr 3, 2025, 2:01 AM');
         });
       });
@@ -378,7 +380,7 @@ describe('FrameworksTable component', () => {
     });
 
     it.each(Object.keys(frameworks))('has the correct data for row %s', (idx) => {
-      const policyCell = findTableRowData(idx).at(3);
+      const policyCell = findTableRowData(idx).at(4);
       const frameworkPolicies = policyCell.text();
 
       expect(frameworkPolicies).toMatch(
@@ -940,6 +942,155 @@ describe('FrameworksTable component', () => {
         tags: {
           vue_component: 'frameworks_table',
         },
+      });
+    });
+  });
+
+  describe('CSP framework behavior', () => {
+    describe('source column', () => {
+      beforeEach(() => {
+        const inheritedFrameworks = [
+          createFramework({
+            id: 1,
+            options: { namespaceId: 'gid://gitlab/Types::Namespace/456' }, // Different namespace
+          }),
+          createFramework({
+            id: 2,
+            options: { namespaceId: 'gid://gitlab/Types::Namespace/123' }, // Same namespace
+          }),
+        ];
+
+        wrapper = createComponent({
+          frameworks: inheritedFrameworks,
+          isLoading: false,
+          namespaceId: 'gid://gitlab/Group/123', // Current namespace
+        });
+      });
+
+      it('shows "CSP Group" for inherited frameworks', () => {
+        const sourceCell = findTableRowData(0).at(1);
+        expect(sourceCell.text()).toBe('CSP group');
+      });
+
+      it('shows "This group" for non-inherited frameworks', () => {
+        const sourceCell = findTableRowData(1).at(1);
+        expect(sourceCell.text()).toBe('This group');
+      });
+
+      it('includes source column in table headers', () => {
+        const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
+        expect(headerTexts).toContain('Source');
+      });
+    });
+
+    describe('disabled actions for inherited frameworks', () => {
+      beforeEach(() => {
+        const inheritedFramework = createFramework({
+          id: 1,
+          options: {
+            namespaceId: 'gid://gitlab/Types::Namespace/456',
+            scanResultPolicies: { nodes: [] },
+            default: false,
+          },
+        });
+
+        wrapper = createComponent({
+          frameworks: [inheritedFramework],
+          isLoading: false,
+          namespaceId: 'gid://gitlab/Group/123',
+        });
+      });
+
+      it('disables delete action for inherited frameworks', () => {
+        expect(findDeleteAction().props('disabled')).toBe(true);
+      });
+
+      it('shows tooltip for inherited frameworks', () => {
+        const tooltip = getBinding(findDeleteActionTooltip().element, 'gl-tooltip');
+        expect(tooltip).toBeDefined();
+      });
+
+      it('disables the set as default button', () => {
+        const setAsDefaultButton = wrapper.find('[data-testid="action-set-as-default"]');
+
+        expect(setAsDefaultButton.attributes('disabled')).toBeDefined();
+      });
+    });
+
+    describe('framework badge showDefault behavior', () => {
+      beforeEach(() => {
+        const frameworksWithDefaults = [
+          createFramework({
+            id: 1,
+            isDefault: true,
+            options: { namespaceId: 'gid://gitlab/Types::Namespace/456' },
+          }),
+          createFramework({
+            id: 2,
+            isDefault: true,
+            options: { namespaceId: 'gid://gitlab/Types::Namespace/123' },
+          }),
+        ];
+
+        wrapper = createComponent({
+          frameworks: frameworksWithDefaults,
+          isLoading: false,
+          namespaceId: 'gid://gitlab/Group/123',
+        });
+      });
+
+      it('hides default badge for inherited frameworks', () => {
+        const firstBadge = findTableRowData(0).at(0).findComponent(FrameworkBadge);
+        expect(firstBadge.props('showDefault')).toBe(false);
+      });
+
+      it('shows default badge for non-inherited frameworks', () => {
+        const secondBadge = findTableRowData(1).at(0).findComponent(FrameworkBadge);
+        expect(secondBadge.props('showDefault')).toBe(true);
+      });
+    });
+
+    describe('shouldDisableDeleteAction method', () => {
+      it('returns true for inherited frameworks even when not default and no policies', () => {
+        const inheritedFramework = createFramework({
+          options: {
+            namespaceId: 'gid://gitlab/Types::Namespace/456',
+            default: false,
+            scanResultPolicies: { nodes: [] },
+            scanExecutionPolicies: { nodes: [] },
+            pipelineExecutionPolicies: { nodes: [] },
+            vulnerabilityManagementPolicies: { nodes: [] },
+          },
+        });
+
+        wrapper = createComponent({
+          frameworks: [inheritedFramework],
+          isLoading: false,
+          namespaceId: 'gid://gitlab/Group/123',
+        });
+
+        expect(wrapper.vm.shouldDisableDeleteAction(inheritedFramework)).toBe(true);
+      });
+
+      it('returns false for non-inherited frameworks when not default and no policies', () => {
+        const nonInheritedFramework = createFramework({
+          options: {
+            namespaceId: 'gid://gitlab/Types::Namespace/123',
+            default: false,
+            scanResultPolicies: { nodes: [] },
+            scanExecutionPolicies: { nodes: [] },
+            pipelineExecutionPolicies: { nodes: [] },
+            vulnerabilityManagementPolicies: { nodes: [] },
+          },
+        });
+
+        wrapper = createComponent({
+          frameworks: [nonInheritedFramework],
+          isLoading: false,
+          namespaceId: 'gid://gitlab/Group/123',
+        });
+
+        expect(wrapper.vm.shouldDisableDeleteAction(nonInheritedFramework)).toBe(false);
       });
     });
   });
