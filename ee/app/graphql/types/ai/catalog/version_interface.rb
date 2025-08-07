@@ -19,8 +19,10 @@ module Types
         field :id, GraphQL::Types::ID, null: false, description: 'ID of the item version.'
         field :updated_at, Types::TimeType, null: false, description: 'Timestamp of when the item version was updated.'
         field :created_at, Types::TimeType, null: false, description: 'Timestamp of when the item version was created.'
-        field :published_at, Types::TimeType, null: true, method: :release_date,
-          description: 'Timestamp of when the item version was published.'
+        field :released_at, Types::TimeType, null: true, method: :release_date,
+          description: 'Timestamp of when the item version was released.'
+        field :released, GraphQL::Types::Boolean, null: false, method: :released?,
+          description: 'Indicates the item version is released.'
         field :version_name, GraphQL::Types::String, null: true, method: :human_version,
           description: 'Version name of the item version.'
 

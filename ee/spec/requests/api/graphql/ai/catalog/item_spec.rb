@@ -19,7 +19,8 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
         id
         updatedAt
         createdAt
-        publishedAt
+        releasedAt
+        released
         versionName
         ... on AiCatalogAgentVersion {
           systemPrompt
@@ -82,7 +83,8 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
                   )
                 },
                 'updatedAt' => latest_version.updated_at.iso8601,
-                'publishedAt' => latest_version.release_date&.iso8601,
+                'releasedAt' => latest_version.release_date&.iso8601,
+                'released' => latest_version.released?,
                 'versionName' => latest_version.human_version,
                 'createdAt' => latest_version.created_at.iso8601
               )

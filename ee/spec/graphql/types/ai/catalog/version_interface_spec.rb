@@ -11,7 +11,8 @@ RSpec.describe Types::Ai::Catalog::VersionInterface, feature_category: :workflow
     expected_fields = %w[
       created_at
       id
-      published_at
+      released_at
+      released
       updated_at
       version_name
     ]
