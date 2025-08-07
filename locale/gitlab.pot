@@ -1123,7 +1123,7 @@ msgstr ""
 msgid "%{lets_encrypt_link_start}Let's Encrypt%{lets_encrypt_link_end} is a free, automated, and open certificate authority (CA) that issues digital certificates to enable HTTPS (SSL/TLS) for sites."
 msgstr ""
 
-msgid "%{level_name} is not allowed in a %{group_level_name} group."
+msgid "%{level_name} is not allowed in a %{namespace_level_name} namespace."
 msgstr ""
 
 msgid "%{level_name} is not allowed since the fork source project has lower visibility."
