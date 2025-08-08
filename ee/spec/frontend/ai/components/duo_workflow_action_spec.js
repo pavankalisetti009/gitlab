@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { GlButton } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -54,8 +55,53 @@ describe('DuoWorkflowAction component', () => {
       expect(findButton().props('category')).toBe('primary');
       expect(findButton().props('icon')).toBe('tanuki-ai');
       expect(findButton().props('size')).toBe('small');
+      expect(findButton().props('loading')).toBe(false);
       expect(findButton().attributes('title')).toBe(defaultProps.hoverMessage);
       expect(findButton().text()).toBe(defaultProps.title);
+    });
+  });
+
+  describe('loading state', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    describe('when button is clicked', () => {
+      beforeEach(async () => {
+        axios.post.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+        findButton().vm.$emit('click');
+        await nextTick();
+      });
+
+      it('shows loading state', () => {
+        expect(findButton().props('loading')).toBe(true);
+      });
+    });
+
+    describe('when the flow starts successfully', () => {
+      beforeEach(async () => {
+        findButton().vm.$emit('click');
+        await waitForPromises();
+      });
+
+      it('removes loading state when workflow starts successfully', () => {
+        expect(findButton().props('loading')).toBe(false);
+      });
+    });
+
+    describe('when the flow fails to start', () => {
+      beforeEach(async () => {
+        const error = new Error('API error');
+
+        axios.post.mockRejectedValue(error);
+        findButton().vm.$emit('click');
+
+        await waitForPromises();
+      });
+      it('removes loading state when workflow fails to start', () => {
+        expect(findButton().props('loading')).toBe(false);
+      });
     });
   });
 
@@ -80,6 +126,10 @@ describe('DuoWorkflowAction component', () => {
       it('emits prompt-validation-error', () => {
         expect(wrapper.emitted('prompt-validation-error')).toEqual([[invalidGoal]]);
         expect(axios.post).not.toHaveBeenCalled();
+      });
+
+      it('does not show loading state for validation errors', () => {
+        expect(findButton().props('loading')).toBe(false);
       });
     });
 
@@ -126,12 +176,20 @@ describe('DuoWorkflowAction component', () => {
     });
 
     describe('when request succeeds', () => {
-      it('emits agent-flow-started event', async () => {
-        createComponent();
-        findButton().vm.$emit('click');
-        await waitForPromises();
+      describe('side effects', () => {
+        beforeEach(async () => {
+          createComponent();
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
 
-        expect(wrapper.emitted('agent-flow-started')).toEqual([[mockCreateFlowResponse]]);
+        it('emits agent-flow-started event', () => {
+          expect(wrapper.emitted('agent-flow-started')).toEqual([[mockCreateFlowResponse]]);
+        });
+
+        it('removes loading state after success', () => {
+          expect(findButton().props('loading')).toBe(false);
+        });
       });
 
       describe('when there are no projectPath prop', () => {
@@ -190,6 +248,10 @@ describe('DuoWorkflowAction component', () => {
 
       it('does not emits agent-flow-started event', () => {
         expect(wrapper.emitted('agent-flow-started')).toBeUndefined();
+      });
+
+      it('removes loading state after error', () => {
+        expect(findButton().props('loading')).toBe(false);
       });
     });
   });
