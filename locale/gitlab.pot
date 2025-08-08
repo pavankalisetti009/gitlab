@@ -58678,6 +58678,9 @@ msgstr ""
 msgid "SecurityReports|A dismissal reason is required."
 msgstr ""
 
+msgid "SecurityReports|Active secret"
+msgstr ""
+
 msgid "SecurityReports|Activity"
 msgstr ""
 
@@ -58906,6 +58909,9 @@ msgstr ""
 msgid "SecurityReports|Image"
 msgstr ""
 
+msgid "SecurityReports|Inactive secret"
+msgstr ""
+
 msgid "SecurityReports|Investigate this vulnerability by creating an issue"
 msgstr ""
 
@@ -58994,6 +59000,9 @@ msgid "SecurityReports|Parsing errors in pipeline"
 msgstr ""
 
 msgid "SecurityReports|Parsing warnings in pipeline"
+msgstr ""
+
+msgid "SecurityReports|Possibly active secret"
 msgstr ""
 
 msgid "SecurityReports|Project"
@@ -59158,6 +59167,9 @@ msgid "SecurityReports|Unable to add %{invalidProjectsMessage}: %{errorMessage}"
 msgstr ""
 
 msgid "SecurityReports|Undo dismiss"
+msgstr ""
+
+msgid "SecurityReports|Validity check"
 msgstr ""
 
 msgid "SecurityReports|Vulnerabilities over time"
