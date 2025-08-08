@@ -25,7 +25,10 @@ module Ai
 
       def before_indexing_checks
         return "namespace not found" unless namespace
-        return "knowledge_graph_indexing is not enabled" unless Feature.enabled?(:knowledge_graph_indexing, namespace)
+
+        return "knowledge_graph_indexing is not enabled" unless Feature.enabled?(:knowledge_graph_indexing,
+          namespace.project)
+
         return "project has empty repo" if namespace.project.empty_repo?
 
         return "project doesn't have duo features available" unless ::GitlabSubscriptions::AddOnPurchase
