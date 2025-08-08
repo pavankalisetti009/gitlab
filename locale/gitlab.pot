@@ -23913,6 +23913,15 @@ msgstr ""
 msgid "Duo Agent Platform|Something went wrong saving Duo Agent Platform settings"
 msgstr ""
 
+msgid "DuoAgentPlatform|Error occurred when starting the flow."
+msgstr ""
+
+msgid "DuoAgentPlatform|Flow started successfully."
+msgstr ""
+
+msgid "DuoAgentPlatform|Flow started successfully. To view progress, see %{linkStart}Session %{id}%{linkEnd}."
+msgstr ""
+
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 
@@ -25938,9 +25947,6 @@ msgid "Error occurred when fetching sidebar data"
 msgstr ""
 
 msgid "Error occurred when saving reviewers"
-msgstr ""
-
-msgid "Error occurred when starting the workflow"
 msgstr ""
 
 msgid "Error occurred while updating the issue status"
@@ -72549,9 +72555,6 @@ msgid "WorkItem|ticket"
 msgstr ""
 
 msgid "Workflow"
-msgstr ""
-
-msgid "Workflow started successfully"
 msgstr ""
 
 msgid "Workspaces"

@@ -30,6 +30,8 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
         scope :automate do
           get '/(*vueroute)' => 'duo_agents_platform#show', as: :automate, format: false
           # Additional named routes for helpers
+          # Used as hardcoded path in
+          # https://gitlab.com/gitlab-org/gitlab/-/blob/e9b59c5de32c6ce4e14665681afbf95cf001c044/ee/app/assets/javascripts/ai/components/duo_workflow_action.vue#L76.
           get 'agent-sessions', to: 'duo_agents_platform#show', as: :automate_agent_sessions, format: false
           get 'flow-triggers', to: 'duo_agents_platform#show', as: :automate_flow_triggers, format: false
         end

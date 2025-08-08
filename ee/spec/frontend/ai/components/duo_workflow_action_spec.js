@@ -4,6 +4,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
+import { mockCreateFlowResponse } from '../mocks';
 
 jest.mock('~/alert');
 
@@ -12,19 +13,11 @@ describe('DuoWorkflowAction component', () => {
 
   const projectId = 123;
   const duoWorkflowInvokePath = `/api/v4/projects/${projectId}/duo_workflows`;
-  const pipelineId = 987;
-  const pipelinePath = `/project/${projectId}/pipelines/${pipelineId}`;
   const currentRef = 'feature-branch';
-
-  const mockPipelineData = {
-    pipeline: {
-      id: pipelineId,
-      path: pipelinePath,
-    },
-  };
 
   const defaultProps = {
     projectId,
+    projectPath: 'group/project',
     title: 'Convert to GitLab CI/CD',
     hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
     goal: 'Jenkinsfile',
@@ -49,6 +42,7 @@ describe('DuoWorkflowAction component', () => {
 
   beforeEach(() => {
     jest.spyOn(axios, 'post');
+    axios.post.mockResolvedValue({ data: mockCreateFlowResponse });
   });
 
   describe('rendering', () => {
@@ -75,10 +69,6 @@ describe('DuoWorkflowAction component', () => {
       agent_privileges: defaultProps.agentPrivileges,
     };
 
-    beforeEach(() => {
-      createComponent();
-    });
-
     describe('when the goal fails to match the promptValidatorRegex', () => {
       const invalidGoal = 'InvalidPath';
 
@@ -97,7 +87,6 @@ describe('DuoWorkflowAction component', () => {
       const validGoal = 'Jenkinsfile';
 
       beforeEach(() => {
-        axios.post.mockResolvedValue({ data: mockPipelineData });
         createComponent({ goal: validGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
         findButton().vm.$emit('click');
       });
@@ -108,61 +97,92 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    it('makes API call with correct data when button is clicked', async () => {
-      axios.post.mockResolvedValue({ data: mockPipelineData });
+    describe('when button is clicked', () => {
+      beforeEach(async () => {
+        createComponent();
+        findButton().vm.$emit('click');
+        await waitForPromises();
+      });
 
-      findButton().vm.$emit('click');
-      await waitForPromises();
-
-      expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, expectedRequestData);
+      it('makes API call with correct data', () => {
+        expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, expectedRequestData);
+      });
     });
 
-    it('includes source_branch when currentRef is provided', async () => {
-      createComponent({}, { currentRef });
-      axios.post.mockResolvedValue({ data: mockPipelineData });
+    describe('when currentRef is provided', () => {
+      beforeEach(async () => {
+        createComponent({}, { currentRef });
 
-      findButton().vm.$emit('click');
-      await waitForPromises();
+        findButton().vm.$emit('click');
+        await waitForPromises();
+      });
 
-      expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
-        ...expectedRequestData,
-        source_branch: currentRef,
+      it('includes source_branch in the request params', () => {
+        expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          ...expectedRequestData,
+          source_branch: currentRef,
+        });
       });
     });
 
     describe('when request succeeds', () => {
-      beforeEach(() => {
-        axios.post.mockResolvedValue({ data: mockPipelineData });
+      it('emits agent-flow-started event', async () => {
+        createComponent();
         findButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(wrapper.emitted('agent-flow-started')).toEqual([[mockCreateFlowResponse]]);
       });
 
-      it('shows success alert with pipeline link', () => {
-        expect(createAlert).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'success',
-            data: mockPipelineData,
-            renderMessageHTML: true,
-            message: 'Workflow started successfully',
-          }),
-        );
+      describe('when there are no projectPath prop', () => {
+        beforeEach(async () => {
+          createComponent({ projectPath: null });
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('calls createAlert without messageLinks', () => {
+          expect(createAlert).toHaveBeenCalledWith(
+            expect.objectContaining({ message: 'Flow started successfully.', messageLinks: {} }),
+          );
+        });
       });
 
-      it('emits agent-flow-started event', () => {
-        expect(wrapper.emitted('agent-flow-started')).toEqual([[mockPipelineData]]);
+      describe('when there is a projectPath prop', () => {
+        beforeEach(async () => {
+          createComponent();
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('shows success alert with the session ID', () => {
+          expect(createAlert).toHaveBeenCalledWith(
+            expect.objectContaining({
+              variant: 'success',
+              message:
+                'Flow started successfully. To view progress, see %{linkStart}Session 1056241%{linkEnd}.',
+              messageLinks: {
+                link: '/group/project/-/automate/agent-sessions/1056241',
+              },
+            }),
+          );
+        });
       });
     });
 
     describe('when request fails', () => {
       const error = new Error('API error');
 
-      beforeEach(() => {
+      beforeEach(async () => {
         axios.post.mockRejectedValue(error);
+        createComponent();
         findButton().vm.$emit('click');
+        await waitForPromises();
       });
 
       it('shows error alert', () => {
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Error occurred when starting the workflow',
+          message: 'Error occurred when starting the flow.',
           captureError: true,
           error,
         });

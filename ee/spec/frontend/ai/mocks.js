@@ -66,3 +66,30 @@ export const mockGetAgentFlowResponse = {
     },
   },
 };
+
+export const mockCreateFlowResponse = {
+  id: 1056241,
+  project_id: 46519181,
+  namespace_id: null,
+  agent_privileges: [1, 2, 3, 4, 5],
+  agent_privileges_names: [
+    'read_write_files',
+    'read_only_gitlab',
+    'read_write_gitlab',
+    'run_commands',
+    'use_git',
+  ],
+  pre_approved_agent_privileges: [1, 2],
+  pre_approved_agent_privileges_names: ['read_write_files', 'read_only_gitlab'],
+  workflow_definition: 'issue_to_merge_request',
+  status: 'created',
+  allow_agent_to_request_user: true,
+  image: null,
+  environment: 'web',
+  workload: {
+    id: 1000338,
+    message: null,
+  },
+  mcp_enabled: true,
+  gitlab_url: 'https://gitlab.com',
+};
