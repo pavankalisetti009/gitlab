@@ -51,5 +51,9 @@ FactoryBot.define do
         ]
       }
     end
+
+    after(:build) do |evidence|
+      evidence.project_id ||= evidence.finding.project_id
+    end
   end
 end

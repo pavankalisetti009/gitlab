@@ -40,12 +40,16 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
     subject(:archive_vulnerabilities) { service_object.execute }
 
     before do
+      # This is messed up. Both vulnerability and finding records have foreign keys to each other.
+      # This will be fixed by tracking vulnerabilities on multiple branches effort.
+      vulnerability.vulnerability_finding.update_column(:vulnerability_id, vulnerability.id)
+
       allow(Vulnerabilities::Archival::ArchivedRecordBuilderService).to receive(:execute).and_return(archived_record)
       allow(Vulnerabilities::Statistics::AdjustmentWorker).to receive(:perform_async)
     end
 
     it 'archives the vulnerabilities' do
-      expect { archive_vulnerabilities }.to change { Vulnerability.find_by_id(vulnerability.id) }.to(nil)
+      expect { archive_vulnerabilities }.to change { vulnerability.deleted_from_database? }.to(true)
                                         .and change { archive.archived_records.count }.by(1)
                                         .and change { archive.reload.archived_records_count }.by(1)
     end
@@ -68,9 +72,47 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
       end
 
       it 'archives the vulnerabilities' do
-        expect { archive_vulnerabilities }.to change { Vulnerability.find_by_id(vulnerability.id) }.to(nil)
+        expect { archive_vulnerabilities }.to change { vulnerability.deleted_from_database? }.to(true)
                                           .and change { archive.archived_records.count }.by(1)
                                           .and change { archive.reload.archived_records_count }.by(1)
+      end
+    end
+
+    describe 'taking backup' do
+      let_it_be(:finding) { vulnerability.vulnerability_finding }
+      let_it_be(:evidence) { create(:vulnerabilties_finding_evidence, finding: finding) }
+      let_it_be(:flag) { create(:vulnerabilities_flag, finding: finding) }
+      let_it_be(:link) { create(:finding_link, finding: finding) }
+      let_it_be(:remediation) { create(:vulnerability_finding_remediation, finding: finding) }
+      let_it_be(:signature) { create(:vulnerabilities_finding_signature, finding: finding) }
+
+      let_it_be(:external_issue_link) { create(:vulnerabilities_external_issue_link, vulnerability: vulnerability) }
+      let_it_be(:issue_link) { create(:vulnerabilities_issue_link, vulnerability: vulnerability) }
+      let_it_be(:merge_request_link) { create(:vulnerabilities_merge_request_link, vulnerability: vulnerability) }
+      let_it_be(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
+      let_it_be(:user_mention) { create(:vulnerability_user_mention, vulnerability: vulnerability) }
+
+      before do
+        finding.identifiers << finding.primary_identifier
+      end
+
+      it 'creates backup records' do
+        expect { archive_vulnerabilities }.to change { backup_record_of(finding) }.from(nil)
+                                          .and change { backup_record_of(evidence) }.from(nil)
+                                          .and change { backup_record_of(flag) }.from(nil)
+                                          .and change { backup_record_of(link) }.from(nil)
+                                          .and change { backup_record_of(remediation) }.from(nil)
+                                          .and change { backup_record_of(signature) }.from(nil)
+                                          .and change { backup_record_of(vulnerability) }.from(nil)
+                                          .and change { backup_record_of(external_issue_link) }.from(nil)
+                                          .and change { backup_record_of(issue_link) }.from(nil)
+                                          .and change { backup_record_of(merge_request_link) }.from(nil)
+                                          .and change { backup_record_of(state_transition) }.from(nil)
+                                          .and change { backup_record_of(user_mention) }.from(nil)
+      end
+
+      def backup_record_of(record)
+        record.class.backup_model.find_by(original_record_identifier: record)
       end
     end
   end
