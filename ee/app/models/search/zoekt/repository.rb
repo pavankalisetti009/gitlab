@@ -51,9 +51,13 @@ module Search
         where(state: [:orphaned, :pending_deletion])
       end
 
-      scope :should_be_indexed, -> do
+      scope :should_be_indexed, -> { pending }
+      scope :should_be_reindexed, -> do
         indexable.joins(zoekt_index: :node).where("#{table_name}.schema_version != #{Node.table_name}.schema_version")
-          .or(pending)
+      end
+
+      scope :with_pending_or_processing_tasks, -> do
+        joins(:tasks).merge(Search::Zoekt::Task.pending_or_processing)
       end
 
       scope :for_zoekt_indices, ->(indices) { where(zoekt_index: indices) }

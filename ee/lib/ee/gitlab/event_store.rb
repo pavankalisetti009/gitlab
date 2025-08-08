@@ -245,6 +245,9 @@ module EE
           store.subscribe ::Search::Zoekt::RepoToIndexEventWorker,
             to: ::Search::Zoekt::RepoToIndexEvent
 
+          store.subscribe ::Search::Zoekt::RepoToReindexEventWorker,
+            to: ::Search::Zoekt::RepoToReindexEvent
+
           store.subscribe ::Search::Zoekt::IndexToEvictEventWorker,
             to: ::Search::Zoekt::IndexToEvictEvent
 

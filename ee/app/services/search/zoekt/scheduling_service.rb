@@ -69,6 +69,10 @@ module Search
           if: -> { Repository.should_be_indexed.exists? },
           dispatch: { event: RepoToIndexEvent }
         },
+        repo_to_reindex_check: {
+          if: -> { Repository.should_be_reindexed.exists? },
+          dispatch: { event: RepoToReindexEvent }
+        },
         repo_to_delete_check: {
           if: -> { ::Search::Zoekt::Repository.should_be_deleted.exists? },
           dispatch: { event: RepoMarkedAsToDeleteEvent }
