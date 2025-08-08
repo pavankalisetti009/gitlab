@@ -6,9 +6,37 @@ module WorkItems
       include ErrorMapping
 
       def self.constructor_container_arg(value)
+        # TODO: Dynamically determining the type of a constructor arg based on the class is an antipattern,
+        # but this pattern was inherited from Epics::BaseService which this service replaces (via replacing
+        # its descendant Epics::UpdateService). The root cause is that the epic services hierarchy had
+        # inheritance issues where inheritance may not be the appropriate pattern.
+        # See more details in comments below and follow on issue to address this:
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/328438
+
         { group: value }
       end
 
+      # TODO: This service replaces Epics::UpdateService (a descendant of Epics::BaseService) and inherits
+      # its constructor pattern issues. The first argument is named group because epics have no `project`
+      # associated, even though other similar services take a `project` as the first argument.
+      # This pattern exists because named arguments were added after classes were already in use,
+      # and `.constructor_container_arg` is used to determine the correct keyword.
+      #
+      # This reveals an existing inconsistency where sometimes a `project` is passed but ignored,
+      # violating the Liskov Substitution Principle
+      # (https://en.wikipedia.org/wiki/Liskov_substitution_principle),
+      # since we cannot determine which form of constructor to call without knowing the subclass type.
+      #
+      # This suggests inheritance may not be the proper relationship to "issuable",
+      # because it may not be an "is a" relationship. Other `IssuableBaseService` subclasses
+      # are in the context of a project and take the project as the first argument.
+      #
+      # There are concerns like state management and notes which are applicable to epic services,
+      # but not necessarily all aspects of issuable services.
+      #
+      # See the following links for more context:
+      # - Original discussion thread: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/59182#note_555401711
+      # - Issue to address inheritance problems: https://gitlab.com/gitlab-org/gitlab/-/issues/328438
       def initialize(group:, perform_spam_check: true, current_user: nil, params: {})
         @group = group
         @current_user = current_user
