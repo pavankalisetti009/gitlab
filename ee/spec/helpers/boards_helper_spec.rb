@@ -109,7 +109,9 @@ RSpec.describe BoardsHelper do
           [:board_assignee_lists, :assignee_lists_available],
           [:issuable_health_status, :health_status_feature_available],
           [:scoped_labels, :scoped_labels],
-          [:scoped_issue_board, :scoped_issue_board_feature_enabled]].each do |feature_name, feature_key|
+          [:scoped_issue_board, :scoped_issue_board_feature_enabled],
+          [:board_status_lists, :status_lists_available],
+          [:work_item_status, :work_item_status_available]].each do |feature_name, feature_key|
           include_examples "serializes the availability of a licensed feature", feature_name, feature_key
         end
       end
