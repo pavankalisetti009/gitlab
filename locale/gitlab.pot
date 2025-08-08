@@ -25424,10 +25424,10 @@ msgstr ""
 msgid "Environments|An error occurred while making the request."
 msgstr ""
 
-msgid "Environments|An error occurred while re-deploying the environment, please try again"
+msgid "Environments|An error occurred while re-deploying the environment, please try again."
 msgstr ""
 
-msgid "Environments|An error occurred while rolling back the environment, please try again"
+msgid "Environments|An error occurred while rolling back the environment, please try again."
 msgstr ""
 
 msgid "Environments|An error occurred while stopping the environment, please try again"
