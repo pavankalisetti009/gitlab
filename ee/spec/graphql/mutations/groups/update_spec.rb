@@ -65,9 +65,9 @@ RSpec.describe Mutations::Groups::Update, feature_category: :groups_and_projects
       end
     end
 
-    context 'when use_web_based_commit_signing_enabled feature flag is disabled' do
+    context 'when configure_web_based_commit_signing feature flag is disabled' do
       before_all do
-        stub_feature_flags(use_web_based_commit_signing_enabled: false)
+        stub_feature_flags(configure_web_based_commit_signing: false)
         group.add_owner(current_user)
       end
 

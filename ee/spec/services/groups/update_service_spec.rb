@@ -842,9 +842,9 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       it_behaves_like 'ignoring web_based_commit_signing_enabled'
     end
 
-    context 'when the use_web_based_commit_signing_enabled feature flag is not enabled' do
+    context 'when the configure_web_based_commit_signing feature flag is not enabled' do
       before do
-        stub_feature_flags(use_web_based_commit_signing_enabled: false)
+        stub_feature_flags(configure_web_based_commit_signing: false)
       end
 
       it_behaves_like 'ignoring web_based_commit_signing_enabled'

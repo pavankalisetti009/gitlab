@@ -1,0 +1,10 @@
+---
+name: configure_web_based_commit_signing
+description:
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/17775
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200425
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/542975
+milestone: '18.3'
+group: group::source code
+type: beta
+default_enabled: false

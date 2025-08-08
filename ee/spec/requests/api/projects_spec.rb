@@ -2012,7 +2012,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
           context 'and the feature is not enabled' do
             before do
-              stub_feature_flags(use_web_based_commit_signing_enabled: false)
+              stub_feature_flags(configure_web_based_commit_signing: false)
             end
 
             it_behaves_like 'does not update the value'

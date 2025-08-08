@@ -735,7 +735,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
             group.add_owner(user)
 
             stub_saas_features(repositories_web_based_commit_signing: feature_available)
-            stub_feature_flags(use_web_based_commit_signing_enabled: feature_enabled)
+            stub_feature_flags(configure_web_based_commit_signing: feature_enabled)
           end
 
           it 'updates the attribute as expected' do
