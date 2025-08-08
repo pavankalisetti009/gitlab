@@ -6,7 +6,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
   include_context 'with lightweight trial registration redesign turned on' # rubocop:disable Gitlab/RSpec/AvoidSetup -- temporary during the experiment
 
   it 'registers the user and sends them to the group page' do
-    group = create(:group, name: 'Test Group', organization: create(:organization))
+    group = create(:group, name: 'Test Group')
 
     registers_from_invite(group: group)
 
@@ -21,7 +21,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
   end
 
   it 'registers the user with identity verification and sends them to the group page' do
-    group = create(:group, name: 'Test Group', organization: create(:organization))
+    group = create(:group, name: 'Test Group')
 
     registers_from_invite_with_arkose(group: group)
 
@@ -66,7 +66,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
 
   context 'when the invite email is not lowercased' do
     it 'registers the user and sends them to the group page' do
-      group = create(:group, name: 'Test Group', organization: create(:organization))
+      group = create(:group, name: 'Test Group')
 
       registers_from_invite(group: group, invite_email: user_email.upcase)
 

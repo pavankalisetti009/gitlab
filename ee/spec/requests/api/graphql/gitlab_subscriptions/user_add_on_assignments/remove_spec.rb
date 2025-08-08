@@ -6,12 +6,11 @@ RSpec.describe 'UserAddOnAssignmentRemove', feature_category: :seat_cost_managem
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:organization) { create(:organization) }
-  let_it_be(:namespace) { create(:group, organization: organization) }
-  let_it_be(:namespace_1) { create(:group, organization: organization) }
-  let_it_be(:namespace_2) { create(:group, organization: organization) }
+  let_it_be(:namespace) { create(:group) }
+  let_it_be(:namespace_1) { create(:group) }
+  let_it_be(:namespace_2) { create(:group) }
   let_it_be(:add_on_purchase) do
-    create(:gitlab_subscription_add_on_purchase, namespace: namespace, organization: organization)
+    create(:gitlab_subscription_add_on_purchase, namespace: namespace)
   end
 
   let_it_be(:remove_user) { create(:user) }
