@@ -1,14 +1,24 @@
 <script>
 import { __ } from '~/locale';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import GeoListFilteredSearchBar from './geo_list_filtered_search_bar.vue';
 import GeoListBulkActions from './geo_list_bulk_actions.vue';
 
 export default {
   components: {
+    PageHeading,
     GeoListFilteredSearchBar,
     GeoListBulkActions,
   },
   props: {
+    pageHeadingTitle: {
+      type: String,
+      required: true,
+    },
+    pageHeadingDescription: {
+      type: String,
+      required: true,
+    },
     listboxHeaderText: {
       type: String,
       required: false,
@@ -50,18 +60,24 @@ export default {
 
 <template>
   <div>
+    <page-heading :heading="pageHeadingTitle">
+      <template #actions>
+        <geo-list-bulk-actions
+          v-if="showActions"
+          :bulk-actions="bulkActions"
+          @bulkAction="handleBulkAction"
+        />
+      </template>
+      <template #description>
+        {{ pageHeadingDescription }}
+      </template>
+    </page-heading>
     <geo-list-filtered-search-bar
       :listbox-header-text="listboxHeaderText"
       :active-listbox-item="activeListboxItem"
       :active-filtered-search-filters="activeFilteredSearchFilters"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
-    />
-    <geo-list-bulk-actions
-      v-if="showActions"
-      :bulk-actions="bulkActions"
-      class="gl-my-5 gl-flex gl-justify-end"
-      @bulkAction="handleBulkAction"
     />
   </div>
 </template>

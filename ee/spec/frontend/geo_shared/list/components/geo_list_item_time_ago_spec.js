@@ -30,6 +30,9 @@ describe('GeoListItemTimeAgo', () => {
     });
   };
 
+  const findDateString = () => wrapper.findByTestId('date-string');
+  const findDivider = () => wrapper.findByTestId('divider');
+
   describe.each`
     dateString       | showDivider | expectedText
     ${MOCK_JUST_NOW} | ${true}     | ${`${MOCK_LABEL} just now`}
@@ -43,12 +46,11 @@ describe('GeoListItemTimeAgo', () => {
 
     describe(`with dateString is ${dateString} and showDivider is ${showDivider}`, () => {
       it(`sets Replicable Time Ago text to ${expectedText}`, () => {
-        expect(wrapper.text()).toBe(expectedText);
+        expect(findDateString().text()).toBe(expectedText);
       });
 
-      it(`does${showDivider ? '' : ' not'} show right border`, () => {
-        expect(wrapper.find('span').classes('gl-border-r-1')).toBe(showDivider);
-        expect(wrapper.find('span').classes('gl-border-r-solid')).toBe(showDivider);
+      it(`does${showDivider ? '' : ' not'} show right · divider`, () => {
+        expect(findDivider().exists()).toBe(showDivider);
       });
     });
   });

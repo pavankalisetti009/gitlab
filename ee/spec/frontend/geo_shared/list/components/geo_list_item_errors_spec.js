@@ -33,16 +33,18 @@ describe('GeoListItemErrors', () => {
       expect(findCollapse().props('visible')).toBe(false);
     });
 
-    it('renders button with text Show errors by default', () => {
-      expect(findToggleButton().text()).toBe('Show errors');
+    it('renders button with text Expand errors by default with chevron-right icon', () => {
+      expect(findToggleButton().text()).toBe('Expand errors');
+      expect(findToggleButton().props('icon')).toBe('chevron-right');
     });
 
-    it('toggles collapse visibility to true when button is clicked and changes text to Hide errors', async () => {
+    it('toggles collapse visibility to true when button is clicked and changes text to Collapse errors and icon to chevron-down', async () => {
       findToggleButton().vm.$emit('click');
       await nextTick();
 
       expect(findCollapse().props('visible')).toBe(true);
-      expect(findToggleButton().text()).toBe('Hide errors');
+      expect(findToggleButton().text()).toBe('Collapse errors');
+      expect(findToggleButton().props('icon')).toBe('chevron-down');
     });
 
     it('renders an error message for each item in the errorsArray', () => {

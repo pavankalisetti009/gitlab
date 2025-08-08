@@ -36,7 +36,7 @@ export default {
 
 <template>
   <div class="gl-text-sm gl-text-subtle">
-    <span class="gl-px-2" :class="{ 'gl-border-r-1 gl-border-r-solid': showDivider }">
+    <span class="gl-px-1" data-testid="date-string">
       <gl-sprintf :message="$options.i18n.timeAgoString">
         <template #label>
           <span>{{ label }}</span>
@@ -47,5 +47,6 @@ export default {
         </template>
       </gl-sprintf>
     </span>
+    <span v-if="showDivider" class="gl-mr-1" data-testid="divider">·</span>
   </div>
 </template>

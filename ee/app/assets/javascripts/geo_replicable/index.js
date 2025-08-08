@@ -10,7 +10,7 @@ Vue.use(Translate);
 
 export default () => {
   const el = document.getElementById('js-geo-replicable');
-  const { geoCurrentSiteId, geoTargetSiteId, replicableBasePath } = el.dataset;
+  const { geoCurrentSiteId, geoTargetSiteId, geoTargetSiteName, replicableBasePath } = el.dataset;
 
   const replicableTypes = convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicableTypes), {
     deep: true,
@@ -39,6 +39,7 @@ export default () => {
       replicableTypes,
       graphqlRegistryClass,
       itemTitle: titlePlural,
+      siteName: geoTargetSiteName,
       listboxItems: formatListboxItems(replicableTypes),
       filteredSearchTokens: FILTERED_SEARCH_TOKENS,
     },

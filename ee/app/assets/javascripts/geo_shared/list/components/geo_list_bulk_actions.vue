@@ -60,8 +60,9 @@ export default {
         v-for="action in bulkActions"
         :key="action.id"
         v-gl-modal-directive="$options.GEO_BULK_ACTION_MODAL_ID"
+        :icon="action.icon"
         :data-testid="action.id"
-        class="gl-ml-2"
+        class="gl-ml-3"
         @click="setModalData(action)"
       >
         {{ action.text }}
