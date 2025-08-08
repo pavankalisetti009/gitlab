@@ -22,6 +22,15 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
         releasedAt
         released
         versionName
+        ... on AiCatalogFlowVersion {
+          steps {
+            nodes {
+              agent {
+                name
+              }
+            }
+          }
+        }
         ... on AiCatalogAgentVersion {
           systemPrompt
           tools {
@@ -166,6 +175,26 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
         'latestVersion' => a_graphql_entity_for(latest_version)
       )
     )
+  end
+
+  context 'when item is a flow' do
+    let_it_be(:flow) { create(:ai_catalog_flow, project: project, public: true) }
+    let(:params) { { id: flow.to_global_id } }
+
+    it 'resolves flow steps agents' do
+      create(:ai_catalog_flow_version, item: flow, definition: {
+        triggers: [],
+        steps: [
+          { agent_id: catalog_item.id, current_version_id: catalog_item.latest_version.id, pinned_version_prefix: nil }
+        ]
+      })
+
+      post_graphql(query, current_user: nil)
+
+      expect(graphql_data_at(:ai_catalog_item, :latest_version, :steps, :nodes)).to include(a_hash_including(
+        'agent' => { 'name' => catalog_item.name }
+      ))
+    end
   end
 
   context 'when item belongs to another organization' do

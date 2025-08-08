@@ -10,7 +10,7 @@ module Mutations
           include Gitlab::Graphql::Authorize::AuthorizeResource
 
           field :item,
-            ::Types::Ai::Catalog::ItemInterface,
+            ::Types::Ai::Catalog::FlowType,
             null: true,
             description: 'Item created.'
 
@@ -30,12 +30,23 @@ module Mutations
             required: true,
             description: 'Whether the flow is publicly visible in the catalog.'
 
+          argument :steps, [::Types::Ai::Catalog::FlowStepsInputType],
+            required: true,
+            description: 'Steps for the flow.'
+
           authorize :admin_ai_catalog_item
 
           def resolve(args)
             project = authorized_find!(id: args[:project_id])
 
             service_args = args.except(:project_id)
+            # We can't use `loads` because of this bug https://github.com/rmosolgo/graphql-ruby/issues/2966
+            agents = ::Ai::Catalog::Item.with_ids(service_args[:steps].pluck(:agent_id)).index_by(&:id) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord model
+
+            service_args[:steps] = service_args[:steps].map do |step|
+              step.to_hash.merge(agent: agents[step[:agent_id]]).except(:agent_id)
+            end
+
             result = ::Ai::Catalog::Flows::CreateService.new(
               project: project,
               current_user: current_user,

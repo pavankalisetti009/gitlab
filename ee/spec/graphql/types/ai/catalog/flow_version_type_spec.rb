@@ -12,7 +12,9 @@ RSpec.describe Types::Ai::Catalog::FlowVersionType, feature_category: :workflow_
   end
 
   it 'has the expected fields' do
-    expect(described_class.own_fields).to be_empty
+    expect(described_class.own_fields.keys).to match_array(%w[
+      steps
+    ])
   end
 
   it { expect(described_class).to require_graphql_authorizations(:read_ai_catalog_item) }

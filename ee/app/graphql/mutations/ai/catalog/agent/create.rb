@@ -8,7 +8,7 @@ module Mutations
           graphql_name 'AiCatalogAgentCreate'
 
           field :item,
-            ::Types::Ai::Catalog::ItemInterface,
+            ::Types::Ai::Catalog::AgentType,
             null: true,
             description: 'Item created.'
 

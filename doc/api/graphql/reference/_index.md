@@ -2307,7 +2307,7 @@ Input type: `AiCatalogAgentCreateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogagentcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaicatalogagentcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationaicatalogagentcreateitem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Item created. |
+| <a id="mutationaicatalogagentcreateitem"></a>`item` | [`AiCatalogAgent`](#aicatalogagent) | Item created. |
 
 ### `Mutation.aiCatalogAgentDelete`
 
@@ -2361,7 +2361,7 @@ Input type: `AiCatalogAgentUpdateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogagentupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaicatalogagentupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationaicatalogagentupdateitem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Agent that was updated. |
+| <a id="mutationaicatalogagentupdateitem"></a>`item` | [`AiCatalogAgent`](#aicatalogagent) | Agent that was updated. |
 
 ### `Mutation.aiCatalogFlowCreate`
 
@@ -2381,6 +2381,7 @@ Input type: `AiCatalogFlowCreateInput`
 | <a id="mutationaicatalogflowcreatename"></a>`name` | [`String!`](#string) | Name for the flow. |
 | <a id="mutationaicatalogflowcreateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project for the flow. |
 | <a id="mutationaicatalogflowcreatepublic"></a>`public` | [`Boolean!`](#boolean) | Whether the flow is publicly visible in the catalog. |
+| <a id="mutationaicatalogflowcreatesteps"></a>`steps` | [`[AiCatalogFlowStepsInput!]!`](#aicatalogflowstepsinput) | Steps for the flow. |
 
 #### Fields
 
@@ -2388,7 +2389,7 @@ Input type: `AiCatalogFlowCreateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogflowcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaicatalogflowcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationaicatalogflowcreateitem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Item created. |
+| <a id="mutationaicatalogflowcreateitem"></a>`item` | [`AiCatalogFlow`](#aicatalogflow) | Item created. |
 
 ### `Mutation.aiCatalogFlowDelete`
 
@@ -2439,7 +2440,7 @@ Input type: `AiCatalogFlowUpdateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogflowupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaicatalogflowupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationaicatalogflowupdateitem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Flow that was updated. |
+| <a id="mutationaicatalogflowupdateitem"></a>`item` | [`AiCatalogFlow`](#aicatalogflow) | Flow that was updated. |
 
 ### `Mutation.aiCatalogItemConsumerCreate`
 
@@ -14444,6 +14445,29 @@ The edge type for [`AiCatalogBuiltInTool`](#aicatalogbuiltintool).
 | <a id="aicatalogbuiltintooledgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aicatalogbuiltintooledgenode"></a>`node` | [`AiCatalogBuiltInTool`](#aicatalogbuiltintool) | The item at the end of the edge. |
 
+#### `AiCatalogFlowStepsConnection`
+
+The connection type for [`AiCatalogFlowSteps`](#aicatalogflowsteps).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowstepsconnectionedges"></a>`edges` | [`[AiCatalogFlowStepsEdge]`](#aicatalogflowstepsedge) | A list of edges. |
+| <a id="aicatalogflowstepsconnectionnodes"></a>`nodes` | [`[AiCatalogFlowSteps]`](#aicatalogflowsteps) | A list of nodes. |
+| <a id="aicatalogflowstepsconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiCatalogFlowStepsEdge`
+
+The edge type for [`AiCatalogFlowSteps`](#aicatalogflowsteps).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowstepsedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aicatalogflowstepsedgenode"></a>`node` | [`AiCatalogFlowSteps`](#aicatalogflowsteps) | The item at the end of the edge. |
+
 #### `AiCatalogItemConnection`
 
 The connection type for [`AiCatalogItem`](#aicatalogitem).
@@ -22608,6 +22632,15 @@ An AI catalog flow.
 | <a id="aicatalogflowpublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
 | <a id="aicatalogflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
+### `AiCatalogFlowSteps`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowstepsagent"></a>`agent` | [`AiCatalogAgent!`](#aicatalogagent) | Agent used. |
+| <a id="aicatalogflowstepspinnedversionprefix"></a>`pinnedVersionPrefix` | [`String`](#string) | Major version, minor version, or patch the agent is pinned to. |
+
 ### `AiCatalogFlowVersion`
 
 An AI catalog flow version.
@@ -22620,6 +22653,7 @@ An AI catalog flow version.
 | <a id="aicatalogflowversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
 | <a id="aicatalogflowversionreleased"></a>`released` | [`Boolean!`](#boolean) | Indicates the item version is released. |
 | <a id="aicatalogflowversionreleasedat"></a>`releasedAt` | [`Time`](#time) | Timestamp of when the item version was released. |
+| <a id="aicatalogflowversionsteps"></a>`steps` | [`AiCatalogFlowStepsConnection!`](#aicatalogflowstepsconnection) | Steps of the flow. (see [Connections](#connections)) |
 | <a id="aicatalogflowversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |
 | <a id="aicatalogflowversionversionname"></a>`versionName` | [`String`](#string) | Version name of the item version. |
 
@@ -52554,6 +52588,15 @@ see the associated mutation type above.
 | <a id="aiagenticchatinputcurrentfile"></a>`currentFile` | [`AiCurrentFileInput`](#aicurrentfileinput) | Information about currently selected text which can be passed for additional context. |
 | <a id="aiagenticchatinputnamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | Global ID of the namespace the user is acting on. |
 | <a id="aiagenticchatinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
+
+### `AiCatalogFlowStepsInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowstepsinputagentid"></a>`agentId` | [`AiCatalogItemID!`](#aicatalogitemid) | Agent to use. |
+| <a id="aicatalogflowstepsinputpinnedversionprefix"></a>`pinnedVersionPrefix` | [`String`](#string) | Major version, minor version, or patch to pin the agent to. |
 
 ### `AiChatInput`
 

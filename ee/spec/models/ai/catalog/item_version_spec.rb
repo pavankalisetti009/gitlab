@@ -44,6 +44,32 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
           it { is_expected.not_to be_valid }
         end
+
+        describe 'steps.pinned_version_prefix' do
+          [nil, '0', '0.1', '1', '12', '12.34', '123.456.789', '1.0.0'].each do |prefix|
+            context "with step pinned_version_prefix #{prefix}" do
+              before do
+                version.definition['steps'] = [
+                  { 'agent_id' => 1, 'current_version_id' => 1, 'pinned_version_prefix' => prefix }
+                ]
+              end
+
+              it { is_expected.to be_valid }
+            end
+          end
+
+          ['1.2.3.4', '1.'].each do |prefix|
+            context "with step pinned_version_prefix #{prefix}" do
+              before do
+                version.definition['steps'] = [
+                  { 'agent_id' => 1, 'current_version_id' => 1, 'pinned_version_prefix' => prefix }
+                ]
+              end
+
+              it { is_expected.not_to be_valid }
+            end
+          end
+        end
       end
 
       context 'when item is nil' do
