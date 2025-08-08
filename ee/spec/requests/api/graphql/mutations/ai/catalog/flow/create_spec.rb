@@ -7,6 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
+  let_it_be(:agent) { create(:ai_catalog_agent, :with_version, project: project) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_catalog_flow_create, params) }
@@ -17,7 +18,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       project_id: project.to_global_id,
       name: name,
       description: description,
-      public: true
+      public: true,
+      steps: [{ agent_id: agent.to_global_id }]
     }
   end
 
@@ -90,7 +92,9 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       schema_version: 1,
       version: '1.0.0',
       definition: {
-        steps: [],
+        steps: [{
+          agent_id: agent.id, current_version_id: agent.latest_version.id, pinned_version_prefix: nil
+        }.stringify_keys],
         triggers: []
       }.stringify_keys
     )

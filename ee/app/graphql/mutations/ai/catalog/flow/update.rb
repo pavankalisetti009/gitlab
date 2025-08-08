@@ -8,7 +8,7 @@ module Mutations
           graphql_name 'AiCatalogFlowUpdate'
 
           field :item,
-            ::Types::Ai::Catalog::ItemInterface,
+            ::Types::Ai::Catalog::FlowType,
             null: true,
             description: 'Flow that was updated.'
 

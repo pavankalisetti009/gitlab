@@ -8,7 +8,7 @@ module Mutations
           graphql_name 'AiCatalogAgentUpdate'
 
           field :item,
-            ::Types::Ai::Catalog::ItemInterface,
+            ::Types::Ai::Catalog::AgentType,
             null: true,
             description: 'Agent that was updated.'
 

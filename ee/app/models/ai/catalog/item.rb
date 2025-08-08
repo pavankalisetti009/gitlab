@@ -27,6 +27,7 @@ module Ai
       scope :for_organization, ->(organization) { where(organization: organization) }
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :search, ->(query) { fuzzy_search(query, [:name, :description]) }
+      scope :with_ids, ->(ids) { where(id: ids) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
 
       before_destroy :prevent_deletion_if_consumers_exist

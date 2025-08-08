@@ -5,13 +5,19 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_catalog do
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
+  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
+  let_it_be(:v1_0) { create(:ai_catalog_agent_version, item: agent, version: '1.0.0') }
+  let_it_be(:v1_1) { create(:ai_catalog_agent_version, item: agent, version: '1.1.0') }
 
   let(:user) { maintainer }
   let(:params) do
     {
       name: 'Agent',
       description: 'Description',
-      public: true
+      public: true,
+      steps: [
+        { agent: agent }
+      ]
     }
   end
 
@@ -55,7 +61,11 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
         schema_version: 1,
         version: '1.0.0',
         definition: {
-          steps: [],
+          steps: [
+            {
+              agent_id: agent.id, current_version_id: v1_1.id, pinned_version_prefix: nil
+            }.stringify_keys
+          ],
           triggers: []
         }.stringify_keys
       )
@@ -79,6 +89,27 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       it_behaves_like 'an error response', ["Name can't be blank", 'Versions is invalid']
     end
 
+    context 'when including a pinned_version_prefix' do
+      let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '1.0' }]) }
+
+      it 'sets the correct current_version_id' do
+        response
+
+        item = Ai::Catalog::Item.last
+        expect(item.versions.first.definition['steps'].first).to match a_hash_including(
+          'agent_id' => agent.id, 'current_version_id' => v1_0.id, 'pinned_version_prefix' => '1.0'
+        )
+      end
+
+      context 'when the prefix is not valid' do
+        let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '2' }]) }
+
+        it 'raises an ArgumentError' do
+          expect { response }.to raise_error(ArgumentError)
+        end
+      end
+    end
+
     context 'when user is a developer' do
       let(:user) { create(:user).tap { |user| project.add_developer(user) } }
 
@@ -91,6 +122,26 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       end
 
       it_behaves_like 'an error response', 'You have insufficient permissions'
+    end
+
+    context 'when user does not have access to read one of the agents' do
+      let!(:params) do
+        super().merge(steps: [{ agent: create(:ai_catalog_agent, public: false) }])
+      end
+
+      it_behaves_like 'an error response', 'You have insufficient permissions'
+    end
+
+    context 'when flow exceeds maximum steps' do
+      before do
+        stub_const("#{described_class}::MAX_STEPS", 1)
+      end
+
+      let!(:params) do
+        super().merge(steps: [{ agent: agent }, { agent: agent }])
+      end
+
+      it_behaves_like 'an error response', 'Maximum steps for a flow (1) exceeded'
     end
   end
 end
