@@ -204,6 +204,12 @@ module MergeTrains
     private
 
     def cleanup_ref(async: true)
+      # Since we don't have any hooks for GeneratedrefMergeRequestCommit, we can use delete_all here.
+      if Feature.enabled?(:generate_ref_commits, merge_request.project) && !merged?
+        MergeRequests::GeneratedRefCommit
+          .where(project: merge_request.project, merge_request: merge_request).delete_all
+      end
+
       if async
         merge_request.schedule_cleanup_refs(only: :train)
       else
