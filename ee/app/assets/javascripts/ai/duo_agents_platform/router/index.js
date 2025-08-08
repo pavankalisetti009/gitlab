@@ -4,7 +4,7 @@ import { s__ } from '~/locale';
 import NestedRouteApp from '../nested_route_app.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
-import FlowTriggersIndex from '../pages/flow_triggers/flow_triggers_index.vue';
+import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersShow from '../pages/flow_triggers/flow_triggers_show.vue';
 import {
