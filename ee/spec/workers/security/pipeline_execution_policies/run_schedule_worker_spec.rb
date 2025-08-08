@@ -137,6 +137,16 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
             )
         end
 
+        context 'when project has no security policy bot' do
+          before do
+            project.team.guests.delete_all
+          end
+
+          it 'creates a new bot user' do
+            expect { perform }.to change { project.security_policy_bot }.from(nil).to(User)
+          end
+        end
+
         describe 'resulting pipeline' do
           subject(:pipeline) { perform.then { project.all_pipelines.last! } }
 

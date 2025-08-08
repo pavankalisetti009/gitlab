@@ -24,6 +24,8 @@ module Security
 
         return unless experiment_enabled?(schedule)
 
+        ensure_security_policy_bot_user(schedule)
+
         if schedule.snoozed?
           ::Gitlab::InternalEvents.track_event('scheduled_pipeline_execution_policy_snoozed', project: schedule.project)
 
@@ -80,6 +82,14 @@ module Security
           .security_policy
           .security_orchestration_policy_configuration
           .experiment_enabled?(:pipeline_execution_schedule_policy)
+      end
+
+      def ensure_security_policy_bot_user(schedule)
+        return if schedule.project.security_policy_bot
+
+        Security::Orchestration::CreateBotService
+          .new(schedule.project, nil, skip_authorization: true)
+          .execute
       end
     end
   end
