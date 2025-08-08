@@ -6,9 +6,6 @@ module CloudConnector
     # are generally working. This includes checking for availability of certain network
     # endpoints, but also which license is used etc.
     class StatusService
-      CUSTOMERS_DOT_URL = ::Gitlab::Routing.url_helpers.subscription_portal_url.freeze
-      CLOUD_CONNECTOR_URL = ::CloudConnector::Config.base_url.freeze
-
       attr_reader :probes
 
       def initialize(user:, probes: nil)
@@ -29,54 +26,19 @@ module CloudConnector
       private
 
       def selected_probes
+        probe_registry = ::CloudConnector::StatusChecks::Probes::Registry.new(@user)
+
         if ::Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
-          development_probes
+          probe_registry.development_probes
         # We consider the instance to be using self-hosted Duo
         # if they register a self-hosted AIGW URL.
         elsif ::Gitlab::AiGateway.self_hosted_url.present?
-          if Feature.enabled?(:ai_self_hosted_vendored_features, :instance) && at_least_one_vendored_feature?
-            default_probes + self_hosted_probes
-          else
-            self_hosted_probes
-          end
+          probe_registry.self_hosted_probes
         elsif ::Ai::AmazonQ.connected?
-          default_probes + amazon_q_probes
+          probe_registry.default_probes + probe_registry.amazon_q_probes
         else
-          default_probes
+          probe_registry.default_probes
         end
-      end
-
-      def at_least_one_vendored_feature?
-        ::Ai::FeatureSetting.vendored.exists?
-      end
-
-      def default_probes
-        [
-          CloudConnector::StatusChecks::Probes::LicenseProbe.new,
-          CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_URL),
-          CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_URL),
-          CloudConnector::StatusChecks::Probes::AccessProbe.new,
-          CloudConnector::StatusChecks::Probes::TokenProbe.new,
-          CloudConnector::StatusChecks::Probes::EndToEndProbe.new(@user)
-        ]
-      end
-
-      # Carries out minimal checks for development and testing purposes
-      def development_probes
-        [
-          CloudConnector::StatusChecks::Probes::HostProbe.new(::Gitlab::AiGateway.self_hosted_url),
-          CloudConnector::StatusChecks::Probes::EndToEndProbe.new(@user)
-        ]
-      end
-
-      def amazon_q_probes
-        [
-          CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe.new(@user)
-        ]
-      end
-
-      def self_hosted_probes
-        ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
       end
     end
   end
