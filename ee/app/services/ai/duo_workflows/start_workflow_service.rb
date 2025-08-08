@@ -57,10 +57,17 @@ module Ai
 
       def workload_definition
         ::Ci::Workloads::WorkloadDefinition.new do |d|
-          d.image = @workflow.image.presence || IMAGE
+          d.image = @workflow.image.presence || configured_image || IMAGE
           d.variables = variables
           d.commands = commands
         end
+      end
+
+      def configured_image
+        return unless project
+
+        config = ::Gitlab::DuoAgentPlatform::Config.new(project)
+        config.default_image
       end
 
       def variables
