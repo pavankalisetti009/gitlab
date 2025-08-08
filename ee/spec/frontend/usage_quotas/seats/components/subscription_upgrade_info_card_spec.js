@@ -16,7 +16,7 @@ describe('SubscriptionUpgradeInfoCard', () => {
     wrapper = mount(SubscriptionUpgradeInfoCard, {
       propsData: { ...defaultProps, ...props },
       provide: {
-        maxFreeNamespaceSeats: 5,
+        trialDuration: 60,
       },
     });
   };

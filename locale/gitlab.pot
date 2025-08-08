@@ -10386,7 +10386,7 @@ msgstr ""
 msgid "Billing|Something went wrong when un-assigning the add-on to this member. If the problem persists, please %{supportLinkStart}contact support%{supportLinkEnd}."
 msgstr ""
 
-msgid "Billing|Start a free 60-day trial or upgrade to a paid tier to get an unlimited number of seats."
+msgid "Billing|Start a free %{duration}-day trial or upgrade to a paid tier to get an unlimited number of seats."
 msgstr ""
 
 msgid "Billing|There are not enough seats to assign the GitLab Duo add-on to all selected members."
@@ -28124,7 +28124,7 @@ msgstr ""
 msgid "FreeUserCap|Start a trial:"
 msgstr ""
 
-msgid "FreeUserCap|To remove the %{link_start}read-only%{link_end} state and regain write access, you can reduce the number of users in your top-level group to %{free_user_limit} users or less. You can also %{upgrade_start}upgrade%{upgrade_end} to a paid tier, which do not have user limits. If you need additional time, you can %{trial_start}start a free 60-day trial%{trial_end} which includes unlimited users."
+msgid "FreeUserCap|To remove the %{link_start}read-only%{link_end} state and regain write access, you can reduce the number of users in your top-level group to %{free_user_limit} users or less. You can also %{upgrade_start}upgrade%{upgrade_end} to a paid tier, which do not have user limits. If you need additional time, you can %{trial_start}start a free %{duration}-day trial%{trial_end} which includes unlimited users."
 msgstr ""
 
 msgid "FreeUserCap|Upgrade:"
@@ -65633,8 +65633,8 @@ msgstr ""
 msgid "To get started, use the link below to confirm your account."
 msgstr ""
 
-msgid "To invite more users, you can reduce the number of users in your top-level group to %{free_limit} user or less. You can also upgrade to a paid tier which do not have user limits. If you need additional time, you can start a free 60-day trial which includes unlimited users."
-msgid_plural "To invite more users, you can reduce the number of users in your top-level group to %{free_limit} users or less. You can also upgrade to a paid tier which do not have user limits. If you need additional time, you can start a free 60-day trial which includes unlimited users."
+msgid "To invite more users, you can reduce the number of users in your top-level group to %{free_limit} user or less. You can also upgrade to a paid tier which do not have user limits. If you need additional time, you can start a free %{duration}-day trial which includes unlimited users."
+msgid_plural "To invite more users, you can reduce the number of users in your top-level group to %{free_limit} users or less. You can also upgrade to a paid tier which do not have user limits. If you need additional time, you can start a free %{duration}-day trial which includes unlimited users."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -65686,7 +65686,7 @@ msgstr ""
 msgid "To remove the %{link_start}read-only%{link_end} state and regain write access, ask your top-level group owner(s) to reduce the number of users in your top-level group to %{free_limit} users or less, or to upgrade to a paid tier which do not have user limits."
 msgstr ""
 
-msgid "To remove the %{link_start}read-only%{link_end} state and regain write access, you can reduce the number of users in your top-level group to %{free_limit} users or less. You can also upgrade to a paid tier, which do not have user limits. If you need additional time, you can start a free 60-day trial which includes unlimited users."
+msgid "To remove the %{link_start}read-only%{link_end} state and regain write access, you can reduce the number of users in your top-level group to %{free_limit} users or less. You can also upgrade to a paid tier, which do not have user limits. If you need additional time, you can start a free %{duration}-day trial which includes unlimited users."
 msgstr ""
 
 msgid "To remove the read-only state, reduce git repository and git LFS storage."

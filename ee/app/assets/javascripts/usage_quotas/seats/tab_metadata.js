@@ -15,6 +15,7 @@ export const parseProvideData = (el) => {
     maxFreeNamespaceSeats,
     explorePlansPath,
     enforcementFreeUserCapEnabled,
+    trialDuration,
   } = el.dataset;
 
   return {
@@ -28,6 +29,7 @@ export const parseProvideData = (el) => {
     maxFreeNamespaceSeats: parseInt(maxFreeNamespaceSeats, 10),
     explorePlansPath,
     enforcementFreeUserCapEnabled: parseBoolean(enforcementFreeUserCapEnabled),
+    trialDuration,
   };
 };
 
@@ -47,6 +49,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
     maxFreeNamespaceSeats,
     explorePlansPath,
     enforcementFreeUserCapEnabled,
+    trialDuration,
   } = parseProvideData(el);
 
   const SeatUsageApp = () => {
@@ -74,6 +77,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
         seatUsageExportPath,
         maxFreeNamespaceSeats,
         hasLimitedFreePlan: enforcementFreeUserCapEnabled,
+        trialDuration,
       },
       render(createElement) {
         return createElement(SeatUsageApp);

@@ -1,6 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import Tracking from '~/tracking';
 import { EXPLORE_PAID_PLANS_CLICKED } from '../constants';
 
@@ -8,7 +8,7 @@ export default {
   name: 'SubscriptionUpgradeInfoCard',
   components: { GlButton },
   mixins: [Tracking.mixin()],
-  inject: ['maxFreeNamespaceSeats'],
+  inject: ['trialDuration'],
   props: {
     explorePlansPath: {
       type: String,
@@ -17,10 +17,14 @@ export default {
   },
   i18n: {
     title: s__('Billing|Add additional seats'),
-    description: s__(
-      'Billing|Start a free 60-day trial or upgrade to a paid tier to get an unlimited number of seats.',
-    ),
     cta: s__('Billing|Explore plans'),
+    description: (duration) =>
+      sprintf(
+        s__(
+          'Billing|Start a free %{duration}-day trial or upgrade to a paid tier to get an unlimited number of seats.',
+        ),
+        { duration },
+      ),
   },
   methods: {
     trackClick() {
@@ -38,7 +42,7 @@ export default {
           {{ $options.i18n.title }}
         </p>
         <p class="gl-m-0" data-testid="description">
-          {{ $options.i18n.description }}
+          {{ $options.i18n.description(trialDuration) }}
         </p>
       </div>
       <div>

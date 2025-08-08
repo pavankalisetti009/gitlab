@@ -62,7 +62,8 @@ module EE
         add_seats_href: add_seats_url(group),
         max_free_namespace_seats: ::Namespaces::FreeUserCap.dashboard_limit,
         explore_plans_path: group_billings_path(group),
-        enforcement_free_user_cap_enabled: ::Namespaces::FreeUserCap::Enforcement.new(group).enforce_cap?.to_s
+        enforcement_free_user_cap_enabled: ::Namespaces::FreeUserCap::Enforcement.new(group).enforce_cap?.to_s,
+        trial_duration: ::GitlabSubscriptions::TrialDurationService.new.execute
       }
     end
 

@@ -15,6 +15,7 @@ module Namespaces
       @upgrade_url = group_billings_url(namespace)
       @manage_users_url = group_usage_quotas_url(namespace, anchor: 'seats-quota-tab')
       @namespace_name = namespace.name
+      @trial_duration = GitlabSubscriptions::TrialDurationService.new.execute
 
       mail_with_locale(
         to: email,

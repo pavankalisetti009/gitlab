@@ -228,7 +228,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         subscription_history_href: subscription_history_group_usage_quotas_path(group),
         max_free_namespace_seats: 10,
         explore_plans_path: group_billings_path(group),
-        enforcement_free_user_cap_enabled: 'false'
+        enforcement_free_user_cap_enabled: 'false',
+        trial_duration: 60
       }
     end
 

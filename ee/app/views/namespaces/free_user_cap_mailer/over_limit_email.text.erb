@@ -1,6 +1,6 @@
 <%= over_limit_body_text(@namespace_name) %>
 
-<%= over_limit_body_secondary_text(@start_trial_url, @upgrade_url, html_tags: false) %>
+<%= over_limit_body_secondary_text(@start_trial_url, @upgrade_url, @trial_duration, html_tags: false) %>
 
 <%= s_('FreeUserCap|Upgrade:') %>
 <%= @upgrade_url %>
