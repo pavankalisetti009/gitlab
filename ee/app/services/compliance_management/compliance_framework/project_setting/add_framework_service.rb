@@ -4,13 +4,15 @@ module ComplianceManagement
   module ComplianceFramework
     module ProjectSetting
       class AddFrameworkService < BaseFrameworkService
+        include ::ComplianceManagement::Frameworks
+
         EVENT_TYPE = ::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:added].freeze
 
         def execute
           result = super
-
           return result if result.is_a?(ServiceResponse) && result.error?
 
+          return project_framework_mismatch_error unless project_is_in_scope?
           return error unless framework.projects.push project
 
           enqueue_project_framework_evaluation
@@ -25,6 +27,18 @@ module ComplianceManagement
         end
 
         private
+
+        def project_is_in_scope?
+          project_framework_same_namespace?(project, framework)
+        end
+
+        def project_framework_mismatch_error
+          ServiceResponse.error(
+            message: format(_('Project %{project_name} and framework are not from same namespace.'),
+              project_name: project.name
+            )
+          )
+        end
 
         def error
           message = _("Project not found") unless project

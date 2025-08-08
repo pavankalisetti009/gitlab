@@ -9,7 +9,22 @@ module ComplianceManagement
     end
 
     def project_framework_same_namespace?(project, framework)
-      project.root_ancestor&.id == framework.namespace_id
+      project.root_ancestor&.id == framework.namespace_id ||
+        framework_belongs_to_csp(framework)
+    end
+
+    private
+
+    def framework_belongs_to_csp(framework)
+      return false unless Feature.enabled?(:include_csp_frameworks, framework.namespace)
+
+      framework.namespace_id == csp_namespace_id(framework)
+    end
+
+    def csp_namespace_id(framework)
+      ::Security::PolicySetting.for_organization(
+        framework.namespace.organization
+      )&.csp_namespace_id
     end
   end
 end

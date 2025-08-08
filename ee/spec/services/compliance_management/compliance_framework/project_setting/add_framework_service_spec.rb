@@ -58,6 +58,64 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::AddFra
           end
         end
 
+        context 'when project and framework belongs to the CSP namespace' do
+          include Security::PolicyCspHelpers
+
+          let_it_be(:csp_group) { create(:group) }
+          let_it_be(:framework) { create(:compliance_framework, namespace: csp_group) }
+
+          before do
+            stub_csp_group(csp_group)
+          end
+
+          context 'and the feature flag is disabled' do
+            before do
+              stub_feature_flags(include_csp_frameworks: false)
+            end
+
+            it 'does not create a new project setting record' do
+              expect { service.execute }.not_to change {
+                ComplianceManagement::ComplianceFramework::ProjectSettings.count
+              }
+            end
+          end
+
+          it 'creates the project setting with the correct attributes' do
+            service.execute
+
+            setting = ComplianceManagement::ComplianceFramework::ProjectSettings.last
+            expect(setting.project_id).to eq(project.id)
+            expect(setting.framework_id).to eq(framework.id)
+          end
+
+          it 'returns a successful service response' do
+            expect(service.execute.success?).to be true
+          end
+
+          it 'publishes a compliance framework changed event' do
+            expect(::Gitlab::EventStore).to receive(:publish).with(
+              an_instance_of(::Projects::ComplianceFrameworkChangedEvent)
+            ).and_call_original
+
+            service.execute
+          end
+
+          it 'creates an audit event' do
+            expect { service.execute }.to change {
+              AuditEvent.where("details LIKE ?", "%compliance_framework_added%").count
+            }.by(1)
+          end
+
+          it 'enqueues the ProjectComplianceEvaluatorWorker' do
+            expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+              ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+              framework.id, [project.id]
+            ).once.and_call_original
+
+            service.execute
+          end
+        end
+
         context 'when project and framework belongs to different top-level namespaces' do
           let_it_be(:project) { create(:project) }
 
