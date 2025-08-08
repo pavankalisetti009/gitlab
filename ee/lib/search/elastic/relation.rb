@@ -50,6 +50,10 @@ module Search
         records
       end
 
+      def size
+        response_mapper.total_count
+      end
+
       private
 
       attr_reader :klass, :query, :options, :preload_values

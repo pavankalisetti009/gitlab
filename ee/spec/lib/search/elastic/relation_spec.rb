@@ -155,4 +155,10 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
       expect(relation.to_a).to eq(all_vulnerabilities)
     end
   end
+
+  describe '#size' do
+    it 'returns the total count of records' do
+      expect(relation.size).to eq(all_vulnerabilities.count)
+    end
+  end
 end

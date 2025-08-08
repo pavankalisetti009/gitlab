@@ -315,6 +315,50 @@ RSpec.describe Resolvers::WorkItemsResolver do
         end
       end
     end
+
+    context 'when searching for work items in ES for GLQL request' do
+      let(:request_params) { { 'operationName' => 'GLQL' } }
+      let(:glql_ctx) do
+        { request: instance_double(ActionDispatch::Request, params: request_params, referer: 'http://localhost') }
+      end
+
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+        allow(Gitlab::Search::Client).to receive(:execute_search).and_yield({
+          'hits' => {
+            'hits' => [
+              { '_id' => work_item1.id.to_s, '_source' => { 'id' => work_item1.id } }
+            ],
+            'total' => { 'value' => 1 }
+          }
+        })
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(glql_es_integration: true)
+        end
+
+        it 'uses GLQL WorkItemsFinder' do
+          result = batch_sync { resolve_items({ label_name: work_item1.labels }, glql_ctx).to_a }
+
+          expect(result).to contain_exactly(work_item1)
+        end
+      end
+
+      context 'when feature flag is not enabled' do
+        before do
+          stub_feature_flags(glql_es_integration: false)
+        end
+
+        it 'falls back to old WorkItemsFinder' do
+          expect(::WorkItems::Glql::WorkItemsFinder).not_to receive(:new)
+
+          batch_sync { resolve_items({ label_name: work_item1.labels }, glql_ctx).to_a }
+        end
+      end
+    end
   end
 
   def resolve_items(args = {}, context = { current_user: user })
