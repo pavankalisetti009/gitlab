@@ -518,7 +518,61 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
   end
 
   describe '#try_cleanup_ref' do
-    let(:train_car) { create(:merge_train_car) }
+    let(:train_car) { create(:merge_train_car, target_project: project) }
+    let(:generated_ref_commits) { class_double(MergeRequests::GeneratedRefCommit) }
+
+    context 'when we deal with generated ref commits' do
+      before do
+        create_list(
+          :merge_request_generated_ref_commit,
+          2,
+          project: train_car.merge_request.project,
+          merge_request: train_car.merge_request
+        )
+      end
+
+      context 'when a merge request is merged' do
+        subject { train_car.try_cleanup_ref }
+
+        it 'does not delete created ref merge request commits' do
+          train_car.refresh_pipeline!
+          train_car.start_merge!
+          train_car.finish_merge!
+          generated_ref_commits = MergeRequests::GeneratedRefCommit.where(project: train_car.merge_request.project,
+            merge_request: train_car.merge_request)
+          subject
+          expect(generated_ref_commits.count).to eq(2)
+        end
+      end
+
+      context 'when a merge request is not merged' do
+        subject { train_car.try_cleanup_ref(async: false) }
+
+        it 'does delete created ref merge request commits' do
+          generated_ref_commits = MergeRequests::GeneratedRefCommit.where(project: train_car.merge_request.project,
+            merge_request: train_car.merge_request)
+
+          expect(generated_ref_commits.count).to eq(2)
+          subject
+          expect(generated_ref_commits.count).to eq(0)
+        end
+
+        context 'when the ff for generate ref commits is disabled' do
+          before do
+            stub_feature_flags(generate_ref_commits: false)
+          end
+
+          it 'does not delete created ref merge request commits' do
+            generated_ref_commits = MergeRequests::GeneratedRefCommit.where(project: train_car.merge_request.project,
+              merge_request: train_car.merge_request)
+
+            expect(generated_ref_commits.count).to eq(2)
+            subject
+            expect(generated_ref_commits.count).to eq(2)
+          end
+        end
+      end
+    end
 
     context 'when running async' do
       subject { train_car.try_cleanup_ref }
