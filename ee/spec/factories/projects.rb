@@ -182,6 +182,29 @@ FactoryBot.modify do
       end
     end
 
+    trait :with_product_analytics_dashboard_with_invalid_panel_tooltip do
+      repository
+
+      after(:create) do |project|
+        dashboard = 'dashboard_example_invalid_panel_tooltip'
+        project.repository.create_file(
+          project.creator,
+          ".gitlab/analytics/dashboards/#{dashboard}/#{dashboard}.yaml",
+          File.open(Rails.root.join("ee/spec/fixtures/product_analytics/#{dashboard}.yaml")).read,
+          message: 'test',
+          branch_name: 'master'
+        )
+
+        project.repository.create_file(
+          project.creator,
+          '.gitlab/analytics/dashboards/visualizations/cube_line_chart.yaml',
+          File.open(Rails.root.join('ee/spec/fixtures/product_analytics/cube_line_chart.yaml')).read,
+          message: 'test',
+          branch_name: 'master'
+        )
+      end
+    end
+
     trait :with_product_analytics_custom_visualization do
       repository
 
