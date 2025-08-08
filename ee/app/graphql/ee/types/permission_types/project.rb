@@ -9,6 +9,9 @@ module EE
         prepended do
           abilities :read_path_locks, :create_path_lock, :admin_path_locks, :generate_description,
             :admin_work_item_lifecycle
+
+          ability_field :manage_ai_flow_triggers,
+            experiment: { milestone: '18.3' }
         end
       end
     end
