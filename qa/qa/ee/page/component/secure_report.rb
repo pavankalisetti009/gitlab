@@ -35,9 +35,9 @@ module QA
             if has_element?("filtered-search-term", wait: 1)
               click_element('filtered-search-term')
 
-              if page.has_link?('Scanner')
-                click_link('Scanner')
-              elsif page.has_link?('Tool')
+              if page.has_link?('Report type', wait: 1)
+                click_link('Report type')
+              else
                 click_link('Tool')
               end
 
@@ -57,11 +57,33 @@ module QA
             end
           end
 
+          def filter_by(token_name:, token_value:)
+            click_element('filtered-search-term')
+
+            # This is a temporary workaround until we fully enable the functionality
+            # behind the vulnerability_report_filtered_search_v2 feature flag.
+            token_name = 'Tool' if token_name == 'Report type' && !page.has_link?('Report type', wait: 1)
+
+            click_link(token_name)
+            click_link(token_value)
+            wait_for_requests
+            click_element("search-button")
+            click_element("search-button") # Click twice to make dropdown go away
+
+            yield if block_given?
+
+            clear_filter_token(token_name)
+          end
+
           def clear_filter_token(token_name)
-            within_element("#{token_name}-token") do
+            token = find(:css, '[data-testid="filtered-search-token"]', text: token_name)
+            token.find('button[aria-label="Remove"]').click
+            # This is a workaround for the case where the token is not found,
+            # which can happen when the vulnerability_report_filtered_search_v2 feature flag is not enabled.
+          rescue Capybara::ElementNotFound
+            within_element("#{token_name.downcase}-token") do
               click_element("close-icon")
             end
-            click_element("search-button")
           end
 
           def status_listbox_item_selector(report)
