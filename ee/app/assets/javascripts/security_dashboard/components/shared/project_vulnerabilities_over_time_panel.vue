@@ -1,16 +1,19 @@
 <script>
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
+import { fetchPolicies } from '~/lib/graphql';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
+import OverTimeGroupBy from './over_time_group_by.vue';
 
 export default {
   name: 'ProjectVulnerabilitiesOverTimePanel',
   components: {
     ExtendedDashboardPanel,
     VulnerabilitiesOverTimeChart,
+    OverTimeGroupBy,
   },
   inject: ['projectFullPath'],
   props: {
@@ -21,6 +24,7 @@ export default {
   },
   apollo: {
     vulnerabilitiesOverTime: {
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
       query: getVulnerabilitiesOverTime,
       variables() {
         const lookbackDate = getDateInPast(new Date(), DASHBOARD_LOOKBACK_DAYS);
@@ -32,11 +36,13 @@ export default {
           startDate,
           endDate,
           reportType: this.filters.reportType,
+          includeBySeverity: this.groupedBy === 'severity',
+          includeByReportType: this.groupedBy === 'reportType',
         };
       },
       update(data) {
         const rawData = data.project?.securityMetrics?.vulnerabilitiesOverTime?.nodes || [];
-        return formatVulnerabilitiesOverTimeData(rawData);
+        return formatVulnerabilitiesOverTimeData(rawData, this.groupedBy);
       },
       error() {
         this.fetchError = true;
@@ -47,6 +53,7 @@ export default {
     return {
       vulnerabilitiesOverTime: [],
       fetchError: false,
+      groupedBy: 'severity',
     };
   },
   computed: {
@@ -63,6 +70,9 @@ export default {
     :loading="$apollo.queries.vulnerabilitiesOverTime.loading"
     :show-alert-state="fetchError"
   >
+    <template #filters>
+      <over-time-group-by v-model="groupedBy" />
+    </template>
     <template #body>
       <vulnerabilities-over-time-chart
         v-if="!fetchError && hasChartData"
