@@ -139,68 +139,62 @@ describe('WorkItemBulkEditSidebar component EE', () => {
     });
   });
 
-  describe('when work_items_bulk_edit is enabled', () => {
-    it('calls mutation to bulk edit ee attributes', async () => {
-      const status = 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2';
-      const iterationId = 'gid://gitlab/Iteration/1215';
-      createComponent({
-        provide: {
-          glFeatures: {
-            workItemStatusFeatureFlag: true,
-            workItemsBulkEdit: true,
-          },
+  it('calls mutation to bulk edit ee attributes', async () => {
+    const status = 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2';
+    const iterationId = 'gid://gitlab/Iteration/1215';
+    createComponent({
+      provide: {
+        glFeatures: {
+          workItemStatusFeatureFlag: true,
         },
-        props: { isEpicsList: false },
-      });
-      await waitForPromises();
-
-      findIterationComponent().vm.$emit('input', iterationId);
-      findStatusComponent().vm.$emit('input', status);
-      findForm().vm.$emit('submit', { preventDefault: () => {} });
-
-      expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
-        input: {
-          fullPath: 'group/project',
-          ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
-          iterationWidget: {
-            iterationId,
-          },
-          statusWidget: {
-            status,
-          },
-          assigneesWidget: undefined,
-          confidential: undefined,
-          healthStatusWidget: undefined,
-          hierarchyWidget: undefined,
-          labelsWidget: undefined,
-          milestoneWidget: undefined,
-          stateEvent: undefined,
-          subscriptionEvent: undefined,
-        },
-      });
+      },
+      props: { isEpicsList: false },
     });
+    await waitForPromises();
 
-    it('calls mutation with null values to bulk edit when "No value" is chosen', async () => {
-      createComponent({
-        provide: {
-          glFeatures: { workItemsBulkEdit: true },
+    findIterationComponent().vm.$emit('input', iterationId);
+    findStatusComponent().vm.$emit('input', status);
+    findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+    expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
+      input: {
+        fullPath: 'group/project',
+        ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
+        iterationWidget: {
+          iterationId,
         },
-        props: { isEpicsList: false },
-      });
-      await waitForPromises();
-
-      findIterationComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
-      findForm().vm.$emit('submit', { preventDefault: () => {} });
-
-      expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
-        input: {
-          fullPath: 'group/project',
-          ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
-          iterationWidget: {
-            iterationId: null,
-          },
+        statusWidget: {
+          status,
         },
-      });
+        assigneesWidget: undefined,
+        confidential: undefined,
+        healthStatusWidget: undefined,
+        hierarchyWidget: undefined,
+        labelsWidget: undefined,
+        milestoneWidget: undefined,
+        stateEvent: undefined,
+        subscriptionEvent: undefined,
+      },
+    });
+  });
+
+  it('calls mutation with null values to bulk edit when "No value" is chosen', async () => {
+    createComponent({
+      props: { isEpicsList: false },
+    });
+    await waitForPromises();
+
+    findIterationComponent().vm.$emit('input', BULK_EDIT_NO_VALUE);
+    findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+    expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
+      input: {
+        fullPath: 'group/project',
+        ids: ['gid://gitlab/WorkItem/11', 'gid://gitlab/WorkItem/22'],
+        iterationWidget: {
+          iterationId: null,
+        },
+      },
     });
   });
 
@@ -210,7 +204,6 @@ describe('WorkItemBulkEditSidebar component EE', () => {
         provide: {
           glFeatures: {
             workItemStatusFeatureFlag: true,
-            workItemsBulkEdit: true,
           },
         },
         props: {
@@ -228,11 +221,6 @@ describe('WorkItemBulkEditSidebar component EE', () => {
   describe('"Iteration" component', () => {
     it.each([true, false])('renders depending on isEpicsList prop', (isEpicsList) => {
       createComponent({
-        provide: {
-          glFeatures: {
-            workItemsBulkEdit: true,
-          },
-        },
         props: { isEpicsList },
       });
 
@@ -241,11 +229,6 @@ describe('WorkItemBulkEditSidebar component EE', () => {
 
     it('updates iteration when "Iteration" component emits "input" event', async () => {
       createComponent({
-        provide: {
-          glFeatures: {
-            workItemsBulkEdit: true,
-          },
-        },
         props: { isEpicsList: false },
       });
 
@@ -257,11 +240,6 @@ describe('WorkItemBulkEditSidebar component EE', () => {
 
     it('enables "Iteration" component when "Iteration" widget is available', async () => {
       createComponent({
-        provide: {
-          glFeatures: {
-            workItemsBulkEdit: true,
-          },
-        },
         props: { isEpicsList: false },
       });
 
@@ -273,11 +251,6 @@ describe('WorkItemBulkEditSidebar component EE', () => {
 
     it('disables "Iteration" component when "Iteration" widget is unavailable', async () => {
       createComponent({
-        provide: {
-          glFeatures: {
-            workItemsBulkEdit: true,
-          },
-        },
         props: { isEpicsList: false },
         availableWidgetsHandler: jest
           .fn()
