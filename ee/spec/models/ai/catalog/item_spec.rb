@@ -93,12 +93,34 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   end
 
   describe 'scopes' do
+    describe '.for_organization' do
+      let_it_be(:item_1) { create(:ai_catalog_item, organization: create(:organization)) }
+      let_it_be(:item_2) { create(:ai_catalog_item, organization: create(:organization)) }
+
+      it 'returns items for the specified organization' do
+        expect(described_class.for_organization(item_1.organization)).to contain_exactly(item_1)
+      end
+    end
+
     describe '.not_deleted' do
       let_it_be(:items) { create_list(:ai_catalog_item, 2) }
       let_it_be(:deleted_items) { create_list(:ai_catalog_item, 2, deleted_at: 1.day.ago) }
 
       it 'returns not deleted items' do
         expect(described_class.not_deleted).to match_array(items)
+      end
+    end
+
+    describe '.search' do
+      let_it_be(:issue_label_agent) { create(:ai_catalog_agent, name: 'Autotriager') }
+      let_it_be(:mr_review_flow) { create(:ai_catalog_flow, description: 'Merge request reviewer') }
+
+      it 'finds items by partial name' do
+        expect(described_class.search('triage')).to contain_exactly(issue_label_agent)
+      end
+
+      it 'finds items by partial description' do
+        expect(described_class.search('review')).to contain_exactly(mr_review_flow)
       end
     end
 
@@ -111,15 +133,6 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
 
         expect(described_class.count).to eq(2)
         expect(result).to contain_exactly(agent_type_item)
-      end
-    end
-
-    describe '.for_organization' do
-      let_it_be(:item_1) { create(:ai_catalog_item, organization: create(:organization)) }
-      let_it_be(:item_2) { create(:ai_catalog_item, organization: create(:organization)) }
-
-      it 'returns items for the specified organization' do
-        expect(described_class.for_organization(item_1.organization)).to contain_exactly(item_1)
       end
     end
   end

@@ -121,4 +121,29 @@ RSpec.describe 'getting AI catalog items', :with_current_organization, feature_c
 
     expect(nodes).to contain_exactly(a_graphql_entity_for(item))
   end
+
+  describe 'search argument' do
+    let_it_be(:issue_label_agent) { create(:ai_catalog_agent, name: 'Autotriager', project: project, public: true) }
+    let_it_be(:mr_review_flow) { create(:ai_catalog_flow, description: 'MR reviewer', project: project, public: true) }
+
+    context 'when matches part of an item name' do
+      let(:args) { { search: 'triage' } }
+
+      it 'returns the matching items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(a_graphql_entity_for(issue_label_agent))
+      end
+    end
+
+    context 'when matches part of an item description' do
+      let(:args) { { search: 'review' } }
+
+      it 'returns the matching items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(a_graphql_entity_for(mr_review_flow))
+      end
+    end
+  end
 end

@@ -4,6 +4,7 @@ module Ai
   module Catalog
     class Item < ApplicationRecord
       include ActiveRecord::Sanitization::ClassMethods
+      include Gitlab::SQL::Pattern
 
       self.table_name = "ai_catalog_items"
 
@@ -23,9 +24,10 @@ module Ai
         foreign_key: :ai_catalog_item_id, inverse_of: :item
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
-      scope :not_deleted, -> { where(deleted_at: nil) }
-      scope :with_item_type, ->(item_type) { where(item_type: item_type) }
       scope :for_organization, ->(organization) { where(organization: organization) }
+      scope :not_deleted, -> { where(deleted_at: nil) }
+      scope :search, ->(query) { fuzzy_search(query, [:name, :description]) }
+      scope :with_item_type, ->(item_type) { where(item_type: item_type) }
 
       before_destroy :prevent_deletion_if_consumers_exist
 
