@@ -15392,6 +15392,8 @@ CREATE TABLE gpg_signatures (
     verification_status smallint DEFAULT 0 NOT NULL,
     gpg_key_subkey_id bigint,
     author_email text,
+    committer_email text,
+    CONSTRAINT check_0ce2b9f622 CHECK ((char_length(committer_email) <= 255)),
     CONSTRAINT check_d113461ed1 CHECK ((char_length(author_email) <= 255))
 );
 
