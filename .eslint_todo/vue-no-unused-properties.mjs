@@ -135,8 +135,6 @@ export default {
     'ee/app/assets/javascripts/analytics/repository_analytics/components/test_coverage_table.vue',
     'ee/app/assets/javascripts/billings/components/zuora_simple.vue',
     'ee/app/assets/javascripts/billings/subscriptions/components/subscription_table.vue',
-    'ee/app/assets/javascripts/oncall_schedules/components/add_edit_schedule_form.vue',
-    'ee/app/assets/javascripts/oncall_schedules/components/oncall_schedule.vue',
     'ee/app/assets/javascripts/oncall_schedules/components/schedule/components/preset_days/days_header_sub_item.vue',
     'ee/app/assets/javascripts/oncall_schedules/components/schedule/components/preset_weeks/weeks_header_item.vue',
     'ee/app/assets/javascripts/roadmap/components/milestone_item.vue',
