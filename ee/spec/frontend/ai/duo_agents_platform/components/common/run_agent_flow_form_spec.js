@@ -81,17 +81,19 @@ describe('RunAgentFlowForm', () => {
       const workflowAction = findDuoAgentFlowAction();
 
       expect(workflowAction.exists()).toBe(true);
-      expect(workflowAction.props()).toEqual({
-        projectId: 123,
-        title: 'Start agent session',
-        hoverMessage: '',
-        goal: '',
-        size: 'small',
-        workflowDefinition: 'convert_to_gitlab_ci',
-        duoWorkflowInvokePath: '/api/v4/projects/123/duo_workflow/invoke',
-        agentPrivileges: [1, 2, 5],
-        promptValidatorRegex: /.*[Jj]enkinsfile.*/,
-      });
+      expect(workflowAction.props()).toEqual(
+        expect.objectContaining({
+          projectId: 123,
+          title: 'Start agent session',
+          hoverMessage: '',
+          goal: '',
+          size: 'small',
+          workflowDefinition: 'convert_to_gitlab_ci',
+          duoWorkflowInvokePath: '/api/v4/projects/123/duo_workflow/invoke',
+          agentPrivileges: [1, 2, 5],
+          promptValidatorRegex: /.*[Jj]enkinsfile.*/,
+        }),
+      );
     });
   });
 

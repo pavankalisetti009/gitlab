@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { sprintf, s__ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 
@@ -20,6 +20,11 @@ export default {
     },
   },
   props: {
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     projectId: {
       type: Number,
       required: true,
@@ -64,11 +69,37 @@ export default {
     },
   },
   methods: {
+    successAlert(id) {
+      return this.projectPath && id
+        ? {
+            message: sprintf(
+              s__(
+                `DuoAgentPlatform|Flow started successfully. To view progress, see %{linkStart}Session %{id}%{linkEnd}.`,
+              ),
+              { id },
+            ),
+            variant: 'success',
+            messageLinks: this.formatMessageLinks(id),
+          }
+        : {
+            message: s__('DuoAgentPlatform|Flow started successfully.'),
+            variant: 'success',
+            messageLinks: {},
+          };
+    },
+    formatMessageLinks(id) {
+      return {
+        // Hardcoded for an easier integration with any page at GitLab.
+        // https://gitlab.com/gitlab-org/gitlab/-/blob/b50c9e5ad666bab0e45365b2c6994d99407a68d1/ee/app/assets/javascripts/ai/duo_agents_platform/router/index.js#L61
+        link: `/${this.projectPath}/-/automate/agent-sessions/${id}`,
+      };
+    },
     startWorkflow() {
       if (this.promptValidatorRegex && !this.promptValidatorRegex.test(this.goal)) {
         this.$emit('prompt-validation-error', this.goal);
         return;
       }
+
       const requestData = {
         project_id: this.projectId,
         start_workflow: true,
@@ -87,17 +118,11 @@ export default {
         .then(({ data }) => {
           this.$emit('agent-flow-started', data);
 
-          createAlert({
-            message: __(`Workflow started successfully`),
-            captureError: true,
-            variant: 'success',
-            data,
-            renderMessageHTML: true,
-          });
+          createAlert(this.successAlert(data.id));
         })
         .catch((error) => {
           createAlert({
-            message: __('Error occurred when starting the workflow'),
+            message: s__('DuoAgentPlatform|Error occurred when starting the flow.'),
             captureError: true,
             error,
           });

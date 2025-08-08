@@ -55,6 +55,8 @@ export const createRouter = (base, namespace) => {
               text: s__('DuoAgentsPlatform|New'),
             },
           },
+          // Used as hardcoded path in
+          // https://gitlab.com/gitlab-org/gitlab/-/blob/e9b59c5de32c6ce4e14665681afbf95cf001c044/ee/app/assets/javascripts/ai/components/duo_workflow_action.vue#L76.
           {
             name: AGENTS_PLATFORM_SHOW_ROUTE,
             path: ':id(\\d+)',
