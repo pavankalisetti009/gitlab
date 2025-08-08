@@ -33,6 +33,8 @@ panels:
             - '2016-02-30'
           granularity: month
   - title: Overall Conversion Rate
+    tooltip:
+      description: 'Percentage of visitors who complete a desired action.'
     gridAttributes:
       yPos: 4
       xPos: 1

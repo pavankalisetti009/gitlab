@@ -18,7 +18,8 @@ module Types
           type: GraphQL::Types::String,
           null: true,
           description: 'Optional URL for link insertion in the `description` ' \
-            'between %{linkStart} and %{linkEnd} placeholders.'
+            'between %{linkStart} and %{linkEnd} placeholders.',
+          hash_key: :descriptionLink
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end
