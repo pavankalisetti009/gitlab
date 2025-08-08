@@ -3,6 +3,8 @@
 module GitlabSubscriptions
   module Trials
     class WelcomeCreateService
+      include Gitlab::Experiment::Dsl
+
       EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION = 'Experiment - SaaS Trial'
       private_constant :EXPERIMENT_SAAS_TRIAL_PRODUCT_INTERACTION
 
@@ -60,6 +62,7 @@ module GitlabSubscriptions
 
         if response.success?
           ::Onboarding::Progress.onboard(namespace)
+
           # We need to stick to the primary database in order to allow the following request
           # fetch the namespace from an up-to-date replica or a primary database.
           ::Namespace.sticking.stick(:namespace, namespace.id)
@@ -83,15 +86,17 @@ module GitlabSubscriptions
       end
 
       def submit_trial
-        GitlabSubscriptions::Trials::ApplyTrialService.new(uid: user.id,
-          trial_user_information: trial_params).execute.success?
+        GitlabSubscriptions::Trials::ApplyTrialWorker.perform_async(user.id, trial_params.deep_stringify_keys)
       end
 
       def setup_trial
+        experiment(:lightweight_trial_registration_redesign, actor: user).track(:assignment, namespace: namespace)
+
         @lead_created = submit_lead.success? unless lead_created
 
         return error unless lead_created
-        return error unless submit_trial
+
+        submit_trial
 
         success
       end
