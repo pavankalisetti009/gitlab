@@ -996,9 +996,9 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
         end
       end
 
-      context 'when use_web_based_commit_signing_enabled FF is disabled' do
+      context 'when configure_web_based_commit_signing FF is disabled' do
         before do
-          stub_feature_flags(use_web_based_commit_signing_enabled: false)
+          stub_feature_flags(configure_web_based_commit_signing: false)
         end
 
         it_behaves_like 'ignores web_based_commit_signing_enabled param',

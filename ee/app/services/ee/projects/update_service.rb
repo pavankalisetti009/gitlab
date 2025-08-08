@@ -77,7 +77,7 @@ module EE
         return unless params.key?(:web_based_commit_signing_enabled)
 
         return if ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) &&
-          ::Feature.enabled?(:use_web_based_commit_signing_enabled, project) &&
+          ::Feature.enabled?(:configure_web_based_commit_signing, project) &&
           !namespace_settings_enabled?
 
         params.delete(:web_based_commit_signing_enabled)

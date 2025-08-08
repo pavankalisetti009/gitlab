@@ -70,7 +70,7 @@ module EE
           params.delete(:insight_attributes) unless group_projects.exists?(insight_project_id) # rubocop:disable CodeReuse/ActiveRecord
         end
 
-        unless ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) && ::Feature.enabled?(:use_web_based_commit_signing_enabled, group)
+        unless ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) && ::Feature.enabled?(:configure_web_based_commit_signing, group)
           params.delete(:web_based_commit_signing_enabled)
         end
 
