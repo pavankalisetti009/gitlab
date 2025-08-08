@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::JobArtifactPolicy, :models do
+RSpec.describe Ci::JobArtifactPolicy, :models, feature_category: :job_artifacts do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
@@ -14,7 +14,7 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
 
   describe 'rules' do
     describe 'for user without access to the project' do
-      context 'when job artifact is private' do
+      context 'when job artifact is private' do # access:developer
         let(:job_artifact) { create(:ci_job_artifact, :private, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
@@ -22,16 +22,16 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         end
       end
 
-      context 'when job artifact is public' do
-        let(:job_artifact) { create(:ci_job_artifact, :public, project: project) }
+      context 'when job artifact is public' do # access:all
+        let(:job_artifact) { create(:ci_job_artifact, :public, job: job, project: project) }
 
-        it 'allows read_job_artifacts' do
-          expect(policy).to be_allowed :read_job_artifacts
+        it 'disallows read_job_artifacts' do
+          expect(policy).to be_disallowed :read_job_artifacts
         end
       end
 
-      context 'when job artifact access is set to none' do
-        let(:job_artifact) { create(:ci_job_artifact, :none, project: project) }
+      context 'when job artifact access is set to none' do # public:false
+        let(:job_artifact) { create(:ci_job_artifact, :none, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
           expect(policy).to be_disallowed :read_job_artifacts
@@ -44,7 +44,7 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         project.add_developer(current_user)
       end
 
-      context 'when job artifact is private' do
+      context 'when job artifact is private' do # access:developer
         let(:job_artifact) { create(:ci_job_artifact, :private, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
@@ -52,16 +52,16 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         end
       end
 
-      context 'when job artifact is public' do
-        let(:job_artifact) { create(:ci_job_artifact, :public, project: project) }
+      context 'when job artifact is public' do # access:all
+        let(:job_artifact) { create(:ci_job_artifact, :public, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
           expect(policy).to be_allowed :read_job_artifacts
         end
       end
 
-      context 'when job artifact access is set to none' do
-        let(:job_artifact) { create(:ci_job_artifact, :none, project: project) }
+      context 'when job artifact access is set to none' do # public:false
+        let(:job_artifact) { create(:ci_job_artifact, :none, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
           expect(policy).to be_disallowed :read_job_artifacts
@@ -76,7 +76,7 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         project.add_developer(current_user)
       end
 
-      context 'when job artifact is private' do
+      context 'when job artifact is private' do # access:developer
         let(:job_artifact) { create(:ci_job_artifact, :private, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
@@ -84,16 +84,16 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         end
       end
 
-      context 'when job artifact is public' do
-        let(:job_artifact) { create(:ci_job_artifact, :public, project: project) }
+      context 'when job artifact is public' do # access:all
+        let(:job_artifact) { create(:ci_job_artifact, :public, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
           expect(policy).to be_allowed :read_job_artifacts
         end
       end
 
-      context 'when job artifact access is set to none' do
-        let(:job_artifact) { create(:ci_job_artifact, :none, project: project) }
+      context 'when job artifact access is set to none' do # public:false
+        let(:job_artifact) { create(:ci_job_artifact, :none, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
           expect(policy).to be_disallowed :read_job_artifacts
@@ -106,7 +106,7 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         project.add_reporter(current_user)
       end
 
-      context 'when job artifact is private' do
+      context 'when job artifact is private' do # access:developer
         let(:job_artifact) { create(:ci_job_artifact, :private, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
@@ -114,16 +114,16 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         end
       end
 
-      context 'when job artifact is public' do
-        let(:job_artifact) { create(:ci_job_artifact, :public, project: project) }
+      context 'when job artifact is public' do # access:all
+        let(:job_artifact) { create(:ci_job_artifact, :public, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
           expect(policy).to be_allowed :read_job_artifacts
         end
       end
 
-      context 'when job artifact access is set to none' do
-        let(:job_artifact) { create(:ci_job_artifact, :none, project: project) }
+      context 'when job artifact access is set to none' do # public:false
+        let(:job_artifact) { create(:ci_job_artifact, :none, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
           expect(policy).to be_disallowed :read_job_artifacts
@@ -135,7 +135,7 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
       let_it_be(:guest) { create(:user, guest_of: project) }
       let(:current_user) { guest }
 
-      context 'when job artifact is private' do
+      context 'when job artifact is private' do # access:developer
         let(:job_artifact) { create(:ci_job_artifact, :private, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
@@ -143,16 +143,26 @@ RSpec.describe Ci::JobArtifactPolicy, :models do
         end
       end
 
-      context 'when job artifact is public' do
-        let(:job_artifact) { create(:ci_job_artifact, :public, project: project) }
+      context 'when job artifact is public' do # access:all
+        let(:job_artifact) { create(:ci_job_artifact, :public, job: job, project: project) }
 
         it 'allows read_job_artifacts' do
           expect(policy).to be_allowed :read_job_artifacts
         end
+
+        context 'when Project-based pipeline visibility disabled' do
+          before do
+            project.update!(public_builds: false)
+          end
+
+          it 'disallows read_job_artifacts' do
+            expect(policy).to be_disallowed :read_job_artifacts
+          end
+        end
       end
 
-      context 'when job artifact access is set to none' do
-        let(:job_artifact) { create(:ci_job_artifact, :none, project: project) }
+      context 'when job artifact access is set to none' do # public:false
+        let(:job_artifact) { create(:ci_job_artifact, :none, job: job, project: project) }
 
         it 'disallows read_job_artifacts' do
           expect(policy).to be_disallowed :read_job_artifacts

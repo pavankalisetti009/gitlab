@@ -180,7 +180,6 @@ RSpec.describe Ci::PipelinePresenter, feature_category: :continuous_integration 
       context 'when user is not authorized' do
         before do
           stub_licensed_features("#{license}": true)
-          project.add_guest(current_user)
         end
 
         it 'doesn\'t return the downloadable path' do
@@ -242,7 +241,6 @@ RSpec.describe Ci::PipelinePresenter, feature_category: :continuous_integration 
 
     context 'when user is not authorized' do
       before do
-        project.add_guest(current_user)
         stub_licensed_features(merge_request_performance_metrics: true)
       end
 
