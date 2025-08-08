@@ -12,6 +12,10 @@ describe('AI Catalog Router', () => {
 
   beforeEach(() => {
     router = createRouter();
+
+    // this is needed to disable the warning thrown for incorrect path
+    // eslint-disable-next-line no-console
+    console.warn = jest.fn();
   });
 
   describe('/agents/:id redirect', () => {
@@ -36,6 +40,22 @@ describe('AI Catalog Router', () => {
       await router.push(`/agents/${agentId}/run`);
 
       expect(router.currentRoute.name).toBe(AI_CATALOG_AGENTS_RUN_ROUTE);
+    });
+  });
+
+  describe('Non-numeric /agents/:id route', () => {
+    it('redirects to index for non-numeric id', async () => {
+      await router.push('/agents/abc');
+
+      expect(router.currentRoute.path).toBe('/');
+    });
+  });
+
+  describe('Unknown path fallback', () => {
+    it('redirects to index for unknown route', async () => {
+      await router.push('/some/unknown/path');
+
+      expect(router.currentRoute.path).toBe('/');
     });
   });
 });
