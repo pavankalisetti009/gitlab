@@ -11,6 +11,9 @@ module Ai
     belongs_to :project
     belongs_to :user
 
+    scope :triggered_on, ->(event_type) { where("event_types @> ('{?}')", EVENT_TYPES[event_type]) }
+    scope :by_users, ->(users) { where(user: users) }
+
     validates :project, presence: true
     validates :user, presence: true
     validates :event_types, presence: true
