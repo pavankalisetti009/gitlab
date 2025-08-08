@@ -90,7 +90,7 @@ class Geo::BaseRegistry < Geo::TrackingBase
     [untracked_ids, unused_tracked_ids]
   end
 
-  def self.find_registries_never_attempted_sync(batch_size:, except_ids: [])
+  def self.find_registries_pending(batch_size:, except_ids: [])
     pending
       .model_id_not_in(except_ids)
       .limit(batch_size)

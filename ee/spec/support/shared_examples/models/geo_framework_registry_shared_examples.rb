@@ -46,17 +46,17 @@ RSpec.shared_examples 'a Geo framework registry' do
     let!(:unsynced_item1) { create(registry_class_factory) } # rubocop:disable Rails/SaveBang
     let!(:unsynced_item2) { create(registry_class_factory) } # rubocop:disable Rails/SaveBang
 
-    describe '.find_registries_never_attempted_sync' do
-      it 'returns unsynced items' do
-        result = described_class.find_registries_never_attempted_sync(batch_size: 10)
+    describe '.find_registries_pending' do
+      it 'returns pending items' do
+        result = described_class.find_registries_pending(batch_size: 10)
 
         expect(result).to include(unsynced_item1, unsynced_item2)
       end
 
-      it 'returns items that never have an attempt to sync except some specific item ID' do
+      it 'returns pending items except some specific item ID' do
         except_id = unsynced_item1.model_record_id
 
-        result = described_class.find_registries_never_attempted_sync(batch_size: 10, except_ids: [except_id])
+        result = described_class.find_registries_pending(batch_size: 10, except_ids: [except_id])
 
         expect(result).to include(unsynced_item2)
         expect(result).not_to include(unsynced_item1)
