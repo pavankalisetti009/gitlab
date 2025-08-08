@@ -137,6 +137,7 @@ export default {
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
+        steps: [],
       };
       this.$emit('submit', transformedValues);
     },

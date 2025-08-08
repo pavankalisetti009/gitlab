@@ -22,6 +22,7 @@ describe('AiCatalogFlowForm', () => {
     name: 'My AI Flow',
     description: 'A helpful AI assistant',
     public: false,
+    steps: [],
   };
 
   const createWrapper = (props = {}) => {
