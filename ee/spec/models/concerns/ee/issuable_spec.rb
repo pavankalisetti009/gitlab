@@ -154,6 +154,7 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
 
   describe '#to_hook_data' do
     let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project) }
     let_it_be(:escalation_policy) { create(:incident_management_escalation_policy, project: project) }
 
@@ -205,6 +206,7 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
     end
 
     context "with status changes" do
+      let_it_be_with_reload(:project) { create(:project, group: group) }
       let(:old_associations) { { status: old_status } }
 
       before do
@@ -243,7 +245,7 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
       context "with system defined statuses" do
         let(:old_status) { build_stubbed(:work_item_system_defined_status, :to_do) }
         let(:new_status) { build_stubbed(:work_item_system_defined_status, :in_progress) }
-        let(:issue) { create(:work_item) }
+        let(:issue) { create(:work_item, project: project) }
 
         context "when status changes" do
           before do
@@ -275,8 +277,7 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
       end
 
       context "with custom statuses" do
-        let_it_be(:group) { create(:group) }
-        let_it_be(:project) { create(:project, group: group) }
+        let_it_be_with_reload(:project) { create(:project, group: group) }
 
         let(:issue) { create(:work_item, :task, project: project) }
         let!(:custom_lifecycle) do

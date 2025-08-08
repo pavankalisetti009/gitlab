@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
+  let_it_be(:other_group) { create(:group) }
   let(:user) { create(:user, maintainer_of: group) }
 
   let_it_be(:system_defined_lifecycle) { WorkItems::Statuses::SystemDefined::Lifecycle.all.first }
@@ -239,7 +240,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           let!(:other_project_list) do
             create(
               :status_list,
-              board: create(:board),
+              board: create(:board, group: other_group),
               system_defined_status_identifier: build(:work_item_system_defined_status, :in_progress).id
             )
           end
@@ -395,8 +396,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           end
 
           context 'when other root namespace exists' do
-            let_it_be(:other_group) { create(:group) }
-
             let!(:other_custom_lifecycle) do
               create(:work_item_custom_lifecycle, name: system_defined_lifecycle.name, namespace: other_group)
             end
@@ -655,7 +654,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               let!(:other_project_list) do
                 create(
                   :status_list,
-                  board: create(:board),
+                  board: create(:board, group: other_group),
                   system_defined_status_identifier: custom_status.converted_from_system_defined_status_identifier
                 )
               end

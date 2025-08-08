@@ -821,6 +821,8 @@ module EE
     end
 
     def load_feature_available(feature)
+      return false if user_namespace? && ::GitlabSubscriptions::Features::GROUP_ONLY_LICENSED_FEATURES.include?(feature)
+
       globally_available = License.feature_available?(feature)
 
       if ::Gitlab::CurrentSettings.should_check_namespace_plan?

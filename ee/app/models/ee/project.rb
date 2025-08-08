@@ -1636,11 +1636,13 @@ module EE
     def load_licensed_feature_available(feature)
       globally_available = License.feature_available?(feature)
 
+      return false unless globally_available
+      return false if ::GitlabSubscriptions::Features::GROUP_ONLY_LICENSED_FEATURES.include?(feature) && namespace&.user_namespace?
+
       if ::Gitlab::CurrentSettings.should_check_namespace_plan? && namespace
-        globally_available &&
-          (namespace.feature_available_in_plan?(feature) || open_source_license_granted?)
+        namespace.feature_available_in_plan?(feature) || open_source_license_granted?
       else
-        globally_available
+        true
       end
     end
 
