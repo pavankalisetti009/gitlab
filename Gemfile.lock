@@ -1043,7 +1043,7 @@ GEM
       parser (>= 2.5, != 2.5.1.1)
     influxdb-client (3.2.0)
       csv
-    invisible_captcha (2.1.0)
+    invisible_captcha (2.3.0)
       rails (>= 5.2)
     io-console (0.8.0)
     io-event (1.12.1)
@@ -2226,7 +2226,7 @@ DEPENDENCIES
   i18n_data (~> 0.13.1)
   icalendar (~> 2.10.1)
   influxdb-client (~> 3.1)
-  invisible_captcha (~> 2.1.0)
+  invisible_captcha (~> 2.3.0)
   io-event (~> 1.12)
   ipaddress (~> 0.8.3)
   ipynbdiff!
