@@ -73,10 +73,12 @@ export default {
       }
     },
     createErrorAlert(error) {
+      const message = error.message || error.response?.data?.message;
+
       createAlert({
-        message: s__(
-          'VulnerabilityManagement|Could not refresh the validity check. Please try again.',
-        ),
+        message:
+          message ||
+          s__('VulnerabilityManagement|Could not refresh the validity check. Please try again.'),
         captureError: true,
         error,
       });
