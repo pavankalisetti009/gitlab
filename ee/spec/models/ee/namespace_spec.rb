@@ -2235,6 +2235,32 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#organization_csp_namespace' do
+    include Security::PolicyCspHelpers
+
+    subject { group.organization_csp_namespace }
+
+    let(:group) { create(:group) }
+
+    it { is_expected.to be_nil }
+
+    context 'when the group is designated as a CSP group' do
+      before do
+        stub_csp_group(group)
+      end
+
+      it { is_expected.to eq(group) }
+
+      context 'when feature flag "security_policies_csp" is disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
+  end
+
   describe '#all_project_ids_with_csp_in_batches' do
     let_it_be(:group) { create(:group) }
     let_it_be(:subgroup) { create(:group, parent: group) }
