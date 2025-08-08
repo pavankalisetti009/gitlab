@@ -17,12 +17,9 @@ export default {
   },
   mixins: [CommonMixin],
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- This is used in headerItemComponentForPreset via CommonMixin.
     presetType: {
       type: String,
-      required: true,
-    },
-    epics: {
-      type: Array,
       required: true,
     },
     timeframe: {

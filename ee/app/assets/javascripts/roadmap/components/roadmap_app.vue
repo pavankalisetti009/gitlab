@@ -165,9 +165,6 @@ export default {
       const last = this.timeframe.length - 1;
       return this.timeframe[last];
     },
-    isWarningVisible() {
-      return !this.isWarningDismissed && this.epics.length > gon?.roadmap_epics_limit;
-    },
   },
   methods: {
     toggleSettings() {

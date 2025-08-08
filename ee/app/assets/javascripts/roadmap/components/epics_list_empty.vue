@@ -28,6 +28,7 @@ export default {
     'isChildEpics',
   ],
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- This is used in CommonMixin.
     presetType: {
       type: String,
       required: true,
