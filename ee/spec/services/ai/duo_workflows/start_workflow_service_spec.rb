@@ -26,9 +26,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   shared_examples "success" do
     it 'creates a workload to execute workflow with the correct definition' do
       shadowed_project = project
-      expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |project:, workload_definition:, **_kwargs|
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |project:, **_kwargs|
         expect(project).to eq(shadowed_project)
-        expect(workload_definition.image).to eq("example.com/example-image:latest")
       end.and_call_original
 
       expect(execute).to be_success
@@ -40,18 +39,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       workload = Ci::Workloads::Workload.find_by_id([workload_id])
       expect(workload.branch_name).to start_with('workloads/')
       expect(workload.branch_name).to start_with('workloads/')
-    end
-
-    context 'when image is not provided' do
-      let(:image) { nil }
-
-      it 'executes the workflow with the default image' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
-          expect(workload_definition.image).to eq(described_class::IMAGE)
-        end.and_call_original
-
-        expect(execute).to be_success
-      end
     end
   end
 
@@ -186,6 +173,118 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       ).and_call_original
 
       expect(execute).to be_success
+    end
+  end
+
+  context 'with custom image configuration' do
+    let(:custom_image) { 'registry.gitlab.com/custom/image:v1.0' }
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+    end
+
+    context 'when .gitlab/duo/agent-config.yml exists with valid configuration' do
+      before do
+        allow(duo_config).to receive_messages(valid?: true, default_image: custom_image)
+      end
+
+      context 'when workflow has no image specified' do
+        let(:image) { nil }
+
+        it 'uses the configured image from .gitlab/duo/agent-config.yml' do
+          expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+            expect(workload_definition.image).to eq(custom_image)
+          end.and_call_original
+
+          expect(execute).to be_success
+        end
+      end
+
+      context 'when workflow already has an image specified' do
+        let(:image) { 'workflow-specific-image:latest' }
+
+        it 'prefers the workflow image over the configured image' do
+          expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+            expect(workload_definition.image).to eq(image)
+          end.and_call_original
+
+          expect(execute).to be_success
+        end
+      end
+    end
+
+    context 'when .gitlab/duo/agent-config.yml exists but has no default_image' do
+      before do
+        allow(duo_config).to receive_messages(valid?: true, default_image: nil)
+      end
+
+      let(:image) { nil }
+
+      it 'falls back to the default IMAGE constant' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.image).to eq(described_class::IMAGE)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
+  context 'with image priority' do
+    let(:workflow_image) { 'workflow-image:latest' }
+    let(:config_image) { 'config-image:latest' }
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+      allow(duo_config).to receive_messages(valid?: true, default_image: config_image)
+    end
+
+    context 'when workflow image is present' do
+      let(:image) { workflow_image }
+
+      it 'uses the workflow image' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.image).to eq(workflow_image)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when only config image is present' do
+      let(:image) { nil }
+
+      it 'uses the config image' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.image).to eq(config_image)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when neither workflow nor config image are present' do
+      let(:image) { nil }
+
+      before do
+        allow(duo_config).to receive(:default_image).and_return(nil)
+      end
+
+      it 'uses the default IMAGE constant' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.image).to eq(described_class::IMAGE)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
     end
   end
 end
