@@ -75377,6 +75377,9 @@ msgstr ""
 msgid "event"
 msgstr ""
 
+msgid "exactly one of %{parent_types} is required"
+msgstr ""
+
 msgid "example-branch-name"
 msgstr ""
 
