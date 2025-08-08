@@ -1,5 +1,4 @@
-import GridstackDashboard from 'storybook_helpers/dashboards/gridstack_dashboard.vue';
-import GridstackPanel from 'storybook_helpers/dashboards/gridstack_panel.vue';
+import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import DataTable from './data_table.vue';
 
 export default {
@@ -8,18 +7,18 @@ export default {
 };
 
 const Template = (args, { argTypes }) => ({
-  components: { DataTable, GridstackDashboard, GridstackPanel },
+  components: { DataTable, DashboardLayout },
   props: Object.keys(argTypes),
   template: `<data-table :data="data" :options="options" />`,
 });
 
-const WithGridstack = (args, { argTypes }) => ({
-  components: { DataTable, GridstackDashboard, GridstackPanel },
+const WithDashboard = (args, { argTypes }) => ({
+  components: { DataTable, DashboardLayout },
   props: Object.keys(argTypes),
   template: `
-      <gridstack-dashboard :panels="panelsConfig">
+      <dashboard-layout :panels="panelsConfig">
         <data-table :data="data" :options="options" />
-      </gridstack-dashboard>`,
+      </dashboard-layout>`,
 });
 
 const changePercentData = [
@@ -77,7 +76,7 @@ WithPagination.args = {
   },
 };
 
-export const InDashboardPanel = WithGridstack.bind({});
+export const InDashboardPanel = WithDashboard.bind({});
 InDashboardPanel.args = {
   ...defaultArgs,
   panelsConfig: [

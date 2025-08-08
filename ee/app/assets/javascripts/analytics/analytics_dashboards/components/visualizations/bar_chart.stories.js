@@ -1,5 +1,4 @@
-import GridstackDashboard from 'storybook_helpers/dashboards/gridstack_dashboard.vue';
-import GridstackPanel from 'storybook_helpers/dashboards/gridstack_panel.vue';
+import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import BarChart from './bar_chart.vue';
 
 export default {
@@ -8,7 +7,7 @@ export default {
 };
 
 const Template = (args, { argTypes }) => ({
-  components: { BarChart, GridstackDashboard, GridstackPanel },
+  components: { BarChart, DashboardLayout },
   props: Object.keys(argTypes),
   template: `
   <div class="gl-h-48">
@@ -16,13 +15,13 @@ const Template = (args, { argTypes }) => ({
   </div>`,
 });
 
-const WithGridstack = (args, { argTypes }) => ({
-  components: { BarChart, GridstackDashboard, GridstackPanel },
+const WithDashboard = (args, { argTypes }) => ({
+  components: { BarChart, DashboardLayout },
   props: Object.keys(argTypes),
   template: `
-      <gridstack-dashboard :panels="panelsConfig">
+      <dashboard-layout :panels="panelsConfig">
         <bar-chart :data="data" :options="options" />
-      </gridstack-dashboard>`,
+      </dashboard-layout>`,
 });
 
 const defaultArgs = {
@@ -48,7 +47,7 @@ const defaultArgs = {
 export const Default = Template.bind({});
 Default.args = defaultArgs;
 
-export const InDashboardPanel = WithGridstack.bind({});
+export const InDashboardPanel = WithDashboard.bind({});
 InDashboardPanel.args = {
   ...defaultArgs,
   panelsConfig: [

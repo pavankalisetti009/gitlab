@@ -1,14 +1,19 @@
-import { GlSkeletonLoader, GlEmptyState, GlSprintf, GlLink } from '@gitlab/ui';
+import {
+  GlSkeletonLoader,
+  GlEmptyState,
+  GlSprintf,
+  GlLink,
+  GlDashboardLayout,
+  GlExperimentBadge,
+} from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { createAlert } from '~/alert';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
-import getAvailableVisualizations from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_visualizations.query.graphql';
 import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/analytics_dashboard.vue';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
-import AnalyticsCustomizableDashboard from 'ee/analytics/analytics_dashboards/components/analytics_customizable_dashboard.vue';
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
@@ -52,7 +57,6 @@ import {
   TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE,
   TEST_CUSTOM_DASHBOARDS_PROJECT,
   TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
-  TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE,
   getGraphQLDashboardWithPanels,
   mockDateRangeFilterChangePayload,
   mockFilteredSearchChangePayload,
@@ -78,7 +82,7 @@ describe('AnalyticsDashboard', () => {
 
   const namespaceId = '1';
 
-  const findDashboard = () => wrapper.findComponent(AnalyticsCustomizableDashboard);
+  const findDashboard = () => wrapper.findComponent(GlDashboardLayout);
   const findAllPanels = () => wrapper.findAllComponents(AnalyticsDashboardPanel);
   const findPanelByTitle = (title) =>
     findAllPanels().wrappers.find((w) => w.props('title') === title);
@@ -91,7 +95,10 @@ describe('AnalyticsDashboard', () => {
     wrapper.findByTestId('analytics-dashboard-invalid-config-alert');
   const findUsageOverviewAggregationWarning = () =>
     wrapper.findComponent(UsageOverviewBackgroundAggregationWarning);
-  const findAfterDescriptionLink = () => wrapper.findByTestId('after-description-link');
+  const findCustomTitle = () => wrapper.findByTestId('custom-title');
+  const findCustomDescription = () => wrapper.findByTestId('custom-description');
+  const findCustomDescriptionLink = () => wrapper.findByTestId('custom-description-link');
+  const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findAnonUsersFilter = () => wrapper.findComponent(AnonUsersFilter);
   const findDateRangeFilter = () => wrapper.findComponent(DateRangeFilter);
   const findProjectsFilter = () => wrapper.findComponent(ProjectsFilter);
@@ -109,22 +116,14 @@ describe('AnalyticsDashboard', () => {
     };
   };
 
-  const mockCustomizableDashboardDeletePanel = jest.fn();
-
   let mockAnalyticsDashboardsHandler = jest.fn();
-  let mockAvailableVisualizationsHandler = jest.fn();
 
   const mockDashboardResponse = (response) => {
     mockAnalyticsDashboardsHandler = jest.fn().mockResolvedValue(response);
   };
-  const mockAvailableVisualizationsResponse = (response) => {
-    mockAvailableVisualizationsHandler = jest.fn().mockResolvedValue(response);
-  };
 
   afterEach(() => {
     mockAnalyticsDashboardsHandler = jest.fn();
-    mockAvailableVisualizationsHandler = jest.fn();
-    mockCustomizableDashboardDeletePanel.mockRestore();
   });
 
   const breadcrumbState = { updateName: jest.fn() };
@@ -134,12 +133,7 @@ describe('AnalyticsDashboard', () => {
     namespaceFullPath: TEST_CUSTOM_DASHBOARDS_PROJECT.fullPath,
   };
 
-  const createWrapper = ({
-    props = {},
-    routeSlug = '',
-    provide = {},
-    stubMockMethods = {},
-  } = {}) => {
+  const createWrapper = ({ props = {}, routeSlug = '', provide = {} } = {}) => {
     const mocks = {
       $route: {
         params: {
@@ -153,7 +147,6 @@ describe('AnalyticsDashboard', () => {
 
     const mockApollo = createMockApollo([
       [getCustomizableDashboardQuery, mockAnalyticsDashboardsHandler],
-      [getAvailableVisualizations, mockAvailableVisualizationsHandler],
     ]);
 
     wrapper = shallowMountExtended(AnalyticsDashboard, {
@@ -168,16 +161,13 @@ describe('AnalyticsDashboard', () => {
         DateRangeFilter,
         FilteredSearchFilter,
         ProjectsFilter,
-        AnalyticsCustomizableDashboard: stubComponent(AnalyticsCustomizableDashboard, {
-          methods: {
-            ...stubMockMethods,
-            deletePanel: mockCustomizableDashboardDeletePanel,
-          },
+        GlDashboardLayout: stubComponent(GlDashboardLayout, {
           template: `<div>
             <slot name="alert"></slot>
-            <slot name="after-description"></slot>
+            <slot name="title"></slot>
+            <slot name="description"></slot>
             <slot name="filters"></slot>
-            <template v-for="panel in dashboard.panels">
+            <template v-for="panel in config.panels">
               <slot name="panel" v-bind="{ panel }"></slot>
             </template>
           </div>`,
@@ -186,7 +176,6 @@ describe('AnalyticsDashboard', () => {
       mocks,
       provide: {
         ...mockNamespace,
-        customDashboardsProject: TEST_CUSTOM_DASHBOARDS_PROJECT,
         dashboardEmptyStateIllustrationPath: TEST_EMPTY_DASHBOARD_SVG_PATH,
         breadcrumbState,
         isGroup: false,
@@ -199,7 +188,6 @@ describe('AnalyticsDashboard', () => {
 
   const setupDashboard = (dashboardResponse, slug = '', provide = {}) => {
     mockDashboardResponse(dashboardResponse);
-    mockAvailableVisualizationsResponse(TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE);
     createWrapper({
       routeSlug: slug,
       provide,
@@ -207,6 +195,33 @@ describe('AnalyticsDashboard', () => {
 
     return waitForPromises();
   };
+
+  describe('container classes updates', () => {
+    let wrapperLimited;
+
+    beforeEach(() => {
+      wrapperLimited = document.createElement('div');
+      wrapperLimited.classList.add('container-fluid', 'container-limited');
+      document.body.appendChild(wrapperLimited);
+
+      createWrapper();
+    });
+
+    afterEach(() => {
+      document.body.removeChild(wrapperLimited);
+    });
+
+    it('body container', () => {
+      expect(document.querySelectorAll('.container-fluid.not-container-limited')).toHaveLength(1);
+    });
+
+    it('body container after destroy', () => {
+      wrapper.destroy();
+
+      expect(document.querySelectorAll('.container-fluid.not-container-limited')).toHaveLength(0);
+      expect(document.querySelectorAll('.container-fluid.container-limited')).toHaveLength(1);
+    });
+  });
 
   describe('when mounted', () => {
     beforeEach(() => {
@@ -226,7 +241,7 @@ describe('AnalyticsDashboard', () => {
       });
 
       expect(findDashboard().props()).toMatchObject({
-        dashboard: getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
+        config: getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
       });
 
       expect(breadcrumbState.updateName).toHaveBeenCalledWith('Audience');
@@ -284,7 +299,7 @@ describe('AnalyticsDashboard', () => {
 
       await waitForPromises();
 
-      expect(findDashboard().props().dashboard.panels).toEqual(
+      expect(findDashboard().props().config.panels).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: expect.stringContaining('panel-'),
@@ -312,12 +327,29 @@ describe('AnalyticsDashboard', () => {
       });
     });
 
-    it('should not add the after-description link to the dashboard by default', async () => {
+    it('should not render a custom title by default', async () => {
       createWrapper();
 
       await waitForPromises();
 
-      expect(findAfterDescriptionLink().exists()).toBe(false);
+      expect(findCustomTitle().exists()).toBe(false);
+    });
+
+    it('should not render a badge by default', async () => {
+      createWrapper();
+
+      await waitForPromises();
+
+      expect(findExperimentBadge().exists()).toBe(false);
+    });
+
+    it('should not render a custom description by default', async () => {
+      createWrapper();
+
+      await waitForPromises();
+
+      expect(findCustomDescription().exists()).toBe(false);
+      expect(findCustomDescriptionLink().exists()).toBe(false);
     });
 
     it('should not render filters by default', async () => {
@@ -506,6 +538,22 @@ describe('AnalyticsDashboard', () => {
         expect(findProductAnalyticsFeedbackBanner().exists()).toBe(showsBanner);
       },
     );
+  });
+
+  describe('status badge', () => {
+    beforeEach(async () => {
+      await setupDashboard(
+        createDashboardGraphqlSuccessResponse(
+          getGraphQLDashboardWithPanels({ status: 'beta', title: 'Beta dashboard' }),
+        ),
+        'test-beta-dashboard',
+      );
+    });
+
+    it('renders the custom title with badge', () => {
+      expect(findCustomTitle().text()).toContain('Beta dashboard');
+      expect(findExperimentBadge().props('type')).toBe('beta');
+    });
   });
 
   describe('filters', () => {
@@ -816,7 +864,7 @@ describe('AnalyticsDashboard', () => {
 
     it('renders the dashboard correctly', () => {
       expect(findDashboard().props()).toMatchObject({
-        dashboard: {
+        config: {
           ...getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
           title: 'AI impact analytics',
           slug: 'ai_impact',
@@ -832,8 +880,10 @@ describe('AnalyticsDashboard', () => {
       expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
     });
 
-    it('adds the after-description link to the dashboard', () => {
-      const linkWrapper = findAfterDescriptionLink();
+    it('renders a custom description with links', () => {
+      const description = findCustomDescription();
+      expect(description.text()).toContain('Understand your audience');
+      const linkWrapper = findCustomDescriptionLink();
       const links = linkWrapper.findAllComponents(GlLink);
 
       expect(linkWrapper.text()).toBe('Learn more about AI impact analytics and GitLab Duo seats.');
@@ -875,7 +925,7 @@ describe('AnalyticsDashboard', () => {
 
     it('renders the dashboard correctly', () => {
       expect(findDashboard().props()).toMatchObject({
-        dashboard: {
+        config: {
           ...getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
           title: 'Value Streams Dashboard',
           slug: 'value_streams_dashboard',
@@ -891,8 +941,10 @@ describe('AnalyticsDashboard', () => {
       expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
     });
 
-    it('adds the after-description link to the dashboard', () => {
-      const linkWrapper = findAfterDescriptionLink();
+    it('renders a custom description with links', () => {
+      const description = findCustomDescription();
+      expect(description.text()).toContain('Understand your audience');
+      const linkWrapper = findCustomDescriptionLink();
 
       expect(linkWrapper.text()).toBe('Learn more.');
       expect(linkWrapper.findComponent(GlLink).attributes('href')).toBe(
@@ -949,7 +1001,7 @@ describe('AnalyticsDashboard', () => {
       await waitForPromises();
 
       expect(findDashboard().props()).toMatchObject({
-        dashboard: {
+        config: {
           ...getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
           title: 'Value Streams Dashboard',
           slug: 'value_streams_dashboard',
