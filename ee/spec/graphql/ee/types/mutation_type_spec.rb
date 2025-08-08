@@ -56,4 +56,11 @@ RSpec.describe Types::MutationType do
       expect(scopes).to include(:api, :read_api, :ai_workflows)
     end
   end
+
+  describe 'vulnerability issue link create mutation scopes' do
+    it 'includes api, read_api, ai_workflows scopes' do
+      mutation = described_class.fields['vulnerabilityIssueLinkCreate']
+      expect(mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+    end
+  end
 end

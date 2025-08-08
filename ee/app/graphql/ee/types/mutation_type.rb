@@ -112,7 +112,7 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::Resolve
         mount_mutation ::Mutations::Vulnerabilities::Confirm, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::RevertToDetected, scopes: [:api, :read_api, :ai_workflows]
-        mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink
+        mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :read_api, :ai_workflows]
