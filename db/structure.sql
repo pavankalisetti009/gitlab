@@ -35310,6 +35310,8 @@ CREATE UNIQUE INDEX index_approval_merge_request_rules_users_1 ON approval_merge
 
 CREATE INDEX index_approval_merge_request_rules_users_2 ON approval_merge_request_rules_users USING btree (user_id);
 
+CREATE INDEX index_approval_merge_request_rules_users_on_project_id ON approval_merge_request_rules_users USING btree (project_id);
+
 CREATE INDEX index_approval_mr_rules_on_project_id_policy_rule_id_and_id ON approval_merge_request_rules USING btree (security_orchestration_policy_configuration_id, approval_policy_rule_id, id);
 
 CREATE INDEX index_approval_policy_merge_request_bypass_events_on_mr_id ON approval_policy_merge_request_bypass_events USING btree (merge_request_id);
