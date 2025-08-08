@@ -44,6 +44,7 @@ export default {
       containerStyles: {},
       canCalculateEpicsListHeight: false,
       milestones: [],
+      // eslint-disable-next-line vue/no-unused-properties -- This is used in Apollo query
       localRoadmapSettings: {},
     };
   },
@@ -160,7 +161,6 @@ export default {
     <roadmap-timeline-section
       ref="roadmapTimeline"
       :preset-type="presetType"
-      :epics="epics"
       :timeframe="timeframe"
     />
     <milestones-list-section
