@@ -58,14 +58,14 @@ export const createRouter = (base) => {
           },
           // Catch-all route for /agents/:id - redirect to /agents?show=:id
           {
-            path: ':id',
+            path: ':id(\\d+)',
             redirect: (to) => ({
               path: '/agents',
               query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
             }),
           },
           {
-            path: ':id',
+            path: ':id(\\d+)',
             component: AiCatalogAgent,
             children: [
               {
@@ -111,14 +111,14 @@ export const createRouter = (base) => {
           },
           // Catch-all route for /flows/:id - redirect to /flows?show=:id
           {
-            path: ':id',
+            path: ':id(\\d+)',
             redirect: (to) => ({
               path: '/flows',
               query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
             }),
           },
           {
-            path: ':id',
+            path: ':id(\\d+)',
             component: AiCatalogFlow,
             children: [
               {
@@ -133,6 +133,7 @@ export const createRouter = (base) => {
           },
         ],
       },
+      { path: '*', redirect: { name: AI_CATALOG_INDEX_ROUTE } },
     ],
   });
 };
