@@ -77,7 +77,7 @@ export default {
       return {
         actionItems: (itemId) => [
           {
-            text: s__('AICatalog|Test Run'),
+            text: s__('AICatalog|Test run'),
             to: {
               name: AI_CATALOG_AGENTS_RUN_ROUTE,
               params: { id: itemId },
