@@ -2,7 +2,7 @@
 
 module Types
   module Security
-    # rubocop: disable Graphql/AuthorizeTypes, GraphQL/ExtractType -- to be done, this is a poc
+    # rubocop: disable Graphql/AuthorizeTypes, GraphQL/ExtractType -- not applicable
     class VulnerabilitiesOverTimeType < BaseObject
       graphql_name 'VulnerabilitiesOverTime'
       description 'Represents vulnerability metrics over time with filtering and grouping capabilities'

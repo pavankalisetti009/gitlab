@@ -10,7 +10,6 @@ module Resolvers
       include Gitlab::Graphql::Authorize::AuthorizeResource
 
       type Types::Security::SecurityMetricsType, null: true
-      authorize :read_security_resource
 
       argument :project_id, [GraphQL::Types::ID],
         required: false,
@@ -21,8 +20,9 @@ module Resolvers
         description: 'Filter by report types.'
 
       def resolve(**args)
-        authorize!(object)
+        return unless Ability.allowed?(current_user, :read_security_resource, object)
 
+        # To Do: Update this feature flag once the new feature flag is created in https://gitlab.com/groups/gitlab-org/-/epics/17073
         if object.is_a?(Project)
           return unless Feature.enabled?(:project_security_dashboard_new, object)
         elsif object.is_a?(Group)
