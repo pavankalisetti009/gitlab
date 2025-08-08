@@ -16,6 +16,7 @@ RSpec.describe BuildDetailsEntity, feature_category: :continuous_integration do
   subject { entity.as_json }
 
   before do
+    project.add_developer(user)
     allow(request).to receive(:current_user).and_return(user)
   end
 
