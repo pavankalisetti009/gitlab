@@ -27,7 +27,7 @@ module Gitlab
       delegate :replicable_title_plural, to: :class
 
       class << self
-        delegate :find_registries_never_attempted_sync,
+        delegate :find_registries_pending,
           :find_registries_needs_sync_again,
           :fail_sync_timeouts,
           to: :registry_class

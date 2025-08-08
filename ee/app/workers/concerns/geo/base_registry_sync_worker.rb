@@ -27,7 +27,7 @@ module Geo
     #
     # @return [Array] resources to be transferred
     def load_pending_resources
-      resources = find_jobs_never_attempted_sync(batch_size: db_retrieve_batch_size)
+      resources = find_jobs_pending(batch_size: db_retrieve_batch_size)
       remaining_capacity = db_retrieve_batch_size - resources.count
 
       if remaining_capacity == 0
@@ -37,16 +37,16 @@ module Geo
       end
     end
 
-    # Get a batch of resources that never have an attempt to sync, taking
+    # Get a batch of resources that are in pending state, taking
     # equal parts from each resource.
     #
-    # @return [Array] job arguments of resources that never have an attempt to sync
-    def find_jobs_never_attempted_sync(batch_size:)
+    # @return [Array] job arguments of resources that are in pending state
+    def find_jobs_pending(batch_size:)
       jobs = replicator_classes.reduce([]) do |jobs, replicator_class|
         except_ids = scheduled_replicable_ids(replicator_class.replicable_name)
 
         jobs << replicator_class
-                  .find_registries_never_attempted_sync(batch_size: batch_size, except_ids: except_ids)
+                  .find_registries_pending(batch_size: batch_size, except_ids: except_ids)
                   .map { |registry| [replicator_class.replicable_name, registry.model_record_id] }
       end
 

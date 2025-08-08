@@ -2,9 +2,9 @@
 
 module Geo
   class RegistryFinder
-    # @!method find_registries_never_attempted_sync
+    # @!method find_registries_pending
     #    Return an ActiveRecord::Relation of the registry records for the
-    #    tracked type that this secondary has never attempted to sync.
+    #    tracked type that are in pending state.
     #
     #    Does not care about selective sync, because it considers the Registry
     #    table to be the single source of truth. The contract is that other
@@ -21,9 +21,9 @@ module Geo
     # @param [Integer] batch_size used to limit the results returned
     # @param [Array<Integer>] except_ids ids that will be ignored from the query
     #
-    def find_registries_never_attempted_sync(batch_size:, except_ids: [])
+    def find_registries_pending(batch_size:, except_ids: [])
       registry_class
-        .find_registries_never_attempted_sync(batch_size: batch_size, except_ids: except_ids)
+        .find_registries_pending(batch_size: batch_size, except_ids: except_ids)
     end
 
     # @!method find_registries_needs_sync_again
