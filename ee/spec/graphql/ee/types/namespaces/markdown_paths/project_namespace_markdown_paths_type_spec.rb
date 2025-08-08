@@ -6,7 +6,8 @@ RSpec.describe Types::Namespaces::MarkdownPaths::ProjectNamespaceMarkdownPathsTy
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :public) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:project_namespace) { project.project_namespace }
 
   describe '#autocomplete_sources_path' do

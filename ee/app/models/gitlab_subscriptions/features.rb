@@ -373,6 +373,16 @@ module GitlabSubscriptions
       'GitLab_Geo' => :geo
     }.freeze
 
+    # These features require configuration at the group level
+    # and should not be available for personal namespaces.
+    GROUP_ONLY_LICENSED_FEATURES = [
+      :custom_fields,
+      :iterations,
+      :board_iteration_lists,
+      :work_item_status,
+      :board_status_lists
+    ].freeze
+
     class << self
       def features(plan:, add_ons:)
         (for_plan(plan) + for_add_ons(add_ons)).to_set

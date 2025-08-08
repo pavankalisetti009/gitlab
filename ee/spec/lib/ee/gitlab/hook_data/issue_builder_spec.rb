@@ -59,7 +59,8 @@ RSpec.describe Gitlab::HookData::IssueBuilder, feature_category: :webhooks do
     end
 
     context "when current status exists" do
-      let_it_be_with_reload(:issue) { create(:work_item) }
+      let_it_be(:group) { create(:group) }
+      let_it_be_with_reload(:issue) { create(:work_item, namespace: group) }
 
       context "when the licence is disabled" do
         before do
@@ -86,7 +87,7 @@ RSpec.describe Gitlab::HookData::IssueBuilder, feature_category: :webhooks do
       end
 
       context "when status with callback is nil" do
-        let_it_be_with_reload(:issue) { create(:incident) }
+        let_it_be_with_reload(:issue) { create(:incident, namespace: group) }
 
         it { is_expected.not_to include(:status) }
       end

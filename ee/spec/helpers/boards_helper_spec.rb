@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe BoardsHelper do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
-  let_it_be_with_refind(:project) { create(:project) }
+  let_it_be_with_refind(:project) { create(:project, group: group) }
   let_it_be(:project_board) { create(:board, project: project) }
 
   describe '#build_issue_link_base' do
@@ -52,6 +52,7 @@ RSpec.describe BoardsHelper do
         allow(helper).to receive(:can?).with(user, :admin_issue_board, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :admin_label, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :create_saved_replies, project).and_return(false)
+        allow(helper).to receive(:can?).with(user, :create_saved_replies, project.group).and_return(false)
         allow(helper).to receive(:can?).with(user, :create_work_item, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :admin_issue, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :bulk_admin_epic, project).and_return(false)

@@ -88,7 +88,13 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       context 'when parent is a project in user_namespace' do
         let(:parent) { create(:project) }
         let(:feature) { feature_widget.first }
-        let(:widget_classes) { WorkItems::Type::EXCLUDED_USER_NAMESPACE_LICENSED_WIDGETS }
+        let(:widget_classes) do
+          [
+            ::WorkItems::Widgets::CustomFields,
+            ::WorkItems::Widgets::Iteration,
+            ::WorkItems::Widgets::Status
+          ]
+        end
 
         subject(:returned_widgets) { work_item_type.widgets(parent) }
 

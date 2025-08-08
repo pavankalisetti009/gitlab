@@ -76,11 +76,11 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
   end
 
   before_all do
-    create(:iteration_list, iteration: past_iteration)
+    create(:iteration_list, board: past_board, iteration: past_iteration)
     create(:resource_iteration_event, iteration: past_iteration)
-    create(:iteration_list, iteration: last_future_iteration)
+    create(:iteration_list, board: last_future_board, iteration: last_future_iteration)
     create(:resource_iteration_event, iteration: last_future_iteration)
-    create(:iteration_list, iteration: other_cadence_iteration)
+    create(:iteration_list, board: other_cadence_board, iteration: other_cadence_iteration)
     create(:resource_iteration_event, iteration: other_cadence_iteration)
   end
 

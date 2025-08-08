@@ -4,6 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_management do
   describe '#execute' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:group_project) { create(:project, group: group) }
     let!(:backlog_list) { board.lists.backlog.first }
     let!(:closed_list) { board.lists.closed.first }
     let!(:label_list) { create(:list, board: board, label: label) }
@@ -112,12 +116,43 @@ RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_manageme
       end
     end
 
-    context 'when board parent is a project' do
-      let(:user) { create(:user) }
-      let(:project) { create(:project) }
+    context 'when board parent is a project in user namespace' do
       let(:board) { create(:board, project: project) }
       let(:label) { create(:label, project: project) }
       let(:service) { described_class.new(project, user) }
+
+      it_behaves_like 'list service for board with assignee lists'
+      it_behaves_like 'list service for board with milestone lists'
+
+      context 'with iteration lists' do
+        let!(:iteration_list) { create_board_list(:iteration_list, board) }
+
+        before do
+          stub_licensed_features(board_iteration_lists: true)
+        end
+
+        it 'filters out iteration lists' do
+          expect(execute_service).not_to include(iteration_list)
+        end
+      end
+
+      context 'with status lists' do
+        let!(:status_list) { create_board_list(:status_list, board) }
+
+        before do
+          stub_licensed_features(board_status_lists: true)
+        end
+
+        it 'filters out status lists' do
+          expect(execute_service).not_to include(status_list)
+        end
+      end
+    end
+
+    context 'when board parent is a project in group namespace' do
+      let(:board) { create(:board, project: group_project) }
+      let(:label) { create(:label, project: group_project) }
+      let(:service) { described_class.new(group_project, user) }
 
       it_behaves_like 'list service for board with assignee lists'
       it_behaves_like 'list service for board with milestone lists'
@@ -126,8 +161,6 @@ RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_manageme
     end
 
     context 'when board parent is a group' do
-      let(:user) { create(:user) }
-      let(:group) { create(:group) }
       let(:board) { create(:board, group: group) }
       let(:label) { create(:group_label, group: group) }
       let(:service) { described_class.new(group, user) }

@@ -245,14 +245,29 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
 
     describe '#work_item_status_feature_available?' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:group_project) { create(:project, namespace: group) }
+
       subject { project.work_item_status_feature_available? }
+
+      shared_examples 'work item status availability' do |expected_result|
+        context 'when project belongs to group' do
+          let(:project) { group_project }
+
+          it { is_expected.to be expected_result }
+        end
+
+        context 'when project belongs to user namespace' do
+          it { is_expected.to be false }
+        end
+      end
 
       context 'when work_item_status licensed feature is enabled' do
         before do
           stub_licensed_features(work_item_status: true)
         end
 
-        it { is_expected.to be true }
+        it_behaves_like 'work item status availability', true
       end
 
       context 'when work_item_status licensed feature is disabled' do
@@ -260,7 +275,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           stub_licensed_features(work_item_status: false)
         end
 
-        it { is_expected.to be false }
+        it_behaves_like 'work item status availability', false
       end
 
       context 'when work_item_status_feature_flag is disabled' do
@@ -268,7 +283,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           stub_feature_flags(work_item_status_feature_flag: false)
         end
 
-        it { is_expected.to be false }
+        it_behaves_like 'work item status availability', false
       end
     end
 
@@ -2025,9 +2040,11 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
   describe '#feature_available?' do
     let(:namespace) { build(:namespace) }
-    let(:plan_license) { nil }
     let(:project) { build(:project, namespace: namespace) }
+    let(:group) { build(:group) }
+    let(:group_project) { build(:project, namespace: group) }
     let(:user) { build(:user) }
+    let(:plan_license) { nil }
 
     subject { project.feature_available?(feature, user) }
 
@@ -2055,8 +2072,20 @@ RSpec.describe Project, feature_category: :groups_and_projects do
                   allow(namespace).to receive(:actual_plan) { plan_license }
                 end
 
-                it 'returns true' do
-                  is_expected.to eq(true)
+                context 'with group namespace' do
+                  let(:namespace) { group }
+                  let(:project) { group_project }
+
+                  it 'returns true' do
+                    is_expected.to eq(true)
+                  end
+                end
+
+                context 'with user namespace' do
+                  it 'respects group-only feature restrictions' do
+                    expected = ::GitlabSubscriptions::Features::GROUP_ONLY_LICENSED_FEATURES.include?(feature_sym) ? false : true
+                    is_expected.to eq(expected)
+                  end
                 end
               end
 
@@ -2069,8 +2098,20 @@ RSpec.describe Project, feature_category: :groups_and_projects do
                   allow(project).to receive(:public?) { true }
                 end
 
-                it 'returns true' do
-                  is_expected.to eq(true)
+                context 'with group namespace' do
+                  let(:namespace) { group }
+                  let(:project) { group_project }
+
+                  it 'returns true' do
+                    is_expected.to eq(true)
+                  end
+                end
+
+                context 'with user namespace' do
+                  it 'respects group-only feature restrictions' do
+                    expected = ::GitlabSubscriptions::Features::GROUP_ONLY_LICENSED_FEATURES.include?(feature_sym) ? false : true
+                    is_expected.to eq(expected)
+                  end
                 end
               end
 
@@ -2079,8 +2120,19 @@ RSpec.describe Project, feature_category: :groups_and_projects do
                   let(:allowed_on_global_license) { true }
                   let(:plan_license) { build(:bronze_plan) }
 
-                  it 'returns false' do
-                    is_expected.to eq(false)
+                  context 'with group namespace' do
+                    let(:namespace) { group }
+                    let(:project) { group_project }
+
+                    it 'returns false' do
+                      is_expected.to eq(false)
+                    end
+                  end
+
+                  context 'with user namespace' do
+                    it 'returns false' do
+                      is_expected.to eq(false)
+                    end
                   end
                 end
               end
@@ -2089,8 +2141,19 @@ RSpec.describe Project, feature_category: :groups_and_projects do
                 let(:allowed_on_global_license) { false }
                 let(:plan_license) { build(:ultimate_plan) }
 
-                it 'returns false' do
-                  is_expected.to eq(false)
+                context 'with group namespace' do
+                  let(:namespace) { group }
+                  let(:project) { group_project }
+
+                  it 'returns false' do
+                    is_expected.to eq(false)
+                  end
+                end
+
+                context 'with user namespace' do
+                  it 'returns false' do
+                    is_expected.to eq(false)
+                  end
                 end
               end
             end
@@ -2102,16 +2165,39 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             context 'allowed by Global License' do
               let(:allowed_on_global_license) { true }
 
-              it 'returns true' do
-                is_expected.to eq(true)
+              context 'with group namespace' do
+                let(:namespace) { group }
+                let(:project) { group_project }
+
+                it 'returns true' do
+                  is_expected.to eq(true)
+                end
+              end
+
+              context 'with user namespace' do
+                it 'respects group-only feature restrictions' do
+                  expected = ::GitlabSubscriptions::Features::GROUP_ONLY_LICENSED_FEATURES.include?(feature_sym) ? false : true
+                  is_expected.to eq(expected)
+                end
               end
             end
 
             context 'not allowed by Global License' do
               let(:allowed_on_global_license) { false }
 
-              it 'returns false' do
-                is_expected.to eq(false)
+              context 'with group namespace' do
+                let(:namespace) { group }
+                let(:project) { group_project }
+
+                it 'returns false' do
+                  is_expected.to eq(false)
+                end
+              end
+
+              context 'with user namespace' do
+                it 'returns false' do
+                  is_expected.to eq(false)
+                end
               end
             end
           end
