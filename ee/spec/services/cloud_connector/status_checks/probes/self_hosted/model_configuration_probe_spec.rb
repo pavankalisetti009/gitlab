@@ -8,6 +8,10 @@ RSpec.describe ::CloudConnector::StatusChecks::Probes::SelfHosted::ModelConfigur
 
   subject(:probe) { described_class.new(user, self_hosted_model) }
 
+  before do
+    allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http://localhost:3000')
+  end
+
   describe '#execute' do
     context 'when the user is not present' do
       let(:user) { nil }
@@ -28,6 +32,22 @@ RSpec.describe ::CloudConnector::StatusChecks::Probes::SelfHosted::ModelConfigur
 
         expect(result.success).to be false
         expect(result.errors.full_messages).to include('Self-hosted model was not provided')
+      end
+    end
+
+    context 'when the local AI Gateway URL is not configured' do
+      before do
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(nil)
+      end
+
+      it 'returns a failure result with a local AI Gateway URL not configured message' do
+        result = probe.execute
+
+        expect(result.success).to be false
+        expect(result.errors.full_messages).to include(
+          "You have not configured your local AI gateway URL. " \
+            "Configure the URL in the GitLab Duo configuration settings."
+        )
       end
     end
 
