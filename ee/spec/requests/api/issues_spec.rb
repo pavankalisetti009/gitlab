@@ -418,6 +418,19 @@ RSpec.describe API::Issues, :mailer, :aggregate_failures, feature_category: :tea
       let(:endpoint) { "/projects/#{group_project.id}/issues" }
     end
 
+    context 'when using keyset pagination' do
+      let!(:issue1) { create(:issue, author: user2, project: project, weight: 1, created_at: 3.days.ago) }
+      let!(:issue2) { create(:issue, author: user2, project: project, weight: 5, created_at: 2.days.ago) }
+
+      it 'orders by weight' do
+        params = { pagination: 'keyset', per_page: 2, order_by: 'weight' }
+        get api("/projects/#{project.id}/issues", user), params: params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.first['id']).to eq(issue2.id)
+      end
+    end
+
     context 'on personal project' do
       let!(:issue_with_epic) { create(:issue, project: project, epic: epic) }
 
