@@ -64,7 +64,7 @@ describe('TokenValidityBadge', () => {
       expect(findHelpPopover().props('options')).toEqual({
         title: 'What is a validity check?',
         content:
-          'GitLab checks the validity of the secret with the third party vendor on each pipeline run. If the secret is still active it could be exploited and needs to be revoked and rotated.',
+          'GitLab checks if detected secrets are active. You should revoke and replace active secrets immediately, because they can be used to impersonate legitimate activity.',
       });
     });
   });
