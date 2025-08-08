@@ -14,12 +14,17 @@ module Resolvers
           required: false,
           description: 'Type of items to retrieve.'
 
-        def resolve_with_lookahead(item_type: nil)
+        argument :search, GraphQL::Types::String,
+          required: false,
+          description: 'Search items by name and description.'
+
+        def resolve_with_lookahead(item_type: nil, search: nil)
           return ::Ai::Catalog::Item.none unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
           items = ::Ai::Catalog::Item.not_deleted
           items = items.for_organization(current_organization)
           items = items.with_item_type(item_type) if item_type
+          items = items.search(search) if search.present?
           apply_lookahead(items)
         end
 
