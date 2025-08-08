@@ -1,5 +1,4 @@
 <script>
-import { GlButton, GlButtonGroup } from '@gitlab/ui';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import { fetchPolicies } from '~/lib/graphql';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
@@ -7,14 +6,14 @@ import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/share
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_group_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
+import OverTimeGroupBy from './over_time_group_by.vue';
 
 export default {
   name: 'GroupVulnerabilitiesOverTimePanel',
   components: {
-    GlButton,
-    GlButtonGroup,
     ExtendedDashboardPanel,
     VulnerabilitiesOverTimeChart,
+    OverTimeGroupBy,
   },
   inject: ['groupFullPath'],
   props: {
@@ -38,8 +37,8 @@ export default {
           projectId: this.filters.projectId,
           reportType: this.filters.reportType,
           fullPath: this.groupFullPath,
-          includeBySeverity: this.isGroupedBy('severity'),
-          includeByReportType: this.isGroupedBy('reportType'),
+          includeBySeverity: this.groupedBy === 'severity',
+          includeByReportType: this.groupedBy === 'reportType',
         };
       },
       update(data) {
@@ -64,14 +63,6 @@ export default {
       return this.vulnerabilitiesOverTime.length > 0;
     },
   },
-  methods: {
-    isGroupedBy(group) {
-      return this.groupedBy === group;
-    },
-    groupBy(group) {
-      this.groupedBy = group;
-    },
-  },
 };
 </script>
 
@@ -82,26 +73,7 @@ export default {
     :show-alert-state="fetchError"
   >
     <template #filters>
-      <gl-button-group>
-        <gl-button
-          data-testid="severity-button"
-          size="small"
-          category="secondary"
-          :selected="isGroupedBy('severity')"
-          @click="groupBy('severity')"
-        >
-          {{ s__('SecurityReports|Severity') }}
-        </gl-button>
-        <gl-button
-          data-testid="report-type-button"
-          size="small"
-          category="secondary"
-          :selected="isGroupedBy('reportType')"
-          @click="groupBy('reportType')"
-        >
-          {{ s__('SecurityReports|Report Type') }}
-        </gl-button>
-      </gl-button-group>
+      <over-time-group-by v-model="groupedBy" />
     </template>
     <template #body>
       <vulnerabilities-over-time-chart

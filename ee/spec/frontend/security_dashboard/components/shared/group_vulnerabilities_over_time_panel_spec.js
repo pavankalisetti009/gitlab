@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
+import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_group_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -91,8 +92,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
-  const findSeverityButton = () => wrapper.findByTestId('severity-button');
-  const findReportTypeButton = () => wrapper.findByTestId('report-type-button');
+  const findOverTimeGroupBy = () => wrapper.findComponent(OverTimeGroupBy);
   const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
 
   beforeEach(() => {
@@ -109,40 +109,33 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
     });
 
-    it('renders the group by buttons in the filters slot', () => {
-      expect(findSeverityButton().text()).toBe('Severity');
-      expect(findReportTypeButton().text()).toBe('Report Type');
-    });
-
-    it('sets severity button as selected by default', () => {
-      expect(findSeverityButton().props('selected')).toBe(true);
-      expect(findReportTypeButton().props('selected')).toBe(false);
+    it('passes severity value to OverTimeGroupBy by default', () => {
+      expect(findOverTimeGroupBy().props('value')).toBe('severity');
     });
   });
 
   describe('group by functionality', () => {
     it('switches to report type grouping when report type button is clicked', async () => {
       await waitForPromises();
-      const reportTypeButton = findReportTypeButton();
+      const overTimeGroupBy = findOverTimeGroupBy();
 
-      await reportTypeButton.vm.$emit('click');
+      await overTimeGroupBy.vm.$emit('input', 'reportType');
       await nextTick();
 
-      expect(reportTypeButton.props('selected')).toBe(true);
-      expect(findSeverityButton().props('selected')).toBe(false);
+      expect(overTimeGroupBy.props('value')).toBe('reportType');
     });
 
     it('switches back to severity grouping when severity button is clicked', async () => {
       await waitForPromises();
+      const overTimeGroupBy = findOverTimeGroupBy();
 
-      await findReportTypeButton().vm.$emit('click');
+      await overTimeGroupBy.vm.$emit('input', 'reportType');
       await nextTick();
 
-      await findSeverityButton().vm.$emit('click');
+      await overTimeGroupBy.vm.$emit('input', 'severity');
       await nextTick();
 
-      expect(findSeverityButton().props('selected')).toBe(true);
-      expect(findReportTypeButton().props('selected')).toBe(false);
+      expect(overTimeGroupBy.props('value')).toBe('severity');
     });
   });
 
@@ -203,7 +196,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
     it('updates query variables when switching to report type grouping', async () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
 
-      await findReportTypeButton().vm.$emit('click');
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
       await waitForPromises();
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
@@ -220,7 +213,6 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   describe('chart data formatting', () => {
     it('correctly formats chart data from the API response for severity grouping', async () => {
       await waitForPromises();
-      await nextTick();
 
       const expectedChartData = [
         {
@@ -266,10 +258,16 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('severity');
     });
 
-    it('correctly formats chart data from the API response for report type grouping', async () => {
-      await findReportTypeButton().vm.$emit('click');
+    it('passes the correct grouped-by prop for report type grouping', async () => {
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
       await waitForPromises();
-      await nextTick();
+
+      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('reportType');
+    });
+
+    it('correctly formats chart data from the API response for report type grouping', async () => {
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await waitForPromises();
 
       const expectedChartData = [
         {
@@ -303,14 +301,6 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       ];
 
       expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
-    });
-
-    it('passes the correct grouped-by prop for report type grouping', async () => {
-      await findReportTypeButton().vm.$emit('click');
-      await waitForPromises();
-      await nextTick();
-
-      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('reportType');
     });
 
     it('returns empty chart data when no vulnerabilities data is available', async () => {

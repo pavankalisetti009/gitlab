@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
+import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -37,6 +38,11 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
                   { severity: 'MEDIUM', count: 15 },
                   { severity: 'LOW', count: 8 },
                 ],
+                byReportType: [
+                  { reportType: 'SAST', count: 8 },
+                  { reportType: 'DEPENDENCY_SCANNING', count: 12 },
+                  { reportType: 'CONTAINER_SCANNING', count: 10 },
+                ],
               },
               {
                 date: '2025-06-02',
@@ -45,6 +51,11 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
                   { severity: 'HIGH', count: 9 },
                   { severity: 'MEDIUM', count: 14 },
                   { severity: 'LOW', count: 7 },
+                ],
+                byReportType: [
+                  { reportType: 'DAST', count: 5 },
+                  { reportType: 'API_FUZZING', count: 3 },
+                  { reportType: 'SAST', count: 6 },
                 ],
               },
             ],
@@ -80,6 +91,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
   const findExtendedDashboardPanel = () => wrapper.findComponent(ExtendedDashboardPanel);
   const findVulnerabilitiesOverTimeChart = () =>
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
+  const findOverTimeGroupBy = () => wrapper.findComponent(OverTimeGroupBy);
   const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
 
   beforeEach(() => {
@@ -95,6 +107,35 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       await waitForPromises();
       expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
     });
+
+    it('passes severity value to OverTimeGroupBy by default', () => {
+      expect(findOverTimeGroupBy().props('value')).toBe('severity');
+    });
+  });
+
+  describe('group by functionality', () => {
+    it('switches to report type grouping when report type button is clicked', async () => {
+      await waitForPromises();
+      const overTimeGroupBy = findOverTimeGroupBy();
+
+      await overTimeGroupBy.vm.$emit('input', 'reportType');
+      await nextTick();
+
+      expect(overTimeGroupBy.props('value')).toBe('reportType');
+    });
+
+    it('switches back to severity grouping when severity button is clicked', async () => {
+      await waitForPromises();
+      const overTimeGroupBy = findOverTimeGroupBy();
+
+      await overTimeGroupBy.vm.$emit('input', 'reportType');
+      await nextTick();
+
+      await overTimeGroupBy.vm.$emit('input', 'severity');
+      await nextTick();
+
+      expect(overTimeGroupBy.props('value')).toBe('severity');
+    });
   });
 
   describe('Apollo query', () => {
@@ -106,6 +147,8 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         reportType: mockFilters.reportType,
         startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
+        includeBySeverity: true,
+        includeByReportType: false,
       });
     });
 
@@ -121,6 +164,8 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         reportType: ['API_FUZZING', 'SAST'],
         startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
+        includeBySeverity: true,
+        includeByReportType: false,
       });
     });
 
@@ -139,6 +184,24 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         fullPath: mockProjectFullPath,
         startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
+        includeBySeverity: true,
+        includeByReportType: false,
+      });
+    });
+
+    it('updates query variables when switching to report type grouping', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+        fullPath: mockProjectFullPath,
+        reportType: mockFilters.reportType,
+        startDate: ninetyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
+        includeBySeverity: false,
+        includeByReportType: true,
       });
     });
   });
@@ -181,6 +244,44 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
             ['2025-06-01', 8],
             ['2025-06-02', 7],
           ],
+        },
+      ];
+
+      expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
+    });
+
+    it('correctly formats chart data from the API response for report type grouping', async () => {
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await waitForPromises();
+
+      const expectedChartData = [
+        {
+          name: 'SAST',
+          id: 'SAST',
+          data: [
+            ['2025-06-01', 8],
+            ['2025-06-02', 6],
+          ],
+        },
+        {
+          name: 'Dependency Scanning',
+          id: 'DEPENDENCY_SCANNING',
+          data: [['2025-06-01', 12]],
+        },
+        {
+          name: 'Container Scanning',
+          id: 'CONTAINER_SCANNING',
+          data: [['2025-06-01', 10]],
+        },
+        {
+          name: 'DAST',
+          id: 'DAST',
+          data: [['2025-06-02', 5]],
+        },
+        {
+          name: 'API Fuzzing',
+          id: 'API_FUZZING',
+          data: [['2025-06-02', 3]],
         },
       ];
 
