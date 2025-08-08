@@ -43382,6 +43382,9 @@ msgstr ""
 msgid "Observability|Creates alerts automatically for Observability-related errors."
 msgstr ""
 
+msgid "Observability|Crypto API not available"
+msgstr ""
+
 msgid "Observability|Danger Zone"
 msgstr ""
 
@@ -43446,6 +43449,9 @@ msgid "Observability|Last 5 minutes"
 msgstr ""
 
 msgid "Observability|Last 7 days"
+msgstr ""
+
+msgid "Observability|Length must be a positive integer"
 msgstr ""
 
 msgid "Observability|Message validation failed"
