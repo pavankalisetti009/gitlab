@@ -31,7 +31,6 @@ export default {
     GlIcon,
     WorkItemSidebarWidget,
     GlPopover,
-    IssueWeight: () => import('ee_component/issues/components/issue_weight.vue'),
   },
   mixins: [Tracking.mixin()],
   inject: ['hasIssueWeightsFeature'],
@@ -191,17 +190,17 @@ export default {
           variant="warning"
         />
         <gl-popover target="conflicting-weight-warning-icon" triggers="hover focus">
-          <div class="gl-text-strong">{{ __('Weight does not match total of child items.') }}</div>
-          <div class="gl-mt-3 gl-flex gl-gap-3">
-            <span>
-              <div class="gl-text-subtle">{{ __('Total of child items') }}</div>
-              <issue-weight :weight="rolledUpWeight" class="!gl-text-strong" />
-            </span>
-            <span>
-              <div class="gl-text-subtle">
-                {{ __('Item weight') }}
-              </div>
+          <div class="gl-text-strong">
+            {{ __('Assigned weight does not match total of its child items.') }}
+          </div>
+          <div class="gl-mt-3 gl-flex">
+            <span class="gl-flex-grow">
+              <div class="gl-text-subtle">{{ __('Assigned weight') }}</div>
               <span class="gl-text-strong">{{ weight }}</span>
+            </span>
+            <span class="gl-flex-grow">
+              <div class="gl-text-subtle">{{ __('Total of child items') }}</div>
+              <span class="gl-text-strong">{{ rolledUpWeight }}</span>
             </span>
           </div>
         </gl-popover>

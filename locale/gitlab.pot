@@ -9016,6 +9016,12 @@ msgstr ""
 msgid "Assigned to %{assignee_name}"
 msgstr ""
 
+msgid "Assigned weight"
+msgstr ""
+
+msgid "Assigned weight does not match total of its child items."
+msgstr ""
+
 msgid "Assignee"
 msgid_plural "%d Assignees"
 msgstr[0] ""
@@ -35228,9 +35234,6 @@ msgid "Item - %d"
 msgid_plural "Items - %d"
 msgstr[0] ""
 msgstr[1] ""
-
-msgid "Item weight"
-msgstr ""
 
 msgid "Item with ID: %{id} cannot be added. You don't have permission to perform this action."
 msgstr ""
@@ -71289,9 +71292,6 @@ msgid "Weight %{weight}"
 msgstr ""
 
 msgid "Weight - %{maxIssueWeight}"
-msgstr ""
-
-msgid "Weight does not match total of child items."
 msgstr ""
 
 msgid "Welcome %{name},"
