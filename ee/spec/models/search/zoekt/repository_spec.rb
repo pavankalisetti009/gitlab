@@ -108,21 +108,73 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
 
     describe '.should_be_indexed' do
       let_it_be(:ready) { create(:zoekt_repository, state: :ready) }
-      let_it_be(:ready_mismatch_schema_version) { create(:zoekt_repository, state: :ready, schema_version: 2510) }
       let_it_be(:pending) { create(:zoekt_repository, state: :pending) }
       let_it_be(:orphaned) { create(:zoekt_repository, state: :orphaned) }
       let_it_be(:pending_deletion) { create(:zoekt_repository, state: :pending_deletion) }
       let_it_be(:failed) { create(:zoekt_repository, state: :failed) }
       let_it_be(:initializing) { create(:zoekt_repository, state: :initializing) }
-      let_it_be(:initializing_mismatch_schema_version) do
-        create(:zoekt_repository, state: :initializing, schema_version: 2510)
-      end
 
       subject(:records) { described_class.should_be_indexed }
 
-      it 'returns all repositories with pending states and indexable states with mismatched schema_version' do
-        expect(records).to include ready_mismatch_schema_version, pending, initializing_mismatch_schema_version
+      it 'returns only repositories with pending state' do
+        expect(records).to include pending
         expect(records).not_to include ready, initializing, orphaned, pending_deletion, failed
+      end
+    end
+
+    describe '.should_be_reindexed' do
+      let_it_be(:node_v1) { create(:zoekt_node, schema_version: 1) }
+      let_it_be(:node_v2) { create(:zoekt_node, schema_version: 2) }
+      let_it_be(:index_v1) { create(:zoekt_index, node: node_v1) }
+      let_it_be(:index_v2) { create(:zoekt_index, node: node_v2) }
+
+      let_it_be(:ready_matching_schema) do
+        create(:zoekt_repository, state: :ready, schema_version: 1, zoekt_index: index_v1)
+      end
+
+      let_it_be(:ready_mismatched_schema) do
+        create(:zoekt_repository, state: :ready, schema_version: 1, zoekt_index: index_v2)
+      end
+
+      let_it_be(:pending_mismatched_schema) do
+        create(:zoekt_repository, state: :pending, schema_version: 1, zoekt_index: index_v2)
+      end
+
+      let_it_be(:initializing_mismatched_schema) do
+        create(:zoekt_repository, state: :initializing, schema_version: 1, zoekt_index: index_v2)
+      end
+
+      let_it_be(:orphaned_mismatched_schema) do
+        create(:zoekt_repository, state: :orphaned, schema_version: 1, zoekt_index: index_v2)
+      end
+
+      subject(:records) { described_class.should_be_reindexed }
+
+      it 'returns indexable repositories with schema version different from their node' do
+        expect(records).to include ready_mismatched_schema, pending_mismatched_schema, initializing_mismatched_schema
+        expect(records).not_to include ready_matching_schema, orphaned_mismatched_schema
+      end
+    end
+
+    describe '.with_pending_or_processing_tasks' do
+      let_it_be(:repo_with_pending_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_processing_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_done_task) { create(:zoekt_repository) }
+      let_it_be(:repo_with_failed_task) { create(:zoekt_repository) }
+      let_it_be(:repo_without_tasks) { create(:zoekt_repository) }
+
+      before_all do
+        create(:zoekt_task, :pending, zoekt_repository: repo_with_pending_task)
+        create(:zoekt_task, :processing, zoekt_repository: repo_with_processing_task)
+        create(:zoekt_task, :done, zoekt_repository: repo_with_done_task)
+        create(:zoekt_task, :failed, zoekt_repository: repo_with_failed_task)
+      end
+
+      subject(:records) { described_class.with_pending_or_processing_tasks }
+
+      it 'returns repositories that have pending or processing tasks' do
+        expect(records).to include repo_with_pending_task, repo_with_processing_task
+        expect(records).not_to include repo_with_done_task, repo_with_failed_task, repo_without_tasks
       end
     end
   end
