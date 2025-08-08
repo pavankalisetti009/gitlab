@@ -3,6 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoListFilteredSearchBar from 'ee/geo_shared/list/components/geo_list_filtered_search_bar.vue';
 import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { MOCK_LISTBOX_ITEMS, MOCK_FILTER_A, MOCK_BULK_ACTIONS } from '../mock_data';
 
 describe('GeoListTopBar', () => {
@@ -14,6 +15,8 @@ describe('GeoListTopBar', () => {
     activeFilteredSearchFilters: [MOCK_FILTER_A],
     showActions: true,
     bulkActions: MOCK_BULK_ACTIONS,
+    pageHeadingTitle: 'Test Title',
+    pageHeadingDescription: 'Test Description',
   };
 
   const createComponent = ({ props } = {}) => {
@@ -22,11 +25,15 @@ describe('GeoListTopBar', () => {
         ...defaultProps,
         ...props,
       },
+      stubs: {
+        PageHeading,
+      },
     });
   };
 
   const findFilteredSearch = () => wrapper.findComponent(GeoListFilteredSearchBar);
   const findBulkActions = () => wrapper.findComponent(GeoListBulkActions);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   describe('GeoListFilteredSearchBar', () => {
     beforeEach(() => {
@@ -53,6 +60,17 @@ describe('GeoListTopBar', () => {
       await nextTick();
 
       expect(wrapper.emitted('search')).toStrictEqual([['test-search']]);
+    });
+  });
+
+  describe('PageHeading', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders with correct props and text', () => {
+      expect(findPageHeading().props('heading')).toBe(defaultProps.pageHeadingTitle);
+      expect(findPageHeading().text()).toContain(defaultProps.pageHeadingDescription);
     });
   });
 

@@ -65,11 +65,13 @@ export const MOCK_STATUSES = [
     tooltip: 'Status: A',
     icon: 'status_preparing',
     variant: 'warning',
+    label: 'Label A',
   },
   {
     tooltip: 'Status: B',
     icon: 'status_success',
     variant: 'success',
+    label: 'Label B',
   },
 ];
 

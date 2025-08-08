@@ -1,9 +1,9 @@
 <script>
-import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import { GlBadge, GlTooltipDirective } from '@gitlab/ui';
 
 export default {
   components: {
-    GlIcon,
+    GlBadge,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -20,14 +20,15 @@ export default {
 
 <template>
   <div>
-    <gl-icon
+    <gl-badge
       v-for="(status, index) in statusArray"
       :key="index"
       v-gl-tooltip.hover.focus
       :title="status.tooltip"
-      :name="status.icon"
+      :icon="status.icon"
       :variant="status.variant"
       class="gl-mx-1 gl-cursor-pointer"
-    />
+      >{{ status.label }}</gl-badge
+    >
   </div>
 </template>

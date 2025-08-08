@@ -15,10 +15,6 @@ RSpec.describe "admin/geo/replicables/index", feature_category: :geo_replication
     render
   end
 
-  it 'renders page header through the PageHeadingComponent component' do
-    expect(rendered).to have_content('Geo Replication - geo-test-node')
-  end
-
   it 'renders #js-geo-replicable' do
     expect(rendered).to have_css('#js-geo-replicable')
   end

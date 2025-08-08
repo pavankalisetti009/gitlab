@@ -32,6 +32,9 @@ export default {
     itemTitle: {
       default: '',
     },
+    siteName: {
+      default: '',
+    },
   },
   data() {
     return {
@@ -66,6 +69,9 @@ export default {
         helpLink: GEO_TROUBLESHOOTING_LINK,
         hasFilters: this.emptyStateHasFilters,
       };
+    },
+    pageHeadingTitle() {
+      return sprintf(s__('Geo|Geo Replication - %{siteName}'), { siteName: this.siteName });
     },
   },
   created() {
@@ -107,6 +113,12 @@ export default {
   <article class="geo-replicable-container">
     <geo-feedback-banner />
     <geo-list-top-bar
+      :page-heading-title="pageHeadingTitle"
+      :page-heading-description="
+        s__(
+          'Geo|Review replication status, and resynchronize and reverify items with the primary site.',
+        )
+      "
       :listbox-header-text="s__('Geo|Select replicable type')"
       :active-listbox-item="activeReplicableType"
       :active-filtered-search-filters="activeFilteredSearchFilters"

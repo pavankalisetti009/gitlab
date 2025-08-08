@@ -47,6 +47,7 @@ describe('GeoReplicableApp', () => {
 
   const defaultProvide = {
     itemTitle: 'Test Item',
+    siteName: 'Test Site',
   };
 
   const MOCK_EMPTY_STATE = {
@@ -214,6 +215,19 @@ describe('GeoReplicableApp', () => {
 
     it('renders the Geo Feedback Banner', () => {
       expect(findGeoFeedbackBanner().exists()).toBe(true);
+    });
+  });
+
+  describe('page title', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('passes the correct title and description to the topbar', () => {
+      expect(findGeoListTopBar().props('pageHeadingTitle')).toBe('Geo Replication - Test Site');
+      expect(findGeoListTopBar().props('pageHeadingDescription')).toBe(
+        'Review replication status, and resynchronize and reverify items with the primary site.',
+      );
     });
   });
 

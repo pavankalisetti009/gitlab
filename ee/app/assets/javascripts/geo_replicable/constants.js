@@ -112,6 +112,7 @@ export const BULK_ACTIONS = [
     id: 'geo-bulk-action-resync',
     action: ACTION_TYPES.RESYNC_ALL,
     text: s__('Geo|Resync all'),
+    icon: 'retry',
     modal: {
       title: s__('Geo|Resync all %{type}'),
       description: s__(

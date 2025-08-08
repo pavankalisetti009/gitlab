@@ -5,7 +5,12 @@ import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import { REPLICATION_STATUS_STATES, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import {
+  REPLICATION_STATUS_STATES,
+  VERIFICATION_STATUS_STATES,
+  REPLICATION_STATUS_LABELS,
+  VERIFICATION_STATUS_LABELS,
+} from 'ee/geo_shared/constants';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import { ACTION_TYPES } from 'ee/geo_replicable/constants';
@@ -82,18 +87,21 @@ describe('GeoReplicableItem', () => {
       tooltip: `Replication: ${REPLICATION_STATUS_STATES.PENDING.title}`,
       icon: REPLICATION_STATUS_STATES.PENDING.icon,
       variant: REPLICATION_STATUS_STATES.PENDING.variant,
+      label: REPLICATION_STATUS_LABELS[REPLICATION_STATUS_STATES.PENDING.value],
     };
 
     const EXPECTED_VERIFICATION_STATUS = {
       tooltip: `Verification: ${VERIFICATION_STATUS_STATES.SUCCEEDED.title}`,
       icon: VERIFICATION_STATUS_STATES.SUCCEEDED.icon,
       variant: VERIFICATION_STATUS_STATES.SUCCEEDED.variant,
+      label: VERIFICATION_STATUS_LABELS[VERIFICATION_STATUS_STATES.SUCCEEDED.value],
     };
 
     const EXPECTED_UNKNOWN_VERIFICATION_STATUS = {
       tooltip: `Verification: ${VERIFICATION_STATUS_STATES.UNKNOWN.title}`,
       icon: VERIFICATION_STATUS_STATES.UNKNOWN.icon,
       variant: VERIFICATION_STATUS_STATES.UNKNOWN.variant,
+      label: VERIFICATION_STATUS_LABELS.UNKNOWN,
     };
 
     describe.each`
@@ -127,7 +135,7 @@ describe('GeoReplicableItem', () => {
         defaultText: 'Unknown',
       },
       {
-        label: 'Last time verified',
+        label: 'Verified',
         dateString: mockReplicable.verifiedAt,
         defaultText: null,
       },
@@ -166,6 +174,7 @@ describe('GeoReplicableItem', () => {
       id: 'geo-resync-item',
       value: ACTION_TYPES.RESYNC,
       text: 'Resync',
+      icon: 'retry',
     };
 
     const REVERIFY_ACTION = {

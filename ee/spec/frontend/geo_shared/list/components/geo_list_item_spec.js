@@ -106,7 +106,7 @@ describe('GeoListItem', () => {
       });
 
       it('does render extra-details slot with slot contents', () => {
-        expect(findExtraDetails().text()).toBe('Extra Details');
+        expect(findExtraDetails().text()).toBe('Extra Details ·');
       });
     });
   });

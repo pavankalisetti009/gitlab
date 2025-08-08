@@ -2,7 +2,12 @@
 import { GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { REPLICATION_STATUS_STATES, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
+import {
+  REPLICATION_STATUS_STATES,
+  VERIFICATION_STATUS_STATES,
+  REPLICATION_STATUS_LABELS,
+  VERIFICATION_STATUS_LABELS,
+} from 'ee/geo_shared/constants';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -17,7 +22,7 @@ export default {
     nA: __('Not applicable.'),
     resync: s__('Geo|Resync'),
     reverify: s__('Geo|Reverify'),
-    lastVerified: s__('Geo|Last time verified'),
+    lastVerified: s__('Geo|Verified'),
     modelRecordId: s__('Geo|Model record: %{modelRecordId}'),
     replicationStatus: s__('Geo|Replication: %{status}'),
     verificationStatus: s__('Geo|Verification: %{status}'),
@@ -109,6 +114,8 @@ export default {
           }),
           icon: replicationStatus.icon,
           variant: replicationStatus.variant,
+          label:
+            REPLICATION_STATUS_LABELS[replicationStatus.value] || REPLICATION_STATUS_LABELS.UNKNOWN,
         },
       ];
 
@@ -123,6 +130,9 @@ export default {
           }),
           icon: verificationStatus.icon,
           variant: verificationStatus.variant,
+          label:
+            VERIFICATION_STATUS_LABELS[verificationStatus.value] ||
+            VERIFICATION_STATUS_LABELS.UNKNOWN,
         });
       }
 
@@ -134,6 +144,7 @@ export default {
           id: 'geo-resync-item',
           value: ACTION_TYPES.RESYNC,
           text: this.$options.i18n.resync,
+          icon: 'retry',
         },
       ];
 

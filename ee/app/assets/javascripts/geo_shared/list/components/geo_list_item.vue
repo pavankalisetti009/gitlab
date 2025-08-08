@@ -48,43 +48,47 @@ export default {
 
 <template>
   <div class="gl-border-b gl-p-5">
-    <div class="geo-list-item-grid gl-grid gl-items-center gl-pb-4">
-      <geo-list-item-status :status-array="statusArray" />
-
-      <gl-link v-if="detailsPath" class="gl-font-bold" :href="detailsPath">{{ name }}</gl-link>
-      <span v-else class="gl-font-bold" data-testid="non-link-name">{{ name }}</span>
-
+    <div class="gl-flex gl-items-center gl-pb-3">
       <div>
+        <gl-link v-if="detailsPath" :href="detailsPath">{{ name }}</gl-link>
+        <span v-else data-testid="non-link-name">{{ name }}</span>
+
+        <div class="gl-flex gl-flex-wrap gl-items-center">
+          <span
+            v-if="$scopedSlots['extra-details']"
+            class="gl-px-1 gl-text-sm gl-text-subtle"
+            data-testid="extra-details"
+          >
+            <slot name="extra-details"></slot>
+            <span class="gl-ml-1">·</span>
+          </span>
+
+          <geo-list-item-time-ago
+            v-for="(timeAgo, index) in timeAgoArray"
+            :key="index"
+            :label="timeAgo.label"
+            :date-string="timeAgo.dateString"
+            :default-text="timeAgo.defaultText"
+            :show-divider="index < timeAgoArray.length - 1"
+          />
+        </div>
+      </div>
+
+      <div class="gl-ml-auto gl-self-start">
         <gl-button
           v-for="action in actionsArray"
           :key="action.id"
           :data-testid="action.id"
+          :icon="action.icon"
           size="small"
+          class="gl-ml-3"
           @click="$emit('actionClicked', action)"
         >
           {{ action.text }}
         </gl-button>
       </div>
     </div>
-
-    <div class="gl-flex gl-flex-wrap gl-items-center">
-      <span
-        v-if="$scopedSlots['extra-details']"
-        class="gl-border-r-1 gl-px-2 gl-text-sm gl-text-subtle gl-border-r-solid"
-        data-testid="extra-details"
-      >
-        <slot name="extra-details"></slot>
-      </span>
-
-      <geo-list-item-time-ago
-        v-for="(timeAgo, index) in timeAgoArray"
-        :key="index"
-        :label="timeAgo.label"
-        :date-string="timeAgo.dateString"
-        :default-text="timeAgo.defaultText"
-        :show-divider="index < timeAgoArray.length - 1"
-      />
-    </div>
+    <geo-list-item-status :status-array="statusArray" />
     <geo-list-item-errors v-if="errorsArray.length" :errors-array="errorsArray" class="gl-pl-2" />
   </div>
 </template>
