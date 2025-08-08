@@ -8,9 +8,8 @@ RSpec.describe 'Setting the epic of an issue', feature_category: :team_planning 
   let(:new_epic_group) { nil }
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:organization) { create(:organization) }
-  let_it_be(:group) { create(:group, developers: current_user, organization: organization) }
-  let_it_be(:project) { create(:project, group: group, developers: current_user, organization: organization) }
+  let_it_be(:group) { create(:group, developers: current_user) }
+  let_it_be(:project) { create(:project, group: group, developers: current_user) }
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:user) { create(:user) }
 
@@ -82,7 +81,7 @@ RSpec.describe 'Setting the epic of an issue', feature_category: :team_planning 
   end
 
   context 'when epic has to be in a different group' do
-    let(:new_epic_group) { create(:group, organization: organization) }
+    let(:new_epic_group) { create(:group) }
 
     context 'when user cannot create epic in new group' do
       it 'does not promote the issue to epic' do

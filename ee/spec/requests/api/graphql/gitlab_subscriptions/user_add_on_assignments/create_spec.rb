@@ -116,7 +116,6 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
     end
   end
 
-  let_it_be(:organization) { create(:organization) }
   let(:requested_fields) do
     <<-GQL
   errors
@@ -174,8 +173,8 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
     end
 
     let_it_be(:current_user) { create(:user) }
-    let_it_be(:namespace) { create(:group, organization: organization) }
-    let_it_be(:namespace_1) { create(:group, organization: organization) }
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:namespace_1) { create(:group) }
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
 
     before_all do
