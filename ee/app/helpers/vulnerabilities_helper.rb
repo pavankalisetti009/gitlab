@@ -141,7 +141,7 @@ module VulnerabilitiesHelper
     data[:ai_resolution_available] = finding.ai_resolution_available?
     data[:belongs_to_public_project] = vulnerability.project.public?
     data[:cve_enrichment] = cve_enrichment(finding)
-    data[:cvss] = cvss(finding)
+    data[:cvss] = cvss(vulnerability)
     if Feature.enabled?(:validity_checks, finding.project) && finding.project.security_setting&.validity_checks_enabled
       data[:finding_token_status] = finding.finding_token_status
     end
@@ -162,13 +162,17 @@ module VulnerabilitiesHelper
     }
   end
 
-  def cvss(finding)
-    return [] unless finding.advisory&.cvss_v3
+  def cvss(vulnerability)
+    vulnerability.cvss.filter_map do |data|
+      cvss = CvssSuite.new(data['vector'])
 
-    [{
-      overall_score: finding.advisory.cvss_v3.overall_score,
-      version: finding.advisory.cvss_v3.version
-    }]
+      next unless cvss.valid?
+
+      {
+        overall_score: cvss.overall_score,
+        version: cvss.version
+      }
+    end
   end
 
   def vulnerability_scan_data?(vulnerability)
