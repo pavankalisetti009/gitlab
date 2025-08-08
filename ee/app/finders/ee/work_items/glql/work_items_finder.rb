@@ -52,13 +52,22 @@ module EE
 
         GLQL_SOURCE = 'glql'
 
+        INDEX_NAME = ::Search::Elastic::References::WorkItem.index
+        QUERY = '*'
+
         attr_reader :current_user, :context, :params
         attr_accessor :resource_parent
 
         def execute
-          result = search_service.search_results.objects('issues')
+          work_item_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: QUERY, options: search_params)
 
-          ::WorkItem.glql_from_es_results(result)
+          ::Search::Elastic::Relation.new(::WorkItem, work_item_query, es_search_options)
+        end
+
+        def es_search_options
+          {
+            index_name: INDEX_NAME
+          }
         end
 
         override :use_elasticsearch_finder?
@@ -90,10 +99,6 @@ module EE
 
         private
 
-        def search_service
-          ::SearchService.new(current_user, search_params)
-        end
-
         def search_params
           base_params.merge(scope_param)
         end
@@ -106,15 +111,61 @@ module EE
             sort: 'created_desc',
             state: params[:state],
             confidential: params[:confidential],
-            work_item_type_ids: type_ids_from(params[:issue_types])
+            work_item_type_ids: type_ids_from(params[:issue_types]),
+            current_user: current_user,
+            public_and_internal_projects: false,
+            root_ancestor_ids: [resource_parent.root_ancestor.id]
           }.merge(
+            project_params,
+            group_params,
             label_params,
             author_params,
             milestone_params,
             assignee_params,
             weight_params,
             health_status_params
-          )
+          ).compact
+        end
+
+        def project_scope?
+          parent_param == :project_id
+        end
+
+        def group_scope?
+          parent_param == :group_id
+        end
+
+        def group_params
+          return {} unless group_scope?
+
+          {
+            search_level: 'group',
+            group_ids: [resource_parent.id],
+            group_id: resource_parent.id,
+            project_ids: project_ids
+          }
+        end
+
+        def project_params
+          return {} unless project_scope?
+
+          {
+            search_level: 'project',
+            project_ids: [resource_parent.id]
+          }
+        end
+
+        # NOTE: project_ids should be removed when the traversal_ids
+        # optimization is implemented for confidentiality filters
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/558781
+        def project_ids
+          projects = ::ProjectsFinder.new(current_user: current_user)
+            .execute
+            .inside_path_preloaded(resource_parent.full_path)
+
+          return [] unless projects.present?
+
+          projects.pluck_primary_key
         end
 
         def label_params
