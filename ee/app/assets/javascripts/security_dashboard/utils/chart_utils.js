@@ -81,7 +81,7 @@ const formatVulnerabilitiesByReportType = (vulnerabilitiesOverTime) => {
       id: 'CONTAINER_SCANNING_FOR_REGISTRY',
       data: [],
     },
-    GENERIC: { name: s__('reportType|Generic'), id: 'GENERIC', data: [] },
+    GENERIC: { name: s__('reportType|Manually added'), id: 'GENERIC', data: [] },
   };
 
   vulnerabilitiesOverTime.forEach((node) => {

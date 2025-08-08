@@ -76425,7 +76425,7 @@ msgstr ""
 msgid "reportType|Dependency Scanning"
 msgstr ""
 
-msgid "reportType|Generic"
+msgid "reportType|Manually added"
 msgstr ""
 
 msgid "reportType|SAST"
