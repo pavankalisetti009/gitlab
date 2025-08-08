@@ -75,6 +75,8 @@ module EE
         .includes(:user)
         .order(:user_id, :invite_email)
       end
+
+      scope :order_access_level_desc, -> { order(access_level: :desc) }
     end
 
     class_methods do

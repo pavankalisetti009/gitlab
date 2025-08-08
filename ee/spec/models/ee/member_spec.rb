@@ -200,6 +200,16 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       it { is_expected.not_to include member_with_higher_access_level }
       it { is_expected.to include member_with_higher_access_level_and_custom_role }
     end
+
+    describe '.order_access_level_desc' do
+      it 'orders by the access level' do
+        group = create(:group)
+        developer = create(:group_member, :developer, group: group)
+        maintainer = create(:group_member, :maintainer, group: group)
+
+        expect(group.members.order_access_level_desc).to eq([maintainer, developer])
+      end
+    end
   end
 
   describe '#notification_service' do
