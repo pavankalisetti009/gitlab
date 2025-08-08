@@ -215,6 +215,9 @@ module EE
         end
 
         def subscribe_to_zoekt_events(store)
+          store.subscribe ::Search::Zoekt::ProjectMarkedAsArchivedEventWorker,
+            to: ::Projects::ProjectArchivedEvent
+
           store.subscribe ::Search::Zoekt::ForceUpdateOverprovisionedIndexEventWorker,
             to: ::Search::Zoekt::ForceUpdateOverprovisionedIndexEvent
 
