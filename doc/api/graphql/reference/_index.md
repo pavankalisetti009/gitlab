@@ -41565,7 +41565,8 @@ Represents security metrics.
 
 ##### `SecurityMetrics.vulnerabilitiesOverTime`
 
-Vulnerability metrics over time with filtering and grouping capabilities. This feature is currently under development and not yet available for general use.
+Vulnerability metrics over time with filtering and grouping capabilities.
+This feature is currently under development and not yet available for general use.
 
 Returns [`VulnerabilitiesOverTimeConnection`](#vulnerabilitiesovertimeconnection).
 
@@ -41578,10 +41579,22 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="securitymetricsvulnerabilitiesovertimeenddate"></a>`endDate` | [`ISO8601Date!`](#iso8601date) | End date for the vulnerability metrics time range. |
-| <a id="securitymetricsvulnerabilitiesovertimeprojectid"></a>`projectId` | [`[ID!]`](#id) | Filter by project IDs in a group. This argument is ignored when we are querying for a project. |
-| <a id="securitymetricsvulnerabilitiesovertimereporttype"></a>`reportType` | [`[VulnerabilityReportType!]`](#vulnerabilityreporttype) | Filter by report types. |
 | <a id="securitymetricsvulnerabilitiesovertimeseverity"></a>`severity` | [`[VulnerabilitySeverity!]`](#vulnerabilityseverity) | Filter vulnerabilities by severity. |
 | <a id="securitymetricsvulnerabilitiesovertimestartdate"></a>`startDate` | [`ISO8601Date!`](#iso8601date) | Start date for the vulnerability metrics time range. |
+
+##### `SecurityMetrics.vulnerabilitiesPerSeverity`
+
+Count of open vulnerabilities per severity level.
+This feature is currently under development and not yet available for general use.
+
+Returns [`VulnerabilitiesPerSeverity`](#vulnerabilitiesperseverity).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="securitymetricsvulnerabilitiesperseverityenddate"></a>`endDate` {{< icon name="warning-solid" >}} | [`ISO8601Date`](#iso8601date) | **Introduced** in GitLab 18.3. **Status**: Experiment. End date for the vulnerability metrics time range. Defaults to current date if not provided. |
+| <a id="securitymetricsvulnerabilitiesperseveritystartdate"></a>`startDate` {{< icon name="warning-solid" >}} | [`ISO8601Date`](#iso8601date) | **Introduced** in GitLab 18.3. **Status**: Experiment. Start date for the vulnerability metrics time range. Defaults to 365 days ago if not provided. |
 
 ### `SecurityPolicyType`
 
@@ -43485,6 +43498,21 @@ Represents vulnerability metrics over time with filtering and grouping capabilit
 | <a id="vulnerabilitiesovertimebyseverity"></a>`bySeverity` | [`[VulnerabilitySeverityCount!]`](#vulnerabilityseveritycount) | Vulnerability counts grouped by severity level. |
 | <a id="vulnerabilitiesovertimecount"></a>`count` | [`Int!`](#int) | Total number of vulnerabilities for the date. |
 | <a id="vulnerabilitiesovertimedate"></a>`date` | [`ISO8601Date!`](#iso8601date) | Date for the metrics. |
+
+### `VulnerabilitiesPerSeverity`
+
+Represents vulnerability counts grouped by severity level.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitiesperseveritycritical"></a>`critical` | [`Int!`](#int) | Number of CRITICAL severity vulnerabilities. |
+| <a id="vulnerabilitiesperseverityhigh"></a>`high` | [`Int!`](#int) | Number of HIGH severity vulnerabilities. |
+| <a id="vulnerabilitiesperseverityinfo"></a>`info` | [`Int!`](#int) | Number of INFO severity vulnerabilities. |
+| <a id="vulnerabilitiesperseveritylow"></a>`low` | [`Int!`](#int) | Number of LOW severity vulnerabilities. |
+| <a id="vulnerabilitiesperseveritymedium"></a>`medium` | [`Int!`](#int) | Number of MEDIUM severity vulnerabilities. |
+| <a id="vulnerabilitiesperseverityunknown"></a>`unknown` | [`Int!`](#int) | Number of UNKNOWN severity vulnerabilities. |
 
 ### `Vulnerability`
 

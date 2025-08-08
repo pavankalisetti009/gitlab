@@ -46,9 +46,9 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
       end
     end
 
-    shared_examples 'returns resource not available error when unauthorized' do
-      it 'returns a resource not available error' do
-        expect(resolved_metrics).to be_a(Gitlab::Graphql::Errors::ResourceNotAvailable)
+    shared_examples 'returns nil when unauthorized' do
+      it 'returns nil' do
+        expect(resolved_metrics).to be_nil
       end
     end
 
@@ -79,7 +79,7 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
       end
 
       context 'when the current user does not have access' do
-        it_behaves_like 'returns resource not available error when unauthorized'
+        it_behaves_like 'returns nil when unauthorized'
       end
     end
 
@@ -111,7 +111,7 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
       end
 
       context 'when the current user does not have access' do
-        it_behaves_like 'returns resource not available error when unauthorized'
+        it_behaves_like 'returns nil when unauthorized'
       end
     end
 
@@ -146,7 +146,7 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
         stub_licensed_features(security_dashboard: false)
       end
 
-      it_behaves_like 'returns resource not available error when unauthorized'
+      it_behaves_like 'returns nil when unauthorized'
     end
   end
 end
