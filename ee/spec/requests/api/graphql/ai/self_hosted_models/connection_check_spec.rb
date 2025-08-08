@@ -49,11 +49,13 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
       allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
         allow(client).to receive(:test_model_connection).with(any_args)
       end
+
+      allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http://localhost:3000')
     end
 
     it_behaves_like 'it calls the manage_self_hosted_models_settings policy'
 
-    context 'when there are errors with creating the self-hosted model' do
+    context 'when there are errors with performing the code suggestions test' do
       let(:error_message) { 'API error' }
 
       before do
@@ -80,12 +82,29 @@ RSpec.describe 'Checking a self-hosted model connection', feature_category: :"se
         end
       end
 
-      it 'creates a self-hosted model' do
+      it 'returns a success result' do
         request
 
         expect(response).to have_gitlab_http_status(:success)
         expect(probe_graphql_result['success']).to be true
         expect(probe_graphql_result['message']).to match('Successfully connected')
+      end
+    end
+
+    context 'when the local AI Gateway URL is not configured' do
+      before do
+        allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return(nil)
+      end
+
+      it 'returns a failure result with a local AI Gateway URL not configured message' do
+        request
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(probe_graphql_result['success']).to be false
+        expect(probe_graphql_result['message']).to match(
+          "You have not configured your local AI gateway URL. " \
+            "Configure the URL in the GitLab Duo configuration settings."
+        )
       end
     end
   end

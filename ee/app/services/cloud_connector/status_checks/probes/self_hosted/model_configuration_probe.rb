@@ -11,6 +11,7 @@ module CloudConnector
 
           validate :check_user_exists
           validate :check_self_hosted_model_exists
+          validate :self_hosted_ai_gateway_configured
           validate :validate_code_completion_availability
 
           attr_reader :self_hosted_model
@@ -38,12 +39,24 @@ module CloudConnector
             errors.add(:base, _('User not provided')) unless user
           end
 
+          def self_hosted_ai_gateway_configured
+            return if self_hosted_ai_gateway_url.present?
+
+            errors.add(:base,
+              s_(
+                "AdminSelfHostedModels|You have not configured your local AI gateway URL. " \
+                  "Configure the URL in the GitLab Duo configuration settings."
+              )
+            )
+          end
+
           def check_self_hosted_model_exists
             errors.add(:base, s_('AdminSelfHostedModels|Self-hosted model was not provided')) unless self_hosted_model
           end
 
           def validate_code_completion_availability
             return unless user
+            return if self_hosted_ai_gateway_url.blank?
 
             error = ::Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(user).test_model_connection(self_hosted_model)
             errors.add(:base, failure_text(error)) if error.present?
@@ -75,6 +88,10 @@ module CloudConnector
 
           def failure_message
             errors.full_messages.first
+          end
+
+          def self_hosted_ai_gateway_url
+            ::Gitlab::AiGateway.self_hosted_url
           end
         end
       end
