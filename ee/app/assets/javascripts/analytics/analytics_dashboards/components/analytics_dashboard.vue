@@ -1,5 +1,13 @@
 <script>
-import { GlEmptyState, GlSkeletonLoader, GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
+import {
+  GlEmptyState,
+  GlSkeletonLoader,
+  GlAlert,
+  GlLink,
+  GlSprintf,
+  GlDashboardLayout,
+  GlExperimentBadge,
+} from '@gitlab/ui';
 import { createAlert, VARIANT_WARNING, VARIANT_DANGER } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -30,7 +38,6 @@ import {
   filtersToQueryParams,
   isDashboardFilterEnabled,
 } from './filters/utils';
-import AnalyticsCustomizableDashboard from './analytics_customizable_dashboard.vue';
 import AnalyticsDashboardPanel from './analytics_dashboard_panel.vue';
 
 export default {
@@ -40,7 +47,6 @@ export default {
     AnonUsersFilter: () => import('./filters/anon_users_filter.vue'),
     ProjectsFilter: () => import('./filters/projects_filter.vue'),
     FilteredSearchFilter: () => import('./filters/filtered_search_filter.vue'),
-    AnalyticsCustomizableDashboard,
     AnalyticsDashboardPanel,
     ProductAnalyticsFeedbackBanner,
     ValueStreamFeedbackBanner,
@@ -51,13 +57,11 @@ export default {
     GlLink,
     GlSprintf,
     UrlSync,
+    GlDashboardLayout,
+    GlExperimentBadge,
   },
   mixins: [InternalEvents.mixin()],
   inject: {
-    customDashboardsProject: {
-      type: Object,
-      default: null,
-    },
     namespaceFullPath: {
       type: String,
     },
@@ -82,7 +86,7 @@ export default {
   },
   data() {
     return {
-      initialDashboard: null,
+      dashboard: null,
       showEmptyState: false,
       filters: null,
       backUrl: this.$router.resolve('/').href,
@@ -91,18 +95,15 @@ export default {
     };
   },
   computed: {
-    currentDashboard() {
-      return this.initialDashboard;
-    },
     showValueStreamFeedbackBanner() {
       return [BUILT_IN_VALUE_STREAM_DASHBOARD, CUSTOM_VALUE_STREAM_DASHBOARD].includes(
-        this.currentDashboard?.slug,
+        this.dashboard?.slug,
       );
     },
     showProductAnalyticsFeedbackBanner() {
       return (
-        !this.currentDashboard?.userDefined &&
-        BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS.includes(this.currentDashboard?.slug)
+        !this.dashboard?.userDefined &&
+        BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS.includes(this.dashboard?.slug)
       );
     },
     showFilters() {
@@ -117,31 +118,31 @@ export default {
       return isDashboardFilterEnabled(this.dateRangeFilter);
     },
     showProjectsFilter() {
-      return this.isGroup && isDashboardFilterEnabled(this.currentDashboard?.filters?.projects);
+      return this.isGroup && isDashboardFilterEnabled(this.dashboard?.filters?.projects);
     },
     dateRangeFilter() {
-      return this.currentDashboard?.filters?.dateRange || {};
+      return this.dashboard?.filters?.dateRange || {};
     },
     dateRangeLimit() {
       return this.dateRangeFilter.numberOfDaysLimit || 0;
     },
     showAnonUserFilter() {
-      return isDashboardFilterEnabled(this.currentDashboard?.filters?.excludeAnonymousUsers);
+      return isDashboardFilterEnabled(this.dashboard?.filters?.excludeAnonymousUsers);
     },
     filteredSearchFilter() {
-      return this.currentDashboard?.filters?.filteredSearch;
+      return this.dashboard?.filters?.filteredSearch;
     },
     showFilteredSearchFilter() {
       return isDashboardFilterEnabled(this.filteredSearchFilter);
     },
     invalidDashboardErrors() {
-      return this.currentDashboard?.errors ?? [];
+      return this.dashboard?.errors ?? [];
     },
     hasDashboardError() {
       return this.hasDashboardLoadError || this.invalidDashboardErrors.length > 0;
     },
     dashboardHasUsageOverviewPanel() {
-      return this.currentDashboard?.panels
+      return this.dashboard?.panels
         .map(({ visualization: { slug } }) => slug)
         .includes('usage_overview');
     },
@@ -152,31 +153,31 @@ export default {
       return this.isValueStreamsDashboard || this.isAiImpactDashboard;
     },
     isValueStreamsDashboard() {
-      return this.currentDashboard.slug === BUILT_IN_VALUE_STREAM_DASHBOARD;
+      return this.dashboard.slug === BUILT_IN_VALUE_STREAM_DASHBOARD;
     },
     isAiImpactDashboard() {
-      return this.currentDashboard.slug === AI_IMPACT_DASHBOARD;
+      return this.dashboard.slug === AI_IMPACT_DASHBOARD;
     },
     queryParams() {
       return filtersToQueryParams(this.filters);
     },
     dateRangeOptions() {
-      return this.currentDashboard.filters?.dateRange?.options;
+      return this.dashboard.filters?.dateRange?.options;
     },
     filteredSearchOptions() {
-      return this.currentDashboard.filters?.filteredSearch?.options;
+      return this.dashboard.filters?.filteredSearch?.options;
+    },
+    statusBadgeType() {
+      return this.dashboard?.status || null;
     },
   },
   watch: {
-    initialDashboard({ title: label, userDefined } = {}) {
+    dashboard({ title: label, userDefined } = {}) {
       this.trackEvent(EVENT_LABEL_VIEWED_DASHBOARD, {
         label,
       });
 
-      this.filters = buildDefaultDashboardFilters(
-        window.location.search,
-        this.currentDashboard.filters,
-      );
+      this.filters = buildDefaultDashboardFilters(window.location.search, this.dashboard.filters);
 
       if (userDefined) {
         this.trackEvent(EVENT_LABEL_VIEWED_CUSTOM_DASHBOARD, {
@@ -189,7 +190,12 @@ export default {
       }
     },
   },
+  mounted() {
+    this.setPageFullWidth();
+  },
   beforeDestroy() {
+    this.setPageDefaultWidth();
+
     this.alert?.dismiss();
 
     // Clear the breadcrumb name when we leave this component so it doesn't
@@ -197,7 +203,7 @@ export default {
     this.breadcrumbState.updateName('');
   },
   apollo: {
-    initialDashboard: {
+    dashboard: {
       query: getCustomizableDashboardQuery,
       variables() {
         return {
@@ -222,9 +228,9 @@ export default {
         };
       },
       result() {
-        this.breadcrumbState.updateName(this.initialDashboard?.title || '');
+        this.breadcrumbState.updateName(this.dashboard?.title || '');
 
-        this.validateFilters(this.initialDashboard?.filters);
+        this.validateFilters(this.dashboard?.filters);
       },
       error(error) {
         const message = [
@@ -246,6 +252,22 @@ export default {
     },
   },
   methods: {
+    setPageFullWidth() {
+      const wrappers = document.querySelectorAll('.container-fluid.container-limited');
+
+      wrappers.forEach((el) => {
+        el.classList.add('not-container-limited');
+        el.classList.remove('container-limited');
+      });
+    },
+    setPageDefaultWidth() {
+      const wrappers = document.querySelectorAll('.container-fluid.not-container-limited');
+
+      wrappers.forEach((el) => {
+        el.classList.add('container-limited');
+        el.classList.remove('not-container-limited');
+      });
+    },
     getDashboardPanels(dashboard) {
       const panels = dashboard.panels?.nodes || [];
 
@@ -336,7 +358,7 @@ export default {
 
 <template>
   <div>
-    <template v-if="currentDashboard">
+    <template v-if="dashboard">
       <gl-alert
         v-if="invalidDashboardErrors.length > 0"
         data-testid="analytics-dashboard-invalid-config-alert"
@@ -356,34 +378,43 @@ export default {
       <value-stream-feedback-banner v-if="showValueStreamFeedbackBanner" />
       <product-analytics-feedback-banner v-if="showProductAnalyticsFeedbackBanner" />
 
-      <analytics-customizable-dashboard ref="dashboard" :dashboard="currentDashboard">
-        <!-- TODO: Remove this link in https://gitlab.com/gitlab-org/gitlab/-/issues/465569 -->
-        <template v-if="hasCustomDescriptionLink" #after-description>
-          <span data-testid="after-description-link">
-            <gl-sprintf v-if="isAiImpactDashboard" :message="$options.i18n.aiImpactDescriptionLink">
-              <template #docsLink="{ content }">
-                <gl-link :href="$options.AI_IMPACT_DOCUMENTATION_LINK">{{ content }}</gl-link>
-              </template>
-              <template #subscriptionLink="{ content }">
-                <gl-link :href="$options.DUO_PRO_SUBSCRIPTION_ADD_ON_LINK">{{ content }}</gl-link>
-              </template>
-            </gl-sprintf>
-
-            <gl-sprintf
-              v-else-if="isValueStreamsDashboard"
-              :message="__('%{linkStart} Learn more%{linkEnd}.')"
-            >
-              <template #link="{ content }">
-                <gl-link :href="$options.VSD_DOCUMENTATION_LINK">{{ content }}</gl-link>
-              </template>
-            </gl-sprintf>
-          </span>
+      <gl-dashboard-layout :config="dashboard">
+        <template v-if="statusBadgeType" #title>
+          <h2 data-testid="custom-title" class="gl-my-0">{{ dashboard.title }}</h2>
+          <gl-experiment-badge v-if="statusBadgeType" class="gl-ml-3" :type="statusBadgeType" />
         </template>
 
-        <template #alert>
-          <div v-if="showEnableAggregationWarning" class="gl-mx-3">
-            <usage-overview-background-aggregation-warning />
-          </div>
+        <!-- TODO: Remove this link in https://gitlab.com/gitlab-org/gitlab/-/issues/465569 -->
+        <template v-if="hasCustomDescriptionLink" #description>
+          <p class="gl-mb-0" data-testid="custom-description">
+            {{ dashboard.description }}
+            <span data-testid="custom-description-link">
+              <gl-sprintf
+                v-if="isAiImpactDashboard"
+                :message="$options.i18n.aiImpactDescriptionLink"
+              >
+                <template #docsLink="{ content }">
+                  <gl-link :href="$options.AI_IMPACT_DOCUMENTATION_LINK">{{ content }}</gl-link>
+                </template>
+                <template #subscriptionLink="{ content }">
+                  <gl-link :href="$options.DUO_PRO_SUBSCRIPTION_ADD_ON_LINK">{{ content }}</gl-link>
+                </template>
+              </gl-sprintf>
+
+              <gl-sprintf
+                v-else-if="isValueStreamsDashboard"
+                :message="__('%{linkStart} Learn more%{linkEnd}.')"
+              >
+                <template #link="{ content }">
+                  <gl-link :href="$options.VSD_DOCUMENTATION_LINK">{{ content }}</gl-link>
+                </template>
+              </gl-sprintf>
+            </span>
+          </p>
+        </template>
+
+        <template v-if="showEnableAggregationWarning" #alert>
+          <usage-overview-background-aggregation-warning />
         </template>
 
         <template v-if="showFilters" #filters>
@@ -429,7 +460,7 @@ export default {
             :data-testid="panelTestId(panel)"
           />
         </template>
-      </analytics-customizable-dashboard>
+      </gl-dashboard-layout>
     </template>
     <gl-empty-state
       v-else-if="showEmptyState"

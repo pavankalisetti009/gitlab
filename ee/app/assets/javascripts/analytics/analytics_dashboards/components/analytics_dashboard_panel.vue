@@ -3,7 +3,6 @@ import { merge } from 'lodash';
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import isString from 'lodash/isString';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { isEmptyPanelData } from '~/vue_shared/components/customizable_dashboard/utils';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { VARIANT_DANGER, VARIANT_INFO, VARIANT_WARNING } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
@@ -18,6 +17,7 @@ import {
   VISUALIZATION_SLUG_VSD_DORA_METRICS_TABLE,
   VISUALIZATION_SLUG_VSD_SECURITY_METRICS_TABLE,
 } from '../constants';
+import { isEmptyPanelData } from './utils';
 
 export default {
   name: 'AnalyticsDashboardPanel',

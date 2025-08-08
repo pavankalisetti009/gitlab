@@ -1,5 +1,4 @@
-import GridstackDashboard from 'storybook_helpers/dashboards/gridstack_dashboard.vue';
-import GridstackPanel from 'storybook_helpers/dashboards/gridstack_panel.vue';
+import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import SingleMetricTrend from './single_metric_trend.vue';
 
 export default {
@@ -8,18 +7,18 @@ export default {
 };
 
 const Template = (args, { argTypes }) => ({
-  components: { SingleMetricTrend, GridstackDashboard, GridstackPanel },
+  components: { SingleMetricTrend, DashboardLayout },
   props: Object.keys(argTypes),
   template: `<single-metric-trend :data="data" :options="options" />`,
 });
 
-const WithGridstack = (args, { argTypes }) => ({
-  components: { SingleMetricTrend, GridstackDashboard, GridstackPanel },
+const WithDashboard = (args, { argTypes }) => ({
+  components: { SingleMetricTrend, DashboardLayout },
   props: Object.keys(argTypes),
   template: `
-      <gridstack-dashboard :panels="panelsConfig">
+      <dashboard-layout :panels="panelsConfig">
         <single-metric-trend :data="data" :options="options" />
-      </gridstack-dashboard>`,
+      </dashboard-layout>`,
 });
 
 const defaultArgs = {
@@ -77,7 +76,7 @@ NoTrend.args = {
   },
 };
 
-export const InDashboardPanel = WithGridstack.bind({});
+export const InDashboardPanel = WithDashboard.bind({});
 InDashboardPanel.args = {
   ...defaultArgs,
   panelsConfig: [

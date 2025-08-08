@@ -1,5 +1,4 @@
-import GridstackDashboard from 'storybook_helpers/dashboards/gridstack_dashboard.vue';
-import GridstackPanel from 'storybook_helpers/dashboards/gridstack_panel.vue';
+import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import { daysToSeconds } from '~/lib/utils/datetime/date_calculation_utility';
 import ComparisonTable from './comparison_table.vue';
 
@@ -14,13 +13,13 @@ const Template = (args, { argTypes }) => ({
   template: '<comparison-table v-bind="$props" />',
 });
 
-const WithGridstack = (args, { argTypes }) => ({
-  components: { ComparisonTable, GridstackDashboard, GridstackPanel },
+const WithDashboard = (args, { argTypes }) => ({
+  components: { ComparisonTable, DashboardLayout },
   props: Object.keys(argTypes),
   template: `
-      <gridstack-dashboard :panels="panelsConfig">
+      <dashboard-layout :panels="panelsConfig">
         <comparison-table v-bind="$props" />
-      </gridstack-dashboard>`,
+      </dashboard-layout>`,
 });
 
 const defaultArgs = {
@@ -88,7 +87,7 @@ Default.args = defaultArgs;
 export const NoData = Template.bind({});
 NoData.args = { projects: [] };
 
-export const InDashboardPanel = WithGridstack.bind({});
+export const InDashboardPanel = WithDashboard.bind({});
 InDashboardPanel.args = {
   ...defaultArgs,
   panelsConfig: [
