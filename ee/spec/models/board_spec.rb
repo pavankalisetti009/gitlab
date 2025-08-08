@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Board do
-  let(:board) { create(:board) }
+  let_it_be(:project) { create(:project, :empty_repo) }
+  let(:board) { create(:board, project: project) }
 
   it { is_expected.to include_module(EE::Board) }
 
@@ -27,7 +28,7 @@ RSpec.describe Board do
     end
 
     context 'when project is present' do
-      subject { described_class.new(project: create(:project)) }
+      subject { described_class.new(project: project) }
 
       it { is_expected.to validate_presence_of(:project) }
       it { is_expected.not_to validate_presence_of(:group) }
@@ -156,8 +157,9 @@ RSpec.describe Board do
     end
 
     it 'returns true when any label exists' do
-      board = create(:board, milestone: nil, weight: nil, assignee: nil)
-      board.labels.create!(title: 'foo')
+      board = create(:board, milestone: nil, weight: nil, assignee: nil, project: project)
+      label = create(:label, title: 'foo', project: project)
+      board.labels << label
 
       expect(board).to be_scoped
     end
