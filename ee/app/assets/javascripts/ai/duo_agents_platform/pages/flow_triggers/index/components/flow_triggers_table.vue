@@ -35,6 +35,15 @@ export default {
       type: Array,
       required: true,
     },
+    eventTypeOptions: {
+      type: Array,
+      required: true,
+    },
+  },
+  computed: {
+    eventTypes() {
+      return Object.fromEntries(this.eventTypeOptions.map((item) => [item.value, item.text]));
+    },
   },
   fields: [
     {
@@ -70,10 +79,6 @@ export default {
       columnClass: 'gl-w-3/20',
     },
   ],
-  eventTypes: {
-    0: s__('DuoAgentsPlatform|Mention'),
-    1: s__('DuoAgentsPlatform|Assign'),
-  },
 };
 </script>
 
@@ -94,7 +99,7 @@ export default {
     <template #cell(eventType)="{ item }">
       <div class="gl-flex gl-flex-wrap gl-gap-2" data-testid="flow-trigger-badges">
         <gl-badge v-for="eventType in item.eventTypes" :key="eventType" variant="info">
-          {{ $options.eventTypes[eventType] }}
+          {{ eventTypes[eventType] }}
         </gl-badge>
       </div>
     </template>

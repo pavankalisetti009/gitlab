@@ -37,3 +37,8 @@ export const mockEmptyAiFlowTriggersResponse = {
     project: { id: 'gid://gitlab/Project/1000000', aiFlowTriggers: { nodes: [] } },
   },
 };
+
+export const eventTypeOptions = [
+  { value: 0, text: 'Mention' },
+  { value: 1, text: 'Assign' },
+];
