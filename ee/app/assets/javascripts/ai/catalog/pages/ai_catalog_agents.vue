@@ -8,7 +8,7 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS } from 'ee/ai/catalog/constants';
+import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
@@ -19,8 +19,6 @@ import {
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from '../router/constants';
-
-const PAGE_SIZE = 20;
 
 export default {
   name: 'AiCatalogAgents',
