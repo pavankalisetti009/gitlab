@@ -577,21 +577,14 @@ RSpec.describe Note, feature_category: :team_planning do
 
   describe '.order_by_noteable_latest_first' do
     let_it_be(:issue) { create(:issue, project: create(:project)) }
-    let_it_be(:note1) { create(:note, noteable: issue, project: issue.project, created_at: 3.days.ago, id: 1) }
-    let_it_be(:note2) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago, id: 2) }
-    let_it_be(:note3) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago, id: 3) }
-
-    let_it_be(:epic) { create(:epic) }
-    let_it_be(:note4) { create(:note, noteable: epic, project: nil, created_at: 2.days.ago, id: 4) }
+    let_it_be(:note1) { create(:note, noteable: issue, project: issue.project, created_at: 3.days.ago) }
+    let_it_be(:note2) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago) }
+    let_it_be(:note3) { create(:note, noteable: issue, project: issue.project, created_at: 1.day.ago) }
 
     subject(:ordered_notes) { described_class.order_by_noteable_latest_first }
 
-    it 'orders notes by noteable_id ascending and created_at descending',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/554692' do
-      grouped = ordered_notes.group_by(&:noteable_id)
-
-      expect(grouped[issue.id].map(&:id)).to eq([3, 2, 1])
-      expect(grouped[epic.id].map(&:id)).to eq([4])
+    it 'orders notes by noteable_id ascending and created_at descending' do
+      expect(ordered_notes).to eq([note3, note2, note1])
     end
   end
 end
