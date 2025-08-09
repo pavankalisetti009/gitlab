@@ -25,6 +25,11 @@ module EE
         @subject.enterprise_user? && @subject.enterprise_group.disable_personal_access_tokens?
       end
 
+      desc "User can delete the given enterprise user"
+      condition(:can_delete_enterprise_user) do
+        @subject.enterprise_user? && @subject.managed_by_user?(@user)
+      end
+
       condition(:profiles_can_be_made_private, scope: :global) { profiles_can_be_made_private? }
 
       rule { can?(:update_user) }.enable :update_name
@@ -37,6 +42,8 @@ module EE
         .prevent :create_user_personal_access_token
 
       rule { ~profiles_can_be_made_private & ~admin }.prevent :make_profile_private
+
+      rule { can_delete_enterprise_user }.enable :destroy_user
 
       desc "User can assign a default Duo group setting"
       condition(:default_duo_group_assignment_available) { can_assign_default_duo_group? }

@@ -88,6 +88,30 @@ module API
           bad_request!(result[:message])
         end
       end
+
+      desc 'Delete an enterprise user'
+      params do
+        requires :user_id, type: Integer, desc: 'ID of user account.'
+        optional :hard_delete,
+          type: Grape::API::Boolean,
+          default: false,
+          desc: 'If `false`, deletes the user and moves their contributions to a system-wide "Ghost User". If ' \
+            '`true`, deletes the user, their associated contributions, and any groups owned solely by the user. ' \
+            'Default value: `false`.'
+      end
+      delete ":id/enterprise_users/:user_id" do
+        user = user_group.enterprise_users.find(declared_params[:user_id])
+
+        authorize! :destroy_user, user
+
+        unless user.can_be_removed? || declared_params[:hard_delete]
+          conflict!('Can not remove a user who is the sole owner of a group.')
+        end
+
+        destroy_conditionally!(user) do
+          user.delete_async(deleted_by: current_user, params: { hard_delete: declared_params[:hard_delete] })
+        end
+      end
     end
   end
 end
