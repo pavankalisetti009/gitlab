@@ -15,6 +15,8 @@ import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
 
+const PAGE_SIZE = 20;
+
 export default {
   name: 'AiCatalogFlows',
   components: {
@@ -25,10 +27,19 @@ export default {
   apollo: {
     aiCatalogFlows: {
       query: aiCatalogFlowsQuery,
+      variables() {
+        return {
+          before: null,
+          after: null,
+          first: PAGE_SIZE,
+          last: null,
+        };
+      },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data.aiCatalogItems.nodes,
-      result() {
+      result({ data }) {
         this.checkDrawerParams();
+        this.pageInfo = data.aiCatalogItems.pageInfo;
       },
     },
     aiCatalogFlow: {
@@ -56,6 +67,7 @@ export default {
       aiCatalogFlow: {},
       activeItem: null,
       errorMessage: null,
+      pageInfo: {},
     };
   },
   computed: {
@@ -127,6 +139,24 @@ export default {
         this.activeItem = null;
       }
     },
+    handleNextPage() {
+      this.$apollo.queries.aiCatalogFlows.refetch({
+        ...this.$apollo.queries.aiCatalogFlows.variables,
+        before: null,
+        after: this.pageInfo.endCursor,
+        first: PAGE_SIZE,
+        last: null,
+      });
+    },
+    handlePrevPage() {
+      this.$apollo.queries.aiCatalogFlows.refetch({
+        ...this.$apollo.queries.aiCatalogFlows.variables,
+        after: null,
+        before: this.pageInfo.startCursor,
+        first: null,
+        last: PAGE_SIZE,
+      });
+    },
   },
   editRoute: AI_CATALOG_FLOWS_EDIT_ROUTE,
 };
@@ -145,6 +175,9 @@ export default {
       :is-loading="isLoading"
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
+      :page-info="pageInfo"
+      @next-page="handleNextPage"
+      @prev-page="handlePrevPage"
     />
     <ai-catalog-item-drawer
       :is-open="isItemSelected"

@@ -20,6 +20,8 @@ import {
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from '../router/constants';
 
+const PAGE_SIZE = 20;
+
 export default {
   name: 'AiCatalogAgents',
   components: {
@@ -30,10 +32,19 @@ export default {
   apollo: {
     aiCatalogAgents: {
       query: aiCatalogAgentsQuery,
+      variables() {
+        return {
+          before: null,
+          after: null,
+          first: PAGE_SIZE,
+          last: null,
+        };
+      },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data.aiCatalogItems.nodes,
-      result() {
+      result({ data }) {
         this.checkDrawerParams();
+        this.pageInfo = data.aiCatalogItems.pageInfo;
       },
     },
     aiCatalogAgent: {
@@ -61,6 +72,7 @@ export default {
       aiCatalogAgent: {},
       activeItem: null,
       errorMessage: null,
+      pageInfo: {},
     };
   },
   computed: {
@@ -163,6 +175,24 @@ export default {
         this.activeItem = null;
       }
     },
+    handleNextPage() {
+      this.$apollo.queries.aiCatalogAgents.refetch({
+        ...this.$apollo.queries.aiCatalogAgents.variables,
+        before: null,
+        after: this.pageInfo.endCursor,
+        first: PAGE_SIZE,
+        last: null,
+      });
+    },
+    handlePrevPage() {
+      this.$apollo.queries.aiCatalogAgents.refetch({
+        ...this.$apollo.queries.aiCatalogAgents.variables,
+        after: null,
+        before: this.pageInfo.startCursor,
+        first: null,
+        last: PAGE_SIZE,
+      });
+    },
   },
   editRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
 };
@@ -184,6 +214,9 @@ export default {
       :delete-confirm-title="s__('AICatalog|Delete agent')"
       :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
       :delete-fn="deleteAgent"
+      :page-info="pageInfo"
+      @next-page="handleNextPage"
+      @prev-page="handlePrevPage"
     />
     <ai-catalog-item-drawer
       :is-open="isItemSelected"

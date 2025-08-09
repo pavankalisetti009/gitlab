@@ -20,6 +20,7 @@ import {
   mockCatalogItemDeleteResponse,
   mockCatalogItemDeleteErrorResponse,
   mockAiCatalogAgentResponse,
+  mockPageInfo,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -233,6 +234,41 @@ describe('AiCatalogAgents', () => {
         await waitForPromises();
         expect(findGlAlert().text()).toBe('Failed to delete agent. Error: Request failed');
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('pagination', () => {
+    it('passes pageInfo to list component', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+    });
+
+    it('refetches query with correct variables when paging backward', async () => {
+      createComponent();
+      await waitForPromises();
+
+      findAiCatalogList().vm.$emit('prev-page');
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: null,
+        before: 'eyJpZCI6IjUxIn0',
+        first: null,
+        last: 20,
+      });
+    });
+
+    it('refetches query with correct variables when paging forward', async () => {
+      createComponent();
+      await waitForPromises();
+
+      findAiCatalogList().vm.$emit('next-page');
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: 'eyJpZCI6IjM1In0',
+        before: null,
+        first: 20,
+        last: null,
       });
     });
   });

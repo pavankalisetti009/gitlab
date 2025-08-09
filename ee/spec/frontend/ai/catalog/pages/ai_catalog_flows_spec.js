@@ -16,6 +16,7 @@ import {
   mockAiCatalogFlowResponse,
   mockCatalogFlowsResponse,
   mockFlows,
+  mockPageInfo,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -157,6 +158,41 @@ describe('AiCatalogFlows', () => {
 
       it('does not open the drawer', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      });
+    });
+  });
+
+  describe('pagination', () => {
+    it('passes pageInfo to list component', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findAiCatalogList().props('pageInfo')).toMatchObject(mockPageInfo);
+    });
+
+    it('refetches query with correct variables when paging backward', async () => {
+      createComponent();
+      await waitForPromises();
+
+      findAiCatalogList().vm.$emit('prev-page');
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: null,
+        before: 'eyJpZCI6IjUxIn0',
+        first: null,
+        last: 20,
+      });
+    });
+
+    it('refetches query with correct variables when paging forward', async () => {
+      createComponent();
+      await waitForPromises();
+
+      findAiCatalogList().vm.$emit('next-page');
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: 'eyJpZCI6IjM1In0',
+        before: null,
+        first: 20,
+        last: null,
       });
     });
   });
