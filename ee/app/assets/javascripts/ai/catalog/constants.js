@@ -10,6 +10,8 @@ export const TYPENAME_AI_CATALOG_ITEM = 'Ai::Catalog::Item';
 export const AI_CATALOG_TYPE_AGENT = 'AGENT';
 export const AI_CATALOG_TYPE_FLOW = 'FLOW';
 
+export const PAGE_SIZE = 20;
+
 // Matches backend validations in https://gitlab.com/gitlab-org/gitlab/blob/aa02c3080b316cf0f3b71a992bc5cc5dc8e8bb34/ee/app/models/ai/catalog/item.rb#L10
 export const MAX_LENGTH_NAME = 255;
 export const MAX_LENGTH_DESCRIPTION = 1024;
