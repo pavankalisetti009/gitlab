@@ -1,9 +1,13 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
-query aiCatalogFlows {
-  aiCatalogItems(itemType: FLOW) {
+query aiCatalogFlows($before: String, $after: String, $first: Int, $last: Int) {
+  aiCatalogItems(itemType: FLOW, before: $before, after: $after, first: $first, last: $last) {
     nodes {
       ...BaseAiCatalogItem
+    }
+    pageInfo {
+      ...PageInfo
     }
   }
 }

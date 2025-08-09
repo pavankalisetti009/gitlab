@@ -13,6 +13,14 @@ const mockProject = {
   __typename: TYPENAME_PROJECT,
 };
 
+export const mockPageInfo = {
+  hasNextPage: true,
+  hasPreviousPage: false,
+  startCursor: 'eyJpZCI6IjUxIn0',
+  endCursor: 'eyJpZCI6IjM1In0',
+  __typename: 'PageInfo',
+};
+
 /* AGENTS */
 
 const mockAgentFactory = (overrides = {}) => ({
@@ -61,6 +69,7 @@ export const mockCatalogItemsResponse = {
   data: {
     aiCatalogItems: {
       nodes: mockAgents,
+      pageInfo: mockPageInfo,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
     },
   },
@@ -182,6 +191,7 @@ export const mockCatalogFlowsResponse = {
   data: {
     aiCatalogItems: {
       nodes: mockFlows,
+      pageInfo: mockPageInfo,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
     },
   },

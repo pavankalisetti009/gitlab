@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf } from '@gitlab/ui';
+import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
@@ -11,6 +11,7 @@ export default {
   components: {
     AiCatalogListItem,
     ConfirmActionModal,
+    GlKeysetPagination,
     GlSprintf,
     ResourceListsLoadingStateList,
     ResourceListsEmptyState,
@@ -43,6 +44,10 @@ export default {
       required: false,
       default: () => {},
     },
+    pageInfo: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -74,6 +79,13 @@ export default {
           @delete="itemToDelete = item"
         />
       </ul>
+
+      <gl-keyset-pagination
+        v-bind="pageInfo"
+        class="gl-mt-5 gl-flex gl-justify-center"
+        @prev="$emit('prev-page')"
+        @next="$emit('next-page')"
+      />
 
       <confirm-action-modal
         v-if="itemToDelete"

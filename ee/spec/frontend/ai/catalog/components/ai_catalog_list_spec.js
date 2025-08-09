@@ -1,11 +1,11 @@
-import { GlSprintf } from '@gitlab/ui';
+import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { mockAgents } from '../mock_data';
+import { mockAgents, mockPageInfo } from '../mock_data';
 
 describe('AiCatalogList', () => {
   let wrapper;
@@ -18,6 +18,7 @@ describe('AiCatalogList', () => {
         items: mockItems,
         itemTypeConfig: {},
         isLoading: false,
+        pageInfo: mockPageInfo,
         ...props,
       },
       stubs: {
@@ -131,6 +132,35 @@ describe('AiCatalogList', () => {
       findConfirmModal().props('actionFn')();
 
       expect(mockDeleteFn).toHaveBeenCalledWith(mockItems[1].id);
+    });
+  });
+
+  describe('pagination', () => {
+    const findPaginator = () => wrapper.findComponent(GlKeysetPagination);
+
+    it('passes pageInfo to pagination component', () => {
+      createComponent();
+
+      expect(findPaginator().props()).toMatchObject({
+        startCursor: mockPageInfo.startCursor,
+        endCursor: mockPageInfo.endCursor,
+        hasNextPage: mockPageInfo.hasNextPage,
+        hasPreviousPage: mockPageInfo.hasPreviousPage,
+      });
+    });
+
+    it('emits prev-page when prev emitted by pagination component', () => {
+      createComponent();
+
+      findPaginator().vm.$emit('prev');
+      expect(wrapper.emitted('prev-page')).toHaveLength(1);
+    });
+
+    it('emits next-page when next emitted by pagination component', () => {
+      createComponent();
+
+      findPaginator().vm.$emit('next');
+      expect(wrapper.emitted('next-page')).toHaveLength(1);
     });
   });
 });
