@@ -404,4 +404,113 @@ RSpec.describe API::GroupEnterpriseUsers, :aggregate_failures, feature_category:
       end
     end
   end
+
+  describe 'DELETE /groups/:id/enterprise_users/:user_id', :sidekiq_inline, :saas do
+    let(:delete_params) { {} }
+    let(:delete_headers) { {} }
+
+    subject(:delete_group_enterprise_user) do
+      delete api("/groups/#{group_id}/enterprise_users/#{user_id}", current_user),
+        params: delete_params,
+        headers: delete_headers
+    end
+
+    before do
+      stub_licensed_features(domain_verification: true)
+    end
+
+    it_behaves_like 'authentication and authorization requirements'
+
+    it 'deletes the given user' do
+      expect { delete_group_enterprise_user }
+        .to change {
+          Users::GhostUserMigration
+            .where(user_id: user_id, initiator_user: current_user, hard_delete: false)
+            .count
+        }.by(1)
+
+      expect(response).to have_gitlab_http_status(:no_content)
+    end
+
+    context 'when the user being deleted has a solo owned group' do
+      let(:group) { create(:group) }
+
+      before do
+        group.add_member(enterprise_user_of_the_group, GroupMember::OWNER)
+      end
+
+      it 'does not delete the user or the group' do
+        expect { delete_group_enterprise_user }
+          .not_to change { Users::GhostUserMigration.count }
+
+        expect(Group.exists?(group.id)).to be_truthy
+      end
+
+      it 'returns 409 Conflict' do
+        delete_group_enterprise_user
+
+        expect(response).to have_gitlab_http_status(:conflict)
+        expect(json_response['message']).to eq('Can not remove a user who is the sole owner of a group.')
+      end
+
+      context 'when the hard_delete flag is provided' do
+        let(:delete_params) { { hard_delete: true } }
+
+        it 'deletes the user and the group' do
+          expect { delete_group_enterprise_user }
+            .to change {
+              Users::GhostUserMigration
+                .where(user_id: user_id, initiator_user: current_user, hard_delete: true)
+                .count
+            }.by(1)
+
+          expect(Group.exists?(group.id)).to be_falsy
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+      end
+    end
+
+    context 'when the If-Unmodified-Since header is provided by the client' do
+      context 'when the user record has been modified since the given time' do
+        let(:delete_headers) { { 'If-Unmodified-Since' => (enterprise_user_of_the_group.updated_at - 1.hour).to_s } }
+
+        it 'does not delete the user' do
+          expect { delete_group_enterprise_user }
+            .not_to change { Users::GhostUserMigration.count }
+          expect(response).to have_gitlab_http_status(:precondition_failed)
+        end
+      end
+
+      context 'when the user record has not been modified since the given time' do
+        let(:delete_headers) { { 'If-Unmodified-Since' => (enterprise_user_of_the_group.updated_at + 1.hour).to_s } }
+
+        it 'deletes the user' do
+          expect { delete_group_enterprise_user }
+            .to change { Users::GhostUserMigration.where(user_id: user_id, initiator_user: current_user).count }.by(1)
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+      end
+    end
+
+    context 'when user_id does not refer to an enterprise user of the group' do
+      let(:user_id) { enterprise_user_of_another_group.id }
+
+      it 'returns 404 Not found' do
+        expect { delete_group_enterprise_user }
+          .not_to change { Users::GhostUserMigration.count }
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when the group does not have a feature license for the Enterprise Users feature' do
+      before do
+        stub_licensed_features(domain_verification: false)
+      end
+
+      it 'does not delete the user' do
+        expect { delete_group_enterprise_user }.not_to change { Users::GhostUserMigration.count }
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
 end

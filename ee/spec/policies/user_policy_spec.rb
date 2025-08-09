@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe UserPolicy do
+RSpec.describe UserPolicy, feature_category: :user_management do
   let(:current_user) { create(:user) }
   let(:user) { create(:user) }
 
@@ -135,6 +135,62 @@ RSpec.describe UserPolicy do
 
           it { is_expected.not_to be_allowed(:destroy_user) }
         end
+      end
+    end
+
+    context 'when deleting an enterprise user', :saas do
+      let(:enterprise_group) { create(:group) }
+      let(:enterprise_user) { create(:user, enterprise_group: enterprise_group) }
+
+      let(:current_user) { create(:user) }
+      let(:user) { enterprise_user }
+
+      before do
+        stub_licensed_features(domain_verification: true)
+      end
+
+      context 'when current user is Owner of the enterprise group' do
+        before do
+          enterprise_group.add_owner(current_user)
+        end
+
+        it { is_expected.to be_allowed(:destroy_user) }
+
+        context 'when the GitLab instance is not GitLab.com' do
+          before do
+            allow(::Gitlab).to receive(:com?).and_return(false)
+          end
+
+          it { is_expected.not_to be_allowed(:destroy_user) }
+        end
+
+        context 'when the domain verification feature is not available' do
+          before do
+            stub_licensed_features(domain_verification: false)
+          end
+
+          it { is_expected.not_to be_allowed(:destroy_user) }
+        end
+
+        context 'when the user is not an enterprise user' do
+          let(:user) { create(:user) }
+
+          it { is_expected.not_to be_allowed(:destroy_user) }
+        end
+
+        context 'when the user is an enterprise user of another enterprise group' do
+          let(:user) { create(:enterprise_user) }
+
+          it { is_expected.not_to be_allowed(:destroy_user) }
+        end
+      end
+
+      context 'when current user is not Owner of the enterprise group' do
+        before do
+          enterprise_group.add_maintainer(current_user)
+        end
+
+        it { is_expected.not_to be_allowed(:destroy_user) }
       end
     end
   end
