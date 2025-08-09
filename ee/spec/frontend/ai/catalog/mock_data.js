@@ -6,6 +6,7 @@ const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
+const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_PROJECT = 'Project';
 
 const mockProject = {
@@ -87,7 +88,7 @@ export const mockAiCatalogAgentNullResponse = {
   },
 };
 
-export const mockCatalogItemDeleteResponse = {
+export const mockCatalogAgentDeleteResponse = {
   data: {
     aiCatalogAgentDelete: {
       errors: [],
@@ -97,7 +98,7 @@ export const mockCatalogItemDeleteResponse = {
   },
 };
 
-export const mockCatalogItemDeleteErrorResponse = {
+export const mockCatalogAgentDeleteErrorResponse = {
   data: {
     aiCatalogAgentDelete: {
       errors: ['You do not have permission to delete this AI agent.'],
@@ -225,5 +226,25 @@ export const mockAiCatalogFlowResponse = {
 export const mockAiCatalogFlowNullResponse = {
   data: {
     aiCatalogItem: null,
+  },
+};
+
+export const mockCatalogFlowDeleteResponse = {
+  data: {
+    aiCatalogFlowDelete: {
+      errors: [],
+      success: true,
+      __typename: TYPENAME_AI_CATALOG_FLOW_DELETE,
+    },
+  },
+};
+
+export const mockCatalogFlowDeleteErrorResponse = {
+  data: {
+    aiCatalogFlowDelete: {
+      errors: ['You do not have permission to delete this AI flow.'],
+      success: false,
+      __typename: TYPENAME_AI_CATALOG_FLOW_DELETE,
+    },
   },
 };

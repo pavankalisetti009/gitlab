@@ -31,18 +31,15 @@ export default {
     },
     deleteConfirmTitle: {
       type: String,
-      required: false,
-      default: '',
+      required: true,
     },
     deleteConfirmMessage: {
       type: String,
-      required: false,
-      default: '',
+      required: true,
     },
     deleteFn: {
       type: Function,
-      required: false,
-      default: () => {},
+      required: true,
     },
     pageInfo: {
       type: Object,

@@ -17,8 +17,8 @@ import {
   mockAgent,
   mockAgents,
   mockCatalogItemsResponse,
-  mockCatalogItemDeleteResponse,
-  mockCatalogItemDeleteErrorResponse,
+  mockCatalogAgentDeleteResponse,
+  mockCatalogAgentDeleteErrorResponse,
   mockAiCatalogAgentResponse,
   mockPageInfo,
 } from '../mock_data';
@@ -192,7 +192,7 @@ describe('AiCatalogAgents', () => {
     });
 
     it('calls delete mutation', () => {
-      deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogItemDeleteResponse);
+      deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogAgentDeleteResponse);
 
       deleteAgent();
 
@@ -201,7 +201,7 @@ describe('AiCatalogAgents', () => {
 
     describe('when request succeeds', () => {
       it('shows a toast message and refetches the list', async () => {
-        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogItemDeleteResponse);
+        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogAgentDeleteResponse);
 
         deleteAgent();
 
@@ -214,7 +214,7 @@ describe('AiCatalogAgents', () => {
 
     describe('when request succeeds but returns errors', () => {
       it('shows alert with error', async () => {
-        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogItemDeleteErrorResponse);
+        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogAgentDeleteErrorResponse);
 
         deleteAgent();
 
