@@ -1,6 +1,6 @@
 <script>
 import { GlAlert } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import {
@@ -11,6 +11,7 @@ import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/con
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
+import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
@@ -137,6 +138,29 @@ export default {
         this.activeItem = null;
       }
     },
+    async deleteFlow(id) {
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteAiCatalogFlowMutation,
+          variables: {
+            id,
+          },
+          refetchQueries: [aiCatalogFlowsQuery],
+        });
+
+        if (!data.aiCatalogFlowDelete.success) {
+          this.errorMessage = sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
+            error: data.aiCatalogFlowDelete.errors?.[0],
+          });
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Flow deleted successfully.'));
+      } catch (error) {
+        this.errorMessage = sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error });
+        Sentry.captureException(error);
+      }
+    },
     handleNextPage() {
       this.$apollo.queries.aiCatalogFlows.refetch({
         ...this.$apollo.queries.aiCatalogFlows.variables,
@@ -173,6 +197,9 @@ export default {
       :is-loading="isLoading"
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
+      :delete-confirm-title="s__('AICatalog|Delete flow')"
+      :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
+      :delete-fn="deleteFlow"
       :page-info="pageInfo"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"

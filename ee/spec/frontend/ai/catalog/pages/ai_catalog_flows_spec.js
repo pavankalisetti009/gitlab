@@ -1,6 +1,8 @@
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
+import { GlAlert } from '@gitlab/ui';
 
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -10,14 +12,18 @@ import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import aiCatalogFlowsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flows.query.graphql';
-
+import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import {
   mockFlow,
   mockAiCatalogFlowResponse,
   mockCatalogFlowsResponse,
+  mockCatalogFlowDeleteResponse,
+  mockCatalogFlowDeleteErrorResponse,
   mockFlows,
   mockPageInfo,
 } from '../mock_data';
+
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
 
@@ -31,22 +37,29 @@ describe('AiCatalogFlows', () => {
 
   const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogFlowsResponse);
+  const deleteCatalogItemMutationHandler = jest.fn();
+  const mockToast = {
+    show: jest.fn(),
+  };
 
   const createComponent = ({ $route = {} } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogFlowQuery, mockFlowQueryHandler],
       [aiCatalogFlowsQuery, mockCatalogItemsQueryHandler],
+      [deleteAiCatalogFlowMutation, deleteCatalogItemMutationHandler],
     ]);
 
     wrapper = shallowMountExtended(AiCatalogFlows, {
       apolloProvider: mockApollo,
       mocks: {
+        $toast: mockToast,
         $router: mockRouter,
         $route,
       },
     });
   };
 
+  const findGlAlert = () => wrapper.findComponent(GlAlert);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
 
@@ -158,6 +171,60 @@ describe('AiCatalogFlows', () => {
 
       it('does not open the drawer', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      });
+    });
+  });
+
+  describe('on deleting a flow', () => {
+    const deleteFlow = (index = 0) => findAiCatalogList().props('deleteFn')(mockFlows[index].id);
+
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('calls delete mutation', () => {
+      deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogFlowDeleteResponse);
+
+      deleteFlow();
+
+      expect(deleteCatalogItemMutationHandler).toHaveBeenCalledWith({ id: mockFlows[0].id });
+    });
+
+    describe('when request succeeds', () => {
+      it('shows a toast message and refetches the list', async () => {
+        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogFlowDeleteResponse);
+
+        deleteFlow();
+
+        await waitForPromises();
+
+        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledTimes(2);
+        expect(mockToast.show).toHaveBeenCalledWith('Flow deleted successfully.');
+      });
+    });
+
+    describe('when request succeeds but returns errors', () => {
+      it('shows alert with error', async () => {
+        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogFlowDeleteErrorResponse);
+
+        deleteFlow();
+
+        await waitForPromises();
+        expect(findGlAlert().text()).toBe(
+          'Failed to delete flow. You do not have permission to delete this AI flow.',
+        );
+      });
+    });
+
+    describe('when request fails', () => {
+      it('shows alert with error and captures exception', async () => {
+        deleteCatalogItemMutationHandler.mockRejectedValue(new Error('Request failed'));
+
+        deleteFlow();
+
+        await waitForPromises();
+        expect(findGlAlert().text()).toBe('Failed to delete flow. Error: Request failed');
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });
