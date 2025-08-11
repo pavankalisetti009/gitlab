@@ -735,7 +735,7 @@ GEM
     gitlab-crystalball (1.1.1)
       git (< 4)
       ostruct (< 1)
-    gitlab-dangerfiles (4.9.2)
+    gitlab-dangerfiles (4.10.0)
       danger (>= 9.3.0)
       danger-gitlab (>= 8.0.0)
       rake (~> 13.0)
@@ -2157,7 +2157,7 @@ DEPENDENCIES
   gitlab-chronic (~> 0.10.5)
   gitlab-cloud-connector (~> 1.26)
   gitlab-crystalball (~> 1.1.0)
-  gitlab-dangerfiles (~> 4.9.0)
+  gitlab-dangerfiles (~> 4.10.0)
   gitlab-duo-workflow-service-client (~> 0.2)!
   gitlab-experiment (~> 0.9.1)
   gitlab-fog-azure-rm (~> 2.2.0)
