@@ -6,6 +6,7 @@ import {
   VULNERABILITY_METRICS,
   MERGE_REQUEST_METRICS,
   CONTRIBUTOR_METRICS,
+  PIPELINE_ANALYTICS_METRICS,
   UNITS,
 } from '~/analytics/shared/constants';
 
@@ -33,6 +34,37 @@ export const SUPPORTED_VULNERABILITY_METRICS = [
 ];
 
 export const SUPPORTED_CONTRIBUTOR_METRICS = [CONTRIBUTOR_METRICS.COUNT];
+
+export const SUPPORTED_PIPELINE_ANALYTICS_METRICS = [
+  PIPELINE_ANALYTICS_METRICS.COUNT,
+  PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE,
+  PIPELINE_ANALYTICS_METRICS.FAILURE_RATE,
+  PIPELINE_ANALYTICS_METRICS.MEDIAN,
+];
+
+export const PIPELINE_ANALYTICS_TABLE_METRICS = {
+  [PIPELINE_ANALYTICS_METRICS.COUNT]: {
+    label: s__('CICDAnalytics|Total pipeline runs'),
+    invertTrendColor: true,
+    units: UNITS.COUNT,
+    showGradient: false,
+    isNeutralChange: true,
+  },
+  [PIPELINE_ANALYTICS_METRICS.MEDIAN]: {
+    label: s__('CICDAnalytics|Median duration'),
+    invertTrendColor: true,
+    units: UNITS.MINUTES,
+  },
+  [PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE]: {
+    label: s__('CICDAnalytics|Success rate'),
+    units: UNITS.PERCENT,
+  },
+  [PIPELINE_ANALYTICS_METRICS.FAILURE_RATE]: {
+    label: s__('CICDAnalytics|Failure rate'),
+    invertTrendColor: true,
+    units: UNITS.PERCENT,
+  },
+};
 
 export const DORA_TABLE_METRICS = {
   [DORA_METRICS.DEPLOYMENT_FREQUENCY]: {
@@ -150,6 +182,7 @@ export const CHART_TOOLTIP_UNITS = {
   [UNITS.DAYS]: __('days'),
   [UNITS.PER_DAY]: __('/day'),
   [UNITS.PERCENT]: '%',
+  [UNITS.MINUTES]: __('minutes'),
 };
 
 export const ALERT_TEXT = s__(

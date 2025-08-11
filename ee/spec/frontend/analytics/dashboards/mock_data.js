@@ -590,6 +590,18 @@ export const mockContributorCountResponseData = {
   __typename: 'ValueStreamDashboardCount',
 };
 
+export const mockAggregatedPipelineMetricsResponseData = {
+  label: null,
+  pipelineCount: 100,
+  pipelineSuccessCount: 50,
+  pipelineFailedCount: 25,
+  durationStatistics: {
+    pipelineDurationMedian: 39600,
+    __typename: 'CiDurationStatistics',
+  },
+  __typename: 'PipelineAnalyticsPeriod',
+};
+
 export const MOCK_LABELS = [
   { id: 1, title: 'one', color: '#FFFFFF' },
   { id: 2, title: 'two', color: '#000000' },

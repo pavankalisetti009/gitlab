@@ -170,6 +170,10 @@ export const mockTableValues = [
     rootCauseAnalysisUsersCount: 5,
     duoAssignedUsersCount: 15,
     duoUsedCount: 100,
+    pipelineCount: 387,
+    pipelineSuccessCount: 149,
+    pipelineFailedCount: 175,
+    pipelineDurationMedian: 150,
   },
   {
     deploymentFrequency: 20,
@@ -192,6 +196,10 @@ export const mockTableValues = [
     rootCauseAnalysisUsersCount: 6,
     duoAssignedUsersCount: 7,
     duoUsedCount: 100,
+    pipelineCount: 37,
+    pipelineSuccessCount: 49,
+    pipelineFailedCount: 15,
+    pipelineDurationMedian: 120,
   },
   {
     deploymentFrequency: 40,
@@ -214,6 +222,10 @@ export const mockTableValues = [
     rootCauseAnalysisUsersCount: 11,
     duoAssignedUsersCount: 15,
     duoUsedCount: 100,
+    pipelineCount: 27,
+    pipelineSuccessCount: 10,
+    pipelineFailedCount: 5,
+    pipelineDurationMedian: 165,
   },
   {
     deploymentFrequency: 10,
@@ -236,6 +248,10 @@ export const mockTableValues = [
     rootCauseAnalysisUsersCount: 12,
     duoAssignedUsersCount: 18,
     duoUsedCount: 100,
+    pipelineCount: 95,
+    pipelineSuccessCount: 60,
+    pipelineFailedCount: 10,
+    pipelineDurationMedian: 90,
   },
   {
     deploymentFrequency: 20,
@@ -258,6 +274,10 @@ export const mockTableValues = [
     rootCauseAnalysisUsersCount: 7,
     duoAssignedUsersCount: 17,
     duoUsedCount: 100,
+    pipelineCount: 75,
+    pipelineSuccessCount: 18,
+    pipelineFailedCount: 15,
+    pipelineDurationMedian: 250,
   },
   {
     deploymentFrequency: 40,
@@ -280,6 +300,10 @@ export const mockTableValues = [
     rootCauseAnalysisUsersCount: 6,
     duoAssignedUsersCount: 12,
     duoUsedCount: 100,
+    pipelineCount: 100,
+    pipelineSuccessCount: 50,
+    pipelineFailedCount: 25,
+    pipelineDurationMedian: 100,
   },
 ];
 
@@ -305,6 +329,10 @@ export const mockTableLargeValues = [
     rootCauseAnalysisUsersCount: 1000,
     duoAssignedUsersCount: 2000,
     duoUsedCount: 10000,
+    pipelineCount: 37000,
+    pipelineSuccessCount: 49000,
+    pipelineFailedCount: 15000,
+    pipelineDurationMedian: 120000,
   },
   {
     deploymentFrequency: 20000,
@@ -327,6 +355,10 @@ export const mockTableLargeValues = [
     rootCauseAnalysisUsersCount: 1200,
     duoAssignedUsersCount: 1500,
     duoUsedCount: 10000,
+    pipelineCount: 27000,
+    pipelineSuccessCount: 29000,
+    pipelineFailedCount: 1500,
+    pipelineDurationMedian: 1200,
   },
   {
     deploymentFrequency: 40000,
@@ -349,6 +381,10 @@ export const mockTableLargeValues = [
     rootCauseAnalysisUsersCount: 2000,
     duoAssignedUsersCount: 2400,
     duoUsedCount: 10000,
+    pipelineCount: 45000,
+    pipelineSuccessCount: 1000,
+    pipelineFailedCount: 100,
+    pipelineDurationMedian: 12000,
   },
   {
     deploymentFrequency: 10000,
@@ -371,6 +407,10 @@ export const mockTableLargeValues = [
     rootCauseAnalysisUsersCount: 4000,
     duoAssignedUsersCount: 6000,
     duoUsedCount: 10000,
+    pipelineCount: 217000,
+    pipelineSuccessCount: 129000,
+    pipelineFailedCount: 15400,
+    pipelineDurationMedian: 5500,
   },
   {
     deploymentFrequency: 20000,
@@ -393,6 +433,10 @@ export const mockTableLargeValues = [
     rootCauseAnalysisUsersCount: 7000,
     duoAssignedUsersCount: 9000,
     duoUsedCount: 10000,
+    pipelineCount: 52000,
+    pipelineSuccessCount: 41000,
+    pipelineFailedCount: 1400,
+    pipelineDurationMedian: 9300,
   },
   {
     deploymentFrequency: 40,
@@ -415,6 +459,10 @@ export const mockTableLargeValues = [
     rootCauseAnalysisUsersCount: 8000,
     duoAssignedUsersCount: 8500,
     duoUsedCount: 10000,
+    pipelineCount: 720,
+    pipelineSuccessCount: 240,
+    pipelineFailedCount: 70,
+    pipelineDurationMedian: 155,
   },
 ];
 
@@ -439,6 +487,10 @@ const mockUniformTableRow = (value) => ({
   codeContributorsCount: value,
   codeSuggestionsAcceptedCount: value,
   codeSuggestionsShownCount: value,
+  pipelineCount: value,
+  pipelineSuccessCount: value,
+  pipelineFailedCount: value,
+  pipelineDurationMedian: value,
 });
 
 export const mockTableBlankValues = [

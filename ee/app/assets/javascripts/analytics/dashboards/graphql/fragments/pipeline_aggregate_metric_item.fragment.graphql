@@ -1,0 +1,10 @@
+fragment PipelineAggregateMetricItem on PipelineAnalytics {
+  aggregate {
+    pipelineCount: count
+    pipelineSuccessCount: count(status: SUCCESS)
+    pipelineFailedCount: count(status: FAILED)
+    durationStatistics {
+      pipelineDurationMedian: p50
+    }
+  }
+}

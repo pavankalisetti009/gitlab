@@ -9,7 +9,7 @@ import {
   nSecondsBefore,
   nDaysBefore,
 } from '~/lib/utils/datetime_utility';
-import { days, percentHundred } from '~/lib/utils/unit_format';
+import { days, percentHundred, minutes } from '~/lib/utils/unit_format';
 import {
   TABLE_METRICS,
   SUPPORTED_DORA_METRICS,
@@ -83,6 +83,9 @@ export const formatMetric = (value, units) => {
       break;
     case UNITS.PERCENT:
       formatted = percentHundred(value, fractionDigits(value));
+      break;
+    case UNITS.MINUTES:
+      formatted = minutes(value, fractionDigits(value), { unitSeparator: ' ' });
       break;
     default:
       formatted = value;

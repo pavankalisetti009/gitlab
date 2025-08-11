@@ -13,7 +13,6 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
 
 exports[`Metric table for the change_failure_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -36,13 +35,8 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
       40,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "%",
 }
 `;
@@ -60,7 +54,6 @@ exports[`Metric table for the code_suggestions_acceptance_rate table row when th
 
 exports[`Metric table for the code_suggestions_acceptance_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -83,13 +76,8 @@ exports[`Metric table for the code_suggestions_acceptance_rate table row when th
       17.6,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "%",
 }
 `;
@@ -118,7 +106,6 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
 
 exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -141,13 +128,8 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
       10,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "%",
 }
 `;
@@ -165,7 +147,6 @@ exports[`Metric table for the contributor_count table row when the data is loade
 
 exports[`Metric table for the contributor_count table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -188,13 +169,8 @@ exports[`Metric table for the contributor_count table row when the data is loade
       4,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "",
 }
 `;
@@ -212,7 +188,6 @@ exports[`Metric table for the cycle_time table row when the data is loaded rende
 
 exports[`Metric table for the cycle_time table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -235,13 +210,8 @@ exports[`Metric table for the cycle_time table row when the data is loaded rende
       2,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "days",
 }
 `;
@@ -259,7 +229,6 @@ exports[`Metric table for the deployment_frequency table row when the data is lo
 
 exports[`Metric table for the deployment_frequency table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -282,13 +251,8 @@ exports[`Metric table for the deployment_frequency table row when the data is lo
       20,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "/day",
 }
 `;
@@ -306,7 +270,6 @@ exports[`Metric table for the deploys table row when the data is loaded renders 
 
 exports[`Metric table for the deploys table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -329,13 +292,8 @@ exports[`Metric table for the deploys table row when the data is loaded renders 
       10,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "",
 }
 `;
@@ -353,7 +311,6 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
 
 exports[`Metric table for the duo_chat_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -376,13 +333,8 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
       17.6,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "%",
 }
 `;
@@ -411,7 +363,6 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
 
 exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -434,13 +385,8 @@ exports[`Metric table for the duo_rca_usage_rate table row when the data is load
       41.2,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "%",
 }
 `;
@@ -458,7 +404,6 @@ exports[`Metric table for the issues table row when the data is loaded renders t
 
 exports[`Metric table for the issues table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -481,13 +426,8 @@ exports[`Metric table for the issues table row when the data is loaded renders t
       2,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "",
 }
 `;
@@ -505,7 +445,6 @@ exports[`Metric table for the issues_completed table row when the data is loaded
 
 exports[`Metric table for the issues_completed table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -528,13 +467,8 @@ exports[`Metric table for the issues_completed table row when the data is loaded
       10,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "",
 }
 `;
@@ -552,7 +486,6 @@ exports[`Metric table for the lead_time table row when the data is loaded render
 
 exports[`Metric table for the lead_time table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -575,13 +508,8 @@ exports[`Metric table for the lead_time table row when the data is loaded render
       2,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "days",
 }
 `;
@@ -599,7 +527,6 @@ exports[`Metric table for the lead_time_for_changes table row when the data is l
 
 exports[`Metric table for the lead_time_for_changes table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -622,13 +549,8 @@ exports[`Metric table for the lead_time_for_changes table row when the data is l
       2.3,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "days",
 }
 `;
@@ -646,7 +568,6 @@ exports[`Metric table for the median_time_to_merge table row when the data is lo
 
 exports[`Metric table for the median_time_to_merge table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -669,13 +590,8 @@ exports[`Metric table for the median_time_to_merge table row when the data is lo
       0.2,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "days",
 }
 `;
@@ -693,7 +609,6 @@ exports[`Metric table for the merge_request_throughput table row when the data i
 
 exports[`Metric table for the merge_request_throughput table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -716,14 +631,173 @@ exports[`Metric table for the merge_request_throughput table row when the data i
       10,
     ],
   ],
-  "gradient": [
-    "#499767",
-    "#5252B5",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": false,
+  "showGradient": true,
   "tooltipLabel": "",
+}
+`;
+
+exports[`Metric table for the pipeline_count table row when the data is loaded renders the metric values 1`] = `
+[
+  "387",
+  "37",
+  "27",
+  "95",
+  "75",
+  "100",
+]
+`;
+
+exports[`Metric table for the pipeline_count table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "data": [
+    [
+      "Jul 1 – 31",
+      387,
+    ],
+    [
+      "Aug 1 – 31",
+      37,
+    ],
+    [
+      "Sep 1 – 30",
+      27,
+    ],
+    [
+      "Oct 1 – 31",
+      95,
+    ],
+    [
+      "Nov 1 – 30",
+      75,
+    ],
+  ],
+  "invertTrendColor": true,
+  "showGradient": false,
+  "tooltipLabel": "",
+}
+`;
+
+exports[`Metric table for the pipeline_duration_median table row when the data is loaded renders the metric values 1`] = `
+[
+  "2.5 m",
+  "2.0 m",
+  "2.8 m",
+  "1.5 m",
+  "4.2 m",
+  "1.7 m",
+]
+`;
+
+exports[`Metric table for the pipeline_duration_median table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "data": [
+    [
+      "Jul 1 – 31",
+      2.5,
+    ],
+    [
+      "Aug 1 – 31",
+      2,
+    ],
+    [
+      "Sep 1 – 30",
+      2.8,
+    ],
+    [
+      "Oct 1 – 31",
+      1.5,
+    ],
+    [
+      "Nov 1 – 30",
+      4.2,
+    ],
+  ],
+  "invertTrendColor": true,
+  "showGradient": true,
+  "tooltipLabel": "minutes",
+}
+`;
+
+exports[`Metric table for the pipeline_failed_rate table row when the data is loaded renders the metric values 1`] = `
+[
+  "45.2% 175/387",
+  "40.5% 15/37",
+  "18.5% 5/27",
+  "10.5% 10/95",
+  "20.0% 15/75",
+  "25.0% 25/100",
+]
+`;
+
+exports[`Metric table for the pipeline_failed_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "data": [
+    [
+      "Jul 1 – 31",
+      45.2,
+    ],
+    [
+      "Aug 1 – 31",
+      40.5,
+    ],
+    [
+      "Sep 1 – 30",
+      18.5,
+    ],
+    [
+      "Oct 1 – 31",
+      10.5,
+    ],
+    [
+      "Nov 1 – 30",
+      20,
+    ],
+  ],
+  "invertTrendColor": true,
+  "showGradient": true,
+  "tooltipLabel": "%",
+}
+`;
+
+exports[`Metric table for the pipeline_success_rate table row when the data is loaded renders the metric values 1`] = `
+[
+  "38.5% 149/387",
+  "132.4% 49/37",
+  "37.0% 10/27",
+  "63.1% 60/95",
+  "24.0% 18/75",
+  "50.0% 50/100",
+]
+`;
+
+exports[`Metric table for the pipeline_success_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "data": [
+    [
+      "Jul 1 – 31",
+      38.5,
+    ],
+    [
+      "Aug 1 – 31",
+      132.4,
+    ],
+    [
+      "Sep 1 – 30",
+      37,
+    ],
+    [
+      "Oct 1 – 31",
+      63.1,
+    ],
+    [
+      "Nov 1 – 30",
+      24,
+    ],
+  ],
+  "invertTrendColor": false,
+  "showGradient": true,
+  "tooltipLabel": "%",
 }
 `;
 
@@ -740,7 +814,6 @@ exports[`Metric table for the time_to_restore_service table row when the data is
 
 exports[`Metric table for the time_to_restore_service table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -763,13 +836,8 @@ exports[`Metric table for the time_to_restore_service table row when the data is
       2.3,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "days",
 }
 `;
@@ -787,7 +855,6 @@ exports[`Metric table for the vulnerability_critical table row when the data is 
 
 exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -810,13 +877,8 @@ exports[`Metric table for the vulnerability_critical table row when the data is 
       20,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "",
 }
 `;
@@ -834,7 +896,6 @@ exports[`Metric table for the vulnerability_high table row when the data is load
 
 exports[`Metric table for the vulnerability_high table row when the data is loaded renders the sparkline chart with expected props 1`] = `
 {
-  "connectNulls": true,
   "data": [
     [
       "Jul 1 – 31",
@@ -857,13 +918,8 @@ exports[`Metric table for the vulnerability_high table row when the data is load
       20,
     ],
   ],
-  "gradient": [
-    "#5252B5",
-    "#499767",
-  ],
-  "height": 30,
-  "showLastYValue": false,
-  "smooth": 0.2,
+  "invertTrendColor": true,
+  "showGradient": true,
   "tooltipLabel": "",
 }
 `;

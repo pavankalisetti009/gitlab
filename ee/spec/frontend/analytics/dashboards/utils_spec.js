@@ -67,6 +67,7 @@ describe('Analytics Dashboards utils', () => {
     { units: UNITS.PER_DAY, suffix: '/d' },
     { units: UNITS.DAYS, suffix: ' d' },
     { units: UNITS.PERCENT, suffix: '%' },
+    { units: UNITS.MINUTES, suffix: ' m' },
   ])('formatMetric(*, $units)', ({ units, suffix }) => {
     it.each`
       value      | result

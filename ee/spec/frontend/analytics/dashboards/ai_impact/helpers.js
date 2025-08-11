@@ -179,3 +179,31 @@ export const mockAiMetricsResponse = (values = []) =>
       }),
     jest.fn(),
   );
+
+export const mockAggregatedPipelineMetricsResponse = (values = []) =>
+  values.reduce(
+    (acc, { pipelineCount, pipelineSuccessCount, pipelineFailedCount, pipelineDurationMedian }) =>
+      acc.mockResolvedValueOnce({
+        data: {
+          project: null,
+          group: {
+            id: 'fake-pipeline-metrics',
+            pipelineAnalytics: {
+              aggregate: {
+                label: null,
+                pipelineCount,
+                pipelineSuccessCount,
+                pipelineFailedCount,
+                durationStatistics: {
+                  pipelineDurationMedian,
+                  __typename: 'CiDurationStatistics',
+                },
+                __typename: 'PipelineAnalyticsPeriod',
+              },
+              __typename: 'PipelineAnalytics',
+            },
+          },
+        },
+      }),
+    jest.fn(),
+  );

@@ -27,10 +27,18 @@ export default {
       required: false,
       default: false,
     },
+    showGradient: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
-  computed: {
-    chartGradient() {
-      return this.invertTrendColor ? CHART_GRADIENT_INVERTED : CHART_GRADIENT;
+  methods: {
+    chartGradient(invert, showGradient) {
+      if (showGradient) {
+        return invert ? CHART_GRADIENT_INVERTED : CHART_GRADIENT;
+      }
+      return [];
     },
   },
 };
@@ -44,7 +52,7 @@ export default {
       :show-last-y-value="false"
       :data="data"
       :smooth="0.2"
-      :gradient="chartGradient"
+      :gradient="chartGradient(invertTrendColor, showGradient)"
       connect-nulls
       data-testid="metric-chart"
     />
