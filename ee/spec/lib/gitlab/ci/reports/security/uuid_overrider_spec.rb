@@ -93,53 +93,26 @@ RSpec.describe 'UuidOverrider', feature_category: :vulnerability_management do
         }
       end
 
-      context 'when vulnerability_signatures_dedup_by_type feature flag is enabled' do
-        before do
-          # Mock dedup_by_type_enabled? to return true for all FindingSignature instances (FF enabled)
-          allow_next_instance_of(::Vulnerabilities::FindingSignature) do |instance|
-            allow(instance).to receive(:dedup_by_type_enabled?).and_return(true)
-          end
-        end
-
-        let(:qualified_signature) { true }
-        let(:test_data) { create_multiple_matches_test_data(qualified_signature) }
-
-        it 'overrides the UUID using the highest numeric priority signature' do
-          stub_licensed_features(vulnerability_finding_signatures: true)
-
-          override_uuids = Gitlab::Ci::Reports::Security::UUIDOverrider.new(project, [test_data[:report_finding]])
-          override_uuids.execute
-
-          # With flag enabled, higher priority wins (2 > 1)
-          # So compressed signature (priority 2) should be used
-          expect(test_data[:report_finding].uuid).to eq(test_data[:vuln_finding_compressed].uuid)
-          expect(test_data[:report_finding].uuid).not_to eq(test_data[:vuln_finding_offset].uuid)
+      before do
+        # Mock dedup_by_type_enabled? to return true for all FindingSignature instances (FF enabled)
+        allow_next_instance_of(::Vulnerabilities::FindingSignature) do |instance|
+          allow(instance).to receive(:dedup_by_type_enabled?).and_return(true)
         end
       end
 
-      context 'when vulnerability_signatures_dedup_by_type feature flag is disabled' do
-        before do
-          stub_feature_flags(vulnerability_signatures_dedup_by_type: false)
-          # Mock dedup_by_type_enabled? to return false for all FindingSignature instances
-          allow_next_instance_of(::Vulnerabilities::FindingSignature) do |instance|
-            allow(instance).to receive(:dedup_by_type_enabled?).and_return(false)
-          end
-        end
+      let(:qualified_signature) { true }
+      let(:test_data) { create_multiple_matches_test_data(qualified_signature) }
 
-        let(:qualified_signature) { false }
-        let(:test_data) { create_multiple_matches_test_data(qualified_signature) }
+      it 'overrides the UUID using the highest numeric priority signature' do
+        stub_licensed_features(vulnerability_finding_signatures: true)
 
-        it 'overrides the UUID using the lowest numeric priority signature' do
-          stub_licensed_features(vulnerability_finding_signatures: true)
+        override_uuids = Gitlab::Ci::Reports::Security::UUIDOverrider.new(project, [test_data[:report_finding]])
+        override_uuids.execute
 
-          override_uuids = Gitlab::Ci::Reports::Security::UUIDOverrider.new(project, [test_data[:report_finding]])
-          override_uuids.execute
-
-          # With flag disabled, lower priority wins (1 < 2)
-          # So offset signature (priority 1) should is used (unintended old behaviour)
-          expect(test_data[:report_finding].uuid).to eq(test_data[:vuln_finding_offset].uuid)
-          expect(test_data[:report_finding].uuid).not_to eq(test_data[:vuln_finding_compressed].uuid)
-        end
+        # With flag enabled, higher priority wins (2 > 1)
+        # So compressed signature (priority 2) should be used
+        expect(test_data[:report_finding].uuid).to eq(test_data[:vuln_finding_compressed].uuid)
+        expect(test_data[:report_finding].uuid).not_to eq(test_data[:vuln_finding_offset].uuid)
       end
     end
   end
