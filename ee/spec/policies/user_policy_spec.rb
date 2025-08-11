@@ -308,25 +308,10 @@ RSpec.describe UserPolicy, feature_category: :user_management do
   end
 
   describe ':assign_default_duo_group' do
-    let_it_be(:first_group) { create(:group) }
-    let_it_be(:second_group) { create(:group) }
-
-    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
-
-    let_it_be(:add_on_purchases) do
-      [
-        create(:gitlab_subscription_add_on_purchase, namespace: first_group, add_on: duo_pro_add_on),
-        create(:gitlab_subscription_add_on_purchase, namespace: second_group, add_on: duo_pro_add_on),
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: second_group)
-      ]
-    end
-
-    before do
-      stub_feature_flags(ai_model_switching: false)
-    end
-
     context 'with no user assignments' do
       before do
+        stub_feature_flags(ai_model_switching: true)
+        stub_feature_flags(ai_user_default_duo_namespace: true)
         stub_application_setting(duo_features_enabled: true)
       end
 
@@ -334,7 +319,17 @@ RSpec.describe UserPolicy, feature_category: :user_management do
     end
 
     context 'with duo user assignments' do
-      using RSpec::Parameterized::TableSyntax
+      let!(:groups) { create_list(:group, 2) }
+
+      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+
+      let!(:add_on_purchases) do
+        [
+          create(:gitlab_subscription_add_on_purchase, namespace: groups[0], add_on: duo_pro_add_on),
+          create(:gitlab_subscription_add_on_purchase, namespace: groups[1], add_on: duo_pro_add_on),
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: groups[0])
+        ]
+      end
 
       let!(:user_assignments) do
         add_on_purchases.map do |purchase|
@@ -342,25 +337,54 @@ RSpec.describe UserPolicy, feature_category: :user_management do
         end
       end
 
-      where(:group_index, :duo_features_enabled, :allowed?) do
-        0 | false | false
-        0 | true | true
-        1 | false | false
-        1 | true | true
-        nil | true | false
-        nil | false | false
+      let(:default_duo_namespace_enabled) { true }
+      let(:duo_features_enabled) { true }
+      let(:group_index) { 0 }
+
+      before do
+        enabled_namespace = group_index ? groups.at(group_index) : false
+        default_duo_namespace = default_duo_namespace_enabled ? current_user : false
+
+        stub_feature_flags(ai_model_switching: enabled_namespace)
+        stub_feature_flags(ai_user_default_duo_namespace: default_duo_namespace)
+
+        stub_application_setting(duo_features_enabled: duo_features_enabled)
       end
 
-      with_them do
-        before do
-          enabled_namespaces = group_index.nil? ? nil : [first_group, second_group].at(group_index)
+      describe 'When the instance is not SAAS' do
+        using RSpec::Parameterized::TableSyntax
 
-          stub_feature_flags(ai_model_switching: enabled_namespaces || false)
-          stub_application_setting(duo_features_enabled: duo_features_enabled)
+        where(:group_index, :disallowed_policy) do
+          0 |  be_disallowed(:assign_default_duo_group)
+          1 |  be_disallowed(:assign_default_duo_group)
+        end
+        with_them do
+          it { is_expected.to disallowed_policy }
+        end
+      end
+
+      describe 'When the instance is SAAS', :saas do
+        using RSpec::Parameterized::TableSyntax
+
+        # Since this policy work with logical AND operator
+        # We only need to test when one variable is false and the rest is true to validate it works correctly
+        # This make this test more intelligible
+        where(:group_index, :default_duo_namespace_enabled, :duo_features_enabled, :allowed?) do
+          0   | false | true  | false
+          0   | true  | false | false
+          0   | false | false | false
+          0   | true  | true  | true
+          1   | false | true  | false
+          1   | true  | false | false
+          1   | false | false | false
+          1   | true  | true  | true
+          nil | true  | true  | false
         end
 
-        it 'allows the user accordingly' do
-          is_expected.to(allowed? ? be_allowed(:assign_default_duo_group) : be_disallowed(:assign_default_duo_group))
+        with_them do
+          it 'allows the user accordingly' do
+            is_expected.to(allowed? ? be_allowed(:assign_default_duo_group) : be_disallowed(:assign_default_duo_group))
+          end
         end
       end
     end
