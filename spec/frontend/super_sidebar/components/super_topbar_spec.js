@@ -3,16 +3,23 @@ import { GlBadge } from '@gitlab/ui';
 import SuperTopbar from '~/super_sidebar/components/super_topbar.vue';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
 import CreateMenu from '~/super_sidebar/components/create_menu.vue';
+import SearchModal from '~/super_sidebar/components/global_search/components/global_search.vue';
 import UserCounts from '~/super_sidebar/components/user_counts.vue';
 import UserMenu from '~/super_sidebar/components/user_menu.vue';
+import waitForPromises from 'helpers/wait_for_promises';
+import { stubComponent } from 'helpers/stub_component';
 import { sidebarData as mockSidebarData } from '../mock_data';
 
 describe('SuperTopbar', () => {
   let wrapper;
 
+  const SearchModalStub = stubComponent(SearchModal);
+
   const findBrandLogo = () => wrapper.findComponent(BrandLogo);
   const findCreateMenu = () => wrapper.findComponent(CreateMenu);
   const findNextBadge = () => wrapper.findComponent(GlBadge);
+  const findSearchButton = () => wrapper.findByTestId('super-topbar-search-button');
+  const findSearchModal = () => wrapper.findComponent(SearchModal);
   const findUserCounts = () => wrapper.findComponent(UserCounts);
   const findUserMenu = () => wrapper.findComponent(UserMenu);
 
@@ -21,6 +28,9 @@ describe('SuperTopbar', () => {
       propsData: {
         sidebarData: mockSidebarData,
         ...props,
+      },
+      stubs: {
+        SearchModal: SearchModalStub,
       },
     });
   };
@@ -32,6 +42,21 @@ describe('SuperTopbar', () => {
 
     it('renders the header element with correct `super-topbar` class', () => {
       expect(wrapper.find('header').classes()).toContain('super-topbar');
+    });
+
+    describe('Search', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('should render search button', () => {
+        expect(findSearchButton().exists()).toBe(true);
+      });
+
+      it('should render search modal', () => {
+        expect(findSearchModal().exists()).toBe(true);
+      });
     });
 
     describe('"Create new…" menu', () => {
