@@ -1,0 +1,17 @@
+fragment FlowTriggerFragment on AiFlowTriggerType {
+  id
+  description
+  eventTypes
+  configUrl
+  configPath
+  user {
+    id
+    avatarUrl
+    name
+    username
+    webPath
+    webUrl
+  }
+  createdAt
+  updatedAt
+}

@@ -40,6 +40,15 @@ describe('Agents Platform Router', () => {
     });
   });
 
+  describe('flow triggers', () => {
+    it('redirect to flow triggers base route when ID to edit does not exist', async () => {
+      router = createRouter(baseRoute, 'project');
+      await router.push('/flow-triggers/invalid-id/edit');
+
+      expect(router.currentRoute.path).toBe('/flow-triggers');
+    });
+  });
+
   describe('catchall redirect', () => {
     it('adds the * redirect path as the last route', () => {
       router = createRouter(baseRoute, 'project');

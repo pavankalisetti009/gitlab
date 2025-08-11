@@ -1,6 +1,7 @@
 <script>
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
+import { fetchPolicies } from '~/lib/graphql';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
@@ -30,6 +31,7 @@ export default {
   apollo: {
     aiFlowTriggers: {
       query: getProjectAiFlowTriggers,
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       variables() {
         return {
           projectPath: this.projectPath,

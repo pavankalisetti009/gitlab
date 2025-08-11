@@ -1,5 +1,7 @@
+import { TYPENAME_AI_FLOW_TRIGGER } from '~/graphql_shared/constants';
+
 export const mockFlowTriggerFactory = (overrides = {}) => ({
-  id: 'gid://gitlab/Ai::FlowTrigger/1',
+  id: `gid://gitlab/${TYPENAME_AI_FLOW_TRIGGER}/1`,
   description: 'Test trigger',
   eventTypes: [0, 1],
   configPath: '/config/test.yml',
@@ -7,17 +9,21 @@ export const mockFlowTriggerFactory = (overrides = {}) => ({
   user: {
     id: 'gid://gitlab/User/1',
     username: 'testuser',
+    name: 'Test User',
     avatarUrl: 'https://example.com/avatar.png',
     webPath: '/testuser',
+    webUrl: 'https://example.com/testuser',
     __typename: 'UserCore',
   },
   createdAt: '2025-08-08T13:37:18Z',
   updatedAt: '2025-08-08T13:37:18Z',
-  __typename: 'AiFlowTriggerType',
+  __typename: TYPENAME_AI_FLOW_TRIGGER,
   ...overrides,
 });
 
-export const mockTriggers = [mockFlowTriggerFactory()];
+export const mockTrigger = mockFlowTriggerFactory();
+
+export const mockTriggers = [mockTrigger];
 
 export const mockTriggersWithoutUser = [mockFlowTriggerFactory({ user: undefined })];
 
@@ -50,3 +56,37 @@ export const eventTypeOptions = [
   { value: 0, text: 'Mention' },
   { value: 1, text: 'Assign' },
 ];
+
+export const mockCreateFlowTriggerSuccessMutation = {
+  data: {
+    aiFlowTriggerCreate: {
+      aiFlowTrigger: mockTrigger,
+      errors: [],
+    },
+  },
+};
+
+export const mockCreateFlowTriggerErrorMutation = {
+  data: {
+    aiFlowTriggerCreate: {
+      aiFlowTrigger: null,
+      errors: ['No input was provided.'],
+    },
+  },
+};
+
+export const mockUpdateFlowTriggerSuccessMutation = {
+  data: {
+    aiFlowTriggerUpdate: {
+      errors: [],
+    },
+  },
+};
+
+export const mockUpdateFlowTriggerErrorMutation = {
+  data: {
+    aiFlowTriggerUpdate: {
+      errors: ['No input was provided.'],
+    },
+  },
+};
