@@ -8,6 +8,7 @@ import {
   extractGraphqlVulnerabilitiesData,
   extractGraphqlMergeRequestsData,
   extractGraphqlContributorCountData,
+  extractAggregatedPipelineMetricsData,
 } from 'ee/analytics/dashboards/api';
 import {
   mockDoraMetricsResponseData,
@@ -17,6 +18,7 @@ import {
   mockLastVulnerabilityCountData,
   mockMergeRequestsResponseData,
   mockContributorCountResponseData,
+  mockAggregatedPipelineMetricsResponseData,
 } from './mock_data';
 
 describe('Analytics Dashboards api', () => {
@@ -209,6 +211,46 @@ describe('Analytics Dashboards api', () => {
           result: { data: {} },
         }),
       ).toEqual({});
+    });
+  });
+
+  describe('extractAggregatedPipelineMetricsData', () => {
+    let resp;
+
+    beforeEach(() => {
+      resp = extractAggregatedPipelineMetricsData(mockAggregatedPipelineMetricsResponseData);
+    });
+
+    it('returns the relevant pipeline metrics', () => {
+      expect(Object.keys(resp)).toEqual([
+        'pipeline_count',
+        'pipeline_success_rate',
+        'pipeline_failed_rate',
+        'pipeline_duration_median',
+      ]);
+    });
+
+    it('correctly formats each metric', () => {
+      expect(resp).toEqual({
+        pipeline_count: {
+          identifier: 'pipeline_count',
+          value: '100',
+        },
+        pipeline_duration_median: {
+          identifier: 'pipeline_duration_median',
+          value: 660,
+        },
+        pipeline_failed_rate: {
+          identifier: 'pipeline_failed_rate',
+          tooltip: '25/100',
+          value: 25,
+        },
+        pipeline_success_rate: {
+          identifier: 'pipeline_success_rate',
+          tooltip: '50/100',
+          value: 50,
+        },
+      });
     });
   });
 });

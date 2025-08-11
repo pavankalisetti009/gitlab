@@ -21,13 +21,21 @@ export default {
       required: false,
       default: false,
     },
+    isNeutralChange: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     trendingUp() {
       return this.change > 0;
     },
     textColor() {
-      return this.trendingUp !== this.invertColor ? 'gl-text-success' : 'gl-text-danger';
+      if (!this.isNeutralChange) {
+        return this.trendingUp !== this.invertColor ? 'gl-text-success' : 'gl-text-danger';
+      }
+      return 'gl-text-color-default';
     },
     iconName() {
       return this.trendingUp ? 'trend-up' : 'trend-down';

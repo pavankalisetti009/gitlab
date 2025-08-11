@@ -8,7 +8,6 @@ import {
   GlSprintf,
   GlLink,
 } from '@gitlab/ui';
-import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import { toYmd, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { AI_METRICS, UNITS } from '~/analytics/shared/constants';
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
@@ -19,12 +18,14 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
+import AggregatedPipelineMetricsQuery from '../../graphql/get_aggregate_pipeline_metrics.query.graphql';
 import VulnerabilitiesQuery from '../../graphql/vulnerabilities.query.graphql';
 import AiMetricsQuery from '../graphql/ai_metrics.query.graphql';
 import MergeRequestsQuery from '../../graphql/merge_requests.query.graphql';
 import ContributorCountQuery from '../../graphql/contributor_count.query.graphql';
 import { MERGE_REQUESTS_STATE_MERGED } from '../../graphql/constants';
 import MetricLabel from '../../../analytics_dashboards/components/visualizations/data_table/metric_label.vue';
+import TrendLine from '../../../analytics_dashboards/components/visualizations/data_table/trend_line.vue';
 import TrendIndicator from '../../components/trend_indicator.vue';
 import {
   SUPPORTED_DORA_METRICS,
@@ -32,10 +33,9 @@ import {
   SUPPORTED_CONTRIBUTOR_METRICS,
   SUPPORTED_MERGE_REQUEST_METRICS,
   SUPPORTED_FLOW_METRICS,
+  SUPPORTED_PIPELINE_ANALYTICS_METRICS,
   DASHBOARD_LOADING_FAILURE,
   RESTRICTED_METRIC_ERROR,
-  CHART_GRADIENT,
-  CHART_GRADIENT_INVERTED,
 } from '../../constants';
 import {
   mergeTableData,
@@ -62,6 +62,7 @@ import {
   extractGraphqlFlowData,
   extractGraphqlMergeRequestsData,
   extractGraphqlContributorCountData,
+  extractAggregatedPipelineMetricsData,
 } from '../../api';
 import { extractGraphqlAiData } from '../api';
 
@@ -73,9 +74,9 @@ export default {
     GlSprintf,
     GlLink,
     GlSkeletonLoader,
-    GlSparklineChart,
     MetricLabel,
     TrendIndicator,
+    TrendLine,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -124,6 +125,10 @@ export default {
         {
           metrics: SUPPORTED_CONTRIBUTOR_METRICS,
           queryFn: this.fetchContributorsCountQuery,
+        },
+        {
+          metrics: SUPPORTED_PIPELINE_ANALYTICS_METRICS,
+          queryFn: this.fetchAggregatedPipelineMetrics,
         },
       ].filter(({ metrics }) => !this.areAllMetricsSkipped(metrics));
     },
@@ -179,10 +184,6 @@ export default {
 
     formatInvalidTrend(value) {
       return value === 0 ? formatMetric(0, UNITS.PERCENT) : value;
-    },
-
-    chartGradient(invert) {
-      return invert ? CHART_GRADIENT_INVERTED : CHART_GRADIENT;
     },
 
     async resolveQueries(handler) {
@@ -325,6 +326,27 @@ export default {
         ...extractGraphqlAiData(responseData),
       };
     },
+
+    async fetchAggregatedPipelineMetrics({ startDate, endDate }, timePeriod) {
+      const result = await this.$apollo.query({
+        query: AggregatedPipelineMetricsQuery,
+        variables: {
+          fullPath: this.namespace,
+          fromTime: startDate,
+          toTime: endDate,
+        },
+      });
+
+      const { aggregate: metrics = {} } = extractQueryResponseFromNamespace({
+        result,
+        resultKey: 'pipelineAnalytics',
+      });
+
+      return {
+        ...timePeriod,
+        ...extractAggregatedPipelineMetricsData(metrics),
+      };
+    },
     formatNumber,
   },
   dataNotAvailableTooltips: AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS,
@@ -391,7 +413,9 @@ export default {
       </span>
     </template>
 
-    <template #cell(change)="{ value: { value, tooltip }, item: { invertTrendColor } }">
+    <template
+      #cell(change)="{ value: { value, tooltip }, item: { invertTrendColor, isNeutralChange } }"
+    >
       <span v-if="value === undefined" data-testid="metric-skeleton-loader">
         <gl-skeleton-loader :lines="1" :width="50" />
       </span>
@@ -399,6 +423,7 @@ export default {
         v-else-if="isValidTrend(value)"
         :change="value"
         :invert-color="invertTrendColor"
+        :is-neutral-change="isNeutralChange"
       />
       <span
         v-else
@@ -412,16 +437,15 @@ export default {
       </span>
     </template>
 
-    <template #cell(chart)="{ value: { data, tooltipLabel }, item: { invertTrendColor } }">
-      <gl-sparkline-chart
+    <template
+      #cell(chart)="{ value: { data, tooltipLabel }, item: { invertTrendColor, showGradient } }"
+    >
+      <trend-line
         v-if="data"
-        :height="30"
-        :tooltip-label="tooltipLabel"
-        :show-last-y-value="false"
         :data="data"
-        :smooth="0.2"
-        :gradient="chartGradient(invertTrendColor)"
-        connect-nulls
+        :tooltip-label="tooltipLabel"
+        :invert-trend-color="invertTrendColor"
+        :show-gradient="showGradient"
       />
       <div v-else class="gl-py-4" data-testid="metric-chart-skeleton">
         <gl-skeleton-loader :lines="1" :width="100" />

@@ -98,10 +98,17 @@ export const generateTableColumns = (now) => [
 export const generateSkeletonTableData = (excludeMetrics = []) =>
   Object.entries(AI_IMPACT_TABLE_METRICS)
     .filter(([identifier]) => !excludeMetrics.includes(identifier))
-    .map(([identifier, { label, invertTrendColor }]) => ({
-      metric: { identifier, value: label },
-      invertTrendColor,
-    }));
+    .map(
+      ([
+        identifier,
+        { label, invertTrendColor, showGradient = true, isNeutralChange = false },
+      ]) => ({
+        metric: { identifier, value: label },
+        invertTrendColor,
+        showGradient,
+        isNeutralChange,
+      }),
+    );
 
 export const calculateChange = (current, previous) => {
   const isInvalid = (value) => isNil(value) || value === '-';

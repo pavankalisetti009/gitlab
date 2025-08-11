@@ -10,7 +10,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   components: { ChangePercentageIndicator },
   props: Object.keys(argTypes),
-  template: `<change-percentage-indicator :value="value" :tooltip="tooltip" :invert-trend-color="invertTrendColor" />`,
+  template: `<change-percentage-indicator :value="value" :tooltip="tooltip" :invert-trend-color="invertTrendColor" :is-neutral-change="isNeutralChange" />`,
 });
 
 const TableTemplate = (args, { argTypes }) => ({
@@ -26,6 +26,9 @@ Default.args = { value: 0.25, tooltip, invertTrendColor: false };
 
 export const WithInvertTrendColor = Template.bind({});
 WithInvertTrendColor.args = { value: 0.25, tooltip, invertTrendColor: true };
+
+export const WithNeutralChange = Template.bind({});
+WithNeutralChange.args = { value: 0.25, tooltip, isNeutralChange: true };
 
 export const NegativeChange = Template.bind({});
 NegativeChange.args = { value: -0.125, tooltip, invertTrendColor: false };

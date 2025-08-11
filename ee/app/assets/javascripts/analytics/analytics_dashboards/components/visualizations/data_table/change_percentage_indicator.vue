@@ -27,6 +27,11 @@ export default {
       required: false,
       default: false,
     },
+    isNeutralChange: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     formatInvalidTrend() {
@@ -40,7 +45,12 @@ export default {
 </script>
 <template>
   <div>
-    <trend-indicator v-if="isValidTrend" :change="value" :invert-color="invertTrendColor" />
+    <trend-indicator
+      v-if="isValidTrend"
+      :change="value"
+      :invert-color="invertTrendColor"
+      :is-neutral-change="isNeutralChange"
+    />
     <span
       v-else
       v-gl-tooltip="tooltip"
