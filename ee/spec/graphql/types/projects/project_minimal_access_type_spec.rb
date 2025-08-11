@@ -27,7 +27,16 @@ RSpec.describe Types::Projects::ProjectMinimalAccessType, feature_category: :gro
     end
 
     it 'only the defined fields resolve to non-nil values' do
-      defined_fields = %w[name name_with_namespace description avatar_url full_path]
+      defined_fields = %w[
+        avatar_url
+        description
+        full_path
+        id
+        name
+        name_with_namespace
+        path
+        user_permissions
+      ]
 
       expect(described_class.own_fields.keys.map(&:underscore)).to match_array(defined_fields)
 

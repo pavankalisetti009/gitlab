@@ -16,16 +16,23 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
     end
 
     describe 'list' do
-      let_it_be(:project) { create(:project, owners: [current_user]) }
+      let_it_be(:authorized_project) { create(:project, owners: [current_user]) }
+      let_it_be(:unauthorized_project) { create(:project, :private) }
 
       it 'does not render admin-only action buttons' do
         visit admin_projects_path
 
         expect(page).not_to have_content("New Project")
-        expect(page).to have_content(project.name)
-        within_testid("projects-list-item-#{project.id}") do
+        expect(page).to have_content(authorized_project.name)
+        within_testid("projects-list-item-#{authorized_project.id}") do
           expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
         end
+      end
+
+      it 'displays projects the user is not a member of' do
+        visit admin_projects_path
+
+        expect(page).to have_content(unauthorized_project.name)
       end
     end
 
