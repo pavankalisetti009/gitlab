@@ -222,18 +222,16 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
 
       context 'with missing artifacts file', :aggregate_failures do
         let(:job_without_artifacts) do
-          create(:ci_build, :success, ref: ref, pipeline: pipeline, user: user, project: project)
+          create(:ci_build, :running, ref: ref, pipeline: pipeline, user: user, project: project)
         end
 
-        it 'returns not_found and does not audit' do
+        it 'returns not_found and does not audit artifact download' do
           expect(::Ci::ArtifactDownloadAuditor).not_to receive(:new)
           expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+            .with(hash_including(name: 'job_artifact_downloaded'))
 
-          # Use bearer to avoid HTTP 401 unauthorized response
-          pat = create :personal_access_token, user: user, scopes: %w[api]
-          bearer = { 'Authorization' => "Bearer #{pat.token}" }
-
-          get api("/jobs/#{job_without_artifacts.id}/artifacts"), headers: bearer
+          get api("/jobs/#{job_without_artifacts.id}/artifacts"),
+            params: { token: job_without_artifacts.token }
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
