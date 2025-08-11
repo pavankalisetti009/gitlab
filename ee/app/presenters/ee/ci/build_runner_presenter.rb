@@ -10,10 +10,7 @@ module EE
           secret['vault']['server'] = vault_server(secret) if secret['vault']
           secret['azure_key_vault']['server'] = azure_key_vault_server(secret) if secret['azure_key_vault']
           secret['gcp_secret_manager']['server'] = gcp_secret_manager_server(secret) if secret['gcp_secret_manager']
-
-          if ::Feature.enabled?(:ci_aws_secrets_manager, project) && (secret['aws_secrets_manager'])
-            secret['aws_secrets_manager']['server'] = aws_secrets_manager_server(secret)
-          end
+          secret['aws_secrets_manager']['server'] = aws_secrets_manager_server(secret) if secret['aws_secrets_manager']
 
           # For compatibility with the existing Vault integration in Runner,
           # template gitlab_secrets_manager data into the vault field.
