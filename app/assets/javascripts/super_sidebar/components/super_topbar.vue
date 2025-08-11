@@ -1,6 +1,7 @@
 <script>
 import { GlBadge } from '@gitlab/ui';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
+import CreateMenu from './create_menu.vue';
 import UserMenu from './user_menu.vue';
 import UserCounts from './user_counts.vue';
 
@@ -11,6 +12,7 @@ export default {
   components: {
     GlBadge,
     BrandLogo,
+    CreateMenu,
     UserCounts,
     UserMenu,
   },
@@ -39,6 +41,11 @@ export default {
     </div>
 
     <div class="gl-flex gl-gap-2">
+      <create-menu
+        v-if="sidebarData.is_logged_in && sidebarData.create_new_menu_groups.length > 0"
+        :groups="sidebarData.create_new_menu_groups"
+      />
+
       <user-counts
         v-if="sidebarData.is_logged_in"
         :sidebar-data="sidebarData"
