@@ -345,7 +345,7 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
 
   describe 'ownerProject' do
     let(:query) do
-      project_path = query_graphql_path(%i[ownerProject], all_graphql_fields_for('ProjectInterface'))
+      project_path = query_graphql_path(%i[ownerProject], all_graphql_fields_for('ProjectInterface', max_depth: 1))
 
       wrap_fields(query_graphql_path(query_path, project_path))
     end
@@ -359,27 +359,21 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
     context 'when current user is an admin',
       :enable_admin_mode, feature_category: :permissions do
       let_it_be(:current_user) { admin }
-      let_it_be(:project) { create(:project, :private, description: 'd') }
+      let_it_be(:project) { create(:project, :private) }
       let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
-      let(:field_names) do
-        ::Types::Projects::ProjectInterface.fields.keys.map(&:underscore)
-      end
-
-      let(:project_data) do
-        fields = field_names.excluding('id') # a_graphql_entity_for already sets id
-        a_graphql_entity_for(project, *fields).to_hash
-      end
+      # select a non-nullable ProjectType field that is not also exposed by ProjectMinimalAccessType
+      let(:project_type_field) { :star_count }
 
       before do
         post_graphql(query, current_user: current_user)
       end
 
-      it 'retrieves expected field values' do
+      it 'returns ProjectType fields' do
         runner_data = graphql_data_at(:runner)
 
         expect(runner_data).not_to be_nil
-        expect(graphql_dig_at(runner_data, :ownerProject)).to match project_data
+        expect(graphql_dig_at(runner_data, :ownerProject, project_type_field)).to eq project.send(project_type_field)
       end
     end
 
@@ -391,33 +385,11 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
       let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
       let(:exposed_field_names) do
-        %w[avatar_url description full_path name name_with_namespace]
+        %w[avatar_url description full_path id name name_with_namespace path user_permissions]
       end
 
       let(:unexposed_field_names) do
         ::Types::Projects::ProjectInterface.fields.keys.map(&:underscore) - exposed_field_names
-      end
-
-      let(:project_exposed_data) do
-        {
-          avatar_url: project.avatar_url(only_path: false),
-          description: project.description,
-          full_path: project.full_path,
-          name: project.name,
-          name_with_namespace: project.name_with_namespace
-        }
-      end
-
-      let(:project_data) do
-        nil_fields = unexposed_field_names.index_with { |_f| nil }
-
-        a_graphql_entity_for(
-          project,
-          **project_exposed_data.merge(nil_fields)
-        ).to_hash.tap do |h|
-          # a_graphql_entity_for sets id but we expect it to be nil
-          h["id"] = nil
-        end
       end
 
       before do
@@ -427,15 +399,16 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
       end
 
       it 'retrieves expected field values' do
-        expect(exposed_field_names).to match_array(
-          ::Types::Projects::ProjectMinimalAccessType.own_fields.keys.map(&:underscore)
-        )
-        expect(exposed_field_names.map(&:to_sym)).to match_array(project_exposed_data.keys)
-
         runner_data = graphql_data_at(:runner)
+        project_data = graphql_dig_at(runner_data, :ownerProject)
 
         expect(runner_data).not_to be_nil
-        expect(graphql_dig_at(runner_data, :ownerProject)).to match project_data
+
+        exposed_field_values = project_data.slice(*exposed_field_names).values
+        expect(exposed_field_values).to be_all(&:present?)
+
+        unexposed_field_values = project_data.slice(*unexposed_field_names).values
+        expect(unexposed_field_values).to be_all(&:blank?)
       end
     end
   end

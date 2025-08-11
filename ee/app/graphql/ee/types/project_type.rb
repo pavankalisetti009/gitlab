@@ -66,14 +66,6 @@ module EE
           null: true,
           description: 'Number of requirements for the project by their state.'
 
-        field :compliance_frameworks, ::Types::ComplianceManagement::ComplianceFrameworkType.connection_type,
-          description: 'Compliance frameworks associated with the project.',
-          null: true do
-            argument :sort, ::Types::ComplianceManagement::ComplianceFrameworkSortEnum,
-              required: false,
-              description: 'Sort compliance frameworks by the criteria.'
-          end
-
         field :merge_request_violations,
           ::Types::ComplianceManagement::MergeRequests::ComplianceViolationType.connection_type,
           null: true,
@@ -103,10 +95,6 @@ module EE
           resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusResolver,
           authorize: :read_compliance_adherence_report,
           experiment: { milestone: '18.0' }
-
-        field :security_dashboard_path, GraphQL::Types::String,
-          description: "Path to project's security dashboard.",
-          null: true
 
         field :vulnerability_identifier_search,
           [GraphQL::Types::String],
@@ -162,22 +150,6 @@ module EE
           null: true,
           resolver: ::Resolvers::DastSiteValidationResolver,
           description: 'DAST Site Validations associated with the project.'
-
-        field :repository_size_excess,
-          GraphQL::Types::Float,
-          null: true,
-          description: 'Size of repository that exceeds the limit in bytes.'
-
-        field :actual_repository_size_limit,
-          GraphQL::Types::Float,
-          null: true,
-          description: 'Size limit for the repository in bytes.'
-
-        field :code_coverage_summary,
-          ::Types::Ci::CodeCoverageSummaryType,
-          null: true,
-          description: 'Code coverage summary associated with the project.',
-          resolver: ::Resolvers::Ci::CodeCoverageSummaryResolver
 
         field :alert_management_payload_fields,
           [::Types::AlertManagement::PayloadAlertFieldType],
@@ -348,16 +320,6 @@ module EE
           description: 'Container images reported on the project vulnerabilities.',
           resolver: ::Resolvers::Vulnerabilities::ContainerImagesResolver
 
-        field :only_allow_merge_if_all_status_checks_passed, GraphQL::Types::Boolean,
-          null: true,
-          description: 'Indicates that merges of merge requests should be blocked ' \
-                       'unless all status checks have passed.'
-
-        field :duo_features_enabled, GraphQL::Types::Boolean,
-          null: true,
-          experiment: { milestone: '16.9' },
-          description: 'Indicates whether GitLab Duo features are enabled for the project.'
-
         field :duo_context_exclusion_settings, ::Types::Projects::DuoContextExclusionSettingsType,
           null: true,
           description: 'Settings for excluding files from Duo context.',
@@ -408,18 +370,6 @@ module EE
           description: 'Project-level settings for product analytics.',
           null: true,
           resolver: ::Resolvers::Analytics::ProductAnalytics::ProjectSettingsResolver
-
-        field :tracking_key, GraphQL::Types::String,
-          null: true,
-          description: 'Tracking key assigned to the project.',
-          experiment: { milestone: '16.0' },
-          authorize: :developer_access
-
-        field :product_analytics_instrumentation_key, GraphQL::Types::String,
-          null: true,
-          description: 'Product Analytics instrumentation key assigned to the project.',
-          experiment: { milestone: '16.0' },
-          authorize: :developer_access
 
         field :dependencies, ::Types::Sbom::DependencyType.connection_type,
           null: true,
@@ -621,11 +571,6 @@ module EE
           description: 'Traces attached to the project.',
           resolver: ::Resolvers::Observability::TracesResolver
 
-        field :component_usages, ::Types::Ci::Catalog::Resources::Components::UsageType.connection_type,
-          null: true,
-          description: 'Component(s) used by the project.',
-          resolver: ::Resolvers::Ci::Catalog::Resources::Components::ProjectUsageResolver
-
         field :security_exclusions,
           ::Types::Security::ProjectSecurityExclusionType.connection_type,
           null: true,
@@ -647,12 +592,6 @@ module EE
         field :analyzer_statuses, [::Types::Security::AnalyzerProjectStatusType],
           null: true,
           description: 'Status for all analyzers in the project.'
-
-        field :duo_agentic_chat_available, ::GraphQL::Types::Boolean,
-          null: true,
-          resolver: ::Resolvers::Ai::ProjectAgenticChatAccessResolver,
-          experiment: { milestone: '18.1' },
-          description: 'User access to Duo agentic Chat feature.'
 
         field :security_metrics,
           ::Types::Security::SecurityMetricsType,
