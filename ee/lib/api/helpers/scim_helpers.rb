@@ -25,7 +25,7 @@ module API
       end
 
       def update_scim_user(identity)
-        parser = ::EE::Gitlab::Scim::ParamsParser.new(params)
+        parser = ::Gitlab::Scim::ParamsParser.new(params)
         parsed_hash = parser.update_params
 
         if parser.deprovision_user?

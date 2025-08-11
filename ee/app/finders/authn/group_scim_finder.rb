@@ -30,7 +30,7 @@ module Authn
     end
 
     def filter_identities(params)
-      parser = EE::Gitlab::Scim::ParamsParser.new(params)
+      parser = Gitlab::Scim::ParamsParser.new(params)
 
       if eq_filter_on_extern_uid?(parser)
         by_extern_uid(parser.filter_params[:extern_uid])

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative './shared_examples/internal_events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :workflow_catalog do
   let_it_be(:user) { create(:user) }
@@ -21,6 +22,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
   subject(:execute) { described_class.new(container: container, current_user: user, params: params).execute }
 
+  it_behaves_like 'ItemConsumers::InternalEventsTracking' do
+    subject { described_class.new(container: container, current_user: user, params: params) }
+  end
+
   shared_examples 'a failure' do |message|
     it 'does not create a catalog item consumer' do
       expect { execute }.not_to change { Ai::Catalog::ItemConsumer.count }
@@ -31,6 +36,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
 
       expect(response).to be_error
       expect(response.message).to contain_exactly(message)
+    end
+
+    it 'does not track internal event' do
+      expect { execute }.not_to trigger_internal_events('create_ai_catalog_item_consumer')
     end
   end
 
@@ -43,6 +52,18 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
       item: item,
       enabled: true,
       locked: true
+    )
+  end
+
+  it 'tracks internal event on successful creation' do
+    expect { execute }.to trigger_internal_events('create_ai_catalog_item_consumer').with(
+      user: user,
+      project: consumer_project,
+      namespace: nil,
+      additional_properties: {
+        label: 'true',
+        property: 'true'
+      }
     )
   end
 
@@ -66,6 +87,18 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         item: item,
         enabled: true,
         locked: true
+      )
+    end
+
+    it 'tracks internal event with group namespace' do
+      expect { execute }.to trigger_internal_events('create_ai_catalog_item_consumer').with(
+        user: user,
+        project: nil,
+        namespace: consumer_group,
+        additional_properties: {
+          label: 'true',
+          property: 'true'
+        }
       )
     end
 

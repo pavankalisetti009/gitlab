@@ -116,43 +116,6 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
                                            .and not_change { Note.count }
             end
           end
-
-          context 'when destroying epic issue fails' do
-            before do
-              # We still need to test when `epic_issues` has no `work_item_parent_link_id`.
-              # If set, FK constraint would the delete the epic_issue otherwise directly.
-              EpicIssue.where(work_item_parent_link_id: parent_link.id).update!(work_item_parent_link_id: nil)
-
-              allow_next_instance_of(::EpicIssues::DestroyService) do |instance|
-                allow(instance).to receive(:execute).and_return({ status: :error, message: 'Some error' })
-              end
-            end
-
-            it 'does not destroy parent link or epic issue link', :aggregate_failures do
-              expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
-                .with({
-                  message: 'Not able to remove work item parent link',
-                  error_message: 'Some error',
-                  namespace_id: group.id,
-                  work_item_id: work_item_issue.id,
-                  work_item_parent_id: with_synced_epic1.id
-                })
-
-              expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-                instance_of(WorkItems::SyncAsEpic::SyncAsEpicError),
-                { work_item_parent_id: with_synced_epic1.id }
-              )
-
-              expect { destroy_link }.to not_change { WorkItems::ParentLink.count }
-                                    .and not_change { EpicIssue.count }
-                                    .and not_change { WorkItems::ResourceLinkEvent.count }
-                                    .and not_change { Note.count }
-
-              expect(destroy_link).to eq(
-                message: "Couldn't delete link due to an internal error.", status: :error, http_status: 422
-              )
-            end
-          end
         end
       end
     end

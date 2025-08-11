@@ -168,7 +168,7 @@ RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
         before do
           allow_next_instance_of(::EE::Gitlab::Scim::Group::ProvisioningService) do |instance|
             allow(instance).to receive(:execute).and_return(
-              ::EE::Gitlab::Scim::ProvisioningResponse.new(status: :error)
+              ::Gitlab::Scim::ProvisioningResponse.new(status: :error)
             )
           end
 

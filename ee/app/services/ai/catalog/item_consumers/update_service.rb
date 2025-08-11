@@ -4,6 +4,8 @@ module Ai
   module Catalog
     module ItemConsumers
       class UpdateService
+        include InternalEventsTracking
+
         def initialize(item_consumer, current_user, params)
           @current_user = current_user
           @item_consumer = item_consumer
@@ -14,6 +16,7 @@ module Ai
           return error_no_permissions unless allowed?
 
           if item_consumer.update(params)
+            track_item_consumer_event(item_consumer, 'update_ai_catalog_item_consumer')
             ServiceResponse.success(payload: { item_consumer: item_consumer })
           else
             error_updating

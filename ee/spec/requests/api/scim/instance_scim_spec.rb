@@ -259,7 +259,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         before do
           allow_next_instance_of(::EE::Gitlab::Scim::ProvisioningService) do |instance|
             allow(instance).to receive(:execute).and_return(
-              ::EE::Gitlab::Scim::ProvisioningResponse.new(status: :error)
+              ::Gitlab::Scim::ProvisioningResponse.new(status: :error)
             )
           end
         end
@@ -278,7 +278,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         before do
           allow_next_instance_of(::EE::Gitlab::Scim::ProvisioningService) do |instance|
             allow(instance).to receive(:execute).and_return(
-              ::EE::Gitlab::Scim::ProvisioningResponse.new(status: :conflict)
+              ::Gitlab::Scim::ProvisioningResponse.new(status: :conflict)
             )
           end
         end

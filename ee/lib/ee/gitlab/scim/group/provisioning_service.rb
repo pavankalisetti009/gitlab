@@ -108,7 +108,7 @@ module EE
           end
 
           def success_response
-            ProvisioningResponse.new(status: :success, identity: identity)
+            ::Gitlab::Scim::ProvisioningResponse.new(status: :success, identity: identity)
           end
 
           def log_audit_event

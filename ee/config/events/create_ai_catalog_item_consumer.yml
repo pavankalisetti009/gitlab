@@ -1,0 +1,20 @@
+---
+description: AI Catalog item consumer created
+internal_events: true
+action: create_ai_catalog_item_consumer
+identifiers:
+- project
+- namespace
+additional_properties:
+  label:
+    description: Enabled state of the item consumer
+  property:
+    description: Locked state of the item consumer
+product_group: workflow_catalog
+product_categories:
+- workflow_catalog
+milestone: '18.3'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200024
+tiers:
+- premium
+- ultimate

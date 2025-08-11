@@ -2,7 +2,7 @@
 
 require 'fast_spec_helper'
 
-RSpec.describe EE::Gitlab::Scim::ParamsParser, feature_category: :system_access do
+RSpec.describe Gitlab::Scim::ParamsParser, feature_category: :system_access do
   describe '#filter_params' do
     it 'returns the correct filter attributes' do
       filter = 'id eq "6ba81b08-77da"'
@@ -27,7 +27,7 @@ RSpec.describe EE::Gitlab::Scim::ParamsParser, feature_category: :system_access 
     it 'returns nil if the filter is invalid' do
       parser = described_class.new(filter: 'this eq that')
 
-      expect(parser.filter_operator).to eq(nil)
+      expect(parser.filter_operator).to be_nil
     end
   end
 
