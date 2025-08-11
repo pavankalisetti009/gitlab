@@ -27,7 +27,6 @@ describe('PolicyExceptionsSelectedList', () => {
 
   beforeEach(() => {
     window.gon.features = {
-      securityPoliciesBypassOptionsTokensAccounts: true,
       securityPoliciesBypassOptionsGroupRoles: true,
     };
     createComponent();
@@ -87,7 +86,6 @@ describe('PolicyExceptionsSelectedList', () => {
   describe('rendering with flags', () => {
     beforeEach(() => {
       window.gon.features = {
-        securityPoliciesBypassOptionsTokensAccounts: false,
         securityPoliciesBypassOptionsGroupRoles: false,
       };
     });
