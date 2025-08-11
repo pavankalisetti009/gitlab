@@ -8995,9 +8995,6 @@ msgstr ""
 msgid "Assigned to %{assignee_name}"
 msgstr ""
 
-msgid "Assigned to you"
-msgstr ""
-
 msgid "Assignee"
 msgid_plural "%d Assignees"
 msgstr[0] ""
