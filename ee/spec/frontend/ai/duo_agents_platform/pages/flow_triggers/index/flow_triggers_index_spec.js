@@ -9,7 +9,11 @@ import ResourceListsLoadingStateList from '~/vue_shared/components/resource_list
 import FlowTriggersIndex from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index//components/flow_triggers_table.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
-import { mockAiFlowTriggersResponse, mockEmptyAiFlowTriggersResponse } from '../mocks';
+import {
+  mockAiFlowTriggersResponse,
+  mockEmptyAiFlowTriggersResponse,
+  eventTypeOptions,
+} from '../mocks';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -32,6 +36,7 @@ describe('FlowTriggersIndex', () => {
       provide: {
         projectPath: 'myProject',
         emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
+        flowTriggersEventTypeOptions: eventTypeOptions,
       },
     });
   };

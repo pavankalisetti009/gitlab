@@ -20,7 +20,13 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
   }
 
   const { dataset } = el;
-  const { agentsPlatformBaseRoute, duoAgentsInvokePath, emptyStateIllustrationPath } = dataset;
+
+  const {
+    agentsPlatformBaseRoute,
+    duoAgentsInvokePath,
+    emptyStateIllustrationPath,
+    flowTriggersEventTypeOptions,
+  } = dataset;
   const namespaceProvideData = getNamespaceDatasetProperties(dataset, namespaceDatasetProperties);
 
   if (namespaceDatasetProperties.length !== Object.keys(namespaceProvideData).length) {
@@ -51,6 +57,9 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     provide: {
       duoAgentsInvokePath,
       emptyStateIllustrationPath,
+      flowTriggersEventTypeOptions: flowTriggersEventTypeOptions
+        ? JSON.parse(flowTriggersEventTypeOptions)
+        : [],
       ...namespaceProvideData,
     },
     render(h) {
