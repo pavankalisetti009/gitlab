@@ -70,6 +70,7 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
         context 'when group level feature flag is disabled' do
           before do
             stub_feature_flags(group_security_dashboard_new: false)
+            stub_feature_flags(new_security_dashboard_vulnerabilities_per_severity: false)
           end
 
           it 'returns nil' do
@@ -102,6 +103,7 @@ RSpec.describe Resolvers::Security::SecurityMetricsResolver, feature_category: :
         context 'when group level feature flag is disabled' do
           before do
             stub_feature_flags(project_security_dashboard_new: false)
+            stub_feature_flags(new_security_dashboard_vulnerabilities_per_severity: false)
           end
 
           it 'returns nil' do
