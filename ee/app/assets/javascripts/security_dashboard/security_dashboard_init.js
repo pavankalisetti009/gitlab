@@ -43,6 +43,7 @@ export default async (el, dashboardType) => {
     vulnerabilitiesPdfExportEndpoint,
     newVulnerabilityPath,
     groupSecurityVulnerabilitiesPath,
+    projectSecurityVulnerabilitiesPath,
   } = el.dataset;
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
@@ -101,6 +102,7 @@ export default async (el, dashboardType) => {
     if (!hasVulnerabilities) {
       component = ReportNotConfiguredProject;
     } else if (isProjectSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
+      provide.securityVulnerabilitiesPath = projectSecurityVulnerabilitiesPath;
       const { default: ProjectSecurityDashboardNew } = await import(
         './components/shared/project_security_dashboard_new.vue'
       );
