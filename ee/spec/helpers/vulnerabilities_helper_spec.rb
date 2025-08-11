@@ -7,10 +7,22 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
   let_it_be(:project) { create(:project, :repository, :public) }
   let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
   let_it_be_with_refind(:finding) { create(:vulnerabilities_finding, :with_pipeline, :with_cve, :with_token_status, token_status: :active, project: project, severity: :high) }
-  let_it_be(:advisory) { create(:pm_advisory, cve: finding.cve_value) }
   let_it_be(:cve_enrichment_object) { create(:pm_cve_enrichment, cve: finding.cve_value) }
 
-  let(:vulnerability) { create(:vulnerability, title: "My vulnerability", project: project, findings: [finding]) }
+  let(:cvss_data) do
+    [
+      {
+        'vector' => 'CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N/E:P',
+        'vendor' => 'GitLab'
+      },
+      {
+        'vector' => 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
+        'vendor' => 'GitLab'
+      }
+    ]
+  end
+
+  let(:vulnerability) { create(:vulnerability, title: "My vulnerability", project: project, findings: [finding], cvss: cvss_data) }
 
   before do
     allow(helper).to receive(:current_user).and_return(user)
@@ -502,10 +514,16 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
           epss_score: cve_enrichment_object.epss_score,
           is_known_exploit: cve_enrichment_object.is_known_exploit
         },
-        cvss: [{
-          overall_score: advisory.cvss_v3.overall_score,
-          version: advisory.cvss_v3.version
-        }],
+        cvss: [
+          {
+            overall_score: 5.5,
+            version: 4.0
+          },
+          {
+            overall_score: 9.8,
+            version: 3.1
+          }
+        ],
         validity_checks_enabled: be_in([true, false])
       )
 
@@ -523,11 +541,24 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
     end
 
     context 'when there is no CVSS data' do
-      before do
-        allow(finding).to receive(:advisory).and_return(nil)
-      end
+      let(:cvss_data) { [] }
 
       it 'returns an empty array for cvss' do
+        expect(subject[:cvss]).to eq([])
+      end
+    end
+
+    context 'when cvss vector is invalid' do
+      let(:cvss_data) do
+        [
+          {
+            'vendor' => 'GitLab',
+            'vector' => 'foo'
+          }
+        ]
+      end
+
+      it 'skips the invalid item' do
         expect(subject[:cvss]).to eq([])
       end
     end
