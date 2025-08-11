@@ -44,6 +44,13 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
     end
   end
 
+  shared_examples 'does not call inventory filters service' do
+    it 'does not call InventoryFilters service' do
+      expect(inventory_filters_update_service).not_to receive(:execute)
+      execute
+    end
+  end
+
   shared_examples 'creates aggregated status from pipeline-based status' do |analyzer_type, pipeline_type, status|
     it "creates #{analyzer_type} aggregated status as #{status} from #{pipeline_type}" do
       expect { execute }.to change {
@@ -96,10 +103,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
         expect(execute).to be_nil
       end
 
-      it 'does not call InventoryFilters service' do
-        expect(inventory_filters_update_service).not_to receive(:execute)
-        execute
-      end
+      include_examples 'does not call inventory filters service'
     end
 
     context 'when project doesnt exist' do
@@ -111,10 +115,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
         expect(execute).to be_nil
       end
 
-      it 'does not call InventoryFilters service' do
-        expect(inventory_filters_update_service).not_to receive(:execute)
-        execute
-      end
+      include_examples 'does not call inventory filters service'
     end
 
     context 'when post_pipeline_analyzer_status_updates feature flag is disabled' do
@@ -126,10 +127,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
         expect(execute).to be_nil
       end
 
-      it 'does not call InventoryFilters service' do
-        expect(inventory_filters_update_service).not_to receive(:execute)
-        execute
-      end
+      include_examples 'does not call inventory filters service'
     end
 
     context 'when post_pipeline_analyzer_status_updates feature flag is enabled' do
@@ -354,11 +352,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             }.from(nil).to('not_configured')
           end
 
-          it 'does not call InventoryFilters service' do
-            expect(inventory_filters_update_service).not_to receive(:execute)
-            execute
-          end
-
+          include_examples 'does not call inventory filters service'
           include_examples 'calls namespace related services'
         end
 
@@ -380,10 +374,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             expect(ancestors_update_service).not_to have_received(:execute)
           end
 
-          it 'does not call InventoryFilters service' do
-            expect(inventory_filters_update_service).not_to receive(:execute)
-            execute
-          end
+          include_examples 'does not call inventory filters service'
         end
 
         context 'with aggregated type handling' do
