@@ -57671,9 +57671,6 @@ msgstr ""
 msgid "SecurityOrchestration|Maximum security policy project schedule rule count exceeded"
 msgstr ""
 
-msgid "SecurityOrchestration|Merge Release Security"
-msgstr ""
-
 msgid "SecurityOrchestration|Merge Request Security"
 msgstr ""
 
@@ -57857,6 +57854,9 @@ msgid "SecurityOrchestration|Project cannot be deleted because it is linked as a
 msgstr ""
 
 msgid "SecurityOrchestration|Reason for snoozing policy (optional)"
+msgstr ""
+
+msgid "SecurityOrchestration|Release Security"
 msgstr ""
 
 msgid "SecurityOrchestration|Remove %{group}"
