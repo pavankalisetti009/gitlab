@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::Gitlab::Scim::DeprovisioningService, feature_category: :system_access do
+RSpec.describe ::Gitlab::Scim::DeprovisioningService, feature_category: :system_access do
   describe '#execute' do
     let(:identity) { create(:scim_identity, active: true) }
     let(:user) { identity.user }
@@ -17,7 +17,7 @@ RSpec.describe ::EE::Gitlab::Scim::DeprovisioningService, feature_category: :sys
       it 'blocks the user' do
         service.execute
 
-        expect(user.ldap_blocked?).to eq(true)
+        expect(user.ldap_blocked?).to be(true)
       end
 
       it 'returns the successful deprovision message' do

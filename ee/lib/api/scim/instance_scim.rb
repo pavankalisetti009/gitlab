@@ -36,7 +36,7 @@ module API
         end
 
         def patch_deprovision(identity)
-          ::EE::Gitlab::Scim::DeprovisioningService.new(identity).execute
+          ::Gitlab::Scim::DeprovisioningService.new(identity).execute
 
           true
         rescue StandardError => e
@@ -50,7 +50,7 @@ module API
         end
 
         def reprovision(identity)
-          ::EE::Gitlab::Scim::ReprovisioningService.new(identity).execute
+          ::Gitlab::Scim::ReprovisioningService.new(identity).execute
 
           true
         rescue StandardError => e
@@ -109,7 +109,7 @@ module API
 
           post do
             parser = ::Gitlab::Scim::ParamsParser.new(params)
-            result = ::EE::Gitlab::Scim::ProvisioningService.new(
+            result = ::Gitlab::Scim::ProvisioningService.new(
               parser.post_params.merge(organization_id: ::Current.organization.id)
             ).execute
 
@@ -188,7 +188,7 @@ module API
             optional :externalId, type: String, desc: 'SCIM group ID'
           end
           post do
-            result = ::EE::Gitlab::Scim::GroupSyncProvisioningService.new(
+            result = ::Gitlab::Scim::GroupSyncProvisioningService.new(
               saml_group_name: params[:displayName],
               scim_group_uid: params[:externalId] || SecureRandom.uuid
             ).execute
@@ -258,7 +258,7 @@ module API
             saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
             scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
 
-            ::EE::Gitlab::Scim::GroupSyncPatchService.new(
+            ::Gitlab::Scim::GroupSyncPatchService.new(
               scim_group_uid: params[:id],
               operations: params[:Operations]
             ).execute
@@ -277,7 +277,7 @@ module API
             saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
             scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
 
-            ::EE::Gitlab::Scim::GroupSyncPutService.new(
+            ::Gitlab::Scim::GroupSyncPutService.new(
               scim_group_uid: params[:id],
               members: params[:members] || [],
               display_name: params[:displayName]
@@ -294,7 +294,7 @@ module API
             saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
             scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
 
-            result = ::EE::Gitlab::Scim::GroupSyncDeletionService.new(scim_group_uid: params[:id]).execute
+            result = ::Gitlab::Scim::GroupSyncDeletionService.new(scim_group_uid: params[:id]).execute
             scim_error!(message: result.message) if result.error?
 
             no_content!
