@@ -24,7 +24,7 @@ module Ai
 
         ::Ci::Workloads::RunWorkloadService.new(
           project: project,
-          current_user: current_user,
+          current_user: flow_trigger.user,
           source: :duo_workflow,
           workload_definition: workload_definition,
           **branch_args

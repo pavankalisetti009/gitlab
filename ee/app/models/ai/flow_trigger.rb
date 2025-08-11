@@ -19,9 +19,10 @@ module Ai
     validates :event_types, presence: true
 
     validates :description, length: { maximum: 255 }, presence: true
-    validates :config_path, length: { maximum: 255 }
+    validates :config_path, length: { maximum: 255 }, presence: true
 
     validate :event_types_are_valid
+    validate :user_is_service_account, if: :user
 
     scope :with_ids, ->(ids) { where(id: ids) }
 
@@ -34,6 +35,12 @@ module Ai
       return if invalid_types.empty?
 
       errors.add(:event_types, "contains invalid event types: #{invalid_types.join(', ')}")
+    end
+
+    def user_is_service_account
+      return if user.service_account?
+
+      errors.add(:user, 'user must be a service account')
     end
   end
 end

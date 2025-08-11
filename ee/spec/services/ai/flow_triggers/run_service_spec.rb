@@ -7,9 +7,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
   let(:current_user) { create(:user, maintainer_of: project) }
   let(:resource) { create(:issue, project: project) }
   let(:params) { { input: 'test input', event: 'mention' } }
+  let(:service_account) { create(:service_account, maintainer_of: project) }
 
   let(:flow_trigger) do
-    create(:ai_flow_trigger, project: project, user: current_user, config_path: '.gitlab/duo/flow.yml')
+    create(:ai_flow_trigger, project: project, user: service_account, config_path: '.gitlab/duo/flow.yml')
   end
 
   let(:flow_definition) do
@@ -90,7 +91,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
       it 'includes source branch in branch args' do
         expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
           project: project,
-          current_user: current_user,
+          current_user: service_account,
           source: :duo_workflow,
           workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
           create_branch: true,
@@ -105,7 +106,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
       it 'does not include source branch in branch args' do
         expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
           project: project,
-          current_user: current_user,
+          current_user: service_account,
           source: :duo_workflow,
           workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
           create_branch: true
