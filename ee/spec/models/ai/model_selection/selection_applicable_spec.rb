@@ -145,25 +145,39 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
         end
 
         describe '#default_duo_namespace_required?' do
-          before do
-            stub_feature_flags(ai_model_switching: false)
-          end
+          context 'when the user has a default namespace set' do
+            before do
+              allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(second_group)
+            end
 
-          context 'when no namespace has ai_model_switching enabled' do
             it 'returns false' do
               expect(included_instance.default_duo_namespace_required?).to be_falsey
             end
           end
 
-          context 'when any of the namespaces has ai_model_switching enabled' do
+          context 'when the user has no default namespace set' do
             before do
-              picked_group = [first_group, second_group].sample
-
-              stub_feature_flags(ai_model_switching: picked_group)
+              allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(nil)
             end
 
-            it 'returns false' do
-              expect(included_instance.default_duo_namespace_required?).to be_truthy
+            context 'when user cannot :assign_default_duo_group' do
+              before do
+                allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(false)
+              end
+
+              it 'returns false' do
+                expect(included_instance.default_duo_namespace_required?).to be_falsey
+              end
+            end
+
+            context 'when user can :assign_default_duo_group' do
+              before do
+                allow(Ability).to receive(:allowed?).with(user, :assign_default_duo_group, user).and_return(true)
+              end
+
+              it 'returns true' do
+                expect(included_instance.default_duo_namespace_required?).to be_truthy
+              end
             end
           end
         end
