@@ -23940,13 +23940,22 @@ msgstr ""
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Actions"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Agent session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Agent sessions"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Assign"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Automate"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Config Path"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Convert Jenkins to CI"
@@ -23964,7 +23973,22 @@ msgstr ""
 msgid "DuoAgentsPlatform|Create flow triggers to automatically run pipelines when specified events occur in your project."
 msgstr ""
 
+msgid "DuoAgentsPlatform|Default"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Delete trigger"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Description"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Edit trigger"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Enter the path to your Jenkinsfile."
+msgstr ""
+
+msgid "DuoAgentsPlatform|Event Type"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Failed to fetch flow triggers"
@@ -23986,6 +24010,9 @@ msgid "DuoAgentsPlatform|ID"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Manage automated flows within your project."
+msgstr ""
+
+msgid "DuoAgentsPlatform|Mention"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Name"
@@ -24013,6 +24040,9 @@ msgid "DuoAgentsPlatform|No logs available yet."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Output"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Owner"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Path must be a Jenkinsfile with the exact matching case."

@@ -6,11 +6,13 @@ import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empt
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import FlowTriggersCta from './components/flow_triggers_cta.vue';
+import FlowTriggersTable from './components/flow_triggers_table.vue';
 
 export default {
   name: 'FlowTriggersIndex',
   components: {
     FlowTriggersCta,
+    FlowTriggersTable,
     PageHeading,
     ResourceListsEmptyState,
     ResourceListsLoadingStateList,
@@ -80,8 +82,6 @@ export default {
         </slot>
       </template>
     </resource-lists-empty-state>
-    <div v-else>
-      {{ aiFlowTriggers }}
-    </div>
+    <flow-triggers-table v-else :ai-flow-triggers="aiFlowTriggers" class="gl-mt-8" />
   </div>
 </template>

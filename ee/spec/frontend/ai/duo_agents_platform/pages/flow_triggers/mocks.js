@@ -17,11 +17,17 @@ export const mockFlowTriggerFactory = (overrides = {}) => ({
   ...overrides,
 });
 
+export const mockTriggers = [mockFlowTriggerFactory()];
+
+export const mockTriggersWithoutUser = [mockFlowTriggerFactory({ user: undefined })];
+
+export const mockTriggersConfigPath = [mockFlowTriggerFactory({ configPath: '', configUrl: '' })];
+
 export const mockAiFlowTriggersResponse = {
   data: {
     project: {
       id: 'gid://gitlab/Project/1000000',
-      aiFlowTriggers: { nodes: [mockFlowTriggerFactory()] },
+      aiFlowTriggers: { nodes: mockTriggers },
     },
   },
 };
