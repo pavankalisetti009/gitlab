@@ -1332,6 +1332,49 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
   end
 
+  describe '#index_and_search_validation' do
+    subject(:index_and_search_validation) { service.execute(:index_and_search_validation) }
+
+    before do
+      allow(::Search::ClusterHealthCheck::IndexValidationService).to receive(:execute).and_return(validation_result)
+    end
+
+    context 'when validation succeeds' do
+      let(:validation_result) { true }
+
+      it 'logs success message' do
+        expect(logger).to receive(:info).with(/Running index and search validation/)
+        expect(logger).to receive(:info).with(/Index and search validation completed successfully/)
+
+        index_and_search_validation
+      end
+
+      it 'calls the IndexValidationService with logger parameter' do
+        expect(::Search::ClusterHealthCheck::IndexValidationService).to receive(:execute).with(logger: logger)
+
+        index_and_search_validation
+      end
+    end
+
+    context 'when validation fails' do
+      let(:validation_result) { false }
+
+      it 'logs error message' do
+        expect(logger).to receive(:info).with(/Running index and search validation/)
+        expect(logger).to receive(:error).with(/Index and search validation failed/)
+
+        index_and_search_validation
+      end
+
+      it 'calls the IndexValidationService with logger parameter' do
+        allow(logger).to receive(:error)
+        expect(::Search::ClusterHealthCheck::IndexValidationService).to receive(:execute).with(logger: logger)
+
+        index_and_search_validation
+      end
+    end
+  end
+
   def get_class_proxy(class_name:, use_separate_indices:)
     type_class(class_name) || ::Elastic::Latest::ApplicationClassProxy.new(class_name,
       use_separate_indices: use_separate_indices)

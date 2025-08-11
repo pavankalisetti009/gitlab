@@ -13,6 +13,7 @@ module Search
       enable_search_with_elasticsearch
       estimate_cluster_size
       estimate_shard_sizes
+      index_and_search_validation
       index_epics
       index_work_items
       index_group_entities
@@ -468,6 +469,18 @@ module Search
       end
 
       logger.info("Indexing vulnerabilities... #{Rainbow('done').green}")
+    end
+
+    def index_and_search_validation
+      logger.info('Running index and search validation...')
+
+      result = ::Search::ClusterHealthCheck::IndexValidationService.execute(logger: logger)
+
+      if result
+        logger.info(Rainbow('Index and search validation completed successfully').green)
+      else
+        logger.error(Rainbow('Index and search validation failed').red)
+      end
     end
 
     def info

@@ -169,6 +169,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
             title="foo"
           >
             <div
+              aria-hidden="true"
               class="gl-avatar gl-avatar-circle gl-avatar-identicon gl-avatar-identicon-bg1 gl-avatar-s24"
             >
               F
@@ -192,6 +193,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
               title="bar"
             >
               <div
+                aria-hidden="true"
                 class="gl-avatar gl-avatar-circle gl-avatar-identicon gl-avatar-identicon-bg1 gl-avatar-s24"
               />
             </a>

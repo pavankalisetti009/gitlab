@@ -11,11 +11,16 @@ module Ai
         search_embedding_version: :integer,
         collection_class: :string
 
+      jsonb_accessor :options,
+        queue_shard_count: :integer,
+        queue_shard_limit: :integer
+
       belongs_to :connection, class_name: 'Ai::ActiveContext::Connection'
 
       validates :name, presence: true, length: { maximum: 255 }
       validates :name, uniqueness: { scope: :connection_id }
-      validates :metadata, json_schema: { filename: 'ai_active_context_collection_metadata' }
+      validates :metadata, json_schema: { filename: 'ai_active_context_collection_metadata', size_limit: 16.kilobytes }
+      validates :options, json_schema: { filename: 'ai_active_context_collection_options', size_limit: 2.kilobytes }
       validates :number_of_partitions, presence: true, numericality: { greater_than_or_equal_to: 1, only_integer: true }
       validates :connection_id, presence: true
 
@@ -25,6 +30,10 @@ module Ai
 
       def update_metadata!(new_metadata)
         update!(metadata: metadata.merge(new_metadata))
+      end
+
+      def update_options!(new_options)
+        update!(options: options.merge(new_options))
       end
     end
   end
