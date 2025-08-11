@@ -87,6 +87,10 @@ module Ai
 
         # rubocop: disable Gitlab/FeatureFlagKeyDynamic -- The whole goal of this method is to dynamically filter out disabled features
         def self.enabled_features_for(feature_flag_scope)
+          experimental_features_enabled = feature_flag_scope.experiment_features_enabled
+
+          return FEATURES.except(*FEATURES_UNDER_FLAGS.keys) unless experimental_features_enabled
+
           disabled_features = FEATURES_UNDER_FLAGS.filter_map do |feature, flag|
             feature if ::Feature.disabled?(flag, feature_flag_scope)
           end
