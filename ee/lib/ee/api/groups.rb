@@ -105,16 +105,6 @@ module EE
             can?(current_user, :admin_group, user_group) ? params : params.merge(author_id: current_user.id)
           end
 
-          def users_params_error
-            format(
-              _("At least one of %{params} must be true"), params: ::Groups::UsersFinder::ALLOWED_FILTERS.join(', ')
-            )
-          end
-
-          def any_allowed_filters_present?(params)
-            ::Groups::UsersFinder::ALLOWED_FILTERS.any? { |param| params[param].presence }
-          end
-
           def check_ssh_certificate_available_to_group(group)
             not_found!('Group') unless group
             not_found! unless group.licensed_feature_available?(:ssh_certificates)
@@ -264,41 +254,6 @@ module EE
               declared_params.merge(provisioning_group: user_group))
 
             users = finder.execute.preload(:identities)
-
-            present paginate(users), with: ::API::Entities::UserPublic
-          end
-          # rubocop: enable CodeReuse/ActiveRecord
-
-          desc 'Get a list of users for the group' do
-            success code: 200, model: ::API::Entities::UserPublic
-            failure [
-              { code: 400, message: 'Bad request' },
-              { code: 403, message: 'Forbidden' },
-              { code: 404, message: '404 Not Found' }
-            ]
-          end
-          params do
-            optional :search, type: String, desc: 'Search users by name, email or username'
-            optional :active, type: ::Grape::API::Boolean, default: false, desc: 'Filters only active users'
-
-            optional :include_saml_users,
-              type: Grape::API::Boolean,
-              desc: 'Return users with a SAML identity in this group'
-            optional :include_service_accounts,
-              type: Grape::API::Boolean,
-              desc: 'Return service accounts owned by this group'
-            at_least_one_of :include_saml_users, :include_service_accounts
-
-            use :pagination
-          end
-          # rubocop: disable CodeReuse/ActiveRecord
-          get ':id/users', feature_category: :user_management do
-            authorize! :read_saml_user, user_group
-            params = declared_params(include_missing: false).except!(:id)
-            bad_request!(users_params_error) unless any_allowed_filters_present?(params)
-
-            finder = ::Groups::UsersFinder.new(current_user, user_group, params)
-            users = finder.execute.preload(:identities, :group_scim_identities, :instance_scim_identities)
 
             present paginate(users), with: ::API::Entities::UserPublic
           end
