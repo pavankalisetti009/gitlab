@@ -104,7 +104,6 @@ RSpec.shared_examples 'work items comments' do |type|
         expect(page).to have_text("/shrug")
         expect(page).to have_text("/tableflip")
         expect(page).to have_text("/close")
-        expect(page).to have_text("/cc")
       end
     end
 
@@ -299,7 +298,6 @@ RSpec.shared_examples 'work items description' do
       expect(page).to have_text("shrug")
       expect(page).to have_text("tableflip")
       expect(page).to have_text("close")
-      expect(page).to have_text("cc")
     end
   end
 

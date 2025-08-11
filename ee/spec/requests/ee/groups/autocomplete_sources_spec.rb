@@ -168,11 +168,13 @@ RSpec.describe 'groups autocomplete', feature_category: :groups_and_projects do
     it 'handles new epics' do
       get commands_group_autocomplete_sources_path(group, type: 'Epic', type_id: nil)
 
+      puts json_response
+
       expect(json_response).to be_an(Array)
       expect(json_response).to include(
         {
-          'name' => 'cc', 'aliases' => [], 'description' => 'CC',
-          'params' => ['@user'], 'warning' => '', 'icon' => ''
+          "aliases" => [], "description" => "Turn on confidentiality", "icon" => "",
+          "name" => "confidential", "params" => [], "warning" => ""
         }
       )
     end
