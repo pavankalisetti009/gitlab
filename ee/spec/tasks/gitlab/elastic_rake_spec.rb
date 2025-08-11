@@ -127,6 +127,14 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
     include_examples 'rake task executor task', :info
   end
 
+  describe 'gitlab:elastic:index_and_search_validation' do
+    it 'calls validate_index_and_search on Search::RakeTask::Elastic' do
+      expect(Search::RakeTask::Elastic).to receive(:validate_index_and_search)
+
+      run_rake_task('gitlab:elastic:index_and_search_validation')
+    end
+  end
+
   describe 'gitlab:elastic:index' do
     subject(:task) { run_rake_task('gitlab:elastic:index') }
 

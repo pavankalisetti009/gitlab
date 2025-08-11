@@ -14,9 +14,10 @@ module Search
         new(...).execute
       end
 
-      def initialize(operations: DEFAULT_OPERATIONS, target_classes: nil)
+      def initialize(operations: DEFAULT_OPERATIONS, target_classes: nil, logger: nil)
         @target_classes = target_classes
         @requested_operations = operations
+        @logger = logger || ::Gitlab::Elasticsearch::Logger.build
       end
 
       def execute
@@ -30,25 +31,54 @@ module Search
 
         failures.empty?
       rescue ::Elasticsearch::Transport::Transport::Error, ::Faraday::TimeoutError, ::Faraday::ConnectionFailed => e
-        logger.error(build_structured_payload(message: 'an error occurred while validating search cluster',
+        log_error('An error occurred while validating search cluster',
           error_message: e.message,
-          error_class: e.class.name))
+          error_class: e.class.name)
         false
       end
 
       private
 
+      attr_reader :logger
+
+      def log_error(message, extra_params = {})
+        if structured_logging?
+          logger.error(build_structured_payload(message: message, **extra_params))
+        else
+          logger.error(format_message(message, extra_params))
+        end
+      end
+
+      def log_warn(message, extra_params = {})
+        if structured_logging?
+          logger.warn(build_structured_payload(message: message, **extra_params))
+        else
+          logger.warn(format_message(message, extra_params))
+        end
+      end
+
+      def format_message(message, extra_params)
+        return message if extra_params.empty?
+
+        detail_strings = extra_params.map { |k, v| "#{k}: #{v}" }
+        "#{message} (#{detail_strings.join(', ')})"
+      end
+
+      def structured_logging?
+        logger.is_a?(::Gitlab::JsonLogger)
+      end
+
       def elasticsearch_indexing_enabled?
         return true if ::Gitlab::CurrentSettings.elasticsearch_indexing?
 
-        logger.warn(build_structured_payload(message: 'elasticsearch_indexing is disabled'))
+        log_warn('The elasticsearch_indexing setting is disabled')
         false
       end
 
       def search_cluster_reachable?
         return true if elastic_helper.ping?
 
-        logger.warn(build_structured_payload(message: 'search cluster is unreachable'))
+        log_warn('The search cluster is unreachable')
         false
       end
 
@@ -60,15 +90,11 @@ module Search
         @elastic_helper ||= Gitlab::Elastic::Helper.default
       end
 
-      def logger
-        @logger = ::Gitlab::Elasticsearch::Logger.build
-      end
-
       def perform_operation(operation, failure_message)
         result = validate(operation)
         failures = result.reject { |_, success| success }
         failures.each_key do |index_alias|
-          logger.error(build_structured_payload(message: failure_message, index_alias: index_alias))
+          log_error(failure_message, index_alias: index_alias)
         end
         failures
       end
@@ -76,7 +102,7 @@ module Search
       def validate(operation)
         aliases.each_with_object({}) do |alias_name, result_hash|
           unless elastic_helper.alias_exists?(name: alias_name)
-            logger.warn(build_structured_payload(message: 'alias does not exist', alias_name: alias_name))
+            log_warn('The alias does not exist', alias_name: alias_name)
             next
           end
 
