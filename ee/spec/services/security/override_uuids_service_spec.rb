@@ -94,34 +94,15 @@ RSpec.describe Security::OverrideUuidsService, feature_category: :vulnerability_
         )
       end
 
-      context 'when the `vulnerability_signatures_dedup_by_type` feature flag is enabled' do
-        it 'overrides finding uuids and prioritizes the existing findings' do
-          expect { override_uuids }
-            .to change { report.findings.map(&:overridden_uuid) }.from(Array.new(4) { nil }).to([an_instance_of(String), an_instance_of(String), nil, nil])
-            .and change { matching_report_finding_by_signature.uuid }.from(matching_report_finding_uuid_1).to(vulnerability_finding_uuid_1)
-            .and change { matching_report_finding_by_signature.overridden_uuid }.from(nil).to(matching_report_finding_uuid_1)
-            .and change { matching_report_finding_by_location.uuid }.from(matching_report_finding_uuid_2).to(vulnerability_finding_uuid_2)
-            .and change { matching_report_finding_by_location.overridden_uuid }.from(nil).to(matching_report_finding_uuid_2)
-            .and not_change { matching_report_finding_by_location_conflict.uuid }
-            .and not_change { unmatching_report_finding.uuid }
-        end
-      end
-
-      context 'when the `vulnerability_signatures_dedup_by_type` feature flag is disabled' do
-        before do
-          stub_feature_flags(vulnerability_signatures_dedup_by_type: false)
-        end
-
-        it 'overrides finding uuids and prioritizes the existing findings' do
-          expect { override_uuids }
-            .to change { report.findings.map(&:overridden_uuid) }.from(Array.new(4) { nil }).to([an_instance_of(String), an_instance_of(String), nil, nil])
-            .and change { matching_report_finding_by_signature.uuid }.from(matching_report_finding_uuid_1).to(vulnerability_finding_uuid_1)
-            .and change { matching_report_finding_by_signature.overridden_uuid }.from(nil).to(matching_report_finding_uuid_1)
-            .and change { matching_report_finding_by_location.uuid }.from(matching_report_finding_uuid_2).to(vulnerability_finding_uuid_2)
-            .and change { matching_report_finding_by_location.overridden_uuid }.from(nil).to(matching_report_finding_uuid_2)
-            .and not_change { matching_report_finding_by_location_conflict.uuid }
-            .and not_change { unmatching_report_finding.uuid }
-        end
+      it 'overrides finding uuids and prioritizes the existing findings' do
+        expect { override_uuids }
+          .to change { report.findings.map(&:overridden_uuid) }.from(Array.new(4) { nil }).to([an_instance_of(String), an_instance_of(String), nil, nil])
+          .and change { matching_report_finding_by_signature.uuid }.from(matching_report_finding_uuid_1).to(vulnerability_finding_uuid_1)
+          .and change { matching_report_finding_by_signature.overridden_uuid }.from(nil).to(matching_report_finding_uuid_1)
+          .and change { matching_report_finding_by_location.uuid }.from(matching_report_finding_uuid_2).to(vulnerability_finding_uuid_2)
+          .and change { matching_report_finding_by_location.overridden_uuid }.from(nil).to(matching_report_finding_uuid_2)
+          .and not_change { matching_report_finding_by_location_conflict.uuid }
+          .and not_change { unmatching_report_finding.uuid }
       end
 
       context 'when a finding has only a scope_offset signature match' do
@@ -159,28 +140,12 @@ RSpec.describe Security::OverrideUuidsService, feature_category: :vulnerability_
 
         let(:test_data) { create_scope_offset_test_data }
 
-        context 'when the `vulnerability_signatures_dedup_by_type` feature flag is enabled' do
-          it 'overrides finding uuid based on the matching scope_offset signature' do
-            expect { test_data[:service].execute }
-              .to change { test_data[:report_finding].uuid }
-                  .from(matching_report_finding_uuid_3).to(vulnerability_finding_uuid_3)
-              .and change { test_data[:report_finding].overridden_uuid }
-                  .from(nil).to(matching_report_finding_uuid_3)
-          end
-        end
-
-        context 'when the `vulnerability_signatures_dedup_by_type` feature flag is disabled' do
-          before do
-            stub_feature_flags(vulnerability_signatures_dedup_by_type: false)
-          end
-
-          it 'overrides finding uuid based on the matching scope_offset signature' do
-            expect { test_data[:service].execute }
-              .to change { test_data[:report_finding].uuid }
-                  .from(matching_report_finding_uuid_3).to(vulnerability_finding_uuid_3)
-              .and change { test_data[:report_finding].overridden_uuid }
-                  .from(nil).to(matching_report_finding_uuid_3)
-          end
+        it 'overrides finding uuid based on the matching scope_offset signature' do
+          expect { test_data[:service].execute }
+            .to change { test_data[:report_finding].uuid }
+                .from(matching_report_finding_uuid_3).to(vulnerability_finding_uuid_3)
+            .and change { test_data[:report_finding].overridden_uuid }
+                .from(nil).to(matching_report_finding_uuid_3)
         end
       end
 
@@ -271,36 +236,16 @@ RSpec.describe Security::OverrideUuidsService, feature_category: :vulnerability_
 
         let(:test_data) { create_mixed_signatures_test_data }
 
-        context 'when the `vulnerability_signatures_dedup_by_type` feature flag is enabled' do
-          it 'overrides uuid based on the matching signature' do
-            expect { test_data[:service].execute }
-              .to change { test_data[:report_4].uuid }
-                  .from(test_data[:report_4].uuid).to(test_data[:vuln_4].uuid)
-              .and change { test_data[:report_4].overridden_uuid }
-                  .from(nil).to(test_data[:report_4].uuid)
-              .and change { test_data[:report_5].uuid }
-                  .from(test_data[:report_5].uuid).to(test_data[:vuln_5].uuid)
-              .and change { test_data[:report_5].overridden_uuid }
-                  .from(nil).to(test_data[:report_5].uuid)
-          end
-        end
-
-        context 'when the `vulnerability_signatures_dedup_by_type` feature flag is disabled' do
-          before do
-            stub_feature_flags(vulnerability_signatures_dedup_by_type: false)
-          end
-
-          it 'overrides uuid based on the matching signature' do
-            expect { test_data[:service].execute }
-              .to change { test_data[:report_4].uuid }
-                  .from(test_data[:report_4].uuid).to(test_data[:vuln_4].uuid)
-              .and change { test_data[:report_4].overridden_uuid }
-                  .from(nil).to(test_data[:report_4].uuid)
-              .and change { test_data[:report_5].uuid }
-                  .from(test_data[:report_5].uuid).to(test_data[:vuln_5].uuid)
-              .and change { test_data[:report_5].overridden_uuid }
-                  .from(nil).to(test_data[:report_5].uuid)
-          end
+        it 'overrides uuid based on the matching signature' do
+          expect { test_data[:service].execute }
+            .to change { test_data[:report_4].uuid }
+                .from(test_data[:report_4].uuid).to(test_data[:vuln_4].uuid)
+            .and change { test_data[:report_4].overridden_uuid }
+                .from(nil).to(test_data[:report_4].uuid)
+            .and change { test_data[:report_5].uuid }
+                .from(test_data[:report_5].uuid).to(test_data[:vuln_5].uuid)
+            .and change { test_data[:report_5].overridden_uuid }
+                .from(nil).to(test_data[:report_5].uuid)
         end
       end
 

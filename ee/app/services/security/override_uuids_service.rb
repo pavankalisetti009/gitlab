@@ -67,16 +67,9 @@ module Security
       # in case if a new algorithm is introduced or if there is a finding
       # with the UUID calculated by the location information.
       def existing_finding_by_signature(finding)
-        signature_keys = if Feature.enabled?(:vulnerability_signatures_dedup_by_type, project)
-                           # Sorting order is from highest priority to lowest priority algorithm:
-                           #  gives precedence to algorithm with better deduplication performance.
-                           finding.signatures.sort_by { |sig| -sig.priority }.map(&:signature_hex)
-                         else
-                           # Sorting order is from lowest priority to highest priority algorithm:
-                           #  gives precedence to algorithm with weaker deduplication performance
-                           #  which was not intended.
-                           finding.signatures.sort_by(&:priority).map(&:signature_sha)
-                         end
+        signature_keys = # Sorting order is from highest priority to lowest priority algorithm:
+          #  gives precedence to algorithm with better deduplication performance.
+          finding.signatures.sort_by { |sig| -sig.priority }.map(&:signature_hex)
 
         existing_signatures.values_at(*signature_keys).compact.map(&:finding).find do |existing_finding|
           compare_with_existing_finding(existing_finding, finding)
@@ -99,12 +92,10 @@ module Security
       end
 
       def existing_signatures
-        index_key = Feature.enabled?(:vulnerability_signatures_dedup_by_type, project) ? :signature_hex : :signature_sha
-
         @existing_signatures ||= ::Vulnerabilities::FindingSignature.by_signature_sha(finding_signature_shas)
             .by_project(project)
             .eager_load_comparison_entities
-            .index_by(&index_key)
+            .index_by(&:signature_hex)
       end
 
       def finding_signature_shas

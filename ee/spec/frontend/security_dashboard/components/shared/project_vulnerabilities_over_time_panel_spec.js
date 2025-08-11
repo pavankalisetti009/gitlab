@@ -82,6 +82,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       },
       provide: {
         projectFullPath: mockProjectFullPath,
+        securityVulnerabilitiesPath: '/group/project/security/vulnerabilities',
       },
     });
 
@@ -250,6 +251,12 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
     });
 
+    it('passes the correct grouped-by prop for severity grouping', async () => {
+      await waitForPromises();
+
+      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('severity');
+    });
+
     it('correctly formats chart data from the API response for report type grouping', async () => {
       await findOverTimeGroupBy().vm.$emit('input', 'reportType');
       await waitForPromises();
@@ -286,6 +293,13 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       ];
 
       expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
+    });
+
+    it('passes the correct grouped-by prop for report type grouping', async () => {
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await waitForPromises();
+
+      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('reportType');
     });
 
     it('returns empty chart data when no vulnerabilities data is available', async () => {

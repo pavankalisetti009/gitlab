@@ -13,6 +13,7 @@ module Search
       urgency :throttled
       idempotent!
       deduplicate :until_executed
+      pause_control :advanced_search
 
       def perform
         return false unless ::Gitlab::Saas.feature_available?(:advanced_search)

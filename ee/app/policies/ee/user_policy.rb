@@ -63,6 +63,10 @@ module EE
     end
 
     def can_assign_default_duo_group?
+      return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      return false unless ::Feature.enabled?(:ai_user_default_duo_namespace, user)
+
       users_namespaces = user.user_preference.distinct_eligible_duo_add_on_assignments.map(&:namespace)
 
       has_feature_enabled = users_namespaces.any? do |namespace|
