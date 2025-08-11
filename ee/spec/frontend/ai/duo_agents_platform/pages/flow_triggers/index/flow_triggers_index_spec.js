@@ -6,12 +6,15 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
+import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import FlowTriggersIndex from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index//components/flow_triggers_table.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
+import deleteAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/delete_ai_flow_trigger.mutation.graphql';
 import {
   mockAiFlowTriggersResponse,
   mockEmptyAiFlowTriggersResponse,
+  mockDeleteTriggerResponse,
   eventTypeOptions,
 } from '../mocks';
 
@@ -23,13 +26,21 @@ describe('FlowTriggersIndex', () => {
   let mockApollo;
 
   const mockFlowTriggerQueryHandler = jest.fn().mockResolvedValue(mockAiFlowTriggersResponse);
+  const mockFlowDeleteMutationHandler = jest.fn().mockResolvedValue(mockDeleteTriggerResponse);
 
   const findLoadingStateList = () => wrapper.findComponent(ResourceListsLoadingStateList);
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findTable = () => wrapper.findComponent(FlowTriggersTable);
+  const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
 
-  const createWrapper = ({ queryHandler = mockFlowTriggerQueryHandler } = {}) => {
-    mockApollo = createMockApollo([[getProjectAiFlowTriggers, queryHandler]]);
+  const createWrapper = ({
+    queryHandler = mockFlowTriggerQueryHandler,
+    mutationHandler = mockFlowDeleteMutationHandler,
+  } = {}) => {
+    mockApollo = createMockApollo([
+      [getProjectAiFlowTriggers, queryHandler],
+      [deleteAiFlowTriggerMutation, mutationHandler],
+    ]);
 
     wrapper = shallowMountExtended(FlowTriggersIndex, {
       apolloProvider: mockApollo,
@@ -124,6 +135,37 @@ describe('FlowTriggersIndex', () => {
 
         it('does not show a loading state', () => {
           expect(findLoadingStateList().exists()).toBe(false);
+        });
+      });
+    });
+  });
+
+  describe('Interactions', () => {
+    describe('when the user clicked on a delete button', () => {
+      beforeEach(async () => {
+        await waitForPromises();
+        const tableComponent = findTable();
+        tableComponent.vm.$emit('delete-trigger', '1');
+      });
+
+      it('opens confirm modal on delete', () => {
+        expect(findConfirmModal().exists()).toBe(true);
+      });
+
+      describe('and the user confirms deletion', () => {
+        beforeEach(async () => {
+          findConfirmModal().props('actionFn')();
+          await waitForPromises();
+        });
+
+        it('hides the modal', () => {
+          expect(findConfirmModal().exists()).toBe(false);
+        });
+
+        it('performs delete action', () => {
+          expect(mockFlowDeleteMutationHandler).toHaveBeenCalledWith({
+            id: '1',
+          });
         });
       });
     });

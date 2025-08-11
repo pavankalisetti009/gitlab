@@ -8,7 +8,7 @@ module Gitlab
           {
             name: "Claude Sonnet 3.7 [Bedrock]",
             model: :claude_3,
-            identifier: "bedrock/anthropic.claude-3-7-sonnet-20250219-v1:0",
+            identifier: "bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
             endpoint: "http://ignorethis.com"
           },
           {
@@ -21,7 +21,7 @@ module Gitlab
           {
             name: "Claude Sonnet 4 [Bedrock]",
             model: :claude_3,
-            identifier: "bedrock/anthropic.claude-sonnet-4-20250514-v1:0",
+            identifier: "bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0",
             endpoint: "http://ignorethis.com"
           },
           {
@@ -33,13 +33,13 @@ module Gitlab
           {
             name: "Llama 3.1 8b [Bedrock]",
             model: :llama3,
-            identifier: "bedrock/meta.llama3-1-8b-instruct-v1:0",
+            identifier: "bedrock/us.meta.llama3-1-8b-instruct-v1:0",
             endpoint: "http://ignorethis.com"
           },
           {
             name: "Llama 3.1 70b [Bedrock]",
             model: :llama3,
-            identifier: "bedrock/meta.llama3-1-70b-instruct-v1:0",
+            identifier: "bedrock/us.meta.llama3-1-70b-instruct-v1:0",
             endpoint: "http://ignorethis.com"
           },
           {

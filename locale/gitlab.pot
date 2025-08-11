@@ -23946,6 +23946,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Agent sessions"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Are you sure you want to delete this flow trigger? This action cannot be undone."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Automate"
 msgstr ""
 
@@ -23970,6 +23973,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Default"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Delete flow trigger"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Delete trigger"
 msgstr ""
 
@@ -23985,6 +23991,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Event Type"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Failed to delete flow trigger."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Failed to fetch flow triggers"
 msgstr ""
 
@@ -23992,6 +24001,9 @@ msgid "DuoAgentsPlatform|Failed to fetch workflows"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Fetching logs..."
+msgstr ""
+
+msgid "DuoAgentsPlatform|Flow trigger deleted successfully."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Flow trigger details"

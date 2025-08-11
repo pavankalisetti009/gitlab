@@ -32,6 +32,14 @@ export const mockAiFlowTriggersResponse = {
   },
 };
 
+export const mockDeleteTriggerResponse = {
+  data: {
+    aiFlowTriggerDelete: {
+      errors: [],
+    },
+  },
+};
+
 export const mockEmptyAiFlowTriggersResponse = {
   data: {
     project: { id: 'gid://gitlab/Project/1000000', aiFlowTriggers: { nodes: [] } },
