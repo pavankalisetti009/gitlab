@@ -57,8 +57,6 @@ export default {
   },
   i18n: {
     newPolicyButtonText: NEW_POLICY_BUTTON_TEXT,
-    editPolicyProjectButtonText: s__('SecurityOrchestration|Edit policy project'),
-    viewPolicyProjectButtonText: s__('SecurityOrchestration|View policy project'),
   },
   data() {
     return {
@@ -74,7 +72,7 @@ export default {
       return Boolean(this.assignedPolicyProject?.id);
     },
     securityPolicyProjectPath() {
-      return joinPaths('/', this.assignedPolicyProject?.fullPath);
+      return joinPaths(gon.relative_url_root || '/', this.assignedPolicyProject?.fullPath);
     },
     subtitle() {
       if (this.namespaceType === NAMESPACE_TYPES.PROJECT) {
@@ -165,7 +163,7 @@ export default {
           :loading="projectIsBeingLinked"
           @click="showNewPolicyModal"
         >
-          {{ $options.i18n.editPolicyProjectButtonText }}
+          {{ s__('SecurityOrchestration|Edit policy project') }}
         </gl-button>
         <gl-button
           v-else-if="hasAssignedPolicyProject"
@@ -174,7 +172,7 @@ export default {
           :href="securityPolicyProjectPath"
         >
           <gl-icon name="external-link" />
-          {{ $options.i18n.viewPolicyProjectButtonText }}
+          {{ s__('SecurityOrchestration|View policy project') }}
         </gl-button>
         <gl-button
           v-if="!disableScanPolicyUpdate"
