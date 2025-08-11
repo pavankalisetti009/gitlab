@@ -22,7 +22,12 @@ module QA
 
       it(
         'finds issue that matches description',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347635'
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347635',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/929',
+          type: :investigating,
+          only: { pipeline: :staging }
+        }
       ) do
         QA::Support::Retrier.retry_on_exception(
           max_attempts: Runtime::Search::RETRY_MAX_ITERATION,
