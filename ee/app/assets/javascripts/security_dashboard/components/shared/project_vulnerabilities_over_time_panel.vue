@@ -78,6 +78,7 @@ export default {
         v-if="!fetchError && hasChartData"
         class="gl-h-full gl-overflow-hidden gl-p-2"
         :chart-series="vulnerabilitiesOverTime"
+        :grouped-by="groupedBy"
       />
       <p
         v-else
