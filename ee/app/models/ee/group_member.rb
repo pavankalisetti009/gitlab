@@ -54,6 +54,13 @@ module EE
         exists?(group: group, user: user)
       end
 
+      def direct_member_of_groups?(group_ids, user)
+        active_without_invites_and_requests
+          .non_minimal_access
+          .where(source_id: group_ids)
+          .exists?(user_id: user.id)
+      end
+
       def filter_by_enterprise_users(value)
         subquery =
           ::UserDetail.where(

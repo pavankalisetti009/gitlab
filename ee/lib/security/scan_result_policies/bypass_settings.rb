@@ -10,12 +10,12 @@ module Security
       end
 
       def access_token_ids
-        bypass_settings[:access_tokens]&.pluck(:id)
+        bypass_settings[:access_tokens]&.pluck(:id) || []
       end
       strong_memoize_attr :access_token_ids
 
       def service_account_ids
-        bypass_settings[:service_accounts]&.pluck(:id)
+        bypass_settings[:service_accounts]&.pluck(:id) || []
       end
       strong_memoize_attr :service_account_ids
 
@@ -25,12 +25,12 @@ module Security
       strong_memoize_attr :branches
 
       def user_ids
-        bypass_settings[:users]&.pluck(:id)
+        bypass_settings[:users]&.pluck(:id) || []
       end
       strong_memoize_attr :user_ids
 
       def group_ids
-        bypass_settings[:groups]&.pluck(:id)
+        bypass_settings[:groups]&.pluck(:id) || []
       end
       strong_memoize_attr :group_ids
 
@@ -40,7 +40,7 @@ module Security
       strong_memoize_attr :default_roles
 
       def custom_role_ids
-        bypass_settings[:custom_roles]&.pluck(:id)
+        bypass_settings[:custom_roles]&.pluck(:id) || []
       end
       strong_memoize_attr :custom_role_ids
 

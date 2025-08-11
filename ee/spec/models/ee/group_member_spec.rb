@@ -185,6 +185,95 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
     end
   end
 
+  describe '.direct_member_of_groups?' do
+    let_it_be(:group1) { create(:group) }
+    let_it_be(:group2) { create(:group) }
+    let_it_be(:group3) { create(:group) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:other_user) { create(:user) }
+
+    context 'when user is a direct member of the specified groups' do
+      before do
+        group1.add_developer(user)
+        group2.add_maintainer(user)
+      end
+
+      it 'returns true for single group' do
+        expect(described_class.direct_member_of_groups?([group1.id], user)).to be true
+      end
+
+      it 'returns true for multiple groups where user is member of all' do
+        expect(described_class.direct_member_of_groups?([group1.id, group2.id], user)).to be true
+      end
+
+      it 'returns true for multiple groups where user is member of some' do
+        expect(described_class.direct_member_of_groups?([group1.id, group3.id], user)).to be true
+      end
+
+      it 'returns false for groups where user is not a member' do
+        expect(described_class.direct_member_of_groups?([group3.id], user)).to be false
+      end
+
+      it 'returns false for other user' do
+        expect(described_class.direct_member_of_groups?([group1.id, group2.id], other_user)).to be false
+      end
+    end
+
+    context 'when user has minimal access level' do
+      before do
+        stub_licensed_features(minimal_access_role: true)
+        group1.add_member(user, Gitlab::Access::MINIMAL_ACCESS)
+      end
+
+      it 'returns false as minimal access is excluded' do
+        expect(described_class.direct_member_of_groups?([group1.id], user)).to be false
+      end
+    end
+
+    context 'when user has pending invite' do
+      before do
+        create(:group_member, :invited, group: group1, user: nil, invite_email: user.email)
+      end
+
+      it 'returns false as invites are excluded' do
+        expect(described_class.direct_member_of_groups?([group1.id], user)).to be false
+      end
+    end
+
+    context 'when user has pending request' do
+      before do
+        create(:group_member, :awaiting, group: group1, user: user)
+      end
+
+      it 'returns false as requests are excluded' do
+        expect(described_class.direct_member_of_groups?([group1.id], user)).to be false
+      end
+    end
+
+    context 'when user is blocked' do
+      before do
+        user.update!(state: :blocked)
+        group1.add_developer(user)
+      end
+
+      it 'returns false as blocked users are excluded' do
+        expect(described_class.direct_member_of_groups?([group1.id], user)).to be false
+      end
+    end
+
+    context 'with empty group_ids' do
+      it 'returns false' do
+        expect(described_class.direct_member_of_groups?([], user)).to be false
+      end
+    end
+
+    context 'with nil group_ids' do
+      it 'returns false' do
+        expect(described_class.direct_member_of_groups?(nil, user)).to be false
+      end
+    end
+  end
+
   describe '.filter_by_enterprise_users' do
     let_it_be(:group) { create(:group) }
     let_it_be(:enterprise_user_member_1_of_group) { group.add_developer(create(:user, enterprise_group_id: group.id)) }

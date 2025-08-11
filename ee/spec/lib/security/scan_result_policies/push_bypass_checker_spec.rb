@@ -13,7 +13,7 @@ RSpec.describe Security::ScanResultPolicies::PushBypassChecker, feature_category
       project: project,
       user_access: user_access,
       branch_name: branch_name,
-      push_options: {}
+      push_options: Gitlab::PushOptions.new([])
     )
   end
 

@@ -33,6 +33,8 @@ module Security
           branch_name: branch_name,
           push_options: push_options
         ).bypass_allowed?
+      rescue Security::ScanResultPolicies::PolicyBypassChecker::BypassReasonRequiredError
+        raise
       end
     end
   end
