@@ -114,7 +114,7 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
     context 'for processing AI flow triggers' do
       let_it_be(:user) { create(:user) }
       let_it_be(:project) { create(:project, developers: [user]) }
-      let_it_be(:mentioned_user) { create(:user) }
+      let_it_be(:mentioned_user) { create(:service_account) }
       let_it_be(:issue) { create(:issue, project: project) }
       let_it_be(:note) { create(:note, project: project, noteable: issue, author: user) }
       let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
@@ -182,7 +182,7 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
 
           context 'when multiple flow triggers exist but only one matches' do
             let_it_be(:other_flow_trigger) do
-              create(:ai_flow_trigger, project: project, user: create(:user))
+              create(:ai_flow_trigger, project: project)
             end
 
             it 'uses the first matching flow trigger' do

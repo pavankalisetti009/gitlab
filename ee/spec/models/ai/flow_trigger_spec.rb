@@ -6,7 +6,7 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
   subject(:flow_trigger) { build(:ai_flow_trigger) }
 
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:service_account) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
@@ -18,59 +18,10 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
     it { is_expected.to validate_presence_of(:user) }
     it { is_expected.to validate_presence_of(:event_types) }
     it { is_expected.to validate_presence_of(:description) }
+    it { is_expected.to validate_presence_of(:config_path) }
 
     it { is_expected.to validate_length_of(:description).is_at_most(255) }
     it { is_expected.to validate_length_of(:config_path).is_at_most(255) }
-
-    describe 'config_path validation' do
-      it 'allows nil config_path' do
-        flow_trigger = build(:ai_flow_trigger, config_path: nil)
-        expect(flow_trigger).to be_valid
-      end
-
-      it 'allows empty config_path' do
-        flow_trigger = build(:ai_flow_trigger, config_path: '')
-        expect(flow_trigger).to be_valid
-      end
-
-      it 'allows valid config_path' do
-        flow_trigger = build(:ai_flow_trigger, config_path: '.gitlab/ai_flows/workflow.yml')
-        expect(flow_trigger).to be_valid
-      end
-
-      it 'rejects config_path longer than 255 characters' do
-        long_path = 'a' * 256
-        flow_trigger = build(:ai_flow_trigger, config_path: long_path)
-        expect(flow_trigger).not_to be_valid
-        expect(flow_trigger.errors[:config_path]).to include('is too long (maximum is 255 characters)')
-      end
-    end
-
-    describe 'description validation' do
-      it 'rejects empty description' do
-        flow_trigger = build(:ai_flow_trigger, description: '')
-        expect(flow_trigger).not_to be_valid
-        expect(flow_trigger.errors[:description]).to include("can't be blank")
-      end
-
-      it 'rejects nil description' do
-        flow_trigger = build(:ai_flow_trigger, description: nil)
-        expect(flow_trigger).not_to be_valid
-        expect(flow_trigger.errors[:description]).to include("can't be blank")
-      end
-
-      it 'rejects description longer than 255 characters' do
-        long_description = 'a' * 256
-        flow_trigger = build(:ai_flow_trigger, description: long_description)
-        expect(flow_trigger).not_to be_valid
-        expect(flow_trigger.errors[:description]).to include('is too long (maximum is 255 characters)')
-      end
-
-      it 'allows valid description' do
-        flow_trigger = build(:ai_flow_trigger, description: 'Valid description')
-        expect(flow_trigger).to be_valid
-      end
-    end
 
     describe 'event_types validation' do
       it 'rejects empty event_types array' do
@@ -90,6 +41,15 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
         expect(flow_trigger).to be_valid
       end
     end
+
+    describe 'user_is_service_account validation' do
+      it 'rejects regular user' do
+        regular_user = create(:user)
+        flow_trigger = build(:ai_flow_trigger, user: regular_user)
+        expect(flow_trigger).not_to be_valid
+        expect(flow_trigger.errors[:user]).to include('user must be a service account')
+      end
+    end
   end
 
   describe 'database constraints' do
@@ -99,14 +59,14 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
 
     context 'with loose foreign key on users.id' do
       it_behaves_like 'cleanup by a loose foreign key' do
-        let!(:model) { create(:ai_flow_trigger, user: create(:user), project: create(:project)) }
+        let!(:model) { create(:ai_flow_trigger) }
         let!(:parent) { model.user }
       end
     end
 
     context 'with loose foreign key on projects.id' do
       it_behaves_like 'cleanup by a loose foreign key' do
-        let!(:model) { create(:ai_flow_trigger, user: create(:user), project: create(:project)) }
+        let!(:model) { create(:ai_flow_trigger) }
         let!(:parent) { model.project }
       end
     end
@@ -193,9 +153,6 @@ RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
   end
 
   describe '.triggered_on' do
-    let_it_be(:project) { create(:project) }
-    let_it_be(:user) { create(:user) }
-
     before do
       stub_const("#{described_class}::EVENT_TYPES", {
         mention: 0,
