@@ -8,6 +8,7 @@ import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import Approvals from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_approvals.vue';
 import Settings from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_settings.vue';
 import EdgeCaseSettings from 'ee/security_orchestration/components/policy_drawer/scan_result/edge_case_settings.vue';
+import PolicyExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/policy_exceptions.vue';
 import DenyAllowViewList from 'ee/security_orchestration/components/policy_drawer/scan_result/deny_allow_view_list.vue';
 import {
   disabledSendBotMessageActionScanResultManifest,
@@ -22,6 +23,7 @@ import {
   allowDenyScanResultLicenseNonEmptyManifest,
   mockWarnActionScanResultManifest,
   denyScanResultLicenseNonEmptyManifest,
+  mockPolicyExceptionsScanResultManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 
 describe('DetailsDrawer component', () => {
@@ -37,6 +39,7 @@ describe('DetailsDrawer component', () => {
   const findApprovalSubheader = () => wrapper.findByTestId('approvals-subheader');
   const findEdgeCaseSettings = () => wrapper.findComponent(EdgeCaseSettings);
   const findDenyAllowViewList = () => wrapper.findComponent(DenyAllowViewList);
+  const findPolicyExceptions = () => wrapper.findComponent(PolicyExceptions);
 
   const factory = ({ props, provide = {} } = {}) => {
     wrapper = shallowMountExtended(DetailsDrawer, {
@@ -71,6 +74,7 @@ describe('DetailsDrawer component', () => {
       expect(findDrawerLayout().exists()).toBe(true);
       expect(findDrawerLayout().props('description')).toBe('');
       expect(findDenyAllowViewList().exists()).toBe(false);
+      expect(findPolicyExceptions().exists()).toBe(false);
     });
   });
 
@@ -197,6 +201,38 @@ describe('DetailsDrawer component', () => {
       it('passes the empty object to the "Settings" component if no settings are present', () => {
         factory();
         expect(findSettings().props('settings')).toEqual({});
+      });
+    });
+  });
+
+  describe('policy exceptions bypass options', () => {
+    it('renders the policy exceptions when exceptions present in yaml', () => {
+      factory({
+        props: {
+          policy: { ...mockProjectScanResultPolicy, yaml: mockPolicyExceptionsScanResultManifest },
+        },
+      });
+
+      expect(findPolicyExceptions().exists()).toBe(true);
+      expect(findPolicyExceptions().props('exceptions')).toEqual({
+        branches: [
+          {
+            source: {
+              pattern: 'master',
+            },
+            target: {
+              name: '*test',
+            },
+          },
+          {
+            source: {
+              pattern: 'main',
+            },
+            target: {
+              name: '*test2',
+            },
+          },
+        ],
       });
     });
   });
