@@ -1,0 +1,93 @@
+import { GlBadge, GlAvatar } from '@gitlab/ui';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
+import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_table.vue';
+import { mockTriggers, mockTriggersWithoutUser, mockTriggersConfigPath } from '../../mocks';
+
+describe('FlowTriggersTable', () => {
+  let wrapper;
+
+  const findAvatar = () => wrapper.findComponent(GlAvatar);
+  const findBadges = () => wrapper.findAllComponents(GlBadge);
+  const findConfigPath = () => wrapper.findByTestId('flow-trigger-config-path');
+  const findConfigPathFallback = () => wrapper.findByTestId('flow-trigger-config-path-fallback');
+  const findDeleteButton = () => wrapper.findByTestId('flow-trigger-delete-action');
+
+  const createComponent = (props = {}) => {
+    wrapper = mountExtended(FlowTriggersTable, {
+      propsData: {
+        aiFlowTriggers: mockTriggers,
+        ...props,
+      },
+    });
+  };
+
+  describe('Rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('displays correct event type badges', () => {
+      const badges = findBadges();
+
+      expect(badges).toHaveLength(2);
+      expect(badges.at(0).text()).toBe('Mention');
+      expect(badges.at(1).text()).toBe('Assign');
+    });
+
+    describe('when there is a config path', () => {
+      it('displays the config path', () => {
+        expect(findConfigPath().exists()).toBe(true);
+      });
+
+      it('does not display the fallback string', () => {
+        expect(findConfigPathFallback().exists()).toBe(false);
+      });
+    });
+
+    describe('when there is no config path', () => {
+      beforeEach(() => {
+        createComponent({ aiFlowTriggers: mockTriggersConfigPath });
+      });
+
+      it('displays the fallback string', () => {
+        expect(findConfigPathFallback().exists()).toBe(true);
+      });
+
+      it('does not display the config path', () => {
+        expect(findConfigPath().exists()).toBe(false);
+      });
+    });
+
+    describe('when there is user information', () => {
+      it('displays the user avatar', () => {
+        expect(findAvatar().exists()).toBe(true);
+      });
+    });
+
+    describe('when there is no user information', () => {
+      beforeEach(() => {
+        createComponent({ aiFlowTriggers: mockTriggersWithoutUser });
+      });
+
+      it('does not display the user avatar', () => {
+        expect(findAvatar().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('Interactions', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    describe('when user clicks on delete button', () => {
+      beforeEach(() => {
+        findDeleteButton().vm.$emit('click');
+      });
+
+      it('emits the event', () => {
+        expect(wrapper.emitted('delete-trigger')).toHaveLength(1);
+      });
+    });
+  });
+});
