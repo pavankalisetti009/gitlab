@@ -34,10 +34,6 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
   end
 
   describe '#to_prompt_inputs' do
-    before do
-      stub_feature_flags(duo_code_review_prompt_updates: false)
-    end
-
     let(:expected_diff_lines) do
       <<~DIFF.chomp
         <file_diff filename="UPDATED.md">
@@ -284,22 +280,6 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
         it 'returns empty string for custom instructions section' do
           expect(prompt_inputs[:custom_instructions_section]).to eq("")
         end
-      end
-    end
-
-    context 'when duo_code_review_prompt_updates feature flag is enabled' do
-      before do
-        stub_feature_flags(duo_code_review_prompt_updates: true)
-      end
-
-      it 'excludes full_file_intro from prompt inputs' do
-        expect(prompt_inputs).to eq({
-          mr_title: mr_title,
-          mr_description: mr_description,
-          diff_lines: expected_diff_lines,
-          full_content_section: expected_full_content_section,
-          custom_instructions_section: ""
-        })
       end
     end
   end
