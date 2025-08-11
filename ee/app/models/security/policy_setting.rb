@@ -41,11 +41,14 @@ module Security
     end
 
     def trigger_security_policies_updates
+      previous_csp_id = csp_namespace_id_previously_was
       old_configuration = Security::OrchestrationPolicyConfiguration
-                            .find_by(namespace_id: csp_namespace_id_previously_was)
+                            .find_by(namespace_id: previous_csp_id)
 
       # Recreate the configuration for the previous group to unlink it from all projects and link it to its hierarchy
       ::Security::RecreateOrchestrationConfigurationWorker.perform_async(old_configuration.id) if old_configuration
+
+      ComplianceManagement::ProjectSettingsDestroyWorker.perform_async(previous_csp_id) if previous_csp_id
 
       new_configuration = csp_namespace&.security_orchestration_policy_configuration
       return unless new_configuration

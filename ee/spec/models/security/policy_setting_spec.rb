@@ -134,6 +134,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
     context 'when csp_namespace_id changes from nil to a group' do
       it 'schedules SyncScanPoliciesWorker for the new group' do
         expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+        expect(ComplianceManagement::ProjectSettingsDestroyWorker).not_to receive(:perform_async)
         expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
           .with(new_configuration.id, { 'force_resync' => true })
 
@@ -157,9 +158,11 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
         policy_settings.update!(csp_namespace: old_group)
       end
 
-      it 'schedules both workers for old and new groups' do
+      it 'schedules all three workers for old and new groups' do
         expect(Security::RecreateOrchestrationConfigurationWorker).to receive(:perform_async)
           .with(old_configuration.id)
+        expect(ComplianceManagement::ProjectSettingsDestroyWorker).to receive(:perform_async)
+          .with(old_group.id)
         expect(Security::SyncScanPoliciesWorker).to receive(:perform_async)
           .with(new_configuration.id, { 'force_resync' => true })
 
@@ -200,9 +203,11 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
         policy_settings.update!(csp_namespace: old_group)
       end
 
-      it 'only schedules RecreateOrchestrationConfigurationWorker for the old group' do
+      it 'schedules RecreateOrchestrationConfigurationWorker and ProjectSettingsDestroyWorker for the old group' do
         expect(Security::RecreateOrchestrationConfigurationWorker).to receive(:perform_async)
           .with(old_configuration.id)
+        expect(ComplianceManagement::ProjectSettingsDestroyWorker).to receive(:perform_async)
+          .with(old_group.id)
         expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
 
         policy_settings.update!(csp_namespace: nil)
@@ -231,6 +236,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
       it 'does not schedule any workers when updating other attributes' do
         expect(Security::RecreateOrchestrationConfigurationWorker).not_to receive(:perform_async)
+        expect(ComplianceManagement::ProjectSettingsDestroyWorker).not_to receive(:perform_async)
         expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
 
         # Trigger an update without changing csp_namespace_id

@@ -12,7 +12,9 @@ RSpec.describe ComplianceManagement::Frameworks::ProjectSettingsDestroyService, 
   let_it_be(:project2) { create(:project, group: group) }
   let_it_be(:project3) { create(:project, group: group) }
 
-  let(:service) { described_class.new(framework_ids:) }
+  let(:namespace_id) { nil }
+
+  let(:service) { described_class.new(framework_ids:, namespace_id:) }
 
   before_all do
     create(:compliance_framework_project_setting, project: project1, compliance_management_framework: framework1)
@@ -58,6 +60,49 @@ RSpec.describe ComplianceManagement::Frameworks::ProjectSettingsDestroyService, 
         is_expected.to be_success.and have_attributes(
           message: 'Destroyed related project settings for frameworks',
           payload: { deleted_count: 3 }
+        )
+      end
+    end
+
+    context 'with a namespace_id' do
+      let(:namespace_id) { group.id }
+      let(:framework_ids) { nil }
+
+      it 'deletes project settings for all specified frameworks and returns success response', :aggregate_failures do
+        expect { execute }.to change {
+          ComplianceManagement::ComplianceFramework::ProjectSettings.count
+        }.by(-3)
+
+        is_expected.to be_success.and have_attributes(
+          message: 'Destroyed related project settings for frameworks',
+          payload: { deleted_count: 3 }
+        )
+      end
+
+      context 'when namespace has no frameworks' do
+        let(:empty_group) { create(:group) }
+        let(:namespace_id) { empty_group.id }
+
+        it 'returns success with zero deleted count' do
+          expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::ProjectSettings.count }
+
+          is_expected.to be_success.and have_attributes(
+            payload: { deleted_count: 0 }
+          )
+        end
+      end
+    end
+
+    context 'with non-existent namespace_id' do
+      let(:namespace_id) { non_existing_record_id }
+      let(:framework_ids) { nil }
+
+      it 'does not delete any existing project settings and returns success response', :aggregate_failures do
+        expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::ProjectSettings.count }
+
+        is_expected.to be_success.and have_attributes(
+          message: 'Destroyed related project settings for frameworks',
+          payload: { deleted_count: 0 }
         )
       end
     end

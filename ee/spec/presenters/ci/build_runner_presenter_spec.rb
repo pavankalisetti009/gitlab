@@ -277,16 +277,6 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'aws_secrets_manager', 'server')
         end
 
-        context 'when feature flag aws_secret_manager is disabled' do
-          before do
-            stub_feature_flags(ci_aws_secrets_manager: false)
-          end
-
-          it 'does not include the server configuration' do
-            expect(aws_secrets_manager_server).to be_nil
-          end
-        end
-
         context 'Secrets Manager Region' do
           context 'AWS_REGION CI variable is present' do
             it 'returns the Region' do

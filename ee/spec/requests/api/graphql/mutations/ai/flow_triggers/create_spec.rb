@@ -6,7 +6,8 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_workf
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, maintainers: maintainer) }
+  let_it_be(:service_account) { create(:service_account) }
+  let_it_be(:project) { create(:project, :repository, maintainers: [maintainer, service_account]) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_flow_trigger_create, params) }
@@ -15,7 +16,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_workf
   let(:params) do
     {
       project_path: project.full_path,
-      user_id: current_user.to_global_id,
+      user_id: service_account.to_global_id,
       description: description,
       event_types: event_types,
       config_path: '.gitlab/duo/agents.yml'
@@ -85,7 +86,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_workf
     trigger = Ai::FlowTrigger.last
     expect(trigger).to have_attributes(
       description: description,
-      user_id: current_user.id,
+      user_id: service_account.id,
       project_id: project.id,
       event_types: event_types,
       config_path: '.gitlab/duo/agents.yml'
@@ -101,7 +102,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_workf
       'configPath' => '.gitlab/duo/agents.yml',
       'configUrl' => "/#{project.full_path}/-/blob/#{project.default_branch}/.gitlab/duo/agents.yml",
       'project' => a_hash_including('id' => project.to_global_id.to_s),
-      'user' => a_hash_including('id' => current_user.to_global_id.to_s)
+      'user' => a_hash_including('id' => service_account.to_global_id.to_s)
     )
   end
 end
