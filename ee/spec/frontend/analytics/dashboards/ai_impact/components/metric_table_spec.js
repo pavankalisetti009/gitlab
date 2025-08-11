@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlTooltip } from '@gitlab/ui';
-import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import {
   FLOW_METRICS,
   DORA_METRICS,
@@ -9,6 +8,7 @@ import {
   MERGE_REQUEST_METRICS,
   CONTRIBUTOR_METRICS,
   AI_METRICS,
+  PIPELINE_ANALYTICS_METRICS,
 } from '~/analytics/shared/constants';
 import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
@@ -23,7 +23,9 @@ import {
   SUPPORTED_CONTRIBUTOR_METRICS,
   SUPPORTED_MERGE_REQUEST_METRICS,
   SUPPORTED_FLOW_METRICS,
+  SUPPORTED_PIPELINE_ANALYTICS_METRICS,
 } from 'ee/analytics/dashboards/constants';
+import AggregatedPipelineMetricsQuery from 'ee/analytics/dashboards/graphql/get_aggregate_pipeline_metrics.query.graphql';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/graphql/vulnerabilities.query.graphql';
 import MergeRequestsQuery from 'ee/analytics/dashboards/graphql/merge_requests.query.graphql';
 import ContributorCountQuery from 'ee/analytics/dashboards/graphql/contributor_count.query.graphql';
@@ -37,6 +39,7 @@ import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.v
 import { setLanguage } from 'jest/__helpers__/locale_helper';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import MetricLabel from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/metric_label.vue';
+import TrendLine from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/trend_line.vue';
 import { useFakeDate } from 'helpers/fake_date';
 import {
   mockGraphqlMergeRequestsResponse,
@@ -48,6 +51,7 @@ import {
   mockFlowMetricsResponse,
   mockVulnerabilityMetricsResponse,
   mockAiMetricsResponse,
+  mockAggregatedPipelineMetricsResponse,
 } from '../helpers';
 import {
   mockTableValues,
@@ -83,6 +87,7 @@ describe('Metric table', () => {
       mockContributorCountResponseData,
     ),
     aiMetricsRequest = mockAiMetricsResponse(mockTableAndChartValues),
+    pipelineMetricsRequest = mockAggregatedPipelineMetricsResponse(mockTableAndChartValues),
   } = {}) => {
     return createMockApollo(
       [
@@ -92,6 +97,7 @@ describe('Metric table', () => {
         [MergeRequestsQuery, mrMetricsRequest],
         [ContributorCountQuery, contributorMetricsRequest],
         [AiMetricsQuery, aiMetricsRequest],
+        [AggregatedPipelineMetricsQuery, pipelineMetricsRequest],
       ],
       {},
       {
@@ -109,6 +115,7 @@ describe('Metric table', () => {
       mockContributorCountResponseData,
     ),
     aiMetricsRequest = mockAiMetricsResponse(mockTableLargeValues),
+    pipelineMetricsRequest = mockAggregatedPipelineMetricsResponse(mockTableLargeValues),
   } = {}) => {
     return createMockApollo(
       [
@@ -118,6 +125,7 @@ describe('Metric table', () => {
         [MergeRequestsQuery, mrMetricsRequest],
         [ContributorCountQuery, contributorMetricsRequest],
         [AiMetricsQuery, aiMetricsRequest],
+        [AggregatedPipelineMetricsQuery, pipelineMetricsRequest],
       ],
       {},
       {
@@ -170,7 +178,7 @@ describe('Metric table', () => {
   const findValueTableCells = (metricId) =>
     findTableRow(metricId).findAll(`[data-testid="ai-impact-table-value-cell"]`);
   const findTrendIndicator = (metricId) => findTableRow(metricId).findComponent(TrendIndicator);
-  const findSparklineChart = (metricId) => findTableRow(metricId).findComponent(GlSparklineChart);
+  const findTrendLineChart = (metricId) => findTableRow(metricId).findComponent(TrendLine);
   const findSkeletonLoaders = (metricId) =>
     wrapper.findAll(
       `[data-testid="${metricIdToTestId(metricId)}"] [data-testid="metric-skeleton-loader"]`,
@@ -213,6 +221,10 @@ describe('Metric table', () => {
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${''}        | ${''}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${''}        | ${''}
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${''}        | ${''}
+    ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
+    ${PIPELINE_ANALYTICS_METRICS.FAILURE_RATE}     | ${namespace} | ${AI_IMPACT_TABLE_TRACKING_PROPERTY}
   `('for the $identifier table row', ({ identifier, requestPath, trackingProperty }) => {
     beforeEach(() => {
       createWrapper([identifier]);
@@ -245,6 +257,10 @@ describe('Metric table', () => {
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions: Acceptance rate'}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Usage'}
     ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA: Usage'}
+    ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${'Total pipeline runs'}
+    ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${'Median duration'}
+    ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${'Success rate'}
+    ${PIPELINE_ANALYTICS_METRICS.FAILURE_RATE}     | ${'Failure rate'}
   `('for the $identifier table row', ({ identifier, name }) => {
     describe('when loading data', () => {
       beforeEach(() => {
@@ -272,6 +288,7 @@ describe('Metric table', () => {
             mrMetricsRequest: jest.fn().mockRejectedValue({}),
             contributorMetricsRequest: jest.fn().mockRejectedValue({}),
             aiMetricsRequest: jest.fn().mockRejectedValue({}),
+            pipelineMetricsRequest: jest.fn().mockRejectedValue({}),
           }),
         });
       });
@@ -307,8 +324,8 @@ describe('Metric table', () => {
       });
 
       it('renders the sparkline chart with expected props', () => {
-        expect(findSparklineChart(identifier).exists()).toBe(true);
-        expect(findSparklineChart(identifier).props()).toMatchSnapshot();
+        expect(findTrendLineChart(identifier).exists()).toBe(true);
+        expect(findTrendLineChart(identifier).props()).toMatchSnapshot();
       });
     });
   });
@@ -444,6 +461,7 @@ describe('Metric table', () => {
     const mrMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const contributorMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const aiMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
+    const pipelineMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     let apolloProvider;
 
     beforeEach(() => {
@@ -454,6 +472,7 @@ describe('Metric table', () => {
         mrMetricsRequest,
         contributorMetricsRequest,
         aiMetricsRequest,
+        pipelineMetricsRequest,
       });
     });
 
@@ -487,6 +506,11 @@ describe('Metric table', () => {
         group: 'AI metrics',
         excludeMetrics: SUPPORTED_AI_METRICS,
         apiRequest: aiMetricsRequest,
+      },
+      {
+        group: 'Pipeline metrics',
+        excludeMetrics: SUPPORTED_PIPELINE_ANALYTICS_METRICS,
+        apiRequest: pipelineMetricsRequest,
       },
     ])('for $group', ({ excludeMetrics, apiRequest }) => {
       describe('when all metrics excluded', () => {

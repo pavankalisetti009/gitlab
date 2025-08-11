@@ -1,5 +1,6 @@
 import { GlModal, GlLoadingIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import axios from '~/lib/utils/axios_utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
@@ -32,9 +33,15 @@ describe('DuoWorkflowSettings', () => {
   const findWorkflowStatus = () => wrapper.find('h3');
   const findServiceAccount = () => wrapper.findByTestId('service-account');
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findPageHeadingTitle = () => wrapper.findByTestId('duo-settings-page-title');
+  const findPageHeadingSubtitle = () => wrapper.findByTestId('duo-settings-page-subtitle');
 
-  const createWrapper = (provide = {}) => {
+  const createWrapper = (props = {}, provide = {}) => {
     const defaultMountOptions = {
+      propsData: {
+        ...props,
+      },
       provide: {
         duoWorkflowEnabled: false,
         duoWorkflowServiceAccount: null,
@@ -68,16 +75,76 @@ describe('DuoWorkflowSettings', () => {
     });
 
     it('renders the component when workflow is enabled', () => {
-      createWrapper({
-        duoWorkflowEnabled: true,
-        duoWorkflowServiceAccount: SERVICE_ACCOUNT,
-      });
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: true,
+          duoWorkflowServiceAccount: SERVICE_ACCOUNT,
+        },
+      );
 
       expect(findEnableButton().exists()).toBe(false);
       expect(findDisableButton().exists()).toBe(true);
       expect(findWorkflowStatus().text()).toContain('On');
       expect(findServiceAccount().text()).toContain(SERVICE_ACCOUNT.name);
       expect(findServiceAccount().text()).toContain(SERVICE_ACCOUNT.username);
+    });
+
+    describe('displayPageHeading', () => {
+      describe('when displayPageHeading is true', () => {
+        it.each([
+          {
+            scenario: 'title and subtitle',
+            props: { title: 'Test Title', subtitle: 'Test Subtitle' },
+            expected: { heading: true, title: true, subtitle: true },
+          },
+          {
+            scenario: 'title only',
+            props: { title: 'Test Title' },
+            expected: { heading: true, title: true, subtitle: false },
+          },
+          {
+            scenario: 'subtitle only',
+            props: { subtitle: 'Test Subtitle' },
+            expected: { heading: true, title: false, subtitle: true },
+          },
+        ])('renders the page heading with $scenario', ({ props, expected }) => {
+          createWrapper({
+            displayPageHeading: true,
+            ...props,
+          });
+
+          expect(findPageHeading().exists()).toBe(expected.heading);
+          expect(findPageHeadingTitle().exists()).toBe(expected.title);
+          expect(findPageHeadingSubtitle().exists()).toBe(expected.subtitle);
+        });
+      });
+
+      describe('when displayPageHeading is false', () => {
+        it.each([
+          {
+            scenario: 'title and subtitle provided',
+            props: { title: 'Test Title', subtitle: 'Test Subtitle' },
+          },
+          {
+            scenario: 'only title provided',
+            props: { title: 'Test Title' },
+          },
+          {
+            scenario: 'only subtitle provided',
+            props: { subtitle: 'Test Subtitle' },
+          },
+        ])('does not render the page heading when $scenario', ({ props }) => {
+          createWrapper({
+            displayPageHeading: false,
+            ...props,
+          });
+
+          expect(findPageHeading().exists()).toBe(false);
+          expect(findPageHeadingTitle().exists()).toBe(false);
+          expect(findPageHeadingSubtitle().exists()).toBe(false);
+        });
+      });
     });
   });
 
@@ -138,10 +205,13 @@ describe('DuoWorkflowSettings', () => {
     });
 
     it('calls the disable workflow API and redirects with success alert', async () => {
-      createWrapper({
-        duoWorkflowEnabled: true,
-        duoWorkflowServiceAccount: SERVICE_ACCOUNT,
-      });
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: true,
+          duoWorkflowServiceAccount: SERVICE_ACCOUNT,
+        },
+      );
 
       findConfirmModal().vm.$emit('primary');
 
@@ -162,18 +232,24 @@ describe('DuoWorkflowSettings', () => {
     });
 
     it('shows disable button when workflow is enabled', () => {
-      createWrapper({
-        duoWorkflowEnabled: true,
-        duoWorkflowServiceAccount: SERVICE_ACCOUNT,
-      });
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: true,
+          duoWorkflowServiceAccount: SERVICE_ACCOUNT,
+        },
+      );
       expect(findDisableButton().text()).toContain('Turn off GitLab Duo Agent Platform');
     });
 
     it('clicking disable button shows the confirmation modal', async () => {
-      createWrapper({
-        duoWorkflowEnabled: true,
-        duoWorkflowServiceAccount: SERVICE_ACCOUNT,
-      });
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: true,
+          duoWorkflowServiceAccount: SERVICE_ACCOUNT,
+        },
+      );
 
       expect(findConfirmModal().props('visible')).toBe(false);
 
@@ -186,10 +262,13 @@ describe('DuoWorkflowSettings', () => {
 
   describe('modal interactions', () => {
     it('shows and hides the confirmation modal', async () => {
-      createWrapper({
-        duoWorkflowEnabled: true,
-        duoWorkflowServiceAccount: SERVICE_ACCOUNT,
-      });
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: true,
+          duoWorkflowServiceAccount: SERVICE_ACCOUNT,
+        },
+      );
 
       expect(findConfirmModal().props('visible')).toBe(false);
 
@@ -228,10 +307,13 @@ describe('DuoWorkflowSettings', () => {
     });
 
     it('handles disable workflow error', async () => {
-      createWrapper({
-        duoWorkflowEnabled: true,
-        duoWorkflowServiceAccount: SERVICE_ACCOUNT,
-      });
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: true,
+          duoWorkflowServiceAccount: SERVICE_ACCOUNT,
+        },
+      );
       const error = new Error('API Error');
       axios.post.mockRejectedValueOnce(error);
 

@@ -3,7 +3,7 @@ import { s__ } from '~/locale';
 import { AI_METRICS, UNITS } from '~/analytics/shared/constants';
 
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { TABLE_METRICS } from '../constants';
+import { TABLE_METRICS, PIPELINE_ANALYTICS_TABLE_METRICS } from '../constants';
 
 export const SUPPORTED_AI_METRICS = [
   AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
@@ -48,6 +48,7 @@ export const AI_IMPACT_USAGE_METRICS = {
 
 export const AI_IMPACT_TABLE_METRICS = {
   ...TABLE_METRICS,
+  ...PIPELINE_ANALYTICS_TABLE_METRICS,
   ...pick(AI_IMPACT_USAGE_METRICS, SUPPORTED_AI_METRICS),
 };
 

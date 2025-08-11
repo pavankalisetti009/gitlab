@@ -92,7 +92,6 @@ describe('GitLab Duo Home', () => {
           title: 'GitLab Duo',
           subtitle:
             'Monitor, manage, and customize AI-powered features to ensure efficient utilization and alignment.',
-          forceHideTitle: false,
         });
       });
 
@@ -145,7 +144,6 @@ describe('GitLab Duo Home', () => {
           title: 'GitLab Duo',
           subtitle:
             'Monitor, manage, and customize AI-powered features to ensure efficient utilization and alignment.',
-          forceHideTitle: false,
         });
       });
     });

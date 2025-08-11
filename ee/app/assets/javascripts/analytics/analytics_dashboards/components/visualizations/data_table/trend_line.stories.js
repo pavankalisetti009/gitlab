@@ -9,7 +9,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   components: { TrendLine },
   props: Object.keys(argTypes),
-  template: `<trend-line :data="data" :tooltip-label="tooltipLabel" :invert-trend-color="invertTrendColor" />`,
+  template: `<trend-line :data="data" :tooltip-label="tooltipLabel" :invert-trend-color="invertTrendColor" :show-gradient="showGradient" />`,
 });
 
 const TableTemplate = (args, { argTypes }) => ({
@@ -34,6 +34,9 @@ Default.args = { data, tooltipLabel, invertTrendColor: false };
 
 export const WithInvertTrendColor = Template.bind({});
 WithInvertTrendColor.args = { data, tooltipLabel, invertTrendColor: true };
+
+export const WithNoGradient = Template.bind({});
+WithNoGradient.args = { data, tooltipLabel, showGradient: false };
 
 export const IsLoading = Template.bind({});
 IsLoading.args = { tooltipLabel, invertTrendColor: false, data: [] };

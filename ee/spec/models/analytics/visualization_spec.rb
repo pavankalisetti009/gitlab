@@ -48,6 +48,7 @@ RSpec.describe Analytics::Visualization, feature_category: :product_analytics do
       code_suggestions_acceptance_rate_over_time
       duo_chat_usage_rate_over_time
       duo_usage_rate_over_time
+      pipeline_metrics_table
     ]
   end
 

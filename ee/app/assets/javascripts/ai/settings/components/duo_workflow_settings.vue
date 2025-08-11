@@ -8,6 +8,7 @@ import {
   GlLoadingIcon,
   GlCard,
 } from '@gitlab/ui';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { s__, sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
@@ -24,6 +25,7 @@ export default {
     GlAvatarLink,
     GlLoadingIcon,
     GlCard,
+    PageHeading,
   },
   inject: [
     'duoWorkflowEnabled',
@@ -32,6 +34,21 @@ export default {
     'redirectPath',
     'duoWorkflowDisablePath',
   ],
+  props: {
+    title: {
+      type: String,
+      required: true,
+    },
+    subtitle: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    displayPageHeading: {
+      type: Boolean,
+      required: true,
+    },
+  },
   data() {
     return {
       showConfirmModal: false,
@@ -41,6 +58,9 @@ export default {
   computed: {
     serviceAccountHelpPath() {
       return helpPagePath('user/duo_agent_platform/security');
+    },
+    shouldDisplayPageHeader() {
+      return this.displayPageHeading && (this.title || this.subtitle);
     },
   },
   methods: {
@@ -126,10 +146,25 @@ export default {
 
 <template>
   <div>
+    <page-heading v-if="shouldDisplayPageHeader">
+      <template v-if="title" #heading>
+        <span class="gl-flex gl-items-center gl-gap-3">
+          <span data-testid="duo-settings-page-title">{{ title }}</span>
+        </span>
+      </template>
+
+      <template v-if="subtitle" #description>
+        <span data-testid="duo-settings-page-subtitle">
+          {{ subtitle }}
+        </span>
+      </template>
+    </page-heading>
+
     <gl-card
       header-class="gl-bg-transparent gl-border-none gl-pb-0"
       footer-class="gl-bg-transparent gl-border-none gl-flex-end"
-      class="gl-mt-5 gl-justify-between"
+      class="gl-justify-between"
+      :class="{ 'gl-mt-5': shouldDisplayPageHeader }"
     >
       <template #default>
         <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">

@@ -1,6 +1,16 @@
-import { CONTRIBUTOR_METRICS, VULNERABILITY_METRICS } from '~/analytics/shared/constants';
+import {
+  CONTRIBUTOR_METRICS,
+  VULNERABILITY_METRICS,
+  PIPELINE_ANALYTICS_METRICS,
+} from '~/analytics/shared/constants';
 import { scaledValueForDisplay } from '~/analytics/shared/utils';
+import { secondsToMinutes } from '~/lib/utils/datetime/date_calculation_utility';
+import {
+  formatPipelineCount,
+  calculatePipelineCountPercentage,
+} from '~/projects/pipelines/charts/format_utils';
 import { TABLE_METRICS } from './constants';
+import { generateMetricTableTooltip } from './ai_impact/utils';
 
 /**
  * @typedef {Object} ValueStreamDashboardTableMetric
@@ -40,6 +50,51 @@ export const extractGraphqlVulnerabilitiesData = (rawVulnerabilityData = []) => 
     [VULNERABILITY_METRICS.HIGH]: {
       identifier: VULNERABILITY_METRICS.HIGH,
       value: selectedCount?.high || '-',
+    },
+  };
+};
+
+/**
+ * Takes the raw Query.pipelineAnalytics graphql response and prepares the data for display
+ * in the dashboard.
+ *
+ * An array is returned, but we only want the first value (the latest date) if there are multiple
+ *
+ * @param {AggregatedPipelineMetricsDataItem} data
+ * @returns {AggregatedPipelineMetricsDataResponseItem} Vulnerability metric data ready for rendering in the value stream dashboard
+ */
+export const extractAggregatedPipelineMetricsData = (rawAggregatedPipelineMetricsData = {}) => {
+  const {
+    pipelineCount,
+    pipelineSuccessCount,
+    pipelineFailedCount,
+    durationStatistics: { pipelineDurationMedian = null } = {},
+  } = rawAggregatedPipelineMetricsData;
+
+  return {
+    [PIPELINE_ANALYTICS_METRICS.COUNT]: {
+      identifier: PIPELINE_ANALYTICS_METRICS.COUNT,
+      value: formatPipelineCount(pipelineCount),
+    },
+    [PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE]: {
+      identifier: PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE,
+      value: calculatePipelineCountPercentage(pipelineSuccessCount, pipelineCount) || '-',
+      tooltip: generateMetricTableTooltip({
+        numerator: pipelineSuccessCount,
+        denominator: pipelineCount,
+      }),
+    },
+    [PIPELINE_ANALYTICS_METRICS.FAILURE_RATE]: {
+      identifier: PIPELINE_ANALYTICS_METRICS.FAILURE_RATE,
+      value: calculatePipelineCountPercentage(pipelineFailedCount, pipelineCount) || '-',
+      tooltip: generateMetricTableTooltip({
+        numerator: pipelineFailedCount,
+        denominator: pipelineCount,
+      }),
+    },
+    [PIPELINE_ANALYTICS_METRICS.MEDIAN]: {
+      identifier: PIPELINE_ANALYTICS_METRICS.MEDIAN,
+      value: secondsToMinutes(pipelineDurationMedian),
     },
   };
 };
