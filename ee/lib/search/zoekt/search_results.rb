@@ -16,8 +16,11 @@ module Search
       attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes,
         :source, :projects, :node_id, :multi_match, :options
 
-      def initialize(
-        current_user, query, projects = nil, **options)
+      def initialize(current_user, query, projects = nil, **options)
+        if options[:search_level].present?
+          raise 'Specifying search level is not supported. Pass group_id or project_id instead.'
+        end
+
         @current_user = current_user
         @query = query
         @source = options[:source]&.to_sym
@@ -29,10 +32,6 @@ module Search
         @modes = options.fetch(:modes, {})
         @multi_match = MultiMatch.new(options[:chunk_count]) if options.fetch(:multi_match_enabled, false)
         @options = options
-
-        return unless options[:search_level].present?
-
-        raise 'Specifying search level is not supported. Pass group_id or project_id instead.'
       end
 
       def limit_project_ids

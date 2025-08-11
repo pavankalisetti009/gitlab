@@ -2,21 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search do
+RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_cache_disabled, feature_category: :global_search do
   let_it_be(:project_1) { create(:project, :public, :repository) }
   let_it_be(:project_2) { create(:project, :public, :repository) }
   let_it_be(:project_3) { create(:project, :public, :repository) }
   let(:client) { described_class.new }
 
   before_all do
-    zoekt_truncate_index!
     zoekt_ensure_project_indexed!(project_1)
     zoekt_ensure_project_indexed!(project_2)
     zoekt_ensure_project_indexed!(project_3)
-  end
-
-  after(:all) do
-    zoekt_truncate_index!
   end
 
   shared_examples 'an authenticated zoekt request' do
@@ -316,6 +311,16 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search
 
     subject(:search) do
       client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: search_mode)
+    end
+
+    context 'when user does not have permission to read across the projects' do
+      before do
+        allow(Ability).to receive(:allowed?).with(anything, :read_cross_project).and_return(false)
+      end
+
+      it 'returns an empty array', :aggregate_failures do
+        expect(search.file_count).to eq 0
+      end
     end
 
     it_behaves_like 'an authenticated zoekt request' do
