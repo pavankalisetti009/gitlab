@@ -39,7 +39,7 @@ module EE
         strong_memoize_attr :group_link
 
         def success_response
-          ProvisioningResponse.new(status: :success, group_link: group_link)
+          ::Gitlab::Scim::ProvisioningResponse.new(status: :success, group_link: group_link)
         end
 
         def missing_params
