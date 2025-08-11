@@ -61,6 +61,7 @@ describe('ErrorTrackingList', () => {
         },
         stubs: {
           ...stubChildren(ErrorTrackingList),
+          GlTable: false,
           ...stubs,
         },
       }),
@@ -125,7 +126,6 @@ describe('ErrorTrackingList', () => {
       store.state.list.errors = errorsList;
       mountComponent({
         stubs: {
-          GlTable: false,
           GlLink: false,
         },
       });
@@ -153,7 +153,6 @@ describe('ErrorTrackingList', () => {
         mountComponent({
           listPath: url,
           stubs: {
-            GlTable: false,
             GlLink: false,
           },
         });
@@ -188,7 +187,6 @@ describe('ErrorTrackingList', () => {
         store.state.list.errors = errorsList.map((e) => ({ ...e, frequency: undefined }));
         mountComponent({
           stubs: {
-            GlTable: false,
             GlLink: false,
           },
         });
@@ -237,7 +235,6 @@ describe('ErrorTrackingList', () => {
 
       mountComponent({
         stubs: {
-          GlTable: false,
           GlDropdown: false,
           GlDropdownItem: false,
         },
@@ -303,7 +300,6 @@ describe('ErrorTrackingList', () => {
 
       mountComponent({
         stubs: {
-          GlTable: false,
           GlLink: false,
         },
       });
@@ -333,7 +329,6 @@ describe('ErrorTrackingList', () => {
 
       mountComponent({
         stubs: {
-          GlTable: false,
           GlLink: false,
         },
       });
@@ -356,7 +351,7 @@ describe('ErrorTrackingList', () => {
     });
   });
 
-  describe('when the resolve button is clicked with non numberic error id', () => {
+  describe('when the resolve button is clicked with non numeric error id', () => {
     beforeEach(() => {
       store.state.list.loading = false;
       store.state.list.errors = [
@@ -374,7 +369,6 @@ describe('ErrorTrackingList', () => {
 
       mountComponent({
         stubs: {
-          GlTable: false,
           GlLink: false,
         },
       });
@@ -517,7 +511,6 @@ describe('ErrorTrackingList', () => {
           store.state.list.loading = false;
           mountComponent({
             stubs: {
-              GlTable: false,
               GlPagination: false,
             },
           });
@@ -570,7 +563,6 @@ describe('ErrorTrackingList', () => {
       beforeEach(() => {
         mountComponent({
           stubs: {
-            GlTable: false,
             GlLink: false,
           },
           integratedErrorTrackingEnabled: integrated,
@@ -599,7 +591,7 @@ describe('ErrorTrackingList', () => {
         });
         await waitForPromises();
 
-        expect(trackEventSpy).toHaveBeenCalledWith(
+        expect(trackEventSpy).toHaveBeenLastCalledWith(
           'update_ignored_status',
           {
             variant: integrated ? 'integrated' : 'external',
