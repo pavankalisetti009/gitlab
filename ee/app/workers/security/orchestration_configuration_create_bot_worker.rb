@@ -25,8 +25,9 @@ module Security
       Security::Orchestration::CreateBotService
         .new(project, current_user, skip_authorization: skip_authorization)
         .execute
-    rescue Gitlab::Access::AccessDeniedError
+    rescue Gitlab::Access::AccessDeniedError => exception
       # Rescue errors to avoid worker retry
+      Gitlab::ErrorTracking.track_exception(exception, project_id: project_id, current_user_id: current_user_id)
     end
   end
 end

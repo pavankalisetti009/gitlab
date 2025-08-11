@@ -91,6 +91,12 @@ RSpec.describe Security::OrchestrationConfigurationCreateBotWorker, feature_cate
           it 'exits without error' do
             expect { run_worker }.not_to raise_error
           end
+
+          it 'logs the access denied error' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception)
+
+            run_worker
+          end
         end
       end
     end
