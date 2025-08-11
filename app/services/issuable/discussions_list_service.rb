@@ -18,7 +18,7 @@ module Issuable
       return Note.none unless can_read_issuable_notes?
 
       notes = NotesFinder.new(current_user, params.merge({ target: issuable, project: issuable.project }))
-                .execute.with_web_entity_associations.inc_relations_for_view(issuable).fresh
+                .execute.with_web_entity_associations.inc_relations_for_view(issuable).order_created_at_id_asc
 
       if paginator
         paginated_discussions_by_type = paginator.records.group_by(&:table_name)

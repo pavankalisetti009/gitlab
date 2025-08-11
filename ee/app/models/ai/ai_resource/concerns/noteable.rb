@@ -15,7 +15,7 @@ module Ai
           sum_of_length = 0
 
           limited_notes.each_batch(of: 500) do |batch|
-            batch.fresh.pluck(:note).each do |note|
+            batch.order_created_at_id_asc.pluck(:note).each do |note|
               sum_of_length += note.size
               break notes_content if sum_of_length >= notes_limit
 

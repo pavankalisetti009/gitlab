@@ -66,7 +66,7 @@ module StatusPage
     end
 
     def chronological(notes)
-      notes.fresh
+      notes.order_created_at_id_asc
     end
   end
 end

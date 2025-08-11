@@ -118,7 +118,7 @@ module Noteable
 
     Note.from_union(relations, remove_duplicates: false)
       .select(:table_name, :id, :created_at, :ids)
-      .fresh
+      .order_created_at_id_asc
   end
 
   def capped_notes_count(max)
