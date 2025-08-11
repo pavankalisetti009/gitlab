@@ -3,17 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe ApprovalRules::ParamsFilteringService do
+  let_it_be(:project_member) { create(:user) }
+  let_it_be(:outsider) { create(:user) }
+  let_it_be(:accessible_group) { create(:group, :private) }
+  let_it_be(:accessible_subgroup) { create(:group, :private, parent: accessible_group) }
+  let_it_be(:inaccessible_group) { create(:group, :private) }
+  let_it_be_with_reload(:project) { create(:project, :repository) }
+  let_it_be(:user) { create(:user) }
+
   let(:service) { described_class.new(merge_request, user, params) }
-  let(:project_member) { create(:user) }
-  let(:outsider) { create(:user) }
-  let(:accessible_group) { create(:group, :private) }
-  let(:accessible_subgroup) { create(:group, :private, parent: accessible_group) }
-  let(:inaccessible_group) { create(:group, :private) }
-  let(:project) { create(:project, :repository) }
-  let(:user) { create(:user) }
 
   describe '#execute' do
-    before do
+    before_all do
       project.add_maintainer(user)
       project.add_reporter(project_member)
 
@@ -98,8 +99,8 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
       end
 
       context 'inapplicable user defined rules' do
-        let!(:source_rule) { create(:approval_project_rule, project: project) }
-        let!(:another_source_rule) { create(:approval_project_rule, project: project) }
+        let_it_be(:source_rule) { create(:approval_project_rule, project: project) }
+        let_it_be(:another_source_rule) { create(:approval_project_rule, project: project) }
         let(:protected_branch) { create(:protected_branch, project: project, name: 'stable-*') }
 
         let(:approval_rules_attributes) do
@@ -115,6 +116,7 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
         context 'when multiple_approval_rules feature is available' do
           before do
             stub_licensed_features(multiple_approval_rules: true)
+            project.clear_memoization(:user_defined_rules)
           end
 
           it 'adds inapplicable user defined rules' do
@@ -259,10 +261,12 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
     end
 
     context 'update' do
-      let(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
-      let(:existing_private_group) { create(:group, :private) }
-      let!(:rule1) { create(:approval_merge_request_rule, merge_request: merge_request, users: [create(:user)]) }
-      let!(:rule2) { create(:approval_merge_request_rule, merge_request: merge_request, groups: [existing_private_group]) }
+      let_it_be(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
+      let_it_be(:existing_private_group) { create(:group, :private) }
+      let_it_be(:rule1) { create(:approval_merge_request_rule, merge_request: merge_request, users: [create(:user)]) }
+      let_it_be(:rule2) { create(:approval_merge_request_rule, merge_request: merge_request, groups: [existing_private_group]) }
+      let_it_be(:rule3) { create(:report_approver_rule, :scan_finding, merge_request: merge_request) }
+      let_it_be(:rule4) { create(:report_approver_rule, :license_scanning, merge_request: merge_request) }
 
       it_behaves_like 'assigning users and groups' do
         let(:params) do
@@ -275,6 +279,25 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
         end
 
         let(:expected_groups) { [accessible_group, existing_private_group] }
+      end
+
+      context 'with scan result policy approval rules' do
+        let(:params) do
+          {
+            approval_rules_attributes: [
+              { id: rule1.id, name: 'foo', approvals_required: 0 },
+              { id: rule2.id, name: 'bar', approvals_required: 0 },
+              { id: rule3.id, name: 'bar', approvals_required: 0 },
+              { id: rule4.id, name: 'bar', approvals_required: 0 }
+            ]
+          }
+        end
+
+        it 'filters scan result policy approval rules' do
+          filtered_params = service.execute
+
+          expect(filtered_params[:approval_rules_attributes].pluck("id")).to match_array([rule1.id, rule2.id])
+        end
       end
 
       context 'inapplicable user defined rules' do
@@ -314,6 +337,7 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
           context 'when multiple_approval_rules feature is available' do
             before do
               stub_licensed_features(multiple_approval_rules: true)
+              project.clear_memoization(:user_defined_rules)
             end
 
             it 'adds inapplicable user defined rules' do
