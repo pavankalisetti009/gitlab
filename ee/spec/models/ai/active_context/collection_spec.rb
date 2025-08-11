@@ -98,6 +98,54 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
     end
   end
 
+  describe 'options' do
+    it 'is valid when empty' do
+      collection.options = {}
+      expect(collection).to be_valid
+    end
+
+    it 'is valid when values follow expected types' do
+      collection.options = {
+        queue_shard_count: 2,
+        queue_shard_limit: 1000
+      }
+
+      expect(collection).to be_valid
+    end
+
+    it 'is valid when nullable values are nil' do
+      collection.options = {
+        queue_shard_count: nil,
+        queue_shard_limit: nil
+      }
+
+      expect(collection).to be_valid
+    end
+
+    describe 'invalid options' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:key, :value) do
+        :queue_shard_count | "some string"
+        :queue_shard_count | 0
+
+        :queue_shard_limit | "some string"
+        :queue_shard_limit | 0
+      end
+
+      with_them do
+        before do
+          collection.options = { key => value }
+        end
+
+        it 'results in validation errors' do
+          expect(collection).not_to be_valid
+          expect(collection.errors[:options]).to include('must be a valid json schema')
+        end
+      end
+    end
+  end
+
   describe '.partition_for' do
     using RSpec::Parameterized::TableSyntax
 
@@ -181,6 +229,23 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
         expect { collection.update_metadata!(search_embedding_version: -1) }.to raise_error(ActiveRecord::RecordInvalid)
         expect(collection.reload.metadata).to eq({ 'search_embedding_version' => 5 })
       end
+    end
+  end
+
+  describe '#update_options!' do
+    it 'upserts and keeps existing options' do
+      collection.update!(options: { queue_shard_count: 2 })
+
+      collection.reload
+      expect(collection.options.symbolize_keys).to eq({ queue_shard_count: 2 })
+
+      collection.update_options!({ queue_shard_limit: 200 })
+
+      collection.reload
+      expect(collection.options.symbolize_keys).to eq({
+        queue_shard_count: 2,
+        queue_shard_limit: 200
+      })
     end
   end
 
