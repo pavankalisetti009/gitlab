@@ -1,0 +1,5 @@
+mutation deleteAiFlowTrigger($id: AiFlowTriggerID!) {
+  aiFlowTriggerDelete(input: { id: $id }) {
+    errors
+  }
+}

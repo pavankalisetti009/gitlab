@@ -3,14 +3,17 @@ import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
+import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
+import deleteAiFlowTrigger from 'ee/ai/duo_agents_platform/graphql/mutations/delete_ai_flow_trigger.mutation.graphql';
 import FlowTriggersCta from './components/flow_triggers_cta.vue';
 import FlowTriggersTable from './components/flow_triggers_table.vue';
 
 export default {
   name: 'FlowTriggersIndex',
   components: {
+    ConfirmActionModal,
     FlowTriggersCta,
     FlowTriggersTable,
     PageHeading,
@@ -21,6 +24,7 @@ export default {
   data() {
     return {
       aiFlowTriggers: [],
+      idToBeDeleted: null,
     };
   },
   apollo: {
@@ -46,6 +50,30 @@ export default {
     },
     showEmptyState() {
       return !this.isLoading && this.aiFlowTriggers.length === 0;
+    },
+  },
+  methods: {
+    async deleteAiFlowTrigger() {
+      try {
+        await this.$apollo.mutate({
+          mutation: deleteAiFlowTrigger,
+          variables: {
+            id: this.idToBeDeleted,
+          },
+          refetchQueries: [getProjectAiFlowTriggers],
+        });
+
+        this.$toast.show(s__('DuoAgentsPlatform|Flow trigger deleted successfully.'));
+      } catch (error) {
+        createAlert({
+          message: error.message || s__('DuoAgentsPlatform|Failed to delete flow trigger.'),
+        });
+      } finally {
+        this.resetItemIdToBeDeleted();
+      }
+    },
+    resetItemIdToBeDeleted() {
+      this.idToBeDeleted = null;
     },
   },
 };
@@ -82,11 +110,28 @@ export default {
         </slot>
       </template>
     </resource-lists-empty-state>
-    <flow-triggers-table
-      v-else
-      :ai-flow-triggers="aiFlowTriggers"
-      :event-type-options="flowTriggersEventTypeOptions"
-      class="gl-mt-8"
-    />
+    <template v-else>
+      <flow-triggers-table
+        :ai-flow-triggers="aiFlowTriggers"
+        :event-type-options="flowTriggersEventTypeOptions"
+        class="gl-mt-8"
+        @delete-trigger="(id) => (idToBeDeleted = id)"
+      />
+      <confirm-action-modal
+        v-if="idToBeDeleted"
+        modal-id="delete-item-modal"
+        variant="danger"
+        :title="s__('DuoAgentsPlatform|Delete flow trigger')"
+        :action-fn="deleteAiFlowTrigger"
+        :action-text="__('Delete')"
+        @close="resetItemIdToBeDeleted"
+      >
+        {{
+          s__(
+            'DuoAgentsPlatform|Are you sure you want to delete this flow trigger? This action cannot be undone.',
+          )
+        }}
+      </confirm-action-modal>
+    </template>
   </div>
 </template>
