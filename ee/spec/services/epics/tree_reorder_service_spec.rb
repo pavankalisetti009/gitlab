@@ -8,14 +8,12 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
     let_it_be(:ancestor) { create(:group) }
     let_it_be(:group) { create(:group, parent: ancestor) }
     let_it_be(:project) { create(:project, group: group) }
-    let_it_be(:issue1) { create(:issue, project: project) }
-    let_it_be(:issue2) { create(:issue, project: project) }
 
     let(:epic) { create(:epic, group: group) }
     let(:epic1) { create(:epic, group: group, parent: epic, relative_position: 10) }
     let(:epic2) { create(:epic, group: group, parent: epic, relative_position: 20) }
-    let(:epic_issue1) { create(:epic_issue, :with_parent_link, epic: epic, issue: issue1, relative_position: 30) }
-    let(:epic_issue2) { create(:epic_issue, :with_parent_link, epic: epic, issue: issue2, relative_position: 40) }
+    let(:issue1) { create(:issue, project: project, epic: epic, epic_issue_relative_position: 30) }
+    let(:issue2) { create(:issue, project: project, epic: epic, epic_issue_relative_position: 40) }
 
     let(:relative_position) { 'after' }
     let!(:tree_object_1) { epic1 }
@@ -64,8 +62,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
         end
 
         context 'when moving EpicIssue' do
-          let!(:tree_object_1) { epic_issue1 }
-          let!(:tree_object_2) { epic_issue2 }
+          let!(:tree_object_1) { issue1.epic_issue }
+          let!(:tree_object_2) { issue2.epic_issue }
 
           context 'when relative_position is not valid' do
             let(:relative_position) { 'whatever' }
@@ -106,8 +104,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
           context 'when object being moved is from another epic' do
             before do
               other_epic = create(:epic, group: group)
-              epic_issue2.work_item_parent_link.update!(work_item_parent: other_epic.work_item)
-              epic_issue2.update!(epic: other_epic)
+              issue2.epic_issue.work_item_parent_link.update!(work_item_parent: other_epic.work_item)
+              issue2.epic_issue.update!(epic: other_epic)
             end
 
             context 'when the new_parent_id has not been provided' do
@@ -151,13 +149,16 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
           context 'when user does not have permissions to move issue' do
             let_it_be(:private_project) { create(:project, :private) }
-            let_it_be(:private_issue1) { create(:issue, project: private_project) }
-            let_it_be(:private_issue2) { create(:issue, project: private_project) }
-            let!(:private_epic_issue1) { create(:epic_issue, epic: epic, issue: private_issue1, relative_position: 50) }
-            let!(:private_epic_issue2) { create(:epic_issue, epic: epic, issue: private_issue2, relative_position: 60) }
+            let(:private_issue1) do
+              create(:issue, project: private_project, epic: epic, epic_issue_relative_position: 50)
+            end
 
-            let!(:tree_object_1) { private_epic_issue1 }
-            let!(:tree_object_2) { private_epic_issue2 }
+            let(:private_issue2) do
+              create(:issue, project: private_project, epic: epic, epic_issue_relative_position: 60)
+            end
+
+            let!(:tree_object_1) { private_issue1.epic_issue }
+            let!(:tree_object_2) { private_issue2.epic_issue }
 
             it_behaves_like 'error for the tree update', 'You don\'t have permissions to move the objects.'
           end
@@ -167,8 +168,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
             before do
-              epic_issue2.work_item_parent_link.update!(work_item_parent: other_epic.work_item)
-              epic_issue2.update!(parent: other_epic)
+              issue2.epic_issue.work_item_parent_link.update!(work_item_parent: other_epic.work_item)
+              issue2.epic_issue.update!(parent: other_epic)
             end
 
             it_behaves_like 'error for the tree update', 'You don\'t have permissions to move the objects.'
@@ -185,11 +186,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             let(:another_epic) { create(:epic, group: ancestor) }
 
             before do
-              epic_issue1.work_item_parent_link.update!(work_item_parent: another_epic.work_item)
-              epic_issue1.update!(epic: another_epic)
+              issue1.epic_issue.work_item_parent_link.update!(work_item_parent: another_epic.work_item)
+              issue1.epic_issue.update!(epic: another_epic)
 
-              epic_issue2.work_item_parent_link.update!(work_item_parent: another_epic.work_item)
-              epic_issue2.update!(epic: another_epic)
+              issue2.epic_issue.work_item_parent_link.update!(work_item_parent: another_epic.work_item)
+              issue2.epic_issue.update!(epic: another_epic)
             end
 
             context 'when new_parent_id is not provided' do
@@ -214,8 +215,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
               before do
-                epic_issue2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
-                epic_issue2.update!(epic: epic1)
+                issue2.epic_issue.work_item_parent_link.update!(work_item_parent: epic1.work_item)
+                issue2.epic_issue.update!(epic: epic1)
               end
 
               it 'updates the parent' do
@@ -239,8 +240,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 let(:work_item_1) { WorkItem.find(issue1.id) }
                 let(:work_item_2) { WorkItem.find(issue2.id) }
                 let(:adjacent_reference_id) { nil }
-                let(:moving_object_id) { GitlabSchema.id_from_object(epic_issue2) }
-                let(:moving_epic_issue) { epic_issue2 }
+                let(:moving_object_id) { GitlabSchema.id_from_object(issue2.epic_issue) }
+                let(:moving_epic_issue) { issue2.epic_issue }
                 let(:moving_parent_link) { work_item_2 }
 
                 let_it_be(:old_parent) { create(:epic, :with_synced_work_item, group: group) }
@@ -259,11 +260,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
                 context 'when new parent has no children' do
                   before do
-                    epic_issue1.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
-                    epic_issue1.update!(epic: old_parent)
+                    issue1.epic_issue.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
+                    issue1.epic_issue.update!(epic: old_parent)
 
-                    epic_issue2.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
-                    epic_issue2.update!(epic: old_parent)
+                    issue2.epic_issue.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
+                    issue2.epic_issue.update!(epic: old_parent)
                   end
 
                   it 'sets a new work item parent' do
@@ -309,18 +310,18 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   end
                 end
 
-                # rubocop:disable RSpec/MultipleMemoizedHelpers -- needed for the context
+                # -- needed for the context
                 context 'when new parent has children' do
-                  let(:adjacent_reference_id) { GitlabSchema.id_from_object(epic_issue1) }
-                  let(:parent_link1) { epic_issue1.work_item_parent_link }
-                  let(:parent_link2) { epic_issue2.work_item_parent_link }
+                  let(:adjacent_reference_id) { GitlabSchema.id_from_object(issue1.epic_issue) }
+                  let(:parent_link1) { issue1.epic_issue.work_item_parent_link }
+                  let(:parent_link2) { issue2.epic_issue.work_item_parent_link }
 
                   before do
-                    epic_issue1.work_item_parent_link.update!(work_item_parent: new_parent.work_item)
-                    epic_issue2.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
+                    issue1.epic_issue.work_item_parent_link.update!(work_item_parent: new_parent.work_item)
+                    issue2.epic_issue.work_item_parent_link.update!(work_item_parent: old_parent.work_item)
 
-                    epic_issue1.update!(epic: new_parent)
-                    epic_issue2.update!(epic: old_parent)
+                    issue1.epic_issue.update!(epic: new_parent)
+                    issue2.epic_issue.update!(epic: old_parent)
                   end
 
                   context 'when relative_position is before' do
@@ -331,9 +332,10 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                         .and change { work_item_2.reload.work_item_parent }
                         .from(old_parent.work_item).to(new_parent.work_item)
 
-                      expect(epic_issue2.reload.relative_position).to be > epic_issue1.reload.relative_position
+                      expect(issue2.epic_issue.reload.relative_position).to be >
+                        issue1.epic_issue.reload.relative_position
                       expect(parent_link2.reload.relative_position).to be > parent_link1.reload.relative_position
-                      expect(parent_link2.relative_position).to eq(epic_issue2.reload.relative_position)
+                      expect(parent_link2.relative_position).to eq(issue2.epic_issue.reload.relative_position)
                       expect(reorder[:status]).to eq(:success)
                     end
                   end
@@ -347,7 +349,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                           .from(old_parent.work_item).to(new_parent.work_item)
 
                       expect(parent_link2.reload.relative_position).to be < parent_link1.reload.relative_position
-                      expect(parent_link2.relative_position).to eq(epic_issue2.reload.relative_position)
+                      expect(parent_link2.relative_position).to eq(issue2.epic_issue.reload.relative_position)
                       expect(reorder[:status]).to eq(:success)
                     end
                   end
@@ -377,32 +379,31 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   end
                 end
               end
-              # rubocop:enable RSpec/MultipleMemoizedHelpers
 
               context 'when reordering within the same parent' do
                 let(:relative_position) { 'after' }
 
                 let_it_be(:synced_epic) { create(:epic, :with_synced_work_item, group: group) }
-                let_it_be(:issue1) { create(:issue, project: project) }
-                let_it_be(:issue2) { create(:issue, project: project) }
+                let_it_be(:issue1) do
+                  create(:issue, project: project, epic: synced_epic, epic_issue_relative_position: 10)
+                end
 
-                let_it_be(:epic_issue1) { create(:epic_issue, epic: synced_epic, issue: issue1, relative_position: 10) }
-                let_it_be(:epic_issue2) do
-                  create(:epic_issue, epic: synced_epic, issue: issue2, relative_position: 20)
+                let_it_be(:issue2) do
+                  create(:issue, project: project, epic: synced_epic, epic_issue_relative_position: 20)
                 end
 
                 let_it_be(:parent_link1) do
-                  epic_issue1.work_item_parent_link
+                  issue1.epic_issue.work_item_parent_link
                 end
 
                 let_it_be(:parent_link2) do
-                  epic_issue2.work_item_parent_link
+                  issue2.epic_issue.work_item_parent_link
                 end
 
                 let(:params) do
                   {
                     base_epic_id: GitlabSchema.id_from_object(synced_epic),
-                    adjacent_reference_id: GitlabSchema.id_from_object(epic_issue1),
+                    adjacent_reference_id: GitlabSchema.id_from_object(issue1.epic_issue),
                     relative_position: relative_position
                   }
                 end
@@ -413,9 +414,10 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   it 'updates the relative positions', :aggregate_failures do
                     reorder
 
-                    expect(epic_issue1.reload.relative_position).to be > epic_issue2.reload.relative_position
+                    expect(issue1.epic_issue.reload.relative_position).to be >
+                      issue2.epic_issue.reload.relative_position
                     expect(parent_link1.reload.relative_position).to be > parent_link2.reload.relative_position
-                    expect(parent_link1.reload.relative_position).to eq(epic_issue1.relative_position)
+                    expect(parent_link1.reload.relative_position).to eq(issue1.epic_issue.relative_position)
                   end
                 end
 
@@ -425,9 +427,10 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   it 'updates the relative positions', :aggregate_failures do
                     reorder
 
-                    expect(epic_issue1.reload.relative_position).to be < epic_issue2.reload.relative_position
+                    expect(issue1.epic_issue.reload.relative_position).to be <
+                      issue2.epic_issue.reload.relative_position
                     expect(parent_link1.reload.relative_position).to be < parent_link2.reload.relative_position
-                    expect(parent_link1.reload.relative_position).to eq(epic_issue1.relative_position)
+                    expect(parent_link1.reload.relative_position).to eq(issue1.epic_issue.relative_position)
                   end
                 end
               end

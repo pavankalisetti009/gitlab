@@ -1390,7 +1390,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
 
     context 'when creating new issue' do
-      let(:issue) { build(:issue, project: project, epic: epic) }
+      let(:issue) { create(:issue, project: project, epic: epic) }
 
       it 'schedules cache update for epic' do
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic.id]).once
@@ -1496,13 +1496,6 @@ RSpec.describe Issue, feature_category: :team_planning do
         expect(issue).not_to be_valid
         expect(issue.errors[:work_item_type_id])
           .to include(_('can not be changed when assigned to an epic'))
-      end
-
-      it 'is possible to change back from incident to issue' do
-        issue = create(:issue, :incident, epic: epic)
-        issue.assign_attributes(work_item_type: WorkItems::Type.default_by_type(:issue))
-
-        expect(issue).to be_valid
       end
     end
 

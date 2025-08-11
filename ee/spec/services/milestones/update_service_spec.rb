@@ -12,9 +12,6 @@ RSpec.describe Milestones::UpdateService, feature_category: :team_planning do
       let_it_be_with_reload(:milestone) { create(:milestone, project: project) }
       let_it_be_with_reload(:epic) { create(:epic, group: group) }
       let_it_be(:issue) { create(:issue, milestone: milestone, epic: epic, project: project) }
-      let_it_be(:parent_link) do
-        create(:parent_link, work_item_parent: epic.work_item, work_item: WorkItem.find(issue.id))
-      end
 
       subject(:update_milestone) { described_class.new(project, user, params).execute(milestone) }
 

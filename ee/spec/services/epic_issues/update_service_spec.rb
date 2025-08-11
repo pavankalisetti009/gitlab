@@ -215,44 +215,6 @@ RSpec.describe EpicIssues::UpdateService, feature_category: :portfolio_managemen
         end
       end
 
-      context 'when the parent link after does not exist' do
-        before do
-          epic_issue2.update_attribute(:work_item_parent_link_id, nil)
-          parent_link2.destroy!
-        end
-
-        it_behaves_like 'is successful'
-      end
-
-      context 'when the parent link before does not exist' do
-        before do
-          epic_issue1.update_attribute(:work_item_parent_link_id, nil)
-          parent_link1.destroy!
-        end
-
-        it_behaves_like 'is successful'
-      end
-
-      context 'when the parent links before and after do not exit' do
-        before do
-          epic_issue1.update_attribute(:work_item_parent_link_id, nil)
-          epic_issue2.update_attribute(:work_item_parent_link_id, nil)
-          parent_link1.destroy!
-          parent_link2.destroy!
-        end
-
-        it_behaves_like 'is successful'
-      end
-
-      context 'when the synced parent link does not exist' do
-        before do
-          epic_issue3.update_attribute(:work_item_parent_link_id, nil)
-          parent_link3.destroy!
-        end
-
-        it_behaves_like 'is successful'
-      end
-
       context 'when saving the parent link fails' do
         before do
           allow_next_found_instance_of(WorkItems::ParentLink) do |instance|

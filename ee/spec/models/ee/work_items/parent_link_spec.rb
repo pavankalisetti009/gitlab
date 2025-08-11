@@ -61,20 +61,6 @@ RSpec.describe ::WorkItems::ParentLink, feature_category: :portfolio_management 
           expect(subject).to be_valid
         end
 
-        context 'when epic_issue already exists with the same hierarchy' do
-          it 'is valid' do
-            # Simulating epic_issue that doesn't have a work_item_parent_link_id set yet
-            legacy_epic = create(:epic, :with_synced_work_item, group: group)
-            work_item_epic = legacy_epic.work_item
-            epic_issue = create(:epic_issue, epic: legacy_epic, issue: issue)
-            parent_link = epic_issue.work_item_parent_link
-            epic_issue.update!(work_item_parent_link_id: nil)
-            parent_link.destroy!
-
-            expect(described_class.new(work_item: issue, work_item_parent: work_item_epic)).to be_valid
-          end
-        end
-
         it 'is invalid for child with existing legacy epic', :aggregate_failures do
           create(:epic_issue, epic: legacy_epic, issue: issue)
 

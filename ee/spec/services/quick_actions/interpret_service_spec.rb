@@ -1039,16 +1039,6 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
         end
       end
 
-      context 'when issuable does not support epics' do
-        it 'does not recognize /remove_epic' do
-          incident = create(:incident, project: project, epic: epic)
-
-          _, updates = service.execute(content, incident)
-
-          expect(updates).to be_empty
-        end
-      end
-
       context 'when user has no access to the issue' do
         before do
           allow(current_user).to receive(:can?).and_call_original

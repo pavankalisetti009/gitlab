@@ -38,17 +38,29 @@ FactoryBot.modify do
 
     transient do
       epic { nil }
+      epic_issue_relative_position { nil }
+    end
+
+    after(:build) do |issue, evaluator|
+      epic = evaluator.epic
+      issue.epic = epic if epic.present?
     end
 
     # rubocop:disable RSpec/FactoryBot/StrategyInCallback -- this is not a direct association of the factory created here
-    after(:build) do |issue, evaluator|
+    after(:create) do |issue, evaluator|
       epic = evaluator.epic
-      if epic.present?
-        work_item_parent_link = build(:parent_link, work_item_id: issue.id, work_item_parent: epic.work_item)
 
-        issue.build_epic_issue(
+      if epic.present?
+        work_item_parent_link = create(:parent_link,
+          work_item_id: issue.id,
+          work_item_parent: epic.work_item,
+          relative_position: evaluator.epic_issue_relative_position
+        )
+
+        issue.create_epic_issue!(
           epic: evaluator.epic,
-          work_item_parent_link: work_item_parent_link
+          work_item_parent_link: work_item_parent_link,
+          relative_position: evaluator.epic_issue_relative_position
         )
       end
     end
