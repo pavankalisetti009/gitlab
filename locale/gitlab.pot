@@ -23949,9 +23949,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Agent sessions"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Assign"
-msgstr ""
-
 msgid "DuoAgentsPlatform|Automate"
 msgstr ""
 
@@ -24010,9 +24007,6 @@ msgid "DuoAgentsPlatform|ID"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Manage automated flows within your project."
-msgstr ""
-
-msgid "DuoAgentsPlatform|Mention"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Name"

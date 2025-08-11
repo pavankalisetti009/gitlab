@@ -17,7 +17,7 @@ export default {
     ResourceListsEmptyState,
     ResourceListsLoadingStateList,
   },
-  inject: ['emptyStateIllustrationPath', 'projectPath'],
+  inject: ['emptyStateIllustrationPath', 'projectPath', 'flowTriggersEventTypeOptions'],
   data() {
     return {
       aiFlowTriggers: [],
@@ -82,6 +82,11 @@ export default {
         </slot>
       </template>
     </resource-lists-empty-state>
-    <flow-triggers-table v-else :ai-flow-triggers="aiFlowTriggers" class="gl-mt-8" />
+    <flow-triggers-table
+      v-else
+      :ai-flow-triggers="aiFlowTriggers"
+      :event-type-options="flowTriggersEventTypeOptions"
+      class="gl-mt-8"
+    />
   </div>
 </template>
