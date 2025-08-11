@@ -1,0 +1,24 @@
+query getAiFlowTriggers($projectPath: ID!) {
+  project(fullPath: $projectPath) {
+    id
+    aiFlowTriggers {
+      nodes {
+        id
+        description
+        eventTypes
+        configUrl
+        configPath
+        user {
+          id
+          avatarUrl
+          username
+          webPath
+          __typename
+        }
+        createdAt
+        updatedAt
+        __typename
+      }
+    }
+  }
+}
