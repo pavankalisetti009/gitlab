@@ -70,7 +70,7 @@ RSpec.describe ComplianceManagement::Frameworks::DestroyService, feature_categor
           it 'enqueues the ProjectSettingsDestroyWorker' do
             expect(ComplianceManagement::ProjectSettingsDestroyWorker)
               .to receive(:perform_async)
-              .with(framework.id)
+              .with(nil, framework.id)
 
             subject.execute
           end

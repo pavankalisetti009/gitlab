@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ProjectSettingsDestroyWorker, feature_category: :compliance_management do
   let_it_be(:framework_id) { 12345 }
+  let_it_be(:namespace_id) { 98765 }
 
   subject(:worker) { described_class.new }
 
@@ -19,24 +20,33 @@ RSpec.describe ComplianceManagement::ProjectSettingsDestroyWorker, feature_categ
   it_behaves_like 'an idempotent worker'
 
   describe '#perform' do
-    it 'calls the ProjectSettingsDestroyService' do
+    it 'calls the ProjectSettingsDestroyService with framework_ids' do
       expect_next_instance_of(ComplianceManagement::Frameworks::ProjectSettingsDestroyService,
-        framework_ids: framework_id) do |service|
+        framework_ids: framework_id, namespace_id: nil) do |service|
         expect(service).to receive(:execute).and_call_original
       end
 
-      worker.perform(framework_id)
+      worker.perform(nil, framework_id)
     end
 
-    context 'when framework_id is nil' do
+    it 'calls the ProjectSettingsDestroyService with namespace_id' do
+      expect_next_instance_of(ComplianceManagement::Frameworks::ProjectSettingsDestroyService,
+        framework_ids: nil, namespace_id: namespace_id) do |service|
+        expect(service).to receive(:execute).and_call_original
+      end
+
+      worker.perform(namespace_id, nil)
+    end
+
+    context 'when passing nil params' do
       it 'calls the ProjectSettingsDestroyService with nil' do
         expect(ComplianceManagement::Frameworks::ProjectSettingsDestroyService).not_to receive(:new)
 
-        worker.perform(nil)
+        worker.perform(nil, nil)
       end
 
       it 'does not raise an error' do
-        expect { worker.perform(nil) }.not_to raise_error
+        expect { worker.perform(nil, nil) }.not_to raise_error
       end
     end
 
@@ -45,11 +55,11 @@ RSpec.describe ComplianceManagement::ProjectSettingsDestroyWorker, feature_categ
 
       it 'calls the ProjectSettingsDestroyService with the string id' do
         expect_next_instance_of(ComplianceManagement::Frameworks::ProjectSettingsDestroyService,
-          framework_ids: string_framework_id) do |service|
+          framework_ids: string_framework_id, namespace_id: nil) do |service|
           expect(service).to receive(:execute).and_call_original
         end
 
-        worker.perform(string_framework_id)
+        worker.perform(nil, string_framework_id)
       end
     end
 
@@ -58,11 +68,11 @@ RSpec.describe ComplianceManagement::ProjectSettingsDestroyWorker, feature_categ
 
       it 'calls the ProjectSettingsDestroyService with the array' do
         expect_next_instance_of(ComplianceManagement::Frameworks::ProjectSettingsDestroyService,
-          framework_ids: framework_ids_array) do |service|
+          framework_ids: framework_ids_array, namespace_id: nil) do |service|
           expect(service).to receive(:execute).and_call_original
         end
 
-        worker.perform(framework_ids_array)
+        worker.perform(nil, framework_ids_array)
       end
     end
   end
@@ -84,13 +94,13 @@ RSpec.describe ComplianceManagement::ProjectSettingsDestroyWorker, feature_categ
         expect(context[:worker]).to eq('ComplianceManagement::ProjectSettingsDestroyWorker')
       end
 
-      worker.perform(framework_id)
+      worker.perform(nil, framework_id)
     end
 
     it 'returns the error result' do
       allow(Gitlab::ErrorTracking).to receive(:track_exception)
 
-      result = worker.perform(framework_id)
+      result = worker.perform(nil, framework_id)
       expect(result).to eq(error_result)
       expect(result).to be_error
     end
