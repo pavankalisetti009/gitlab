@@ -12,6 +12,7 @@ RSpec.describe ::Search::ClusterHealthCheck::IndexValidationService, feature_cat
     allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(elastic_helper)
     allow(::Gitlab::Search::Client).to receive(:new).and_return(client)
     allow(::Gitlab::Elasticsearch::Logger).to receive(:build).and_return(logger)
+    allow(logger).to receive(:is_a?).with(::Gitlab::JsonLogger).and_return(true)
     allow(logger).to receive(:error)
     allow(logger).to receive(:warn)
   end
@@ -23,8 +24,20 @@ RSpec.describe ::Search::ClusterHealthCheck::IndexValidationService, feature_cat
       end
 
       it 'returns false and logs a warning' do
-        expect(logger).to receive(:warn).with(hash_including('message' => 'elasticsearch_indexing is disabled'))
+        expect(logger).to receive(:warn)
+            .with(hash_including('message' => 'The elasticsearch_indexing setting is disabled'))
         expect(service.execute).to be false
+      end
+
+      context 'when using a non-standard logger' do
+        it 'does not print JSON formatting' do
+          custom_logger = Logger.new($stdout)
+          service = described_class.new(logger: custom_logger)
+
+          expect(custom_logger).to receive(:warn).with('The elasticsearch_indexing setting is disabled')
+
+          service.execute
+        end
       end
     end
 
@@ -39,7 +52,7 @@ RSpec.describe ::Search::ClusterHealthCheck::IndexValidationService, feature_cat
         end
 
         it 'returns false' do
-          expect(logger).to receive(:warn).with(hash_including('message' => 'search cluster is unreachable'))
+          expect(logger).to receive(:warn).with(hash_including('message' => 'The search cluster is unreachable'))
 
           expect(service.execute).to be false
         end
@@ -117,13 +130,27 @@ RSpec.describe ::Search::ClusterHealthCheck::IndexValidationService, feature_cat
 
         context 'when elasticsearch raises an error' do
           before do
-            allow(client).to receive(:index).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
+            allow(client).to receive(:index)
+              .and_raise(Elasticsearch::Transport::Transport::Errors::NotFound, 'cluster not found')
           end
 
           it 'returns false and logs the error' do
             expect(logger).to receive(:error)
-              .with(hash_including('message' => 'an error occurred while validating search cluster'))
+              .with(hash_including('message' => 'An error occurred while validating search cluster'))
             expect(service.execute).to be false
+          end
+
+          context 'when using a non-structured logger' do
+            it 'does not print JSON formatting' do
+              custom_logger = Logger.new($stdout)
+              service = described_class.new(logger: custom_logger)
+
+              expect(custom_logger).to receive(:error)
+                .with('An error occurred while validating search cluster (error_message: cluster not found, ' \
+                  'error_class: Elasticsearch::Transport::Transport::Errors::NotFound)')
+
+              service.execute
+            end
           end
         end
 
@@ -135,7 +162,7 @@ RSpec.describe ::Search::ClusterHealthCheck::IndexValidationService, feature_cat
           it 'returns false and logs an error' do
             aliases.each do |alias_name|
               expect(logger).to receive(:warn)
-              .with(hash_including('message' => 'alias does not exist', 'alias_name' => alias_name))
+              .with(hash_including('message' => 'The alias does not exist', 'alias_name' => alias_name))
             end
 
             expect(service.execute).to be true
@@ -152,6 +179,31 @@ RSpec.describe ::Search::ClusterHealthCheck::IndexValidationService, feature_cat
       expect(service_instance).to receive(:execute)
 
       described_class.execute
+    end
+
+    it 'passes logger parameter to the constructor' do
+      service_instance = instance_double(described_class)
+      custom_logger = instance_double(Gitlab::Elasticsearch::Logger)
+      expect(described_class).to receive(:new).with(logger: custom_logger).and_return(service_instance)
+      expect(service_instance).to receive(:execute)
+
+      described_class.execute(logger: custom_logger)
+    end
+  end
+
+  describe '#initialize' do
+    let_it_be(:custom_logger) { Logger.new($stdout) }
+
+    context 'when custom logger is provided' do
+      it 'uses the provided logger' do
+        service = described_class.new(logger: custom_logger)
+
+        expect(service.send(:logger)).to eq(custom_logger)
+      end
+    end
+
+    it 'defaults to Gitlab::Elasticsearch::Logger.build when no logger provided' do
+      expect(described_class.new.send(:logger)).to eq(logger)
     end
   end
 

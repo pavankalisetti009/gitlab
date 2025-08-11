@@ -151,5 +151,10 @@ namespace :gitlab do
     task info: :environment do
       Search::RakeTask::Elastic.task_executor_service.execute(:info)
     end
+
+    desc 'GitLab | Elasticsearch | Validate index and search functionality'
+    task index_and_search_validation: :environment do
+      Search::RakeTask::Elastic.validate_index_and_search
+    end
   end
 end
