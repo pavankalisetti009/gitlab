@@ -44,6 +44,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [featureFlagsMixin()],
+  expose: ['fetchChartData'],
   props: {
     emptyStateSvgPath: {
       type: String,

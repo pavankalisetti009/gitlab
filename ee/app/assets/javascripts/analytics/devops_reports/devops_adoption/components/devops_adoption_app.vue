@@ -54,7 +54,6 @@ export default {
     return {
       hasSubgroups: undefined,
       isLoadingEnableGroup: false,
-      requestCount: 0,
       openModal: false,
       errors: [],
       groups: {
@@ -132,13 +131,6 @@ export default {
         DATE_TIME_FORMAT,
       );
     },
-    isLoading() {
-      return (
-        this.$apollo.queries.groups.loading ||
-        this.isLoadingEnableGroup ||
-        this.$apollo.queries.devopsAdoptionEnabledNamespaces.loading
-      );
-    },
     isLoadingAdoptionData() {
       return (
         this.isLoadingEnableGroup || this.$apollo.queries.devopsAdoptionEnabledNamespaces.loading
@@ -155,9 +147,6 @@ export default {
     availableGroups() {
       return this.groups?.nodes || [];
     },
-    enabledNamespaces() {
-      return this.devopsAdoptionEnabledNamespaces?.nodes || [];
-    },
   },
   created() {
     this.selectTab();
@@ -167,9 +156,6 @@ export default {
     clearInterval(this.pollingTableData);
   },
   methods: {
-    openAddRemoveModal() {
-      this.$refs.addRemoveModal.openModal();
-    },
     enableGroup() {
       this.isLoadingEnableGroup = true;
 
@@ -313,7 +299,6 @@ export default {
           :has-group-data="hasGroupData"
           :cols="tab.cols"
           :enabled-namespaces="devopsAdoptionEnabledNamespaces"
-          :search-term="groupsSearchTerm"
           :groups="availableGroups"
           :is-loading-groups="$apollo.queries.groups.loading"
           :has-subgroups="hasSubgroups"
@@ -332,7 +317,6 @@ export default {
       <template #toolbar-end>
         <span class="nav-item gl-hidden gl-grow gl-self-center md:gl-block" align="right">
           <devops-adoption-add-dropdown
-            :search-term="groupsSearchTerm"
             :groups="availableGroups"
             :enabled-namespaces="devopsAdoptionEnabledNamespaces"
             :is-loading-groups="$apollo.queries.groups.loading"

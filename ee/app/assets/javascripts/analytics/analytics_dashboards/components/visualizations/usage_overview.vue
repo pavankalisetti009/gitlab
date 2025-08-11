@@ -30,6 +30,7 @@ export default {
       type: Object,
       required: true,
     },
+    // eslint-disable-next-line vue/no-unused-properties -- options prop is part of the standard visualizations API interface, required for consistency across all visualization components
     options: {
       type: Object,
       required: false,
