@@ -299,6 +299,64 @@ RSpec.describe API::Issues, :mailer, :aggregate_failures, feature_category: :tea
           expect_response_contain_exactly(iteration_1_issue.id)
         end
       end
+
+      context "filtering by IP-restricted projects" do
+        let_it_be(:current_user) { user }
+        let_it_be(:allowed_cidr_range) { '10.0.0.0/8' }
+        let_it_be(:denied_ip) { '192.168.0.2' }
+        let_it_be(:allowed_ip) { '10.0.0.1' }
+        let_it_be(:ip_restricted_group) do
+          create(:group).tap do |group|
+            create(:ip_restriction, group: group, range: allowed_cidr_range)
+          end
+        end
+
+        let_it_be(:unrestricted_group) { group }
+
+        let_it_be(:restricted_project) { create(:project, namespace: ip_restricted_group, developers: [current_user]) }
+        let_it_be(:unrestricted_project) { group_project }
+
+        let_it_be(:restricted_issue) { create(:issue, project: restricted_project, assignees: [current_user]) }
+        let_it_be(:unrestricted_issue) { create(:issue, project: unrestricted_project, assignees: [current_user]) }
+
+        let(:user_ip) { allowed_ip }
+
+        before do
+          stub_licensed_features(group_ip_restriction: true)
+          allow(Gitlab::IpAddressState).to receive(:current).and_return(user_ip)
+        end
+
+        context "when current IP is not allowed for restricted group" do
+          let(:user_ip) { denied_ip }
+
+          it "filters out issues the user shouldn't see based on IP" do
+            get api('/issues', current_user), params: { scope: 'all' }
+
+            expect_paginated_array_response([unrestricted_issue.id])
+          end
+        end
+
+        context "when IP is allowed" do
+          it "includes issues from restricted project" do
+            get api('/issues', current_user), params: { scope: 'all' }
+
+            expect_paginated_array_response([restricted_issue.id, unrestricted_issue.id])
+          end
+        end
+
+        context "query performance" do
+          it "does not introduce N+1 queries for ability filtering" do
+            control = ActiveRecord::QueryRecorder.new do
+              get api('/issues', current_user), params: { scope: 'all' }
+            end
+
+            create(:issue, project: restricted_project)
+            create(:issue, project: unrestricted_project)
+
+            expect { get api('/issues', current_user) }.not_to exceed_query_limit(control)
+          end
+        end
+      end
     end
   end
 
