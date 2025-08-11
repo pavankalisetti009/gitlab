@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative './shared_examples/internal_events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :workflow_catalog do
+  it_behaves_like 'ItemConsumers::InternalEventsTracking' do
+    subject { described_class.new(build(:ai_catalog_item_consumer), build(:user), {}) }
+  end
+
   describe '#execute' do
     let_it_be(:developer) { create(:user) }
     let_it_be(:maintainer) { create(:user) }
@@ -21,6 +26,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
           expect(response).to be_error
           expect(response.message).to contain_exactly('You have insufficient permission to update this item consumer')
         end
+
+        it 'does not track internal event on failure' do
+          expect { response }.not_to trigger_internal_events('update_ai_catalog_item_consumer')
+        end
       end
 
       context 'when user has permission' do
@@ -36,12 +45,28 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
             .and change { item_consumer.pinned_version_prefix }.from(nil).to('1.1')
         end
 
+        it 'tracks internal event on successful update' do
+          expect { response }.to trigger_internal_events('update_ai_catalog_item_consumer').with(
+            user: maintainer,
+            project: item_consumer.project,
+            namespace: item_consumer.group,
+            additional_properties: {
+              label: 'false',
+              property: 'false'
+            }
+          )
+        end
+
         context 'when the item consumer cannot be updated' do
           let(:params) { { pinned_version_prefix: 'a' * 51 } }
 
           it 'returns an error' do
             expect(response).to be_error
             expect(response.message).to contain_exactly('Pinned version prefix is too long (maximum is 50 characters)')
+          end
+
+          it 'does not track internal event on failure' do
+            expect { response }.not_to trigger_internal_events('update_ai_catalog_item_consumer')
           end
         end
       end

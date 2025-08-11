@@ -1,0 +1,15 @@
+---
+description: AI Catalog item consumer deleted
+internal_events: true
+action: delete_ai_catalog_item_consumer
+identifiers:
+- project
+- namespace
+product_group: workflow_catalog
+product_categories:
+- workflow_catalog
+milestone: '18.3'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200024
+tiers:
+- premium
+- ultimate

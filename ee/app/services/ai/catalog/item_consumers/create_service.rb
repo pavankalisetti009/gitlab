@@ -4,15 +4,21 @@ module Ai
   module Catalog
     module ItemConsumers
       class CreateService < ::BaseContainerService
+        include InternalEventsTracking
+
         def execute
           return error_no_permissions unless allowed?
           return error('Catalog item is not a flow') unless item.flow?
 
           params.merge!(project: project, group: group)
           item_consumer = ::Ai::Catalog::ItemConsumer.create(params)
-          return ServiceResponse.success(payload: { item_consumer: item_consumer }) if item_consumer.save
 
-          error_creating(item_consumer)
+          if item_consumer.save
+            track_item_consumer_event(item_consumer, 'create_ai_catalog_item_consumer')
+            ServiceResponse.success(payload: { item_consumer: item_consumer })
+          else
+            error_creating(item_consumer)
+          end
         end
 
         private

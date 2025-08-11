@@ -4,6 +4,8 @@ module Ai
   module Catalog
     module ItemConsumers
       class DestroyService
+        include InternalEventsTracking
+
         def initialize(item_consumer, current_user)
           @current_user = current_user
           @item_consumer = item_consumer
@@ -12,9 +14,12 @@ module Ai
         def execute
           return error_no_permissions unless allowed?
 
-          return ServiceResponse.success(payload: { item_consumer: item_consumer }) if item_consumer.destroy
-
-          error(item_consumer.errors.full_messages)
+          if item_consumer.destroy
+            track_item_consumer_event(item_consumer, 'delete_ai_catalog_item_consumer', additional_properties: nil)
+            ServiceResponse.success(payload: { item_consumer: item_consumer })
+          else
+            error(item_consumer.errors.full_messages)
+          end
         end
 
         private
