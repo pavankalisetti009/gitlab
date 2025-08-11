@@ -531,39 +531,6 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           end
         end
       end
-
-      context 'with akeyless secret manager' do
-        let(:secrets) do
-          {
-            DATABASE_PASSWORD: {
-              akeyless: {
-                name: 'key'
-              },
-              token: '$AKEYLESS_JWT'
-            }
-          }
-        end
-
-        let(:akeyless_server) { presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'akeyless', 'server') }
-
-        context 'when feature flag ci_akeyless_secret is disabled' do
-          before do
-            stub_feature_flags(ci_akeyless_secret: false)
-          end
-
-          it { expect(akeyless_server).to be_nil }
-        end
-
-        context 'AKEYLESS_ACCESS_ID CI variable is present' do
-          before do
-            create(:ci_variable, project: ci_build.project, key: 'AKEYLESS_ACCESS_ID', value: 'test')
-          end
-
-          it 'returns the ACCESS_ID' do
-            expect(akeyless_server.fetch('access_id')).to eq('test')
-          end
-        end
-      end
     end
   end
 

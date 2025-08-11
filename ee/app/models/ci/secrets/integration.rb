@@ -5,7 +5,6 @@ module Ci
     class Integration
       PROVIDER_TYPE_MAP = {
         "azure_key_vault" => :azure_key_vault,
-        "akeyless" => :akeyless,
         "gcp_secret_manager" => :gcp_secret_manager,
         "vault" => :hashicorp_vault,
         "gitlab_secrets_manager" => :gitlab_secrets_manager,
@@ -55,10 +54,6 @@ module Ci
 
       def hashicorp_vault?
         variables['VAULT_SERVER_URL']&.value.present?
-      end
-
-      def akeyless?
-        variables['AKEYLESS_ACCESS_ID']&.value.present?
       end
 
       def aws?

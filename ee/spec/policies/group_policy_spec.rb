@@ -3991,66 +3991,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe ':read_saml_user' do
-    let_it_be(:user) { non_group_member }
-    let_it_be(:subgroup) { create(:group, :private, parent: group) }
-
-    subject(:policy) { described_class.new(user, the_group) }
-
-    context 'when a SAML provider does not exist' do
-      let_it_be(:the_group) { subgroup }
-
-      before do
-        stub_licensed_features(group_saml: true)
-        the_group.add_member(user, Gitlab::Access::OWNER)
-      end
-
-      it { is_expected.to be_disallowed(:read_saml_user) }
-    end
-
-    context 'when a SAML provider exists' do
-      before_all do
-        create(:saml_provider, group: group)
-      end
-      where(:the_group, :licensed, :saml_enabled, :sso_enforced, :role, :allowed) do
-        ref(:group)     | false | false | false | Gitlab::Access::OWNER      | false
-        ref(:group)     | false | false | false | Gitlab::Access::MAINTAINER | false
-
-        ref(:group)     | true  | false | false | Gitlab::Access::OWNER      | false
-        ref(:group)     | true  | false | false | Gitlab::Access::MAINTAINER | false
-
-        ref(:group)     | true  | true  | false | Gitlab::Access::OWNER      | false
-        ref(:group)     | true  | true  | false | Gitlab::Access::MAINTAINER | false
-
-        ref(:group)     | true  | true  | true  | Gitlab::Access::OWNER      | true
-        ref(:group)     | true  | true  | true  | Gitlab::Access::MAINTAINER | false
-
-        ref(:subgroup)  | false | false | false | Gitlab::Access::OWNER      | false
-        ref(:subgroup)  | false | false | false | Gitlab::Access::MAINTAINER | false
-
-        ref(:subgroup)  | true  | false | false | Gitlab::Access::OWNER      | false
-        ref(:subgroup)  | true  | false | false | Gitlab::Access::MAINTAINER | false
-
-        ref(:subgroup)  | true  | true  | false | Gitlab::Access::OWNER      | false
-        ref(:subgroup)  | true  | true  | false | Gitlab::Access::MAINTAINER | false
-
-        ref(:subgroup)  | true  | true  | true  | Gitlab::Access::OWNER      | true
-        ref(:subgroup)  | true  | true  | true  | Gitlab::Access::MAINTAINER | false
-      end
-
-      with_them do
-        before do
-          stub_licensed_features(group_saml: licensed)
-          the_group.add_member(user, role)
-          the_group.root_ancestor.saml_provider.update!(enabled: saml_enabled)
-          the_group.root_ancestor.saml_provider.update!(enforced_sso: sso_enforced)
-        end
-
-        it { expect(policy.allowed?(:read_saml_user)).to eq(allowed) }
-      end
-    end
-  end
-
   context 'custom role' do
     let_it_be(:guest) { create(:user) }
     let_it_be(:parent_group) { create(:group) }

@@ -11,9 +11,9 @@ module Gitlab
           include ::Gitlab::Config::Entry::Configurable
           include ::Gitlab::Config::Entry::Attributable
 
-          ALLOWED_KEYS = %i[vault file azure_key_vault gcp_secret_manager akeyless gitlab_secrets_manager token
+          ALLOWED_KEYS = %i[vault file azure_key_vault gcp_secret_manager gitlab_secrets_manager token
             aws_secrets_manager].freeze
-          SUPPORTED_PROVIDERS = %i[vault azure_key_vault gcp_secret_manager akeyless gitlab_secrets_manager
+          SUPPORTED_PROVIDERS = %i[vault azure_key_vault gcp_secret_manager gitlab_secrets_manager
             aws_secrets_manager].freeze
 
           attributes ALLOWED_KEYS
@@ -23,7 +23,6 @@ module Gitlab
           entry :file, ::Gitlab::Config::Entry::Boolean, description: 'Should the created variable be of file type'
           entry :azure_key_vault, Entry::AzureKeyVault::Secret, description: 'Azure Key Vault configuration'
           entry :gcp_secret_manager, Entry::GcpSecretManager::Secret, description: 'GCP Secrets Manager configuration'
-          entry :akeyless, Entry::Akeyless::Secret, description: 'Akeyless Key Vault configuration'
           entry :gitlab_secrets_manager, Entry::GitlabSecretsManager::Secret,
             description: 'Gitlab Secrets Manager configuration'
 
@@ -43,7 +42,6 @@ module Gitlab
               aws_secrets_manager: aws_secrets_manager_value,
               gcp_secret_manager: gcp_secret_manager_value,
               azure_key_vault: azure_key_vault_value,
-              akeyless: akeyless_value,
               file: file_value,
               token: token
             }.compact

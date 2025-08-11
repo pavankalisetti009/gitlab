@@ -328,94 +328,6 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
         end
       end
 
-      context 'for Akeyless' do
-        context 'when `token` is defined' do
-          let(:config) do
-            {
-              akeyless: {
-                name: 'name'
-              },
-              token: '$TEST_ID_TOKEN'
-            }
-          end
-
-          describe '#value' do
-            it 'returns secret configuration' do
-              expect(entry.value).to eq(
-                {
-                  akeyless: {
-                    name: 'name',
-                    akeyless_access_key: nil,
-                    akeyless_access_type: nil,
-                    akeyless_api_url: nil,
-                    akeyless_token: nil,
-                    azure_object_id: nil,
-                    cert_user_name: nil,
-                    csr_data: nil,
-                    data_key: nil,
-                    gateway_ca_certificate: nil,
-                    gcp_audience: nil,
-                    k8s_auth_config_name: nil,
-                    k8s_service_account_token: nil,
-                    public_key_data: nil,
-                    uid_token: nil
-                  },
-                  token: '$TEST_ID_TOKEN'
-                }
-              )
-            end
-          end
-
-          describe '#valid?' do
-            it 'is valid' do
-              expect(entry).to be_valid
-            end
-          end
-        end
-
-        context 'when `token` is not defined' do
-          let(:config) do
-            {
-              akeyless: {
-                name: 'name'
-              }
-            }
-          end
-
-          describe '#value' do
-            it 'returns secret configuration' do
-              expect(entry.value).to eq(
-                {
-                  akeyless: {
-                    name: 'name',
-                    akeyless_access_key: nil,
-                    akeyless_access_type: nil,
-                    akeyless_api_url: nil,
-                    akeyless_token: nil,
-                    azure_object_id: nil,
-                    cert_user_name: nil,
-                    csr_data: nil,
-                    data_key: nil,
-                    gateway_ca_certificate: nil,
-                    gcp_audience: nil,
-                    k8s_auth_config_name: nil,
-                    k8s_service_account_token: nil,
-                    public_key_data: nil,
-                    uid_token: nil
-                  }
-                }
-              )
-            end
-          end
-
-          describe '#valid?' do
-            it 'is valid' do
-              expect(entry).to be_valid
-            end
-          end
-        end
-      end
-
       context 'for Gitlab Secrets Manager' do
         context 'when config is valid' do
           let(:config) do
@@ -465,7 +377,7 @@ RSpec.describe Gitlab::Ci::Config::Entry::Secret, feature_category: :secrets_man
         it 'reports error' do
           expect(entry.errors)
             .to include 'secret config must use exactly one of these keys: ' \
-              'vault, azure_key_vault, gcp_secret_manager, akeyless, gitlab_secrets_manager, aws_secrets_manager'
+              'vault, azure_key_vault, gcp_secret_manager, gitlab_secrets_manager, aws_secrets_manager'
         end
       end
 

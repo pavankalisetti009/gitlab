@@ -119,25 +119,25 @@ module QA
         EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_load)
 
         EE::Page::Project::Secure::Show.perform do |dashboard|
-          filter_report_and_perform(page: dashboard, filter_report: "gemnasium") do
+          dashboard.filter_by(token_name: 'Scanner', token_value: 'gemnasium') do
             expect(dashboard).to have_vulnerability dependency_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Trivy") do
+          dashboard.filter_by(token_name: 'Scanner', token_value: 'Trivy') do
             expect(dashboard).to have_vulnerability container_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Brakeman") do
+          dashboard.filter_by(token_name: 'Scanner', token_value: 'Brakeman') do
             expect(dashboard).to have_vulnerability sast_scan_example_vuln
             expect(dashboard).to have_vulnerability sast_scan_fp_example_vuln
             expect(dashboard).to have_false_positive_vulnerability
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "GitLab API Security") do
+          dashboard.filter_by(token_name: 'Scanner', token_value: 'GitLab API Security') do
             expect(dashboard).to have_vulnerability dast_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Gitleaks") do
+          dashboard.filter_by(token_name: 'Scanner', token_value: 'Gitleaks') do
             expect(dashboard).to have_vulnerability secret_detection_vuln
           end
         end
@@ -185,23 +185,23 @@ module QA
         EE::Page::Group::Secure::Show.perform do |dashboard|
           dashboard.filter_project(project_id: project.id, project_name: project.name)
 
-          filter_report_and_perform(page: dashboard, filter_report: "Dependency Scanning") do
+          dashboard.filter_by(token_name: 'Report type', token_value: "Dependency Scanning") do
             expect(dashboard).to have_vulnerability dependency_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Container Scanning") do
+          dashboard.filter_by(token_name: 'Report type', token_value: "Container Scanning") do
             expect(dashboard).to have_vulnerability container_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "SAST") do
+          dashboard.filter_by(token_name: 'Report type', token_value: "SAST") do
             expect(dashboard).to have_vulnerability sast_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "DAST") do
+          dashboard.filter_by(token_name: 'Report type', token_value: "DAST") do
             expect(dashboard).to have_vulnerability dast_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Secret Detection") do
+          dashboard.filter_by(token_name: 'Report type', token_value: "Secret Detection") do
             expect(dashboard).to have_vulnerability secret_detection_vuln
           end
         end
@@ -275,21 +275,11 @@ module QA
 
       def filter_report_and_perform(page:, filter_report:)
         Support::Retrier.retry_on_exception(sleep_interval: 1,
-          reload_page: page, message: 'Tool Dropdown selection') do
+          reload_page: page, message: 'Report type dropdown selection') do
           page.filter_report_type(filter_report)
         end
 
         yield
-
-        if page.has_text?('Development vulnerabilities') # If vulnerability report page
-          if page.has_selector?('[data-testid="scanner-token"]', wait: 1)
-            page.clear_filter_token('scanner') # vulnerability_report_type_scanner_filter feature flag
-          else
-            page.clear_filter_token('tool')
-          end
-        else
-          page.filter_report_type(filter_report)
-        end
       end
 
       def push_security_reports

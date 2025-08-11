@@ -1884,49 +1884,4 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
   end
-
-  describe '#advisory' do
-    let_it_be(:cve_value) { 'CVE-2023-12345' }
-    let(:finding) do
-      build(:vulnerabilities_finding, :with_cve, cve_value: cve_value)
-    end
-
-    let_it_be(:advisory) do
-      create(:pm_advisory, cve: cve_value)
-    end
-
-    it 'returns the Advisory for the finding\'s CVE' do
-      expect(finding.advisory).to eq(advisory)
-    end
-
-    it 'memoizes the result' do
-      expect(PackageMetadata::Advisory).to receive(:find_by).once.and_return(advisory)
-      2.times { finding.advisory }
-    end
-
-    context 'when no Advisory is found' do
-      let(:finding_without_advisory) do
-        build(:vulnerabilities_finding, :with_cve, cve_value: 'CVE-2023-54321')
-      end
-
-      it 'returns nil' do
-        expect(finding_without_advisory.advisory).to be_nil
-      end
-    end
-
-    context 'when cve_value is nil' do
-      before do
-        finding.identifiers = []
-      end
-
-      it 'returns nil' do
-        expect(finding.advisory).to be_nil
-      end
-
-      it 'does not query the database' do
-        expect(PackageMetadata::Advisory).not_to receive(:find_by)
-        finding.advisory
-      end
-    end
-  end
 end
