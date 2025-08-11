@@ -1,7 +1,6 @@
 <script>
 import { GlTooltipDirective, GlIcon } from '@gitlab/ui';
 import { __, sprintf } from '~/locale';
-import { I18N_CELL_FLAG_TRUE_TEXT, I18N_CELL_FLAG_FALSE_TEXT } from '../constants';
 
 export default {
   name: 'DevopsAdoptionTableCellFlag',
@@ -27,9 +26,6 @@ export default {
     },
   },
   computed: {
-    tooltipText() {
-      return this.enabled ? I18N_CELL_FLAG_TRUE_TEXT : I18N_CELL_FLAG_FALSE_TEXT;
-    },
     iconAltText() {
       if (this.enabled) return sprintf(__('%{name} checked'), { name: this.name });
       return sprintf(__('%{name} not checked'), { name: this.name });

@@ -17,6 +17,7 @@ export default {
       required: true,
     },
     // Part of the visualizations API, but left unused for dora performers score.
+    // eslint-disable-next-line vue/no-unused-properties -- options prop is part of the standard visualizations API interface, required for consistency across all visualization components
     options: {
       type: Object,
       required: false,
