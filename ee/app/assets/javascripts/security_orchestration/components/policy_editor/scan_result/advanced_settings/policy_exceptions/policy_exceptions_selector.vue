@@ -19,15 +19,11 @@ export default {
     },
   },
   computed: {
-    hasBypassOptionsAccountsTokens() {
-      return this.glFeatures.securityPoliciesBypassOptionsTokensAccounts;
-    },
     hasBypassOptionsGroupsRoles() {
       return this.glFeatures.securityPoliciesBypassOptionsGroupRoles;
     },
     availableOptions() {
       const options = renderOptionsList({
-        securityPoliciesBypassOptionsTokensAccounts: this.hasBypassOptionsAccountsTokens,
         securityPoliciesBypassOptionsGroupRoles: this.hasBypassOptionsGroupsRoles,
       });
 

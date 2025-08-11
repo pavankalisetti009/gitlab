@@ -10,7 +10,6 @@ describe('PolicyExceptionsSelector', () => {
       provide: {
         glFeatures: {
           securityPoliciesBypassOptionsGroupRoles: true,
-          securityPoliciesBypassOptionsTokensAccounts: true,
           ...glFeatures,
         },
       },
@@ -49,34 +48,6 @@ describe('PolicyExceptionsSelector', () => {
       expect(headers.at(0).text()).toBe('Service Account');
       expect(headers.at(1).text()).toBe('Access Token');
       expect(headers.at(2).text()).toBe('Source Branch Patterns');
-    });
-
-    it('renders partial options list when securityPoliciesBypassOptionsTokensAccounts is disabled', () => {
-      createComponent({
-        glFeatures: {
-          securityPoliciesBypassOptionsTokensAccounts: false,
-        },
-      });
-
-      const headers = findHeaders();
-      expect(findPolicyExceptionSelectors()).toHaveLength(4);
-      expect(headers.at(0).text()).toBe('Roles');
-      expect(headers.at(1).text()).toBe('Groups');
-      expect(headers.at(2).text()).toBe('Users');
-      expect(headers.at(3).text()).toBe('Source Branch Patterns');
-    });
-
-    it('renders only branch patterns option when other two flags are disabled', () => {
-      createComponent({
-        glFeatures: {
-          securityPoliciesBypassOptionsTokensAccounts: false,
-          securityPoliciesBypassOptionsGroupRoles: false,
-        },
-      });
-
-      const headers = findHeaders();
-      expect(findPolicyExceptionSelectors()).toHaveLength(1);
-      expect(headers.at(0).text()).toBe('Source Branch Patterns');
     });
   });
 });

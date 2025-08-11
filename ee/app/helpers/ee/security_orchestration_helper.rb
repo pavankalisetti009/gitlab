@@ -192,8 +192,6 @@ module EE::SecurityOrchestrationHelper
   end
 
   def access_tokens_for_container(container)
-    return [] if Feature.disabled?(:security_policies_bypass_options_tokens_accounts, container)
-
     bot_users = if container.is_a?(::Project)
                   container.bots
                 else

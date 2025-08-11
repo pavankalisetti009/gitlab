@@ -34,8 +34,6 @@ module EE
           end
 
           def policies_bypass_applied?
-            return false if ::Feature.disabled?(:security_policies_bypass_options_tokens_accounts, project)
-
             ::Security::ScanResultPolicies::PushBypassChecker.new(
               project: project, user_access: user_access, branch_name: branch_name
             ).check_bypass!
