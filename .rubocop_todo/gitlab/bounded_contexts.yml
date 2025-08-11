@@ -1590,6 +1590,7 @@ Gitlab/BoundedContexts:
     - 'app/services/issues/close_service.rb'
     - 'app/services/issues/convert_to_ticket_service.rb'
     - 'app/services/issues/create_service.rb'
+    - 'app/services/issues/destroy_service.rb'
     - 'app/services/issues/duplicate_service.rb'
     - 'app/services/issues/export_csv_service.rb'
     - 'app/services/issues/import_csv_service.rb'

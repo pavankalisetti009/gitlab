@@ -18,16 +18,12 @@ module Issuable
 
     private
 
-    def before_destroy(issuable)
-      store_work_item_parent_id(issuable) if issuable.is_a?(Issue)
-    end
+    def before_destroy(issuable); end
 
     def after_destroy(issuable)
       delete_associated_records(issuable)
       issuable.invalidate_project_counter_caches
       issuable.assignees.each(&:invalidate_cache_counts)
-
-      publish_work_item_deleted_event(issuable) if issuable.is_a?(Issue)
     end
 
     def delete_associated_records(issuable)
@@ -62,22 +58,6 @@ module Issuable
         Issuable::LabelLinksDestroyWorker.perform_async(
           synced_object_to_delete.id, synced_object_to_delete.class.base_class.name
         )
-      end
-    end
-
-    def store_work_item_parent_id(work_item)
-      @work_item_parent_id = WorkItems::ParentLink.for_children(work_item.id).first&.work_item_parent_id
-    end
-
-    def publish_work_item_deleted_event(work_item)
-      event = WorkItems::WorkItemDeletedEvent.new(data: {
-        id: work_item.id,
-        namespace_id: work_item.namespace_id,
-        work_item_parent_id: @work_item_parent_id
-      }.tap(&:compact_blank!))
-
-      work_item.run_after_commit_or_now do
-        Gitlab::EventStore.publish(event)
       end
     end
   end
