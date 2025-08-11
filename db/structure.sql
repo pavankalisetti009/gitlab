@@ -4728,7 +4728,8 @@ CREATE TABLE p_ci_job_artifacts (
     exposed_as text,
     exposed_paths text[],
     CONSTRAINT check_27f0f6dbab CHECK ((file_store IS NOT NULL)),
-    CONSTRAINT check_9f04410cf4 CHECK ((char_length(file_final_path) <= 1024))
+    CONSTRAINT check_9f04410cf4 CHECK ((char_length(file_final_path) <= 1024)),
+    CONSTRAINT check_b8fac815e7 CHECK ((char_length(exposed_as) <= 100))
 )
 PARTITION BY LIST (partition_id);
 
@@ -30202,9 +30203,6 @@ ALTER TABLE merge_request_context_commit_diff_files
 
 ALTER TABLE related_epic_links
     ADD CONSTRAINT check_a6d9d7c276 CHECK ((issue_link_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE p_ci_job_artifacts
-    ADD CONSTRAINT check_b8fac815e7 CHECK ((char_length(exposed_as) <= 100)) NOT VALID;
 
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
