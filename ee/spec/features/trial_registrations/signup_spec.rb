@@ -80,6 +80,7 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
     context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js do
       include IdentityVerificationHelpers
 
+      let_it_be(:user) { create(:user) }
       let(:user_email) { new_user.email }
 
       before do
@@ -109,6 +110,8 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
         allow_next_instance_of(GitlabSubscriptions::Trials::ApplyTrialService) do |service|
           allow(service).to receive(:execute).and_return(ServiceResponse.success)
         end
+
+        allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).and_return(true)
       end
 
       it 'goes through the experiment trial registration flow' do
@@ -140,7 +143,7 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
 
         # Step 4
         expect(page).to have_content('Welcome to GitLab')
-        expect(page).to have_content('We need a few more details from you to activate your trial.')
+        expect(page).to have_content('Help us personalize your GitLab experience by answering a few questions')
         expect(page).to have_current_path(new_users_sign_up_trial_welcome_path)
 
         wait_for_all_requests
@@ -160,7 +163,37 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
 
         wait_for_all_requests
 
-        expect(page).to have_content('Learn GitLab')
+        expect(page).to have_content('Get started')
+      end
+
+      it 'when model errors occur form can be resubmitted' do
+        sign_in(user)
+
+        visit new_users_sign_up_trial_welcome_path
+
+        fill_in 'first_name', with: 'John'
+        fill_in 'last_name', with: 'Doe'
+        fill_in 'company_name', with: 'My Company'
+
+        select 'United States of America', from: 'country'
+        wait_for_all_requests
+        select 'California', from: 'state'
+
+        fill_in 'group_name', with: 'My Group'
+        fill_in 'project_name', with: 'My Project*'
+
+        click_button _('Continue to GitLab')
+
+        expect(find_by_testid("group-name-input").disabled?).to be(true)
+
+        fill_in 'project_name', with: 'My Project'
+
+        group_count = Group.count
+        click_button _('Continue to GitLab')
+
+        wait_for_all_requests
+
+        expect(group_count).to eq(Group.count)
       end
     end
   end

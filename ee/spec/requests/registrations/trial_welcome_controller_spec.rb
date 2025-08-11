@@ -99,7 +99,7 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
           instance
         end
 
-        expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace, project))
+        expect(post_create).to redirect_to(namespace_project_get_started_path(namespace, project))
       end
 
       context 'with experiment lightweight_trial_registration_redesign' do
@@ -198,7 +198,7 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
             instance
           end
 
-          expect(post_create).to redirect_to(namespace_project_learn_gitlab_path(namespace, project))
+          expect(post_create).to redirect_to(namespace_project_get_started_path(namespace, project))
         end
       end
     end

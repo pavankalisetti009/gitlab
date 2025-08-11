@@ -1,12 +1,15 @@
 - content_for(:hide_empty_navbar, true)
 
-.gl-max-w-4xl.gl-mx-auto.gl-flex.gl-justify-center.gl-px-8
-  .gl-w-full.gl-max-w-lg
+= render Pajamas::CardComponent.new(card_options: { class: 'gl-max-w-2xl gl-mx-auto gl-rounded-lg gl-mt-6'}, body_options: { class: 'gl-p-8' }, footer_options: { class: 'gl-rounded-b-lg' }) do |c|
+  - c.with_body do
+    .gl-text-center.gl-mb-6
+      = image_tag 'illustrations/gitlab_logo.svg', class: 'gl-h-9', alt: 'GitLab'
+
     %h2.gl-mt-0.gl-text-center
       = s_('Trial|Welcome to GitLab')
 
     %p.gl-text-subtle.gl-text-lg.gl-text-center
-      = s_('Trial|We need a few more details from you to activate your trial.')
+      = s_('Trial|Help us personalize your GitLab experience by answering a few questions')
 
     .gl-max-w-80.gl-mx-auto
       #js-create-trial-welcome-form{ data: { view_model: form_data } }

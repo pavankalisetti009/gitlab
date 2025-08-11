@@ -66889,6 +66889,9 @@ msgstr ""
 msgid "Trial|GitLab Subscription Agreement"
 msgstr ""
 
+msgid "Trial|Help us personalize your GitLab experience by answering a few questions"
+msgstr ""
+
 msgid "Trial|Privacy Statement"
 msgstr ""
 
