@@ -91,6 +91,7 @@ export default {
       hasError: false,
       isLoading: false,
       selectedProjectIds: {},
+      // eslint-disable-next-line vue/no-unused-properties -- projects is not used but it is marked as required by @gitlab/vue-no-undef-apollo-properties
       projects: {},
     };
   },

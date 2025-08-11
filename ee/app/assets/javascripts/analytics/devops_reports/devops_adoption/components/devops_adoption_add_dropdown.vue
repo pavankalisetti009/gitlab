@@ -40,11 +40,6 @@ export default {
       type: Array,
       required: true,
     },
-    searchTerm: {
-      type: String,
-      required: false,
-      default: '',
-    },
     isLoadingGroups: {
       type: Boolean,
       required: false,
@@ -62,9 +57,6 @@ export default {
     },
   },
   computed: {
-    filteredGroupsLength() {
-      return this.groups?.length;
-    },
     dropdownTitle() {
       return this.isGroup ? I18N_GROUP_DROPDOWN_TEXT : I18N_ADMIN_DROPDOWN_TEXT;
     },

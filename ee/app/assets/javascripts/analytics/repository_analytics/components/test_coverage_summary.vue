@@ -93,7 +93,6 @@ export default {
       coverageCount: null,
       latestCoverageDate: null,
       groupCoverageChartData: [],
-      coveragePercentage: null,
       tooltipTitle: null,
       tooltipAverageCoverage: null,
       tooltipProjectCount: null,

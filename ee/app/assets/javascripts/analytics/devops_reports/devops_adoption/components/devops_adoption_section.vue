@@ -46,10 +46,6 @@ export default {
       type: Array,
       required: true,
     },
-    searchTerm: {
-      type: String,
-      required: true,
-    },
     isLoadingGroups: {
       type: Boolean,
       required: true,
@@ -74,7 +70,6 @@ export default {
 
       <devops-adoption-add-dropdown
         class="gl-mb-3 md:gl-hidden"
-        :search-term="searchTerm"
         :groups="groups"
         :enabled-namespaces="enabledNamespaces"
         :is-loading-groups="isLoadingGroups"
