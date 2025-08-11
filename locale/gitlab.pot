@@ -27747,6 +27747,9 @@ msgstr ""
 msgid "FeatureFlag|User List"
 msgstr ""
 
+msgid "FeaturedCard|Learn more about %{title}, opens in a new tab"
+msgstr ""
+
 msgid "FeaturedUpdate|%{current} / %{total}"
 msgstr ""
 
