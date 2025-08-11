@@ -130,17 +130,5 @@ RSpec.describe Gitlab::Checks::Security::PolicyCheck, '#validate!', feature_cate
         end
       end
     end
-
-    context 'when the security_policies_bypass_options_tokens_accounts feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policies_bypass_options_tokens_accounts: false)
-      end
-
-      it 'does not bypass and raises error' do
-        expect { policy_check! }.to raise_error(
-          Gitlab::GitAccess::ForbiddenError, described_class::FORCE_PUSH_ERROR_MESSAGE
-        )
-      end
-    end
   end
 end

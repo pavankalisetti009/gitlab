@@ -1,11 +1,9 @@
 import { uniqueId, get } from 'lodash';
 import {
-  ACCOUNTS,
   CUSTOM_ROLES,
   EXCEPTIONS_FULL_OPTIONS_MAP,
   GROUPS,
   ROLES,
-  TOKENS,
   USERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
@@ -35,16 +33,8 @@ export const removeIds = (items = []) => {
   return items.map(({ id, ...item }) => ({ ...item }));
 };
 
-export const renderOptionsList = ({
-  securityPoliciesBypassOptionsTokensAccounts = false,
-  securityPoliciesBypassOptionsGroupRoles = false,
-}) => {
+export const renderOptionsList = ({ securityPoliciesBypassOptionsGroupRoles = false }) => {
   const allOptions = { ...EXCEPTIONS_FULL_OPTIONS_MAP };
-
-  if (!securityPoliciesBypassOptionsTokensAccounts) {
-    delete allOptions[ACCOUNTS];
-    delete allOptions[TOKENS];
-  }
 
   if (!securityPoliciesBypassOptionsGroupRoles) {
     delete allOptions[ROLES];
@@ -62,12 +52,10 @@ export const renderOptionsList = ({
  * @returns {string[]};
  */
 export const onlyValidKeys = (keys) => {
-  const { securityPoliciesBypassOptionsTokensAccounts, securityPoliciesBypassOptionsGroupRoles } =
-    window.gon?.features || {};
+  const { securityPoliciesBypassOptionsGroupRoles } = window.gon?.features || {};
 
   const validKeys = Object.keys(
     renderOptionsList({
-      securityPoliciesBypassOptionsTokensAccounts,
       securityPoliciesBypassOptionsGroupRoles,
     }),
   );

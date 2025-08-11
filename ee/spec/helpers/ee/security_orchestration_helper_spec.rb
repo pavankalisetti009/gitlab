@@ -729,16 +729,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         create(:personal_access_token, :impersonation, user: bot_user1, name: 'Impersonation Token')
       end
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(security_policies_bypass_options_tokens_accounts: false)
-        end
-
-        it 'returns nil' do
-          expect(access_tokens).to be_empty
-        end
-      end
-
       context 'when there are bot users with access tokens' do
         before do
           setup_bot_users
