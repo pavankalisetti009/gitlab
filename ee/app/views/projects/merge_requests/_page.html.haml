@@ -33,6 +33,7 @@
     window.gl.mrWidgetData.dismissal_descriptions = '#{escape_javascript(dismissal_descriptions.to_json)}';
     window.gl.mrWidgetData.commit_path_template = '#{commit_path_template(@project)}';
     window.gl.mrWidgetData.merge_trains_path = '#{namespace_project_merge_trains_path}';
+    window.gl.mrWidgetData.validity_checks_enabled = '#{@merge_request.project&.security_setting&.validity_checks_enabled.to_s}';
 
 - if can?(current_user, :read_security_orchestration_policies, @project)
   = javascript_tag do

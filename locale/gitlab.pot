@@ -71171,6 +71171,9 @@ msgstr ""
 msgid "Vulnerability|Use AI to understand a vulnerability and suggest a fix"
 msgstr ""
 
+msgid "Vulnerability|Validity check:"
+msgstr ""
+
 msgid "Vulnerability|Vendor: %{vendorName}"
 msgstr ""
 
