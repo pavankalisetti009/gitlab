@@ -72497,10 +72497,10 @@ msgstr ""
 msgid "WorkItem|Something went wrong when removing item. Please refresh this page."
 msgstr ""
 
-msgid "WorkItem|Something went wrong when trying to add a child. Please try again."
+msgid "WorkItem|Something went wrong when trying to add a child item. Please try again."
 msgstr ""
 
-msgid "WorkItem|Something went wrong when trying to create a child. Please try again."
+msgid "WorkItem|Something went wrong when trying to create a child item. Please try again."
 msgstr ""
 
 msgid "WorkItem|Something went wrong when trying to link a item. Please try again."
