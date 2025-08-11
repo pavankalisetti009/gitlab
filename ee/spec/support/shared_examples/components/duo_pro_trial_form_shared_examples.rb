@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples GitlabSubscriptions::Trials::DuoPro::TrialFormComponent do
+RSpec.shared_examples GitlabSubscriptions::Trials::DuoPro::LegacyTrialFormComponent do
   let(:eligible_namespaces) { Group.none }
   let(:group1) { build_stubbed(:group, name: 'Test Group 1') }
   let(:group2) { build_stubbed(:group, name: 'Test Group 2') }

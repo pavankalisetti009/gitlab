@@ -75,15 +75,34 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
         login_as(user)
       end
 
-      it { is_expected.to render_lead_form }
+      it { is_expected.to render_duo_pro_trial_form }
 
       context 'with tracking page render' do
         it_behaves_like 'internal event tracking' do
-          let(:event) { 'render_duo_pro_lead_page' }
+          let(:event) { 'render_duo_pro_trial_page' }
           let(:namespace) { group }
 
           subject(:track_event) do
             get new_trials_duo_pro_path, params: { namespace_id: group.id }
+          end
+        end
+      end
+
+      context 'when duo_pro_trial_single_form is disabled' do
+        before do
+          stub_feature_flags(duo_pro_trial_single_form: false)
+        end
+
+        it { is_expected.to render_duo_pro_trial_form }
+
+        context 'with tracking page render' do
+          it_behaves_like 'internal event tracking' do
+            let(:event) { 'render_duo_pro_lead_page' }
+            let(:namespace) { group }
+
+            subject(:track_event) do
+              get new_trials_duo_pro_path, params: { namespace_id: group.id }
+            end
           end
         end
       end
@@ -208,7 +227,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
         context 'when lead creation fails' do
           let(:failure_reason) { :lead_failed }
 
-          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+          it { is_expected.to render_duo_pro_trial_form }
         end
 
         context 'when lead creation is successful, but we need to select a namespace next to apply trial' do

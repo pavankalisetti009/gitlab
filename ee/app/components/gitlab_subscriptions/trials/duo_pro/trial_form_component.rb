@@ -7,15 +7,16 @@ module GitlabSubscriptions
         include TrialFormDisplayUtilities
 
         def initialize(**kwargs)
+          @user = kwargs[:user]
           @eligible_namespaces = kwargs[:eligible_namespaces]
           @params = kwargs[:params]
         end
 
         private
 
-        attr_reader :eligible_namespaces, :params
+        attr_reader :user, :eligible_namespaces, :params
 
-        delegate :page_title, :sprite_icon, to: :helpers
+        delegate :sprite_icon, to: :helpers
 
         def before_render
           content_for :body_class, 'duo-pro-trials gl-bg-brand-charcoal'
@@ -25,16 +26,54 @@ module GitlabSubscriptions
           # no op
         end
 
-        def submit_path
-          trials_duo_pro_path(step: GitlabSubscriptions::Trials::CreateDuoProService::TRIAL)
+        def form_data
+          ::Gitlab::Json.generate(
+            {
+              userData: user_data,
+              namespaceData: namespace_data,
+              submitPath: submit_path,
+              gtmSubmitEventLabel: 'saasDuoProTrialSubmit',
+              border: false
+            }
+          )
         end
 
-        def trial_namespace_selector_data
+        def user_data
           {
-            initial_value: params[:namespace_id],
-            any_trial_eligible_namespaces: eligible_namespaces.any?.to_s,
-            items: format_namespaces_for_selector(eligible_namespaces).to_json
+            firstName: user.first_name,
+            lastName: user.last_name,
+            showNameFields: user.last_name.blank?,
+            emailDomain: user.email_domain,
+            companyName: user.user_detail_organization,
+            phoneNumber: nil,
+            country: '',
+            state: ''
           }
+        end
+
+        def submit_path
+          trials_duo_pro_path(step: GitlabSubscriptions::Trials::DuoProCreateService::FULL)
+        end
+
+        def namespace_data
+          {
+            # This may allow through an unprivileged submission of trial since we don't validate access on the passed in
+            # namespace_id.
+            # That is ok since we validate this on submission.
+            initialValue: (namespace_id || single_eligible_namespace_id).to_s,
+            anyTrialEligibleNamespaces: eligible_namespaces.any?,
+            items: format_namespaces_for_selector(eligible_namespaces)
+          }
+        end
+
+        def namespace_id
+          params[:namespace_id]
+        end
+
+        def single_eligible_namespace_id
+          return unless GitlabSubscriptions::Trials.single_eligible_namespace?(eligible_namespaces)
+
+          eligible_namespaces.first&.id
         end
       end
     end

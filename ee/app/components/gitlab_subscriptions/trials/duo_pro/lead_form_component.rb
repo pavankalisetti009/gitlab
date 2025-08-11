@@ -22,7 +22,7 @@ module GitlabSubscriptions
         private
 
         def before_render
-          content_for :body_class, 'duo-pro-trials gl-bg-brand-charcoal'
+          content_for :body_class, 'legacy-duo-pro-trials gl-bg-brand-charcoal'
         end
 
         def before_form_content
