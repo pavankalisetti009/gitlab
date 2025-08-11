@@ -6250,9 +6250,6 @@ msgstr ""
 msgid "AiPowered|GitLab Duo availability"
 msgstr ""
 
-msgid "AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings."
-msgstr ""
-
 msgid "AiPowered|GitLab Duo with Amazon Q"
 msgstr ""
 
@@ -6304,9 +6301,6 @@ msgstr ""
 msgid "AiPowered|Purchase Duo Pro seats"
 msgstr ""
 
-msgid "AiPowered|Seat assignment for GitLab Duo has moved"
-msgstr ""
-
 msgid "AiPowered|Self-hosted beta models and features"
 msgstr ""
 
@@ -6356,9 +6350,6 @@ msgid "AiPowered|Upgrade to"
 msgstr ""
 
 msgid "AiPowered|Use beta models and features in GitLab Duo Self-Hosted"
-msgstr ""
-
-msgid "AiPowered|View GitLab Duo settings"
 msgstr ""
 
 msgid "AiPowered|View configuration"
@@ -67966,9 +67957,6 @@ msgid "UsageQuota|Filter projects data by month"
 msgstr ""
 
 msgid "UsageQuota|Git repository."
-msgstr ""
-
-msgid "UsageQuota|GitLab Duo"
 msgstr ""
 
 msgid "UsageQuota|Gitlab-integrated Docker container registry for storing Docker Images."

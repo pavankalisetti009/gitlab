@@ -1,5 +1,4 @@
 <script>
-import { isBoolean } from 'lodash';
 import { GlBadge, GlAlert, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
@@ -52,7 +51,6 @@ export default {
   },
   inject: {
     isSaaS: {},
-    isStandalonePage: { default: false },
     groupId: { default: null },
     duoPagePath: { default: null },
   },
@@ -68,11 +66,6 @@ export default {
     subscriptionActivationFutureDatedNotificationMessage: s__(
       'CodeSuggestions|You have successfully added a license that activates on %{date}.',
     ),
-    movedUsageAlertTitle: s__('AiPowered|Seat assignment for GitLab Duo has moved'),
-    movedUsageAlertDescription: s__(
-      'AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings.',
-    ),
-    movedUsageAlertButtonText: s__('AiPowered|View GitLab Duo settings'),
   },
   props: {
     title: {
@@ -82,11 +75,6 @@ export default {
     },
     subtitle: {
       type: String,
-      required: false,
-      default: null,
-    },
-    forceHideTitle: {
-      type: Boolean,
       required: false,
       default: null,
     },
@@ -150,18 +138,7 @@ export default {
         this.$apollo.queries.currentSubscription.loading
       );
     },
-    shouldForceHideTitle() {
-      if (isBoolean(this.forceHideTitle)) {
-        return this.forceHideTitle;
-      }
-
-      return this.isSaaS && !this.isStandalonePage;
-    },
     showTitleAndSubtitle() {
-      if (this.shouldForceHideTitle) {
-        return false;
-      }
-
       return !this.isLoading && (this.hasAddOnPurchase || this.addOnPurchasesFetchError);
     },
     shouldShowIntro() {
@@ -306,20 +283,7 @@ export default {
       <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
       <section v-else-if="hasAddOnPurchase">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
-          <template v-if="isSaaS && !isStandalonePage && duoPagePath">
-            <gl-alert
-              variant="info"
-              :title="$options.i18n.movedUsageAlertTitle"
-              :dismissible="false"
-              :primary-button-text="$options.i18n.movedUsageAlertButtonText"
-              :primary-button-link="duoPagePath"
-              class="gl-mb-5"
-              data-testid="duo-moved-usage-alert"
-            >
-              {{ $options.i18n.movedUsageAlertDescription }}
-            </gl-alert>
-          </template>
-          <template v-else-if="areSeatsAssignable">
+          <template v-if="areSeatsAssignable">
             <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
               <code-suggestions-statistics-card
                 :total-value="totalValue"

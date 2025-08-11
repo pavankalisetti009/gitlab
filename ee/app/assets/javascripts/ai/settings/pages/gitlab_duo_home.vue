@@ -93,7 +93,6 @@ export default {
       v-if="shouldShowCodeSuggestionsUsage"
       :title="$options.i18n.gitlabDuoHomeTitle"
       :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
-      :force-hide-title="false"
       v-bind="$attrs"
     >
       <template #health-check>
@@ -117,6 +116,11 @@ export default {
         />
       </template>
     </code-suggestions-usage>
-    <duo-workflow-settings v-if="isAdminInstanceDuoHome" />
+    <duo-workflow-settings
+      v-if="isAdminInstanceDuoHome"
+      :title="$options.i18n.gitlabDuoHomeTitle"
+      :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
+      :display-page-heading="!shouldShowCodeSuggestionsUsage"
+    />
   </div>
 </template>

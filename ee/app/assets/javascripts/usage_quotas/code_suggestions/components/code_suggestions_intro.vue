@@ -73,7 +73,6 @@ export default {
     isFreeNamespace: { default: false },
     duoProActiveTrialEndDate: { default: null },
     buySubscriptionPath: { default: null },
-    isStandalonePage: { default: false },
   },
   props: {
     subscription: {
@@ -166,7 +165,6 @@ export default {
     <gl-alert
       v-if="showPostTrialForFreeNamespace && !isAlertDismissed"
       class="gl-mb-9"
-      :class="{ '-gl-mt-3': !isStandalonePage }"
       variant="danger"
       :title="$options.i18n.postTrialAlertTitle"
       data-testid="duo-pro-post-trial-alert"
