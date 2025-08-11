@@ -27,6 +27,7 @@ module Ai
           current_user: flow_trigger.user,
           source: :duo_workflow,
           workload_definition: workload_definition,
+          ci_variables_included: flow_definition['variables'] || [],
           **branch_args
         ).execute
       end
@@ -42,7 +43,7 @@ module Ai
         return unless flow_definition.is_a?(Hash)
 
         flow_definition
-      rescue Psych::SyntaxError
+      rescue Psych::Exception
         nil
       end
 
