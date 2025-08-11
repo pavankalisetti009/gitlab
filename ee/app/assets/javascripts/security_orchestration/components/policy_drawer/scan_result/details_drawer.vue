@@ -1,5 +1,6 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
+import { isEmpty } from 'lodash';
 import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
@@ -13,6 +14,7 @@ import ToggleList from '../toggle_list.vue';
 import DenyAllowViewList from './deny_allow_view_list.vue';
 import Approvals from './policy_approvals.vue';
 import EdgeCaseSettings from './edge_case_settings.vue';
+import PolicyExceptions from './policy_exceptions/policy_exceptions.vue';
 import Settings from './policy_settings.vue';
 import { humanizeRules, mapApproversToArray } from './utils';
 
@@ -32,6 +34,7 @@ export default {
     InfoRow,
     Approvals,
     EdgeCaseSettings,
+    PolicyExceptions,
     Settings,
   },
   props: {
@@ -103,6 +106,12 @@ export default {
     },
     hasEdgeCaseSettings() {
       return Object.values(this.edgeCaseSettings).some((v) => v);
+    },
+    hasPolicyExceptions() {
+      return !isEmpty(this.policyExceptions);
+    },
+    policyExceptions() {
+      return this.parsedYaml?.bypass_settings || {};
     },
     settings() {
       return this.parsedYaml?.approval_settings || {};
@@ -201,6 +210,12 @@ export default {
             </li>
           </ul>
           <settings :settings="settings" />
+
+          <policy-exceptions
+            v-if="hasPolicyExceptions"
+            class="gl-mt-6"
+            :exceptions="policyExceptions"
+          />
         </div>
       </info-row>
     </template>

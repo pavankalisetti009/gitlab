@@ -751,6 +751,9 @@ msgid_plural "%{count} archived projects"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{count} bypass %{configurations} defined:"
+msgstr ""
+
 msgid "%{count} contact"
 msgid_plural "%{count} contacts"
 msgstr[0] ""
@@ -28146,6 +28149,9 @@ msgid "Friday"
 msgstr ""
 
 msgid "From"
+msgstr ""
+
+msgid "From %{codeStart}%{source}%{codeEnd} to: %{codeStart}%{target}%{codeEnd}"
 msgstr ""
 
 msgid "From %{code_open}%{source_title}%{code_close} into"
@@ -57071,6 +57077,9 @@ msgstr ""
 msgid "SecurityOrchestration|Automatically selected runners"
 msgstr ""
 
+msgid "SecurityOrchestration|Branch exceptions (%{count})"
+msgstr ""
+
 msgid "SecurityOrchestration|Branch types don't match any existing branches."
 msgstr ""
 
@@ -57542,6 +57551,9 @@ msgid "SecurityOrchestration|Policies"
 msgstr ""
 
 msgid "SecurityOrchestration|Policies are invalid"
+msgstr ""
+
+msgid "SecurityOrchestration|Policy Bypass Options"
 msgstr ""
 
 msgid "SecurityOrchestration|Policy Type"
@@ -74947,6 +74959,11 @@ msgstr ""
 
 msgid "conaninfo is too large. Maximum size is %{max_size} characters"
 msgstr ""
+
+msgid "configuration"
+msgid_plural "configurations"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "contacts can only be added to root groups and groups configured as CRM targets"
 msgstr ""
