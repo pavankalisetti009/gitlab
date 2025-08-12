@@ -136,7 +136,7 @@ describe('GitLab Duo Home', () => {
       it('renders the correct base components', () => {
         expect(findCodeSuggestionsUsage().exists()).toBe(true);
         expect(findHealthCheckList().exists()).toBe(true);
-        expect(findDuoWorkflowSettings().exists()).toBe(true);
+        expect(findDuoWorkflowSettings().exists()).toBe(false);
       });
 
       it('passes the correct props to `CodeSuggestionsUsage`', () => {
