@@ -2,7 +2,7 @@
 
 class AddIndexToPushEventPayloadsOnProjectId < Gitlab::Database::Migration[2.3]
   disable_ddl_transaction!
-  milestone '18.3'
+  milestone '18.4'
 
   INDEX_NAME = 'index_push_event_payloads_on_project_id'
 
