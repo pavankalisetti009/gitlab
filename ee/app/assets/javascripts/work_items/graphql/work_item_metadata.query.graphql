@@ -25,16 +25,7 @@ query workItemMetadataEE($fullPath: ID!) {
       register
       reportAbuse
       signIn
-      emailsHelpPagePath
-      markdownHelpPath
-      quickActionsHelpPath
       issuesSettings @gl_introduced(version: "18.3.0-pre")
-      ... on ProjectNamespaceLinks {
-        newWorkItemEmailAddress
-      }
-    }
-    userPermissions {
-      createWorkItem
     }
   }
 }
