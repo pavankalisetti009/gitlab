@@ -349,6 +349,11 @@ module EE
       Security::PolicySetting.for_organization(::Organizations::Organization.default_organization).csp_namespace_id
     end
 
+    override :custom_admin_roles_available?
+    def custom_admin_roles_available?
+      License.feature_available?(:custom_roles) && ::Feature.enabled?(:custom_admin_roles, :instance)
+    end
+
     private
 
     def identity_verification_attributes

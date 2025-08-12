@@ -13,7 +13,7 @@ export default {
   components: { PageHeading, GlTabs, GlTab, GlSprintf, GlLink, LdapSyncCrud },
   inject: ['ldapServers', 'groupFullPath'],
   props: {
-    adminModeSettingPath: {
+    signInRestrictionsSettingsPath: {
       type: String,
       required: false,
       default: '',
@@ -61,20 +61,23 @@ export default {
     </page-heading>
 
     <div
-      v-if="adminModeSettingPath"
+      v-if="signInRestrictionsSettingsPath"
       class="gl-mb-6 gl-rounded-base gl-bg-orange-50 gl-p-5"
       :class="{ '!gl-mb-3': showTabs }"
-      data-testid="admin-mode-recommendation"
+      data-testid="security-recommendation-alert"
     >
       <gl-sprintf
         :message="
           s__(
-            'MemberRole|To enhance security, we recommend %{linkStart}enabling Admin mode%{linkEnd} when using custom admin roles. Enabling Admin mode will require users to re-authenticate in GitLab before accessing the Admin area.',
+            'MemberRole|To enhance security, we recommend enabling %{adminModeLinkStart}Admin Mode%{adminModeLinkEnd} and %{mfaLinkStart}Require administrators to enable 2FA%{mfaLinkEnd} when using custom admin roles. Enabling Admin Mode will require users to re-authenticate in GitLab before accessing the Admin area.',
           )
         "
       >
-        <template #link="{ content }">
-          <gl-link :href="adminModeSettingPath">{{ content }}</gl-link>
+        <template #adminModeLink="{ content }">
+          <gl-link :href="signInRestrictionsSettingsPath">{{ content }}</gl-link>
+        </template>
+        <template #mfaLink="{ content }">
+          <gl-link :href="signInRestrictionsSettingsPath">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
     </div>

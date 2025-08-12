@@ -525,4 +525,31 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       it { is_expected.to eq(csp_group.id) }
     end
   end
+
+  describe '#custom_admin_roles_available?' do
+    subject { helper.custom_admin_roles_available? }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+      stub_feature_flags(custom_admin_roles: true)
+    end
+
+    it { is_expected.to be true }
+
+    context 'when license does not have custom roles feature' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when custom admin roles feature flag is disabled' do
+      before do
+        stub_feature_flags(custom_admin_roles: false)
+      end
+
+      it { is_expected.to be false }
+    end
+  end
 end
