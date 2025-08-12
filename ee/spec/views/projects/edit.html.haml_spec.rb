@@ -60,7 +60,16 @@ RSpec.describe 'projects/edit' do
     context 'when the user can archive projects' do
       let(:can_archive_projects) { true }
 
-      it { is_expected.to have_link(_('Archive project')) }
+      it { is_expected.to have_selector('#js-archive-settings') }
+
+      context 'when `archive_group` flag is disabled' do
+        before do
+          stub_feature_flags(archive_group: false)
+          render
+        end
+
+        it { is_expected.to have_link(_('Archive project')) }
+      end
     end
 
     context 'when the user can remove projects' do
