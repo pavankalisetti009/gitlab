@@ -106,19 +106,6 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
         it { is_expected.to be_empty }
       end
 
-      context 'when epic and work item hierarchy are not equal' do
-        before do
-          parent_link = epic.work_item_parent_link
-
-          epic.update!(work_item_parent_link: nil)
-          parent_link.destroy!
-          create(:parent_link, work_item_parent: create(:work_item, :epic),
-            work_item: epic.work_item)
-        end
-
-        it { is_expected.to include("parent_id") }
-      end
-
       context 'with relative position check' do
         let_it_be_with_reload(:epic) do
           create(:epic, :with_synced_work_item, group: group, parent: parent_epic, relative_position: 10)
@@ -134,18 +121,6 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
           end
 
           it { is_expected.to include("relative_position") }
-        end
-
-        context 'when work_item_parent_link record is missing' do
-          before do
-            parent_link = epic.work_item_parent_link
-
-            epic.update!(work_item_parent_link: nil)
-            parent_link.destroy!
-          end
-
-          it { is_expected.not_to include("relative_position") }
-          it { is_expected.to include("parent_id") }
         end
       end
     end

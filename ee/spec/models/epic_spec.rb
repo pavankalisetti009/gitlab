@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Epic, feature_category: :portfolio_management do
   include NestedEpicsHelper
+  include LegacyEpicsHelper
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -340,6 +341,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
           epic_with_other_parent = create(:epic, group: group, parent: create(:epic, group: group))
           expect(epic_with_other_parent).to be_valid
 
+          epic_with_other_parent.work_item_parent_link = build(:parent_link, work_item_parent: parent_epic.work_item, work_item: epic_with_other_parent.work_item)
           epic_with_other_parent.parent = parent_epic
 
           expect(epic_with_other_parent).not_to be_valid
@@ -632,6 +634,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         add_parents_to(epic: root_epic, count: 2)
         add_children_to(epic: child_epic1, count: 2)
 
+        epic.work_item_parent_link = build(:parent_link, work_item_parent: parent_epic.work_item, work_item: epic.work_item)
         epic.parent = parent_epic
 
         expect(epic.valid_parent?).to be_falsey
@@ -665,14 +668,10 @@ RSpec.describe Epic, feature_category: :portfolio_management do
   end
 
   context 'hierarchy' do
-    let_it_be(:epic2, reload: true) { create(:epic, group: group) }
+    let_it_be(:epic1) { create(:epic, group: group) }
+    let_it_be(:epic2) { create(:epic, group: group, parent: epic1) }
     let_it_be(:epic3) { create(:epic, group: group, parent: epic2) }
     let_it_be(:epic4) { create(:epic, group: group, parent: epic3) }
-    let_it_be(:epic1) { create(:epic, group: group) }
-
-    before do
-      epic2.update!(parent_id: epic1.id)
-    end
 
     describe '#ancestors' do
       it 'returns all ancestors for an epic ordered correctly' do
@@ -1018,8 +1017,9 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     end
 
     it 'has parent' do
-      create(:epic, group: group, children: [epic])
+      parent_epic = create(:epic, group: group)
 
+      epic.parent_id = parent_epic.id
       expect(epic.has_parent?).to be_truthy
     end
   end
@@ -1612,6 +1612,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
       it 'schedules cache update for parent epic' do
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([parent_epic.id]).once
 
+        subepic.work_item_parent_link = build(:parent_link, work_item_parent: parent_epic.work_item, work_item: subepic.work_item)
         subepic.update!(parent: parent_epic)
       end
     end
@@ -1624,7 +1625,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([parent_epic.id]).once
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([old_parent.id]).once
 
-        subepic.update!(parent: parent_epic)
+        assign_epic_parent(subepic, parent_epic)
       end
 
       it 'schedules cache update for parent epic when removing subepic parent' do

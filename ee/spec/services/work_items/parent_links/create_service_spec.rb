@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfolio_management do
+  include LegacyEpicsHelper
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group, reporters: user) }
@@ -186,7 +187,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
         end
 
         before_all do
-          other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
+          assign_epic_parent(other_epic_work_item.synced_epic, parent_epic)
         end
 
         context 'when child is type :epic' do
@@ -285,7 +286,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
         end
 
         before_all do
-          other_epic_work_item.synced_epic.update!(parent: parent_epic, relative_position: 500)
+          assign_epic_parent(other_epic_work_item.synced_epic, parent_epic)
         end
 
         context 'when child is type :epic' do
@@ -314,9 +315,10 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
             before do
               # Using -13 specifically since move_to_start would set -13 and we want not trigger any changes
               # to the record only from `relative_position` to ensure Notes still get created.
-              create(:parent_link, work_item: child_work_item, work_item_parent: other_epic_work_item,
-                relative_position: -13)
-              child_epic.update!(parent: other_epic_work_item.synced_epic, relative_position: -13)
+              child_epic.parent_id = other_epic_work_item.synced_epic.id
+              child_epic.work_item_parent_link = create(:parent_link, work_item: child_work_item,
+                work_item_parent: other_epic_work_item, relative_position: -13)
+              child_epic.save!
             end
 
             it 'syncs the parent epic, updates the FK and creates notes' do

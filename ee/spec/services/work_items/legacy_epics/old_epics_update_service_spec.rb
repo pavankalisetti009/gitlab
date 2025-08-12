@@ -4,6 +4,7 @@ require 'spec_helper'
 
 # rubocop:disable RSpec/SpecFilePathFormat -- all Epics::UpdateService calls go through adapter service
 RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfolio_management do
+  include LegacyEpicsHelper
   let_it_be_with_refind(:group) { create(:group, :internal) }
   let_it_be(:user) { create(:user) }
   let_it_be_with_refind(:epic) { create(:epic, group: group) }
@@ -391,8 +392,7 @@ RSpec.describe WorkItems::LegacyEpics::UpdateService, feature_category: :portfol
             let(:existing_parent) { create(:epic, group: group) }
 
             before do
-              epic.update!(parent: existing_parent)
-              create(:parent_link, work_item_parent: existing_parent.work_item, work_item: epic.work_item)
+              assign_epic_parent(epic, existing_parent)
             end
 
             it 'changes parent and creates system notes' do

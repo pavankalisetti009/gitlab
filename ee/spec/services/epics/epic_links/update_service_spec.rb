@@ -188,33 +188,6 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
             expect(ordered_work_items).to match_array(expected_work_items)
           end
         end
-
-        context 'when moving child does not have a synced work item parent link' do
-          before do
-            WorkItems::ParentLink.where(work_item_id: epic_to_move.issue_id).delete_all
-            expected_work_items.delete_at(2)
-          end
-
-          it_behaves_like 'reordering without syncing relative positions'
-        end
-
-        context 'when move_before child does not have a synced work item parent link' do
-          before do
-            WorkItems::ParentLink.where(work_item_id: child_epic1.issue_id).delete_all
-            expected_work_items.delete_at(0)
-          end
-
-          it_behaves_like 'reordering without syncing relative positions'
-        end
-
-        context 'when move_after child does not have a synced work item parent link' do
-          before do
-            WorkItems::ParentLink.where(work_item_id: child_epic2.issue_id).delete_all
-            expected_work_items.delete_at(1)
-          end
-
-          it_behaves_like 'reordering without syncing relative positions'
-        end
       end
     end
   end
