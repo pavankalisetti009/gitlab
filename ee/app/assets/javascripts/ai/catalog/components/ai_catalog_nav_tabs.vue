@@ -35,8 +35,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-4 gl-flex lg:gl-items-center">
-    <gl-tabs content-class="gl-py-0" class="gl-w-full">
+  <div class="gl-flex gl-grow lg:gl-items-center">
+    <gl-tabs content-class="gl-py-0">
       <gl-tab
         v-for="tab in tabs"
         :key="tab.text"

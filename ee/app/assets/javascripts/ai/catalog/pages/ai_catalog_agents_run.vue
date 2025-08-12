@@ -45,9 +45,9 @@ export default {
   <div>
     <page-heading :heading="pageTitle">
       <template #description>
-        <p>
+        <div class="gl-border-b gl-pb-3">
           {{ s__('AICatalog|Test run agents to see how they respond.') }}
-        </p>
+        </div>
       </template>
     </page-heading>
 

@@ -12,6 +12,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
+import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
@@ -20,6 +21,7 @@ export default {
   name: 'AiCatalogFlows',
   components: {
     GlAlert,
+    AiCatalogListHeader,
     AiCatalogList,
     AiCatalogItemDrawer,
   },
@@ -186,6 +188,7 @@ export default {
 
 <template>
   <div>
+    <ai-catalog-list-header />
     <gl-alert
       v-if="errorMessage"
       class="gl-mb-3 gl-mt-5"

@@ -8,6 +8,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
+import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
@@ -66,6 +67,10 @@ describe('AiCatalogFlows', () => {
   describe('component rendering', () => {
     beforeEach(async () => {
       await createComponent();
+    });
+
+    it('renders AiCatalogListHeader component', () => {
+      expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
     it('renders AiCatalogList component', () => {

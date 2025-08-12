@@ -12,6 +12,7 @@ import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/co
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
+import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import {
@@ -24,6 +25,7 @@ export default {
   name: 'AiCatalogAgents',
   components: {
     GlAlert,
+    AiCatalogListHeader,
     AiCatalogList,
     AiCatalogItemDrawer,
   },
@@ -198,6 +200,7 @@ export default {
 
 <template>
   <div>
+    <ai-catalog-list-header />
     <gl-alert
       v-if="errorMessage"
       class="gl-mb-3 gl-mt-5"
