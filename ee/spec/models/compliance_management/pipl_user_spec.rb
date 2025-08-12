@@ -57,7 +57,7 @@ RSpec.describe ComplianceManagement::PiplUser,
         expect(pipl_user.state).to eq("default")
       end
 
-      it { is_expected.to define_enum_for(:state).with_values(default: 0, deletion_needs_to_be_reviewed: 1) }
+      it { is_expected.to define_enum_for(:state).with_values(default: 0) }
     end
 
     describe '.with_due_notifications', time_travel_to: '2024-10-07 10:32:45.000000' do
@@ -229,19 +229,6 @@ RSpec.describe ComplianceManagement::PiplUser,
 
       it "fetches the already-deleted user" do
         expect { pipl_deletable }.to not_change { pipl_deletable.count }
-      end
-    end
-
-    context 'when deletion needs to be reviewed for some records' do
-      let(:pipl_user_deletion_needs_review) do
-        create(:pipl_user, initial_email_sent_at: threshold, user: blocked_user,
-          state: "deletion_needs_to_be_reviewed")
-      end
-
-      it "does not fetch data for the user with state deletion_needs_to_be_reviewed" do
-        result = pipl_deletable
-
-        expect(result).to contain_exactly(pipl_users)
       end
     end
   end
