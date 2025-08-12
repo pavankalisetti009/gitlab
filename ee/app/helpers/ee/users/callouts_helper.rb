@@ -103,6 +103,12 @@ module EE
           !user_dismissed?(EXPLORE_DUO_CORE_BANNER)
       end
 
+      def render_default_duo_namespace_required_alert?
+        return false unless current_user
+
+        Ai::ModelSelection::DefaultDuoNamespaceService.new(current_user).default_duo_namespace_required?
+      end
+
       private
 
       override :dismissed_callout?

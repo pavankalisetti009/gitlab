@@ -40993,10 +40993,19 @@ msgstr ""
 msgid "ModelSelection|Model Selection"
 msgstr ""
 
+msgid "ModelSelection|Model Selection is enabled for GitLab Duo, which requires a default namespace to be set. You must select a default namespace in profile preferences to continue using GitLab Duo features."
+msgstr ""
+
+msgid "ModelSelection|Select default namespace for GitLab Duo"
+msgstr ""
+
 msgid "ModelSelection|Successfully updated %{mainFeature} / %{title}"
 msgstr ""
 
 msgid "ModelSelection|Successfully updated all %{mainFeature} features"
+msgstr ""
+
+msgid "ModelSelection|Update profile preferences"
 msgstr ""
 
 msgid "Modified"
