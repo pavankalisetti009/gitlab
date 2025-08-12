@@ -84,6 +84,14 @@ query SubgroupsAndProjects(
           buildId
           updatedAt
         }
+        # @client cannot be combined with @include
+        # resolver returns empty array if feature flag is disabled
+        securityAttributes @client {
+          nodes {
+            name
+            color
+          }
+        }
       }
     }
   }
