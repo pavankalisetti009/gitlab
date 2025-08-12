@@ -19,6 +19,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       :name,
       :project_id,
       :public,
+      :release,
       :system_prompt,
       :user_prompt,
       :tools,

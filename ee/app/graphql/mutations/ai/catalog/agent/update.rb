@@ -26,7 +26,11 @@ module Mutations
 
           argument :public, GraphQL::Types::Boolean,
             required: false,
-            description: 'Whether the item is publicly visible in the catalog.'
+            description: 'Whether the agent is publicly visible in the catalog.'
+
+          argument :release, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Whether to release the latest version of the agent.'
 
           argument :system_prompt, GraphQL::Types::String,
             required: false,
@@ -54,7 +58,7 @@ module Mutations
             ).execute
 
             item = result.payload[:item]
-            item.reset unless result.success?
+            item.reset
 
             {
               item: item,

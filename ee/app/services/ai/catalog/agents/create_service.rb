@@ -23,6 +23,7 @@ module Ai
               user_prompt: params[:user_prompt]
             }
           }
+          version_params[:release_date] = Time.zone.now if params[:release] == true
 
           item = Ai::Catalog::Item.new(item_params)
           item.versions.build(version_params)
