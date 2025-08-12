@@ -458,4 +458,32 @@ RSpec.describe EE::Users::CalloutsHelper do
       end
     end
   end
+
+  describe '.render_default_duo_namespace_required_alert?', :do_not_mock_admin_mode_setting do
+    let_it_be(:user) { create(:user) }
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+    end
+
+    context 'when a default duo namespace is not required' do
+      before do
+        allow(Ai::ModelSelection::DefaultDuoNamespaceService).to receive_message_chain(:new, :default_duo_namespace_required?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(helper.render_default_duo_namespace_required_alert?).to be(false)
+      end
+    end
+
+    context 'when a default duo namespace is required' do
+      before do
+        allow(Ai::ModelSelection::DefaultDuoNamespaceService).to receive_message_chain(:new, :default_duo_namespace_required?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(helper.render_default_duo_namespace_required_alert?).to be(true)
+      end
+    end
+  end
 end
