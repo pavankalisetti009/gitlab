@@ -17,20 +17,12 @@ module Types
       field :full_path, GraphQL::Types::ID,
         null: false,
         description: 'Full path of the project.'
-      field :id, GraphQL::Types::ID,
-        null: false,
-        description: 'ID of the project.'
       field :name, GraphQL::Types::String,
         null: false,
         description: 'Name of the project without the namespace.'
       field :name_with_namespace, GraphQL::Types::String,
         null: false,
         description: 'Name of the project including the namespace.'
-      field :path, GraphQL::Types::String,
-        null: false,
-        description: 'Path of the project.'
-
-      expose_permissions Types::PermissionTypes::Project
 
       authorize :read_project_metadata
     end
