@@ -1,23 +1,11 @@
-query getAiFlowTriggers($projectPath: ID!) {
+#import "../fragments/flow_trigger.fragment.graphql"
+
+query getAiFlowTriggers($projectPath: ID!, $ids: [AiFlowTriggerID!] = null) {
   project(fullPath: $projectPath) {
     id
-    aiFlowTriggers {
+    aiFlowTriggers(ids: $ids) {
       nodes {
-        id
-        description
-        eventTypes
-        configUrl
-        configPath
-        user {
-          id
-          avatarUrl
-          username
-          webPath
-          __typename
-        }
-        createdAt
-        updatedAt
-        __typename
+        ...FlowTriggerFragment
       }
     }
   }
