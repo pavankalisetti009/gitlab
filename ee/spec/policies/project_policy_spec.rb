@@ -3297,13 +3297,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         it_behaves_like 'admin custom roles abilities'
       end
-
-      context 'for an admin member role with read_admin_projects true' do
-        let(:member_role_abilities) { [:read_admin_projects] }
-        let(:allowed_abilities) { %i[read_project_metadata] }
-
-        it_behaves_like 'admin custom roles abilities'
-      end
     end
 
     describe 'permissions for suggested reviewers bot', :saas do

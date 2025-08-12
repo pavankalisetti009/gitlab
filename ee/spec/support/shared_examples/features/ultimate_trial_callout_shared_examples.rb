@@ -12,14 +12,6 @@ RSpec.shared_examples 'dashboard ultimate trial callout' do
   end
 
   describe '.com', :saas do
-    let_it_be(:trial_duration) { 60 }
-
-    before do
-      allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
-        allow(instance).to receive(:execute).and_return(trial_duration)
-      end
-    end
-
     it 'shows dismissable promotion callout if default dashboard for an owner', :js do
       group = create(:group)
       group.add_owner(user)

@@ -6,14 +6,6 @@ RSpec.describe 'Trial Sign In', feature_category: :subscription_management do
   let(:user) { create(:user) }
 
   describe 'on GitLab.com', :saas do
-    let_it_be(:trial_duration) { 60 }
-
-    before do
-      allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
-        allow(instance).to receive(:execute).and_return(trial_duration)
-      end
-    end
-
     it 'logs the user in' do
       url_params = { glm_source: 'any-source', glm_content: 'any-content' }
       visit(new_trial_registration_path(url_params))

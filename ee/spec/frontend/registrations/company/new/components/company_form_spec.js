@@ -65,7 +65,7 @@ describe('CompanyForm', () => {
         submitPath: SUBMIT_PATH,
         user,
         trackActionForErrors: '_trackActionForErrors_',
-        trialDuration: 60,
+        trialDuration: 30,
         showFormFooter: true,
         ...provideData,
       },
@@ -363,7 +363,7 @@ describe('CompanyForm', () => {
     it('displays correct footer text', () => {
       expect(findFooterDescriptionText().exists()).toBe(true);
       expect(findFooterDescriptionText().text()).toBe(
-        'Your free Ultimate & GitLab Duo Enterprise Trial lasts for 60 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
+        'Your free Ultimate & GitLab Duo Enterprise Trial lasts for 30 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
       );
     });
   });

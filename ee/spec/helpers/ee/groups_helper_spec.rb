@@ -229,7 +229,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         max_free_namespace_seats: 10,
         explore_plans_path: group_billings_path(group),
         enforcement_free_user_cap_enabled: 'false',
-        trial_duration: 60
+        trial_duration: 30
       }
     end
 

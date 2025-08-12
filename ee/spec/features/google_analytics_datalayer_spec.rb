@@ -17,14 +17,6 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
 
   context 'on account sign up pages' do
     context 'when creating a new trial registration' do
-      let_it_be(:trial_duration) { 60 }
-
-      before do
-        allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |instance|
-          allow(instance).to receive(:execute).and_return(trial_duration)
-        end
-      end
-
       it 'tracks form submissions in the dataLayer' do
         visit new_trial_registration_path
 

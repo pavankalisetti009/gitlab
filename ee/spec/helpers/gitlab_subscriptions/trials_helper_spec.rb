@@ -45,7 +45,7 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
   end
 
   describe '#trial_duration' do
-    let(:trial_duration) { 60 }
+    let(:trial_duration) { 30 }
 
     subject { helper.trial_duration }
 
