@@ -103,12 +103,16 @@ export default {
           <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)" />
           <duo-seat-utilization-info-card
             v-if="shouldShowSeatUtilizationInfoCard(activeDuoTier)"
+            data-testid="duo-seat-utilization-info-card"
             :total-value="totalValue"
             :usage-value="usageValue"
             :active-duo-tier="activeDuoTier"
             :add-on-purchases="addOnPurchases"
           />
-          <duo-configuration-settings-info-card :active-duo-tier="activeDuoTier" />
+          <duo-configuration-settings-info-card
+            data-testid="duo-configuration-settings-info-card"
+            :active-duo-tier="activeDuoTier"
+          />
         </section>
         <duo-models-configuration-info-card
           v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"
