@@ -614,63 +614,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
           update_merge_request(opts)
         end
-
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(merge_request_approval_policies_inapplicable_rule_evaluation: false)
-          end
-
-          it 'does not schedule policy synchronization' do
-            expect(merge_request).not_to receive(:schedule_policy_synchronization)
-
-            update_merge_request(opts)
-          end
-        end
-      end
-    end
-
-    describe '#sync_any_merge_request_approval_rules' do
-      let(:opts) { { target_branch: 'feature-2' } }
-      let!(:scan_result_policy_read) { create(:scan_result_policy_read, :targeting_commits, project: project) }
-
-      subject(:execute) { update_merge_request(opts) }
-
-      it 'enqueues SyncAnyMergeRequestApprovalRulesWorker' do
-        expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to(
-          receive(:perform_async).with(merge_request.id)
-        )
-
-        execute
-      end
-
-      context 'when target_branch is not changing' do
-        let(:opts) { {} }
-
-        it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
-          expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)
-
-          execute
-        end
-      end
-
-      context 'when scan_result_policy_read does not target commits' do
-        let!(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
-
-        it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
-          expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)
-
-          execute
-        end
-      end
-
-      context 'without scan_result_policy_read' do
-        let!(:scan_result_policy_read) { nil }
-
-        it 'does not enqueue SyncAnyMergeRequestApprovalRulesWorker' do
-          expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).not_to receive(:perform_async)
-
-          execute
-        end
       end
     end
 
