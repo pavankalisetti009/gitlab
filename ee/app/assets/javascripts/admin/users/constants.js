@@ -15,6 +15,8 @@ export const ACCESS_LEVEL_OPTIONS = [
   { value: 'external', title: s__('AdminUsers|External') },
 ];
 
+// NOTE: If you add a config, also add the querystring key to app/helpers/sorting_helper.rb.
+// Otherwise, changing the sort will remove the querystring for the config.
 export const getStandardTokenConfigs = ({ customRoles, customAdminRoles }) => {
   const configs = [];
   // Add the admin role token config if the license allows custom roles (Ultimate-only feature) and
@@ -23,7 +25,7 @@ export const getStandardTokenConfigs = ({ customRoles, customAdminRoles }) => {
     configs.push(
       createTokenConfig({
         type: 'admin_role_id',
-        title: s__('MemberRole|Admin role'),
+        title: s__('MemberRole|Custom admin role'),
         token: AdminRoleToken,
       }),
     );
