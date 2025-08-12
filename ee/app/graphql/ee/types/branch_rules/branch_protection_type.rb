@@ -22,6 +22,13 @@ module EE
             null: false,
             description: 'Indicates if a security policy prevents modification.',
             calls_gitaly: true
+
+          field :is_group_level,
+            type: GraphQL::Types::Boolean,
+            null: false,
+            description: 'Indicates whether the branch protection rule was created at the group level.',
+            method: :group_level?,
+            experiment: { milestone: '18.3' }
         end
       end
     end
