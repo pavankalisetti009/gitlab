@@ -4,6 +4,7 @@
 DEFAULT_TOTAL_COUNT = 50
 DEFAULT_PROJECT_PATH = 'gitlab-org/gitlab-test'
 DEFAULT_CURRENT_USER_COUNT_LIMIT = 24
+DEFAULT_ENVIRONMENT_TYPE = 'web'
 
 namespace :gitlab do
   namespace :duo_workflow do
@@ -13,12 +14,19 @@ namespace :gitlab do
     # current_user_count: Workflows for target user (default: min(total_count, 24))
     # user_id: User ID or email (default: first available user)
     # project_path: Project path like 'gitlab-org/gitlab' (default: gitlab-org/gitlab-test)
+    # environment_type: Environment type like 'web' (default: 'web')
     # Note: This task cannot be run in production.
     # Note: this current_user_count cannot be greater than total_count
 
     # Helper method to create workflow checkpoint data structures
 
-    task :populate, [:total_count, :current_user_count, :user_id, :project_path] => :environment do |_t, args|
+    task :populate, [
+      :total_count,
+      :current_user_count,
+      :user_id,
+      :project_path,
+      :environment_type
+    ] => :environment do |_t, args|
       raise 'This task cannot be run in production' if Rails.env.production?
 
       # rubocop:disable Rake/TopLevelMethodDefinition -- Instance metods withing task scope do not leak
@@ -211,6 +219,9 @@ namespace :gitlab do
         end
       end
 
+      # Set environment type
+      environment_type = args.environment_type.presence || DEFAULT_ENVIRONMENT_TYPE
+
       # Validate arguments
       if current_user_count > total_count
         puts Rainbow("Error: current_user_count (#{current_user_count})
@@ -227,6 +238,7 @@ namespace :gitlab do
       puts "Creating #{total_count} fake Ai::DuoWorkflows::Workflow entities..."
       puts "#{current_user_count} will be assigned to user: #{target_user.username} (#{target_user.email})"
       puts "All workflows will be assigned to project: #{target_project.full_path}"
+      puts "All workflows will use environment type: #{environment_type}"
 
       # Sample goals for workflows
       sample_goals = [
@@ -317,13 +329,13 @@ namespace :gitlab do
         workflow = Ai::DuoWorkflows::Workflow.create!(
           user_id: user_id,
           project_id: target_project.id,
-          environment: 'web',
           goal: goal,
           status: workflow_status,
           workflow_definition: workflow_definitions.sample,
           agent_privileges: agent_privileges,
           pre_approved_agent_privileges: pre_approved_privileges,
-          allow_agent_to_request_user: [true, false].sample
+          allow_agent_to_request_user: [true, false].sample,
+          environment: environment_type
         )
 
         workflows_created += 1
