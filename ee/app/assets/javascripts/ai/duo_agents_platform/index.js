@@ -57,9 +57,7 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     provide: {
       duoAgentsInvokePath,
       emptyStateIllustrationPath,
-      flowTriggersEventTypeOptions: flowTriggersEventTypeOptions
-        ? JSON.parse(flowTriggersEventTypeOptions)
-        : [],
+      flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions),
       ...namespaceProvideData,
     },
     render(h) {
