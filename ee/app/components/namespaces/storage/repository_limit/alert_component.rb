@@ -123,7 +123,7 @@ module Namespaces
 
         def alert_message_cta
           group_member_link = group_group_members_path(root_namespace)
-          purchase_more_link = help_page_path('subscriptions/gitlab_com/_index.md', anchor: 'purchase-more-storage')
+          purchase_more_link = help_page_path('user/storage_usage_quotas.md', anchor: 'purchase-more-storage')
           manage_storage_link = help_page_path('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
           text_args = {
             **tag_pair(link_to('', group_member_link), :group_member_link_start, :link_end),

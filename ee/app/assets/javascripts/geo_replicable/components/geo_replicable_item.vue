@@ -1,7 +1,7 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
+import { mapActions } from 'vuex';
 import {
   REPLICATION_STATUS_STATES,
   VERIFICATION_STATUS_STATES,
@@ -9,7 +9,6 @@ import {
   VERIFICATION_STATUS_LABELS,
 } from 'ee/geo_shared/constants';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { __, s__, sprintf } from '~/locale';
@@ -33,8 +32,7 @@ export default {
     GeoListItem,
     GlSprintf,
   },
-  mixins: [glFeatureFlagsMixin()],
-  inject: ['replicableBasePath', 'graphqlRegistryClass'],
+  inject: ['replicableBasePath', 'replicableClass'],
   props: {
     registryId: {
       type: [String, Number],
@@ -76,7 +74,6 @@ export default {
     },
   },
   computed: {
-    ...mapState(['verificationEnabled']),
     timeAgoArray() {
       return [
         {
@@ -87,7 +84,7 @@ export default {
         {
           label: this.$options.i18n.lastVerified,
           dateString: this.lastVerified,
-          defaultText: this.verificationEnabled
+          defaultText: this.replicableClass.verificationEnabled
             ? this.$options.i18n.unknown
             : this.$options.i18n.nA,
         },
@@ -100,7 +97,7 @@ export default {
       return `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`;
     },
     name() {
-      return `${this.graphqlRegistryClass}/${this.id}`;
+      return `${this.replicableClass.graphqlRegistryClass}/${this.id}`;
     },
     statusArray() {
       const replicationStatus =
@@ -119,7 +116,7 @@ export default {
         },
       ];
 
-      if (this.verificationEnabled) {
+      if (this.replicableClass.verificationEnabled) {
         const verificationStatus =
           VERIFICATION_STATUS_STATES[this.verificationState?.toUpperCase()] ||
           VERIFICATION_STATUS_STATES.UNKNOWN;
@@ -148,7 +145,7 @@ export default {
         },
       ];
 
-      if (this.verificationEnabled) {
+      if (this.replicableClass.verificationEnabled) {
         actions.push({
           id: 'geo-reverify-item',
           value: ACTION_TYPES.REVERIFY,

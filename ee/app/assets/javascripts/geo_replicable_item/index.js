@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { getGraphqlClient } from 'ee/geo_replicable/utils';
+import { getGraphqlClient } from 'ee/geo_shared/graphql/geo_client';
 import GeoReplicableItemApp from './components/app.vue';
 
 export const initGeoReplicableItem = () => {

@@ -47,3 +47,16 @@ export const processFilters = (filters) => {
 
   return { query, url };
 };
+
+export const getGraphqlFilterVariables = (filters) => {
+  const variables = {
+    replicationState: null,
+  };
+
+  variables.replicationState =
+    filters
+      .find(({ type }) => type === TOKEN_TYPES.REPLICATION_STATUS)
+      ?.value?.data?.toUpperCase() || null;
+
+  return variables;
+};
