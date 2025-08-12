@@ -1,12 +1,5 @@
 <script>
-import {
-  GlButton,
-  GlFormGroup,
-  GlFormInput,
-  GlIcon,
-  GlTooltipDirective,
-  GlPopover,
-} from '@gitlab/ui';
+import { GlButton, GlFormGroup, GlFormInput, GlTooltipDirective } from '@gitlab/ui';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
@@ -18,6 +11,7 @@ import {
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { newWorkItemId } from '~/work_items/utils';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
+import WorkItemWeightConflictWarning from 'ee/work_items/components/work_item_weight_conflict_warning.vue';
 import { sprintf } from '~/locale';
 
 export default {
@@ -28,9 +22,8 @@ export default {
     GlButton,
     GlFormGroup,
     GlFormInput,
-    GlIcon,
     WorkItemSidebarWidget,
-    GlPopover,
+    WorkItemWeightConflictWarning,
   },
   mixins: [Tracking.mixin()],
   inject: ['hasIssueWeightsFeature'],
@@ -68,12 +61,6 @@ export default {
     },
     hasWeight() {
       return this.weight !== null;
-    },
-    hasRolledUpWeight() {
-      return this.rolledUpWeight !== null;
-    },
-    hasConflictingWeights() {
-      return this.hasWeight && this.hasRolledUpWeight && this.weight !== this.rolledUpWeight;
     },
     showRemoveWeight() {
       return this.hasWeight && !this.isUpdating;
@@ -182,28 +169,7 @@ export default {
       <template v-if="hasWeight">
         {{ weight }}
 
-        <gl-icon
-          v-if="hasConflictingWeights"
-          id="conflicting-weight-warning-icon"
-          name="warning"
-          class="gl-ml-2 gl-cursor-help"
-          variant="warning"
-        />
-        <gl-popover target="conflicting-weight-warning-icon" triggers="hover focus">
-          <div class="gl-text-strong">
-            {{ __('Assigned weight does not match total of its child items.') }}
-          </div>
-          <div class="gl-mt-3 gl-flex">
-            <span class="gl-flex-grow">
-              <div class="gl-text-subtle">{{ __('Assigned weight') }}</div>
-              <span class="gl-text-strong">{{ weight }}</span>
-            </span>
-            <span class="gl-flex-grow">
-              <div class="gl-text-subtle">{{ __('Total of child items') }}</div>
-              <span class="gl-text-strong">{{ rolledUpWeight }}</span>
-            </span>
-          </div>
-        </gl-popover>
+        <work-item-weight-conflict-warning :weight="weight" :rolled-up-weight="rolledUpWeight" />
       </template>
       <span v-else class="gl-text-subtle">
         {{ __('None') }}
