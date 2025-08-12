@@ -21,6 +21,7 @@ export const getObservabilityTabMetadata = ({ includeEl = false } = {}) => {
     title: s__('UsageQuota|Observability'),
     hash: '#observability-usage-quota-tab',
     testid: 'observability-tab',
+    featureCategory: 'error_budgets',
     component: {
       name: 'ObservabilityUsageQuotaTab',
       provide: parseProvideData(el),

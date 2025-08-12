@@ -39,6 +39,7 @@ export const getPagesTabMetadata = ({ viewType } = {}) => {
     title: __('Pages'),
     hash: '#pages-deployments-usage-tab',
     testid: 'pages-tab',
+    featureCategory: 'pages',
     component: {
       name: 'PagesDeploymentsTab',
       apolloProvider,
