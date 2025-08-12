@@ -7,6 +7,7 @@ const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
 const TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION = 'AiCatalogBuiltInToolConnection';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
+const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_PROJECT = 'Project';
 
@@ -232,6 +233,25 @@ export const mockCreateAiCatalogFlowSuccessMutation = {
 export const mockCreateAiCatalogFlowErrorMutation = {
   data: {
     aiCatalogFlowCreate: {
+      errors: ['Some error'],
+      item: null,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogFlowSuccessMutation = {
+  data: {
+    aiCatalogFlowUpdate: {
+      errors: [],
+      item: mockFlow,
+      __typename: TYPENAME_AI_CATALOG_FLOW_UPDATE,
+    },
+  },
+};
+
+export const mockUpdateAiCatalogFlowErrorMutation = {
+  data: {
+    aiCatalogFlowUpdate: {
       errors: ['Some error'],
       item: null,
     },

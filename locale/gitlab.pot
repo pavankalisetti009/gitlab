@@ -2602,6 +2602,9 @@ msgstr ""
 msgid "AICatalog|The flow could not be added. Please try again."
 msgstr ""
 
+msgid "AICatalog|The flow could not be updated. Please try again."
+msgstr ""
+
 msgid "AICatalog|This agent can be made private if it is not used."
 msgstr ""
 
