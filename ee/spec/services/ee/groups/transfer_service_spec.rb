@@ -131,7 +131,7 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         let(:transfer_lifecycle_service) { instance_double(WorkItems::Widgets::Statuses::TransferLifecycleService) }
 
         it 'delegates transfer to TransferLifecycleService and to TransferService' do
-          project # load the project in order the group to has projects.
+          project
           expect(WorkItems::Widgets::Statuses::TransferLifecycleService).to receive(:new).with(
             old_root_namespace: root_group,
             new_root_namespace: group
@@ -549,7 +549,6 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         transfer_service.execute(new_group)
       end
 
-      # explicit testing of the pipeline subscriptions cleanup to verify `run_after_commit` block is executed
       context 'with pipeline subscriptions', :saas do
         before do
           create(:license, plan: License::PREMIUM_PLAN)
@@ -577,6 +576,57 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         expect(::EE::Projects::RemovePaidFeaturesService).not_to receive(:new)
 
         transfer_service.execute(new_group)
+      end
+    end
+  end
+
+  context 'with compliance frameworks' do
+    let_it_be(:source_root) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: source_root) }
+    let_it_be(:project_with_framework) { create(:project, namespace: subgroup) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: source_root) }
+    let(:transfer_service) { described_class.new(subgroup, user) }
+
+    before_all do
+      source_root.add_owner(user)
+    end
+
+    before do
+      stub_licensed_features(custom_compliance_frameworks: true)
+      create(:compliance_framework_project_setting,
+        project: project_with_framework,
+        compliance_management_framework: compliance_framework)
+    end
+
+    context 'with different root group' do
+      it 'removes compliance frameworks' do
+        expect { transfer_service.execute(new_group) }
+          .to change { project_with_framework.reload.compliance_framework_settings.count }
+          .from(1).to(0)
+      end
+    end
+
+    context 'with same root group' do
+      let(:sibling) { create(:group, parent: source_root) }
+
+      before do
+        sibling.add_owner(user)
+      end
+
+      it 'keeps compliance frameworks' do
+        expect { transfer_service.execute(sibling) }
+          .not_to change { project_with_framework.reload.compliance_framework_settings.count }
+      end
+    end
+
+    context 'when unlicensed' do
+      before do
+        stub_licensed_features(custom_compliance_frameworks: false)
+      end
+
+      it 'keeps compliance frameworks' do
+        expect { transfer_service.execute(new_group) }
+          .not_to change { project_with_framework.reload.compliance_framework_settings.count }
       end
     end
   end
