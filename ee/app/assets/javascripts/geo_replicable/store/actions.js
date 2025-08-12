@@ -1,78 +1,10 @@
+import { getGraphqlClient } from 'ee/geo_shared/graphql/geo_client';
 import { createAlert } from '~/alert';
 import { s__, __, sprintf } from '~/locale';
 import toast from '~/vue_shared/plugins/global_toast';
 import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
-import { PREV, NEXT, DEFAULT_PAGE_SIZE } from '../constants';
-import buildReplicableTypeQuery from '../graphql/replicable_type_query_builder';
 import replicableTypeBulkUpdateMutation from '../graphql/replicable_type_bulk_update_mutation.graphql';
-import { getGraphqlClient } from '../utils';
 import * as types from './mutation_types';
-
-// Fetch Replicable Items
-export const requestReplicableItems = ({ commit }) => commit(types.REQUEST_REPLICABLE_ITEMS);
-export const receiveReplicableItemsSuccess = ({ commit }, data) =>
-  commit(types.RECEIVE_REPLICABLE_ITEMS_SUCCESS, data);
-export const receiveReplicableItemsError = ({ state, commit }) => {
-  createAlert({
-    message: sprintf(
-      s__(
-        'Geo|There was an error fetching the %{replicableType}. The GraphQL API call to the secondary may have failed.',
-      ),
-      {
-        replicableType: state.titlePlural,
-      },
-    ),
-  });
-  commit(types.RECEIVE_REPLICABLE_ITEMS_ERROR);
-};
-
-export const fetchReplicableItems = ({ state, dispatch }, direction) => {
-  dispatch('requestReplicableItems');
-
-  let before = '';
-  let after = '';
-
-  // If we are going backwards we want the last 20, otherwise get the first 20.
-  let first = DEFAULT_PAGE_SIZE;
-  let last = null;
-
-  if (direction === PREV) {
-    before = state.paginationData.startCursor;
-    first = null;
-    last = DEFAULT_PAGE_SIZE;
-  } else if (direction === NEXT) {
-    after = state.paginationData.endCursor;
-  }
-
-  const replicationState = state.statusFilter ? state.statusFilter.toUpperCase() : null;
-
-  const client = getGraphqlClient(state.geoCurrentSiteId, state.geoTargetSiteId);
-
-  client
-    .query({
-      query: buildReplicableTypeQuery(state.graphqlFieldName, state.verificationEnabled),
-      variables: { first, last, before, after, replicationState },
-    })
-    .then((res) => {
-      // Query.geoNode to be renamed to Query.geoSite => https://gitlab.com/gitlab-org/gitlab/-/issues/396739
-      if (!res.data.geoNode || !(state.graphqlFieldName in res.data.geoNode)) {
-        dispatch('receiveReplicableItemsSuccess', { data: [], pagination: null });
-        return;
-      }
-
-      const registries = res.data.geoNode[state.graphqlFieldName];
-      const data = registries.nodes;
-      const pagination = {
-        ...registries.pageInfo,
-        page: state.paginationData.page,
-      };
-
-      dispatch('receiveReplicableItemsSuccess', { data, pagination });
-    })
-    .catch(() => {
-      dispatch('receiveReplicableItemsError');
-    });
-};
 
 // Initiate All Replicable Action
 export const requestInitiateAllReplicableAction = ({ commit }) =>
@@ -154,13 +86,4 @@ export const initiateReplicableAction = ({ state, dispatch }, { registryId, name
     .catch(() => {
       dispatch('receiveInitiateReplicableActionError', { name });
     });
-};
-
-// Filtering/Pagination
-export const setStatusFilter = ({ commit }, filter) => {
-  commit(types.SET_STATUS_FILTER, filter);
-};
-
-export const setSearch = ({ commit }, search) => {
-  commit(types.SET_SEARCH, search);
 };

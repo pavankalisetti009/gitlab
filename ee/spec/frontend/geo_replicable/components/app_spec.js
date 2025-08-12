@@ -2,23 +2,32 @@ import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import { BULK_ACTIONS, GEO_TROUBLESHOOTING_LINK } from 'ee/geo_replicable/constants';
+import VueApollo from 'vue-apollo';
+import {
+  BULK_ACTIONS,
+  GEO_TROUBLESHOOTING_LINK,
+  DEFAULT_PAGE_SIZE,
+} from 'ee/geo_replicable/constants';
 import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import initStore from 'ee/geo_replicable/store';
+import buildReplicableTypeQuery from 'ee/geo_replicable/graphql/replicable_type_query_builder';
 import { processFilters } from 'ee/geo_replicable/filters';
 import { TEST_HOST } from 'spec/test_constants';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import setWindowLocation from 'helpers/set_window_location_helper';
+import { createAlert } from '~/alert';
 import { setUrlParams, visitUrl } from '~/lib/utils/url_utility';
 import {
   MOCK_BASIC_GRAPHQL_DATA,
-  MOCK_REPLICABLE_TYPE,
-  MOCK_GRAPHQL_REGISTRY,
+  MOCK_REPLICABLE_CLASS,
   MOCK_REPLICABLE_TYPE_FILTER,
   MOCK_REPLICATION_STATUS_FILTER,
+  MOCK_GRAPHQL_PAGINATION_DATA,
 } from '../mock_data';
 
 const MOCK_FILTERS = { foo: 'bar' };
@@ -39,7 +48,10 @@ jest.mock('ee/geo_replicable/filters', () => ({
   processFilters: jest.fn(() => MOCK_PROCESSED_FILTERS),
 }));
 
+jest.mock('~/alert');
+
 Vue.use(Vuex);
+Vue.use(VueApollo);
 
 describe('GeoReplicableApp', () => {
   let wrapper;
@@ -48,6 +60,7 @@ describe('GeoReplicableApp', () => {
   const defaultProvide = {
     itemTitle: 'Test Item',
     siteName: 'Test Site',
+    replicableClass: MOCK_REPLICABLE_CLASS,
   };
 
   const MOCK_EMPTY_STATE = {
@@ -59,14 +72,43 @@ describe('GeoReplicableApp', () => {
     hasFilters: false,
   };
 
-  const createStore = (options) => {
-    store = initStore({ replicableType: MOCK_REPLICABLE_TYPE, ...options });
-    jest.spyOn(store, 'dispatch').mockImplementation();
-  };
+  const query = buildReplicableTypeQuery(
+    defaultProvide.replicableClass.graphqlFieldName,
+    defaultProvide.replicableClass.verificationEnabled,
+  );
 
-  const createComponent = () => {
+  const MOCK_QUERY_HANDLER_WITH_DATA = jest.fn().mockResolvedValue({
+    data: {
+      geoNode: {
+        [defaultProvide.replicableClass.graphqlFieldName]: {
+          nodes: MOCK_BASIC_GRAPHQL_DATA,
+          pageInfo: MOCK_GRAPHQL_PAGINATION_DATA,
+        },
+      },
+    },
+  });
+
+  const MOCK_QUERY_HANDLER_WITHOUT_DATA = jest.fn().mockResolvedValue({
+    data: {
+      geoNode: {
+        [defaultProvide.replicableClass.graphqlFieldName]: {
+          nodes: [],
+          pageInfo: {},
+        },
+      },
+    },
+  });
+
+  const createComponent = ({ handler } = {}) => {
+    const apolloQueryHandler = handler || MOCK_QUERY_HANDLER_WITH_DATA;
+    const apolloProvider = createMockApollo([[query, apolloQueryHandler]]);
+
+    store = initStore({});
+    jest.spyOn(store, 'dispatch').mockImplementation();
+
     wrapper = shallowMount(GeoReplicableApp, {
       store,
+      apolloProvider,
       provide: {
         ...defaultProvide,
       },
@@ -79,28 +121,42 @@ describe('GeoReplicableApp', () => {
   const findGeoListTopBar = () => findGeoReplicableContainer().findComponent(GeoListTopBar);
   const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
-  describe.each`
-    isLoading | replicableItems
-    ${false}  | ${MOCK_BASIC_GRAPHQL_DATA}
-    ${false}  | ${[]}
-    ${true}   | ${MOCK_BASIC_GRAPHQL_DATA}
-    ${true}   | ${[]}
-  `(`template`, ({ isLoading, replicableItems }) => {
+  beforeEach(() => {
+    setWindowLocation(MOCK_BASE_LOCATION);
+  });
+
+  describe('loading state', () => {
     beforeEach(() => {
-      createStore({ graphqlFieldName: MOCK_GRAPHQL_REGISTRY });
       createComponent();
     });
 
-    describe(`when isLoading is ${isLoading} and ${replicableItems.length ? 'does' : 'does not'} have replicableItems`, () => {
-      beforeEach(() => {
-        store.state.isLoading = isLoading;
-        store.state.replicableItems = replicableItems;
+    it('when isLoading is true renders GeoList with loading state true and GeoReplicable in default slot', () => {
+      expect(findGeoList().props()).toStrictEqual({
+        isLoading: true,
+        hasItems: false,
+        emptyState: MOCK_EMPTY_STATE,
+      });
+
+      expect(findGeoReplicable().exists()).toBe(true);
+    });
+  });
+
+  describe.each`
+    hasItems | handler
+    ${true}  | ${MOCK_QUERY_HANDLER_WITH_DATA}
+    ${false} | ${MOCK_QUERY_HANDLER_WITHOUT_DATA}
+  `('GeoList state', ({ hasItems, handler }) => {
+    describe(`${hasItems ? 'does' : 'does not'} have replicableItems`, () => {
+      beforeEach(async () => {
+        createComponent({ handler });
+
+        await waitForPromises();
       });
 
       it('renders GeoList with the correct params', () => {
         expect(findGeoList().props()).toStrictEqual({
-          isLoading,
-          hasItems: Boolean(replicableItems.length),
+          isLoading: false,
+          hasItems,
           emptyState: MOCK_EMPTY_STATE,
         });
       });
@@ -111,19 +167,35 @@ describe('GeoReplicableApp', () => {
     });
   });
 
+  describe('error handling', () => {
+    it('displays error message when Apollo query fails', async () => {
+      const errorMessage = new Error('GraphQL Error');
+      const handler = jest.fn().mockRejectedValue(errorMessage);
+      createComponent({ handler });
+
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message:
+          'There was an error fetching the Test Item. The GraphQL API call to the secondary may have failed.',
+        captureError: true,
+        error: errorMessage,
+      });
+    });
+  });
+
   describe.each`
     hasFilters | mockLocation
     ${false}   | ${MOCK_BASE_LOCATION}
     ${true}    | ${MOCK_LOCATION_WITH_FILTERS}
   `('empty state property', ({ hasFilters, mockLocation }) => {
     describe(`when filters are ${hasFilters}`, () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         setWindowLocation(mockLocation);
 
-        createStore();
-        createComponent();
+        createComponent({ handler: MOCK_QUERY_HANDLER_WITHOUT_DATA });
 
-        store.state.replicableItems = [];
+        await waitForPromises();
       });
 
       it('renders GeoList with correct empty state prop', () => {
@@ -140,7 +212,6 @@ describe('GeoReplicableApp', () => {
       beforeEach(() => {
         setWindowLocation(MOCK_BASE_LOCATION);
 
-        createStore();
         createComponent();
       });
 
@@ -156,7 +227,6 @@ describe('GeoReplicableApp', () => {
       beforeEach(() => {
         setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
 
-        createStore();
         createComponent();
       });
 
@@ -172,14 +242,11 @@ describe('GeoReplicableApp', () => {
   });
 
   describe('bulk actions', () => {
-    beforeEach(() => {
-      createStore();
-      createComponent();
-    });
-
     describe('with no replicable items', () => {
-      beforeEach(() => {
-        store.state.replicableItems = [];
+      beforeEach(async () => {
+        createComponent({ handler: MOCK_QUERY_HANDLER_WITHOUT_DATA });
+
+        await waitForPromises();
       });
 
       it('renders top bar with showActions=false', () => {
@@ -188,8 +255,10 @@ describe('GeoReplicableApp', () => {
     });
 
     describe('with replicable items', () => {
-      beforeEach(() => {
-        store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
+      beforeEach(async () => {
+        createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
+
+        await waitForPromises();
       });
 
       it('renders top bar with showActions=true and correct actions', () => {
@@ -235,7 +304,6 @@ describe('GeoReplicableApp', () => {
     beforeEach(() => {
       setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
 
-      createStore();
       createComponent();
     });
 
@@ -259,7 +327,6 @@ describe('GeoReplicableApp', () => {
 
   describe('handleSearch', () => {
     beforeEach(() => {
-      createStore();
       createComponent();
     });
 
@@ -276,14 +343,47 @@ describe('GeoReplicableApp', () => {
     });
   });
 
-  describe('onCreate', () => {
-    beforeEach(() => {
-      createStore();
-      createComponent();
+  describe('handleNextPage', () => {
+    beforeEach(async () => {
+      createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
+
+      await waitForPromises();
     });
 
-    it('calls fetchReplicableItems', () => {
-      expect(store.dispatch).toHaveBeenCalledWith('fetchReplicableItems');
+    it('calls Apollo query with updated cursor', async () => {
+      findGeoReplicable().vm.$emit('next', 'test_item');
+      await nextTick();
+
+      expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledWith(
+        expect.objectContaining({
+          before: '',
+          after: 'test_item',
+          first: DEFAULT_PAGE_SIZE,
+          last: null,
+        }),
+      );
+    });
+  });
+
+  describe('handlePrevPage', () => {
+    beforeEach(async () => {
+      createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
+
+      await waitForPromises();
+    });
+
+    it('calls Apollo query with updated cursor', async () => {
+      findGeoReplicable().vm.$emit('prev', 'test_item');
+      await nextTick();
+
+      expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledWith(
+        expect.objectContaining({
+          before: 'test_item',
+          after: '',
+          first: null,
+          last: DEFAULT_PAGE_SIZE,
+        }),
+      );
     });
   });
 });

@@ -9,9 +9,7 @@ Vue.use(Vuex);
 
 export const getStoreConfig = ({
   titlePlural,
-  graphqlFieldName,
   graphqlMutationRegistryClass,
-  verificationEnabled,
   geoCurrentSiteId,
   geoTargetSiteId,
 }) => ({
@@ -19,9 +17,7 @@ export const getStoreConfig = ({
   mutations,
   state: createState({
     titlePlural,
-    graphqlFieldName,
     graphqlMutationRegistryClass,
-    verificationEnabled,
     geoCurrentSiteId,
     geoTargetSiteId,
   }),

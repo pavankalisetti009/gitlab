@@ -4,28 +4,36 @@ export const MOCK_REPLICABLE_TYPES = [
   {
     titlePlural: 'Design Management Repositories',
     namePlural: 'design_management_repositories',
+    graphqlRegistryClass: 'DesignManagementRepositoryRegistry',
     graphqlFieldName: 'designManagementRepositoryRegistries',
     graphqlMutationRegistryClass: 'DESIGN_MANAGEMENT_REPOSITORY_REGISTRY',
+    verificationEnabled: true,
   },
   {
     titlePlural: 'Project Repositories',
     namePlural: 'project_repositories',
+    graphqlRegistryClass: 'ProjectRepositoryRegistry',
     graphqlFieldName: 'projectRepositoryRegistries',
     graphqlMutationRegistryClass: 'PROJECT_REPOSITORY_REGISTRY',
+    verificationEnabled: true,
   },
   {
     titlePlural: 'Package Files',
     namePlural: 'package_files',
+    graphqlRegistryClass: 'PackageFileRegistry',
     graphqlFieldName: 'packageFileRegistries',
     graphqlMutationRegistryClass: 'PACKAGE_FILE_REGISTRY',
+    verificationEnabled: false,
   },
 ];
+
+export const MOCK_REPLICABLE_CLASS = MOCK_REPLICABLE_TYPES[0];
 
 export const MOCK_REPLICABLE_TYPE = MOCK_REPLICABLE_TYPES[0].namePlural;
 
 export const MOCK_GRAPHQL_REGISTRY = MOCK_REPLICABLE_TYPES[0].graphqlFieldName;
 
-export const MOCK_GRAPHQL_REGISTRY_CLASS = MOCK_REPLICABLE_TYPES[0].graphqlMutationRegistryClass;
+export const MOCK_GRAPHQL_REGISTRY_CLASS = MOCK_REPLICABLE_TYPES[0].graphqlRegistryClass;
 
 export const MOCK_BASIC_GRAPHQL_DATA = [
   {
@@ -37,6 +45,9 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
     verifiedAt: new Date().toString(),
     lastSyncFailure: null,
     verificationFailure: null,
+    retryCount: 0,
+    retryAt: null,
+    createdAt: new Date().toString(),
   },
   {
     id: 'gid://gitlab/Geo::MockRegistry/2',
@@ -47,6 +58,9 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
     verifiedAt: null,
     lastSyncFailure: null,
     verificationFailure: null,
+    retryCount: 0,
+    retryAt: null,
+    createdAt: new Date().toString(),
   },
   {
     id: 'gid://gitlab/Geo::MockRegistry/3',
@@ -57,6 +71,9 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
     verifiedAt: new Date().toString(),
     lastSyncFailure: 'There was a sync failure',
     verificationFailure: 'There was a verification failure',
+    retryCount: 1,
+    retryAt: new Date().toString(),
+    createdAt: new Date().toString(),
   },
 ];
 
