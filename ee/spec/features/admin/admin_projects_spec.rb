@@ -7,37 +7,78 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:role) { create(:admin_member_role, :read_admin_projects, user: current_user) }
 
-    before do
-      stub_licensed_features(custom_roles: true)
+    context 'when admin_projects_vue feature flag is disabled' do
+      before do
+        stub_feature_flags(admin_projects_vue: false)
+        stub_licensed_features(custom_roles: true)
 
-      enable_admin_mode!(current_user)
+        enable_admin_mode!(current_user)
 
-      sign_in(current_user)
-    end
-
-    describe 'list' do
-      let_it_be(:authorized_project) { create(:project, owners: [current_user]) }
-      let_it_be(:unauthorized_project) { create(:project, :private) }
-
-      it 'does not render admin-only action buttons' do
-        visit admin_projects_path
-
-        expect(page).not_to have_content("New Project")
-        expect(page).to have_content(authorized_project.name)
-        within_testid("projects-list-item-#{authorized_project.id}") do
-          expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
-        end
+        sign_in(current_user)
       end
 
-      it 'displays projects the user is not a member of' do
-        visit admin_projects_path
+      describe 'list' do
+        let_it_be(:authorized_project) { create(:project, owners: [current_user]) }
+        let_it_be(:unauthorized_project) { create(:project, :private) }
 
-        expect(page).to have_content(unauthorized_project.name)
+        it 'does not render admin-only action buttons' do
+          visit admin_projects_path
+
+          expect(page).to have_content(authorized_project.name)
+          expect(page).not_to have_content("New Project")
+          expect(page).not_to have_content("Edit")
+          expect(page).not_to have_content("Delete")
+        end
+
+        it 'displays projects the user is not a member of' do
+          visit admin_projects_path
+
+          expect(page).to have_content(unauthorized_project.name)
+        end
+      end
+    end
+
+    context 'when admin_projects_vue feature flag is enabled' do
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        enable_admin_mode!(current_user)
+
+        sign_in(current_user)
+      end
+
+      describe 'list' do
+        let_it_be(:authorized_project) { create(:project, owners: [current_user]) }
+        let_it_be(:unauthorized_project) { create(:project, :private) }
+
+        it 'does not render admin-only action buttons' do
+          visit admin_projects_path
+
+          expect(page).not_to have_content("New Project")
+          expect(page).to have_content(authorized_project.name)
+          within_testid("projects-list-item-#{authorized_project.id}") do
+            expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
+          end
+        end
+
+        it 'displays projects the user is not a member of' do
+          visit admin_projects_path
+
+          expect(page).to have_content(unauthorized_project.name)
+        end
       end
     end
 
     describe 'show', :aggregate_failures do
       let_it_be(:project) { create(:project) }
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        enable_admin_mode!(current_user)
+
+        sign_in(current_user)
+      end
 
       it 'shows the project without admin-only buttons' do
         visit admin_project_path(project)
