@@ -26,7 +26,7 @@ module QA
         quarantine: {
           issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/929',
           type: :investigating,
-          only: { pipeline: :staging }
+          only: { pipeline: %w[staging-canary staging] }
         }
       ) do
         QA::Support::Retrier.retry_on_exception(
