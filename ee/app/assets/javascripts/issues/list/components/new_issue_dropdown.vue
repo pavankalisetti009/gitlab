@@ -6,9 +6,14 @@ import {
   GlDisclosureDropdownItem,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import { sprintfWorkItem, WORK_ITEM_TYPE_NAME_OBJECTIVE } from '~/work_items/constants';
+import {
+  CREATION_CONTEXT_LIST_ROUTE,
+  sprintfWorkItem,
+  WORK_ITEM_TYPE_NAME_OBJECTIVE,
+} from '~/work_items/constants';
 
 export default {
+  CREATION_CONTEXT_LIST_ROUTE,
   WORK_ITEM_TYPE_NAME_OBJECTIVE,
   i18n: {
     newIssueLabel: __('New issue'),
@@ -55,6 +60,7 @@ export default {
     >
       <gl-disclosure-dropdown-item :item="newIssueItem" />
       <create-work-item-modal
+        :creation-context="$options.CREATION_CONTEXT_LIST_ROUTE"
         :full-path="fullPath"
         :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_OBJECTIVE"
         as-dropdown-item

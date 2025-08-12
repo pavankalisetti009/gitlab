@@ -2,7 +2,7 @@ import { GlButton, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitla
 import { mount } from '@vue/test-utils';
 import NewIssueDropdown from 'ee/issues/list/components/new_issue_dropdown.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
-import { WORK_ITEM_TYPE_NAME_OBJECTIVE } from '~/work_items/constants';
+import { CREATION_CONTEXT_LIST_ROUTE, WORK_ITEM_TYPE_NAME_OBJECTIVE } from '~/work_items/constants';
 
 const NEW_ISSUE_PATH = 'mushroom-kingdom/~/issues/new';
 
@@ -11,10 +11,11 @@ describe('NewIssueDropdown component', () => {
 
   const createComponent = () => {
     return mount(NewIssueDropdown, {
+      propsData: {
+        fullPath: 'full-path',
+      },
       provide: {
         newIssuePath: NEW_ISSUE_PATH,
-        fullPath: 'full-path',
-        isGroup: false,
       },
       stubs: {
         CreateWorkItemModal,
@@ -47,6 +48,7 @@ describe('NewIssueDropdown component', () => {
   it('renders findCreateWorkItemModal as dropdown item for objectives', () => {
     expect(findCreateWorkItemModal().props()).toMatchObject({
       asDropdownItem: true,
+      creationContext: CREATION_CONTEXT_LIST_ROUTE,
       preselectedWorkItemType: WORK_ITEM_TYPE_NAME_OBJECTIVE,
     });
   });

@@ -102,7 +102,6 @@ describe('WorkItemCustomFieldsSingleSelect', () => {
         customField,
         workItemType,
         workItemId,
-        fullPath: 'flightjs/FlightJs',
       },
     });
   };

@@ -50,7 +50,6 @@ describe('WorkItemDates component', () => {
         shouldRollUp,
         workItemType: 'Epic',
         workItem: updateWorkItemMutationResponse.data.workItemUpdate.workItem,
-        fullPath: 'gitlab-org/gitlab',
       },
       stubs: {
         GlDatepicker: stubComponent(GlDatepicker, {

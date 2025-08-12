@@ -115,11 +115,7 @@ export default {
       this.updateInProgress = true;
 
       if (this.createFlow) {
-        this.$emit('updateWidgetDraft', {
-          fullPath: this.fullPath,
-          healthStatus,
-          workItemType: this.workItemType,
-        });
+        this.$emit('updateWidgetDraft', { healthStatus });
         this.updateInProgress = false;
         return;
       }

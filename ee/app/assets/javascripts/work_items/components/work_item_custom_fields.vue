@@ -28,10 +28,6 @@ export default {
       required: false,
       default: '',
     },
-    fullPath: {
-      type: String,
-      required: true,
-    },
     canUpdate: {
       type: Boolean,
       required: false,
@@ -79,7 +75,6 @@ export default {
       :custom-field="customFieldData"
       :can-update="canUpdate"
       :work-item-type="workItemType"
-      :full-path="fullPath"
       @updateWidgetDraft="$emit('updateWidgetDraft', $event)"
       @error="$emit('error', $event)"
     />

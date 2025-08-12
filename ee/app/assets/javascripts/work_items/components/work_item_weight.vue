@@ -31,10 +31,6 @@ export default {
       required: false,
       default: false,
     },
-    fullPath: {
-      type: String,
-      required: true,
-    },
     widget: {
       type: Object,
       required: true,
@@ -113,11 +109,7 @@ export default {
       this.track('updated_weight');
 
       if (this.createFlow) {
-        this.$emit('updateWidgetDraft', {
-          workItemType: this.workItemType,
-          fullPath: this.fullPath,
-          weight: newWeight,
-        });
+        this.$emit('updateWidgetDraft', { weight: newWeight });
         this.isUpdating = false;
         return;
       }

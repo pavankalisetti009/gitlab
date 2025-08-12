@@ -206,13 +206,7 @@ export default {
       try {
         if (this.createFlow) {
           this.$emit('updateWidgetDraft', {
-            workItemType: this.workItemType,
-            fullPath: this.fullPath,
-            status: this.localStatus
-              ? {
-                  ...this.localStatus,
-                }
-              : null,
+            status: this.localStatus ? { ...this.localStatus } : null,
           });
           this.updateInProgress = true;
           return;
