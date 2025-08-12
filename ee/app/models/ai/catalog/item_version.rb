@@ -8,6 +8,10 @@ module Ai
       AGENT_SCHEMA_VERSION = 1
       DEFINITION_ACCESSOR_PREFIX = 'def_'
 
+      VERSION_BUMP_MAJOR = :major
+      VERSION_BUMP_MINOR = :minor
+      VERSION_BUMP_PATCH = :patch
+
       self.table_name = "ai_catalog_item_versions"
 
       columns_changing_default :definition
@@ -40,12 +44,31 @@ module Ai
         release_date.present?
       end
 
+      def enforce_readonly_versions?
+        Feature.enabled?(:ai_catalog_enforce_readonly_versions, item.project)
+      end
+
       def draft?
         !released?
       end
 
-      def readonly?
-        super || release_date_was.present?
+      def version_bump(bump_level)
+        return if version.nil?
+
+        old_version = Gitlab::VersionInfo.parse(version)
+
+        new_version = case bump_level.to_sym
+                      when VERSION_BUMP_MAJOR
+                        [old_version.major + 1, 0, 0]
+                      when VERSION_BUMP_MINOR
+                        [old_version.major, old_version.minor + 1, 0]
+                      when VERSION_BUMP_PATCH
+                        [old_version.major, old_version.minor, old_version.patch + 1]
+                      else
+                        raise ArgumentError, "unknown bump_level: #{bump_level}"
+                      end
+
+        Gitlab::VersionInfo.new(*new_version).to_s
       end
 
       private
@@ -77,9 +100,9 @@ module Ai
       end
 
       def validate_readonly
-        return unless readonly? && changed?
+        return unless release_date_was.present? && changed? && enforce_readonly_versions?
 
-        errors.add(:base, s_('AICatalog|cannot change a released item version'))
+        errors.add(:base, s_('AICatalog|cannot be changed as it has been released'))
       end
 
       def populate_organization

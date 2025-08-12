@@ -28,6 +28,10 @@ module Mutations
             required: true,
             description: 'Whether the agent is publicly visible in the catalog.'
 
+          argument :release, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Whether to release the latest version of the agent.'
+
           argument :system_prompt, GraphQL::Types::String,
             required: true,
             description: 'System prompt for the agent.'

@@ -12,6 +12,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       name: 'Agent',
       description: 'Description',
       public: true,
+      release: true,
       tools: [Ai::Catalog::BuiltInTool.find(1)],
       system_prompt: 'A',
       user_prompt: 'B'
@@ -20,7 +21,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
 
   subject(:response) { described_class.new(project: project, current_user: user, params: params).execute }
 
-  describe '#execute' do
+  describe '#execute', :freeze_time do
     shared_examples 'an error response' do |errors|
       it 'returns an error response' do
         expect(response).to be_error
@@ -57,6 +58,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
       expect(item.versions.first).to have_attributes(
         schema_version: 1,
         version: '1.0.0',
+        release_date: Time.zone.now,
         definition: {
           system_prompt: params[:system_prompt],
           tools: [1],
@@ -73,6 +75,18 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
          'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_weekly',
          'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly'
        )
+    end
+
+    context 'when the version is not being released' do
+      let(:params) { super().merge(release: false) }
+
+      it 'creates a draft version' do
+        expect { response }.to change { Ai::Catalog::ItemVersion.count }
+
+        item = Ai::Catalog::Item.last
+
+        expect(item.latest_version).to be_draft
+      end
     end
 
     context 'when there is a validation issue' do

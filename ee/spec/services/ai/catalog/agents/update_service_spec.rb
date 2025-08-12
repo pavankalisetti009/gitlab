@@ -16,6 +16,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
       description: 'New description',
       public: true,
       tools: tools,
+      release: true,
       user_prompt: 'New user prompt',
       system_prompt: 'New system prompt'
     }
@@ -23,11 +24,11 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
 
   let(:service) { described_class.new(project: project, current_user: user, params: params) }
 
-  describe '#execute' do
+  describe '#execute', :freeze_time do
     subject(:execute_service) { service.execute }
 
     shared_examples 'an error response' do |error|
-      it 'returns an error response' do
+      it 'returns an error response', :aggregate_failures do
         result = execute_service
 
         expect(result).to be_error
@@ -62,7 +63,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         project.add_maintainer(user)
       end
 
-      it 'updates the agent and its latest version' do
+      it 'updates the agent and its latest version', :aggregate_failures do
         execute_service
 
         expect(agent.reload).to have_attributes(
@@ -74,6 +75,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         expect(latest_version.reload).to have_attributes(
           schema_version: 1,
           version: '1.1.0',
+          release_date: Time.zone.now,
           definition: {
             user_prompt: 'New user prompt',
             tools: [1, 9],
@@ -82,7 +84,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         )
       end
 
-      it 'returns success response with item in payload' do
+      it 'returns success response with item in payload', :aggregate_failures do
         result = execute_service
 
         expect(result).to be_success
@@ -95,11 +97,92 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
          .with(user: user, project: project, additional_properties: { label: 'agent' })
       end
 
+      context 'when the latest version has been released' do
+        before do
+          latest_version.update!(release_date: 1.day.ago)
+        end
+
+        it 'creates a new released version', :aggregate_failures do
+          expect { execute_service }.to change { agent.reload.versions.count }.by(1)
+          expect(agent.latest_version).not_to eq(latest_version)
+          expect(agent.latest_version).to have_attributes(
+            schema_version: 1,
+            version: '2.0.0',
+            release_date: Time.zone.now,
+            definition: {
+              user_prompt: 'New user prompt',
+              tools: [1, 9],
+              system_prompt: 'New system prompt'
+            }.stringify_keys
+          )
+        end
+
+        it 'does not change the older version' do
+          expect { execute_service }.not_to change { latest_version.reload.attributes }
+        end
+
+        context 'when the `ai_catalog_enforce_readonly_versions` flag is disabled' do
+          before do
+            stub_feature_flags(ai_catalog_enforce_readonly_versions: false)
+          end
+
+          it 'does not create a new version, and updates the existing version instead', :aggregate_failures do
+            expect { execute_service }.not_to change { agent.reload.versions.count }
+            expect(agent.latest_version).to eq(latest_version)
+            expect(agent.latest_version).to have_attributes(
+              schema_version: 1,
+              version: '1.1.0',
+              release_date: 1.day.ago,
+              definition: {
+                user_prompt: 'New user prompt',
+                tools: [1, 9],
+                system_prompt: 'New system prompt'
+              }.stringify_keys
+            )
+          end
+
+          context 'when the version is not being released' do
+            let(:params) { super().merge(release: false) }
+
+            it 'does not unrelease the version', :aggregate_failures do
+              expect { execute_service }.not_to change { agent.reload.versions.count }
+              expect(agent.latest_version).to be_released
+            end
+          end
+        end
+
+        context 'when the version is not being released' do
+          let(:params) { super().merge(release: nil) }
+
+          it 'creates a new unreleased version', :aggregate_failures do
+            expect { execute_service }.to change { agent.reload.versions.count }.by(1)
+            expect(agent.latest_version).not_to eq(latest_version)
+            expect(agent.latest_version.release_date).to be_nil
+          end
+        end
+
+        context 'when only agent properties are updated' do
+          let(:params) { { agent: agent, name: 'New name' } }
+
+          it 'updates the agent' do
+            expect { execute_service }.to change { agent.reload.name }.to('New name')
+          end
+
+          it 'does not create a new version' do
+            expect { execute_service }.not_to change { agent.reload.versions.count }
+          end
+        end
+      end
+
       context 'when only agent properties are being updated' do
         let(:params) { { agent: agent, name: 'New name' } }
 
         it 'updates the agent' do
           expect { execute_service }.to change { agent.reload.name }.to('New name')
+        end
+
+        it 'does not update the latest version' do
+          expect { execute_service }.not_to change { latest_version.reload.attributes }
         end
       end
 
@@ -114,7 +197,19 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           expect { execute_service }.to change { latest_version.reload.schema_version }.to(987)
         end
 
-        context 'when no version properties are being updated' do
+        context 'when the only change to the version is that it is being released' do
+          let(:params) { { agent: agent, release: true } }
+
+          it 'releases the version' do
+            expect { execute_service }.to change { latest_version.reload.released? }.to(true)
+          end
+
+          it 'does not change the current schema version' do
+            expect { execute_service }.not_to change { latest_version.reload.schema_version }
+          end
+        end
+
+        context 'when only the agent is being updated' do
           let(:params) { { agent: agent, name: 'New name' } }
 
           it 'does not change the current schema version' do

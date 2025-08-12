@@ -22,6 +22,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
         public
         latestVersion {
           id
+          released
           ...on AiCatalogAgentVersion {
             userPrompt
             tools {
@@ -45,6 +46,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       name: 'New name',
       public: true,
       description: 'New description',
+      release: true,
       system_prompt: 'New system prompt',
       tools: tools.map { |tool| global_id_of(tool) },
       user_prompt: 'New user prompt'
@@ -116,7 +118,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
     end
   end
 
-  context 'when update succeeds' do
+  context 'when update succeeds', :freeze_time do
     it 'updates the agent and its latest version, and returns a success response' do
       execute
 
@@ -129,6 +131,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       expect(latest_version.reload).to have_attributes(
         schema_version: 1,
         version: '1.1.0',
+        release_date: Time.zone.now,
         definition: {
           system_prompt: 'New system prompt',
           tools: tools.map(&:id),
@@ -142,6 +145,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
           :description,
           :public,
           latest_version: a_graphql_entity_for(latest_version,
+            released: true,
             system_prompt: latest_version.definition['system_prompt'],
             tools: {
               'nodes' => match_array(
@@ -153,6 +157,21 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
         )
       )
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
+    end
+  end
+
+  context 'when update creates a new latest version' do
+    it 'returns the correct version in latestVersion field' do
+      latest_version.update!(release_date: Time.zone.now)
+
+      execute
+
+      expect(graphql_dig_at(mutation_response, :item, :latest_version)).not_to match(
+        a_graphql_entity_for(latest_version)
+      )
+      expect(graphql_dig_at(mutation_response, :item, :latest_version)).to match(
+        a_graphql_entity_for(agent.latest_version)
+      )
     end
   end
 end

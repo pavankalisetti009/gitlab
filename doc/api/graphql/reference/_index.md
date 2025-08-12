@@ -2297,6 +2297,7 @@ Input type: `AiCatalogAgentCreateInput`
 | <a id="mutationaicatalogagentcreatename"></a>`name` | [`String!`](#string) | Name for the agent. |
 | <a id="mutationaicatalogagentcreateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project for the agent. |
 | <a id="mutationaicatalogagentcreatepublic"></a>`public` | [`Boolean!`](#boolean) | Whether the agent is publicly visible in the catalog. |
+| <a id="mutationaicatalogagentcreaterelease"></a>`release` | [`Boolean`](#boolean) | Whether to release the latest version of the agent. |
 | <a id="mutationaicatalogagentcreatesystemprompt"></a>`systemPrompt` | [`String!`](#string) | System prompt for the agent. |
 | <a id="mutationaicatalogagentcreatetools"></a>`tools` | [`[AiCatalogBuiltInToolID!]`](#aicatalogbuiltintoolid) | List of GitLab tools enabled for the agent. |
 | <a id="mutationaicatalogagentcreateuserprompt"></a>`userPrompt` | [`String!`](#string) | User prompt for the agent. |
@@ -2350,7 +2351,8 @@ Input type: `AiCatalogAgentUpdateInput`
 | <a id="mutationaicatalogagentupdatedescription"></a>`description` | [`String`](#string) | Description for the agent. |
 | <a id="mutationaicatalogagentupdateid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog Agent to update. |
 | <a id="mutationaicatalogagentupdatename"></a>`name` | [`String`](#string) | Name for the agent. |
-| <a id="mutationaicatalogagentupdatepublic"></a>`public` | [`Boolean`](#boolean) | Whether the item is publicly visible in the catalog. |
+| <a id="mutationaicatalogagentupdatepublic"></a>`public` | [`Boolean`](#boolean) | Whether the agent is publicly visible in the catalog. |
+| <a id="mutationaicatalogagentupdaterelease"></a>`release` | [`Boolean`](#boolean) | Whether to release the latest version of the agent. |
 | <a id="mutationaicatalogagentupdatesystemprompt"></a>`systemPrompt` | [`String`](#string) | System prompt for the agent. |
 | <a id="mutationaicatalogagentupdatetools"></a>`tools` | [`[AiCatalogBuiltInToolID!]`](#aicatalogbuiltintoolid) | List of GitLab tools enabled for the agent. |
 | <a id="mutationaicatalogagentupdateuserprompt"></a>`userPrompt` | [`String`](#string) | User prompt for the agent. |
