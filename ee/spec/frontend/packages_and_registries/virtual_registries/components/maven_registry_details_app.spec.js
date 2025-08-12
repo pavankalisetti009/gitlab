@@ -13,7 +13,7 @@ import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import { updateMavenRegistryUpstreamPosition } from 'ee/api/virtual_registries_api';
-import { groupVirtualRegistry } from '../mock_data';
+import { mavenVirtualRegistry } from '../mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
@@ -23,7 +23,7 @@ Vue.use(VueApollo);
 describe('MavenRegistryDetailsApp', () => {
   let wrapper;
 
-  const { upstreams } = groupVirtualRegistry.group.mavenVirtualRegistries.nodes[0];
+  const { upstreams } = mavenVirtualRegistry;
 
   const defaultProps = {
     registry: {
