@@ -9,6 +9,7 @@ import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_a
 import {
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
+  CREATION_CONTEXT_LIST_ROUTE,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
 } from '~/work_items/constants';
@@ -44,6 +45,7 @@ const IterationToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/iteration_token.vue');
 
 export default {
+  CREATION_CONTEXT_LIST_ROUTE,
   emptyStateSvg,
   WORK_ITEM_TYPE_NAME_EPIC,
   components: {
@@ -243,6 +245,7 @@ export default {
         <template v-if="showNewWorkItem" #new-issue-button>
           <create-work-item-modal
             class="gl-grow"
+            :creation-context="$options.CREATION_CONTEXT_LIST_ROUTE"
             :full-path="rootPageFullPath"
             :is-group="isGroup"
             :preselected-work-item-type="preselectedWorkItemType"
@@ -266,6 +269,7 @@ export default {
         <template v-if="showNewWorkItem" #actions>
           <create-work-item-modal
             class="gl-grow"
+            :creation-context="$options.CREATION_CONTEXT_LIST_ROUTE"
             :full-path="rootPageFullPath"
             :is-group="isGroup"
             :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_EPIC"

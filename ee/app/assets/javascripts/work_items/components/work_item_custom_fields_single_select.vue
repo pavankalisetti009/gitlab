@@ -42,10 +42,6 @@ export default {
       type: Object,
       required: true,
     },
-    fullPath: {
-      type: String,
-      required: true,
-    },
   },
   data() {
     return {
@@ -175,8 +171,6 @@ export default {
           : null;
 
         this.$emit('updateWidgetDraft', {
-          workItemType: this.workItemType,
-          fullPath: this.fullPath,
           customField: {
             id: this.customFieldId,
             selectedOptions: selectedOption ? [selectedOption] : [],

@@ -103,7 +103,6 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
         customField,
         workItemType,
         workItemId,
-        fullPath: 'flightjs/FlightJs',
       },
     });
   };

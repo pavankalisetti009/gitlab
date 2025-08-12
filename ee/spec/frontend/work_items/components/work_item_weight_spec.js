@@ -37,7 +37,6 @@ describe('WorkItemWeight component', () => {
       apolloProvider: createMockApollo([[updateWorkItemMutation, mutationHandler]]),
       propsData: {
         canUpdate,
-        fullPath: 'gitlab-org/gitlab',
         widget: {
           weight,
           widgetDefinition: { editable },

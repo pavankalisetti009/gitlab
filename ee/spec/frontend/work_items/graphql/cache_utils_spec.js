@@ -1,5 +1,5 @@
 import { setNewWorkItemCache } from '~/work_items/graphql/cache_utils';
-import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
+import { CREATION_CONTEXT_LIST_ROUTE, WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import { apolloProvider } from '~/graphql_shared/issuable_client';
 import { namespaceWorkItemTypesQueryResponse } from 'jest/work_items/mock_data';
@@ -32,8 +32,9 @@ describe('work items graphql cache utils', () => {
 
       await setNewWorkItemCache({
         fullPath: 'gitlab-org/gitlab',
+        context: CREATION_CONTEXT_LIST_ROUTE,
         widgetDefinitions: taskWidgetDefinitions,
-        workItemType: 'TASK',
+        workItemType: 'Task',
         workItemTypeId: 'gid://gitlab/WorkItems::Type/5',
         workItemTypeIconName: 'issue-type-task',
       });

@@ -169,12 +169,7 @@ export default {
 
       try {
         if (this.workItemId === newWorkItemId(this.workItemType)) {
-          this.$emit('updateWidgetDraft', {
-            workItemType: this.workItemType,
-            fullPath: this.fullPath,
-            iteration: this.localIteration,
-          });
-
+          this.$emit('updateWidgetDraft', { iteration: this.localIteration });
           this.updateInProgress = false;
           return;
         }

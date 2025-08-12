@@ -25,7 +25,6 @@ describe('WorkItemCustomFields', () => {
         workItemId: 'gid://gitlab/WorkItem/1',
         workItemType: 'Issue',
         customFields,
-        fullPath: 'group/project',
         canUpdate: true,
       },
     });
