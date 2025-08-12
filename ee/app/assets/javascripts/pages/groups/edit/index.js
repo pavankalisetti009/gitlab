@@ -9,6 +9,8 @@ import { initServicePingSettingsClickTracking } from 'ee/registration_features_d
 import { createAlert } from '~/alert';
 import { initMergeRequestMergeChecksApp } from 'ee/merge_checks';
 import { initDormantUsersInputSection } from '~/pages/admin/application_settings/account_and_limits';
+import { initAiSettings } from 'ee/ai/settings/index';
+import AiGroupSettings from 'ee/ai/settings/pages/ai_group_settings.vue';
 import { __ } from '~/locale';
 
 /**
@@ -67,3 +69,4 @@ if (mergeRequestApprovalSetting) {
 
 initServicePingSettingsClickTracking();
 initMergeRequestMergeChecksApp();
+initAiSettings('js-ai-settings', AiGroupSettings);
