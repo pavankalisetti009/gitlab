@@ -42,6 +42,9 @@ query getWorkItemsFullEE(
   $status: WorkItemWidgetStatusFilterInput
   $releaseTag: [String!]
   $releaseTagWildcardId: ReleaseTagWildcardId
+  $iterationId: [ID]
+  $iterationWildcardId: IterationWildcardId
+  $iterationCadenceId: [IterationsCadenceID!]
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -86,6 +89,9 @@ query getWorkItemsFullEE(
       status: $status
       releaseTag: $releaseTag
       releaseTagWildcardId: $releaseTagWildcardId
+      iterationId: $iterationId
+      iterationWildcardId: $iterationWildcardId
+      iterationCadenceId: $iterationCadenceId
     ) {
       pageInfo {
         ...PageInfo

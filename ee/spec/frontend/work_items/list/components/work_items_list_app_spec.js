@@ -25,9 +25,12 @@ import {
   TOKEN_TITLE_HEALTH,
   TOKEN_TYPE_STATUS,
   TOKEN_TITLE_STATUS,
+  TOKEN_TYPE_ITERATION,
+  TOKEN_TITLE_ITERATION,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
+import searchIterationsQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
 import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import { mockNamespaceCustomFieldsResponse } from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
 
@@ -37,6 +40,19 @@ const skipReason = new SkipReason({
   issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478775',
 });
 
+const mockIterationsResponse = {
+  data: {
+    project: {
+      iterations: {
+        nodes: [
+          { id: 'gid://gitlab/Iteration/1', title: 'Iteration 1' },
+          { id: 'gid://gitlab/Iteration/2', title: 'Iteration 2' },
+        ],
+      },
+    },
+  },
+};
+
 describeSkipVue3(skipReason, () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
@@ -44,6 +60,7 @@ describeSkipVue3(skipReason, () => {
   Vue.use(VueApollo);
 
   const customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse);
+  const iterationsQueryHandler = jest.fn().mockResolvedValue(mockIterationsResponse);
 
   const findCreateWorkItemModal = () => wrapper.findComponent(CreateWorkItemModal);
   const findListEmptyState = () => wrapper.findComponent(EmptyStateWithAnyIssues);
@@ -59,6 +76,7 @@ describeSkipVue3(skipReason, () => {
     hasIssueWeightsFeature = false,
     hasIssuableHealthStatusFeature = false,
     hasCustomFieldsFeature = true,
+    hasIterationsFeature = false,
     showNewWorkItem = true,
     isGroup = true,
     workItemType = WORK_ITEM_TYPE_NAME_EPIC,
@@ -66,12 +84,16 @@ describeSkipVue3(skipReason, () => {
     hasStatusFeature = true,
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
-      apolloProvider: createMockApollo([[namespaceCustomFieldsQuery, customFieldsQueryHandler]]),
+      apolloProvider: createMockApollo([
+        [namespaceCustomFieldsQuery, customFieldsQueryHandler],
+        [searchIterationsQuery, iterationsQueryHandler],
+      ]),
       provide: {
         hasEpicsFeature,
         hasCustomFieldsFeature,
         hasIssueWeightsFeature,
         hasIssuableHealthStatusFeature,
+        hasIterationsFeature,
         showNewWorkItem,
         isGroup,
         workItemType,
@@ -319,6 +341,53 @@ describeSkipVue3(skipReason, () => {
           icon: 'status-health',
           token: expect.any(Function),
           unique: true,
+        });
+      });
+    });
+
+    describe('iteration', () => {
+      it('excludes iteration token when feature is disabled', async () => {
+        mountComponent({
+          hasIterationsFeature: false,
+          workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        });
+        await waitForPromises();
+
+        const iterationToken = findToken(TOKEN_TYPE_ITERATION);
+
+        expect(iterationToken).toBeUndefined();
+      });
+
+      it('excludes iteration token when feature is enabled but on epics list', async () => {
+        mountComponent({
+          hasIterationsFeature: true,
+          workItemType: WORK_ITEM_TYPE_NAME_EPIC,
+        });
+        await waitForPromises();
+
+        const iterationToken = findToken(TOKEN_TYPE_ITERATION);
+
+        expect(iterationToken).toBeUndefined();
+      });
+
+      it('includes iteration token when feature is enabled and not on epics list', async () => {
+        mountComponent({
+          hasIterationsFeature: true,
+          workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        });
+        await waitForPromises();
+
+        const iterationToken = findToken(TOKEN_TYPE_ITERATION);
+
+        expect(iterationToken).toMatchObject({
+          type: TOKEN_TYPE_ITERATION,
+          title: TOKEN_TITLE_ITERATION,
+          icon: 'iteration',
+          token: expect.any(Function),
+          fetchIterations: expect.any(Function),
+          recentSuggestionsStorageKey: 'gitlab-org-work-items-recent-tokens-iteration',
+          fullPath: 'gitlab-org',
+          isProject: false,
         });
       });
     });
