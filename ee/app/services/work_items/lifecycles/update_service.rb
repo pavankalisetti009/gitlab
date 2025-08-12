@@ -50,8 +50,10 @@ module WorkItems
             validate_status_removal_constraints
             update_lifecycle_status_positions!
             lifecycle.assign_attributes(default_statuses_for_lifecycle(@processed_statuses, params))
-            lifecycle.validate!
           end
+
+          lifecycle.assign_attributes(params.slice(:name))
+          lifecycle.validate!
 
           lifecycle.updated_by = current_user if lifecycle.changed?
           lifecycle.save! if lifecycle.changed?
@@ -70,11 +72,11 @@ module WorkItems
           validate_status_removal_constraints
 
           statuses = @processed_statuses
-          default_statuses = default_statuses_for_lifecycle(statuses, params)
+          default_statuses = default_statuses_for_lifecycle(statuses, params, force_resolve: true)
 
           ::WorkItems::Statuses::Custom::Lifecycle.create!(
             namespace: group,
-            name: lifecycle.name,
+            name: params[:name] || lifecycle.name,
             work_item_types: lifecycle.work_item_types,
             statuses: statuses,
             default_open_status: default_statuses[:default_open_status],
