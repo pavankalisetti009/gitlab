@@ -23646,9 +23646,6 @@ msgstr ""
 msgid "Display blame info"
 msgstr ""
 
-msgid "Display block"
-msgstr ""
-
 msgid "Display by"
 msgstr ""
 
@@ -23668,6 +23665,9 @@ msgid "Display source"
 msgstr ""
 
 msgid "Display time tracking in issues in total hours only. %{link_start}What is time tracking?%{link_end}"
+msgstr ""
+
+msgid "Display view"
 msgstr ""
 
 msgid "Do not display content for customer experience improvement and offers from third parties"
@@ -44334,7 +44334,7 @@ msgstr ""
 msgid "Online license"
 msgstr ""
 
-msgid "Only %{n} embedded views can be automatically displayed on a page. Click the button below to manually display this block."
+msgid "Only %{n} embedded views can be automatically displayed on a page. Click the button below to manually display this view."
 msgstr ""
 
 msgid "Only %{workspaceType} members with %{permissions} can view or be notified about this %{issuableType}."
