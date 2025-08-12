@@ -4330,6 +4330,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Features"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|GitLab AI vendor model"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|GitLab Default %{defaultModel}"
 msgstr ""
 
@@ -4360,10 +4363,10 @@ msgstr ""
 msgid "AdminAiPoweredFeatures|%{selected_model} is incompatible with the %{title} feature"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|AI vendor"
+msgid "AdminAiPoweredFeatures|Disabled"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Disabled"
+msgid "AdminAiPoweredFeatures|GitLab AI vendor model"
 msgstr ""
 
 msgid "AdminAiPoweredFeatures|Self-hosted model"

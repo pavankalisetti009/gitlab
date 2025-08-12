@@ -26,12 +26,16 @@ export default {
   },
   computed: {
     selectedFeatureSettingUnassigned() {
-      const providers = [PROVIDERS.SELF_HOSTED, PROVIDERS.DISABLED];
-
-      return !providers.includes(this.selectedFeatureSetting.provider);
+      return this.selectedFeatureSetting.provider === PROVIDERS.UNASSIGNED;
     },
     selectedFeatureSettingDisabled() {
       return this.selectedFeatureSetting.provider === PROVIDERS.DISABLED;
+    },
+    selectedFeatureSettingSelfHosted() {
+      return this.selectedFeatureSetting.provider === PROVIDERS.SELF_HOSTED;
+    },
+    selectedFeatureSettingVendored() {
+      return this.selectedFeatureSetting.provider === PROVIDERS.VENDORED;
     },
     selectedModelCompatibleWithAllSettings() {
       const selectedModelId = this.selectedFeatureSetting.selfHostedModel?.id;
@@ -45,11 +49,15 @@ export default {
       });
     },
     canBatchUpdate() {
-      return (
-        !this.selectedFeatureSettingUnassigned &&
-        !this.selectedFeatureSettingDisabled &&
-        this.selectedModelCompatibleWithAllSettings
-      );
+      if (this.selectedFeatureSettingDisabled) {
+        return false;
+      }
+
+      if (this.selectedFeatureSettingVendored) {
+        return true;
+      }
+
+      return this.selectedModelCompatibleWithAllSettings;
     },
     tooltipTitle() {
       let tooltipText;
@@ -103,7 +111,9 @@ export default {
             input: {
               features,
               provider: provider.toUpperCase(),
-              aiSelfHostedModelId: this.selectedFeatureSettingDisabled ? null : selfHostedModel?.id,
+              aiSelfHostedModelId: this.selectedFeatureSettingSelfHosted
+                ? selfHostedModel?.id
+                : null,
             },
           },
           refetchQueries: [{ query: getAiFeatureSettingsQuery }],

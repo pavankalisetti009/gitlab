@@ -90,7 +90,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
   context 'when feature setting is vendored' do
     let(:feature_setting) { build(:ai_feature_setting, provider: :vendored) }
 
-    it { expect(feature_setting.provider_title).to eq('AI vendor') }
+    it { expect(feature_setting.provider_title).to eq('GitLab AI vendor model') }
   end
 
   context 'when feature setting is disabled' do
