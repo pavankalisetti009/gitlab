@@ -183,10 +183,10 @@ RSpec.describe Issues::ReopenService, feature_category: :team_planning do
           WorkItems::Weights::UpdateWeightsService.new([parent_issue]).execute
         end
 
-        it 'triggers weight update for parent when child is reopened', :sidekiq_inline do
+        it 'triggers weight update when child is reopened', :sidekiq_inline do
           expect(WorkItems::Weights::UpdateWeightsWorker)
             .to receive(:perform_async)
-            .with(array_including(parent_issue.id))
+            .with(array_including(child_task_1.id))
 
           described_class.new(container: project, current_user: current_user).execute(child_task_1)
         end

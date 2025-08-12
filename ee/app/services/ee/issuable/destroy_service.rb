@@ -9,6 +9,8 @@ module EE
 
       override :before_destroy
       def before_destroy(issuable)
+        super
+
         return unless issuable.is_a?(MergeRequest)
 
         ::MergeRequests::MergeRequestBeforeDestroyAuditor.new(issuable, current_user).execute
