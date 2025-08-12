@@ -22,6 +22,10 @@ module Mutations
           required: true,
           description: 'Global ID of the lifecycle to be updated.'
 
+        argument :name, GraphQL::Types::String,
+          required: false,
+          description: 'Name of the lifecycle.'
+
         argument :statuses, [Types::WorkItems::StatusInputType],
           required: false,
           description: 'Statuses of the lifecycle. Can be existing (with id) or new (without id).'

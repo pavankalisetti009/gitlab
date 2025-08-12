@@ -8346,6 +8346,7 @@ Input type: `LifecycleUpdateInput`
 | <a id="mutationlifecycleupdatedefaultduplicatestatusindex"></a>`defaultDuplicateStatusIndex` | [`Int`](#int) | Index of the default duplicated status in the statuses array. |
 | <a id="mutationlifecycleupdatedefaultopenstatusindex"></a>`defaultOpenStatusIndex` | [`Int`](#int) | Index of the default open status in the statuses array. |
 | <a id="mutationlifecycleupdateid"></a>`id` | [`WorkItemsStatusesLifecycleID!`](#workitemsstatuseslifecycleid) | Global ID of the lifecycle to be updated. |
+| <a id="mutationlifecycleupdatename"></a>`name` | [`String`](#string) | Name of the lifecycle. |
 | <a id="mutationlifecycleupdatenamespacepath"></a>`namespacePath` | [`ID!`](#id) | Namespace path where the lifecycle exists. |
 | <a id="mutationlifecycleupdatestatuses"></a>`statuses` | [`[WorkItemStatusInput!]`](#workitemstatusinput) | Statuses of the lifecycle. Can be existing (with id) or new (without id). |
 
