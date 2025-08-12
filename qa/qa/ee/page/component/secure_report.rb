@@ -41,7 +41,6 @@ module QA
                 click_link('Tool')
               end
 
-              click_link(report)
               click_element("search-button")
               click_element("search-button") # Click twice to make dropdown go away
             else
