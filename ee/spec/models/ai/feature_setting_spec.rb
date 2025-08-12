@@ -162,14 +162,12 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     let_it_be(:feature_flagged_features) { Ai::FeatureSetting::FLAGGED_FEATURES.dup.stringify_keys }
 
     before do
-      allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+      # Set testing terms to false by default to make sure we catch
+      # undesirable mutations https://gitlab.com/gitlab-org/gitlab/-/issues/560746
+      allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(false)
     end
 
     context 'when GitLab testing terms have not been accepted' do
-      before do
-        allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(false)
-      end
-
       it 'returns only stable features' do
         expect(described_class.allowed_features).to eq(stable_features)
       end
@@ -180,6 +178,10 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
     end
 
     context 'when GitLab testing terms have been accepted' do
+      before do
+        allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+      end
+
       it 'returns both stable and flagged features' do
         expect(described_class.allowed_features).to eq(stable_features.merge(feature_flagged_features))
       end
@@ -190,14 +192,30 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         allow(::License).to receive(:current).and_return(instance_double(License, premium?: true))
       end
 
-      it 'excludes restricted features for premium users' do
-        expected_features = stable_features.merge(feature_flagged_features)
-        expected_features.except!(
-          'duo_chat_explain_vulnerability',
-          'resolve_vulnerability'
-        )
+      context 'when GitLab testing terms have been accepted' do
+        before do
+          allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+        end
 
-        expect(described_class.allowed_features).to eq(expected_features)
+        it 'excludes restricted features for premium users' do
+          expected_features = stable_features.merge(feature_flagged_features)
+          expected_features.except!(
+            'duo_chat_explain_vulnerability',
+            'resolve_vulnerability'
+          )
+
+          expect(described_class.allowed_features).to eq(expected_features)
+        end
+      end
+
+      context 'when GitLab testing terms have not been accepted' do
+        it 'returns only stable features' do
+          expect(described_class.allowed_features).to eq(stable_features)
+        end
+
+        it 'does not include flagged features' do
+          expect(described_class.allowed_features.keys).not_to include(*feature_flagged_features.keys)
+        end
       end
     end
   end
