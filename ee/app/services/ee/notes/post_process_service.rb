@@ -58,12 +58,15 @@ module EE
         flow_trigger = note.project.ai_flow_triggers.triggered_on(:mention).by_users(note.mentioned_users).first
         return unless flow_trigger
 
+        # We don't want the service account to talk to itself
+        return if note.author == flow_trigger.user
+
         ::Ai::FlowTriggers::RunService.new(
           project: note.project,
           current_user: note.author,
           resource: note.noteable,
           flow_trigger: flow_trigger
-        ).execute({ input: note.note, event: :mention })
+        ).execute({ input: note.note, event: :mention, discussion: note.discussion })
       end
     end
   end
