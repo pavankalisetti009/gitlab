@@ -38941,6 +38941,9 @@ msgstr ""
 msgid "MemberRole|Admin role is used by one or more LDAP synchronizations. Remove LDAP syncs, then delete role."
 msgstr ""
 
+msgid "MemberRole|Also applies to users that are assigned a custom admin role."
+msgstr ""
+
 msgid "MemberRole|Are you sure you want to delete this role?"
 msgstr ""
 
@@ -39217,7 +39220,7 @@ msgstr ""
 msgid "MemberRole|To delete custom member role, remove role from the following security policies:"
 msgstr ""
 
-msgid "MemberRole|To enhance security, we recommend %{linkStart}enabling Admin mode%{linkEnd} when using custom admin roles. Enabling Admin mode will require users to re-authenticate in GitLab before accessing the Admin area."
+msgid "MemberRole|To enhance security, we recommend enabling %{adminModeLinkStart}Admin Mode%{adminModeLinkEnd} and %{mfaLinkStart}Require administrators to enable 2FA%{mfaLinkEnd} when using custom admin roles. Enabling Admin Mode will require users to re-authenticate in GitLab before accessing the Admin area."
 msgstr ""
 
 msgid "MemberRole|Unable to export role report. Contact support if this error persists."

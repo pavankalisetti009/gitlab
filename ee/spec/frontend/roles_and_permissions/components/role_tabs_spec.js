@@ -13,12 +13,12 @@ describe('RoleTabs component', () => {
 
   const createWrapper = ({
     ldapServers = ldapServersData,
-    adminModeSettingPath = '',
+    signInRestrictionsSettingsPath = '',
     isSaas = false,
     groupFullPath = null,
   } = {}) => {
     wrapper = shallowMountExtended(RoleTabs, {
-      propsData: { adminModeSettingPath, isSaas },
+      propsData: { signInRestrictionsSettingsPath, isSaas },
       provide: { ldapServers, groupFullPath },
       stubs: { GlSprintf },
     });
@@ -30,7 +30,9 @@ describe('RoleTabs component', () => {
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findTabAt = (index) => wrapper.findAllComponents(GlTab).at(index);
   const findLdapSyncCrud = () => wrapper.findComponent(LdapSyncCrud);
-  const findAdminRoleRecommendation = () => wrapper.findByTestId('admin-mode-recommendation');
+  const findSecurityRecommendationAlert = () =>
+    wrapper.findByTestId('security-recommendation-alert');
+  const findSettingsLinks = () => findSecurityRecommendationAlert().findAllComponents(GlLink);
 
   describe('page heading', () => {
     beforeEach(() => createWrapper());
@@ -110,26 +112,31 @@ describe('RoleTabs component', () => {
     });
   });
 
-  it('does not show admin mode recommendation alert by default', () => {
+  it('does not show security recommendation alert by default', () => {
     createWrapper();
 
-    expect(findAdminRoleRecommendation().exists()).toBe(false);
+    expect(findSecurityRecommendationAlert().exists()).toBe(false);
   });
 
-  describe('when enabling admin mode is recommended', () => {
-    beforeEach(() => createWrapper({ adminModeSettingPath: 'path/to/admin/mode/setting' }));
+  describe('when there is a path to the sign-in restriction settings', () => {
+    beforeEach(() =>
+      createWrapper({ signInRestrictionsSettingsPath: 'path/to/admin/mode/setting' }),
+    );
 
-    it('shows admin mode recommendation alert', () => {
-      expect(findAdminRoleRecommendation().text()).toMatchInterpolatedText(
-        'To enhance security, we recommend enabling Admin mode when using custom admin roles. Enabling Admin mode will require users to re-authenticate in GitLab before accessing the Admin area.',
+    it('shows security recommendation alert', () => {
+      expect(findSecurityRecommendationAlert().text()).toMatchInterpolatedText(
+        'To enhance security, we recommend enabling Admin Mode and Require administrators to enable 2FA when using custom admin roles. Enabling Admin Mode will require users to re-authenticate in GitLab before accessing the Admin area.',
       );
     });
 
-    it('shows link to admin mode setting', () => {
-      const link = findAdminRoleRecommendation().findComponent(GlLink);
+    it('shows Admin Mode link', () => {
+      expect(findSettingsLinks().at(0).text()).toBe('Admin Mode');
+      expect(findSettingsLinks().at(0).props('href')).toBe('path/to/admin/mode/setting');
+    });
 
-      expect(link.text()).toBe('enabling Admin mode');
-      expect(link.props('href')).toBe('path/to/admin/mode/setting');
+    it('shows Require administrators to enable 2FA link', () => {
+      expect(findSettingsLinks().at(1).text()).toBe('Require administrators to enable 2FA');
+      expect(findSettingsLinks().at(1).props('href')).toBe('path/to/admin/mode/setting');
     });
   });
 });
