@@ -38338,6 +38338,8 @@ CREATE INDEX index_protected_tag_create_access_levels_on_user_id ON protected_ta
 
 CREATE UNIQUE INDEX index_protected_tags_on_project_id_and_name ON protected_tags USING btree (project_id, name);
 
+CREATE INDEX index_push_event_payloads_on_project_id ON push_event_payloads USING btree (project_id);
+
 CREATE INDEX index_push_rules_on_is_sample ON push_rules USING btree (is_sample) WHERE is_sample;
 
 CREATE INDEX index_push_rules_on_organization_id ON push_rules USING btree (organization_id);
