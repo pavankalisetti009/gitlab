@@ -220,7 +220,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
 
           visit project_settings_repository_path(project)
 
-          expect(page).to have_content("The following user can also push to this branch: "\
+          expect(page).to have_content("The following users can also push to this branch: "\
                                        "Jane")
         end
 
@@ -230,7 +230,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
 
           visit project_settings_repository_path(project)
 
-          expect(page).to have_content("Members of this group can also push to "\
+          expect(page).to have_content("Members of these groups can also push to "\
                                        "this branch: Team Awesome")
         end
 
@@ -240,7 +240,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
 
           visit project_settings_repository_path(project)
 
-          expect(page).to have_content("The following user can also merge into "\
+          expect(page).to have_content("The following users can also merge into "\
                                        "this branch: Jane")
         end
 
