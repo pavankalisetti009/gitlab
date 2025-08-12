@@ -25,6 +25,7 @@ import {
   mockIssues,
   mockAssignees,
 } from 'ee_else_ce_jest/gfm_auto_complete/mock_data';
+import { InternalEvents } from '~/tracking';
 
 const mockSpriteIcons = '/icons.svg';
 
@@ -196,6 +197,7 @@ describe('GfmAutoComplete', () => {
       mock = new MockAdapter(axios);
       jest.spyOn(axios, 'get');
       jest.spyOn(AjaxCache, 'retrieve');
+      jest.spyOn(InternalEvents, 'trackEvent');
     });
 
     afterEach(() => {
@@ -240,6 +242,15 @@ describe('GfmAutoComplete', () => {
             params: { search: 'query2' },
             signal: expect.any(AbortSignal),
           });
+        });
+
+        it('tracks autocomplete event for wikis', () => {
+          fetchData.call(context, {}, '[[', 'query');
+
+          expect(InternalEvents.trackEvent).toHaveBeenCalledTimes(1);
+          expect(InternalEvents.trackEvent).toHaveBeenCalledWith(
+            'trigger_autocomplete_for_wiki_links',
+          );
         });
 
         it.each([HTTP_STATUS_OK, HTTP_STATUS_INTERNAL_SERVER_ERROR])(
