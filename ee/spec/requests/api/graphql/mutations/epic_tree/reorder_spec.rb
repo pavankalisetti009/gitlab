@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management do
   include GraphqlHelpers
+  include LegacyEpicsHelper
 
   let_it_be(:private_group) { create(:group, :private) }
   let_it_be(:private_project) { create(:project, :private, group: private_group) }
@@ -186,7 +187,7 @@ RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management 
           before do
             stub_licensed_features(epics: true, subepics: false)
             other_epic = create(:epic, group: group)
-            epic2.update!(parent: other_epic)
+            assign_epic_parent(epic2, other_epic)
           end
 
           it_behaves_like 'a mutation that does not update the tree'

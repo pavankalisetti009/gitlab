@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_context 'for epic hierarchy commands' do
+  include LegacyEpicsHelper
   let_it_be(:guest) { create(:user) }
   let_it_be(:private_group) { create(:group, :private, guests: guest) }
   let_it_be(:public_group) { create(:group, :public, guests: guest) }
@@ -118,7 +119,7 @@ RSpec.shared_examples 'execute epic hierarchy commands' do
           let(:referenced_epic) { epic2 }
 
           before do
-            child_epic.update!(parent: referenced_epic)
+            assign_epic_parent(child_epic, referenced_epic)
           end
 
           it_behaves_like 'quick action is available', :child_epic
@@ -334,7 +335,7 @@ RSpec.shared_examples 'explain epic hierarchy commands' do
       let(:content) { "/child_epic #{epic2&.to_reference(epic)}" }
 
       before do
-        epic2.update!(parent: epic)
+        assign_epic_parent(epic2, epic)
       end
 
       it_behaves_like 'epics are already related'
@@ -344,7 +345,7 @@ RSpec.shared_examples 'explain epic hierarchy commands' do
       let(:content) { "/child_epic #{epic2&.to_reference(epic)}" }
 
       before do
-        epic.update!(parent: epic2)
+        assign_epic_parent(epic, epic2)
       end
 
       it_behaves_like 'epics are already related'
@@ -368,7 +369,7 @@ RSpec.shared_examples 'explain epic hierarchy commands' do
       let(:content) { "/remove_child_epic #{epic2&.to_reference(epic)}" }
 
       before do
-        epic2.update!(parent: epic)
+        assign_epic_parent(epic2, epic)
       end
 
       it 'returns explain message with epic reference' do
@@ -413,7 +414,7 @@ RSpec.shared_examples 'explain epic hierarchy commands' do
       let(:content) { "/remove_child_epic #{epic2&.to_reference(epic)}" }
 
       before do
-        epic2.update!(parent: epic)
+        assign_epic_parent(epic2, epic)
       end
 
       it_behaves_like 'without permissions for action', target_epic: :create, param_epic: :admin
@@ -429,7 +430,7 @@ RSpec.shared_examples 'explain epic hierarchy commands' do
       let(:content) { "/parent_epic #{epic2&.to_reference(epic)}" }
 
       before do
-        epic.update!(parent: epic2)
+        assign_epic_parent(epic, epic2)
       end
 
       it_behaves_like 'epics are already related'
@@ -439,7 +440,7 @@ RSpec.shared_examples 'explain epic hierarchy commands' do
       let(:content) { "/parent_epic #{epic2&.to_reference(epic)}" }
 
       before do
-        epic2.update!(parent: epic)
+        assign_epic_parent(epic2, epic)
       end
 
       it_behaves_like 'epics are already related'

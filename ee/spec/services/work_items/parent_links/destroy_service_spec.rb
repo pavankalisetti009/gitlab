@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_planning do
+  include LegacyEpicsHelper
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group, reporters: user) }
@@ -164,7 +165,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
 
         context 'with existing legacy epic parent' do
           before do
-            synced_epic1.update!(parent: synced_epic2)
+            assign_epic_parent(synced_epic1, synced_epic2)
           end
 
           it 'destroys parent link and remove legacy parent' do
@@ -186,7 +187,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
           end
 
           it 'does not destroy parent link or epic issue link' do
-            synced_epic1.update!(parent: synced_epic2)
+            assign_epic_parent(synced_epic1, synced_epic2)
 
             expect { destroy_link }.to raise_error(StandardError)
                                    .and not_change { WorkItems::ParentLink.count }
@@ -205,7 +206,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
 
           it 'does not destroy parent link or epic issue link', :aggregate_failures,
             quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460241' do
-            synced_epic1.update!(parent: synced_epic2)
+            assign_epic_parent(synced_epic1, synced_epic2)
 
             expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
               .with({

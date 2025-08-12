@@ -8,8 +8,9 @@ module NestedEpicsHelper
       latest = create(:epic, :with_work_item_parent, group: epic.group, parent: latest)
     end
 
-    epic.update!(parent: latest)
-    create(:parent_link, work_item: epic.work_item, work_item_parent: latest.work_item)
+    epic.parent_id = latest.id
+    epic.work_item_parent_link = create(:parent_link, work_item: epic.work_item, work_item_parent: latest.work_item)
+    epic.save!
 
     latest
   end

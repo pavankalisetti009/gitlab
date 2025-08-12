@@ -6,6 +6,7 @@ require 'spec_helper'
 # Should follow closely in order to ensure all situations are covered
 RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_management do
   include GraphqlHelpers
+  include LegacyEpicsHelper
 
   let(:epics_data) { graphql_data['group']['epics']['edges'] }
   let(:epic_data) { graphql_data['group']['epic'] }
@@ -223,7 +224,8 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
           end
 
           epics_with_parent = create_list(:epic, 3, group: group) do |epic|
-            epic.update!(parent: create(:epic, group: group))
+            parent_epic = create(:epic, group: group)
+            assign_epic_parent(epic, parent_epic)
           end
 
           expect do

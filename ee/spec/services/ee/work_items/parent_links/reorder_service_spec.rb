@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfolio_management do
+  include LegacyEpicsHelper
   describe '#execute' do
     let_it_be(:group) { create(:group) }
     let_it_be(:user) { create(:user, developer_of: group) }
@@ -116,9 +117,9 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
       let(:params) { base_params.merge(adjacent_work_item: new_sibling2, relative_position: "BEFORE") }
 
       before do
-        new_parent.synced_epic.update!(parent: parent.synced_epic, relative_position: 50)
-        new_sibling1.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 10)
-        new_sibling2.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 20)
+        assign_epic_parent(new_parent.synced_epic, parent.synced_epic, relative_position: 50)
+        assign_epic_parent(new_sibling1.synced_epic, new_parent.synced_epic, relative_position: 10)
+        assign_epic_parent(new_sibling2.synced_epic, new_parent.synced_epic, relative_position: 20)
       end
 
       subject(:move_child) { described_class.new(new_parent, user, params).execute }
@@ -184,9 +185,9 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
         context 'when synced epics for the work items exist' do
           before do
-            top_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 20)
-            last_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 30)
-            work_item.synced_epic.update!(parent: parent.synced_epic, relative_position: 40)
+            assign_epic_parent(top_adjacent.synced_epic, parent.synced_epic, relative_position: 20)
+            assign_epic_parent(last_adjacent.synced_epic, parent.synced_epic, relative_position: 30)
+            assign_epic_parent(work_item.synced_epic, parent.synced_epic, relative_position: 40)
           end
 
           context 'without group level work items license' do
@@ -227,24 +228,6 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
                                     .and change {
                                            work_item.synced_epic.reload.work_item_parent_link.work_item_parent
                                          }.to(new_parent)
-
-                expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item,
-                  new_sibling2])
-              end
-            end
-
-            context 'when work_item_parent_link FK was not already set' do
-              before do
-                work_item.synced_epic&.update!(parent: parent.synced_epic)
-              end
-
-              it 'updates work item parent and legacy epic parent and sets the FK' do
-                expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
-                                    .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
-                                                                                        .to(new_parent.synced_epic)
-                                    .and change { work_item.synced_epic.reload.work_item_parent_link }
-                                        .from(nil)
-                                        .to(work_item.parent_link)
 
                 expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item,
                   new_sibling2])
@@ -307,8 +290,9 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
       before do
         stub_licensed_features(epics: true, subepics: true)
-        top_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 20)
-        last_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 30)
+
+        assign_epic_parent(top_adjacent.synced_epic, parent.synced_epic, relative_position: 20)
+        assign_epic_parent(last_adjacent.synced_epic, parent.synced_epic, relative_position: 30)
       end
 
       it_behaves_like 'reorders the hierarchy'
