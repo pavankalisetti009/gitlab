@@ -1,0 +1,92 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe 'Admin GitLab Duo home page', feature_category: :ai_abstraction_layer do
+  let_it_be(:admin) { create(:admin) }
+
+  describe 'code suggestions usage' do
+    context 'when saas', :saas, :js do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_pro)
+        sign_in(admin)
+        enable_admin_mode!(admin)
+
+        visit admin_gitlab_duo_path
+      end
+
+      it 'does not render Duo configuration info card' do
+        expect(page).not_to have_content('GitLab Duo Pro')
+        expect(page).not_to have_selector('[data-testid="duo-configuration-settings-info-card"]')
+      end
+
+      it 'does not render Duo seat utilization info card' do
+        expect(page).not_to have_content('Seat utilization')
+        expect(page).not_to have_selector('[data-testid="duo-seat-utilization-info-card"]')
+      end
+    end
+
+    context 'when self-managed', :js do
+      before do
+        status_service = instance_double(::CloudConnector::StatusChecks::StatusService)
+        allow(::CloudConnector::StatusChecks::StatusService).to receive(:new).and_return(status_service)
+        allow(status_service).to receive(:execute).and_return(ServiceResponse.success)
+
+        sign_in(admin)
+        enable_admin_mode!(admin)
+      end
+
+      context 'when duo tier is not Duo Core' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_pro)
+        end
+
+        it 'renders Duo seat utilization info card' do
+          visit admin_gitlab_duo_path
+
+          expect(page).to have_content('Seat utilization')
+          expect(page).to have_selector('[data-testid="duo-seat-utilization-info-card"]')
+        end
+
+        it 'renders Duo configuration info card' do
+          visit admin_gitlab_duo_path
+
+          expect(page).to have_content('GitLab Duo Pro')
+          expect(page).to have_selector('[data-testid="duo-configuration-settings-info-card"]')
+        end
+      end
+
+      context 'when tier is Duo Core' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_core)
+        end
+
+        it 'does not render Duo seat utilization info card' do
+          visit admin_gitlab_duo_path
+
+          expect(page).not_to have_content('Seat utilization')
+          expect(page).not_to have_selector('[data-testid="duo-seat-utilization-info-card"]')
+        end
+
+        it 'renders Duo configuration info card' do
+          visit admin_gitlab_duo_path
+
+          expect(page).to have_content('GitLab Duo Core')
+          expect(page).to have_selector('[data-testid="duo-configuration-settings-info-card"]')
+        end
+      end
+    end
+  end
+
+  describe 'enable duo banner', :js, time_travel_to: '2025-05-15' do
+    before do
+      create(:license, plan: License::ULTIMATE_PLAN)
+      sign_in(admin)
+      enable_admin_mode!(admin)
+
+      visit admin_gitlab_duo_path
+    end
+
+    it_behaves_like 'admin interacts with enable duo banner sm'
+  end
+end
