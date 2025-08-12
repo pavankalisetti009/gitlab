@@ -11,7 +11,7 @@ export const FILTER_TOKEN_CONFIGS = getExpectedFilterTokenConfigs([
 ]);
 
 export const ADMIN_ROLE_TOKEN = {
-  title: 'Admin role',
+  title: 'Custom admin role',
   type: 'admin_role_id',
   token: AdminRoleToken,
   operators: OPERATORS_IS,
