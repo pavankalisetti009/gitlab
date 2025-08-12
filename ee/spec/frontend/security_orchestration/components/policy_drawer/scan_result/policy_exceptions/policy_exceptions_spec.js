@@ -1,5 +1,6 @@
 import BranchPatternException from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/branch_pattern_exception.vue';
 import PolicyExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/policy_exceptions.vue';
+import UsersGroupsExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/users_groups_exceptions.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('Policy Exceptions', () => {
@@ -14,6 +15,7 @@ describe('Policy Exceptions', () => {
   const findHeader = () => wrapper.findByTestId('header');
   const findSubHeader = () => wrapper.findByTestId('subheader');
   const findBranchPatternException = () => wrapper.findComponent(BranchPatternException);
+  const findUsersGroupsExceptions = () => wrapper.findComponent(UsersGroupsExceptions);
 
   describe('default rendering', () => {
     beforeEach(() => {
@@ -43,6 +45,56 @@ describe('Policy Exceptions', () => {
       expect(findBranchPatternException().exists()).toBe(true);
       expect(findBranchPatternException().props('branches')).toEqual(branches);
       expect(findSubHeader().text()).toBe('2 bypass configurations defined:');
+    });
+  });
+
+  describe('users and groups exceptions', () => {
+    const users = [{ id: 3 }, { id: 4 }];
+    const groups = [{ id: 1 }, { id: 2 }];
+
+    it('renders users exceptions', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            users,
+          },
+        },
+      });
+
+      expect(findUsersGroupsExceptions().exists()).toBe(true);
+      expect(findUsersGroupsExceptions().props('users')).toEqual(users);
+      expect(findUsersGroupsExceptions().props('groups')).toEqual([]);
+      expect(findSubHeader().text()).toBe('2 bypass configurations defined:');
+    });
+
+    it('renders groups exceptions', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            groups,
+          },
+        },
+      });
+
+      expect(findUsersGroupsExceptions().exists()).toBe(true);
+      expect(findUsersGroupsExceptions().props('users')).toEqual([]);
+      expect(findUsersGroupsExceptions().props('groups')).toEqual(groups);
+      expect(findSubHeader().text()).toBe('2 bypass configurations defined:');
+    });
+
+    it('renders mixed users and groups exceptions', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            groups,
+            users,
+          },
+        },
+      });
+
+      expect(findUsersGroupsExceptions().props('users')).toEqual(users);
+      expect(findUsersGroupsExceptions().props('groups')).toEqual(groups);
+      expect(findSubHeader().text()).toBe('4 bypass configurations defined:');
     });
   });
 });

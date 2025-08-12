@@ -185,5 +185,26 @@ module EE
         zoekt_enabled: ::Search::Zoekt.enabled_for_user?(current_user)
       )
     end
+
+    def work_item_status_for_issuable(issuable)
+      return unless work_item_status_feature_available?
+      return unless issuable.respond_to?(:status_with_fallback)
+
+      status = issuable.status_with_fallback
+      return unless status
+
+      {
+        id: status.id,
+        name: status.name,
+        color: status.color,
+        category: status.category,
+        description: status.description,
+        icon_name: status.icon_name
+      }
+    end
+
+    def work_item_status_feature_available?
+      ::Feature.enabled?(:work_item_status_feature_flag, :instance) && License.feature_available?(:work_item_status)
+    end
   end
 end
