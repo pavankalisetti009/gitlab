@@ -36,6 +36,9 @@ query EEgetWorkItemStateCounts(
   $status: WorkItemWidgetStatusFilterInput
   $releaseTag: [String!]
   $releaseTagWildcardId: ReleaseTagWildcardId
+  $iterationId: [ID]
+  $iterationWildcardId: IterationWildcardId
+  $iterationCadenceId: [IterationsCadenceID!]
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -71,6 +74,9 @@ query EEgetWorkItemStateCounts(
       or: $or
       healthStatusFilter: $healthStatusFilter
       status: $status
+      iterationId: $iterationId
+      iterationWildcardId: $iterationWildcardId
+      iterationCadenceId: $iterationCadenceId
     ) {
       all
       closed
@@ -112,6 +118,9 @@ query EEgetWorkItemStateCounts(
       status: $status
       releaseTag: $releaseTag
       releaseTagWildcardId: $releaseTagWildcardId
+      iterationId: $iterationId
+      iterationWildcardId: $iterationWildcardId
+      iterationCadenceId: $iterationCadenceId
     ) {
       all
       closed

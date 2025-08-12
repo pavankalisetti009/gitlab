@@ -23,13 +23,16 @@ import {
   TOKEN_TYPE_WEIGHT,
   TOKEN_TYPE_HEALTH,
   TOKEN_TITLE_HEALTH,
+  TOKEN_TYPE_ITERATION,
+  TOKEN_TITLE_ITERATION,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
-
+import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
+import searchIterationsQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
 
 const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
@@ -37,6 +40,8 @@ const WeightToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/weight_token.vue');
 const HealthToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/health_token.vue');
+const IterationToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/iteration_token.vue');
 
 export default {
   emptyStateSvg,
@@ -57,6 +62,7 @@ export default {
     'hasIssueWeightsFeature',
     'hasIssuableHealthStatusFeature',
     'hasStatusFeature',
+    'hasIterationsFeature',
   ],
   props: {
     withTabs: {
@@ -110,6 +116,9 @@ export default {
     },
   },
   computed: {
+    namespace() {
+      return !this.isGroup ? WORKSPACE_PROJECT : WORKSPACE_GROUP;
+    },
     preselectedWorkItemType() {
       return this.isEpicsList ? WORK_ITEM_TYPE_NAME_EPIC : WORK_ITEM_TYPE_NAME_ISSUE;
     },
@@ -134,15 +143,31 @@ export default {
         });
       }
 
-      if (this.hasIssueWeightsFeature && !this.isEpicsList) {
-        tokens.push({
-          type: TOKEN_TYPE_WEIGHT,
-          title: TOKEN_TITLE_WEIGHT,
-          icon: 'weight',
-          token: WeightToken,
-          unique: true,
-        });
+      if (!this.isEpicsList) {
+        if (this.hasIssueWeightsFeature) {
+          tokens.push({
+            type: TOKEN_TYPE_WEIGHT,
+            title: TOKEN_TITLE_WEIGHT,
+            icon: 'weight',
+            token: WeightToken,
+            unique: true,
+          });
+        }
+
+        if (this.hasIterationsFeature) {
+          tokens.push({
+            type: TOKEN_TYPE_ITERATION,
+            title: TOKEN_TITLE_ITERATION,
+            icon: 'iteration',
+            token: IterationToken,
+            fetchIterations: this.fetchIterations,
+            recentSuggestionsStorageKey: `${this.rootPageFullPath}-work-items-recent-tokens-iteration`,
+            fullPath: this.rootPageFullPath,
+            isProject: !this.isGroup,
+          });
+        }
       }
+
       if (this.showCustomStatusFeature) {
         tokens.push({
           type: TOKEN_TYPE_STATUS,
@@ -180,6 +205,23 @@ export default {
     },
     issuableStatusItem(issuable) {
       return findStatusWidget(issuable)?.status || {};
+    },
+    async fetchIterations(search) {
+      const id = Number(search);
+      const variables =
+        !search || Number.isNaN(id)
+          ? { fullPath: this.rootPageFullPath, search, isProject: !this.isGroup }
+          : { fullPath: this.rootPageFullPath, id, isProject: !this.isGroup };
+
+      variables.state = 'all';
+
+      return this.$apollo
+        .query({
+          query: searchIterationsQuery,
+          variables,
+        })
+        .then(({ data }) => data[this.namespace]?.iterations.nodes)
+        .catch(() => []);
     },
   },
 };

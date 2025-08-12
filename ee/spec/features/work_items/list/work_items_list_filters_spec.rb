@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- using filter would need multiple creation with different criteria
 RSpec.describe 'Work items list filters', :js, feature_category: :team_planning do
   include FilteredSearchHelpers
 
@@ -33,6 +34,13 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
   let_it_be(:issue_at_risk) { create(:issue, project: project, health_status: 'at_risk') }
   let_it_be(:issue_no_health) { create(:issue, project: project, health_status: nil) }
 
+  let_it_be(:iteration_cadence) { create(:iterations_cadence, group: group) }
+  let_it_be(:iteration_1) { create(:iteration, iterations_cadence: iteration_cadence, title: 'Iteration 1') }
+  let_it_be(:iteration_2) { create(:iteration, iterations_cadence: iteration_cadence, title: 'Iteration 2') }
+  let_it_be(:issue_with_iteration_1) { create(:issue, project: project, iteration: iteration_1) }
+  let_it_be(:issue_with_iteration_2) { create(:issue, project: project, iteration: iteration_2) }
+  let_it_be(:issue_without_iteration) { create(:issue, project: project, iteration: nil) }
+
   def expect_work_items_list_count(count)
     expect(page).to have_css('.issue', count: count)
   end
@@ -40,7 +48,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
   context 'for signed in user' do
     before do
       stub_licensed_features(epics: true, quality_management: true, subepics: true, issue_weights: true,
-        issuable_health_status: true, work_item_status: true)
+        issuable_health_status: true, work_item_status: true, iterations: true)
       sign_in(user)
       visit group_work_items_path(group)
     end
@@ -72,7 +80,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
       it 'filters', :aggregate_failures do
         select_tokens('Type', '=', 'Issue', submit: true)
 
-        expect(page).to have_css('.issue', count: 10)
+        expect(page).to have_css('.issue', count: 13)
         expect(page).to have_link(issue.title)
         expect(page).to have_link(sub_issue.title)
 
@@ -289,7 +297,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
         it 'filters work items by to do status' do
           select_tokens 'Status', 'To do', submit: true
 
-          expect_work_items_list_count(10)
+          expect_work_items_list_count(13)
         end
       end
 
@@ -307,5 +315,63 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
         end
       end
     end
+
+    describe 'iteration' do
+      before do
+        visit project_work_items_path(project)
+      end
+
+      describe 'only iteration' do
+        it 'filters work items by specified iteration' do
+          select_tokens 'Iteration', '=', 'Iteration 1', submit: true
+
+          expect_work_items_list_count(1)
+          expect(page).to have_link(issue_with_iteration_1.title)
+        end
+      end
+
+      describe 'iteration wildcards' do
+        it 'filters work items by None iteration' do
+          select_tokens 'Iteration', '=', 'None', submit: true
+
+          expect(page).to have_link(issue_without_iteration.title)
+          expect(page).not_to have_link(issue_with_iteration_1.title)
+          expect(page).not_to have_link(issue_with_iteration_2.title)
+        end
+
+        it 'filters work items by Any iteration' do
+          select_tokens 'Iteration', '=', 'Any', submit: true
+
+          expect_work_items_list_count(2)
+          expect(page).to have_link(issue_with_iteration_1.title)
+          expect(page).to have_link(issue_with_iteration_2.title)
+          expect(page).not_to have_link(issue_without_iteration.title)
+        end
+      end
+
+      describe 'negated iteration only' do
+        it 'excludes work items with specified iteration' do
+          select_tokens 'Iteration', '!=', 'Iteration 1', submit: true
+
+          expect(page).to have_link(issue_with_iteration_2.title)
+          expect(page).to have_link(issue_without_iteration.title)
+          expect(page).not_to have_link(issue_with_iteration_1.title)
+        end
+      end
+
+      context 'when iterations feature is not available' do
+        before do
+          stub_licensed_features(iterations: false)
+          visit project_work_items_path(project)
+        end
+
+        it 'does not show iteration filter token' do
+          click_filtered_search_bar
+
+          expect(page).not_to have_css('[data-testid="filtered-search-token-segment"]', text: 'Iteration')
+        end
+      end
+    end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers
