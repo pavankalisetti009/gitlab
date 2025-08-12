@@ -17,9 +17,9 @@ import { ACTION_TYPES } from 'ee/geo_replicable/constants';
 import { getStoreConfig } from 'ee/geo_replicable/store';
 import {
   MOCK_BASIC_GRAPHQL_DATA,
-  MOCK_REPLICABLE_TYPE,
-  MOCK_REPLICABLE_BASE_PATH,
+  MOCK_REPLICABLE_CLASS,
   MOCK_GRAPHQL_REGISTRY_CLASS,
+  MOCK_REPLICABLE_BASE_PATH,
 } from '../mock_data';
 
 Vue.use(Vuex);
@@ -45,12 +45,9 @@ describe('GeoReplicableItem', () => {
     verificationFailure: mockReplicable.verificationFailure,
   };
 
-  const createComponent = ({ props, state, featureFlags } = {}) => {
+  const createComponent = ({ props, provide } = {}) => {
     const store = new Vuex.Store({
-      ...getStoreConfig({
-        replicableType: MOCK_REPLICABLE_TYPE,
-        ...state,
-      }),
+      ...getStoreConfig({}),
       actions: actionSpies,
     });
 
@@ -62,8 +59,8 @@ describe('GeoReplicableItem', () => {
       },
       provide: {
         replicableBasePath: MOCK_REPLICABLE_BASE_PATH,
-        graphqlRegistryClass: MOCK_GRAPHQL_REGISTRY_CLASS,
-        glFeatures: { ...featureFlags },
+        replicableClass: MOCK_REPLICABLE_CLASS,
+        ...provide,
       },
     });
   };
@@ -116,7 +113,7 @@ describe('GeoReplicableItem', () => {
         beforeEach(() => {
           createComponent({
             props: { verificationState },
-            state: { verificationEnabled },
+            provide: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled } },
           });
         });
 
@@ -143,7 +140,9 @@ describe('GeoReplicableItem', () => {
 
     describe('when verificationEnabled is false', () => {
       beforeEach(() => {
-        createComponent({ state: { verificationEnabled: false } });
+        createComponent({
+          provide: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: false } },
+        });
       });
 
       it('render GeoListItem with the correct timeAgoArray prop', () => {
@@ -158,7 +157,9 @@ describe('GeoReplicableItem', () => {
 
     describe('when verificationEnabled is true', () => {
       beforeEach(() => {
-        createComponent({ state: { verificationEnabled: true } });
+        createComponent({
+          provide: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: true } },
+        });
       });
 
       it('render GeoListItem with the correct timeAgoArray prop', () => {
@@ -185,7 +186,9 @@ describe('GeoReplicableItem', () => {
 
     describe('when verificationEnabled is false', () => {
       beforeEach(() => {
-        createComponent({ state: { verificationEnabled: false } });
+        createComponent({
+          provide: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: false } },
+        });
       });
 
       it('render GeoListItem with the correct actionsArray prop', () => {
@@ -206,7 +209,9 @@ describe('GeoReplicableItem', () => {
 
     describe('when verificationEnabled is true', () => {
       beforeEach(() => {
-        createComponent({ state: { verificationEnabled: true } });
+        createComponent({
+          provide: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: true } },
+        });
       });
 
       it('render GeoListItem with the correct actionsArray prop', () => {

@@ -1,4 +1,4 @@
-import { getGraphqlClient } from 'ee/geo_replicable/utils';
+import { getGraphqlClient } from 'ee/geo_shared/graphql/geo_client';
 
 jest.mock('~/lib/graphql', () => ({
   ...jest.requireActual('~/lib/graphql'),

@@ -1,8 +1,5 @@
 <script>
 import { GlKeysetPagination } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
-import { PREV, NEXT } from '../constants';
 import GeoReplicableItem from './geo_replicable_item.vue';
 
 export default {
@@ -11,14 +8,24 @@ export default {
     GlKeysetPagination,
     GeoReplicableItem,
   },
-  computed: {
-    ...mapState(['replicableItems', 'paginationData']),
+  props: {
+    replicableItems: {
+      type: Array,
+      required: true,
+    },
+    pageInfo: {
+      type: Object,
+      required: true,
+    },
   },
   methods: {
-    ...mapActions(['fetchReplicableItems']),
+    handleNextPage(item) {
+      this.$emit('next', item);
+    },
+    handlePrevPage(item) {
+      this.$emit('prev', item);
+    },
   },
-  NEXT,
-  PREV,
 };
 </script>
 
@@ -37,11 +44,7 @@ export default {
       :verification-failure="item.verificationFailure"
     />
     <div class="gl-mt-6 gl-flex gl-justify-center">
-      <gl-keyset-pagination
-        v-bind="paginationData"
-        @next="fetchReplicableItems($options.NEXT)"
-        @prev="fetchReplicableItems($options.PREV)"
-      />
+      <gl-keyset-pagination v-bind="pageInfo" @next="handleNextPage" @prev="handlePrevPage" />
     </div>
   </section>
 </template>
