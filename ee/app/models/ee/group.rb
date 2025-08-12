@@ -71,8 +71,6 @@ module EE
       # here since Group inherits from Namespace, the entity_type would be set to `Namespace`.
       has_many :audit_events, -> { where(entity_type: ::Group.name) }, foreign_key: 'entity_id'
 
-      has_many :project_templates, through: :projects, foreign_key: 'custom_project_templates_group_id'
-
       has_many :managed_users, class_name: 'User', foreign_key: 'managing_group_id', inverse_of: :managing_group
       has_many :enterprise_user_details, class_name: 'UserDetail', foreign_key: 'enterprise_group_id', inverse_of: :enterprise_group
       has_many :enterprise_users, through: :enterprise_user_details, source: :user
