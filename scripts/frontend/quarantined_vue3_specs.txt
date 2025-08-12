@@ -31,10 +31,6 @@ spec/frontend/design_management/components/design_notes/design_reply_form_spec.j
 spec/frontend/design_management/pages/design/index_spec.js
 spec/frontend/design_management/pages/index_spec.js
 spec/frontend/editor/extensions/source_editor_toolbar_ext_spec.js
-spec/frontend/glql/components/common/facade_spec.js
-spec/frontend/glql/components/presenters/list_spec.js
-spec/frontend/glql/components/presenters/table_spec.js
-spec/frontend/glql/core/presenter_spec.js
 spec/frontend/helpers/init_simple_app_helper_spec.js
 spec/frontend/issuable/related_issues/components/related_issues_root_spec.js
 spec/frontend/issues/list/components/issues_list_app_spec.js
