@@ -100,8 +100,8 @@ module EE
 
       validates :work_item, presence: true
 
-      validates :work_item_parent_link, presence: true, on: :create, if: -> { parent.present? }
-      validate :validate_same_work_item_parent_link, on: :create, if: -> { parent.present? }
+      validates :work_item_parent_link, presence: true, if: -> { parent.present? }
+      validate :validate_same_work_item_parent_link, if: -> { parent.present? }
 
       with_options(comparison: {
         allow_nil: true,

@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::ImportExport::Group::TreeSaver, feature_category: :importers do
+  include LegacyEpicsHelper
   describe 'saves the group tree into a json object' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
@@ -131,7 +132,7 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver, feature_category: :import
         let_it_be(:external_parent) { create(:epic, group: create(:group, :private)) }
 
         it 'filters out inaccessible epic parent' do
-          epic.update!(parent: external_parent)
+          assign_epic_parent(epic, external_parent)
 
           expect_successful_save(group_tree_saver)
           expect(epic_json['parent']).to be_nil

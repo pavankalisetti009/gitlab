@@ -20,13 +20,16 @@ module WorkItems
       ].freeze
 
       def self.can_handle?(event)
+        # For delete events, always trigger weight updates since we can't know whether the deleted item has weight
+        return true if event.is_a?(WorkItems::WorkItemDeletedEvent)
+
         # For update events, check if weight-related attributes/widgets were updated
         if event.data.key?(:updated_widgets) || event.data.key?(:updated_attributes)
           return UPDATE_TRIGGER_WIDGETS.any? { |widget| event.data.fetch(:updated_widgets, []).include?(widget) } ||
               UPDATE_TRIGGER_ATTRIBUTES.any? { |attr| event.data.fetch(:updated_attributes, []).include?(attr) }
         end
 
-        # For other events (create, delete, close, reopen), check if work item has weight
+        # For other events (create, close, reopen), check if work item has weight
         work_item_id = event.data[:id]
         return false unless work_item_id
 
@@ -37,23 +40,11 @@ module WorkItems
       end
 
       def handle_event(event)
-        work_item_id = event.data[:id]
-        return unless work_item_id
+        work_item_ids = [
+          event.data[:id],
+          event.data[:previous_work_item_parent_id]
+        ].compact
 
-        work_item_ids = []
-
-        # Add parent IDs from event data if present
-        work_item_ids << event.data[:work_item_parent_id] if event.data[:work_item_parent_id]
-
-        work_item_ids << event.data[:previous_work_item_parent_id] if event.data[:previous_work_item_parent_id]
-
-        # If no parent IDs in event data, look up the work item's parent
-        if work_item_ids.empty?
-          work_item = WorkItem.find_by_id(work_item_id)
-          work_item_ids << work_item.work_item_parent.id if work_item&.work_item_parent
-        end
-
-        work_item_ids.compact!
         return if work_item_ids.blank?
 
         UpdateWeightsWorker.perform_async(work_item_ids)

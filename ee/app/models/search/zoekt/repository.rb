@@ -66,7 +66,7 @@ module Search
       scope :searchable, -> { where(state: SEARCHABLE_STATES) }
 
       def self.minimum_schema_version
-        minimum(:schema_version)
+        searchable.minimum(:schema_version)
       end
 
       # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Limit is on the call. It is temporary debugging code.

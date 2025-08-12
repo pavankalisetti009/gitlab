@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_management do
+  include LegacyEpicsHelper
+
   let_it_be(:group) { create(:group, :internal) }
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, group: group) }
@@ -342,10 +344,11 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
 
           it "doesn't update cyclic hierarchies" do
             parent_epic = create(:epic, group: group).tap do |parent|
-              epic.update!(parent: parent)
+              assign_epic_parent(epic, parent)
             end
             create(:epic, group: group).tap do |cycle_link|
-              parent_epic.update!(parent: cycle_link)
+              assign_epic_parent(parent_epic, cycle_link)
+
               cycle_link.parent = epic
               cycle_link.save!(validate: false)
             end

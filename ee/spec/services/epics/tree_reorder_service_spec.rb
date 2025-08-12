@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_management do
+  include LegacyEpicsHelper
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:ancestor) { create(:group) }
@@ -468,7 +469,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
               before do
-                epic2.update!(parent: other_epic)
+                assign_epic_parent(epic2, other_epic)
               end
 
               it_behaves_like 'error for the tree update', 'You don\'t have permissions to move the objects.'
@@ -501,8 +502,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   other_group.add_developer(user)
                   epic.update!(group: other_group)
                   epic.work_item.update!(namespace: other_group)
-                  epic2.update!(parent: epic1)
-                  epic2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
+                  assign_epic_parent(epic2, epic1)
                 end
 
                 it_behaves_like 'new parent not in an ancestor group'
@@ -517,8 +517,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   descendant_group.add_developer(user)
                   epic.update!(group: descendant_group)
                   epic.work_item.update!(namespace: descendant_group)
-                  epic2.update!(parent: epic1)
-                  epic2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
+
+                  assign_epic_parent(epic2, epic1)
                 end
 
                 it_behaves_like 'new parent not in an ancestor group'
@@ -537,8 +537,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               let(:another_epic) { create(:epic, group: another_group) }
 
               before do
-                epic1.update!(group: ancestor, parent: another_epic)
-                epic2.update!(group: ancestor, parent: another_epic)
+                epic1.assign_attributes(group: ancestor)
+                assign_epic_parent(epic1, another_epic)
+
+                epic2.assign_attributes(group: ancestor)
+                assign_epic_parent(epic2, another_epic)
               end
 
               it_behaves_like 'error for the tree update', 'You don\'t have permissions to move the objects.'
@@ -637,18 +640,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   end
 
                   context 'when new parent has no children' do
-                    context 'when moving object does not have parent link relationship' do
-                      let_it_be_with_reload(:moving_object_parent_link) { nil }
-
-                      before do
-                        link = moving_epic.work_item_parent_link
-                        moving_epic.update!(work_item_parent_link: nil)
-                        link.destroy!
-                      end
-
-                      it_behaves_like 'moves to a parent without children'
-                    end
-
                     context 'when moving object has parent link relationship' do
                       let_it_be_with_refind(:moving_object_parent_link) { moving_epic.work_item_parent_link }
 
@@ -775,23 +766,6 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                         .to eq(moving_epic.reload.relative_position)
 
                       expect(reorder[:status]).to eq(:success)
-                    end
-                  end
-
-                  context 'when the moving epic has no correlating work item' do
-                    let_it_be_with_reload(:moving_epic) do
-                      create(:epic, group: group, parent: parent, relative_position: 20)
-                    end
-
-                    before do
-                      link = moving_epic.work_item_parent_link
-                      moving_epic.update!(work_item_parent_link: nil)
-                      link.destroy!
-                    end
-
-                    it 'successfully changes the position of the epic' do
-                      expect(WorkItems::ParentLinks::ReorderService).not_to receive(:new)
-                      expect { reorder }.to change { moving_epic.reload.relative_position }
                     end
                   end
 

@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EpicsFinder, feature_category: :team_planning do
+  include LegacyEpicsHelper
   let_it_be(:user) { create(:user) }
   let_it_be(:search_user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
@@ -371,8 +372,8 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
 
         context 'by parent' do
           before do
-            epic3.update!(parent_id: epic2.id)
-            epic2.update!(parent_id: epic1.id)
+            assign_epic_parent(epic3, epic2)
+            assign_epic_parent(epic2, epic1)
           end
 
           it 'returns direct children of the parent' do
@@ -454,8 +455,8 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
 
         context 'by child' do
           before do
-            epic3.update!(parent_id: epic2.id)
-            epic2.update!(parent_id: epic1.id)
+            assign_epic_parent(epic3, epic2)
+            assign_epic_parent(epic2, epic1)
           end
 
           it 'returns ancestors of the child epic ordered from the bottom' do

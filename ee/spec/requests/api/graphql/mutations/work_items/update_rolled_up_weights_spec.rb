@@ -2,9 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Weight updates on work item state changes', :aggregate_failures, :sidekiq_inline, feature_category: :team_planning do
+RSpec.describe 'Rolled up weight updates on work item changes', :aggregate_failures, :sidekiq_inline, feature_category: :team_planning do
   include GraphqlHelpers
   include WorkhorseHelpers
+
+  # Ensure support bot user is created so it doesn't get created within a transaction
+  let_it_be(:support_bot) { Users::Internal.support_bot }
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -39,9 +42,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
       # Verify the work item state changed
       expect(work_item.reload.state).to eq(expected_state)
 
-      # Manually trigger parent weight update (simulating what the event handler would do)
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
-
       # Verify parent weights are updated correctly
       parent_weights = parent_work_item.reload.weights_source
       expect(parent_weights&.rolled_up_weight).to eq(expected_total_weight)
@@ -72,7 +72,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
           current_user: current_user
         )
 
-        WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
         parent_weights = parent_work_item.reload.weights_source
         expect(parent_weights&.rolled_up_completed_weight).to eq(3)
 
@@ -82,7 +81,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
           current_user: current_user
         )
 
-        WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
         parent_weights = parent_work_item.reload.weights_source
         expect(parent_weights&.rolled_up_completed_weight).to eq(5) # 3 + 2
 
@@ -92,7 +90,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
           current_user: current_user
         )
 
-        WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
         parent_weights = parent_work_item.reload.weights_source
         expect(parent_weights&.rolled_up_completed_weight).to eq(10) # 3 + 2 + 5
       end
@@ -136,9 +133,7 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
             graphql_mutation(:workItemUpdate, { id: task.to_gid.to_s, stateEvent: 'REOPEN' }),
             current_user: current_user
           )
-          WorkItems::WeightsSource.upsert_rolled_up_weights_for(task)
         end
-        WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
         parent_weights = parent_work_item.reload.weights_source
         expect(parent_weights&.rolled_up_weight).to eq(10)
         expect(parent_weights&.rolled_up_completed_weight).to eq(0)
@@ -154,11 +149,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
     end
 
     it 'handles complex state change scenarios' do
-      # Initial state: all open
-      [child_task_1, child_task_2, child_task_3].each do |child|
-        WorkItems::WeightsSource.upsert_rolled_up_weights_for(child)
-      end
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
       parent_weights = parent_work_item.reload.weights_source
       expect(parent_weights&.rolled_up_completed_weight).to eq(0)
 
@@ -167,8 +157,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
         graphql_mutation(:workItemUpdate, { id: child_task_1.to_gid.to_s, stateEvent: 'CLOSE' }),
         current_user: current_user
       )
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(child_task_1)
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
       parent_weights = parent_work_item.reload.weights_source
       expect(parent_weights&.rolled_up_completed_weight).to eq(3)
 
@@ -177,8 +165,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
         graphql_mutation(:workItemUpdate, { id: child_task_3.to_gid.to_s, stateEvent: 'CLOSE' }),
         current_user: current_user
       )
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(child_task_3)
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
       parent_weights = parent_work_item.reload.weights_source
       expect(parent_weights&.rolled_up_completed_weight).to eq(8) # 3 + 5
 
@@ -187,8 +173,6 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
         graphql_mutation(:workItemUpdate, { id: child_task_1.to_gid.to_s, stateEvent: 'REOPEN' }),
         current_user: current_user
       )
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(child_task_1)
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
       parent_weights = parent_work_item.reload.weights_source
       expect(parent_weights&.rolled_up_completed_weight).to eq(5) # Only task 3
 
@@ -197,10 +181,34 @@ RSpec.describe 'Weight updates on work item state changes', :aggregate_failures,
         graphql_mutation(:workItemUpdate, { id: child_task_2.to_gid.to_s, stateEvent: 'CLOSE' }),
         current_user: current_user
       )
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(child_task_2)
-      WorkItems::WeightsSource.upsert_rolled_up_weights_for(parent_work_item)
       parent_weights = parent_work_item.reload.weights_source
       expect(parent_weights&.rolled_up_completed_weight).to eq(7) # task 2 (2) + task 3 (5)
+    end
+  end
+
+  describe 'adding a child work item' do
+    let_it_be(:child_task_4) { create(:work_item, :task, project: project, weight: 99) }
+
+    it 'updates the rolled up weight of the parent' do
+      expect do
+        post_graphql_mutation(
+          graphql_mutation(:workItemUpdate, {
+            id: parent_work_item.to_gid.to_s, hierarchy_widget: { children_ids: [child_task_4.to_gid.to_s] }
+          }),
+          current_user: current_user
+        )
+      end.to change { parent_work_item.weights_source.reload.rolled_up_weight }.by(99)
+    end
+  end
+
+  describe 'deleting a child work item' do
+    it 'updates the rolled up weight of the parent' do
+      expect do
+        post_graphql_mutation(
+          graphql_mutation(:workItemDelete, { id: child_task_3.to_gid.to_s }),
+          current_user: create(:user, :admin)
+        )
+      end.to change { parent_work_item.weights_source.reload.rolled_up_weight }.by(-5)
     end
   end
 

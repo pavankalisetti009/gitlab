@@ -182,10 +182,10 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
           project.add_developer(current_user)
         end
 
-        it 'triggers weight update for parent when child is closed', :sidekiq_inline do
+        it 'triggers weight update when child is closed', :sidekiq_inline do
           expect(WorkItems::Weights::UpdateWeightsWorker)
             .to receive(:perform_async)
-            .with(array_including(parent_issue.id))
+            .with(array_including(child_task_1.id))
 
           described_class.new(container: project, current_user: current_user).execute(child_task_1)
         end

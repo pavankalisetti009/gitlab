@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Update a work item', feature_category: :team_planning do
   include GraphqlHelpers
+  include LegacyEpicsHelper
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -1072,7 +1073,8 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         end
 
         before do
-          work_item_epic.synced_epic.update!(parent: existing_parent.synced_epic)
+          legacy_epic = work_item_epic.synced_epic
+          assign_epic_parent(legacy_epic, existing_parent.synced_epic)
         end
 
         it 'syncs with legacy epic if child is epic' do
@@ -1111,8 +1113,10 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           end
 
           before do
-            create(:parent_link, work_item: child_in_new_parent, work_item_parent: new_parent, relative_position: 10)
-            child_in_new_parent.synced_epic.update!(parent: new_parent.synced_epic)
+            child_in_new_parent.synced_epic.work_item_parent_link = create(:parent_link,
+              work_item: child_in_new_parent, work_item_parent: new_parent, relative_position: 10)
+            child_in_new_parent.synced_epic.parent_id = new_parent.synced_epic.id
+            child_in_new_parent.synced_epic.save!
           end
 
           context 'when moving child is an epic' do

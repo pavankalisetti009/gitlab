@@ -446,7 +446,7 @@ module API
         authorize!(:destroy_issue, issue)
 
         destroy_conditionally!(issue) do |issue|
-          Issuable::DestroyService.new(container: user_project, current_user: current_user).execute(issue)
+          ::Issues::DestroyService.new(container: user_project, current_user: current_user).execute(issue)
         end
       end
       # rubocop: enable CodeReuse/ActiveRecord

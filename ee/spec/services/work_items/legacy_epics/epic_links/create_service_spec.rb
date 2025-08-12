@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_category: :team_planning do
   include NestedEpicsHelper
+  include LegacyEpicsHelper
 
   describe '#execute' do
     let_it_be(:ancestor) { create(:group) }
@@ -114,8 +115,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
                 end
 
                 before do
-                  epic.update!(parent: epic_to_add)
-                  create(:parent_link, work_item: epic.work_item, work_item_parent: epic_to_add.work_item)
+                  assign_epic_parent(epic, epic_to_add)
                 end
 
                 include_examples 'returns an error'
@@ -132,8 +132,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
                   # epic_to_add -> epic1 -> epic2 -> epic
                   epic1 = create(:epic, :with_work_item_parent, group: group, parent: epic_to_add)
                   epic2 = create(:epic, :with_work_item_parent, group: group, parent: epic1)
-                  epic.update!(parent: epic2)
-                  create(:parent_link, work_item: epic.work_item, work_item_parent: epic2.work_item)
+                  assign_epic_parent(epic, epic2)
                 end
 
                 include_examples 'returns an error'
@@ -145,8 +144,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
               let(:expected_code) { 409 }
 
               before do
-                epic_to_add.update!(parent: epic)
-                create(:parent_link, work_item_parent: epic.work_item, work_item: epic_to_add.work_item)
+                assign_epic_parent(epic_to_add, epic)
               end
 
               include_examples 'returns an error'
@@ -180,10 +178,8 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
               let(:expected_code) { 409 }
 
               before do
-                epic_to_add.update!(parent: epic)
-                another_epic.update!(parent: epic)
-                create(:parent_link, work_item: epic_to_add.work_item, work_item_parent: epic.work_item)
-                create(:parent_link, work_item: another_epic.work_item, work_item_parent: epic.work_item)
+                assign_epic_parent(epic_to_add, epic)
+                assign_epic_parent(another_epic, epic)
               end
 
               include_examples 'returns an error'
@@ -236,8 +232,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
                 end
 
                 before do
-                  epic.update!(parent: epic_to_add)
-                  create(:parent_link, work_item: epic.work_item, work_item_parent: epic_to_add.work_item)
+                  assign_epic_parent(epic, epic_to_add)
                 end
 
                 include_examples 'returns an error'
@@ -462,8 +457,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
 
         context 'when at least one epic is still not assigned to the parent epic' do
           before do
-            epic_to_add.update!(parent: epic)
-            create(:parent_link, work_item_parent: epic.work_item, work_item: epic_to_add.work_item)
+            assign_epic_parent(epic_to_add, epic)
           end
 
           let(:references) do
@@ -500,8 +494,7 @@ RSpec.describe WorkItems::LegacyEpics::EpicLinks::CreateService, feature_categor
 
         context 'when an epic is already assigned to another epic' do
           before do
-            epic_to_add.update!(parent: another_epic)
-            create(:parent_link, work_item_parent: another_epic.work_item, work_item: epic_to_add.work_item)
+            assign_epic_parent(epic_to_add, another_epic)
           end
 
           it 'creates system notes' do
