@@ -101,7 +101,7 @@ module Security
     end
 
     def pipeline_ids
-      if Feature.enabled?(:show_child_reports_in_mr_page, project)
+      if Feature.enabled?(:show_child_security_reports_in_mr_widget, project)
         # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Pluck is more efficient & limit of 1000 by default
         pipeline.self_and_project_descendants.pluck(:id)
         # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord

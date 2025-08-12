@@ -869,9 +869,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             end
           end
 
-          context 'with FF show_child_reports_in_mr_page disabled' do
+          context 'with FF show_child_security_reports_in_mr_widget disabled' do
             before do
-              stub_feature_flags(show_child_reports_in_mr_page: false)
+              stub_feature_flags(show_child_security_reports_in_mr_widget: false)
             end
 
             it { is_expected.to be_falsy }
@@ -902,7 +902,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
-  shared_examples_for 'reports in child pipelines' do |report_type|
+  shared_examples_for 'security reports in child pipelines' do |report_type|
     context 'when the child pipeline has reports' do
       let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
       let_it_be(:pipeline) { create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
@@ -921,9 +921,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         expect(subject).to eq(true)
       end
 
-      context 'when FF show_child_reports_in_mr_page is disabled' do
+      context 'when FF show_child_security_reports_in_mr_widget is disabled' do
         before do
-          stub_feature_flags(show_child_reports_in_mr_page: false)
+          stub_feature_flags(show_child_security_reports_in_mr_widget: false)
         end
 
         it 'returns false regardless of child pipeline reports' do
@@ -1022,7 +1022,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       it { is_expected.to be_falsey }
     end
 
-    it_behaves_like "reports in child pipelines", :container_scanning_feature_branch
+    it_behaves_like "security reports in child pipelines", :container_scanning_feature_branch
   end
 
   describe '#has_dast_reports?' do
