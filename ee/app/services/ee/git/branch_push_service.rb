@@ -50,7 +50,7 @@ module EE
       end
 
       def enqueue_knowledge_graph_indexing
-        return false unless ::Feature.enabled?(:knowledge_graph_indexing, project.project_namespace)
+        return false unless ::Feature.enabled?(:knowledge_graph_indexing, project)
         return false unless default_branch?
 
         return false unless ::GitlabSubscriptions::AddOnPurchase
