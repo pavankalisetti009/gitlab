@@ -6,7 +6,7 @@ import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
 import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
-import FlowTriggersShow from '../pages/flow_triggers/flow_triggers_show.vue';
+import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
 import {
   AGENTS_PLATFORM_INDEX_ROUTE,
   AGENTS_PLATFORM_NEW_ROUTE,
@@ -14,7 +14,7 @@ import {
   WORKFLOW_END_PAGE_LINK,
   FLOW_TRIGGERS_INDEX_ROUTE,
   FLOW_TRIGGERS_NEW_ROUTE,
-  FLOW_TRIGGERS_SHOW_ROUTE,
+  FLOW_TRIGGERS_EDIT_ROUTE,
 } from './constants';
 import { getNamespaceIndexComponent } from './utils';
 
@@ -85,9 +85,16 @@ export const createRouter = (base, namespace) => {
             },
           },
           {
-            name: FLOW_TRIGGERS_SHOW_ROUTE,
-            path: ':id(\\d+)',
-            component: FlowTriggersShow,
+            path: ':id(\\d+)/edit',
+            component: FlowTriggersEdit,
+            name: FLOW_TRIGGERS_EDIT_ROUTE,
+            meta: {
+              text: s__('AICatalog|Edit flow'),
+            },
+          },
+          {
+            path: ':id/edit',
+            redirect: '/flow-triggers',
           },
         ],
       },

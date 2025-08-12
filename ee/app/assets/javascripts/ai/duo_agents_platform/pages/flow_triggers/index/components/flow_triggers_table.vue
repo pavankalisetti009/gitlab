@@ -11,6 +11,8 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { FLOW_TRIGGERS_EDIT_ROUTE } from '../../../../router/constants';
 
 const thClass = 'gl-whitespace-nowrap';
 const truncateClasses = 'md:gl-truncate md:gl-max-w-0 md:gl-whitespace-nowrap';
@@ -43,6 +45,11 @@ export default {
   computed: {
     eventTypes() {
       return Object.fromEntries(this.eventTypeOptions.map((item) => [item.value, item.text]));
+    },
+  },
+  methods: {
+    createEditPath(id) {
+      return { name: FLOW_TRIGGERS_EDIT_ROUTE, params: { id: getIdFromGraphQLId(id) } };
     },
   },
   fields: [
@@ -142,7 +149,8 @@ export default {
             v-gl-tooltip
             :title="s__('DuoAgentsPlatform|Edit trigger')"
             :aria-label="s__('DuoAgentsPlatform|Edit trigger')"
-            :href="item.editPath"
+            :to="createEditPath(item.id)"
+            data-testid="flow-trigger-edit-action"
             icon="pencil"
           />
           <gl-button

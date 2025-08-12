@@ -3,10 +3,13 @@
 module API
   class Issues < ::API::Base
     include ::API::Concerns::AiWorkflowsAccess
+    include ::API::Concerns::McpAccess
     include APIGuard
     include PaginationParams
 
     allow_ai_workflows_access
+    allow_mcp_access_read
+    allow_mcp_access_create
 
     helpers Helpers::IssuesHelpers
     helpers SpammableActions::CaptchaCheck::RestApiActionsSupport

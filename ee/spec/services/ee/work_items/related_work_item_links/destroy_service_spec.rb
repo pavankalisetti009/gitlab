@@ -22,16 +22,6 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
       project.add_guest(user)
     end
 
-    context 'when synced_work_item: true' do
-      let(:extra_params) { { synced_work_item: true } }
-
-      it 'does not create a system note' do
-        expect(SystemNoteService).not_to receive(:unrelate_issuable)
-
-        expect { destroy_links }.not_to change { SystemNoteMetadata.count }
-      end
-    end
-
     context 'when there is an epic for the work item' do
       let_it_be(:group) { create(:group) }
       let_it_be(:epic_a) { create(:epic, :with_synced_work_item, group: group) }
@@ -53,72 +43,35 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::DestroyService, feature_category
         stub_licensed_features(epics: true, related_epics: true)
       end
 
-      context 'when synced_work_item: false' do
-        it 'creates system notes' do
-          expect(SystemNoteService).to receive(:unrelate_issuable).with(source, target, user)
-          expect(SystemNoteService).to receive(:unrelate_issuable).with(target, source, user)
+      it 'creates system notes' do
+        expect(SystemNoteService).to receive(:unrelate_issuable).with(source, target, user)
+        expect(SystemNoteService).to receive(:unrelate_issuable).with(target, source, user)
 
-          destroy_links
-        end
+        destroy_links
+      end
 
-        it 'destroys both links' do
-          expect { destroy_links }.to change { WorkItems::RelatedWorkItemLink.count }.by(-1)
-            .and change { Epic::RelatedEpicLink.count }.by(-1)
+      it 'destroys both links' do
+        expect { destroy_links }.to change { WorkItems::RelatedWorkItemLink.count }.by(-1)
+          .and change { Epic::RelatedEpicLink.count }.by(-1)
 
-          expect(epic_a.related_epics(user)).to be_empty
-          expect(source.linked_work_items(authorize: false)).to be_empty
-        end
+        expect(epic_a.related_epics(user)).to be_empty
+        expect(source.linked_work_items(authorize: false)).to be_empty
+      end
 
-        it 'calls this service once' do
-          allow(described_class).to receive(:new).and_call_original
-          expect(described_class).to receive(:new).once
+      it 'calls this service once' do
+        allow(described_class).to receive(:new).and_call_original
+        expect(described_class).to receive(:new).once
 
-          destroy_links
-        end
+        destroy_links
+      end
 
-        it 'creates notes only for work item', :sidekiq_inline do
-          expect { destroy_links }.to change { Epic::RelatedEpicLink.count }.by(-1)
-            .and change { WorkItems::RelatedWorkItemLink.count }.by(-1)
-            .and change { source.notes.count }.by(1)
-            .and change { target.notes.count }.by(1)
-            .and not_change { epic_a.own_notes.count }
-            .and not_change { epic_b.own_notes.count }
-        end
-
-        context 'when destroying the related epic link fails' do
-          before do
-            allow_next_found_instance_of(Epic::RelatedEpicLink) do |instance|
-              errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:base, 'Some error') }
-              allow(instance).to receive_messages(destroy: false, errors: errors)
-            end
-          end
-
-          it 'does not create an epic link nor a work item link', :aggregate_failures do
-            expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error)
-              .with({
-                message: 'Not able to destroy related epic links',
-                error_message: ['Some error'],
-                group_id: group.id,
-                source_id: source.id,
-                target_id: target.id
-              })
-
-            expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(
-              instance_of(::WorkItems::SyncAsEpic::SyncAsEpicError),
-              { work_item_id: source.id }
-            )
-
-            expect { destroy_links }.to not_change { Epic::RelatedEpicLink.count }
-              .and not_change { WorkItems::RelatedWorkItemLink.count }
-          end
-
-          it 'returns an error' do
-            expect(destroy_links).to eq({
-              status: :error,
-              message: "Couldn't delete work item link due to an internal error.", http_status: 422
-            })
-          end
-        end
+      it 'creates notes only for work item', :sidekiq_inline do
+        expect { destroy_links }.to change { Epic::RelatedEpicLink.count }.by(-1)
+          .and change { WorkItems::RelatedWorkItemLink.count }.by(-1)
+          .and change { source.notes.count }.by(1)
+          .and change { target.notes.count }.by(1)
+          .and not_change { epic_a.own_notes.count }
+          .and not_change { epic_b.own_notes.count }
       end
     end
   end

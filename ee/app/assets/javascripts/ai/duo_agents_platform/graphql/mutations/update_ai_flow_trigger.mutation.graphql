@@ -1,0 +1,5 @@
+mutation updateAiFlowTrigger($input: AiFlowTriggerUpdateInput!) {
+  aiFlowTriggerUpdate(input: $input) {
+    errors
+  }
+}

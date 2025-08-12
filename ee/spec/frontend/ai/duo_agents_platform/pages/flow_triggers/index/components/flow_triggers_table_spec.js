@@ -1,6 +1,7 @@
 import { GlBadge, GlAvatar } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_table.vue';
+import { FLOW_TRIGGERS_EDIT_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import {
   mockTriggers,
   mockTriggersWithoutUser,
@@ -15,6 +16,7 @@ describe('FlowTriggersTable', () => {
   const findBadges = () => wrapper.findAllComponents(GlBadge);
   const findConfigPath = () => wrapper.findByTestId('flow-trigger-config-path');
   const findConfigPathFallback = () => wrapper.findByTestId('flow-trigger-config-path-fallback');
+  const findEditButton = () => wrapper.findByTestId('flow-trigger-edit-action');
   const findDeleteButton = () => wrapper.findByTestId('flow-trigger-delete-action');
 
   const createComponent = (props = {}) => {
@@ -38,6 +40,13 @@ describe('FlowTriggersTable', () => {
       expect(badges).toHaveLength(2);
       expect(badges.at(0).text()).toBe('Mention');
       expect(badges.at(1).text()).toBe('Assign');
+    });
+
+    it('sets a link to edit the item', () => {
+      expect(findEditButton().props('to')).toEqual({
+        name: FLOW_TRIGGERS_EDIT_ROUTE,
+        params: { id: 1 },
+      });
     });
 
     describe('when there is a config path', () => {

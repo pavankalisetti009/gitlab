@@ -8,7 +8,7 @@ import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empt
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import FlowTriggersIndex from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/flow_triggers_index.vue';
-import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index//components/flow_triggers_table.vue';
+import FlowTriggersTable from 'ee/ai/duo_agents_platform/pages/flow_triggers/index/components/flow_triggers_table.vue';
 import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import deleteAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/delete_ai_flow_trigger.mutation.graphql';
 import {
