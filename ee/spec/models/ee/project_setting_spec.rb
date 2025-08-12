@@ -159,4 +159,9 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
     it_behaves_like 'a cascading project setting boolean attribute',
       settings_attribute_name: :model_prompt_cache_enabled
   end
+
+  describe '#auto_duo_code_review_enabled' do
+    it_behaves_like 'a cascading project setting boolean attribute',
+      settings_attribute_name: :auto_duo_code_review_enabled
+  end
 end

@@ -3,7 +3,10 @@
 require "spec_helper"
 
 RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hosted_models" do
+  let(:user) { build(:user) }
+
   before do
+    allow(helper).to receive(:current_user).and_return(user)
     allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
   end
 
@@ -46,6 +49,50 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
         { modelValue: "CODESTRAL", modelName: "Mistral Codestral", releaseState: "GA" },
         { modelValue: "MIXTRAL", modelName: "Mixtral", releaseState: "GA" }
       ])
+    end
+  end
+
+  describe "#show_self_hosted_vendored_model_option?" do
+    it "returns false when the feature flag is disabled" do
+      stub_feature_flags(ai_self_hosted_vendored_features: false)
+
+      expect(helper.show_self_hosted_vendored_model_option?).to be(false)
+    end
+
+    context "with the feature flag enabled" do
+      subject { helper.show_self_hosted_vendored_model_option? }
+
+      before do
+        stub_feature_flags(ai_self_hosted_vendored_features: true)
+      end
+
+      context "when the license is an online cloud license" do
+        let(:license) { build(:license, cloud: true) }
+
+        before do
+          allow(License).to receive(:current).and_return(license)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context "when the license is not an online cloud license" do
+        let(:license) { build(:license, cloud: false) }
+
+        before do
+          allow(License).to receive(:current).and_return(license)
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context "when there is no license" do
+        before do
+          allow(License).to receive(:current).and_return(nil)
+        end
+
+        it { is_expected.to be(false) }
+      end
     end
   end
 

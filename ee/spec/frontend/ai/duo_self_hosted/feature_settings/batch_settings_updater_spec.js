@@ -72,12 +72,12 @@ describe('DuoSelfHostedBatchSettingsUpdater', () => {
     });
   });
 
-  describe('when the selected feature setting has no option assigned', () => {
+  describe('when the selected feature setting is unassigned', () => {
     beforeEach(() => {
       const unassignedFeatureSetting = {
         feature: 'duo_chat',
         title: 'General Chat',
-        provider: 'vendored',
+        provider: 'unassigned',
       };
 
       createComponent({ props: { selectedFeatureSetting: unassignedFeatureSetting } });

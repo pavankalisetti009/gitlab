@@ -1940,42 +1940,74 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     context 'when setting auto_duo_code_review_enabled' do
       let(:project_params) { { auto_duo_code_review_enabled: true } }
       let_it_be(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-      let_it_be(:purchase) do
-        create(:gitlab_subscription_add_on_purchase,
-          namespace: user.namespace,
-          add_on: duo_add_on,
-          expires_on: 1.day.ago)
-      end
 
-      context 'when licence is available' do
-        before do
-          stub_licensed_features(review_merge_request: true)
-          purchase.update!(expires_on: 1.day.from_now)
+      context 'when on self managed instance' do
+        let_it_be(:purchase) do
+          create(:gitlab_subscription_add_on_purchase, :expired, namespace: nil, add_on: duo_add_on)
         end
 
-        it 'updates the value' do
-          expect { subject }.to change { project.reload.auto_duo_code_review_enabled }
+        context 'when licence is available' do
+          before do
+            stub_licensed_features(review_merge_request: true)
+            purchase.update!(expires_on: 1.day.from_now)
+          end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['auto_duo_code_review_enabled']).to eq true
-        end
-
-        context 'duo enterprise add on expired' do
           it 'updates the value' do
             expect { subject }.to change { project.reload.auto_duo_code_review_enabled }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['auto_duo_code_review_enabled']).to be_nil
+            expect(json_response['auto_duo_code_review_enabled']).to eq true
           end
         end
       end
 
-      context 'when licence is not available' do
-        it 'does not update the value' do
-          expect { subject }.not_to change { project.reload.auto_duo_code_review_enabled }
+      context 'when on gitlab.com instance', :saas do
+        before do
+          # project is initialized as `let(:project) { create(:project, namespace: user.namespace) }`
+          # but gitlab_subscription_add_on_purchase can only be applied to group
+          project.update!(namespace: create(:group))
+          stub_ee_application_setting(should_check_namespace_plan: true)
+        end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['auto_duo_code_review_enabled']).to be_nil
+        context 'when licence is available' do
+          let(:purchase) do
+            create(:gitlab_subscription_add_on_purchase, :expired, namespace: project.root_namespace, add_on: duo_add_on)
+          end
+
+          before do
+            stub_licensed_features(review_merge_request: true)
+          end
+
+          context 'duo enterprise add on available' do
+            before do
+              purchase.update!(expires_on: 1.day.from_now)
+            end
+
+            it 'updates the value' do
+              expect { subject }.to change { project.reload.auto_duo_code_review_enabled }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['auto_duo_code_review_enabled']).to eq true
+            end
+          end
+
+          context 'duo enterprise add on expired' do
+            it 'updates the value' do
+              expect { subject }.to change { project.reload.auto_duo_code_review_enabled }
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['auto_duo_code_review_enabled']).to be_nil
+            end
+          end
+        end
+
+        context 'when licence is not available' do
+          it 'does not update the value' do
+            expect { subject }.not_to change { project.reload.auto_duo_code_review_enabled }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['auto_duo_code_review_enabled']).to be_nil
+          end
         end
       end
     end

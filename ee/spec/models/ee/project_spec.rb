@@ -5450,37 +5450,61 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     let(:namespace) { create(:group, parent: parent) }
     let!(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
-    context "duo_feature enabled" do
+    context "on saas instance" do
       before do
-        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
+        allow(Gitlab).to receive(:com?).and_return(true)
       end
 
-      context "duo_enterprise purchased" do
+      context "duo_feature enabled" do
         before do
-          create(:gitlab_subscription_add_on_purchase,
-            namespace: parent,
-            add_on: duo_add_on)
+          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
         end
 
-        it 'enables duo_enterprise_features_available?' do
-          expect(project).to be_duo_enterprise_features_available
+        context "duo_enterprise purchased" do
+          before do
+            create(:gitlab_subscription_add_on_purchase,
+              namespace: parent,
+              add_on: duo_add_on)
+          end
+
+          it 'enables duo_enterprise_features_available?' do
+            expect(project).to be_duo_enterprise_features_available
+          end
+        end
+
+        context "duo_enterprise not purchased" do
+          it 'disables duo_enterprise_features_available?' do
+            expect(project).not_to be_duo_enterprise_features_available
+          end
         end
       end
 
-      context "duo_enterprise not purchased" do
+      context "duo_feature not enabled" do
+        before do
+          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
+        end
+
         it 'disables duo_enterprise_features_available?' do
           expect(project).not_to be_duo_enterprise_features_available
         end
       end
     end
 
-    context "duo_feature not enabled" do
-      before do
-        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
-      end
+    context "on self-managed instance" do
+      context "duo_feature enabled" do
+        before do
+          allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
+        end
 
-      it 'disables duo_enterprise_features_available?' do
-        expect(project).not_to be_duo_enterprise_features_available
+        context "duo_enterprise purchased" do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_add_on)
+          end
+
+          it 'enables duo_enterprise_features_available?' do
+            expect(project).to be_duo_enterprise_features_available
+          end
+        end
       end
     end
   end
@@ -5649,6 +5673,55 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(projects).to match_array(
         [private_authorized_project, private_unauthorized_project, internal_project, public_project]
       )
+    end
+  end
+
+  describe 'auto_duo_code_review_enabled cascading' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    context 'with application setting enabled' do
+      before do
+        stub_application_setting(auto_duo_code_review_enabled: true)
+      end
+
+      it 'inherits from application setting' do
+        expect(project.auto_duo_code_review_enabled).to be_truthy
+      end
+
+      context 'when group overrides to false' do
+        before do
+          group.namespace_settings.update!(auto_duo_code_review_enabled: false)
+        end
+
+        it 'uses group setting' do
+          expect(project.reload.auto_duo_code_review_enabled).to be_falsey
+        end
+      end
+    end
+
+    context 'with cascading hierarchy' do
+      let_it_be(:parent_group) { create(:group) }
+      let_it_be(:child_group) { create(:group, parent: parent_group) }
+      let_it_be(:project) { create(:project, group: child_group) }
+
+      before do
+        parent_group.namespace_settings.update!(auto_duo_code_review_enabled: true)
+      end
+
+      it 'inherits from parent group' do
+        expect(project.auto_duo_code_review_enabled).to be_truthy
+      end
+
+      context 'when child group overrides' do
+        before do
+          child_group.namespace_settings.update!(auto_duo_code_review_enabled: false)
+        end
+
+        it 'uses child group setting' do
+          expect(project.reload.auto_duo_code_review_enabled).to be_falsey
+        end
+      end
     end
   end
 end

@@ -40,9 +40,7 @@ RSpec.describe 'merge requests creations', feature_category: :code_review_workfl
         let(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
         before do
-          create(:gitlab_subscription_add_on_purchase,
-            namespace: project.namespace,
-            add_on: duo_add_on)
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_add_on)
           ai_features_service = instance_double(::Projects::AiFeatures)
           allow(ai_features_service).to receive(:review_merge_request_allowed?).with(user).and_return(has_duo_access)
           allow(::Projects::AiFeatures).to receive(:new).and_return(ai_features_service)

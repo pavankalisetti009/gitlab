@@ -830,6 +830,10 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       settings_attribute_name: :model_prompt_cache_enabled
   end
 
+  describe '#auto_duo_code_review_enabled' do
+    it_behaves_like 'a cascading namespace setting boolean attribute', settings_attribute_name: :auto_duo_code_review_enabled
+  end
+
   describe '#enterprise_users_extensions_marketplace_enabled=' do
     subject { setting.enterprise_users_extensions_marketplace_opt_in_status }
 
