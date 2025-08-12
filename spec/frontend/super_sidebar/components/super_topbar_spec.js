@@ -1,5 +1,5 @@
-import { shallowMount } from '@vue/test-utils';
 import { GlBadge } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SuperTopbar from '~/super_sidebar/components/super_topbar.vue';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
 import CreateMenu from '~/super_sidebar/components/create_menu.vue';
@@ -20,14 +20,19 @@ describe('SuperTopbar', () => {
   const findNextBadge = () => wrapper.findComponent(GlBadge);
   const findSearchButton = () => wrapper.findByTestId('super-topbar-search-button');
   const findSearchModal = () => wrapper.findComponent(SearchModal);
+  const findStopImpersonationButton = () => wrapper.findByTestId('stop-impersonation-btn');
   const findUserCounts = () => wrapper.findComponent(UserCounts);
   const findUserMenu = () => wrapper.findComponent(UserMenu);
 
-  const createComponent = (props = {}) => {
-    wrapper = shallowMount(SuperTopbar, {
+  const createComponent = (props = {}, provideOverrides = {}) => {
+    wrapper = shallowMountExtended(SuperTopbar, {
       propsData: {
         sidebarData: mockSidebarData,
         ...props,
+      },
+      provide: {
+        isImpersonating: false,
+        ...provideOverrides,
       },
       stubs: {
         SearchModal: SearchModalStub,
@@ -71,6 +76,21 @@ describe('SuperTopbar', () => {
       describe('when there are menu items for it', () => {
         it('passes the "Create new…" menu groups to the create-menu component', () => {
           expect(findCreateMenu().props('groups')).toBe(mockSidebarData.create_new_menu_groups);
+        });
+      });
+    });
+
+    describe('Impersonate', () => {
+      describe('when not impersonating another user', () => {
+        it('does not render the "Stop impersonation" button', () => {
+          expect(findStopImpersonationButton().exists()).toBe(false);
+        });
+      });
+
+      describe('when impersonating another user', () => {
+        it('renders the "Stop impersonation" button', () => {
+          createComponent({}, { isImpersonating: true });
+          expect(findStopImpersonationButton().exists()).toBe(true);
         });
       });
     });

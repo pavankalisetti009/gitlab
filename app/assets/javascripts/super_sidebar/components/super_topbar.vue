@@ -1,5 +1,5 @@
 <script>
-import { GlBadge, GlButton, GlModalDirective, GlIcon } from '@gitlab/ui';
+import { GlBadge, GlButton, GlIcon, GlModalDirective, GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
 import CreateMenu from './create_menu.vue';
@@ -27,10 +27,13 @@ export default {
   },
   i18n: {
     searchBtnText: __('Search or go to…'),
+    stopImpersonating: __('Stop impersonating'),
   },
   directives: {
     GlModal: GlModalDirective,
+    GlTooltip: GlTooltipDirective,
   },
+  inject: ['isImpersonating'],
   props: {
     sidebarData: {
       type: Object,
@@ -79,6 +82,17 @@ export default {
         counter-class="gl-button btn btn-default btn-default-tertiary"
       />
 
+      <gl-button
+        v-if="isImpersonating"
+        v-gl-tooltip.bottom
+        :href="sidebarData.stop_impersonation_path"
+        :title="$options.i18n.stopImpersonating"
+        :aria-label="$options.i18n.stopImpersonating"
+        icon="incognito"
+        category="tertiary"
+        data-method="delete"
+        data-testid="stop-impersonation-btn"
+      />
       <user-menu v-if="sidebarData.is_logged_in" :data="sidebarData" />
     </div>
 
