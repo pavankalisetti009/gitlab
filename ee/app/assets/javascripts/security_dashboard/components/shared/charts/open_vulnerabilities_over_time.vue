@@ -59,6 +59,7 @@ export default {
     },
     chartOptions() {
       return {
+        animation: false,
         // Note: This is a workaround to remove the extra whitespace when the chart has no title
         // Once https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2199 has been fixed, this can be removed
         grid: {

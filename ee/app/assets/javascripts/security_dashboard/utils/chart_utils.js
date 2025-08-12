@@ -1,5 +1,14 @@
 import { s__ } from '~/locale';
 
+export const SEVERITY_LEVELS = {
+  CRITICAL: s__('severity|Critical'),
+  HIGH: s__('severity|High'),
+  MEDIUM: s__('severity|Medium'),
+  LOW: s__('severity|Low'),
+  INFO: s__('severity|Info'),
+  UNKNOWN: s__('severity|Unknown'),
+};
+
 /**
  * Formats vulnerability data by severity for chart visualization
  *
@@ -14,12 +23,12 @@ import { s__ } from '~/locale';
  */
 const formatVulnerabilitiesBySeverity = (vulnerabilitiesOverTime) => {
   const chartSeriesDataBySeverity = {
-    CRITICAL: { name: s__('severity|Critical'), id: 'CRITICAL', data: [] },
-    HIGH: { name: s__('severity|High'), id: 'HIGH', data: [] },
-    MEDIUM: { name: s__('severity|Medium'), id: 'MEDIUM', data: [] },
-    LOW: { name: s__('severity|Low'), id: 'LOW', data: [] },
-    INFO: { name: s__('severity|Info'), id: 'INFO', data: [] },
-    UNKNOWN: { name: s__('severity|Unknown'), id: 'UNKNOWN', data: [] },
+    CRITICAL: { name: SEVERITY_LEVELS.CRITICAL, id: 'CRITICAL', data: [] },
+    HIGH: { name: SEVERITY_LEVELS.HIGH, id: 'HIGH', data: [] },
+    MEDIUM: { name: SEVERITY_LEVELS.MEDIUM, id: 'MEDIUM', data: [] },
+    LOW: { name: SEVERITY_LEVELS.LOW, id: 'LOW', data: [] },
+    INFO: { name: SEVERITY_LEVELS.INFO, id: 'INFO', data: [] },
+    UNKNOWN: { name: SEVERITY_LEVELS.UNKNOWN, id: 'UNKNOWN', data: [] },
   };
 
   vulnerabilitiesOverTime.forEach((node) => {
