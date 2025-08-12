@@ -5564,4 +5564,53 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       )
     end
   end
+
+  describe 'auto_duo_code_review_enabled cascading' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    context 'with application setting enabled' do
+      before do
+        stub_application_setting(auto_duo_code_review_enabled: true)
+      end
+
+      it 'inherits from application setting' do
+        expect(project.auto_duo_code_review_enabled).to be_truthy
+      end
+
+      context 'when group overrides to false' do
+        before do
+          group.namespace_settings.update!(auto_duo_code_review_enabled: false)
+        end
+
+        it 'uses group setting' do
+          expect(project.reload.auto_duo_code_review_enabled).to be_falsey
+        end
+      end
+    end
+
+    context 'with cascading hierarchy' do
+      let_it_be(:parent_group) { create(:group) }
+      let_it_be(:child_group) { create(:group, parent: parent_group) }
+      let_it_be(:project) { create(:project, group: child_group) }
+
+      before do
+        parent_group.namespace_settings.update!(auto_duo_code_review_enabled: true)
+      end
+
+      it 'inherits from parent group' do
+        expect(project.auto_duo_code_review_enabled).to be_truthy
+      end
+
+      context 'when child group overrides' do
+        before do
+          child_group.namespace_settings.update!(auto_duo_code_review_enabled: false)
+        end
+
+        it 'uses child group setting' do
+          expect(project.reload.auto_duo_code_review_enabled).to be_falsey
+        end
+      end
+    end
+  end
 end

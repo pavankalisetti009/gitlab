@@ -365,6 +365,8 @@ module EE
         allow_nil: false,
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
+      validates :auto_duo_code_review_enabled, inclusion: { in: [true, false] }
+
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :trigger_clickhouse_for_analytics_enabled_event
     end
