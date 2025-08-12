@@ -68,7 +68,9 @@ describe('SuperTopbar', () => {
       describe('when there are no menu items for it', () => {
         // This scenario usually happens for an "External" user.
         it('does not render it', () => {
-          createComponent({ sidebarData: { ...mockSidebarData, create_new_menu_groups: [] } });
+          createComponent({
+            sidebarData: { ...mockSidebarData, is_logged_in: true, create_new_menu_groups: [] },
+          });
           expect(findCreateMenu().exists()).toBe(false);
         });
       });
@@ -83,6 +85,7 @@ describe('SuperTopbar', () => {
     describe('Impersonate', () => {
       describe('when not impersonating another user', () => {
         it('does not render the "Stop impersonation" button', () => {
+          createComponent({}, { isImpersonating: false });
           expect(findStopImpersonationButton().exists()).toBe(false);
         });
       });
