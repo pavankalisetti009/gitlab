@@ -71,14 +71,13 @@ describe('AiCatalogAgentsEdit', () => {
   });
 
   describe('Form Submit', () => {
-    const { name, description, systemPrompt, userPrompt } = mockAgent;
+    const { name, description, systemPrompt, userPrompt, public: publicAgent } = mockAgent;
     const formValues = {
       name,
       description,
       systemPrompt,
       userPrompt,
-      // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/555081
-      public: true,
+      public: publicAgent,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
