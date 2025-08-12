@@ -256,12 +256,7 @@ module EE
 
     def has_active_add_on_purchase?(add_on)
       ::GitlabSubscriptions::AddOnPurchase
-        .joins(:add_on)
-        .where(
-          namespace_id: self_and_ancestor_ids,
-          subscription_add_ons: { name: GitlabSubscriptions::AddOn.names[add_on] }
-        )
-        .active
+        .for_active_add_ons(add_on, self)
         .any?
     end
 
