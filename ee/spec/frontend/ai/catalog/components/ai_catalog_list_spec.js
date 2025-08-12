@@ -12,6 +12,10 @@ describe('AiCatalogList', () => {
 
   const mockItems = mockAgents;
 
+  const mockDeleteTitle = 'Delete item';
+  const mockDeleteMessage = 'Are you sure you want to delete item %{name}?';
+  const mockDeleteFn = jest.fn();
+
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(AiCatalogList, {
       propsData: {
@@ -19,6 +23,9 @@ describe('AiCatalogList', () => {
         itemTypeConfig: {},
         isLoading: false,
         pageInfo: mockPageInfo,
+        deleteConfirmTitle: mockDeleteTitle,
+        deleteConfirmMessage: mockDeleteMessage,
+        deleteFn: mockDeleteFn,
         ...props,
       },
       stubs: {
@@ -31,6 +38,7 @@ describe('AiCatalogList', () => {
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findListItems = () => wrapper.findAllComponents(AiCatalogListItem);
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
+  const findPaginator = () => wrapper.findComponent(GlKeysetPagination);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -105,17 +113,8 @@ describe('AiCatalogList', () => {
   });
 
   describe('deleting an item', () => {
-    const mockDeleteTitle = 'Delete item';
-    const mockDeleteMessage = 'Are you sure you want to delete item %{name}?';
-    const mockDeleteFn = jest.fn();
-
     beforeEach(() => {
-      createComponent({
-        deleteConfirmTitle: mockDeleteTitle,
-        deleteConfirmMessage: mockDeleteMessage,
-        deleteFn: mockDeleteFn,
-      });
-
+      createComponent();
       const secondItem = findListItems().at(1);
 
       secondItem.vm.$emit('delete');
@@ -136,11 +135,11 @@ describe('AiCatalogList', () => {
   });
 
   describe('pagination', () => {
-    const findPaginator = () => wrapper.findComponent(GlKeysetPagination);
+    beforeEach(() => {
+      createComponent();
+    });
 
     it('passes pageInfo to pagination component', () => {
-      createComponent();
-
       expect(findPaginator().props()).toMatchObject({
         startCursor: mockPageInfo.startCursor,
         endCursor: mockPageInfo.endCursor,
@@ -150,15 +149,11 @@ describe('AiCatalogList', () => {
     });
 
     it('emits prev-page when prev emitted by pagination component', () => {
-      createComponent();
-
       findPaginator().vm.$emit('prev');
       expect(wrapper.emitted('prev-page')).toHaveLength(1);
     });
 
     it('emits next-page when next emitted by pagination component', () => {
-      createComponent();
-
       findPaginator().vm.$emit('next');
       expect(wrapper.emitted('next-page')).toHaveLength(1);
     });
