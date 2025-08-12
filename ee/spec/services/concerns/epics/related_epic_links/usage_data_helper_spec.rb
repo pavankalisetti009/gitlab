@@ -7,6 +7,7 @@ RSpec.describe Epics::RelatedEpicLinks::UsageDataHelper, feature_category: :port
 
   describe '#track_related_epics_event_for' do
     let_it_be(:user) { create(:user) }
+    let(:service) { related_epic_link_service.new(user) }
     let_it_be(:group) { create(:group) }
 
     subject(:related_epic_link_service) do
@@ -20,8 +21,6 @@ RSpec.describe Epics::RelatedEpicLinks::UsageDataHelper, feature_category: :port
         end
       end
     end
-
-    let(:service) { related_epic_link_service.new(user) }
 
     where(:link_type, :event_type, :tracking_method) do
       IssuableLink::TYPE_RELATES_TO    | :added   | :track_linked_epic_with_type_relates_to_added

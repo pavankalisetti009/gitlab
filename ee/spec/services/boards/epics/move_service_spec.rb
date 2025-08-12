@@ -106,19 +106,18 @@ RSpec.describe Boards::Epics::MoveService do
         let_it_be(:epic1) { create(:epic, group: group) }
         let_it_be(:epic2) { create(:epic, group: group) }
         let_it_be(:epic3) { create(:epic, group: group) }
+        let(:params) do
+          {
+            board_id: board.id,
+            to_list_id: backlog.id
+          }
+        end
 
         def create_positions
           create(:epic_board_position, epic: epic3, epic_board: board, relative_position: 40)
           create(:epic_board_position, epic: epic, epic_board: board, relative_position: 50)
           create(:epic_board_position, epic: epic2, epic_board: board, relative_position: 60)
           create(:epic_board_position, epic: epic1, epic_board: board, relative_position: 80)
-        end
-
-        let(:params) do
-          {
-            board_id: board.id,
-            to_list_id: backlog.id
-          }
         end
 
         def epic_relative_position(epic)

@@ -8,11 +8,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
   let_it_be(:primary) { create(:geo_node, :primary) }
   let_it_be(:secondary) { create(:geo_node) }
   let_it_be(:another_secondary) { create(:geo_node) }
-
-  subject { described_class.new }
-
   let(:event_date) { Time.current.utc }
-
   let(:data) do
     {
       status_message: nil,
@@ -42,6 +38,8 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
       event_log_max_id: 555
     }
   end
+
+  subject { described_class.new }
 
   before do
     # We disable the transaction_open? check because Gitlab::Database::BatchCounter.batch_count

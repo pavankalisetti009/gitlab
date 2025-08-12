@@ -97,16 +97,15 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
           context 'with epic and milestone in commands only' do
             let_it_be(:milestone) { create(:milestone, group: group, start_date: Date.today, due_date: 7.days.from_now) }
             let_it_be(:assignee_user1) { create(:user) }
-
-            before do
-              project.add_guest(assignee_user1)
-            end
-
             let(:params) do
               {
                 title: 'Awesome issue',
                 description: %(/epic #{epic.to_reference}\n/milestone #{milestone.to_reference}\n/assign #{assignee_user1.to_reference})
               }
+            end
+
+            before do
+              project.add_guest(assignee_user1)
             end
 
             it 'sets epic and milestone to issuable and update epic start and due date' do

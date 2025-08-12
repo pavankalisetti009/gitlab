@@ -69,12 +69,6 @@ RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
       let(:issue_a) { create :issue, project: project }
       let(:issue_b) { create :issue, project: project }
       let(:issue_c) { create :issue, project: project }
-
-      before do
-        create :issue_link, source: issue, target: issue_b, link_type: IssueLink::TYPE_RELATES_TO
-        create :issue_link, source: issue, target: issue_c, link_type: IssueLink::TYPE_BLOCKS
-      end
-
       let(:params) do
         {
           issuable_references: [
@@ -84,6 +78,11 @@ RSpec.describe IssueLinks::CreateService, feature_category: :team_planning do
           ],
           link_type: IssueLink::TYPE_BLOCKS
         }
+      end
+
+      before do
+        create :issue_link, source: issue, target: issue_b, link_type: IssueLink::TYPE_RELATES_TO
+        create :issue_link, source: issue, target: issue_c, link_type: IssueLink::TYPE_BLOCKS
       end
 
       it 'sets the same type of relation for selected references' do

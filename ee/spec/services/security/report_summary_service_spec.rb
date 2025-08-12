@@ -4,6 +4,12 @@ require 'spec_helper'
 
 RSpec.describe Security::ReportSummaryService, '#execute', feature_category: :vulnerability_management do
   let_it_be(:pipeline) { create(:ci_pipeline, :success) }
+  let(:result) do
+    described_class.new(
+      pipeline,
+      selection_information
+    ).execute
+  end
 
   let_it_be(:build_ds) { create(:ci_build, :success, name: 'dependency_scanning', pipeline: pipeline) }
   let_it_be(:artifact_ds) { create(:ee_ci_job_artifact, :dependency_scanning, job: build_ds) }
@@ -57,13 +63,6 @@ RSpec.describe Security::ReportSummaryService, '#execute', feature_category: :vu
 
   before do
     stub_licensed_features(sast: true, dependency_scanning: true, container_scanning: true, dast: true)
-  end
-
-  let(:result) do
-    described_class.new(
-      pipeline,
-      selection_information
-    ).execute
   end
 
   context 'Some fields are requested' do
@@ -176,18 +175,17 @@ RSpec.describe Security::ReportSummaryService, '#execute', feature_category: :vu
 
   context 'When there is a scan but no findings' do
     let_it_be(:pipeline) { create(:ci_pipeline, :success) }
-
-    before do
-      build_dast = create(:ci_build, :success, name: 'dast', pipeline: pipeline)
-
-      create(:security_scan, scan_type: :dast, build: build_dast)
-    end
-
     let(:selection_information) do
       {
         dast: [:scanned_resources_count, :vulnerabilities_count],
         sast: [:vulnerabilities_count]
       }
+    end
+
+    before do
+      build_dast = create(:ci_build, :success, name: 'dast', pipeline: pipeline)
+
+      create(:security_scan, scan_type: :dast, build: build_dast)
     end
 
     it 'still returns data for the report ran' do

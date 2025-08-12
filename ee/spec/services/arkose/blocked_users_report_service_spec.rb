@@ -4,12 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Arkose::BlockedUsersReportService do
   let(:service) { described_class.new }
-  subject { service.execute }
-
   let(:arkose_labs_public_api_key) { 'foo' }
   let(:arkose_labs_private_api_key) { 'bar' }
-
   let(:response) { instance_double(HTTParty::Response, success?: true, code: 200, parsed_response: {}) }
+
+  subject { service.execute }
 
   before do
     stub_application_setting(arkose_labs_public_api_key: arkose_labs_public_api_key)
