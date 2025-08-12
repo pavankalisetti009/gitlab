@@ -21,6 +21,7 @@ export const getTransferTabMetadata = ({ vueComponent, includeEl = false } = {})
     title: __('Transfer'),
     hash: '#transfer-quota-tab',
     testid: 'transfer-tab',
+    featureCategory: 'consumables_cost_management',
     component: {
       name: 'TransferTab',
       apolloProvider,

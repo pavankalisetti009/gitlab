@@ -63,6 +63,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
     title: __('Seats'),
     hash: '#seats-quota-tab',
     testid: 'seats-tab',
+    featureCategory: 'seat_cost_management',
     component: {
       name: 'SeatUsageTab',
       apolloProvider,
