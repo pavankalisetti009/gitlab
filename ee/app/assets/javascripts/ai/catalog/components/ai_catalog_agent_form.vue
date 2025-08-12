@@ -69,6 +69,7 @@ export default {
           systemPrompt: '',
           userPrompt: '',
           public: false,
+          release: true,
         };
       },
     },
@@ -218,6 +219,7 @@ export default {
         systemPrompt: this.formValues.systemPrompt.trim(),
         userPrompt: this.formValues.userPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
+        release: this.initialValues.release,
       };
       this.$emit('submit', transformedValues);
     },

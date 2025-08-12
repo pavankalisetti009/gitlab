@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlLink, GlSprintf, GlTooltipDirective } from '@gitlab/ui';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import ListItem from '~/vue_shared/components/registry/list_item.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -28,11 +29,14 @@ export default {
     canEdit() {
       return this.glAbilities.updateVirtualRegistry;
     },
+    registryId() {
+      return getIdFromGraphQLId(this.registry.id);
+    },
     editUrl() {
-      return this.editPathTemplate.replace(':id', this.registry.id);
+      return this.editPathTemplate.replace(':id', this.registryId);
     },
     showUrl() {
-      return this.showPathTemplate.replace(':id', this.registry.id);
+      return this.showPathTemplate.replace(':id', this.registryId);
     },
   },
 };
@@ -50,7 +54,7 @@ export default {
         <span>
           <gl-sprintf :message="s__('VirtualRegistry|Updated %{date}')">
             <template #date>
-              <time-ago-tooltip :time="registry.updated_at" />
+              <time-ago-tooltip :time="registry.updatedAt" />
             </template>
           </gl-sprintf>
         </span>

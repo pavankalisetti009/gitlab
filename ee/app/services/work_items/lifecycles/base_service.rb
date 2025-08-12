@@ -14,9 +14,17 @@ module WorkItems
       private
 
       def apply_status_changes
-        return unless params[:statuses].present?
+        statuses_to_process = params[:statuses]
 
-        @processed_statuses = process_statuses(params[:statuses])
+        # We need to ensure the new custom lifecycle has the correct set of statuses
+        # if they weren't defined explicitly.
+        if statuses_to_process.blank? && system_defined_lifecycle?
+          statuses_to_process = lifecycle.statuses.map { |s| { id: s.to_gid } }
+        end
+
+        @processed_statuses = process_statuses(statuses_to_process)
+        return unless statuses_to_process.present?
+
         @statuses_to_remove = calculate_statuses_to_remove
       end
 
@@ -219,7 +227,7 @@ module WorkItems
         ::WorkItems::Statuses::Custom::LifecycleStatus.insert_all(lifecycle_status_data) if lifecycle_status_data.any?
       end
 
-      def default_statuses_for_lifecycle(processed_statuses, attributes)
+      def default_statuses_for_lifecycle(processed_statuses, attributes, force_resolve: false)
         default_status_mappings = {
           default_open_status: :default_open_status_index,
           default_closed_status: :default_closed_status_index,
@@ -228,10 +236,20 @@ module WorkItems
 
         default_status_mappings.each_with_object({}) do |(status_field, index_field), default_attributes|
           index = attributes[index_field]
-          next unless index.present? && index < processed_statuses.length
 
-          status = processed_statuses[index]
-          default_attributes[status_field] = status if status
+          if index.present? && index < processed_statuses.length
+            status = processed_statuses[index]
+            default_attributes[status_field] = status if status
+          elsif force_resolve
+            # When we create a custom lifecycle it's required to pass all default statuses
+            # so we must resolve them from the system-defined lifecycle if they weren't provided.
+            system_defined_default = lifecycle.try(status_field)&.id
+            next if system_defined_default.blank?
+
+            default_attributes[status_field] = processed_statuses.find do |s|
+              s.converted_from_system_defined_status_identifier == system_defined_default
+            end
+          end
         end
       end
 

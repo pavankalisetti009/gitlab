@@ -7,10 +7,9 @@ RSpec.describe PersonalAccessTokens::Groups::UpdateLifetimeService, feature_cate
 
   describe '#execute', :clean_gitlab_redis_shared_state do
     let_it_be(:group) { create(:group_with_managed_accounts) }
+    let(:lease_key) { "personal_access_tokens/groups/update_lifetime_service:group_id:#{group.id}" }
 
     subject { described_class.new(group) }
-
-    let(:lease_key) { "personal_access_tokens/groups/update_lifetime_service:group_id:#{group.id}" }
 
     context 'when we can obtain the lease' do
       it 'schedules the worker' do

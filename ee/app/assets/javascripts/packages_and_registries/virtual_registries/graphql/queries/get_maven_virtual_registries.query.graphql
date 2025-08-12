@@ -1,0 +1,23 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
+query getMavenVirtualRegistries(
+  $groupPath: ID!
+  $after: String
+  $before: String
+  $first: Int
+  $last: Int
+) {
+  group(fullPath: $groupPath) {
+    id
+    mavenVirtualRegistries(after: $after, before: $before, first: $first, last: $last) {
+      nodes {
+        id
+        name
+        updatedAt
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+  }
+}

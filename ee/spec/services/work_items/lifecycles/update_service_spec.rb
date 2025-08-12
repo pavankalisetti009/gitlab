@@ -47,6 +47,27 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
     end
   end
 
+  RSpec.shared_examples 'accepts lifecycle attributes' do
+    let(:lifecycle_name) { 'Changed lifecycle name' }
+    let(:params) do
+      super().merge(name: lifecycle_name)
+    end
+
+    it 'assigns attributes to lifecycle' do
+      expect(result).not_to be_error
+      expect(lifecycle.name).to eq(lifecycle_name)
+    end
+
+    context 'when name is invalid' do
+      let(:expected_error_message) { "Validation failed: Name can't be blank" }
+      let(:params) do
+        super().merge(name: '')
+      end
+
+      it_behaves_like 'returns validation error'
+    end
+  end
+
   RSpec.shared_examples 'does not create custom lifecycle' do
     it 'does not create custom lifecycle' do
       expect { result }.not_to change { WorkItems::Statuses::Custom::Lifecycle.count }
@@ -91,6 +112,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
     context 'when custom lifecycle does not exist' do
       it_behaves_like 'creates custom lifecycle'
+      it_behaves_like 'accepts lifecycle attributes'
       it_behaves_like 'sets default statuses correctly'
 
       it 'creates custom statuses from system-defined statuses' do
@@ -326,6 +348,23 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           expect(result.message).to include('Lifecycle can only have a maximum of 30 statuses')
         end
       end
+
+      context 'when only name param is provided' do
+        let(:params) do
+          {
+            id: system_defined_lifecycle.to_gid
+            # Shared example passes name attribute
+          }
+        end
+
+        it_behaves_like 'accepts lifecycle attributes'
+        it_behaves_like 'sets default statuses correctly'
+
+        it 'uses statuses from system-defined lifecycle' do
+          expect { result }.to change { WorkItems::Statuses::Custom::Lifecycle.count }.by(1)
+                           .and change { WorkItems::Statuses::Custom::Status.count }.by(5)
+        end
+      end
     end
 
     context 'when custom lifecycle exists' do
@@ -340,6 +379,17 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           expect(result).to be_error
           expect(result.message).to eq('Invalid lifecycle type. Custom lifecycle already exists.')
         end
+      end
+
+      context 'when only name param is provided' do
+        let(:params) do
+          {
+            id: custom_lifecycle.to_gid
+            # Shared example passes name attribute
+          }
+        end
+
+        it_behaves_like 'accepts lifecycle attributes'
       end
 
       context 'when custom lifecycle is provided' do
@@ -368,6 +418,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             default_duplicate_status_index: 2
           }
         end
+
+        it_behaves_like 'accepts lifecycle attributes'
 
         context 'when statuses are added' do
           it 'adds custom statuses' do

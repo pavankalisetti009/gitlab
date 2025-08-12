@@ -3,6 +3,7 @@ require 'spec_helper'
 
 RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category: :portfolio_management do
   let_it_be(:user) { create(:user) }
+  let(:epic) { Epic.last }
   let_it_be(:ancestor) { create(:group) }
   let_it_be(:group) { create(:group, parent: ancestor) }
   let_it_be(:project) { create(:project, group: group) }
@@ -26,8 +27,6 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
   end
 
   subject { described_class.new(container: issue.project, current_user: user) }
-
-  let(:epic) { Epic.last }
 
   describe '#execute' do
     context 'when epics are not enabled' do

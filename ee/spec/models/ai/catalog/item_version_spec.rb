@@ -104,7 +104,20 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
         version.release_date = Time.zone.now
 
         expect(version).not_to be_valid
-        expect(version.errors[:base]).to include('cannot change a released item version')
+        expect(version.errors[:base]).to include('cannot be changed as it has been released')
+      end
+
+      context 'when `ai_catalog_enforce_readonly_versions` feature is disabled' do
+        before do
+          stub_feature_flags(ai_catalog_enforce_readonly_versions: false)
+        end
+
+        it 'can be changed if version is released' do
+          version = create(:ai_catalog_item_version, :released)
+          version.release_date = Time.zone.now
+
+          expect(version).to be_valid
+        end
       end
     end
   end
@@ -135,20 +148,29 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
     end
   end
 
-  describe '#read_only?' do
-    it 'returns false when draft' do
-      expect(create(:ai_catalog_item_version)).not_to be_readonly
+  describe '#version_bump' do
+    subject(:version) { build(:ai_catalog_item_version, version: '1.2.3') }
+
+    it 'returns nil if version is nil' do
+      version.version = nil
+
+      expect(version.version_bump(:major)).to be_nil
     end
 
-    it 'returns true when released' do
-      expect(create(:ai_catalog_item_version, :released)).to be_readonly
+    it 'can return major version bunp' do
+      expect(version.version_bump(:major)).to eq('2.0.0')
     end
 
-    it 'returns true when draft record is read only' do
-      item = create(:ai_catalog_item_version)
-      item.readonly!
+    it 'can return minor version bunp' do
+      expect(version.version_bump(:minor)).to eq('1.3.0')
+    end
 
-      expect(item).to be_readonly
+    it 'can return patch version bunp' do
+      expect(version.version_bump(:patch)).to eq('1.2.4')
+    end
+
+    it 'raises an error if bump level is unknown' do
+      expect { version.version_bump(:foo) }.to raise_error(ArgumentError, 'unknown bump_level: foo')
     end
   end
 

@@ -13,7 +13,7 @@ module MemberRolesHelper
       ldap_users_path: ldap_admin_role_sync_available? ? admin_users_path(filter: 'ldap_sync') : nil,
       ldap_servers: ldap_servers&.to_json,
       is_saas: gitlab_com_subscription?.to_s,
-      admin_mode_setting_path: (admin_mode_setting_path unless group)
+      sign_in_restrictions_settings_path: (sign_in_restrictions_settings_path unless group)
     }.compact
   end
 
@@ -90,15 +90,15 @@ module MemberRolesHelper
     ::Gitlab::Auth::Ldap::Config.available_servers.map { |server| { text: server.label, value: server.provider_name } }
   end
 
-  # Presence of admin_mode_setting_path controls whether the admin mode recommendation is shown in Roles and permissions
-  # admin page
-  def admin_mode_setting_path
+  # Presence of sign_in_restrictions_settings_path controls whether the security recommendation alert is shown in admin
+  # Roles and permissions page.
+  def sign_in_restrictions_settings_path
     return unless License.feature_available?(:custom_roles)
     return unless Feature.enabled?(:custom_admin_roles, :instance)
     return unless MemberRole.admin.any?
-    return if Gitlab::CurrentSettings.admin_mode
+    return if Gitlab::CurrentSettings.admin_mode && Gitlab::CurrentSettings.require_admin_two_factor_authentication
 
     general_admin_application_settings_path(anchor: 'js-signin-settings')
   end
-  strong_memoize_attr :admin_mode_setting_path
+  strong_memoize_attr :sign_in_restrictions_settings_path
 end

@@ -34,13 +34,12 @@ RSpec.describe IncidentManagement::OncallRotations::RemoveParticipantService, fe
 
   context 'with existing shift by other participant, and current shift by user to be removed' do
     let(:current_date) { 1.week.after(rotation.starts_at) }
+    # Create an historial shift (other participant)
+    let!(:historical_shift) { create(:incident_management_oncall_shift, rotation: rotation, participant: other_participant, starts_at: rotation.starts_at, ends_at: ends_at(rotation.starts_at)) }
 
     around do |example|
       travel_to(current_date) { example.run }
     end
-
-    # Create an historial shift (other participant)
-    let!(:historical_shift) { create(:incident_management_oncall_shift, rotation: rotation, participant: other_participant, starts_at: rotation.starts_at, ends_at: ends_at(rotation.starts_at)) }
 
     context 'with historial and current shift', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/343506' do
       # Create a current shift (particpant being removed)

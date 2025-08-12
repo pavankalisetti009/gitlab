@@ -28,7 +28,7 @@ export const initCustomRolesApp = () => {
     ldapUsersPath,
     isSaas,
     ldapServers = null,
-    adminModeSettingPath,
+    signInRestrictionsSettingsPath,
   } = el.dataset;
 
   return new Vue({
@@ -49,7 +49,7 @@ export const initCustomRolesApp = () => {
     },
     render(createElement) {
       return createElement(RoleTabs, {
-        props: { adminModeSettingPath, isSaas: parseBoolean(isSaas) },
+        props: { signInRestrictionsSettingsPath, isSaas: parseBoolean(isSaas) },
       });
     },
   });

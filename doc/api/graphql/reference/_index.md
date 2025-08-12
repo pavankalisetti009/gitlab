@@ -2297,6 +2297,7 @@ Input type: `AiCatalogAgentCreateInput`
 | <a id="mutationaicatalogagentcreatename"></a>`name` | [`String!`](#string) | Name for the agent. |
 | <a id="mutationaicatalogagentcreateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project for the agent. |
 | <a id="mutationaicatalogagentcreatepublic"></a>`public` | [`Boolean!`](#boolean) | Whether the agent is publicly visible in the catalog. |
+| <a id="mutationaicatalogagentcreaterelease"></a>`release` | [`Boolean`](#boolean) | Whether to release the latest version of the agent. |
 | <a id="mutationaicatalogagentcreatesystemprompt"></a>`systemPrompt` | [`String!`](#string) | System prompt for the agent. |
 | <a id="mutationaicatalogagentcreatetools"></a>`tools` | [`[AiCatalogBuiltInToolID!]`](#aicatalogbuiltintoolid) | List of GitLab tools enabled for the agent. |
 | <a id="mutationaicatalogagentcreateuserprompt"></a>`userPrompt` | [`String!`](#string) | User prompt for the agent. |
@@ -2350,7 +2351,8 @@ Input type: `AiCatalogAgentUpdateInput`
 | <a id="mutationaicatalogagentupdatedescription"></a>`description` | [`String`](#string) | Description for the agent. |
 | <a id="mutationaicatalogagentupdateid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog Agent to update. |
 | <a id="mutationaicatalogagentupdatename"></a>`name` | [`String`](#string) | Name for the agent. |
-| <a id="mutationaicatalogagentupdatepublic"></a>`public` | [`Boolean`](#boolean) | Whether the item is publicly visible in the catalog. |
+| <a id="mutationaicatalogagentupdatepublic"></a>`public` | [`Boolean`](#boolean) | Whether the agent is publicly visible in the catalog. |
+| <a id="mutationaicatalogagentupdaterelease"></a>`release` | [`Boolean`](#boolean) | Whether to release the latest version of the agent. |
 | <a id="mutationaicatalogagentupdatesystemprompt"></a>`systemPrompt` | [`String`](#string) | System prompt for the agent. |
 | <a id="mutationaicatalogagentupdatetools"></a>`tools` | [`[AiCatalogBuiltInToolID!]`](#aicatalogbuiltintoolid) | List of GitLab tools enabled for the agent. |
 | <a id="mutationaicatalogagentupdateuserprompt"></a>`userPrompt` | [`String`](#string) | User prompt for the agent. |
@@ -8346,6 +8348,7 @@ Input type: `LifecycleUpdateInput`
 | <a id="mutationlifecycleupdatedefaultduplicatestatusindex"></a>`defaultDuplicateStatusIndex` | [`Int`](#int) | Index of the default duplicated status in the statuses array. |
 | <a id="mutationlifecycleupdatedefaultopenstatusindex"></a>`defaultOpenStatusIndex` | [`Int`](#int) | Index of the default open status in the statuses array. |
 | <a id="mutationlifecycleupdateid"></a>`id` | [`WorkItemsStatusesLifecycleID!`](#workitemsstatuseslifecycleid) | Global ID of the lifecycle to be updated. |
+| <a id="mutationlifecycleupdatename"></a>`name` | [`String`](#string) | Name of the lifecycle. |
 | <a id="mutationlifecycleupdatenamespacepath"></a>`namespacePath` | [`ID!`](#id) | Namespace path where the lifecycle exists. |
 | <a id="mutationlifecycleupdatestatuses"></a>`statuses` | [`[WorkItemStatusInput!]`](#workitemstatusinput) | Statuses of the lifecycle. Can be existing (with id) or new (without id). |
 
@@ -31812,19 +31815,16 @@ Limited group data accessible to users without full group read access (e.g. non-
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupnamespacelinkscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
-| <a id="groupnamespacelinksemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="groupnamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="groupnamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="groupnamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
 | <a id="groupnamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="groupnamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="groupnamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
-| <a id="groupnamespacelinksmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
 | <a id="groupnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
 | <a id="groupnamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
-| <a id="groupnamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="groupnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
-| <a id="groupnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse_path. |
+| <a id="groupnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="groupnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
 
 ### `GroupNamespaceMarkdownPaths`
@@ -40439,20 +40439,17 @@ Returns [`Pipeline`](#pipeline).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectnamespacelinkscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
-| <a id="projectnamespacelinksemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="projectnamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="projectnamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="projectnamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
 | <a id="projectnamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="projectnamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="projectnamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
-| <a id="projectnamespacelinksmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
 | <a id="projectnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
 | <a id="projectnamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
 | <a id="projectnamespacelinksnewworkitememailaddress"></a>`newWorkItemEmailAddress` | [`String`](#string) | Email address that can be used to create a new work item in this project. Returns null if incoming email is not configured. More details on how to configure incoming email is in this [documentation](https://docs.gitlab.com/administration/incoming_email/#set-it-up). |
-| <a id="projectnamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="projectnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
-| <a id="projectnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse_path. |
+| <a id="projectnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="projectnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
 
 ### `ProjectNamespaceMarkdownPaths`
@@ -43384,19 +43381,16 @@ fields relate to interactions between the two entities.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="usernamespacelinkscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
-| <a id="usernamespacelinksemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="usernamespacelinksepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="usernamespacelinksgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="usernamespacelinksissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
 | <a id="usernamespacelinksissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="usernamespacelinkslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="usernamespacelinkslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
-| <a id="usernamespacelinksmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
 | <a id="usernamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
 | <a id="usernamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
-| <a id="usernamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="usernamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
-| <a id="usernamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse_path. |
+| <a id="usernamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="usernamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
 
 ### `UserNamespaceMarkdownPaths`
@@ -51910,19 +51904,16 @@ Implementations:
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="namespaceslinkpathscontributionguidepath"></a>`contributionGuidePath` | [`String`](#string) | Namespace contribution guide path. |
-| <a id="namespaceslinkpathsemailshelppagepath"></a>`emailsHelpPagePath` | [`String`](#string) | Help page path for emails. |
 | <a id="namespaceslinkpathsepicslist"></a>`epicsList` | [`String`](#string) | Namespace epics_list. |
 | <a id="namespaceslinkpathsgroupissues"></a>`groupIssues` | [`String`](#string) | Namespace group_issues. |
 | <a id="namespaceslinkpathsissueslist"></a>`issuesList` | [`String`](#string) | Namespace issues_list. |
 | <a id="namespaceslinkpathsissuessettings"></a>`issuesSettings` | [`String`](#string) | Namespace issues settings path. |
 | <a id="namespaceslinkpathslabelsfetch"></a>`labelsFetch` | [`String`](#string) | Namespace labels_fetch. |
 | <a id="namespaceslinkpathslabelsmanage"></a>`labelsManage` | [`String`](#string) | Namespace labels_manage. |
-| <a id="namespaceslinkpathsmarkdownhelppath"></a>`markdownHelpPath` | [`String`](#string) | Help page path for Markdown. |
 | <a id="namespaceslinkpathsnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
 | <a id="namespaceslinkpathsnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
-| <a id="namespaceslinkpathsquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="namespaceslinkpathsregister"></a>`register` | [`String`](#string) | Namespace register_path. |
-| <a id="namespaceslinkpathsreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse_path. |
+| <a id="namespaceslinkpathsreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="namespaceslinkpathssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
 
 #### `NoteableInterface`

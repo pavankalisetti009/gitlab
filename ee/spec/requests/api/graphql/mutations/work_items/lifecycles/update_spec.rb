@@ -37,24 +37,40 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
   end
 
   context 'when custom lifecycle does not exist' do
-    it 'creates a custom lifecycle' do
-      post_graphql_mutation(mutation, current_user: user)
+    let(:lifecycle_name) { system_defined_lifecycle.name }
 
-      expect(response).to have_gitlab_http_status(:success)
-      expect_graphql_errors_to_be_empty
+    shared_examples 'successful custom lifecycle creation' do
+      it 'creates a custom lifecycle' do
+        post_graphql_mutation(mutation, current_user: user)
 
-      expect(mutation_response['lifecycle']).to match(
-        a_hash_including(
-          'name' => 'Default',
-          'statuses' => include(
-            a_hash_including('name' => system_defined_lifecycle.default_open_status.name),
-            a_hash_including('name' => system_defined_in_progress_status.name),
-            a_hash_including('name' => system_defined_lifecycle.default_closed_status.name),
-            a_hash_including('name' => system_defined_wont_do_status.name),
-            a_hash_including('name' => system_defined_lifecycle.default_duplicate_status.name)
+        expect(response).to have_gitlab_http_status(:success)
+        expect_graphql_errors_to_be_empty
+
+        expect(mutation_response['lifecycle']).to match(
+          a_hash_including(
+            'name' => lifecycle_name,
+            'statuses' => include(
+              a_hash_including('name' => system_defined_lifecycle.default_open_status.name),
+              a_hash_including('name' => system_defined_in_progress_status.name),
+              a_hash_including('name' => system_defined_lifecycle.default_closed_status.name),
+              a_hash_including('name' => system_defined_wont_do_status.name),
+              a_hash_including('name' => system_defined_lifecycle.default_duplicate_status.name)
+            )
           )
         )
-      )
+      end
+
+      it_behaves_like 'successful custom lifecycle creation'
+
+      context 'when name param is provided' do
+        let(:lifecycle_name) { 'Changed lifecycle name' }
+
+        let(:params) do
+          super().merge(name: lifecycle_name)
+        end
+
+        it_behaves_like 'successful custom lifecycle creation'
+      end
     end
   end
 
@@ -84,10 +100,13 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
           lifecycle: custom_lifecycle, status: existing_in_progress_status, namespace: group)
       end
 
+      let(:lifecycle_name) { "Changed lifecycle name" }
+
       let(:params) do
         {
           namespace_path: group.full_path,
           id: custom_lifecycle.to_gid,
+          name: lifecycle_name,
           statuses: [
             {
               name: 'Ready for development', # new default open status
@@ -124,7 +143,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
 
         expect(mutation_response['lifecycle']).to match(
           a_hash_including(
-            'name' => custom_lifecycle.name,
+            'name' => lifecycle_name,
             'statuses' => include(
               a_hash_including('name' => 'Ready for development'),
               a_hash_including('name' => 'To do'),
@@ -135,6 +154,25 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
             )
           )
         )
+      end
+
+      context 'when only name is provided' do
+        let(:params) do
+          {
+            namespace_path: group.full_path,
+            id: custom_lifecycle.to_gid,
+            name: lifecycle_name
+          }
+        end
+
+        it 'updates the name of the lifecycle' do
+          post_graphql_mutation(mutation, current_user: user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect_graphql_errors_to_be_empty
+
+          expect(mutation_response['lifecycle']['name']).to eq(lifecycle_name)
+        end
       end
     end
   end

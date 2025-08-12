@@ -4,11 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Analytics::DevopsAdoption::Snapshots::CalculateAndSaveService do
   let_it_be(:enabled_namespace) { create :devops_adoption_enabled_namespace }
-
-  subject { described_class.new(enabled_namespace: enabled_namespace, range_end: range_end) }
-
   let(:range_end) { Time.zone.now.end_of_month }
   let(:snapshot) { nil }
+
+  subject { described_class.new(enabled_namespace: enabled_namespace, range_end: range_end) }
 
   before do
     allow_next_instance_of(Analytics::DevopsAdoption::SnapshotCalculator, enabled_namespace: enabled_namespace, range_end: range_end, snapshot: snapshot) do |calc|

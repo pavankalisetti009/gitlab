@@ -21,6 +21,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
           }
           public
           latestVersion {
+            released
             ... on AiCatalogAgentVersion {
               systemPrompt
               tools {
@@ -45,6 +46,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       name: name,
       description: description,
       public: true,
+      release: true,
       system_prompt: 'A',
       tools: tools.map { |tool| global_id_of(tool) },
       user_prompt: 'B'
@@ -106,7 +108,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     end
   end
 
-  it 'creates a catalog item and version with expected data' do
+  it 'creates a catalog item and version with expected data', :freeze_time do
     execute
 
     item = Ai::Catalog::Item.last
@@ -119,6 +121,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
     )
     expect(item.versions.first).to have_attributes(
       schema_version: 1,
+      release_date: Time.zone.now,
       version: '1.0.0',
       definition: {
         system_prompt: params[:system_prompt],
@@ -137,6 +140,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       'project' => a_graphql_entity_for(project),
       'public' => true,
       'latestVersion' => {
+        'released' => true,
         'systemPrompt' => params[:system_prompt],
         'tools' => {
           'nodes' => match_array(

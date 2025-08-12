@@ -24,8 +24,14 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     end
   end
 
-  shared_examples 'does not have admin_mode_setting_path' do
-    it { is_expected.not_to have_key(:admin_mode_setting_path) }
+  shared_examples 'does not have sign_in_restrictions_settings_path' do
+    it { is_expected.not_to have_key(:sign_in_restrictions_settings_path) }
+  end
+
+  shared_examples 'has sign_in_restrictions_settings_path' do
+    let_it_be(:expected_path) { '/admin/application_settings/general#js-signin-settings' }
+
+    it { is_expected.to include(sign_in_restrictions_settings_path: expected_path) }
   end
 
   describe '#member_roles_data' do
@@ -91,57 +97,55 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           it_behaves_like 'no LDAP data'
         end
 
-        context 'when admin mode is enabled' do
+        context 'when all security recommendations are applied' do
           before do
-            allow(Gitlab::CurrentSettings).to receive(:admin_mode).and_return(true)
+            allow(Gitlab::CurrentSettings).to receive_messages(admin_mode: true,
+              require_admin_two_factor_authentication: true)
+            allow(MemberRole).to receive(:admin).and_return([build_stubbed(:member_role, :admin)])
+            stub_licensed_features(custom_roles: true)
+            stub_feature_flags(custom_admin_roles: true)
           end
 
-          context 'when there are no admin roles' do
-            it_behaves_like 'does not have admin_mode_setting_path'
-          end
+          it_behaves_like 'does not have sign_in_restrictions_settings_path'
 
-          context 'when there are admin roles' do
+          context 'when admin mode is disabled' do
             before do
-              allow(MemberRole).to receive(:admin).and_return([build_stubbed(:member_role, :admin)])
+              allow(Gitlab::CurrentSettings).to receive(:admin_mode).and_return(false)
             end
 
-            it_behaves_like 'does not have admin_mode_setting_path'
-          end
-        end
-
-        context 'when admin mode is disabled' do
-          before do
-            allow(Gitlab::CurrentSettings).to receive(:admin_mode).and_return(false)
+            it_behaves_like 'has sign_in_restrictions_settings_path'
           end
 
-          context 'when there are no admin roles' do
-            it_behaves_like 'does not have admin_mode_setting_path'
-          end
-
-          context 'when there are admin roles' do
+          context 'when require administrators to enable 2FA is disabled' do
             before do
-              allow(MemberRole).to receive(:admin).and_return([build_stubbed(:member_role, :admin)])
+              allow(Gitlab::CurrentSettings).to receive(:require_admin_two_factor_authentication).and_return(false)
             end
 
-            it 'has admin_mode_setting_path' do
-              expect(data[:admin_mode_setting_path]).to eq '/admin/application_settings/general#js-signin-settings'
+            it_behaves_like 'has sign_in_restrictions_settings_path'
+          end
+
+          context 'when there are no admin member roles' do
+            before do
+              allow(MemberRole).to receive(:admin).and_return([])
             end
 
-            context 'when the license does not have custom roles feature' do
-              before do
-                stub_licensed_features(custom_roles: false)
-              end
+            it_behaves_like 'does not have sign_in_restrictions_settings_path'
+          end
 
-              it_behaves_like 'does not have admin_mode_setting_path'
+          context 'when the license does not have custom roles feature' do
+            before do
+              stub_licensed_features(custom_roles: false)
             end
 
-            context 'when the custom admin roles feature flag is disabled' do
-              before do
-                stub_feature_flags(custom_admin_roles: false)
-              end
+            it_behaves_like 'does not have sign_in_restrictions_settings_path'
+          end
 
-              it_behaves_like 'does not have admin_mode_setting_path'
+          context 'when the custom admin roles feature flag is disabled' do
+            before do
+              stub_feature_flags(custom_admin_roles: false)
             end
+
+            it_behaves_like 'does not have sign_in_restrictions_settings_path'
           end
         end
       end
@@ -152,7 +156,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         subject(:data) { helper.member_roles_data(source) }
 
         it_behaves_like 'no LDAP data'
-        it_behaves_like 'does not have admin_mode_setting_path'
+        it_behaves_like 'does not have sign_in_restrictions_settings_path'
 
         it 'matches the expected data' do
           expect(data[:new_role_path]).to be_nil
@@ -169,7 +173,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             allow(Gitlab.config.ldap).to receive(:enabled).and_return(true)
           end
 
-          it_behaves_like 'does not have admin_mode_setting_path'
+          it_behaves_like 'does not have sign_in_restrictions_settings_path'
 
           it 'matches the expected data' do
             expect(data[:new_role_path]).to eq new_group_settings_roles_and_permission_path(source)

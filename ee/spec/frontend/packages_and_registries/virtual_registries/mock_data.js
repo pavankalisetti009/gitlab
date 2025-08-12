@@ -31,7 +31,86 @@ export const mockUpstreamPagination = {
   cacheEntriesCount: 22,
 };
 
-export const groupVirtualRegistry = {
+export const mavenVirtualRegistry = {
+  __typename: 'MavenVirtualRegistry',
+  id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/2',
+  name: 'Maven Registry 1',
+  description: '',
+  updatedAt: '2023-05-17T08:00:00Z',
+  upstreams: [
+    {
+      __typename: 'MavenUpstream',
+      id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/2',
+      cacheValidityHours: 24,
+      name: 'Maven upstream',
+      description: 'Maven Central',
+      username: '',
+      password: '',
+      url: 'https://repo.maven.apache.org/maven2',
+      registryUpstreams: [
+        {
+          __typename: 'MavenRegistryUpstream',
+
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/2',
+          position: 1,
+        },
+      ],
+    },
+    {
+      __typename: 'MavenUpstream',
+      id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/5',
+      cacheValidityHours: 24,
+      name: 'Maven upstream 4',
+      description: null,
+      username: null,
+      password: null,
+      url: 'https://repo.maven.apache.org/maven2',
+      registryUpstreams: [
+        {
+          __typename: 'MavenRegistryUpstream',
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/3',
+          position: 2,
+        },
+      ],
+    },
+    {
+      __typename: 'MavenUpstream',
+      id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/6',
+      cacheValidityHours: 24,
+      name: 'Maven upstream 4',
+      description: null,
+      username: null,
+      password: null,
+      url: 'https://repo.maven.apache.org/maven2',
+      registryUpstreams: [
+        {
+          __typename: 'MavenRegistryUpstream',
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/4',
+          position: 3,
+        },
+      ],
+    },
+    {
+      __typename: 'MavenUpstream',
+      id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/7',
+      cacheValidityHours: 24,
+      name: 'Maven upstream 4',
+      description: null,
+      username: null,
+      password: null,
+      url: 'https://repo.maven.apache.org/maven2',
+      registryUpstreams: [
+        {
+          __typename: 'MavenRegistryUpstream',
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/7',
+          position: 4,
+        },
+      ],
+    },
+  ],
+};
+
+export const groupVirtualRegistries = {
   group: {
     id: 'gid://gitlab/Group/33',
     __typename: 'Group',
@@ -42,80 +121,16 @@ export const groupVirtualRegistry = {
           __typename: 'MavenVirtualRegistry',
           id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Registry/2',
           name: 'Maven Registry 1',
-          description: '',
-          upstreams: [
-            {
-              __typename: 'MavenUpstream',
-              id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/2',
-              cacheValidityHours: 24,
-              name: 'Maven upstream',
-              description: 'Maven Central',
-              username: '',
-              password: '',
-              url: 'https://repo.maven.apache.org/maven2',
-              registryUpstreams: [
-                {
-                  __typename: 'MavenRegistryUpstream',
-
-                  id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/2',
-                  position: 1,
-                },
-              ],
-            },
-            {
-              __typename: 'MavenUpstream',
-              id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/5',
-              cacheValidityHours: 24,
-              name: 'Maven upstream 4',
-              description: null,
-              username: null,
-              password: null,
-              url: 'https://repo.maven.apache.org/maven2',
-              registryUpstreams: [
-                {
-                  __typename: 'MavenRegistryUpstream',
-                  id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/3',
-                  position: 2,
-                },
-              ],
-            },
-            {
-              __typename: 'MavenUpstream',
-              id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/6',
-              cacheValidityHours: 24,
-              name: 'Maven upstream 4',
-              description: null,
-              username: null,
-              password: null,
-              url: 'https://repo.maven.apache.org/maven2',
-              registryUpstreams: [
-                {
-                  __typename: 'MavenRegistryUpstream',
-                  id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/4',
-                  position: 3,
-                },
-              ],
-            },
-            {
-              __typename: 'MavenUpstream',
-              id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/7',
-              cacheValidityHours: 24,
-              name: 'Maven upstream 4',
-              description: null,
-              username: null,
-              password: null,
-              url: 'https://repo.maven.apache.org/maven2',
-              registryUpstreams: [
-                {
-                  __typename: 'MavenRegistryUpstream',
-                  id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/7',
-                  position: 4,
-                },
-              ],
-            },
-          ],
+          updatedAt: '2023-05-17T08:00:00Z',
         },
       ],
+      pageInfo: {
+        hasPreviousPage: false,
+        hasNextPage: false,
+        startCursor: 'start',
+        endCursor: 'end',
+        __typename: 'PageInfo',
+      },
     },
   },
 };
