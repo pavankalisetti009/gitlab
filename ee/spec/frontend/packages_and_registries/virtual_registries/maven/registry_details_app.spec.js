@@ -8,7 +8,7 @@ import MavenRegistriesDetailsApp from 'ee/packages_and_registries/virtual_regist
 import MavenRegistryDetails from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { groupVirtualRegistry } from '../mock_data';
+import { mavenVirtualRegistry } from '../mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
@@ -17,7 +17,7 @@ Vue.use(VueApollo);
 const mockMavenRegistryUpstreams = {
   data: {
     mavenVirtualRegistry: {
-      ...groupVirtualRegistry.group.mavenVirtualRegistries.nodes[0],
+      ...mavenVirtualRegistry,
     },
   },
 };
