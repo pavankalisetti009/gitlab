@@ -1,9 +1,10 @@
 <script>
-import { GlSkeletonLoader } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
+import { s__, __ } from '~/locale';
 
 export default {
   components: {
+    GlLink,
     GlSkeletonLoader,
   },
   props: {
@@ -19,17 +20,35 @@ export default {
       required: true,
       type: String,
     },
+    executorUrl: {
+      required: false,
+      type: String,
+      default: '',
+    },
   },
   computed: {
+    executorId() {
+      const id = this.executorUrl.split('/').pop();
+
+      if (!id || Number.isNaN(Number(id))) {
+        return null;
+      }
+      return id;
+    },
     payload() {
       return [
         {
-          key: 'Status',
+          key: __('Status'),
           value: this.status,
         },
         {
-          key: 'Type',
+          key: __('Type'),
           value: this.agentFlowDefinition,
+        },
+        {
+          key: s__('DuoAgentPlatform|Executor ID'),
+          value: this.executorId,
+          link: this.executorUrl,
         },
       ].map((entry) => {
         return { ...entry, value: entry.value ? entry.value : __('N/A') };
@@ -44,7 +63,10 @@ export default {
       <li v-for="entry in payload" :key="entry.key" class="gl-mb-4 gl-flex gl-list-none">
         <strong class="gl-pr-3">{{ entry.key }}:</strong>
         <template v-if="isLoading"><gl-skeleton-loader :lines="1" /></template>
-        <template v-else>{{ entry.value }}</template>
+        <template v-else>
+          <gl-link v-if="entry.link" :href="entry.link">{{ entry.value }}</gl-link>
+          <span v-else>{{ entry.value }}</span>
+        </template>
       </li>
     </ul>
   </div>

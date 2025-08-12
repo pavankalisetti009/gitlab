@@ -50,6 +50,9 @@ export default {
     agentFlowCheckpoint() {
       return this.agentFlow?.latestCheckpoint?.checkpoint || '';
     },
+    executorUrl() {
+      return this.agentFlow?.lastExecutorLogsUrl || '';
+    },
   },
 };
 </script>
@@ -59,5 +62,6 @@ export default {
     :status="status"
     :agent-flow-definition="agentFlowDefinition"
     :agent-flow-checkpoint="agentFlowCheckpoint"
+    :executor-url="executorUrl"
   />
 </template>
