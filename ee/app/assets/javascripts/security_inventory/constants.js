@@ -100,3 +100,6 @@ export const PROJECT_SECURITY_CONFIGURATION_PATH = '/-/security/configuration';
 export const PROJECT_VULNERABILITY_REPORT_PATH = '/-/security/vulnerability_report';
 export const GROUP_VULNERABILITY_REPORT_PATH = '/-/security/vulnerabilities';
 export const PROJECT_PIPELINE_JOB_PATH = '/-/jobs';
+
+export const VISIBLE_ATTRIBUTE_COUNT = 3;
+export const LIGHT_GRAY = '#DCDCDE';

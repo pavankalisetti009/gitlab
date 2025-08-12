@@ -56691,6 +56691,9 @@ msgstr ""
 msgid "SecurityApprovals|Requires approval for decreases in test coverage."
 msgstr ""
 
+msgid "SecurityAttributes|+%{additionalAttributeCount} more"
+msgstr ""
+
 msgid "SecurityAttributes|Add attribute"
 msgstr ""
 
@@ -56761,6 +56764,9 @@ msgid "SecurityAttributes|Save changes"
 msgstr ""
 
 msgid "SecurityAttributes|Security attributes"
+msgstr ""
+
+msgid "SecurityAttributes|Security attributes for %{projectName}"
 msgstr ""
 
 msgid "SecurityAttributes|Security attributes help classify and organize your projects. Attributes are managed at the group level. You can add or remove attributes to this project as needed."

@@ -1,10 +1,12 @@
 <script>
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import NameCell from './name_cell.vue';
 import VulnerabilityCell from './vulnerability_cell.vue';
 import ToolCoverageCell from './tool_coverage_cell.vue';
 import ActionCell from './action_cell.vue';
+import AttributesCell from './attributes_cell.vue';
 
 const SKELETON_ROW_COUNT = 3;
 
@@ -16,7 +18,9 @@ export default {
     VulnerabilityCell,
     ToolCoverageCell,
     ActionCell,
+    AttributesCell,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     items: {
       type: Array,
@@ -39,18 +43,29 @@ export default {
         ? Array(SKELETON_ROW_COUNT).fill({})
         : this.items;
     },
+    fields() {
+      const fields = [
+        { key: 'name', label: __('Name'), thClass: 'gl-max-w-0' },
+        { key: 'vulnerabilities', label: __('Vulnerabilities'), thClass: 'gl-w-1/5' },
+        { key: 'toolCoverage', label: __('Tool Coverage'), thClass: 'gl-w-1/3' },
+        // spliced element gets inserted here
+        { key: 'actions', label: '', thClass: 'gl-w-2/20' },
+      ];
+      if (this.glFeatures.securityContextLabels) {
+        fields.splice(3, 0, {
+          key: 'securityAttributes',
+          label: s__('SecurityAttributes|Security attributes'),
+          thClass: 'gl-w-1/6',
+        });
+      }
+      return fields;
+    },
   },
-  fields: [
-    { key: 'name', label: __('Name'), thClass: 'gl-max-w-0' },
-    { key: 'vulnerabilities', label: __('Vulnerabilities'), thClass: 'gl-w-1/5' },
-    { key: 'toolCoverage', label: __('Tool Coverage'), thClass: 'gl-w-1/3' },
-    { key: 'actions', label: '', thClass: 'gl-w-2/20' },
-  ],
 };
 </script>
 
 <template>
-  <gl-table-lite :items="displayItems" :fields="$options.fields" hover table-class="gl-table-fixed">
+  <gl-table-lite :items="displayItems" :fields="fields" hover table-class="gl-table-fixed">
     <template #cell(name)="{ item }">
       <gl-skeleton-loader v-if="isLoading" :width="200" :height="20" preserve-aspect-ratio="none">
         <rect x="0" y="5" width="15" height="15" rx="3" />
@@ -77,6 +92,15 @@ export default {
         <rect x="190" y="5" width="32" height="20" rx="10" />
       </gl-skeleton-loader>
       <tool-coverage-cell v-else :item="item" />
+    </template>
+
+    <template #cell(securityAttributes)="{ item, index }">
+      <gl-skeleton-loader v-if="isLoading" :width="250" :height="40">
+        <rect x="0" y="5" width="100" height="15" rx="6" />
+        <rect x="105" y="5" width="100" height="15" rx="6" />
+        <rect x="0" y="25" width="100" height="15" rx="6" />
+      </gl-skeleton-loader>
+      <attributes-cell v-else :index="index" :item="item" />
     </template>
 
     <template #cell(actions)="{ item }">

@@ -236,6 +236,7 @@ export default {
   },
   Project: {
     securityAttributes() {
+      if (!gon.features.securityContextLabels) return { nodes: [] };
       return {
         nodes: mockSecurityAttributes
           // Temporarily (for mock data), return only attributes that contain the letter p
