@@ -183,21 +183,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
             expect { execute_with_inapplicable_error }.to change { approval_rule_1.reload.approvals_required }
                                                             .from(1).to(0)
           end
-
-          context 'with feature disabled' do
-            before do
-              stub_feature_flags(merge_request_approval_policies_inapplicable_rule_evaluation: false)
-            end
-
-            it 'creates violations' do
-              expect { execute_with_inapplicable_error }.to change { violated_policies.count }.by(1)
-            end
-
-            it 'requires approval' do
-              expect { execute_with_inapplicable_error }.not_to change { approval_rule_1.reload.approvals_required }
-                                                                  .from(1)
-            end
-          end
         end
 
         context 'when rule should fail open' do
