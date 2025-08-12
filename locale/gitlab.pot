@@ -31149,6 +31149,12 @@ msgstr ""
 msgid "GroupProjectUnarchiveSettings|An error occurred while unarchiving the project. Please refresh the page and try again."
 msgstr ""
 
+msgid "GroupProjectUnarchiveSettings|How do I unarchive a group?"
+msgstr ""
+
+msgid "GroupProjectUnarchiveSettings|How do I unarchive a project?"
+msgstr ""
+
 msgid "GroupProjectUnarchiveSettings|Restore your group to an active state. You'll be able to modify its content and settings again."
 msgstr ""
 
