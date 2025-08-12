@@ -40,21 +40,11 @@ module WorkItems
       end
 
       def handle_event(event)
-        work_item_ids = []
+        work_item_ids = [
+          event.data[:id],
+          event.data[:previous_work_item_parent_id]
+        ].compact
 
-        work_item_ids << if event.is_a?(WorkItems::WorkItemDeletedEvent)
-                           # For WorkItemDeletedEvent, the work item would no longer exist,
-                           # so we start updating from the parent.
-                           event.data[:work_item_parent_id]
-                         else
-                           # If the work item exists, we don't need to add the parent as UpdateWeightsWorker
-                           # will also update the ancestors of the given work item id.
-                           event.data[:id]
-                         end
-
-        work_item_ids << event.data[:previous_work_item_parent_id] if event.data[:previous_work_item_parent_id]
-
-        work_item_ids.compact!
         return if work_item_ids.blank?
 
         UpdateWeightsWorker.perform_async(work_item_ids)

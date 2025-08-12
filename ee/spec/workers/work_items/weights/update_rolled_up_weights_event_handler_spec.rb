@@ -255,21 +255,17 @@ RSpec.describe WorkItems::Weights::UpdateRolledUpWeightsEventHandler, feature_ca
         {
           id: child_work_item.id,
           namespace_id: project.namespace.id,
-          work_item_parent_id: parent_work_item.id
+          previous_work_item_parent_id: parent_work_item.id
         }
       end
 
       let(:event) { WorkItems::WorkItemDeletedEvent.new(data: event_data) }
 
-      before do
-        # Delete without altering the child_work_item object so we don't have to reload it for the next tests
-        WorkItem.id_in(child_work_item.id).delete_all
-      end
-
       it 'calls UpdateWeightsWorker with parent work item id' do
         handler.handle_event(event)
 
         expect(WorkItems::Weights::UpdateWeightsWorker).to have_received(:perform_async).with([
+          child_work_item.id,
           parent_work_item.id
         ])
       end

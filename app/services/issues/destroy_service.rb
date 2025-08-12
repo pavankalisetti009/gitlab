@@ -16,7 +16,7 @@ module Issues
       event = WorkItems::WorkItemDeletedEvent.new(data: {
         id: issuable.id,
         namespace_id: issuable.namespace_id,
-        work_item_parent_id: @work_item_parent_id
+        previous_work_item_parent_id: @work_item_parent_id
       }.tap(&:compact_blank!))
 
       issuable.run_after_commit_or_now do
