@@ -585,4 +585,70 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       end
     end
   end
+
+  describe '#work_item_status_for_issuable' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:issue) { create(:issue, project: project) }
+    let_it_be(:status) { build(:work_item_system_defined_status, :to_do) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+      stub_feature_flags(work_item_status_feature_flag: true)
+    end
+
+    subject(:result) { work_item_status_for_issuable(issue) }
+
+    context 'when issuable in an Issue' do
+      it 'returns a hash with all status attributes' do
+        expect(result).to include(
+          id: status.id,
+          name: status.name,
+          color: status.color,
+          category: status.category,
+          description: status.description,
+          icon_name: status.icon_name
+        )
+      end
+    end
+
+    context 'when issuable is a WorkItem' do
+      let(:work_item) { create(:work_item, project: project) }
+
+      subject(:result) { work_item_status_for_issuable(work_item) }
+
+      it 'returns a hash with all status attributes' do
+        expect(result).to include(
+          id: status.id,
+          name: status.name,
+          color: status.color,
+          category: status.category,
+          description: status.description,
+          icon_name: status.icon_name
+        )
+      end
+
+      context 'when work item type does not support status' do
+        let(:work_item) { create(:work_item, :epic, project: project) }
+
+        it { is_expected.to be_nil }
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(work_item_status_feature_flag: false)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when licensed feature is not available' do
+      before do
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
