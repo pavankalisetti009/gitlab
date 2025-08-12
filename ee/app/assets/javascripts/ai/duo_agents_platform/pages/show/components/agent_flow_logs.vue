@@ -37,6 +37,13 @@ export default {
     logs() {
       return this.parsedCheckpoint?.channel_values?.ui_chat_log || [];
     },
+    messageMapCustomStyles() {
+      return {
+        '--duo-chat-message-color': 'var(--white, #ffffff)',
+        '--duo-chat-message-heading-color': 'var(--white, #ffffff)',
+        '--duo-chat-message-pre-color': 'var(--black, #000000)',
+      };
+    },
   },
 };
 </script>
@@ -49,23 +56,13 @@ export default {
         s__('DuoAgentsPlatform|No logs available yet.')
       }}</template>
       <template v-else>
-        <message-map v-for="log in logs" :key="log.id" :message="log" />
+        <message-map
+          v-for="log in logs"
+          :key="log.id"
+          :message="log"
+          :custom-styles="messageMapCustomStyles"
+        />
       </template>
     </div>
   </div>
 </template>
-<style scoped>
-/* FIXME: This is temporary. Since we may well get rid of AgentMessage component,
-* we want to fix the styling only here and not upstream in the component.
-* https://gitlab.com/gitlab-org/gitlab/-/issues/553412
-*/
-
-.duo-chat-message {
-  color: var(--white, #ffffff);
-  --gl-text-color-heading: var(--white, #ffffff);
-}
-
-.duo-chat-message pre {
-  color: var(--black, #000000);
-}
-</style>
