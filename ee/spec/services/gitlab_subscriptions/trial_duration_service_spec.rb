@@ -12,7 +12,8 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
     let_it_be(:corrupted_trial_type) { '_corrupted_trial_type_' }
     let_it_be(:corrupted_duration) { 6 }
     let_it_be(:corrupted_next_duration) { 7 }
-    let_it_be(:default_duration) { 60 }
+    let_it_be(:default_free_duration) { 30 }
+    let_it_be(:default_duo_enterprise_duration) { 60 }
 
     let_it_be(:trial_types) do
       {
@@ -44,7 +45,7 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
     end
 
     it 'returns default duration, makes a request, caches it, and returns correct duration on the next execution' do
-      expect(service.execute).to eq(default_duration) # first execution to spawn the worker
+      expect(service.execute).to eq(default_free_duration) # first execution to spawn the worker
       expect(service.execute).to eq(free_duration)
     end
 
@@ -78,14 +79,28 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
       context 'when trial type is missing from response' do
         let(:trial_type) { '__trial_type__' }
 
-        it { expect(service.execute).to eq(default_duration) }
+        it { expect(service.execute).to eq(default_free_duration) }
       end
     end
 
     context 'with an unsuccessful CustomersDot query' do
       let(:response) { { success: false } }
 
-      it { expect(service.execute).to eq(default_duration) }
+      it { expect(service.execute).to eq(default_free_duration) }
+
+      context 'when trial type is specified' do
+        let(:trial_type) { GitlabSubscriptions::Trials::DUO_ENTERPRISE_TRIAL_TYPE }
+
+        subject(:service) { described_class.new(trial_type) }
+
+        it { expect(service.execute).to eq(default_duo_enterprise_duration) }
+
+        context 'when trial type is missing from defaults' do
+          let(:trial_type) { '__trial_type__' }
+
+          it { expect(service.execute).to eq(default_free_duration) }
+        end
+      end
     end
   end
 end

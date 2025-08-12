@@ -17,7 +17,7 @@ RSpec.describe 'Start trial from external site without confirmation', :with_curr
   let_it_be(:trial_types_response) do
     {
       trial_types: {
-        GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: 60 }
+        GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: 30 }
       }
     }
   end
