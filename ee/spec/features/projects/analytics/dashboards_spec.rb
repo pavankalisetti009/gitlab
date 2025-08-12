@@ -435,6 +435,24 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
           end
         end
       end
+
+      context 'as a reporter' do
+        context 'when the user is a direct member of the project' do
+          let_it_be(:project_user) { create(:user, :with_namespace) }
+
+          before_all do
+            project.add_reporter(project_user)
+          end
+
+          before do
+            sign_in(project_user)
+
+            visit_project_value_streams_dashboard(project)
+          end
+
+          it_behaves_like 'renders licensed project VSD for a reporter'
+        end
+      end
     end
   end
 end
