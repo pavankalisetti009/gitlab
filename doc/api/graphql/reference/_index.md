@@ -45722,6 +45722,7 @@ Providers for AI features that can be configured.
 | ----- | ----------- |
 | <a id="aifeatureprovidersdisabled"></a>`DISABLED` | Disabled option. |
 | <a id="aifeatureprovidersself_hosted"></a>`SELF_HOSTED` | Self hosted option. |
+| <a id="aifeatureprovidersunassigned"></a>`UNASSIGNED` | Unassigned option. |
 | <a id="aifeatureprovidersvendored"></a>`VENDORED` | Vendored option. |
 
 ### `AiFeatures`

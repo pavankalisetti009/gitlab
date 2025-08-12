@@ -32,6 +32,12 @@ module Admin
         model_options.sort_by { |option| option[:modelName] }
       end
 
+      def show_self_hosted_vendored_model_option?
+        return false unless ::Feature.enabled?(:ai_self_hosted_vendored_features, current_user)
+
+        !!::License.current&.online_cloud_license?
+      end
+
       def beta_models_enabled?
         ::Ai::TestingTermsAcceptance.has_accepted?
       end

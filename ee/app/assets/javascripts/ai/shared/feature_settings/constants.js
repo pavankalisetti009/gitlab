@@ -15,11 +15,5 @@ export const DUO_MAIN_FEATURES = {
   AGENT_PLATFORM: 'GitLab Duo Agent Platform',
 };
 
-export const PROVIDERS = {
-  DISABLED: 'disabled',
-  VENDORED: 'vendored',
-  SELF_HOSTED: 'self_hosted',
-};
-
 export const FEATURE_SETTINGS_FIXED_LOADER_WIDTH = '440';
 export const FEATURE_SETTINGS_VARIABLE_LOADER_WIDTHS = ['200', '80', '150'];

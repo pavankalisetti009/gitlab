@@ -13,6 +13,7 @@ export default {
   components: {
     ModelSelectDropdown,
   },
+  inject: ['showVendoredModelOption'],
   props: {
     aiFeatureSetting: {
       type: Object,
@@ -38,7 +39,7 @@ export default {
     selectedOption() {
       const { provider, selfHostedModel } = this.aiFeatureSetting;
 
-      const selected = provider === PROVIDERS.DISABLED ? PROVIDERS.DISABLED : selfHostedModel?.id;
+      const selected = provider === PROVIDERS.SELF_HOSTED ? selfHostedModel?.id : provider;
 
       return this.listItems.find((item) => item.value === selected);
     },
@@ -58,12 +59,21 @@ export default {
         }),
       );
 
-      const disableOption = {
+      const disabledOption = {
         value: PROVIDERS.DISABLED,
         text: s__('AdminAIPoweredFeatures|Disabled'),
       };
 
-      return [...modelOptions, disableOption];
+      const vendoredOption = {
+        value: PROVIDERS.VENDORED,
+        text: s__('AdminAIPoweredFeatures|GitLab AI vendor model'),
+      };
+
+      const otherOptions = this.showVendoredModelOption
+        ? [vendoredOption, disabledOption]
+        : [disabledOption];
+
+      return [...modelOptions, ...otherOptions];
     },
   },
   methods: {
@@ -71,9 +81,8 @@ export default {
       this.isSaving = true;
 
       try {
-        const isDisabled = selectedOption === PROVIDERS.DISABLED;
-        const provider = isDisabled ? PROVIDERS.DISABLED : PROVIDERS.SELF_HOSTED;
-        const aiSelfHostedModelId = isDisabled ? null : selectedOption;
+        const provider = this.getProvider(selectedOption);
+        const aiSelfHostedModelId = provider === PROVIDERS.SELF_HOSTED ? selectedOption : null;
 
         const { data } = await this.$apollo.mutate({
           mutation: updateAiFeatureSetting,
@@ -108,6 +117,14 @@ export default {
       } finally {
         this.isSaving = false;
       }
+    },
+    getProvider(option) {
+      const isDisabled = option === PROVIDERS.DISABLED;
+      const isVendored = option === PROVIDERS.VENDORED;
+
+      if (isDisabled || isVendored) return option;
+
+      return PROVIDERS.SELF_HOSTED;
     },
     errorMessage(error) {
       return error.message || this.$options.i18n.defaultErrorMessage;

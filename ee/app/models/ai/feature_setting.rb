@@ -46,8 +46,9 @@ module Ai
     enum :provider, {
       disabled: 0,
       vendored: 1,
-      self_hosted: 2
-    }, default: :vendored
+      self_hosted: 2,
+      unassigned: 3
+    }, default: :unassigned
 
     enum :feature, STABLE_FEATURES.merge(FLAGGED_FEATURES)
 
@@ -63,7 +64,7 @@ module Ai
       def provider_titles
         {
           disabled: s_('AdminAiPoweredFeatures|Disabled'),
-          vendored: s_('AdminAiPoweredFeatures|AI vendor'),
+          vendored: s_('AdminAiPoweredFeatures|GitLab AI vendor model'),
           self_hosted: s_('AdminAiPoweredFeatures|Self-hosted model')
         }.with_indifferent_access.freeze
       end

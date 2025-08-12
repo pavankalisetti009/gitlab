@@ -9,6 +9,7 @@ import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_drop
 import updateAiFeatureSetting from 'ee/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import { PROVIDERS } from 'ee/ai/duo_self_hosted/feature_settings/constants';
 import { createAlert } from '~/alert';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
@@ -54,12 +55,17 @@ describe('ModelSelector', () => {
       [getSelfHostedModelsQuery, getSelfHostedModelsSuccessHandler],
     ],
     props = {},
+    injectedProps = {},
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
     wrapper = extendedWrapper(
       shallowMount(ModelSelector, {
         apolloProvider: mockApollo,
+        provide: {
+          showVendoredModelOption: true,
+          ...injectedProps,
+        },
         propsData: {
           aiFeatureSetting: mockAiFeatureSetting,
           batchUpdateIsSaving: false,
@@ -89,14 +95,34 @@ describe('ModelSelector', () => {
 
       const modelOptions = findModelSelectDropdown().props('items');
 
-      expect(modelOptions.map(({ text, releaseState }) => [text, releaseState])).toEqual([
+      expect(
+        modelOptions.map(({ text, releaseState }) => {
+          const withReleaseState = releaseState ? [releaseState] : [];
+          return [text, ...withReleaseState];
+        }),
+      ).toEqual([
         ['Model 1 (Mistral)', 'GA'],
         ['Model 4 (GPT)', 'GA'],
         ['Model 5 (Claude 3)', 'GA'],
         ['Model 2 (Code Llama)', 'BETA'],
         ['Model 3 (CodeGemma)', 'BETA'],
+        ['GitLab AI vendor model'],
         ['Disabled'],
       ]);
+    });
+
+    describe('when showVendoredModelOption is false', () => {
+      it('does not include vendored option in options list', () => {
+        createComponent({
+          injectedProps: {
+            showVendoredModelOption: false,
+          },
+        });
+
+        const modelOptions = findModelSelectDropdown().props('items');
+        const vendoredOption = modelOptions.find((option) => option.value === PROVIDERS.VENDORED);
+        expect(vendoredOption).toBeUndefined();
+      });
     });
   });
 
@@ -123,33 +149,25 @@ describe('ModelSelector', () => {
       createComponent();
     });
 
-    describe('with a self-hosted model', () => {
-      it('calls the update mutation with the right input', () => {
-        findModelSelectDropdown().vm.$emit('select', 1);
-
+    it.each`
+      testCase               | selectedOption | provider                 | aiSelfHostedModelId
+      ${'self-hosted model'} | ${1}           | ${PROVIDERS.SELF_HOSTED} | ${1}
+      ${'disabled'}          | ${'disabled'}  | ${PROVIDERS.DISABLED}    | ${null}
+      ${'vendored'}          | ${'vendored'}  | ${PROVIDERS.VENDORED}    | ${null}
+    `(
+      'with $testCase as selected option: calls the update mutation with the correct input',
+      ({ selectedOption, provider, aiSelfHostedModelId }) => {
+        const modelSelectDropdown = findModelSelectDropdown();
+        modelSelectDropdown.vm.$emit('select', selectedOption);
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
             features: ['CODE_GENERATIONS'],
-            provider: 'SELF_HOSTED',
-            aiSelfHostedModelId: 1,
+            provider: provider.toUpperCase(),
+            aiSelfHostedModelId,
           },
         });
-      });
-    });
-
-    describe('disabling the feature', () => {
-      it('calls the update mutation with the right input', () => {
-        findModelSelectDropdown().vm.$emit('select', 'disabled');
-
-        expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
-          input: {
-            features: ['CODE_GENERATIONS'],
-            provider: 'DISABLED',
-            aiSelfHostedModelId: null,
-          },
-        });
-      });
-    });
+      },
+    );
 
     it('triggers a success toast', async () => {
       findModelSelectDropdown().vm.$emit('select', 1);
@@ -174,7 +192,10 @@ describe('ModelSelector', () => {
       it('updates the selected option', async () => {
         const modelSelectDropdown = findModelSelectDropdown();
 
-        expect(modelSelectDropdown.props('selectedOption')).toBe(null);
+        expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
+          text: 'GitLab AI vendor model',
+          value: PROVIDERS.VENDORED,
+        });
 
         modelSelectDropdown.vm.$emit('select', 'disabled');
         await waitForPromises();
@@ -182,14 +203,14 @@ describe('ModelSelector', () => {
         await wrapper.setProps({
           aiFeatureSetting: {
             ...mockAiFeatureSetting,
-            provider: 'disabled',
+            provider: PROVIDERS.DISABLED,
             selfHostedModel: null,
           },
         });
 
         expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
-          value: 'disabled',
           text: 'Disabled',
+          value: PROVIDERS.DISABLED,
         });
       });
     });
@@ -244,7 +265,7 @@ describe('ModelSelector', () => {
     });
 
     it('does not update the selected option', () => {
-      expect(findModelSelectDropdown().props('selectedOption')).toBe(null);
+      expect(findModelSelectDropdown().props('selectedOption').value).toBe(PROVIDERS.VENDORED);
     });
 
     it('triggers an error message', () => {
