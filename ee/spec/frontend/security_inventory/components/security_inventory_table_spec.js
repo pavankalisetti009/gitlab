@@ -6,6 +6,7 @@ import NameCell from 'ee/security_inventory/components/name_cell.vue';
 import VulnerabilityCell from 'ee/security_inventory/components/vulnerability_cell.vue';
 import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cell.vue';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
+import AttributesCell from 'ee/security_inventory/components/attributes_cell.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 const mockProject = subgroupsAndProjects.data.group.projects.nodes[0];
@@ -16,7 +17,7 @@ describe('SecurityInventoryTable', () => {
   let wrapper;
 
   const createComponentFactory = ({ mountFn = shallowMount } = {}) => {
-    return ({ props = {}, stubs = {} } = {}) => {
+    return ({ props = {}, stubs = {}, provide = {} } = {}) => {
       wrapper = mountFn(SecurityInventoryTable, {
         propsData: {
           items,
@@ -25,6 +26,10 @@ describe('SecurityInventoryTable', () => {
         stubs: {
           GlTableLite: { ...stubComponent(GlTableLite), props: ['items', 'fields'] },
           ...stubs,
+        },
+        provide: {
+          glFeatures: { securityContextLabels: true },
+          ...provide,
         },
       });
 
@@ -53,6 +58,7 @@ describe('SecurityInventoryTable', () => {
         { key: 'name', label: 'Name', thClass: 'gl-max-w-0' },
         { key: 'vulnerabilities', label: 'Vulnerabilities', thClass: 'gl-w-1/5' },
         { key: 'toolCoverage', label: 'Tool Coverage', thClass: 'gl-w-1/3' },
+        { key: 'securityAttributes', label: 'Security attributes', thClass: 'gl-w-1/6' },
         { key: 'actions', label: '', thClass: 'gl-w-2/20' },
       ]);
     });
@@ -74,7 +80,7 @@ describe('SecurityInventoryTable', () => {
     it('shows skeleton loaders for each column in a row', () => {
       const firstRow = findNthTableRow(0);
       const firstRowLoaders = firstRow.findAllComponents(GlSkeletonLoader);
-      expect(firstRowLoaders).toHaveLength(4);
+      expect(firstRowLoaders).toHaveLength(5);
     });
   });
 
@@ -90,7 +96,22 @@ describe('SecurityInventoryTable', () => {
       expect(firstRow.findComponent(NameCell).exists()).toBe(true);
       expect(firstRow.findComponent(VulnerabilityCell).exists()).toBe(true);
       expect(firstRow.findComponent(ToolCoverageCell).exists()).toBe(true);
+      expect(firstRow.findComponent(AttributesCell).exists()).toBe(true);
       expect(firstRow.findComponent(ActionCell).exists()).toBe(true);
+    });
+  });
+
+  describe('when security_context_labels feature flag is disabled', () => {
+    beforeEach(() => {
+      createComponent({ provide: { glFeatures: { securityContextLabels: false } } });
+    });
+    it('passes the correct fields to GlTableLite component', () => {
+      expect(findTable().props('fields')).toEqual([
+        { key: 'name', label: 'Name', thClass: 'gl-max-w-0' },
+        { key: 'vulnerabilities', label: 'Vulnerabilities', thClass: 'gl-w-1/5' },
+        { key: 'toolCoverage', label: 'Tool Coverage', thClass: 'gl-w-1/3' },
+        { key: 'actions', label: '', thClass: 'gl-w-2/20' },
+      ]);
     });
   });
 });

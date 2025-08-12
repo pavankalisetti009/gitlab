@@ -9,6 +9,7 @@ module Groups
 
       before_action do
         push_frontend_feature_flag(:security_inventory_dashboard, @group.root_ancestor)
+        push_frontend_feature_flag(:security_context_labels, @group.root_ancestor)
       end
 
       feature_category :security_asset_inventories
