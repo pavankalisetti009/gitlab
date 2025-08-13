@@ -26,7 +26,7 @@
         = render Pajamas::ButtonComponent.new(icon: 'retry',
           button_options: { class: 'disabled', title: _('Updating'), data: { container: 'body', toggle: 'tooltip', testid: 'updating-button' } },
           icon_classes: 'spin')
-      - elsif @project.archived?
+      - elsif @project.self_or_ancestors_archived?
         = render Pajamas::ButtonComponent.new(icon: 'retry',
           button_options: { class: 'disabled', title: _('This project is archived and read-only. To resume pull mirroring, unarchive the project.'), data: { container: 'body', toggle: 'tooltip', testid: 'update-now-button' } },
           icon_classes: 'spin')
