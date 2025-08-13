@@ -10,10 +10,7 @@ module EE
 
       return false if user.enterprise_user? && user.enterprise_group&.hide_email_on_profile?
 
-      # Fallback to existing feature flag logic for backward compatibility
-      return true unless user.provisioned_by_group
-
-      !::Feature.enabled?(:hide_public_email_on_profile, user.provisioned_by_group)
+      true
     end
 
     override :impersonation_tokens_enabled?
