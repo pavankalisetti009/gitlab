@@ -9,7 +9,7 @@ module EE
 
       override :build_preloads
       def build_preloads
-        super + [:metadata]
+        super + [:metadata, :job_definition_instance, :job_definition]
       end
     end
   end
