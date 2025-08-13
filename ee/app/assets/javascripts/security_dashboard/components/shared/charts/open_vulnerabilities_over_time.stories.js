@@ -2,7 +2,7 @@ import OpenVulnerabilitiesOverTimeChart from './open_vulnerabilities_over_time.v
 
 export default {
   component: OpenVulnerabilitiesOverTimeChart,
-  title: 'security_dashboard/charts/open_vulnerabilities_over_time',
+  title: 'ee/security_dashboard/charts/open_vulnerabilities_over_time',
 };
 
 const Template = (args, { argTypes }) => ({
