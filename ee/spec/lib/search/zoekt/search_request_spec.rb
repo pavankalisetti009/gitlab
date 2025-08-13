@@ -117,5 +117,30 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
         end
       end
     end
+
+    context 'when there is no enabled_namespace' do
+      let_it_be(:group) { create(:group) }
+
+      it 'raises an ArgumentError' do
+        expect do
+          described_class.new(current_user: user, group_id: group.id, query: 'test').as_json
+        end.to raise_error(ArgumentError, %r{No enabled namespace found for root ancestor})
+      end
+    end
+
+    context 'when there is no online nodes' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:en) { create(:zoekt_enabled_namespace, namespace: group) }
+
+      before do
+        allow(Search::Zoekt::Node).to receive(:online).and_return(Search::Zoekt::Node.none)
+      end
+
+      it 'raises an ArgumentError' do
+        expect do
+          described_class.new(current_user: user, group_id: group.id, query: 'test').as_json
+        end.to raise_error(ArgumentError, %r{No online nodes found for namespace})
+      end
+    end
   end
 end

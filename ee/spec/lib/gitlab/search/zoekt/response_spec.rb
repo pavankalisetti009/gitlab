@@ -12,6 +12,39 @@ RSpec.describe ::Gitlab::Search::Zoekt::Response, feature_category: :global_sear
 
   subject(:zoekt_response) { described_class.new(parsed_response) }
 
+  describe '.empty' do
+    subject(:empty_response) { described_class.empty }
+
+    it 'returns a Response instance' do
+      expect(empty_response).to be_a(described_class)
+    end
+
+    it 'has the correct result structure' do
+      expect(empty_response.parsed_response).to eq('Result' => { 'FileCount' => 0, 'MatchCount' => 0, 'Files' => [] })
+    end
+
+    context 'as immutable' do
+      it 'creates a new instance each time' do
+        empty_response_1 = described_class.empty
+        empty_response_2 = described_class.empty
+
+        expect(empty_response_1).not_to be(empty_response_2)
+        expect(empty_response_1.parsed_response).to eq(empty_response_2.parsed_response)
+      end
+
+      it 'does not affect other instances when modified' do
+        empty_response_1 = described_class.empty
+        empty_response_2 = described_class.empty
+
+        # Modify one instance's parsed_response
+        empty_response_1.parsed_response[:Result][:FileCount] = 999
+
+        # Other instance should remain unchanged
+        expect(empty_response_2.file_count).to eq(0)
+      end
+    end
+  end
+
   describe '#success?' do
     it 'returns true' do
       expect(zoekt_response.success?).to eq(true)

@@ -30,6 +30,15 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
     zoekt_ensure_project_indexed!(project_2)
   end
 
+  describe '#initialize' do
+    context 'when options has search_level' do
+      it 'raises an error' do
+        expect { described_class.new(nil, 'test', nil, search_level: :project) }
+          .to raise_error('Specifying search level is not supported. Pass group_id or project_id instead.')
+      end
+    end
+  end
+
   describe '#objects' do
     using RSpec::Parameterized::TableSyntax
     let(:query) { 'use.*egex' }
