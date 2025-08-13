@@ -556,21 +556,6 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
           subject
           expect(generated_ref_commits.count).to eq(0)
         end
-
-        context 'when the ff for generate ref commits is disabled' do
-          before do
-            stub_feature_flags(generate_ref_commits: false)
-          end
-
-          it 'does not delete created ref merge request commits' do
-            generated_ref_commits = MergeRequests::GeneratedRefCommit.where(project: train_car.merge_request.project,
-              merge_request: train_car.merge_request)
-
-            expect(generated_ref_commits.count).to eq(2)
-            subject
-            expect(generated_ref_commits.count).to eq(2)
-          end
-        end
       end
     end
 
