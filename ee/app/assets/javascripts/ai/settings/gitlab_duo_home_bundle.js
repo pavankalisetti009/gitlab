@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import apolloProvider from 'ee/usage_quotas/shared/provider';
-import { parseProvideData } from 'ee/usage_quotas/code_suggestions/tab_metadata';
+import { parseProvideData } from 'ee/usage_quotas/code_suggestions/utils';
 
 export function initGitLabDuoHome() {
   const el = document.getElementById('js-gitlab-duo-home');
