@@ -26,6 +26,7 @@ module ApprovalRules
       params.delete(:v2_approval_rules_attributes) unless current_user.can?(:update_approvers,
         target) && Feature.enabled?(:v2_approval_rules, project)
 
+      filter_scan_result_policy_approval_rules if updating?
       params.delete(:reset_approval_rules_to_defaults) unless updating?
 
       return params unless params.key?(:approval_rules_attributes)
@@ -49,6 +50,19 @@ module ApprovalRules
     end
 
     private
+
+    ## Revisit this when v2_approval_rules are created from security policies
+    ## TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/558236
+    def filter_scan_result_policy_approval_rules
+      return if params[:approval_rules_attributes].blank?
+
+      scan_result_policy_approval_rule_ids = target.approval_rules.from_scan_result_policy.pluck_primary_key
+      return if scan_result_policy_approval_rule_ids.blank?
+
+      params[:approval_rules_attributes].reject! do |param|
+        scan_result_policy_approval_rule_ids.include?(param[:id].to_i)
+      end
+    end
 
     def handle_rule(rule_attributes)
       if rule_attributes.key?(:group_ids)
