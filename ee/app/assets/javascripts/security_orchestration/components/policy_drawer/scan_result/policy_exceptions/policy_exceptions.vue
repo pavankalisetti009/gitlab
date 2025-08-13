@@ -3,6 +3,7 @@ import { s__, __, n__, sprintf } from '~/locale';
 import BranchPatternException from './branch_pattern_exception.vue';
 import UsersGroupsExceptions from './users_groups_exceptions.vue';
 import RolesExceptions from './roles_exceptions.vue';
+import ServiceAccountsException from './service_accounts_exception.vue';
 
 export default {
   i18n: {
@@ -13,6 +14,7 @@ export default {
     BranchPatternException,
     UsersGroupsExceptions,
     RolesExceptions,
+    ServiceAccountsException,
   },
   props: {
     exceptions: {
@@ -24,6 +26,12 @@ export default {
   computed: {
     branches() {
       return this.exceptions.branches || [];
+    },
+    serviceAccounts() {
+      return this.exceptions.service_accounts || [];
+    },
+    hasServiceAccounts() {
+      return this.serviceAccounts.length > 0;
     },
     hasBranches() {
       return this.branches.length > 0;
@@ -74,6 +82,7 @@ export default {
     <p v-if="totalExceptionsCount" data-testid="subheader" class="gl-mb-2">{{ subHeaderText }}</p>
 
     <branch-pattern-exception v-if="hasBranches" :branches="branches" />
+    <service-accounts-exception v-if="hasServiceAccounts" :service-accounts="serviceAccounts" />
     <users-groups-exceptions v-if="hasGroupsOrUsers" :groups="groups" :users="users" />
     <roles-exceptions v-if="hasRoles" :roles="roles" :custom-roles="customRoles" />
   </div>
