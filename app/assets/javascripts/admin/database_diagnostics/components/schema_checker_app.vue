@@ -4,25 +4,23 @@ import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
 import { __, s__, sprintf } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
-import DbDiagnosticResults from './db_diagnostic_results.vue';
-import DbIssuesCta from './db_issues_cta.vue';
+import SchemaResultsContainer from './schema_results_container.vue';
 
 export default {
-  name: 'CollationCheckerApp',
+  name: 'SchemaCheckerApp',
   components: {
     GlAlert,
     GlButton,
     GlSkeletonLoader,
-    DbDiagnosticResults,
-    DbIssuesCta,
+    SchemaResultsContainer,
   },
   retryIntervalMs: 5000, // 5 seconds
   maxRetryAttempts: 60, // 5 minutes total (60 × 5 seconds)
-  inject: ['runCollationCheckUrl', 'collationCheckResultsUrl'],
+  inject: ['runSchemaCheckUrl', 'schemaCheckResultsUrl'],
   data() {
     return {
       isLoading: false,
-      dbDiagnostics: null,
+      schemaDiagnostics: null,
       error: null,
       fetchRetryIds: [],
       retryAttempts: 0,
@@ -30,47 +28,43 @@ export default {
   },
   computed: {
     formattedLastRunAt() {
-      if (!this.dbDiagnostics?.metadata?.last_run_at) return '';
+      if (!this.schemaDiagnostics?.metadata?.last_run_at) return '';
 
       const timestamp = localeDateFormat.asDateTime.format(
-        new Date(this.dbDiagnostics.metadata.last_run_at),
+        new Date(this.schemaDiagnostics.metadata.last_run_at),
       );
 
       return sprintf(s__('DatabaseDiagnostics|Last checked: %{timestamp}'), { timestamp });
     },
-    hasDbDiagnostics() {
-      return Boolean(this.dbDiagnostics?.databases);
-    },
-    hasIssues() {
-      if (!this.dbDiagnostics?.databases) return false;
-
-      return Object.values(this.dbDiagnostics.databases).some(
-        (db) => db.corrupted_indexes?.length > 0,
+    hasSchemaDiagnostics() {
+      return Boolean(
+        this.schemaDiagnostics?.schema_check_results &&
+          Object.keys(this.schemaDiagnostics.schema_check_results).length > 0,
       );
     },
   },
   created() {
-    this.fetchDbDiagnostics();
+    this.fetchSchemaDiagnostics();
   },
   beforeDestroy() {
     this.clearFetchRetries();
   },
   methods: {
-    async fetchDbDiagnostics({ retry = false } = {}) {
+    async fetchSchemaDiagnostics({ retry = false } = {}) {
       this.isLoading = true;
       this.error = null;
 
       try {
-        const { data } = await axios.get(this.collationCheckResultsUrl);
+        const { data } = await axios.get(this.schemaCheckResultsUrl);
 
-        if (data?.databases) {
-          this.dbDiagnostics = data;
+        if (data?.schema_check_results) {
+          this.schemaDiagnostics = data;
         }
         this.isLoading = false;
       } catch (error) {
         if (error.response?.status === HTTP_STATUS_NOT_FOUND) {
           if (retry) {
-            this.retryFetchDbDiagnostics();
+            this.retryFetchSchemaDiagnostics();
           } else {
             this.isLoading = false;
           }
@@ -81,7 +75,7 @@ export default {
         }
       }
     },
-    retryFetchDbDiagnostics() {
+    retryFetchSchemaDiagnostics() {
       if (this.retryAttempts >= this.$options.maxRetryAttempts) {
         this.clearFetchRetries();
         this.error = s__(
@@ -90,17 +84,20 @@ export default {
       } else {
         this.retryAttempts += 1;
         this.fetchRetryIds.push(
-          setTimeout(() => this.fetchDbDiagnostics({ retry: true }), this.$options.retryIntervalMs),
+          setTimeout(
+            () => this.fetchSchemaDiagnostics({ retry: true }),
+            this.$options.retryIntervalMs,
+          ),
         );
       }
     },
-    async runDatabaseDiagnostics() {
+    async runSchemaDiagnostics() {
       this.isLoading = true;
       this.error = null;
 
       try {
-        await axios.post(this.runCollationCheckUrl);
-        await this.fetchDbDiagnostics({ retry: true });
+        await axios.post(this.runSchemaCheckUrl);
+        await this.fetchSchemaDiagnostics({ retry: true });
       } catch (error) {
         this.clearFetchRetries();
         this.error =
@@ -122,13 +119,11 @@ export default {
   <main>
     <section class="gl-mb-5">
       <h2 data-testid="title">
-        {{ s__('DatabaseDiagnostics|Collation health check') }}
+        {{ s__('DatabaseDiagnostics|Schema health check') }}
       </h2>
       <p class="gl-text-gray-500">
         {{
-          s__(
-            'DatabaseDiagnostics|Detect collation-related index corruption issues that might occur after OS upgrade',
-          )
+          s__('DatabaseDiagnostics|Detect database schema inconsistencies and structural issues')
         }}
       </p>
       <p v-if="formattedLastRunAt" class="gl-text-sm gl-text-gray-500" data-testid="last-run">
@@ -139,9 +134,9 @@ export default {
         variant="confirm"
         :disabled="isLoading"
         data-testid="run-diagnostics-button"
-        @click="runDatabaseDiagnostics"
+        @click="runSchemaDiagnostics"
       >
-        {{ s__('DatabaseDiagnostics|Run collation check') }}
+        {{ s__('DatabaseDiagnostics|Run schema check') }}
       </gl-button>
     </section>
 
@@ -162,21 +157,14 @@ export default {
       {{ error }}
     </gl-alert>
 
-    <template v-else-if="hasDbDiagnostics">
-      <db-diagnostic-results
-        v-for="(dbDiagnosticResult, dbName) in dbDiagnostics.databases"
-        :key="dbName"
-        :db-name="dbName"
-        :db-diagnostic-result="dbDiagnosticResult"
-      />
-
-      <db-issues-cta v-if="hasIssues" />
+    <template v-else-if="hasSchemaDiagnostics">
+      <schema-results-container :schema-diagnostics="schemaDiagnostics" />
     </template>
 
     <gl-alert v-else variant="info" data-testid="no-results-message" :dismissible="false">
       {{
         s__(
-          'DatabaseDiagnostics|No diagnostics have been run yet. Click "Run Collation Check" to analyze your database for potential collation issues.',
+          'DatabaseDiagnostics|Select "Run Schema Check" to analyze your database schema for potential issues.',
         )
       }}
     </gl-alert>
