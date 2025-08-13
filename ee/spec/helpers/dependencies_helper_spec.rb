@@ -138,7 +138,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
       let(:export) { build_stubbed(:dependency_list_export, organization: organization, project: nil) }
 
       it 'returns the correct link text' do
-        url = url_builder.organization_url(organization)
+        url = url_builder.organization_root_url(organization_path: organization.path)
         is_expected.to eq("organization <a href=\"#{url}\">#{organization.name}</a>")
       end
     end
