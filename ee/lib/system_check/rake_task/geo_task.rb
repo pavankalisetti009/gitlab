@@ -11,6 +11,8 @@ module SystemCheck
       end
 
       def self.checks
+        # If geo_nodes table doesn't exist, only run the prerequisite check
+        return [SystemCheck::Geo::GeoNodesCheck] unless GeoNode.connection.table_exists?(:geo_nodes)
         return secondary_checks if Gitlab::Geo.secondary? || Gitlab::Geo.current_node_misconfigured?
 
         common_checks

@@ -32,36 +32,52 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
   end
 
   describe '.checks' do
-    context 'primary node' do
-      it 'secondary checks is skipped' do
-        primary = create(:geo_node, :primary)
-        stub_current_geo_node(primary)
+    context 'when geo_nodes table does not exist' do
+      before do
+        allow(GeoNode.connection).to receive(:table_exists?).with(:geo_nodes).and_return(false)
+      end
 
-        expect(described_class.checks).to eq(common_checks)
+      it 'returns only the GeoNodesCheck' do
+        expect(described_class.checks).to eq([SystemCheck::Geo::GeoNodesCheck])
       end
     end
 
-    context 'secondary node' do
-      it 'secondary checks is called' do
-        secondary = create(:geo_node)
-        stub_current_geo_node(secondary)
-
-        expect(described_class.checks).to eq(secondary_checks)
+    context 'when geo_nodes table exists' do
+      before do
+        allow(GeoNode.connection).to receive(:table_exists?).with(:geo_nodes).and_return(true)
       end
-    end
 
-    context 'Geo disabled' do
-      it 'secondary checks is skipped' do
-        expect(described_class.checks).to eq(common_checks)
+      context 'primary node' do
+        it 'secondary checks is skipped' do
+          primary = create(:geo_node, :primary)
+          stub_current_geo_node(primary)
+
+          expect(described_class.checks).to eq(common_checks)
+        end
       end
-    end
 
-    context 'Geo is enabled but node is not identified' do
-      it 'secondary checks is called' do
-        create(:geo_node)
-        stub_geo_nodes_exist_but_none_match_current_node
+      context 'secondary node' do
+        it 'secondary checks is called' do
+          secondary = create(:geo_node)
+          stub_current_geo_node(secondary)
 
-        expect(described_class.checks).to eq(secondary_checks)
+          expect(described_class.checks).to eq(secondary_checks)
+        end
+      end
+
+      context 'Geo disabled' do
+        it 'secondary checks is skipped' do
+          expect(described_class.checks).to eq(common_checks)
+        end
+      end
+
+      context 'Geo is enabled but node is not identified' do
+        it 'secondary checks is called' do
+          create(:geo_node)
+          stub_geo_nodes_exist_but_none_match_current_node
+
+          expect(described_class.checks).to eq(secondary_checks)
+        end
       end
     end
   end
