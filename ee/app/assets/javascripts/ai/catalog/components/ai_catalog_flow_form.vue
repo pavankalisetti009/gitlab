@@ -223,7 +223,7 @@ export default {
       </gl-form-fields>
       <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
         <gl-button
-          class="js-no-auto-disable"
+          class="js-no-auto-disable gl-w-full sm:gl-w-auto"
           type="submit"
           variant="confirm"
           category="primary"
