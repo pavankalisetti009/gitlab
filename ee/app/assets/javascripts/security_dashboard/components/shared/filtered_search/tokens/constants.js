@@ -10,6 +10,7 @@ import ProjectToken from './project_token.vue';
 import IdentifierToken from './identifier_token.vue';
 import ScannerToken from './scanner_token.vue';
 import ReachabilityToken from './reachability_token.vue';
+import ValidityCheckToken from './validity_check_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -107,5 +108,14 @@ export const REACHABILITY_TOKEN_DEFINITION = {
   multiSelect: false,
   unique: true,
   token: ReachabilityToken,
+  operators: OPERATORS_IS,
+};
+
+export const VALIDITY_CHECK_TOKEN_DEFINITION = {
+  type: 'validityCheck',
+  title: ValidityCheckToken.i18n.label,
+  multiSelect: false,
+  unique: true,
+  token: ValidityCheckToken,
   operators: OPERATORS_IS,
 };
