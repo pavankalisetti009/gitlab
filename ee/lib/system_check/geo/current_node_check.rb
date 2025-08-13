@@ -8,7 +8,6 @@ module SystemCheck
       # Overriding so we can output current node name and what record it matches, in case either is unexpected
       def self.check_pass
         node_type = Gitlab::Geo.primary? ? 'primary' : 'secondary'
-
         "yes, found a #{node_type} node named \"#{GeoNode.current_node_name}\""
       end
 
