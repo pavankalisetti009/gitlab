@@ -111,13 +111,15 @@ RSpec.describe 'Google Artifact Registry', :js, feature_category: :container_reg
       allow(client_double).to receive(:docker_image).with(name: name).and_return(docker_image)
     end
 
-    it 'has a page title set' do
+    it 'has a page title set', :aggregate_failures do
       visit project_google_cloud_artifact_registry_image_path(project, {
         image: "#{image}@#{digest}",
         project: artifact_registry_integration.artifact_registry_project_id,
         repository: artifact_registry_integration.artifact_registry_repository,
         location: artifact_registry_integration.artifact_registry_location
       })
+
+      expect(find_by_testid('breadcrumb-links')).to have_link 'ruby@4ca5c21b'
 
       expect(page).to have_text _('ruby@4ca5c21b')
       expect(page).to have_link _('Open in Google Cloud')
