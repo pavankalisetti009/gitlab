@@ -5,14 +5,14 @@ require 'spec_helper'
 RSpec.describe Releases::CreateEvidenceService, feature_category: :release_evidence do
   include Gitlab::Routing
 
-  let(:project) { create(:project) }
+  let_it_be(:project) { create(:project) }
   let(:release) { create(:release, project: project) }
 
   context 'when pipeline with artifacts is passed' do
     let(:pipeline) { create(:ci_empty_pipeline, sha: release.sha, project: project) }
     let!(:build_with_artifacts) { create(:ci_build, :artifacts, pipeline: pipeline) }
-    let!(:build_test_report) { create(:ci_build, :test_reports, :with_artifacts_paths, pipeline: pipeline) }
-    let!(:build_coverage_report) { create(:ci_build, :coverage_reports, :with_artifacts_paths, pipeline: pipeline) }
+    let!(:build_test_report) { create(:ci_build, :test_reports, :with_archive_artifact, pipeline: pipeline) }
+    let!(:build_coverage_report) { create(:ci_build, :coverage_reports, :with_archive_artifact, pipeline: pipeline) }
 
     let(:service) { described_class.new(release, pipeline: pipeline) }
 
@@ -62,6 +62,27 @@ RSpec.describe Releases::CreateEvidenceService, feature_category: :release_evide
       expect(build_with_artifacts.reload.artifacts_expire_at).to be_present
       expect(build_test_report.reload.artifacts_expire_at).to be_present
       expect(build_coverage_report.reload.artifacts_expire_at).to be_present
+    end
+
+    it 'avoids N+1 queries', :use_sql_query_cache do
+      stub_licensed_features(release_evidence_test_artifacts: true)
+
+      control = ActiveRecord::QueryRecorder.new(skip_cached: false) { service.execute }
+      build_coverage_report_2 = create(:ci_build, :coverage_reports, :with_archive_artifact, pipeline: pipeline)
+
+      expect { service.execute }.not_to exceed_query_limit(control)
+
+      evidence = Releases::Evidence.last
+      evidence_reports = evidence.summary.dig('release', 'report_artifacts')
+                           .map { |artifact| artifact['url'] }
+
+      expect(evidence_reports).to(
+        contain_exactly(
+          download_project_job_artifacts_url(project, build_test_report),
+          download_project_job_artifacts_url(project, build_coverage_report),
+          download_project_job_artifacts_url(project, build_coverage_report_2)
+        )
+      )
     end
   end
 end

@@ -21,7 +21,7 @@ module EE
       def report_artifacts
         return ::Ci::Build.none unless release.project.feature_available?(:release_evidence_test_artifacts)
 
-        pipeline&.latest_report_builds || ::Ci::Build.none
+        (pipeline&.latest_report_builds || ::Ci::Build.none).with_project_preload
       end
 
       def keep_report_artifacts
