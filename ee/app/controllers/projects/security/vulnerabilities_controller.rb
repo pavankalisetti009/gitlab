@@ -7,6 +7,7 @@ module Projects
       include GovernUsageProjectTracking
 
       before_action :vulnerability, except: [:new]
+      before_action :disable_query_limiting, only: [:show]
       before_action :authorize_admin_vulnerability!, except: [:show, :discussions]
       before_action :authorize_read_vulnerability!, except: [:new]
 
@@ -31,6 +32,10 @@ module Projects
         pipeline = vulnerability.finding.first_finding_pipeline
         @pipeline = pipeline if can?(current_user, :read_pipeline, pipeline)
         @gfm_form = true
+      end
+
+      def disable_query_limiting
+        Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/561234', new_threshold: 120)
       end
 
       private
