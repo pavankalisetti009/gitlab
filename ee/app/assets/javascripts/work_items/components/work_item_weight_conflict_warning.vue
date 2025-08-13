@@ -35,6 +35,7 @@ export default {
       name="warning"
       class="gl-ml-2 gl-cursor-help"
       variant="warning"
+      :aria-label="__('Weight conflict warning')"
     />
     <gl-popover target="conflicting-weight-warning-icon" triggers="hover focus">
       <div class="gl-text-strong">

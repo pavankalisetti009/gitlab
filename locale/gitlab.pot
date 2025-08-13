@@ -71294,6 +71294,9 @@ msgstr ""
 msgid "Weight - %{maxIssueWeight}"
 msgstr ""
 
+msgid "Weight conflict warning"
+msgstr ""
+
 msgid "Welcome %{name},"
 msgstr ""
 
