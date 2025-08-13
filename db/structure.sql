@@ -22071,6 +22071,7 @@ CREATE TABLE project_settings (
     web_based_commit_signing_enabled boolean DEFAULT false NOT NULL,
     duo_context_exclusion_settings jsonb DEFAULT '{}'::jsonb NOT NULL,
     merge_request_title_regex_description text,
+    duo_remote_flows_enabled boolean DEFAULT false NOT NULL,
     CONSTRAINT check_1a30456322 CHECK ((char_length(pages_unique_domain) <= 63)),
     CONSTRAINT check_237486989c CHECK ((char_length(merge_request_title_regex_description) <= 255)),
     CONSTRAINT check_3a03e7557a CHECK ((char_length(previous_default_branch) <= 4096)),
