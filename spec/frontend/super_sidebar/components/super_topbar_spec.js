@@ -18,6 +18,7 @@ describe('SuperTopbar', () => {
   const OrganizationSwitcherStub = stubComponent(OrganizationSwitcher);
   const SearchModalStub = stubComponent(SearchModal);
 
+  const findAdminLink = () => wrapper.findByTestId('topbar-admin-link');
   const findBrandLogo = () => wrapper.findComponent(BrandLogo);
   const findCreateMenu = () => wrapper.findComponent(CreateMenu);
   const findNextBadge = () => wrapper.findComponent(GlBadge);
@@ -160,6 +161,27 @@ describe('SuperTopbar', () => {
       createComponent({ sidebarData: { is_logged_in: false } });
 
       expect(findUserCounts().exists()).toBe(false);
+    });
+
+    describe('Admin link', () => {
+      describe('when user is admin', () => {
+        it('renders', () => {
+          createComponent({
+            sidebarData: {
+              ...mockSidebarData,
+              admin_mode: { user_is_admin: true },
+            },
+          });
+          expect(findAdminLink().attributes('href')).toBe(mockSidebarData.admin_url);
+        });
+      });
+
+      describe('when user is not admin', () => {
+        it('renders', () => {
+          createComponent();
+          expect(findAdminLink().exists()).toBe(false);
+        });
+      });
     });
   });
 });

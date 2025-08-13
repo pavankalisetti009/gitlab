@@ -1,6 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlIcon, GlModalDirective, GlTooltipDirective } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
 import CreateMenu from './create_menu.vue';
@@ -34,6 +34,7 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   i18n: {
+    adminArea: s__('Navigation|Admin'),
     searchBtnText: __('Search or go to…'),
     stopImpersonating: __('Stop impersonating'),
   },
@@ -45,6 +46,9 @@ export default {
     },
   },
   computed: {
+    isAdmin() {
+      return this.sidebarData?.admin_mode?.user_is_admin;
+    },
     isLoggedIn() {
       return this.sidebarData.is_logged_in;
     },
@@ -97,6 +101,16 @@ export default {
         :sidebar-data="sidebarData"
         counter-class="gl-button btn btn-default btn-default-tertiary"
       />
+
+      <gl-button
+        v-if="isAdmin"
+        data-testid="topbar-admin-link"
+        :href="sidebarData.admin_url"
+        icon="admin"
+        size="small"
+      >
+        {{ $options.i18n.adminArea }}
+      </gl-button>
 
       <gl-button
         v-if="isImpersonating"
