@@ -35,10 +35,10 @@ module QA
             if has_element?("filtered-search-term", wait: 1)
               click_element('filtered-search-term')
 
-              if page.has_link?('Report type', wait: 1)
-                click_link('Report type')
+              if page.has_button?('Report type', wait: 1)
+                click_button('Report type')
               else
-                click_link('Tool')
+                click_button('Tool')
               end
 
               click_element("search-button")
@@ -61,10 +61,10 @@ module QA
 
             # This is a temporary workaround until we fully enable the functionality
             # behind the vulnerability_report_filtered_search_v2 feature flag.
-            token_name = 'Tool' if token_name == 'Report type' && !page.has_link?('Report type', wait: 1)
+            token_name = 'Tool' if token_name == 'Report type' && !page.has_button?('Report type', wait: 1)
 
-            click_link(token_name)
-            click_link(token_value)
+            click_button(token_name)
+            click_button(token_value)
             wait_for_requests
             click_element("search-button")
             click_element("search-button") # Click twice to make dropdown go away
@@ -105,11 +105,11 @@ module QA
           def filter_by_status_new(statuses)
             click_element('clear-icon')
             click_element('filtered-search-token-segment')
-            click_link('Status')
-            click_link('All statuses')
+            click_button('Status')
+            click_button('All statuses')
             statuses_list_advanced_filter(statuses).each do |status|
-              click_link(status) unless status == 'Dismissed'
-              click_link('All dismissal reasons') if status == 'Dismissed'
+              click_button(status) unless status == 'Dismissed'
+              click_button('All dismissal reasons') if status == 'Dismissed'
               wait_for_requests
             end
             click_element('search-button')
@@ -158,8 +158,8 @@ module QA
             end
 
             click_element('filtered-search-term')
-            click_link('Activity')
-            click_link(activity_name)
+            click_button('Activity')
+            click_button(activity_name)
             wait_for_requests
             click_element('search-button')
             click_element('search-button') # Second click clears the tool filter dropdown
