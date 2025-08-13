@@ -38026,6 +38026,9 @@ msgstr ""
 msgid "Loading %{name}"
 msgstr ""
 
+msgid "Loading custom roles"
+msgstr ""
+
 msgid "Loading file actions"
 msgstr ""
 
@@ -58081,6 +58084,9 @@ msgid "SecurityOrchestration|Resolved"
 msgstr ""
 
 msgid "SecurityOrchestration|Roles"
+msgstr ""
+
+msgid "SecurityOrchestration|Roles (%{count})"
 msgstr ""
 
 msgid "SecurityOrchestration|Rule mode"
