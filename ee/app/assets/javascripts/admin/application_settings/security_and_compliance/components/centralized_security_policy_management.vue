@@ -9,7 +9,7 @@ import { s__ } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import Api from 'ee/api';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
-import UnassignGroupModal from './unassign_modal.vue';
+import ConfirmationModal from './confirmation_modal.vue';
 
 export default {
   name: 'CentralizedSecurityPolicyManagement',
@@ -52,10 +52,10 @@ export default {
     },
   },
   components: {
+    ConfirmationModal,
     GlAvatarLabeled,
     GlButton,
     GlCollapsibleListbox,
-    UnassignGroupModal,
   },
   props: {
     formId: {
@@ -90,9 +90,6 @@ export default {
     },
     selectedGroupId() {
       return this.selectedGroup?.id;
-    },
-    selectedGroupName() {
-      return this.selectedGroup?.fullName;
     },
     toggleText() {
       return this.selectedGroup?.fullName || s__('SecurityOrchestration|Select a group');
@@ -134,11 +131,12 @@ export default {
     setSearchValue(value = '') {
       this.searchValue = value;
     },
-    async assignGroup(groupId) {
+    async assignGroup() {
       this.saving = true;
       try {
         await Api.updateCompliancePolicySettings({
-          csp_namespace_id: groupId,
+          // If no group selected, group will be cleared (null)
+          csp_namespace_id: this.selectedGroupId || null,
         });
         document.getElementById(this.formId).submit();
       } catch (error) {
@@ -146,10 +144,10 @@ export default {
       }
     },
     handleSelect(groupId) {
-      this.selectedGroup = this.groups.find((group) => group.id === groupId);
+      this.selectedGroup = this.groups.find((group) => group.id === groupId) || null;
     },
     showModalWindow() {
-      this.$refs.modal.showModalWindow();
+      this.$refs.confirmationModal.showModalWindow();
     },
   },
 };
@@ -169,7 +167,7 @@ export default {
       :selected="selectedGroupId"
       :toggle-text="toggleText"
       @bottom-reached="loadMoreGroups"
-      @reset="showModalWindow"
+      @reset="handleSelect"
       @search="handleSearch"
       @select="handleSelect"
     >
@@ -205,15 +203,11 @@ export default {
         category="primary"
         variant="confirm"
         :disabled="loading"
-        @click="assignGroup(selectedGroupId)"
+        @click="showModalWindow"
       >
         {{ s__('SecurityOrchestration|Save changes') }}
       </gl-button>
     </div>
-    <unassign-group-modal
-      ref="modal"
-      :group-name="selectedGroupName"
-      @unassign="assignGroup(null)"
-    />
+    <confirmation-modal ref="confirmationModal" @change="assignGroup" />
   </div>
 </template>
