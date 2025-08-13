@@ -157,7 +157,8 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
 
             expect(service_instance).to receive(:execute).with({
               input: "Test note content",
-              event: :mention
+              event: :mention,
+              discussion: note.discussion
             })
 
             execute
@@ -210,6 +211,17 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
         context 'when no users are mentioned' do
           before do
             allow(note).to receive(:mentioned_users).and_return([])
+          end
+
+          it_behaves_like 'not running AI flow trigger service'
+        end
+
+        context 'when the service account mentioned itself' do
+          before do
+            allow(note).to receive_messages(
+              mentioned_users: [mentioned_user],
+              author: mentioned_user
+            )
           end
 
           it_behaves_like 'not running AI flow trigger service'
