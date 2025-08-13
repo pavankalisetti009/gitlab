@@ -183,6 +183,15 @@ export default {
         :label="s__('DuoAgentsPlatform|Service account user')"
         label-for="trigger-owner"
       >
+        <template #label-description>
+          {{ s__('DuoAgentsPlatform|⚠️ Create a unique service account for each project.') }}
+          <br />
+          {{
+            s__(
+              'DuoAgentsPlatform|Do not assign the service account a role in your project with higher permissions than the users of that service account.',
+            )
+          }}
+        </template>
         <user-select
           :value="selectedUsers"
           :text="selectedUserName"
