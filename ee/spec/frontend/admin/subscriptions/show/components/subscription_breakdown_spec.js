@@ -246,31 +246,52 @@ describe('Subscription Breakdown', () => {
     });
 
     describe('showAlert', () => {
-      beforeEach(() => {
-        const state = createState({
-          licenseRemovalPath: licenseRemovePath,
-          subscriptionSyncPath: '',
-        });
-        const store = createStore({ initialState: state });
+      let consoleErrorSpy;
 
-        createComponent({ stubs: { GlCard, SubscriptionDetailsCard }, store });
+      beforeEach(() => {
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       });
 
       afterEach(() => {
         createAlert.mockClear();
+        consoleErrorSpy.mockRestore();
       });
 
-      it('is called when licenseError is populated', async () => {
-        axiosMock.onDelete(licenseRemovePath).reply(418);
+      describe('when licenseError is populated', () => {
+        beforeEach(async () => {
+          const state = createState({
+            licenseRemovalPath: licenseRemovePath,
+            subscriptionSyncPath: '',
+          });
+          const store = createStore({ initialState: state });
 
-        findRemoveLicenseModal().vm.$emit('primary');
+          createComponent({ stubs: { GlCard, SubscriptionDetailsCard }, store });
 
-        await waitForPromises();
+          axiosMock.onDelete(licenseRemovePath).reply(418);
 
-        expect(createAlert).toHaveBeenCalledWith({ message: expect.any(Error) });
+          findRemoveLicenseModal().vm.$emit('primary');
 
-        const error = createAlert.mock.calls[0][0].message;
-        expect(error.message).toMatch('418');
+          await waitForPromises();
+        });
+
+        it('logs the error to the console and calls createAlert', () => {
+          expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+          expect(consoleErrorSpy).toHaveBeenCalledWith(
+            '[gitlab]',
+            'Error: Request failed with status code 418\n',
+          );
+
+          expect(createAlert).toHaveBeenCalledWith({
+            message: 'Something went wrong while removing the license. Please try again.',
+          });
+        });
+      });
+
+      describe('when licenseError is not populated', () => {
+        it('does not log an error to the console or call createAlert', () => {
+          expect(consoleErrorSpy).not.toHaveBeenCalled();
+          expect(createAlert).not.toHaveBeenCalled();
+        });
       });
     });
   });

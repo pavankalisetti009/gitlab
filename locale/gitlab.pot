@@ -61350,6 +61350,9 @@ msgstr ""
 msgid "Something went wrong while promoting the note to timeline event."
 msgstr ""
 
+msgid "Something went wrong while removing the license. Please try again."
+msgstr ""
+
 msgid "Something went wrong while reopening a requirement."
 msgstr ""
 
