@@ -13,8 +13,20 @@ module Ai
       end
 
       def execute(params)
+        note_service = ::Ai::FlowTriggers::CreateNoteService.new(
+          project: project, resource: resource, author: flow_trigger.user, discussion: params[:discussion]
+        )
+
+        note_service.execute(params) do |updated_params|
+          run_workload(updated_params)
+        end
+      end
+
+      private
+
+      def run_workload(params)
         flow_definition = fetch_flow_definition
-        return unless flow_definition
+        return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
 
         workload_definition = ::Ci::Workloads::WorkloadDefinition.new do |d|
           d.image = flow_definition['image']
@@ -31,8 +43,6 @@ module Ai
           **branch_args
         ).execute
       end
-
-      private
 
       def fetch_flow_definition
         root_ref = project.repository.root_ref
@@ -54,7 +64,8 @@ module Ai
         {
           AI_FLOW_CONTEXT: serialized_resource,
           AI_FLOW_INPUT: params[:input],
-          AI_FLOW_EVENT: params[:event].to_s
+          AI_FLOW_EVENT: params[:event].to_s,
+          AI_FLOW_DISCUSSION_ID: params[:discussion_id]
         }
       end
 

@@ -8,8 +8,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
   let_it_be(:current_user) { create(:user, maintainer_of: project) }
   let_it_be(:resource) { create(:issue, project: project) }
   let_it_be(:service_account) { create(:service_account, maintainer_of: project) }
+  let_it_be(:existing_note) { create(:note, project: project, noteable: resource) }
 
-  let(:params) { { input: 'test input', event: 'mention' } }
+  let(:params) { { input: 'test input', event: 'mention', discussion: existing_note.discussion } }
 
   let_it_be(:flow_trigger) do
     create(:ai_flow_trigger, project: project, user: service_account, config_path: '.gitlab/duo/flow.yml')
@@ -78,24 +79,26 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
         expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
         expect(variables[:AI_FLOW_INPUT]).to eq('test input')
         expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+        expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
         expect(kwargs[:ci_variables_included]).to eq(%w[API_KEY DATABASE_URL])
         expect(kwargs[:source]).to eq(:duo_workflow)
 
         original_method.call(**kwargs)
       end
 
-      service.execute(params)
-    end
+      expect(Note.count).to eq(1)
+      expect(::Ci::Pipeline.count).to eq(0)
 
-    it 'returns the result from workload service' do
-      expected_result = ServiceResponse.success(payload: { workload_id: 123 })
-      expect_next_instance_of(Ci::Workloads::RunWorkloadService) do |instance|
-        expect(instance).to receive(:execute).and_return(expected_result)
-      end
+      response = service.execute(params)
 
-      result = service.execute(params)
+      expect(response).to be_success
+      expect(::Ci::Pipeline.count).to eq(1)
+      expect(Note.count).to eq(2)
 
-      expect(result).to eq(expected_result)
+      expect(Note.last.note).to include('✅ Agent has started. You can view the progress')
+
+      pipeline_url = Gitlab::Routing.url_helpers.project_pipeline_url(project, ::Ci::Pipeline.last)
+      expect(Note.last.note).to include(pipeline_url)
     end
 
     context 'when resource is a MergeRequest' do
@@ -146,9 +149,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
       it 'returns nil without calling workload service' do
         expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
 
-        result = service.execute(params)
+        response = service.execute(params)
 
-        expect(result).to be_nil
+        expect(response).to be_error
+        expect(response.message).to eq('invalid or missing flow definition')
       end
     end
 
@@ -172,9 +176,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
         it 'returns nil without calling workload service' do
           expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
 
-          result = service.execute(params)
+          response = service.execute(params)
 
-          expect(result).to be_nil
+          expect(response).to be_error
+          expect(response.message).to eq('invalid or missing flow definition')
         end
       end
     end
