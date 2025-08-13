@@ -5376,24 +5376,47 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       describe 'trigger_ai_flow permission' do
-        where(:role, :allowed) do
-          :guest      | false
-          :planner    | false
-          :reporter   | false
-          :developer  | true
-          :maintainer | true
-          :owner      | true
-          :admin      | true
-        end
-
-        with_them do
-          let(:current_user) { public_send(role) }
-
-          before do
-            enable_admin_mode!(current_user) if role == :admin
+        context 'with general roles' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | true
+            :maintainer | true
+            :owner      | true
+            :admin      | true
           end
 
-          it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            before do
+              enable_admin_mode!(current_user) if role == :admin
+            end
+
+            it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+          end
+        end
+
+        context 'with project that allows collaboration' do
+          let(:project) { public_project }
+
+          where(:role, :allowed) do
+            :reporter   | false
+            :developer  | true
+          end
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            before do
+              allow(project).to receive(:merge_requests_allowing_push_to_user).and_return(
+                [instance_double(MergeRequest)]
+              )
+            end
+
+            it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+          end
         end
       end
     end
