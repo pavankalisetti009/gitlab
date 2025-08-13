@@ -197,10 +197,6 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
     subject { helper.display_public_email?(user) }
 
-    before do
-      stub_feature_flags hide_public_email_on_profile: false
-    end
-
     it { is_expected.to be true }
 
     context 'when public_email is blank' do
@@ -217,14 +213,6 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
       end
 
       it { is_expected.to be true }
-    end
-
-    context 'when hide_public_email_on_profile is true' do
-      before do
-        stub_feature_flags hide_public_email_on_profile: true
-      end
-
-      it { is_expected.to be false }
     end
 
     context 'when user is an enterprise user' do
