@@ -16497,7 +16497,8 @@ CREATE TABLE internal_ids (
     project_id bigint,
     usage integer NOT NULL,
     last_value integer NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_5ecc6454b1 CHECK ((num_nonnulls(namespace_id, project_id) = 1))
 );
 
 CREATE SEQUENCE internal_ids_id_seq
@@ -30191,9 +30192,6 @@ ALTER TABLE push_event_payloads
 
 ALTER TABLE ONLY instance_type_ci_runners
     ADD CONSTRAINT check_5c34a3c1db UNIQUE (id);
-
-ALTER TABLE internal_ids
-    ADD CONSTRAINT check_5ecc6454b1 CHECK ((num_nonnulls(namespace_id, project_id) = 1)) NOT VALID;
 
 ALTER TABLE ONLY project_type_ci_runners
     ADD CONSTRAINT check_619c71f3a2 UNIQUE (id);
