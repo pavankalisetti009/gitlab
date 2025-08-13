@@ -335,9 +335,9 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
     it 'can select a Label in order to filter the board by not equals' do
       within_testid('epic-filtered-search') do
-        click_link 'Label'
-        click_link '!='
-        click_link label.title
+        click_button 'Label'
+        click_button '!='
+        click_button label.title
 
         find('input').native.send_keys(:return)
       end
@@ -352,9 +352,9 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
     it 'can select a Label in order to filter the board by equals' do
       within_testid('epic-filtered-search') do
-        click_link 'Label'
+        click_button 'Label'
         click_token_equals
-        click_link label.title
+        click_button label.title
 
         find('input').native.send_keys(:return)
       end
@@ -369,9 +369,9 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
     it 'can select an Author in order to filter the board by equals' do
       within_testid('epic-filtered-search') do
-        click_link 'Author'
+        click_button 'Author'
         click_token_equals
-        click_link user.name
+        click_button user.name
 
         find('input').native.send_keys(:return)
       end
@@ -386,9 +386,9 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
     it 'can select an Author in order to filter the board by not equals' do
       within_testid('epic-filtered-search') do
-        click_link 'Author'
-        click_link '!='
-        click_link user.name
+        click_button 'Author'
+        click_button '!='
+        click_button user.name
 
         find('input').native.send_keys(:return)
       end
@@ -517,7 +517,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
   # This isnt the "best" matcher but because we have opts
   # != and = the find function returns both links when finding by =
   def click_token_equals
-    first('a', text: '=').click
+    first('button', text: '=').click
   end
 
   def find_board_list(board_number)
