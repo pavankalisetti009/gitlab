@@ -275,25 +275,9 @@ Configure the GitLab O11y URL for your group and enable the feature flag using t
 
 1. Access the Rails console:
 
-   {{< tabs >}}
-
-   {{< tab title="Linux package (Omnibus)" >}}
-
-   ```shell
-   sudo gitlab-rails console
-   ```
-
-   {{< /tab >}}
-
-   {{< tab title="Docker" >}}
-
    ```shell
    docker exec -it gitlab gitlab-rails console
    ```
-
-   {{< /tab >}}
-
-   {{< /tabs >}}
 
 1. Configure the observability settings for your group and enable the feature flag:
 
