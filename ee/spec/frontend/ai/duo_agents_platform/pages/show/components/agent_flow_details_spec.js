@@ -13,6 +13,7 @@ describe('AgentFlowDetails', () => {
     status: 'RUNNING',
     agentFlowDefinition: 'software_development',
     agentFlowCheckpoint: mockAgentFlowCheckpoint,
+    executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
   };
 
   const createComponent = (props = {}) => {
@@ -52,6 +53,7 @@ describe('AgentFlowDetails', () => {
         isLoading: false,
         status: defaultProps.status,
         agentFlowDefinition: defaultProps.agentFlowDefinition,
+        executorUrl: defaultProps.executorUrl,
       });
     });
   });

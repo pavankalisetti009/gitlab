@@ -69,6 +69,7 @@ describe('DuoAgentsPlatformShow', () => {
       expect(workflowDetailsProps).toEqual({
         isLoading: false,
         status: 'Running',
+        executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
         agentFlowDefinition: 'Software development',
         agentFlowCheckpoint:
           mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.latestCheckpoint

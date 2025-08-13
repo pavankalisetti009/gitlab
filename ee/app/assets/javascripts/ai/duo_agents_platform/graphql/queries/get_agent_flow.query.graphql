@@ -8,6 +8,7 @@ query getAgentFlow($workflowId: AiDuoWorkflowsWorkflowID!) {
         latestCheckpoint {
           checkpoint
         }
+        lastExecutorLogsUrl
       }
     }
   }

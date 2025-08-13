@@ -27,6 +27,11 @@ export default {
       type: String,
       required: true,
     },
+    executorUrl: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
 };
 </script>
@@ -39,6 +44,7 @@ export default {
         :is-loading="isLoading"
         :status="status"
         :agent-flow-definition="agentFlowDefinition"
+        :executor-url="executorUrl"
       />
     </div>
   </div>
