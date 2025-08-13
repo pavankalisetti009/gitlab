@@ -70,7 +70,7 @@ module Ai
       end
 
       def allowed_features
-        allowed_features = STABLE_FEATURES
+        allowed_features = STABLE_FEATURES.dup
 
         if ::Ai::TestingTermsAcceptance.has_accepted?
           # FLAGGED_FEATURES are in beta status. We must ensure the GitLab Testing Terms
@@ -80,7 +80,7 @@ module Ai
         end
 
         if ::License.current&.premium?
-          allowed_features.except!(
+          allowed_features = allowed_features.except(
             :duo_chat_explain_vulnerability,
             :resolve_vulnerability
           )

@@ -14,6 +14,7 @@ import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
 import {
+  CREATION_CONTEXT_LIST_ROUTE,
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
   WORK_ITEM_TYPE_NAME_TASK,
@@ -100,6 +101,7 @@ describe('EE Create work item component', () => {
       apolloProvider: mockApollo,
       propsData: {
         fullPath: 'full-path',
+        creationContext: CREATION_CONTEXT_LIST_ROUTE,
         preselectedWorkItemType,
         ...props,
       },

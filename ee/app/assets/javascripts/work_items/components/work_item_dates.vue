@@ -12,7 +12,6 @@ import {
   WIDGET_TYPE_START_AND_DUE_DATE,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 
 const nullObjectDate = new Date(0);
@@ -33,10 +32,6 @@ export default {
   props: {
     workItem: {
       type: Object,
-      required: true,
-    },
-    fullPath: {
-      type: String,
       required: true,
     },
     workItemType: {
@@ -171,17 +166,10 @@ export default {
       this.track('updated_rollup_type');
 
       if (this.workItemId === newWorkItemId(this.workItemType)) {
-        this.$apollo.mutate({
-          mutation: updateNewWorkItemMutation,
-          variables: {
-            input: {
-              workItemType: this.workItemType,
-              fullPath: this.fullPath,
-              rolledUpDates: {
-                isFixed: this.rollupType === ROLLUP_TYPE_FIXED,
-                rollUp: this.shouldRollUp,
-              },
-            },
+        this.$emit('updateWidgetDraft', {
+          rolledUpDates: {
+            isFixed: this.rollupType === ROLLUP_TYPE_FIXED,
+            rollUp: this.shouldRollUp,
           },
         });
 
@@ -229,19 +217,12 @@ export default {
       this.rollupType = ROLLUP_TYPE_FIXED;
 
       if (this.workItemId === newWorkItemId(this.workItemType)) {
-        this.$apollo.mutate({
-          mutation: updateNewWorkItemMutation,
-          variables: {
-            input: {
-              workItemType: this.workItemType,
-              fullPath: this.fullPath,
-              rolledUpDates: {
-                isFixed: true,
-                dueDate: this.localDueDate ? toISODateFormat(this.localDueDate) : null,
-                startDate: this.localStartDate ? toISODateFormat(this.localStartDate) : null,
-                rollUp: this.shouldRollUp,
-              },
-            },
+        this.$emit('updateWidgetDraft', {
+          rolledUpDates: {
+            isFixed: true,
+            dueDate: this.localDueDate ? toISODateFormat(this.localDueDate) : null,
+            startDate: this.localStartDate ? toISODateFormat(this.localStartDate) : null,
+            rollUp: this.shouldRollUp,
           },
         });
 

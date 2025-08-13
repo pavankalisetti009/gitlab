@@ -3,6 +3,7 @@
 export const defaultArguments = {
   loaded: true,
   type: 'bar',
+  title: 'Insights chart',
   groupBy: 'month',
   data: {
     xAxisTitle: 'Months',

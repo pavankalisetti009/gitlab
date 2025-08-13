@@ -50,10 +50,6 @@ export default {
       type: Object,
       required: true,
     },
-    fullPath: {
-      type: String,
-      required: true,
-    },
   },
   data() {
     return {
@@ -134,11 +130,7 @@ export default {
       this.isUpdating = true;
 
       if (this.workItemId === newWorkItemId(this.workItemType)) {
-        this.$emit('updateWidgetDraft', {
-          fullPath: this.fullPath,
-          color: this.currentColor,
-          workItemType: this.workItemType,
-        });
+        this.$emit('updateWidgetDraft', { color: this.currentColor });
         this.isUpdating = false;
         this.isEditing = false;
         return;

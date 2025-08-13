@@ -9,6 +9,7 @@ import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import {
+  CREATION_CONTEXT_LIST_ROUTE,
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
@@ -133,8 +134,8 @@ describeSkipVue3(skipReason, () => {
     it('passes the right props to modal when hasEpicsFeature is true', () => {
       mountComponent({ hasEpicsFeature: true, showNewWorkItem: true });
 
-      expect(findCreateWorkItemModal().exists()).toBe(true);
       expect(findCreateWorkItemModal().props()).toMatchObject({
+        creationContext: CREATION_CONTEXT_LIST_ROUTE,
         isGroup: true,
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC,
       });
