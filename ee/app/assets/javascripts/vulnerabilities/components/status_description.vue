@@ -129,7 +129,7 @@ export default {
 
 <template>
   <div class="gl-flex gl-flex-wrap gl-items-center gl-whitespace-pre-wrap">
-    <gl-skeleton-loader v-if="isLoadingVulnerability" :lines="1" class="gl-h-auto" />
+    <gl-skeleton-loader v-if="isLoadingVulnerability" :lines="1" />
     <!-- there are cases in which `time` is undefined (e.g.: manually submitted vulnerabilities in "needs triage" state) -->
     <gl-sprintf v-else-if="time" :message="statusText">
       <template #status="{ content }">

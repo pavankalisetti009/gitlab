@@ -353,7 +353,7 @@ export default {
       </template>
 
       <template #table-busy>
-        <gl-skeleton-loader :lines="count" equal-width-lines class="gl-mb-6" />
+        <gl-skeleton-loader :lines="count" equal-width-lines />
       </template>
     </gl-table>
     <drawer-wrapper
