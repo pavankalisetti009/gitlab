@@ -55,6 +55,7 @@ export const mockGetAgentFlowResponse = {
           node: {
             __typename: 'DuoWorkflow',
             id: 'gid://gitlab/DuoWorkflow::Workflow/1',
+            createdAt: '2023-01-01T00:00:00Z',
             updatedAt: '2024-01-01T00:00:00Z',
             latestCheckpoint: { checkpoint: mockAgentFlowCheckpoint },
             lastExecutorLogsUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
