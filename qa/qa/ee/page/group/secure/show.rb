@@ -19,8 +19,8 @@ module QA
             def filter_project(project_id:, project_name:)
               if has_element?('filtered-search-term', wait: 1)
                 click_element('filtered-search-term')
-                click_link('Project')
-                click_link(project_name)
+                click_button('Project')
+                click_button(project_name)
                 click_element('filtered-search-term')
                 click_element('search-button')
               else

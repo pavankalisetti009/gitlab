@@ -245,8 +245,8 @@ RSpec.describe 'Admin::AuditLogs', :js, feature_category: :audit_events do
 
     find(filter_container).click
     within filter_container do
-      click_link type
-      click_link name
+      click_button type
+      click_button name
 
       find('button[type="button"]:not([name="clear"]):not([aria-label="Remove"]').click
     end

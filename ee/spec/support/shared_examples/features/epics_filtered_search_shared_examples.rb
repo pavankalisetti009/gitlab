@@ -22,7 +22,7 @@ RSpec.shared_examples 'filtered search bar' do |tokens, sort_options, current_so
 
   def select_token(token_name)
     page.find('input.gl-filtered-search-term-input').click
-    click_link token_name
+    click_button token_name
     page.first('.gl-filtered-search-suggestion').click
   end
 

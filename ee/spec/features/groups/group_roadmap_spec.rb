@@ -18,7 +18,7 @@ RSpec.describe 'group epic roadmap', :js, feature_category: :portfolio_managemen
   def search_for_label(label)
     page.within('.vue-filtered-search-bar-container .gl-search-box-by-click') do
       find_by_testid('filtered-search-term-input').click
-      click_link 'Label'
+      click_button 'Label'
       page.first('.gl-filtered-search-suggestion-list .gl-filtered-search-suggestion').click # Select `=` operator
       wait_for_requests
       page.find('.gl-filtered-search-suggestion-list .gl-filtered-search-suggestion', text: bug_label.title).click

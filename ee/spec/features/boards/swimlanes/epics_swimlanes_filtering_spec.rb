@@ -54,7 +54,7 @@ RSpec.describe 'epics swimlanes filtering', :js, feature_category: :team_plannin
 
     it 'filters by author' do
       set_filter("author", user2.username)
-      click_filter_link(user2.username)
+      click_filter_button(user2.username)
 
       submit_filter
 
@@ -64,7 +64,7 @@ RSpec.describe 'epics swimlanes filtering', :js, feature_category: :team_plannin
 
     it 'filters by assignee' do
       set_filter("assignee", user.username)
-      click_filter_link(user.username)
+      click_filter_button(user.username)
       submit_filter
 
       wait_for_board_cards(2, 1)
@@ -73,7 +73,7 @@ RSpec.describe 'epics swimlanes filtering', :js, feature_category: :team_plannin
 
     it 'filters by milestone' do
       set_filter("milestone", "\"#{milestone.title}")
-      click_filter_link(milestone.title)
+      click_filter_button(milestone.title)
       submit_filter
 
       wait_for_board_cards(2, 1)
@@ -83,7 +83,7 @@ RSpec.describe 'epics swimlanes filtering', :js, feature_category: :team_plannin
 
     it 'filters by label' do
       set_filter("label", testing.title)
-      click_filter_link(testing.title)
+      click_filter_button(testing.title)
       submit_filter
 
       wait_for_board_cards(2, 1)
@@ -128,11 +128,11 @@ RSpec.describe 'epics swimlanes filtering', :js, feature_category: :team_plannin
     filter_submit.click
   end
 
-  def click_filter_link(link_text)
+  def click_filter_button(text)
     page.within('.gl-filtered-search-suggestion-list') do
-      expect(page).to have_link(link_text)
+      expect(page).to have_button(text)
 
-      click_on link_text
+      click_on text
     end
   end
 end
