@@ -1038,6 +1038,41 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION sync_to_p_sent_notifications_table() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+INSERT INTO "p_sent_notifications" (
+  "project_id",
+  "noteable_id",
+  "noteable_type",
+  "recipient_id",
+  "commit_id",
+  "reply_key",
+  "in_reply_to_discussion_id",
+  "id",
+  "issue_email_participant_id",
+  "namespace_id",
+  "created_at"
+) VALUES (
+  NEW."project_id",
+  NEW."noteable_id",
+  NEW."noteable_type",
+  NEW."recipient_id",
+  NEW."commit_id",
+  NEW."reply_key",
+  NEW."in_reply_to_discussion_id",
+  NEW."id",
+  NEW."issue_email_participant_id",
+  NEW."namespace_id",
+  NEW."created_at"
+);
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION table_sync_function_40ecbfb353() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -19488,6 +19523,35 @@ CREATE SEQUENCE p_knowledge_graph_tasks_id_seq
 
 ALTER SEQUENCE p_knowledge_graph_tasks_id_seq OWNED BY p_knowledge_graph_tasks.id;
 
+CREATE TABLE p_sent_notifications (
+    id bigint NOT NULL,
+    project_id bigint,
+    noteable_id bigint,
+    recipient_id bigint,
+    issue_email_participant_id bigint,
+    namespace_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    partition integer DEFAULT 1 NOT NULL,
+    noteable_type text,
+    commit_id text,
+    reply_key text NOT NULL,
+    in_reply_to_discussion_id text,
+    CONSTRAINT check_18a72130c5 CHECK ((char_length(commit_id) <= 255)),
+    CONSTRAINT check_21ab645552 CHECK ((char_length(reply_key) <= 255)),
+    CONSTRAINT check_4c25a085c6 CHECK ((char_length(noteable_type) <= 255)),
+    CONSTRAINT check_7e7dc3845d CHECK ((char_length(in_reply_to_discussion_id) <= 255))
+)
+PARTITION BY LIST (partition);
+
+CREATE SEQUENCE p_sent_notifications_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE p_sent_notifications_id_seq OWNED BY p_sent_notifications.id;
+
 CREATE TABLE packages_build_infos (
     id bigint NOT NULL,
     package_id bigint NOT NULL,
@@ -28592,6 +28656,8 @@ ALTER TABLE ONLY p_knowledge_graph_enabled_namespaces ALTER COLUMN id SET DEFAUL
 
 ALTER TABLE ONLY p_knowledge_graph_replicas ALTER COLUMN id SET DEFAULT nextval('p_knowledge_graph_replicas_id_seq'::regclass);
 
+ALTER TABLE ONLY p_sent_notifications ALTER COLUMN id SET DEFAULT nextval('p_sent_notifications_id_seq'::regclass);
+
 ALTER TABLE ONLY packages_build_infos ALTER COLUMN id SET DEFAULT nextval('packages_build_infos_id_seq'::regclass);
 
 ALTER TABLE ONLY packages_conan_file_metadata ALTER COLUMN id SET DEFAULT nextval('packages_conan_file_metadata_id_seq'::regclass);
@@ -31469,6 +31535,9 @@ ALTER TABLE ONLY p_knowledge_graph_replicas
 
 ALTER TABLE ONLY p_knowledge_graph_tasks
     ADD CONSTRAINT p_knowledge_graph_tasks_pkey PRIMARY KEY (id, partition_id);
+
+ALTER TABLE ONLY p_sent_notifications
+    ADD CONSTRAINT p_sent_notifications_pkey PRIMARY KEY (id, partition);
 
 ALTER TABLE ONLY packages_build_infos
     ADD CONSTRAINT packages_build_infos_pkey PRIMARY KEY (id);
@@ -37525,6 +37594,14 @@ CREATE INDEX index_p_knowledge_graph_tasks_on_node_state_and_perform_at ON ONLY 
 
 CREATE INDEX index_p_knowledge_graph_tasks_on_state ON ONLY p_knowledge_graph_tasks USING btree (state);
 
+CREATE INDEX index_p_sent_notifications_on_issue_email_participant_id ON ONLY p_sent_notifications USING btree (issue_email_participant_id);
+
+CREATE INDEX index_p_sent_notifications_on_namespace_id ON ONLY p_sent_notifications USING btree (namespace_id);
+
+CREATE INDEX index_p_sent_notifications_on_noteable_type_noteable_id_and_id ON ONLY p_sent_notifications USING btree (noteable_id, id) WHERE (noteable_type = 'Issue'::text);
+
+CREATE UNIQUE INDEX index_p_sent_notifications_on_reply_key_partition_unique ON ONLY p_sent_notifications USING btree (reply_key, partition);
+
 CREATE INDEX index_packages_build_infos_on_pipeline_id ON packages_build_infos USING btree (pipeline_id);
 
 CREATE INDEX index_packages_build_infos_on_project_id ON packages_build_infos USING btree (project_id);
@@ -42475,6 +42552,8 @@ CREATE TRIGGER push_rules_loose_fk_trigger AFTER DELETE ON push_rules REFERENCIN
 
 CREATE TRIGGER sync_project_authorizations_to_migration AFTER INSERT OR DELETE OR UPDATE ON project_authorizations FOR EACH ROW EXECUTE FUNCTION sync_project_authorizations_to_migration_table();
 
+CREATE TRIGGER sync_sent_notifications_to_part AFTER INSERT ON sent_notifications FOR EACH ROW EXECUTE FUNCTION sync_to_p_sent_notifications_table();
+
 CREATE TRIGGER table_sync_trigger_4ea4473e79 AFTER INSERT OR DELETE OR UPDATE ON uploads FOR EACH ROW EXECUTE FUNCTION table_sync_function_40ecbfb353();
 
 CREATE TRIGGER tags_loose_fk_trigger AFTER DELETE ON tags REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
@@ -46045,6 +46124,9 @@ ALTER TABLE ONLY x509_commit_signatures
 
 ALTER TABLE ONLY analytics_cycle_analytics_group_value_streams
     ADD CONSTRAINT fk_rails_540627381a FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE p_sent_notifications
+    ADD CONSTRAINT fk_rails_543568973a FOREIGN KEY (issue_email_participant_id) REFERENCES issue_email_participants(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY geo_node_namespace_links
     ADD CONSTRAINT fk_rails_546bf08d3e FOREIGN KEY (geo_node_id) REFERENCES geo_nodes(id) ON DELETE CASCADE;
