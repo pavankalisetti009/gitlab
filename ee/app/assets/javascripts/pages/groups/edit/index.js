@@ -5,6 +5,7 @@ import {
   initGroupPermissionsFormSubmit,
   initSetUserCapRadio,
 } from 'ee/groups/settings/permissions';
+import { initPlaceholderBypassGroupSetting } from 'ee/groups/settings/permissions/components';
 import { initServicePingSettingsClickTracking } from 'ee/registration_features_discovery_message';
 import { createAlert } from '~/alert';
 import { initMergeRequestMergeChecksApp } from 'ee/merge_checks';
@@ -27,6 +28,8 @@ function initDeactivateDormantMembersPeriodInputSection() {
 }
 
 initDeactivateDormantMembersPeriodInputSection();
+
+initPlaceholderBypassGroupSetting();
 
 initGroupPermissionsFormSubmit();
 
