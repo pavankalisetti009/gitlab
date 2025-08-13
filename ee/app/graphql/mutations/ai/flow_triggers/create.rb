@@ -37,14 +37,18 @@ module Mutations
 
         def resolve(project_path:, **params)
           project = authorized_find!(project_path)
-          trigger = project.ai_flow_triggers.create(params)
 
-          if trigger.valid?
+          response = ::Ai::FlowTriggers::CreateService.new(project: project,
+            current_user: context[:current_user]).execute(params)
+
+          if response.success?
+            trigger = response.payload
+
             { ai_flow_trigger: trigger, errors: [] }
           else
             {
               ai_flow_trigger: nil,
-              errors: trigger.errors
+              errors: [response.message]
             }
           end
         end

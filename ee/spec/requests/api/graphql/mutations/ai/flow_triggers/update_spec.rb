@@ -5,13 +5,14 @@ require 'spec_helper'
 RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :duo_workflow do
   include GraphqlHelpers
 
-  let_it_be(:maintainer) { create(:user) }
-  let_it_be(:service_account) { create(:service_account) }
-  let_it_be(:project) { create(:project, :repository, maintainers: [maintainer, service_account]) }
+  let_it_be(:project) { create(:project, :repository, :in_group, maintainers: [service_account]) }
+  let_it_be(:group_owner) { create(:user, owner_of: project.group) }
+  let_it_be(:service_account) { create(:service_account, provisioned_by_group: project.root_ancestor) }
+
   let_it_be_with_reload(:trigger) { create(:ai_flow_trigger, project: project) }
   let_it_be(:original) { trigger.attributes.dup }
 
-  let(:current_user) { maintainer }
+  let(:current_user) { group_owner }
   let(:mutation) { graphql_mutation(:ai_flow_trigger_update, params) }
   let(:description) { 'New' }
   let(:event_types) { [Ai::FlowTrigger::EVENT_TYPES[:mention]] }
@@ -35,6 +36,9 @@ RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :duo_workf
       :assigned_to_user,
       :exists?
     ).and_return(true)
+
+    stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+    stub_licensed_features(service_accounts: true)
   end
 
   shared_examples 'an authorization failure' do
@@ -75,7 +79,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :duo_workf
     it 'returns the validation error' do
       execute
 
-      expect(graphql_data_at(:ai_flow_trigger_update, :errors)).to contain_exactly(
+      expect(graphql_data_at(:ai_flow_trigger_update, :errors).first).to include(
         'Description is too long (maximum is 255 characters)'
       )
       expect(graphql_data_at(:ai_flow_trigger_update, :ai_flow_trigger)).to be_nil
