@@ -4,9 +4,10 @@ require 'spec_helper'
 
 RSpec.describe ExternalStatusChecks::DestroyService, feature_category: :groups_and_projects do
   let_it_be(:project) { create(:project) }
-  let_it_be(:external_status_check) { create(:external_status_check, name: 'QA', project: project) }
 
   let(:current_user) { project.first_owner }
+
+  let_it_be_with_refind(:external_status_check) { create(:external_status_check, name: 'QA', project: project) }
 
   subject(:execute) do
     described_class.new(container: project, current_user: current_user).execute(external_status_check)
@@ -23,7 +24,7 @@ RSpec.describe ExternalStatusChecks::DestroyService, feature_category: :groups_a
   end
 
   context 'when current user is not a project owner' do
-    let_it_be(:current_user) { create(:user) }
+    let(:current_user) { create(:user) }
 
     it 'does not delete an external status check' do
       expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
@@ -50,7 +51,7 @@ RSpec.describe ExternalStatusChecks::DestroyService, feature_category: :groups_a
       end
 
       context 'when external status check destroy operation succeeds', :request_store do
-        it 'logs an audit event', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537938' do
+        it 'logs an audit event' do
           expect { execute }.to change { AuditEvent.count }.by(1)
           expect(AuditEvent.last.details).to include({
             target_type: 'MergeRequests::ExternalStatusCheck',
@@ -60,12 +61,20 @@ RSpec.describe ExternalStatusChecks::DestroyService, feature_category: :groups_a
       end
 
       context 'when external status check destroy operation fails' do
+        let_it_be_with_refind(:failing_external_status_check) do
+          create(:external_status_check, name: 'Failing Check', project: project)
+        end
+
+        subject(:execute_failing) do
+          described_class.new(container: project, current_user: current_user).execute(failing_external_status_check)
+        end
+
         before do
           allow(::MergeRequests::ExternalStatusCheck).to receive(:destroy).and_return(false)
         end
 
         it 'does not log any audit event' do
-          expect { execute }.not_to change { AuditEvent.count }
+          expect { execute_failing }.not_to change { AuditEvent.count }
         end
       end
     end
