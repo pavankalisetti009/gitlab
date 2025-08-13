@@ -27,7 +27,7 @@ module API
         end
 
         def sort_order
-          params[:sort]
+          params[:sort] || 'created_asc'
         end
 
         def pat_finder_params
@@ -87,7 +87,24 @@ module API
             detail 'This feature was introduced in GitLab 17.8.'
           end
           get do
-            if Feature.enabled?(:credentials_inventory_pat_finder, user_group || :instance)
+            if Feature.enabled?(:optimize_credentials_inventory, user_group || :instance)
+              tokens = PersonalAccessTokensFinder.new(
+                declared(
+                  params,
+                  include_missing: false).merge(
+                    {
+                      group: user_group,
+                      # See bug: https://gitlab.com/gitlab-org/gitlab/-/issues/560151
+                      # user_types should include :service_account too
+                      user_types: [:human],
+                      impersonation: false,
+                      sort: sort_order
+                    }
+                  )
+              ).execute.preload_users
+
+              present paginate(tokens), with: Entities::PersonalAccessToken
+            elsif Feature.enabled?(:credentials_inventory_pat_finder, user_group || :instance)
               tokens = ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(pat_finder_params)
                                                                                     .execute.preload_users
 
@@ -152,9 +169,17 @@ module API
           end
           # rubocop:disable CodeReuse/ActiveRecord -- Specific to this endpoint
           get do
-            tokens = PersonalAccessTokensFinder.new(rat_finder_params)
-                                               .execute
-                                               .includes(user: [:members, { user_detail: :bot_namespace }])
+            tokens =
+              if Feature.enabled?(:optimize_credentials_inventory, user_group || :instance)
+                PersonalAccessTokensFinder.new(
+                  declared(params, include_missing: false)
+                  .merge({ group: user_group, user_types: [:project_bot], impersonation: false, sort: sort_order })
+                ).execute.includes(user: [:members, { user_detail: :bot_namespace }])
+              else
+                PersonalAccessTokensFinder.new(rat_finder_params)
+                                          .execute
+                                          .includes(user: [:members, { user_detail: :bot_namespace }])
+              end
 
             present paginate(tokens), with: Entities::ResourceAccessToken
           end

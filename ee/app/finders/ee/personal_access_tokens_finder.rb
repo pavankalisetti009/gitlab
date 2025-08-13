@@ -7,12 +7,14 @@ module EE
     override :by_owner_type
     def by_owner_type(tokens)
       case params[:owner_type]
-      when 'human'
-        tokens.owner_is_human
       when 'service_account'
-        tokens.owner_is_service_account
+        if ::Feature.enabled?(:optimize_credentials_inventory, params[:group] || :instance)
+          tokens.for_user_types(:service_account)
+        else
+          tokens.owner_is_service_account
+        end
       else
-        tokens
+        super
       end
     end
   end

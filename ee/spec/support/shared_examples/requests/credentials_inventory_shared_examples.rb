@@ -3,7 +3,7 @@
 RSpec.shared_examples_for 'credentials inventory delete SSH key' do |group_credentials_inventory: false|
   include AdminModeHelper
 
-  let_it_be(:user) { group_credentials_inventory ? enterprise_users.last : create(:user, name: 'abc') }
+  let_it_be(:user) { group_credentials_inventory ? group_enterprise_users.last : create(:user, name: 'abc') }
   let_it_be(:ssh_key) { create(:personal_key, user: user) }
 
   let(:ssh_key_id) { ssh_key.id }

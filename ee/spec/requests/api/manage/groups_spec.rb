@@ -190,23 +190,41 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     end
   end
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- Need helpers for testing multiple scenarios
   describe 'GET /groups/:id/manage/personal_access_tokens' do
     let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens" }
 
-    let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
+    # Tokens that should be returned by the API endpoint
 
-    let_it_be(:active_token1) { create(:personal_access_token, user: user, scopes: [:api]) }
-    let_it_be(:active_token2) { create(:personal_access_token, user: user, scopes: [:api]) }
-    let_it_be(:expired_token1) { create(:personal_access_token, user: user, expires_at: 1.year.ago) }
-    let_it_be(:expired_token2) { create(:personal_access_token, user: user, expires_at: 1.year.ago) }
-    let_it_be(:revoked_token1) { create(:personal_access_token, user: user, revoked: true) }
-    let_it_be(:revoked_token2) { create(:personal_access_token, user: user, revoked: true) }
+    let_it_be(:enterprise_user1) { create(:enterprise_user, enterprise_group: group) }
+    let_it_be(:enterprise_user2) { create(:enterprise_user, enterprise_group: group) }
 
-    let_it_be(:created_2_days_ago_token) { create(:personal_access_token, user: user, created_at: 2.days.ago) }
-    let_it_be(:named_token) { create(:personal_access_token, user: user,  name: 'test_1') }
-    let_it_be(:last_used_2_days_ago_token) { create(:personal_access_token, user: user, last_used_at: 2.days.ago) }
+    let_it_be(:active_token1) { create(:personal_access_token, user: enterprise_user1, group: group, scopes: [:api]) }
+    let_it_be(:active_token2) { create(:personal_access_token, user: enterprise_user2, group: group, scopes: [:api]) }
+
+    let_it_be(:expired_token1) do
+      create(:personal_access_token, user: enterprise_user1, group: group, expires_at: 1.year.ago)
+    end
+
+    let_it_be(:expired_token2) do
+      create(:personal_access_token, user: enterprise_user2, group: group, expires_at: 1.year.ago)
+    end
+
+    let_it_be(:revoked_token1) { create(:personal_access_token, user: enterprise_user1, group: group, revoked: true) }
+    let_it_be(:revoked_token2) { create(:personal_access_token, user: enterprise_user2, group: group, revoked: true) }
+
+    let_it_be(:created_2_days_ago_token) do
+      create(:personal_access_token, user: enterprise_user1, group: group, created_at: 2.days.ago)
+    end
+
+    let_it_be(:named_token) { create(:personal_access_token, user: enterprise_user2, group: group, name: 'test_1') }
+
+    let_it_be(:last_used_2_days_ago_token) do
+      create(:personal_access_token, user: enterprise_user1, group: group, last_used_at: 2.days.ago)
+    end
+
     let_it_be(:last_used_2_months_ago_token) do
-      create(:personal_access_token, user: user, last_used_at: 2.months.ago)
+      create(:personal_access_token, user: enterprise_user2, group: group, last_used_at: 2.months.ago)
     end
 
     let_it_be(:created_at_asc) do
@@ -224,9 +242,40 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       ]
     end
 
-    let_it_be(:non_enterprise_user) { create(:user) }
-    # Token which should not be returned in any responses
-    let_it_be(:non_enterprise_token) { create(:personal_access_token, user: non_enterprise_user, scopes: [:api]) }
+    # Tokens that should not be returned by the API endpoint
+
+    let_it_be(:another_group) { create(:group) }
+
+    let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user, enterprise_group: another_group) }
+
+    let_it_be(:token_of_enterprise_user_of_another_group) do
+      create(
+        :personal_access_token,
+        user: enterprise_user_of_another_group,
+        group: another_group,
+        scopes: [:api]
+      )
+    end
+
+    let_it_be(:token_that_belongs_to_another_group) do
+      create(:personal_access_token, group: another_group, scopes: [:api])
+    end
+
+    let_it_be(:token_that_does_not_belong_to_any_group) do
+      create(:personal_access_token, scopes: [:api])
+    end
+
+    let_it_be(:resource_access_token_that_does_not_belong_to_any_group) do
+      create(:resource_access_token, scopes: [:api])
+    end
+
+    let_it_be(:resource_access_token_that_belongs_to_another_group) do
+      create(:resource_access_token, resource: another_group, group: another_group, scopes: [:api])
+    end
+
+    let_it_be(:resource_access_token_that_belong_to_the_group) do
+      create(:resource_access_token, resource: group, group: group, scopes: [:api])
+    end
 
     it_behaves_like 'feature is not available to non saas versions', "get_request"
 
@@ -234,8 +283,6 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       it_behaves_like 'an access token GET API with access token params'
 
       it_behaves_like 'a manage groups GET endpoint'
-
-      it_behaves_like 'a /manage/PAT GET endpoint using the credentials inventory PAT finder'
 
       it 'returns 404 for non-existing group' do
         get(api(
@@ -245,8 +292,30 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
+
+      context 'when optimize_credentials_inventory FF is disabled' do
+        before do
+          stub_feature_flags(optimize_credentials_inventory: false)
+        end
+
+        it_behaves_like 'a /manage/PAT GET endpoint using the credentials inventory PAT finder'
+
+        it_behaves_like 'an access token GET API with access token params'
+
+        it_behaves_like 'a manage groups GET endpoint'
+
+        it 'returns 404 for non-existing group' do
+          get(api(
+            "/groups/#{non_existing_record_id}/manage/personal_access_tokens",
+            personal_access_token: personal_access_token
+          ))
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
     end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 
   describe 'DELETE /groups/:id/manage/personal_access_tokens/:id' do
     let_it_be(:enterprise_user) { create(:enterprise_user, enterprise_group: group) }
@@ -712,23 +781,43 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
   describe 'GET /groups/:id/manage/resource_access_tokens' do
     let_it_be(:path) { "/groups/#{group.id}/manage/resource_access_tokens" }
 
-    let_it_be(:group_bot) { create(:user, :project_bot, bot_namespace: group, developer_of: group) }
+    # Tokens that should be returned by the API endpoint
+
     let_it_be(:project) { create(:project, namespace: group) }
-    let_it_be(:project_bot) do
-      create(:user, :project_bot, bot_namespace: project.project_namespace, developer_of: project)
+
+    let_it_be(:active_token1) { create(:resource_access_token, resource: project, group: group) }
+    let_it_be(:active_token2) { create(:resource_access_token, resource: group, group: group) }
+
+    let_it_be(:expired_token1) do
+      create(:resource_access_token, resource: group, group: group, expires_at: 1.year.ago)
     end
 
-    let_it_be(:active_token1) { create(:personal_access_token, user: project_bot) }
-    let_it_be(:active_token2) { create(:personal_access_token, user: group_bot) }
-    let_it_be(:expired_token1) { create(:personal_access_token, user: group_bot, expires_at: 1.year.ago) }
-    let_it_be(:expired_token2) { create(:personal_access_token, user: group_bot, expires_at: 1.year.ago) }
-    let_it_be(:revoked_token1) { create(:personal_access_token, user: group_bot, revoked: true) }
-    let_it_be(:revoked_token2) { create(:personal_access_token, user: group_bot, revoked: true) }
-    let_it_be(:created_2_days_ago_token) { create(:personal_access_token, user: project_bot, created_at: 2.days.ago) }
-    let_it_be(:named_token) { create(:personal_access_token, user: group_bot, name: "Test token") }
-    let_it_be(:last_used_2_days_ago_token) { create(:personal_access_token, user: group_bot, last_used_at: 2.days.ago) }
+    let_it_be(:expired_token2) do
+      create(:resource_access_token, resource: group, group: group, expires_at: 1.year.ago)
+    end
+
+    let_it_be(:revoked_token1) do
+      create(:resource_access_token, resource: group, group: group, revoked: true)
+    end
+
+    let_it_be(:revoked_token2) do
+      create(:resource_access_token, resource: group, group: group, revoked: true)
+    end
+
+    let_it_be(:created_2_days_ago_token) do
+      create(:resource_access_token, resource: project, group: group, created_at: 2.days.ago)
+    end
+
+    let_it_be(:named_token) do
+      create(:resource_access_token, resource: group, group: group, name: "Test token")
+    end
+
+    let_it_be(:last_used_2_days_ago_token) do
+      create(:resource_access_token, resource: group, group: group, last_used_at: 2.days.ago)
+    end
+
     let_it_be(:last_used_2_months_ago_token) do
-      create(:personal_access_token, user: group_bot, last_used_at: 2.months.ago)
+      create(:resource_access_token, resource: group, group: group, last_used_at: 2.months.ago)
     end
 
     let_it_be(:created_at_asc) do
@@ -746,12 +835,25 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       ]
     end
 
-    let_it_be(:other_group_bot) { create(:user, :project_bot, bot_namespace: create(:group)) }
+    # Tokens that should not be returned by the API endpoint
 
-    # Tokens which should not be returned in any responses
-    let_it_be(:excluded_token1) { create(:personal_access_token, user: current_user) }
-    let_it_be(:excluded_token2) { create(:personal_access_token, user: create(:user, :service_account)) }
-    let_it_be(:excluded_token3) { create(:personal_access_token, user: other_group_bot) }
+    let_it_be(:another_group) { create(:group) }
+
+    let_it_be(:resource_access_token_that_belongs_to_another_group) do
+      create(:resource_access_token, resource: another_group, group: another_group, scopes: [:api])
+    end
+
+    let_it_be(:resource_access_token_that_does_not_belong_to_any_group) do
+      create(:resource_access_token, scopes: [:api])
+    end
+
+    let_it_be(:personal_access_token_that_belong_to_the_group) do
+      create(:personal_access_token, group: group, scopes: [:api])
+    end
+
+    let_it_be(:personal_access_token_that_belong_to_another_group) do
+      create(:personal_access_token, group: another_group, scopes: [:api])
+    end
 
     it_behaves_like 'feature is not available to non saas versions', "get_request"
 
@@ -805,6 +907,69 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         expect do
           get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
         end.not_to exceed_all_query_limit(control)
+      end
+
+      context 'when optimize_credentials_inventory FF is disabled' do
+        before do
+          stub_feature_flags(optimize_credentials_inventory: false)
+        end
+
+        it_behaves_like 'an access token GET API with access token params'
+        it_behaves_like 'a manage groups GET endpoint'
+
+        it 'returns 404 for non-existing group' do
+          get(api(
+            "/groups/#{non_existing_record_id}/manage/resource_access_tokens",
+            personal_access_token: personal_access_token
+          ), headers: dpop_headers_for(current_user))
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+
+        it 'returns the expected response for group tokens' do
+          get api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_desc' },
+            headers: dpop_headers_for(current_user)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
+          expect(json_response[0]['id']).to eq(last_used_2_months_ago_token.id)
+          expect(json_response[0]['resource_type']).to eq('group')
+          expect(json_response[0]['resource_id']).to eq(group.id)
+        end
+
+        it 'returns the expected response for project tokens' do
+          get(
+            api(
+              path,
+              personal_access_token: personal_access_token
+            ),
+            params: { sort: 'created_at_asc' },
+            headers: dpop_headers_for(current_user)
+          )
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
+          expect(json_response[0]['id']).to eq(created_2_days_ago_token.id)
+          expect(json_response[0]['resource_type']).to eq('project')
+          expect(json_response[0]['resource_id']).to eq(project.id)
+        end
+
+        it 'avoids N+1 queries' do
+          dpop_header_val = dpop_headers_for(current_user)
+
+          get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
+
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
+          end
+
+          other_bot = create(:user, :project_bot, bot_namespace: group, developer_of: group)
+          create(:personal_access_token, user: other_bot)
+
+          expect do
+            get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
+          end.not_to exceed_all_query_limit(control)
+        end
       end
     end
   end

@@ -78,4 +78,8 @@ class Admin::CredentialsController < Admin::ApplicationController
   def revocable
     nil
   end
+
+  def group
+    nil
+  end
 end
