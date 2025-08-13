@@ -23,6 +23,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to delegate_method(:security_policy_management_project).to(:security_orchestration_policy_configuration) }
     it { is_expected.to delegate_method(:auto_duo_code_review_enabled).to(:project_setting) }
     it { is_expected.to delegate_method(:auto_duo_code_review_enabled=).to(:project_setting).with_arguments(true) }
+    it { is_expected.to delegate_method(:duo_remote_flows_enabled).to(:project_setting) }
+    it { is_expected.to delegate_method(:duo_remote_flows_enabled=).to(:project_setting).with_arguments(true) }
 
     it { is_expected.to have_one(:import_state).class_name('ProjectImportState') }
     it { is_expected.to have_one(:wiki_repository).class_name('Projects::WikiRepository').inverse_of(:project) }

@@ -164,4 +164,15 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
     it_behaves_like 'a cascading project setting boolean attribute',
       settings_attribute_name: :auto_duo_code_review_enabled
   end
+
+  describe '#duo_remote_flows_enabled' do
+    let(:project_setting) { create(:project_setting) }
+
+    it 'can be updated' do
+      expect(project_setting.duo_remote_flows_enabled).to be_falsey
+
+      project_setting.update!(duo_remote_flows_enabled: true)
+      expect(project_setting.reload.duo_remote_flows_enabled).to be_truthy
+    end
+  end
 end

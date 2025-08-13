@@ -2012,6 +2012,32 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    context 'when setting duo_remote_flows_enabled' do
+      let(:project_params) { { duo_remote_flows_enabled: true } }
+
+      context 'when licence is available' do
+        before do
+          stub_licensed_features(ai_workflows: true)
+        end
+
+        it 'updates the value' do
+          expect { subject }.to change { project.reload.duo_remote_flows_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_remote_flows_enabled']).to eq true
+        end
+      end
+
+      context 'when licence is not available' do
+        it 'does not update the value' do
+          expect { subject }.not_to change { project.reload.duo_remote_flows_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['duo_remote_flows_enabled']).to be_nil
+        end
+      end
+    end
+
     context 'updating web_based_commit_signing_enabled' do
       using RSpec::Parameterized::TableSyntax
 
