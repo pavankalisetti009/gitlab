@@ -1,13 +1,18 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import VueApollo from 'vue-apollo';
 import { GlButton } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
+import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import { mockCreateFlowResponse } from '../mocks';
 
 jest.mock('~/alert');
+
+Vue.use(VueApollo);
 
 describe('DuoWorkflowAction component', () => {
   let wrapper;
@@ -27,8 +32,35 @@ describe('DuoWorkflowAction component', () => {
     duoWorkflowInvokePath,
   };
 
+  let mockGetHealthCheckHandler;
+
+  const mockDuoWorkflowStatusCheckEnabled = {
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        duoWorkflowStatusCheck: {
+          enabled: true,
+        },
+      },
+    },
+  };
+
+  const mockDuoWorkflowStatusCheckDisabled = {
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        duoWorkflowStatusCheck: {
+          enabled: false,
+        },
+      },
+    },
+  };
+
   const createComponent = (props = {}, provide = {}) => {
+    const handlers = [[getDuoWorkflowStatusCheck, mockGetHealthCheckHandler]];
+
     wrapper = shallowMount(DuoWorkflowAction, {
+      apolloProvider: createMockApollo(handlers),
       propsData: {
         ...defaultProps,
         ...props,
@@ -37,6 +69,8 @@ describe('DuoWorkflowAction component', () => {
         ...provide,
       },
     });
+
+    return waitForPromises();
   };
 
   const findButton = () => wrapper.findComponent(GlButton);
@@ -44,26 +78,58 @@ describe('DuoWorkflowAction component', () => {
   beforeEach(() => {
     jest.spyOn(axios, 'post');
     axios.post.mockResolvedValue({ data: mockCreateFlowResponse });
+    mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckEnabled);
   });
 
   describe('rendering', () => {
-    beforeEach(() => {
-      createComponent();
+    describe('when duoWorkflowStatusCheck is not enabled', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckDisabled);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+
+      it('calls health checks query', () => {
+        expect(mockGetHealthCheckHandler).toHaveBeenCalled();
+      });
     });
 
-    it('renders button with correct props', () => {
-      expect(findButton().props('category')).toBe('primary');
-      expect(findButton().props('icon')).toBe('tanuki-ai');
-      expect(findButton().props('size')).toBe('small');
-      expect(findButton().props('loading')).toBe(false);
-      expect(findButton().attributes('title')).toBe(defaultProps.hoverMessage);
-      expect(findButton().text()).toBe(defaultProps.title);
+    describe('when duoWorkflowStatusCheck is enabled', () => {
+      beforeEach(async () => {
+        await createComponent();
+      });
+
+      it('renders button with correct props', () => {
+        expect(findButton().props('category')).toBe('primary');
+        expect(findButton().props('icon')).toBe('tanuki-ai');
+        expect(findButton().props('size')).toBe('small');
+        expect(findButton().props('loading')).toBe(false);
+        expect(findButton().attributes('title')).toBe(defaultProps.hoverMessage);
+        expect(findButton().text()).toBe(defaultProps.title);
+      });
+    });
+
+    describe('when there is no projectPath prop', () => {
+      beforeEach(async () => {
+        await createComponent({ projectPath: null });
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+
+      it('does not call health checks query', () => {
+        expect(mockGetHealthCheckHandler).not.toHaveBeenCalled();
+      });
     });
   });
 
   describe('loading state', () => {
-    beforeEach(() => {
-      createComponent();
+    beforeEach(async () => {
+      await createComponent();
     });
 
     describe('when button is clicked', () => {
@@ -115,11 +181,15 @@ describe('DuoWorkflowAction component', () => {
       agent_privileges: defaultProps.agentPrivileges,
     };
 
+    beforeEach(async () => {
+      await createComponent();
+    });
+
     describe('when the goal fails to match the promptValidatorRegex', () => {
       const invalidGoal = 'InvalidPath';
 
-      beforeEach(() => {
-        createComponent({ goal: invalidGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
+      beforeEach(async () => {
+        await createComponent({ goal: invalidGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
         findButton().vm.$emit('click');
       });
 
@@ -136,8 +206,8 @@ describe('DuoWorkflowAction component', () => {
     describe('when the goal matches the promptVaidatorRegex', () => {
       const validGoal = 'Jenkinsfile';
 
-      beforeEach(() => {
-        createComponent({ goal: validGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
+      beforeEach(async () => {
+        await createComponent({ goal: validGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
         findButton().vm.$emit('click');
       });
 
@@ -149,7 +219,6 @@ describe('DuoWorkflowAction component', () => {
 
     describe('when button is clicked', () => {
       beforeEach(async () => {
-        createComponent();
         findButton().vm.$emit('click');
         await waitForPromises();
       });
@@ -161,7 +230,7 @@ describe('DuoWorkflowAction component', () => {
 
     describe('when currentRef is provided', () => {
       beforeEach(async () => {
-        createComponent({}, { currentRef });
+        await createComponent({}, { currentRef });
 
         findButton().vm.$emit('click');
         await waitForPromises();
@@ -178,7 +247,6 @@ describe('DuoWorkflowAction component', () => {
     describe('when request succeeds', () => {
       describe('side effects', () => {
         beforeEach(async () => {
-          createComponent();
           findButton().vm.$emit('click');
           await waitForPromises();
         });
@@ -192,23 +260,8 @@ describe('DuoWorkflowAction component', () => {
         });
       });
 
-      describe('when there are no projectPath prop', () => {
-        beforeEach(async () => {
-          createComponent({ projectPath: null });
-          findButton().vm.$emit('click');
-          await waitForPromises();
-        });
-
-        it('calls createAlert without messageLinks', () => {
-          expect(createAlert).toHaveBeenCalledWith(
-            expect.objectContaining({ message: 'Flow started successfully.', messageLinks: {} }),
-          );
-        });
-      });
-
       describe('when there is a projectPath prop', () => {
         beforeEach(async () => {
-          createComponent();
           findButton().vm.$emit('click');
           await waitForPromises();
         });
@@ -233,7 +286,6 @@ describe('DuoWorkflowAction component', () => {
 
       beforeEach(async () => {
         axios.post.mockRejectedValue(error);
-        createComponent();
         findButton().vm.$emit('click');
         await waitForPromises();
       });

@@ -1,0 +1,8 @@
+query getDuoWorkflowStatusCheck($projectPath: ID!) {
+  project(fullPath: $projectPath) {
+    id
+    duoWorkflowStatusCheck {
+      enabled
+    }
+  }
+}
