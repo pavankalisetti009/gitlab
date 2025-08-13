@@ -3,21 +3,25 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SuperTopbar from '~/super_sidebar/components/super_topbar.vue';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
 import CreateMenu from '~/super_sidebar/components/create_menu.vue';
+import OrganizationSwitcher from '~/super_sidebar/components/organization_switcher.vue';
 import SearchModal from '~/super_sidebar/components/global_search/components/global_search.vue';
 import UserCounts from '~/super_sidebar/components/user_counts.vue';
 import UserMenu from '~/super_sidebar/components/user_menu.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
+import { defaultOrganization as currentOrganization } from 'jest/organizations/mock_data';
 import { sidebarData as mockSidebarData } from '../mock_data';
 
 describe('SuperTopbar', () => {
   let wrapper;
 
+  const OrganizationSwitcherStub = stubComponent(OrganizationSwitcher);
   const SearchModalStub = stubComponent(SearchModal);
 
   const findBrandLogo = () => wrapper.findComponent(BrandLogo);
   const findCreateMenu = () => wrapper.findComponent(CreateMenu);
   const findNextBadge = () => wrapper.findComponent(GlBadge);
+  const findOrganizationSwitcher = () => wrapper.findComponent(OrganizationSwitcherStub);
   const findSearchButton = () => wrapper.findByTestId('super-topbar-search-button');
   const findSearchModal = () => wrapper.findComponent(SearchModal);
   const findStopImpersonationButton = () => wrapper.findByTestId('stop-impersonation-btn');
@@ -35,6 +39,7 @@ describe('SuperTopbar', () => {
         ...provideOverrides,
       },
       stubs: {
+        OrganizationSwitcher: OrganizationSwitcherStub,
         SearchModal: SearchModalStub,
       },
     });
@@ -47,6 +52,24 @@ describe('SuperTopbar', () => {
 
     it('renders the header element with correct `super-topbar` class', () => {
       expect(wrapper.find('header').classes()).toContain('super-topbar');
+    });
+
+    describe('Organization switcher', () => {
+      it('does not render the organization switcher', () => {
+        expect(findOrganizationSwitcher().exists()).toBe(false);
+      });
+
+      describe('when `ui_for_organizations` feature flag is enabled, user is logged in and current organization is set', () => {
+        beforeEach(async () => {
+          window.gon.current_organization = currentOrganization;
+          createComponent({ is_logged_in: true }, { glFeatures: { uiForOrganizations: true } });
+          await waitForPromises();
+        });
+
+        it('renders the organization switcher', () => {
+          expect(findOrganizationSwitcher().exists()).toBe(true);
+        });
+      });
     });
 
     describe('Search', () => {

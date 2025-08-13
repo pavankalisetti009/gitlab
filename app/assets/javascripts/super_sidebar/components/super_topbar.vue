@@ -1,6 +1,7 @@
 <script>
 import { GlBadge, GlButton, GlIcon, GlModalDirective, GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BrandLogo from 'jh_else_ce/super_sidebar/components/brand_logo.vue';
 import CreateMenu from './create_menu.vue';
 import UserMenu from './user_menu.vue';
@@ -20,24 +21,37 @@ export default {
     CreateMenu,
     UserCounts,
     UserMenu,
+    OrganizationSwitcher: () =>
+      import(/* webpackChunkName: 'organization_switcher' */ './organization_switcher.vue'),
     SearchModal: () =>
       import(
         /* webpackChunkName: 'global_search_modal' */ './global_search/components/global_search.vue'
       ),
   },
-  i18n: {
-    searchBtnText: __('Search or go to…'),
-    stopImpersonating: __('Stop impersonating'),
-  },
   directives: {
     GlModal: GlModalDirective,
     GlTooltip: GlTooltipDirective,
+  },
+  mixins: [glFeatureFlagsMixin()],
+  i18n: {
+    searchBtnText: __('Search or go to…'),
+    stopImpersonating: __('Stop impersonating'),
   },
   inject: ['isImpersonating'],
   props: {
     sidebarData: {
       type: Object,
       required: true,
+    },
+  },
+  computed: {
+    isLoggedIn() {
+      return this.sidebarData.is_logged_in;
+    },
+    shouldShowOrganizationSwitcher() {
+      return (
+        this.glFeatures.uiForOrganizations && this.isLoggedIn && window.gon.current_organization
+      );
     },
   },
 };
@@ -58,6 +72,8 @@ export default {
       >
         {{ $options.NEXT_LABEL }}
       </gl-badge>
+
+      <organization-switcher v-if="shouldShowOrganizationSwitcher" />
     </div>
 
     <gl-button
@@ -72,12 +88,12 @@ export default {
 
     <div class="gl-flex gl-justify-end gl-gap-2">
       <create-menu
-        v-if="sidebarData.is_logged_in && sidebarData.create_new_menu_groups.length > 0"
+        v-if="isLoggedIn && sidebarData.create_new_menu_groups.length > 0"
         :groups="sidebarData.create_new_menu_groups"
       />
 
       <user-counts
-        v-if="sidebarData.is_logged_in"
+        v-if="isLoggedIn"
         :sidebar-data="sidebarData"
         counter-class="gl-button btn btn-default btn-default-tertiary"
       />
@@ -93,7 +109,7 @@ export default {
         data-method="delete"
         data-testid="stop-impersonation-btn"
       />
-      <user-menu v-if="sidebarData.is_logged_in" :data="sidebarData" />
+      <user-menu v-if="isLoggedIn" :data="sidebarData" />
     </div>
 
     <search-modal />
