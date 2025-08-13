@@ -10,7 +10,7 @@ import { visitUrl } from '~/lib/utils/url_utility';
 import Api from 'ee/api';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import CentralizedSecurityPolicyManagement from 'ee/admin/application_settings/security_and_compliance/components/centralized_security_policy_management.vue';
-import UnassignGroupModal from 'ee/admin/application_settings/security_and_compliance/components/unassign_modal.vue';
+import ConfirmationModal from 'ee/admin/application_settings/security_and_compliance/components/confirmation_modal.vue';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -53,6 +53,7 @@ const newGroupPath = 'path/to/groups/new';
 describe('CentralizedSecurityPolicyManagement', () => {
   let wrapper;
   let requestHandler;
+  let showModalWindowSpy;
 
   const createMockApolloProvider = (handler) => {
     Vue.use(VueApollo);
@@ -63,8 +64,8 @@ describe('CentralizedSecurityPolicyManagement', () => {
   const createComponent = ({
     props = {},
     handler = jest.fn().mockResolvedValue(mockGroupsResponse),
-    stubs = {},
   } = {}) => {
+    showModalWindowSpy = jest.fn();
     wrapper = shallowMountExtended(CentralizedSecurityPolicyManagement, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
@@ -72,12 +73,18 @@ describe('CentralizedSecurityPolicyManagement', () => {
         newGroupPath,
         ...props,
       },
-      stubs,
+      stubs: {
+        ConfirmationModal: stubComponent(ConfirmationModal, {
+          methods: {
+            showModalWindow: showModalWindowSpy,
+          },
+        }),
+      },
     });
   };
 
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findModal = () => wrapper.findComponent('unassign-group-modal-stub');
+  const findModal = () => wrapper.findComponent(ConfirmationModal);
   const findSaveButton = () => wrapper.findByTestId('save-button');
   const findCreateGroupButton = () => wrapper.findByTestId('create-group-button');
 
@@ -226,7 +233,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
       Api.updateCompliancePolicySettings.mockResolvedValue({});
     });
 
-    it('calls API and submits form when save button is clicked with selected group', async () => {
+    it('shows confirmation modal on save', async () => {
       createComponent();
       await waitForPromises();
 
@@ -235,10 +242,37 @@ describe('CentralizedSecurityPolicyManagement', () => {
       await nextTick();
 
       findSaveButton().vm.$emit('click');
+      expect(showModalWindowSpy).toHaveBeenCalled();
+      expect(Api.updateCompliancePolicySettings).not.toHaveBeenCalled();
+    });
+
+    it('calls API and submits form when save button is clicked with selected group', async () => {
+      createComponent();
+      await waitForPromises();
+
+      // Select a group first
+      findListbox().vm.$emit('select', 1);
       await nextTick();
+
+      findModal().vm.$emit('change');
 
       expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
         csp_namespace_id: 1,
+      });
+    });
+
+    it('calls API and submits form when save button is clicked with no group selected', async () => {
+      createComponent();
+      await waitForPromises();
+
+      // Select a group first
+      findListbox().vm.$emit('reset');
+      await nextTick();
+
+      findModal().vm.$emit('change');
+
+      expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
+        csp_namespace_id: null,
       });
     });
 
@@ -251,10 +285,9 @@ describe('CentralizedSecurityPolicyManagement', () => {
       await nextTick();
 
       // Mock a pending API call
-      Api.updateCompliancePolicySettings.mockImplementation(() => new Promise(() => {}));
+      // Api.updateCompliancePolicySettings.mockImplementation(() => new Promise(() => {}));
 
-      findSaveButton().vm.$emit('click');
-      await nextTick();
+      await findModal().vm.$emit('change');
 
       expect(findListbox().props('loading')).toBe(true);
       expect(findSaveButton().props('disabled')).toBe(true);
@@ -282,48 +315,6 @@ describe('CentralizedSecurityPolicyManagement', () => {
       wrapper.destroy();
 
       expect(cancelSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('modal', () => {
-    it('renders the modal component', async () => {
-      createComponent({ props: { initialSelectedGroupId: 1 } });
-      await waitForPromises();
-      expect(findModal().props('groupName')).toBe('Group 1');
-    });
-
-    it('shows the modal when clear button is clicked', async () => {
-      const showModalWindowSpy = jest.fn();
-      createComponent({
-        props: { initialSelectedGroupId: 1 },
-        stubs: {
-          UnassignGroupModal: stubComponent(UnassignGroupModal, {
-            methods: {
-              showModalWindow: showModalWindowSpy,
-            },
-          }),
-        },
-      });
-      await waitForPromises();
-      await findListbox().vm.$emit('reset');
-      expect(showModalWindowSpy).toHaveBeenCalled();
-    });
-
-    describe('unassign functionality', () => {
-      beforeEach(() => {
-        Api.updateCompliancePolicySettings.mockResolvedValue({});
-      });
-
-      it('calls API with null when unassign button is clicked', async () => {
-        createComponent({ props: { initialSelectedGroupId: 1 } });
-        await waitForPromises();
-        findModal().vm.$emit('unassign');
-        await nextTick();
-
-        expect(Api.updateCompliancePolicySettings).toHaveBeenCalledWith({
-          csp_namespace_id: null,
-        });
-      });
     });
   });
 });
