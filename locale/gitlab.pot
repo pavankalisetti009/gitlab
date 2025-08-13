@@ -7658,9 +7658,6 @@ msgstr ""
 msgid "An error occurred while searching for labels, please try again."
 msgstr ""
 
-msgid "An error occurred while starting diagnostics"
-msgstr ""
-
 msgid "An error occurred while subscribing to this page. Please try again later."
 msgstr ""
 
@@ -21390,6 +21387,9 @@ msgstr ""
 msgid "Database update failed"
 msgstr ""
 
+msgid "DatabaseDiagnostics|An error occurred while starting diagnostics"
+msgstr ""
+
 msgid "DatabaseDiagnostics|Collation health check"
 msgstr ""
 
@@ -21402,7 +21402,19 @@ msgstr ""
 msgid "DatabaseDiagnostics|Database: %{name}"
 msgstr ""
 
+msgid "DatabaseDiagnostics|Details"
+msgstr ""
+
 msgid "DatabaseDiagnostics|Detect collation-related index corruption issues that might occur after OS upgrade"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Detect database schema inconsistencies and structural issues"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Foreign keys"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Indexes"
 msgstr ""
 
 msgid "DatabaseDiagnostics|Issues detected"
@@ -21414,10 +21426,31 @@ msgstr ""
 msgid "DatabaseDiagnostics|Learn more"
 msgstr ""
 
+msgid "DatabaseDiagnostics|Missing items"
+msgstr ""
+
 msgid "DatabaseDiagnostics|No diagnostics have been run yet. Click \"Run Collation Check\" to analyze your database for potential collation issues."
 msgstr ""
 
+msgid "DatabaseDiagnostics|No schema issues detected."
+msgstr ""
+
 msgid "DatabaseDiagnostics|Run collation check"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Run schema check"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Schema health check"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Select \"Run Schema Check\" to analyze your database schema for potential issues."
+msgstr ""
+
+msgid "DatabaseDiagnostics|Sequences"
+msgstr ""
+
+msgid "DatabaseDiagnostics|Tables"
 msgstr ""
 
 msgid "DatabaseDiagnostics|The database diagnostic job is taking longer than expected. You can check back later or try running it again."
