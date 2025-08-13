@@ -41,7 +41,6 @@ module ComplianceManagement
         .includes(:user)
         .left_outer_joins(user: :ghost_user_migration)
         .where(ghost_user_migrations: { id: nil })
-        .where.not(state: "deletion_needs_to_be_reviewed")
         .pipl_email_sent_on_or_before(DELETION_PERIOD.ago.end_of_day)
         .merge(User.blocked)
     end
@@ -49,8 +48,7 @@ module ComplianceManagement
     validates :last_access_from_pipl_country_at, presence: true
 
     enum :state, {
-      default: 0,
-      deletion_needs_to_be_reviewed: 1
+      default: 0
     }
 
     def self.for_user(user)
