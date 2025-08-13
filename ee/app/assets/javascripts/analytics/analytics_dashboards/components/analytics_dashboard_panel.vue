@@ -108,6 +108,11 @@ export default {
       required: false,
       default: () => ({}),
     },
+    tooltip: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   data() {
     const validationErrors = this.visualization?.errors;
@@ -193,8 +198,12 @@ export default {
     bodyContentClasses() {
       return this.showLicenseRequiredState ? 'gl-content-center' : '';
     },
-    tooltip() {
-      return this.visualizationOptions?.tooltip;
+    panelTooltip() {
+      if (this.tooltip?.description) return this.tooltip;
+
+      if (this.visualizationOptions?.tooltip?.description) return this.visualizationOptions.tooltip;
+
+      return undefined;
     },
   },
   watch: {
@@ -329,7 +338,7 @@ export default {
 <template>
   <extended-dashboard-panel
     :title="panelTitle"
-    :tooltip="tooltip"
+    :tooltip="panelTooltip"
     :loading="loading"
     :loading-delayed="loadingDelayed"
     :show-alert-state="showAlertState"

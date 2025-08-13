@@ -89,6 +89,7 @@ describe('AnalyticsDashboardPanel', () => {
         loading: true,
         showAlertState: false,
         alertPopoverTitle: '',
+        tooltip: {},
       });
     });
 
@@ -113,6 +114,7 @@ describe('AnalyticsDashboardPanel', () => {
       );
     });
   });
+
   describe('when the visualization is licensed invalid', () => {
     describe('with the correct license', () => {
       it('renders the visualization', () => {
@@ -634,17 +636,81 @@ describe('AnalyticsDashboardPanel', () => {
     );
   });
 
-  describe('when options includes a tooltip', () => {
-    const tooltip = { description: 'This is a tooltip' };
+  describe('tooltip', () => {
+    it('sets the tooltip on the panels base component', () => {
+      createWrapper({ props: { tooltip: mockPanel.tooltip } });
 
-    beforeEach(() => {
-      createWrapper({
-        props: { visualization: { ...mockPanel.visualization, options: { tooltip } } },
-      });
+      expect(findExtendedDashboardPanel().props('tooltip')).toEqual(mockPanel.tooltip);
     });
 
-    it('sets the tooltip on the panels base component', () => {
-      expect(findExtendedDashboardPanel().props('tooltip')).toEqual(tooltip);
+    it('ignores tooltip without `description` property', () => {
+      createWrapper({ props: { tooltip: { descriptionLink: 'https://gitlab.com' } } });
+
+      expect(findExtendedDashboardPanel().props('tooltip')).toEqual({});
+    });
+
+    it('ignores empty tooltip object', () => {
+      createWrapper({ props: { tooltip: {} } });
+
+      expect(findExtendedDashboardPanel().props('tooltip')).toEqual({});
+    });
+
+    describe('visualization options includes a tooltip', () => {
+      const vizOptionsTooltip = { description: 'This is a tooltip' };
+
+      it('sets the visualization tooltip on the panels base component', () => {
+        createWrapper({
+          props: {
+            visualization: { ...mockPanel.visualization, options: { tooltip: vizOptionsTooltip } },
+          },
+        });
+
+        expect(findExtendedDashboardPanel().props('tooltip')).toEqual(vizOptionsTooltip);
+      });
+
+      it('ignores visualization tooltip without `description` property', () => {
+        createWrapper({
+          props: {
+            visualization: {
+              ...mockPanel.visualization,
+              options: { tooltip: { descriptionLink: 'https://gitlab.com' } },
+            },
+          },
+        });
+
+        expect(findExtendedDashboardPanel().props('tooltip')).toEqual({});
+      });
+
+      it('ignores empty visualization tooltip object', () => {
+        createWrapper({
+          props: {
+            visualization: {
+              ...mockPanel.visualization,
+              options: { tooltip: {} },
+            },
+          },
+        });
+
+        expect(findExtendedDashboardPanel().props('tooltip')).toEqual({});
+      });
+
+      describe('tooltip already defined at the panel level', () => {
+        beforeEach(() => {
+          createWrapper({
+            props: {
+              tooltip: mockPanel.tooltip,
+              visualization: {
+                ...mockPanel.visualization,
+                options: { tooltip: vizOptionsTooltip },
+              },
+            },
+          });
+        });
+
+        it('takes precedence over visualization tooltip', () => {
+          expect(findExtendedDashboardPanel().props('tooltip')).toEqual(mockPanel.tooltip);
+        });
+      });
     });
   });
 });

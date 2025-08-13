@@ -454,6 +454,7 @@ export default {
         <template #panel="{ panel }">
           <analytics-dashboard-panel
             :title="panel.title"
+            :tooltip="panel.tooltip"
             :visualization="panel.visualization"
             :query-overrides="panel.queryOverrides || undefined"
             :filters="filters"

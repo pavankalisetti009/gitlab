@@ -323,6 +323,7 @@ describe('AnalyticsDashboard', () => {
           visualization: panel.visualization,
           queryOverrides: panel.queryOverrides || undefined,
           filters: buildDefaultDashboardFilters(''),
+          tooltip: panel.tooltip || undefined,
         });
       });
     });
