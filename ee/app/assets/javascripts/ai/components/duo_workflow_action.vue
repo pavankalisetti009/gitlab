@@ -1,6 +1,7 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { sprintf, s__ } from '~/locale';
+import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
+import { sprintf, s__, __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 
@@ -71,7 +72,31 @@ export default {
   data() {
     return {
       isStartingFlow: false,
+      isDuoActionEnabled: false,
     };
+  },
+  apollo: {
+    isDuoActionEnabled: {
+      query: getDuoWorkflowStatusCheck,
+      variables() {
+        return {
+          projectPath: this.projectPath,
+        };
+      },
+      skip() {
+        return !this.projectPath;
+      },
+      update(data) {
+        return Boolean(data.project?.duoWorkflowStatusCheck?.enabled);
+      },
+      error(error) {
+        createAlert({
+          message: error?.message || __('Something went wrong'),
+          captureError: true,
+          error,
+        });
+      },
+    },
   },
   methods: {
     successAlert(id) {
@@ -143,6 +168,7 @@ export default {
 </script>
 <template>
   <gl-button
+    v-if="isDuoActionEnabled"
     v-gl-tooltip.hover.focus.viewport="{ placement: 'top' }"
     category="primary"
     icon="tanuki-ai"
