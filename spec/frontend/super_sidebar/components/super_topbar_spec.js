@@ -177,7 +177,7 @@ describe('SuperTopbar', () => {
       });
 
       describe('when user is not admin', () => {
-        it('renders', () => {
+        it('does not render', () => {
           createComponent();
           expect(findAdminLink().exists()).toBe(false);
         });
