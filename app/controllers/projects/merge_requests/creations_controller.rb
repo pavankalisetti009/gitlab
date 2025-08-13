@@ -11,6 +11,7 @@ class Projects::MergeRequests::CreationsController < Projects::MergeRequests::Ap
   before_action :authorize_create_merge_request_from!
   before_action :apply_diff_view_cookie!, only: [:diffs, :diff_for_path]
   before_action :build_merge_request, except: [:create]
+  before_action :start_covered_experience_create_mr, only: [:create]
 
   feature_category :continuous_integration, [:pipelines]
 
@@ -193,6 +194,10 @@ class Projects::MergeRequests::CreationsController < Projects::MergeRequests::Ap
 
   def tracking_namespace_source
     @project.namespace
+  end
+
+  def start_covered_experience_create_mr
+    Labkit::CoveredExperience.start(:create_merge_request, user_id: current_user.id, project_id: project.id)
   end
 end
 

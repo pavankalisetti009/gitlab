@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'labkit/rspec/matchers'
 
 RSpec.describe Projects::MergeRequests::CreationsController, feature_category: :code_review_workflow do
   let(:project) { create(:project, :repository) }
@@ -291,6 +292,7 @@ RSpec.describe Projects::MergeRequests::CreationsController, feature_category: :
       expect do
         post_request(params)
       end.to change { MergeRequest.count }.by(1)
+      .and start_covered_experience(:create_merge_request)
     end
 
     context 'when the merge request is not created from the web ide' do
