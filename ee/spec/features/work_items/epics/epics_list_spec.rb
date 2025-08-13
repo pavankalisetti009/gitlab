@@ -169,7 +169,8 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
           end
         end
 
-        it 'applies label to multiple epics from bulk editing sidebar', :aggregate_failures do
+        it 'applies label to multiple epics from bulk editing sidebar', :aggregate_failures,
+          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/556089' do
           # TODO: remove threshold after epic-work item sync
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
           allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(175)
