@@ -11518,7 +11518,13 @@ msgstr ""
 msgid "Bulk update"
 msgstr ""
 
-msgid "BulkImports|Placeholder user confirmation"
+msgid "BulkImports|end date is required when bypass is enabled."
+msgstr ""
+
+msgid "BulkImports|end date must be a future date."
+msgstr ""
+
+msgid "BulkImports|end date must not be more than a year in the future."
 msgstr ""
 
 msgid "BulkImport|%{count} placeholder user has been matched to a user."
@@ -26678,9 +26684,6 @@ msgid "Expires at"
 msgstr ""
 
 msgid "Expiring soon"
-msgstr ""
-
-msgid "Expiry date"
 msgstr ""
 
 msgid "Explain current vulnerability."
@@ -68754,6 +68757,9 @@ msgstr ""
 msgid "UserMapping|Placeholder user"
 msgstr ""
 
+msgid "UserMapping|Placeholder user confirmation"
+msgstr ""
+
 msgid "UserMapping|Placeholder user could not be reassigned."
 msgstr ""
 
@@ -68775,9 +68781,6 @@ msgstr ""
 msgid "UserMapping|Placeholders"
 msgstr ""
 
-msgid "UserMapping|Placeholders can be reassigned to enterprise users without user confirmation."
-msgstr ""
-
 msgid "UserMapping|Please upload a valid CSV file."
 msgstr ""
 
@@ -68785,6 +68788,9 @@ msgid "UserMapping|Reassign"
 msgstr ""
 
 msgid "UserMapping|Reassign placeholder to"
+msgstr ""
+
+msgid "UserMapping|Reassign placeholders to enterprise users without user confirmation"
 msgstr ""
 
 msgid "UserMapping|Reassign to"
@@ -68917,6 +68923,9 @@ msgid "UserMapping|Use a CSV file to reassign contributions from placeholder use
 msgstr ""
 
 msgid "UserMapping|User ID"
+msgstr ""
+
+msgid "UserMapping|When to restore user confirmation"
 msgstr ""
 
 msgid "UserMapping|You can assign active users with regular or auditor access only."
