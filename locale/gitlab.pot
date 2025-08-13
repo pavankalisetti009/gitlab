@@ -63220,6 +63220,9 @@ msgstr ""
 msgid "Terraform|Actions"
 msgstr ""
 
+msgid "Terraform|Alternatively, use the Terraform or OpenTofu CLI directly. You must use a personal access token with the scope set to api. %{linkStart}How do I create a personal access token?%{linkEnd}."
+msgstr ""
+
 msgid "Terraform|An error occurred while changing the state file"
 msgstr ""
 
@@ -63280,6 +63283,9 @@ msgstr ""
 msgid "Terraform|Pipeline"
 msgstr ""
 
+msgid "Terraform|Recommended. Run the following command with glab. You must use glab 1.66 or later:"
+msgstr ""
+
 msgid "Terraform|Remove"
 msgstr ""
 
@@ -63298,7 +63304,7 @@ msgstr ""
 msgid "Terraform|Support for periods (`.`) in Terraform state names might break existing states. Refer to the %{link_start}troubleshooting%{link_end} to learn more."
 msgstr ""
 
-msgid "Terraform|Terraform init command"
+msgid "Terraform|Terraform init"
 msgstr ""
 
 msgid "Terraform|Terraform states"
@@ -63310,7 +63316,7 @@ msgstr ""
 msgid "Terraform|The job %{strong_start}%{name}%{strong_end} generated a report."
 msgstr ""
 
-msgid "Terraform|To get access to this terraform state from your local computer, run the following command at the command line. The first line requires a personal access token with API read and write access. %{linkStart}How do I create a personal access token?%{linkEnd}."
+msgid "Terraform|To access this Terraform state from your local computer, use either GitLab CLI (glab) or the REST API."
 msgstr ""
 
 msgid "Terraform|To remove the State file and its versions, type %{name} to confirm:"
