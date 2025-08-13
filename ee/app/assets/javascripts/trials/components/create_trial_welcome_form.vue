@@ -133,17 +133,6 @@ export default {
         validators: [formValidators.required(__('Last name is required.'))],
       };
 
-      result.company_name = {
-        label: LEADS_COMPANY_NAME_LABEL,
-        groupAttrs: {
-          class: 'gl-col-span-12',
-        },
-        inputAttrs: {
-          name: 'company_name',
-        },
-        validators: [formValidators.required(__('Company name is required.'))],
-      };
-
       if (this.showCountry) {
         result.country = {
           label: LEADS_COUNTRY_LABEL,
@@ -163,6 +152,17 @@ export default {
           };
         }
       }
+
+      result.company_name = {
+        label: LEADS_COMPANY_NAME_LABEL,
+        groupAttrs: {
+          class: 'gl-col-span-12',
+        },
+        inputAttrs: {
+          name: 'company_name',
+        },
+        validators: [formValidators.required(__('Company name is required.'))],
+      };
 
       let groupNameValidators = [];
       if (this.namespaceId === null)
@@ -281,7 +281,6 @@ export default {
     ref="form"
     :action="submitPath"
     method="post"
-    class="gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6"
     data-testid="trial-form"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
@@ -341,12 +340,13 @@ export default {
               name="group_name"
               :value="value"
               :disabled="fields.group_name.inputAttrs.disabled"
+              data-testid="group-name-input"
               @input="input"
               @blur="blur"
             />
           </gl-form-group>
           <div
-            class="gl-z-1 gl-ml-6 gl-mt-2 gl-flex gl-w-11 gl-items-center gl-justify-center gl-rounded-lg gl-bg-gray-50 gl-px-8 gl-text-size-h1-xl gl-font-semibold"
+            class="gl-z-1 gl-ml-6 gl-mt-2 gl-flex gl-w-11 gl-items-center gl-justify-center gl-rounded-lg gl-bg-neutral-800 gl-px-8 gl-text-size-h1-xl gl-font-semibold"
             data-testid="group-name-letter"
           >
             {{ (value.length > 0 ? value : __('Group'))[0].toUpperCase() }}

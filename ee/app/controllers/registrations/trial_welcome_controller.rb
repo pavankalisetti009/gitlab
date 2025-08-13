@@ -30,7 +30,7 @@ module Registrations
         experiment(:lightweight_trial_registration_redesign, actor: current_user).track(
           :completed_group_project_creation, namespace: namespace)
 
-        redirect_to namespace_project_learn_gitlab_path(namespace, result.payload[:project])
+        redirect_to namespace_project_get_started_path(namespace, result.payload[:project])
       elsif result.reason == GitlabSubscriptions::Trials::UltimateCreateService::NOT_FOUND
         render_404
       elsif result.payload[:model_errors].present?
@@ -46,7 +46,7 @@ module Registrations
     end
 
     def resubmit_params(result)
-      { namespace_id: result.payload[:namespace].try(:id),
+      { namespace_id: result.payload[:namespace_id],
         errors: result.payload[:model_errors] }.merge(create_params).to_h.symbolize_keys
     end
 

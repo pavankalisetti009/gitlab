@@ -39,7 +39,7 @@ RSpec.describe GitlabSubscriptions::Trials::Welcome::TrialFormComponent, :aggreg
 
     it 'has body content' do
       is_expected
-        .to have_content('We need a few more details from you to activate your trial.')
+        .to have_content('Welcome to GitLab Help us personalize your GitLab experience by answering a few questions')
     end
 
     it 'renders form with correct attributes' do
