@@ -474,3 +474,15 @@ ul.content-list {
     }
   }
 }
+
+[data-testid="work-item-detail"]:has(.issue-sticky-header) .flash-container.sticky {
+  top: calc(#{$calc-application-header-height} + var(--work-item-sticky-header-height, 3rem) + $gl-spacing-scale-3);
+}
+
+.work-item-drawer .flash-container.sticky {
+  top: 0;
+}
+
+.work-item-drawer [data-testid="work-item-detail"]:has(.issue-sticky-header) .flash-container.sticky {
+  top: calc(var(--work-item-sticky-header-height, 3rem) + $gl-spacing-scale-3);
+}
