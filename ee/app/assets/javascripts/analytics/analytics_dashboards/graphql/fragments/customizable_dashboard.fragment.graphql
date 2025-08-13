@@ -10,6 +10,10 @@ fragment CustomizableDashboardFragment on CustomizableDashboardConnection {
     panels {
       nodes {
         title
+        tooltip @gl_introduced(version: "18.3.0") {
+          description
+          descriptionLink
+        }
         gridAttributes
         queryOverrides
         visualization {

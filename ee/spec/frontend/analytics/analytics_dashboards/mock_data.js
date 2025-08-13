@@ -61,6 +61,10 @@ export const getGraphQLDashboardWithPanels = (options = {}) => ({
     nodes: [
       {
         title: 'Daily Active Users',
+        tooltip: {
+          description: `Number of unique users per day. %{linkStart}Learn more%{linkEnd}`,
+          descriptionLink: 'https://gitlab.com',
+        },
         gridAttributes: {
           yPos: 1,
           xPos: 0,
@@ -209,6 +213,7 @@ export const TEST_DASHBOARD_GRAPHQL_EMPTY_SUCCESS_RESPONSE = {
 const mockUsageOverviewPanel = {
   __typename: 'CustomizableDashboardPanel',
   title: 'Usage overview',
+  tooltip: null,
   gridAttributes: { yPos: 0, xPos: 0, width: 12, height: 1 },
   queryOverrides: null,
   visualization: {
