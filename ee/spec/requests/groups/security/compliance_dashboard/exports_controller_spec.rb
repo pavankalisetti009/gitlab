@@ -20,7 +20,7 @@ RSpec.describe ::Groups::Security::ComplianceDashboard::ExportsController, featu
       get group_security_compliance_dashboard_exports_compliance_status_report_path(group), params: { format: :csv }
     end
 
-    it 'triggers export and redirects' do
+    it 'triggers export and redirects', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560221' do
       expect_next_instance_of(
         ::ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::ExportService) do |service|
         expect(service).to receive(:email_export).and_return(ServiceResponse.success)
