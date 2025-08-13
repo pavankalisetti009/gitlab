@@ -25,7 +25,8 @@ module Geo
           instance.verification_started_at = Time.current
         end
 
-        before_transition [:verification_pending, :verification_started, :verification_succeeded, :verification_disabled] => :verification_pending do |instance, _|
+        before_transition [:verification_pending, :verification_started, :verification_succeeded,
+          :verification_disabled] => :verification_pending do |instance, _|
           instance.clear_verification_failure_fields!
         end
 
@@ -91,7 +92,7 @@ module Geo
     def before_verification_failed
       self.verification_retry_count ||= 0
       self.verification_retry_count += 1
-      self.verification_retry_at = self.next_retry_time(self.verification_retry_count)
+      self.verification_retry_at = next_retry_time(self.verification_retry_count)
       self.verified_at = Time.current
     end
 
@@ -110,7 +111,8 @@ module Geo
       model_record_id =
         if object.respond_to?(:model_record_id)
           object.model_record_id
-        elsif self.class.respond_to?(:separate_verification_state_table?) # This is a Model class like `Project`, as opposed to `Geo::ProjectState`.
+        elsif self.class.respond_to?(:separate_verification_state_table?)
+          # This is a Model class like `Project`, as opposed to `Geo::ProjectState`.
           object.id
         else # rubocop:disable Style/EmptyElse -- for clarity!
           nil

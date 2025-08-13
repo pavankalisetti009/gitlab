@@ -36,7 +36,7 @@ module Geo
     end
 
     # Called by Gitlab::Geo::Replicator#consume
-    def consume_event_updated(**params)
+    def consume_event_updated(**_params)
       return unless in_replicables_for_current_secondary?
 
       # Race condition mitigation for mutable types.
@@ -138,7 +138,7 @@ module Geo
     def calculate_checksum
       repository.checksum
     rescue Gitlab::Git::Repository::NoRepository => e
-      log_error('Repository cannot be checksummed because it does not exist', e, self.replicable_params)
+      log_error('Repository cannot be checksummed because it does not exist', e, replicable_params)
 
       raise
     end

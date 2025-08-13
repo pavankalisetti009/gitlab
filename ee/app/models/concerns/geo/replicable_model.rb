@@ -92,12 +92,12 @@ module Geo
       end
 
       def object_storable?
-        self.respond_to?(:with_files_stored_locally)
+        respond_to?(:with_files_stored_locally)
       end
 
       # @return [ActiveRecord::Relation<Replicable>] scope observing selective sync settings of the given node
       def selective_sync_scope(node, **params)
-        raise NotImplementedError, "#{self.name} does not implement #{__method__}"
+        raise NotImplementedError, "#{name} does not implement #{__method__}"
       end
     end
 
