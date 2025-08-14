@@ -1,0 +1,28 @@
+query enabledScans($fullPath: ID!, $pipelineIid: ID!) {
+  project(fullPath: $fullPath) {
+    id
+    pipeline(iid: $pipelineIid) {
+      id
+      enabledSecurityScans {
+        apiFuzzing
+        clusterImageScanning
+        containerScanning
+        coverageFuzzing
+        dast
+        dependencyScanning
+        sast
+        secretDetection
+      }
+      enabledPartialSecurityScans {
+        apiFuzzing
+        clusterImageScanning
+        containerScanning
+        coverageFuzzing
+        dast
+        dependencyScanning
+        sast
+        secretDetection
+      }
+    }
+  }
+}

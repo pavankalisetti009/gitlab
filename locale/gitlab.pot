@@ -75786,6 +75786,9 @@ msgstr ""
 msgid "ciReport|Dynamic Application Security Testing (DAST)"
 msgstr ""
 
+msgid "ciReport|Error while fetching enabled scans. Please try again later."
+msgstr ""
+
 msgid "ciReport|Explain vulnerability"
 msgstr ""
 
