@@ -22,7 +22,8 @@ module Ai
       :resolve_vulnerability,
       :review_merge_request,
       :summarize_comments,
-      :troubleshoot_job
+      :troubleshoot_job,
+      :generate_description
     ].freeze
 
     Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, :authorized_by_duo_core, keyword_init: true)

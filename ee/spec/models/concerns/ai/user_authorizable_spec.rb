@@ -346,7 +346,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       create(:cloud_connector_access, data: {
         available_services: [
           { name: "duo_chat", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
-          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
+          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "generate_description", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
         ]
       })
     end
@@ -361,6 +362,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     where(:amazon_q_connected, :ai_feature, :expected_enablement_type) do
       false | :duo_chat | 'duo_enterprise'
       true | :review_merge_request | 'duo_enterprise'
+      true | :generate_description | 'duo_enterprise'
     end
 
     with_them do
@@ -414,6 +416,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       true  | :resolve_vulnerability | 'duo_amazon_q'
       true  | :summarize_comments | 'duo_amazon_q'
       true  | :generate_commit_message | 'duo_amazon_q'
+      true  | :generate_description | 'duo_amazon_q'
     end
 
     with_them do
