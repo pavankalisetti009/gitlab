@@ -75,18 +75,6 @@ RSpec.describe Search::Zoekt::Query, feature_category: :global_search do
           expect(described_class.new(query, source: :api).formatted_query(:regex)).to eq result
         end
       end
-
-      context 'when FF zoekt_syntax_transpile is disabled' do
-        let(:query) { 'extension:rb' }
-
-        before do
-          stub_feature_flags(zoekt_syntax_transpile: false)
-        end
-
-        it 'does not converts the syntax' do
-          expect(described_class.new(query, source: :api).formatted_query(:regex)).to eq query
-        end
-      end
     end
   end
 end
