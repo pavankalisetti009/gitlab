@@ -17,6 +17,7 @@ module Types
         value 'CLAUDE_3', description: 'Claude 3 model family, suitable for code generation and duo chat.',
           value: 'claude_3'
         value 'GPT', description: 'GPT: Suitable for code suggestions.', value: 'gpt'
+        value 'GENERAL', description: 'General: Any model suitable for code suggestions and duo chat.', value: 'general'
       end
     end
   end

@@ -19,7 +19,8 @@ module Ai
       deepseekcoder: RELEASE_STATE_BETA,
       claude_3: RELEASE_STATE_GA,
       gpt: RELEASE_STATE_GA,
-      mixtral: RELEASE_STATE_GA
+      mixtral: RELEASE_STATE_GA,
+      general: RELEASE_STATE_BETA
     }.freeze
 
     validates :model, presence: true
@@ -46,7 +47,8 @@ module Ai
       deepseekcoder: 5,
       claude_3: 6,
       gpt: 7,
-      mixtral: 8
+      mixtral: 8,
+      general: 9 # internally, this works by using prompts of `claude_3`
     }
 
     # For now, only OpenAI API format is supported, this method will be potentially

@@ -12,7 +12,8 @@ module Admin
         "codellama" => "Code Llama",
         "deepseekcoder" => "DeepSeek Coder",
         "claude_3" => "Claude 3",
-        "gpt" => "GPT"
+        "gpt" => "GPT",
+        "general" => "General"
       }.freeze
 
       def model_choices_as_options

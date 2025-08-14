@@ -12,6 +12,7 @@ code_generations:
     - llama3
     - claude_3
     - gpt
+    - general
   unit_primitives:
     - generate_code
 code_completions:
@@ -28,6 +29,7 @@ code_completions:
     - llama3
     - claude_3
     - gpt
+    - general
   unit_primitives:
     - complete_code
     - code_suggestions
@@ -41,6 +43,7 @@ duo_chat:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - duo_chat
     - chat
@@ -63,6 +66,7 @@ duo_chat_explain_code:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - explain_code
 duo_chat_write_tests:
@@ -76,6 +80,7 @@ duo_chat_write_tests:
     - gpt
     - codestral
     - llama3
+    - general
   unit_primitives:
     - write_tests
 duo_chat_refactor_code:
@@ -89,6 +94,7 @@ duo_chat_refactor_code:
     - gpt
     - codestral
     - llama3
+    - general
   unit_primitives:
     - refactor_code
 duo_chat_fix_code:
@@ -102,6 +108,7 @@ duo_chat_fix_code:
     - gpt
     - codestral
     - llama3
+    - general
   unit_primitives:
     - fix_code
 duo_chat_troubleshoot_job:
@@ -114,6 +121,7 @@ duo_chat_troubleshoot_job:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - troubleshoot_job
 duo_chat_explain_vulnerability:
@@ -126,6 +134,7 @@ duo_chat_explain_vulnerability:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - explain_vulnerability
 duo_chat_summarize_comments:
@@ -138,6 +147,7 @@ duo_chat_summarize_comments:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - summarize_comments
 generate_commit_message:
@@ -150,6 +160,7 @@ generate_commit_message:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - generate_commit_message
 summarize_new_merge_request:
@@ -162,6 +173,7 @@ summarize_new_merge_request:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - summarize_new_merge_request
 resolve_vulnerability:
@@ -174,6 +186,7 @@ resolve_vulnerability:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - resolve_vulnerability
 summarize_review:
@@ -186,6 +199,7 @@ summarize_review:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - summarize_review
 glab_ask_git_command:
@@ -198,6 +212,7 @@ glab_ask_git_command:
     - claude_3
     - gpt
     - llama3
+    - general
   unit_primitives:
     - glab_ask_git_command
 review_merge_request:
@@ -210,6 +225,7 @@ review_merge_request:
     - mixtral
     - gpt
     - llama3
+    - general
   unit_primitives:
     - review_merge_request
 duo_agent_platform:
