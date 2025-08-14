@@ -45,6 +45,10 @@ RSpec.describe Gitlab::WebHooks::RateLimiter, :saas, :clean_gitlab_redis_rate_li
     create(:group_hook, group: group_ultimate_trial_paid_customer_plan)
   end
 
+  before do
+    stub_feature_flags(no_webhook_rate_limit: false)
+  end
+
   describe 'LIMIT_MAP' do
     it 'contains all paid plans' do
       keys = described_class::LIMIT_MAP.keys
