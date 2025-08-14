@@ -13,8 +13,8 @@ RSpec.describe Types::PermissionTypes::Project do
       manage_ai_flow_triggers
       read_ai_catalog_item
       read_ai_catalog_item_consumer
-      manage_ai_catalog_item
-      manage_ai_catalog_item_consumer
+      admin_ai_catalog_item
+      admin_ai_catalog_item_consumer
     ]
 
     expected_permissions.each do |permission|

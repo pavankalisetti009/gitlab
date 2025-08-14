@@ -17,6 +17,7 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
       latest_version
       project
       public
+      user_permissions
       versions
     ]
 
