@@ -10,6 +10,10 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
   describe 'Menu items' do
     subject { described_class.new(context).renderable_items.index { |e| e.item_id == item_id } }
 
+    before do
+      stub_feature_flags(hide_error_tracking_features: false)
+    end
+
     describe 'On-call Schedules', feature_category: :on_call_schedule_management do
       let(:item_id) { :on_call_schedules }
 
