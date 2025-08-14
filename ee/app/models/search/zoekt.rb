@@ -102,6 +102,10 @@ module Search
         Gitlab.config.zoekt.bin_path
       end
 
+      def skip_empty_repositories?
+        Feature.disabled?(:zoekt_index_empty_repos, Feature.current_request)
+      end
+
       private
 
       def fetch_root_namespace_id(container)

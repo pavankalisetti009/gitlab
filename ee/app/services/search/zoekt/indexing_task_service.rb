@@ -57,7 +57,7 @@ module Search
       def preflight_check?
         return true if task_type == :delete_repo
         return false unless project
-        return false if project.empty_repo?
+        return false if ::Search::Zoekt.skip_empty_repositories? && project.empty_repo?
 
         true
       end

@@ -208,17 +208,31 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
 
     context 'with missing gitaly repo' do
       let_it_be(:project_without_repo) { create(:project) }
-      let_it_be(:task_with_invalid_repo) { create(:zoekt_task, project: project_without_repo) }
-      let_it_be(:delete_task_with_invalid_repo) do
+      let_it_be(:task_with_empty_repo) { create(:zoekt_task, project: project_without_repo) }
+      let_it_be(:delete_task_with_empty_repo) do
         create(:zoekt_task, task_type: :delete_repo, project: project_without_repo)
       end
 
-      it 'marks indexing tasks as done, the repository as ready, and processes delete tasks' do
+      it 'processes the tasks as normal' do
         expect do
           described_class.each_task_for_processing(limit: 10) { |t| t }
-        end.to change { task_with_invalid_repo.reload.state }.from('pending').to('done')
-        expect(delete_task_with_invalid_repo.reload).to be_processing
-        expect(task_with_invalid_repo.zoekt_repository.reload).to be_ready
+        end.to change { task_with_empty_repo.reload.state }.from('pending').to('processing')
+        expect(delete_task_with_empty_repo.reload).to be_pending
+        expect(task_with_empty_repo.zoekt_repository.reload).not_to be_ready
+      end
+
+      context 'when zoekt_index_empty_repos feature flag is disabled' do
+        before do
+          stub_feature_flags(zoekt_index_empty_repos: false)
+        end
+
+        it 'marks indexing tasks as done, the repository as ready, and processes delete tasks' do
+          expect do
+            described_class.each_task_for_processing(limit: 10) { |t| t }
+          end.to change { task_with_empty_repo.reload.state }.from('pending').to('done')
+          expect(delete_task_with_empty_repo.reload).to be_processing
+          expect(task_with_empty_repo.zoekt_repository.reload).to be_ready
+        end
       end
     end
   end
@@ -310,8 +324,18 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
           allow(project).to receive(:repo_exists?).and_return(false)
         end
 
-        it 'returns :done' do
-          expect(described_class.determine_task_state(task)).to eq(:done)
+        it 'returns :valid' do
+          expect(described_class.determine_task_state(task)).to eq(:valid)
+        end
+
+        context 'when zoekt_index_empty_repos feature flag is disabled' do
+          before do
+            stub_feature_flags(zoekt_index_empty_repos: false)
+          end
+
+          it 'returns :done' do
+            expect(described_class.determine_task_state(task)).to eq(:done)
+          end
         end
       end
 
