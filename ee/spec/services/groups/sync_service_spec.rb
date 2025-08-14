@@ -57,6 +57,33 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
       expect(sync.payload).to include({ added: 2, removed: 0, updated: 0 })
     end
 
+    it 'logs an info message' do
+      expect(Gitlab::AppLogger).to receive(:info).with(
+        hash_including(
+          action: :added,
+          user_id: user.id,
+          group_id: top_level_group.id,
+          prior_access_level: nil,
+          new_access_level: ::Gitlab::Access::GUEST,
+          prior_member_role_id: nil,
+          new_member_role_id: nil
+        )
+      )
+
+      expect(Gitlab::AppLogger).to receive(:info).with(
+        hash_including(
+          action: :added,
+          user_id: user.id,
+          group_id: group1.id,
+          prior_access_level: nil,
+          new_access_level: ::Gitlab::Access::DEVELOPER,
+          prior_member_role_id: nil,
+          new_member_role_id: nil
+        )
+      )
+      sync
+    end
+
     context 'when a subgroup has no group links' do
       let_it_be(:subgroup) { create(:group, parent: group2, maintainers: user) }
 
@@ -70,6 +97,10 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
           expect(subgroup.members.reload.find_by(user_id: user.id).access_level)
             .to eq(::Gitlab::Access::MAINTAINER)
+        end
+
+        it 'does not log an info message' do
+          expect(Gitlab::AppLogger).not_to receive(:info)
         end
       end
     end
@@ -93,6 +124,34 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
           expect_next_instances_of(GroupMember, 2) do |instance|
             expect(instance).to receive(:update_user_group_member_roles)
           end
+
+          sync
+        end
+
+        it 'logs an info message' do
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            hash_including(
+              action: :added,
+              user_id: user.id,
+              group_id: top_level_group.id,
+              prior_access_level: nil,
+              new_access_level: ::Gitlab::Access::GUEST,
+              prior_member_role_id: nil,
+              new_member_role_id: nil
+            )
+          )
+
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            hash_including(
+              action: :added,
+              user_id: user.id,
+              group_id: group1.id,
+              prior_access_level: nil,
+              new_access_level: ::Gitlab::Access::DEVELOPER,
+              prior_member_role_id: nil,
+              new_member_role_id: member_role.id
+            )
+          )
 
           sync
         end
@@ -136,6 +195,10 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
           sync
         end
+
+        it 'does not log an info message' do
+          expect(Gitlab::AppLogger).not_to receive(:info)
+        end
       end
 
       context 'with a different access level' do
@@ -157,6 +220,10 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
           it 'returns sync stats as payload' do
             expect(sync.payload).to include({ added: 1, removed: 0, updated: 1 })
+          end
+
+          it 'does not log an info message' do
+            expect(Gitlab::AppLogger).not_to receive(:info)
           end
 
           context 'when member promotion management is enabled' do
@@ -341,6 +408,10 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
         expect(group1.members.find_by(user_id: user.id).access_level)
           .to eq(::Gitlab::Access::DEVELOPER)
+      end
+
+      it 'does not log an info message' do
+        expect(Gitlab::AppLogger).not_to receive(:info)
       end
     end
   end
