@@ -2,12 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :subscription_management do
+RSpec.describe 'Billing plan pages', :feature, :saas, :js, :with_organization_url_helpers, feature_category: :subscription_management do
   include SubscriptionPortalHelpers
   include Features::HandRaiseLeadHelpers
   include Features::BillingPlansHelpers
 
   let(:user) { create(:user, first_name: 'James', last_name: 'Bond', user_detail_organization: 'ACME') }
+  let(:current_organization) { user.organization }
   let(:auditor) { create(:auditor, first_name: 'James', last_name: 'Bond', user_detail_organization: 'ACME') }
   let(:namespace) { user.namespace }
   let(:free_plan) { create(:free_plan) }

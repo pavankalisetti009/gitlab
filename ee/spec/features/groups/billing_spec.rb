@@ -2,11 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Billing', :js, :saas, feature_category: :subscription_management do
+RSpec.describe 'Groups > Billing', :js, :saas, :with_organization_url_helpers, feature_category: :subscription_management do
   include StubRequests
   include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
+  let(:current_organization) { user.organization }
   let_it_be(:auditor) { create(:auditor) }
   let_it_be(:group) { create(:group, owners: user, guests: auditor) }
   let_it_be(:bronze_plan) { create(:bronze_plan) }
