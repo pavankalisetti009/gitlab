@@ -122,7 +122,7 @@ module Gitlab
       _("If you don't renew by %{strong}%{downgrades_on}%{strong_close} your instance will become read-only, and you won't be able to create issues or merge requests. You will also lose access to your paid features and support entitlement. %{learn_more_link}") %
         {
           expires_on: subscribable.expires_at.iso8601,
-          downgrades_on: subscribable.block_changes_at.iso8601,
+          downgrades_on: subscribable.expires_at.iso8601,
           learn_more_link: docs_link,
           plan_name: plan_name,
           strong: strong,
@@ -143,7 +143,7 @@ module Gitlab
     def expiring_features_message
       _("If you do not renew by %{strong}%{downgrades_on}%{strong_close}, you can't use merge approvals, %{end_message}") %
         {
-          downgrades_on: subscribable.block_changes_at.iso8601,
+          downgrades_on: subscribable.expires_at.iso8601,
           end_message: end_message,
           strong: strong,
           strong_close: strong_close
