@@ -21,20 +21,6 @@ RSpec.describe Groups::Analytics::DashboardsController, feature_category: :group
   end
 
   shared_examples 'shared analytics value streams dashboard' do
-    it 'passes pointer_project if it has been configured' do
-      analytics_dashboards_pointer
-      request
-
-      expect(response).to be_successful
-
-      expect(js_list_app_attributes['data-dashboard-project'].value).to eq({
-        id: analytics_dashboards_pointer.target_project.id,
-        full_path: analytics_dashboards_pointer.target_project.full_path,
-        name: analytics_dashboards_pointer.target_project.name,
-        default_branch: analytics_dashboards_pointer.target_project.default_branch
-      }.to_json)
-    end
-
     it 'passes data_source_clickhouse to data attributes' do
       request
 

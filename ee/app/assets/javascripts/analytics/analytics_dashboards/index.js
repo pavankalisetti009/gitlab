@@ -1,23 +1,11 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import {
-  convertObjectPropsToCamelCase,
-  convertArrayToCamelCase,
-  parseBoolean,
-} from '~/lib/utils/common_utils';
+import { convertArrayToCamelCase, parseBoolean } from '~/lib/utils/common_utils';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
 import DashboardsApp from './dashboards_app.vue';
 import createRouter from './router';
 import AnalyticsDashboardsBreadcrumbs from './components/analytics_dashboards_breadcrumbs.vue';
-
-const rawJSONtoObject = (json) => convertObjectPropsToCamelCase(JSON.parse(json));
-
-const buildAnalyticsDashboardPointer = (analyticsDashboardPointerJSON = '') => {
-  return analyticsDashboardPointerJSON.length
-    ? rawJSONtoObject(analyticsDashboardPointerJSON)
-    : null;
-};
 
 export default () => {
   const el = document.getElementById('js-analytics-dashboards-list-app');
@@ -27,7 +15,6 @@ export default () => {
   }
 
   const {
-    dashboardProject: analyticsDashboardPointerJSON = '',
     canConfigureProjectSettings: canConfigureProjectSettingsString,
     canSelectGitlabManagedProvider,
     managedClusterPurchased,
@@ -52,7 +39,6 @@ export default () => {
     hasScopedLabelsFeature,
   } = el.dataset;
 
-  const analyticsDashboardPointer = buildAnalyticsDashboardPointer(analyticsDashboardPointerJSON);
   const canConfigureProjectSettings = parseBoolean(canConfigureProjectSettingsString);
 
   Vue.use(VueApollo);
@@ -86,7 +72,6 @@ export default () => {
       this.name = value;
     },
   });
-  const customDashboardsProject = analyticsDashboardPointer;
   const isProject = parseBoolean(isProjectStr);
 
   const router = createRouter(routerBase, breadcrumbState, {
@@ -102,7 +87,6 @@ export default () => {
     router,
     provide: {
       breadcrumbState,
-      customDashboardsProject,
       canConfigureProjectSettings,
       canSelectGitlabManagedProvider: parseBoolean(canSelectGitlabManagedProvider),
       managedClusterPurchased: parseBoolean(managedClusterPurchased),
