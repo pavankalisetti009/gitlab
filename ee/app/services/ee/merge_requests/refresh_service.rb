@@ -15,13 +15,9 @@ module EE
 
         remove_requested_changes
 
-        ::Gitlab::Metrics.measure(:update_approvers_for_source_branch_merge_requests) do
-          update_approvers_for_source_branch_merge_requests
-        end
+        update_approvers_for_source_branch_merge_requests
 
-        ::Gitlab::Metrics.measure(:update_approvers_for_target_branch_merge_requests) do
-          update_approvers_for_target_branch_merge_requests
-        end
+        update_approvers_for_target_branch_merge_requests
 
         reset_approvals_for_merge_requests(push.ref, push.newrev)
 
