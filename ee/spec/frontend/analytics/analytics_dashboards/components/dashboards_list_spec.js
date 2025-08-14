@@ -145,7 +145,6 @@ describe('DashboardsList', () => {
 
           createWrapper({
             features: ['productAnalytics'],
-            customDashboardsProject: TEST_CUSTOM_DASHBOARDS_PROJECT,
           });
 
           await waitForPromises();

@@ -33,13 +33,6 @@ export default {
     isGroup: {
       type: Boolean,
     },
-    customDashboardsProject: {
-      type: Object,
-      default: null,
-    },
-    canConfigureProjectSettings: {
-      type: Boolean,
-    },
     namespaceFullPath: {
       type: String,
     },

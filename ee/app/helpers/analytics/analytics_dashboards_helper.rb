@@ -11,7 +11,6 @@ module Analytics
         namespace_id: namespace.id,
         is_project: is_project.to_s,
         is_group: is_group.to_s,
-        dashboard_project: analytics_dashboard_pointer_project(namespace)&.to_json,
         can_configure_project_settings: can_configure_project_settings?(namespace).to_s,
         can_select_gitlab_managed_provider: can_select_gitlab_managed_provider?(namespace).to_s,
         managed_cluster_purchased: managed_cluster_purchased?(namespace).to_s,
@@ -106,33 +105,6 @@ module Analytics
 
       ::Feature.enabled?(:product_analytics_billing_override, project.root_ancestor) ||
         ::GitlabSubscriptions::AddOnPurchase.active.for_product_analytics.by_namespace(project.root_ancestor).any?
-    end
-
-    def project_dashboard_pointer(project)
-      if project.analytics_dashboards_pointer.present?
-        project.analytics_dashboards_pointer.target_project
-      else
-        project
-      end
-    end
-
-    def group_dashboard_pointer(group)
-      return unless group.analytics_dashboards_pointer.present?
-
-      group.all_projects.find_by_id(group.analytics_dashboards_pointer.target_project_id)
-    end
-
-    def analytics_dashboard_pointer_project(namespace)
-      pointer_project = project?(namespace) ? project_dashboard_pointer(namespace) : group_dashboard_pointer(namespace)
-
-      return unless pointer_project
-
-      {
-        id: pointer_project.id,
-        full_path: pointer_project.full_path,
-        name: pointer_project.name,
-        default_branch: pointer_project.default_branch
-      }
     end
 
     def router_base(namespace)
