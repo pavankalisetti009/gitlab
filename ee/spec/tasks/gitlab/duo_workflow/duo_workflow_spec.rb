@@ -82,12 +82,13 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
       )
     end
 
-    it 'creates checkpoints for each workflow' do
+    it 'creates checkpoints for each workflow', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560512' do
       expect { run_rake_task('gitlab:duo_workflow:populate', '5', '2') }
         .to change { Ai::DuoWorkflows::Checkpoint.count }.by_at_least(5)
     end
 
-    it 'creates checkpoints with valid attributes'  do
+    it 'creates checkpoints with valid attributes',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560512' do
       run_rake_task('gitlab:duo_workflow:populate', '3', '1')
 
       checkpoint = Ai::DuoWorkflows::Checkpoint.last
@@ -118,7 +119,8 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
       )
     end
 
-    context 'when checkpoint creation based on workflow status' do
+    context 'when checkpoint creation based on workflow status',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560512' do
       it 'creates checkpoints with correct status progression for different workflow states' do
         run_rake_task('gitlab:duo_workflow:populate', '10', '5')
 
@@ -155,7 +157,8 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
         end
       end
 
-      it 'creates checkpoints with valid UI chat log entries' do
+      it 'creates checkpoints with valid UI chat log entries',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560512' do
         run_rake_task('gitlab:duo_workflow:populate', '2', '1')
 
         checkpoint = Ai::DuoWorkflows::Checkpoint.last
@@ -174,7 +177,8 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
         expect(ui_chat_log[6]['message_type']).to eq('workflow_end')
       end
 
-      it 'creates checkpoints with workflow goal referenced in chat log' do
+      it 'creates checkpoints with workflow goal referenced in chat log',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560512' do
         run_rake_task('gitlab:duo_workflow:populate', '1', '1')
 
         workflow = Ai::DuoWorkflows::Workflow.last
@@ -187,7 +191,8 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
       end
     end
 
-    it 'uses default values when no arguments provided' do
+    it 'uses default values when no arguments provided',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560512' do
       expect { run_rake_task('gitlab:duo_workflow:populate') }
         .to change { Ai::DuoWorkflows::Workflow.count }.by(50)
         .and change { Ai::DuoWorkflows::Checkpoint.count }.by_at_least(50)
