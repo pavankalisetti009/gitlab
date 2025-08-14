@@ -31804,6 +31804,7 @@ Limited group data accessible to users without full group read access (e.g. non-
 | <a id="groupnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="groupnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="groupnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+| <a id="groupnamespacelinksuserexportemail"></a>`userExportEmail` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.3. **Status**: Experiment. User email for export CSV. Returns `null` for user namespaces. |
 
 ### `GroupNamespaceMarkdownPaths`
 
@@ -40318,6 +40319,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="projectnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="projectnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+| <a id="projectnamespacelinksuserexportemail"></a>`userExportEmail` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.3. **Status**: Experiment. User email for export CSV. Returns `null` for user namespaces. |
 
 ### `ProjectNamespaceMarkdownPaths`
 
@@ -43259,6 +43261,7 @@ fields relate to interactions between the two entities.
 | <a id="usernamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="usernamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="usernamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+| <a id="usernamespacelinksuserexportemail"></a>`userExportEmail` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.3. **Status**: Experiment. User email for export CSV. Returns `null` for user namespaces. |
 
 ### `UserNamespaceMarkdownPaths`
 
@@ -51783,6 +51786,7 @@ Implementations:
 | <a id="namespaceslinkpathsregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="namespaceslinkpathsreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="namespaceslinkpathssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+| <a id="namespaceslinkpathsuserexportemail"></a>`userExportEmail` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.3. **Status**: Experiment. User email for export CSV. Returns `null` for user namespaces. |
 
 #### `NoteableInterface`
 
