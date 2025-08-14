@@ -51,7 +51,7 @@ class Groups::Analytics::CycleAnalyticsController < Groups::Analytics::Applicati
                     end
   end
 
-  alias_method :tracking_namespace_source, :load_group
+  alias_method :tracking_namespace_source, :group
   alias_method :tracking_project_source, :load_project
 
   def group_feature?(feature)
