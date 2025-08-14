@@ -22586,6 +22586,7 @@ An AI catalog agent.
 | <a id="aicatalogagentname"></a>`name` | [`String!`](#string) | Name of the item. |
 | <a id="aicatalogagentproject"></a>`project` | [`Project`](#project) | Project for the item. |
 | <a id="aicatalogagentpublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
+| <a id="aicatalogagentuserpermissions"></a>`userPermissions` | [`AiCatalogItemPermissions!`](#aicatalogitempermissions) | Permissions for the current user on the resource. |
 | <a id="aicatalogagentversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ### `AiCatalogAgentVersion`
@@ -22635,6 +22636,7 @@ An AI catalog flow.
 | <a id="aicatalogflowname"></a>`name` | [`String!`](#string) | Name of the item. |
 | <a id="aicatalogflowproject"></a>`project` | [`Project`](#project) | Project for the item. |
 | <a id="aicatalogflowpublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
+| <a id="aicatalogflowuserpermissions"></a>`userPermissions` | [`AiCatalogItemPermissions!`](#aicatalogitempermissions) | Permissions for the current user on the resource. |
 | <a id="aicatalogflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ### `AiCatalogFlowSteps`
@@ -22677,6 +22679,17 @@ An AI catalog item configuration.
 | <a id="aicatalogitemconsumerlocked"></a>`locked` | [`Boolean!`](#boolean) | Indicates whether the catalog item configuration is locked or can be overridden. |
 | <a id="aicatalogitemconsumerorganization"></a>`organization` | [`Organization`](#organization) | Organization in which the catalog item is configured. |
 | <a id="aicatalogitemconsumerproject"></a>`project` | [`Project`](#project) | Project in which the catalog item is configured. |
+
+### `AiCatalogItemPermissions`
+
+Check permissions for the current user on an AI catalog item.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitempermissionsadminaicatalogitem"></a>`adminAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_ai_catalog_item` on this resource. |
+| <a id="aicatalogitempermissionsreadaicatalogitem"></a>`readAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_ai_catalog_item` on this resource. |
 
 ### `AiConversationsThread`
 
@@ -51206,6 +51219,7 @@ Implementations:
 | <a id="aicatalogitemname"></a>`name` | [`String!`](#string) | Name of the item. |
 | <a id="aicatalogitemproject"></a>`project` | [`Project`](#project) | Project for the item. |
 | <a id="aicatalogitempublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
+| <a id="aicatalogitemuserpermissions"></a>`userPermissions` | [`AiCatalogItemPermissions!`](#aicatalogitempermissions) | Permissions for the current user on the resource. |
 | <a id="aicatalogitemversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### `AiCatalogItemVersion`

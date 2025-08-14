@@ -45,7 +45,7 @@ export default {
   },
   computed: {
     canAdmin() {
-      return Boolean(this.activeItem.project?.userPermissions?.adminAiCatalogItem);
+      return Boolean(this.activeItem.userPermissions.adminAiCatalogItem);
     },
     getDrawerHeight() {
       return `calc(${getContentWrapperHeight()} + var(--top-bar-height))`;

@@ -39,7 +39,7 @@ export default {
   },
   computed: {
     canAdmin() {
-      return Boolean(this.item.project?.userPermissions?.adminAiCatalogItem);
+      return Boolean(this.item.userPermissions.adminAiCatalogItem);
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
