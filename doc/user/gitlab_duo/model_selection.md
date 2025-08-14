@@ -40,9 +40,9 @@ You should use the defaults if you do not have unique requirements.
 Prerequisites:
 
 - The group that you want to select LLMs for must:
-  - Be a [top-level group](../group/_index.md#group-hierarchy) on GitLab.com.
+  - Be a top-level group or namespace on GitLab.com.
   - Have GitLab Duo Core, Pro, or Enterprise enabled.
-- You must have the Owner role for the group.
+- You must have the Owner role for the group or namespace.
 - In GitLab 18.3 or later, you must [assign a default namespace](#assign-a-default-gitlab-duo-namespace) if you belong to multiple GitLab Duo namespaces.
 
 To select a different LLM for a feature:
