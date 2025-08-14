@@ -33,6 +33,18 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
           expect(changed_path.score).to eq(0)
         end.and_call_original
 
+        expected_diff_filters = [
+          :DIFF_STATUS_ADDED,
+          :DIFF_STATUS_MODIFIED,
+          :DIFF_STATUS_TYPE_CHANGE,
+          :DIFF_STATUS_COPIED,
+          :DIFF_STATUS_RENAMED
+        ]
+        expect(project.repository).to receive(:find_changed_paths).with(
+          anything,
+          hash_including(diff_filters: expected_diff_filters)
+        ).and_call_original
+
         payloads = payload_processor.standardize_payloads
         expect(payloads).to be_an(Array)
         expect(payloads.size).to eq(1)
@@ -71,6 +83,23 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
           expect(payload.id).to eq(new_blob_reference)
           expect(payload.data).to include("BASE_URL=https://foo.bar")
           expect(payload.offset).to eq(1)
+        end
+      end
+    end
+
+    context 'when secret_detection_filter_deleted_files is disabled' do
+      before do
+        stub_feature_flags(secret_detection_filter_deleted_files: false)
+      end
+
+      context 'with a valid diff blob' do
+        it 'does not pass diff filters to find_changed_paths' do
+          expect(project.repository).to receive(:find_changed_paths).with(
+            anything,
+            hash_including(diff_filters: nil)
+          ).and_call_original
+
+          payload_processor.standardize_payloads
         end
       end
     end
