@@ -118,7 +118,7 @@ export default {
 
       <div class="gl-flex gl-flex-wrap gl-justify-end gl-gap-3">
         <gl-button data-testid="cancel-button" @click="onCancel">{{ __('Cancel') }}</gl-button>
-        <gl-button type="submit" class="js-no-auto-disable" :loading="busy">
+        <gl-button variant="confirm" type="submit" class="js-no-auto-disable" :loading="busy">
           {{ modalButton }}
         </gl-button>
       </div>
