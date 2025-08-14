@@ -5,12 +5,13 @@ module Analytics
     class TroubleshootUsageService
       include CommonUsageService
 
-      QUERY = <<~SQL
+      QUERY = <<~SQL.freeze
         SELECT COUNT(DISTINCT user_id) as root_cause_analysis_users_count
-        FROM troubleshoot_job_events
+        FROM ai_usage_events
         WHERE timestamp >= {from:Date}
         AND timestamp <= {to:Date}
         AND startsWith(namespace_path, {traversal_path:String})
+        AND event = #{Ai::UsageEvent.events['troubleshoot_job']}
       SQL
 
       FIELDS_SUBQUERIES = {
@@ -21,7 +22,7 @@ module Analytics
 
       private
 
-      # Overriden from CommonUsageService to be false.
+      # Overridden from CommonUsageService to be false.
       # The filter for troubleshoot usage does not use contributions
       # table.
       def fetch_contributions_from_new_table?
