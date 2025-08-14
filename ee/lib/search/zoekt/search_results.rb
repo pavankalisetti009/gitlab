@@ -156,6 +156,7 @@ module Search
           search_mode: search_mode,
           current_user: current_user,
           targets: use_traversal_id_queries? ? nil : zoekt_targets,
+          multi_match: multi_match,
           **options
         )
 

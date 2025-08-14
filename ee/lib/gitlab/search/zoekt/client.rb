@@ -56,6 +56,7 @@ module Gitlab
               num_context_lines: CONTEXT_LINES_COUNT,
               max_file_match_results: num,
               max_line_match_results: num,
+              max_line_match_results_per_file: options[:multi_match]&.max_chunks_size,
               search_mode: search_mode,
               **options
             ).as_json

@@ -18,12 +18,16 @@ module Search
           max_file_match_results: options.fetch(:max_file_match_results, 5),
           max_line_match_window: options.fetch(:max_line_match_window, 500),
           max_line_match_results: options.fetch(:max_line_match_results, 10),
-          max_line_match_results_per_file: options.fetch(:max_line_match_results_per_file, 3),
+          max_line_match_results_per_file: max_line_match_results_per_file,
           forward_to: use_traversal_id_queries? ? build_node_queries : build_node_queries_from_targets
         }
       end
 
       private
+
+      def max_line_match_results_per_file
+        options[:max_line_match_results_per_file] || Search::Zoekt::MultiMatch::DEFAULT_REQUESTED_CHUNK_SIZE
+      end
 
       def build_node_queries
         builder_options = {
