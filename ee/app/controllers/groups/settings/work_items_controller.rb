@@ -5,6 +5,7 @@ module Groups
     class WorkItemsController < Groups::ApplicationController
       layout 'group_settings'
 
+      before_action :ensure_root_group
       before_action :check_feature_availability
       before_action :authorize_admin_work_item_settings
 
@@ -19,6 +20,10 @@ module Groups
       def show; end
 
       private
+
+      def ensure_root_group
+        render_404 unless group.root?
+      end
 
       def check_feature_availability
         render_404 unless group.licensed_feature_available?(:custom_fields) || group.work_item_status_feature_available?
