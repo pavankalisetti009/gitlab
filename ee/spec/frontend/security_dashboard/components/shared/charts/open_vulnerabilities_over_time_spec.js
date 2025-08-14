@@ -82,7 +82,7 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
 
   describe('tooltip configuration', () => {
     describe('tooltip content', () => {
-      describe('when there is a securityVulnerabilitiesPathBase prop', () => {
+      describe('when there is a securityVulnerabilitiesPath provided', () => {
         const mockTooltipParams = {
           seriesName: 'Severity',
           color: 'red',
@@ -90,8 +90,9 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
           seriesId: 'CRITICAL',
         };
 
-        beforeEach(() => {
+        const createComponentWithStubbedTooltip = ({ props = {} } = {}) => {
           createComponent({
+            props,
             stubs: {
               GlLineChart: stubComponent(GlLineChart, {
                 data() {
@@ -108,9 +109,11 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
               }),
             },
           });
-        });
+        };
 
         it('renders the chart label correctly', () => {
+          createComponentWithStubbedTooltip();
+
           expect(wrapper.findComponent(GlChartSeriesLabel).text()).toBe(
             mockTooltipParams.seriesName,
           );
@@ -119,11 +122,47 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
           );
         });
 
-        it('renders the tooltip content with the correct link', () => {
-          expect(wrapper.findComponent(GlLink).text()).toBe(`${mockTooltipParams.value[1]}`);
-          expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-            `${defaultProvide.securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED,DETECTED&${defaultProps.groupedBy}=${mockTooltipParams.seriesId}`,
-          );
+        describe('link to vulnerabilities report', () => {
+          const findLinkToVulnerabilitiesReport = () =>
+            wrapper.findComponent(GlLink).attributes('href');
+
+          it('renders the tooltip content with the correct link', () => {
+            createComponentWithStubbedTooltip();
+
+            expect(wrapper.findComponent(GlLink).text()).toBe(`${mockTooltipParams.value[1]}`);
+            expect(findLinkToVulnerabilitiesReport()).toBe(
+              `${defaultProvide.securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&${defaultProps.groupedBy}=${mockTooltipParams.seriesId}`,
+            );
+          });
+
+          it('adds additional filters to the link when they are provided', () => {
+            createComponentWithStubbedTooltip({
+              props: { filters: { projectId: '123' } },
+            });
+
+            expect(wrapper.findComponent(GlLink).attributes('href')).toContain('&projectId=123');
+          });
+
+          it('does not add the additional filter if it has the same key as the `groupedBy` prop', () => {
+            createComponentWithStubbedTooltip({
+              props: { filters: { severity: ['SHOULD_NOT_BE_ADDED'] }, groupedBy: 'severity' },
+            });
+
+            expect(findLinkToVulnerabilitiesReport()).toContain(
+              `&severity=${mockTooltipParams.seriesId}`,
+            );
+            expect(findLinkToVulnerabilitiesReport()).not.toContain(
+              '&severity=SHOULD_NOT_BE_ADDED',
+            );
+          });
+
+          it('does not add the additional filter if it is empty', () => {
+            createComponentWithStubbedTooltip({
+              props: { filters: { projectId: [] } },
+            });
+
+            expect(findLinkToVulnerabilitiesReport()).not.toContain('&projectId=');
+          });
         });
       });
     });

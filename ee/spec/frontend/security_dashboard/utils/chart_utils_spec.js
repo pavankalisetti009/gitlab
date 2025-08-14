@@ -166,7 +166,7 @@ describe('Security Dashboard - Chart Utils', () => {
       });
 
       expect(result).toBe(
-        `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED,DETECTED&report_type=SAST`,
+        `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&report_type=SAST`,
       );
     });
 
@@ -178,7 +178,74 @@ describe('Security Dashboard - Chart Utils', () => {
         });
 
         expect(result).toBe(
-          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED,DETECTED&tab=OPERATIONAL`,
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&tab=OPERATIONAL`,
+        );
+      });
+    });
+
+    describe('additional filters', () => {
+      it('includes additional filters when provided', () => {
+        const result = constructVulnerabilitiesReportWithFiltersPath({
+          seriesId: 'CRITICAL',
+          filterKey: 'severity',
+          securityVulnerabilitiesPath,
+          additionalFilters: {
+            projectId: '123',
+          },
+        });
+
+        expect(result).toBe(
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL&projectId=123`,
+        );
+      });
+
+      it('joins multiple values of the same filter key with commas', () => {
+        const result = constructVulnerabilitiesReportWithFiltersPath({
+          seriesId: 'CRITICAL',
+          filterKey: 'severity',
+          securityVulnerabilitiesPath,
+          additionalFilters: {
+            reportType: ['SAST', 'DAST'],
+            projectId: '123',
+          },
+        });
+
+        expect(result).toBe(
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL&reportType=SAST%2CDAST&projectId=123`,
+        );
+      });
+
+      it('skips additional filters that match the filterKey', () => {
+        const filterKey = 'severity';
+
+        const result = constructVulnerabilitiesReportWithFiltersPath({
+          seriesId: 'CRITICAL',
+          filterKey,
+          securityVulnerabilitiesPath,
+          additionalFilters: {
+            [filterKey]: ['HIGH', 'MEDIUM'],
+            reportType: ['SAST'],
+          },
+        });
+
+        expect(result).toBe(
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL&reportType=SAST`,
+        );
+      });
+
+      it('skips empty additional filters', () => {
+        const result = constructVulnerabilitiesReportWithFiltersPath({
+          seriesId: 'CRITICAL',
+          filterKey: 'severity',
+          securityVulnerabilitiesPath,
+          additionalFilters: {
+            reportType: [],
+            projectId: '',
+          },
+        });
+
+        expect(result).toBe(
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL`,
         );
       });
     });

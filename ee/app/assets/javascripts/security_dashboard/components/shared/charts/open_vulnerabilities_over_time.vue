@@ -28,6 +28,11 @@ export default {
       required: false,
       default: '',
     },
+    filters: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   computed: {
     chartStartDate() {
@@ -99,6 +104,7 @@ export default {
         securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
         seriesId,
         filterKey: this.groupedBy,
+        additionalFilters: this.filters,
       });
     },
   },

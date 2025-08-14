@@ -65,6 +65,12 @@ export default {
     };
   },
   computed: {
+    combinedFilters() {
+      return {
+        ...this.filters,
+        ...this.panelLevelFilters,
+      };
+    },
     hasChartData() {
       return this.vulnerabilitiesOverTime.length > 0;
     },
@@ -89,6 +95,7 @@ export default {
         class="gl-z-0 gl-h-full gl-overflow-hidden gl-p-2"
         :chart-series="vulnerabilitiesOverTime"
         :grouped-by="groupedBy"
+        :filters="combinedFilters"
       />
       <p
         v-else

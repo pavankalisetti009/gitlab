@@ -97,11 +97,11 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
   const findSeverityFilter = () => wrapper.findComponent(OverTimeSeverityFilter);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('component rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('passes the correct title to the panels base', () => {
       expect(findExtendedDashboardPanel().props('title')).toBe('Vulnerabilities over time');
     });
@@ -116,7 +116,88 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
     });
   });
 
+  describe('filters prop', () => {
+    it('passes filters to VulnerabilitiesOverTimeChart component', async () => {
+      const customFilters = {
+        projectId: 'gid://gitlab/Project/456',
+        reportType: ['SAST', 'DAST'],
+        severity: ['HIGH', 'CRITICAL'],
+      };
+
+      const defaultPanelLevelFilters = { severity: [] };
+
+      createComponent({
+        props: {
+          filters: customFilters,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(findVulnerabilitiesOverTimeChart().props('filters')).toEqual({
+        ...customFilters,
+        ...defaultPanelLevelFilters,
+      });
+    });
+
+    it('passes filters to VulnerabilitiesOverTimeChart when switching group by', async () => {
+      const customFilters = {
+        projectId: 'gid://gitlab/Project/789',
+        reportType: ['CONTAINER_SCANNING'],
+      };
+      const defaultPanelLevelFilters = { severity: [] };
+
+      createComponent({
+        props: {
+          filters: customFilters,
+        },
+      });
+
+      await waitForPromises();
+
+      // Switch to report type grouping
+      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await waitForPromises();
+
+      expect(findVulnerabilitiesOverTimeChart().props('filters')).toEqual({
+        ...customFilters,
+        ...defaultPanelLevelFilters,
+      });
+    });
+
+    it('combines props filters with panel level filters', async () => {
+      const customFilters = {
+        projectId: 'gid://gitlab/Project/456',
+        reportType: ['SAST', 'DAST'],
+      };
+
+      const panelLevelFilters = ['HIGH', 'MEDIUM'];
+
+      createComponent({
+        props: {
+          filters: customFilters,
+        },
+      });
+
+      await waitForPromises();
+
+      findSeverityFilter().vm.$emit('input', panelLevelFilters);
+      await nextTick();
+
+      // The combinedFilters should include both props filters and panel level filters
+      expect(findVulnerabilitiesOverTimeChart().props('filters')).toEqual({
+        projectId: 'gid://gitlab/Project/456',
+        reportType: ['SAST', 'DAST'],
+        severity: panelLevelFilters,
+      });
+    });
+  });
+
   describe('group by functionality', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('switches to report type grouping when report type button is clicked', async () => {
       await waitForPromises();
       const overTimeGroupBy = findOverTimeGroupBy();
@@ -142,6 +223,10 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   });
 
   describe('Apollo query', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('fetches vulnerabilities over time data when component is created', () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
 
@@ -211,6 +296,10 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   });
 
   describe('chart data formatting', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('correctly formats chart data from the API response for severity grouping', async () => {
       await waitForPromises();
 
@@ -328,6 +417,10 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   });
 
   describe('loading state', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('passes loading state to panels base', async () => {
       expect(findExtendedDashboardPanel().props('loading')).toBe(true);
 
@@ -366,6 +459,10 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   });
 
   describe('severity filter', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('passes the correct value prop', () => {
       expect(findSeverityFilter().props('value')).toEqual([]);
     });
