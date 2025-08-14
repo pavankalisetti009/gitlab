@@ -127,6 +127,18 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         expect(jwt_role["bound_claims"]["project_id"].to_i).to eq(project.id)
         expect(jwt_role["user_claim"]).to eq("project_id")
       end
+
+      it 'updates the bound_audience' do
+        expect(result).to be_success
+        expect(secrets_manager.reload).to be_active
+
+        # Check that JWT role was properly configured
+        jwt_role = secrets_manager_client.read_jwt_role('gitlab_rails_jwt', 'app')
+        expect(jwt_role).to be_present
+
+        # Verify the specifics of JWT role configuration
+        expect(jwt_role["bound_audiences"]).to include('http://127.0.0.1:9800')
+      end
     end
   end
 end

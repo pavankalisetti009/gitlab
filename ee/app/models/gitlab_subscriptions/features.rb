@@ -202,6 +202,7 @@ module GitlabSubscriptions
       board_status_lists
       disable_invite_members
       self_hosted_models
+      native_secrets_management
     ].freeze
 
     ULTIMATE_FEATURES = %i[
@@ -248,7 +249,6 @@ module GitlabSubscriptions
       jira_issue_association_enforcement
       kubernetes_cluster_vulnerabilities
       license_scanning
-      native_secrets_management
       okrs
       personal_access_token_expiration_policy
       secret_push_protection

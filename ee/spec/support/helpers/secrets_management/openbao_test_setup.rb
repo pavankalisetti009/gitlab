@@ -3,7 +3,8 @@
 module SecretsManagement
   class OpenbaoTestSetup
     SERVER_ADDRESS = '127.0.0.1:9800'
-    SERVER_URI_TO_PING = "http://#{SERVER_ADDRESS}/v1/sys/health".freeze
+    SERVER_ADDRESS_WITH_HTTP = "http://#{SERVER_ADDRESS}".freeze
+    SERVER_URI_TO_PING = "#{SERVER_ADDRESS_WITH_HTTP}/v1/sys/health".freeze
 
     class << self
       def install_dir
@@ -42,8 +43,18 @@ module SecretsManagement
         wait_for_ready
       end
 
+      def jwt_auth_enabled?
+        opts = "-address=#{SERVER_ADDRESS_WITH_HTTP}"
+        jwt_path = SecretsManagerClient::GITLAB_JWT_AUTH_PATH
+
+        # Try to read JWT config - if it exists, auth is enabled
+        system(%(#{bin_path} read #{opts} auth/#{jwt_path}/config >/dev/null 2>&1))
+      end
+
       def configure_jwt_auth(jwt_public_key)
-        opts = "-address=http://#{SERVER_ADDRESS}"
+        return if jwt_auth_enabled?
+
+        opts = "-address=#{SERVER_ADDRESS_WITH_HTTP}"
         policy_path = File.join(__dir__, 'test_jwt_policy.hcl')
 
         # Redirect both stdout and stderr to /dev/null for all commands
@@ -53,16 +64,16 @@ module SecretsManagement
 
         # Always update the JWT config with the new public key
         system(%(#{bin_path} write #{opts} auth/#{jwt_path}/config \
-                 bound_issuer="#{Gitlab.config.gitlab.url}" \
-                 jwt_validation_pubkeys="#{jwt_public_key}" >/dev/null 2>&1))
+                bound_issuer="#{Gitlab.config.gitlab.url}" \
+                jwt_validation_pubkeys="#{jwt_public_key}" >/dev/null 2>&1))
 
         # Update role configuration
         role = SecretsManagerClient::DEFAULT_JWT_ROLE
         system(%(#{bin_path} write #{opts} auth/#{jwt_path}/role/#{role} \
-                 role_type=jwt \
-                 bound_audiences=openbao \
-                 user_claim=user_id \
-                 token_policies=secrets_manager >/dev/null 2>&1))
+                role_type=jwt \
+                bound_audiences=#{SERVER_ADDRESS_WITH_HTTP} \
+                user_claim=user_id \
+                token_policies=secrets_manager >/dev/null 2>&1))
 
         # Update policy configuration
         system(%(#{bin_path} policy write #{opts} secrets_manager #{policy_path} >/dev/null 2>&1))

@@ -17,6 +17,7 @@ module SecretsManagement
       end
 
       def execute
+        update_gitlab_rails_jwt_role
         enable_secret_store
         enable_auth
         create_owner_policy
@@ -133,6 +134,24 @@ module SecretsManagement
           policy.add_capability(metadata_path, permission)
         end
         policy.add_capability(detailed_metadata_path, 'list')
+      end
+
+      def update_gitlab_rails_jwt_role
+        # A new test environment is created everytime we run rspec which has the server url
+        # as bound_audience based on openbao_test_setup file.
+        # I have added specs to make sure the bound_audiences include the expected server_url in provision_service_spec.
+        return if Rails.env.test?
+
+        # This is a temporary code to update the JWT bound_audiences in Staging and Production.
+        jwt = SecretsManagement::SecretsManagerJwt.new(
+          current_user: current_user,
+          project: project,
+          old_aud: 'openbao'
+        ).encoded
+
+        client = SecretsManagement::SecretsManagerClient.new(jwt: jwt)
+
+        client.update_gitlab_rails_jwt_role(openbao_url: SecretsManagement::ProjectSecretsManager.server_url)
       end
 
       def activate_secrets_manager

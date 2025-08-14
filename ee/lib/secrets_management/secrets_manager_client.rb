@@ -143,6 +143,15 @@ module SecretsManagement
       make_request(:post, "auth/#{mount_path}/config", config)
     end
 
+    def update_gitlab_rails_jwt_role(openbao_url:)
+      role_data = {
+        role_type: "jwt",
+        bound_audiences: openbao_url
+      }
+      url = "auth/gitlab_rails_jwt/role/app"
+      make_request(:post, url, role_data)
+    end
+
     def update_jwt_role(mount_path, role_name, **role_data)
       ttl_values = {
         token_ttl: OPENBAO_TOKEN_TTL,

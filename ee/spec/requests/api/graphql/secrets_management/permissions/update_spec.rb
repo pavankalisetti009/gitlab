@@ -72,7 +72,7 @@ RSpec.describe 'Update Secret Permission', :gitlab_secrets_manager, feature_cate
 
         expect(mutation_response['secretPermission']).not_to be_nil
         expect(mutation_response['secretPermission']['principal']['id']).to eq(principal[:id].to_s)
-        expect(mutation_response['secretPermission']['principal']['type']).to eq('User')
+        expect(mutation_response['secretPermission']['principal']['type']).to eq('USER')
         expect(mutation_response['secretPermission']['permissions']).to eq(permissions.to_s)
         expect(mutation_response['secretPermission']['expiredAt']).to eq(expired_at)
       end

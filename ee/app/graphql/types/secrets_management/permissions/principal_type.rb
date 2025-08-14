@@ -11,7 +11,7 @@ module Types
           null: false,
           description: 'ID of the principal (User, MemberRole, Role, Group).'
 
-        field :type, GraphQL::Types::String,
+        field :type, Types::SecretsManagement::Permissions::PrincipalTypeEnum,
           null: false,
           description: 'Name of the principal (User, MemberRole, Role, Group).'
 

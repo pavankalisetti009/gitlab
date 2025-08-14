@@ -65,7 +65,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
         a_hash_including(
           'principal' => a_hash_including(
             'id' => current_user.id.to_s,
-            'type' => 'User',
+            'type' => 'USER',
             'user' => a_hash_including('id' => anything)
           )
         ).and(satisfy { |data|
@@ -76,7 +76,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
         a_hash_including(
           'principal' => a_hash_including(
             'id' => group.id.to_s,
-            'type' => 'Group',
+            'type' => 'GROUP',
             'group' => a_hash_including('id' => anything)
           )
         ).and(satisfy { |data|
@@ -86,7 +86,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
         a_hash_including(
           'principal' => a_hash_including(
             'id' => '20',
-            'type' => 'Role'
+            'type' => 'ROLE'
           )
         ).and(satisfy { |data|
           data['permissions'].include?('create') &&
