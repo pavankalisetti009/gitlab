@@ -40,7 +40,7 @@ RSpec.describe SecretsManagement::SecretsManagerJwt, feature_category: :secrets_
         nbf: now,
         exp: now + described_class::DEFAULT_TTL.to_i,
         jti: 'test-uuid',
-        aud: 'openbao',
+        aud: 'http://127.0.0.1:9800',
         sub: 'gitlab_secrets_manager',
         correlation_id: 'test-correlation-id'
       )
