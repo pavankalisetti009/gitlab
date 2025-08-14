@@ -15444,6 +15444,9 @@ msgstr ""
 msgid "Commits & branches"
 msgstr ""
 
+msgid "Commits breadcrumb"
+msgstr ""
+
 msgid "Commits feed"
 msgstr ""
 
