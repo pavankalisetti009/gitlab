@@ -9,6 +9,20 @@ export const SEVERITY_LEVELS = {
   UNKNOWN: s__('severity|Unknown'),
 };
 
+// Constants for vulnerability report URL parameters
+export const ACTIVITY_FILTERS = {
+  ALL: 'ALL',
+};
+
+export const STATE_FILTERS = {
+  CONFIRMED: 'CONFIRMED',
+  DETECTED: 'DETECTED',
+};
+
+export const TAB_FILTERS = {
+  OPERATIONAL: 'OPERATIONAL',
+};
+
 /**
  * Formats vulnerability data by severity for chart visualization
  *
@@ -147,7 +161,8 @@ export const formatVulnerabilitiesOverTimeData = (
  *
  * @param {string} securityVulnerabilitiesPath - The path to the security vulnerabilities page
  * @param {string} seriesId - The ID of the series
- * @param {string} groupBy - The grouping to use for the chart. Can be 'severity' or 'reportType'.
+ * @param {string} filterKey - The primary filter key (usually the groupedBy value)
+ * @param {Object} additionalFilters - Additional filters to include in the URL
  *
  * @note
  * This is a temporary solution until the link is provided by the GraphQL API
@@ -157,15 +172,37 @@ export const constructVulnerabilitiesReportWithFiltersPath = ({
   securityVulnerabilitiesPath,
   seriesId,
   filterKey,
+  additionalFilters = {},
 }) => {
   const SPECIAL_LINK_CASES = {
     CLUSTER_IMAGE_SCANNING: {
       // Cluster image scanning is a special case because it has a different tab in the vulnerability report page
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      linkSuffix: 'tab=OPERATIONAL',
+      tab: TAB_FILTERS.OPERATIONAL,
     },
   };
-  const linkSuffix = SPECIAL_LINK_CASES[seriesId]?.linkSuffix || `${filterKey}=${seriesId}`;
 
-  return `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED,DETECTED&${linkSuffix}`;
+  const params = new URLSearchParams();
+
+  // Add default parameters
+  params.set('activity', ACTIVITY_FILTERS.ALL);
+  params.set('state', `${STATE_FILTERS.CONFIRMED},${STATE_FILTERS.DETECTED}`);
+
+  const specialCase = SPECIAL_LINK_CASES[seriesId];
+  if (specialCase) {
+    Object.entries(specialCase).forEach(([key, value]) => {
+      params.set(key, value);
+    });
+  } else {
+    params.set(filterKey, seriesId);
+  }
+
+  Object.entries(additionalFilters).forEach(([key, value]) => {
+    if (key !== filterKey && value && value.length > 0) {
+      // A filter can have multiple values (e.g. severity=HIGH,MEDIUM) so we need to join them with commas
+      const filterValue = Array.isArray(value) ? value.join(',') : value;
+      params.set(key, filterValue);
+    }
+  });
+
+  return `${securityVulnerabilitiesPath}?${params.toString()}`;
 };
