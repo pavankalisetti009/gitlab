@@ -9019,6 +9019,12 @@ msgstr ""
 msgid "Assigned to %{assignee_name}"
 msgstr ""
 
+msgid "Assigned weight"
+msgstr ""
+
+msgid "Assigned weight does not match total of its child items."
+msgstr ""
+
 msgid "Assignee"
 msgid_plural "%d Assignees"
 msgstr[0] ""
@@ -66782,6 +66788,9 @@ msgstr ""
 msgid "Total memory (GB)"
 msgstr ""
 
+msgid "Total of child items"
+msgstr ""
+
 msgid "Total test time for all commits/merges"
 msgstr ""
 
@@ -71406,6 +71415,9 @@ msgid "Weight %{weight}"
 msgstr ""
 
 msgid "Weight - %{maxIssueWeight}"
+msgstr ""
+
+msgid "Weight conflict warning"
 msgstr ""
 
 msgid "Welcome %{name},"

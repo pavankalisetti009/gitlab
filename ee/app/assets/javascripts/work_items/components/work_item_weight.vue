@@ -11,6 +11,7 @@ import {
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { newWorkItemId } from '~/work_items/utils';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
+import WorkItemWeightConflictWarning from 'ee/work_items/components/work_item_weight_conflict_warning.vue';
 import { sprintf } from '~/locale';
 
 export default {
@@ -22,6 +23,7 @@ export default {
     GlFormGroup,
     GlFormInput,
     WorkItemSidebarWidget,
+    WorkItemWeightConflictWarning,
   },
   mixins: [Tracking.mixin()],
   inject: ['hasIssueWeightsFeature'],
@@ -53,6 +55,9 @@ export default {
   computed: {
     weight() {
       return this.widget.weight;
+    },
+    rolledUpWeight() {
+      return this.widget.rolledUpWeight;
     },
     hasWeight() {
       return this.weight !== null;
@@ -163,6 +168,8 @@ export default {
     <template #content>
       <template v-if="hasWeight">
         {{ weight }}
+
+        <work-item-weight-conflict-warning :weight="weight" :rolled-up-weight="rolledUpWeight" />
       </template>
       <span v-else class="gl-text-subtle">
         {{ __('None') }}
