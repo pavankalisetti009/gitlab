@@ -95,8 +95,13 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
 
       try {
         const href = joinPaths(url, `${this.serviceAccount.id}`);
+        const { email, ...valuesWithoutEmail } = values;
 
-        await axios.patch(href, values);
+        if (email == null) {
+          await axios.patch(href, valuesWithoutEmail);
+        } else {
+          await axios.patch(href, values);
+        }
 
         this.alert = createAlert({
           message: s__('ServiceAccounts|The service account was updated.'),
