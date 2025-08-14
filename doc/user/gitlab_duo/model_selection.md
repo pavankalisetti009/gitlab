@@ -29,11 +29,13 @@ For more information, see the history.
 
 {{< /alert >}}
 
-To help meet your performance and compliance requirements,
-on GitLab.com, you can choose to use different large language models (LLMs) with GitLab Duo.
+Every GitLab Duo feature has a pre-selected default large language model (LLM), chosen by GitLab.
 
-If you do not select a specific LLM, all GitLab Duo features use the default LLMs.
-You should use the defaults if you do not have unique requirements.
+GitLab can update this default LLM to optimize feature performance. Therefore, a feature's LLM might change without you taking any action.
+
+If you do not want to use the default LLM for each feature, or have specific requirements, you can choose from an array of other available supported LLMs.
+
+If you select a specific LLM for a feature, the feature uses that LLM until you select another.
 
 ## Select an LLM for a feature
 
