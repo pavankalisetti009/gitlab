@@ -1,0 +1,10 @@
+---
+name: zoekt_index_empty_repos
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/561000
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201141
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/561026
+milestone: '18.3'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false

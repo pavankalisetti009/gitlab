@@ -39,7 +39,7 @@ module Search
         return :skipped unless Repository::INDEXABLE_STATES.include?(zoekt_repository.state.to_sym)
 
         # Mark tasks as done since we have nothing to index
-        return :done unless project.repo_exists?
+        return :done if ::Search::Zoekt.skip_empty_repositories? && !project.repo_exists?
 
         :valid
       end
