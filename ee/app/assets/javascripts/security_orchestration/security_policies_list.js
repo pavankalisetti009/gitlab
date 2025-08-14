@@ -24,6 +24,7 @@ export default (el, namespaceType) => {
   if (!el) return null;
 
   const {
+    accessTokens,
     assignedPolicyProject,
     designatedAsCsp,
     disableSecurityPolicyProject,
@@ -40,11 +41,18 @@ export default (el, namespaceType) => {
   } = el.dataset;
 
   let parsedAssignedPolicyProject;
+  let parsedAccessTokens;
 
   try {
     parsedAssignedPolicyProject = convertObjectPropsToCamelCase(JSON.parse(assignedPolicyProject));
   } catch {
     parsedAssignedPolicyProject = DEFAULT_ASSIGNED_POLICY_PROJECT;
+  }
+
+  try {
+    parsedAccessTokens = JSON.parse(accessTokens);
+  } catch {
+    parsedAccessTokens = [];
   }
 
   const count = parseInt(maxScanExecutionPolicyActions, 10);
@@ -64,6 +72,7 @@ export default (el, namespaceType) => {
     el,
     name: 'PoliciesAppRoot',
     provide: {
+      availableAccessTokens: parsedAccessTokens,
       assignedPolicyProject: parsedAssignedPolicyProject,
       designatedAsCsp: parseBoolean(designatedAsCsp),
       disableSecurityPolicyProject: parseBoolean(disableSecurityPolicyProject),

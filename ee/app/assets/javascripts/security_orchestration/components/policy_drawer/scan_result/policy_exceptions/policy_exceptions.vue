@@ -4,6 +4,7 @@ import BranchPatternException from './branch_pattern_exception.vue';
 import UsersGroupsExceptions from './users_groups_exceptions.vue';
 import RolesExceptions from './roles_exceptions.vue';
 import ServiceAccountsException from './service_accounts_exception.vue';
+import TokensException from './tokens_exception.vue';
 
 export default {
   i18n: {
@@ -15,6 +16,7 @@ export default {
     UsersGroupsExceptions,
     RolesExceptions,
     ServiceAccountsException,
+    TokensException,
   },
   props: {
     exceptions: {
@@ -24,6 +26,12 @@ export default {
     },
   },
   computed: {
+    tokens() {
+      return this.exceptions.access_tokens || [];
+    },
+    hasTokens() {
+      return this.tokens.length > 0;
+    },
     branches() {
       return this.exceptions.branches || [];
     },
@@ -81,6 +89,7 @@ export default {
     <h5 data-testid="header">{{ $options.i18n.header }}</h5>
     <p v-if="totalExceptionsCount" data-testid="subheader" class="gl-mb-2">{{ subHeaderText }}</p>
 
+    <tokens-exception v-if="hasTokens" :tokens="tokens" />
     <branch-pattern-exception v-if="hasBranches" :branches="branches" />
     <service-accounts-exception v-if="hasServiceAccounts" :service-accounts="serviceAccounts" />
     <users-groups-exceptions v-if="hasGroupsOrUsers" :groups="groups" :users="users" />

@@ -57442,6 +57442,9 @@ msgstr ""
 msgid "SecurityOrchestration|API request"
 msgstr ""
 
+msgid "SecurityOrchestration|Access tokens (%{count})"
+msgstr ""
+
 msgid "SecurityOrchestration|Accounts exceptions (%{count})"
 msgstr ""
 
