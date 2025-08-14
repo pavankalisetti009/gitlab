@@ -13,8 +13,16 @@ module GitlabSubscriptions
         if general_params[:step] == GitlabSubscriptions::Trials::CreateDuoProService::TRIAL
           track_event('render_duo_pro_trial_page')
 
-          render GitlabSubscriptions::Trials::DuoPro::TrialFormComponent
+          render GitlabSubscriptions::Trials::DuoPro::LegacyTrialFormComponent
                    .new(eligible_namespaces: eligible_namespaces, params: trial_params)
+        elsif ::Feature.enabled?(:duo_pro_trial_single_form, current_user)
+          track_event('render_duo_pro_trial_page')
+
+          render GitlabSubscriptions::Trials::DuoPro::TrialFormComponent.new(
+            user: current_user,
+            eligible_namespaces: eligible_namespaces,
+            params: form_params
+          )
         else
           track_event('render_duo_pro_lead_page')
 
@@ -52,7 +60,7 @@ module GitlabSubscriptions
           # trial creation failed
           params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
-          render GitlabSubscriptions::Trials::DuoPro::TrialFormWithErrorsComponent
+          render GitlabSubscriptions::Trials::DuoPro::LegacyTrialFormWithErrorsComponent
                    .new(eligible_namespaces: eligible_namespaces,
                      params: trial_params,
                      errors: @result.errors,
@@ -75,6 +83,13 @@ module GitlabSubscriptions
 
       def trial_params
         params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id).to_h
+      end
+
+      def form_params
+        params.permit(
+          *::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id, :first_name, :last_name, :company_name,
+          :phone_number, :country, :state
+        )
       end
 
       def success_flash_message(add_on_purchase)

@@ -4,22 +4,9 @@ module GitlabSubscriptions
   module Trials
     module DuoPro
       class AdvantagesListComponent < ViewComponent::Base
-        def call
-          render(GitlabSubscriptions::TrialAdvantagesComponent.new) do |c|
-            c.with_header do
-              s_('DuoProTrial|GitLab Duo Pro is designed to make teams more efficient throughout the software ' \
-                'development lifecycle with:')
-            end
-
-            c.with_advantages(advantages)
-
-            c.with_footer do
-              s_('DuoProTrial|GitLab Duo Pro is only available for purchase for Premium and Ultimate users.')
-            end
-          end
-        end
-
         private
+
+        delegate :sprite_icon, to: :helpers
 
         def advantages
           [
