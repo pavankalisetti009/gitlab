@@ -7,6 +7,7 @@ import {
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
+import DurationSelector from 'ee/security_orchestration/components/policy_editor/shared/duration_selector/duration_selector.vue';
 import { getHostname, slugify, slugifyToArray } from '../../utils';
 import {
   DAYS,
@@ -28,19 +29,21 @@ import {
   SCAN_EXECUTION_RULE_PERIOD_DAILY_KEY,
   SCAN_EXECUTION_RULE_PERIOD_WEEKLY_KEY,
 } from '../constants';
+import { TIME_UNITS } from '../../shared/duration_selector/constants';
 import BaseRuleComponent from './base_rule_component.vue';
 
 export default {
-  SCAN_EXECUTION_RULE_SCOPE_TYPE,
-  SCAN_EXECUTION_RULE_PERIOD_TYPE,
-  SCAN_EXECUTION_RULES_SCHEDULE_KEY,
-  SCAN_EXECUTION_RULE_PERIOD_DAILY_KEY,
-  SCAN_EXECUTION_RULE_PERIOD_WEEKLY_KEY,
-  HOUR_MINUTE_LIST,
   DAYS,
+  HOUR_MINUTE_LIST,
+  SCAN_EXECUTION_RULE_PERIOD_DAILY_KEY,
+  SCAN_EXECUTION_RULE_PERIOD_TYPE,
+  SCAN_EXECUTION_RULE_PERIOD_WEEKLY_KEY,
+  SCAN_EXECUTION_RULE_SCOPE_TYPE,
+  SCAN_EXECUTION_RULES_SCHEDULE_KEY,
+  TIME_UNITS,
   i18n: {
     schedulePeriod: s__(
-      'ScanExecutionPolicy|%{period} %{days} around %{time} %{timezoneLabel} %{timezone}',
+      'ScanExecutionPolicy|at the following times: %{period} %{days} around %{time} %{timezone}, run for: %{duration}, %{timezoneLabel}',
     ),
     selectedAgentsPlaceholder: s__('ScanExecutionPolicy|Select agent'),
     selectedNamespacesPlaceholder: s__('ScanExecutionPolicy|Select namespaces'),
@@ -55,6 +58,7 @@ export default {
   name: 'ScheduleRuleComponent',
   components: {
     BaseRuleComponent,
+    DurationSelector,
     GlFormInput,
     GlCollapsibleListbox,
     GlSprintf,
@@ -128,6 +132,9 @@ export default {
   methods: {
     convertToListboxItems(items) {
       return Object.entries(items).map(([value, text]) => ({ value, text }));
+    },
+    handleTimeWindowUpdate(timeWindow) {
+      this.triggerChanged({ time_window: timeWindow });
     },
     handleTimeZoneInput({ identifier }) {
       this.triggerChanged({ timezone: identifier });
@@ -293,6 +300,13 @@ export default {
               :timezone-data="timezones"
               :title="timezoneTooltipText"
               @input="handleTimeZoneInput"
+            />
+          </template>
+          <template #duration>
+            <duration-selector
+              :minimum-seconds="$options.TIME_UNITS.HOUR"
+              :time-window="initRule.time_window"
+              @changed="handleTimeWindowUpdate"
             />
           </template>
         </gl-sprintf>

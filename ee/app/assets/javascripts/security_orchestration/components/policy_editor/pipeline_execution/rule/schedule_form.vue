@@ -1,34 +1,20 @@
 <script>
-import { GlCollapsibleListbox, GlSprintf, GlFormInput } from '@gitlab/ui';
-import { debounce, sortBy } from 'lodash';
+import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import { sortBy } from 'lodash';
 import { n__, s__, __, sprintf } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { isNumeric } from '~/lib/utils/number_utils';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/branch_selection.vue';
+import DurationSelector from 'ee/security_orchestration/components/policy_editor/shared/duration_selector/duration_selector.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
 import { PROJECT_DEFAULT_BRANCH } from '../../constants';
-import {
-  CADENCE_OPTIONS,
-  DEFAULT_TIME_PER_UNIT,
-  DEFAULT_TIMEZONE,
-  HOUR_MINUTE_LIST,
-  MINIMUM_SECONDS_IN_MINUTES,
-  TIME_UNIT_OPTIONS,
-  TIME_UNITS,
-  WEEKDAY_OPTIONS,
-} from './constants';
+import { CADENCE_OPTIONS, DEFAULT_TIMEZONE, HOUR_MINUTE_LIST, WEEKDAY_OPTIONS } from './constants';
 import {
   isCadenceWeekly,
   isCadenceMonthly,
   isValidCadence,
   updateScheduleCadence,
   getMonthlyDayOptions,
-  timeUnitToSeconds,
-  secondsToValue,
-  determineTimeUnit,
-  getValueWithinLimits,
 } from './utils';
 import SnoozeForm from './snooze_form.vue';
 
@@ -36,7 +22,6 @@ export default {
   name: 'ScheduleForm',
   CADENCE_OPTIONS,
   HOUR_MINUTE_LIST,
-  TIME_UNIT_OPTIONS,
   WEEKDAY_OPTIONS,
   i18n: {
     cadence: __('Cadence'),
@@ -45,8 +30,6 @@ export default {
     details: s__(
       'SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}',
     ),
-    duration: __('Duration'),
-    durationPlaceholder: __('Enter duration'),
     headerText: s__('SecurityOrchestration|Select days'),
     message: s__('SecurityOrchestration|Schedule to run for %{branchSelector}'),
     monthly: __('Monthly'),
@@ -56,16 +39,15 @@ export default {
     time: __('Time'),
     timezoneLabel: s__('ScanExecutionPolicy|on %{hostname}'),
     timezonePlaceholder: s__('ScanExecutionPolicy|Select timezone'),
-    timeUnit: __('Time unit'),
     weekly: __('Weekly'),
     weekdayDropdownPlaceholder: __('Select a day'),
   },
   components: {
     BranchSelection,
+    DurationSelector,
     GlCollapsibleListbox,
     GlSprintf,
     TimezoneDropdown,
-    GlFormInput,
     SnoozeForm,
   },
   inject: ['timezones'],
@@ -74,12 +56,6 @@ export default {
       type: Object,
       required: true,
     },
-  },
-  data() {
-    const seconds = this.schedule.time_window?.value || TIME_UNITS.HOUR;
-    return {
-      selectedTimeUnit: determineTimeUnit(seconds),
-    };
   },
   computed: {
     defaultBranch() {
@@ -99,12 +75,6 @@ export default {
     },
     cadenceToggleText() {
       return isValidCadence(this.cadence) ? this.cadence : this.$options.i18n.cadencePlaceholder;
-    },
-    durationValue() {
-      const seconds = this.schedule.time_window?.value || 0;
-      return (
-        Math.floor(secondsToValue(seconds, this.selectedTimeUnit)) || MINIMUM_SECONDS_IN_MINUTES
-      );
     },
     monthlyDaysMessage() {
       return n__('day of the month', 'days of the month', this.selectedMonthlyDays.length);
@@ -144,15 +114,6 @@ export default {
       });
     },
   },
-  created() {
-    this.handleUpdateDuration = debounce(
-      this.updateDurationValue,
-      DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
-    );
-  },
-  destroyed() {
-    this.handleUpdateDuration.cancel();
-  },
   methods: {
     handleMonthlyDaysInput(selectedDays) {
       this.updatePolicy('days_of_month', sortBy(selectedDays));
@@ -181,21 +142,6 @@ export default {
     },
     updatePolicy(key, value) {
       this.$emit('changed', { ...this.schedule, [key]: value });
-    },
-    updateDurationValue(value) {
-      if (value && isNumeric(value)) {
-        const valueInSeconds = timeUnitToSeconds(parseInt(value, 10), this.selectedTimeUnit);
-        const seconds = getValueWithinLimits(valueInSeconds);
-        this.updateTimeWindow(seconds);
-      }
-    },
-    updateDurationUnit(unit) {
-      this.selectedTimeUnit = unit;
-      this.updateTimeWindow(DEFAULT_TIME_PER_UNIT[unit]);
-    },
-    updateTimeWindow(seconds) {
-      const timeWindow = { ...this.schedule.time_window, value: seconds };
-      this.updatePolicy('time_window', timeWindow);
     },
   },
 };
@@ -275,25 +221,11 @@ export default {
         </template>
 
         <template #duration>
-          <div class="gl-flex gl-gap-3">
-            <gl-form-input
-              class="gl-inline-block gl-w-12"
-              data-testid="duration-input"
-              :aria-label="$options.i18n.duration"
-              :value="durationValue"
-              type="number"
-              :min="1"
-              :placeholder="$options.i18n.durationPlaceholder"
-              @update="handleUpdateDuration"
-            />
-            <gl-collapsible-listbox
-              data-testid="time-unit-dropdown"
-              :aria-label="$options.i18n.timeUnit"
-              :items="$options.TIME_UNIT_OPTIONS"
-              :selected="selectedTimeUnit"
-              @select="updateDurationUnit"
-            />
-          </div>
+          <duration-selector
+            time-window-required
+            :time-window="schedule.time_window"
+            @changed="updatePolicy('time_window', $event)"
+          />
         </template>
 
         <template #timezoneSelector>

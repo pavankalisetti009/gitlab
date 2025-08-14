@@ -3,6 +3,7 @@ import { nextTick } from 'vue';
 import mockTimezones from 'test_fixtures/timezones/full.json';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BaseRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/base_rule_component.vue';
+import DurationSelector from 'ee/security_orchestration/components/policy_editor/shared/duration_selector/duration_selector.vue';
 import ScheduleRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/schedule_rule_component.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import {
@@ -47,6 +48,7 @@ describe('ScheduleRuleComponent', () => {
     });
   };
 
+  const findDurationSelector = () => wrapper.findComponent(DurationSelector);
   const findScheduleRuleScopeDropDown = () => wrapper.findByTestId('rule-component-scope');
   const findScheduleRuleTypeDropDown = () => wrapper.findByTestId('rule-component-type');
   const findScheduleRulePeriodDropDown = () => wrapper.findByTestId('rule-component-period');
@@ -219,6 +221,31 @@ describe('ScheduleRuleComponent', () => {
       await nextTick();
 
       expect(findTimezoneDropdown().attributes('title')).toBe("Kubernetes agent's timezone");
+    });
+  });
+
+  describe('duration selector', () => {
+    it('renders', () => {
+      createComponent();
+      expect(findDurationSelector().props()).toMatchObject({
+        timeWindow: { distribution: 'random' },
+        timeWindowRequired: false,
+      });
+    });
+
+    it('handles duration selection changes', async () => {
+      createComponent();
+      await findDurationSelector().vm.$emit('changed', { distribution: 'random', value: 7200 });
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            branches: [],
+            cadence: '0 0 * * *',
+            time_window: { distribution: 'random', value: 7200 },
+            type: 'schedule',
+          },
+        ],
+      ]);
     });
   });
 });
