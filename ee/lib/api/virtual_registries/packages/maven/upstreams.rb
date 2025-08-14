@@ -46,6 +46,11 @@ module API
             end
 
             namespace ':id/-/virtual_registries/packages/maven/upstreams' do
+              after_validation do
+                bad_request!(_('only available on top-level groups.')) unless group.root?
+                authorize! :read_virtual_registry, group.virtual_registry_policy_subject
+              end
+
               desc 'List all maven virtual registry upstreams for a group' do
                 detail 'This feature was introduced in GitLab 18.3. \
                     This feature is currently in experiment state. \
@@ -61,11 +66,40 @@ module API
                 hidden true
               end
               get do
-                bad_request!(_('only available on top-level groups.')) unless group.root?
-                authorize! :read_virtual_registry, group.virtual_registry_policy_subject
-
                 present paginate(::VirtualRegistries::Packages::Maven::Upstream.for_group(group)),
                   with: Entities::VirtualRegistries::Packages::Maven::Upstream
+              end
+
+              desc 'Test connection to a maven virtual registry upstream with provided parameters' do
+                detail 'This feature was introduced in GitLab 18.3. \
+                        This feature is currently in experiment state. \
+                        This feature is behind the `maven_virtual_registry` feature flag.'
+                success code: 200
+                failure [
+                  { code: 400, message: 'Bad Request' },
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: 'Forbidden' },
+                  { code: 404, message: 'Not found' }
+                ]
+                tags %w[maven_virtual_registries]
+                hidden true
+              end
+              params do
+                requires :url, type: String, desc: 'The URL of the maven virtual registry upstream',
+                  allow_blank: false
+                optional :username, type: String, desc: 'The username of the maven virtual registry upstream'
+                optional :password, type: String, desc: 'The password of the maven virtual registry upstream'
+                all_or_none_of :username, :password
+              end
+              post :test do
+                upstream = ::VirtualRegistries::Packages::Maven::Upstream.new(
+                  declared_params(include_missing: false).merge(group: group, name: 'test')
+                )
+
+                render_validation_error!(upstream) if upstream.invalid?
+
+                status :ok
+                upstream.test
               end
             end
           end
@@ -239,6 +273,26 @@ module API
                   authorize! :destroy_virtual_registry, upstream
 
                   destroy_conditionally!(upstream) { upstream.purge_cache! }
+                end
+
+                desc 'Test connection to an existing maven virtual registry upstream' do
+                  detail 'This feature was introduced in GitLab 18.3. \
+                        This feature is currently in experiment state. \
+                        This feature is behind the `maven_virtual_registry` feature flag.'
+                  success code: 200
+                  failure [
+                    { code: 400, message: 'Bad Request' },
+                    { code: 401, message: 'Unauthorized' },
+                    { code: 403, message: 'Forbidden' },
+                    { code: 404, message: 'Not found' }
+                  ]
+                  tags %w[maven_virtual_registries]
+                  hidden true
+                end
+                get :test do
+                  authorize! :read_virtual_registry, upstream
+
+                  upstream.test
                 end
               end
             end
