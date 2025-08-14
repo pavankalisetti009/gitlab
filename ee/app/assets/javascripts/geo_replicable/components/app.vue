@@ -1,10 +1,11 @@
 <script>
-// eslint-disable-next-line no-restricted-imports
-import { mapActions } from 'vuex';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
+import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
+import replicableTypeBulkUpdateMutation from 'ee/geo_shared/graphql/replicable_type_bulk_update_mutation.graphql';
 import { sprintf, s__ } from '~/locale';
 import { createAlert } from '~/alert';
+import toast from '~/vue_shared/plugins/global_toast';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
 import {
   isValidFilter,
@@ -127,7 +128,6 @@ export default {
     this.getFiltersFromQuery();
   },
   methods: {
-    ...mapActions(['initiateAllReplicableAction']),
     getFiltersFromQuery() {
       const filters = [];
       const url = new URL(window.location.href);
@@ -148,8 +148,63 @@ export default {
 
       visitUrl(setUrlParams(query, url.href, true));
     },
-    handleBulkAction(action) {
-      this.initiateAllReplicableAction({ action });
+    async handleSingleAction({ action, name, registryId }) {
+      const actionName = action.toLowerCase();
+
+      try {
+        await this.$apollo.mutate({
+          mutation: replicableTypeUpdateMutation,
+          variables: {
+            action: action.toUpperCase(),
+            registryId,
+          },
+        });
+
+        toast(sprintf(s__('Geo|Scheduled %{name} for %{actionName}.'), { name, actionName }));
+        this.$apollo.queries.replicableItems.refetch();
+      } catch (error) {
+        createAlert({
+          message: sprintf(s__('Geo|There was an error scheduling %{name} for %{actionName}.'), {
+            name,
+            actionName,
+          }),
+          error,
+          captureError: true,
+        });
+      }
+    },
+    async handleBulkAction(action) {
+      const actionName = action.toLowerCase().replace(/_[^_]*$/, '');
+
+      try {
+        await this.$apollo.mutate({
+          mutation: replicableTypeBulkUpdateMutation,
+          variables: {
+            action: action.toUpperCase(),
+            registryClass: this.replicableClass.graphqlMutationRegistryClass,
+          },
+        });
+
+        toast(
+          sprintf(s__('Geo|Scheduled all %{replicableType} for %{actionName}.'), {
+            replicableType: this.itemTitle,
+            actionName,
+          }),
+        );
+        this.$apollo.queries.replicableItems.refetch();
+      } catch (error) {
+        createAlert({
+          message: sprintf(
+            s__('Geo|There was an error scheduling %{actionName} for all %{replicableType}.'),
+            {
+              replicableType: this.itemTitle,
+              actionName,
+            },
+          ),
+          error,
+          captureError: true,
+        });
+      }
     },
     handleNextPage(item) {
       this.cursor = {
@@ -196,6 +251,7 @@ export default {
       <geo-replicable
         :replicable-items="replicableItems"
         :page-info="pageInfo"
+        @actionClicked="handleSingleAction"
         @next="handleNextPage"
         @prev="handlePrevPage"
       />

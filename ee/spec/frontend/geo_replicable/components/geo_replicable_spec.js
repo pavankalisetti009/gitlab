@@ -1,5 +1,6 @@
 import { GlKeysetPagination } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import { ACTION_TYPES } from 'ee/geo_replicable/constants';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import { MOCK_BASIC_GRAPHQL_DATA, MOCK_GRAPHQL_PAGINATION_DATA } from '../mock_data';
@@ -74,6 +75,24 @@ describe('GeoReplicable', () => {
       findGlKeysetPagination().vm.$emit('next', 'asdf');
 
       expect(wrapper.emitted('next')).toStrictEqual([['asdf']]);
+    });
+  });
+
+  describe('clicking an action', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('emits the actionClicked event to the parent', () => {
+      findGeoReplicableItem().at(0).vm.$emit('actionClicked', {
+        action: ACTION_TYPES.RESYNC,
+        name: 'TestRegistry/1',
+        registryId: '123',
+      });
+
+      expect(wrapper.emitted('actionClicked')).toStrictEqual([
+        [{ action: ACTION_TYPES.RESYNC, name: 'TestRegistry/1', registryId: '123' }],
+      ]);
     });
   });
 });

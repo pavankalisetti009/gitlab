@@ -25,6 +25,9 @@ export default {
     handlePrevPage(item) {
       this.$emit('prev', item);
     },
+    handleActionClicked(data) {
+      this.$emit('actionClicked', data);
+    },
   },
 };
 </script>
@@ -42,6 +45,7 @@ export default {
       :last-verified="item.verifiedAt"
       :last-sync-failure="item.lastSyncFailure"
       :verification-failure="item.verificationFailure"
+      @actionClicked="handleActionClicked"
     />
     <div class="gl-mt-6 gl-flex gl-justify-center">
       <gl-keyset-pagination v-bind="pageInfo" @next="handleNextPage" @prev="handlePrevPage" />

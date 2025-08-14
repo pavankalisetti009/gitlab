@@ -1,7 +1,5 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions } from 'vuex';
 import {
   REPLICATION_STATUS_STATES,
   VERIFICATION_STATUS_STATES,
@@ -176,9 +174,8 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['initiateReplicableAction']),
     handleActionClicked(action) {
-      this.initiateReplicableAction({
+      this.$emit('actionClicked', {
         registryId: this.registryId,
         name: this.name,
         action: action.value,

@@ -1,9 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import VueApollo from 'vue-apollo';
 import {
+  ACTION_TYPES,
   BULK_ACTIONS,
   GEO_TROUBLESHOOTING_LINK,
   DEFAULT_PAGE_SIZE,
@@ -13,7 +12,8 @@ import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
-import initStore from 'ee/geo_replicable/store';
+import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
+import replicableTypeBulkUpdateMutation from 'ee/geo_shared/graphql/replicable_type_bulk_update_mutation.graphql';
 import buildReplicableTypeQuery from 'ee/geo_replicable/graphql/replicable_type_query_builder';
 import { processFilters } from 'ee/geo_replicable/filters';
 import { TEST_HOST } from 'spec/test_constants';
@@ -21,6 +21,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { createAlert } from '~/alert';
+import toast from '~/vue_shared/plugins/global_toast';
 import { setUrlParams, visitUrl } from '~/lib/utils/url_utility';
 import {
   MOCK_BASIC_GRAPHQL_DATA,
@@ -49,13 +50,12 @@ jest.mock('ee/geo_replicable/filters', () => ({
 }));
 
 jest.mock('~/alert');
+jest.mock('~/vue_shared/plugins/global_toast');
 
-Vue.use(Vuex);
 Vue.use(VueApollo);
 
 describe('GeoReplicableApp', () => {
   let wrapper;
-  let store;
 
   const defaultProvide = {
     itemTitle: 'Test Item',
@@ -99,15 +99,34 @@ describe('GeoReplicableApp', () => {
     },
   });
 
-  const createComponent = ({ handler } = {}) => {
-    const apolloQueryHandler = handler || MOCK_QUERY_HANDLER_WITH_DATA;
-    const apolloProvider = createMockApollo([[query, apolloQueryHandler]]);
+  const MOCK_SINGLE_MUTATION_HANDLER = jest.fn().mockResolvedValue({
+    data: {
+      geoRegistriesUpdate: {
+        errors: [],
+      },
+    },
+  });
 
-    store = initStore({});
-    jest.spyOn(store, 'dispatch').mockImplementation();
+  const MOCK_BULK_MUTATION_HANDLER = jest.fn().mockResolvedValue({
+    data: {
+      geoRegistriesBulkUpdate: {
+        errors: [],
+      },
+    },
+  });
+
+  const createComponent = ({ handler, singleMutationHandler, bulkMutationHandler } = {}) => {
+    const apolloQueryHandler = handler || MOCK_QUERY_HANDLER_WITH_DATA;
+    const apolloSingleMutationHandler = singleMutationHandler || MOCK_SINGLE_MUTATION_HANDLER;
+    const apolloBulkMutationHandler = bulkMutationHandler || MOCK_BULK_MUTATION_HANDLER;
+
+    const apolloProvider = createMockApollo([
+      [query, apolloQueryHandler],
+      [replicableTypeUpdateMutation, apolloSingleMutationHandler],
+      [replicableTypeBulkUpdateMutation, apolloBulkMutationHandler],
+    ]);
 
     wrapper = shallowMount(GeoReplicableApp, {
-      store,
       apolloProvider,
       provide: {
         ...defaultProvide,
@@ -266,13 +285,41 @@ describe('GeoReplicableApp', () => {
         expect(findGeoListTopBar().props('bulkActions')).toStrictEqual(BULK_ACTIONS);
       });
 
-      it('when top bar emits @bulkAction, initiateAllReplicableAction is called with correct action', async () => {
+      it('when top bar emits @bulkAction, bulk action mutation is called with correct action, emits a toast and calls refetch', async () => {
         findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
         await nextTick();
 
-        expect(store.dispatch).toHaveBeenCalledWith('initiateAllReplicableAction', {
-          action: BULK_ACTIONS[0].action,
+        expect(MOCK_BULK_MUTATION_HANDLER).toHaveBeenCalledWith({
+          action: BULK_ACTIONS[0].action.toUpperCase(),
+          registryClass: MOCK_REPLICABLE_CLASS.graphqlMutationRegistryClass,
         });
+
+        await waitForPromises();
+
+        expect(toast).toHaveBeenCalledWith('Scheduled all Test Item for resync.');
+        expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when bulk action fails', () => {
+      beforeEach(async () => {
+        const errorMutationHandler = jest.fn().mockRejectedValue(new Error('GraphQL Error'));
+        createComponent({ bulkMutationHandler: errorMutationHandler });
+
+        await waitForPromises();
+      });
+
+      it('when top bar emits @bulkAction, createAlert is called and not toast', async () => {
+        findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'There was an error scheduling resync for all Test Item.',
+          error: expect.any(Error),
+          captureError: true,
+        });
+
+        expect(toast).not.toHaveBeenCalled();
       });
     });
   });
@@ -384,6 +431,61 @@ describe('GeoReplicableApp', () => {
           last: DEFAULT_PAGE_SIZE,
         }),
       );
+    });
+  });
+
+  describe('handleSingleAction', () => {
+    describe('when single action is successful', () => {
+      beforeEach(async () => {
+        createComponent();
+
+        await waitForPromises();
+      });
+
+      it('properly calls the single action mutation, toast and refetch', async () => {
+        findGeoReplicable().vm.$emit('actionClicked', {
+          action: ACTION_TYPES.RESYNC,
+          name: 'TestRegistry/1',
+          registryId: '123',
+        });
+        await nextTick();
+
+        expect(MOCK_SINGLE_MUTATION_HANDLER).toHaveBeenCalledWith({
+          action: ACTION_TYPES.RESYNC.toUpperCase(),
+          registryId: '123',
+        });
+
+        await waitForPromises();
+
+        expect(toast).toHaveBeenCalledWith('Scheduled TestRegistry/1 for resync.');
+        expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when single action is not successful', () => {
+      beforeEach(async () => {
+        const errorMutationHandler = jest.fn().mockRejectedValue(new Error('GraphQL Error'));
+        createComponent({ singleMutationHandler: errorMutationHandler });
+
+        await waitForPromises();
+      });
+
+      it('calls createAlert and not toast', async () => {
+        findGeoReplicable().vm.$emit('actionClicked', {
+          action: ACTION_TYPES.RESYNC,
+          name: 'TestRegistry/1',
+          registryId: '123',
+        });
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'There was an error scheduling TestRegistry/1 for resync.',
+          error: expect.any(Error),
+          captureError: true,
+        });
+
+        expect(toast).not.toHaveBeenCalled();
+      });
     });
   });
 });
