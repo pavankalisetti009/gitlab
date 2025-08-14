@@ -41,7 +41,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-flex gl-items-center gl-justify-between gl-px-4 gl-py-3">
+  <div class="gl-flex gl-items-start gl-justify-between gl-px-4 gl-py-3">
     <span class="gl-inline-flex gl-flex-col gl-items-start gl-gap-2">
       <!--
       TODO: To improve the accessibility of this component, the link to open the Workspace should always be available instead
@@ -61,7 +61,7 @@ export default {
       <span v-else class="gl-break-anywhere">{{ workspace.name }}</span>
       <div class="gl-flex gl-gap-2">
         <workspace-state-indicator :workspace-display-state="displayState" />
-        <div class="gl-text-subtle">
+        <div class="gl-text-sm gl-text-subtle">
           {{ $options.i18n.created }}
           <time-ago-tooltip :time="workspace.createdAt" />
         </div>

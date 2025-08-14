@@ -35,7 +35,7 @@ describe('WorkspaceStateIndicator', () => {
 
       expect(badge.props()).toMatchObject({
         icon: iconName,
-        iconSize: 'md',
+        iconSize: 'sm',
         iconOpticallyAligned: false,
         variant,
       });

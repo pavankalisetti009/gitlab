@@ -202,11 +202,7 @@ export default {
               @updateWorkspace="update(workspace.id, $event)"
             />
           </template>
-          <div
-            v-else
-            class="gl-mb-3 gl-px-4 gl-text-left gl-text-base"
-            data-testid="no-workspaces-message"
-          >
+          <div v-else class="gl-px-4 gl-text-left gl-text-base" data-testid="no-workspaces-message">
             <p class="gl-mb-0 gl-text-sm gl-text-subtle">
               {{ $options.i18n.noWorkspacesMessage }}
             </p>

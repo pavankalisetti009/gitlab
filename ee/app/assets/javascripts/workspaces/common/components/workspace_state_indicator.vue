@@ -68,6 +68,7 @@ export default {
 <template>
   <gl-badge
     :icon="iconName"
+    icon-size="sm"
     class="workspace-state-indicator"
     :variant="variant"
     data-testid="workspace-state-indicator"
