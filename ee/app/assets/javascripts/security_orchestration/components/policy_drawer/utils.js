@@ -1,4 +1,5 @@
 import { sprintf, s__, n__ } from '~/locale';
+import { parseSeconds } from '~/lib/utils/datetime_utility';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 
@@ -67,3 +68,48 @@ export const mapShortIdToFullGraphQlFormat = (type = TYPENAME_PROJECT, id = '') 
  */
 export const mapShortIdsToFullGraphQlFormat = (type, ids = []) =>
   ids?.map((id) => mapShortIdToFullGraphQlFormat(type, id)) || [];
+
+/**
+ * Gets the time window information
+ * @param {Object} timeWindow
+ * @returns {String} Formatted time window information
+ */
+export const getTimeWindowInfo = (timeWindow) => {
+  const seconds = timeWindow?.value;
+
+  if (!seconds) {
+    return '';
+  }
+
+  const { hours, minutes } = parseSeconds(seconds, {
+    hoursPerDay: 24,
+    limitToHours: true,
+  });
+
+  const hoursText = n__('%d hour', '%d hours', hours);
+  const minutesText = n__('%d minute', '%d minutes', minutes);
+  const secondsText = n__('%d second', '%d seconds', seconds);
+
+  if (hours > 0) {
+    if (minutes > 0) {
+      return sprintf(s__('SecurityOrchestration|%{hours} and %{minutes}'), {
+        hours: hoursText,
+        minutes: minutesText,
+      });
+    }
+
+    return sprintf(s__('SecurityOrchestration|%{hours}'), {
+      hours: hoursText,
+    });
+  }
+
+  if (minutes > 0) {
+    return sprintf(s__('SecurityOrchestration|%{minutes}'), {
+      minutes: minutesText,
+    });
+  }
+
+  return sprintf(s__('SecurityOrchestration|%{seconds}'), {
+    seconds: secondsText,
+  });
+};

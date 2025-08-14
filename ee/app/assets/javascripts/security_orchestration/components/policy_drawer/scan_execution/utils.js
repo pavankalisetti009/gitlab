@@ -12,7 +12,11 @@ import {
 import { createHumanizedScanners } from '../../policy_editor/utils';
 import { DEFAULT_TEMPLATE } from '../../policy_editor/scan_execution/action/scan_filters/constants';
 import { PIPELINE_SOURCE_OPTIONS } from '../../policy_editor/scan_execution/constants';
-import { buildBranchExceptionsString, humanizedBranchExceptions } from '../utils';
+import {
+  buildBranchExceptionsString,
+  getTimeWindowInfo,
+  humanizedBranchExceptions,
+} from '../utils';
 
 const createTagsMessage = (tags) => {
   return tags.length > 0
@@ -196,17 +200,27 @@ const humanizePipelineRule = (rule) => {
 
 const humanizeScheduleRule = (rule) => {
   const branchExceptionsString = buildBranchExceptionsString(rule.branch_exceptions);
+  const humanizedTimeWindowValue = getTimeWindowInfo(rule.time_window);
+  const timeWindowInfo = humanizedTimeWindowValue
+    ? sprintf(
+        s__('SecurityOrchestration| with scans distributed over %{humanizedTimeWindowValue}'),
+        {
+          humanizedTimeWindowValue,
+        },
+      )
+    : null;
 
   if (rule.agents) {
     return {
       summary: sprintf(
         s__(
-          'SecurityOrchestration|by the agent named %{agents} %{cadence}%{branchExceptionsString}',
+          'SecurityOrchestration|by the agent named %{agents} %{cadence}%{timeWindowInfo}%{branchExceptionsString}',
         ),
         {
           agents: humanizeAgent(rule.agents),
           cadence: humanizeCadence(rule.cadence),
           branchExceptionsString,
+          timeWindowInfo,
         },
       ),
       branchExceptions: humanizedBranchExceptions(rule.branch_exceptions),
@@ -223,11 +237,14 @@ const humanizeScheduleRule = (rule) => {
 
   return {
     summary: sprintf(
-      s__('SecurityOrchestration|%{cadence} on %{branches}%{branchExceptionsString}'),
+      s__(
+        'SecurityOrchestration|%{cadence} on %{branches}%{timeWindowInfo}%{branchExceptionsString}',
+      ),
       {
         cadence: humanizeCadence(rule.cadence),
         branches: humanizedValue,
         branchExceptionsString,
+        timeWindowInfo,
       },
     ),
     branchExceptions: humanizedBranchExceptions(rule.branch_exceptions),

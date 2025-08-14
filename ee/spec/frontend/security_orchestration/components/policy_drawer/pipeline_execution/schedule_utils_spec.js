@@ -2,7 +2,6 @@ import {
   generateScheduleSummary,
   getBranchInfo,
   getTimeInfo,
-  getTimeWindowInfo,
   getTimezoneInfo,
   getWeeklyScheduleInfo,
   getMonthlyScheduleInfo,
@@ -50,37 +49,6 @@ describe('getTimeInfo', () => {
   `('formats time $input correctly', ({ input, output }) => {
     expect(getTimeInfo(input)).toContain(output);
   });
-});
-
-describe('getTimeWindowInfo', () => {
-  it.each([undefined, null, {}, { value: null }])(
-    'returns empty string when time window is $input',
-    (input) => {
-      expect(getTimeWindowInfo(input)).toBe('');
-    },
-  );
-
-  it.each`
-    seconds | expectedText    | includesMinutes
-    ${3600} | ${'1 hour'}     | ${false}
-    ${7200} | ${'2 hours'}    | ${false}
-    ${5400} | ${'1 hour'}     | ${true}
-    ${9000} | ${'2 hours'}    | ${true}
-    ${1800} | ${'30 minutes'} | ${true}
-    ${2700} | ${'45 minutes'} | ${true}
-  `(
-    'formats $seconds seconds correctly to include $expectedText',
-    ({ seconds, expectedText, includesMinutes }) => {
-      const result = getTimeWindowInfo({ value: seconds });
-
-      expect(result).toContain(expectedText);
-      if (includesMinutes) {
-        expect(result).toContain('minutes');
-      } else if (!expectedText.includes('seconds')) {
-        expect(result).not.toContain('minutes');
-      }
-    },
-  );
 });
 
 describe('getTimezoneInfo', () => {
