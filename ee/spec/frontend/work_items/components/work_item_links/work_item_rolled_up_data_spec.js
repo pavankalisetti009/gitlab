@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { GlIcon, GlPopover, GlTooltip } from '@gitlab/ui';
+import { GlIcon, GlTooltip } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WorkItemRolledUpData from '~/work_items/components/work_item_links/work_item_rolled_up_data.vue';
@@ -17,6 +17,7 @@ describe('WorkItemRolledUpData', () => {
 
   const findRolledUpWeight = () => wrapper.findByTestId('work-item-rollup-weight');
   const findRolledUpWeightValue = () => wrapper.findByTestId('work-item-weight-value');
+  const findRolledUpWeightCompletedLabel = () => wrapper.findByTestId('weight-completed-label');
   const findRolledUpProgress = () => wrapper.findByTestId('work-item-rollup-progress');
   const findRolledUpProgressValue = () => wrapper.findByTestId('work-item-progress-value');
   const findWorkItemRolledUpHealthStatus = () =>
@@ -107,9 +108,7 @@ describe('WorkItemRolledUpData', () => {
 
           expect(findRolledUpWeight().exists()).toBe(true);
           expect(findRolledUpWeight().findComponent(GlTooltip).text()).toBe('Issue weight');
-          expect(findRolledUpProgress().findComponent(GlPopover).text()).toMatch(
-            /0\/10\s+issue weight completed/,
-          );
+          expect(findRolledUpWeightCompletedLabel().text()).toBe('issue weight completed');
         });
 
         it('does not mention issue weight when useCachedRolledUpWeights is true', async () => {
@@ -123,9 +122,7 @@ describe('WorkItemRolledUpData', () => {
 
           expect(findRolledUpWeight().exists()).toBe(true);
           expect(findRolledUpWeight().findComponent(GlTooltip).text()).toBe('Weight');
-          expect(findRolledUpProgress().findComponent(GlPopover).text()).toMatch(
-            /0\/10\s+weight completed/,
-          );
+          expect(findRolledUpWeightCompletedLabel().text()).toBe('weight completed');
         });
       });
     });

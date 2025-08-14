@@ -140,7 +140,7 @@ export default {
       <gl-popover triggers="hover focus" :target="() => $refs.progressBadge">
         <template #title>{{ $options.i18n.progressLabel }}</template>
         <span class="gl-font-bold">{{ rolledUpCompletedWeight }}/{{ rolledUpWeight }}</span>
-        {{ weightCompletedLabel }}
+        <span data-testid="weight-completed-label">{{ weightCompletedLabel }}</span>
       </gl-popover>
     </span>
     <!-- END Rolled up Progress -->
