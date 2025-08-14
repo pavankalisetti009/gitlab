@@ -32,6 +32,10 @@ module Ai
 
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)
 
+    FEATURES_UNDER_FLAGS = {
+      duo_agent_platform: :agent_platform_model_selection
+    }.freeze
+
     belongs_to :self_hosted_model, foreign_key: :ai_self_hosted_model_id, inverse_of: :feature_settings
 
     validates :self_hosted_model, presence: true, if: :self_hosted?
@@ -85,6 +89,14 @@ module Ai
             :resolve_vulnerability
           )
         end
+
+        # rubocop: disable Gitlab/FeatureFlagKeyDynamic -- The whole goal of this method is to dynamically filter out disabled features
+        disabled_features = FEATURES_UNDER_FLAGS.filter_map do |feature, flag|
+          feature if ::Feature.disabled?(flag, :instance)
+        end
+        # rubocop: enable Gitlab/FeatureFlagKeyDynamic
+
+        allowed_features = allowed_features.except(*disabled_features)
 
         allowed_features.stringify_keys
       end
