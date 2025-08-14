@@ -3354,6 +3354,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: search_zoekt_project_visibility_changed_event
+  :worker_name: Search::Zoekt::ProjectVisibilityChangedEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: search_zoekt_repo_marked_as_to_delete_event
   :worker_name: Search::Zoekt::RepoMarkedAsToDeleteEventWorker
   :feature_category: :global_search
