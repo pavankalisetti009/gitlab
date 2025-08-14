@@ -5,11 +5,6 @@ require 'spec_helper'
 RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupMemberService, feature_category: :permissions do
   let_it_be(:group) { create(:group) }
   let_it_be(:member_role) { create(:member_role, namespace: group) }
-  let(:custom_roles_available) { true }
-
-  before do
-    stub_licensed_features(custom_roles: custom_roles_available)
-  end
 
   shared_examples 'does not enqueue UpdateForGroupWorker job' do
     it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForGroupWorker job' do
@@ -26,12 +21,6 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupMemberService, feature
       execute
 
       expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to have_received(:perform_async).with(member.id)
-    end
-
-    context 'when custom_roles licensed feature is not available' do
-      let(:custom_roles_available) { false }
-
-      it_behaves_like 'does not enqueue UpdateForGroupWorker job'
     end
 
     context 'when feature flag is disabled' do
