@@ -423,6 +423,69 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
 
       it_behaves_like 'restricted country message'
 
+      context 'when user is invited to a paid/trial group', :saas do
+        let(:user) { create(:user) }
+
+        before do
+          mock_auth_hash(provider.to_s, extern_uid, user.email)
+        end
+
+        context 'with paid group invitation' do
+          let(:paid_group) do
+            group = create(:group)
+            create(:gitlab_subscription, :ultimate, namespace: group) # if using subscriptions
+            group
+          end
+
+          let(:member) { create(:group_member, :invited, group: paid_group, invite_email: user.email) }
+
+          before do
+            session[:originating_member_id] = member.id
+          end
+
+          it 'allows signup for invited users in paid groups' do
+            post provider
+
+            expect(request.env['warden']).to be_authenticated
+            expect(User.find_by_email(user.email)).to be_present
+          end
+        end
+
+        context 'with trial group invitation' do
+          let(:ultimate_group_trial) do
+            create(:group_with_plan, :public, plan: :ultimate_plan, trial_ends_on: Time.current + 30.days)
+          end
+
+          let(:member) { create(:group_member, :invited, group: ultimate_group_trial, invite_email: user.email) }
+
+          before do
+            session[:originating_member_id] = member.id
+          end
+
+          it 'allows signup for invited users in trial groups' do
+            post provider
+
+            expect(request.env['warden']).to be_authenticated
+            expect(User.find_by_email(user.email)).to be_present
+          end
+        end
+
+        context 'with free group invitation' do
+          let!(:free_group) { create(:group) }
+          let!(:member) { create(:group_member, :invited, group: free_group, invite_email: user.email) }
+
+          before do
+            session[:originating_member_id] = member.id
+          end
+
+          it_behaves_like 'restricted country message'
+        end
+
+        context 'with no invitation' do
+          it_behaves_like 'restricted country message'
+        end
+      end
+
       context 'with feature flag disabled' do
         before do
           stub_feature_flags(restrict_sso_login_for_pipl_compliance: false)

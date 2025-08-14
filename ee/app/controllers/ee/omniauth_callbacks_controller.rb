@@ -108,6 +108,8 @@ module EE
       if new_user && restricted_country?(request.env['HTTP_CF_IPCOUNTRY']) && ::Feature.enabled?(
         :restrict_sso_login_for_pipl_compliance, :instance)
 
+        return new_user if allow_invited_user?
+
         # This logger statement can be deleted while we are deleting feature flag
         ::Gitlab::AppLogger.info("Gitlab Signup via SSO failed for Region: #{request.env['HTTP_CF_IPCOUNTRY']}")
 
@@ -148,6 +150,19 @@ module EE
 
     def valid_gitlab_initiated_saml_request?
       ::Gitlab::Auth::Saml::OriginValidator.new(session).gitlab_initiated?(saml_response)
+    end
+
+    def allow_invited_user?
+      member_id = session[:originating_member_id]
+      return unless member_id
+
+      member = ::Member.find_by_id(member_id)
+
+      invite_root_namespace = member&.source&.root_ancestor
+
+      return false unless invite_root_namespace
+
+      invite_root_namespace.paid? || invite_root_namespace.trial?
     end
   end
 end
