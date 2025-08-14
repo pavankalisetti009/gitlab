@@ -41,6 +41,11 @@ module RemoteDevelopment
 
           # Add the clone_project event
           clone_project_command_id = "gl-clone-project-command"
+          # SECURITY REVIEWED: Shell interpolation using format() with escaped variables
+          # project_url (user-controlled, escaped), project_ref (user-controlled, escaped)
+          # clone_dir (system-controlled, escaped), project_cloning_successful_file (system-controlled, escaped)
+          # clone_depth_option (system-controlled, safe constant)
+          # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
           clone_project_script =
             format(
               INTERNAL_POSTSTART_COMMAND_CLONE_PROJECT_SCRIPT,
@@ -73,6 +78,9 @@ module RemoteDevelopment
           unless clone_depth_option.empty?
             # Add the clone_unshallow event
             clone_unshallow_command_id = "gl-clone-unshallow-command"
+            # SECURITY REVIEWED: Shell interpolation using format() with escaped variables
+            # project_cloning_successful_file (system-controlled, escaped), clone_dir (system-controlled, escaped)
+            # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
             clone_unshallow_script =
               format(
                 INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
@@ -114,6 +122,9 @@ module RemoteDevelopment
 
           # Add the sleep_until_container_is_running event
           sleep_until_container_is_running_command_id = "gl-sleep-until-container-is-running-command"
+          # SECURITY REVIEWED: Shell interpolation using format() with system-controlled constant
+          # workspace_reconciled_actual_state_file_path (system-controlled constant)
+          # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
           sleep_until_container_is_running_script =
             format(
               INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_WORKSPACE_IS_RUNNING_SCRIPT,
