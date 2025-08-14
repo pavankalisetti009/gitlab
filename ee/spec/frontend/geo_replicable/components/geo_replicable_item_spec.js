@@ -1,6 +1,4 @@
-import Vue, { nextTick } from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import { nextTick } from 'vue';
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -14,7 +12,6 @@ import {
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import { ACTION_TYPES } from 'ee/geo_replicable/constants';
-import { getStoreConfig } from 'ee/geo_replicable/store';
 import {
   MOCK_BASIC_GRAPHQL_DATA,
   MOCK_REPLICABLE_CLASS,
@@ -22,17 +19,11 @@ import {
   MOCK_REPLICABLE_BASE_PATH,
 } from '../mock_data';
 
-Vue.use(Vuex);
-
 describe('GeoReplicableItem', () => {
   let wrapper;
   const mockReplicable = MOCK_BASIC_GRAPHQL_DATA[0];
   const MOCK_NAME = `${MOCK_GRAPHQL_REGISTRY_CLASS}/${getIdFromGraphQLId(mockReplicable.id)}`;
   const MOCK_DETAILS_PATH = `${MOCK_REPLICABLE_BASE_PATH}/${getIdFromGraphQLId(mockReplicable.id)}`;
-
-  const actionSpies = {
-    initiateReplicableAction: jest.fn(),
-  };
 
   const defaultProps = {
     registryId: mockReplicable.id,
@@ -46,13 +37,7 @@ describe('GeoReplicableItem', () => {
   };
 
   const createComponent = ({ props, provide } = {}) => {
-    const store = new Vuex.Store({
-      ...getStoreConfig({}),
-      actions: actionSpies,
-    });
-
     wrapper = shallowMountExtended(GeoReplicableItem, {
-      store,
       propsData: {
         ...defaultProps,
         ...props,
@@ -195,15 +180,13 @@ describe('GeoReplicableItem', () => {
         expect(findGeoListItem().props('actionsArray')).toStrictEqual([RESYNC_ACTION]);
       });
 
-      it('handles resync action when `actionClicked` is emitted', async () => {
+      it('emits `actionClicked` to the parent when action is clicked', async () => {
         findGeoListItem().vm.$emit('actionClicked', RESYNC_ACTION);
         await nextTick();
 
-        expect(actionSpies.initiateReplicableAction).toHaveBeenCalledWith(expect.any(Object), {
-          registryId: defaultProps.registryId,
-          name: MOCK_NAME,
-          action: ACTION_TYPES.RESYNC,
-        });
+        expect(wrapper.emitted('actionClicked')).toStrictEqual([
+          [{ action: ACTION_TYPES.RESYNC, name: MOCK_NAME, registryId: defaultProps.registryId }],
+        ]);
       });
     });
 
@@ -225,11 +208,9 @@ describe('GeoReplicableItem', () => {
         findGeoListItem().vm.$emit('actionClicked', REVERIFY_ACTION);
         await nextTick();
 
-        expect(actionSpies.initiateReplicableAction).toHaveBeenCalledWith(expect.any(Object), {
-          registryId: defaultProps.registryId,
-          name: MOCK_NAME,
-          action: ACTION_TYPES.REVERIFY,
-        });
+        expect(wrapper.emitted('actionClicked')).toStrictEqual([
+          [{ action: ACTION_TYPES.REVERIFY, name: MOCK_NAME, registryId: defaultProps.registryId }],
+        ]);
       });
     });
   });

@@ -1189,9 +1189,6 @@ msgstr ""
 msgid "%{name} is reserved for %{type} report type"
 msgstr ""
 
-msgid "%{name} is scheduled for %{action}"
-msgstr ""
-
 msgid "%{name} not checked"
 msgstr ""
 
@@ -28557,9 +28554,6 @@ msgstr ""
 msgid "Geo|All"
 msgstr ""
 
-msgid "Geo|All %{replicableType} are being scheduled for %{action}"
-msgstr ""
-
 msgid "Geo|All projects"
 msgstr ""
 
@@ -28962,6 +28956,12 @@ msgstr ""
 msgid "Geo|Review replication status, and resynchronize and reverify items with the primary site."
 msgstr ""
 
+msgid "Geo|Scheduled %{name} for %{actionName}."
+msgstr ""
+
+msgid "Geo|Scheduled all %{replicableType} for %{actionName}."
+msgstr ""
+
 msgid "Geo|Secondary"
 msgstr ""
 
@@ -29103,7 +29103,10 @@ msgstr ""
 msgid "Geo|There was an error saving this Geo Site"
 msgstr ""
 
-msgid "Geo|There was an error scheduling action %{action} for %{replicableType}"
+msgid "Geo|There was an error scheduling %{actionName} for all %{replicableType}."
+msgstr ""
+
+msgid "Geo|There was an error scheduling %{name} for %{actionName}."
 msgstr ""
 
 msgid "Geo|There was an error updating the Geo Settings"
@@ -64828,9 +64831,6 @@ msgid "There was an error subscribing to this label."
 msgstr ""
 
 msgid "There was an error summarizing your pending comments."
-msgstr ""
-
-msgid "There was an error syncing project %{name}"
 msgstr ""
 
 msgid "There was an error updating your display preferences."

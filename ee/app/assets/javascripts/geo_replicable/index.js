@@ -3,7 +3,6 @@ import VueApollo from 'vue-apollo';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { getGraphqlClient } from 'ee/geo_shared/graphql/geo_client';
 import GeoReplicableApp from './components/app.vue';
-import createStore from './store';
 import { formatListboxItems } from './filters';
 import { FILTERED_SEARCH_TOKENS } from './constants';
 
@@ -24,13 +23,6 @@ export default () => {
   return new Vue({
     el,
     apolloProvider,
-    // TODO: This will be fully removed as part of https://gitlab.com/gitlab-org/gitlab/-/issues/425584
-    store: createStore({
-      titlePlural: replicableClass.titlePlural,
-      graphqlMutationRegistryClass: replicableClass.graphqlMutationRegistryClass,
-      geoCurrentSiteId: replicableClass.geoCurrentSiteId,
-      geoTargetSiteId: replicableClass.geoTargetSiteId,
-    }),
     provide: {
       replicableBasePath,
       replicableTypes,
