@@ -18,6 +18,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
         { modelValue: "CODEGEMMA", modelName: "CodeGemma", releaseState: "BETA" },
         { modelValue: "DEEPSEEKCODER", modelName: "DeepSeek Coder", releaseState: "BETA" },
         { modelValue: "GPT", modelName: "GPT", releaseState: "GA" },
+        { modelValue: "GENERAL", modelName: "General", releaseState: "BETA" },
         { modelValue: "LLAMA3", modelName: "Llama 3", releaseState: "BETA" },
         { modelValue: "MISTRAL", modelName: "Mistral", releaseState: "GA" },
         { modelValue: "CODESTRAL", modelName: "Mistral Codestral", releaseState: "GA" },
