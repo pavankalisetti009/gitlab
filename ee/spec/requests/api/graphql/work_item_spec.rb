@@ -3,18 +3,29 @@
 require 'spec_helper'
 
 RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
-  include_context 'with work item request context EE'
+  include GraphqlHelpers
 
-  let(:current_user) { guest }
-
-  let_it_be(:iteration) do
-    create(:iteration, iterations_cadence: create(:iterations_cadence, group: project.group)).tap do |iteration|
-      work_item.update!(iteration: iteration)
-    end
+  let_it_be(:group) { create(:group) }
+  let_it_be_with_reload(:project) { create(:project, :private, group: group) }
+  let_it_be(:guest) { create(:user, guest_of: group) }
+  let_it_be(:developer) { create(:user, developer_of: group) }
+  let_it_be(:iteration) { create(:iteration, iterations_cadence: create(:iterations_cadence, group: project.group)) }
+  let_it_be(:project_work_item) do
+    create(:work_item, project: project, description: '- List item', weight: 1, iteration: iteration)
   end
 
   let_it_be(:group_work_item) do
     create(:work_item, :group_level, namespace: group)
+  end
+
+  let(:current_user) { guest }
+  let(:work_item) { project_work_item }
+  let(:work_item_data) { graphql_data['workItem'] }
+  let(:work_item_fields) { all_graphql_fields_for('WorkItem') }
+  let(:global_id) { work_item.to_gid.to_s }
+
+  let(:query) do
+    graphql_query_for('workItem', { 'id' => global_id }, work_item_fields)
   end
 
   before do
@@ -959,15 +970,15 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let_it_be(:blocked_item) { create(:work_item, project: project) }
         let_it_be(:blocking_item) { create(:work_item, project: project) }
         let_it_be(:link1) do
-          create(:work_item_link, source: work_item, target: related_item, link_type: 'relates_to')
+          create(:work_item_link, source: project_work_item, target: related_item, link_type: 'relates_to')
         end
 
         let_it_be(:link2) do
-          create(:work_item_link, source: work_item, target: blocked_item, link_type: 'blocks')
+          create(:work_item_link, source: project_work_item, target: blocked_item, link_type: 'blocks')
         end
 
         let_it_be(:link3) do
-          create(:work_item_link, source: blocking_item, target: work_item, link_type: 'blocks')
+          create(:work_item_link, source: blocking_item, target: project_work_item, link_type: 'blocks')
         end
 
         let(:filter_type) { 'RELATED' }
@@ -1080,17 +1091,9 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         let_it_be(:ancestor1) { create(:work_item, :epic, namespace: group, work_item_parent: ancestor2) }
         let_it_be(:parent_epic) { create(:work_item, :epic, project: project, work_item_parent: ancestor1) }
         let_it_be(:work_item) { create(:work_item, :epic, project: project, work_item_parent: parent_epic) }
-        let_it_be(:child_issue) { add_child(work_item, :issue, project) }
-        let_it_be(:child_epic) { add_child(work_item, :epic, project) }
-        let_it_be(:child_epic2) { add_child(work_item, :epic, group) }
-        let_it_be(:private_child) { add_child(work_item, :issue, other_project) }
-
-        let(:children_nodes) do
-          <<~GRAPHQL
-            id
-            webUrl
-          GRAPHQL
-        end
+        let_it_be(:child_issue) { create(:work_item, :issue, project: project, work_item_parent: work_item) }
+        let_it_be(:child_epic) { create(:work_item, :epic, project: project, work_item_parent: work_item) }
+        let_it_be(:private_child) { create(:work_item, :issue, project: other_project, work_item_parent: work_item) }
 
         let(:current_user) { developer }
         let(:work_item_fields) do
@@ -1102,7 +1105,12 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   id
                   webUrl
                 }
-                children { nodes { #{children_nodes} } }
+                children {
+                  nodes {
+                    id
+                    webUrl
+                  }
+                }
                 ancestors {
                   nodes {
                     id
@@ -1114,18 +1122,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
 
         before do
-          stub_licensed_features(
-            epics: true,
-            subepics: true,
-            issuable_health_status: true,
-            issue_weights: true,
-            iterations: true
-          )
+          stub_licensed_features(epics: true, subepics: true)
         end
 
         it 'returns authorized widget information' do
-          # Allow higher threshold due to complex query with lookahead preloading
-          allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(105)
           post_graphql(query, current_user: current_user)
 
           expect(work_item_data).to include(
@@ -1145,10 +1145,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     hash_including(
                       'id' => child_epic.to_gid.to_s,
                       'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/work_items/#{child_epic.iid}"
-                    ),
-                    hash_including(
-                      'id' => child_epic2.to_gid.to_s,
-                      'webUrl' => "#{Gitlab.config.gitlab.url}/groups/#{group.full_path}/-/epics/#{child_epic2.iid}"
                     )
                   ]) },
                 'ancestors' => { 'nodes' => match_array(
@@ -1164,53 +1160,29 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           )
         end
 
-        context 'with N+1 queries check' do
-          let_it_be(:other_group2) { create(:group, :private) }
-          let_it_be(:other_group3) { create(:group, :private) }
-          let_it_be(:other_project2) { create(:project, :private) }
+        it 'avoids N+1 queries', :use_sql_query_cache do
+          # Grant access to the top ancestor
+          other_group.add_guest(current_user)
+          post_graphql(query, current_user: current_user) # warm-up
 
-          let(:children_nodes) { licensed_widget_fields }
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            post_graphql(query, current_user: current_user)
+          end
+          expect_graphql_errors_to_be_empty
 
-          before do
-            [other_group, other_group2, other_group3, other_project2].each do |container|
-              container.add_guest(current_user)
-            end
+          # Use a different group hierarchy to test preloaders properly
+          other_group2 = create(:group, :private, guests: current_user)
+          other_group3 = create(:group, :private, guests: current_user)
+          other_project2 = create(:project, :private, guests: current_user)
 
-            stub_feature_flags(use_cached_rolled_up_weights: false)
+          create(:work_item, :epic, namespace: other_group2).tap do |new_ancestor|
+            ancestor3.update!(work_item_parent: new_ancestor)
           end
 
-          it 'executes limited N+1 queries', :use_sql_query_cache do
-            # Increase threshold to accommodate additional queries from test setup
-            allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(132)
-            post_graphql(query, current_user: current_user) # warm-up
+          create(:work_item, :issue, project: other_project2, work_item_parent: work_item)
+          create(:work_item, :epic, namespace: other_group3, work_item_parent: work_item)
 
-            control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-              post_graphql(query, current_user: current_user)
-            end
-            expect_graphql_errors_to_be_empty
-
-            create(:work_item, :epic, namespace: other_group2).tap do |new_ancestor|
-              ancestor3.update!(work_item_parent: new_ancestor)
-            end
-
-            child_issue = add_child(work_item, :issue, other_project2)
-            add_child(child_issue, :task, other_project2)
-            add_child(work_item, :epic, other_project2)
-            add_child(work_item, :epic, other_group3)
-
-            # These fields are pending optimisation
-            # See https://gitlab.com/groups/gitlab-org/-/epics/18837
-            fields_threshold = {
-              rolled_up_counts_by_type: 3,
-              depth_limit_reached_by_type: 12,
-              rolled_up_weight: 3, # can be deleted when removing `use_cached_rolled_up_weights` FF
-              rolled_up_health_status: 4
-            }
-
-            expect { post_graphql(query, current_user: current_user) }
-              .not_to exceed_all_query_limit(control).with_threshold(fields_threshold.values.sum)
-            expect_graphql_errors_to_be_empty
-          end
+          expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
         end
 
         context 'when work item belongs to a user namespace project' do
@@ -1397,6 +1369,9 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
 
       describe 'dates rolledup widget' do
+        let_it_be(:start_date) { 5.days.ago }
+        let_it_be(:due_date) { 5.days.from_now }
+
         context 'with fixed dates' do
           let_it_be(:epic) { create(:work_item, :epic, namespace: group) }
 
@@ -1523,6 +1498,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
 
         context 'with dates from milestone' do
+          let_it_be(:milestone) { create(:milestone, project: project, start_date: start_date, due_date: due_date) }
           let_it_be(:epic) { create(:work_item, :epic, namespace: group) }
 
           let(:global_id) { epic.to_gid.to_s }
@@ -1608,7 +1584,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           before_all do
-            feature_flags.each { |ff| create(:feature_flag_issue, issue_id: work_item.id, feature_flag: ff) }
+            feature_flags.each { |ff| create(:feature_flag_issue, issue_id: project_work_item.id, feature_flag: ff) }
           end
 
           before do
