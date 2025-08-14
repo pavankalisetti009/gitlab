@@ -255,10 +255,6 @@ module EE
         enable :read_admin_groups
       end
 
-      rule { custom_role_enables_read_admin_projects }.policy do
-        enable :read_admin_projects
-      end
-
       rule { admin & duo_core_features_available }.policy do
         enable :manage_duo_core_settings
       end
