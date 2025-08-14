@@ -49,7 +49,7 @@ export default {
   /**
    * Emitted when the cache is cleared
    * @event clearCache
-   * @property {string} upstreamId - The ID of the upstream to clear the cache
+   * @property {string} upstream - The upstream to clear the cache
    */
   /**
    * Emitted when the upstream is deleted
@@ -76,10 +76,7 @@ export default {
     cacheValidityHours() {
       return this.upstream.cacheValidityHours;
     },
-    canClearCache() {
-      return this.upstream.canClearCache;
-    },
-    canEdit() {
+    canUpdate() {
       return this.glAbilities.updateVirtualRegistry;
     },
     canDelete() {
@@ -108,9 +105,7 @@ export default {
       return this.upstream.warning?.text || this.$options.i18n.defaultWarningText;
     },
     showButtons() {
-      return (
-        this.hasWarning || this.canClearCache || (this.canEdit && this.editPath) || this.canDelete
-      );
+      return this.hasWarning || (this.canUpdate && this.editPath) || this.canDelete;
     },
     cacheSizeLabel() {
       return sprintf(s__('VirtualRegistry|Cache: %{size}'), { size: this.cacheSize });
@@ -141,7 +136,7 @@ export default {
       this.$emit('reorderUpstream', direction, this.upstream);
     },
     clearCache() {
-      this.$emit('clearCache', this.id);
+      this.$emit('clearCache', this.upstream);
     },
     deleteUpstream() {
       this.$emit('deleteUpstream', this.id);
@@ -162,7 +157,7 @@ export default {
     data-testid="registry-upstream-item"
     class="gl-border gl-grid gl-grid-cols-[auto_1fr] gl-gap-3 gl-rounded-base gl-bg-default gl-p-3"
   >
-    <div class="gl-flex gl-items-start gl-justify-between">
+    <div v-if="canUpdate" class="gl-flex gl-items-start gl-justify-between">
       <gl-button-group vertical>
         <gl-button
           size="small"
@@ -237,7 +232,7 @@ export default {
             </button>
           </div>
           <gl-button
-            v-if="canClearCache"
+            v-if="canUpdate"
             size="small"
             category="tertiary"
             data-testid="clear-cache-button"
@@ -246,7 +241,7 @@ export default {
             {{ $options.i18n.clearCacheLabel }}</gl-button
           >
           <gl-button
-            v-if="canEdit && editPath"
+            v-if="canUpdate && editPath"
             v-gl-tooltip="$options.i18n.editUpstreamLabel"
             data-testid="edit-button"
             :aria-label="$options.i18n.editUpstreamLabel"

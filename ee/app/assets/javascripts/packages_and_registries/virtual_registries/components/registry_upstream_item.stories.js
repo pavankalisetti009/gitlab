@@ -10,7 +10,7 @@ export default {
       action: 'reorderUpstream',
       table: {
         type: {
-          summary: '(direction: "up" | "down", upstreamId: string) => void',
+          summary: '(direction: "up" | "down", upstream: object) => void',
         },
       },
     },
@@ -19,7 +19,7 @@ export default {
       action: 'clearCache',
       table: {
         type: {
-          summary: '(upstreamId: string) => void',
+          summary: '(upstream: object) => void',
         },
       },
     },
@@ -62,7 +62,6 @@ Default.args = {
     cacheValidityHours: 24,
     cacheSize: '100 MB',
     artifactCount: 100,
-    canClearCache: true,
     position: 1,
     warning: {
       text: 'Example warning text',
