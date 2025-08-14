@@ -5,5 +5,10 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   description
   name
   public
+  project {
+    userPermissions {
+      adminAiCatalogItem
+    }
+  }
   __typename
 }

@@ -11,10 +11,10 @@ RSpec.describe Types::PermissionTypes::Project do
       generate_description
       admin_work_item_lifecycle
       manage_ai_flow_triggers
-      read_ai_catalog_items
-      read_ai_catalog_item_consumers
-      manage_ai_catalog_items
-      manage_ai_catalog_item_consumers
+      read_ai_catalog_item
+      read_ai_catalog_item_consumer
+      manage_ai_catalog_item
+      manage_ai_catalog_item_consumer
     ]
 
     expected_permissions.each do |permission|

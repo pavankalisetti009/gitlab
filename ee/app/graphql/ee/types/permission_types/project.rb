@@ -13,16 +13,16 @@ module EE
           ability_field :manage_ai_flow_triggers,
             experiment: { milestone: '18.3' }
 
-          ability_field :read_ai_catalog_items,
+          ability_field :read_ai_catalog_item,
             experiment: { milestone: '18.3' }
 
-          ability_field :read_ai_catalog_item_consumers,
+          ability_field :read_ai_catalog_item_consumer,
             experiment: { milestone: '18.3' }
 
-          ability_field :manage_ai_catalog_items,
+          ability_field :admin_ai_catalog_item,
             experiment: { milestone: '18.3' }
 
-          ability_field :manage_ai_catalog_item_consumers,
+          ability_field :admin_ai_catalog_item_consumer,
             experiment: { milestone: '18.3' }
         end
       end
