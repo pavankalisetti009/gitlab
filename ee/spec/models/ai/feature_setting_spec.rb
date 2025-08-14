@@ -218,6 +218,46 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         end
       end
     end
+
+    context 'when features are controlled by feature flags' do
+      before do
+        allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+      end
+
+      context 'when `agent_platform_model_selection` feature flag is disabled' do
+        before do
+          stub_feature_flags(agent_platform_model_selection: false)
+        end
+
+        it 'does not include duo_agent_platform' do
+          expect(described_class.allowed_features.keys).not_to include('duo_agent_platform')
+        end
+      end
+
+      context 'when `agent_platform_model_selection` feature flag is enabled' do
+        it 'includes duo_agent_platform when its flag is enabled' do
+          expect(described_class.allowed_features.keys).to include('duo_agent_platform')
+        end
+      end
+
+      context 'when premium license restrictions also apply' do
+        before do
+          allow(::License).to receive(:current).and_return(instance_double(License, premium?: true))
+          stub_feature_flags(agent_platform_model_selection: false)
+        end
+
+        it 'applies both feature flag and license restrictions' do
+          expected_features = stable_features.merge(feature_flagged_features)
+          expected_features.except!(
+            'duo_chat_explain_vulnerability', # excluded by premium license
+            'resolve_vulnerability', # excluded by premium license
+            'duo_agent_platform' # excluded by disabled feature flag
+          )
+
+          expect(described_class.allowed_features).to eq(expected_features)
+        end
+      end
+    end
   end
 
   describe '#base_url' do
