@@ -21,7 +21,6 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
     [
       'analytics_devops_adoption_segments.namespace_id',
       *['badges.project_id', 'badges.group_id'],
-      'ci_sources_pipelines.project_id',
       'member_roles.namespace_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/444161
       *['todos.project_id', 'todos.group_id'],
       *uploads_and_partitions
