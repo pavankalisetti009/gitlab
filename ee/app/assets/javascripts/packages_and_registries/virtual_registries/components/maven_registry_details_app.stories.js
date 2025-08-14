@@ -43,15 +43,6 @@ export default {
         },
       },
     },
-    clearCache: {
-      description: 'Emitted when the cache is cleared',
-      action: 'clearCache',
-      table: {
-        type: {
-          summary: '(upstreamId: string) => void',
-        },
-      },
-    },
     deleteUpstream: {
       description: 'Emitted when the upstream is deleted',
       action: 'deleteUpstream',
@@ -77,7 +68,7 @@ const Template = (_, { argTypes }) => ({
     showUpstreamPathTemplate: 'path/:id',
   },
   template:
-    '<maven-registry-details-app v-bind="$props" @createUpstream="createUpstream" @testUpstream="testUpstream" @reorderUpstream="reorderUpstream" @clearCache="clearCache" @editUpstream="editUpstream" @deleteUpstream="deleteUpstream" />',
+    '<maven-registry-details-app v-bind="$props" @upstreamCreated="upstreamCreated" @testUpstream="testUpstream" @upstreamReordered="upstreamReordered" @editUpstream="editUpstream" @deleteUpstream="deleteUpstream" />',
 });
 
 export const Default = Template.bind({});
@@ -116,17 +107,14 @@ Default.args = {
     },
   ],
   canTestUpstream: true,
-  createUpstream: () => {
-    showToast(`Upstream created`);
+  upstreamCreated: () => {
+    showToast('Upstream created');
   },
   testUpstream: (upstream) => {
     showToast(`Upstream test called for "${upstream.name}"`);
   },
-  reorderUpstream: (direction, upstreamId) => {
-    showToast(`Upstream reorder called for "${upstreamId}" in direction "${direction}"`);
-  },
-  clearCache: (upstreamId) => {
-    showToast(`Cache clear called for "${upstreamId}"`);
+  upstreamReordered: () => {
+    showToast('Upstream reordered');
   },
   deleteUpstream: (upstreamId) => {
     showToast(`Upstream delete called for "${upstreamId}"`);

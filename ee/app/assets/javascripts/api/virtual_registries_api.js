@@ -2,6 +2,7 @@ import axios from '~/lib/utils/axios_utils';
 import { buildApiUrl } from '~/api/api_utils';
 
 const MAVEN_UPSTREAM_PATH = '/api/:version/virtual_registries/packages/maven/upstreams/:id';
+const MAVEN_UPSTREAM_CACHE_PATH = `${MAVEN_UPSTREAM_PATH}/cache`;
 const MAVEN_UPSTREAM_CACHE_ENTRIES_PATH =
   '/api/:version/virtual_registries/packages/maven/upstreams/:id/cache_entries';
 const MAVEN_UPSTREAM_CACHE_ENTRY_PATH =
@@ -37,6 +38,12 @@ export function getMavenUpstreamCacheEntries({ id, params = {} }) {
   const url = buildApiUrl(MAVEN_UPSTREAM_CACHE_ENTRIES_PATH).replace(':id', id);
 
   return axios.get(url, { params });
+}
+
+export function deleteMavenUpstreamCache({ id }) {
+  const url = buildApiUrl(MAVEN_UPSTREAM_CACHE_PATH).replace(':id', id);
+
+  return axios.delete(url);
 }
 
 export function deleteMavenUpstreamCacheEntry({ id }) {

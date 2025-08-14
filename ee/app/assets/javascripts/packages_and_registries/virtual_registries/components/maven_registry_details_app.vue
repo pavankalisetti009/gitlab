@@ -1,12 +1,15 @@
 <script>
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton, GlModal } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import { sprintf, s__ } from '~/locale';
-import { updateMavenRegistryUpstreamPosition } from 'ee/api/virtual_registries_api';
+import { sprintf, s__, __ } from '~/locale';
+import {
+  deleteMavenUpstreamCache,
+  updateMavenRegistryUpstreamPosition,
+} from 'ee/api/virtual_registries_api';
 import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_upstream.mutation.graphql';
 import { convertToMavenRegistryGraphQLId } from '../utils';
 import { captureException } from '../sentry_utils';
@@ -18,6 +21,7 @@ export default {
   components: {
     GlAlert,
     GlButton,
+    GlModal,
     MetadataItem,
     TitleArea,
     CrudComponent,
@@ -69,24 +73,21 @@ export default {
    * @event testUpstream
    * @property {Object} upstream - The upstream object being tested
    */
-  /**
-   * Emitted when the cache is cleared
-   * @event clearCache
-   * @property {string} upstreamId - The ID of the upstream to clear the cache
-   */
 
   /**
    * Emitted when the upstream is deleted
    * @event deleteUpstream
    * @property {string} upstreamId - The ID of the upstream to delete
    */
-  emits: ['upstreamReordered', 'upstreamCreated', 'testUpstream', 'clearCache', 'deleteUpstream'],
+  emits: ['upstreamReordered', 'upstreamCreated', 'testUpstream', 'deleteUpstream'],
   data() {
     return {
       createUpstreamError: '',
       createUpstreamMutationLoading: false,
+      upstreamToBeCleared: null,
+      showUpstreamClearCacheModal: false,
       upstreamItems: this.upstreams,
-      upstreamPositionUpdateErrorMessage: '',
+      upstreamUpdateActionErrorMessage: '',
     };
   },
   computed: {
@@ -112,6 +113,13 @@ export default {
     mavenVirtualRegistryID() {
       return convertToMavenRegistryGraphQLId(this.registry.id);
     },
+    clearUpstreamCacheModalTitle() {
+      if (!this.showUpstreamClearCacheModal) return '';
+
+      return sprintf(s__('VirtualRegistry|Clear cache for %{upstreamName}?'), {
+        upstreamName: this.upstreamToBeCleared.name,
+      });
+    },
   },
   watch: {
     upstreams(val) {
@@ -124,7 +132,7 @@ export default {
       const position = registryUpstream.position + (direction === 'up' ? -1 : 1);
 
       const id = getIdFromGraphQLId(registryUpstream.id);
-      this.upstreamPositionUpdateErrorMessage = '';
+      this.upstreamUpdateActionErrorMessage = '';
 
       try {
         await updateMavenRegistryUpstreamPosition({ id, position });
@@ -133,10 +141,10 @@ export default {
           s__('VirtualRegistry|Position of the upstream has been updated successfully'),
         );
       } catch (error) {
-        this.upstreamPositionUpdateErrorMessage =
+        this.upstreamUpdateActionErrorMessage =
           error.error ||
           s__('VirtualRegistry|Failed to update position of the upstream. Please try again.');
-        captureException({ error, component: this.$options.name });
+        this.handleError(error);
       }
     },
     async upstreamAction(name, mutationData) {
@@ -163,7 +171,7 @@ export default {
         this.createUpstreamError = s__(
           'VirtualRegistry|Something went wrong while creating the upstream. Please try again.',
         );
-        captureException({ error, component: this.$options.name });
+        this.handleError(error);
       } finally {
         this.createUpstreamMutationLoading = false;
       }
@@ -178,8 +186,27 @@ export default {
       this.$emit('upstreamCreated');
       this.hideForm();
     },
-    clearCache(upstreamId) {
-      this.$emit('clearCache', upstreamId);
+    handleClearUpstreamCache(upstream) {
+      this.upstreamToBeCleared = upstream;
+      this.showUpstreamClearCacheModal = true;
+    },
+    hideUpstreamClearCacheModal() {
+      this.showUpstreamClearCacheModal = false;
+      this.upstreamToBeCleared = null;
+    },
+    async clearUpstreamCache() {
+      const id = getIdFromGraphQLId(this.upstreamToBeCleared.id);
+      this.upstreamUpdateActionErrorMessage = '';
+      this.hideUpstreamClearCacheModal();
+      try {
+        await deleteMavenUpstreamCache({ id });
+        this.$toast.show(s__('VirtualRegistry|Upstream cache cleared successfully'));
+      } catch (error) {
+        this.upstreamUpdateActionErrorMessage = s__(
+          'VirtualRegistry|Failed to clear upstream cache. Please try again.',
+        );
+        this.handleError(error);
+      }
     },
     deleteUpstream(upstreamId) {
       this.$emit('deleteUpstream', upstreamId);
@@ -193,8 +220,23 @@ export default {
         this.createUpstreamError = '';
       }
     },
+    handleError(error) {
+      captureException({ error, component: this.$options.name });
+    },
   },
   upstreamRegistryCreate: 'mavenUpstreamCreate',
+  modal: {
+    primaryAction: {
+      text: s__('VirtualRegistry|Clear cache'),
+      attributes: {
+        variant: 'danger',
+        category: 'primary',
+      },
+    },
+    cancelAction: {
+      text: __('Cancel'),
+    },
+  },
 };
 </script>
 
@@ -229,12 +271,12 @@ export default {
       <template #default>
         <div v-if="upstreamsCount" class="gl-flex gl-flex-col gl-gap-3">
           <gl-alert
-            v-if="upstreamPositionUpdateErrorMessage"
-            data-testid="position-update-error-alert"
+            v-if="upstreamUpdateActionErrorMessage"
+            data-testid="upstream-action-error-alert"
             variant="danger"
-            @dismiss="upstreamPositionUpdateErrorMessage = ''"
+            @dismiss="upstreamUpdateActionErrorMessage = ''"
           >
-            {{ upstreamPositionUpdateErrorMessage }}
+            {{ upstreamUpdateActionErrorMessage }}
           </gl-alert>
           <registry-upstream-item
             v-for="(upstream, index) in sortedUpstreamItems"
@@ -243,9 +285,25 @@ export default {
             :upstreams-count="upstreamsCount"
             :index="index"
             @reorderUpstream="reorderUpstream"
-            @clearCache="clearCache"
+            @clearCache="handleClearUpstreamCache"
             @deleteUpstream="deleteUpstream"
           />
+          <gl-modal
+            v-model="showUpstreamClearCacheModal"
+            modal-id="delete-upstream-cache-modal"
+            size="sm"
+            :title="clearUpstreamCacheModalTitle"
+            :action-primary="$options.modal.primaryAction"
+            :action-cancel="$options.modal.cancelAction"
+            @cancel="hideUpstreamClearCacheModal"
+            @primary="clearUpstreamCache"
+          >
+            {{
+              s__(
+                'VirtualRegistry|This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs may fail. Are you sure you want to continue?',
+              )
+            }}
+          </gl-modal>
         </div>
         <p v-else class="gl-text-subtle">
           {{ s__('VirtualRegistry|No upstreams yet') }}

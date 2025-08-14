@@ -11,7 +11,6 @@ const defaultProps = {
     url: 'http://maven.org/test',
     cacheValidityHours: 24,
     cacheSize: '100 MB',
-    canClearCache: true,
     editPath: 'http://maven.org/test/edit',
     artifactCount: 100,
     registryUpstreams: [
@@ -99,6 +98,13 @@ describe('RegistryUpstreamItem', () => {
       expect(findReorderDownButton().props('disabled')).toBe(true);
     });
 
+    it('does not render reorder buttons if `glAbilities.updateVirtualRegistry` is false', () => {
+      createComponent({ provide: { glAbilities: { updateVirtualRegistry: false } } });
+
+      expect(findReorderUpButton().exists()).toBe(false);
+      expect(findReorderDownButton().exists()).toBe(false);
+    });
+
     it('renders the upstream name', () => {
       expect(findUpstreamName().text()).toBe(defaultProps.upstream.name);
     });
@@ -140,21 +146,21 @@ describe('RegistryUpstreamItem', () => {
       expect(findWarningBadge().exists()).toBe(false);
     });
 
-    it('renders the clear cache button if canClearCache is true', () => {
+    it('renders the clear cache button if `glAbilities.updateVirtualRegistry` is true', () => {
       expect(findClearCacheButton().exists()).toBe(true);
     });
 
-    it('does not render the clear cache button if canClearCache is false', () => {
-      createComponent({ props: { upstream: { ...defaultProps.upstream, canClearCache: false } } });
+    it('does not render the clear cache button if `glAbilities.updateVirtualRegistry` is false', () => {
+      createComponent({ provide: { glAbilities: { updateVirtualRegistry: false } } });
       expect(findClearCacheButton().exists()).toBe(false);
     });
 
-    it('renders the edit button if canEdit is true and editPath is provided', () => {
+    it('renders the edit button if `glAbilities.updateVirtualRegistry` is true and editPath is provided', () => {
       expect(findEditButton().exists()).toBe(true);
       expect(findEditButton().attributes('href')).toBe('path/1/edit');
     });
 
-    it('does not render the edit button if canEdit is false', () => {
+    it('does not render the edit button if `glAbilities.updateVirtualRegistry` is false', () => {
       createComponent({ provide: { glAbilities: { updateVirtualRegistry: false } } });
       expect(findEditButton().exists()).toBe(false);
     });
@@ -189,7 +195,7 @@ describe('RegistryUpstreamItem', () => {
     it('emits clearCache when clear cache button is clicked', () => {
       findClearCacheButton().vm.$emit('click');
       expect(Boolean(wrapper.emitted('clearCache'))).toBe(true);
-      expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.upstream.id]);
+      expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.upstream]);
     });
 
     it('emits deleteUpstream when delete button is clicked', () => {

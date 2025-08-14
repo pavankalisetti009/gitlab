@@ -1,6 +1,6 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton, GlModal } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -12,7 +12,10 @@ import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
-import { updateMavenRegistryUpstreamPosition } from 'ee/api/virtual_registries_api';
+import {
+  updateMavenRegistryUpstreamPosition,
+  deleteMavenUpstreamCache,
+} from 'ee/api/virtual_registries_api';
 import { mavenVirtualRegistry } from '../mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
@@ -82,11 +85,13 @@ describe('MavenRegistryDetailsApp', () => {
   const findButton = () => wrapper.findComponent(GlButton);
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findCreateUpstreamButton = () => wrapper.findByTestId('crud-form-toggle');
+  const findClearUpstreamCacheModal = () => wrapper.findComponent(GlModal);
   const findMetadataItems = () => wrapper.findAllComponents(MetadataItem);
   const findCreateUpstreamForm = () => wrapper.findComponent(RegistryUpstreamForm);
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
   const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
-  const findPositionUpdateErrorAlert = () => wrapper.findByTestId('position-update-error-alert');
+  const findUpstreamActionUpdateErrorAlert = () =>
+    wrapper.findByTestId('upstream-action-error-alert');
 
   const createComponent = ({
     mountFn = shallowMountExtended,
@@ -167,6 +172,10 @@ describe('MavenRegistryDetailsApp', () => {
       createComponent({ provide: { glAbilities: { updateVirtualRegistry: false } } });
 
       expect(findButton().exists()).toBe(false);
+    });
+
+    it('hides the upstream clear cache modal', () => {
+      expect(findClearUpstreamCacheModal().props('visible')).toBe(false);
     });
   });
 
@@ -301,7 +310,7 @@ describe('MavenRegistryDetailsApp', () => {
         expect(showToastSpy).toHaveBeenCalledWith(
           'Position of the upstream has been updated successfully',
         );
-        expect(findPositionUpdateErrorAlert().exists()).toBe(false);
+        expect(findUpstreamActionUpdateErrorAlert().exists()).toBe(false);
         expect(captureException).not.toHaveBeenCalled();
       });
     });
@@ -318,7 +327,9 @@ describe('MavenRegistryDetailsApp', () => {
 
         await waitForPromises();
 
-        expect(findPositionUpdateErrorAlert().text()).toBe('position does not have a valid value');
+        expect(findUpstreamActionUpdateErrorAlert().text()).toBe(
+          'position does not have a valid value',
+        );
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
           component: 'MavenRegistryDetailsApp',
@@ -337,8 +348,96 @@ describe('MavenRegistryDetailsApp', () => {
 
         await waitForPromises();
 
-        expect(findPositionUpdateErrorAlert().text()).toBe(
+        expect(findUpstreamActionUpdateErrorAlert().text()).toBe(
           'Failed to update position of the upstream. Please try again.',
+        );
+        expect(showToastSpy).not.toHaveBeenCalled();
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'MavenRegistryDetailsApp',
+          error: mockError,
+        });
+      });
+    });
+  });
+
+  describe('clear upstream cache action', () => {
+    beforeEach(() => {
+      deleteMavenUpstreamCache.mockReset();
+    });
+
+    it('modal is shown with props', async () => {
+      createComponent();
+
+      const upstreamItems = findUpstreamItems();
+      upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+      await nextTick();
+
+      expect(findClearUpstreamCacheModal().props()).toMatchObject({
+        visible: true,
+        title: 'Clear cache for Maven upstream?',
+        size: 'sm',
+        modalId: 'delete-upstream-cache-modal',
+        actionPrimary: {
+          text: 'Clear cache',
+          attributes: { variant: 'danger', category: 'primary' },
+        },
+        actionCancel: { text: 'Cancel' },
+      });
+      expect(findClearUpstreamCacheModal().text()).toBe(
+        'This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs may fail. Are you sure you want to continue?',
+      );
+    });
+
+    it('hides modal on cancel', () => {
+      createComponent();
+
+      const upstreamItems = findUpstreamItems();
+      upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+
+      findClearUpstreamCacheModal().vm.$emit('cancel');
+
+      expect(findClearUpstreamCacheModal().props('visible')).toBe(false);
+    });
+
+    describe('when modal is confirmed', () => {
+      beforeEach(() => {
+        deleteMavenUpstreamCache.mockResolvedValue();
+        createComponent();
+        const upstreamItems = findUpstreamItems();
+
+        upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+        findClearUpstreamCacheModal().vm.$emit('primary');
+      });
+
+      it('calls the right arguments', () => {
+        expect(deleteMavenUpstreamCache).toHaveBeenCalledWith({
+          id: 2,
+        });
+      });
+
+      it('shows success toast when successful', async () => {
+        await waitForPromises();
+
+        expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully');
+        expect(captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when API fails', () => {
+      it('shows toast with default message & reports error to Sentry', async () => {
+        const mockError = new Error();
+        deleteMavenUpstreamCache.mockRejectedValue(mockError);
+        createComponent();
+
+        const upstreamItems = findUpstreamItems();
+
+        upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
+        findClearUpstreamCacheModal().vm.$emit('primary');
+
+        await waitForPromises();
+
+        expect(findUpstreamActionUpdateErrorAlert().text()).toBe(
+          'Failed to clear upstream cache. Please try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
