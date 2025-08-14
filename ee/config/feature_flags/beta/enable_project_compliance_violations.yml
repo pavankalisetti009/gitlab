@@ -6,5 +6,5 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/195469
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/551110
 milestone: '18.2'
 group: group::compliance
-type: gitlab_com_derisk
-default_enabled: false
+type: beta
+default_enabled: true
