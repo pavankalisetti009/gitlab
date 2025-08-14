@@ -47823,6 +47823,9 @@ msgstr ""
 msgid "Please %{link_to_register} or %{link_to_sign_in} to comment"
 msgstr ""
 
+msgid "Please %{link_to_sign_in} to comment"
+msgstr ""
+
 msgid "Please %{registerLinkStart}register%{registerLinkEnd} or %{signInLinkStart}sign in%{signInLinkEnd} to add a comment."
 msgstr ""
 
