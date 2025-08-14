@@ -42,6 +42,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::Projects::ComplianceFrameworkChangedEvent,
         ::ContainerRegistry::ImagePushedEvent,
         Projects::ProjectTransferedEvent,
+        Projects::ProjectVisibilityChangedEvent,
         Groups::GroupTransferedEvent,
         Groups::GroupDeletedEvent,
         Projects::ProjectArchivedEvent,
