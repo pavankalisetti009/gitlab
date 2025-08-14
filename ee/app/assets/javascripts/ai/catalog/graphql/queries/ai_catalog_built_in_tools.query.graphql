@@ -1,0 +1,8 @@
+query aiCatalogBuiltInTools {
+  aiCatalogBuiltInTools {
+    nodes {
+      id
+      title
+    }
+  }
+}

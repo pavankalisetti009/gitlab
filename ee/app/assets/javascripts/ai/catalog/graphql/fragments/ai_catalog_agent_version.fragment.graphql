@@ -4,4 +4,10 @@ fragment BaseAiCatalogAgentVersion on AiCatalogAgentVersion {
   ...BaseAiCatalogItemVersion
   systemPrompt
   userPrompt
+  tools {
+    nodes {
+      id
+      title
+    }
+  }
 }
