@@ -218,6 +218,9 @@ module EE
           store.subscribe ::Search::Zoekt::ProjectMarkedAsArchivedEventWorker,
             to: ::Projects::ProjectArchivedEvent
 
+          store.subscribe ::Search::Zoekt::ProjectFeaturesChangedEventWorker,
+            to: ::Projects::ProjectFeaturesChangedEvent
+
           store.subscribe ::Search::Zoekt::ForceUpdateOverprovisionedIndexEventWorker,
             to: ::Search::Zoekt::ForceUpdateOverprovisionedIndexEvent
 
