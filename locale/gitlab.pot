@@ -27861,6 +27861,9 @@ msgstr ""
 msgid "Filter by test cases that are currently open."
 msgstr ""
 
+msgid "Filter input"
+msgstr ""
+
 msgid "Filter list for %{title}"
 msgstr ""
 
@@ -28000,6 +28003,9 @@ msgid "Focus file tree browser filter bar"
 msgstr ""
 
 msgid "Focus filter bar"
+msgstr ""
+
+msgid "Focus on the filter bar"
 msgstr ""
 
 msgid "FogBugz Email"
