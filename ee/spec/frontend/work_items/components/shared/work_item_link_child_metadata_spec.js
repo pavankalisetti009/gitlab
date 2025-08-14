@@ -88,14 +88,14 @@ describe('WorkItemLinkChildMetadataEE', () => {
       expect(findWorkItemAttribute().at(0).props('title')).toBe(`${WEIGHT.weight}`);
     });
 
-    it('renders rollup weight with icon and value when widget has rollUp weight', () => {
+    it('renders rollup weight with icon and value when rolledUpWeight is not null', () => {
       const rolledUpWeightWidget = {
         type: 'WEIGHT',
         weight: null,
         rolledUpWeight: 5,
         widgetDefinition: {
           editable: false,
-          rollUp: true,
+          rollUp: false,
           __typename: 'WorkItemWidgetDefinitionWeight',
         },
         __typename: 'WorkItemWidgetWeight',
