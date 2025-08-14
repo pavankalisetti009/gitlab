@@ -21,9 +21,15 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-gap-3">
+  <div class="gl-flex gl-flex-wrap gl-gap-3">
     <slot></slot>
-    <gl-button :disabled="isDisabled" :to="{ name: indexRoute }" type="button" category="secondary">
+    <gl-button
+      :disabled="isDisabled"
+      :to="{ name: indexRoute }"
+      type="button"
+      category="secondary"
+      class="gl-w-full sm:gl-w-auto"
+    >
       {{ __('Cancel') }}
     </gl-button>
   </div>
