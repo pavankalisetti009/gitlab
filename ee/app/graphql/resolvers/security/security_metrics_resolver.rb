@@ -22,11 +22,12 @@ module Resolvers
       def resolve(**args)
         return unless Ability.allowed?(current_user, :read_security_resource, object)
 
-        # To Do: Update this feature flag once the new feature flag is created in https://gitlab.com/groups/gitlab-org/-/epics/17073
         if object.is_a?(Project)
-          return unless Feature.enabled?(:project_security_dashboard_new, object)
+          return if Feature.disabled?(:project_security_dashboard_new, object) &&
+            Feature.disabled?(:new_security_dashboard_vulnerabilities_per_severity, object)
         elsif object.is_a?(Group)
-          return unless Feature.enabled?(:group_security_dashboard_new, object)
+          return if Feature.disabled?(:group_security_dashboard_new, object) &&
+            Feature.disabled?(:new_security_dashboard_vulnerabilities_per_severity, object)
         else
           return
         end

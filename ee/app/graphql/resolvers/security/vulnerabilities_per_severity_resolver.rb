@@ -29,8 +29,7 @@ module Resolvers
 
         validate_date_range!(start_date, end_date)
 
-        # To Do: Update this feature flag once the new feature flag is created in https://gitlab.com/groups/gitlab-org/-/epics/17073
-        return {} if !vulnerable || Feature.disabled?(:group_security_dashboard_new, vulnerable)
+        return {} if !vulnerable || Feature.disabled?(:new_security_dashboard_vulnerabilities_per_severity, vulnerable)
 
         params = build_base_params(start_date, end_date)
 
