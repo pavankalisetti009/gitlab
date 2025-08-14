@@ -17,6 +17,7 @@ class CreateCode < ActiveContext::Migration[1.0]
       c.text :name
       c.keyword :source
       c.keyword :language
+      c.boolean :reindexing
       c.vector :embeddings_v1, dimensions: 768
     end
   end
