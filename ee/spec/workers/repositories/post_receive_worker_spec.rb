@@ -232,4 +232,53 @@ RSpec.describe Repositories::PostReceiveWorker, feature_category: :shared do
       end
     end
   end
+
+  describe '#replicate_snippet_changes' do
+    let_it_be(:snippet) { create(:project_snippet, :repository, project: project) }
+    let(:gl_repository) { "snippet-#{snippet.id}" }
+
+    before do
+      allow_next(::Snippets::UpdateStatisticsService).to receive(:execute)
+    end
+
+    context 'when on a Geo primary site' do
+      before do
+        stub_current_geo_node(primary)
+      end
+
+      context 'when snippet_repository does not exist' do
+        before do
+          snippet.snippet_repository.destroy!
+        end
+
+        it 'does not call replicator to update Geo' do
+          expect_next_instance_of(Geo::SnippetRepositoryReplicator).never
+
+          described_class.new.perform(gl_repository, key_id, base64_changes)
+        end
+      end
+
+      context 'when snippet_repository exists' do
+        it 'calls replicator to update Geo' do
+          expect_next_instance_of(Geo::SnippetRepositoryReplicator) do |instance|
+            expect(instance).to receive(:geo_handle_after_update)
+          end
+
+          described_class.new.perform(gl_repository, key_id, base64_changes)
+        end
+      end
+    end
+
+    context 'when not on a Geo primary site' do
+      before do
+        stub_current_geo_node(secondary)
+      end
+
+      it 'does not call replicator to update Geo' do
+        expect_next_instance_of(Geo::SnippetRepositoryReplicator).never
+
+        described_class.new.perform(gl_repository, key_id, base64_changes)
+      end
+    end
+  end
 end

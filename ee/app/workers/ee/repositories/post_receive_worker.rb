@@ -44,15 +44,11 @@ module EE
       end
 
       override :replicate_snippet_changes
-      # rubocop:disable Gitlab/NoCodeCoverageComment -- https://gitlab.com/gitlab-org/gitlab/-/issues/512940
-      # :nocov:
       def replicate_snippet_changes(snippet)
         return unless ::Gitlab::Geo.primary?
 
         snippet.snippet_repository.geo_handle_after_update if snippet.snippet_repository
       end
-      # :nocov:
-      # rubocop:enable Gitlab/NoCodeCoverageComment
       override :replicate_design_management_repository_changes
       def replicate_design_management_repository_changes(design_management_repository)
         design_management_repository.geo_handle_after_update if design_management_repository
