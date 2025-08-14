@@ -70,6 +70,8 @@ describe('DuoAgentsPlatformShow', () => {
         isLoading: false,
         status: 'Running',
         executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
         agentFlowDefinition: 'Software development',
         agentFlowCheckpoint:
           mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.latestCheckpoint

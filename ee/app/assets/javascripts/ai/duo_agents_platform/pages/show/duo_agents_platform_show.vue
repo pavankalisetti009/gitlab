@@ -53,6 +53,12 @@ export default {
     executorUrl() {
       return this.agentFlow?.lastExecutorLogsUrl || '';
     },
+    createdAt() {
+      return this.agentFlow?.createdAt || '';
+    },
+    updatedAt() {
+      return this.agentFlow?.updatedAt || '';
+    },
   },
 };
 </script>
@@ -63,5 +69,7 @@ export default {
     :agent-flow-definition="agentFlowDefinition"
     :agent-flow-checkpoint="agentFlowCheckpoint"
     :executor-url="executorUrl"
+    :created-at="createdAt"
+    :updated-at="updatedAt"
   />
 </template>

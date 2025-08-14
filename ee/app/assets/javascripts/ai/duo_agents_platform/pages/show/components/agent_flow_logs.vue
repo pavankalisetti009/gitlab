@@ -48,8 +48,10 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-w-2/3">
-    <div class="gl-bg-gray-50 gl-p-3 gl-text-gray-500">{{ s__('DuoAgentsPlatform|Output') }}</div>
+  <div class="gl-w-full">
+    <div class="gl-bg-gray-50 gl-p-3 gl-text-gray-500">
+      {{ s__('DuoAgentsPlatform|Output') }}
+    </div>
     <div class="gl-h-62 gl-overflow-y-auto gl-bg-gray-950 gl-p-6 gl-text-gray-100">
       <template v-if="isLoading">{{ s__('DuoAgentsPlatform|Fetching logs...') }}</template>
       <template v-else-if="!hasLogs">{{

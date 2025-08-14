@@ -14,6 +14,8 @@ describe('AgentFlowDetails', () => {
     agentFlowDefinition: 'software_development',
     agentFlowCheckpoint: mockAgentFlowCheckpoint,
     executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+    createdAt: '2023-01-01T00:54:00Z',
+    updatedAt: '2024-01-02T00:34:00Z',
   };
 
   const createComponent = (props = {}) => {
@@ -33,12 +35,10 @@ describe('AgentFlowDetails', () => {
     createComponent();
   });
 
-  describe('component structure', () => {
-    it('renders all child components', () => {
-      expect(findAgentFlowHeader().exists()).toBe(true);
-      expect(findAgentFlowInfo().exists()).toBe(true);
-      expect(findAgentFlowLogs().exists()).toBe(true);
-    });
+  it('renders all tab components and their content', () => {
+    expect(findAgentFlowHeader().exists()).toBe(true);
+    expect(findAgentFlowInfo().exists()).toBe(true);
+    expect(findAgentFlowLogs().exists()).toBe(true);
   });
 
   describe('props passing', () => {
@@ -54,6 +54,8 @@ describe('AgentFlowDetails', () => {
         status: defaultProps.status,
         agentFlowDefinition: defaultProps.agentFlowDefinition,
         executorUrl: defaultProps.executorUrl,
+        createdAt: '2023-01-01T00:54:00Z',
+        updatedAt: '2024-01-02T00:34:00Z',
       });
     });
   });

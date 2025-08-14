@@ -9,6 +9,7 @@ query getAgentFlow($workflowId: AiDuoWorkflowsWorkflowID!) {
           checkpoint
         }
         lastExecutorLogsUrl
+        createdAt
       }
     }
   }
