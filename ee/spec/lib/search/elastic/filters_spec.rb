@@ -4120,4 +4120,328 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it_behaves_like 'adds filter to query_hash'
     end
   end
+
+  describe '.by_closed_at' do
+    subject(:by_closed_at) { described_class.by_closed_at(query_hash: query_hash, options: options) }
+
+    context 'when all closed_at options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:closed_after] is provided' do
+      let(:options) { { closed_after: '2025-01-01T00:00:00Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:closed_after',
+            must: {
+              range: {
+                'closed_at' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:closed_before] is provided' do
+      let(:options) { { closed_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:closed_before',
+            must: {
+              range: {
+                'closed_at' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when both options[:closed_after] and options[:closed_before] are provided' do
+      let(:options) { { closed_after: '2025-01-01T00:00:00Z', closed_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:closed_after',
+            must: {
+              range: {
+                'closed_at' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }, {
+          bool: {
+            _name: 'filters:closed_before',
+            must: {
+              range: {
+                'closed_at' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
+
+  describe '.by_created_at' do
+    subject(:by_created_at) { described_class.by_created_at(query_hash: query_hash, options: options) }
+
+    context 'when all created_at options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:created_after] is provided' do
+      let(:options) { { created_after: '2025-01-01T00:00:00Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:created_after',
+            must: {
+              range: {
+                'created_at' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:created_before] is provided' do
+      let(:options) { { created_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:created_before',
+            must: {
+              range: {
+                'created_at' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when both options[:created_after] and options[:created_before] are provided' do
+      let(:options) { { created_after: '2025-01-01T00:00:00Z', created_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:created_after',
+            must: {
+              range: {
+                'created_at' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }, {
+          bool: {
+            _name: 'filters:created_before',
+            must: {
+              range: {
+                'created_at' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
+
+  describe '.by_updated_at' do
+    subject(:by_updated_at) { described_class.by_updated_at(query_hash: query_hash, options: options) }
+
+    context 'when all updated_at options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:updated_after] is provided' do
+      let(:options) { { updated_after: '2025-01-01T00:00:00Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:updated_after',
+            must: {
+              range: {
+                'updated_at' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:updated_before] is provided' do
+      let(:options) { { updated_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:updated_before',
+            must: {
+              range: {
+                'updated_at' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when both options[:updated_after] and options[:updated_before] are provided' do
+      let(:options) { { updated_after: '2025-01-01T00:00:00Z', updated_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:updated_after',
+            must: {
+              range: {
+                'updated_at' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }, {
+          bool: {
+            _name: 'filters:updated_before',
+            must: {
+              range: {
+                'updated_at' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
+
+  describe '.by_due_date' do
+    subject(:by_due_date) { described_class.by_due_date(query_hash: query_hash, options: options) }
+
+    context 'when all due_date options are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:due_after] is provided' do
+      let(:options) { { due_after: '2025-01-01T00:00:00Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:due_after',
+            must: {
+              range: {
+                'due_date' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:due_before] is provided' do
+      let(:options) { { due_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:due_before',
+            must: {
+              range: {
+                'due_date' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when both options[:due_after] and options[:due_before] are provided' do
+      let(:options) { { due_after: '2025-01-01T00:00:00Z', due_before: '2025-12-31T23:59:59Z' } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:due_after',
+            must: {
+              range: {
+                'due_date' => {
+                  gte: '2025-01-01T00:00:00Z'
+                }
+              }
+            }
+          }
+        }, {
+          bool: {
+            _name: 'filters:due_before',
+            must: {
+              range: {
+                'due_date' => {
+                  lte: '2025-12-31T23:59:59Z'
+                }
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
 end

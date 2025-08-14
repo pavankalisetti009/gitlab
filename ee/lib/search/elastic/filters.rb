@@ -123,6 +123,186 @@ module Search
           end
         end
 
+        def by_closed_at(query_hash:, options:)
+          closed_after = options[:closed_after]
+          closed_before = options[:closed_before]
+
+          return query_hash unless closed_after || closed_before
+
+          context.name(:filters) do
+            if closed_after
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:closed_after),
+                    must: {
+                      range: {
+                        'closed_at' => {
+                          gte: closed_after
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if closed_before
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:closed_before),
+                    must: {
+                      range: {
+                        'closed_at' => {
+                          lte: closed_before
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
+        def by_created_at(query_hash:, options:)
+          created_after = options[:created_after]
+          created_before = options[:created_before]
+
+          return query_hash unless created_after || created_before
+
+          context.name(:filters) do
+            if created_after
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:created_after),
+                    must: {
+                      range: {
+                        'created_at' => {
+                          gte: created_after
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if created_before
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:created_before),
+                    must: {
+                      range: {
+                        'created_at' => {
+                          lte: created_before
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
+        def by_updated_at(query_hash:, options:)
+          updated_after = options[:updated_after]
+          updated_before = options[:updated_before]
+
+          return query_hash unless updated_after || updated_before
+
+          context.name(:filters) do
+            if updated_after
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:updated_after),
+                    must: {
+                      range: {
+                        'updated_at' => {
+                          gte: updated_after
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if updated_before
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:updated_before),
+                    must: {
+                      range: {
+                        'updated_at' => {
+                          lte: updated_before
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
+        def by_due_date(query_hash:, options:)
+          due_after = options[:due_after]
+          due_before = options[:due_before]
+
+          return query_hash unless due_after || due_before
+
+          context.name(:filters) do
+            if due_after
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:due_after),
+                    must: {
+                      range: {
+                        'due_date' => {
+                          gte: due_after
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if due_before
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    _name: context.name(:due_before),
+                    must: {
+                      range: {
+                        'due_date' => {
+                          lte: due_before
+                        }
+                      }
+                    }
+                  }
+                }
+              end
+            end
+          end
+
+          query_hash
+        end
+
         def by_milestone(query_hash:, options:)
           # milestone_title filters and wildcard filters (any_milestones, none_milestones)
           # are mutually exclusive and should not be used together in the same query
