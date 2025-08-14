@@ -75,6 +75,13 @@ export default {
        */
       return this.isSaaS && !this.isAdminInstanceDuoHome;
     },
+    shouldShowDuoAgentPlatformSettings() {
+      if (!this.isSaaS) {
+        // Disabled in self-managed instances, will be released in a future milestone
+        return false;
+      }
+      return this.isAdminInstanceDuoHome;
+    },
   },
   methods: {
     shouldShowDuoCoreUpgradeCard(activeDuoTier) {
@@ -121,7 +128,7 @@ export default {
       </template>
     </code-suggestions-usage>
     <duo-workflow-settings
-      v-if="isAdminInstanceDuoHome"
+      v-if="shouldShowDuoAgentPlatformSettings"
       :title="$options.i18n.gitlabDuoHomeTitle"
       :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
       :display-page-heading="!shouldShowCodeSuggestionsUsage"
