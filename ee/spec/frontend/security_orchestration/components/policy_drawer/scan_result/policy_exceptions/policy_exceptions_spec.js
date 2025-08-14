@@ -1,5 +1,6 @@
 import BranchPatternException from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/branch_pattern_exception.vue';
 import RolesExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/roles_exceptions.vue';
+import TokensException from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/tokens_exception.vue';
 import PolicyExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/policy_exceptions.vue';
 import UsersGroupsExceptions from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_exceptions/users_groups_exceptions.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -18,6 +19,7 @@ describe('Policy Exceptions', () => {
   const findBranchPatternException = () => wrapper.findComponent(BranchPatternException);
   const findUsersGroupsExceptions = () => wrapper.findComponent(UsersGroupsExceptions);
   const findRolesExceptions = () => wrapper.findComponent(RolesExceptions);
+  const findTokensException = () => wrapper.findComponent(TokensException);
 
   describe('default rendering', () => {
     beforeEach(() => {
@@ -27,6 +29,8 @@ describe('Policy Exceptions', () => {
     it('renders header', () => {
       expect(findHeader().text()).toBe('Policy Bypass Options');
       expect(findSubHeader().exists()).toBe(false);
+      expect(findBranchPatternException().exists()).toBe(false);
+      expect(findTokensException().exists()).toBe(false);
     });
   });
 
@@ -47,6 +51,22 @@ describe('Policy Exceptions', () => {
       expect(findBranchPatternException().exists()).toBe(true);
       expect(findBranchPatternException().props('branches')).toEqual(branches);
       expect(findSubHeader().text()).toBe('2 bypass configurations defined:');
+    });
+
+    it('renders tokens exceptions', () => {
+      const tokens = [{ id: '1' }, { id: '2' }, { id: '3' }];
+
+      createComponent({
+        propsData: {
+          exceptions: {
+            access_tokens: tokens,
+          },
+        },
+      });
+
+      expect(findTokensException().exists()).toBe(true);
+      expect(findTokensException().props('tokens')).toEqual(tokens);
+      expect(findSubHeader().text()).toBe('3 bypass configurations defined:');
     });
   });
 
