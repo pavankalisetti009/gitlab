@@ -768,6 +768,170 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'closed_at' do
+      before do
+        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
+      end
+
+      it 'does not apply closed_at filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:closed_after
+            filters:closed_before
+          ])
+      end
+
+      context 'when closed_after option is provided' do
+        let(:options) { base_options.merge(closed_after: '2025-01-01T00:00:00Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:closed_after])
+        end
+      end
+
+      context 'when closed_before option is provided' do
+        let(:options) { base_options.merge(closed_before: '2025-12-31T23:59:59Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:closed_before])
+        end
+      end
+
+      context 'when both closed_after and closed_before options are provided' do
+        let(:options) do
+          base_options.merge(closed_after: '2025-01-01T00:00:00Z', closed_before: '2025-12-31T23:59:59Z')
+        end
+
+        it 'applies both filters' do
+          assert_names_in_query(build, with: %w[filters:closed_after filters:closed_before])
+        end
+      end
+
+      context 'when migration is not finished' do
+        before do
+          set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
+        end
+
+        let(:options) do
+          base_options.merge(closed_after: '2025-01-01T00:00:00Z', closed_before: '2025-12-31T23:59:59Z')
+        end
+
+        it 'does not apply closed_at filters' do
+          assert_names_in_query(build,
+            without: %w[
+              filters:closed_after
+              filters:closed_before
+            ])
+        end
+      end
+    end
+
+    describe 'created_at' do
+      it 'does not apply created_at filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:created_after
+            filters:created_before
+          ])
+      end
+
+      context 'when created_after option is provided' do
+        let(:options) { base_options.merge(created_after: '2025-01-01T00:00:00Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:created_after])
+        end
+      end
+
+      context 'when created_before option is provided' do
+        let(:options) { base_options.merge(created_before: '2025-12-31T23:59:59Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:created_before])
+        end
+      end
+
+      context 'when both created_after and created_before options are provided' do
+        let(:options) do
+          base_options.merge(created_after: '2025-01-01T00:00:00Z', created_before: '2025-12-31T23:59:59Z')
+        end
+
+        it 'applies both filters' do
+          assert_names_in_query(build, with: %w[filters:created_after filters:created_before])
+        end
+      end
+    end
+
+    describe 'updated_at' do
+      it 'does not apply updated_at filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:updated_after
+            filters:updated_before
+          ])
+      end
+
+      context 'when updated_after option is provided' do
+        let(:options) { base_options.merge(updated_after: '2025-01-01T00:00:00Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:updated_after])
+        end
+      end
+
+      context 'when updated_before option is provided' do
+        let(:options) { base_options.merge(updated_before: '2025-12-31T23:59:59Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:updated_before])
+        end
+      end
+
+      context 'when both updated_after and updated_before options are provided' do
+        let(:options) do
+          base_options.merge(updated_after: '2025-01-01T00:00:00Z', updated_before: '2025-12-31T23:59:59Z')
+        end
+
+        it 'applies both filters' do
+          assert_names_in_query(build, with: %w[filters:updated_after filters:updated_before])
+        end
+      end
+    end
+
+    describe 'due_date' do
+      it 'does not apply due_date filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:due_after
+            filters:due_before
+          ])
+      end
+
+      context 'when due_after option is provided' do
+        let(:options) { base_options.merge(due_after: '2025-01-01T00:00:00Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:due_after])
+        end
+      end
+
+      context 'when due_before option is provided' do
+        let(:options) { base_options.merge(due_before: '2025-12-31T23:59:59Z') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:due_before])
+        end
+      end
+
+      context 'when both due_after and due_before options are provided' do
+        let(:options) { base_options.merge(due_after: '2025-01-01T00:00:00Z', due_before: '2025-12-31T23:59:59Z') }
+
+        it 'applies both filters' do
+          assert_names_in_query(build, with: %w[filters:due_after filters:due_before])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'

@@ -8,13 +8,13 @@
 #   context         - GraphQL context object (an instance of GraphQL::Query::Context) that holds per-request metadata,
 #                     such as the HTTP request, current user, etc.
 #   params:
-#     state        - String with possible values of 'opened', 'closed', or 'all'
-#     group_id     - ActiveRecord Group instance
-#     project_id   - ActiveRecord Project instance
-#     label_name   - Array of strings, can also accept wildcard values of "NONE" or "ANY"
-#     sort         - Symbol with possible values of :created_desc or :created_asc
-#     confidential - Boolean
-#     author_username - String
+#     state                  - String with possible values of 'opened', 'closed', or 'all'
+#     group_id               - ActiveRecord Group instance
+#     project_id             - ActiveRecord Project instance
+#     label_name             - Array of strings, can also accept wildcard values of "NONE" or "ANY"
+#     sort                   - Symbol with possible values of :created_desc or :created_asc
+#     confidential           - Boolean
+#     author_username        - String
 #     milestone_title:       - Array of strings (cannot be simultaneously used with milestone_wildcard_id)
 #     milestone_wildcard_id: - String with possible values of  'none', 'any', 'upcoming', 'started'
 #                              (cannot be simultaneously used with milestone_title)
@@ -25,6 +25,14 @@
 #     issue_types:           - Array of strings (one of WorkItems::Type.base_types)
 #     health_status_filter:  - String with possible values of 'on_track', 'needs_attention' and 'at_risk',
 #                              can also accept wildcard values of "NONE" or "ANY"
+#     due_after:             - Time object
+#     due_before:            - Time object
+#     created_after:         - Time object
+#     created_before:        - Time object
+#     updated_after:         - Time object
+#     updated_before:        - Time object
+#     closed_after:          - Time object
+#     closed_before:         - Time object
 #     not                    - Hash with keys that can be negated
 #     or                     - Hash with keys that can be combined using OR logic
 #
@@ -39,7 +47,8 @@ module EE
         ALLOWED_ES_FILTERS = [
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
-          :weight, :weight_wildcard_id, :issue_types, :health_status_filter
+          :weight, :weight_wildcard_id, :issue_types, :health_status_filter, :due_after, :due_before,
+          :created_after, :created_before, :updated_after, :updated_before, :closed_after, :closed_before
         ].freeze
         NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
           :weight_wildcard_id, :health_status_filter, :milestone_wildcard_id].freeze
@@ -123,7 +132,8 @@ module EE
             milestone_params,
             assignee_params,
             weight_params,
-            health_status_params
+            health_status_params,
+            dates_params
           ).compact
         end
 
@@ -228,6 +238,19 @@ module EE
             not_health_status: health_status(not_status_filter),
             none_health_status: none_health_status?(status_filter),
             any_health_status: any_health_status?(status_filter)
+          }
+        end
+
+        def dates_params
+          {
+            due_after: params[:due_after],
+            due_before: params[:due_before],
+            created_after: params[:created_after],
+            created_before: params[:created_before],
+            updated_after: params[:updated_after],
+            updated_before: params[:updated_before],
+            closed_after: params[:closed_after],
+            closed_before: params[:closed_before]
           }
         end
 

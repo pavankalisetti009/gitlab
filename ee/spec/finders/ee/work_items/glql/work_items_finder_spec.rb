@@ -887,6 +887,243 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, :elastic_delete_by_query, :side
           end
         end
       end
+
+      context 'when searching by dates', :freeze_time do
+        context 'when searching for due dates' do
+          let(:due_today) { Time.current.beginning_of_day }
+          let(:due_yesterday) { 1.day.ago.beginning_of_day }
+          let(:due_tomorrow) { 1.day.from_now.beginning_of_day }
+
+          let(:work_item_due_yesterday) { create(:work_item, project: project, due_date: due_yesterday) }
+          let(:work_item_due_today) { create(:work_item, project: project, due_date: due_today) }
+          let(:work_item_due_tomorrow) { create(:work_item, project: project, due_date: due_tomorrow) }
+          let(:work_item_without_due_date) { create(:work_item, project: project, due_date: nil) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_due_yesterday,
+              work_item_due_today,
+              work_item_due_tomorrow,
+              work_item_without_due_date
+            )
+
+            ensure_elasticsearch_index!
+          end
+
+          context 'when due_after param provided' do
+            let(:params) do
+              { due_after: due_today }
+            end
+
+            it 'returns work items due after specified date' do
+              expect(execute).to contain_exactly(work_item_due_today, work_item_due_tomorrow)
+            end
+          end
+
+          context 'when due_before param provided' do
+            let(:params) do
+              { due_before: due_today }
+            end
+
+            it 'returns work items due before specified date' do
+              expect(execute).to contain_exactly(work_item_due_yesterday, work_item_due_today)
+            end
+          end
+
+          context 'when both due_after and due_before params provided' do
+            let(:params) do
+              { due_after: due_yesterday, due_before: due_tomorrow }
+            end
+
+            it 'returns work items due within specified date range' do
+              expect(execute).to contain_exactly(
+                work_item_due_yesterday,
+                work_item_due_today,
+                work_item_due_tomorrow
+              )
+            end
+          end
+        end
+
+        context 'when searching for created dates' do
+          let(:created_yesterday) { 1.day.ago }
+          let(:created_today) { Time.current }
+          let(:created_tomorrow) { 1.day.from_now }
+
+          let!(:work_item_created_yesterday) do
+            create(:work_item, project: project, created_at: created_yesterday)
+          end
+
+          let!(:work_item_created_today) { create(:work_item, project: project, created_at: created_today) }
+          let!(:work_item_created_tomorrow) { create(:work_item, project: project, created_at: created_tomorrow) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_created_yesterday,
+              work_item_created_today,
+              work_item_created_tomorrow
+            )
+
+            ensure_elasticsearch_index!
+          end
+
+          context 'when created_after param provided' do
+            let(:params) do
+              { created_after: created_today }
+            end
+
+            it 'returns work items created after specified date' do
+              expect(execute).to contain_exactly(work_item_created_today, work_item_created_tomorrow)
+            end
+          end
+
+          context 'when created_before param provided' do
+            let(:params) do
+              { created_before: created_today }
+            end
+
+            it 'returns work items created before specified date' do
+              expect(execute).to contain_exactly(work_item_created_yesterday, work_item_created_today)
+            end
+          end
+
+          context 'when both created_after and created_before params provided' do
+            let(:params) do
+              { created_after: created_yesterday, created_before: created_tomorrow }
+            end
+
+            it 'returns work items created within specified date range' do
+              expect(execute).to contain_exactly(
+                work_item_created_yesterday,
+                work_item_created_today,
+                work_item_created_tomorrow
+              )
+            end
+          end
+        end
+
+        context 'when searching for updated dates' do
+          let(:updated_yesterday) { 1.day.ago }
+          let(:updated_today) { Time.current }
+          let(:updated_tomorrow) { 1.day.from_now }
+
+          let!(:work_item_updated_yesterday) do
+            create(:work_item, project: project, updated_at: updated_yesterday)
+          end
+
+          let!(:work_item_updated_today) { create(:work_item, project: project, updated_at: updated_today) }
+          let!(:work_item_updated_tomorrow) { create(:work_item, project: project, updated_at: updated_tomorrow) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_updated_yesterday,
+              work_item_updated_today,
+              work_item_updated_tomorrow
+            )
+
+            ensure_elasticsearch_index!
+          end
+
+          context 'when updated_after param provided' do
+            let(:params) do
+              { updated_after: updated_today }
+            end
+
+            it 'returns work items updated after specified date' do
+              expect(execute).to contain_exactly(work_item_updated_today, work_item_updated_tomorrow)
+            end
+          end
+
+          context 'when updated_before param provided' do
+            let(:params) do
+              { updated_before: updated_today }
+            end
+
+            it 'returns work items updated before specified date' do
+              expect(execute).to contain_exactly(work_item_updated_yesterday, work_item_updated_today)
+            end
+          end
+
+          context 'when both updated_after and updated_before params provided' do
+            let(:params) do
+              { updated_after: updated_yesterday, updated_before: updated_tomorrow }
+            end
+
+            it 'returns work items updated within specified date range' do
+              expect(execute).to contain_exactly(
+                work_item_updated_yesterday,
+                work_item_updated_today,
+                work_item_updated_tomorrow
+              )
+            end
+          end
+        end
+
+        context 'when searching for closed dates' do
+          let(:closed_yesterday) { 1.day.ago }
+          let(:closed_today) { Time.current }
+          let(:closed_tomorrow) { 1.day.from_now }
+
+          let!(:work_item_closed_yesterday) do
+            create(:work_item, project: project, state: 'closed', closed_at: closed_yesterday)
+          end
+
+          let!(:work_item_closed_today) do
+            create(:work_item, project: project, state: 'closed', closed_at: closed_today)
+          end
+
+          let!(:work_item_closed_tomorrow) do
+            create(:work_item, project: project, state: 'closed', closed_at: closed_tomorrow)
+          end
+
+          let!(:work_item_still_open) { create(:work_item, project: project, state: 'opened') }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_closed_yesterday,
+              work_item_closed_today,
+              work_item_closed_tomorrow,
+              work_item_still_open
+            )
+
+            ensure_elasticsearch_index!
+          end
+
+          context 'when closed_after param provided' do
+            let(:params) do
+              { closed_after: closed_today }
+            end
+
+            it 'returns work items closed after specified date' do
+              expect(execute).to contain_exactly(work_item_closed_today, work_item_closed_tomorrow)
+            end
+          end
+
+          context 'when closed_before param provided' do
+            let(:params) do
+              { closed_before: closed_today }
+            end
+
+            it 'returns work items closed before specified date' do
+              expect(execute).to contain_exactly(work_item_closed_yesterday, work_item_closed_today)
+            end
+          end
+
+          context 'when both closed_after and closed_before params provided' do
+            let(:params) do
+              { closed_after: closed_yesterday, closed_before: closed_tomorrow }
+            end
+
+            it 'returns work items closed within specified date range' do
+              expect(execute).to contain_exactly(
+                work_item_closed_yesterday,
+                work_item_closed_today,
+                work_item_closed_tomorrow
+              )
+            end
+          end
+        end
+      end
     end
 
     context 'when resource_parent is a Project' do
