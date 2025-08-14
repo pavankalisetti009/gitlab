@@ -57321,6 +57321,9 @@ msgstr ""
 msgid "SecurityOrchestration| triggered by %{sources}"
 msgstr ""
 
+msgid "SecurityOrchestration| with scans distributed over %{humanizedTimeWindowValue}"
+msgstr ""
+
 msgid "SecurityOrchestration|%d project which has compliance framework:"
 msgid_plural "SecurityOrchestration|%d projects which have compliance framework:"
 msgstr[0] ""
@@ -57344,13 +57347,22 @@ msgstr ""
 msgid "SecurityOrchestration|%{branchName} (in %{codeStart}%{fullPath}%{codeEnd})"
 msgstr ""
 
-msgid "SecurityOrchestration|%{cadence} on %{branches}%{branchExceptionsString}"
+msgid "SecurityOrchestration|%{cadence} on %{branches}%{timeWindowInfo}%{branchExceptionsString}"
 msgstr ""
 
 msgid "SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}"
 msgstr ""
 
+msgid "SecurityOrchestration|%{hours}"
+msgstr ""
+
+msgid "SecurityOrchestration|%{hours} and %{minutes}"
+msgstr ""
+
 msgid "SecurityOrchestration|%{listType} attempts from %{linkStart}other settings%{linkEnd} to override variables when the policy runs, except the variables defined in the %{list}."
+msgstr ""
+
+msgid "SecurityOrchestration|%{minutes}"
 msgstr ""
 
 msgid "SecurityOrchestration|%{pageSize}+ projects which have compliance framework:"
@@ -57366,6 +57378,9 @@ msgid "SecurityOrchestration|%{scanners} of %{severities} severity level"
 msgid_plural "SecurityOrchestration|%{scanners} of %{severities} severity levels"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "SecurityOrchestration|%{seconds}"
+msgstr ""
 
 msgid "SecurityOrchestration|%{sources} or %{lastSource}"
 msgstr ""
@@ -58608,16 +58623,7 @@ msgstr ""
 msgid "SecurityOrchestration|allowlist"
 msgstr ""
 
-msgid "SecurityOrchestration|and run for %{hours}"
-msgstr ""
-
-msgid "SecurityOrchestration|and run for %{hours} and %{minutes}"
-msgstr ""
-
-msgid "SecurityOrchestration|and run for %{minutes}"
-msgstr ""
-
-msgid "SecurityOrchestration|and run for %{seconds}"
+msgid "SecurityOrchestration|and run for %{timeWindowInfo}"
 msgstr ""
 
 msgid "SecurityOrchestration|any"
@@ -58659,7 +58665,7 @@ msgstr ""
 msgid "SecurityOrchestration|branches"
 msgstr ""
 
-msgid "SecurityOrchestration|by the agent named %{agents} %{cadence}%{branchExceptionsString}"
+msgid "SecurityOrchestration|by the agent named %{agents} %{cadence}%{timeWindowInfo}%{branchExceptionsString}"
 msgstr ""
 
 msgid "SecurityOrchestration|compliance frameworks"

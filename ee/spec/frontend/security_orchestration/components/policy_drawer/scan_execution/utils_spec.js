@@ -56,6 +56,7 @@ const mockRules = [
     agents: {
       'default-agent': { namespaces: ['staging', 'releases', 'dev'] },
     },
+    time_window: { duration: 'random', value: 10800 },
   },
   { type: 'pipeline', branches: ['release/*', 'staging'], branch_exceptions: ['main', 'test'] },
   { type: 'pipeline', branches: ['release/*', 'staging'], branch_exceptions: ['main'] },
@@ -64,6 +65,7 @@ const mockRules = [
     cadence: '* */20 4 * *',
     branches: ['test'],
     branch_exceptions: ['main', 'test1'],
+    time_window: { duration: 'random', value: 3600 },
   },
   {
     type: 'schedule',
@@ -72,6 +74,7 @@ const mockRules = [
       'default-agent': { namespaces: ['staging', 'releases', 'dev'] },
     },
     branch_exceptions: ['main', 'test1'],
+    time_window: { duration: 'random', value: 7200 },
   },
   { type: 'pipeline', branch_type: 'default' },
 ];
@@ -231,7 +234,7 @@ describe('humanizeRules', () => {
       {
         branchExceptions: [],
         summary:
-          'by the agent named default-agent for the staging, releases and dev namespaces every minute, every 20 hours, on day 4 of the month',
+          'by the agent named default-agent for the staging, releases and dev namespaces every minute, every 20 hours, on day 4 of the month with scans distributed over 3 hours',
       },
       {
         branchExceptions: ['main', 'test'],
@@ -245,12 +248,12 @@ describe('humanizeRules', () => {
       {
         branchExceptions: ['main', 'test1'],
         summary:
-          'every minute, every 20 hours, on day 4 of the month on the test branch except branches:',
+          'every minute, every 20 hours, on day 4 of the month on the test branch with scans distributed over 1 hour except branches:',
       },
       {
         branchExceptions: ['main', 'test1'],
         summary:
-          'by the agent named default-agent for the staging, releases and dev namespaces every minute, every 20 hours, on day 4 of the month except branches:',
+          'by the agent named default-agent for the staging, releases and dev namespaces every minute, every 20 hours, on day 4 of the month with scans distributed over 2 hours except branches:',
       },
       {
         branchExceptions: [],

@@ -1,5 +1,5 @@
 import { __, s__, n__, sprintf } from '~/locale';
-import { formatDate, parseSeconds } from '~/lib/utils/datetime_utility';
+import { formatDate } from '~/lib/utils/datetime_utility';
 import {
   DAILY,
   WEEKLY,
@@ -11,6 +11,7 @@ import {
   PROJECT_DEFAULT_BRANCH,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { DEFAULT_TIMEZONE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
+import { getTimeWindowInfo } from '../utils';
 
 /**
  * Gets the branch information
@@ -40,51 +41,6 @@ export const getTimeInfo = (time) => {
   }
 
   return sprintf(s__('SecurityOrchestration|at %{time}'), { time });
-};
-
-/**
- * Gets the time window information
- * @param {Object} timeWindow
- * @returns {String} Formatted time window information
- */
-export const getTimeWindowInfo = (timeWindow) => {
-  const seconds = timeWindow?.value;
-
-  if (!seconds) {
-    return '';
-  }
-
-  const { hours, minutes } = parseSeconds(seconds, {
-    hoursPerDay: 24,
-    limitToHours: true,
-  });
-
-  const hoursText = n__('%d hour', '%d hours', hours);
-  const minutesText = n__('%d minute', '%d minutes', minutes);
-  const secondsText = n__('%d second', '%d seconds', seconds);
-
-  if (hours > 0) {
-    if (minutes > 0) {
-      return sprintf(s__('SecurityOrchestration|and run for %{hours} and %{minutes}'), {
-        hours: hoursText,
-        minutes: minutesText,
-      });
-    }
-
-    return sprintf(s__('SecurityOrchestration|and run for %{hours}'), {
-      hours: hoursText,
-    });
-  }
-
-  if (minutes > 0) {
-    return sprintf(s__('SecurityOrchestration|and run for %{minutes}'), {
-      minutes: minutesText,
-    });
-  }
-
-  return sprintf(s__('SecurityOrchestration|and run for %{seconds}'), {
-    seconds: secondsText,
-  });
 };
 
 /**
@@ -190,7 +146,9 @@ export const generateScheduleSummary = (schedule) => {
   const branchInfo = getBranchInfo(schedule.branch_type);
   const scheduleTypeInfo = getScheduleTypeInfo(schedule);
   const timeInfo = getTimeInfo(schedule.start_time);
-  const timeWindowInfo = getTimeWindowInfo(schedule.time_window);
+  const timeWindowInfo = sprintf(s__('SecurityOrchestration|and run for %{timeWindowInfo}'), {
+    timeWindowInfo: getTimeWindowInfo(schedule.time_window),
+  });
   const timezoneInfo = getTimezoneInfo(schedule.timezone);
 
   // Combine using sprintf
