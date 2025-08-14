@@ -39,6 +39,10 @@ module RemoteDevelopment
               next unless containers_with_devfile_poststart_commands.include?(container_name)
 
               if internal_blocking_command_label_present
+                # SECURITY REVIEWED: Shell interpolation using format() with system-controlled paths
+                # run_internal_blocking_poststart_commands_script_file_path (system-controlled path)
+                # run_non_blocking_poststart_commands_script_file_path (system-controlled path)
+                # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
                 kubernetes_poststart_hook_script =
                   format(
                     KUBERNETES_POSTSTART_HOOK_COMMAND,
@@ -48,6 +52,9 @@ module RemoteDevelopment
                       "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}"
                   )
               else
+                # SECURITY REVIEWED: Shell interpolation using format() with system-controlled path
+                # run_internal_blocking_poststart_commands_script_file_path (system-controlled path)
+                # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
                 kubernetes_poststart_hook_script =
                   format(
                     KUBERNETES_LEGACY_POSTSTART_HOOK_COMMAND,

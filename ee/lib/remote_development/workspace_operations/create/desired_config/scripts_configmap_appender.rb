@@ -97,6 +97,10 @@ module RemoteDevelopment
             end
 
             unless internal_blocking_command_label_present
+              # SAST IGNORE: String interpolation in shell context is safe here
+              # The interpolated method call returns validated script content
+              # Future SAST alerts on this heredoc can be safely ignored
+              # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
               configmap_data[LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
                 <<~SH.chomp
                   #!/bin/sh
@@ -113,12 +117,20 @@ module RemoteDevelopment
                 command && command.dig(:exec, :label) == INTERNAL_BLOCKING_COMMAND_LABEL
               end
 
+            # SAST IGNORE: String interpolation in shell context is safe here
+            # The interpolated method call returns validated internal script content
+            # Future SAST alerts on this heredoc can be safely ignored.
+            # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
             configmap_data[RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
               <<~SH.chomp
                 #!/bin/sh
                 #{get_poststart_command_script_content(poststart_command_ids: internal_blocking_poststart_command_ids)}
               SH
 
+            # SAST IGNORE: String interpolation in shell context is safe here
+            # The interpolated method call returns validated script content
+            # Future SAST alerts on this heredoc can be safely ignored.
+            # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
             configmap_data[RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
               <<~SH.chomp
                 #!/bin/sh
@@ -137,6 +149,12 @@ module RemoteDevelopment
               #       container from exiting. Then users can view logs to debug failures.
               #       See https://github.com/eclipse-che/che/issues/23404#issuecomment-2787779571
               #       for more context.
+
+              # SAST IGNORE: String interpolation in shell context is safe here
+              # Command IDs are validated by the devfile gem, this prevents malicious attacks like path traversal
+              # Additional validation in ee/lib/remote_development/devfile_operations/restrictions_enforcer.rb
+              # Future SAST alerts on this heredoc can be safely ignored.
+              # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
               <<~SH
                 echo "$(date -Iseconds): ----------------------------------------"
                 echo "$(date -Iseconds): Running #{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{poststart_command_id}..."
