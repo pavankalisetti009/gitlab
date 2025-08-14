@@ -260,6 +260,12 @@ describe('useAccessTokens store', () => {
             data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
           }),
         );
+
+        expect(mockAxios.history.patch[0]).toEqual(
+          expect.not.objectContaining({
+            email: null,
+          }),
+        );
       });
 
       it('calls the edit endpoint with the correct params when using a user provided email', async () => {
