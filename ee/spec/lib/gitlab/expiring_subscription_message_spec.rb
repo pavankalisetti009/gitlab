@@ -104,7 +104,7 @@ RSpec.describe Gitlab::ExpiringSubscriptionMessage, :saas do
                     let(:plan_name) { ::Plan::PREMIUM }
 
                     it "shows the expiring message" do
-                      expect(message).to include('No worries, you can still use all the Premium features for now. You have 0 days to renew your subscription.')
+                      expect(message).to include('Your Premium subscription has expired. Please renew your subscription to continue using paid features.')
                     end
                   end
 
@@ -181,7 +181,7 @@ RSpec.describe Gitlab::ExpiringSubscriptionMessage, :saas do
                     allow(subscribable).to receive(:block_changes_at).and_return(Time.utc(2020, 3, 9, 10).to_date)
                     allow(subscribable).to receive(:is_a?).with(::License).and_return(true)
 
-                    expect(message).to include('No worries, you can still use all the Ultimate features for now. You have 2 days to renew your subscription.')
+                    expect(message).to include('Your Ultimate subscription has expired. Please renew your subscription to continue using paid features.')
                   end
                 end
               end
