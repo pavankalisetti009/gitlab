@@ -4,6 +4,8 @@ module VirtualRegistries
   module Packages
     module Maven
       class Upstream < ApplicationRecord
+        TEST_PATH = 'com/company/app/maven-metadata.xml'
+
         belongs_to :group
         has_many :registry_upstreams,
           class_name: 'VirtualRegistries::Packages::Maven::RegistryUpstream',
@@ -84,6 +86,24 @@ module VirtualRegistries
 
         def purge_cache!
           ::VirtualRegistries::Packages::Cache::MarkEntriesForDestructionWorker.perform_async(id)
+        end
+
+        def test
+          relative_path = new_record? ? TEST_PATH : (default_cache_entries.pick(:relative_path) || TEST_PATH)
+
+          response = Gitlab::HTTP.head(
+            url_for(relative_path),
+            headers: headers,
+            follow_redirects: true
+          )
+
+          case response.code
+          when 404, 200..299 then { success: true }
+          else
+            { success: false, result: "Error: #{response.code} - #{response.message}" }
+          end
+        rescue *::Gitlab::HTTP::HTTP_ERRORS => e
+          { success: false, result: "Error: #{e.message}" }
         end
 
         private

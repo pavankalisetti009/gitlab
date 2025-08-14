@@ -75,6 +75,108 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     it_behaves_like 'an authenticated virtual registry REST API'
   end
 
+  describe 'POST /api/v4/groups/:id/-/virtual_registries/packages/maven/upstreams/test' do
+    let(:group_id) { group.id }
+    let(:url) { "/groups/#{group_id}/-/virtual_registries/packages/maven/upstreams/test" }
+    let(:params) { { url: 'http://example.com', username: 'user', password: 'test' } }
+
+    subject(:api_request) { post api(url), params: params, headers: headers }
+
+    it_behaves_like 'disabled maven_virtual_registry feature flag'
+    it_behaves_like 'maven virtual registry disabled dependency proxy'
+    it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'maven virtual registry feature not licensed'
+
+    context 'with valid params' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      before do
+        allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |upstream_instance|
+          allow(upstream_instance).to receive(:test).and_return({ success: true })
+        end
+      end
+
+      it { is_expected.to have_request_urgency(:low) }
+
+      it 'returns a successful response' do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq({ 'success' => true })
+      end
+    end
+
+    context 'with invalid group_id' do
+      where(:group_id, :status) do
+        non_existing_record_id | :not_found
+        'foo'                  | :not_found
+        ''                     | :not_found
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with a non top level group' do
+      let(:group) { create(:group, :nested) }
+
+      before do
+        group.parent.add_maintainer(user)
+      end
+
+      it_behaves_like 'returning response status', :bad_request
+    end
+
+    context 'with invalid params' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      where(:params, :status) do
+        { url: '' }                                     | :bad_request
+        { url: 'invalid-url' }                          | :bad_request
+        {}                                              | :bad_request
+        { username: 'user' }                            | :bad_request
+        { password: 'test' }                            | :bad_request
+        { url: 'http://example.com', username: 'user' } | :bad_request
+        { url: 'http://example.com', password: 'test' } | :bad_request
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with a non member user' do
+      let_it_be(:user) { create(:user) }
+
+      where(:group_access_level, :status) do
+        'PUBLIC'   | :forbidden
+        'INTERNAL' | :forbidden
+        'PRIVATE'  | :not_found
+      end
+
+      with_them do
+        before do
+          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    it_behaves_like 'an authenticated virtual registry REST API' do
+      before do
+        allow_next_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |instance|
+          allow(instance).to receive(:test)
+        end
+      end
+    end
+  end
+
   describe 'GET /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
@@ -501,5 +603,80 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         group.add_maintainer(user)
       end
     end
+  end
+
+  describe 'GET /api/v4/virtual_registries/packages/maven/upstreams/:id/test' do
+    let(:url) { "/virtual_registries/packages/maven/upstreams/#{upstream.id}/test" }
+
+    subject(:api_request) { get api(url), headers: headers }
+
+    before do
+      allow_next_found_instance_of(::VirtualRegistries::Packages::Maven::Upstream) do |instance|
+        allow(instance).to receive(:test).and_return({ success: true })
+      end
+    end
+
+    shared_examples 'successful response' do
+      it 'returns a successful response' do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq({ 'success' => true })
+      end
+    end
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    it_behaves_like 'disabled maven_virtual_registry feature flag'
+    it_behaves_like 'maven virtual registry disabled dependency proxy'
+    it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'maven virtual registry feature not licensed'
+
+    context 'with valid upstream' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      it_behaves_like 'successful response'
+    end
+
+    context 'for different user roles' do
+      where(:user_role, :status) do
+        :owner      | :ok
+        :maintainer | :ok
+        :developer  | :ok
+        :reporter   | :ok
+        :guest      | :ok
+      end
+
+      with_them do
+        before do
+          group.send(:"add_#{user_role}", user)
+          allow(upstream).to receive(:test) if status == :ok
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with a non member user' do
+      let_it_be(:user) { create(:user) }
+
+      where(:group_access_level, :status) do
+        'PUBLIC'   | :forbidden
+        'INTERNAL' | :forbidden
+        'PRIVATE'  | :forbidden
+      end
+
+      with_them do
+        before do
+          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 end

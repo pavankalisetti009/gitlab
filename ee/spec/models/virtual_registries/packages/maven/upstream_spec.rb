@@ -316,4 +316,107 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       upstream.purge_cache!
     end
   end
+
+  describe '#test' do
+    let(:test_url) { upstream.url_for('com/company/app/maven-metadata.xml') }
+    let(:response) { ActiveSupport::OrderedOptions.new }
+    let(:code) { 200 }
+    let(:message) { 'OK' }
+
+    subject(:test) { upstream.test }
+
+    before do
+      allow(Gitlab::HTTP).to receive(:head) do
+        response.code = code
+        response.message = message
+        response
+      end
+    end
+
+    it 'makes a HEAD request to the test endpoint' do
+      test
+
+      expect(Gitlab::HTTP).to have_received(:head).with(
+        test_url,
+        headers: upstream.headers,
+        follow_redirects: true
+      )
+    end
+
+    context 'with different HTTP response codes' do
+      where(:code, :message, :expected_result) do
+        200 | 'OK'                    | { success: true }
+        201 | 'Created'               | { success: true }
+        299 | 'Misc Success'          | { success: true }
+        404 | 'Not Found'             | { success: true }
+        400 | 'Bad Request'           | { success: false, result: 'Error: 400 - Bad Request' }
+        401 | 'Unauthorized'          | { success: false, result: 'Error: 401 - Unauthorized' }
+        403 | 'Forbidden'             | { success: false, result: 'Error: 403 - Forbidden' }
+        500 | 'Internal Server Error' | { success: false, result: 'Error: 500 - Internal Server Error' }
+      end
+
+      with_them do
+        it { is_expected.to eq(expected_result) }
+      end
+    end
+
+    context 'when HTTP errors occur' do
+      where(:error_class, :error_message) do
+        Net::OpenTimeout | 'Connection timeout'
+        SocketError      | 'getaddrinfo: Name or service not known'
+      end
+
+      before do
+        allow(Gitlab::HTTP).to receive(:head).and_raise(error_class, error_message)
+      end
+
+      with_them do
+        it { is_expected.to eq({ success: false, result: "Error: #{error_message}" }) }
+      end
+    end
+
+    context 'with credentials' do
+      where(:username, :password, :expected_headers) do
+        'testuser' | 'testpass' | { Authorization: 'Basic dGVzdHVzZXI6dGVzdHBhc3M=' }
+        nil        | nil        | {}
+      end
+
+      before do
+        upstream.assign_attributes(username:, password:)
+      end
+
+      with_them do
+        it 'uses the appropriate headers' do
+          test
+
+          expect(Gitlab::HTTP).to have_received(:head).with(
+            test_url,
+            headers: expected_headers,
+            follow_redirects: true
+          )
+        end
+      end
+    end
+
+    context 'with existing upstream cache entries' do
+      before do
+        upstream.save!
+        create(
+          :virtual_registries_packages_maven_cache_entry,
+          upstream: upstream,
+          relative_path: 'dummy/path/maven-metadata.xml'
+        )
+      end
+
+      it 'uses the cache entry relative_path for the HEAD request' do
+        test
+
+        expect(Gitlab::HTTP).to have_received(:head).with(
+          upstream.url_for('dummy/path/maven-metadata.xml'),
+          headers: upstream.headers,
+          follow_redirects: true
+        )
+      end
+    end
+  end
 end
