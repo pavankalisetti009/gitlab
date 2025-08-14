@@ -17,6 +17,8 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
   let(:audit_role_from) { "Default role: #{Gitlab::Access.human_access(Gitlab::Access::GUEST)}" }
   let(:audit_role_to) { "Default role: #{Gitlab::Access.human_access(new_access_level)}" }
+  let(:target_member_role) { nil }
+
   let(:audit_role_details) do
     {
       change: 'access_level',
@@ -25,7 +27,8 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
       expiry_from: nil,
       expiry_to: new_expiration,
       as: audit_role_to,
-      member_id: member.id
+      member_id: member.id,
+      member_role_id: target_member_role&.id
     }
   end
 

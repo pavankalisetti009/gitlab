@@ -97,20 +97,27 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
   context 'streaming audit event' do
     let(:group) { root_ancestor }
-    let(:params) do
-      {
-        user_id: project_users.first.id,
-        access_level: Gitlab::Access::GUEST,
-        invite_source: '_invite_source_'
-      }
-    end
+    let(:user_added) { project_users.first }
+    let(:invites) { user_added.id }
 
     it 'audits event with name' do
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
-        hash_including(name: "member_created")
-      ).and_call_original
+        hash_including(
+          name: 'member_created',
+          author: user,
+          scope: project,
+          target: user_added,
+          target_details: user_added.name,
+          message: 'Membership created',
+          additional_details: hash_including(
+            add: 'user_access',
+            as: 'Default role: Guest',
+            member_role_id: nil
+          )
+        )
+      )
 
-      subject
+      execute_service
     end
 
     include_examples 'sends streaming audit event'
@@ -347,7 +354,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
   end
 
   context 'when assigning a member role', feature_category: :permissions do
-    let_it_be(:member_role) { create(:member_role, :guest, namespace: root_ancestor) }
+    let_it_be(:member_role) { create(:member_role, :guest, namespace: root_ancestor, name: 'Custom role') }
 
     before do
       params[:member_role_id] = member_role.id
@@ -365,6 +372,25 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
         expect(member.member_role).to eq(member_role)
         expect(member.access_level).to eq(Member::GUEST)
+      end
+
+      context 'streaming audit event' do
+        let(:invites) { project_users.first.id }
+
+        it 'audits event with member_role_id' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'member_created',
+              additional_details: hash_including(
+                add: 'user_access',
+                as: 'Custom role: Custom role',
+                member_role_id: member_role.id
+              )
+            )
+          )
+
+          execute_service
+        end
       end
 
       context "member's Authz::UserGroupMembeRole records" do
