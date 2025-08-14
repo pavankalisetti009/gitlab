@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-class Groups::Analytics::ApplicationController < ApplicationController
-  include RoutableActions
+class Groups::Analytics::ApplicationController < Groups::ApplicationController
   include GracefulTimeoutHandling
+
+  skip_cross_project_access_check :show
+  before_action :authenticate_user!
 
   feature_category :team_planning
   urgency :low
-
-  before_action :load_group
 
   private
 
@@ -16,23 +16,17 @@ class Groups::Analytics::ApplicationController < ApplicationController
   end
 
   def authorize_view_by_action!(action)
-    return render_403 unless can?(current_user, action, @group)
+    return render_403 unless can?(current_user, action, group)
   end
 
   def check_feature_availability!(feature)
-    return render_403 unless @group && @group.licensed_feature_available?(feature)
-  end
-
-  def load_group
-    return unless params['group_id']
-
-    @group ||= find_routable!(Group, params['group_id'], request.fullpath)
+    return render_403 unless group && group.licensed_feature_available?(feature)
   end
 
   def load_project
-    return unless @group && params['project_id']
+    return unless group && params['project_id']
 
-    @project = find_routable!(@group.all_projects, params['project_id'], request.fullpath)
+    @project = find_routable!(group.all_projects, params['project_id'], request.fullpath)
   end
 
   private_class_method :increment_usage_counter
