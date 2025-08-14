@@ -925,7 +925,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
       :read_admin_users        | %i[read_admin_users]
       :read_admin_groups       | %i[read_admin_groups]
-      :read_admin_projects     | %i[read_admin_projects]
     end
 
     with_them do
