@@ -17,11 +17,11 @@ export const ACCESS_LEVEL_OPTIONS = [
 
 // NOTE: If you add a config, also add the querystring key to app/helpers/sorting_helper.rb.
 // Otherwise, changing the sort will remove the querystring for the config.
-export const getStandardTokenConfigs = ({ customRoles, customAdminRoles }) => {
+export const getStandardTokenConfigs = ({ customRoles, customAdminRoles, readAdminRole }) => {
   const configs = [];
-  // Add the admin role token config if the license allows custom roles (Ultimate-only feature) and
-  // the custom_admin_roles feature flag is on.
-  if (customRoles && customAdminRoles) {
+  // Add the admin role token config if the license allows custom roles (Ultimate-only feature), the
+  // custom_admin_roles feature flag is on, and the user has permission to read custom admin roles.
+  if (customRoles && customAdminRoles && readAdminRole) {
     configs.push(
       createTokenConfig({
         type: 'admin_role_id',

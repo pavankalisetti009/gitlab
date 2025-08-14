@@ -6,9 +6,16 @@ import { ADMIN_ROLE_TOKEN } from 'ee_jest/admin/users/mock_data';
 describe('AdminUsersFilterApp', () => {
   let wrapper;
 
-  const createComponent = ({ customRoles = true, customAdminRoles = true }) => {
+  const createComponent = ({
+    customRoles = true,
+    customAdminRoles = true,
+    readAdminRole = true,
+  }) => {
     wrapper = shallowMount(AdminUsersFilterApp, {
-      provide: { glFeatures: { customRoles, customAdminRoles } },
+      provide: {
+        glFeatures: { customRoles, customAdminRoles },
+        glAbilities: { readAdminRole },
+      },
     });
   };
 
@@ -16,21 +23,21 @@ describe('AdminUsersFilterApp', () => {
     wrapper.findComponent(GlFilteredSearch).props('availableTokens');
 
   it.each`
-    customRoles | customAdminRoles
-    ${false}    | ${false}
-    ${false}    | ${true}
-    ${true}     | ${false}
+    customRoles | customAdminRoles | readAdminRole
+    ${false}    | ${true}          | ${true}
+    ${true}     | ${false}         | ${true}
+    ${true}     | ${true}          | ${false}
   `(
     'does not include admin role token when customRoles = $customRoles, customAdminRoles = $customAdminRoles',
-    ({ customRoles, customAdminRoles }) => {
-      createComponent({ customRoles, customAdminRoles });
+    ({ customRoles, customAdminRoles, readAdminRole }) => {
+      createComponent({ customRoles, customAdminRoles, readAdminRole });
 
       expect(findAvailableTokens()).not.toContainEqual(ADMIN_ROLE_TOKEN);
     },
   );
 
   it(`includes admin role token when customRoles = true, customAdminRoles = true`, () => {
-    createComponent({ customRoles: true, customAdminRoles: true });
+    createComponent({ customRoles: true, customAdminRoles: true, readAdminRole: true });
 
     expect(findAvailableTokens()).toContainEqual(ADMIN_ROLE_TOKEN);
   });
