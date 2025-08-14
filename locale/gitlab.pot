@@ -2569,10 +2569,16 @@ msgstr ""
 msgid "AICatalog|Save changes"
 msgstr ""
 
+msgid "AICatalog|Search and select tools for this agent."
+msgstr ""
+
 msgid "AICatalog|Select a project for your AI agent to be associated with."
 msgstr ""
 
 msgid "AICatalog|Select a project for your AI flow to be associated with."
+msgstr ""
+
+msgid "AICatalog|Select tools that this agent will have access to."
 msgstr ""
 
 msgid "AICatalog|System prompt"
@@ -2603,6 +2609,9 @@ msgid "AICatalog|This agent specializes in... It can help you with... Best suite
 msgstr ""
 
 msgid "AICatalog|This flow specializes in... It can help you with... Best suited for..."
+msgstr ""
+
+msgid "AICatalog|Tools"
 msgstr ""
 
 msgid "AICatalog|User Prompt"

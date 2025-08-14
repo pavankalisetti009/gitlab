@@ -4,6 +4,7 @@ const TYPENAME_AI_CATALOG_AGENT_CREATE = 'AiCatalogAgentCreatePayload';
 const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
 const TYPENAME_AI_CATALOG_AGENT_VERSION = 'AiCatalogAgentVersion';
+const TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION = 'AiCatalogBuiltInToolConnection';
 const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
@@ -22,6 +23,22 @@ export const mockPageInfo = {
   __typename: 'PageInfo',
 };
 
+export const toolTitles = ['Gitlab Blob Search', 'Ci Linter', 'Run Git Command'];
+
+const aiCatalogBuiltInToolsNodes = [0, 1, 2].map((number) => ({
+  id: `gid://gitlab/Ai::Catalog::BuiltInTool/${number}`,
+  title: toolTitles[number],
+}));
+
+export const mockToolQueryResponse = {
+  data: {
+    aiCatalogBuiltInTools: {
+      nodes: aiCatalogBuiltInToolsNodes,
+      __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
+    },
+  },
+};
+
 /* AGENTS */
 
 const mockAgentFactory = (overrides = {}) => ({
@@ -35,12 +52,16 @@ const mockAgentFactory = (overrides = {}) => ({
   ...overrides,
 });
 
-const mockAgentVersion = {
+export const mockAgentVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
   versionName: 'v1.0.0-draft',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
   userPrompt: 'The user prompt',
+  tools: {
+    nodes: [],
+    __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
+  },
 };
 
 export const mockBaseAgent = mockAgentFactory();

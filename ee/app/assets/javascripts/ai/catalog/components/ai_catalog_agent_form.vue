@@ -9,6 +9,7 @@ import {
   GlFormRadioGroup,
   GlFormRadio,
   GlIcon,
+  GlTokenSelector,
 } from '@gitlab/ui';
 import {
   VISIBILITY_LEVEL_LABELS,
@@ -27,6 +28,7 @@ import {
 import { __, s__ } from '~/locale';
 import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
+import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
 const tmpProjectId = 'gid://gitlab/Project/1000000';
@@ -42,6 +44,13 @@ export default {
     GlFormRadio,
     GlFormTextarea,
     GlIcon,
+    GlTokenSelector,
+  },
+  apollo: {
+    availableTools: {
+      query: aiCatalogBuiltInToolsQuery,
+      update: (data) => data.aiCatalogBuiltInTools.nodes.map((t) => ({ id: t.id, name: t.title })),
+    },
   },
   props: {
     mode: {
@@ -70,12 +79,15 @@ export default {
           userPrompt: '',
           public: false,
           release: true,
+          tools: [],
         };
       },
     },
   },
   data() {
     return {
+      availableTools: [],
+      toolFilter: '',
       formValues: {
         ...this.initialValues,
         visibilityLevel: this.initialValues.public
@@ -172,6 +184,12 @@ export default {
             ),
           },
         },
+        tools: {
+          label: s__('AICatalog|Tools'),
+          groupAttrs: {
+            labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
+          },
+        },
         systemPrompt: {
           label: s__('AICatalog|System prompt'),
           validators: createFieldValidators({
@@ -209,6 +227,17 @@ export default {
         },
       };
     },
+    filteredAvailableTools() {
+      return this.availableTools.filter((tool) =>
+        tool.name.toLowerCase().includes(this.toolFilter.toLowerCase()),
+      );
+    },
+    selectedTools() {
+      return this.formValues.tools.map((toolId) => ({
+        id: toolId,
+        name: this.availableTools.find((tool) => tool.id === toolId).name,
+      }));
+    },
   },
   methods: {
     handleSubmit() {
@@ -220,8 +249,15 @@ export default {
         userPrompt: this.formValues.userPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
         release: this.initialValues.release,
+        tools: this.formValues.tools,
       };
       this.$emit('submit', transformedValues);
+    },
+    handleToolsInput(input) {
+      this.formValues.tools = input.map((t) => t.id);
+    },
+    handleToolSearch(search) {
+      this.toolFilter = search;
     },
   },
   indexRoute: AI_CATALOG_AGENTS_ROUTE,
@@ -298,6 +334,17 @@ export default {
             data-testid="agent-form-textarea-user-prompt"
             @blur="blur"
             @update="input"
+          />
+        </template>
+        <template #input(tools)>
+          <gl-token-selector
+            :selected-tokens="selectedTools"
+            :dropdown-items="filteredAvailableTools"
+            :placeholder="s__('AICatalog|Search and select tools for this agent.')"
+            allow-clear-all
+            data-testid="agent-form-token-selector-tools"
+            @input="handleToolsInput"
+            @text-input="handleToolSearch"
           />
         </template>
         <template #input(visibilityLevel)="{ id, input, validation, value }">

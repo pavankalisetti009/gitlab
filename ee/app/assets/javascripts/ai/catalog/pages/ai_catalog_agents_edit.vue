@@ -39,6 +39,7 @@ export default {
         systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
         userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
         public: this.aiCatalogAgent.public,
+        tools: this.aiCatalogAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
       };
     },
   },
@@ -47,18 +48,13 @@ export default {
       this.isSubmitting = true;
       this.resetErrorMessages();
       try {
-        const { name, description, userPrompt, systemPrompt } = formValues;
-
         const { data } = await this.$apollo.mutate({
           mutation: updateAiCatalogAgent,
           variables: {
             input: {
+              ...formValues,
               id: this.aiCatalogAgent.id,
-              name,
-              description,
-              userPrompt,
-              systemPrompt,
-              public: formValues.public,
+              projectId: undefined,
             },
           },
         });

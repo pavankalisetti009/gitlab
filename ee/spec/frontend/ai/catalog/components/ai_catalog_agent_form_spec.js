@@ -1,10 +1,21 @@
+import VueApollo from 'vue-apollo';
+import Vue, { nextTick } from 'vue';
+
 import { GlFormFields, GlFormRadioGroup } from '@gitlab/ui';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
+import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_built_in_tools.query.graphql';
+
+import { mockToolQueryResponse, toolTitles } from '../mock_data';
+
+Vue.use(VueApollo);
 
 describe('AiCatalogAgentForm', () => {
   let wrapper;
+  let mockApollo;
 
   const findErrorAlert = () => wrapper.findByTestId('agent-form-error-alert');
   const findFormFields = () => wrapper.findComponent(GlFormFields);
@@ -12,6 +23,12 @@ describe('AiCatalogAgentForm', () => {
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
+  const findToolsField = () => wrapper.findByTestId('agent-form-token-selector-tools');
+  const findToolOptions = () =>
+    findToolsField()
+      .props('dropdownItems')
+      .map((t) => t.name)
+      .join(', ');
   const findUserPromptField = () => wrapper.findByTestId('agent-form-textarea-user-prompt');
   const findVisibilityLevel = () => wrapper.findByTestId('agent-form-radio-group-visibility-level');
   const findVisibilityLevelAlert = () => wrapper.findByTestId('agent-form-visibility-level-alert');
@@ -30,10 +47,16 @@ describe('AiCatalogAgentForm', () => {
     systemPrompt: 'You are a helpful assistant',
     userPrompt: 'Help me with coding',
     public: true,
+    tools: [],
   };
 
+  const mockToolQueryHandler = jest.fn().mockResolvedValue(mockToolQueryResponse);
+
   const createWrapper = (props = {}) => {
+    mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolQueryHandler]]);
+
     wrapper = shallowMountExtended(AiCatalogAgentForm, {
+      apolloProvider: mockApollo,
       propsData: {
         ...defaultProps,
         ...props,
@@ -128,6 +151,28 @@ describe('AiCatalogAgentForm', () => {
         });
       },
     );
+  });
+
+  describe('Tool selection', () => {
+    beforeEach(async () => {
+      createWrapper();
+      await waitForPromises();
+    });
+
+    it('fetches list data', () => {
+      expect(mockToolQueryHandler).toHaveBeenCalled();
+    });
+
+    it('lists all available tools', () => {
+      expect(findToolOptions()).toStrictEqual(toolTitles.join(', '));
+    });
+
+    it('filters available tools based on the search query', async () => {
+      findToolsField().vm.$emit('text-input', 'blob');
+      await nextTick();
+
+      expect(findToolOptions()).toStrictEqual('Gitlab Blob Search');
+    });
   });
 
   describe('Loading Prop', () => {
