@@ -11,7 +11,7 @@ module Ai
           return error('Catalog item is not a flow') unless item.flow?
 
           params.merge!(project: project, group: group)
-          item_consumer = ::Ai::Catalog::ItemConsumer.create(params)
+          item_consumer = ::Ai::Catalog::ItemConsumer.new(params)
 
           if item_consumer.save
             track_item_consumer_event(item_consumer, 'create_ai_catalog_item_consumer')
