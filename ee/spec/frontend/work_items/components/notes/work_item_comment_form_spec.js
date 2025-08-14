@@ -24,6 +24,7 @@ describe('WorkItemCommentForm', () => {
   let workItemByIidSuccessHandler;
 
   const mockAutosaveKey = 'test-auto-save-key';
+  const mockAutosaveKeyInternalNote = 'test-auto-save-key/InternalNote';
   const findMarkdownEditor = () => wrapper.findComponent(MarkdownEditor);
   const findWorkItemToggleStateButton = () => wrapper.findComponent(WorkItemStateToggle);
   const findConfirmButton = () => wrapper.findByTestId('confirm-button');
@@ -52,6 +53,7 @@ describe('WorkItemCommentForm', () => {
         uploadsPath: 'http://127.0.0.1:3000/test-project-path/uploads',
         ariaLabel: 'test-aria-label',
         autosaveKey: mockAutosaveKey,
+        autosaveKeyInternalNote: mockAutosaveKeyInternalNote,
         ...props,
       },
       provide: {
