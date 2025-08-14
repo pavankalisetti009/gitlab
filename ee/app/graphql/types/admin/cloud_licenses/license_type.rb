@@ -37,7 +37,7 @@ module Types
 
           field :block_changes_at, ::Types::DateType,
             null: true,
-            description: 'Date, including grace period, when licensed features will be blocked.'
+            description: 'Date when licensed features will be blocked.'
 
           field :activated_at, ::Types::DateType,
             null: true, description: 'Date when the license was activated.'

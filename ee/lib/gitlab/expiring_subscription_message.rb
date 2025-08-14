@@ -89,11 +89,7 @@ module Gitlab
     def expired_message
       return block_changes_message if show_downgrade_messaging?
 
-      n_(
-        'No worries, you can still use all the %{strong}%{plan_name}%{strong_close} features for now. You have %{remaining_days} day to renew your subscription.',
-        'No worries, you can still use all the %{strong}%{plan_name}%{strong_close} features for now. You have %{remaining_days} days to renew your subscription.',
-        remaining_days
-      ) % { plan_name: plan_name, remaining_days: remaining_days, strong: strong, strong_close: strong_close }
+      _('Your %{strong}%{plan_name}%{strong_close} subscription has expired. Please renew your subscription to continue using paid features.') % { plan_name: plan_name, strong: strong, strong_close: strong_close }
     end
 
     def block_changes_message

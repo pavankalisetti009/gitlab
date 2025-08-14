@@ -42442,11 +42442,6 @@ msgstr ""
 msgid "No work item found."
 msgstr ""
 
-msgid "No worries, you can still use all the %{strong}%{plan_name}%{strong_close} features for now. You have %{remaining_days} day to renew your subscription."
-msgid_plural "No worries, you can still use all the %{strong}%{plan_name}%{strong_close} features for now. You have %{remaining_days} days to renew your subscription."
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "No wrap"
 msgstr ""
 
@@ -74176,6 +74171,9 @@ msgid "Your %{spammable_entity_type} has been recognized as spam. Please, change
 msgstr ""
 
 msgid "Your %{strong}%{plan_name}%{strong_close} subscription for %{strong}%{namespace_name}%{strong_close} will expire on %{strong}%{expires_on}%{strong_close}."
+msgstr ""
+
+msgid "Your %{strong}%{plan_name}%{strong_close} subscription has expired. Please renew your subscription to continue using paid features."
 msgstr ""
 
 msgid "Your Activity"
