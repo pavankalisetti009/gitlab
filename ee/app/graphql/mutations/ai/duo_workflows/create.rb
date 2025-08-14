@@ -6,8 +6,8 @@ module Mutations
       class Create < BaseMutation
         graphql_name 'AiDuoWorkflowCreate'
 
-        # The actual auth check is performed by CreateWorkflowService based on the workflow definition
-        authorize :developer_access
+        # Auth is checked in allowed? depending on the container type
+        # Further checks are performed by CreateWorkflowService based on the workflow definition
 
         def self.authorization_scopes
           super + [:ai_features]
@@ -57,10 +57,12 @@ module Mutations
 
         def resolve(**args)
           container = if args[:project_id]
-                        authorized_find!(id: args[:project_id])
+                        GitlabSchema.find_by_gid(args[:project_id]).sync
                       elsif args[:namespace_id]
-                        authorized_find!(id: args[:namespace_id])
+                        GitlabSchema.find_by_gid(args[:namespace_id]).sync
                       end
+
+          raise_resource_not_available_error! unless allowed?(container)
 
           workflow_params = {
             goal: args[:goal],
@@ -86,6 +88,14 @@ module Mutations
             workflow: result[:workflow],
             errors: errors_on_object(result[:workflow])
           }
+        end
+
+        private
+
+        def allowed?(container)
+          return Ability.allowed?(current_user, :read_project, container) if container.is_a?(Project)
+
+          Ability.allowed?(current_user, :read_group, container)
         end
       end
     end
