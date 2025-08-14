@@ -137,6 +137,7 @@ module Gitlab
           "generate_description/base": "^1.0.0",
           "generate_description/claude_3": "^1.0.0",
           "generate_description/general": "^1.0.0",
+          "generate_description/amazon_q": "^1.0.0",
           "glab_ask_git_command/base": "^1.0.0",
           "glab_ask_git_command/amazon_q": "^1.0.0",
           "glab_ask_git_command/claude_3": "^1.0.0",
