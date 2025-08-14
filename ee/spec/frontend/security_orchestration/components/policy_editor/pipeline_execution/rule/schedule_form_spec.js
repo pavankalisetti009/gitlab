@@ -4,12 +4,7 @@ import BranchSelection from 'ee/security_orchestration/components/policy_editor/
 import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
 import SnoozeForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/snooze_form.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
-import {
-  DEFAULT_TIME_PER_UNIT,
-  MAXIMUM_SECONDS,
-  MINIMUM_SECONDS,
-  TIME_UNITS,
-} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
+import DurationSelector from 'ee/security_orchestration/components/policy_editor/shared/duration_selector/duration_selector.vue';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
@@ -20,7 +15,7 @@ describe('ScheduleForm', () => {
   let wrapper;
   const defaultSchedule = {
     type: 'daily',
-    time_window: { value: 3600 },
+    time_window: { distribution: 'random', value: 3600 },
     branch_type: 'protected',
   };
   const mockTimezones = [
@@ -38,13 +33,12 @@ describe('ScheduleForm', () => {
 
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findBranchSelection = () => wrapper.findComponent(BranchSelection);
+  const findDurationSelector = () => wrapper.findComponent(DurationSelector);
   const findTimezoneDropdown = () => wrapper.findComponent(TimezoneDropdown);
   const findTimeDropdown = () => wrapper.findByTestId('time-dropdown');
   const findWeekdayDropdown = () => wrapper.findByTestId('weekday-dropdown');
   const findMonthlyDaysDropdown = () => wrapper.findByTestId('monthly-days-dropdown');
-  const findDurationInput = () => wrapper.findByTestId('duration-input');
   const findSnoozeForm = () => wrapper.findComponent(SnoozeForm);
-  const findTimeUnitDropdown = () => wrapper.findByTestId('time-unit-dropdown');
 
   describe('rendering', () => {
     it('displays the message', () => {
@@ -173,42 +167,6 @@ describe('ScheduleForm', () => {
       });
     });
 
-    describe('duration controls', () => {
-      it('renders the time unit dropdown with correct options', () => {
-        createComponent();
-        const timeUnitDropdown = findTimeUnitDropdown();
-        expect(timeUnitDropdown.exists()).toBe(true);
-        expect(timeUnitDropdown.props('items')).toEqual([
-          { value: TIME_UNITS.MINUTE, text: 'Minutes' },
-          { value: TIME_UNITS.HOUR, text: 'Hours' },
-          { value: TIME_UNITS.DAY, text: 'Days' },
-        ]);
-      });
-
-      it('selects hours as default unit for 3600 seconds (1 hour)', () => {
-        createComponent({ schedule: { time_window: { value: 3600 } } });
-        expect(findTimeUnitDropdown().props('selected')).toBe(TIME_UNITS.HOUR);
-        expect(findDurationInput().props('value')).toBe(1);
-      });
-
-      it('selects days as default unit for 86400 seconds (1 day)', () => {
-        createComponent({ schedule: { time_window: { value: 86400 } } });
-        expect(findTimeUnitDropdown().props('selected')).toBe(TIME_UNITS.DAY);
-        expect(findDurationInput().props('value')).toBe(1);
-      });
-
-      it('selects minutes as default unit for non-divisible values', () => {
-        createComponent({ schedule: { time_window: { value: 400 } } });
-        expect(findTimeUnitDropdown().props('selected')).toBe(TIME_UNITS.MINUTE);
-        expect(findDurationInput().props('value')).toBe(6);
-      });
-
-      it('uses minimum value of 10 when duration would be 0', () => {
-        createComponent({ schedule: { time_window: { value: 0 } } });
-        expect(findDurationInput().props('value')).toBe(10);
-      });
-    });
-
     describe('SnoozeForm', () => {
       it('passes snooze data to SnoozeForm component', () => {
         const snoozeData = {
@@ -222,20 +180,18 @@ describe('ScheduleForm', () => {
   });
 
   describe('event handling', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     // TODO unskip these test case after enable dropdown with https://gitlab.com/gitlab-org/gitlab/-/issues/535547
     // eslint-disable-next-line jest/no-disabled-tests
     describe.skip('branch selection', () => {
       it('handles branch type selection changes', async () => {
+        createComponent();
         const branchTypeData = { branch_type: 'all' };
         await findBranchSelection().vm.$emit('set-branch-type', branchTypeData);
         expect(wrapper.emitted('changed')).toMatchObject([[{ ...branchTypeData }]]);
       });
 
       it('handles branches selection changes', async () => {
+        createComponent();
         const branchesData = { branches: ['main'] };
         await findBranchSelection().vm.$emit('changed', branchesData);
         expect(wrapper.emitted('changed')).toMatchObject([[{ ...branchesData }]]);
@@ -295,6 +251,7 @@ describe('ScheduleForm', () => {
 
     describe('timezone', () => {
       it('handles timezone selection changes', async () => {
+        createComponent();
         const timezoneData = { identifier: 'America/Los_Angeles' };
         await findTimezoneDropdown().vm.$emit('input', timezoneData);
         expect(wrapper.emitted('changed')).toEqual([
@@ -305,6 +262,7 @@ describe('ScheduleForm', () => {
 
     describe('time dropdown', () => {
       it('emits changed event when time is selected', async () => {
+        createComponent();
         const timeDropdown = findTimeDropdown();
         await timeDropdown.vm.$emit('select', '10:00');
         expect(wrapper.emitted('changed')).toEqual([
@@ -349,52 +307,27 @@ describe('ScheduleForm', () => {
       });
     });
 
-    describe('duration controls', () => {
-      it('updates time_window.value when duration value changes', async () => {
-        createComponent({ schedule: { time_window: { value: 3600 } } });
-        await findDurationInput().vm.$emit('update', 2);
+    describe('duration selector', () => {
+      it('renders', () => {
+        createComponent();
+        expect(findDurationSelector().props()).toMatchObject({
+          timeWindow: { distribution: 'random', value: 3600 },
+          timeWindowRequired: true,
+        });
+      });
 
+      it('handles duration selection changes', async () => {
+        createComponent();
+        await findDurationSelector().vm.$emit('changed', { distribution: 'random', value: 7200 });
         expect(wrapper.emitted('changed')).toEqual([
-          [{ time_window: { value: 7200 } }], // 2 hours = 7200 seconds
+          [
+            {
+              branch_type: 'protected',
+              time_window: { distribution: 'random', value: 7200 },
+              type: 'daily',
+            },
+          ],
         ]);
-      });
-
-      it('applies minimum limit when duration is too small', async () => {
-        createComponent({ schedule: { time_window: { value: 1 } } });
-        await findDurationInput().vm.$emit('update', 1);
-
-        // With TIME_UNITS.MINUTE selected, 1 minute = 60 seconds, which is below MINIMUM_SECONDS (600)
-        // So it should be capped at MINIMUM_SECONDS
-        expect(wrapper.emitted('changed')[0][0].time_window.value).toBe(MINIMUM_SECONDS);
-      });
-
-      it('applies maximum limit when duration is too large', async () => {
-        createComponent({ schedule: { time_window: { value: 3600 } } });
-        // Set time unit to days first
-        await findTimeUnitDropdown().vm.$emit('select', TIME_UNITS.DAY);
-
-        // Then set a very large number of days
-        await findDurationInput().vm.$emit('update', 100);
-
-        // 100 days exceeds MAXIMUM_SECONDS, so it should be capped
-        expect(wrapper.emitted('changed')[1][0].time_window.value).toBe(MAXIMUM_SECONDS);
-      });
-
-      it('uses DEFAULT_TIME_PER_UNIT when time unit changes', async () => {
-        createComponent({ schedule: { time_window: { value: 3600 } } });
-        await findTimeUnitDropdown().vm.$emit('select', TIME_UNITS.DAY);
-
-        expect(wrapper.emitted('changed')[0][0].time_window.value).toBe(
-          DEFAULT_TIME_PER_UNIT[TIME_UNITS.DAY],
-        );
-      });
-
-      it.each(['', undefined, null, 'hello'])('ignores the input $input', async (input) => {
-        createComponent({ schedule: { time_window: { value: 3600 } } });
-        await findDurationInput().vm.$emit('update', input);
-
-        // Should not emit a change event for empty input
-        expect(wrapper.emitted('changed')).toBe(undefined);
       });
     });
 

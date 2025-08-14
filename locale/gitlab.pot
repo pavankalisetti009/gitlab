@@ -55413,9 +55413,6 @@ msgstr ""
 msgid "ScanExecutionPolicy|%{labelStart}File path:%{labelEnd} %{filePath}"
 msgstr ""
 
-msgid "ScanExecutionPolicy|%{period} %{days} around %{time} %{timezoneLabel} %{timezone}"
-msgstr ""
-
 msgid "ScanExecutionPolicy|%{rules} actions for %{scopes} %{branches} %{agents} %{branchExceptions} %{namespaces} %{period}"
 msgstr ""
 
@@ -55585,6 +55582,9 @@ msgid "ScanExecutionPolicy|Value"
 msgstr ""
 
 msgid "ScanExecutionPolicy|agent"
+msgstr ""
+
+msgid "ScanExecutionPolicy|at the following times: %{period} %{days} around %{time} %{timezone}, run for: %{duration}, %{timezoneLabel}"
 msgstr ""
 
 msgid "ScanExecutionPolicy|branch"
