@@ -16,6 +16,10 @@ module EE
           push_frontend_feature_flag(:custom_admin_roles)
           push_licensed_feature(:custom_roles)
         end
+
+        before_action only: [:index] do
+          push_frontend_ability(ability: :read_admin_role, user: current_user)
+        end
       end
 
       def identity_verification_exemption
