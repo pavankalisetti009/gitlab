@@ -56,7 +56,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :d
 
       context 'when 1 or more vendored models are in use' do
         before do
-          create(:ai_feature_setting, provider: :vendored)
+          create(:ai_feature_setting, feature: :code_completions, provider: :vendored)
         end
 
         context 'when the ai_self_hosted_vendored_features feature flag is enabled' do

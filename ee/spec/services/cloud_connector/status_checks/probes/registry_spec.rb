@@ -86,10 +86,28 @@ RSpec.describe CloudConnector::StatusChecks::Probes::Registry, feature_category:
           create(:ai_feature_setting, provider: :vendored)
         end
 
-        it 'returns self-hosted probes combined with default probes' do
-          probes = registry.self_hosted_probes
+        context 'when code completions is vendored' do
+          before do
+            create(:ai_feature_setting, feature: :code_completions, provider: :vendored)
+          end
 
-          expect(probes).to match(default_probe_types + self_hosted_only_probe_types)
+          it 'returns self-hosted probes combined with default probes including EndToEndProbe' do
+            probes = registry.self_hosted_probes
+
+            expect(probes).to match(default_probe_types + self_hosted_only_probe_types)
+          end
+        end
+
+        context 'when code completions is not vendored' do
+          before do
+            create(:ai_feature_setting, feature: :code_completions, provider: :self_hosted)
+          end
+
+          it 'returns self-hosted probes combined with default probes excluding EndToEndProbe' do
+            probes = registry.self_hosted_probes
+
+            expect(probes).not_to include(an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe))
+          end
         end
       end
 
