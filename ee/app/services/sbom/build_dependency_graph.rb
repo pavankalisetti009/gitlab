@@ -83,16 +83,14 @@ module Sbom
         graph[path[:ancestor_id]] << path[:descendant_id]
       end
 
-      transitive_paths = []
+      transitive_paths = {}
 
       # For each direct dependency, find all possible paths to other dependencies
       direct_dependencies.each do |direct_dep|
         find_all_paths(direct_dep.id, graph, transitive_paths)
       end
 
-      result = all_paths
-        .concat(transitive_paths)
-        .uniq { |path| [path.ancestor_id, path.descendant_id, path.path_length] }
+      result = all_paths.concat(transitive_paths.values)
 
       ::Gitlab::AppLogger.info(
         message: "New graph creation complete",
@@ -137,7 +135,8 @@ module Sbom
         next if visited.include?(neighbor_id)
 
         if new_length > 1
-          all_paths << Sbom::GraphPath.new(
+          key = "#{path_start}-#{neighbor_id}-#{new_length}"
+          all_paths[key] = Sbom::GraphPath.new(
             ancestor_id: path_start,
             descendant_id: neighbor_id,
             project_id: project.id,
