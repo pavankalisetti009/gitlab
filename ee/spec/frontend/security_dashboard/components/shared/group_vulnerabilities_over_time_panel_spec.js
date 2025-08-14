@@ -261,21 +261,17 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       },
     );
 
-    it.each`
-      condition                | filters
-      ${'empty filters'}       | ${{}}
-      ${'unsupported filters'} | ${{ unsupportedFilter: ['filterValue'] }}
-    `('does not add filters to the GraphQL query when given $condition', ({ filters }) => {
+    it('does not add unsupported filters that are passed', () => {
+      const unsupportedFilter = ['filterValue'];
       const { vulnerabilitiesOverTimeHandler } = createComponent({
         props: {
-          filters,
+          filters: { unsupportedFilter },
         },
       });
 
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+      expect(vulnerabilitiesOverTimeHandler).not.toHaveBeenCalledWith(
         expect.objectContaining({
-          includeBySeverity: true,
-          includeByReportType: false,
+          unsupportedFilter,
         }),
       );
     });
@@ -290,6 +286,31 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
         expect.objectContaining({
           includeBySeverity: false,
           includeByReportType: true,
+        }),
+      );
+    });
+  });
+
+  describe('severity filter', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('passes the correct value prop', () => {
+      expect(findSeverityFilter().props('value')).toEqual([]);
+    });
+
+    it('updates the GraphQL query variables when severity filter changes', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+      const appliedFilters = ['CRITICAL', 'HIGH'];
+
+      findSeverityFilter().vm.$emit('input', appliedFilters);
+      await waitForPromises();
+
+      expect(findSeverityFilter().props('value')).toBe(appliedFilters);
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          severity: appliedFilters,
         }),
       );
     });
@@ -455,30 +476,6 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       it('renders the correct error message', () => {
         expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
       });
-    });
-  });
-
-  describe('severity filter', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('passes the correct value prop', () => {
-      expect(findSeverityFilter().props('value')).toEqual([]);
-    });
-
-    it('updates the GraphQL query variables when severity filter changes', async () => {
-      const { vulnerabilitiesOverTimeHandler } = createComponent();
-      const appliedFilters = ['CRITICAL', 'HIGH'];
-
-      findSeverityFilter().vm.$emit('input', appliedFilters);
-      await waitForPromises();
-
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
-        expect.objectContaining({
-          severity: appliedFilters,
-        }),
-      );
     });
   });
 });

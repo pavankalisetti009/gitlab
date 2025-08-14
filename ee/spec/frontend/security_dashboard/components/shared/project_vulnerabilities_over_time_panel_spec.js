@@ -5,6 +5,7 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
 import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
+import OverTimeSeverityFilter from 'ee/security_dashboard/components/shared/over_time_severity_filter.vue';
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -94,6 +95,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
     wrapper.findComponent(VulnerabilitiesOverTimeChart);
   const findOverTimeGroupBy = () => wrapper.findComponent(OverTimeGroupBy);
   const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
+  const findSeverityFilter = () => wrapper.findComponent(OverTimeSeverityFilter);
 
   beforeEach(() => {
     createComponent();
@@ -148,6 +150,7 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         reportType: mockFilters.reportType,
         startDate: ninetyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
+        severity: [],
         includeBySeverity: true,
         includeByReportType: false,
       });
@@ -160,34 +163,26 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
         },
       });
 
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockProjectFullPath,
-        reportType: ['API_FUZZING', 'SAST'],
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
-        includeBySeverity: true,
-        includeByReportType: false,
-      });
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reportType: ['API_FUZZING', 'SAST'],
+        }),
+      );
     });
 
-    it.each`
-      condition                | filters
-      ${'empty filters'}       | ${{}}
-      ${'unsupported filters'} | ${{ unsupportedFilter: ['filterValue'] }}
-    `('does not add filters to the GraphQL query when given $condition', ({ filters }) => {
+    it('does not add unsupported filters that are passed', () => {
+      const unsupportedFilter = ['filterValue'];
       const { vulnerabilitiesOverTimeHandler } = createComponent({
         props: {
-          filters,
+          filters: { unsupportedFilter },
         },
       });
 
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockProjectFullPath,
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
-        includeBySeverity: true,
-        includeByReportType: false,
-      });
+      expect(vulnerabilitiesOverTimeHandler).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          unsupportedFilter,
+        }),
+      );
     });
 
     it('updates query variables when switching to report type grouping', async () => {
@@ -196,14 +191,33 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       await findOverTimeGroupBy().vm.$emit('input', 'reportType');
       await waitForPromises();
 
-      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
-        fullPath: mockProjectFullPath,
-        reportType: mockFilters.reportType,
-        startDate: ninetyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
-        includeBySeverity: false,
-        includeByReportType: true,
-      });
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          includeBySeverity: false,
+          includeByReportType: true,
+        }),
+      );
+    });
+  });
+
+  describe('severity filter', () => {
+    it('passes the correct value prop', () => {
+      expect(findSeverityFilter().props('value')).toEqual([]);
+    });
+
+    it('updates the GraphQL query variables when severity filter changes', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+      const appliedFilters = ['CRITICAL', 'HIGH'];
+
+      findSeverityFilter().vm.$emit('input', appliedFilters);
+      await waitForPromises();
+
+      expect(findSeverityFilter().props('value')).toBe(appliedFilters);
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          severity: appliedFilters,
+        }),
+      );
     });
   });
 

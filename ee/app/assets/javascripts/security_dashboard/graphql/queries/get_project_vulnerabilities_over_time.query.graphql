@@ -5,11 +5,12 @@ query getProjectVulnerabilitiesOverTime(
   $endDate: ISO8601Date!
   $includeBySeverity: Boolean!
   $includeByReportType: Boolean!
+  $severity: [VulnerabilitySeverity!]
 ) {
   project(fullPath: $fullPath) {
     id
     securityMetrics(reportType: $reportType) {
-      vulnerabilitiesOverTime(startDate: $startDate, endDate: $endDate) {
+      vulnerabilitiesOverTime(startDate: $startDate, endDate: $endDate, severity: $severity) {
         nodes {
           date
           ... @include(if: $includeBySeverity) {

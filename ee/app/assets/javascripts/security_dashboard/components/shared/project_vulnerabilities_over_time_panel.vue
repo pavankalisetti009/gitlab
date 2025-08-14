@@ -6,6 +6,7 @@ import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/share
 import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
+import OverTimeSeverityFilter from './over_time_severity_filter.vue';
 import OverTimeGroupBy from './over_time_group_by.vue';
 
 export default {
@@ -14,6 +15,7 @@ export default {
     ExtendedDashboardPanel,
     VulnerabilitiesOverTimeChart,
     OverTimeGroupBy,
+    OverTimeSeverityFilter,
   },
   inject: ['projectFullPath'],
   props: {
@@ -36,6 +38,7 @@ export default {
           startDate,
           endDate,
           reportType: this.filters.reportType,
+          severity: this.panelLevelFilters.severity,
           includeBySeverity: this.groupedBy === 'severity',
           includeByReportType: this.groupedBy === 'reportType',
         };
@@ -54,6 +57,9 @@ export default {
       vulnerabilitiesOverTime: [],
       fetchError: false,
       groupedBy: 'severity',
+      panelLevelFilters: {
+        severity: [],
+      },
     };
   },
   computed: {
@@ -71,6 +77,7 @@ export default {
     :show-alert-state="fetchError"
   >
     <template #filters>
+      <over-time-severity-filter v-model="panelLevelFilters.severity" />
       <over-time-group-by v-model="groupedBy" />
     </template>
     <template #body>
