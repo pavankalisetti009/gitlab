@@ -18,8 +18,6 @@ module EE
       condition(:read_only, scope: :subject) { read_only? }
       condition(:approval_rules_editable) { approval_rules_editable? }
       condition(:new_editing_rules) { new_editing_rules? }
-      condition(:merge_request_discussion_locked) { @subject.discussion_locked? }
-      condition(:merge_request_project_archived) { @subject.project.archived? }
 
       condition(:merge_request_group_approver, score: 140) do
         project = @subject.target_project
