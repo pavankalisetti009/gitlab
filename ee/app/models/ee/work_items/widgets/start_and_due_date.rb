@@ -16,7 +16,7 @@ module EE
 
         override :can_rollup?
         def can_rollup?
-          work_item&.work_item_type&.allowed_child_types(cache: true).present?
+          work_item&.work_item_type&.allowed_child_types.present?
         end
         strong_memoize_attr :can_rollup?
 
