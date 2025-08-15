@@ -22,7 +22,7 @@ module Ai
       end
 
       def error_no_permissions(payload: {})
-        error('You have insufficient permissions', payload:)
+        ServiceResponse.error(message: ['You have insufficient permissions'], payload: payload)
       end
 
       def track_ai_item_events(event_type, item_type)

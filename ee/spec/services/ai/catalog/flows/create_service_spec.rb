@@ -104,9 +104,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       context 'when the prefix is not valid' do
         let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '2' }]) }
 
-        it 'raises an ArgumentError' do
-          expect { response }.to raise_error(ArgumentError)
-        end
+        it_behaves_like 'an error response', ['Step 1: Unable to resolve version with prefix 2']
       end
     end
 
@@ -134,7 +132,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
 
     context 'when flow exceeds maximum steps' do
       before do
-        stub_const("#{described_class}::MAX_STEPS", 1)
+        stub_const("Ai::Catalog::Flows::FlowHelper::MAX_STEPS", 1)
       end
 
       let!(:params) do

@@ -28,12 +28,22 @@ module Mutations
             required: false,
             description: 'Whether the flow is publicly visible in the catalog.'
 
+          argument :steps, [::Types::Ai::Catalog::FlowStepsInputType],
+            required: false,
+            description: 'Steps for the flow.'
+
           authorize :admin_ai_catalog_item
 
           def resolve(args)
             flow = authorized_find!(id: args[:id])
 
-            params = args.slice(:name, :description, :public).merge(flow: flow)
+            params = args.except(:id).merge(flow: flow)
+            # We can't use `loads` because of this bug https://github.com/rmosolgo/graphql-ruby/issues/2966
+            agents = ::Ai::Catalog::Item.with_ids(params[:steps].pluck(:agent_id)).index_by(&:id) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord model
+
+            params[:steps] = params[:steps].map do |step|
+              step.to_hash.merge(agent: agents[step[:agent_id]]).except(:agent_id)
+            end
 
             result = ::Ai::Catalog::Flows::UpdateService.new(
               project: flow.project,

@@ -19,6 +19,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       :description,
       :name,
       :public,
+      :steps,
       :client_mutation_id
     )
   end
