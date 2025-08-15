@@ -704,6 +704,38 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         it { is_expected.to duo_agentic_chat_enabled_for_user }
       end
     end
+
+    context 'when the instance can use Duo with self-hosted models' do
+      where(:instance_with_self_hosted_duo,
+        :agentic_duo_chat_feature_flag_disabled_on_the_instance,
+        :duo_agentic_chat_is_available_otherwise,
+        :policy_result) do
+        true  | false | true  | be_allowed(policy)
+        false | true  | true  | be_allowed(policy)
+        false | false | true  | be_allowed(policy)
+        true  | true  | true  | be_disallowed(policy)
+        true  | true  | false | be_disallowed(policy)
+        true  | false | false | be_disallowed(policy)
+        false | true  | false | be_disallowed(policy)
+        false | false | false | be_disallowed(policy)
+      end
+
+      with_them do
+        before do
+          allow(::Ai::Setting).to receive(:self_hosted?).and_return(instance_with_self_hosted_duo)
+          stub_feature_flags(
+            agent_platform_model_selection: !agentic_duo_chat_feature_flag_disabled_on_the_instance
+          )
+          # setup agentic chat to be available otherwise
+          stub_feature_flags(duo_agentic_chat: duo_agentic_chat_is_available_otherwise)
+          allow(current_user).to receive(:allowed_to_use?)
+            .with(:duo_chat)
+            .and_return(duo_agentic_chat_is_available_otherwise)
+        end
+
+        it { is_expected.to policy_result }
+      end
+    end
   end
 
   describe 'access_x_ray_on_instance' do
