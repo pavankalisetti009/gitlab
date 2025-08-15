@@ -124,9 +124,9 @@ RSpec.describe Ci::PipelinePresenter, feature_category: :continuous_integration 
           it { is_expected.to be_falsey }
         end
 
-        context 'with FF show_child_reports_in_mr_page disabled' do
+        context 'with FF show_child_security_reports_in_mr_widget disabled' do
           before do
-            stub_feature_flags(show_child_reports_in_mr_page: false)
+            stub_feature_flags(show_child_security_reports_in_mr_widget: false)
           end
 
           it { is_expected.to be_falsey }

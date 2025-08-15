@@ -8,7 +8,7 @@ module EE
       def expose_security_dashboard?
         return false unless can?(current_user, :read_security_resource, pipeline.project)
 
-        if ::Feature.enabled?(:show_child_reports_in_mr_page, pipeline.project)
+        if ::Feature.enabled?(:show_child_security_reports_in_mr_widget, pipeline.project)
           latest_report_builds_in_self_and_project_descendants(
             ::Ci::JobArtifact.with_file_types(security_report_file_types)
           ).exists?
