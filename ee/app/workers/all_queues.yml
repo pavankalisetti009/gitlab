@@ -503,6 +503,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:gitlab_subscriptions_add_on_purchases_ldap_all_add_on_seat_sync
+  :worker_name: GitlabSubscriptions::AddOnPurchases::LdapAllAddOnSeatSyncWorker
+  :feature_category: :seat_cost_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:gitlab_subscriptions_add_on_purchases_offline_cloud_license_provision
   :worker_name: GitlabSubscriptions::AddOnPurchases::OfflineCloudLicenseProvisionWorker
   :feature_category: :add-on_provisioning
