@@ -33,7 +33,7 @@ In GitLab 18.3 and later, you can also bring your own compatible model, giving y
 
 ## Supported models
 
-Support for the following GitLab-supported large language models (LLMs) is generally available. If the model you want to use is not in this documentation, provide feedback in the [model request issue (issue 526751)](https://gitlab.com/gitlab-org/gitlab/-/issues/526751).
+Support for the following GitLab-supported large language models (LLMs) is generally available.
 
 - Fully compatible: The model can likely handle the feature without any loss of quality.
 - Largely compatible: The model supports the feature, but there might be compromises or limitations.
