@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Groups::Settings::WorkItemsController, feature_category: :team_planning do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:user) { create(:user) }
@@ -51,46 +53,47 @@ RSpec.describe Groups::Settings::WorkItemsController, feature_category: :team_pl
     context 'with root group' do
       let(:current_group) { group }
 
-      context 'when user is not authorized' do
-        it_behaves_like 'unauthorized access'
+      where(:user_role, :custom_fields_licensed, :work_item_status_licensed, :expected_result) do
+        # Maintainer+ roles should have access when at least one licensed feature is enabled
+        :maintainer | true  | true  | 'successful access'
+        :maintainer | true  | false | 'successful access'
+        :maintainer | false | true  | 'successful access'
+        :maintainer | false | false | 'unauthorized access'
+        :owner      | true  | true  | 'successful access'
+        :owner      | true  | false | 'successful access'
+        :owner      | false | true  | 'successful access'
+        :owner      | false | false | 'unauthorized access'
+
+        # Other roles should never have access regardless of licensed features
+        :anonymous  | true  | true  | 'unauthorized access'
+        :anonymous  | false | false | 'unauthorized access'
+        :guest      | true  | true  | 'unauthorized access'
+        :guest      | false | false | 'unauthorized access'
+        :developer  | true  | true  | 'unauthorized access'
+        :developer  | false | false | 'unauthorized access'
       end
 
-      context 'when user is authorized' do
+      with_them do
         before do
-          current_group.add_maintainer(user)
-        end
-
-        context 'when custom_fields is available' do
-          before do
-            stub_licensed_features(custom_fields: true)
+          case user_role
+          when :anonymous
+            sign_out(user)
+          when :guest
+            current_group.add_guest(user)
+          when :developer
+            current_group.add_developer(user)
+          when :maintainer
+            current_group.add_maintainer(user)
+          when :owner
+            current_group.add_owner(user)
           end
 
-          it_behaves_like 'successful access'
+          stub_licensed_features(
+            custom_fields: custom_fields_licensed, work_item_status: work_item_status_licensed
+          )
         end
 
-        context 'when work_item_status is available' do
-          before do
-            stub_licensed_features(work_item_status: true)
-          end
-
-          it_behaves_like 'successful access'
-        end
-
-        context 'when both features are available' do
-          before do
-            stub_licensed_features(custom_fields: true, work_item_status: true)
-          end
-
-          it_behaves_like 'successful access'
-        end
-
-        context 'when no licensed features are available' do
-          before do
-            stub_licensed_features(custom_fields: false, work_item_status: false)
-          end
-
-          it_behaves_like 'unauthorized access'
-        end
+        it_behaves_like params[:expected_result]
       end
     end
   end
