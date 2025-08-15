@@ -11,7 +11,7 @@ import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/lifecycle_update.mutation.graphql';
 import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/namespace_metadata.query.graphql';
-import { mockNamespaceMetadata, deleteStatusErrorResponse } from './mock_data';
+import { mockNamespaceMetadata, deleteStatusErrorResponse } from '../mock_data';
 
 Vue.use(VueApollo);
 

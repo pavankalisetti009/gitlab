@@ -1,0 +1,33 @@
+query namespaceDefaultLifecycle($fullPath: ID!) {
+  namespaceDefaultLifecycle(fullPath: $fullPath) @client {
+    id
+    lifecycle {
+      id
+      name
+      defaultOpenStatus {
+        id
+        name
+      }
+      defaultClosedStatus {
+        id
+        name
+      }
+      defaultDuplicateStatus {
+        id
+        name
+      }
+      workItemTypes {
+        id
+        name
+        iconName
+      }
+      statuses {
+        id
+        name
+        iconName
+        color
+        description
+      }
+    }
+  }
+}
