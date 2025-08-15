@@ -127,6 +127,7 @@ class Note < ApplicationRecord
   scope :not_internal, -> { where(internal: false) }
   scope :common, -> { where(noteable_type: ["", nil]) }
   scope :order_created_at_id_asc, -> { order_created_asc.with_order_id_asc }
+  scope :order_created_at_id_desc, -> { order_created_desc.with_order_id_desc }
   scope :updated_after, ->(time) { where('updated_at > ?', time) }
   scope :with_suggestions, -> { joins(:suggestions) }
   scope :inc_author, -> { includes(:author) }

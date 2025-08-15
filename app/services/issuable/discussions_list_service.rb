@@ -49,7 +49,10 @@ module Issuable
       # - Internal notes are separately filtered in NotesFinder.redact_internal
       notes = notes.select { |n| !n.system? || n.system_note_visible_for?(current_user) }
 
-      Discussion.build_collection(notes, issuable)
+      discussions = Discussion.build_collection(notes, issuable)
+      discussions.reverse! if params[:sort] && params[:sort] == :created_desc
+
+      discussions
     end
 
     def paginator
@@ -57,7 +60,7 @@ module Issuable
 
       strong_memoize(:paginator) do
         issuable
-          .discussion_root_note_ids(notes_filter: params[:notes_filter])
+          .discussion_root_note_ids(notes_filter: params[:notes_filter], sort: params[:sort])
           .keyset_paginate(cursor: params[:cursor], per_page: params[:per_page].to_i)
       end
     end
