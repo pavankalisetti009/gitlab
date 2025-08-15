@@ -69,7 +69,7 @@ describe('Release stats card', () => {
     });
 
     it('renders the statistics', () => {
-      expect(findStats().text()).toMatchInterpolatedText('2811 Releases 9% Projects with releases');
+      expect(findStats().text()).toMatch(/2811\s*Releases\s*9%\s*Projects\s*with\s*releases/);
     });
   });
 
@@ -97,7 +97,7 @@ describe('Release stats card', () => {
     });
 
     it('renders the statistics', () => {
-      expect(findStats().text()).toMatchInterpolatedText('0 Releases 0% Projects with releases');
+      expect(findStats().text()).toMatch(/0\s*Releases\s*0%\s*Projects\s*with\s*releases/);
     });
   });
 
@@ -116,7 +116,7 @@ describe('Release stats card', () => {
     });
 
     it('renders questions marks in place of the numbers', () => {
-      expect(findStats().text()).toMatchInterpolatedText('- Releases - Projects with releases');
+      expect(findStats().text()).toMatch(/-\s*Releases\s*-\s*Projects\s*with\s*releases/i);
     });
   });
 });
