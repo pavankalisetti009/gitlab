@@ -75,8 +75,8 @@ export default {
     handleLifecycleUpdate() {
       this.$apollo.queries.lifecycles.refetch();
     },
-    toggleCreateLifecycleModal() {
-      this.showCreateLifecycleModal = !this.showCreateLifecycleModal;
+    closeCreateLifecycleModal() {
+      this.showCreateLifecycleModal = false;
     },
   },
 };
@@ -122,7 +122,7 @@ export default {
     >
       <div>
         <h5 class="gl-mb-2">{{ s__('WorkItem|Lifecycles') }}</h5>
-        <p class="gl-mb-0">
+        <p class="gl-mb-0 gl-text-subtle">
           {{
             s__(
               'WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle.',
@@ -130,7 +130,7 @@ export default {
           }}
         </p>
       </div>
-      <gl-button @click="toggleCreateLifecycleModal">{{
+      <gl-button @click="showCreateLifecycleModal = true">{{
         s__('WorkItem|Create lifecycle')
       }}</gl-button>
     </section>
@@ -174,7 +174,8 @@ export default {
 
     <create-lifecycle-modal
       :visible="showCreateLifecycleModal"
-      @close="toggleCreateLifecycleModal"
+      :full-path="fullPath"
+      @close="closeCreateLifecycleModal"
     />
   </div>
 </template>
