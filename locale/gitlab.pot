@@ -48395,6 +48395,9 @@ msgstr ""
 msgid "Preferences|Render whitespace characters in the Web IDE"
 msgstr ""
 
+msgid "Preferences|Select a default Duo namespace..."
+msgstr ""
+
 msgid "Preferences|Show one file at a time on merge request's Changes tab"
 msgstr ""
 

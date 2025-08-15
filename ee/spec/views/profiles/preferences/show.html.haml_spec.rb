@@ -40,7 +40,7 @@ RSpec.describe 'profiles/preferences/show' do
       it 'does not have a default Duo group input' do
         render
 
-        expect(rendered).not_to have_field _('Default GitLab Duo namespace')
+        expect(rendered).not_to have_select _('Default GitLab Duo namespace')
       end
     end
 
@@ -50,10 +50,28 @@ RSpec.describe 'profiles/preferences/show' do
         allow(view).to receive(:user_duo_namespace_assignment_options).and_return(user_duo_namespace_assignments)
       end
 
-      it 'has a default Duo group input' do
-        render
+      context 'with no namespace selected' do
+        it 'renders select input with placeholder text' do
+          render
 
-        expect(rendered).to have_field _('Default GitLab Duo namespace')
+          expect(rendered).to have_select _('Default GitLab Duo namespace'),
+            options: ['Select a default Duo namespace...', 'Namespace 1', 'Namespace 2']
+        end
+      end
+
+      context 'with default already selected' do
+        before do
+          allow_next_instance_of(UserPreference) do |preference|
+            allow(preference).to receive(:default_duo_add_on_assignment_id).and_return(1)
+          end
+        end
+
+        it 'renders select input with namespace options' do
+          render
+
+          expect(rendered).to have_select _('Default GitLab Duo namespace'),
+            options: ['Namespace 1', 'Namespace 2']
+        end
       end
     end
   end
