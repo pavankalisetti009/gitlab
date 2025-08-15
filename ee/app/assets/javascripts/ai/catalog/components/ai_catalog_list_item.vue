@@ -38,6 +38,9 @@ export default {
     },
   },
   computed: {
+    canAdmin() {
+      return this.item.userPermissions.adminAiCatalogItem;
+    },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
     },
@@ -98,6 +101,7 @@ export default {
     </template>
     <template #actions>
       <gl-disclosure-dropdown
+        v-if="canAdmin"
         :toggle-text="__('More actions')"
         category="tertiary"
         icon="ellipsis_v"
@@ -134,6 +138,7 @@ export default {
           </gl-disclosure-dropdown-item>
         </gl-disclosure-dropdown-group>
       </gl-disclosure-dropdown>
+      <div v-else></div>
     </template>
   </list-item>
 </template>

@@ -235,7 +235,7 @@ export default {
     selectedTools() {
       return this.formValues.tools.map((toolId) => ({
         id: toolId,
-        name: this.availableTools.find((tool) => tool.id === toolId).name,
+        name: this.availableTools.find((tool) => tool.id === toolId)?.name,
       }));
     },
   },

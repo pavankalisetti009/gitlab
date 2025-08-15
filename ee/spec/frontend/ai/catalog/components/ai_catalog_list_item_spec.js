@@ -1,4 +1,4 @@
-import { GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import {
@@ -24,6 +24,10 @@ describe('AiCatalogListItem', () => {
     itemType: 'AGENT',
     description: 'A helpful AI assistant for testing purposes',
     public: false,
+    userPermissions: {
+      readAiCatalogItem: true,
+      adminAiCatalogItem: true,
+    },
   };
 
   const mockUrl = '/agent/1';
@@ -36,34 +40,36 @@ describe('AiCatalogListItem', () => {
   const publicTooltip = 'Public Item';
   const privateTooltip = 'Private Item';
 
-  const createComponent = (item = mockItem) => {
+  const defaultItemTypeConfig = {
+    actionItems: (itemId) => [
+      {
+        text: 'Test Run',
+        to: {
+          name: AI_CATALOG_AGENTS_RUN_ROUTE,
+          params: { id: itemId },
+        },
+        icon: 'rocket-launch',
+      },
+      {
+        text: 'Edit',
+        to: {
+          name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+          params: { id: itemId },
+        },
+        icon: 'pencil',
+      },
+    ],
+    visibilityTooltip: {
+      public: publicTooltip,
+      private: privateTooltip,
+    },
+  };
+
+  const createComponent = ({ item = mockItem, itemTypeConfig = defaultItemTypeConfig } = {}) => {
     wrapper = shallowMountExtended(AiCatalogListItem, {
       propsData: {
         item,
-        itemTypeConfig: {
-          actionItems: (itemId) => [
-            {
-              text: 'Test Run',
-              to: {
-                name: AI_CATALOG_AGENTS_RUN_ROUTE,
-                params: { id: itemId },
-              },
-              icon: 'rocket-launch',
-            },
-            {
-              text: 'Edit',
-              to: {
-                name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-                params: { id: itemId },
-              },
-              icon: 'pencil',
-            },
-          ],
-          visibilityTooltip: {
-            public: publicTooltip,
-            private: privateTooltip,
-          },
-        },
+        itemTypeConfig,
       },
       mocks: {
         $route: {
@@ -76,6 +82,7 @@ describe('AiCatalogListItem', () => {
 
   const findListItem = () => wrapper.findComponent(ListItem);
   const findIcon = () => wrapper.findComponent(GlIcon);
+  const findDisclosureDropdown = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
 
   beforeEach(() => {
@@ -102,11 +109,28 @@ describe('AiCatalogListItem', () => {
     it('renders the actions passed in a prop in a disclosure dropdown', () => {
       const items = findDisclosureDropdownItems();
 
+      expect(findDisclosureDropdown().exists()).toBe(true);
       expect(items).toHaveLength(3);
       expect(items.at(0).text()).toBe('Test Run');
       expect(items.at(1).text()).toBe('Edit');
       expect(items.at(2).text()).toBe('Delete');
       expect(items.at(2).attributes('variant')).toBe('danger');
+    });
+
+    describe('when the user does not have permission to admin the item', () => {
+      beforeEach(() => {
+        createComponent({
+          item: {
+            ...mockItem,
+            userPermissions: { adminAiCatalogItem: false },
+            public: true,
+          },
+        });
+      });
+
+      it('does not render the the disclosure dropdown', () => {
+        expect(findDisclosureDropdown().exists()).toBe(false);
+      });
     });
 
     describe('when the item is private', () => {
@@ -120,7 +144,7 @@ describe('AiCatalogListItem', () => {
 
     describe('when the item is public', () => {
       beforeEach(() => {
-        createComponent({ ...mockItem, public: true });
+        createComponent({ item: { ...mockItem, public: true } });
       });
 
       it('renders the public icon with a tooltip', () => {

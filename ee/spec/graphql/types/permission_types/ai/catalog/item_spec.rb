@@ -2,19 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::PermissionTypes::Project do
+RSpec.describe Types::PermissionTypes::Ai::Catalog::Item, feature_category: :workflow_catalog do
   specify do
     expected_permissions = %i[
-      create_path_lock
-      read_path_locks
-      admin_path_locks
-      generate_description
-      admin_work_item_lifecycle
-      manage_ai_flow_triggers
       read_ai_catalog_item
-      read_ai_catalog_item_consumer
       admin_ai_catalog_item
-      admin_ai_catalog_item_consumer
     ]
 
     expected_permissions.each do |permission|

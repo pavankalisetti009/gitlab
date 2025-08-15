@@ -5,6 +5,7 @@ module Types
     module Catalog
       module ItemInterface
         include Types::BaseInterface
+        prepend Gitlab::Graphql::ExposePermissions
 
         RESOLVE_TYPES = {
           ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentType,
@@ -15,6 +16,8 @@ module Types
         description 'An AI catalog item'
 
         connection_type_class ::Types::CountableConnectionType
+
+        expose_permissions ::Types::PermissionTypes::Ai::Catalog::Item
 
         field :created_at, ::Types::TimeType, null: false, description: 'Date of creation.'
         field :description, GraphQL::Types::String, null: false, description: 'Description of the item.'
