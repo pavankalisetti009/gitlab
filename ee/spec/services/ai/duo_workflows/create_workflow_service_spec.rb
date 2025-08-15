@@ -8,7 +8,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
     let_it_be(:project) { create(:project, group: group) }
     let_it_be(:user) { create(:user, maintainer_of: project) }
     let(:container) { project }
-    let(:params) { {} }
+    let(:params) { { environment: "ide" } }
 
     subject(:execute) do
       described_class
@@ -22,9 +22,23 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
 
     it 'creates a new workflow' do
       expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
       expect(execute[:workflow]).to be_a(Ai::DuoWorkflows::Workflow)
       expect(execute[:workflow].user).to eq(user)
       expect(execute[:workflow].project).to eq(project)
+    end
+
+    it 'sends session create event' do
+      expect { execute }.to trigger_internal_events("create_agent_platform_session")
+                              .with(category: "Ai::DuoWorkflows::CreateWorkflowService",
+                                user: user,
+                                project: project,
+                                additional_properties: {
+                                  label: "software_development",
+                                  value: be_a(Integer),
+                                  property: "ide"
+                                }
+                              )
     end
 
     context 'when namespace-level workflow' do

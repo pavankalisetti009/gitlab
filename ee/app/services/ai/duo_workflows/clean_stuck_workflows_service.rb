@@ -24,10 +24,9 @@ module Ai
               project: w.project,
               name: w.project.namespace,
               additional_properties: {
-                label: "workflow_finish_event",
+                label: w.workflow_definition,
                 value: w.id,
-                property: "failed",
-                category: w.workflow_definition
+                property: "failed"
               }
             )
           end

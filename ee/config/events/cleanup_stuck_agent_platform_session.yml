@@ -9,13 +9,11 @@ identifiers:
 - namespace
 additional_properties:
   label:
-    description: hardcoded value "workflow_finish_event"
+    description: Flow type, eg. chat
   property:
     description: workflow's new status eg. failed or paused
   value:
     description: id of the session
-  category:
-    description: workflow definition
 product_group: duo_workflow
 product_categories:
 - duo_workflow

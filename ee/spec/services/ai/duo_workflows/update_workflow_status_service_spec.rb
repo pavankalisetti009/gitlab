@@ -146,10 +146,21 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         let(:workflow_initial_status_enum) { 0 } # status created
 
         it "can start a workflow", :aggregate_failures do
-          result = described_class.new(workflow: workflow, current_user: user, status_event: "start").execute
+          expect do
+            result = described_class.new(workflow: workflow, current_user: user, status_event: "start").execute
 
-          expect(result[:status]).to eq(:success)
-          expect(result[:message]).to eq("Workflow status updated")
+            expect(result[:status]).to eq(:success)
+            expect(result[:message]).to eq("Workflow status updated")
+          end.to trigger_internal_events("start_agent_platform_session")
+                             .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
+                               user: workflow.user,
+                               project: workflow.project,
+                               additional_properties: {
+                                 label: workflow.workflow_definition,
+                                 value: workflow.id,
+                                 property: "ide"
+                               })
+
           expect(workflow.reload.human_status_name).to eq("running")
         end
       end
