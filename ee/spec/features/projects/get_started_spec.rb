@@ -37,11 +37,7 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
         visit namespace_project_get_started_path(namespace, project)
 
         within_testid('static-items-section') do
-          expect(page).to have_link('Get started 8%')
-        end
-
-        within_testid('get-started-sections') do
-          expect(find_by_testid('progress-bar')).to have_selector('[aria-valuenow="8"]')
+          expect(page).to have_link('Get started 0%')
         end
 
         find_by_testid('section-header-1').click
@@ -63,12 +59,12 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
         end
 
         within_testid('get-started-sections') do
-          expect(find_by_testid('progress-bar')).to have_selector('[aria-valuenow="15"]')
+          expect(find_by_testid('progress-bar')).to have_selector('[aria-valuenow="8"]')
           expect(page).not_to have_link('Invite your colleagues')
         end
 
         within_testid('static-items-section') do
-          expect(page).to have_link('Get started 15%')
+          expect(page).to have_link('Get started 8%')
         end
       end
     end
@@ -84,8 +80,7 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
         visit namespace_project_get_started_path(namespace, project)
 
         within_testid('get-started-sections') do
-          expect_completed_section('Create a repository')
-          expect_completed_section('Add code to a repository')
+          expect_completed_section("Add code to this project's repository")
         end
       end
     end

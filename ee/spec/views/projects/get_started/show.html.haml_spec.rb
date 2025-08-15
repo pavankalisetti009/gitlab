@@ -8,7 +8,8 @@ RSpec.describe 'projects/get_started/show', :aggregate_failures, feature_categor
   before do
     onboarding_progress = build_stubbed(:onboarding_progress)
 
-    assign(:get_started_presenter, instance_double(Onboarding::GetStartedPresenter, attributes: '{"sections":[]}'))
+    presenter = instance_double(Onboarding::GetStartedPresenter, view_model: '{"sections":[]}', provide: '{}')
+    assign(:get_started_presenter, presenter)
     allow(view).to receive_messages(onboarding_progress: onboarding_progress, current_user: build_stubbed(:user))
     allow(view)
       .to receive(:hide_unlimited_members_during_trial_alert?).with(onboarding_progress).and_return(hide_trial_alert?)

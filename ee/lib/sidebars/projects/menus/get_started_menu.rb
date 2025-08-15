@@ -29,7 +29,7 @@ module Sidebars # rubocop:todo Gitlab/BoundedContexts -- Existing namespace that
           percentage = ::Onboarding::Completion.new(
             context.project,
             context.current_user
-          ).percentage
+          ).get_started_percentage
 
           "#{percentage}%"
         end

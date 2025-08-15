@@ -19,6 +19,10 @@ jest.mock('~/lib/utils/url_utility', () => ({
 describe('GetStarted', () => {
   let wrapper;
 
+  const defaultProvide = {
+    projectName: 'test-project',
+  };
+
   const createSections = () => [
     {
       title: 'Section 1',
@@ -44,6 +48,9 @@ describe('GetStarted', () => {
         sections: createSections(),
         tutorialEndPath: '/group/project/-/get-started/end',
         ...props,
+      },
+      provide: {
+        ...defaultProvide,
       },
       stubs: {
         GlCard: { template: '<div><slot name="header" /><slot /></div>' },

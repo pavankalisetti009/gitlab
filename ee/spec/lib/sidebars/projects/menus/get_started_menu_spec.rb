@@ -50,7 +50,7 @@ RSpec.describe Sidebars::Projects::Menus::GetStartedMenu, feature_category: :onb
   describe '#pill_count' do
     it 'returns pill count' do
       expect_next_instance_of(::Onboarding::Completion) do |onboarding|
-        expect(onboarding).to receive(:percentage).and_return(20)
+        expect(onboarding).to receive(:get_started_percentage).and_return(20)
       end
 
       expect(menu.pill_count).to eq '20%'
