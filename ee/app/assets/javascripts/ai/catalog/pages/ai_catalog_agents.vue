@@ -2,13 +2,17 @@
 import { GlAlert } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
+import {
+  AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
+  PAGE_SIZE,
+  TYPENAME_AI_CATALOG_ITEM,
+} from 'ee/ai/catalog/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
@@ -41,7 +45,6 @@ export default {
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data.aiCatalogItems.nodes,
       result({ data }) {
-        this.checkDrawerParams();
         this.pageInfo = data.aiCatalogItems.pageInfo;
       },
     },
@@ -51,14 +54,16 @@ export default {
         return !this.isItemSelected;
       },
       variables() {
-        return {
-          id: this.activeItem.id,
-        };
+        const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
+        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, iid) };
       },
       update(data) {
         return data?.aiCatalogItem || {};
       },
       error(error) {
+        if (this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM]) {
+          this.closeDrawer();
+        }
         this.errorMessage = error.message;
         Sentry.captureException(error);
       },
@@ -68,7 +73,6 @@ export default {
     return {
       aiCatalogAgents: [],
       aiCatalogAgent: {},
-      activeItem: null,
       errorMessage: null,
       pageInfo: {},
     };
@@ -81,7 +85,7 @@ export default {
       return this.$apollo.queries.aiCatalogAgent.loading;
     },
     isItemSelected() {
-      return Boolean(this.activeItem?.id);
+      return Boolean(this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM]);
     },
     itemTypeConfig() {
       return {
@@ -112,18 +116,14 @@ export default {
       };
     },
     activeAgent() {
-      if (this.isItemDetailsLoading) {
-        return this.activeItem;
-      }
+      if (!this.isItemDetailsLoading) return this.aiCatalogAgent;
 
-      return this.aiCatalogAgent;
-    },
-  },
-  watch: {
-    '$route.query.show': {
-      handler() {
-        this.checkDrawerParams();
-      },
+      // Returns the fully-loaded agent if available from aiCatalogAgents
+      const iid = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
+      const fromList = this.aiCatalogAgents.find(
+        (n) => this.formatId(n.id).toString() === String(iid),
+      );
+      return fromList || { iid };
     },
   },
   methods: {
@@ -131,7 +131,6 @@ export default {
       return getIdFromGraphQLId(id);
     },
     closeDrawer() {
-      this.activeItem = null;
       const { show, ...otherQuery } = this.$route.query;
 
       this.$router.push({
@@ -160,17 +159,6 @@ export default {
       } catch (error) {
         this.errorMessage = sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error });
         Sentry.captureException(error);
-      }
-    },
-    checkDrawerParams() {
-      const urlItemId = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
-      if (urlItemId) {
-        this.activeItem =
-          this.aiCatalogAgents.find(
-            (item) => this.formatId(item.id).toString() === urlItemId.toString(),
-          ) || null;
-      } else {
-        this.activeItem = null;
       }
     },
     handleNextPage() {
