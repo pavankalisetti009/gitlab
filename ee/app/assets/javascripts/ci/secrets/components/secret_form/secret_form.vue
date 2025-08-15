@@ -71,7 +71,6 @@ export default {
   data() {
     return {
       customRotationPeriod: '',
-      isEditingValue: false,
       isSubmitting: false,
       secret: {
         branch: '',
@@ -111,13 +110,6 @@ export default {
     isNameValid() {
       return this.secret.name?.length > 0;
     },
-    isValueFieldDisabled() {
-      if (this.isEditing) {
-        return !this.isEditingValue;
-      }
-
-      return false;
-    },
     isValueValid() {
       if (this.isEditing) {
         return true; // value is optional when editing
@@ -145,7 +137,7 @@ export default {
     },
     valueFieldPlaceholder() {
       if (this.isEditing) {
-        return '* * * * * * *';
+        return s__('Secrets|Enter a new value to update secret');
       }
 
       return s__('Secrets|Enter a value for the secret');
@@ -179,15 +171,6 @@ export default {
       } finally {
         this.isSubmitting = false;
       }
-    },
-    disableValueEditing() {
-      this.isEditingValue = false;
-    },
-    editValue() {
-      this.isEditingValue = true;
-      this.$nextTick(() => {
-        this.$refs.editValueField.$el.focus();
-      });
     },
     async editSecret() {
       this.hideModal();
@@ -289,17 +272,6 @@ export default {
       >
         <template #label>
           {{ __('Value') }}
-          <gl-button
-            v-if="isEditing"
-            class="gl-mb-2 gl-ml-3"
-            icon="pencil"
-            variant="link"
-            data-testid="edit-value-button"
-            :aria-label="__('Edit value')"
-            @click="editValue"
-          >
-            {{ __('Edit value') }}
-          </gl-button>
         </template>
         <gl-form-textarea
           id="secret-value"
@@ -308,11 +280,9 @@ export default {
           rows="5"
           max-rows="15"
           no-resize
-          :disabled="isValueFieldDisabled"
           :placeholder="valueFieldPlaceholder"
           :spellcheck="false"
           :state="secret.secret === undefined || isValueValid"
-          @blur="disableValueEditing"
         />
       </gl-form-group>
       <gl-form-group
