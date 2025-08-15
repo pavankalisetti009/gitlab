@@ -4,7 +4,7 @@ module EE
   module Gitlab
     module Scim
       module Group
-        class DeprovisioningService < BaseDeprovisioningService
+        class DeprovisioningService < ::Gitlab::Scim::BaseDeprovisioningService
           def execute
             if group.last_owner?(user)
               return error(format(

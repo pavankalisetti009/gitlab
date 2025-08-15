@@ -28,7 +28,7 @@ module Authn
 
       @scim_group_uid = scim_group_uid
       @user_ids = user_ids
-      @cache_service = ::EE::Gitlab::Scim::GroupMembershipCacheService.new(scim_group_uid: scim_group_uid)
+      @cache_service = ::Gitlab::Scim::GroupMembershipCacheService.new(scim_group_uid: scim_group_uid)
 
       return if group_links.empty?
       return if user_ids.empty? && operation_type != 'replace'

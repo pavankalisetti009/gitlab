@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Gitlab::Scim::GroupMembershipCacheService, feature_category: :system_access do
+RSpec.describe Gitlab::Scim::GroupMembershipCacheService, feature_category: :system_access do
   let(:scim_group_uid) { SecureRandom.uuid }
 
   let_it_be(:user1) { create(:user) }

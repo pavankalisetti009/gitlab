@@ -4,7 +4,7 @@ module EE
   module Gitlab
     module Scim
       module Group
-        class ProvisioningService < BaseProvisioningService
+        class ProvisioningService < ::Gitlab::Scim::BaseProvisioningService
           def execute
             return error_response(errors: ["Missing params: #{missing_params}"]) unless missing_params.empty?
             return success_response if existing_identity_and_member?

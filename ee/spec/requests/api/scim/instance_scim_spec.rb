@@ -243,7 +243,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         it 'responds with 201 and the scim user attributes' do
           create(:user, email: email)
 
-          expect(::EE::Gitlab::Scim::ProvisioningService).to receive(:new).with(
+          expect(::Gitlab::Scim::ProvisioningService).to receive(:new).with(
             hash_including(organization_id: organization.id)
           ).and_call_original
 
@@ -257,7 +257,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
       context 'when a provisioning error occurs' do
         before do
-          allow_next_instance_of(::EE::Gitlab::Scim::ProvisioningService) do |instance|
+          allow_next_instance_of(::Gitlab::Scim::ProvisioningService) do |instance|
             allow(instance).to receive(:execute).and_return(
               ::Gitlab::Scim::ProvisioningResponse.new(status: :error)
             )
@@ -276,7 +276,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
       context 'when a conflict occurs' do
         before do
-          allow_next_instance_of(::EE::Gitlab::Scim::ProvisioningService) do |instance|
+          allow_next_instance_of(::Gitlab::Scim::ProvisioningService) do |instance|
             allow(instance).to receive(:execute).and_return(
               ::Gitlab::Scim::ProvisioningResponse.new(status: :conflict)
             )
@@ -390,7 +390,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
 
         before do
-          allow_next_instance_of(::EE::Gitlab::Scim::DeprovisioningService) do |instance|
+          allow_next_instance_of(::Gitlab::Scim::DeprovisioningService) do |instance|
             allow(instance).to receive(:execute).and_raise(ActiveRecord::RecordInvalid)
           end
         end
@@ -410,7 +410,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
 
         before do
-          allow_next_instance_of(::EE::Gitlab::Scim::ReprovisioningService) do |instance|
+          allow_next_instance_of(::Gitlab::Scim::ReprovisioningService) do |instance|
             allow(instance).to receive(:execute).and_raise(ActiveRecord::RecordInvalid)
           end
         end
@@ -499,7 +499,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
       context 'when deprovision fails' do
         before do
-          allow_next_instance_of(::EE::Gitlab::Scim::DeprovisioningService) do |instance|
+          allow_next_instance_of(::Gitlab::Scim::DeprovisioningService) do |instance|
             allow(instance).to receive(:execute).and_raise(ActiveRecord::RecordInvalid)
           end
         end
@@ -1446,7 +1446,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
 
         it 'calls the deletion service' do
-          expect(::EE::Gitlab::Scim::GroupSyncDeletionService).to receive(:new)
+          expect(::Gitlab::Scim::GroupSyncDeletionService).to receive(:new)
             .with(scim_group_uid: scim_group_uid)
             .and_call_original
 
@@ -1469,7 +1469,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
 
         it 'returns 404 without calling the service' do
-          expect(::EE::Gitlab::Scim::GroupSyncDeletionService).not_to receive(:new)
+          expect(::Gitlab::Scim::GroupSyncDeletionService).not_to receive(:new)
 
           api_request
 
@@ -1480,7 +1480,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
       context 'when service returns error' do
         before do
-          allow_next_instance_of(::EE::Gitlab::Scim::GroupSyncDeletionService) do |service|
+          allow_next_instance_of(::Gitlab::Scim::GroupSyncDeletionService) do |service|
             allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Database error'))
           end
         end

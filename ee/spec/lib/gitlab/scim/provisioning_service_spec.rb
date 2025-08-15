@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::Gitlab::Scim::ProvisioningService, feature_category: :system_access do
+RSpec.describe ::Gitlab::Scim::ProvisioningService, feature_category: :system_access do
   include LoginHelpers
 
   describe '#execute' do

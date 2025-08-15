@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Gitlab::Scim::GroupSyncPatchService, feature_category: :system_access do
+RSpec.describe Gitlab::Scim::GroupSyncPatchService, feature_category: :system_access do
   let(:scim_group_uid) { SecureRandom.uuid }
   let(:service) { described_class.new(scim_group_uid: scim_group_uid, operations: operations) }
 
