@@ -9,6 +9,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
@@ -70,6 +71,10 @@ describe('AiCatalogAgents', () => {
   describe('component rendering', () => {
     beforeEach(async () => {
       await createComponent();
+    });
+
+    it('renders AiCatalogListHeader component', () => {
+      expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
     it('renders AiCatalogList component', () => {

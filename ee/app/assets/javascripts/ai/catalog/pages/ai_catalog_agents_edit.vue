@@ -88,10 +88,13 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="pageTitle" />
-    <p>
-      {{ s__('AICatalog|Modify the agent settings and configuration.') }}
-    </p>
+    <page-heading :heading="pageTitle">
+      <template #description>
+        <div class="gl-border-b gl-pb-3">
+          {{ s__('AICatalog|Modify the agent settings and configuration.') }}
+        </div>
+      </template>
+    </page-heading>
     <ai-catalog-agent-form
       mode="edit"
       :error-messages="errorMessages"

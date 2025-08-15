@@ -61,7 +61,17 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|New agent')" />
+    <page-heading :heading="s__('AICatalog|New agent')">
+      <template #description>
+        <div class="gl-border-b gl-pb-3">
+          {{
+            s__(
+              'AICatalog|AI agents complete specialized tasks. They become active when included in a Flow.',
+            )
+          }}
+        </div>
+      </template>
+    </page-heading>
 
     <ai-catalog-agent-form
       mode="create"

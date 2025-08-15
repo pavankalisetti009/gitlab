@@ -21,12 +21,12 @@ export default {
         case AI_CATALOG_AGENTS_ROUTE:
           return {
             route: AI_CATALOG_AGENTS_NEW_ROUTE,
-            label: s__('AICatalog|Create agent'),
+            label: s__('AICatalog|New agent'),
           };
         case AI_CATALOG_FLOWS_ROUTE:
           return {
             route: AI_CATALOG_FLOWS_NEW_ROUTE,
-            label: s__('AICatalog|Create flow'),
+            label: s__('AICatalog|New flow'),
           };
         default:
           return {
@@ -40,7 +40,9 @@ export default {
 </script>
 
 <template>
-  <gl-button v-if="buttonProps.route" :to="{ name: buttonProps.route }" variant="confirm">
-    {{ buttonProps.label }}
-  </gl-button>
+  <div class="gl-flex gl-items-center">
+    <gl-button v-if="buttonProps.route" :to="{ name: buttonProps.route }" variant="confirm">
+      {{ buttonProps.label }}
+    </gl-button>
+  </div>
 </template>
