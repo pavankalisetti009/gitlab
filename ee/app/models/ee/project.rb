@@ -197,10 +197,10 @@ module EE
 
       has_many :sbom_occurrences, inverse_of: :project, class_name: 'Sbom::Occurrence'
 
-      has_one :analytics_dashboards_pointer, class_name: 'Analytics::DashboardsPointer', foreign_key: :project_id
+      has_one :analytics_dashboards_pointer, class_name: 'Analytics::Dashboards::DashboardsPointer', foreign_key: :project_id
       accepts_nested_attributes_for :analytics_dashboards_pointer, allow_destroy: true
       has_one :analytics_dashboards_configuration_project, through: :analytics_dashboards_pointer, source: :target_project
-      has_many :targeting_dashboards_pointers, class_name: 'Analytics::DashboardsPointer', foreign_key: :target_project_id
+      has_many :targeting_dashboards_pointers, class_name: 'Analytics::Dashboards::DashboardsPointer', foreign_key: :target_project_id
       has_many :targeting_dashboards_pointer_projects, through: :targeting_dashboards_pointers, source: :project
       has_one :project_state,
         autosave: false,

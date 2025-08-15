@@ -80,7 +80,7 @@ RSpec.describe Resolvers::Analytics::Dashboards::DashboardsResolver, feature_cat
 
         context 'when user is not assigned to duo_enterprise' do
           it 'does not contain AI impact dashboard' do
-            expect(result.map(&:slug)).not_to include(Analytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
+            expect(result.map(&:slug)).not_to include(Analytics::Dashboards::Dashboard::AI_IMPACT_DASHBOARD_NAME)
           end
 
           context 'when user is assigned to duo enteprise seat' do
@@ -97,7 +97,7 @@ RSpec.describe Resolvers::Analytics::Dashboards::DashboardsResolver, feature_cat
             end
 
             it 'contains AI impact dashboard' do
-              expect(result.map(&:slug)).to include(Analytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
+              expect(result.map(&:slug)).to include(Analytics::Dashboards::Dashboard::AI_IMPACT_DASHBOARD_NAME)
             end
           end
         end

@@ -310,7 +310,7 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
 
       context 'with single pointer project' do
         before do
-          Analytics::DashboardsPointer.create!(project: other_project_1, target_project: project)
+          Analytics::Dashboards::DashboardsPointer.create!(project: other_project_1, target_project: project)
           other_project_1.project_setting.update!(
             product_analytics_configurator_connection_string: 'http://test:test@anotherhost:4567',
             product_analytics_data_collector_host: 'http://test.net',
@@ -330,8 +330,8 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
 
       context 'with multiple pointer projects' do
         before do
-          Analytics::DashboardsPointer.create!(project: other_project_1, target_project: project)
-          Analytics::DashboardsPointer.create!(project: other_project_2, target_project: project)
+          Analytics::Dashboards::DashboardsPointer.create!(project: other_project_1, target_project: project)
+          Analytics::Dashboards::DashboardsPointer.create!(project: other_project_2, target_project: project)
         end
 
         context "when projects are using the same configurator" do

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::DashboardsPointer, type: :model, feature_category: :devops_reports do
+RSpec.describe Analytics::Dashboards::DashboardsPointer, feature_category: :devops_reports do
   subject(:pointer) { build(:analytics_dashboards_pointer) }
 
   it { is_expected.to belong_to(:namespace) }
