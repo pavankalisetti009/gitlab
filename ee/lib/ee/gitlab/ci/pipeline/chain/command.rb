@@ -10,7 +10,7 @@ module EE
 
             override :dry_run?
             def dry_run?
-              super || !!pipeline_policy_context&.creating_policy_pipeline?
+              super || !!pipeline_policy_context&.pipeline_execution_context&.creating_policy_pipeline?
             end
 
             override :pipeline_policy_context

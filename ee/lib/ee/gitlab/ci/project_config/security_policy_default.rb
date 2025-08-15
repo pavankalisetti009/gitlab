@@ -47,7 +47,7 @@ module EE
           attr_reader :pipeline_policy_context, :source_branch
 
           def has_pipeline_execution_policies_defined?
-            pipeline_policy_context&.has_execution_policy_pipelines?
+            pipeline_policy_context&.pipeline_execution_context&.has_execution_policy_pipelines?
           end
 
           def has_applicable_scan_execution_policies_defined?

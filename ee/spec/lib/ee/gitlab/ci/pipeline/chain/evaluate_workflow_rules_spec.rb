@@ -104,7 +104,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::EvaluateWorkflowRules, feature_categ
       context 'with execution_policy_pipelines' do
         before do
           allow(command)
-            .to receive_message_chain(:pipeline_policy_context, :has_execution_policy_pipelines?).and_return(true)
+            .to receive_message_chain(:pipeline_policy_context, :pipeline_execution_context,
+              :has_execution_policy_pipelines?).and_return(true)
           step.perform!
         end
 

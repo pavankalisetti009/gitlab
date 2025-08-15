@@ -24,7 +24,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Command, feature_category: :continuo
       let(:creating_policy_pipeline) { false }
       let(:pipeline_policy_context) do
         instance_double(Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
-          creating_policy_pipeline?: creating_policy_pipeline)
+          pipeline_execution_context: instance_double(
+            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+            creating_policy_pipeline?: creating_policy_pipeline
+          )
+        )
       end
 
       it { is_expected.to eq(false) }

@@ -25,7 +25,10 @@ module EE
 
               override :perform!
               def perform!
-                command.pipeline_policy_context.build_policy_pipelines!(pipeline.partition_id) do |error_message|
+                command
+                  .pipeline_policy_context
+                  .pipeline_execution_context
+                  .build_policy_pipelines!(pipeline.partition_id) do |error_message|
                   break error("Pipeline execution policy error: #{error_message}", failure_reason: :config_error)
                 end
               end
