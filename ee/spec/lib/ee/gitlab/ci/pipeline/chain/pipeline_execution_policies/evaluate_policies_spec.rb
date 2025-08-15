@@ -10,9 +10,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::EvaluateP
 
   let(:creating_policy_pipeline) { nil }
   let(:pipeline_policy_context) do
-    instance_double(
-      Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
-      creating_policy_pipeline?: creating_policy_pipeline
+    instance_double(Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
+      pipeline_execution_context: instance_double(
+        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
+        creating_policy_pipeline?: creating_policy_pipeline
+      )
     )
   end
 
@@ -30,14 +32,17 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::EvaluateP
 
   describe '#perform!' do
     it 'builds policy pipelines using pipeline_policy_context' do
-      expect(pipeline_policy_context).to receive(:build_policy_pipelines!).with(pipeline.partition_id)
+      expect(pipeline_policy_context.pipeline_execution_context)
+        .to receive(:build_policy_pipelines!).with(pipeline.partition_id)
 
       step.perform!
     end
 
     context 'when error is raised' do
       before do
-        allow(pipeline_policy_context).to receive(:build_policy_pipelines!).and_yield('some error')
+        allow(pipeline_policy_context.pipeline_execution_context)
+          .to receive(:build_policy_pipelines!).and_yield('some error')
+
         step.perform!
       end
 

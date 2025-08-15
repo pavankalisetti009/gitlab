@@ -14,22 +14,14 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
     )
   end
 
-  describe 'delegations' do
-    it { is_expected.to delegate_method(:policy_pipelines).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:override_policy_stages).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:build_policy_pipelines!).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:creating_policy_pipeline?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:creating_project_pipeline?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:has_execution_policy_pipelines?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:has_overriding_execution_policy_pipelines?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:collect_declared_stages!).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:inject_policy_stages?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:valid_stage?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:has_injected_stages?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:has_override_stages?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:injected_policy_stages).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:policy_management_project_access_allowed?).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:applying_config_override?).to(:pipeline_execution_context) }
+  describe 'direct context access' do
+    # With delegation removed, callers should now access pipeline_execution_context directly
+    # These tests verify the context object is properly initialized
+    it 'provides access to pipeline execution context' do
+      expect(context.pipeline_execution_context).to be_a(
+        ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext
+      )
+    end
   end
 
   describe '#pipeline_execution_context' do

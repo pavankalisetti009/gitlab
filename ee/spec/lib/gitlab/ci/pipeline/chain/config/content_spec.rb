@@ -138,10 +138,15 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
     let(:apply_config_override) { false }
 
     before do
-      command.pipeline_policy_context = instance_double(
-        Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
+      pipeline_execution_context = instance_double(
+        Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
         has_execution_policy_pipelines?: true,
         applying_config_override?: apply_config_override
+      )
+
+      command.pipeline_policy_context = instance_double(
+        Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext,
+        pipeline_execution_context: pipeline_execution_context
       )
     end
 

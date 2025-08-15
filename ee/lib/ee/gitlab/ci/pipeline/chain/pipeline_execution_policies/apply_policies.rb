@@ -21,7 +21,7 @@ module EE
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
 
               def perform!
-                policy_context = command.pipeline_policy_context
+                policy_context = command.pipeline_policy_context.pipeline_execution_context
 
                 if policy_context.creating_policy_pipeline?
                   collect_policy_pipeline_stages
@@ -42,7 +42,7 @@ module EE
 
               def collect_policy_pipeline_stages
                 # We save declared policy stages in the pipeline context to use them in the main pipeline
-                command.pipeline_policy_context.collect_declared_stages!(declared_stages)
+                command.pipeline_policy_context.pipeline_execution_context.collect_declared_stages!(declared_stages)
               rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::OverrideStagesConflictError => e
                 # This error is propagated into `EvaluatePolicies` because it can only happen while building
                 # the policy pipeline. `EvaluatePolicies` decorates the error with
@@ -59,7 +59,7 @@ module EE
               end
 
               def merge_policy_jobs
-                command.pipeline_policy_context.policy_pipelines.each do |policy|
+                command.pipeline_policy_context.pipeline_execution_context.policy_pipelines.each do |policy|
                   # Return `nil` is equivalent to "never" otherwise provide the new name.
                   on_conflict = ->(job_name) { job_name + policy.suffix if policy.suffix_on_conflict? }
 
@@ -86,7 +86,7 @@ module EE
               def usage_tracking
                 @usage_tracking ||= ::Security::PipelineExecutionPolicy::UsageTracking.new(
                   project: project,
-                  policy_pipelines: command.pipeline_policy_context.policy_pipelines
+                  policy_pipelines: command.pipeline_policy_context.pipeline_execution_context.policy_pipelines
                 )
               end
             end

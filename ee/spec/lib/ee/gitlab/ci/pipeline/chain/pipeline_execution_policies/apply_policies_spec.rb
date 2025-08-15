@@ -443,7 +443,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
       context 'with "inject_ci" policy' do
         it 'does not add policy stages to the pipeline_policy_context' do
-          expect { run_chain }.not_to change { command.pipeline_policy_context.override_policy_stages }.from([])
+          expect { run_chain }.not_to change {
+            command.pipeline_policy_context.pipeline_execution_context.override_policy_stages
+          }.from([])
         end
       end
 
@@ -452,13 +454,15 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
         let(:execution_policy_config) { build(:pipeline_execution_policy_config, policy: override_policy) }
 
         it 'adds policy stages to the pipeline_policy_context' do
-          expect { run_chain }.to change { command.pipeline_policy_context.override_policy_stages }
+          expect { run_chain }.to change {
+            command.pipeline_policy_context.pipeline_execution_context.override_policy_stages
+          }
                                     .to(%w[.pipeline-policy-pre .pre test policy-test .post .pipeline-policy-post])
         end
 
         context 'when stages are incompatible with other policy' do
           before do
-            command.pipeline_policy_context.collect_declared_stages!(
+            command.pipeline_policy_context.pipeline_execution_context.collect_declared_stages!(
               %w[.pipeline-policy-pre .pre build .post .pipeline-policy-post])
           end
 

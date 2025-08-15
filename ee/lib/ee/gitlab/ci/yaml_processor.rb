@@ -23,7 +23,7 @@ module EE
 
         def validate_job_stage!(name, job)
           super
-          return if pipeline_policy_context.valid_stage?(job[:stage])
+          return if pipeline_policy_context.pipeline_execution_context.valid_stage?(job[:stage])
 
           error!("#{name} job: chosen stage `#{job[:stage]}` is reserved for Pipeline Execution Policies")
         end
