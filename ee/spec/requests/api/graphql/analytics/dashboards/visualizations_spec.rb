@@ -120,13 +120,13 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
           graphql_data_at(:project, :customizable_dashboards, :nodes, 0,
             :panels, :nodes, 0, :visualization, :errors, 0))
           .to eq("property '/type' is not one of: " \
-                 "[\"AreaChart\", \"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
-                 "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", " \
-                 "\"DoraProjectsComparison\", \"AiImpactTable\", \"ContributionsByUserTable\", " \
-                 "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", " \
-                   "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
-                   "\"MergeRequestsThroughputTable\", " \
-                   "\"BarChart\"]")
+            "[\"AreaChart\", \"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
+            "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", " \
+            "\"DoraProjectsComparison\", \"AiImpactTable\", \"ContributionsByUserTable\", " \
+            "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", " \
+            "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
+            "\"MergeRequestsThroughputTable\", " \
+            "\"BarChart\"]")
       end
     end
   end

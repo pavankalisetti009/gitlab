@@ -39,7 +39,7 @@ module EE
       has_one :insight, foreign_key: :namespace_id
       has_one :value_stream_dashboard_aggregation, class_name: 'Analytics::ValueStreamDashboard::Aggregation', foreign_key: :namespace_id
       accepts_nested_attributes_for :insight, allow_destroy: true
-      has_one :analytics_dashboards_pointer, class_name: 'Analytics::DashboardsPointer', foreign_key: :namespace_id
+      has_one :analytics_dashboards_pointer, class_name: 'Analytics::Dashboards::DashboardsPointer', foreign_key: :namespace_id
       accepts_nested_attributes_for :analytics_dashboards_pointer, allow_destroy: true
       accepts_nested_attributes_for :value_stream_dashboard_aggregation, update_only: true
       has_one :analytics_dashboards_configuration_project, through: :analytics_dashboards_pointer, source: :target_project

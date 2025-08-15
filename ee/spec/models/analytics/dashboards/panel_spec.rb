@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::Panel, feature_category: :product_analytics do
+RSpec.describe Analytics::Dashboards::Panel, feature_category: :product_analytics do
   let_it_be(:user) { create(:user) }
 
   before do

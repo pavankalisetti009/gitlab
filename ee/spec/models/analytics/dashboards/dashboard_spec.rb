@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::Dashboard, feature_category: :product_analytics do
+RSpec.describe Analytics::Dashboards::Dashboard, feature_category: :product_analytics do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be_with_refind(:project) do

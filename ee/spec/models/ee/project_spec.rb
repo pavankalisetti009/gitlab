@@ -98,7 +98,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to have_one(:analytics_dashboards_pointer) }
     it { is_expected.to have_one(:analytics_dashboards_configuration_project) }
-    it { is_expected.to have_many(:targeting_dashboards_pointers).class_name('Analytics::DashboardsPointer') }
+    it { is_expected.to have_many(:targeting_dashboards_pointers).class_name('Analytics::Dashboards::DashboardsPointer') }
     it { is_expected.to have_many(:targeting_dashboards_pointer_projects).through(:targeting_dashboards_pointers).source(:project) }
 
     it { is_expected.to have_many(:custom_software_licenses) }

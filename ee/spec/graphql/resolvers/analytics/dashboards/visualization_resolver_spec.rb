@@ -35,12 +35,12 @@ RSpec.describe Resolvers::Analytics::Dashboards::VisualizationResolver, feature_
       end
 
       it 'returns the visualization object' do
-        expect(resolved_visualization).to be_a(Analytics::Visualization)
+        expect(resolved_visualization).to be_a(Analytics::Dashboards::Visualization)
       end
 
       context 'when the visualization does not exist' do
         before do
-          allow_next_instance_of(Analytics::Panel) do |panel|
+          allow_next_instance_of(Analytics::Dashboards::Panel) do |panel|
             allow(panel).to receive(:visualization).and_return(nil)
           end
         end
