@@ -49,7 +49,8 @@ module EE
         amazonQAvailable: Ai::AmazonQ.connected?,
         amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
-        duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {}
+        duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {},
+        initialDuoFlowEnabled: project.duo_remote_flows_enabled
       })
     end
 

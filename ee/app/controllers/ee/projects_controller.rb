@@ -19,6 +19,7 @@ module EE
         push_licensed_feature(:remote_development)
         push_frontend_feature_flag(:repository_lock_information, @project)
         push_frontend_feature_flag(:use_duo_context_exclusion, @project)
+        push_frontend_feature_flag(:duo_workflow_in_ci, current_user)
       end
     end
 
@@ -69,6 +70,10 @@ module EE
 
       if project&.licensed_feature_available?(:security_orchestration_policies)
         attributes << :spp_repository_pipeline_access
+      end
+
+      if project&.licensed_feature_available?(:ai_workflows)
+        attributes << :duo_remote_flows_enabled
       end
 
       unless project&.project_setting&.duo_features_enabled_locked?
