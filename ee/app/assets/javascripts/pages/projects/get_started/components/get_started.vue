@@ -27,13 +27,10 @@ export default {
     GetFamiliar,
   },
   mixins: [trackingMixin],
+  inject: ['projectName'],
   props: {
     sections: {
       type: Array,
-      required: true,
-    },
-    projectName: {
-      type: String,
       required: true,
     },
     tutorialEndPath: {

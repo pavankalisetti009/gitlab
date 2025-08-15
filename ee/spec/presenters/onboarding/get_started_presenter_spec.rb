@@ -4,19 +4,20 @@ require 'spec_helper'
 
 RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_category: :onboarding do
   let(:namespace) { build_stubbed(:group) }
-  let(:project) { build(:project, namespace: namespace) }
+  let(:project) { build_stubbed(:project, namespace: namespace) }
   let(:onboarding_progress) { build(:onboarding_progress, namespace: namespace) }
   let(:user) { build(:user) }
   let(:presenter) { described_class.new(user, project, onboarding_progress) }
-  let(:parsed_attributes) { Gitlab::Json.parse(attributes) }
-  let(:sections) { parsed_attributes['sections'] }
 
-  describe '#attributes' do
-    subject(:attributes) { presenter.attributes }
+  describe '#view_model' do
+    let(:parsed_view_model) { Gitlab::Json.parse(view_model) }
+    let(:sections) { parsed_view_model['sections'] }
 
-    it 'returns a JSON string with all attributes' do
-      expect(attributes).to be_a(String)
-      expect(parsed_attributes).to include('projectName', 'sections')
+    subject(:view_model) { presenter.view_model }
+
+    it 'returns a JSON string with view_model' do
+      expect(view_model).to be_a(String)
+      expect(parsed_view_model).to include('sections', 'tutorialEndPath')
     end
 
     it 'includes all required sections' do
@@ -34,9 +35,10 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
     it 'has correct structure for all sections' do
       expect(sections).to all(include('title', 'description', 'actions'))
 
-      structure = ->(section) {
-        section['title'].is_a?(String) && section['description'].is_a?(String) && section['actions'].is_a?(Array)
-      }
+      structure = ->(section) do
+        section['title'].is_a?(String) && [String, NilClass].include?(section['description'].class) &&
+          section['actions'].is_a?(Array)
+      end
 
       expect(sections).to all(satisfy(&structure))
 
@@ -52,12 +54,6 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
         .to all(satisfy(&actions_structure))
     end
 
-    context 'for projectName' do
-      it 'includes project name' do
-        expect(parsed_attributes['projectName']).to eq(project.name)
-      end
-    end
-
     context 'for code section' do
       subject(:actions) { sections.first['actions'] }
 
@@ -68,7 +64,6 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       context 'when actions are completed' do
         before do
           onboarding_progress.code_added_at = Time.current
-          onboarding_progress.created_at = Time.current
         end
 
         it 'marks actions as completed' do
@@ -249,6 +244,48 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
 
     def find_action_by_label(actions, label)
       actions.find { |a| a['trackLabel'] == label }
+    end
+  end
+
+  describe '#provide' do
+    let(:parsed_provide) { Gitlab::Json.parse(provide) }
+
+    subject(:provide) { presenter.provide }
+
+    it 'returns a JSON string with provide' do
+      keys = %w[projectName defaultBranch canPushCode canPushToBranch uploadPath]
+
+      expect(provide).to be_a(String)
+      expect(parsed_provide).to include(*keys)
+    end
+
+    it 'has all the expected values' do
+      expect(parsed_provide['canPushCode']).to be(false)
+      expect(parsed_provide['canPushToBranch']).to be(false)
+      expect(parsed_provide['uploadPath']).to include(project.full_path)
+      expect(parsed_provide['defaultBranch']).to include(project.default_branch_or_main)
+      expect(parsed_provide['projectName']).to eq(project.name)
+      expect(parsed_provide['uploadPath']).to include(project.default_branch_or_main)
+      expect(parsed_provide['uploadPath']).to include(project.full_path)
+    end
+
+    context 'for when user can push code' do
+      it 'returns true for canPushCode' do
+        allow(user).to receive(:can?)
+        allow(user).to receive(:can?).with(:push_code, project).and_return(true)
+
+        expect(parsed_provide['canPushCode']).to be(true)
+      end
+    end
+
+    context 'for when user can push to branch' do
+      it 'returns true for canPushToBranch' do
+        allow_next_instance_of(::Gitlab::UserAccess, user, container: project) do |instance|
+          allow(instance).to receive(:can_push_to_branch?).and_return(true)
+        end
+
+        expect(parsed_provide['canPushToBranch']).to be(true)
+      end
     end
   end
 end

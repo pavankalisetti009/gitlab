@@ -1,6 +1,7 @@
 <script>
 import { GlIcon, GlCollapse } from '@gitlab/ui';
 import ActionItem from './action_item.vue';
+import AddCodeActionItem from './add_code_action_item.vue';
 
 export default {
   name: 'SectionBody',
@@ -8,6 +9,7 @@ export default {
     GlIcon,
     GlCollapse,
     ActionItem,
+    AddCodeActionItem,
   },
   props: {
     section: {
@@ -29,7 +31,7 @@ export default {
 
 <template>
   <gl-collapse :visible="isExpanded" class="gl-flex gl-flex-col">
-    <div class="gl-my-4 gl-flex gl-items-center gl-gap-2">
+    <div v-if="section.description" class="gl-my-4 gl-flex gl-items-center gl-gap-2">
       <gl-icon
         v-if="section.descriptionIcon"
         variant="default"
@@ -40,13 +42,21 @@ export default {
     </div>
 
     <!-- Action list -->
-    <ul class="gl-mb-4 gl-flex gl-list-none gl-flex-col gl-gap-4 gl-pl-0">
-      <action-item
-        v-for="(action, index) in section.actions"
-        :key="`action-${index}`"
-        data-testid="action-item"
-        :action="action"
-      />
+    <ul
+      :class="[
+        'gl-mb-4 gl-flex gl-list-none gl-flex-col gl-gap-4 gl-pl-0',
+        { 'gl-mt-4': !section.description },
+      ]"
+    >
+      <template v-for="(action, index) in section.actions">
+        <add-code-action-item
+          v-if="action.trackLabel === 'add_code'"
+          :key="`add-code-action-${index}`"
+          :action="action"
+        />
+
+        <action-item v-else :key="`action-${index}`" :action="action" data-testid="action-item" />
+      </template>
 
       <!-- Trial section divider -->
       <li v-if="showDivider" class="gl-mb-1 gl-mt-2">

@@ -2,6 +2,7 @@ import { GlCollapse } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SectionBody from 'ee/pages/projects/get_started/components/section_body.vue';
 import ActionItem from 'ee/pages/projects/get_started/components/action_item.vue';
+import AddCodeActionItem from 'ee/pages/projects/get_started/components/add_code_action_item.vue';
 
 describe('SectionBody', () => {
   let wrapper;
@@ -33,6 +34,7 @@ describe('SectionBody', () => {
   const findActionItems = () => wrapper.findAllComponents(ActionItem);
   const findRegularActionItems = () => wrapper.findAllByTestId('action-item');
   const findTrialActionItems = () => wrapper.findAllByTestId('trial-action-item');
+  const findAddCodeActionItemComponents = () => wrapper.findAllComponents(AddCodeActionItem);
   const findDivider = () => wrapper.findByTestId('divider');
   const findTrialHeader = () => wrapper.findByTestId('trial-description-text');
   const findTrialIcon = () => wrapper.findByTestId('trial-icon');
@@ -86,6 +88,35 @@ describe('SectionBody', () => {
       });
     });
 
+    describe('add code action items', () => {
+      const addCodeAction = { title: 'Add Code', trackLabel: 'add_code', url: '/web_ide' };
+      const regularAction = { title: 'Regular Action', trackLabel: 'other_action' };
+
+      it('renders AddCodeActionItem component for actions with trackLabel "add_code"', () => {
+        const section = createSection({
+          actions: [addCodeAction, regularAction],
+          trialActions: [],
+        });
+        createComponent({ section });
+
+        expect(findAddCodeActionItemComponents()).toHaveLength(1);
+        expect(findAddCodeActionItemComponents().at(0).props('action')).toEqual(addCodeAction);
+        expect(findRegularActionItems()).toHaveLength(1);
+        expect(findRegularActionItems().at(0).props('action')).toEqual(regularAction);
+      });
+
+      it('renders only regular ActionItem components when no add_code actions exist', () => {
+        const section = createSection({
+          actions: [regularAction, { title: 'Another Action', trackLabel: 'different' }],
+          trialActions: [],
+        });
+        createComponent({ section });
+
+        expect(findAddCodeActionItemComponents()).toHaveLength(0);
+        expect(findRegularActionItems()).toHaveLength(2);
+      });
+    });
+
     describe('trial section', () => {
       it('renders trial section divider and header when trial actions exist', () => {
         createComponent();
@@ -129,6 +160,21 @@ describe('SectionBody', () => {
       createComponent({ section: { description: 'Test Description' } });
 
       expect(findActionItems()).toHaveLength(0);
+    });
+
+    it('handles mixed action types correctly', () => {
+      const addCodeAction = { title: 'Add Code', trackLabel: 'add_code', url: '/web_ide' };
+      const regularAction = { title: 'Regular Action', trackLabel: 'other_action' };
+      const section = createSection({
+        actions: [addCodeAction, regularAction],
+        trialActions: [{ title: 'Trial Action', trackLabel: 'trial' }],
+      });
+      createComponent({ section });
+
+      expect(findAddCodeActionItemComponents()).toHaveLength(1);
+      expect(findRegularActionItems()).toHaveLength(1);
+      expect(findTrialActionItems()).toHaveLength(1);
+      expect(findDivider().exists()).toBe(true);
     });
   });
 });

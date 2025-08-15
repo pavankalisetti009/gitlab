@@ -1,0 +1,221 @@
+import { GlIcon, GlLink } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import AddCodeActionItem from 'ee/pages/projects/get_started/components/add_code_action_item.vue';
+import UploadBlobModal from '~/repository/components/upload_blob_modal.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { createMockDirective } from 'helpers/vue_mock_directive';
+import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from 'ee/pages/projects/get_started/constants';
+import { mockTracking } from 'helpers/tracking_helper';
+
+describe('AddCodeActionItem', () => {
+  let wrapper;
+
+  const defaultProvide = {
+    projectName: 'test-project',
+    defaultBranch: 'main',
+    canPushCode: true,
+    canPushToBranch: true,
+    uploadPath: '/test/upload',
+  };
+
+  const createComponent = (actionProps = {}, provide = {}) => {
+    wrapper = shallowMountExtended(AddCodeActionItem, {
+      propsData: {
+        action: {
+          title: 'Add Code',
+          url: '/web_ide',
+          trackLabel: 'add_code',
+          completed: false,
+          ...actionProps,
+        },
+      },
+      provide: {
+        ...defaultProvide,
+        ...provide,
+      },
+      directives: { GlModal: createMockDirective('gl-modal') },
+    });
+  };
+
+  const findActionIcon = () => wrapper.findByTestId('action-icon');
+  const findActionTitle = () => wrapper.find('span');
+  const findUploadFilesButton = () => wrapper.findByTestId('upload-files-button');
+  const findWebIdeLink = () => wrapper.findComponent(GlLink);
+  const findUploadBlobModal = () => wrapper.findComponent(UploadBlobModal);
+  const findActionsList = () => wrapper.find('ul');
+
+  describe('rendering', () => {
+    it('renders the action title', () => {
+      createComponent();
+
+      expect(findActionTitle().text()).toBe('Add Code');
+    });
+
+    it('renders action title with line-through when completed', () => {
+      createComponent({ completed: true });
+
+      expect(findActionTitle().classes()).toContain('gl-line-through');
+    });
+
+    it('renders the action list when not completed', () => {
+      createComponent({ completed: false });
+
+      expect(findActionsList().exists()).toBe(true);
+    });
+
+    it('does not render the action list when completed', () => {
+      createComponent({ completed: true });
+
+      expect(findActionsList().exists()).toBe(false);
+    });
+  });
+
+  describe('icon display', () => {
+    it('displays completed icon when action is completed', () => {
+      createComponent({ completed: true });
+
+      expect(findActionIcon().exists()).toBe(true);
+      expect(findActionIcon().props('name')).toBe(ICON_TYPE_COMPLETED);
+    });
+
+    it('displays empty icon when action is not completed', () => {
+      createComponent({ completed: false });
+
+      expect(findActionIcon().exists()).toBe(true);
+      expect(findActionIcon().props('name')).toBe(ICON_TYPE_EMPTY);
+    });
+  });
+
+  describe('action buttons and links', () => {
+    beforeEach(() => {
+      createComponent({ completed: false });
+    });
+
+    it('renders upload files button when user can push code', () => {
+      expect(findUploadFilesButton().exists()).toBe(true);
+      expect(findUploadFilesButton().text()).toBe('Upload files');
+      expect(findUploadFilesButton().props('variant')).toBe('link');
+    });
+
+    it('does not render upload files button when user cannot push code', () => {
+      createComponent({ completed: false }, { canPushCode: false });
+
+      expect(findUploadFilesButton().exists()).toBe(false);
+    });
+
+    it('does not render upload files button when user cannot push to branch', () => {
+      createComponent({ completed: false }, { canPushToBranch: false });
+
+      expect(findUploadFilesButton().exists()).toBe(false);
+    });
+
+    it('renders WebIDE link', () => {
+      expect(findWebIdeLink().exists()).toBe(true);
+      expect(findWebIdeLink().text()).toContain('Open the WebIDE');
+      expect(findWebIdeLink().attributes('href')).toBe('/web_ide');
+      expect(findWebIdeLink().attributes('target')).toBe('_blank');
+    });
+
+    it('renders external link icon in WebIDE link', () => {
+      const externalIcon = findWebIdeLink().findComponent(GlIcon);
+
+      expect(externalIcon.exists()).toBe(true);
+      expect(externalIcon.props('name')).toBe('external-link');
+    });
+
+    it('does not render WebIDE link when user cannot push code', () => {
+      createComponent({ completed: false }, { canPushCode: false });
+
+      expect(findWebIdeLink().exists()).toBe(false);
+    });
+
+    it('does not render WebIDE link when user cannot push to branch', () => {
+      createComponent({ completed: false }, { canPushToBranch: false });
+
+      expect(findWebIdeLink().exists()).toBe(false);
+    });
+  });
+
+  describe('modals', () => {
+    beforeEach(() => {
+      createComponent({ completed: false });
+    });
+
+    it('renders upload blob modal when user can push code', () => {
+      expect(findUploadBlobModal().props()).toMatchObject({
+        commitMessage: 'Upload New File',
+        targetBranch: 'main',
+        originalBranch: 'main',
+        canPushCode: true,
+        canPushToBranch: true,
+        path: '/test/upload',
+        uploadPath: '/test/upload',
+      });
+    });
+
+    it('does not render upload blob modal when user cannot push code', () => {
+      createComponent({ completed: false }, { canPushCode: false });
+
+      expect(findUploadBlobModal().exists()).toBe(false);
+    });
+
+    it('does not render upload blob modal when user cannot push to branch', () => {
+      createComponent({ completed: false }, { canPushToBranch: false });
+
+      expect(findUploadBlobModal().exists()).toBe(false);
+    });
+  });
+
+  describe('with tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    beforeEach(() => {
+      createComponent({ completed: false });
+    });
+
+    it('should call trackEvent method when upload files button is clicked', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await findUploadFilesButton().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_upload_files_in_get_started',
+        {},
+        undefined,
+      );
+    });
+
+    it('should call track method when WebIDE link is clicked', async () => {
+      const trackingSpy = mockTracking('_category_', undefined, jest.spyOn);
+
+      await findWebIdeLink().vm.$emit('click');
+
+      expect(trackingSpy).toHaveBeenCalledWith('projects:learn_gitlab:show', 'click_link', {
+        category: 'projects:learn_gitlab:show',
+        label: 'add_code',
+      });
+    });
+  });
+
+  describe('computed properties', () => {
+    it('generates unique modal IDs', () => {
+      createComponent();
+
+      expect(findUploadBlobModal().props('modalId')).toMatch(/modal-upload-blob/);
+    });
+
+    it('correctly determines canShowUploadButton when user has permissions', () => {
+      createComponent({ completed: false }, { canPushCode: true, canPushToBranch: true });
+
+      expect(findUploadFilesButton().exists()).toBe(true);
+      expect(findUploadBlobModal().exists()).toBe(true);
+    });
+
+    it('correctly determines canShowUploadButton when user lacks permissions', () => {
+      createComponent({ completed: false }, { canPushCode: false, canPushToBranch: false });
+
+      expect(findUploadFilesButton().exists()).toBe(false);
+      expect(findUploadBlobModal().exists()).toBe(false);
+    });
+  });
+});

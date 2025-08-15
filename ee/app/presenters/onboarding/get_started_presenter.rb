@@ -8,12 +8,25 @@ module Onboarding
       @onboarding_progress = onboarding_progress
     end
 
-    def attributes
-      ::Gitlab::Json.generate({
-        sections: sections,
-        tutorialEndPath: url_helpers.end_tutorial_project_get_started_path(project),
-        projectName: project.name
-      })
+    def view_model
+      ::Gitlab::Json.generate(
+        {
+          sections: sections,
+          tutorialEndPath: url_helpers.end_tutorial_project_get_started_path(project)
+        }
+      )
+    end
+
+    def provide
+      ::Gitlab::Json.generate(
+        {
+          projectName: project.name,
+          defaultBranch: project.default_branch_or_main,
+          canPushCode: user.can?(:push_code, project),
+          canPushToBranch: user_access.can_push_to_branch?(project.default_branch_or_main),
+          uploadPath: project_create_blob_path(project, project.default_branch_or_main)
+        }
+      )
     end
 
     private
@@ -36,16 +49,10 @@ module Onboarding
     def code_section
       {
         title: s_('LearnGitLab|Set up your code'),
-        description: s_('LearnGitLab|Use the Web IDE or upload code using your preferred method.'),
+        description: nil,
         actions: [
           {
-            title: s_('LearnGitLab|Create a repository'),
-            trackLabel: 'create_a_repository',
-            url: url_helpers.project_path(project),
-            completed: action_completed?(:created)
-          },
-          {
-            title: s_('LearnGitLab|Add code to a repository'),
+            title: s_("LearnGitLab|Add code to this project's repository"),
             trackLabel: 'add_code',
             url: CGI.unescape(url_helpers.ide_project_edit_path(project.full_path)),
             completed: action_completed?(:code_added)
@@ -180,6 +187,14 @@ module Onboarding
 
     def url_helpers
       Gitlab::Routing.url_helpers
+    end
+
+    def user_access
+      ::Gitlab::UserAccess.new(user, container: project)
+    end
+
+    def project_create_blob_path(project, ref)
+      url_helpers.project_create_blob_path(project, ref)
     end
   end
 end
