@@ -50,7 +50,6 @@ describe('SecretForm component', () => {
   const findBranchField = () => wrapper.findComponent(SecretBranchesField);
   const findDescriptionField = () => wrapper.findByTestId('secret-description');
   const findDescriptionFieldGroup = () => wrapper.findByTestId('secret-description-field-group');
-  const findEditValueButton = () => wrapper.findByTestId('edit-value-button');
   const findExpirationField = () => wrapper.findComponent(GlDatepicker);
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findNameFieldGroup = () => wrapper.findByTestId('secret-name-field-group');
@@ -397,39 +396,9 @@ describe('SecretForm component', () => {
       expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('production');
     });
 
-    it('disables value field', () => {
-      expect(findValueField().attributes('placeholder')).toBe('* * * * * * *');
-      expect(findValueField().attributes('disabled')).toBeDefined();
-    });
-
-    it('enables and focuses on value field when "Edit value" button is clicked', async () => {
-      const focusSpy = jest.spyOn(findValueField().element, 'focus');
-
-      expect(findValueField().attributes('disabled')).toBeDefined();
-
-      findEditValueButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findValueField().attributes('disabled')).toBeUndefined();
-      expect(focusSpy).toHaveBeenCalled();
-    });
-
-    it('disables value field again when it is out of focus', async () => {
-      findEditValueButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findValueField().attributes('disabled')).toBeUndefined();
-
-      findValueField().vm.$emit('blur');
-      await nextTick();
-
-      expect(findValueField().attributes('disabled')).toBeDefined();
-    });
-
     it('allows value field to be empty', async () => {
       expect(findValueFieldGroup().attributes('state')).toBeUndefined();
 
-      findEditValueButton().vm.$emit('click');
       findValueField().vm.$emit('input', 'EDITED_SECRET_VALUE');
       await nextTick();
 
@@ -478,7 +447,6 @@ describe('SecretForm component', () => {
 
     const editSecret = async ({ finishRequest = true, editValue = true } = {}) => {
       if (editValue) {
-        findEditValueButton().vm.$emit('click');
         findValueField().vm.$emit('input', 'EDITED_SECRET_VALUE');
       }
 
