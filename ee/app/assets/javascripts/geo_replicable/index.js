@@ -3,8 +3,7 @@ import VueApollo from 'vue-apollo';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { getGraphqlClient } from 'ee/geo_shared/graphql/geo_client';
 import GeoReplicableApp from './components/app.vue';
-import { formatListboxItems } from './filters';
-import { FILTERED_SEARCH_TOKENS } from './constants';
+import { formatListboxItems, getAvailableFilteredSearchTokens } from './filters';
 
 export default () => {
   const el = document.getElementById('js-geo-replicable');
@@ -30,7 +29,7 @@ export default () => {
       replicableClass,
       itemTitle: replicableClass.titlePlural, // itemTitle is used by a few geo_shared/ components
       listboxItems: formatListboxItems(replicableTypes),
-      filteredSearchTokens: FILTERED_SEARCH_TOKENS,
+      filteredSearchTokens: getAvailableFilteredSearchTokens(replicableClass.verificationEnabled),
     },
 
     render(createElement) {

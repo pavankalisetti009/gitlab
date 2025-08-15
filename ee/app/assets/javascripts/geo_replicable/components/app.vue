@@ -10,12 +10,14 @@ import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils
 import {
   isValidFilter,
   getReplicationStatusFilter,
+  getVerificationStatusFilter,
   getReplicableTypeFilter,
   processFilters,
   getGraphqlFilterVariables,
 } from '../filters';
 import {
   REPLICATION_STATUS_STATES_ARRAY,
+  VERIFICATION_STATUS_STATES_ARRAY,
   TOKEN_TYPES,
   BULK_ACTIONS,
   GEO_TROUBLESHOOTING_LINK,
@@ -132,10 +134,18 @@ export default {
       const filters = [];
       const url = new URL(window.location.href);
       const segments = pathSegments(url);
-      const { replication_status: replicationStatus } = queryToObject(window.location.search || '');
+      const { replication_status: replicationStatus, verification_status: verificationStatus } =
+        queryToObject(window.location.search || '');
 
       if (isValidFilter(replicationStatus, REPLICATION_STATUS_STATES_ARRAY)) {
         filters.push(getReplicationStatusFilter(replicationStatus));
+      }
+
+      if (
+        this.replicableClass.verificationEnabled &&
+        isValidFilter(verificationStatus, VERIFICATION_STATUS_STATES_ARRAY)
+      ) {
+        filters.push(getVerificationStatusFilter(verificationStatus));
       }
 
       this.activeFilters = [getReplicableTypeFilter(segments.pop()), ...filters];
