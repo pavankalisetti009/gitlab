@@ -11,6 +11,7 @@ import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, generateEventLabelFromText, setAgenticMode } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
+import DuoChatLoggingAlert from 'ee/ai/components/duo_chat_logging_alert.vue';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
 import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
@@ -58,6 +59,7 @@ export default {
     DuoChatCallout,
     TanukiBotSubscriptions,
     GlToggle,
+    DuoChatLoggingAlert,
   },
   mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   provide() {
@@ -95,6 +97,11 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    metadata: {
+      type: Object,
+      required: false,
+      default: null,
     },
   },
   apollo: {
@@ -531,7 +538,11 @@ export default {
         @chat-hidden="onChatClose"
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
-        ><template v-if="agenticAvailable" #footer-controls>
+      >
+        <template #subheader>
+          <duo-chat-logging-alert :metadata="metadata" />
+        </template>
+        <template v-if="agenticAvailable" #footer-controls>
           <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
             <gl-toggle
               v-model="duoAgenticModePreference"
