@@ -28,7 +28,7 @@ import { SUCCESS } from '~/vue_merge_request_widget/components/deployment/consta
 // eslint-disable-next-line no-unused-vars
 import _Deployment from '~/vue_merge_request_widget/components/deployment/deployment.vue';
 
-import getStateQuery from '~/vue_merge_request_widget/queries/get_state.query.graphql';
+import getStateQuery from 'ee/vue_merge_request_widget/queries/get_state.query.graphql';
 import getStateSubscription from '~/vue_merge_request_widget/queries/get_state.subscription.graphql';
 import readyToMergeSubscription from '~/vue_merge_request_widget/queries/states/ready_to_merge.subscription.graphql';
 import readyToMergeQuery from 'ee_else_ce/vue_merge_request_widget/queries/states/ready_to_merge.query.graphql';
@@ -58,9 +58,21 @@ describe('ee merge request widget options', () => {
 
   const createComponent = ({ mountFn = shallowMountExtended, updatedMrData = {} } = {}) => {
     gl.mrWidgetData = { ...mockData, ...updatedMrData };
+    const queryResponse = {
+      data: {
+        project: {
+          ...getStateQueryResponse.data.project,
+          mergeTrains: null,
+          mergeRequest: {
+            ...getStateQueryResponse.data.project.mergeRequest,
+            mergeTrainCar: null,
+          },
+        },
+      },
+    };
     const queryHandlers = [
       [approvalsQuery, jest.fn().mockResolvedValue(approvedByCurrentUser)],
-      [getStateQuery, jest.fn().mockResolvedValue(getStateQueryResponse)],
+      [getStateQuery, jest.fn().mockResolvedValue(queryResponse)],
       [readyToMergeQuery, jest.fn().mockResolvedValue(readyToMergeResponse)],
       [
         mergeQuery,
