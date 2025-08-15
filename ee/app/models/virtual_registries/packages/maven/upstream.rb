@@ -32,6 +32,7 @@ module VirtualRegistries
         validates :url, length: { maximum: 255 }
         validates :username, :password, length: { maximum: 510 }
         validates :cache_validity_hours, numericality: { greater_than_or_equal_to: 0, only_integer: true }
+        validates :metadata_cache_validity_hours, numericality: { greater_than: 0, only_integer: true }
         validates :name, presence: true, length: { maximum: 255 }
         validates :description, length: { maximum: 1024 }
 

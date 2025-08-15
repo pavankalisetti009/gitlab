@@ -154,6 +154,8 @@ module API
                     optional :username, type: String, desc: 'The username of the maven virtual registry upstream'
                     optional :password, type: String, desc: 'The password of the maven virtual registry upstream'
                     optional :cache_validity_hours, type: Integer, desc: 'The cache validity in hours. Defaults to 24'
+                    optional :metadata_cache_validity_hours, type: Integer,
+                      desc: 'The metadata cache validity period in hours. Defaults to 24'
                     all_or_none_of :username, :password
                   end
                   post do
@@ -218,8 +220,11 @@ module API
                   optional :username, type: String, desc: 'The username of the maven virtual registry upstream'
                   optional :password, type: String, desc: 'The password of the maven virtual registry upstream'
                   optional :cache_validity_hours, type: Integer, desc: 'The validity of the cache in hours'
+                  optional :metadata_cache_validity_hours, type: Integer,
+                    desc: 'The metadata cache validity period in hours.'
 
-                  at_least_one_of :name, :description, :url, :username, :password, :cache_validity_hours
+                  at_least_one_of :name, :description, :url, :username, :password, :cache_validity_hours,
+                    :metadata_cache_validity_hours
                 end
                 patch do
                   authorize! :update_virtual_registry, upstream

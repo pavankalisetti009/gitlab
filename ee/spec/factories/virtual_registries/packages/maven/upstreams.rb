@@ -10,6 +10,7 @@ FactoryBot.define do
     registries { [association(:virtual_registries_packages_maven_registry)] }
     group { registries.first.group }
     cache_validity_hours { 24 }
+    metadata_cache_validity_hours { 24 }
 
     after(:build) do |entry, _|
       entry.registry_upstreams.each { |registry_upstream| registry_upstream.group = entry.group }

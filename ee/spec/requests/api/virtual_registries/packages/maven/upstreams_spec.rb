@@ -262,8 +262,10 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
         expect(response).to have_gitlab_http_status(:created)
         expect(Gitlab::Json.parse(response.body)).to eq(upstream_as_json)
-        expect(upstream_model.last.cache_validity_hours).to eq(
-          params[:cache_validity_hours] || upstream_model.new.cache_validity_hours
+        expect(upstream_model.last).to have_attributes(
+          cache_validity_hours: params[:cache_validity_hours] || upstream_model.new.cache_validity_hours,
+          metadata_cache_validity_hours: params[:metadata_cache_validity_hours] ||
+            upstream_model.new.metadata_cache_validity_hours
         )
       end
     end
@@ -311,13 +313,21 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     context 'for params' do
+      let(:params) do
+        { url: test_url }.merge(
+          name:, description:, username:, password:, cache_validity_hours:, metadata_cache_validity_hours:
+        ).compact
+      end
+
       # rubocop:disable Layout/LineLength -- splitting the table syntax affects readability
-      where(:params, :status) do
-        { name: 'foo', description: 'bar', url: 'http://example.com', username: 'test', password: 'test', cache_validity_hours: 3 } | :created
-        { name: 'foo', url: 'http://example.com', username: 'test', password: 'test' }                                              | :created
-        { url: '', username: 'test', password: 'test' }                                                                             | :bad_request
-        { url: 'http://example.com', username: 'test' }                                                                             | :bad_request
-        {}                                                                                                                          | :bad_request
+      where(:name, :description, :test_url, :username, :password, :cache_validity_hours, :metadata_cache_validity_hours, :status) do
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | 5   | :created
+        'foo' | nil   | 'http://example.com' | 'test' | 'test' | nil | 5   | :created
+        'foo' | nil   | 'http://example.com' | 'test' | 'test' | nil | nil | :created
+        nil   | nil   | ''                   | 'test' | 'test' | nil | nil | :bad_request
+        nil   | nil   | 'http://example.com' | 'test' | nil    | nil | nil | :bad_request
+        nil   | nil   | 'http://example.com' | 'test' | 'test' | nil | 0   | :bad_request
+        nil   | nil   | nil                  | nil    | nil    | nil | nil | :bad_request
       end
       # rubocop:enable Layout/LineLength
 
@@ -460,27 +470,32 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
 
       let(:params) do
-        { name: name, description: description, url: param_url, username: username, password: password,
-          cache_validity_hours: cache_validity_hours }.compact
+        { url: param_url }.merge(
+          name:, description:, username:, password:, cache_validity_hours:, metadata_cache_validity_hours:
+        ).compact
       end
 
-      where(:name, :description, :param_url, :username, :password, :cache_validity_hours, :status) do
-        nil   | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :ok
-        'foo' | nil   | 'http://example.com' | 'test' | 'test' | 3   | :ok
-        'foo' | 'bar' | nil                  | 'test' | 'test' | 3   | :ok
-        'foo' | 'bar' | 'http://example.com' | nil    | 'test' | 3   | :ok
-        'foo' | 'bar' | 'http://example.com' | 'test' | nil    | 3   | :ok
-        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | nil | :ok
-        nil   | nil   | nil                  | nil    | nil    | 3   | :ok
-        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :ok
-        'foo' | ''    | 'http://example.com' | 'test' | 'test' | 3   | :ok
-        ''    | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :bad_request
-        'foo' | 'bar' | ''                   | 'test' | 'test' | 3   | :bad_request
-        'foo' | 'bar' | 'http://example.com' | ''     | 'test' | 3   | :bad_request
-        'foo' | 'bar' | 'http://example.com' | 'test' | ''     | 3   | :bad_request
-        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | -1  | :bad_request
-        nil   | nil   | nil                  | nil    | nil    | nil | :bad_request
+      # rubocop:disable Layout/LineLength -- splitting the table syntax affects readability
+      where(:name, :description, :param_url, :username, :password, :cache_validity_hours, :metadata_cache_validity_hours, :status) do
+        nil | 'bar' | 'http://example.com' | 'test' | 'test'   | 3   | 5   | :ok
+        'foo' | nil   | 'http://example.com' | 'test' | 'test' | 3   | 5   | :ok
+        'foo' | 'bar' | nil                  | 'test' | 'test' | 3   | 5   | :ok
+        'foo' | 'bar' | 'http://example.com' | nil    | 'test' | 3   | 5   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | nil    | 3   | 5   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | nil | 5   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | nil | :ok
+        nil   | nil   | nil                  | nil    | nil    | 3   | 5   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | 5   | :ok
+        'foo' | ''    | 'http://example.com' | 'test' | 'test' | 3   | 5   | :ok
+        ''    | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | 5   | :bad_request
+        'foo' | 'bar' | ''                   | 'test' | 'test' | 3   | 5   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | ''     | 'test' | 3   | 5   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | 'test' | ''     | 3   | 5   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | -1  | 5   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | 0   | :bad_request
+        nil   | nil   | nil                  | nil    | nil    | nil | nil | :bad_request
       end
+      # rubocop:enable Layout/LineLength
 
       with_them do
         it_behaves_like 'returning response status', params[:status]
