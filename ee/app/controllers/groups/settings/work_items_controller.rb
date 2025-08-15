@@ -6,8 +6,7 @@ module Groups
       layout 'group_settings'
 
       before_action :ensure_root_group
-      before_action :check_feature_availability
-      before_action :authorize_admin_work_item_settings
+      before_action :check_feature_availability_and_authorize
 
       feature_category :team_planning
       urgency :low
@@ -25,13 +24,20 @@ module Groups
         render_404 unless group.root?
       end
 
-      def check_feature_availability
-        render_404 unless group.licensed_feature_available?(:custom_fields) || group.work_item_status_feature_available?
+      def check_feature_availability_and_authorize
+        render_404 unless can_access_work_item_settings?
       end
 
-      def authorize_admin_work_item_settings
-        render_404 unless can?(current_user, :admin_custom_field,
-          group) || can?(current_user, :admin_work_item, group)
+      def can_access_work_item_settings?
+        can_admin_custom_fields? || can_admin_work_item_statuses?
+      end
+
+      def can_admin_custom_fields?
+        group.licensed_feature_available?(:custom_fields) && can?(current_user, :admin_custom_field, group)
+      end
+
+      def can_admin_work_item_statuses?
+        group.work_item_status_feature_available? && can?(current_user, :admin_work_item_lifecycle, group)
       end
     end
   end

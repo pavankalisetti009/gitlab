@@ -243,9 +243,19 @@ module EE
           end
 
           def show_group_work_items_settings_menu_item?
-            context.group.root? &&
-              context.group.licensed_feature_available?(:custom_fields) &&
+            return false unless context.group.root?
+
+            can_admin_custom_fields? || can_admin_work_item_statuses?
+          end
+
+          def can_admin_custom_fields?
+            context.group.licensed_feature_available?(:custom_fields) &&
               can?(context.current_user, :admin_custom_field, context.group)
+          end
+
+          def can_admin_work_item_statuses?
+            context.group.work_item_status_feature_available? &&
+              can?(context.current_user, :admin_work_item_lifecycle, context.group)
           end
         end
       end

@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigation do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:owner) { create(:user) }
   let_it_be(:auditor) { create(:user, :auditor) }
   let_it_be(:maintainer) { create(:user, :maintainer) }
@@ -340,35 +342,6 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
       end
     end
 
-    context 'for maintainer user' do
-      let(:user) { maintainer }
-
-      subject { menu.renderable_items.find { |e| e.item_id == item_id } }
-
-      describe 'Issues menu item' do
-        let(:item_id) { :group_work_items_settings }
-        let(:custom_fields_licensed) { true }
-
-        before do
-          stub_licensed_features(custom_fields: custom_fields_licensed)
-        end
-
-        it { is_expected.to be_present }
-
-        context 'when custom_fields is not licensed' do
-          let(:custom_fields_licensed) { false }
-
-          it { is_expected.not_to be_present }
-        end
-
-        context 'when subgroup' do
-          let(:container) { subgroup }
-
-          it { is_expected.not_to be_present }
-        end
-      end
-    end
-
     context 'for auditor user' do
       let(:user) { auditor }
 
@@ -398,21 +371,55 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
           expect(menu.renderable_items.length).to equal(1)
         end
       end
+    end
 
-      describe 'Issues menu item' do
-        let(:item_id) { :group_work_items }
+    describe 'Issues menu', feature_category: :team_planning do
+      let(:item_id) { :group_work_items_settings }
+
+      subject(:issues_menu) { menu.renderable_items.find { |e| e.item_id == item_id } }
+
+      where(:user_role, :custom_fields_licensed, :work_item_status_licensed, :expected_result) do
+        :owner      | true  | true  | true
+        :owner      | true  | false | true
+        :owner      | false | true  | true
+        :owner      | false | false | false
+        :maintainer | true  | true  | true
+        :maintainer | true  | false | true
+        :maintainer | false | true  | true
+        :maintainer | false | false | false
+        :auditor    | true  | true  | false
+        :auditor    | true  | false | false
+        :auditor    | false | true  | false
+        :auditor    | false | false | false
+      end
+
+      with_them do
+        let(:user) { try(user_role) }
 
         before do
-          stub_licensed_features(custom_fields: true)
+          stub_licensed_features(
+            custom_fields: custom_fields_licensed, work_item_status: work_item_status_licensed
+          )
         end
 
-        it { is_expected.not_to be_present }
+        it 'controls menu visibility based on user role and feature licensing' do
+          expected_result ? expect(issues_menu).to(be_present) : expect(issues_menu).not_to(be_present)
+        end
+      end
+
+      context 'with subgroup' do
+        let(:container) { subgroup }
+        let(:user) { maintainer }
+
+        before do
+          stub_licensed_features(custom_fields: true, work_item_status: true)
+        end
+
+        it { expect(issues_menu).not_to be_present }
       end
     end
 
     describe 'Custom Roles' do
-      using RSpec::Parameterized::TableSyntax
-
       let_it_be_with_reload(:user) { create(:user) }
       let_it_be_with_reload(:group) { create(:group) }
       let_it_be_with_reload(:sub_group) { create(:group, parent: group) }
