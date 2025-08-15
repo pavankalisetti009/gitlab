@@ -1154,11 +1154,11 @@ module EE
         ::Feature.enabled?(:ai_flow_triggers, @user)
       end
 
-      rule { ai_flow_triggers_enabled & assigned_to_duo_enterprise & can?(:admin_project) }.policy do
+      rule { ai_flow_triggers_enabled & (amazon_q_enabled | assigned_to_duo_enterprise) & can?(:admin_project) }.policy do
         enable :manage_ai_flow_triggers
       end
 
-      rule { ai_flow_triggers_enabled & assigned_to_duo_enterprise & can?(:developer_access) & can?(:create_pipeline) }.policy do
+      rule { ai_flow_triggers_enabled & (amazon_q_enabled | assigned_to_duo_enterprise) & can?(:developer_access) & can?(:create_pipeline) }.policy do
         enable :trigger_ai_flow
       end
 

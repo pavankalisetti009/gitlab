@@ -5436,6 +5436,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         it { is_expected.to be_disallowed(:manage_ai_flow_triggers) }
         it { is_expected.to be_disallowed(:trigger_ai_flow) }
       end
+
+      context 'when Amazon Q is enabled' do
+        where(:role, :allowed, :allowed_to_manage) do
+          :guest      | false | false
+          :planner    | false | false
+          :reporter   | false | false
+          :developer  | true  | false
+          :maintainer | true  | true
+          :owner      | true  | true
+          :admin      | true  | true
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            enable_admin_mode!(current_user) if role == :admin
+
+            allow(::Ai::AmazonQ).to receive(:enabled?).and_return(true)
+          end
+
+          it { is_expected.to(allowed ? be_allowed(:trigger_ai_flow) : be_disallowed(:trigger_ai_flow)) }
+          it { is_expected.to(allowed_to_manage ? be_allowed(:manage_ai_flow_triggers) : be_disallowed(:manage_ai_flow_triggers)) }
+        end
+      end
     end
 
     context 'when ai_flow_triggers feature flag is disabled' do
