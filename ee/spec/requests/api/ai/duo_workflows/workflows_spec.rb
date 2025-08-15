@@ -637,7 +637,6 @@ expires_at: duo_workflow_service_token_expires_at })
         expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
         expect(json_response['DuoWorkflow']['Headers']).to include(
-          'x-gitlab-base-url' => Gitlab.config.gitlab.url,
           'x-gitlab-oauth-token' => 'oauth_token',
           'authorization' => 'Bearer token',
           'x-gitlab-authentication-type' => 'oidc',
@@ -649,6 +648,33 @@ expires_at: duo_workflow_service_token_expires_at })
 
         expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+      end
+
+      context 'when duo_agent_platform_disable_direct_http is disabled' do
+        before do
+          stub_feature_flags(duo_agent_platform_disable_direct_http: false)
+        end
+
+        it 'returns the websocket configuration with proper headers' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
+
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-base-url' => Gitlab.config.gitlab.url,
+            'x-gitlab-oauth-token' => 'oauth_token',
+            'authorization' => 'Bearer token',
+            'x-gitlab-authentication-type' => 'oidc',
+            'x-gitlab-enabled-feature-flags' => anything,
+            'x-gitlab-instance-id' => anything,
+            'x-gitlab-version' => Gitlab.version_info.to_s,
+            'x-gitlab-unidirectional-streaming' => 'enabled'
+          )
+
+          expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
+          expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        end
       end
 
       context 'when agent_platform_model_selection feature flag is enabled' do
@@ -757,7 +783,6 @@ expires_at: duo_workflow_service_token_expires_at })
           expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
           expect(json_response['DuoWorkflow']['Headers']).to include(
-            'x-gitlab-base-url' => Gitlab.config.gitlab.url,
             'x-gitlab-oauth-token' => 'oauth_token',
             'authorization' => 'Bearer token',
             'x-gitlab-authentication-type' => 'oidc',
