@@ -56676,6 +56676,12 @@ msgstr ""
 msgid "Secrets|Expires"
 msgstr ""
 
+msgid "Secrets|Failed to create Secrets manager permission. Please try again."
+msgstr ""
+
+msgid "Secrets|Failed to fetch secrets manager permissions. Please try again later."
+msgstr ""
+
 msgid "Secrets|Failed to load secret. Please try again later."
 msgstr ""
 
@@ -56715,9 +56721,6 @@ msgstr ""
 msgid "Secrets|Secret Manager permissions were successfully updated."
 msgstr ""
 
-msgid "Secrets|Secret manager user permissions"
-msgstr ""
-
 msgid "Secrets|Secrets"
 msgstr ""
 
@@ -56728,6 +56731,9 @@ msgid "Secrets|Secrets Manager has been provisioned for this project."
 msgstr ""
 
 msgid "Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job."
+msgstr ""
+
+msgid "Secrets|Secrets manager user permissions"
 msgstr ""
 
 msgid "Secrets|Secure your sensitive information"
