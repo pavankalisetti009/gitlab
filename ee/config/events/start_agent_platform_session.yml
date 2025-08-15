@@ -1,0 +1,26 @@
+---
+description: Tracks duo agent platform session start
+internal_events: true
+status: active
+action: start_agent_platform_session
+identifiers:
+- project
+- namespace
+- user
+additional_properties:
+  label:
+    description: Flow type, eg. chat
+  property:
+    description: Environment, eg. web
+  value:
+    description: Session id
+product_group: duo_workflow
+product_categories:
+- duo_workflow
+milestone: '18.3'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201505
+tiers:
+- premium
+- ultimate
+extra_trackers:
+  - tracking_class: Gitlab::Tracking::AiTracking

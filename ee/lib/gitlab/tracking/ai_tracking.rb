@@ -30,6 +30,9 @@ module Gitlab
             merge_request_id: context['job'].pipeline&.merge_request_id
           }
         end
+
+        events(create_agent_platform_session: 8)
+        events(start_agent_platform_session: 9)
       end
 
       class << self

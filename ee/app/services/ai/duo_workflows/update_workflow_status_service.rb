@@ -3,6 +3,8 @@
 module Ai
   module DuoWorkflows
     class UpdateWorkflowStatusService
+      include ::Gitlab::InternalEventsTracking
+
       def initialize(workflow:, status_event:, current_user:)
         @workflow = workflow
         @status_event = status_event
@@ -32,6 +34,19 @@ module Ai
         end
 
         @workflow.fire_status_event(@status_event)
+
+        if @status_event == "start"
+          track_internal_event(
+            "start_agent_platform_session",
+            user: @workflow.user,
+            project: @workflow.project,
+            additional_properties: {
+              label: @workflow.workflow_definition,
+              value: @workflow.id,
+              property: @workflow.environment
+            }
+          )
+        end
 
         GraphqlTriggers.workflow_events_updated(@workflow.checkpoints.last) if @workflow.checkpoints.any?
 

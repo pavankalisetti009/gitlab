@@ -44,10 +44,9 @@ RSpec.describe Ai::DuoWorkflows::CleanStuckWorkflowsService, feature_category: :
                                     user: workflow.user,
                                     project: workflow.project,
                                     additional_properties: {
-                                      label: "workflow_finish_event",
+                                      label: workflow.workflow_definition,
                                       value: workflow.id,
-                                      property: "failed",
-                                      category: workflow.workflow_definition
+                                      property: "failed"
                                     })
         end
 
