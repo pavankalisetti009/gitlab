@@ -5,8 +5,28 @@ require 'spec_helper'
 RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext, feature_category: :security_policy_management do
   subject(:context) { execution_policies_pipeline_context.pipeline_execution_context }
 
+  let(:sha_context) do
+    Gitlab::Ci::Pipeline::ShaContext.new(
+      before: command.before_sha,
+      after: command.after_sha,
+      source: command.source_sha,
+      checkout: command.checkout_sha,
+      target: command.target_sha
+    )
+  end
+
   let(:execution_policies_pipeline_context) do
-    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(
+      project: project,
+      source: command.source,
+      current_user: command.current_user,
+      ref: command.ref,
+      sha_context: sha_context,
+      variables_attributes: command.variables_attributes,
+      chat_data: command.chat_data,
+      merge_request: command.merge_request,
+      schedule: command.schedule
+    )
   end
 
   let_it_be(:project) { create(:project, :repository) }

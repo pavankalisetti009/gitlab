@@ -15,9 +15,23 @@ module EE
 
             override :pipeline_policy_context
             def pipeline_policy_context
+              sha_context = ::Gitlab::Ci::Pipeline::ShaContext.new(
+                before: before_sha,
+                after: after_sha,
+                source: source_sha,
+                checkout: checkout_sha,
+                target: target_sha
+              )
               self[:pipeline_policy_context] ||= ::Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(
                 project: project,
-                command: self
+                source: source,
+                current_user: current_user,
+                ref: ref,
+                sha_context: sha_context,
+                variables_attributes: variables_attributes,
+                chat_data: chat_data,
+                merge_request: merge_request,
+                schedule: schedule
               )
             end
 

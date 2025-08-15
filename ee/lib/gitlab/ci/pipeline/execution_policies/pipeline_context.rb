@@ -8,14 +8,36 @@ module Gitlab
         class PipelineContext
           include ::Gitlab::Utils::StrongMemoize
 
-          def initialize(project:, command: nil)
+          # rubocop:disable Metrics/ParameterLists -- Explicit parameters needed to replace command object delegation
+          def initialize(
+            project:, source: nil, current_user: nil, ref: nil, sha_context: nil,
+            variables_attributes: nil, chat_data: nil, merge_request: nil, schedule: nil)
+            # rubocop:enable Metrics/ParameterLists
             @project = project
-            @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
+            @source = source
+            @current_user = current_user
+            @ref = ref
+            @sha_context = sha_context
+            @variables_attributes = variables_attributes
+            @chat_data = chat_data
+            @merge_request = merge_request
+            @schedule = schedule
           end
 
           def pipeline_execution_context
             ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext
-              .new(context: self, project: project, command: command)
+              .new(
+                context: self,
+                project: project,
+                source: source,
+                current_user: current_user,
+                ref: ref,
+                sha_context: sha_context,
+                variables_attributes: variables_attributes,
+                chat_data: chat_data,
+                merge_request: merge_request,
+                schedule: schedule
+              )
           end
           strong_memoize_attr :pipeline_execution_context
 
@@ -24,8 +46,8 @@ module Gitlab
               ::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext.new(
                 project: project,
                 ref: ref,
-                current_user: command&.current_user,
-                source: command&.source)
+                current_user: current_user,
+                source: source)
             end
           end
 
@@ -35,7 +57,8 @@ module Gitlab
 
           private
 
-          attr_reader :project, :command
+          attr_reader :project, :source, :current_user, :ref, :sha_context, :variables_attributes, :chat_data,
+            :merge_request, :schedule
         end
       end
     end

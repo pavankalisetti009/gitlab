@@ -72,12 +72,33 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
     let(:command) do
       Gitlab::Ci::Pipeline::Chain::Command.new(
         project: project,
-        source: source
+        source: source,
+        origin_ref: project.default_branch_or_main
+      )
+    end
+
+    let(:sha_context) do
+      Gitlab::Ci::Pipeline::ShaContext.new(
+        before: command.before_sha,
+        after: command.after_sha,
+        source: command.source_sha,
+        checkout: command.checkout_sha,
+        target: command.target_sha
       )
     end
 
     let(:pipeline_policy_context) do
-      Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
+      Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(
+        project: project,
+        source: command.source,
+        current_user: command.current_user,
+        ref: command.ref,
+        sha_context: sha_context,
+        variables_attributes: command.variables_attributes,
+        chat_data: command.chat_data,
+        merge_request: command.merge_request,
+        schedule: command.schedule
+      )
     end
 
     subject(:config) { described_class.new(ci_yml, pipeline: pipeline, project: project, pipeline_policy_context: pipeline_policy_context) }
