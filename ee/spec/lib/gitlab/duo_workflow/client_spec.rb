@@ -75,7 +75,6 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       expected_headers = {
         'authorization' => "Bearer #{token}",
         'x-gitlab-authentication-type' => 'oidc',
-        'x-gitlab-base-url' => 'http://localhost',
         'x-gitlab-feature-enabled-by-namespace-ids' => '',
         'x-gitlab-global-user-id' => Gitlab::GlobalAnonymousId.user_id(user),
         'x-gitlab-host-name' => 'localhost',
@@ -88,6 +87,31 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       }
 
       expect(described_class.cloud_connector_headers(user: user)).to eq(expected_headers)
+    end
+
+    context 'when duo_agent_platform_disable_direct_http is disabled' do
+      before do
+        stub_feature_flags(duo_agent_platform_disable_direct_http: false)
+      end
+
+      it 'returns headers with x-gitlab-base-url' do
+        expected_headers = {
+          'authorization' => "Bearer #{token}",
+          'x-gitlab-authentication-type' => 'oidc',
+          'x-gitlab-feature-enabled-by-namespace-ids' => '',
+          'x-gitlab-base-url' => 'http://localhost',
+          'x-gitlab-global-user-id' => Gitlab::GlobalAnonymousId.user_id(user),
+          'x-gitlab-host-name' => 'localhost',
+          'x-gitlab-instance-id' => 'uuid-not-set',
+          'x-gitlab-realm' => 'self-managed',
+          'x-gitlab-version' => Gitlab.version_info.to_s,
+          'x-gitlab-enabled-instance-verbose-ai-logs' => 'true',
+          'x-gitlab-enabled-feature-flags' => '',
+          'x-gitlab-feature-enablement-type' => ''
+        }
+
+        expect(described_class.cloud_connector_headers(user: user)).to eq(expected_headers)
+      end
     end
   end
 

@@ -33,7 +33,7 @@ module Gitlab
       end
 
       def self.cloud_connector_headers(user:)
-        Gitlab::AiGateway
+        headers = Gitlab::AiGateway
           .public_headers(user: user, service_name: :duo_workflow)
           .transform_keys(&:downcase)
           .merge(
@@ -41,6 +41,10 @@ module Gitlab
             'authorization' => "Bearer #{cloud_connector_token(user: user)}",
             'x-gitlab-authentication-type' => 'oidc'
           )
+
+        headers.delete('x-gitlab-base-url') if Feature.enabled?(:duo_agent_platform_disable_direct_http, user)
+
+        headers
       end
 
       def self.cloud_connector_token(user:)

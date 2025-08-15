@@ -1,0 +1,10 @@
+---
+name: duo_agent_platform_disable_direct_http
+description: Controls whether DWS should perform direct HTTP calls
+feature_issue_url: https://gitlab.com/gitlab-com/request-for-help/-/issues/3274
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201593
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/561716
+milestone: '18.3'
+group: group::duo workflow
+type: gitlab_com_derisk
+default_enabled: false
