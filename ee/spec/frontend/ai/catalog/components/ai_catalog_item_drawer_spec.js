@@ -61,6 +61,22 @@ describe('CatalogItemDrawer', () => {
         params: { id: 1 },
       });
     });
+
+    describe('when the user does not have permission to admin the item', () => {
+      it('does not link to edit page', () => {
+        createComponent({
+          props: {
+            isOpen: true,
+            activeItem: {
+              ...mockAgent,
+              userPermissions: { adminAiCatalogItem: false },
+            },
+          },
+        });
+
+        expect(findEditButton().exists()).toBe(false);
+      });
+    });
   });
 
   describe('drawer content', () => {
