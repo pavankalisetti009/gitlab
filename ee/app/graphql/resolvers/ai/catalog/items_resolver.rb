@@ -18,14 +18,18 @@ module Resolvers
           required: false,
           description: 'Search items by name and description.'
 
-        def resolve_with_lookahead(item_type: nil, search: nil)
-          return ::Ai::Catalog::Item.none unless ::Feature.enabled?(:global_ai_catalog, current_user)
+        def resolve_with_lookahead(**args)
+          items = ::Ai::Catalog::ItemsFinder.new(
+            current_user,
+            params: finder_params(args)
+          ).execute
 
-          items = ::Ai::Catalog::Item.not_deleted
-          items = items.for_organization(current_organization)
-          items = items.with_item_type(item_type) if item_type
-          items = items.search(search) if search.present?
           apply_lookahead(items)
+        end
+
+        def finder_params(params)
+          params[:organization] = current_organization
+          params
         end
 
         def preloads

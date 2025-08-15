@@ -28,6 +28,7 @@ module Ai
 
       scope :for_organization, ->(organization) { where(organization: organization) }
       scope :not_deleted, -> { where(deleted_at: nil) }
+      scope :public_only, -> { where(public: true) }
       scope :search, ->(query) { fuzzy_search(query, [:name, :description]) }
       scope :with_ids, ->(ids) { where(id: ids) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
@@ -41,6 +42,16 @@ module Ai
         AGENT_TYPE => 1,
         FLOW_TYPE => 2
       }
+
+      class << self
+        def public_or_visible_to_user(current_user)
+          return public_only if current_user.nil?
+
+          public_only.or(
+            where(project: current_user.authorized_projects(Gitlab::Access::DEVELOPER))
+          )
+        end
+      end
 
       def deleted?
         deleted_at.present?

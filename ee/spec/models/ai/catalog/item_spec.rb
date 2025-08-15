@@ -139,6 +139,46 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       end
     end
 
+    describe '.public_only' do
+      let_it_be(:public_item) { create(:ai_catalog_item, public: true) }
+      let_it_be(:private_item) { create(:ai_catalog_item, public: false) }
+
+      it 'returns the public items' do
+        expect(described_class.public_only).to contain_exactly(public_item)
+      end
+    end
+
+    describe '.public_or_visible_to_user' do
+      let_it_be(:user) { create(:user) }
+
+      let_it_be(:reporter_project) { create(:project, reporters: user) }
+      let_it_be(:developer_project) { create(:project, developers: user) }
+
+      let_it_be(:public_item) { create(:ai_catalog_item, public: true) }
+      let_it_be(:private_item) { create(:ai_catalog_item, public: false) }
+
+      let_it_be(:private_item_in_reporter_project) do
+        create(:ai_catalog_item, public: false, project: reporter_project)
+      end
+
+      let_it_be(:private_item_in_developer_project) do
+        create(:ai_catalog_item, public: false, project: developer_project)
+      end
+
+      it 'returns only public items when user is nil' do
+        expect(described_class.public_or_visible_to_user(nil)).to contain_exactly(
+          public_item
+        )
+      end
+
+      it 'returns public items, and items belonging to projects user is developer+ of' do
+        expect(described_class.public_or_visible_to_user(user)).to contain_exactly(
+          public_item,
+          private_item_in_developer_project
+        )
+      end
+    end
+
     describe '.search' do
       let_it_be(:issue_label_agent) { create(:ai_catalog_agent, name: 'Autotriager') }
       let_it_be(:mr_review_flow) { create(:ai_catalog_flow, description: 'Merge request reviewer') }
