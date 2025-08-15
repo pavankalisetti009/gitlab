@@ -18,7 +18,11 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
   describe '#bypass_allowed?' do
     subject(:bypass_allowed?) do
       described_class.new(
-        security_policy: security_policy, project: project, user_access: user_access, branch_name: branch_name
+        security_policy: security_policy,
+        project: project,
+        user_access: user_access,
+        branch_name: branch_name,
+        push_options: {}
       ).bypass_allowed?
     end
 

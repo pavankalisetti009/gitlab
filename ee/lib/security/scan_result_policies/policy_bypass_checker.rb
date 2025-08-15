@@ -5,11 +5,12 @@ module Security
     class PolicyBypassChecker
       include Gitlab::Utils::StrongMemoize
 
-      def initialize(security_policy:, project:, user_access:, branch_name:)
+      def initialize(security_policy:, project:, user_access:, branch_name:, push_options:)
         @security_policy = security_policy
         @project = project
         @user = user_access.user
         @branch_name = branch_name
+        @push_options = push_options
       end
 
       def bypass_allowed?
@@ -44,7 +45,7 @@ module Security
 
       private
 
-      attr_reader :security_policy, :project, :user, :branch_name
+      attr_reader :security_policy, :project, :user, :branch_name, :push_options
 
       def log_bypass_audit!(type, id)
         message = <<~MSG.squish
