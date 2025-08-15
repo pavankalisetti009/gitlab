@@ -10,6 +10,7 @@ module Ai
       validates :pinned_version_prefix, length: { maximum: 50 }
 
       validate :validate_exactly_one_sharding_key_present
+      validate :organization_match
 
       validates :item, uniqueness: { scope: :organization_id, message: 'already configured' },
         if: -> { organization.present? }
@@ -29,10 +30,20 @@ module Ai
 
       private
 
+      def organization_id_from_sharding_key
+        organization_id || group&.organization_id || project&.organization_id
+      end
+
+      def organization_match
+        return if ai_catalog_item_id.nil? || item.organization_id == organization_id_from_sharding_key
+
+        errors.add(:item, _("organization must match the item consumer's organization"))
+      end
+
       def validate_exactly_one_sharding_key_present
         return if [organization, group, project].compact.one?
 
-        errors.add(:base, 'The item must belong to only one organization, group, or project')
+        errors.add(:base, 'The item consumer must belong to only one organization, group, or project')
       end
     end
   end

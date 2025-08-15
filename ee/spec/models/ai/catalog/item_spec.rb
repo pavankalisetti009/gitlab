@@ -33,6 +33,34 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
     it { is_expected.to validate_length_of(:description).is_at_most(1_024) }
 
+    describe 'project belongs to same organization' do
+      let_it_be(:default_organization) { create(:organization) }
+      let_it_be(:different_organization) { create(:organization) }
+
+      let_it_be(:project_with_default_organization) { create(:project, organization: default_organization) }
+      let_it_be(:project_with_different_organization) { create(:project, organization: different_organization) }
+
+      where(:project, :expected_validity) do
+        [
+          [ref(:project_with_default_organization), true],
+          [nil, true],
+          [ref(:project_with_different_organization), false]
+        ]
+      end
+
+      with_them do
+        subject(:item) { build(:ai_catalog_item, organization: default_organization, project: project) }
+
+        it 'validates the project belongs to the same organization if present' do
+          expect(item.valid?).to eq(expected_validity)
+
+          unless expected_validity
+            expect(item.errors[:project]).to include("organization must match the item's organization")
+          end
+        end
+      end
+    end
+
     describe 'changing from public to private' do
       let_it_be(:project) { create(:project) }
       let_it_be_with_refind(:item) { create(:ai_catalog_item, public: true, project: project) }

@@ -36,6 +36,42 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       expect(item_consumer).to validate_uniqueness_of(:item).scoped_to(:project_id).with_message('already configured')
     end
 
+    describe 'item and item_consumer organization checks' do
+      let_it_be(:default_organization) { create(:organization) }
+      let_it_be(:different_organization) { create(:organization) }
+
+      let_it_be(:project_with_different_org) { build(:project, organization: different_organization) }
+      let_it_be(:group_with_different_org) { build(:group, organization: different_organization) }
+
+      let_it_be(:project_with_default_org) { build(:project, organization: default_organization) }
+      let_it_be(:group_with_default_org) { build(:group, organization: default_organization) }
+
+      let_it_be(:item) { create(:ai_catalog_item, organization: default_organization) }
+
+      where(:organization, :project, :group, :expected_validity) do
+        [
+          [ref(:default_organization), nil, nil, true],
+          [nil, ref(:project_with_default_org), nil, true],
+          [nil, nil, ref(:group_with_default_org), true],
+          [ref(:different_organization), nil, nil, false],
+          [nil, ref(:project_with_different_org), nil, false],
+          [nil, nil, ref(:group_with_different_org), false]
+        ]
+      end
+
+      with_them do
+        subject(:item_consumer) { build(:ai_catalog_item_consumer, organization:, group:, project:, item:) }
+
+        it 'validates they belong to the same organization' do
+          expect(item_consumer.valid?).to eq(expected_validity)
+
+          unless expected_validity
+            expect(item_consumer.errors[:item]).to include("organization must match the item consumer's organization")
+          end
+        end
+      end
+    end
+
     describe '#validate_exactly_one_sharding_key_present' do
       let(:organization_stub) { build_stubbed(:organization) }
       let(:group_stub) { build_stubbed(:group) }
@@ -57,7 +93,7 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       with_them do
         it "validates correctly for #{params[:case_name]}" do
           setting = build(:ai_catalog_item_consumer,
-            item: build_stubbed(:ai_catalog_item),
+            item: build_stubbed(:ai_catalog_item, organization:),
             organization: organization,
             group: group,
             project: project
@@ -69,8 +105,11 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
             expect(setting.errors[:base]).to be_empty
           else
             expect(setting.errors[:base]).to include(
-              'The item must belong to only one organization, group, or project'
+              'The item consumer must belong to only one organization, group, or project'
             )
+
+            expect(setting.errors.full_messages)
+              .to include('The item consumer must belong to only one organization, group, or project')
           end
         end
       end

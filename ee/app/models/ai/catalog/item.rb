@@ -19,6 +19,8 @@ module Ai
       belongs_to :organization, class_name: 'Organizations::Organization', optional: false
       belongs_to :project
 
+      validate :organization_match
+
       has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
       has_one :latest_version, -> { order(id: :desc) }, class_name: 'Ai::Catalog::ItemVersion',
         foreign_key: :ai_catalog_item_id, inverse_of: :item
@@ -81,6 +83,12 @@ module Ai
 
         errors.add(:base, 'Cannot delete an item that has consumers')
         throw :abort # rubocop:disable Cop/BanCatchThrow -- We handle soft deleting in `ee/app/services/ai/catalog/agents/destroy_service.rb`
+      end
+
+      def organization_match
+        return if project_id.nil? || project.organization_id == organization_id
+
+        errors.add(:project, _("organization must match the item's organization"))
       end
 
       def validate_public_item_cannot_become_private

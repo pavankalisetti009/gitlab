@@ -199,7 +199,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
 
   context 'when item belongs to another organization' do
     before do
-      catalog_item.update!(organization: create(:organization))
+      catalog_item.update!(organization: create(:organization), project: nil)
     end
 
     it_behaves_like 'an unsuccessful query'
