@@ -43,6 +43,8 @@ describe('The Pipeline Tabs', () => {
     totalJobCount: 10,
     testsCount: 123,
     manualVariablesCount: 0,
+    displayPipelineVariables: false,
+    canReadVariables: false,
   };
 
   const $router = {
