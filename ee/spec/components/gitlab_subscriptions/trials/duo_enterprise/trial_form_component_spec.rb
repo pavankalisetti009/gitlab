@@ -26,10 +26,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::TrialFormComponent, :
           lastName: user.last_name,
           emailDomain: user.email_domain,
           companyName: user.user_detail_organization,
-          showNameFields: false,
-          phoneNumber: nil,
-          country: '',
-          state: ''
+          showNameFields: false
         },
         submitPath: trials_duo_enterprise_path(step: 'full'),
         gtmSubmitEventLabel: 'saasDuoEnterpriseTrialSubmit'

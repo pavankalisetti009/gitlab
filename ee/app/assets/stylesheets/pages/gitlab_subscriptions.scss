@@ -16,16 +16,7 @@
   }
 }
 
-.duo-pro-trials {
-  .bg-decorations {
-    @include gl-media-breakpoint-up(md) {
-      background-image: url('illustrations/bg-decorations.svg');
-      background-position: bottom 5% right 75px;
-    }
-  }
-}
-
-.duo-enterprise-trials {
+.duo-trials {
   .bg-decorations {
     @include gl-media-breakpoint-up(md) {
       background-image: url('illustrations/bg-decorations.svg');
