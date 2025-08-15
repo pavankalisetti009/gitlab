@@ -703,7 +703,10 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   describe '#gitlab_duo_settings_data' do
     let(:user) { instance_double(User, can_admin_all_resources?: false) }
     let(:expected_data) do
-      { duoFeaturesEnabled: true, licensedAiFeaturesAvailable: false, duoFeaturesLocked: false }
+      { duoFeaturesEnabled: true,
+        licensedAiFeaturesAvailable: false,
+        duoFeaturesLocked: false,
+        initialDuoFlowEnabled: false }
     end
 
     subject(:data) { helper.gitlab_duo_settings_data(project) }

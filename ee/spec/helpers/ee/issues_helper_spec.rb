@@ -138,6 +138,13 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expect(helper.project_issues_list_data(project, current_user)).to include(expected)
       end
 
+      it 'includes duo_remote_flows_enabled for projects' do
+        result = helper.project_issues_list_data(project, current_user)
+
+        expect(result).to include(:duo_remote_flows_enabled)
+        expect(result[:duo_remote_flows_enabled]).to eq('false')
+      end
+
       context 'when project does not have group' do
         let(:project_with_no_group) { create :project }
 
@@ -178,6 +185,13 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
 
         expect(result).to include(expected)
         expect(result).not_to include(:group_path)
+      end
+
+      it 'still includes duo_remote_flows_enabled even when other features are disabled' do
+        result = helper.project_issues_list_data(project, current_user)
+
+        expect(result).to include(:duo_remote_flows_enabled)
+        expect(result[:duo_remote_flows_enabled]).to eq('false')
       end
     end
   end
@@ -222,6 +236,12 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         }
 
         expect(helper.group_issues_list_data(group, current_user)).to include(expected)
+      end
+
+      it 'does not include duo_remote_flows_enabled for groups' do
+        result = helper.group_issues_list_data(group, current_user)
+
+        expect(result).not_to include(:duo_remote_flows_enabled)
       end
     end
 
@@ -295,6 +315,12 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
 
         expect(helper.dashboard_issues_list_data(current_user)).to include(expected)
       end
+
+      it 'does not include duo_remote_flows_enabled for dashboard' do
+        result = helper.dashboard_issues_list_data(current_user)
+
+        expect(result).not_to include(:duo_remote_flows_enabled)
+      end
     end
 
     context 'when features are disabled' do
@@ -320,6 +346,40 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         }
 
         expect(helper.dashboard_issues_list_data(current_user)).to include(expected)
+      end
+    end
+  end
+
+  describe '#duo_remote_flows_enabled' do
+    context 'when resource is not a Project' do
+      it 'returns false for non-project resources' do
+        expect(helper.send(:duo_remote_flows_enabled, group)).to be(false)
+      end
+
+      it 'returns false for nil resource' do
+        expect(helper.send(:duo_remote_flows_enabled, nil)).to be(false)
+      end
+    end
+
+    context 'when resource is a Project' do
+      it 'returns false when project does not respond to duo_remote_flows_enabled' do
+        allow(project).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(false)
+
+        expect(helper.send(:duo_remote_flows_enabled, project)).to be_falsy
+      end
+
+      it 'returns false when project has duo_remote_flows_enabled disabled' do
+        allow(project).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(true)
+        allow(project).to receive(:duo_remote_flows_enabled).and_return(false)
+
+        expect(helper.send(:duo_remote_flows_enabled, project)).to be_falsy
+      end
+
+      it 'returns true when project has duo_remote_flows_enabled enabled' do
+        allow(project).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(true)
+        allow(project).to receive(:duo_remote_flows_enabled).and_return(true)
+
+        expect(helper.send(:duo_remote_flows_enabled, project)).to be_truthy
       end
     end
   end

@@ -50,6 +50,8 @@ module EE
     override :project_issues_list_data
     def project_issues_list_data(project, current_user)
       super.tap do |data|
+        data[:duo_remote_flows_enabled] = duo_remote_flows_enabled(project).to_s
+
         if project.feature_available?(:epics) && project.group
           data[:group_path] = project.group.full_path
         end
@@ -80,5 +82,13 @@ module EE
         has_status_feature: License.feature_available?(:work_item_status).to_s
       )
     end
+  end
+
+  private
+
+  def duo_remote_flows_enabled(resource)
+    return false unless resource.is_a?(Project)
+
+    resource.duo_remote_flows_enabled
   end
 end

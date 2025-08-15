@@ -45,6 +45,7 @@ describe('EE WorkItemDetail component', () => {
     workItemIid = '1',
     handler = successHandler,
     glFeatures = {},
+    provide = {},
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemDetail, {
       apolloProvider: createMockApollo([
@@ -62,11 +63,13 @@ describe('EE WorkItemDetail component', () => {
           workItemsAlpha: true,
           ...glFeatures,
         },
+        duoRemoteFlowsEnabled: true,
         hasSubepicsFeature: true,
         hasLinkedItemsEpicsFeature: true,
         fullPath: 'group/project',
         groupPath: 'group',
         reportAbusePath: '/report/abuse/path',
+        ...provide,
       },
       mocks: {
         $router: true,
@@ -100,39 +103,58 @@ describe('EE WorkItemDetail component', () => {
   });
 
   describe('Duo Workflow Action', () => {
-    beforeEach(async () => {
-      createComponent({ glFeatures: { duoWorkflowInCi: true } });
-      await waitForPromises();
-    });
+    describe('when duoRemoteFlowsEnabled  is false', () => {
+      beforeEach(async () => {
+        createComponent({
+          glFeatures: { duoWorkflowInCi: true },
+          provide: { duoRemoteFlowsEnabled: false },
+        });
+        await waitForPromises();
+      });
 
-    it('shows DuoWorkflowAction component', () => {
-      expect(findDuoWorkflowAction().exists()).toBe(true);
-    });
-
-    it('passes correct props to DuoWorkflowAction', () => {
-      const duoWorkflowAction = findDuoWorkflowAction();
-      const { workItem } = workItemByIidQueryResponse.data.workspace;
-
-      expect(duoWorkflowAction.props()).toMatchObject({
-        projectId: 123,
-        title: 'Generate MR with Duo',
-        hoverMessage: 'Generate merge request with Duo',
-        goal: workItem.webUrl,
-        workflowDefinition: 'issue_to_merge_request',
-        agentPrivileges: [1, 2, 3, 4, 5],
-        duoWorkflowInvokePath: '/api/v4/ai/duo_workflows/workflows',
-        size: 'medium',
+      it('does not show the DuoWorkflowAction component', () => {
+        expect(findDuoWorkflowAction().exists()).toBe(false);
       });
     });
 
-    it('calls getIdFromGraphQLId with the project ID', () => {
-      expect(getIdFromGraphQLId).toHaveBeenCalledWith(
-        workItemByIidQueryResponse.data.workspace.workItem.project.id,
-      );
-    });
+    describe('when duoRemoteFlowsEnabled is true', () => {
+      beforeEach(async () => {
+        createComponent({
+          glFeatures: { duoWorkflowInCi: true },
+          provide: { duoRemoteFlowsEnabled: true },
+        });
+        await waitForPromises();
+      });
 
-    it('calls buildApiUrl with the correct path', () => {
-      expect(buildApiUrl).toHaveBeenCalledWith('/api/:version/ai/duo_workflows/workflows');
+      it('shows DuoWorkflowAction component', () => {
+        expect(findDuoWorkflowAction().exists()).toBe(true);
+      });
+
+      it('passes correct props to DuoWorkflowAction', () => {
+        const duoWorkflowAction = findDuoWorkflowAction();
+        const { workItem } = workItemByIidQueryResponse.data.workspace;
+
+        expect(duoWorkflowAction.props()).toMatchObject({
+          projectId: 123,
+          title: 'Generate MR with Duo',
+          hoverMessage: 'Generate merge request with Duo',
+          goal: workItem.webUrl,
+          workflowDefinition: 'issue_to_merge_request',
+          agentPrivileges: [1, 2, 3, 4, 5],
+          duoWorkflowInvokePath: '/api/v4/ai/duo_workflows/workflows',
+          size: 'medium',
+        });
+      });
+
+      it('calls getIdFromGraphQLId with the project ID', () => {
+        expect(getIdFromGraphQLId).toHaveBeenCalledWith(
+          workItemByIidQueryResponse.data.workspace.workItem.project.id,
+        );
+      });
+
+      it('calls buildApiUrl with the correct path', () => {
+        expect(buildApiUrl).toHaveBeenCalledWith('/api/:version/ai/duo_workflows/workflows');
+      });
     });
 
     describe('when duoWorkflowInCi feature flag is disabled', () => {
