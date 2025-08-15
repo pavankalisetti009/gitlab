@@ -251,6 +251,14 @@ describe('SecretsManagerPermissionsModal', () => {
       expect(findModal().props('actionPrimary').attributes.disabled).toBe(false);
     });
 
+    it('emits the refetch event', async () => {
+      expect(wrapper.emitted('refetch')).toBeUndefined();
+
+      await submitPermission();
+
+      expect(wrapper.emitted('refetch')).toHaveLength(1);
+    });
+
     it('hides modal and shows toast message on successful submission', async () => {
       expect(mockCreatePermission).toHaveBeenCalledTimes(0);
 
@@ -290,7 +298,7 @@ describe('SecretsManagerPermissionsModal', () => {
       await submitPermission();
 
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Something went wrong on our end. Please try again.',
+        message: 'Failed to create Secrets manager permission. Please try again.',
         captureError: true,
         error,
       });

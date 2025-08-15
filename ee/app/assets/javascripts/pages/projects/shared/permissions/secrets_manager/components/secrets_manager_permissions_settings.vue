@@ -1,12 +1,14 @@
 <script>
-import { GlCollapsibleListbox, GlTabs } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { GlCollapsibleListbox, GlLoadingIcon, GlTabs } from '@gitlab/ui';
+import { __, s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import {
   PERMISSION_CATEGORY_GROUP,
   PERMISSION_CATEGORY_ROLE,
   PERMISSION_CATEGORY_USER,
 } from '../constants';
+import secretsPermissionsQuery from '../graphql/secrets_permission.query.graphql';
 import PermissionsModal from './secrets_manager_permissions_modal.vue';
 import PermissionsTable from './secrets_manager_permissions_table.vue';
 
@@ -15,10 +17,12 @@ export default {
   components: {
     CrudComponent,
     GlCollapsibleListbox,
+    GlLoadingIcon,
     GlTabs,
     PermissionsModal,
     PermissionsTable,
   },
+  inject: ['fullPath'],
   props: {
     canManageSecretsManager: {
       type: Boolean,
@@ -27,11 +31,62 @@ export default {
   },
   data() {
     return {
+      permissions: [],
       selectedPermissionCategory: null,
-      secretsPermissions: [],
     };
   },
+  apollo: {
+    permissions: {
+      query: secretsPermissionsQuery,
+      variables() {
+        return {
+          projectPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.secretPermissions.edges?.map((edge) => edge.node) || [];
+      },
+      error(error) {
+        createAlert({
+          message: s__(
+            'Secrets|Failed to fetch secrets manager permissions. Please try again later.',
+          ),
+          captureError: true,
+          error,
+        });
+      },
+    },
+  },
+  computed: {
+    isLoading() {
+      return this.$apollo.queries.permissions.loading;
+    },
+    groupPermissions() {
+      return (
+        this.permissions.filter(
+          (permission) => permission.principal.type === PERMISSION_CATEGORY_GROUP,
+        ) || []
+      );
+    },
+    rolePermissions() {
+      return (
+        this.permissions.filter(
+          (permission) => permission.principal.type === PERMISSION_CATEGORY_ROLE,
+        ) || []
+      );
+    },
+    userPermissions() {
+      return (
+        this.permissions.filter(
+          (permission) => permission.principal.type === PERMISSION_CATEGORY_USER,
+        ) || []
+      );
+    },
+  },
   methods: {
+    refetchPermissions() {
+      this.$apollo.queries.permissions.refetch();
+    },
     resetSelectedPermissionCategory() {
       this.selectedPermissionCategory = null;
     },
@@ -61,8 +116,9 @@ export default {
     <permissions-modal
       :permission-category="selectedPermissionCategory"
       @hide="resetSelectedPermissionCategory"
+      @refetch="refetchPermissions"
     />
-    <crud-component :title="s__('Secrets|Secret manager user permissions')" class="gl-mt-5">
+    <crud-component :title="s__('Secrets|Secrets manager user permissions')" class="gl-mt-5">
       <template #actions>
         <gl-collapsible-listbox
           v-if="canManageSecretsManager"
@@ -73,17 +129,18 @@ export default {
         />
       </template>
       <template #default>
-        <gl-tabs>
+        <gl-loading-icon v-if="isLoading" />
+        <gl-tabs v-else>
           <permissions-table
-            :items="secretsPermissions"
+            :items="userPermissions"
             :permission-category="$options.PERMISSION_CATEGORY_USER"
           />
           <permissions-table
-            :items="secretsPermissions"
+            :items="groupPermissions"
             :permission-category="$options.PERMISSION_CATEGORY_GROUP"
           />
           <permissions-table
-            :items="secretsPermissions"
+            :items="rolePermissions"
             :permission-category="$options.PERMISSION_CATEGORY_ROLE"
           />
         </gl-tabs>

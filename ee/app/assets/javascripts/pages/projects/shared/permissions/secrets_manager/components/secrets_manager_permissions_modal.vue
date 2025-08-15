@@ -168,10 +168,11 @@ export default {
           return;
         }
 
+        this.$emit('refetch');
         this.$toast.show(s__('Secrets|Secret Manager permissions were successfully updated.'));
       } catch (e) {
         createAlert({
-          message: __('Something went wrong on our end. Please try again.'),
+          message: s__('Secrets|Failed to create Secrets manager permission. Please try again.'),
           captureError: true,
           error: e,
         });

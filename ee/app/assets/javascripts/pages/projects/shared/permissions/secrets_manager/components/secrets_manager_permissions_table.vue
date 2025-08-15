@@ -1,6 +1,8 @@
 <script>
-import { GlTab, GlTable } from '@gitlab/ui';
+import { GlAvatarLabeled, GlTab, GlTableLite } from '@gitlab/ui';
+import { upperFirst } from 'lodash';
 import { __ } from '~/locale';
+import { ACCESS_LEVELS_INTEGER_TO_STRING } from '~/access_level/constants';
 import {
   PERMISSION_CATEGORY_GROUP,
   PERMISSION_CATEGORY_ROLE,
@@ -10,8 +12,9 @@ import {
 export default {
   name: 'SecretsManagerPermissionsTable',
   components: {
+    GlAvatarLabeled,
     GlTab,
-    GlTable,
+    GlTableLite,
   },
   props: {
     items: {
@@ -27,47 +30,61 @@ export default {
     return {};
   },
   computed: {
+    isCategoryGroup() {
+      return this.permissionCategory === PERMISSION_CATEGORY_GROUP;
+    },
+    isCategoryRole() {
+      return this.permissionCategory === PERMISSION_CATEGORY_ROLE;
+    },
+    isCategoryUser() {
+      return this.permissionCategory === PERMISSION_CATEGORY_USER;
+    },
     tableFields() {
       return [
-        ...(this.permissionCategory === PERMISSION_CATEGORY_USER
+        ...(this.isCategoryUser
           ? [
               {
                 key: 'user',
                 label: __('User'),
               },
               {
-                key: 'user-role',
+                key: 'role',
                 label: __('Role'),
               },
             ]
           : []),
-        ...(this.permissionCategory === PERMISSION_CATEGORY_GROUP
+        ...(this.isCategoryGroup
           ? [
               {
                 key: 'group',
                 label: __('Group'),
+                thClass: 'gl-w-1/5',
               },
             ]
           : []),
-        ...(this.permissionCategory === PERMISSION_CATEGORY_ROLE
+        ...(this.isCategoryRole
           ? [
               {
                 key: 'role',
                 label: __('Role'),
+                thClass: 'gl-w-1/5',
               },
             ]
           : []),
         {
           key: 'scope',
           label: __('Scope'),
+          thClass: 'gl-w-1/5',
         },
-        {
-          key: 'expiration',
-          label: __('Expiration'),
-        },
+        // TODO: Add expiration column once available
+        // See https://gitlab.com/gitlab-org/gitlab/-/issues/560580
         {
           key: 'access-granted',
           label: __('Access granted'),
+        },
+        {
+          key: 'actions',
+          label: __('Actions'),
         },
       ];
     },
@@ -83,11 +100,72 @@ export default {
       return __('Roles');
     },
   },
+  methods: {
+    formatPermissions(permissions) {
+      const scopes = JSON.parse(permissions).map((p) => upperFirst(p));
+      return scopes.join(', ');
+    },
+    formatRoleName(id) {
+      const role = ACCESS_LEVELS_INTEGER_TO_STRING[id] || '';
+      return upperFirst(role.toLowerCase());
+    },
+  },
 };
 </script>
 
 <template>
   <gl-tab :title="tableTitle">
-    <gl-table :items="items" :fields="tableFields" />
+    <gl-table-lite :items="items" :fields="tableFields">
+      <template
+        v-if="isCategoryUser"
+        #cell(user)="{
+          item: {
+            principal: { user },
+          },
+        }"
+      >
+        <gl-avatar-labeled
+          :size="32"
+          :src="user.avatarUrl"
+          :label="user.username"
+          :label-link="user.webUrl"
+          :sub-label="user.name"
+        />
+      </template>
+      <template
+        v-if="isCategoryGroup"
+        #cell(group)="{
+          item: {
+            principal: { group },
+          },
+        }"
+      >
+        <gl-avatar-labeled
+          :src="group.avatarUrl"
+          :size="32"
+          :entity-name="group.name"
+          :label="group.name"
+          :label-link="group.webUrl"
+        />
+      </template>
+      <template v-if="!isCategoryGroup" #cell(role)="{ item: { principal } }">
+        <span v-if="isCategoryUser">{{ formatRoleName(principal.userRoleId) }}</span>
+        <span v-if="isCategoryRole">{{ formatRoleName(principal.id) }}</span>
+      </template>
+      <template #cell(scope)="{ item: { permissions } }">
+        {{ formatPermissions(permissions) }}
+      </template>
+      <template #cell(access-granted)="{ item: { grantedBy } }">
+        <gl-avatar-labeled
+          v-if="Boolean(grantedBy)"
+          :size="32"
+          :src="grantedBy.avatarUrl"
+          :label="grantedBy.username"
+          :label-link="grantedBy.webUrl"
+          :sub-label="grantedBy.name"
+        />
+        <span v-else>{{ __('N/A') }}</span>
+      </template>
+    </gl-table-lite>
   </gl-tab>
 </template>

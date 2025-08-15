@@ -22,8 +22,8 @@ export default {
     PermissionsSettings,
   },
   provide() {
-    const { fullPath } = this;
-    return { fullPath };
+    const { fullPath, projectId } = this;
+    return { fullPath, projectId };
   },
   props: {
     canManageSecretsManager: {
@@ -32,6 +32,10 @@ export default {
     },
     fullPath: {
       type: String,
+      required: true,
+    },
+    projectId: {
+      type: Number,
       required: true,
     },
   },
