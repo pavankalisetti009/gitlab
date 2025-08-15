@@ -6,7 +6,8 @@ module API
       module Packages
         module Maven
           class Upstream < Grape::Entity
-            expose :id, :name, :description, :group_id, :url, :username, :cache_validity_hours, :created_at, :updated_at
+            expose :id, :name, :description, :group_id, :url, :username, :cache_validity_hours,
+              :metadata_cache_validity_hours, :created_at, :updated_at
             expose :registry_upstream,
               if: ->(_upstream, options) { options[:with_registry_upstream] },
               using: RegistryUpstream

@@ -91,9 +91,16 @@ module VirtualRegistries
 
           def stale?
             return true unless upstream
-            return false if upstream.cache_validity_hours == 0
 
-            (upstream_checked_at + upstream.cache_validity_hours.hours).past?
+            validity_hours = if relative_path.end_with?('maven-metadata.xml')
+                               upstream.metadata_cache_validity_hours
+                             else
+                               upstream.cache_validity_hours
+                             end
+
+            return false if validity_hours == 0
+
+            (upstream_checked_at + validity_hours.hours).past?
           end
 
           def mark_as_pending_destruction

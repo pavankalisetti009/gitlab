@@ -230,34 +230,32 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
       build(:virtual_registries_packages_maven_cache_entry, upstream_checked_at: 10.hours.ago)
     end
 
-    let(:threshold) do
-      cache_entry.upstream_checked_at + cache_entry.upstream.cache_validity_hours.hours
-    end
-
     subject { cache_entry.stale? }
 
-    context 'when before the threshold' do
-      before do
-        allow(Time.zone).to receive(:now).and_return(threshold - 1.hour)
+    shared_examples 'threshold behavior' do
+      context 'when before the threshold' do
+        before do
+          travel_to(threshold - 1.hour)
+        end
+
+        it { is_expected.to be(false) }
       end
 
-      it { is_expected.to be(false) }
-    end
+      context 'when on the threshold' do
+        before do
+          travel_to(threshold)
+        end
 
-    context 'when on the threshold' do
-      before do
-        allow(Time.zone).to receive(:now).and_return(threshold)
+        it { is_expected.to be(false) }
       end
 
-      it { is_expected.to be(false) }
-    end
+      context 'when after the threshold' do
+        before do
+          travel_to(threshold + 1.hour)
+        end
 
-    context 'when after the threshold' do
-      before do
-        allow(Time.zone).to receive(:now).and_return(threshold + 1.hour)
+        it { is_expected.to be(true) }
       end
-
-      it { is_expected.to be(true) }
     end
 
     context 'with no upstream' do
@@ -268,12 +266,29 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
       it { is_expected.to be(true) }
     end
 
-    context 'with 0 cache validity hours' do
+    context 'for regular artifacts' do
+      let(:threshold) { cache_entry.upstream_checked_at + cache_entry.upstream.cache_validity_hours.hours }
+
+      include_examples 'threshold behavior'
+
+      context 'with 0 cache validity hours' do
+        before do
+          cache_entry.upstream.cache_validity_hours = 0
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'for metadata file' do
+      let(:threshold) { cache_entry.upstream_checked_at + cache_entry.upstream.metadata_cache_validity_hours.hours }
+
       before do
+        cache_entry.relative_path = 'com/company/maven-metadata.xml'
         cache_entry.upstream.cache_validity_hours = 0
       end
 
-      it { is_expected.to be(false) }
+      include_examples 'threshold behavior'
     end
   end
 

@@ -10,7 +10,8 @@ RSpec.describe API::Entities::VirtualRegistries::Packages::Maven::Upstream, feat
 
   it 'exposes the correct attributes' do
     is_expected.to include(
-      :id, :name, :description, :group_id, :url, :username, :cache_validity_hours, :created_at, :updated_at
+      :id, :name, :description, :group_id, :url, :username, :cache_validity_hours,
+      :metadata_cache_validity_hours, :created_at, :updated_at
     ).and not_include(:registry_upstream, :registry_upstreams)
   end
 
