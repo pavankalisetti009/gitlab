@@ -9,7 +9,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
   let(:pipeline) { build(:ci_pipeline, project: project) }
   let(:content) { nil }
   let(:source) { :push }
-  let(:command) { Gitlab::Ci::Pipeline::Chain::Command.new(project: project, content: content, source: source) }
+  let(:command) { Gitlab::Ci::Pipeline::Chain::Command.new(project: project, origin_ref: project.default_branch_or_main, content: content, source: source) }
   let(:content_result) do
     <<~EOY
     ---
@@ -66,7 +66,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
         it_behaves_like 'does include compliance pipeline configuration content'
 
         context 'when pipeline is downstream of a bridge' do
-          let(:command) { Gitlab::Ci::Pipeline::Chain::Command.new(project: project, content: content, source: source, bridge: create(:ci_bridge)) }
+          let(:command) { Gitlab::Ci::Pipeline::Chain::Command.new(project: project, origin_ref: project.default_branch_or_main, content: content, source: source, bridge: create(:ci_bridge)) }
 
           it_behaves_like 'does include compliance pipeline configuration content'
 

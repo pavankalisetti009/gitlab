@@ -12,7 +12,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::EvaluateWorkflowRules, feature_categ
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project,
-      current_user: user
+      current_user: user,
+      origin_ref: project.default_branch_or_main
     )
   end
 

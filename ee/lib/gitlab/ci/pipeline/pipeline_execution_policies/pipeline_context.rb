@@ -17,10 +17,21 @@ module Gitlab
 
           attr_reader :policy_pipelines, :override_policy_stages, :injected_policy_stages
 
-          def initialize(context:, project:, command: nil)
+          # rubocop:disable Metrics/ParameterLists -- Explicit parameters needed to replace command object delegation
+          def initialize(
+            context:, project:, source:, current_user:, ref:, sha_context:,
+            variables_attributes:, chat_data:, merge_request:, schedule:)
+            # rubocop:enable Metrics/ParameterLists
             @context = context
             @project = project
-            @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
+            @source = source
+            @current_user = current_user
+            @ref = ref
+            @sha_context = sha_context
+            @variables_attributes = variables_attributes
+            @chat_data = chat_data
+            @merge_request = merge_request
+            @schedule = schedule
             @policy_pipelines = []
             @override_policy_stages = []
             @injected_policy_stages = []
@@ -66,13 +77,13 @@ module Gitlab
           def scheduled_execution_policy_pipeline?
             return false if Feature.disabled?(:scheduled_pipeline_execution_policies, project)
 
-            command&.source == ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE
+            source == ::Security::PipelineExecutionPolicies::RunScheduleWorker::PIPELINE_SOURCE
           end
 
           def skip_ci_allowed?
             return true unless has_execution_policy_pipelines?
 
-            policy_pipelines.all? { |policy_pipeline| policy_pipeline.skip_ci_allowed?(command.current_user&.id) }
+            policy_pipelines.all? { |policy_pipeline| policy_pipeline.skip_ci_allowed?(current_user&.id) }
           end
 
           def has_overriding_execution_policy_pipelines?
@@ -151,11 +162,12 @@ module Gitlab
 
           private
 
-          attr_reader :project, :command, :current_policy
+          attr_reader :project, :current_policy, :source, :current_user, :ref, :sha_context,
+            :variables_attributes, :chat_data, :merge_request, :schedule
 
           def policies
-            return [] if command&.source.blank?
-            return [] if Enums::Ci::Pipeline.dangling_sources.key?(command.source&.to_sym)
+            return [] if source.blank?
+            return [] if Enums::Ci::Pipeline.dangling_sources.key?(source.to_sym)
 
             ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies.new(project).configs
           end
@@ -165,21 +177,21 @@ module Gitlab
             measure(HISTOGRAMS.fetch(:single_pipeline)) do
               with_policy_context(policy) do
                 ::Ci::CreatePipelineService
-                  .new(project, command.current_user,
-                    ref: command.ref,
-                    before: command.before_sha,
-                    after: command.after_sha,
-                    source_sha: command.source_sha,
-                    checkout_sha: command.checkout_sha,
-                    target_sha: command.target_sha,
+                  .new(project, current_user,
+                    ref: ref,
+                    before: sha_context.before,
+                    after: sha_context.after,
+                    source_sha: sha_context.source,
+                    checkout_sha: sha_context.checkout,
+                    target_sha: sha_context.target,
                     partition_id: partition_id,
-                    variables_attributes: command.variables_attributes,
-                    chat_data: command.chat_data)
-                  .execute(command.source,
+                    variables_attributes: variables_attributes,
+                    chat_data: chat_data)
+                  .execute(source,
                     content: policy.content,
                     pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
-                    merge_request: command.merge_request, # This is for supporting merge request pipelines,
-                    schedule: command.schedule,
+                    merge_request: merge_request, # This is for supporting merge request pipelines,
+                    schedule: schedule,
                     ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
                     # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
                   )

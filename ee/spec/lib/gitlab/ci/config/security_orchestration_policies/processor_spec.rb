@@ -8,14 +8,35 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
   let_it_be(:config) { { image: 'image:1.0.0' } }
 
   let(:ci_context) { Gitlab::Ci::Config::External::Context.new(project: project) }
+  let(:sha_context) do
+    Gitlab::Ci::Pipeline::ShaContext.new(
+      before: command.before_sha,
+      after: command.after_sha,
+      source: command.source_sha,
+      checkout: command.checkout_sha,
+      target: command.target_sha
+    )
+  end
+
   let(:pipeline_policy_context) do
-    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(project: project, command: command)
+    Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext.new(
+      project: project,
+      source: command.source,
+      current_user: command.current_user,
+      ref: command.ref,
+      sha_context: sha_context,
+      variables_attributes: command.variables_attributes,
+      chat_data: command.chat_data,
+      merge_request: command.merge_request,
+      schedule: command.schedule
+    )
   end
 
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project,
-      source: source)
+      source: source,
+      origin_ref: project.default_branch_or_main)
   end
 
   let(:ref) { 'refs/heads/master' }

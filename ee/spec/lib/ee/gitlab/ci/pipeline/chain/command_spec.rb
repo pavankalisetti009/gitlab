@@ -8,7 +8,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Command, feature_category: :continuo
   describe '#dry_run?' do
     subject { command.dry_run? }
 
-    let(:command) { described_class.new(dry_run: dry_run, pipeline_policy_context: pipeline_policy_context) }
+    let(:command) do
+      described_class.new(dry_run: dry_run, pipeline_policy_context: pipeline_policy_context,
+        origin_ref: project.default_branch_or_main)
+    end
+
     let(:dry_run) { false }
     let(:pipeline_policy_context) { nil }
 

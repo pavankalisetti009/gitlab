@@ -3,7 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature_category: :security_policy_management do
-  subject(:context) { described_class.new(project: project, command: command) }
+  let(:sha_context) do
+    Gitlab::Ci::Pipeline::ShaContext.new(
+      before: command.before_sha,
+      after: command.after_sha,
+      source: command.source_sha,
+      checkout: command.checkout_sha,
+      target: command.target_sha
+    )
+  end
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, developer_of: project) }
@@ -11,6 +19,20 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
   let(:command) do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project, source: pipeline.source, current_user: user, origin_ref: pipeline.ref
+    )
+  end
+
+  subject(:context) do
+    described_class.new(
+      project: project,
+      source: command.source,
+      current_user: command.current_user,
+      ref: command.ref,
+      sha_context: sha_context,
+      variables_attributes: command.variables_attributes,
+      chat_data: command.chat_data,
+      merge_request: command.merge_request,
+      schedule: command.schedule
     )
   end
 
@@ -27,7 +49,18 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
   describe '#pipeline_execution_context' do
     it 'initializes it with correct attributes' do
       expect(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext)
-        .to receive(:new).with(context: context, project: project, command: command)
+        .to receive(:new).with(
+          context: context,
+          project: project,
+          source: command.source,
+          current_user: command.current_user,
+          ref: command.ref,
+          sha_context: sha_context,
+          variables_attributes: command.variables_attributes,
+          chat_data: command.chat_data,
+          merge_request: command.merge_request,
+          schedule: command.schedule
+        )
 
       context.pipeline_execution_context
     end
