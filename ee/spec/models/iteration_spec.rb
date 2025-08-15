@@ -48,12 +48,6 @@ RSpec.describe Iteration, feature_category: :team_planning do
     end
   end
 
-  describe '#merge_requests_enabled?' do
-    it 'returns false' do
-      expect(build(:iteration).merge_requests_enabled?).to eq false
-    end
-  end
-
   describe '.reference_pattern' do
     let_it_be(:group) { create(:group) }
     let_it_be(:iteration_cadence) { create(:iterations_cadence, group: group) }

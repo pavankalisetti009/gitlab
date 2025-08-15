@@ -15,7 +15,6 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
   let_it_be(:past_iteration, refind: true) { create(:closed_iteration, iterations_cadence: iteration_cadence1, group: group, start_date: start_date, due_date: start_date + 13.days) }
   let_it_be(:past_board, refind: true) { create(:board, iteration: past_iteration, group: group) }
   let_it_be(:past_issue, refind: true) { create(:issue, project: project, iteration: past_iteration) }
-  let_it_be(:past_merge_request, refind: true) { create(:merge_request, source_project: project, iteration: past_iteration) }
 
   let_it_be(:current_iteration, refind: true) { create(:current_iteration, iterations_cadence: iteration_cadence1, group: group, start_date: start_date + 14.days, due_date: start_date + 27.days) }
 
@@ -24,12 +23,10 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
   let_it_be(:last_future_iteration, refind: true) { create(:upcoming_iteration, iterations_cadence: iteration_cadence1, group: group, start_date: start_date + 42.days, due_date: start_date + 55.days) }
   let_it_be(:last_future_board, refind: true) { create(:board, iteration: last_future_iteration, group: group) }
   let_it_be(:last_future_issue, refind: true) { create(:issue, project: project, iteration: last_future_iteration) }
-  let_it_be(:last_future_merge_request, refind: true) { create(:merge_request, source_branch: 'another-feature', source_project: project, iteration: last_future_iteration) }
 
   let_it_be(:other_cadence_iteration, refind: true) { create(:current_iteration, iterations_cadence: iteration_cadence2, group: group, start_date: start_date + 14.days, due_date: start_date + 27.days) }
   let_it_be(:other_cadence_board, refind: true) { create(:board, iteration: other_cadence_iteration, group: group) }
   let_it_be(:other_cadence_issue, refind: true) { create(:issue, project: project, iteration: other_cadence_iteration) }
-  let_it_be(:other_cadence_merge_request, refind: true) { create(:merge_request, source_branch: 'another-feature2', source_project: project, iteration: other_cadence_iteration) }
 
   let(:iteration_to_delete) { past_iteration }
 
@@ -54,7 +51,6 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
 
         associated_board.reload
         associated_issue.reload
-        associated_mr.reload
       end.to change(Iteration, :count).by(-1).and(
         change(List, :count).by(-1)
       ).and(
@@ -65,8 +61,6 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
         change(associated_board, :iteration_id).from(iteration_to_delete.id).to(nil)
       ).and(
         change(associated_issue, :iteration).from(iteration_to_delete).to(nil)
-      ).and(
-        change(associated_mr, :iteration).from(iteration_to_delete).to(nil)
       )
     end
 
@@ -97,7 +91,6 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
 
         context 'when deleting a past iteration' do
           let(:iteration_to_delete) { past_iteration }
-          let(:associated_mr) { past_merge_request }
           let(:associated_issue) { past_issue }
           let(:associated_board) { past_board }
 
@@ -118,7 +111,6 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
 
         context 'when deleting the last upcoming iteration' do
           let(:iteration_to_delete) { last_future_iteration }
-          let(:associated_mr) { last_future_merge_request }
           let(:associated_issue) { last_future_issue }
           let(:associated_board) { last_future_board }
 
@@ -127,7 +119,6 @@ RSpec.describe Iterations::DeleteService, feature_category: :team_planning do
 
         context 'when deleting the current iteration in another cadence' do
           let(:iteration_to_delete) { other_cadence_iteration }
-          let(:associated_mr) { other_cadence_merge_request }
           let(:associated_issue) { other_cadence_issue }
           let(:associated_board) { other_cadence_board }
 

@@ -15,7 +15,6 @@ RSpec.describe Iterations::Cadences::DestroyService, feature_category: :team_pla
   let_it_be(:board2, refind: true) { create(:board, iteration: iteration, group: group) }
   let_it_be(:iteration_list, refind: true) { create(:iteration_list, board: board, iteration: iteration) }
   let_it_be(:issue) { create(:issue, project: project, iteration: iteration) }
-  let_it_be(:merge_request) { create(:merge_request, source_project: project, iteration: iteration) }
 
   RSpec.shared_examples 'cadence destroy fails with message' do |message:|
     it { is_expected.to be_error }
@@ -44,7 +43,6 @@ RSpec.describe Iterations::Cadences::DestroyService, feature_category: :team_pla
             board.reload
             board2.reload
             issue.reload
-            merge_request.reload
           end.to change(Iterations::Cadence, :count).by(-1).and(
             change(List, :count).by(-1)
           ).and(
@@ -59,8 +57,6 @@ RSpec.describe Iterations::Cadences::DestroyService, feature_category: :team_pla
             change(board, :iteration_cadence_id).from(iteration_cadence.id).to(nil)
           ).and(
             change(issue, :iteration).from(iteration).to(nil)
-          ).and(
-            change(merge_request, :iteration).from(iteration).to(nil)
           )
         end
 

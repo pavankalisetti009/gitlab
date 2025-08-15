@@ -37,7 +37,6 @@ class Iteration < ApplicationRecord
 
   has_many :issues, foreign_key: 'sprint_id'
   has_many :labels, -> { distinct.reorder('labels.title') }, through: :issues
-  has_many :merge_requests, foreign_key: 'sprint_id'
 
   has_internal_id :iid, scope: :group
 
@@ -249,10 +248,6 @@ class Iteration < ApplicationRecord
     format_reference = timebox_format_reference(format)
 
     "#{self.class.reference_prefix}#{format_reference}"
-  end
-
-  def merge_requests_enabled?
-    false
   end
 
   private

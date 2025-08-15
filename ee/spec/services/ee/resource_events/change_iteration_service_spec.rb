@@ -11,10 +11,8 @@ RSpec.describe ResourceEvents::ChangeIterationService, feature_category: :team_p
   let(:add_timebox_args) { { old_iteration: nil } }
   let(:remove_timebox_args) { { old_iteration: timebox } }
 
-  [:issue, :merge_request].each do |issuable|
-    it_behaves_like 'timebox(milestone or iteration) resource events creator', ResourceIterationEvent do
-      let_it_be(:resource) { create(issuable) } # rubocop:disable Rails/SaveBang
-    end
+  it_behaves_like 'timebox(milestone or iteration) resource events creator', ResourceIterationEvent do
+    let_it_be(:resource) { create(:issue) }
   end
 
   describe 'events tracking' do
