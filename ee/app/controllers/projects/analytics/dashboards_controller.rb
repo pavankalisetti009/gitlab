@@ -15,7 +15,7 @@ module Projects
         push_frontend_feature_flag(:dora_metrics_dashboard, project.group)
 
         [:read_dora4_analytics, :read_cycle_analytics, :read_security_resource].each do |ability|
-          push_frontend_ability(ability: ability, resource: project.group, user: current_user)
+          push_frontend_ability(ability: ability, resource: project, user: current_user)
         end
       end
 
