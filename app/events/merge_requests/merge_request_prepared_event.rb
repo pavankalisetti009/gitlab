@@ -5,7 +5,7 @@ module MergeRequests
     def schema
       {
         'type' => 'object',
-        'required' => ['project_id', 'user_id', 'oldrev', 'newrev', 'ref'],
+        'required' => %w[project_id user_id oldrev newrev ref],
         'properties' => {
           'project_id' => { 'type' => 'integer' },
           'user_id' => { 'type' => 'integer' },
