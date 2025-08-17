@@ -72772,6 +72772,9 @@ msgstr ""
 msgid "WorkItem|Create lifecycle"
 msgstr ""
 
+msgid "WorkItem|Create new work item by email"
+msgstr ""
+
 msgid "WorkItem|Created %{timeago}"
 msgstr ""
 
@@ -72841,10 +72844,19 @@ msgstr ""
 msgid "WorkItem|Edit work item"
 msgstr ""
 
+msgid "WorkItem|Email a new work item to this project"
+msgstr ""
+
 msgid "WorkItem|Email participants"
 msgstr ""
 
 msgid "WorkItem|Emoji reactions"
+msgstr ""
+
+msgid "WorkItem|Enter the work item description"
+msgstr ""
+
+msgid "WorkItem|Enter the work item title"
 msgstr ""
 
 msgid "WorkItem|Epic"
@@ -73280,6 +73292,9 @@ msgstr ""
 msgid "WorkItem|Select which type you would like to change this item to."
 msgstr ""
 
+msgid "WorkItem|Send email"
+msgstr ""
+
 msgid "WorkItem|Show all ancestors"
 msgstr ""
 
@@ -73454,6 +73469,12 @@ msgstr ""
 msgid "WorkItem|The current task"
 msgstr ""
 
+msgid "WorkItem|The subject is used as the title of the new work item, and the message is the description. %{quickActionsLinkStart}Quick actions%{quickActionsLinkEnd} and styling with %{markdownLinkStart}Markdown%{markdownLinkEnd} are supported."
+msgstr ""
+
+msgid "WorkItem|There was an error when resetting email token."
+msgstr ""
+
 msgid "WorkItem|These existing items have a similar title and may represent potential duplicates."
 msgstr ""
 
@@ -73473,6 +73494,9 @@ msgid "WorkItem|This action cannot be undone."
 msgstr ""
 
 msgid "WorkItem|This group has no active custom fields. Create a custom field to track data that matters to your team."
+msgstr ""
+
+msgid "WorkItem|This is a %{emailsHelpLinkStart}private email address%{emailsHelpLinkEnd} generated just for you. Anyone who has it can create work items as if they were you. If that happens, %{resetLinkStart}reset this token%{resetLinkEnd}."
 msgstr ""
 
 msgid "WorkItem|This item is hidden because its author has been banned."
@@ -73572,6 +73596,9 @@ msgid "WorkItem|Work items"
 msgstr ""
 
 msgid "WorkItem|Yes, close %{workItemType}"
+msgstr ""
+
+msgid "WorkItem|You can create a new work item inside this project by sending an email to the following email address:"
 msgstr ""
 
 msgid "WorkItem|You cannot add another child %{workItemType}. You’ve reached the maximum number of nested levels."

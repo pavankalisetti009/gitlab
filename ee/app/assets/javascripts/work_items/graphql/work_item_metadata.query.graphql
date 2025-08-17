@@ -27,6 +27,15 @@ query workItemMetadataEE($fullPath: ID!) {
       signIn
       issuesSettings @gl_introduced(version: "18.3.0-pre")
       userExportEmail
+      emailsHelpPagePath
+      markdownHelpPath
+      quickActionsHelpPath
+      ... on ProjectNamespaceLinks {
+        newWorkItemEmailAddress
+      }
+    }
+    userPermissions {
+      createWorkItem
     }
   }
 }
