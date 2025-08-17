@@ -1,0 +1,73 @@
+# frozen_string_literal: true
+
+module Ai
+  module Catalog
+    class WrappedAgentFlowBuilder
+      GENERATED_FLOW_VERSION = '1.0.0'
+
+      def initialize(agent, agent_version)
+        @agent = agent
+        @agent_version = agent_version
+        @flow = nil
+      end
+
+      def build
+        validate_inputs!
+        build_flow_from_agent
+        validate_flow
+        flow
+      end
+
+      private
+
+      attr_reader :agent, :agent_version, :flow
+
+      def validate_inputs!
+        raise ArgumentError, 'Agent is required' unless agent && agent.agent?
+        raise ArgumentError, 'Agent version is required' unless agent_version
+        raise ArgumentError, 'Agent version must belong to the agent' unless agent_version.item == agent
+      end
+
+      def build_flow_from_agent
+        @flow = build_flow_item
+        flow_version = build_flow_version
+        @flow.versions = [flow_version]
+        @flow.readonly!
+      end
+
+      def build_flow_item
+        ::Ai::Catalog::Item.flow.new(
+          name: "Generated Flow for #{agent.name}",
+          description: "Auto-generated flow from agent #{agent.name}",
+          organization: agent.organization
+        )
+      end
+
+      def build_flow_version
+        ::Ai::Catalog::ItemVersion.new(
+          item: flow,
+          definition: build_flow_definition,
+          schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
+          version: GENERATED_FLOW_VERSION
+        )
+      end
+
+      def build_flow_definition
+        {
+          triggers: [],
+          steps: [
+            {
+              agent_id: agent.id,
+              current_version_id: agent_version.id,
+              pinned_version_prefix: nil
+            }
+          ]
+        }
+      end
+
+      def validate_flow
+        raise ArgumentError, "Generated flow is invalid: #{flow.errors.full_messages.join(', ')}" unless flow.valid?
+      end
+    end
+  end
+end
