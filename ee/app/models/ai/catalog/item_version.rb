@@ -6,6 +6,7 @@ module Ai
       include SafelyChangeColumnDefault
 
       AGENT_SCHEMA_VERSION = 1
+      FLOW_SCHEMA_VERSION = 1
       DEFINITION_ACCESSOR_PREFIX = 'def_'
 
       VERSION_BUMP_MAJOR = :major

@@ -7,28 +7,30 @@ module Ai
         include Gitlab::Utils::StrongMemoize
         include ActiveModel::Model
 
-        def initialize(flow_id, pinned_version_prefix = nil)
-          @flow_id = flow_id
+        def initialize(flow, pinned_version_prefix = nil)
+          @flow = flow
           @pinned_version_prefix = pinned_version_prefix
         end
 
         def build
+          validate_inputs!
           build_flow_config
         end
 
         private
 
-        attr_reader :flow_id, :pinned_version_prefix
+        attr_reader :flow, :pinned_version_prefix
+
+        def validate_inputs!
+          raise ArgumentError, 'Flow is required' if flow.nil?
+          raise ArgumentError, 'Flow must be an Ai::Catalog::Item' unless flow.is_a?(::Ai::Catalog::Item)
+          raise ArgumentError, 'Flow must have item_type of flow' unless flow.flow?
+        end
 
         def pinned_to_specific_version?
           # if the flow is pinned to a specific version, we pin all agent versions too
           pinned_version_prefix.to_s.count('.') == 2
         end
-
-        def flow
-          Ai::Catalog::Item.find(flow_id)
-        end
-        strong_memoize_attr :flow
 
         def flow_definition
           flow.definition(pinned_version_prefix)

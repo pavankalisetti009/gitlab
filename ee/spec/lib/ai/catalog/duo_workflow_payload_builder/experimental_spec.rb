@@ -44,7 +44,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
     create(:ai_catalog_flow_version, item: flow_item, definition: flow_definition, version: '2.1.0')
   end
 
-  subject(:builder) { described_class.new(flow_item.id) }
+  subject(:builder) { described_class.new(flow_item) }
 
   describe 'inheritance' do
     it 'inherits from Base' do
@@ -61,42 +61,10 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
     end
   end
 
-  shared_examples 'builds valid flow configuration' do
-    let(:result) { builder.build }
-
-    it 'returns correct flow configuration structure' do
-      expect(result).to include(
-        'version' => 'experimental',
-        'environment' => 'remote',
-        'components' => be_an(Array),
-        'routers' => be_an(Array),
-        'flow' => be_a(Hash)
-      )
-    end
-
-    it 'builds components with correct structure' do
-      expect(result['components']).to all(include(
-        'name' => be_a(String),
-        'type' => 'AgentComponent',
-        'prompt_id' => 'workflow_catalog',
-        'prompt_version' => '^1.0.0',
-        'inputs' => be_an(Array),
-        'output' => 'context:agent.answer',
-        'toolset' => be_an(Array)
-      ))
-    end
-  end
-
-  shared_examples 'invalid flow configuration' do
-    it 'raises error during build' do
-      expect { builder.build }.to raise_error(StandardError)
-    end
-  end
-
   describe '#build' do
     context 'when flow has no versions' do
       let_it_be(:empty_flow) { create(:ai_catalog_flow, project: project) }
-      let_it_be(:builder) { described_class.new(empty_flow.id) }
+      let_it_be(:builder) { described_class.new(empty_flow) }
 
       it_behaves_like 'invalid flow configuration'
     end
@@ -109,12 +77,14 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           version: '2.1.0')
       end
 
-      let_it_be(:builder) { described_class.new(empty_steps_flow.id) }
+      let_it_be(:builder) { described_class.new(empty_steps_flow) }
 
       it_behaves_like 'invalid flow configuration'
     end
 
     context 'when flow have single agent' do
+      let_it_be_with_reload(:single_agent_flow) { create(:ai_catalog_flow, project: project) }
+
       let_it_be(:single_agent_flow_definition) do
         {
           'triggers' => [1],
@@ -124,13 +94,13 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
         }
       end
 
-      let_it_be(:single_agent_flow) { create(:ai_catalog_flow, project: project) }
       let_it_be(:single_agent_flow_version) do
         create(:ai_catalog_flow_version, item: single_agent_flow, definition: single_agent_flow_definition,
           version: '2.2.0')
       end
 
-      let(:builder) { described_class.new(single_agent_flow.id) }
+      let(:builder) { described_class.new(single_agent_flow) }
+      let(:result) { builder.build }
 
       include_examples 'builds valid flow configuration'
 
@@ -157,7 +127,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
 
         context 'when no version is pinned' do
           it 'selects the latest flow version' do
-            result = builder.build
+            result = described_class.new(single_agent_flow).build
 
             expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
           end
@@ -165,7 +135,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
 
         context 'when flow version prefix is pinned' do
           it 'selects the correct flow version' do
-            result = described_class.new(single_agent_flow.id, '2.3').build
+            result = described_class.new(single_agent_flow, '2.3').build
 
             expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
             expect(result['components'].first['toolset']).to contain_exactly('run_git_command')
@@ -174,7 +144,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
 
         context 'when flow version is fully pinned' do
           it 'selects the correct flow version and child versions' do
-            result = described_class.new(single_agent_flow.id, '2.3.0').build
+            result = described_class.new(single_agent_flow, '2.3.0').build
 
             expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
             expect(result['components'].first['toolset']).to contain_exactly(
