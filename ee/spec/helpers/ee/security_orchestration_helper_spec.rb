@@ -668,12 +668,12 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
   end
 
-  describe '#security_configurations_preventing_group_deletion' do
+  describe '#policy_configurations_within_group' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
     let(:feature_licensed) { true }
 
-    subject(:preventing_configurations) { helper.security_configurations_preventing_group_deletion(group) }
+    subject(:preventing_configurations) { helper.policy_configurations_within_group(group) }
 
     before do
       stub_licensed_features(security_orchestration_policies: feature_licensed)
@@ -700,6 +700,57 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
       it 'returns the preventing configurations' do
         expect(preventing_configurations).to contain_exactly(config)
+      end
+    end
+  end
+
+  describe '#security_configurations_preventing_group_deletion' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let(:feature_licensed) { true }
+
+    subject(:result) { helper.security_configurations_preventing_group_deletion(group) }
+
+    before do
+      stub_licensed_features(security_orchestration_policies: feature_licensed)
+      stub_const("#{described_class}::GROUP_DELETION_CONFIGURATIONS_LIMIT", 2)
+    end
+
+    context 'when security orchestration policies are not available' do
+      let(:feature_licensed) { false }
+
+      it 'returns empty configurations and no more records' do
+        expect(result[:limited_configurations]).to be_empty
+        expect(result[:has_more]).to be false
+      end
+    end
+
+    context 'when there are no preventing configurations' do
+      it 'returns empty configurations and no more records' do
+        expect(result[:limited_configurations]).to be_empty
+        expect(result[:has_more]).to be false
+      end
+    end
+
+    context 'when there are preventing configurations' do
+      let!(:config) do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+      end
+
+      it 'returns limited configurations and no more records' do
+        expect(result[:limited_configurations]).to contain_exactly(config)
+        expect(result[:has_more]).to be false
+      end
+
+      context 'when there are more than the limit configurations' do
+        before do
+          create_list(:security_orchestration_policy_configuration, 3, security_policy_management_project: project)
+        end
+
+        it 'limits configurations to the mocked limit and indicates more records exist' do
+          expect(result[:limited_configurations].count).to eq(2)
+          expect(result[:has_more]).to be true
+        end
       end
     end
   end

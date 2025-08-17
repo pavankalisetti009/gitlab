@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module EE::SecurityOrchestrationHelper
+  GROUP_DELETION_CONFIGURATIONS_LIMIT = 10
+
   def can_update_security_orchestration_policy_project?(container)
     can?(current_user, :update_security_orchestration_policy_project, container) && !container.designated_as_csp?
   end
@@ -183,12 +185,21 @@ module EE::SecurityOrchestrationHelper
     ::Security::OrchestrationPolicyConfiguration.for_management_project(project)
   end
 
-  def security_configurations_preventing_group_deletion(group)
+  def policy_configurations_within_group(group)
     unless group.licensed_feature_available?(:security_orchestration_policies)
       return ::Security::OrchestrationPolicyConfiguration.none
     end
 
     ::Security::OrchestrationPolicyConfiguration.for_management_project(group.all_project_ids)
+  end
+
+  def security_configurations_preventing_group_deletion(group)
+    configurations = policy_configurations_within_group(group)
+
+    {
+      limited_configurations: configurations.limit(GROUP_DELETION_CONFIGURATIONS_LIMIT),
+      has_more: configurations.has_more_than_limit?(GROUP_DELETION_CONFIGURATIONS_LIMIT)
+    }
   end
 
   def access_tokens_for_container(container)

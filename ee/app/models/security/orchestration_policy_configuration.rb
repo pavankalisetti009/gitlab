@@ -67,6 +67,10 @@ module Security
 
     delegate :actual_limits, :actual_plan_name, :actual_plan, :designated_as_csp?, to: :source
 
+    def self.has_more_than_limit?(limit)
+      offset(limit).exists?
+    end
+
     def self.policy_management_project?(project_id)
       self.exists?(security_policy_management_project_id: project_id)
     end

@@ -86,7 +86,10 @@ RSpec.describe 'groups/settings/_remove.html.haml', feature_category: :groups_an
     context 'when group has linked security policy projects' do
       before do
         allow(view).to receive(:can?).with(anything, :remove_group, group).and_return(true)
-        allow(view).to receive(:security_configurations_preventing_group_deletion).and_return(linked_configurations)
+        allow(view).to receive(:security_configurations_preventing_group_deletion).and_return({
+          limited_configurations: linked_configurations,
+          has_more: false
+        })
       end
 
       it 'disables the remove group button' do
