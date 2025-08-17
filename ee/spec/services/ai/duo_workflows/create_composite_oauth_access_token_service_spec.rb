@@ -45,7 +45,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
 
       context 'when the user does not have the duo_workflow feature flag enabled' do
         before do
-          stub_feature_flags(duo_workflow_in_ci: false)
+          stub_feature_flags(duo_workflow_use_composite_identity: false)
         end
 
         it 'returns an error' do

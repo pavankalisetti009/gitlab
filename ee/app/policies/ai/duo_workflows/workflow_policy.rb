@@ -28,7 +28,7 @@ module Ai
       end
 
       condition(:duo_workflow_in_ci_available) do
-        ::Feature.enabled?(:duo_workflow_in_ci, @user)
+        @subject.project.duo_remote_flows_enabled && ::Feature.enabled?(:duo_workflow_in_ci, @user)
       end
 
       condition(:web_environment) do

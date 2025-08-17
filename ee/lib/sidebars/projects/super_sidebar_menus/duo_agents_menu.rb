@@ -27,7 +27,7 @@ module Sidebars
         private
 
         def show_agents_runs_menu_items?
-          Feature.enabled?(:duo_workflow_in_ci, context.current_user)
+          context.project.duo_remote_flows_enabled && Feature.enabled?(:duo_workflow_in_ci, context.current_user)
         end
 
         def show_flow_triggers_menu_items?

@@ -10,6 +10,10 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, namespace: user.namespace) }
 
+  before_all do
+    project.update!(duo_remote_flows_enabled: true)
+  end
+
   before do
     project.add_owner(user)
 
@@ -63,6 +67,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
         before do
           group.add_developer(user)
+          project.update!(duo_remote_flows_enabled: true)
 
           insert_after_sub_nav_item(
             _('Milestones'),
@@ -256,6 +261,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
         before_all do
           project.add_maintainer(user)
+          project.update!(duo_remote_flows_enabled: true)
         end
 
         before do

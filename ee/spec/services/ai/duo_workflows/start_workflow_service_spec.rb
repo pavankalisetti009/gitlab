@@ -54,13 +54,16 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
 
   context 'with workflow enablement checks' do
     using RSpec::Parameterized::TableSyntax
-    where(:duo_workflow_ff, :duo_workflow_in_ci_ff, :duo_features_enabled, :current_user, :shared_examples) do
-      false | false | true   | ref(:maintainer) | 'failure'
-      true  | false | true   | ref(:developer)  | 'failure'
-      false | true  | true   | ref(:developer)  | 'failure'
-      true  | true  | true   | ref(:maintainer) | 'success'
-      true  | true  | true   | ref(:reporter)   | 'failure'
-      true  | true  | false  | ref(:developer)  | 'failure'
+    where(:duo_workflow_ff, :duo_workflow_in_ci_ff, :duo_features_enabled, :duo_remote_flows_enabled, :current_user,
+      :shared_examples) do
+      false | false | true  | true  | ref(:maintainer) | 'failure'
+      true  | false | true  | true  | ref(:developer)  | 'failure'
+      false | true  | true  | true  | ref(:developer)  | 'failure'
+      true  | true  | true  | false | ref(:maintainer) | 'failure'
+      true  | true  | true  | true  | ref(:maintainer) | 'success'
+      true  | true  | true  | true  | ref(:reporter)   | 'failure'
+      true  | true  | false | true  | ref(:developer)  | 'failure'
+      true  | true  | false | false | ref(:developer)  | 'failure'
     end
 
     with_them do
@@ -68,7 +71,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
         stub_feature_flags(duo_workflow: duo_workflow_ff, duo_workflow_in_ci: duo_workflow_in_ci_ff)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         allow(current_user).to receive(:allowed_to_use?).and_return(true)
-        project.project_setting.update!(duo_features_enabled: duo_features_enabled)
+        project.project_setting.update!(duo_features_enabled: duo_features_enabled,
+          duo_remote_flows_enabled: duo_remote_flows_enabled)
         workflow.update!(user: current_user)
       end
 
@@ -101,7 +105,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       allow_next_instance_of(Ci::CreatePipelineService) do |instance|
         allow(instance).to receive(:execute).and_return(service_response)
       end
-      project.project_setting.update!(duo_features_enabled: true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
     end
 
     it 'does not start a pipeline to execute workflow' do
@@ -122,7 +126,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
       allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
       # rubocop:enable RSpec/AnyInstanceOf
-      project.project_setting.update!(duo_features_enabled: true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
 
       mock_workload = instance_double(Ci::Workloads::Workload, id: 123)
 
@@ -153,7 +157,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
       allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
       # rubocop:enable RSpec/AnyInstanceOf
-      project.project_setting.update!(duo_features_enabled: true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
     end
 
     it 'passes source_branch to RunWorkloadService when provided' do
@@ -183,7 +187,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       allow(maintainer).to receive(:allowed_to_use?).and_return(true)
-      project.project_setting.update!(duo_features_enabled: true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
       allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
     end
 
@@ -242,7 +246,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       allow(maintainer).to receive(:allowed_to_use?).and_return(true)
-      project.project_setting.update!(duo_features_enabled: true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
       allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
       allow(duo_config).to receive_messages(valid?: true, default_image: config_image)
     end

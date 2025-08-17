@@ -16,7 +16,7 @@ module Ai
 
       def execute
         unless Feature.enabled?(
-          :duo_workflow_in_ci, @current_user)
+          :duo_workflow_use_composite_identity, @current_user)
           return ServiceResponse.error(message: 'Can not generate token to execute workflow in CI',
             reason: :feature_unavailable)
         end

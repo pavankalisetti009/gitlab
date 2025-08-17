@@ -10,79 +10,39 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
   subject(:menu) { described_class.new(context) }
 
   describe '#configure_menu_items' do
-    before do
-      stub_feature_flags(duo_workflow_in_ci: true)
+    using RSpec::Parameterized::TableSyntax
+
+    where(:duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers, :configure_result,
+      :expected_items) do
+      true  | true  | false | true  | [:agents_runs]
+      true  | true  | true  | true  | [:agents_runs, :ai_flow_triggers]
+      true  | false | false | false | []
+      true  | false | true  | true  | [:ai_flow_triggers]
+      false | true  | false | false | []
+      false | true  | true  | true  | [:ai_flow_triggers]
+      false | false | false | false | []
+      false | false | true  | true  | [:ai_flow_triggers]
     end
 
-    it 'returns true and adds menu items' do
-      expect(menu.configure_menu_items).to be true
-    end
-
-    it 'adds agents runs menu item' do
-      expect(menu.renderable_items.size).to eq(1)
-      expect(menu.renderable_items.first.item_id).to eq(:agents_runs)
-    end
-
-    context 'when duo_workflow_in_ci feature is disabled' do
+    with_them do
       before do
-        stub_feature_flags(duo_workflow_in_ci: false)
+        stub_feature_flags(duo_workflow_in_ci: duo_workflow_in_ci_ff)
+        project.project_setting.update!(duo_remote_flows_enabled: duo_remote_flows_enabled)
+        allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(can_manage_ai_flow_triggers)
       end
 
-      it 'returns false and does not add menu items' do
-        expect(menu.configure_menu_items).to be false
-        expect(menu.renderable_items).to be_empty
-      end
-    end
-
-    context 'when user can manage ai flow triggers' do
-      before do
-        allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(true)
+      it "returns correct configure result" do
+        expect(menu.configure_menu_items).to eq(configure_result)
       end
 
-      it 'adds both menu items when feature flag is enabled and user has permissions' do
-        expect(menu.renderable_items.size).to eq(2)
-        expect(menu.renderable_items.map(&:item_id)).to contain_exactly(:agents_runs, :ai_flow_triggers)
-      end
-    end
+      it "renders expected menu items" do
+        expect(menu.renderable_items.size).to eq(expected_items.size)
 
-    context 'when user cannot manage ai flow triggers' do
-      before do
-        allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
-      end
-
-      it 'returns true and adds menu items' do
-        expect(menu.configure_menu_items).to be true
-      end
-
-      it 'only adds agents runs menu item' do
-        expect(menu.renderable_items.size).to eq(1)
-        expect(menu.renderable_items.first.item_id).to eq(:agents_runs)
-      end
-    end
-
-    context 'when duo_workflow_in_ci feature is disabled but user can manage ai flow triggers' do
-      before do
-        stub_feature_flags(duo_workflow_in_ci: false)
-
-        allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(true)
-      end
-
-      it 'returns true and adds only flow triggers menu item' do
-        expect(menu.renderable_items.size).to eq(1)
-        expect(menu.renderable_items.first.item_id).to eq(:ai_flow_triggers)
-      end
-    end
-
-    context 'when both feature flag is disabled and user cannot manage ai flow triggers' do
-      before do
-        stub_feature_flags(duo_workflow_in_ci: false)
-
-        allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
-      end
-
-      it 'returns false and does not add any menu items' do
-        expect(menu.configure_menu_items).to be false
-        expect(menu.renderable_items).to be_empty
+        if expected_items.any?
+          expect(menu.renderable_items.map(&:item_id)).to match_array(expected_items)
+        else
+          expect(menu.renderable_items).to be_empty
+        end
       end
     end
   end
@@ -101,6 +61,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
 
   describe 'agents runs menu item' do
     before do
+      project.project_setting.update!(duo_remote_flows_enabled: true)
       menu.configure_menu_items
     end
 

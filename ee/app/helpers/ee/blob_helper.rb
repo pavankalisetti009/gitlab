@@ -12,7 +12,9 @@ module EE
     override :vue_blob_app_data
     def show_duo_workflow_action?(blob)
       return false unless current_user.present?
-      return false unless ::Feature.enabled?(:duo_workflow_in_ci, current_user)
+
+      return false unless blob.project&.duo_remote_flows_enabled && ::Feature.enabled?(:duo_workflow_in_ci,
+        current_user)
 
       ::Gitlab::FileDetector.type_of(blob.name) == :jenkinsfile && ::Ai::DuoWorkflow.enabled?
     end
