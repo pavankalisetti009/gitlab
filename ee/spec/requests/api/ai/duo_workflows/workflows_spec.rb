@@ -297,6 +297,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     end
 
     context 'when start_workflow is true' do
+      before_all do
+        project.project_setting.update!(duo_remote_flows_enabled: true)
+      end
+
       shared_examples 'starts duo workflow execution in CI' do
         it 'creates a pipeline to run the workflow' do
           expect_next_instance_of(Ci::CreatePipelineService) do |pipeline_service|
@@ -307,6 +311,15 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
           expect(json_response['workload']['id']).to eq(Ci::Workloads::Workload.last.id)
           expect(::Ci::Pipeline.last.project_id).to eq(project.id)
+        end
+      end
+
+      shared_examples 'workflow execution blocked in CI' do
+        it 'does not start a CI pipeline' do
+          post api(path, user), params: params
+
+          expect(json_response.dig('workload', 'id')).to eq(nil)
+          expect(json_response.dig('workload', 'message')).to eq('Can not execute workflow in CI')
         end
       end
 
@@ -335,12 +348,16 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
           stub_feature_flags(duo_workflow_in_ci: false)
         end
 
-        it 'does not start a CI pipeline' do
-          post api(path, user), params: params
+        include_examples 'workflow execution blocked in CI'
+      end
 
-          expect(json_response.dig('workload', 'id')).to eq(nil)
-          expect(json_response.dig('workload', 'message')).to eq('Can not execute workflow in CI')
+      context 'when duo_remote_flows_enabled settings is turned off' do
+        before do
+          project.project_setting.update!(duo_remote_flows_enabled: false)
+          project.reload
         end
+
+        include_examples 'workflow execution blocked in CI'
       end
 
       context 'when ci pipeline could not be created' do

@@ -15,6 +15,8 @@ module Projects
         return
       end
 
+      return render_404 unless project&.duo_remote_flows_enabled
+
       render_404 unless ::Feature.enabled?(:duo_workflow_in_ci, current_user) && ::Ai::DuoWorkflow.enabled?
     end
 

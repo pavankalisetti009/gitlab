@@ -113,6 +113,10 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
     context 'when blob name is Jenkinsfile' do
       let(:blob) { fake_blob(path: 'Jenkinsfile') }
 
+      before do
+        blob.project.update!(duo_remote_flows_enabled: true)
+      end
+
       it 'returns true when user is present' do
         expect(helper.show_duo_workflow_action?(blob)).to be true
       end
@@ -126,6 +130,10 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
     context 'when blob name is not Jenkinsfile' do
       let(:blob) { fake_blob(path: 'not_jenkinsfile.rb') }
 
+      before do
+        blob.project.update!(duo_remote_flows_enabled: true)
+      end
+
       it 'returns false even when user is present' do
         expect(helper.show_duo_workflow_action?(blob)).to be false
       end
@@ -133,6 +141,10 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
 
     context 'when feature flag is disabled' do
       let(:blob) { fake_blob(path: 'Jenkinsfile') }
+
+      before do
+        blob.project.update!(duo_remote_flows_enabled: true)
+      end
 
       it 'returns false' do
         stub_feature_flags(duo_workflow_in_ci: false)
@@ -143,6 +155,18 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
       it 'returns false when user does not have the feature flag' do
         Feature.disable(:duo_workflow_in_ci, user)
 
+        expect(helper.show_duo_workflow_action?(blob)).to be false
+      end
+    end
+
+    context 'when duo_remote_flows_enabled settings is disabled' do
+      let(:blob) { fake_blob(path: 'Jenkinsfile') }
+
+      before do
+        blob.project.update!(duo_remote_flows_enabled: false)
+      end
+
+      it 'returns false' do
         expect(helper.show_duo_workflow_action?(blob)).to be false
       end
     end
