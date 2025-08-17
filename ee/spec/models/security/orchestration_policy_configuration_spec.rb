@@ -297,6 +297,30 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '.has_more_than_limit?' do
+    let(:limit) { 2 }
+
+    context 'when there are fewer records than the limit' do
+      before do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: security_policy_management_project)
+      end
+
+      it 'returns false' do
+        expect(described_class.has_more_than_limit?(limit)).to be false
+      end
+    end
+
+    context 'when there are more records than the limit' do
+      before do
+        create_list(:security_orchestration_policy_configuration, limit + 1, security_policy_management_project: security_policy_management_project)
+      end
+
+      it 'returns true' do
+        expect(described_class.has_more_than_limit?(limit)).to be true
+      end
+    end
+  end
+
   describe '.valid_scan_type?' do
     it 'returns true when scan type is valid' do
       expect(Security::ScanExecutionPolicy.valid_scan_type?('secret_detection')).to be_truthy

@@ -12,7 +12,7 @@ module EE
     private
 
     def excludes_security_policy_projects
-      return unless security_configurations_preventing_group_deletion(group).exists?
+      return unless policy_configurations_within_group(group).exists?
 
       errors.add(:base,
         s_('SecurityOrchestration|Group cannot be deleted because it has projects ' \
