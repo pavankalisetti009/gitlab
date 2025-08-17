@@ -47,9 +47,14 @@ module Ai
         def public_or_visible_to_user(current_user)
           return public_only if current_user.nil?
 
-          public_only.or(
-            where(project: current_user.authorized_projects(Gitlab::Access::DEVELOPER))
-          )
+          joins(
+            sanitize_sql_array([
+              'LEFT JOIN project_authorizations pa ON ai_catalog_items.project_id = pa.project_id ' \
+                'AND pa.user_id = ? AND pa.access_level >= ?',
+              current_user.id,
+              Gitlab::Access::DEVELOPER
+            ])
+          ).where('ai_catalog_items.public = ? OR pa.project_id IS NOT NULL', true)
         end
       end
 
