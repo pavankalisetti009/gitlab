@@ -1,3 +1,4 @@
+-# rubocop:disable Cop/ExperimentsTestCoverage - TODO: will add spec in next MR
 - page_title _('Billing')
 - add_page_specific_style 'page_bundles/billings'
 - namespace = current_user.namespace
@@ -5,9 +6,9 @@
 - data_attributes = subscription_plan_data_attributes(namespace, current_plan)
 - @force_desktop_expanded_sidebar = true
 
-- if current_plan
-  = render 'billing_plan_header', namespace: namespace, current_plan: current_plan
-
-= render 'shared/billings/billing_plans', plans_data: @plans_data, namespace: namespace, current_plan: current_plan, read_only: false
-
-#js-billing-plans{ data: data_attributes }
+- experiment(:user_billing_pricing_information, actor: current_user) do |e|
+  - e.control do
+    = render 'control_variant', namespace: namespace, current_plan: current_plan, data_attributes: data_attributes
+  - e.candidate do
+    = render 'candidate_variant', namespace: namespace, current_plan: current_plan, data_attributes: data_attributes
+-# rubocop:enable Cop/ExperimentsTestCoverage
