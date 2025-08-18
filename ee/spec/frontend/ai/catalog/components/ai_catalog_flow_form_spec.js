@@ -1,6 +1,7 @@
 import { GlFormFields } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
+import AiCatalogStepsEditor from 'ee/ai/catalog/components/ai_catalog_steps_editor.vue';
 
 describe('AiCatalogFlowForm', () => {
   let wrapper;
@@ -11,6 +12,7 @@ describe('AiCatalogFlowForm', () => {
   const findNameField = () => wrapper.findByTestId('flow-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('flow-form-textarea-description');
   const findSubmitButton = () => wrapper.findByTestId('flow-form-submit-button');
+  const findStepsEditor = () => wrapper.findComponent(AiCatalogStepsEditor);
 
   const defaultProps = {
     mode: 'create',
@@ -58,6 +60,12 @@ describe('AiCatalogFlowForm', () => {
       expect(findProjectIdField().props('value')).toBe('gid://gitlab/Project/1000000');
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
+    });
+
+    it('renders steps editor', () => {
+      createWrapper();
+
+      expect(findStepsEditor().exists()).toBe(true);
     });
   });
 

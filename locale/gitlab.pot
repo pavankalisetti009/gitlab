@@ -2410,6 +2410,15 @@ msgstr ""
 msgid "AIAgent|Your agent's system prompt will be applied to the chat input."
 msgstr ""
 
+msgid "AICatalog| Agent"
+msgstr ""
+
+msgid "AICatalog| Draft node"
+msgstr ""
+
+msgid "AICatalog| Flow nodes (Coming soon)"
+msgstr ""
+
 msgid "AICatalog|A public agent can be made private only if it is not used."
 msgstr ""
 
@@ -2486,6 +2495,9 @@ msgid "AICatalog|Description"
 msgstr ""
 
 msgid "AICatalog|Description is required."
+msgstr ""
+
+msgid "AICatalog|Draft node"
 msgstr ""
 
 msgid "AICatalog|Edit"
@@ -2579,6 +2591,9 @@ msgid "AICatalog|Select a project for your AI agent to be associated with."
 msgstr ""
 
 msgid "AICatalog|Select a project for your AI flow to be associated with."
+msgstr ""
+
+msgid "AICatalog|Select agent"
 msgstr ""
 
 msgid "AICatalog|Select tools that this agent will have access to."
@@ -53044,6 +53059,9 @@ msgid "Reopening…"
 msgstr ""
 
 msgid "Reopens this %{quick_action_target}."
+msgstr ""
+
+msgid "Reorder"
 msgstr ""
 
 msgid "Replace"

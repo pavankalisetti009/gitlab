@@ -20,12 +20,14 @@ import { __, s__ } from '~/locale';
 import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
+import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
 
 const tmpProjectId = 'gid://gitlab/Project/1000000';
 
 export default {
   components: {
     AiCatalogFormButtons,
+    AiCatalogStepsEditor,
     GlAlert,
     GlButton,
     GlForm,
@@ -221,6 +223,7 @@ export default {
           </gl-alert>
         </template>
       </gl-form-fields>
+      <ai-catalog-steps-editor class="gl-mb-4" />
       <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
         <gl-button
           class="js-no-auto-disable gl-w-full sm:gl-w-auto"
