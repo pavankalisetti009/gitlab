@@ -7,6 +7,10 @@ module Types
     graphql_name 'VulnerableKubernetesResource'
     description 'Represents a vulnerable Kubernetes resource. Used in vulnerability location data'
 
+    def self.authorization_scopes
+      super + [:ai_workflows]
+    end
+
     field :namespace, GraphQL::Types::String,
       null: false, description: 'Kubernetes namespace where the resource resides.'
 
@@ -20,7 +24,8 @@ module Types
       null: false, description: 'Name of the container that had its image scanned.'
 
     field :agent, ::Types::Clusters::AgentType,
-      null: true, description: 'Kubernetes agent that performed the scan.'
+      null: true, description: 'Kubernetes agent that performed the scan.',
+      scopes: [:api, :read_api, :ai_workflows]
 
     field :cluster_id, ::Types::GlobalIDType[::Clusters::Cluster],
       null: true,
