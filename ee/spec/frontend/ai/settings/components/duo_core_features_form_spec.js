@@ -44,12 +44,12 @@ describe('DuoCoreFeaturesForm', () => {
 
   it('renders the subtitle', () => {
     expect(wrapper.text()).toMatch(
-      'When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in supported IDEs.',
+      'When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in Web and supported IDEs.',
     );
   });
 
   it('renders the checkbox with correct label', () => {
-    expect(findFormCheckbox().text()).toContain('Turn on IDE features');
+    expect(findFormCheckbox().text()).toContain('Turn on Web and IDE features');
   });
 
   it('sets initial checkbox state based on duoCoreFeaturesEnabled prop when unselected', () => {

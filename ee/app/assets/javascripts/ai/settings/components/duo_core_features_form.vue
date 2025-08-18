@@ -16,9 +16,9 @@ export default {
   i18n: {
     sectionTitle: __('Gitlab Duo Core'),
     subtitle: s__(
-      'AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in supported IDEs.',
+      'AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in Web and supported IDEs.',
     ),
-    checkboxLabel: s__('AiPowered|Turn on IDE features'),
+    checkboxLabel: s__('AiPowered|Turn on Web and IDE features'),
     checkboxHelpTextSaaS: s__(
       'AiPowered|This setting applies to the whole top-level group. By turning this on, you accept the %{termsLinkStart}GitLab AI Functionality Terms%{termsLinkEnd} unless your organization has a separate agreement with GitLab governing AI feature usage. Check the %{requirementsLinkStart}eligibility requirements%{requirementsLinkEnd}.',
     ),
