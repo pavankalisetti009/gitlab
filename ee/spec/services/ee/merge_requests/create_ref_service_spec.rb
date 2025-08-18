@@ -98,14 +98,6 @@ RSpec.describe MergeRequests::CreateRefService, feature_category: :merge_trains 
                 commit_count
               )
           end
-
-          context 'when ff for generate ref commits is disabled' do
-            before do
-              stub_feature_flags(generate_ref_commits: false)
-            end
-
-            include_examples 'does not generate ref merge request commits'
-          end
         end
       end
 
