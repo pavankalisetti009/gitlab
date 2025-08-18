@@ -6,35 +6,11 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
   feature_category: :seat_cost_management do
   using RSpec::Parameterized::TableSyntax
 
-  describe 'validations', :saas do
-    context 'with nil user' do
-      let(:user) { nil }
-      let(:namespace) { create(:group) }
-
-      it 'raises an error' do
-        expect { described_class.new(user, namespace).execute }.to raise_error(
-          ArgumentError, 'User must be present'
-        )
-      end
-    end
-
-    context 'with nil namespace' do
-      let(:user) { create(:user) }
-      let(:namespace) { nil }
-
-      it 'raises an error' do
-        expect { described_class.new(user, namespace).execute }.to raise_error(
-          ArgumentError, 'Namespace must be present'
-        )
-      end
-    end
-  end
-
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group) }
 
-    subject(:seat_type) { described_class.new(user, namespace).execute }
+    subject(:seat_type) { described_class.execute(user, namespace) }
 
     context 'when on saas', :saas do
       context 'with a namespace on a free plan' do
@@ -107,7 +83,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
           let(:subgroup) { create(:group, parent: namespace) }
 
           before do
-            create(:group_member, :minimal_access, group: namespace, user: user)
+            create(:group_member, group: namespace, user: user, access_level: ::Gitlab::Access::GUEST)
             create(:group_member, group: subgroup, user: user, access_level: ::Gitlab::Access::MAINTAINER)
           end
 
@@ -130,7 +106,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
 
       context 'with a namespace on an ultimate plan' do
-        before do
+        before_all do
           create(:gitlab_subscription, :ultimate, namespace: namespace)
         end
 
@@ -182,9 +158,9 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
 
       context 'with a bot user' do
-        let(:user) { create(:user, :bot) }
+        let_it_be(:user) { create(:user, :bot) }
 
-        before do
+        before_all do
           create(:group_member, group: namespace, user: user)
         end
 
@@ -197,6 +173,64 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
     context 'when on self-managed' do
       it 'returns nil' do
         expect(seat_type).to be_nil
+      end
+    end
+  end
+
+  describe '#bulk_execute' do
+    let_it_be(:user1) { create(:user) }
+    let_it_be(:user2) { create(:user) }
+    let_it_be(:namespace) { create(:group) }
+
+    subject(:seat_types) { described_class.bulk_execute([user1, user2], namespace) }
+
+    context 'when on self-managed' do
+      it 'returns nil' do
+        expect(seat_types).to eq({})
+      end
+    end
+
+    context 'when on saas', :saas do
+      before do
+        create(:gitlab_subscription, :ultimate, namespace: namespace)
+      end
+
+      context 'with memberships' do
+        before_all do
+          namespace.add_guest(user1)
+          namespace.add_developer(user2)
+        end
+
+        it 'returns seat types for multiple users' do
+          expect(seat_types).to eq({ user1.id => :free, user2.id => :base })
+        end
+      end
+
+      context 'with memberships in other groups' do
+        before_all do
+          namespace.add_guest(user1)
+
+          group = create(:group)
+          group.add_maintainer(user1)
+        end
+
+        it 'only considers specified namespace' do
+          expect(seat_types[user1.id]).to eq(:free)
+        end
+      end
+
+      context 'without memberships' do
+        it 'returns nil seat types' do
+          expect(seat_types).to eq({ user1.id => nil, user2.id => nil })
+        end
+      end
+
+      context 'with array with nil' do
+        subject(:seat_types) { described_class.bulk_execute([nil], namespace) }
+
+        it 'returns an empty hash' do
+          expect(seat_types).to eq({})
+        end
       end
     end
   end

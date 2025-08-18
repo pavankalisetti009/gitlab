@@ -7,6 +7,10 @@ module GitlabSubscriptions
     PLAN_SEAT = :plan
     SYSTEM_SEAT = :system
 
+    FREE_TIER = :free
+    PREMIUM_TIER = :premium
+    ULTIMATE_TIER = :ultimate
+
     SEAT_TYPE_MAPPINGS = {
       premium: {
         ::Gitlab::Access::MINIMAL_ACCESS => FREE_SEAT,
@@ -28,61 +32,48 @@ module GitlabSubscriptions
       }
     }.freeze
 
-    def initialize(user, namespace)
-      @user = user
-      @namespace = namespace
-    end
+    class << self
+      def execute(user, namespace)
+        return unless gitlab_com?
 
-    def execute
-      return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        tier = subscription_tier(namespace)
+        access_level = find_highest_membership(user, namespace)&.access_level
+        calculate_seat_type(user, tier, access_level)
+      end
 
-      validate!
+      def bulk_execute(users, namespace)
+        return {} unless gitlab_com?
 
-      calculate_seat_type
-    end
+        tier = subscription_tier(namespace)
+        access_levels = Member.seat_assignable_highest_access_levels(users: users, namespace: namespace)
+        users.compact.each_with_object({}) do |user, hash|
+          hash[user.id] = calculate_seat_type(user, tier, access_levels[user.id])
+        end
+      end
 
-    private
+      private
 
-    attr_reader :user, :namespace
+      def gitlab_com?
+        ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      end
 
-    def validate!
-      raise ArgumentError, 'User must be present' if user.nil?
-      raise ArgumentError, 'Namespace must be present' if namespace.nil?
-    end
+      def find_highest_membership(user, namespace)
+        Member.seat_assignable(users: user, namespace: namespace).order_access_level_desc.first
+      end
 
-    def calculate_seat_type
-      return SYSTEM_SEAT if user.bot?
+      def calculate_seat_type(user, tier, access_level)
+        return unless access_level
+        return SYSTEM_SEAT if user.bot?
+        return BASE_SEAT if tier == FREE_TIER
 
-      member = find_highest_membership
-      return unless member
+        SEAT_TYPE_MAPPINGS.dig(tier, access_level)
+      end
 
-      seat_type_for_active_user(member)
-    end
+      def subscription_tier(namespace)
+        return FREE_TIER if namespace.free_plan?
 
-    def seat_type_for_active_user(member)
-      return :base if subscription_tier == :free
-
-      highest_access_level = member.access_level
-      seat_type_for_tier(highest_access_level)
-    end
-
-    def find_highest_membership
-      user.members
-        .in_hierarchy(namespace)
-        .with_user(user)
-        .without_invites_and_requests(minimal_access: true)
-        .order_access_level_desc
-        .first
-    end
-
-    def subscription_tier
-      return :free if namespace.free_plan?
-
-      namespace.exclude_guests? ? :ultimate : :premium
-    end
-
-    def seat_type_for_tier(access_level)
-      SEAT_TYPE_MAPPINGS.dig(subscription_tier, access_level)
+        namespace.exclude_guests? ? ULTIMATE_TIER : PREMIUM_TIER
+      end
     end
   end
 end
