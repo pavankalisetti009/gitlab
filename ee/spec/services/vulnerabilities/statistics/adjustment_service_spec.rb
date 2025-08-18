@@ -50,6 +50,14 @@ RSpec.describe Vulnerabilities::Statistics::AdjustmentService, feature_category:
       end
     end
 
+    context 'when no project exist for the given ids' do
+      let(:project_ids) { [non_existing_record_id] }
+
+      it 'returns empty structure' do
+        expect(adjust_statistics).to eq({ diff: [], affected_project_ids: [] })
+      end
+    end
+
     context 'when the project has detected and confirmed vulnerabilities' do
       let(:expected_statistics) do
         {
@@ -156,6 +164,213 @@ RSpec.describe Vulnerabilities::Statistics::AdjustmentService, feature_category:
         end
 
         it_behaves_like 'ignoring the non-existing project IDs'
+      end
+    end
+
+    context 'with the diff return value' do
+      let_it_be(:namespace) { project.namespace }
+      let(:result) { adjust_statistics }
+      let(:diffs) { result[:diff] }
+      let(:affected_project_ids) { result[:affected_project_ids] }
+
+      context 'when statistics change' do
+        before do
+          create(:vulnerability, :with_finding, :critical_severity, project: project)
+          create(:vulnerability, :with_finding, :high_severity, project: project)
+        end
+
+        context 'with a single project' do
+          it 'returns namespace diff with project_ids array' do
+            expect(diffs).to contain_exactly(
+              hash_including(
+                'namespace_id' => namespace.id,
+                'traversal_ids' => "{#{namespace.traversal_ids.join(',')}}",
+                'total' => 2,
+                'critical' => 1,
+                'high' => 1,
+                'medium' => 0,
+                'low' => 0,
+                'info' => 0,
+                'unknown' => 0
+              )
+            )
+          end
+
+          it 'returns affected_project_ids containing the project' do
+            expect(affected_project_ids).to eq([project.id])
+          end
+        end
+
+        context 'with multiple projects in the same namespace' do
+          let_it_be(:project2) { create(:project, namespace: namespace) }
+          let(:project_ids) { [project.id, project2.id] }
+
+          before do
+            create(:vulnerability, :with_finding, :medium_severity, project: project2)
+          end
+
+          it 'returns namespace diff with all affected project_ids' do
+            expect(diffs).to contain_exactly(
+              hash_including(
+                'namespace_id' => namespace.id,
+                'traversal_ids' => "{#{namespace.traversal_ids.join(',')}}",
+                'total' => 3,
+                'critical' => 1,
+                'high' => 1,
+                'medium' => 1,
+                'low' => 0,
+                'info' => 0,
+                'unknown' => 0
+              )
+            )
+          end
+
+          it 'returns affected_project_ids containing both projects' do
+            expect(affected_project_ids).to match_array([project.id, project2.id])
+          end
+        end
+
+        context 'with multiple projects across different namespaces' do
+          let_it_be(:namespace2) { create(:namespace) }
+          let_it_be(:project2) { create(:project, namespace: namespace2) }
+          let(:project_ids) { [project.id, project2.id] }
+
+          before do
+            create(:vulnerability, :with_finding, :low_severity, project: project2)
+          end
+
+          it 'returns diffs for each namespace with only their affected project_ids' do
+            result_by_namespace = diffs.index_by { |row| row['namespace_id'] }
+
+            expect(result_by_namespace[namespace.id]).to include(
+              'namespace_id' => namespace.id,
+              'traversal_ids' => "{#{namespace.traversal_ids.join(',')}}",
+              'total' => 2,
+              'critical' => 1,
+              'high' => 1,
+              'medium' => 0,
+              'low' => 0,
+              'info' => 0,
+              'unknown' => 0
+            )
+
+            expect(result_by_namespace[namespace2.id]).to include(
+              'namespace_id' => namespace2.id,
+              'traversal_ids' => "{#{namespace2.traversal_ids.join(',')}}",
+              'total' => 1,
+              'critical' => 0,
+              'high' => 0,
+              'medium' => 0,
+              'low' => 1,
+              'info' => 0,
+              'unknown' => 0
+            )
+          end
+
+          it 'returns all affected_project_ids' do
+            expect(affected_project_ids).to match_array([project.id, project2.id])
+          end
+        end
+
+        context 'when updating existing statistics' do
+          before do
+            create(:vulnerability_statistic, project: project, critical: 2, high: 0, total: 2)
+          end
+
+          it 'returns the diff values (new - old)' do
+            expect(diffs).to contain_exactly(
+              hash_including(
+                'namespace_id' => namespace.id,
+                'traversal_ids' => "{#{namespace.traversal_ids.join(',')}}",
+                'total' => 0,      # was 2, now 2, diff = 0
+                'critical' => -1,  # was 2, now 1, diff = -1
+                'high' => 1,       # was 0, now 1, diff = 1
+                'medium' => 0,
+                'low' => 0,
+                'info' => 0,
+                'unknown' => 0
+              )
+            )
+          end
+
+          it 'includes project in affected_project_ids' do
+            expect(affected_project_ids).to eq([project.id])
+          end
+        end
+      end
+
+      context 'when no statistics change' do
+        context 'when vulnerabilities match existing statistics' do
+          before do
+            create(:vulnerability_statistic, project: project, total: 1, high: 1)
+            create(:vulnerability, :with_finding, :high_severity, project: project)
+          end
+
+          it 'returns empty diff array when no diffs exist' do
+            expect(diffs).to eq([])
+          end
+
+          it 'returns empty affected_project_ids' do
+            expect(affected_project_ids).to eq([])
+          end
+        end
+      end
+
+      context 'with non-existing project IDs' do
+        let(:project_ids) { [non_existing_record_id, project.id] }
+
+        before do
+          create(:vulnerability, :with_finding, :critical_severity, project: project)
+        end
+
+        it 'only includes existing project ids in the project_ids array' do
+          expect(diffs).to contain_exactly(
+            hash_including(
+              'namespace_id' => namespace.id,
+              'traversal_ids' => "{#{namespace.traversal_ids.join(',')}}"
+            )
+          )
+        end
+
+        it 'only includes existing project in affected_project_ids' do
+          expect(affected_project_ids).to eq([project.id])
+        end
+      end
+
+      context 'when some projects have changes and others do not' do
+        let_it_be(:project2) { create(:project, namespace: namespace) }
+        let_it_be(:project3) { create(:project, namespace: namespace) }
+        let(:project_ids) { [project.id, project2.id, project3.id] }
+
+        before do
+          create(:vulnerability, :with_finding, :critical_severity, project: project)
+
+          create(:vulnerability_statistic, project: project2, total: 1, medium: 1)
+          create(:vulnerability, :with_finding, :medium_severity, project: project2)
+
+          create(:vulnerability_statistic, project: project3, total: 0)
+          create(:vulnerability, :with_finding, :low_severity, project: project3)
+        end
+
+        it 'includes only projects with changes in namespace project_ids' do
+          expect(diffs).to contain_exactly(
+            hash_including(
+              'namespace_id' => namespace.id,
+              'traversal_ids' => "{#{namespace.traversal_ids.join(',')}}",
+              'total' => 2,      # +1 from project, +1 from project3
+              'critical' => 1,   # +1 from project
+              'high' => 0,
+              'medium' => 0,
+              'low' => 1,        # +1 from project3
+              'info' => 0,
+              'unknown' => 0
+            )
+          )
+        end
+
+        it 'includes only projects with changes in affected_project_ids' do
+          expect(affected_project_ids).to match_array([project.id, project3.id])
+        end
       end
     end
   end
