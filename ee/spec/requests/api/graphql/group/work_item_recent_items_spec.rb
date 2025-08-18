@@ -7,7 +7,8 @@ RSpec.describe 'Recent items logging for group work items', feature_category: :t
 
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:user) { create(:user, developer_of: group) }
-  let_it_be(:epic_work_item) { create(:work_item, :epic, namespace: group) }
+  let_it_be(:epic_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+  let_it_be(:epic) { epic_work_item.synced_epic }
 
   let(:query_work_item) { epic_work_item }
   let(:query) do
@@ -24,15 +25,31 @@ RSpec.describe 'Recent items logging for group work items', feature_category: :t
 
   describe 'recent items logging' do
     context 'when work item is an epic' do
-      it 'logs the epic to recent items' do
+      it 'logs the epic model to recent items' do
         recent_epics_service = instance_double(::Gitlab::Search::RecentEpics)
         expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_service)
-        expect(recent_epics_service).to receive(:log_view).with(epic_work_item)
+        expect(recent_epics_service).to receive(:log_view).with(epic)
 
         post_graphql(query, current_user: user)
 
         expect(graphql_errors).to be_blank
         expect(graphql_data_at(:namespace, :workItem)).to include('id' => epic_work_item.to_gid.to_s)
+      end
+
+      context 'when epic work item has no synced_epic (edge case)' do
+        let_it_be(:epic_work_item_without_sync) { create(:work_item, :epic, namespace: group) }
+        let(:query_work_item) { epic_work_item_without_sync }
+
+        it 'logs the work item to recent items (fallback behavior)' do
+          recent_epics_service = instance_double(::Gitlab::Search::RecentEpics)
+          expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_service)
+          expect(recent_epics_service).to receive(:log_view).with(epic_work_item_without_sync)
+
+          post_graphql(query, current_user: user)
+
+          expect(graphql_errors).to be_blank
+          expect(graphql_data_at(:namespace, :workItem)).to include('id' => epic_work_item_without_sync.to_gid.to_s)
+        end
       end
     end
 
