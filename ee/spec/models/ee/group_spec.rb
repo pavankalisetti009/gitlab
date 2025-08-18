@@ -4084,37 +4084,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#work_item_epics_ssot_enabled?' do
-    let_it_be(:root_group) { create(:group) }
-    let_it_be(:sub_group) { create(:group, parent: root_group) }
-
-    subject { sub_group.work_item_epics_ssot_enabled? }
-
-    context 'when enabled for root ancestor' do
-      before do
-        stub_feature_flags(work_item_epics_ssot: root_group)
-      end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when enabled for sub group' do
-      before do
-        stub_feature_flags(work_item_epics_ssot: sub_group)
-      end
-
-      it { is_expected.to eq(false) }
-    end
-
-    context 'when disabled for root ancestor' do
-      before do
-        stub_feature_flags(work_item_epics_ssot: false)
-      end
-
-      it { is_expected.to eq(false) }
-    end
-  end
-
   describe '#work_item_status_feature_available?' do
     subject { group.work_item_status_feature_available? }
 

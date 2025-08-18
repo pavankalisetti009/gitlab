@@ -450,7 +450,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
     context 'when epic indexing is enabled' do
       before do
-        stub_feature_flags(work_item_epics_ssot: false)
         stub_ee_application_setting(elasticsearch_indexing: true)
         Epics::UpdateDatesService.new([epic, another_epic]).execute
         epic.reload
