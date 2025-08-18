@@ -46,7 +46,7 @@ export default {
           });
         }
       } catch (error) {
-        this.errorMessages = [s__('AICatalog|The flow could not be added. Please try again.')];
+        this.errorMessages = [s__('AICatalog|The flow could not be added. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;

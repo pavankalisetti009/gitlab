@@ -127,7 +127,7 @@ describe('AiCatalogAgentsEdit', () => {
 
       it('sets error messages and captures exception', () => {
         expect(findForm().props('errorMessages')).toEqual([
-          'The agent could not be updated. Please try again.',
+          'The agent could not be updated. Try again.',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
