@@ -136,10 +136,12 @@ export default {
       v-model="selected"
       :name="'test'"
       :header-text="s__('CycleAnalytics|Select labels')"
+      :toggle-text="s__('CycleAnalytics|Select labels')"
       :items="items"
       :searching="loading"
       :no-results-text="__('No matching labels')"
       icon="settings"
+      text-sr-only
       searchable
       multiple
       @search="setSearchTerm"
