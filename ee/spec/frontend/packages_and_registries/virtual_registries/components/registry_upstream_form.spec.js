@@ -11,7 +11,7 @@ describe('RegistryUpstreamForm', () => {
     url: 'https://example.com',
     description: 'bar',
     username: 'bax',
-    cacheValidityHours: 12,
+    cacheValidityHours: 0,
   };
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -95,7 +95,7 @@ describe('RegistryUpstreamForm', () => {
       });
 
       it('renders Cache validity hours input', () => {
-        expect(findCacheValidityHoursInput().props('value')).toBe(12);
+        expect(findCacheValidityHoursInput().props('value')).toBe(0);
       });
     });
 
@@ -151,7 +151,7 @@ describe('RegistryUpstreamForm', () => {
           url: 'https://example.com',
           description: 'bar',
           username: 'bax',
-          cacheValidityHours: 12,
+          cacheValidityHours: 0,
         }),
       );
     });
@@ -187,7 +187,7 @@ describe('RegistryUpstreamForm', () => {
           url: 'https://example.com',
           description: 'bar',
           username: 'bax',
-          cacheValidityHours: 12,
+          cacheValidityHours: 0,
         }),
       );
     });

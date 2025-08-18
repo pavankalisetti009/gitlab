@@ -71,9 +71,11 @@ export default {
         description: this.upstream.description ? this.upstream.description : '',
         username: this.upstream.username ? this.upstream.username : '',
         password: '',
-        cacheValidityHours: this.upstream.cacheValidityHours
-          ? this.upstream.cacheValidityHours
-          : 24,
+        // `0` is a valid value for cacheValidityHours
+        cacheValidityHours:
+          typeof this.upstream.cacheValidityHours === 'number'
+            ? this.upstream.cacheValidityHours
+            : 24,
       },
       showValidation: false,
     };

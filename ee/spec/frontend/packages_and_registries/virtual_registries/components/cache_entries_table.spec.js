@@ -58,7 +58,7 @@ describe('CacheEntriesTable', () => {
     });
 
     it('displays artifact size', () => {
-      expect(findSize().text()).toBe('15 KB');
+      expect(findSize().text()).toBe('15 B');
     });
   });
 
