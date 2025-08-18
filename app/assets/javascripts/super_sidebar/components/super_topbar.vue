@@ -81,6 +81,7 @@ export default {
     </div>
 
     <gl-button
+      id="super-sidebar-search"
       v-gl-modal="$options.SEARCH_MODAL_ID"
       button-text-classes="gl-flex"
       data-testid="super-topbar-search-button"
