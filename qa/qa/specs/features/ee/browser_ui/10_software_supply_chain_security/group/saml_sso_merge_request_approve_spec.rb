@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Software Supply Chain Security', :skip_live_env, :orchestrated, :group_saml,
-    product_group: :compliance do
+    feature_category: :compliance_management do
     include Runtime::Fixtures
 
     # The core feature is tested in ee/spec/features/merge_request/user_approves_with_password_spec.rb

@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Fulfillment', :requires_admin, only: { subdomain: :staging },
-    product_group: :subscription_management do
+    feature_category: :subscription_management do
     describe 'Utilization' do
       let(:hash) { SecureRandom.hex(8) }
 

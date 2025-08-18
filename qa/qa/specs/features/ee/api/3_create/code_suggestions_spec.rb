@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create', product_group: :code_creation do
+  RSpec.describe 'Create', feature_category: :code_suggestions do
     include Support::API
 
     # These tests require several feature flags, user settings, and instance configurations.

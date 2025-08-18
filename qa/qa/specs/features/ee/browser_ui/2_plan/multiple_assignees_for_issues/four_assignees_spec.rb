@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :smoke, :requires_admin, product_group: :project_management do
+  RSpec.describe 'Plan', :smoke, :requires_admin, feature_category: :team_planning do
     describe 'Multiple assignees per issue' do
       before do
         Flow::Login.sign_in

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', except: { subdomain: 'pre' }, product_group: :security_policies do
+  RSpec.describe 'Security Risk Management', except: { subdomain: 'pre' },
+    feature_category: :security_policy_management do
     describe 'Group Level Scan Execution Policy' do
       let(:group) { create(:group, path: "scan-execution-policy-group-#{SecureRandom.hex(4)}") }
 

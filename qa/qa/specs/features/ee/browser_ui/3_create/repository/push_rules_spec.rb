@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Push rules', :requires_admin, product_group: :source_code do
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Push rules', :requires_admin do
       let!(:creator) { Runtime::User::Store.test_user }
       let!(:project) { create(:project, :with_readme) }
 

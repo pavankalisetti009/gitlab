@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Approval rules', :requires_admin, product_group: :code_review do
+  RSpec.describe 'Create', feature_category: :code_review_workflow do
+    describe 'Approval rules', :requires_admin do
       let(:approver1) { create(:user) }
       let(:approver2) { create(:user) }
       let(:project) { create(:project, name: 'approval-rules') }

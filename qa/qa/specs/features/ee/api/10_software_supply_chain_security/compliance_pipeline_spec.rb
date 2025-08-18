@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security', product_group: :compliance do
+  RSpec.describe 'Software Supply Chain Security', feature_category: :compliance_management do
     describe 'Compliance pipeline' do
       let(:group) do
         create(:group, path: "compliance-pipeline-#{Faker::Alphanumeric.alphanumeric(number: 8)}")

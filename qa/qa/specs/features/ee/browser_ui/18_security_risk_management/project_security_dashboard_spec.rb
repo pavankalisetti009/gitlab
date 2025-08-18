@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', product_group: :security_insights do
+  RSpec.describe 'Security Risk Management', feature_category: :vulnerability_management do
     describe 'Security Dashboard in a Project' do
       let!(:project) do
         create(:project, :with_readme, name: 'project-with-secure', description: 'Project with Secure')

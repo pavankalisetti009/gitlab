@@ -3,7 +3,7 @@
 module QA
   # Spec can be removed once epic migration to work items is complete
   RSpec.describe 'Plan',
-    only: { condition: -> { ENV["EPIC_SYNC_TEST"] == "true" } }, product_group: :product_planning do
+    only: { condition: -> { ENV["EPIC_SYNC_TEST"] == "true" } }, feature_category: :portfolio_management do
     include Support::API
 
     describe 'Legacy Epics to Work Items Migration' do

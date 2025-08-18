@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Systems', :orchestrated, :geo, product_group: :geo do
+  RSpec.describe 'Systems', :orchestrated, :geo, feature_category: :geo_replication do
     let(:git_push_http_path_prefix) { '/-/from_secondary' }
 
     describe 'GitLab Geo HTTP push secondary' do

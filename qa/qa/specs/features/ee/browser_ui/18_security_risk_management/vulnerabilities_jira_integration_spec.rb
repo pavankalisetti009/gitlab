@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', :jira, :orchestrated, :requires_admin, product_group: :security_insights do
+  RSpec.describe 'Security Risk Management', :jira, :orchestrated, :requires_admin,
+    feature_category: :vulnerability_management do
     describe 'vulnerability report with jira integration' do
       let(:jira_project_key) { 'JITP' }
       let!(:project) do

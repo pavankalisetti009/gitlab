@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env,
-    product_group: :utilization do
+  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env, feature_category: :consumables_cost_management do
     describe 'Utilization' do
       describe 'User Registration' do
         let!(:group) { create(:group) }

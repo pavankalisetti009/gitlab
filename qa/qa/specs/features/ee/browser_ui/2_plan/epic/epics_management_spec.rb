@@ -2,7 +2,7 @@
 
 module QA
   # Add :smoke back once proven reliable
-  RSpec.describe 'Plan', product_group: :product_planning do
+  RSpec.describe 'Plan', feature_category: :portfolio_management do
     describe 'Epics Management' do
       include_context 'work item epics migration'
 

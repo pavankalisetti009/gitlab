@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security', :group_saml, :orchestrated,
+  RSpec.describe 'Software Supply Chain Security', :group_saml, :orchestrated, feature_category: :compliance_management,
     requires_admin: 'creates a user via API' do
-    describe 'Group SAML SSO - Enforced SSO', product_group: :authentication do
+    describe 'Group SAML SSO - Enforced SSO' do
       include Support::API
 
       let!(:group) { create(:sandbox, path: "saml_sso_group_#{SecureRandom.hex(8)}") }

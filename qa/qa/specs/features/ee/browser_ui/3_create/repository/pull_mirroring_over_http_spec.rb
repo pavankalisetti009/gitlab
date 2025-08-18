@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Pull mirror a repository over HTTP', product_group: :source_code do
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Pull mirror a repository over HTTP' do
       let(:user) { Runtime::User::Store.test_user }
 
       it 'configures and syncs a (pull) mirrored repository with password auth', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347764' do

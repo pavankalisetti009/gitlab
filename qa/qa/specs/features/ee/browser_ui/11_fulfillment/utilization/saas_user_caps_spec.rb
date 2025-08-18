@@ -3,7 +3,7 @@
 module QA
   RSpec.describe 'Fulfillment',
     :requires_admin,
-    product_group: :utilization,
+    feature_category: :consumables_cost_management,
     only: { pipeline: %i[staging staging-canary] } do
     describe 'Utilization' do
       let(:admin_api_client) { Runtime::API::Client.as_admin }

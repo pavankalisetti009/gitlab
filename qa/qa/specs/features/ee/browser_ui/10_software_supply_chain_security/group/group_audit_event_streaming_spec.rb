@@ -8,7 +8,7 @@ module QA
     :requires_admin,
     :skip_live_env, # We need to enable local requests to use a local mock streaming server
     # and we can't create top-level groups in the paid tier on production
-    product_group: :compliance,
+    feature_category: :compliance_management,
     feature_flag: {
       name: 'use_consolidated_audit_event_stream_dest_api',
       scope: :group

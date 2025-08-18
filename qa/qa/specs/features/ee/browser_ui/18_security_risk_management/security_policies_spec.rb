@@ -2,8 +2,8 @@
 
 module QA
   RSpec.describe(
-    'Security Risk Management',
-    product_group: :security_policies) do
+    'Security Risk Management', feature_category: :security_policy_management
+  ) do
     describe 'Security policies' do
       let!(:project) do
         Resource::Project.fabricate_via_api_unless_fips! do |project|

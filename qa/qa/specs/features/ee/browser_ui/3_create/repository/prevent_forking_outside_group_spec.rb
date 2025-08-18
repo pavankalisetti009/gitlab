@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
+  RSpec.describe 'Create', feature_category: :source_code_management do
     describe 'prevent forking outside group',
-      except: { pipeline: %i[staging staging-canary] }, product_group: :source_code do
+      except: { pipeline: %i[staging staging-canary] } do
       let!(:group_for_fork) do
         Resource::Sandbox.fabricate! do |sandbox_group|
           sandbox_group.path = "group_for_fork_#{SecureRandom.hex(8)}"

@@ -5,7 +5,7 @@ module QA
     'Software Supply Chain Security',
     :requires_admin,
     :skip_live_env, # We need to enable local requests to use a local mock streaming server
-    product_group: :compliance,
+    feature_category: :compliance_management,
     feature_flag: { name: :disable_audit_event_streaming }
   ) do
     describe 'Instance audit event streaming' do

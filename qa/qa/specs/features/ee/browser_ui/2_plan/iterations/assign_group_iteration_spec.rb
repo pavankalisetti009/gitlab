@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan' do
-    describe 'Assign Iterations', product_group: :project_management do
+  RSpec.describe 'Plan', feature_category: :team_planning do
+    describe 'Assign Iterations' do
       include Support::Dates
 
       let!(:start_date) { current_date_yyyy_mm_dd }

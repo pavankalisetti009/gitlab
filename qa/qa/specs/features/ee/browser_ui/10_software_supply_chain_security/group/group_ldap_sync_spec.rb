@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security', :orchestrated, :ldap_tls, :ldap_no_tls, :requires_admin do
-    describe 'LDAP Group sync', product_group: :authentication do
+  RSpec.describe 'Software Supply Chain Security', :orchestrated, :ldap_tls, :ldap_no_tls, :requires_admin,
+    feature_category: :system_access do
+    describe 'LDAP Group sync' do
       include Support::API
 
       let(:root_group) { create(:sandbox, path: "group_sync_root_group-#{SecureRandom.hex(4)}") }

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan' do
-    describe 'Contribution Analytics', product_group: :optimize do
+  RSpec.describe 'Plan', feature_category: :value_stream_management do
+    describe 'Contribution Analytics' do
       let(:group) { create(:group, path: "contribution_anayltics-#{SecureRandom.hex(8)}") }
 
       let(:project) { create(:project, name: 'contribution_analytics', group: group) }

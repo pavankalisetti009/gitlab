@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Manage' do
-    describe 'Jira issues integration', :jira, :orchestrated, :requires_admin, product_group: :import,
+  RSpec.describe 'Manage', feature_category: :importers do
+    describe 'Jira issues integration', :jira, :orchestrated, :requires_admin,
       feature_flag: { name: 'jira_multiple_project_keys', scope: :project } do
       # rubocop:disable RSpec/InstanceVariable
       before(:context) do

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Verify' do
-    describe 'Pipeline subscription with a group owned project', product_group: :pipeline_execution do
+  RSpec.describe 'Verify', feature_category: :continuous_integration do
+    describe 'Pipeline subscription with a group owned project' do
       let(:executor) { "qa-runner-#{SecureRandom.hex(3)}" }
       let(:tag_name) { "awesome-tag-#{SecureRandom.hex(3)}" }
       let(:group) { create(:group, name: "group-for-pipeline-subscriptions-#{SecureRandom.hex(3)}") }

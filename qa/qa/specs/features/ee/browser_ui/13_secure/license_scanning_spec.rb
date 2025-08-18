@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', product_group: :composition_analysis,
+  RSpec.describe 'Secure', feature_category: :software_composition_analysis,
     only: { pipeline: %i[staging staging-canary] } do
     describe 'License Scanning' do
       let!(:test_project) do

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging }, product_group: :acquisition do
+  RSpec.describe 'Growth', :requires_admin, only: { subdomain: :staging }, feature_category: :acquisition do
     describe 'SaaS trials' do
       let(:api_client) { Runtime::API::Client.as_admin }
       let(:user) do

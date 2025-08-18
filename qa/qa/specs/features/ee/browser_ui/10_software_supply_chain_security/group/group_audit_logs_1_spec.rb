@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security', :skip_live_env, product_group: :compliance, feature_flag: {
-    name: :show_role_details_in_drawer
-  } do
+  RSpec.describe 'Software Supply Chain Security', :skip_live_env, feature_category: :compliance_management,
+    feature_flag: {
+      name: :show_role_details_in_drawer
+    } do
     shared_examples 'audit event' do |expected_events|
       it 'logs audit events for UI operations' do
         wait_for_audit_events(expected_events, group)

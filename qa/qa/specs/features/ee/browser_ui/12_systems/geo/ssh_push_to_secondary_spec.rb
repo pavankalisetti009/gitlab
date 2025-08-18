@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Systems', :orchestrated, :geo, product_group: :geo do
+  RSpec.describe 'Systems', :orchestrated, :geo, feature_category: :geo_replication do
     describe 'GitLab SSH push to secondary' do
       let(:file_content_primary) { 'This is a Geo project! Commit from primary.' }
       let(:file_content_secondary) { 'This is a Geo project! Commit from secondary.' }

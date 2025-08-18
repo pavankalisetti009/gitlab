@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Fulfillment', :requires_admin,
+  RSpec.describe 'Fulfillment', :requires_admin, feature_category: :consumables_cost_management,
     only: { subdomain: :staging },
-    feature_flag: { name: 'namespace_storage_limit', scope: :group },
-    product_group: :utilization do
+    feature_flag: { name: 'namespace_storage_limit', scope: :group } do
     describe 'Utilization' do
       include Runtime::Fixtures
 

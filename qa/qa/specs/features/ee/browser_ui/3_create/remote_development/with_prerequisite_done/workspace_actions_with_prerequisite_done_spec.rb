@@ -25,11 +25,11 @@
 #   GITLAB_QA_ADMIN_ACCESS_TOKEN=abcde12345 scripts/remote_development/run-e2e-tests.sh
 
 module QA
-  RSpec.describe 'Create',
+  RSpec.describe 'Create', feature_category: :workspaces,
     quarantine: {
       type: :waiting_on,
       issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/397005'
-    }, product_group: :remote_development, feature_category: :workspaces do
+    } do
     describe 'Remote Development' do
       context 'when prerequisite is already done',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/396854' do

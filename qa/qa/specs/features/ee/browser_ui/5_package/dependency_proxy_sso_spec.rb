@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Package', :skip_live_env, :orchestrated, :group_saml,
+  RSpec.describe 'Package', :skip_live_env, :orchestrated, :group_saml, feature_category: :package_registry,
     requires_admin: 'for various user admin functions' do
-    describe 'Dependency Proxy Group SSO', product_group: :container_registry do
+    describe 'Dependency Proxy Group SSO' do
       let!(:group) do
         Resource::Sandbox.fabricate! do |sandbox_group|
           sandbox_group.path = "saml_sso_group_with_dependency_proxy_#{SecureRandom.hex(8)}"

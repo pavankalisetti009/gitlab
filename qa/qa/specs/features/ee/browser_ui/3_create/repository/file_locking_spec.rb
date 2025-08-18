@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
+  RSpec.describe 'Create', feature_category: :source_code_management do
     describe(
       'File Locking',
-      :requires_admin,
-      product_group: :source_code
+      :requires_admin
     ) do
       let(:user_one) { create(:user) }
       let(:user_two) { create(:user) }

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Systems', :orchestrated, :geo, product_group: :geo do
+  RSpec.describe 'Systems', :orchestrated, :geo, feature_category: :geo_replication do
     describe 'GitLab wiki HTTP push' do
       context 'when wiki commit' do
         it 'new Git data is viewable in UI on secondary Geo sites',

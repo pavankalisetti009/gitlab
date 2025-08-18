@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :smoke, product_group: :project_management do
+  RSpec.describe 'Plan', :smoke, feature_category: :team_planning do
     describe 'Configure issue board by label' do
       let(:label_board_list) do
         EE::Resource::Board::BoardList::Project::LabelBoardList.fabricate_via_api!

@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Monitor' do
+  RSpec.describe 'Monitor', feature_category: :incident_management do
     # rubocop:disable RSpec/InstanceVariable -- needed to shut down sample app container in after hook.
     describe(
       'Product Analytics',
-      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"]&.include? "product-analytics" } },
-      product_group: :platform_insights
+      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"]&.include? "product-analytics" } }
     ) do
       let!(:group) { create(:group, name: "product-analytics-g-#{SecureRandom.hex(8)}") }
 

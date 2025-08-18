@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Deploy', product_group: :environments do
+  RSpec.describe 'Deploy', feature_category: :environment_management do
     describe 'Operations Dashboard' do
       let!(:runner) do
         create(:group_runner, group: group, name: group.name, tags: [group.name])

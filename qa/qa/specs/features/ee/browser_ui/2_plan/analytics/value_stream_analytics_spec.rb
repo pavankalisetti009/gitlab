@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :requires_admin, product_group: :optimize do
+  RSpec.describe 'Plan', :requires_admin, feature_category: :value_stream_management do
     describe 'Value stream analytics' do
       let(:admin_api_client) { Runtime::API::Client.as_admin }
       let(:default_stage_names) { %w[Issue Plan Code Test Review Staging] }
