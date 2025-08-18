@@ -24,7 +24,6 @@ module CodeSuggestions
 
       def feature_name
         return :amazon_q_integration if ::Ai::AmazonQ.connected?
-        return :self_hosted_models if self_hosted?
 
         :code_suggestions
       end

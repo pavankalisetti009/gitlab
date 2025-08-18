@@ -190,7 +190,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     end
 
     context 'when code_completions is self-hosted' do
-      let(:expected_ai_feature) { :self_hosted_models }
+      let(:expected_ai_feature) { :code_suggestions }
 
       before do
         create(:ai_feature_setting, :code_completions, provider: :self_hosted)
