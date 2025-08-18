@@ -2,9 +2,9 @@
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-search-md.svg';
 import { createAlert } from '~/alert';
+import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
-import { TYPENAME_AI_CATALOG_ITEM } from '../constants';
 
 export default {
   name: 'AiCatalogAgent',
