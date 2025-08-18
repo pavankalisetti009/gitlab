@@ -162,10 +162,6 @@ module Gitlab
           ::CloudConnector::AvailableServices.find_by_name(service_name)
         end
 
-        def api_key
-          service.access_token(user)
-        end
-
         # We specificy the `anthropic-version` header to receive the stream word by word instead of the accumulated
         # response https://docs.anthropic.com/claude/reference/streaming.
         def request_headers

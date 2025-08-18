@@ -184,9 +184,6 @@ module API
             unauthorized_with_origin_header!
           end
 
-          token = service.access_token(current_user)
-          unauthorized_with_origin_header! if token.nil?
-
           body = task.body
           file_too_large_with_origin_header! if body.size > MAX_BODY_SIZE
 
