@@ -73,20 +73,20 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
 
       context 'with data' do
         before do
-          clickhouse_fixture(:duo_chat_events, [
-            { user_id: user1.id, namespace_path: group.traversal_path, event: 1, timestamp: to - 3.days },
-            { user_id: user1.id, namespace_path: subgroup.traversal_path, event: 1, timestamp: to - 4.days },
-            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to - 2.days },
-            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to - 2.days },
+          clickhouse_fixture(:ai_usage_events, [
+            { user_id: user1.id, namespace_path: group.traversal_path, event: 6, timestamp: to - 3.days },
+            { user_id: user1.id, namespace_path: subgroup.traversal_path, event: 6, timestamp: to - 4.days },
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
             # Included only when use_ai_events_namespace_path_filter is enabled
-            { user_id: stranger_user.id, namespace_path: group.traversal_path, event: 1, timestamp: to - 2.days },
+            { user_id: stranger_user.id, namespace_path: group.traversal_path, event: 6, timestamp: to - 2.days },
             # out of timeframe
-            { user_id: user3.id, namespace_path: group.traversal_path, event: 1, timestamp: to + 2.days },
+            { user_id: user3.id, namespace_path: group.traversal_path, event: 6, timestamp: to + 2.days },
             # out of timeframe
-            { user_id: user3.id, namespace_path: group.traversal_path, event: 1, timestamp: from - 2.days }
+            { user_id: user3.id, namespace_path: group.traversal_path, event: 6, timestamp: from - 2.days }
           ])
 
-          clickhouse_fixture(:code_suggestion_events, [
+          clickhouse_fixture(:ai_usage_events, [
             { user_id: user1.id, event: 2, timestamp: to - 3.days }, # shown
             { user_id: user1.id, event: 3, timestamp: to - 3.days + 1.second }, # accepted
             { user_id: user1.id, event: 2, timestamp: to - 4.days }, # shown

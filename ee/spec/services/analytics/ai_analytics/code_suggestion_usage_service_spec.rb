@@ -103,38 +103,41 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
 
       context 'with data' do
         before do
-          clickhouse_fixture(:code_suggestion_events, [
+          clickhouse_fixture(:ai_usage_events, [
             # shown
-            { user_id: user1.id, namespace_path: group.traversal_path, event: 2, language: 'ruby',
-              suggestion_size: 10, timestamp: to - 3.days },
+            { user_id: user1.id, namespace_path: group.traversal_path, event: 2,
+              extras: { language: 'ruby', suggestion_size: 10 }, timestamp: to - 3.days },
             # accepted
-            { user_id: user1.id, namespace_path: project_namespace.traversal_path, event: 3, language: 'ruby',
-              suggestion_size: 20, timestamp: to - 3.days + 1.second },
+            { user_id: user1.id, namespace_path: project_namespace.traversal_path, event: 3,
+              extras: { language: 'ruby', suggestion_size: 20 }, timestamp: to - 3.days + 1.second },
             # shown
-            { user_id: user1.id, namespace_path: project_namespace.traversal_path, event: 2, language: 'ruby',
-              suggestion_size: 30, timestamp: to - 4.days },
+            { user_id: user1.id, namespace_path: project_namespace.traversal_path, event: 2,
+              extras: { language: 'ruby', suggestion_size: 30 }, timestamp: to - 4.days },
             # shown
-            { user_id: user2.id, namespace_path: subgroup.traversal_path, event: 2, language: 'js',
-              suggestion_size: 40, timestamp: to - 2.days },
+            { user_id: user2.id, namespace_path: subgroup.traversal_path, event: 2,
+              extras: { language: 'js', suggestion_size: 40 }, timestamp: to - 2.days },
             # shown
-            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 2, language: 'rust',
-              suggestion_size: 50, timestamp: to - 2.days },
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 2,
+              extras: { language: 'rust', suggestion_size: 50 }, timestamp: to - 2.days },
             # shown
             # these are taken into account when fetch_contributions_data_from_new_tables is enabled
-            { user_id: not_member.id, namespace_path: group.traversal_path, language: 'c++', suggestion_size: 60,
-              event: 2, timestamp: to - 2.days },
+            { user_id: not_member.id, namespace_path: group.traversal_path, event: 2,
+              extras: { language: 'c++', suggestion_size: 60 }, timestamp: to - 2.days },
             # accepted
             # these are taken into account when fetch_contributions_data_from_new_tables is enabled
-            { user_id: not_member.id, namespace_path: group.traversal_path, language: 'c', suggestion_size: 70,
-              event: 3, timestamp: to - 2.days + 1.second },
+            { user_id: not_member.id, namespace_path: group.traversal_path, event: 3,
+              extras: { language: 'c', suggestion_size: 70 }, timestamp: to - 2.days + 1.second },
             # shown
             # Out of timeframe
-            { user_id: user3.id, namespace_path: project_namespace.traversal_path, event: 2, language: 'perl',
-              suggestion_size: 80, timestamp: to + 2.days },
+            { user_id: user3.id, namespace_path: project_namespace.traversal_path, event: 2,
+              extras: { language: 'perl', suggestion_size: 80 }, timestamp: to + 2.days },
             # shown
             # Out of timeframe
-            { user_id: user3.id, namespace_path: subgroup.traversal_path, event: 2, language: 'php',
-              suggestion_size: 90, timestamp: from - 2.days }
+            { user_id: user3.id, namespace_path: subgroup.traversal_path, event: 2,
+              extras: { language: 'php', suggestion_size: 90 }, timestamp: from - 2.days },
+            # non-CS event
+            { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6,
+              extras: { language: 'rust', suggestion_size: 50 }, timestamp: to - 2.days }
           ])
 
           insert_events_into_click_house([

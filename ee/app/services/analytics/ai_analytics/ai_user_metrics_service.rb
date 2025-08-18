@@ -9,7 +9,7 @@ module Analytics
         WHERE user_id IN ({user_ids:Array(UInt64)})
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']}
+        AND event = #{::Ai::UsageEvent.events['code_suggestion_accepted_in_ide']}
         AND (
           {namespace_path:String} = '' OR startsWith(namespace_path, {namespace_path:String})
         )
@@ -17,13 +17,13 @@ module Analytics
       SQL
       private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
 
-      DUO_CHAT_INTERACTIONS_COUNT_QUERY = <<~SQL
+      DUO_CHAT_INTERACTIONS_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences) as duo_chat_interactions_count, user_id
         FROM duo_chat_events_daily
         WHERE user_id IN ({user_ids:Array(UInt64)})
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = 1
+        AND event = #{::Ai::UsageEvent.events['request_duo_chat_response']}
         AND (
           {namespace_path:String} = '' OR startsWith(namespace_path, {namespace_path:String})
         )
