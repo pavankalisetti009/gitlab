@@ -18,7 +18,6 @@ RSpec.shared_examples 'builds valid flow configuration' do
       'prompt_id' => 'workflow_catalog',
       'prompt_version' => '^1.0.0',
       'inputs' => be_an(Array),
-      'output' => 'context:agent.answer',
       'toolset' => be_an(Array)
     ))
   end

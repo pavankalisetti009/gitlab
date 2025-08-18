@@ -7,7 +7,6 @@ module Ai
         FLOW_VERSION = 'experimental'
         FLOW_ENVIRONMENT = 'remote'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
-        OUTPUT_CONTEXT = 'context:agent.answer'
         AGENT_INPUT = 'context:goal'
         PROMPT_ID = 'workflow_catalog'
         PROMPT_VERSION = '^1.0.0'
@@ -59,7 +58,6 @@ module Ai
             'prompt_id' => PROMPT_ID,
             'prompt_version' => PROMPT_VERSION,
             'inputs' => [AGENT_INPUT],
-            'output' => OUTPUT_CONTEXT,
             'toolset' => determine_toolset(definition),
             'ui_log_events' => ui_log_events
           }

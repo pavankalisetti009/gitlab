@@ -57,7 +57,6 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       expect(described_class::FLOW_VERSION).to eq('experimental')
       expect(described_class::FLOW_ENVIRONMENT).to eq('remote')
       expect(described_class::AGENT_COMPONENT_TYPE).to eq('AgentComponent')
-      expect(described_class::OUTPUT_CONTEXT).to eq('context:agent.answer')
     end
   end
 
