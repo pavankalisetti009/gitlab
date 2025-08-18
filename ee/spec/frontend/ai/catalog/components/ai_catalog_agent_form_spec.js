@@ -71,7 +71,7 @@ describe('AiCatalogAgentForm', () => {
     it('does not render error alert', () => {
       createWrapper();
 
-      expect(findErrorAlert().exists()).toBe(false);
+      expect(findErrorAlert().isVisible()).toBe(false);
     });
 
     it('renders the form with the correct initial values when props are provided', () => {
@@ -239,6 +239,22 @@ describe('AiCatalogAgentForm', () => {
       findErrorAlert().vm.$emit('dismiss');
 
       expect(wrapper.emitted('dismiss-error')).toHaveLength(1);
+    });
+
+    it('scrolls to error alert when errorMessages are set', async () => {
+      const scrollIntoViewMock = jest.fn();
+      const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+      HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+      createWrapper();
+
+      await wrapper.setProps({ errorMessages: ['Error occurred'] });
+      await nextTick();
+
+      expect(scrollIntoViewMock).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'center',
+      });
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
     });
   });
 });
