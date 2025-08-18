@@ -49439,7 +49439,13 @@ msgstr ""
 msgid "Project & Group can not be assigned at the same time"
 msgstr ""
 
+msgid "Project '%{project_name}' has been successfully archived."
+msgstr ""
+
 msgid "Project '%{project_name}' has been successfully restored."
+msgstr ""
+
+msgid "Project '%{project_name}' has been successfully unarchived."
 msgstr ""
 
 msgid "Project '%{project_name}' is being deleted."
@@ -51076,10 +51082,16 @@ msgstr ""
 msgid "ProjectsNew|my-awesome-project"
 msgstr ""
 
+msgid "Projects|An error occurred archiving the project. Please refresh the page to try again."
+msgstr ""
+
 msgid "Projects|An error occurred deleting the project. Please refresh the page to try again."
 msgstr ""
 
 msgid "Projects|An error occurred restoring the project. Please refresh the page to try again."
+msgstr ""
+
+msgid "Projects|An error occurred unarchiving the project. Please refresh the page to try again."
 msgstr ""
 
 msgid "Projects|Delete %{nameWithNamespace}"
@@ -67645,6 +67657,9 @@ msgid "Unapprove the current merge request."
 msgstr ""
 
 msgid "Unapproved the current merge request."
+msgstr ""
+
+msgid "Unarchive"
 msgstr ""
 
 msgid "Unarchive project"
