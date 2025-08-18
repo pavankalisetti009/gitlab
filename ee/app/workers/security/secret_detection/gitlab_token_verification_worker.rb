@@ -22,7 +22,16 @@ module Security
       #
       # @param [Integer] pipeline_id ID of the pipeline containing security scan results
       def perform(pipeline_id)
-        Security::SecretDetection::UpdateTokenStatusService.new.execute_for_pipeline(pipeline_id)
+        pipeline = Ci::Pipeline.find_by_id(pipeline_id)
+        return unless pipeline
+
+        service = Security::SecretDetection::UpdateTokenStatusService.new
+
+        if pipeline.default_branch?
+          service.execute_for_vulnerability_pipeline(pipeline_id)
+        else
+          service.execute_for_security_pipeline(pipeline_id)
+        end
       end
     end
   end

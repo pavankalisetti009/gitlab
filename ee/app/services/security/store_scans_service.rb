@@ -33,6 +33,7 @@ module Security
 
       schedule_store_reports_worker
       schedule_scan_security_report_secrets_worker
+      schedule_update_token_status_worker
     end
 
     private
@@ -86,6 +87,20 @@ module Security
 
     def schedule_scan_security_report_secrets_worker
       ScanSecurityReportSecretsWorker.perform_async(pipeline.id) if revoke_secret_detection_token?
+    end
+
+    def schedule_update_token_status_worker
+      return unless should_update_token_status?
+
+      Security::SecretDetection::GitlabTokenVerificationWorker.perform_async(pipeline.id)
+    end
+
+    def should_update_token_status?
+      !pipeline.default_branch? &&
+        Feature.enabled?(:validity_checks_security_finding_status, project) &&
+        Feature.enabled?(:validity_checks, project) &&
+        project.security_setting&.validity_checks_enabled &&
+        secret_detection_scans_found?
     end
 
     def revoke_secret_detection_token?

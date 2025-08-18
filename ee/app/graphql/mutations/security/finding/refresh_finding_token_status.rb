@@ -30,7 +30,7 @@ module Mutations
 
           ::Security::SecretDetection::UpdateTokenStatusService
             .new
-            .execute_for_finding(finding.id)
+            .execute_for_vulnerability_finding(finding.id)
 
           token_status = finding.reset.finding_token_status
           return { errors: ["Token status not found."], finding_token_status: nil } unless token_status

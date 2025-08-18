@@ -14,8 +14,20 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
     )
   end
 
-  describe '#execute' do
-    subject(:execute) { described_class.new.execute_for_pipeline(pipeline.id) }
+  shared_examples 'does not create vulnerability finding token status' do
+    it 'does not run' do
+      expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
+    end
+  end
+
+  shared_examples 'does not create security finding token status' do
+    it 'does not create security finding token status' do
+      expect { execute }.not_to change { Security::FindingTokenStatus.count }
+    end
+  end
+
+  describe '#execute_for_vulnerability_pipeline' do
+    subject(:execute) { described_class.new.execute_for_vulnerability_pipeline(pipeline.id) }
 
     shared_examples 'creates a finding token status' do |expected_status|
       it "creates FindingTokenStatus with \"#{expected_status}\" status" do
@@ -32,9 +44,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
         stub_feature_flags(validity_checks: false)
       end
 
-      it 'does not run' do
-        expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
-      end
+      it_behaves_like 'does not create vulnerability finding token status'
     end
 
     context 'when validity checks FF is enabled' do
@@ -47,9 +57,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           project.security_setting.update!(validity_checks_enabled: false)
         end
 
-        it 'does not run' do
-          expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
-        end
+        it_behaves_like 'does not create vulnerability finding token status'
       end
 
       context 'when validity checks is enabled for the project' do
@@ -60,11 +68,9 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
         context 'when there are no findings' do
           let(:empty_pipeline) { create(:ci_pipeline, :success, project: project) }
 
-          subject(:execute) { described_class.new.execute_for_pipeline(empty_pipeline.id) }
+          subject(:execute) { described_class.new.execute_for_vulnerability_pipeline(empty_pipeline.id) }
 
-          it 'does not create any token statuses' do
-            expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
-          end
+          it_behaves_like 'does not create vulnerability finding token status'
         end
 
         context 'when finding exists with no token' do
@@ -74,7 +80,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             finding.update!(raw_metadata: parsed_metadata.to_json)
           end
 
-          it_behaves_like 'creates a finding token status', 'unknown'
+          it_behaves_like 'does not create vulnerability finding token status'
         end
 
         context 'when finding exists with blank token' do
@@ -84,7 +90,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             finding.update!(raw_metadata: parsed_metadata.to_json)
           end
 
-          it_behaves_like 'creates a finding token status', 'unknown'
+          it_behaves_like 'does not create vulnerability finding token status'
         end
 
         context 'when a token is not found' do
@@ -152,7 +158,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
         context 'when the token lookup service raises an error' do
           let(:token_lookup) { instance_double(Security::SecretDetection::TokenLookupService) }
 
-          subject(:execute) { described_class.new(token_lookup).execute_for_pipeline(pipeline.id) }
+          subject(:execute) { described_class.new(token_lookup).execute_for_vulnerability_pipeline(pipeline.id) }
 
           before do
             allow(token_lookup).to receive(:find).and_raise(StandardError.new("Token lookup error"))
@@ -406,12 +412,34 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             expect(query_count).to eq(9)
           end
         end
+
+        context 'when process_findings_batch receives invalid finding type' do
+          it 'raises ArgumentError for unknown finding type' do
+            service = described_class.new
+
+            allow(service).to receive(:process_findings_batch)
+              .and_wrap_original do |original_method, findings, _finding_type|
+              original_method.call(findings, :invalid_type)
+            end
+
+            allow(service).to receive_messages(build_token_status_attributes_by_raw_token: { 'glpat-test' => [{
+              project_id: project.id,
+              vulnerability_occurrence_id: finding.id,
+              status: 'unknown',
+              created_at: Time.current,
+              updated_at: Time.current
+            }] }, get_tokens_by_raw_token_value: {})
+
+            expect { service.execute_for_vulnerability_pipeline(pipeline.id) }
+              .to raise_error(ArgumentError, 'Unknown finding type: invalid_type')
+          end
+        end
       end
     end
   end
 
-  describe '#execute_for_finding' do
-    subject(:execute) { described_class.new.execute_for_finding(finding.id) }
+  describe '#execute_for_vulnerability_finding' do
+    subject(:execute) { described_class.new.execute_for_vulnerability_finding(finding.id) }
 
     shared_examples 'creates a finding token status for single finding' do |expected_status|
       it "creates FindingTokenStatus with \"#{expected_status}\" status" do
@@ -424,11 +452,9 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
     end
 
     context 'when finding does not exist' do
-      subject(:execute) { described_class.new.execute_for_finding(non_existing_record_id) }
+      subject(:execute) { described_class.new.execute_for_vulnerability_finding(non_existing_record_id) }
 
-      it 'does not create any token statuses' do
-        expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
-      end
+      it_behaves_like 'does not create vulnerability finding token status'
     end
 
     context 'when validity checks FF is disabled' do
@@ -436,9 +462,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
         stub_feature_flags(validity_checks: false)
       end
 
-      it 'does not run' do
-        expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
-      end
+      it_behaves_like 'does not create vulnerability finding token status'
     end
 
     context 'when validity checks FF is enabled' do
@@ -451,9 +475,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           project.security_setting.update!(validity_checks_enabled: false)
         end
 
-        it 'does not run' do
-          expect { execute }.not_to change { Vulnerabilities::FindingTokenStatus.count }
-        end
+        it_behaves_like 'does not create vulnerability finding token status'
       end
 
       context 'when validity checks is enabled for the project' do
@@ -468,7 +490,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             finding.update!(raw_metadata: parsed_metadata.to_json)
           end
 
-          it_behaves_like 'creates a finding token status for single finding', 'unknown'
+          it_behaves_like 'does not create vulnerability finding token status'
         end
 
         context 'when finding exists with blank token' do
@@ -478,7 +500,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             finding.update!(raw_metadata: parsed_metadata.to_json)
           end
 
-          it_behaves_like 'creates a finding token status for single finding', 'unknown'
+          it_behaves_like 'does not create vulnerability finding token status'
         end
 
         context 'when a token is not found' do
@@ -532,7 +554,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
         context 'when the token lookup service raises an error' do
           let(:token_lookup) { instance_double(Security::SecretDetection::TokenLookupService) }
 
-          subject(:execute) { described_class.new(token_lookup).execute_for_finding(finding.id) }
+          subject(:execute) { described_class.new(token_lookup).execute_for_vulnerability_finding(finding.id) }
 
           before do
             allow(token_lookup).to receive(:find).and_raise(StandardError.new("Token lookup error"))
@@ -587,6 +609,311 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             end
 
             execute
+          end
+        end
+      end
+    end
+  end
+
+  describe '#execute_for_security_pipeline' do
+    let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
+
+    let_it_be(:security_scan) do
+      create(:security_scan, project: project, pipeline: pipeline, build: build, scan_type: :secret_detection)
+    end
+
+    let_it_be(:security_finding) do
+      create(:security_finding,
+        scan: security_scan,
+        uuid: SecureRandom.uuid,
+        finding_data: {
+          'name' => 'GitLab personal access token',
+          'identifiers' => [
+            {
+              'external_type' => 'gitleaks_rule_id',
+              'external_id' => 'gitlab_personal_access_token',
+              'name' => 'Gitleaks rule ID gitlab_personal_access_token'
+            }
+          ],
+          'raw_source_code_extract' => 'glpat-test_token_value'
+        }
+      )
+    end
+
+    subject(:execute) { described_class.new.execute_for_security_pipeline(pipeline.id) }
+
+    context 'when validity_checks FF is disabled' do
+      before do
+        stub_feature_flags(validity_checks: false)
+      end
+
+      it_behaves_like 'does not create security finding token status'
+
+      context 'when validity_checks FF is enabled' do
+        before do
+          stub_feature_flags(validity_checks: true)
+        end
+
+        context 'when validity_checks_security_finding_status FF is disabled' do
+          before do
+            stub_feature_flags(validity_checks_security_finding_status: false)
+          end
+
+          it_behaves_like 'does not create security finding token status'
+
+          context 'when validity_checks_security_finding_status FF is enabled' do
+            before do
+              stub_feature_flags(validity_checks_security_finding_status: true)
+            end
+
+            context 'when validity checks is disabled for the project' do
+              before do
+                project.security_setting.update!(validity_checks_enabled: false)
+              end
+
+              it_behaves_like 'does not create security finding token status'
+            end
+
+            context 'when validity checks is enabled for the project' do
+              before do
+                project.security_setting.update!(validity_checks_enabled: true)
+              end
+
+              it 'creates security finding token status' do
+                expect { execute }.to change { Security::FindingTokenStatus.count }.by(1)
+
+                security_finding.reload
+                expect(security_finding.token_status).to be_present
+                expect(security_finding.token_status.status).to eq('unknown')
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe '#execute_for_security_finding' do
+    let_it_be(:security_scan) do
+      create(:security_scan, project: project, pipeline: pipeline, scan_type: :secret_detection)
+    end
+
+    let_it_be(:security_finding) do
+      create(:security_finding, scan: security_scan, finding_data: {
+        'name' => 'GitLab personal access token',
+        'identifiers' => [
+          {
+            'external_type' => 'gitleaks_rule_id',
+            'external_id' => 'gitlab_personal_access_token',
+            'name' => 'Gitleaks rule ID gitlab_personal_access_token'
+          }
+        ],
+        'raw_source_code_extract' => 'glpat-test_token_value'
+      })
+    end
+
+    subject(:execute) { described_class.new.execute_for_security_finding(security_finding.id) }
+
+    context 'when validity_checks FF is disabled' do
+      before do
+        stub_feature_flags(validity_checks: false)
+      end
+
+      it_behaves_like 'does not create security finding token status'
+
+      context 'when validity_checks FF is enabled' do
+        before do
+          stub_feature_flags(validity_checks: true)
+        end
+
+        context 'when validity_checks_security_finding_status FF is disabled' do
+          before do
+            stub_feature_flags(validity_checks_security_finding_status: false)
+          end
+
+          it_behaves_like 'does not create security finding token status'
+
+          context 'when validity_checks_security_finding_status FF is enabled' do
+            before do
+              stub_feature_flags(validity_checks_security_finding_status: true)
+            end
+
+            context 'when validity checks is disabled for the project' do
+              before do
+                project.security_setting.update!(validity_checks_enabled: false)
+              end
+
+              it_behaves_like 'does not create security finding token status'
+
+              context 'when validity checks is enabled for the project' do
+                before do
+                  project.security_setting.update!(validity_checks_enabled: true)
+                end
+
+                context 'when security finding has no raw_source_code_extract' do
+                  let_it_be(:finding_without_extract) do
+                    create(:security_finding,
+                      scan: security_scan,
+                      uuid: SecureRandom.uuid,
+                      finding_data: {
+                        'name' => 'GitLab personal access token',
+                        'identifiers' => [
+                          {
+                            'external_type' => 'gitleaks_rule_id',
+                            'external_id' => 'gitlab_personal_access_token',
+                            'name' => 'Gitleaks rule ID gitlab_personal_access_token'
+                          }
+                        ]
+                      }
+                    )
+                  end
+
+                  subject(:execute) { described_class.new.execute_for_security_finding(finding_without_extract.id) }
+
+                  it 'skips the finding and does not create token status' do
+                    expect { execute }.not_to change { Security::FindingTokenStatus.count }
+
+                    expect(finding_without_extract.reload.token_status).to be_nil
+                  end
+                end
+
+                context 'when security finding has no gitleaks_rule_id identifier' do
+                  let_it_be(:finding_without_identifier) do
+                    create(:security_finding,
+                      scan: security_scan,
+                      uuid: SecureRandom.uuid,
+                      finding_data: {
+                        'name' => 'Some other finding',
+                        'identifiers' => [
+                          {
+                            'external_type' => 'other_type',
+                            'external_id' => 'other_id',
+                            'name' => 'Other identifier'
+                          }
+                        ],
+                        'raw_source_code_extract' => 'some-value'
+                      }
+                    )
+                  end
+
+                  subject(:execute) { described_class.new.execute_for_security_finding(finding_without_identifier.id) }
+
+                  it 'skips the finding and does not create token status' do
+                    expect { execute }.not_to change { Security::FindingTokenStatus.count }
+
+                    expect(finding_without_identifier.reload.token_status).to be_nil
+                  end
+                end
+
+                it 'creates security finding token status' do
+                  expect { execute }.to change { Security::FindingTokenStatus.count }.by(1)
+
+                  security_finding.reload
+                  expect(security_finding.token_status).to be_present
+                  expect(security_finding.token_status.status).to eq('unknown')
+                end
+
+                context 'when multiple security findings have same UUID' do
+                  let_it_be(:another_scan) do
+                    create(:security_scan, project: project, pipeline: pipeline, scan_type: :secret_detection)
+                  end
+
+                  let_it_be(:second_security_finding) do
+                    create(:security_finding,
+                      scan: another_scan,
+                      uuid: security_finding.uuid,
+                      finding_data: {
+                        'name' => 'GitLab personal access token',
+                        'identifiers' => [
+                          {
+                            'external_type' => 'gitleaks_rule_id',
+                            'external_id' => 'gitlab_personal_access_token',
+                            'name' => 'Gitleaks rule ID gitlab_personal_access_token'
+                          }
+                        ],
+                        'raw_source_code_extract' => 'glpat-test_token_value'
+                      }
+                    )
+                  end
+
+                  it 'processes all findings with the same UUID' do
+                    expect { execute }.to change { Security::FindingTokenStatus.count }.by(2)
+
+                    [security_finding, second_security_finding].each do |finding|
+                      finding.reload
+                      expect(finding.token_status).to be_present
+                    end
+                  end
+                end
+
+                context 'when security finding has an associated vulnerability finding' do
+                  let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+                  let_it_be(:vulnerability_finding) do
+                    create(:vulnerabilities_finding,
+                      vulnerability: vulnerability,
+                      uuid: security_finding.uuid,
+                      project: project,
+                      raw_metadata: {
+                        'name' => 'GitLab personal access token',
+                        'identifiers' => [
+                          {
+                            'type' => 'gitleaks_rule_id',
+                            'value' => 'gitlab_personal_access_token',
+                            'name' => 'Gitleaks rule ID gitlab_personal_access_token'
+                          }
+                        ],
+                        'raw_source_code_extract' => 'glpat-test_token_value'
+                      }.to_json
+                    )
+                  end
+
+                  before do
+                    security_finding.update!(vulnerability_finding: vulnerability_finding)
+                  end
+
+                  it 'creates token status for both security finding and vulnerability finding' do
+                    expect { execute }.to change { Security::FindingTokenStatus.count }.by(1)
+                                    .and change { Vulnerabilities::FindingTokenStatus.count }.by(1)
+
+                    security_finding.reload
+                    vulnerability_finding.reload
+
+                    expect(security_finding.token_status).to be_present
+                    expect(security_finding.token_status.status).to eq('unknown')
+
+                    expect(vulnerability_finding.finding_token_status).to be_present
+                    expect(vulnerability_finding.finding_token_status.status).to eq('unknown')
+                  end
+
+                  context 'when token is found and active' do
+                    let_it_be(:pat_token) { create(:personal_access_token) }
+
+                    before do
+                      security_finding.update!(
+                        finding_data: security_finding.finding_data.merge(
+                          'raw_source_code_extract' => pat_token.token
+                        )
+                      )
+                      vulnerability_finding.update!(
+                        raw_metadata: ::Gitlab::Json.parse(vulnerability_finding.raw_metadata).merge(
+                          'raw_source_code_extract' => pat_token.token
+                        ).to_json
+                      )
+                    end
+
+                    it 'marks both findings as active' do
+                      execute
+
+                      security_finding.reload
+                      vulnerability_finding.reload
+
+                      expect(security_finding.token_status.status).to eq('active')
+                      expect(vulnerability_finding.finding_token_status.status).to eq('active')
+                    end
+                  end
+                end
+              end
+            end
           end
         end
       end

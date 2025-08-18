@@ -77,6 +77,14 @@ module Security
     scope :by_project_id_and_pipeline_ids, ->(project_id, pipeline_ids) do
       joins(:scan).merge(Security::Scan.succeeded.by_project(project_id).by_pipeline_ids(pipeline_ids))
     end
+    scope :by_project_id_and_uuid, ->(project_id, partition_numbers, uuid) do
+      relation = joins(:scan)
+        .merge(Security::Scan.by_project(project_id))
+        .by_uuid(uuid)
+      # if there is no partition number, fall back on scanning all partitions
+      partitions = Array(partition_numbers).presence
+      partitions ? relation.where(partition_number: partitions) : relation
+    end
     scope :by_state, ->(states) do
       states = Array(states).map(&:to_s)
 

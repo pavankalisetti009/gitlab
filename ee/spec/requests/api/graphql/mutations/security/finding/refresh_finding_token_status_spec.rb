@@ -93,7 +93,7 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
         before do
           project.security_setting.reload.update!(validity_checks_enabled: true)
           allow(Security::SecretDetection::UpdateTokenStatusService).to receive(:new).and_return(mock_service)
-          allow(mock_service).to receive(:execute_for_finding)
+          allow(mock_service).to receive(:execute_for_vulnerability_finding)
           allow(Vulnerabilities::FindingTokenStatus).to receive(:find).with(finding.id).and_return(token_status)
         end
 
@@ -101,7 +101,7 @@ RSpec.describe Mutations::Security::Finding::RefreshFindingTokenStatus, feature_
           result = execute
 
           expect(Security::SecretDetection::UpdateTokenStatusService).to have_received(:new)
-          expect(mock_service).to have_received(:execute_for_finding).with(finding.id)
+          expect(mock_service).to have_received(:execute_for_vulnerability_finding).with(finding.id)
           expect(result[:errors]).to be_empty
           expect(result[:finding_token_status]).to eq(token_status)
         end
