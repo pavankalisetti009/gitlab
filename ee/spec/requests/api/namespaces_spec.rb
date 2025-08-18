@@ -151,28 +151,51 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
         it { expect { get api("/namespaces", user) }.not_to exceed_all_query_limit(control).with_threshold(8) }
       end
 
-      it 'includes max_seats_used' do
-        get api("/namespaces", user)
+      context 'when user has read_billing permissions' do
+        before do
+          group1.add_owner(user)
+        end
 
-        expect(json_response.first['max_seats_used']).to eq(1)
+        it 'includes billing fields' do
+          get api("/namespaces", user)
+
+          owned_group = json_response.find { |resource| resource['id'] == group1.id }
+
+          expect(owned_group['max_seats_used']).to be_present
+          expect(owned_group['max_seats_used_changed_at']).to be_present
+          expect(owned_group['seats_in_use']).to be_present
+          expect(owned_group['end_date']).to be_present
+        end
       end
 
-      it 'includes max_seats_used_changed_at' do
-        get api("/namespaces", user)
+      context 'when user does not have read_billing permissions' do
+        it 'billing fields are nil' do
+          get api("/namespaces", user)
 
-        expect(Time.zone.parse(json_response.first['max_seats_used_changed_at'])).to eq(1.week.ago)
+          json_response.each do |resp|
+            expect(resp['max_seats_used']).to be_nil
+            expect(resp['max_seats_used_changed_at']).to be_nil
+            expect(resp['seats_in_use']).to be_nil
+            expect(resp['end_date']).to be_nil
+          end
+        end
       end
 
-      it 'includes seats_in_use' do
-        get api("/namespaces", user)
+      context 'when restrict_namespace_api_billing_fields feature flag is disabled' do
+        before do
+          stub_feature_flags(restrict_namespace_api_billing_fields: false)
+        end
 
-        expect(json_response.first['seats_in_use']).to eq(1)
-      end
+        it 'includes billing fields when guest' do
+          get api("/namespaces", user)
 
-      it 'includes end_date' do
-        get api("/namespaces", user)
+          guest_group = json_response.find { |resource| resource['id'] == group1.id }
 
-        expect(Date.parse(json_response.first['end_date'])).to eq(Date.current + 2.days)
+          expect(guest_group['max_seats_used']).to be_present
+          expect(guest_group['max_seats_used_changed_at']).to be_present
+          expect(guest_group['seats_in_use']).to be_present
+          expect(guest_group['end_date']).to be_present
+        end
       end
     end
 
