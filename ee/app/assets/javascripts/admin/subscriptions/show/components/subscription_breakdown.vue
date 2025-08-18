@@ -5,6 +5,7 @@ import { GlButton, GlModalDirective, GlModal } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { createAlert } from '~/alert';
+import { logError } from '~/lib/logger';
 import { __, sprintf } from '~/locale';
 import SubscriptionDetailsHistory from 'jh_else_ee/admin/subscriptions/show/components/subscription_details_history.vue';
 import {
@@ -33,6 +34,7 @@ export const i18n = Object.freeze({
   ),
   removeLicenseConfirm: __('Are you sure you want to remove the license?'),
   removeLicenseButtonLabel: __('Remove license'),
+  removeLicenseError: __('Something went wrong while removing the license. Please try again.'),
   cancel: __('Cancel'),
 });
 
@@ -97,14 +99,9 @@ export default {
     },
   },
   watch: {
-    licenseError(error, prevError) {
-      if (!error || error === prevError) {
-        // Note: This can never happen in practice, since the error is always a
-        // new Error instance, i.e., truthy and unique.
-        return;
-      }
-
-      this.showAlert(error);
+    licenseError(error) {
+      logError(error);
+      this.showAlert(i18n.removeLicenseError);
     },
   },
   methods: {
