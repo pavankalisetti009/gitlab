@@ -72,7 +72,13 @@ RSpec.describe Security::Ingestion::Tasks::IngestRemediations, feature_category:
     it_behaves_like 'sync vulnerabilities changes to ES' do
       let(:expected_vulnerabilities) { [vulnerability_read_1, vulnerability_read_2] }
 
-      subject { ingest_finding_remediations }
+      subject do
+        # ES sync is done in after_commit transaction callback and this task runs inside a transaction.
+        # Here as well a transaction is used to simulate the behaviour.
+        SecApplicationRecord.transaction do
+          ingest_finding_remediations
+        end
+      end
     end
 
     it_behaves_like 'bulk insertable task'

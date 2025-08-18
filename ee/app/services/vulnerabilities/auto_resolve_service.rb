@@ -84,14 +84,16 @@ module Vulnerabilities
         # that auto-resolves Critical and Low SAST vulnerabilities. First 100 will most certainly contain the Critical
         # ones but the Low ones are going to be at the end of the collection
         vulnerabilities_to_update = Vulnerability.id_in(vulnerabilities_to_resolve.map(&:vulnerability_id))
+        vulnerabilities_to_update.update_all(
+          state: :resolved,
+          auto_resolved: true,
+          resolved_by_id: user.id,
+          resolved_at: now,
+          updated_at: now
+        )
 
-        Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_update).execute do |vulnerabilities|
-          vulnerabilities.update_all(
-            state: :resolved,
-            auto_resolved: true,
-            resolved_by_id: user.id,
-            resolved_at: now,
-            updated_at: now)
+        Vulnerability.current_transaction.after_commit do
+          Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_update).execute(&:itself)
         end
       end
 

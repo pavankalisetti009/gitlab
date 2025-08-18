@@ -33,8 +33,14 @@ module Vulnerabilities
       SecApplicationRecord.transaction do
         update_support_tables(vulnerabilities, db_attributes)
 
-        Vulnerabilities::BulkEsOperationService.new(vulnerabilities).execute do |batch|
-          batch.update_all(db_attributes[:vulnerabilities])
+        vulnerability_ids = vulnerabilities.map(&:id)
+
+        vulnerabilities.update_all(db_attributes[:vulnerabilities])
+
+        SecApplicationRecord.current_transaction.after_commit do
+          vulnerabilities_to_sync = Vulnerability.id_in(vulnerability_ids)
+
+          ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_sync).execute(&:itself)
         end
       end
     end

@@ -20,8 +20,10 @@ module Vulnerabilities
 
       SecApplicationRecord.transaction do
         update_support_tables(selected_vulnerabilities, db_attributes)
-        Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute do |vulnerabilities|
-          vulnerabilities.update_all(db_attributes[:vulnerabilities])
+        selected_vulnerabilities.update_all(db_attributes[:vulnerabilities])
+
+        SecApplicationRecord.current_transaction.after_commit do
+          ::Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute(&:itself)
         end
       end
 

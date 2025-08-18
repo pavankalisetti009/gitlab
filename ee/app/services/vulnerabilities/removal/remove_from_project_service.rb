@@ -37,7 +37,7 @@ module Vulnerabilities
         def execute
           return false if batch_size == 0
 
-          transaction_status = Vulnerability.transaction do
+          Vulnerability.transaction do
             delete_resources_by_findings
             delete_resources_by_vulnerabilities
             delete_vulnerabilities
@@ -45,10 +45,10 @@ module Vulnerabilities
 
             update_project_vulnerabilities_count if update_counts
 
-            true
+            Vulnerability.current_transaction.after_commit do
+              sync_elasticsearch
+            end
           end
-
-          sync_elasticsearch if transaction_status
 
           true
         end

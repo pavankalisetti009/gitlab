@@ -51,13 +51,15 @@ module Security
           def update_vulnerability_records
             vulnerabilities_relation = ::Vulnerability.id_in(redetected_vulnerability_ids)
 
-            ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do |relation|
-              relation.update_all(
-                state: :detected,
-                resolved_at: nil,
-                resolved_by_id: nil,
-                updated_at: current_time
-              )
+            vulnerabilities_relation.update_all(
+              state: :detected,
+              resolved_at: nil,
+              resolved_by_id: nil,
+              updated_at: current_time
+            )
+
+            SecApplicationRecord.current_transaction.after_commit do
+              ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute(&:itself)
             end
           end
 
