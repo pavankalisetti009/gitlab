@@ -148,16 +148,26 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
         end
 
         it 'returns expected request params' do
+          expect(subject.send(:use_model_metadata?)).to be_falsy
           expect(subject.request_params).to eq(expected_request_params)
         end
       end
 
       context 'if feature setting is configured for a self-hosted model' do
+        let(:expected_prompt_version) { "^1.0.0" }
+
         let_it_be(:feature_setting) do
           create(:ai_feature_setting, feature: :code_generations, provider: :self_hosted)
         end
 
+        before do
+          stub_feature_flags(incident_fail_over_generation_provider: true)
+          stub_feature_flags(use_gemini_2_5_flash_in_code_generation: true)
+        end
+
         it 'returns expected request params' do
+          expect(subject.send(:use_model_metadata?)).to be_truthy
+
           expect(subject.request_params).to eq(
             {
               **expected_request_params,
@@ -173,6 +183,55 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
         end
       end
 
+      context 'if feature setting is configured for Model Selection' do
+        context 'when there is a model pinned' do
+          let(:expected_prompt_version) { "^1.0.0" }
+
+          let_it_be(:feature_setting) do
+            create(:ai_namespace_feature_setting, feature: :code_generations)
+          end
+
+          before do
+            stub_feature_flags(incident_fail_over_generation_provider: true)
+            stub_feature_flags(use_gemini_2_5_flash_in_code_generation: true)
+          end
+
+          it 'returns expected request params' do
+            expect(subject.send(:use_model_metadata?)).to be_truthy
+
+            expect(subject.request_params).to eq(
+              {
+                **expected_request_params,
+                model_metadata: {
+                  feature_setting: feature_setting.feature.to_s,
+                  identifier: feature_setting.offered_model_ref,
+                  provider: "gitlab"
+                }
+              }
+            )
+          end
+        end
+
+        context 'when there is no model pinned' do
+          let(:expected_prompt_version) { "2.0.0" }
+
+          let_it_be(:feature_setting) do
+            create(:ai_namespace_feature_setting, feature: :code_generations, offered_model_ref: nil)
+          end
+
+          before do
+            stub_feature_flags(incident_fail_over_generation_provider: true)
+            stub_feature_flags(use_gemini_2_5_flash_in_code_generation: true)
+          end
+
+          it 'returns expected request params' do
+            expect(subject.send(:use_model_metadata?)).to be_falsy
+
+            expect(subject.request_params).to eq(expected_request_params)
+          end
+        end
+      end
+
       context 'when failed over' do
         let(:expected_saas) { true }
         let(:expected_prompt_id) { "code_suggestions/generations" }
@@ -184,6 +243,8 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
         end
 
         it 'returns expected request params' do
+          expect(subject.send(:use_model_metadata?)).to be_falsy
+
           expect(subject.request_params).to eq(expected_request_params)
         end
       end
@@ -200,6 +261,8 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
         end
 
         it 'returns expected request params' do
+          expect(subject.send(:use_model_metadata?)).to be_falsy
+
           expect(subject.request_params).to eq(expected_request_params)
         end
       end

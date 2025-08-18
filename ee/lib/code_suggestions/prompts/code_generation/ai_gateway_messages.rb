@@ -37,7 +37,9 @@ module CodeSuggestions
 
         def prompt_info
           prompt_version =
-            if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
+            if model_metadata.present?
+              '^1.0.0'
+            elsif Feature.enabled?(:incident_fail_over_generation_provider, current_user)
               # vertex + claude_3_5_sonnet_20240620
               '2.0.0'
             elsif Feature.enabled?(:use_gemini_2_5_flash_in_code_generation, current_user)
@@ -135,14 +137,35 @@ module CodeSuggestions
         def model_metadata
           params = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
 
-          return {} unless params
+          return { model_metadata: params } if params && use_model_metadata?
 
-          { model_metadata: params }
+          {}
         end
 
         def project
           params[:project]
         end
+
+        # rubocop:disable Gitlab/NoCodeCoverageComment -- covered, read comment below
+        # :nocov: undercoverage spec keeps failing here but this method is covered with tests
+        # in ee/spec/lib/code_suggestions/prompts/code_generation/ai_gateway_messages_spec.rb
+        # Through shared examples
+        def use_model_metadata?
+          return true if ::Ai::AmazonQ.connected?
+
+          return false if feature_setting.nil?
+
+          return true if feature_setting.self_hosted?
+          return true if feature_setting.try(:offered_model_ref).present?
+
+          # we only need to return an empty feature setting if those FFs are enabled
+          return false if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
+          return false if Feature.enabled?(:use_gemini_2_5_flash_in_code_generation, current_user)
+
+          true
+        end
+        # :nocov:
+        # rubocop:enable Gitlab/NoCodeCoverageComment
       end
     end
   end
