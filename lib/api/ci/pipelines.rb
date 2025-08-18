@@ -62,6 +62,10 @@ module API
           optional :name,     types: String, desc: 'Filter pipelines by name',
             documentation: { example: 'Build pipeline' }
         end
+
+        route_setting :authentication, job_token_allowed: true
+        route_setting :authorization, job_token_policies: :read_pipelines,
+          allow_public_access_for_enabled_project_features: [:repository, :builds]
         get ':id/pipelines', urgency: :low, feature_category: :continuous_integration do
           authorize! :read_pipeline, user_project
           authorize! :read_build, user_project
@@ -136,6 +140,10 @@ module API
         params do
           requires :pipeline_id, type: Integer, desc: 'The pipeline ID', documentation: { example: 18 }
         end
+
+        route_setting :authentication, job_token_allowed: true
+        route_setting :authorization, job_token_policies: :read_pipelines,
+          allow_public_access_for_enabled_project_features: [:repository, :builds]
         get ':id/pipelines/:pipeline_id', urgency: :low, feature_category: :continuous_integration do
           authorize! :read_pipeline, pipeline
 
@@ -187,6 +195,9 @@ module API
           use :pagination
         end
 
+        route_setting :authentication, job_token_allowed: true
+        route_setting :authorization, job_token_policies: :read_pipelines,
+          allow_public_access_for_enabled_project_features: [:repository, :builds]
         get ':id/pipelines/:pipeline_id/bridges', urgency: :low, feature_category: :pipeline_composition do
           authorize!(:read_build, user_project)
 
