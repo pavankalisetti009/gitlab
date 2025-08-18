@@ -254,7 +254,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                     'user_instruction' => 'Generate the best possible code based on instructions.'
                   },
                   'prompt_id' => 'code_suggestions/generations',
-                  'prompt_version' => '2.0.0',
+                  'prompt_version' => '^1.0.0',
                   'stream' => false
                 },
                 'type' => 'code_editor_generation'
@@ -337,7 +337,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                 "language_identifier" => "Python",
                 "stream" => false,
                 "prompt_id" => 'code_suggestions/generations',
-                "prompt_version" => "2.0.0",
+                "prompt_version" => "^1.0.0",
                 'prompt_enhancer' => {
                   "examples_array" => [
                     {
@@ -411,7 +411,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
               "language_identifier" => "Python",
               "prompt_enhancer" => {},
               "prompt_id" => "code_suggestions/generations",
-              "prompt_version" => "2.0.0",
+              "prompt_version" => "^1.0.0",
               "stream" => false
             }
           }
@@ -491,7 +491,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                   "user_instruction" => "Generate the best possible code based on instructions."
                 },
                 'prompt_id' => 'code_suggestions/generations',
-                'prompt_version' => '2.0.0',
+                'prompt_version' => '^1.0.0',
                 'stream' => false
               }
             }

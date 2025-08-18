@@ -6,6 +6,10 @@ require_relative 'ai_gateway_shared_examples'
 RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages, feature_category: :code_suggestions do
   let(:prompt_version) { 3 }
 
+  before do
+    stub_feature_flags(ai_model_switching: true)
+  end
+
   it_behaves_like 'code generation AI Gateway request params' do
     def expected_request_params
       {

@@ -21,7 +21,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let_it_be(:token) { 'generated-jwt' }
 
   let(:enabled_by_namespace_ids) { [] }
-  let(:enablement_type) { '' }
   let(:current_user) { nil }
   let(:headers) { {} }
   let(:access_code_suggestions) { true }
@@ -31,6 +30,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:gitlab_realm) { 'saas' }
   let(:service_name) { :code_suggestions }
   let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
+  let(:expected_prompt_version) { "2.0.0" }
 
   subject(:default_namespace_example_state) do
     # rubocop:disable RSpec/AnyInstanceOf -- It's a parent and all the children are tested here...
@@ -251,7 +251,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 'user_instruction' => 'Generate the best possible code based on instructions.'
               },
               'prompt_id' => 'code_suggestions/generations',
-              'prompt_version' => '2.0.0'
+              'prompt_version' => expected_prompt_version
             }
           }
         ]
@@ -722,18 +722,18 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       end
 
       context 'when user belongs to a namespace with an active code suggestions purchase' do
-        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+        let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
         let_it_be(:duo_core_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
         let_it_be(:duo_enterprise_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
 
         let(:current_user) { authorized_user }
 
-        before_all do
+        before do
           add_on_purchase.namespace.add_reporter(authorized_user)
         end
 
         context 'when the user is assigned to the add-on' do
-          before_all do
+          before do
             create(
               :gitlab_subscription_user_add_on_assignment,
               user: authorized_user,
@@ -816,24 +816,49 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               PROMPT
             end
 
-            it 'sends requests to the code generation v3 endpoint' do
-              model_selection_body = {
-                "model_metadata" => {
-                  "provider" => "gitlab",
-                  "feature_setting" => "code_generations",
-                  "identifier" => nil
+            context 'with no model pinned' do
+              it 'sends requests to the code generation v3 endpoint without model_metadata' do
+                expected_body = body.merge(v3_saas_code_generation_prompt_components)
+
+                expect(Gitlab::Workhorse)
+                  .to receive(:send_url)
+                  .with(
+                    "#{::Gitlab::AiGateway.url}/v3/code/completions",
+                    hash_including(body: expected_body.to_json)
+                  )
+
+                post_api
+              end
+            end
+
+            context 'with an model pinned' do
+              let(:expected_prompt_version) { "^1.0.0" }
+              let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: top_level_namespace) }
+
+              before do
+                create(:ai_namespace_feature_setting, feature: 'code_generations', namespace: top_level_namespace,
+                  offered_model_ref: 'claude_sonnet_3_5')
+              end
+
+              it 'sends requests to the code generation v3 endpoint with model_metadata' do
+                model_selection_body = {
+                  "model_metadata" => {
+                    "provider" => "gitlab",
+                    "feature_setting" => "code_generations",
+                    "identifier" => 'claude_sonnet_3_5'
+                  }
                 }
-              }
 
-              expected_body = body.merge(v3_saas_code_generation_prompt_components, model_selection_body)
-              expect(Gitlab::Workhorse)
-                .to receive(:send_url)
-                .with(
-                  "#{::Gitlab::AiGateway.url}/v3/code/completions",
-                  hash_including(body: expected_body.to_json)
-                )
+                expected_body = body.merge(v3_saas_code_generation_prompt_components, model_selection_body)
+                expect(Gitlab::Workhorse)
+                  .to receive(:send_url)
+                  .with(
+                    "#{::Gitlab::AiGateway.url}/v3/code/completions",
+                    hash_including(body: expected_body.to_json)
+                  )
 
-              post_api
+                post_api
+              end
             end
 
             it 'includes additional headers for SaaS with all subscription tiers', :freeze_time do
@@ -1129,7 +1154,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
-      let(:enablement_type) { 'duo_pro' }
 
       let(:base_headers) do
         {
@@ -1140,7 +1164,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'x-gitlab-version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
           'x-gitlab-feature-enabled-by-namespace-ids' => enabled_by_namespace_ids.join(','),
-          "x-gitlab-feature-enablement-type" => enablement_type,
+          "x-gitlab-feature-enablement-type" => 'duo_pro',
           'x-gitlab-enabled-feature-flags' => '',
           "x-gitlab-enabled-instance-verbose-ai-logs" => 'false',
           "X-Gitlab-Model-Prompt-Cache-Enabled" => "true"
@@ -1402,7 +1426,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     let(:params) { {} }
     let(:gitlab_host_name) { Gitlab.config.gitlab.host }
     let(:gitlab_instance_version) { Gitlab.version_info.to_s }
-    let(:enablement_type) { 'duo_pro' }
 
     context 'when unauthorized' do
       let(:current_user) { unauthorized_user }
@@ -1419,7 +1442,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'realm' => gitlab_realm,
             'global_user_id' => global_user_id,
             'host_name' => gitlab_host_name,
-            'feature_enablement_type' => enablement_type,
+            'feature_enablement_type' => 'duo_pro',
             'saas_duo_pro_namespace_ids' => enabled_by_namespace_ids
           }
         end
