@@ -128,45 +128,30 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
   describe 'auto_duo_code_review_enabled' do
     let(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
-    context 'when on gitlab.com instance', :saas do
-      context 'when project is licensed to use review_merge_request' do
-        before do
-          stub_licensed_features(review_merge_request: true)
+    context 'when project is licensed to use review_merge_request' do
+      before do
+        stub_licensed_features(review_merge_request: true)
 
-          create(:gitlab_subscription_add_on_purchase,
-            namespace: project.namespace,
-            add_on: duo_add_on)
-        end
-
-        it 'returns a boolean value' do
-          expect(subject[:auto_duo_code_review_enabled]).to be_in([true, false])
-        end
+        allow(project.namespace)
+          .to receive(:has_active_add_on_purchase?)
+          .with(:duo_enterprise)
+          .and_return(true)
       end
 
-      context 'when project is not licensed to use review_merge_request' do
-        let(:current_user) { developer }
-
-        before do
-          stub_licensed_features(review_merge_request: false)
-        end
-
-        it 'returns nil' do
-          expect(subject[:auto_duo_code_review_enabled]).to be_nil
-        end
+      it 'returns a boolean value' do
+        expect(subject[:auto_duo_code_review_enabled]).to be_in([true, false])
       end
     end
 
-    context 'when on self-managed instance' do
-      context 'when project is licensed to use review_merge_request' do
-        before do
-          stub_licensed_features(review_merge_request: true)
+    context 'when project is not licensed to use review_merge_request' do
+      let(:current_user) { developer }
 
-          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_add_on)
-        end
+      before do
+        stub_licensed_features(review_merge_request: false)
+      end
 
-        it 'returns a boolean value' do
-          expect(subject[:auto_duo_code_review_enabled]).to be_in([true, false])
-        end
+      it 'returns nil' do
+        expect(subject[:auto_duo_code_review_enabled]).to be_nil
       end
     end
   end
