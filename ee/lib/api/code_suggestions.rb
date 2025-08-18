@@ -57,13 +57,18 @@ module API
       def saas_headers
         return {} unless Gitlab.com?
 
+        all_duo_namespace_ids = current_user.duo_available_namespace_ids +
+          current_user.duo_core_ids_via_namespace_settings
+
+        all_duo_namespace_ids = all_duo_namespace_ids.compact.uniq
+
         {
           'X-Gitlab-Saas-Namespace-Ids' => '', # TODO: remove this header entirely once confirmed safe to do so
           # We're reusing the existing 'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' header name
-          # even though we're now combining duo_pro with duo_core_and_ent_namespace_ids.
+          # even though we're now combining duo_pro, duo_enterprise and duo_core namespace IDs.
           # This avoids the need for the data team to combine columns in reporting,
           # allowing the existing reporting pipeline to continue working seamlessly.
-          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => current_user.duo_available_namespace_ids.join(',')
+          'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => all_duo_namespace_ids.join(',')
         }
       end
 

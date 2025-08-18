@@ -39,6 +39,17 @@ module Ai
         end
       end
 
+      # Returns namespace IDs where user has Duo Core
+      # access through namespace-level settings.
+      # We currently provide an alternative pathway to Duo Core features beyond add-on purchase
+      # assignments, enabling organizations
+      # to grant Duo Core access at the namespace level
+      # without requiring individual user purchases.
+      def duo_core_ids_via_namespace_settings
+        groups = groups_with_duo_core_enabled
+        groups.present? ? groups.ids : []
+      end
+
       def duo_addons_cache_key_formatted
         format(DUO_ADD_ONS_CACHE_KEY, user_id: id)
       end

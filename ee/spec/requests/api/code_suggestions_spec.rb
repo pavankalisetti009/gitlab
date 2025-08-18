@@ -871,6 +871,71 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               )
             end
 
+            context 'when the user is a duo_core user' do
+              it 'includes namespace IDs from Duo Core access via add-on purchase', :freeze_time do
+                addon_access_group = create(:group, name: 'duo-addon-access', path: 'duo-addon-access')
+                addon_access_group.add_developer(authorized_user)
+
+                create(
+                  :gitlab_subscription_user_add_on_assignment,
+                  user: authorized_user,
+                  add_on_purchase: duo_core_add_on_purchase
+                )
+
+                # Ensure namespace settings pathway is empty
+                allow(authorized_user).to receive(:duo_core_ids_via_namespace_settings).and_return([])
+
+                post_api
+
+                _, params = workhorse_send_data
+
+                x_gitlab_saas_duo_pro_header = params['Header']['X-Gitlab-Saas-Duo-Pro-Namespace-Ids'].first
+                namespace_ids = x_gitlab_saas_duo_pro_header.split(',').map(&:to_i)
+
+                expect(namespace_ids).to contain_exactly(
+                  add_on_purchase.namespace.id,
+                  duo_core_add_on_purchase.namespace.id
+                )
+
+                expect(params['Header']).to include(
+                  'X-Gitlab-Saas-Namespace-Ids' => [''],
+                  'X-Gitlab-Rails-Send-Start' => [Time.now.to_f.to_s]
+                )
+              end
+
+              it 'includes namespace IDs from Duo Core access via namespace settings', :freeze_time do
+                namespace_settings_group = create(
+                  :group,
+                  name: 'duo-namespace-settings',
+                  path: 'duo-namespace-settings'
+                )
+                namespace_settings_group.add_developer(authorized_user)
+
+                # Duo Core access via namespace settings (no add-on purchase required)
+                namespace_settings_group.namespace_settings.update!(duo_core_features_enabled: true)
+
+                allow(authorized_user).to receive(:duo_core_ids_via_namespace_settings)
+                  .and_return([namespace_settings_group.id])
+
+                post_api
+
+                _, params = workhorse_send_data
+
+                x_gitlab_saas_duo_pro_header = params['Header']['X-Gitlab-Saas-Duo-Pro-Namespace-Ids'].first
+                namespace_ids = x_gitlab_saas_duo_pro_header.split(',').map(&:to_i)
+
+                expect(namespace_ids).to contain_exactly(
+                  add_on_purchase.namespace.id,
+                  namespace_settings_group.id
+                )
+
+                expect(params['Header']).to include(
+                  'X-Gitlab-Saas-Namespace-Ids' => [''],
+                  'X-Gitlab-Rails-Send-Start' => [Time.now.to_f.to_s]
+                )
+              end
+            end
+
             context 'when body is too big' do
               before do
                 stub_const("#{described_class}::MAX_BODY_SIZE", 10)
