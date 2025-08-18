@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Admin::AuditLogs', :js, feature_category: :audit_events do
   include AdminModeHelper
+  include ListboxHelpers
 
   let(:user) { create(:user) }
   let(:admin) { create(:admin, name: 'Bruce Wayne') }
@@ -225,6 +226,9 @@ RSpec.describe 'Admin::AuditLogs', :js, feature_category: :audit_events do
         click_link 'Create blank project'
 
         fill_in(:project_name, with: 'Gotham City')
+
+        click_on 'Pick a group or namespace'
+        select_listbox_item user.username
 
         page.within('#content-body') do
           click_button('Create project')
