@@ -201,5 +201,49 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
       it_behaves_like 'standard ai usage event tracking'
     end
+
+    context 'for `create_agent_platform_session` event' do
+      let(:event_name) { 'create_agent_platform_session' }
+
+      let(:expected_pg_attributes) do
+        {
+          user_id: current_user.id,
+          event: event_name,
+          extras: {}
+        }
+      end
+
+      let(:expected_ch_attributes) do
+        {
+          user_id: current_user.id,
+          event: Ai::UsageEvent.events[event_name],
+          extras: {}.to_json
+        }
+      end
+
+      it_behaves_like 'standard ai usage event tracking'
+    end
+
+    context 'for `start_agent_platform_session` event' do
+      let(:event_name) { 'start_agent_platform_session' }
+
+      let(:expected_pg_attributes) do
+        {
+          user_id: current_user.id,
+          event: event_name,
+          extras: {}
+        }
+      end
+
+      let(:expected_ch_attributes) do
+        {
+          user_id: current_user.id,
+          event: Ai::UsageEvent.events[event_name],
+          extras: {}.to_json
+        }
+      end
+
+      it_behaves_like 'standard ai usage event tracking'
+    end
   end
 end
