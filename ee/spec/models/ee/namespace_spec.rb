@@ -547,6 +547,69 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         expect(results).not_to include(top_namespace2)
       end
     end
+
+    describe '.in_active_trial', :saas do
+      let_it_be(:namespace_with_active_trial) do
+        create(:namespace_with_plan, plan: :ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: 1.month.ago,
+          trial_ends_on: 1.month.from_now)
+      end
+
+      let_it_be(:namespace_with_expired_trial) do
+        create(:namespace_with_plan, plan: :ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: 2.months.ago,
+          trial_ends_on: 1.day.ago)
+      end
+
+      let_it_be(:namespace_without_trial) do
+        create(:namespace_with_plan, plan: :ultimate_plan)
+      end
+
+      it 'returns only namespaces with active trials' do
+        expect(described_class.in_active_trial).to contain_exactly(namespace_with_active_trial)
+      end
+
+      it 'excludes namespaces with expired trials' do
+        expect(described_class.in_active_trial).not_to include(namespace_with_expired_trial)
+      end
+
+      it 'excludes namespaces without trials' do
+        expect(described_class.in_active_trial).not_to include(namespace_without_trial)
+      end
+    end
+
+    describe '.free_or_trial', :saas do
+      let_it_be(:namespace_with_active_trial) do
+        create(:namespace_with_plan, plan: :ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: 1.month.ago,
+          trial_ends_on: 1.month.from_now)
+      end
+
+      let_it_be(:namespace_with_free_plan) do
+        create(:namespace_with_plan, plan: :free_plan)
+      end
+
+      let_it_be(:namespace_with_ultimate_plan) do
+        create(:namespace_with_plan, plan: :ultimate_plan)
+      end
+
+      let_it_be(:namespace_without_subscription) { create(:namespace) }
+
+      it 'returns namespaces with active trials' do
+        expect(described_class.free_or_trial).to include(namespace_with_active_trial)
+      end
+
+      it 'returns namespaces with free plan' do
+        expect(described_class.free_or_trial).to include(namespace_with_free_plan)
+      end
+
+      it 'excludes namespaces with paid plans' do
+        expect(described_class.free_or_trial).not_to include(namespace_with_ultimate_plan)
+      end
+    end
   end
 
   context 'validation' do

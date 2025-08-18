@@ -173,6 +173,16 @@ module EE
         top_level.left_outer_joins(:zoekt_enabled_namespace).where(zoekt_enabled_namespace: { root_namespace_id: nil })
       end
 
+      scope :in_active_trial, -> do
+        top_level
+        .left_joins(gitlab_subscription: :hosted_plan)
+        .where(gitlab_subscriptions: { trial: true, trial_ends_on: Date.tomorrow.. })
+      end
+
+      scope :free_or_trial, -> do
+        in_specific_plans([::Plan.free.name]).or(in_active_trial)
+      end
+
       delegate :eligible_additional_purchased_storage_size, :additional_purchased_storage_size=,
         :additional_purchased_storage_ends_on, :additional_purchased_storage_ends_on=,
         to: :namespace_limit, allow_nil: true
