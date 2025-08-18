@@ -101,6 +101,16 @@ export const mockCatalogItemsResponse = {
   },
 };
 
+export const mockCatalogEmptyItemsResponse = {
+  data: {
+    aiCatalogItems: {
+      nodes: [],
+      pageInfo: mockPageInfo,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONNECTION,
+    },
+  },
+};
+
 export const mockAiCatalogAgentResponse = {
   data: {
     aiCatalogItem: mockAgent,
