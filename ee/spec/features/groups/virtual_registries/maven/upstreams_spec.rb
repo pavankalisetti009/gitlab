@@ -43,7 +43,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
 
           cache_entries.each do |entry|
             expect(page).to have_content(entry.relative_path)
-            expect(page).to have_content(entry.size.to_s)
+            expect(page).to have_content('1.00 KiB')
             expect(page).to have_content(entry.content_type)
           end
         end

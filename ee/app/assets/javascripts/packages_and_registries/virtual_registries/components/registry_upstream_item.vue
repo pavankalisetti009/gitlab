@@ -207,11 +207,11 @@ export default {
           <div v-if="cacheSize" data-testid="cache-size">
             {{ cacheSizeLabel }}
           </div>
-          <div v-if="cacheSize && cacheValidityHours">&middot;</div>
-          <div v-if="cacheValidityHours" data-testid="cache-validity-hours">
+          <div v-if="cacheSize">&middot;</div>
+          <div data-testid="cache-validity-hours">
             {{ cacheValidityHoursLabel }}
           </div>
-          <div v-if="(cacheSize || cacheValidityHours) && artifactCount">&middot;</div>
+          <div v-if="artifactCount">&middot;</div>
           <div v-if="artifactCount" data-testid="artifact-count">
             {{ artifactCountLabel }}
           </div>

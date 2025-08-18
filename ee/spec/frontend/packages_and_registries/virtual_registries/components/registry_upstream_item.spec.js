@@ -9,7 +9,7 @@ const defaultProps = {
     name: 'Upstream title',
     description: 'Upstream description',
     url: 'http://maven.org/test',
-    cacheValidityHours: 24,
+    cacheValidityHours: 0,
     cacheSize: '100 MB',
     editPath: 'http://maven.org/test/edit',
     artifactCount: 100,

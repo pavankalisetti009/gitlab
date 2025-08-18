@@ -8,9 +8,10 @@ import {
   GlTableLite,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __, sprintf, s__ } from '~/locale';
+import { __ } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import { numberToHumanSize } from '~/lib/utils/number_utils';
 
 export default {
   name: 'MavenUpstreamDetails',
@@ -54,9 +55,7 @@ export default {
       this.cacheEntryToBeDeleted = null;
     },
     formatSize(size) {
-      return sprintf(s__('VirtualRegistry|%{size} KB'), {
-        size,
-      });
+      return numberToHumanSize(size);
     },
   },
   fields: [
@@ -127,7 +126,7 @@ export default {
             data-testid="delete-cache-entry-btn"
             @click="handleDelete(item)"
           />
-          <div class="gl-text-sm gl-text-subtle">
+          <div class="gl-text-right gl-text-sm gl-text-subtle">
             <gl-sprintf :message="s__('VirtualRegistry|last checked %{date}')">
               <template #date>
                 <time-ago-tooltip :time="item.upstream_checked_at" />

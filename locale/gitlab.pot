@@ -70083,9 +70083,6 @@ msgid_plural "VirtualRegistry|%{hours} hours cache"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "VirtualRegistry|%{size} KB"
-msgstr ""
-
 msgid "VirtualRegistry|%{size} storage used"
 msgstr ""
 
