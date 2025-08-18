@@ -104,7 +104,7 @@ module PackageMetadata
       range.add(SemverDialects::IntervalParser.parse(type, ">#{highest_version.delete_prefix('v')}")) if highest_version
 
       !range.overlaps_with?(interval)
-    rescue SemverDialects::InvalidConstraintError
+    rescue SemverDialects::InvalidConstraintError, SemverDialects::UnsupportedPackageTypeError
       false
     end
   end

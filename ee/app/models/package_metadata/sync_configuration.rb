@@ -24,7 +24,9 @@ module PackageMetadata
       cargo: "cargo",
       swift: "swift",
       conda: "conda",
-      pub: "pub"
+      pub: "pub",
+      not_provided: "none",
+      unknown: "none"
     }.with_indifferent_access.freeze
 
     def self.configs_for(data_type)

@@ -54,6 +54,25 @@ RSpec.describe PackageMetadata::Package, type: :model, feature_category: :softwa
         end
       end
 
+      context 'when passed empty or unsupported PURL type' do
+        let(:package) { build_stubbed(:pm_package, purl_type: purl_type) }
+        let(:input_version) { "1.0" }
+
+        subject(:license_ids) { package.license_ids_for(version: input_version) }
+
+        context 'on not_provided' do
+          let(:purl_type) { 'not_provided' }
+
+          specify { expect(license_ids).to eq([]) }
+        end
+
+        context 'on unknown' do
+          let(:purl_type) { 'unknown' }
+
+          specify { expect(license_ids).to eq([]) }
+        end
+      end
+
       context 'and the PURL type is supported' do
         context 'and the input version matches the default licenses' do
           let(:license_ids) { package.license_ids_for(version: input_version) }
