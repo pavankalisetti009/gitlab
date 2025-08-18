@@ -664,6 +664,66 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         let_it_be(:add_on_type) { :duo_enterprise }
       end
     end
+
+    context 'when user has duo core add-on' do
+      it_behaves_like 'returns IDs of namespaces with duo add-on' do
+        subject(:duo_namespace_ids) { user.duo_available_namespace_ids }
+
+        let_it_be(:add_on_type) { :duo_core }
+      end
+    end
+  end
+
+  describe '#duo_core_ids_via_namespace_settings' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:group1) { create(:group) }
+    let_it_be(:group2) { create(:group) }
+    let_it_be(:group3) { create(:group) }
+
+    context 'when user has groups with duo core enabled' do
+      before do
+        allow(user).to receive(:groups_with_duo_core_enabled).and_return(
+          class_double(Namespace, present?: true, ids: [group1.id, group2.id, group3.id])
+        )
+      end
+
+      it 'returns the group IDs' do
+        expect(user.duo_core_ids_via_namespace_settings).to match_array([group1.id, group2.id, group3.id])
+      end
+    end
+
+    context 'when user has no groups with duo core enabled' do
+      before do
+        allow(user).to receive(:groups_with_duo_core_enabled).and_return(
+          class_double(Namespace, present?: false, ids: [])
+        )
+      end
+
+      it 'returns an empty array' do
+        expect(user.duo_core_ids_via_namespace_settings).to eq([])
+      end
+    end
+
+    context 'when groups_with_duo_core_enabled returns nil' do
+      before do
+        allow(user).to receive(:groups_with_duo_core_enabled).and_return(nil)
+      end
+
+      it 'returns an empty array' do
+        expect(user.duo_core_ids_via_namespace_settings).to eq([])
+      end
+    end
+
+    context 'when groups_with_duo_core_enabled returns empty collection' do
+      before do
+        allow(user).to receive(:groups_with_duo_core_enabled).and_return(Group.none)
+      end
+
+      it 'returns an empty array' do
+        expect(user.duo_core_ids_via_namespace_settings).to eq([])
+      end
+    end
   end
 
   describe '#eligible_for_self_managed_gitlab_duo_pro?' do
