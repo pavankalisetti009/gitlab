@@ -37,6 +37,7 @@ module RemoteDevelopment
           # NOTE: `processed_devfile` is not available in the context until the devfile has been flattened.
           #       If the devfile is flattened, use `processed_devfile`. Else, use `devfile`.
           devfile: parent_context[:processed_devfile] || parent_context[:devfile],
+          is_processed_devfile: parent_context[:processed_devfile].present?,
           errors: []
         }
 
@@ -206,8 +207,12 @@ module RemoteDevelopment
 
       # @param [Hash] context
       # @return [Hash]
+      # rubocop:disable Metrics/CyclomaticComplexity -- TODO: Refactor this method to reduce its complexity, extract out some helper methods.
       def self.validate_containers(context)
-        context => { devfile: Hash => devfile }
+        context => {
+          devfile: Hash => devfile,
+          is_processed_devfile: is_processed_devfile
+        }
 
         components = devfile.fetch(:components, [])
 
@@ -229,6 +234,16 @@ module RemoteDevelopment
 
           if container[:dedicatedPod]
             append_err(format(_("Property 'dedicatedPod' of component '%{component}' is not yet supported"),
+              component: component_name), context)
+          end
+
+          if container[:sourceMapping]
+            append_err(format(_("Property 'sourceMapping' of component '%{component}' is not yet supported"),
+              component: component_name), context)
+          end
+
+          if container[:mountSources] && !is_processed_devfile
+            append_err(format(_("Property 'mountSources' of component '%{component}' is not yet supported"),
               component: component_name), context)
           end
 
@@ -263,6 +278,7 @@ module RemoteDevelopment
 
         context
       end
+      # rubocop:enable Metrics/CyclomaticComplexity
 
       # @param [Hash] context
       # @return [Hash]

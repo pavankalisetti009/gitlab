@@ -51780,7 +51780,13 @@ msgstr ""
 msgid "Property 'hotReloadCapable' for exec command '%{command}' must be false when specified"
 msgstr ""
 
+msgid "Property 'mountSources' of component '%{component}' is not yet supported"
+msgstr ""
+
 msgid "Property 'overrideCommand' of component '%{name}' must be a boolean (true or false)"
+msgstr ""
+
+msgid "Property 'sourceMapping' of component '%{component}' is not yet supported"
 msgstr ""
 
 msgid "Protect"
