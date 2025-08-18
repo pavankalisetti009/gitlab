@@ -17,14 +17,15 @@ export default {
     crumbs() {
       // Get the first matched items. Iterate over each of them and make then a breadcrumb item
       // only if they have a meta field with text in
+      const { id } = this.$route.params;
       const matchedRoutes = (this.$route?.matched || [])
         .map((route) => {
+          const hasMeta = route.meta && Object.keys(route.meta).length > 0;
+          const to = route.parent ? { name: route.name } : { path: route.path };
+
           return {
-            text:
-              !route.meta && this.$route.params.id
-                ? String(this.$route.params.id)
-                : route.meta?.text,
-            to: { path: route.path },
+            text: !hasMeta && id ? String(id) : route.meta?.text,
+            to,
           };
         })
         .filter((r) => r.text);
