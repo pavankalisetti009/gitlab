@@ -276,7 +276,9 @@ export default {
         this.resetAllFieldsToDefault();
       }
     },
-    onSelectPreset() {
+    onSelectPreset(value) {
+      this.selectedPreset = value;
+
       if (this.selectedPreset === PRESET_OPTIONS_DEFAULT) {
         this.handleResetDefaults();
       } else {
@@ -325,7 +327,7 @@ export default {
           </gl-form-group>
           <gl-form-radio-group
             v-if="!isEditing"
-            v-model="selectedPreset"
+            :checked="selectedPreset"
             class="gl-mb-4"
             data-testid="vsa-preset-selector"
             :options="presetOptions"
