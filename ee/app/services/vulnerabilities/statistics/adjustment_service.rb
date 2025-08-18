@@ -96,6 +96,7 @@ module Vulnerabilities
           SELECT
               new_values.traversal_ids[array_length(new_values.traversal_ids, 1)] AS namespace_id,
               new_values.traversal_ids,
+              ARRAY_AGG(DISTINCT new_values.project_id ORDER BY new_values.project_id) AS affected_project_ids,
               SUM(new_values.total - COALESCE(old_values.total, 0)) AS total,
               SUM(new_values.info - COALESCE(old_values.info, 0)) AS info,
               SUM(new_values.unknown - COALESCE(old_values.unknown, 0)) AS unknown,
@@ -110,6 +111,15 @@ module Vulnerabilities
               SELECT 1
               FROM upserted
               WHERE upserted.project_id = new_values.project_id
+          )
+          AND (
+              new_values.total != COALESCE(old_values.total, 0) OR
+              new_values.info != COALESCE(old_values.info, 0) OR
+              new_values.unknown != COALESCE(old_values.unknown, 0) OR
+              new_values.low != COALESCE(old_values.low, 0) OR
+              new_values.medium != COALESCE(old_values.medium, 0) OR
+              new_values.high != COALESCE(old_values.high, 0) OR
+              new_values.critical != COALESCE(old_values.critical, 0)
           )
           GROUP BY namespace_id, new_values.traversal_ids
       SQL
@@ -150,10 +160,10 @@ module Vulnerabilities
 
       def execute
         filter_project_ids
-        return if project_ids.blank?
+        return { diff: [], affected_project_ids: [] } if project_ids.blank?
 
-        diffs = connection.execute(upsert_with_diffs_sql)
-        diffs.to_a
+        diffs_with_affected_project = connection.execute(upsert_with_diffs_sql)
+        organize_diff_results(diffs_with_affected_project)
       end
 
       private
@@ -218,6 +228,19 @@ module Vulnerabilities
 
       def active_states
         Vulnerability.active_state_values.join(', ')
+      end
+
+      def parse_postgres_array(array_string)
+        array_string.gsub(/[{}]/, '').split(',').map(&:to_i)
+      end
+
+      def organize_diff_results(diffs_with_affected_project)
+        cleaned_diffs = diffs_with_affected_project.map { |diff| diff.except('affected_project_ids') }
+        affected_project_ids = diffs_with_affected_project.flat_map do |diff|
+          parse_postgres_array(diff['affected_project_ids'])
+        end.uniq
+
+        { diff: cleaned_diffs, affected_project_ids: affected_project_ids }
       end
     end
   end

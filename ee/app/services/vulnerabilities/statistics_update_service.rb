@@ -11,10 +11,11 @@ module Vulnerabilities
     end
 
     def execute
-      return if vulnerability.nil?
+      return if vulnerability.nil? || !stat_diff&.update_required?
 
       Statistics::UpdateService.update_for(vulnerability)
       NamespaceStatistics::UpdateService.execute(vulnerability_to_diffs)
+      Security::InventoryFilters::VulnerabilityStatisticsUpdateService.execute(project_to_diffs)
     end
 
     private
@@ -33,6 +34,14 @@ module Vulnerabilities
       diff_hash.merge!(severity_changes)
 
       [diff_hash]
+    end
+
+    def project_to_diffs
+      return unless stat_diff&.update_required?
+
+      {
+        vulnerability.project => severity_changes
+      }
     end
 
     def severity_changes
