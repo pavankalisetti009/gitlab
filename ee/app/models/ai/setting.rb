@@ -8,10 +8,10 @@ module Ai
 
     ignore_column :duo_nano_features_enabled, remove_with: '18.3', remove_after: '2025-07-15'
 
-    validates :ai_gateway_url, length: { maximum: 2048 }, allow_nil: true
+    validates :ai_gateway_url, :duo_agent_platform_service_url, length: { maximum: 2048 }, allow_nil: true
     validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
 
-    validate :validate_ai_gateway_url
+    validate :validate_ai_gateway_url, :validate_duo_agent_platform_service_url
 
     validates :duo_core_features_enabled,
       inclusion: { in: [true, false] },
@@ -51,11 +51,25 @@ module Ai
     end
 
     def validate_ai_gateway_url
-      return if ai_gateway_url.blank?
+      validate_url_attribute(
+        attribute: :ai_gateway_url,
+        value: ai_gateway_url
+      )
+    end
+
+    def validate_duo_agent_platform_service_url
+      validate_url_attribute(
+        attribute: :duo_agent_platform_service_url,
+        value: duo_agent_platform_service_url
+      )
+    end
+
+    def validate_url_attribute(attribute:, value:)
+      return if value.blank?
 
       begin
         Gitlab::HTTP_V2::UrlBlocker.validate!(
-          ai_gateway_url,
+          value,
           schemes: %w[http https],
           allow_localhost: allow_localhost,
           enforce_sanitization: true,
@@ -63,7 +77,7 @@ module Ai
           outbound_local_requests_allowlist: Gitlab::CurrentSettings.outbound_local_requests_whitelist # rubocop:disable Naming/InclusiveLanguage -- existing setting
         )
       rescue Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError => e
-        errors.add(:ai_gateway_url, e.message)
+        errors.add(attribute, e.message)
       end
     end
 
