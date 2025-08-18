@@ -57,20 +57,10 @@ module Security
       end
       strong_memoize_attr :context
 
-      # TODO: With FF removal tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/536299
-      # 1. Remove preloading logic
       def update_elasticsearch
-        return unless ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
+        vulnerabilities = Vulnerability.id_in(vulnerability_ids)
 
-        # rubocop:disable CodeReuse/ActiveRecord -- short lived code will be removed with FF.
-        vulnerabilities = Vulnerability.includes(:project, :group).where(id: vulnerability_ids)
-        # rubocop:enable CodeReuse/ActiveRecord
-
-        eligible_vulnerabilities = vulnerabilities.select(&:maintaining_elasticsearch?)
-
-        eligible_vulnerabilities.each do |vulnerability|
-          ::Elastic::ProcessBookkeepingService.track!(vulnerability)
-        end
+        ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities).execute(&:itself)
       end
 
       def vulnerability_ids

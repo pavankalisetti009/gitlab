@@ -14,17 +14,22 @@ module Vulnerabilities
       vulnerabilities = relation.dup
 
       vulnerabilities.load
+
+      # Project preload for Vulnerability#elastic_reference method
+      # Project.Namespace preload for Vulnerabilities::Read.generate_es_parent method,
+      # which is in turn called in Vulnerability#elastic_reference method.
       associations = nil
       if vulnerabilities.first.is_a?(Vulnerability)
-        associations = [:project, :group]
+        associations = [project: [:namespace]]
       elsif vulnerabilities.first.is_a?(Vulnerabilities::Read)
-        associations = [vulnerability: [:project, :group]]
+        associations = [vulnerability: [project: [:namespace]]]
       end
 
       ActiveRecord::Associations::Preloader.new(
         records: vulnerabilities,
         associations: associations
       ).call
+
       eligible_vulnerabilities = vulnerabilities.select(&:maintaining_elasticsearch?)
 
       yield relation

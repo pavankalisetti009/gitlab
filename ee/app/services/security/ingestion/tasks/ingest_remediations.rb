@@ -118,14 +118,15 @@ module Security
         def update_vulnerability_reads
           unfound_reads = Vulnerabilities::Read.by_vulnerabilities(
             vulnerability_ids_for_remediations(unfound_remediations))
-          ::Vulnerabilities::BulkEsOperationService.new(unfound_reads).execute do |relation|
-            relation.update_all(has_remediations: false)
-          end
+          unfound_reads.update_all(has_remediations: false)
 
           found_reads = Vulnerabilities::Read.by_vulnerabilities(
             vulnerability_ids_for_remediations(found_remediations))
-          ::Vulnerabilities::BulkEsOperationService.new(found_reads).execute do |relation|
-            relation.update_all(has_remediations: true)
+          found_reads.update_all(has_remediations: true)
+
+          SecApplicationRecord.current_transaction.after_commit do
+            ::Vulnerabilities::BulkEsOperationService.new(unfound_reads).execute(&:itself)
+            ::Vulnerabilities::BulkEsOperationService.new(found_reads).execute(&:itself)
           end
         end
 
