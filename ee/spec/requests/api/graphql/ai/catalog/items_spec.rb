@@ -78,8 +78,8 @@ RSpec.describe 'getting AI catalog items', :with_current_organization, feature_c
       post_graphql(query, current_user: nil)
     end
 
-    create(:ai_catalog_item_version, item: catalog_item_1, version: 'v1.0.1')
-    create(:ai_catalog_item_version, item: catalog_item_2, version: 'v1.0.1')
+    create(:ai_catalog_item_version, item: catalog_item_1, version: '1.0.1')
+    create(:ai_catalog_item_version, item: catalog_item_2, version: '1.0.1')
 
     expect do
       post_graphql(query, current_user: nil)

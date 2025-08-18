@@ -22,9 +22,9 @@ module Ai
 
       validates :version, length: { maximum: 50 }
       validates :version, uniqueness: { scope: :item }
+      validates :version, format: { with: /\A\d+\.\d+\.\d+\z/ }
 
       validate :validate_json_schema
-
       validate :validate_readonly
 
       belongs_to :item, class_name: 'Ai::Catalog::Item',

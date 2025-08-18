@@ -17,6 +17,9 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
     it { is_expected.to validate_length_of(:version).is_at_most(50) }
 
+    it { is_expected.to allow_value('1.1.1', '999.999.999').for(:version) }
+    it { is_expected.not_to allow_value('1.1.1.', '1.1', '1', "hello\n1.0.0\nworld").for(:version) }
+
     describe 'definition json_schema' do
       context 'when item is an agent' do
         subject(:version) { build_stubbed(:ai_catalog_agent_version) }
