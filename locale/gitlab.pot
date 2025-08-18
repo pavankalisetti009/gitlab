@@ -53888,16 +53888,13 @@ msgstr ""
 msgid "Review time is the amount of time since the first comment in a merge request."
 msgstr ""
 
+msgid "Reviewed"
+msgstr ""
+
 msgid "Reviewer"
 msgid_plural "%d Reviewers"
 msgstr[0] ""
 msgstr[1] ""
-
-msgid "Reviewer (Active)"
-msgstr ""
-
-msgid "Reviewer (Inactive)"
-msgstr ""
 
 msgid "Reviewer commented"
 msgstr ""
@@ -74701,15 +74698,6 @@ msgstr ""
 msgid "Your merge requests"
 msgstr ""
 
-msgid "Your merge requests (Active)"
-msgstr ""
-
-msgid "Your merge requests (Inactive)"
-msgstr ""
-
-msgid "Your merge requests awaiting approvals, or has been approved by all assigned reviewers."
-msgstr ""
-
 msgid "Your merge requests have a new homepage!"
 msgstr ""
 
@@ -74717,9 +74705,6 @@ msgid "Your merge requests that are waiting for approvals."
 msgstr ""
 
 msgid "Your merge requests that have been merged."
-msgstr ""
-
-msgid "Your merge requests that need reviewers assigned, or has feedback to address."
 msgstr ""
 
 msgid "Your merge requests with approvals by all assigned reviewers."
