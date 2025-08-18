@@ -49,16 +49,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
 
-    context 'when user is authorized by duo core' do
-      before do
-        allow(described_class).to receive(:authorized_by_duo_core?).with(user).and_return(true)
-      end
-
-      it 'returns false' do
-        expect(described_class.enabled_for?(user: user)).to be(false)
-      end
-    end
-
     context 'when user is not present' do
       it 'returns false' do
         expect(described_class.enabled_for?(user: nil)).to be(false)
@@ -185,72 +175,30 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     before do
       allow(described_class).to receive(:chat_enabled?).with(user)
                                                        .and_return(ai_features_enabled_for_user)
-      allow(described_class).to receive(:authorized_by_duo_core?).with(user).and_return(authorized_by_duo_core)
       allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:user).with(user: user)
                                                                         .and_return(authorizer_response)
     end
 
-    where(:container, :ai_features_enabled_for_user, :allowed, :authorized_by_duo_core, :duo_chat_access) do
+    where(:container, :ai_features_enabled_for_user, :allowed, :duo_chat_access) do
       [
-        [:project, true, true, false, true],
-        [:project, true, false, false, false],
-        [:project, false, false, false, false],
-        [:project, false, true, false, false],
-        [:project, true, true, true, false],
-        [:group, true, true, false, true],
-        [:group, true, false, false, false],
-        [:group, false, false, false, false],
-        [:group, false, true, false, false],
-        [:group, true, true, true, false],
-        [nil, true, true, false, false],
-        [nil, true, false, false, false],
-        [nil, false, false, false, false],
-        [nil, false, true, false, false],
-        [nil, true, true, true, false]
+        [:project, true, true, true],
+        [:project, true, false, false],
+        [:project, false, false, false],
+        [:project, false, true, false],
+        [:group, true, true, true],
+        [:group, true, false, false],
+        [:group, false, false, false],
+        [:group, false, true, false],
+        [nil, true, true, false],
+        [nil, true, false, false],
+        [nil, false, false, false],
+        [nil, false, true, false]
       ]
     end
 
     with_them do
       it 'shows button in correct cases' do
         expect(described_class.show_breadcrumbs_entry_point?(user: user, container: container)).to be(duo_chat_access)
-      end
-    end
-  end
-
-  describe '.authorized_by_duo_core?' do
-    let(:user_authorization_response) do
-      instance_double(Ai::UserAuthorizable::Response, allowed?: allowed, authorized_by_duo_core: authorized_by_duo_core)
-    end
-
-    let(:authorized_by_duo_core) { false }
-    let(:allowed) { true }
-
-    before do
-      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(user_authorization_response)
-    end
-
-    context 'when user is authorized by duo core' do
-      let(:authorized_by_duo_core) { true }
-
-      it 'returns true' do
-        expect(described_class.authorized_by_duo_core?(user)).to be(true)
-      end
-    end
-
-    context 'when user is not authorized by duo core' do
-      let(:authorized_by_duo_core) { false }
-
-      it 'returns false' do
-        expect(described_class.authorized_by_duo_core?(user)).to be(false)
-      end
-    end
-
-    context 'when allowed? is false' do
-      let(:allowed) { false }
-      let(:authorized_by_duo_core) { false }
-
-      it 'returns false' do
-        expect(described_class.authorized_by_duo_core?(user)).to be(false)
       end
     end
   end
