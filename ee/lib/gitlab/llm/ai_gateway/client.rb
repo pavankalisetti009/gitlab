@@ -16,7 +16,6 @@ module Gitlab
         def initialize(user, service_name:, tracking_context: {})
           @user = user
           @service = ::CloudConnector::AvailableServices.find_by_name(service_name)
-          @access_token = @service.access_token(user)
           @tracking_context = tracking_context
         end
 
@@ -42,8 +41,6 @@ module Gitlab
         end
 
         def complete(url:, body:, timeout: DEFAULT_TIMEOUT)
-          return unless enabled?
-
           response = retry_with_exponential_backoff do
             resp = perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
 
@@ -59,8 +56,6 @@ module Gitlab
         end
 
         def stream(url:, body:, timeout: DEFAULT_TIMEOUT)
-          return unless enabled?
-
           response_body = ""
 
           response = perform_completion_request(
@@ -114,10 +109,6 @@ module Gitlab
           ) do |fragment|
             yield fragment if block_given?
           end
-        end
-
-        def enabled?
-          access_token.present?
         end
 
         def log_server_error(response)

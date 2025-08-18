@@ -50,11 +50,6 @@ module API
               current_job.namespace
             end
             strong_memoize_attr :current_namespace
-
-            def ai_gateway_token
-              code_suggestions_data.access_token(current_namespace)
-            end
-            strong_memoize_attr :ai_gateway_token
           end
 
           namespace 'internal' do

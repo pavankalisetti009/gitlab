@@ -140,6 +140,7 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
     end
 
     it 'logs the request' do
+      allow(ai_request).to receive(:request)
       expected_prompt = tool.prompt[:prompt]
 
       tool.request
