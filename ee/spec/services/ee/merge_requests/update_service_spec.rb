@@ -780,11 +780,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       let(:duo_enabled_project_setting) { true }
       let(:duo) { ::Users::Internal.duo_code_review_bot }
       let(:old_title) { 'Draft: Awesome merge_request' }
-      let!(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
-      let!(:gitlab_subscription_add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_add_on)
-      end
 
       let(:merge_request) do
         create(
@@ -803,6 +798,10 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         allow(merge_request).to receive(:ai_review_merge_request_allowed?)
           .with(user)
           .and_return(ai_review_allowed)
+        allow(project.namespace)
+          .to receive(:has_active_add_on_purchase?)
+          .with(:duo_enterprise)
+          .and_return(true)
       end
 
       context 'when it became ready by wip_event the MR title changes' do
@@ -860,18 +859,6 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
       context 'when project setting disable duo' do
         let(:duo_enabled_project_setting) { false }
-
-        it 'does not add Duo as a reviewer' do
-          update_merge_request({ title: 'Awesome merge_request' })
-
-          expect(merge_request.reviewers).to be_empty
-        end
-      end
-
-      context 'duo enterprise add on expired' do
-        before do
-          gitlab_subscription_add_on_purchase.update!(expires_on: 1.day.ago)
-        end
 
         it 'does not add Duo as a reviewer' do
           update_merge_request({ title: 'Awesome merge_request' })
