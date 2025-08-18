@@ -97,6 +97,17 @@ RSpec.describe Admin::Geo::NodesController, :geo, feature_category: :geo_replica
 
         go
       end
+
+      context 'when node creation is successful' do
+        let(:geo_node_attributes) { { name: 'Test Node', url: 'http://example.com' } }
+
+        it 'sets flash message and redirects to admin geo nodes path' do
+          go
+
+          expect(flash[:toast]).to eq('Node was successfully created.')
+          expect(response).to redirect_to(admin_geo_nodes_path)
+        end
+      end
     end
   end
 

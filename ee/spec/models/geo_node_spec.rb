@@ -759,6 +759,37 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
     end
   end
 
+  describe '#namespaces_for_group_owned_replicables' do
+    subject(:namespace_ids_for_group_owned_replicables) { node.namespaces_for_group_owned_replicables.pluck(:id) }
+
+    context 'when selective sync is disabled' do
+      it 'raises an error' do
+        expect { namespace_ids_for_group_owned_replicables }
+          .to raise_error('This scope should not be needed without selective sync')
+      end
+    end
+
+    context 'when selective sync is by shards' do
+      it 'returns namespaces for projects in selected shards' do
+        project = create(:project)
+        node.update!(selective_sync_type: 'shards', selective_sync_shards: [project.repository_storage])
+
+        is_expected.to contain_exactly(project.namespace_id)
+      end
+    end
+
+    context 'when selective sync is by namespace' do
+      it 'returns the selected namespace and its descendants' do
+        selected_namespace = create(:group)
+        child_namespace = create(:group, parent: selected_namespace)
+
+        node.update!(selective_sync_type: 'namespaces', namespaces: [selected_namespace])
+
+        is_expected.to contain_exactly(selected_namespace.id, child_namespace.id)
+      end
+    end
+  end
+
   describe '#name=' do
     context 'before validation' do
       it 'strips leading and trailing whitespace' do
