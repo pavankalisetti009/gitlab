@@ -132,6 +132,20 @@ export default {
       };
     },
   },
+  watch: {
+    errorMessages(newValue) {
+      if (newValue.length === 0) {
+        return;
+      }
+
+      this.$nextTick(() => {
+        this.$refs.alertRef?.$el?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      });
+    },
+  },
   methods: {
     handleSubmit() {
       const transformedValues = {
@@ -150,7 +164,8 @@ export default {
 <template>
   <div>
     <gl-alert
-      v-if="errorMessages.length"
+      v-show="errorMessages.length"
+      ref="alertRef"
       class="gl-mb-3 gl-mt-5"
       variant="danger"
       data-testid="flow-form-error-alert"
