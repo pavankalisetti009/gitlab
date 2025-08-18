@@ -189,6 +189,62 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '.by_project_id_and_uuid' do
+    let_it_be(:project_a) { create(:project) }
+    let_it_be(:project_b) { create(:project) }
+
+    let_it_be(:pipeline_a1) { create(:ee_ci_pipeline, :success, project: project_a) }
+    let_it_be(:pipeline_a2) { create(:ee_ci_pipeline, :success, project: project_a) }
+    let_it_be(:pipeline_b1) { create(:ee_ci_pipeline, :success, project: project_b) }
+
+    let_it_be(:scan_a1) do
+      create(:security_scan, project: project_a, pipeline: pipeline_a1, scan_type: :secret_detection,
+        status: :succeeded)
+    end
+
+    let_it_be(:scan_a2) do
+      create(:security_scan, project: project_a, pipeline: pipeline_a2, scan_type: :secret_detection,
+        status: :succeeded)
+    end
+
+    let_it_be(:scan_b1) do
+      create(:security_scan, project: project_b, pipeline: pipeline_b1, scan_type: :secret_detection,
+        status: :succeeded)
+    end
+
+    let_it_be(:uuid) { SecureRandom.uuid }
+
+    let_it_be(:sf_a1) { create(:security_finding, :with_finding_data, uuid: uuid, scan: scan_a1) }
+    let_it_be(:sf_a2) { create(:security_finding, :with_finding_data, uuid: uuid, scan: scan_a2) }
+    let_it_be(:sf_b1) { create(:security_finding, :with_finding_data, uuid: uuid, scan: scan_b1) }
+    let_it_be(:irrelevant) { create(:security_finding, :with_finding_data, scan: scan_a1) }
+
+    it 'returns findings for the given project and uuid only' do
+      expect(described_class.by_project_id_and_uuid(project_a.id, 1, uuid))
+        .to contain_exactly(sf_a1, sf_a2)
+    end
+
+    it 'excludes findings from other projects even with the same uuid' do
+      expect(described_class.by_project_id_and_uuid(project_b.id, 1, uuid))
+        .to contain_exactly(sf_b1)
+    end
+
+    it 'returns empty when uuid does not match' do
+      expect(described_class.by_project_id_and_uuid(project_a.id, 1, SecureRandom.uuid))
+        .to be_empty
+    end
+
+    it 'skips partition filter when partitions is nil' do
+      expect(described_class.by_project_id_and_uuid(project_a.id, nil, uuid))
+        .to contain_exactly(sf_a1, sf_a2)
+    end
+
+    it 'skips partition filter when partitions is []' do
+      expect(described_class.by_project_id_and_uuid(project_a.id, [], uuid))
+        .to contain_exactly(sf_a1, sf_a2)
+    end
+  end
+
   describe '.undismissed_by_vulnerability' do
     let(:expected_findings) { [finding_2] }
 

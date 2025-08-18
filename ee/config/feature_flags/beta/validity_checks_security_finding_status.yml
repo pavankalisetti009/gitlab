@@ -1,0 +1,10 @@
+---
+name: validity_checks_security_finding_status
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556765
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198831
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/560711
+milestone: '18.3'
+group: group::secret detection
+type: beta
+default_enabled: false

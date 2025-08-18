@@ -40,6 +40,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
       allow(ScanSecurityReportSecretsWorker).to receive(:perform_async)
       allow(Security::StoreGroupedScansService).to receive(:execute)
       allow(Security::StoreGroupedSbomScansService).to receive(:execute)
+      allow(Security::SecretDetection::GitlabTokenVerificationWorker).to receive(:perform_async)
 
       stub_licensed_features(sast: true, dast: false, dependency_scanning: true)
     end
@@ -267,6 +268,93 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
                 expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to receive(:perform_async)
 
                 store_group_of_artifacts
+              end
+            end
+          end
+        end
+
+        context 'for Security::SecretDetection::GitlabTokenVerificationWorker' do
+          shared_examples 'does not schedule token status updates' do
+            it 'does not schedule the `GitlabTokenVerificationWorker`' do
+              store_group_of_artifacts
+
+              expect(Security::SecretDetection::GitlabTokenVerificationWorker).not_to have_received(:perform_async)
+            end
+          end
+
+          describe 'scheduling the `GitlabTokenVerificationWorker`' do
+            context 'when validity_checks FF is disabled' do
+              before do
+                stub_feature_flags(validity_checks: false)
+              end
+
+              include_examples 'does not schedule token status updates'
+            end
+
+            context 'when validity_checks FF is enabled' do
+              before do
+                stub_feature_flags(validity_checks: true)
+              end
+
+              context 'when validity_checks_security_finding_status FF is disabled' do
+                before do
+                  stub_feature_flags(validity_checks_security_finding_status: false)
+                end
+
+                include_examples 'does not schedule token status updates'
+              end
+
+              context 'when validity_checks_security_finding_status FF is enabled' do
+                before do
+                  stub_feature_flags(validity_checks_security_finding_status: true)
+                end
+
+                context 'when validity checks is disabled for the project' do
+                  before do
+                    pipeline.project.security_setting.update!(validity_checks_enabled: false)
+                  end
+
+                  include_examples 'does not schedule token status updates'
+                end
+
+                context 'when no secret detection security scans exist for the pipeline' do
+                  before do
+                    pipeline.project.security_setting.update!(validity_checks_enabled: true)
+                  end
+
+                  include_examples 'does not schedule token status updates'
+                end
+
+                context 'when pipeline is on the default branch' do
+                  let_it_be(:scan) { create(:security_scan, scan_type: :secret_detection, build: sast_build) }
+                  let_it_be(:finding) { create(:security_finding, scan: scan) }
+
+                  before do
+                    pipeline.project.security_setting.update!(validity_checks_enabled: true)
+                    allow(pipeline).to receive(:default_branch?).and_return(true)
+                  end
+
+                  include_examples 'does not schedule token status updates'
+                end
+
+                context 'when all conditions are met' do
+                  let_it_be(:scan) { create(:security_scan, scan_type: :secret_detection, build: sast_build) }
+                  let_it_be(:finding) { create(:security_finding, scan: scan) }
+
+                  before do
+                    allow(pipeline).to receive(:default_branch?).and_return(false)
+                    stub_feature_flags(validity_checks_security_finding_status: true)
+                    stub_feature_flags(validity_checks: true)
+                    pipeline.project.security_setting.update!(validity_checks_enabled: true)
+                  end
+
+                  it 'schedules the `GitlabTokenVerificationWorker`' do
+                    store_group_of_artifacts
+
+                    expect(Security::SecretDetection::GitlabTokenVerificationWorker)
+                      .to have_received(:perform_async).with(pipeline.id)
+                  end
+                end
               end
             end
           end

@@ -11,33 +11,72 @@ module Security
         @token_lookup_service = token_lookup_service
       end
 
-      def execute_for_pipeline(pipeline_id)
-        @pipeline = Ci::Pipeline.find_by_id(pipeline_id)
-        @project = @pipeline&.project
-        return unless @pipeline && can_run?(project)
+      # For Vulnerabilities::Finding (default branch pipelines)
+      def execute_for_vulnerability_pipeline(pipeline_id)
+        return unless setup_and_validate_pipeline(pipeline_id)
 
-        relation = Vulnerabilities::Finding.report_type('secret_detection').by_latest_pipeline(pipeline_id)
+        relation = Vulnerabilities::Finding
+          .report_type('secret_detection')
+          .by_latest_pipeline(pipeline_id)
 
         relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
-          process_findings_batch(batch)
+          process_findings_batch(batch, :vulnerability)
         end
       end
 
-      # Updates the token status for a single finding, identified by its ID.
-      #
-      # @param [Integer] finding_id The ID of the Vulnerabilities::Finding to update
-      def execute_for_finding(finding_id)
-        return unless finding_id
+      # For Security::Finding (MR pipelines)
+      def execute_for_security_pipeline(pipeline_id)
+        return unless setup_and_validate_pipeline(pipeline_id)
+        return unless Feature.enabled?(:validity_checks_security_finding_status, @project)
 
-        finding = Vulnerabilities::Finding.find_by_id(finding_id)
-        return unless finding
+        relation = @pipeline.security_findings.by_report_types(['secret_detection'])
 
-        @project = finding.project
-        return unless can_run?(project)
+        relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
+          process_findings_batch(batch, :security)
+        end
+      end
 
-        @pipeline = Ci::Pipeline.find_by_id(finding.latest_pipeline_id)
+      # Single Vulnerabilities::Finding
+      def execute_for_vulnerability_finding(finding_id)
+        vulnerability_finding = Vulnerabilities::Finding.find_by_id(finding_id)
+        return unless vulnerability_finding
 
-        process_findings_batch([finding])
+        @project = vulnerability_finding.project
+        return unless can_run?(@project)
+
+        @pipeline = vulnerability_finding.latest_finding_pipeline
+
+        process_findings_batch([vulnerability_finding], :vulnerability)
+      end
+
+      # Single Security::Finding
+      def execute_for_security_finding(security_finding_id)
+        security_finding = Security::Finding.find_by_id(security_finding_id)
+        return unless security_finding
+
+        @project = security_finding.project
+        return unless can_run?(@project)
+        return unless Feature.enabled?(:validity_checks_security_finding_status, @project)
+
+        @pipeline = security_finding.pipeline
+
+        # partitions tied to current pipeline's scans
+        partition = [security_finding.partition_number].compact
+
+        # Update all findings with matching UUID (same secret, same location across commits)
+        # to maintain consistent token status across pipelines
+        all_security_findings = Security::Finding.by_project_id_and_uuid(@project.id, partition,
+          security_finding.uuid)
+
+        process_findings_batch(all_security_findings, :security)
+
+        # Also update associated vulnerability findings, if any
+        all_security_findings.with_vulnerability.find_each do |security_finding|
+          vuln_finding = security_finding.vulnerability&.finding
+          next unless vuln_finding
+
+          process_findings_batch([vuln_finding], :vulnerability)
+        end
       end
 
       private
@@ -47,72 +86,110 @@ module Security
           project.security_setting&.validity_checks_enabled
       end
 
-      # Processes a batch of findings to create or update their FindingTokenStatus records.
-      #
-      # @param [ActiveRecord::Relation] findings A batch of Vulnerabilities::Finding records
-      def process_findings_batch(findings)
+      def setup_and_validate_pipeline(pipeline_id)
+        @pipeline = Ci::Pipeline.find_by_id(pipeline_id)
+        @project = @pipeline&.project
+        @pipeline && can_run?(@project)
+      end
+
+      def process_findings_batch(findings, finding_type)
         return if findings.empty?
 
-        tokens_by_raw_token = get_tokens_by_raw_token_value(findings)
+        tokens_by_raw = get_tokens_by_raw_token_value(findings, finding_type)
+        attrs_by_raw = build_token_status_attributes_by_raw_token(findings, finding_type)
 
-        token_status_attr_by_raw_token = build_token_status_attributes_by_raw_token(findings)
+        merge_token_status_into_attributes(tokens_by_raw, attrs_by_raw)
 
-        # Set token status on token status attributes
-        tokens_by_raw_token.each do |raw_token, token|
-          token_status_attr_by_raw_token[raw_token].each do |finding_token_status_attr|
+        attributes_to_upsert = attrs_by_raw.values.flatten
+        return if attributes_to_upsert.empty?
+
+        case finding_type
+        when :vulnerability
+          model_class = Vulnerabilities::FindingTokenStatus
+          unique_by = :vulnerability_occurrence_id
+          error_message = "Failed to upsert vulnerability finding token statuses"
+        when :security
+          model_class = Security::FindingTokenStatus
+          unique_by = :security_finding_id
+          error_message = "Failed to upsert security finding token statuses"
+        else
+          raise ArgumentError, "Unknown finding type: #{finding_type}"
+        end
+
+        begin
+          model_class.upsert_all(
+            attributes_to_upsert,
+            unique_by: unique_by,
+            update_only: [:status, :updated_at],
+            record_timestamps: false
+          )
+        rescue StandardError => e
+          handle_upsert_error(e, attributes_to_upsert, error_message)
+        end
+      end
+
+      def merge_token_status_into_attributes(tokens_by_raw, attrs_by_raw)
+        tokens_by_raw.each do |raw_token, token|
+          attrs_by_raw[raw_token]&.each do |finding_token_status_attr|
             finding_token_status_attr[:status] = token_status(token)
             finding_token_status_attr[:updated_at] = Time.current
           end
         end
+      end
 
-        attributes_to_upsert = token_status_attr_by_raw_token.values.flatten
-        return if attributes_to_upsert.empty?
+      def handle_upsert_error(exception, attributes_to_upsert, error_message)
+        Gitlab::ErrorTracking.track_exception(
+          exception,
+          pipeline_id: @pipeline&.id,
+          project_id: @project&.id,
+          finding_count: attributes_to_upsert.size
+        )
 
-        begin
-          Vulnerabilities::FindingTokenStatus.upsert_all(attributes_to_upsert,
-            unique_by: :vulnerability_occurrence_id,
-            update_only: [:status, :updated_at],
-            record_timestamps: false)
-        rescue StandardError => e
-          Gitlab::ErrorTracking.track_exception(
-            e,
-            pipeline_id: @pipeline&.id,
-            project_id: project.id,
-            finding_count: attributes_to_upsert.size
-          )
+        Gitlab::AppLogger.error(
+          message: error_message,
+          exception: exception.class.name,
+          exception_message: exception.message,
+          pipeline_id: @pipeline&.id,
+          project_id: @project&.id,
+          finding_count: attributes_to_upsert.size
+        )
 
-          Gitlab::AppLogger.error(
-            message: "Failed to upsert finding token statuses",
-            exception: e.class.name,
-            exception_message: e.message,
-            pipeline_id: @pipeline&.id,
-            project_id: project.id,
-            finding_count: attributes_to_upsert.size
-          )
-
-          # Re-raise the exception to trigger Sidekiq retry mechanism
-          raise
-        end
+        # Re-raise the exception to trigger Sidekiq retry mechanism
+        raise
       end
 
       # Retrieves token objects by their raw token values from findings
       #
       # @param findings [ActiveRecord::Relation] Secret detection findings containing token information
+      # @param finding_type Type of finding, either :vulnerability or :security
       # @return [Hash] A hash mapping raw token values to their corresponding token objects
       #
       # This method:
       # 1. Groups findings by token type (PAT, Deploy Token, etc.)
       # 2. Performs separate lookups for each token type using the appropriate lookup method
       # 3. Returns a combined hash of all found tokens indexed by their raw values
-      def get_tokens_by_raw_token_value(findings)
+      # rubocop:disable Metrics/CyclomaticComplexity -- token extraction flow clearer in one method, splitting reduces readability
+      def get_tokens_by_raw_token_value(findings, finding_type)
         # organise detected tokens by type
         raw_token_values_by_token_type = findings.each_with_object({}) do |finding, result|
-          finding_type = finding.token_type
-          result[finding_type] = [] unless result[finding_type]
-          result[finding_type] << finding.metadata['raw_source_code_extract']
+          case finding_type
+          when :vulnerability
+            token_type = finding.token_type
+            raw_token = finding.metadata['raw_source_code_extract']
+          when :security
+            token_type = finding.identifiers&.find { |id| id[:external_type] == 'gitleaks_rule_id' }&.dig(:external_id)
+            raw_token = finding.finding_data['raw_source_code_extract']
+          end
+
+          next unless raw_token.present? && token_type
+          next unless Security::SecretDetection::TokenLookupService.supported_token_type?(token_type)
+
+          result[token_type] ||= []
+          result[token_type] << raw_token
 
           result
         end
+        # rubocop:enable Metrics/CyclomaticComplexity
 
         # Find tokens and index by raw token
         raw_token_values_by_token_type.each_with_object({}) do |(token_type, raw_token_values), result_hash|
@@ -125,6 +202,36 @@ module Security
             exception_message: e.message
           )
           next
+        end
+      end
+
+      # Unified attribute building for both finding types
+      def build_token_status_attributes_by_raw_token(findings, finding_type)
+        now = Time.current
+        findings.each_with_object({}) do |finding, attr_by_raw_token|
+          case finding_type
+          when :vulnerability
+            token_value = finding.metadata['raw_source_code_extract']
+            token_type = finding.token_type
+            id_key = :vulnerability_occurrence_id
+          when :security
+            token_value = finding.finding_data['raw_source_code_extract']
+            token_type = finding.identifiers.find { |id| id[:external_type] == 'gitleaks_rule_id' }&.dig(:external_id)
+            id_key = :security_finding_id
+          end
+
+          next unless token_value.present? && token_type
+          next unless Security::SecretDetection::TokenLookupService.supported_token_type?(token_type)
+
+          attr_by_raw_token[token_value] ||= []
+          attributes = {
+            project_id: finding.project_id,
+            status: 'unknown',
+            created_at: now,
+            updated_at: now
+          }
+          attributes[id_key] = finding.id
+          attr_by_raw_token[token_value] << attributes
         end
       end
 
@@ -144,38 +251,6 @@ module Security
 
         # Tokens without active? method (e.g., GroupScimAuthAccessToken) are assumed to be active
         statuses.key(statuses[:active])
-      end
-
-      # Builds attributes for FindingTokenStatus records grouped by token SHA.
-      #
-      # @param [ActiveRecord::Relation] latest_secret_findings Secret detection findings
-      # @return [Hash] A hash mapping token SHAs to arrays of FindingTokenStatus attributes
-      def build_token_status_attributes_by_raw_token(findings)
-        now = Time.current
-        findings.each_with_object({}) do |finding, attr_by_raw_token|
-          token_value = finding.metadata['raw_source_code_extract']
-
-          next unless Security::SecretDetection::TokenLookupService.supported_token_type?(finding.token_type)
-
-          attr_by_raw_token[token_value] ||= []
-          attr_by_raw_token[token_value] << build_finding_token_status_attributes(finding, now)
-        end
-      end
-
-      # Builds attributes for a single FindingTokenStatus record.
-      #
-      # @param [Vulnerabilities::Finding] finding The finding containing the token
-      # @param [Time] time The timestamp to use for created_at and updated_at
-      # @param [String] status Initial status to set (default: 'unknown')
-      # @return [Hash] Attributes for creating a FindingTokenStatus record
-      def build_finding_token_status_attributes(finding, time, status = 'unknown')
-        {
-          vulnerability_occurrence_id: finding.id,
-          project_id: finding.project_id,
-          status: status,
-          created_at: time,
-          updated_at: time
-        }
       end
     end
   end
