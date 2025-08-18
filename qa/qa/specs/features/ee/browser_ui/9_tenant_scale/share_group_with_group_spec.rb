@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Tenant Scale' do
-    describe 'Group with members', product_group: :organizations do
+  RSpec.describe 'Tenant Scale', feature_category: :organization do
+    describe 'Group with members' do
       let(:source_group_with_members) { create(:group, path: "source-group-with-members_#{SecureRandom.hex(8)}") }
       let(:target_group_with_project) { create(:group, path: "target-group-with-project_#{SecureRandom.hex(8)}") }
 

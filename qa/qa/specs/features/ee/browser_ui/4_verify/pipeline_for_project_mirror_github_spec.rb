@@ -4,7 +4,7 @@ require 'base64'
 
 module QA
   describe 'Verify', :github, :requires_admin, only: { pipeline: %i[staging staging-canary] } do
-    describe 'Pipeline for project mirrors Github', product_group: :pipeline_execution do
+    describe 'Pipeline for project mirrors Github', feature_category: :continuous_integration do
       include QA::Support::Data::Github
 
       let(:commit_message) { "Update #{github_data[:file_name]} - #{Time.now}" }

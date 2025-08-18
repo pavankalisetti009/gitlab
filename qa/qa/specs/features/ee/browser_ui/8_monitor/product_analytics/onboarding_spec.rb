@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Monitor' do
+  RSpec.describe 'Monitor', feature_category: :incident_management do
     describe(
       'Product Analytics',
-      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"]&.include? "product-analytics" } },
-      product_group: :platform_insights
+      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"]&.include? "product-analytics" } }
     ) do
       let!(:sandbox_group) { create(:sandbox, path: "gitlab-qa-product-analytics-2") }
       let!(:group) { create(:group, name: "product-analytics-g-#{SecureRandom.hex(8)}", sandbox: sandbox_group) }

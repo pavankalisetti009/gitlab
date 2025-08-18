@@ -3,7 +3,7 @@
 module QA
   include Support::Helpers::Plan
 
-  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env, product_group: :provision do
+  RSpec.describe 'Fulfillment', :requires_admin, :skip_live_env, feature_category: :plan_provisioning do
     include Support::Data::License
 
     let(:user) { license_user }

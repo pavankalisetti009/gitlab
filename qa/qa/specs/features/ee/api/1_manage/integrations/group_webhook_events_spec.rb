@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Manage' do
+  RSpec.describe 'Manage', feature_category: :importers do
     describe(
       'Group WebHooks integration',
       :requires_admin,

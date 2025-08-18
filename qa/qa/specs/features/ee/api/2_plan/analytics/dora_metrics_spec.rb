@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :requires_admin, product_group: :optimize, only: { subdomain: :staging } do
+  RSpec.describe 'Plan', :requires_admin, feature_category: :value_stream_management, only: { subdomain: :staging } do
     shared_examples "dora metrics api endpoint" do |expectation|
       def metric(metric)
         resource.dora_metrics(metric: metric, interval: "monthly", start_date: "2023-07-01", end_date: "2023-07-24")

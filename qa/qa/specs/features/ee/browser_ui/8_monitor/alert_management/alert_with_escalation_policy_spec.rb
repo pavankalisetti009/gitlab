@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Monitor', :orchestrated, :smtp, product_group: :platform_insights,
+  RSpec.describe 'Monitor', :orchestrated, :smtp, feature_category: :incident_management,
     quarantine: {
       type: :bug,
       issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/397133'

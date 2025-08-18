@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Group file templates', :requires_admin, product_group: :source_code do
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Group file templates', :requires_admin do
       include Support::API
 
       let(:api_client) { Runtime::API::Client.as_admin }

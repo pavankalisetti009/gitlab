@@ -2,7 +2,7 @@
 
 module QA
   # https://gitlab.com/gitlab-org/gitlab/issues/35706
-  RSpec.describe 'Systems', :orchestrated, :geo, product_group: :geo do
+  RSpec.describe 'Systems', :orchestrated, :geo, feature_category: :geo_replication do
     describe 'GitLab Geo Wiki HTTP push secondary' do
       let(:wiki_content) do
         'This tests that wikis are viewable in UI on secondary Geo sites after pushing via HTTP to a secondary'

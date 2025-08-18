@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security', :orchestrated, :ldap_no_server, product_group: :authentication do
+  RSpec.describe 'Software Supply Chain Security', :orchestrated, :ldap_no_server, feature_category: :system_access do
     describe 'LDAP admin sync' do
       before do
         run_ldap_service_with_user_as('admin')

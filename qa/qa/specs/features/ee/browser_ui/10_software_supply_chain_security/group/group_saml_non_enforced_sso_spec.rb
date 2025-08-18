@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security', :group_saml, :orchestrated,
+  RSpec.describe 'Software Supply Chain Security', :group_saml, :orchestrated, feature_category: :compliance_management,
     requires_admin: 'creates a user via API' do
-    describe 'Group SAML SSO - Non enforced SSO', product_group: :authentication do
+    describe 'Group SAML SSO - Non enforced SSO' do
       include Support::API
 
       let(:user) { create(:user) }

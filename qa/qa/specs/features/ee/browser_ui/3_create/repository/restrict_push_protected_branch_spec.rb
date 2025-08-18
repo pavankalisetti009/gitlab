@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Restricted protected branch push and merge', :requires_admin, product_group: :source_code do
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Restricted protected branch push and merge', :requires_admin do
       let(:user_developer) { create(:user) }
       let(:user_maintainer) { create(:user) }
       let(:branch_name) { 'protected-branch' }

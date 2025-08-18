@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :external_api_calls, product_group: :project_management do
+  RSpec.describe 'Plan', :external_api_calls, feature_category: :team_planning do
     describe 'Custom email', :requires_admin do
       before do
         Flow::Login.sign_in_as_admin

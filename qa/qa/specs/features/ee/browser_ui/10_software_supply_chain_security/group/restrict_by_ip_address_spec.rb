@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security' do
-    describe 'Group access', :requires_admin, :skip_live_env, product_group: :authentication do
+  RSpec.describe 'Software Supply Chain Security', feature_category: :system_access do
+    describe 'Group access', :requires_admin, :skip_live_env do
       let!(:current_ip_address) do
         Flow::Login.while_signed_in(as: user) { Runtime::User::Store.admin_user.get_user_ip_address(user.id) }
       end

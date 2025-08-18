@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :smoke, product_group: :project_management do
+  RSpec.describe 'Plan', :smoke, feature_category: :team_planning do
     describe 'Default issue templates' do
       let(:default_template_project) { create(:project, name: 'default-issue-template-project') }
 

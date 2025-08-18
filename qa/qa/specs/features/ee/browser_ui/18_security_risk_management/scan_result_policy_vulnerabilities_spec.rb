@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', product_group: :security_policies do
+  RSpec.describe 'Security Risk Management', feature_category: :security_policy_management do
     describe 'Approval policy' do
       let!(:project) do
         create(:project,

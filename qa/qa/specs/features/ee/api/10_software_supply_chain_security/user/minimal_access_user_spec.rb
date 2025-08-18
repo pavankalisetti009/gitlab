@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security' do
-    describe 'User with minimal access to group', :requires_admin, product_group: :authentication do
+  RSpec.describe 'Software Supply Chain Security', feature_category: :system_access do
+    describe 'User with minimal access to group', :requires_admin do
       include QA::Support::Helpers::Project
 
       let(:user_with_minimal_access) { create(:user, :with_personal_access_token) }

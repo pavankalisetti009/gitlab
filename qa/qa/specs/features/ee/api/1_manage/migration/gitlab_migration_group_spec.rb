@@ -3,7 +3,7 @@
 # TODO: this needs to be migrated to using 2 gitlab instances
 # however currently it's not possible to add license to the second source instance
 module QA
-  RSpec.describe "Manage", product_group: :import do
+  RSpec.describe "Manage", feature_category: :importers do
     include_context "with gitlab group migration"
 
     describe "Gitlab migration", :import, :orchestrated, requires_admin: 'creates a user via API' do

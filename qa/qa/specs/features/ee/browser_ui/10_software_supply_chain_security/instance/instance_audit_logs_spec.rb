@@ -2,7 +2,7 @@
 
 module QA
   # Issue to enable this test in live environments: https://gitlab.com/gitlab-org/quality/team-tasks/-/issues/614
-  RSpec.describe 'Software Supply Chain Security', :skip_live_env, product_group: :compliance do
+  RSpec.describe 'Software Supply Chain Security', :skip_live_env, feature_category: :compliance_management do
     shared_examples 'audit event' do |expected_events|
       it 'logs audit events for UI operations' do
         sign_in

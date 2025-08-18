@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Systems', :orchestrated, :geo, product_group: :geo do
+  RSpec.describe 'Systems', :orchestrated, :geo, feature_category: :geo_replication do
     describe 'issue attachment' do
       let(:file_to_attach) { Runtime::Path.fixture('designs', 'banana_sample.gif') }
       let(:project) do

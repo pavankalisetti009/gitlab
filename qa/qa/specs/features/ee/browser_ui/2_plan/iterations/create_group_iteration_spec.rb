@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan' do
-    describe 'Group Iterations', product_group: :project_management do
+  RSpec.describe 'Plan', feature_category: :team_planning do
+    describe 'Group Iterations' do
       include Support::Dates
       include ActiveSupport::Testing::TimeHelpers
 

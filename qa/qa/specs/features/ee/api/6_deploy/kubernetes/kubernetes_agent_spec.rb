@@ -3,8 +3,8 @@
 require 'erb'
 
 module QA
-  RSpec.describe 'Deploy',
-    only: { pipeline: %i[staging staging-canary canary production] }, product_group: :environments do
+  RSpec.describe 'Deploy', feature_category: :environment_management,
+    only: { pipeline: %i[staging staging-canary canary production] } do
     include Service::Shellout
 
     describe 'Kubernetes Agent' do

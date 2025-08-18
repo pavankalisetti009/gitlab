@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Codeowners', :requires_admin, product_group: :source_code do
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Codeowners', :requires_admin do
       # Create one user to be the assigned approver and another user who will not be an approver
       let(:approver) { create(:user) }
       let(:non_approver) { create(:user) }

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan' do
-    describe 'Merge Request Analytics', :requires_admin, product_group: :optimize do
+  RSpec.describe 'Plan', feature_category: :value_stream_management do
+    describe 'Merge Request Analytics', :requires_admin do
       let(:label) { "mr-label" }
       let(:project) { create(:project, name: 'mr_analytics') }
 

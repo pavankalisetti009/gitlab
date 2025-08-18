@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', only: { pipeline: %i[staging staging-canary] },
-    product_group: :security_policies do
+  RSpec.describe 'Security Risk Management', feature_category: :security_policy_management,
+    only: { pipeline: %i[staging staging-canary] } do
     describe 'approval policy' do
       let!(:project) do
         create(:project, :with_readme,

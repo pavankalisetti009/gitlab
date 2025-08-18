@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', product_group: :security_insights do
+  RSpec.describe 'Security Risk Management', feature_category: :vulnerability_management do
     describe 'MR security widget' do
       let(:secret_detection_report) { "gl-secret-detection-report.json" }
       let(:secret_detection_report_mr) { "gl-secret-detection-report-mr.json" }

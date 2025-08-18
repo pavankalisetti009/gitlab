@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Pull mirror a repository over SSH with a private key', product_group: :source_code do
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Pull mirror a repository over SSH with a private key' do
       let(:source) do
         Resource::Repository::ProjectPush.fabricate! do |project_push|
           project_push.project_name = 'pull-mirror-source-project'

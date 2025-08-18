@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', :external_api_calls, product_group: :security_insights do
+  RSpec.describe 'Security Risk Management', :external_api_calls, feature_category: :vulnerability_management do
     describe 'Security Reports' do
       let(:number_of_dependencies_dependency_scanning) { 9 }
       let(:dependency_scan_example_vuln) { 'Prototype pollution attack in mixin-deep' }

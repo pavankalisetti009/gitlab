@@ -3,7 +3,7 @@
 module QA
   RSpec.describe(
     'Software Supply Chain Security',
-    product_group: :compliance,
+    feature_category: :compliance_management,
     feature_flag: {
       name: 'new_project_creation_form'
     }

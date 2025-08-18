@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Secure', :secure_container_reg_cvs,
-    product_group: :composition_analysis,
+    feature_category: :software_composition_analysis,
     only: { pipeline: %i[staging staging-canary] },
     feature_flag: { name: 'cvs_for_container_scanning', scope: :project } do
     describe 'Continuous Vulnerability Scanning' do

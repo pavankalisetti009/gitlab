@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Software Supply Chain Security' do
+  RSpec.describe 'Software Supply Chain Security', feature_category: :system_access do
     describe(
       'User with minimal access to group',
-      :requires_admin,
-      product_group: :authentication
+      :requires_admin
     ) do
       let(:admin_api_client) { Runtime::API::Client.as_admin }
 

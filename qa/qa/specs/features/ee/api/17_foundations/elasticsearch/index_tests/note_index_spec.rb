@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Foundations', product_group: :global_search do
+  RSpec.describe 'Foundations', feature_category: :global_search do
     describe(
       'When using elasticsearch API to search for a public note',
       :orchestrated,

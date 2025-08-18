@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', :requires_admin, product_group: :secret_detection do
+  RSpec.describe 'Secure', :requires_admin, feature_category: :secret_detection do
     describe 'Secret Push Protection' do
       let!(:project) do
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')

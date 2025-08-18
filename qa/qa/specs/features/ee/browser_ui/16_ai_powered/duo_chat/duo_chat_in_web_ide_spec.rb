@@ -2,7 +2,7 @@
 
 module QA
   # https://docs.gitlab.com/ee/development/ai_features/duo_chat.html
-  RSpec.describe 'Ai-powered', product_group: :duo_chat do
+  RSpec.describe 'Ai-powered', feature_category: :duo_chat do
     describe "Duo Chat in Web IDE" do
       include_context 'Web IDE test prep'
       shared_examples 'Duo Chat' do |testcase|

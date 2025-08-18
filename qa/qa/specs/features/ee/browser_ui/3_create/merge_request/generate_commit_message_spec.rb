@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create', product_group: :code_review do
+  RSpec.describe 'Create', feature_category: :code_review_workflow do
     describe 'Generate merge commit message' do
       let(:project) { create(:project, :with_readme, name: 'mr-gen-commit-project') }
 

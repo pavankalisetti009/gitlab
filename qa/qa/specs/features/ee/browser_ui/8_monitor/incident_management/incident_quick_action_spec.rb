@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Monitor', product_group: :platform_insights do
+  RSpec.describe 'Monitor', feature_category: :incident_management do
     describe 'Create incident' do
       let(:project) { create(:project, name: 'project-for-incident', description: 'Project for incident') }
       let!(:incident_label) { create(:project_label, project: project, title: 'incident') }

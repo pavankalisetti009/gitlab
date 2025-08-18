@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Project templates', product_group: :source_code, feature_flag: {
+  RSpec.describe 'Create', feature_category: :source_code_management do
+    describe 'Project templates', feature_flag: {
       name: 'new_project_creation_form'
     } do
       let!(:group) { create(:group) }
