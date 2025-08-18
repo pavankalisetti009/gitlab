@@ -15,7 +15,7 @@ import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
-import { TYPENAME_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
   mockAgent,
   mockAgents,

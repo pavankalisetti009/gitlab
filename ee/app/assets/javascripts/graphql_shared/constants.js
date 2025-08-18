@@ -1,7 +1,9 @@
-export const TYPE_GROUPS_SAVED_REPLY = 'Groups::SavedReply';
-export const TYPE_PROJECTS_SAVED_REPLY = 'Projects::SavedReply';
 export const TYPENAME_AI_AGENT = 'Ai::Agent';
 export const TYPENAME_AI_AGENT_VERSION = 'Ai::AgentVersion';
+export const TYPENAME_AI_CATALOG_ITEM = 'Ai::Catalog::Item';
+export const TYPENAME_AI_FLOW_TRIGGER = 'Ai::FlowTrigger';
 export const TYPENAME_CUSTOM_FIELD = 'Issuables::CustomField';
 export const TYPENAME_CUSTOM_FIELD_SELECT_OPTION = 'Issuables::CustomFieldSelectOption';
+export const TYPENAME_GROUPS_SAVED_REPLY = 'Groups::SavedReply';
+export const TYPENAME_PROJECTS_SAVED_REPLY = 'Projects::SavedReply';
 export const TYPENAME_SBOM_OCCURRENCE = 'Sbom::Occurrence';

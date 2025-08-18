@@ -5,8 +5,6 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 
-export const TYPENAME_AI_CATALOG_ITEM = 'Ai::Catalog::Item';
-
 export const AI_CATALOG_TYPE_AGENT = 'AGENT';
 export const AI_CATALOG_TYPE_FLOW = 'FLOW';
 

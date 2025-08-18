@@ -1,4 +1,4 @@
-import { TYPENAME_AI_FLOW_TRIGGER } from '~/graphql_shared/constants';
+import { TYPENAME_AI_FLOW_TRIGGER } from 'ee/graphql_shared/constants';
 
 export const mockFlowTriggerFactory = (overrides = {}) => ({
   id: `gid://gitlab/${TYPENAME_AI_FLOW_TRIGGER}/1`,
