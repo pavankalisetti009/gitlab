@@ -22,7 +22,6 @@ module Ai
               "cleanup_stuck_agent_platform_session",
               user: w.user,
               project: w.project,
-              name: w.project.namespace,
               additional_properties: {
                 label: w.workflow_definition,
                 value: w.id,
