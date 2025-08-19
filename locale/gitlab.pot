@@ -28568,6 +28568,11 @@ msgstr ""
 msgid "Geo sites"
 msgstr ""
 
+msgid "Geo|%d Registry"
+msgid_plural "Geo|%d Registries"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Geo|%d group selected"
 msgid_plural "Geo|%d groups selected"
 msgstr[0] ""
@@ -28606,6 +28611,9 @@ msgid "Geo|%{titlePlural} synced"
 msgstr ""
 
 msgid "Geo|%{titlePlural} verified"
+msgstr ""
+
+msgid "Geo|1000+ Registries"
 msgstr ""
 
 msgid "Geo|Add New Site"

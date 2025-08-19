@@ -78,6 +78,7 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
 ];
 
 export const MOCK_GRAPHQL_PAGINATION_DATA = {
+  __typename: 'PageInfo',
   hasNextPage: true,
   hasPreviousPage: true,
   startCursor: 'abc123',
