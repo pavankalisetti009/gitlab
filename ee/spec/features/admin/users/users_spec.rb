@@ -254,4 +254,24 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
       end
     end
   end
+
+  describe 'GET /admin/users/:id/projects' do
+    before do
+      visit projects_admin_user_path(minimal_user)
+    end
+
+    context "when user has minimal access role in a group" do
+      let_it_be(:minimal_user) { create(:user) }
+      let_it_be(:group) { create(:group) }
+      let_it_be(:minimal_access) { create(:group_member, :minimal_access, user: minimal_user, group: group) }
+
+      it 'lists minimal access groups' do
+        within(:css, '.gl-mb-3 + .gl-card') do
+          expect(page).to have_content('Groups')
+          expect(page).to have_content 'Minimal Access'
+          expect(page).to have_link group.name, href: admin_group_path(group)
+        end
+      end
+    end
+  end
 end
