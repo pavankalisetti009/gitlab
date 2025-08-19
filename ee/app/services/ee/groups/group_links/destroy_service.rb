@@ -51,8 +51,6 @@ module EE
         end
 
         def destroy_user_group_member_roles(links)
-          links = links.filter { |l| ::Feature.enabled?(:cache_user_group_member_roles, l.shared_group.root_ancestor) }
-
           return if links.empty?
 
           links_with_user_group_member_roles(links).each do |l|

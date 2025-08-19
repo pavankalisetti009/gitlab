@@ -65,7 +65,6 @@ module EE
           access_level_changed = changes[:group_access].present?
 
           return unless member_role_changed || access_level_changed
-          return unless ::Feature.enabled?(:cache_user_group_member_roles, link.shared_group.root_ancestor)
 
           ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker.perform_async(link.id)
         end

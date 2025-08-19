@@ -55,15 +55,11 @@ RSpec.describe Groups::GroupLinks::DestroyService, '#execute', feature_category:
     end
 
     describe "shared_with_group's members' ::Authz::UserGroupMemberRole records" do
-      shared_examples 'does not enqueue a DestroyForSharedGroupWorker job' do
-        specify do
-          expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker).not_to receive(:perform_async)
+      it 'does not enqueue a DestroyForSharedGroupWorker job' do
+        expect(::Authz::UserGroupMemberRoles::DestroyForSharedGroupWorker).not_to receive(:perform_async)
 
-          service.execute(link)
-        end
+        service.execute(link)
       end
-
-      it_behaves_like 'does not enqueue a DestroyForSharedGroupWorker job'
 
       context 'when ::Authz::UserGroupMemberRole records exist matching the link' do
         before do
@@ -75,14 +71,6 @@ RSpec.describe Groups::GroupLinks::DestroyService, '#execute', feature_category:
             .to receive(:perform_async).with(link.shared_group_id, link.shared_with_group_id)
 
           service.execute(link)
-        end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(cache_user_group_member_roles: false)
-          end
-
-          it_behaves_like 'does not enqueue a DestroyForSharedGroupWorker job'
         end
       end
     end

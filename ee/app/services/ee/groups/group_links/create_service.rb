@@ -56,8 +56,6 @@ module EE
         end
 
         def update_user_group_member_roles
-          return unless ::Feature.enabled?(:cache_user_group_member_roles, link.shared_group.root_ancestor)
-
           ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker.perform_async(link.id)
         end
       end

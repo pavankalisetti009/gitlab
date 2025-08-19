@@ -353,14 +353,6 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
 
         it_behaves_like 'enqueues a DestroyForGroupWorker job'
 
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(cache_user_group_member_roles: false)
-          end
-
-          it_behaves_like 'does not enqueue a DestroyForGroupWorker job'
-        end
-
         context 'with project membership' do
           let_it_be(:project) { create(:project, group: group) }
           let(:member) { create(:project_member, :developer, user: member_user, project: project) }
