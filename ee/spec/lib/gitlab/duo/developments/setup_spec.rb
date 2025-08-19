@@ -14,7 +14,7 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
   let(:feature_flags) do
     [
       :enable_hamilton_in_user_preferences,
-      :allow_organization_creation
+      :organization_switching
     ]
   end
 
