@@ -29,7 +29,8 @@ module Ai
       local_git: 'local_git',
       terminal: 'terminal',
       user_rule: 'user_rule',
-      repository: 'repository'
+      repository: 'repository',
+      agent_user_environment: 'agent_user_environment'
     }.freeze
 
     MAX_BODY_SIZE = ::API::CodeSuggestions::MAX_BODY_SIZE
