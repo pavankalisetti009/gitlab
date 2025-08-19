@@ -144,7 +144,7 @@ export default {
       :action-cancel="$options.modal.cancelAction"
       :title="s__('VirtualRegistry|Delete Maven upstream cache entry?')"
       @primary="$emit('delete', { id: cacheEntryToBeDeleted.id })"
-      @cancel="hideModal"
+      @canceled="hideModal"
     >
       <gl-sprintf
         v-if="cacheEntryToBeDeleted"

@@ -1,6 +1,6 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton, GlModal } from '@gitlab/ui';
+import { GlAlert, GlButton } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -13,8 +13,9 @@ import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import {
-  updateMavenRegistryUpstreamPosition,
   deleteMavenUpstreamCache,
+  deleteMavenRegistryCache,
+  updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
 import { mavenVirtualRegistry } from '../mock_data';
 
@@ -83,15 +84,16 @@ describe('MavenRegistryDetailsApp', () => {
   const findDescription = () => wrapper.findByTestId('description');
   const findTitleArea = () => wrapper.findComponent(TitleArea);
   const findButton = () => wrapper.findComponent(GlButton);
+  const findAddUpstreamButton = () => wrapper.findByTestId('add-upstream-button');
+  const findClearRegistryCacheButton = () => wrapper.findByTestId('clear-registry-cache-button');
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
-  const findCreateUpstreamButton = () => wrapper.findByTestId('crud-form-toggle');
-  const findClearUpstreamCacheModal = () => wrapper.findComponent(GlModal);
+  const findClearRegistryCacheModal = () => wrapper.findByTestId('clear-registry-cache-modal');
+  const findClearUpstreamCacheModal = () => wrapper.findByTestId('clear-upstream-cache-modal');
   const findMetadataItems = () => wrapper.findAllComponents(MetadataItem);
   const findCreateUpstreamForm = () => wrapper.findComponent(RegistryUpstreamForm);
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
   const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
-  const findUpstreamActionUpdateErrorAlert = () =>
-    wrapper.findByTestId('upstream-action-error-alert');
+  const findUpdateActionErrorAlert = () => wrapper.findByTestId('update-action-error-alert');
 
   const createComponent = ({
     mountFn = shallowMountExtended,
@@ -112,6 +114,7 @@ describe('MavenRegistryDetailsApp', () => {
       },
       stubs: {
         TitleArea,
+        CrudComponent,
         ...stubs,
       },
       mocks: {
@@ -140,14 +143,19 @@ describe('MavenRegistryDetailsApp', () => {
         title: 'Upstreams',
         icon: 'infrastructure-registry',
         count: defaultProps.upstreams.length,
-        toggleText: 'Add upstream',
       });
     });
 
-    it('does not set toggleText prop on Crud component when user does not have ability', () => {
-      createComponent({ provide: { glAbilities: { createVirtualRegistry: false } } });
+    it('renders `Add upstream` button', () => {
+      expect(findAddUpstreamButton().exists()).toBe(true);
+    });
 
-      expect(findCrudComponent().props('toggleText')).toBeNull();
+    it('does not show `Add upstream` button when user does not have ability', () => {
+      createComponent({
+        provide: { glAbilities: { createVirtualRegistry: false } },
+      });
+
+      expect(findAddUpstreamButton().exists()).toBe(false);
     });
 
     it('renders the upstreams and passes correct props to each', () => {
@@ -159,9 +167,18 @@ describe('MavenRegistryDetailsApp', () => {
       });
     });
 
-    it('shows create form when toggleText is clicked', () => {
-      findCrudComponent().vm.$emit('toggle');
+    it('shows create form when `Add upstream` button is clicked', async () => {
+      createComponent({
+        mountFn: mountExtended,
+        stubs: {
+          RegistryUpstreamItem: true,
+          RegistryUpstreamForm,
+        },
+      });
+      await findAddUpstreamButton().trigger('click');
+
       expect(findCreateUpstreamForm().exists()).toBe(true);
+      expect(findAddUpstreamButton().props('disabled')).toBe(true);
     });
 
     it('renders the edit button with correct href', () => {
@@ -172,6 +189,10 @@ describe('MavenRegistryDetailsApp', () => {
       createComponent({ provide: { glAbilities: { updateVirtualRegistry: false } } });
 
       expect(findButton().exists()).toBe(false);
+    });
+
+    it('hides the registry clear cache modal', () => {
+      expect(findClearRegistryCacheModal().props('visible')).toBe(false);
     });
 
     it('hides the upstream clear cache modal', () => {
@@ -203,7 +224,7 @@ describe('MavenRegistryDetailsApp', () => {
         },
       });
 
-      await findCreateUpstreamButton().trigger('click');
+      await findAddUpstreamButton().trigger('click');
 
       await findCreateUpstreamForm().vm.$emit('submit', upstream);
 
@@ -217,7 +238,7 @@ describe('MavenRegistryDetailsApp', () => {
       });
       expect(findCreateUpstreamForm().exists()).toBe(false);
       expect(wrapper.emitted('upstreamCreated')).toHaveLength(1);
-      expect(showToastSpy).toHaveBeenCalledWith('Upstream created successfully');
+      expect(showToastSpy).toHaveBeenCalledWith('Upstream created successfully.');
       expect(findCreateUpstreamErrorAlert().exists()).toBe(false);
       expect(captureException).not.toHaveBeenCalled();
     });
@@ -226,9 +247,14 @@ describe('MavenRegistryDetailsApp', () => {
       it('renders alert with message', async () => {
         createComponent({
           handlers: [[createUpstreamRegistryMutation, createUpstreamErrorHandler]],
+          mountFn: mountExtended,
+          stubs: {
+            RegistryUpstreamItem: true,
+            RegistryUpstreamForm,
+          },
         });
 
-        await findCrudComponent().vm.$emit('toggle');
+        await findAddUpstreamButton().trigger('click');
 
         await findCreateUpstreamForm().vm.$emit('submit', upstream);
 
@@ -245,16 +271,21 @@ describe('MavenRegistryDetailsApp', () => {
       it('sends an error to Sentry', async () => {
         createComponent({
           handlers: [[createUpstreamRegistryMutation, errorHandler]],
+          mountFn: mountExtended,
+          stubs: {
+            RegistryUpstreamItem: true,
+            RegistryUpstreamForm,
+          },
         });
 
-        await findCrudComponent().vm.$emit('toggle');
+        await findAddUpstreamButton().trigger('click');
 
         await findCreateUpstreamForm().vm.$emit('submit', upstream);
 
         await waitForPromises();
 
         expect(findCreateUpstreamErrorAlert().text()).toBe(
-          'Something went wrong while creating the upstream. Please try again.',
+          'Something went wrong while creating the upstream. Try again.',
         );
         expect(findCreateUpstreamForm().props('loading')).toBe(false);
         expect(showToastSpy).not.toHaveBeenCalled();
@@ -308,9 +339,9 @@ describe('MavenRegistryDetailsApp', () => {
 
         expect(wrapper.emitted('upstreamReordered')).toHaveLength(1);
         expect(showToastSpy).toHaveBeenCalledWith(
-          'Position of the upstream has been updated successfully',
+          'Position of the upstream has been updated successfully.',
         );
-        expect(findUpstreamActionUpdateErrorAlert().exists()).toBe(false);
+        expect(findUpdateActionErrorAlert().exists()).toBe(false);
         expect(captureException).not.toHaveBeenCalled();
       });
     });
@@ -327,9 +358,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         await waitForPromises();
 
-        expect(findUpstreamActionUpdateErrorAlert().text()).toBe(
-          'position does not have a valid value',
-        );
+        expect(findUpdateActionErrorAlert().text()).toBe('position does not have a valid value');
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
           component: 'MavenRegistryDetailsApp',
@@ -348,8 +377,81 @@ describe('MavenRegistryDetailsApp', () => {
 
         await waitForPromises();
 
-        expect(findUpstreamActionUpdateErrorAlert().text()).toBe(
-          'Failed to update position of the upstream. Please try again.',
+        expect(findUpdateActionErrorAlert().text()).toBe(
+          'Failed to update position of the upstream. Try again.',
+        );
+        expect(showToastSpy).not.toHaveBeenCalled();
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'MavenRegistryDetailsApp',
+          error: mockError,
+        });
+      });
+    });
+  });
+
+  describe('clear registry cache action', () => {
+    beforeEach(() => {
+      deleteMavenRegistryCache.mockReset();
+    });
+
+    it('modal is shown with props', async () => {
+      createComponent();
+
+      await findClearRegistryCacheButton().vm.$emit('click');
+
+      expect(findClearRegistryCacheModal().props('visible')).toBe(true);
+      expect(findClearRegistryCacheModal().props('title')).toBe('Clear all caches?');
+      expect(findClearRegistryCacheModal().text()).toBe(
+        'This will delete all cached packages for exclusive upstream registries in this virtual registry. If any upstream is unavailable or misconfigured after clearing, jobs that rely on those packages might fail. Are you sure you want to continue?',
+      );
+    });
+
+    it('hides modal on cancel', () => {
+      createComponent();
+
+      findClearRegistryCacheButton().vm.$emit('click');
+
+      findClearRegistryCacheModal().vm.$emit('canceled');
+
+      expect(findClearRegistryCacheModal().props('visible')).toBe(false);
+    });
+
+    describe('when modal is confirmed and API succeeds', () => {
+      beforeEach(() => {
+        deleteMavenRegistryCache.mockResolvedValue();
+        createComponent();
+
+        findClearRegistryCacheButton().vm.$emit('click');
+        findClearRegistryCacheModal().vm.$emit('primary');
+      });
+
+      it('calls the right arguments', () => {
+        expect(deleteMavenRegistryCache).toHaveBeenCalledWith({
+          id: 1,
+        });
+      });
+
+      it('shows success toast', async () => {
+        await waitForPromises();
+
+        expect(showToastSpy).toHaveBeenCalledWith('Registry cache cleared successfully.');
+        expect(captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when modal is confirmed and API fails', () => {
+      it('shows toast with default message & reports error to Sentry', async () => {
+        const mockError = new Error();
+        deleteMavenRegistryCache.mockRejectedValue(mockError);
+        createComponent();
+
+        findClearRegistryCacheButton().vm.$emit('click');
+        findClearRegistryCacheModal().vm.$emit('primary');
+
+        await waitForPromises();
+
+        expect(findUpdateActionErrorAlert().text()).toBe(
+          'Failed to clear registry cache. Try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
@@ -369,14 +471,13 @@ describe('MavenRegistryDetailsApp', () => {
       createComponent();
 
       const upstreamItems = findUpstreamItems();
-      upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
-      await nextTick();
+      await upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
 
       expect(findClearUpstreamCacheModal().props()).toMatchObject({
         visible: true,
         title: 'Clear cache for Maven upstream?',
         size: 'sm',
-        modalId: 'delete-upstream-cache-modal',
+        modalId: 'clear-upstream-cache-modal',
         actionPrimary: {
           text: 'Clear cache',
           attributes: { variant: 'danger', category: 'primary' },
@@ -384,7 +485,7 @@ describe('MavenRegistryDetailsApp', () => {
         actionCancel: { text: 'Cancel' },
       });
       expect(findClearUpstreamCacheModal().text()).toBe(
-        'This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs may fail. Are you sure you want to continue?',
+        'This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?',
       );
     });
 
@@ -394,7 +495,7 @@ describe('MavenRegistryDetailsApp', () => {
       const upstreamItems = findUpstreamItems();
       upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
 
-      findClearUpstreamCacheModal().vm.$emit('cancel');
+      findClearUpstreamCacheModal().vm.$emit('canceled');
 
       expect(findClearUpstreamCacheModal().props('visible')).toBe(false);
     });
@@ -418,7 +519,7 @@ describe('MavenRegistryDetailsApp', () => {
       it('shows success toast when successful', async () => {
         await waitForPromises();
 
-        expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully');
+        expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully.');
         expect(captureException).not.toHaveBeenCalled();
       });
     });
@@ -436,8 +537,8 @@ describe('MavenRegistryDetailsApp', () => {
 
         await waitForPromises();
 
-        expect(findUpstreamActionUpdateErrorAlert().text()).toBe(
-          'Failed to clear upstream cache. Please try again.',
+        expect(findUpdateActionErrorAlert().text()).toBe(
+          'Failed to clear upstream cache. Try again.',
         );
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
