@@ -24,6 +24,8 @@ import {
   SUPPORTED_MERGE_REQUEST_METRICS,
   SUPPORTED_FLOW_METRICS,
   SUPPORTED_PIPELINE_ANALYTICS_METRICS,
+  TREND_STYLE_ASC,
+  TREND_STYLE_DESC,
 } from 'ee/analytics/dashboards/constants';
 import AggregatedPipelineMetricsQuery from 'ee/analytics/dashboards/graphql/get_aggregate_pipeline_metrics.query.graphql';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/graphql/vulnerabilities.query.graphql';
@@ -395,14 +397,16 @@ describe('Metric table', () => {
 
       it('does not invert the trend indicator for ascending metrics', () => {
         expect(findTrendIndicator(DORA_METRICS.DEPLOYMENT_FREQUENCY).props().change).toBe(1);
-        expect(findTrendIndicator(DORA_METRICS.DEPLOYMENT_FREQUENCY).props().invertColor).toBe(
-          false,
+        expect(findTrendIndicator(DORA_METRICS.DEPLOYMENT_FREQUENCY).props().trendStyle).toBe(
+          TREND_STYLE_ASC,
         );
       });
 
       it('inverts the trend indicator for declining metrics', () => {
         expect(findTrendIndicator(DORA_METRICS.CHANGE_FAILURE_RATE).props().change).toBe(1);
-        expect(findTrendIndicator(DORA_METRICS.CHANGE_FAILURE_RATE).props().invertColor).toBe(true);
+        expect(findTrendIndicator(DORA_METRICS.CHANGE_FAILURE_RATE).props().trendStyle).toBe(
+          TREND_STYLE_DESC,
+        );
       });
     });
   });

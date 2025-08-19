@@ -1,3 +1,4 @@
+import { TREND_STYLE_DESC, TREND_STYLE_NONE } from '../../../../dashboards/constants';
 import DataTable from './data_table.vue';
 import ChangePercentageIndicator from './change_percentage_indicator.vue';
 
@@ -10,7 +11,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   components: { ChangePercentageIndicator },
   props: Object.keys(argTypes),
-  template: `<change-percentage-indicator :value="value" :tooltip="tooltip" :invert-trend-color="invertTrendColor" :is-neutral-change="isNeutralChange" />`,
+  template: `<change-percentage-indicator :value="value" :tooltip="tooltip" :trend-style="trendStyle" />`,
 });
 
 const TableTemplate = (args, { argTypes }) => ({
@@ -22,19 +23,19 @@ const TableTemplate = (args, { argTypes }) => ({
 const tooltip = 'Tooltip label is cool';
 
 export const Default = Template.bind({});
-Default.args = { value: 0.25, tooltip, invertTrendColor: false };
-
-export const WithInvertTrendColor = Template.bind({});
-WithInvertTrendColor.args = { value: 0.25, tooltip, invertTrendColor: true };
-
-export const WithNeutralChange = Template.bind({});
-WithNeutralChange.args = { value: 0.25, tooltip, isNeutralChange: true };
+Default.args = { value: 0.25, tooltip };
 
 export const NegativeChange = Template.bind({});
-NegativeChange.args = { value: -0.125, tooltip, invertTrendColor: false };
+NegativeChange.args = { value: -0.125, tooltip };
 
 export const NoChange = Template.bind({});
-NoChange.args = { tooltip, invertTrendColor: false, value: 0 };
+NoChange.args = { tooltip, value: 0 };
+
+export const WithDescendingTrendStyle = Template.bind({});
+WithDescendingTrendStyle.args = { value: 0.25, tooltip, trendStyle: TREND_STYLE_DESC };
+
+export const WithNoTrendStyle = Template.bind({});
+WithNoTrendStyle.args = { value: 0.25, tooltip, trendStyle: TREND_STYLE_NONE };
 
 export const InTable = TableTemplate.bind({});
 InTable.args = {

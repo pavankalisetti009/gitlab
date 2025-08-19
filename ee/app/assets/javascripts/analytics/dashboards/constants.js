@@ -42,18 +42,21 @@ export const SUPPORTED_PIPELINE_ANALYTICS_METRICS = [
   PIPELINE_ANALYTICS_METRICS.MEDIAN,
 ];
 
+export const TREND_STYLE_ASC = 'ASC';
+export const TREND_STYLE_DESC = 'DESC';
+export const TREND_STYLE_NONE = 'NONE';
+export const TREND_STYLES = [TREND_STYLE_ASC, TREND_STYLE_DESC, TREND_STYLE_NONE];
+
 export const PIPELINE_ANALYTICS_TABLE_METRICS = {
   [PIPELINE_ANALYTICS_METRICS.COUNT]: {
     label: s__('CICDAnalytics|Total pipeline runs'),
-    invertTrendColor: true,
     units: UNITS.COUNT,
-    showGradient: false,
-    isNeutralChange: true,
+    trendStyle: TREND_STYLE_NONE,
   },
   [PIPELINE_ANALYTICS_METRICS.MEDIAN]: {
     label: s__('CICDAnalytics|Median duration'),
-    invertTrendColor: true,
     units: UNITS.MINUTES,
+    trendStyle: TREND_STYLE_DESC,
   },
   [PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE]: {
     label: s__('CICDAnalytics|Success rate'),
@@ -61,8 +64,8 @@ export const PIPELINE_ANALYTICS_TABLE_METRICS = {
   },
   [PIPELINE_ANALYTICS_METRICS.FAILURE_RATE]: {
     label: s__('CICDAnalytics|Failure rate'),
-    invertTrendColor: true,
     units: UNITS.PERCENT,
+    trendStyle: TREND_STYLE_DESC,
   },
 };
 
@@ -73,18 +76,18 @@ export const DORA_TABLE_METRICS = {
   },
   [DORA_METRICS.LEAD_TIME_FOR_CHANGES]: {
     label: s__('DORA4Metrics|Lead time for changes'),
-    invertTrendColor: true,
     units: UNITS.DAYS,
+    trendStyle: TREND_STYLE_DESC,
   },
   [DORA_METRICS.TIME_TO_RESTORE_SERVICE]: {
     label: s__('DORA4Metrics|Time to restore service'),
-    invertTrendColor: true,
     units: UNITS.DAYS,
+    trendStyle: TREND_STYLE_DESC,
   },
   [DORA_METRICS.CHANGE_FAILURE_RATE]: {
     label: s__('DORA4Metrics|Change failure rate'),
-    invertTrendColor: true,
     units: UNITS.PERCENT,
+    trendStyle: TREND_STYLE_DESC,
   },
 };
 
@@ -92,13 +95,13 @@ export const TABLE_METRICS = {
   ...DORA_TABLE_METRICS,
   [FLOW_METRICS.LEAD_TIME]: {
     label: s__('DORA4Metrics|Lead time'),
-    invertTrendColor: true,
     units: UNITS.DAYS,
+    trendStyle: TREND_STYLE_DESC,
   },
   [FLOW_METRICS.CYCLE_TIME]: {
     label: s__('DORA4Metrics|Cycle time'),
-    invertTrendColor: true,
     units: UNITS.DAYS,
+    trendStyle: TREND_STYLE_DESC,
   },
   [FLOW_METRICS.ISSUES]: {
     label: s__('DORA4Metrics|Issues created'),
@@ -125,8 +128,8 @@ export const TABLE_METRICS = {
   },
   [FLOW_METRICS.MEDIAN_TIME_TO_MERGE]: {
     label: s__('DORA4Metrics|Median time to merge'),
-    invertTrendColor: true,
     units: UNITS.DAYS,
+    trendStyle: TREND_STYLE_DESC,
   },
   [CONTRIBUTOR_METRICS.COUNT]: {
     label: s__('DORA4Metrics|Contributor count'),
@@ -134,13 +137,13 @@ export const TABLE_METRICS = {
   },
   [VULNERABILITY_METRICS.CRITICAL]: {
     label: s__('DORA4Metrics|Critical vulnerabilities over time'),
-    invertTrendColor: true,
     units: UNITS.COUNT,
+    trendStyle: TREND_STYLE_DESC,
   },
   [VULNERABILITY_METRICS.HIGH]: {
     label: s__('DORA4Metrics|High vulnerabilities over time'),
-    invertTrendColor: true,
     units: UNITS.COUNT,
+    trendStyle: TREND_STYLE_DESC,
   },
 };
 
@@ -173,8 +176,6 @@ export const DASHBOARD_NO_DATA_FOR_GROUP = s__(
   'DORA4Metrics|No data available for Group: %{fullPath}',
 );
 
-export const CHART_GRADIENT = ['#499767', '#5252B5'];
-export const CHART_GRADIENT_INVERTED = [...CHART_GRADIENT].reverse();
 export const CHART_LOADING_FAILURE = s__('DORA4Metrics|Some metric charts failed to load');
 
 export const CHART_TOOLTIP_UNITS = {

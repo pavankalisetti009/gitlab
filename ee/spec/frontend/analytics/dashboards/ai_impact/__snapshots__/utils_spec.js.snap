@@ -144,202 +144,158 @@ exports[`AI impact Dashboard utils generateDateRanges returns the expected date 
 exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleton based on the table fields 1`] = `
 [
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "deployment_frequency",
       "value": "Deployment frequency",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "lead_time_for_changes",
       "value": "Lead time for changes",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "time_to_restore_service",
       "value": "Time to restore service",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "change_failure_rate",
       "value": "Change failure rate",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "lead_time",
       "value": "Lead time",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "cycle_time",
       "value": "Cycle time",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "issues",
       "value": "Issues created",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "issues_completed",
       "value": "Issues closed",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "deploys",
       "value": "Deploys",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "merge_request_throughput",
       "value": "Merge request throughput",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "median_time_to_merge",
       "value": "Median time to merge",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "contributor_count",
       "value": "Contributor count",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "vulnerability_critical",
       "value": "Critical vulnerabilities over time",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "vulnerability_high",
       "value": "High vulnerabilities over time",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": true,
     "metric": {
       "identifier": "pipeline_count",
       "value": "Total pipeline runs",
     },
-    "showGradient": false,
+    "trendStyle": "NONE",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "pipeline_duration_median",
       "value": "Median duration",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "pipeline_success_rate",
       "value": "Success rate",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": true,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "pipeline_failed_rate",
       "value": "Failure rate",
     },
-    "showGradient": true,
+    "trendStyle": "DESC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "code_suggestions_usage_rate",
       "value": "Code Suggestions: Usage",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "code_suggestions_acceptance_rate",
       "value": "Code Suggestions: Acceptance rate",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "duo_chat_usage_rate",
       "value": "Duo Chat: Usage",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
   {
-    "invertTrendColor": undefined,
-    "isNeutralChange": false,
     "metric": {
       "identifier": "duo_rca_usage_rate",
       "value": "Duo RCA: Usage",
     },
-    "showGradient": true,
+    "trendStyle": "ASC",
   },
 ]
 `;

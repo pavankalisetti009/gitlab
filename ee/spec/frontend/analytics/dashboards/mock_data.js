@@ -1,6 +1,7 @@
 import { isUndefined } from 'lodash';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { nMonthsBefore } from '~/lib/utils/datetime_utility';
+import { TREND_STYLE_DESC } from 'ee/analytics/dashboards/constants';
 
 const METRIC_IDENTIFIERS = [
   'lead_time_for_changes',
@@ -217,7 +218,7 @@ export const mockComparativeTableData = [
       value: 'Lead time for changes',
       identifier: 'lead_time_for_changes',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     thisMonth: {
       value: '0.5 d',
       change: -0.8611111111111112,
@@ -236,7 +237,7 @@ export const mockComparativeTableData = [
       value: 'Time to restore service',
       identifier: 'time_to_restore_service',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     thisMonth: {
       value: '0.05 d',
       change: -0.9974999999999999,
@@ -255,7 +256,7 @@ export const mockComparativeTableData = [
       value: 'Change failure rate',
       identifier: 'change_failure_rate',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     thisMonth: {
       value: '0.005%',
       change: -0.99875,
@@ -274,7 +275,7 @@ export const mockComparativeTableData = [
       value: 'Lead time',
       identifier: 'lead_time',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     lastMonth: {
       change: 1,
       value: '4.0 d',
@@ -293,7 +294,7 @@ export const mockComparativeTableData = [
       value: 'Cycle time',
       identifier: 'cycle_time',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     lastMonth: {
       change: 0,
       value: '-',
@@ -428,7 +429,7 @@ export const mockComparativeTableData = [
       identifier: 'vulnerability_critical',
       value: 'Critical vulnerabilities over time',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     lastMonth: {
       change: null,
       value: 0,
@@ -447,7 +448,7 @@ export const mockComparativeTableData = [
       identifier: 'vulnerability_high',
       value: 'High vulnerabilities over time',
     },
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     lastMonth: {
       change: null,
       value: 3,

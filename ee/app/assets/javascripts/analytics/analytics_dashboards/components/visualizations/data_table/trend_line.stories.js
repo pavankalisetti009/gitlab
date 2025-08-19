@@ -1,3 +1,4 @@
+import { TREND_STYLE_DESC, TREND_STYLE_NONE } from '../../../../dashboards/constants';
 import DataTable from './data_table.vue';
 import TrendLine from './trend_line.vue';
 
@@ -9,7 +10,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   components: { TrendLine },
   props: Object.keys(argTypes),
-  template: `<trend-line :data="data" :tooltip-label="tooltipLabel" :invert-trend-color="invertTrendColor" :show-gradient="showGradient" />`,
+  template: `<trend-line :data="data" :tooltip-label="tooltipLabel" :trend-style="trendStyle" />`,
 });
 
 const TableTemplate = (args, { argTypes }) => ({
@@ -30,21 +31,21 @@ const data = [
 const tooltipLabel = 'Tooltip label is cool';
 
 export const Default = Template.bind({});
-Default.args = { data, tooltipLabel, invertTrendColor: false };
+Default.args = { data, tooltipLabel };
 
-export const WithInvertTrendColor = Template.bind({});
-WithInvertTrendColor.args = { data, tooltipLabel, invertTrendColor: true };
+export const WithDescendingTrendStyle = Template.bind({});
+WithDescendingTrendStyle.args = { data, tooltipLabel, trendStyle: TREND_STYLE_DESC };
 
-export const WithNoGradient = Template.bind({});
-WithNoGradient.args = { data, tooltipLabel, showGradient: false };
+export const WithNoTrendStyle = Template.bind({});
+WithNoTrendStyle.args = { data, tooltipLabel, trendStyle: TREND_STYLE_NONE };
 
 export const IsLoading = Template.bind({});
-IsLoading.args = { tooltipLabel, invertTrendColor: false, data: [] };
+IsLoading.args = { tooltipLabel, data: [] };
 
 export const InTable = TableTemplate.bind({});
 InTable.args = {
   data: {
-    nodes: [{ trend: { data, tooltipLabel, invertTrendColor: false }, metric: 'Vulnerabilities' }],
+    nodes: [{ trend: { data, tooltipLabel }, metric: 'Vulnerabilities' }],
   },
   options: {
     fields: [

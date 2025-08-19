@@ -3,6 +3,7 @@ import { GlTooltipDirective } from '@gitlab/ui';
 import { UNITS } from '~/analytics/shared/constants';
 import TrendIndicator from '../../../../dashboards/components/trend_indicator.vue';
 import { formatMetric } from '../../../../dashboards/utils';
+import { TREND_STYLES, TREND_STYLE_ASC } from '../../../../dashboards/constants';
 
 export default {
   name: 'ChangePercentageIndicator',
@@ -22,15 +23,11 @@ export default {
       required: false,
       default: '',
     },
-    invertTrendColor: {
-      type: Boolean,
+    trendStyle: {
+      type: String,
       required: false,
-      default: false,
-    },
-    isNeutralChange: {
-      type: Boolean,
-      required: false,
-      default: false,
+      default: TREND_STYLE_ASC,
+      validator: (style) => TREND_STYLES.includes(style),
     },
   },
   computed: {
@@ -45,12 +42,7 @@ export default {
 </script>
 <template>
   <div>
-    <trend-indicator
-      v-if="isValidTrend"
-      :change="value"
-      :invert-color="invertTrendColor"
-      :is-neutral-change="isNeutralChange"
-    />
+    <trend-indicator v-if="isValidTrend" :change="value" :trend-style="trendStyle" />
     <span
       v-else
       v-gl-tooltip="tooltip"

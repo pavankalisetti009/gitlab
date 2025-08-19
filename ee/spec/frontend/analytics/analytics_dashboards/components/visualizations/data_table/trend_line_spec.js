@@ -1,6 +1,7 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { TREND_STYLE_DESC, TREND_STYLE_NONE } from 'ee/analytics/dashboards/constants';
 import TrendLine from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/trend_line.vue';
 
 describe('TrendLine', () => {
@@ -49,15 +50,27 @@ describe('TrendLine', () => {
     });
   });
 
-  describe('invertTrendColor = true', () => {
+  describe('with trendStyle = DESC', () => {
     beforeEach(() => {
       wrapper = shallowMountExtended(TrendLine, {
-        propsData: { data, invertTrendColor: true },
+        propsData: { data, trendStyle: TREND_STYLE_DESC },
       });
     });
 
     it('reverses the default color gradient', () => {
       expect(findSparkline().props('gradient')).toEqual(['#5252B5', '#499767']);
+    });
+  });
+
+  describe('with trendStyle = NONE', () => {
+    beforeEach(() => {
+      wrapper = shallowMountExtended(TrendLine, {
+        propsData: { data, trendStyle: TREND_STYLE_NONE },
+      });
+    });
+
+    it('removes the gradient color', () => {
+      expect(findSparkline().props('gradient')).toEqual([]);
     });
   });
 });
