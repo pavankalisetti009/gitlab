@@ -27,6 +27,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns true for the features' do
         expect(work_items_data).to include(
           {
+            duo_remote_flows_enabled: "false",
             has_blocked_issues_feature: "true",
             has_group_bulk_edit_feature: "true",
             can_bulk_edit_epics: "true",
@@ -108,57 +109,5 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       end
     end
     # rubocop:enable RSpec/FactoryBot/AvoidCreate
-  end
-
-  describe '#duo_remote_flows_enabled' do
-    subject(:duo_remote_flows_enabled) { helper.duo_remote_flows_enabled(resource_parent) }
-
-    context 'when group' do
-      let(:resource_parent) { build(:group) }
-
-      it 'returns false due to early return condition' do
-        expect(duo_remote_flows_enabled).to be false
-      end
-    end
-
-    context 'when project' do
-      let(:resource_parent) { build(:project) }
-
-      context 'when project responds to duo_remote_flows_enabled' do
-        before do
-          allow(resource_parent).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(true)
-        end
-
-        context 'when duo_remote_flows_enabled is true' do
-          before do
-            allow(resource_parent).to receive(:duo_remote_flows_enabled).and_return(true)
-          end
-
-          it 'returns true' do
-            expect(duo_remote_flows_enabled).to be true
-          end
-        end
-
-        context 'when duo_remote_flows_enabled is false' do
-          before do
-            allow(resource_parent).to receive(:duo_remote_flows_enabled).and_return(false)
-          end
-
-          it 'returns false' do
-            expect(duo_remote_flows_enabled).to be false
-          end
-        end
-      end
-
-      context 'when project does not respond to duo_remote_flows_enabled' do
-        before do
-          allow(resource_parent).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(false)
-        end
-
-        it 'returns false' do
-          expect(duo_remote_flows_enabled).to be false
-        end
-      end
-    end
   end
 end
