@@ -83,7 +83,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
           let(:subgroup) { create(:group, parent: namespace) }
 
           before do
-            create(:group_member, group: namespace, user: user, access_level: ::Gitlab::Access::GUEST)
+            create(:group_member, :minimal_access, group: namespace, user: user)
             create(:group_member, group: subgroup, user: user, access_level: ::Gitlab::Access::MAINTAINER)
           end
 
@@ -170,7 +170,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
     end
 
-    context 'when on self-managed' do
+    context 'when on Self-Managed' do
       it 'returns nil' do
         expect(seat_type).to be_nil
       end
@@ -184,8 +184,8 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
     subject(:seat_types) { described_class.bulk_execute([user1, user2], namespace) }
 
-    context 'when on self-managed' do
-      it 'returns nil' do
+    context 'when on Self-Managed' do
+      it 'returns an empty hash' do
         expect(seat_types).to eq({})
       end
     end
@@ -207,6 +207,8 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
 
       context 'with memberships in other groups' do
+        subject(:seat_types) { described_class.bulk_execute([user1], namespace) }
+
         before_all do
           namespace.add_guest(user1)
 
@@ -215,7 +217,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
 
         it 'only considers specified namespace' do
-          expect(seat_types[user1.id]).to eq(:free)
+          expect(seat_types).to eq({ user1.id => :free })
         end
       end
 
@@ -225,11 +227,11 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
       end
 
-      context 'with array with nil' do
-        subject(:seat_types) { described_class.bulk_execute([nil], namespace) }
+      context 'with array with mixed values' do
+        subject(:seat_types) { described_class.bulk_execute([user1, nil, user2], namespace) }
 
-        it 'returns an empty hash' do
-          expect(seat_types).to eq({})
+        it 'filters out nil values' do
+          expect(seat_types).to eq({ user1.id => nil, user2.id => nil })
         end
       end
     end
