@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlIcon, GlModal } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -22,6 +22,10 @@ describe('AiCatalogStepsEditor', () => {
   ];
 
   const selectedAgent = agents[0];
+  const selectedApiAgent = {
+    id: agents[0].value,
+    name: agents[0].text,
+  };
 
   const aiCatalogAgentsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
   const aiCatalogEmptyAgentsQueryHandler = jest
@@ -36,27 +40,15 @@ describe('AiCatalogStepsEditor', () => {
     });
   };
 
-  const findLabel = () => wrapper.findByTestId('flow-edit-steps');
   const findNodeField = () => wrapper.findComponent(AiCatalogNodeField);
   const findModal = () => wrapper.findComponent(GlModal);
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findIcon = () => wrapper.findComponent(GlIcon);
 
   beforeEach(() => {
     createComponent();
   });
 
   describe('rendering', () => {
-    it('renders the label with correct text and icon', () => {
-      const label = findLabel();
-      expect(label.exists()).toBe(true);
-      expect(label.text()).toBe('Flow nodes (Coming soon)');
-
-      const icon = findIcon();
-      expect(icon.exists()).toBe(true);
-      expect(icon.props('name')).toBe('diagram');
-    });
-
     it('renders the AiCatalogNodeField component', () => {
       expect(findNodeField().exists()).toBe(true);
     });
@@ -160,6 +152,19 @@ describe('AiCatalogStepsEditor', () => {
 
       expect(findNodeField().props('selected')).toBeNull();
       expect(findModal().props('visible')).toBe(false);
+    });
+  });
+
+  describe('v-model', () => {
+    it('should set steps and update the v-model bound data', async () => {
+      await waitForPromises();
+      expect(findNodeField().props('selected')).toBeNull();
+
+      findListbox().vm.$emit('select', 'gid://gitlab/Ai::Catalog::Item/1');
+      await nextTick();
+
+      expect(wrapper.emitted('setSteps')).toEqual([[[selectedApiAgent]]]);
+      expect(findNodeField().props('selected')).toMatchObject(selectedAgent);
     });
   });
 });

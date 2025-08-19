@@ -186,6 +186,9 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
 const mockFlowVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
   versionName: 'v1.0.0-draft',
+  steps: {
+    nodes: [],
+  },
   __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
 
@@ -240,7 +243,7 @@ export const mockCreateAiCatalogFlowSuccessMutation = {
   data: {
     aiCatalogFlowCreate: {
       errors: [],
-      item: mockBaseFlow,
+      item: mockFlow,
       __typename: TYPENAME_AI_CATALOG_FLOW_CREATE,
     },
   },

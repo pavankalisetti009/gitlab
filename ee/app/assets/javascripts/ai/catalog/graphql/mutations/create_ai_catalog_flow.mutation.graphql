@@ -1,10 +1,14 @@
 #import "../fragments/ai_catalog_item.fragment.graphql"
+#import "../fragments/ai_catalog_flow_version.fragment.graphql"
 
 mutation createAiCatalogFlow($input: AiCatalogFlowCreateInput!) {
   aiCatalogFlowCreate(input: $input) {
     errors
     item {
       ...BaseAiCatalogItem
+      latestVersion {
+        ...BaseAiCatalogFlowVersion
+      }
     }
   }
 }

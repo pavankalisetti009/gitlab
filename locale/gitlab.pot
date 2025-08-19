@@ -2416,9 +2416,6 @@ msgstr ""
 msgid "AICatalog| Draft node"
 msgstr ""
 
-msgid "AICatalog| Flow nodes (Coming soon)"
-msgstr ""
-
 msgid "AICatalog|A public agent can be made private only if it is not used."
 msgstr ""
 
@@ -2524,6 +2521,9 @@ msgstr ""
 msgid "AICatalog|Flow deleted successfully."
 msgstr ""
 
+msgid "AICatalog|Flow nodes"
+msgstr ""
+
 msgid "AICatalog|Flow not found."
 msgstr ""
 
@@ -2552,6 +2552,9 @@ msgid "AICatalog|New agent"
 msgstr ""
 
 msgid "AICatalog|New flow"
+msgstr ""
+
+msgid "AICatalog|Nodes run sequentially."
 msgstr ""
 
 msgid "AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners of this project can edit or delete the agent."
