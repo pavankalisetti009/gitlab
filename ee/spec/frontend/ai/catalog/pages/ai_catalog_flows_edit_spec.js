@@ -126,7 +126,7 @@ describe('AiCatalogFlowsEdit', () => {
 
       it('sets error messages and captures exception', () => {
         expect(findForm().props('errorMessages')).toEqual([
-          'The flow could not be updated. Please try again.',
+          'The flow could not be updated. Try again.',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);

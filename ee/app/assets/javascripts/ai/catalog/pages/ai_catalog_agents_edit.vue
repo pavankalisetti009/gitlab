@@ -73,7 +73,7 @@ export default {
           });
         }
       } catch (error) {
-        this.errorMessages = [s__('AICatalog|The agent could not be updated. Please try again.')];
+        this.errorMessages = [s__('AICatalog|The agent could not be updated. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;
