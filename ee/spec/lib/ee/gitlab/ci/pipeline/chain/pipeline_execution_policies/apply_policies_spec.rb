@@ -39,6 +39,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
   end
 
   before do
+    stub_feature_flags(ci_validate_config_options: false)
     stub_ci_pipeline_yaml_file(YAML.dump(config)) if config
     allow(command.pipeline_policy_context.pipeline_execution_context)
       .to receive_messages(policies: policy_configs, policy_pipelines: execution_policy_pipelines)

@@ -9,6 +9,10 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
 
   subject(:execute) { described_class.execute(pipeline, ingested_ids) }
 
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+  end
+
   describe '#execute' do
     shared_examples 'it no-ops with failed sbom jobs' do
       context 'when there are failed sbom jobs' do

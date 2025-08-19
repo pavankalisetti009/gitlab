@@ -122,6 +122,7 @@ RSpec.describe Deployments::AutoRollbackService, :clean_gitlab_redis_rate_limiti
 
     context "when rollback target's deployable is not retryable" do
       before do
+        stub_feature_flags(ci_validate_config_options: false)
         environment.all_deployments.first.deployable.degenerate!
       end
 

@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext, feature_category: :security_policy_management do
   subject(:context) { execution_policies_pipeline_context.pipeline_execution_context }
 
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+  end
+
   let(:sha_context) do
     Gitlab::Ci::Pipeline::ShaContext.new(
       before: command.before_sha,

@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe AppSec::Dast::Profiles::CreateAssociationsService do
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+  end
+
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user, developer_of: project) }
   let_it_be(:outsider) { create(:user) }

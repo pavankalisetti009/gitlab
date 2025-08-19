@@ -17,6 +17,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::CreateCrossDatabaseAssociations do
   end
 
   describe '#perform!' do
+    before do
+      stub_feature_flags(ci_validate_config_options: false)
+    end
+
     shared_examples 'it failed' do
       it 'breaks the chain' do
         expect(subject.break?).to be(true)

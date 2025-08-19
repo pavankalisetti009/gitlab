@@ -22,6 +22,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
 
     before do
       stub_ci_pipeline_yaml_file(config)
+      stub_feature_flags(ci_validate_config_options: false)
 
       ::Gitlab::Auth::Identity.fabricate(user).link!(scoped_user)
     end

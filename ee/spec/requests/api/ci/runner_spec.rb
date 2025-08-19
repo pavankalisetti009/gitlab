@@ -10,6 +10,10 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
   let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
   describe '/api/v4/jobs', feature_category: :continuous_integration do
+    before do
+      stub_feature_flags(ci_validate_config_options: false)
+    end
+
     include Ci::JobTokenScopeHelpers
 
     let_it_be(:pipeline) { create(:ci_pipeline, project: project, ref: ref) }

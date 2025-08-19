@@ -96,6 +96,10 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
   describe '#execute' do
     subject(:execute) { service.execute }
 
+    before do
+      stub_feature_flags(ci_validate_config_options: false)
+    end
+
     context 'when pipeline doesnt exist' do
       let(:service) { described_class.new(nil) }
 

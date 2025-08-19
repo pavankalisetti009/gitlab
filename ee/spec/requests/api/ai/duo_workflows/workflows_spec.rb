@@ -22,6 +22,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   end
 
   before do
+    stub_feature_flags(ci_validate_config_options: false)
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
     allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)

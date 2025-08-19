@@ -22,6 +22,7 @@ RSpec.describe Projects::UpdatePagesService, feature_category: :pages do
   end
 
   before do
+    stub_feature_flags(ci_validate_config_options: false)
     stub_application_setting(pages_extra_deployments_default_expiry_seconds: system_default_expiry)
     stub_pages_setting(enabled: true)
     allow(::Gitlab::Pages)
