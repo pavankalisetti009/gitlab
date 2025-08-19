@@ -27870,9 +27870,6 @@ msgstr ""
 msgid "File tree"
 msgstr ""
 
-msgid "File tree browser"
-msgstr ""
-
 msgid "File upload error."
 msgstr ""
 
@@ -32426,6 +32423,9 @@ msgid "Hide file browser"
 msgstr ""
 
 msgid "Hide file contents"
+msgstr ""
+
+msgid "Hide file tree browser"
 msgstr ""
 
 msgid "Hide group projects"
@@ -60730,6 +60730,9 @@ msgid "Show file browser"
 msgstr ""
 
 msgid "Show file contents"
+msgstr ""
+
+msgid "Show file tree browser"
 msgstr ""
 
 msgid "Show full blame"
