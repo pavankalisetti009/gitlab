@@ -57,6 +57,16 @@ RSpec.describe ComplianceManagement::Pipl::DeleteNonCompliantUserService,
           it_behaves_like 'has a validation error', "User is not blocked"
         end
 
+        context 'when the pipl_user is recently blocked' do
+          before do
+            pipl_user.user.update!(last_activity_on: Time.current - 1.day)
+            pipl_user.user.update!(state: :blocked)
+          end
+
+          it_behaves_like 'does not delete the user'
+          it_behaves_like 'has a validation error', "User has activity which is more recent than 60 days"
+        end
+
         context 'when the deleting user is not an admin' do
           before do
             deleting_user.update!(admin: false)

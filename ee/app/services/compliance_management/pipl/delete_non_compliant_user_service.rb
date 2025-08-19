@@ -44,7 +44,13 @@ module ComplianceManagement
           return error_response("Pipl deletion threshold has not been exceeded for user: #{user.id}")
         end
 
-        error_response("User is not blocked") unless user.blocked?
+        return error_response("User is not blocked") unless user.blocked?
+
+        return unless user.last_active_at
+
+        return unless user.last_active_at > ComplianceManagement::PiplUser::NOTICE_PERIOD.ago
+
+        error_response("User has activity which is more recent than 60 days")
       end
 
       def error_response(message)
