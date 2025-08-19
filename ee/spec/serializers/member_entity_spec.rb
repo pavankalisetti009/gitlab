@@ -17,32 +17,11 @@ RSpec.describe MemberEntity, feature_category: :system_access do
       expect(entity.to_json).to match_schema('entities/member', dir: 'ee')
     end
 
-    context 'exposes using_license' do
-      context 'when avoid_exposing_member_is_using_seat is enabled' do
-        before do
-          stub_feature_flags(avoid_exposing_member_is_using_seat: true)
-        end
+    it 'correctly exposes `using_license`' do
+      allow(entity).to receive(:can?).with(current_user, :read_billable_member, group).and_return(true)
+      allow(member.user).to receive(:using_gitlab_com_seat?).with(group).and_return(true)
 
-        it 'returns false' do
-          allow(entity).to receive(:can?).with(current_user, :read_billable_member, group).and_return(true)
-          allow(member.user).to receive(:using_gitlab_com_seat?).with(group).and_return(true)
-
-          expect(entity_hash[:using_license]).to be(false)
-        end
-      end
-
-      context 'when avoid_exposing_member_is_using_seat is disabled' do
-        before do
-          stub_feature_flags(avoid_exposing_member_is_using_seat: false)
-        end
-
-        it 'correctly exposes `using_license`' do
-          allow(entity).to receive(:can?).with(current_user, :read_billable_member, group).and_return(true)
-          allow(member.user).to receive(:using_gitlab_com_seat?).with(group).and_return(true)
-
-          expect(entity_hash[:using_license]).to be(true)
-        end
-      end
+      expect(entity_hash[:using_license]).to be(true)
     end
 
     it 'correctly exposes `group_sso`' do

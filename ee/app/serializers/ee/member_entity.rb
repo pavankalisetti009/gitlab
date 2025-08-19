@@ -38,8 +38,6 @@ module EE
     end
 
     def using_license
-      return false if ::Feature.enabled?(:avoid_exposing_member_is_using_seat, group&.root_ancestor, type: :ops)
-
       can?(current_user, :read_billable_member, group) && object.user&.using_gitlab_com_seat?(group)
     end
   end
