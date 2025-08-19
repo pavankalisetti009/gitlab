@@ -4,6 +4,7 @@
 class ApprovalMergeRequestRulesUser < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass -- Conventional name for a join class
   include ApprovalRuleUserLike
 
+  belongs_to :project, optional: false
   belongs_to :user
   belongs_to :approval_merge_request_rule, class_name: 'ApprovalMergeRequestRule'
 
