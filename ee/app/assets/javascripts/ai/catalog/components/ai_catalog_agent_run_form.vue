@@ -91,6 +91,7 @@ export default {
         variant="confirm"
         category="primary"
         data-testid="agent-run-form-submit-button"
+        icon="play"
         :loading="isSubmitting"
       >
         <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
