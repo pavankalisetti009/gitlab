@@ -4685,6 +4685,11 @@ CREATE TABLE p_ci_builds (
     user_id bigint,
     execution_config_id bigint,
     upstream_pipeline_partition_id bigint,
+    scoped_user_id bigint,
+    timeout integer,
+    timeout_source smallint,
+    exit_code smallint,
+    debug_trace_enabled boolean,
     CONSTRAINT check_1e2fbd1b39 CHECK ((lock_version IS NOT NULL)),
     CONSTRAINT check_9aa9432137 CHECK ((project_id IS NOT NULL))
 )
