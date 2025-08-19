@@ -21,6 +21,14 @@ This feature is currently under development and not yet available for general us
         description: 'Vulnerability metrics over time with filtering and grouping capabilities.
 This feature is currently under development and not yet available for general use',
         resolver: ::Resolvers::Security::VulnerabilitiesOverTimeResolver
+
+      field :risk_score,
+        ::Types::Security::RiskScoreType,
+        null: true,
+        experiment: { milestone: '18.4' },
+        description: 'Total risk score information.
+This feature is currently under development and not yet available for general use',
+        resolver: ::Resolvers::Security::RiskScoreResolver
     end
     # rubocop: enable Graphql/AuthorizeTypes, GraphQL/ExtractType
   end
