@@ -33,7 +33,9 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
   end
 
   describe '#handle_event' do
-    let_it_be(:seat_assignment) { create(:gitlab_subscription_seat_assignment, namespace: root_namespace, user: user) }
+    let_it_be(:seat_assignment) do
+      create(:gitlab_subscription_seat_assignment, namespace: root_namespace, user: user, seat_type: :base)
+    end
 
     it 'destroys SeatAssignment record' do
       expect do
@@ -51,10 +53,8 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
       end
     end
 
-    shared_examples 'returns early' do
+    shared_examples 'does nothing' do
       specify do
-        expect(GitlabSubscriptions::SeatAssignment).not_to receive(:find_by_namespace_and_user)
-
         expect do
           consume_event(subscriber: described_class, event: members_destroyed_event)
         end.not_to change { GitlabSubscriptions::SeatAssignment.count }
@@ -64,20 +64,20 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
     context 'when user is not found' do
       let(:user_id) { non_existing_record_id }
 
-      it_behaves_like 'returns early'
+      it_behaves_like 'does nothing'
     end
 
     context 'when root namespace is not found' do
       let(:root_namespace_id) { non_existing_record_id }
 
-      it_behaves_like 'returns early'
+      it_behaves_like 'does nothing'
     end
 
     context 'when root namespace is not group' do
       let(:user_namespace) { create(:user_namespace) }
       let(:root_namespace_id) { user_namespace.id }
 
-      it_behaves_like 'returns early'
+      it_behaves_like 'does nothing'
     end
 
     context 'when user is still a member of group hierarchy' do
@@ -85,14 +85,14 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
         subgroup.add_guest(user)
       end
 
-      it_behaves_like 'returns early'
+      it_behaves_like 'does nothing'
 
       context 'when the user is blocked' do
         before do
           user.block!
         end
 
-        it_behaves_like 'returns early'
+        it_behaves_like 'does nothing'
       end
     end
 
@@ -103,7 +103,7 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
         project.add_guest(user)
       end
 
-      it_behaves_like 'returns early'
+      it_behaves_like 'does nothing'
     end
 
     context 'when an access request remains' do
@@ -139,6 +139,114 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
         expect do
           consume_event(subscriber: described_class, event: members_destroyed_event)
         end.to change { GitlabSubscriptions::SeatAssignment.where(namespace: root_namespace, user: user).count }.by(-1)
+      end
+    end
+
+    context 'in a saas environment', :saas do
+      context 'when a base seat has only guest memberships remaining on a free plan' do
+        before_all do
+          subgroup.add_guest(user)
+        end
+
+        it 'leaves the seat type base' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('base')
+        end
+      end
+
+      context 'when a base seat has only guest memberships remaining on a premium plan' do
+        before_all do
+          create(:gitlab_subscription, :premium, namespace: root_namespace)
+          subgroup.add_guest(user)
+        end
+
+        it 'leaves the seat type base' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('base')
+        end
+      end
+
+      context 'when a base seat has only guest memberships remaining on an ultimate plan' do
+        before_all do
+          create(:gitlab_subscription, :ultimate, namespace: root_namespace)
+          subgroup.add_guest(user)
+        end
+
+        it 'changes the seat type to free' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('free')
+        end
+      end
+
+      context 'when a base seat has a membership higher than guest remaining on an ultimate plan' do
+        before_all do
+          create(:gitlab_subscription, :ultimate, namespace: root_namespace)
+          root_namespace.add_guest(user)
+          subgroup.add_developer(user)
+        end
+
+        it 'leaves the seat type base' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('base')
+        end
+      end
+
+      context 'when a free seat has a membership higher than guest remaining on an ultimate plan' do
+        before_all do
+          seat_assignment.update!(seat_type: :free)
+          create(:gitlab_subscription, :ultimate, namespace: root_namespace)
+          root_namespace.add_developer(user)
+        end
+
+        it 'updates the seat type to base' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('base')
+        end
+      end
+
+      context 'when a seat has no type set but has memberships' do
+        before_all do
+          seat_assignment.update!(seat_type: nil)
+          create(:gitlab_subscription, :premium, namespace: root_namespace)
+          subgroup.add_guest(user)
+        end
+
+        it 'updates the seat type' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('base')
+        end
+      end
+
+      context 'when the highest membership remaining is minimal access' do
+        before_all do
+          create(:group_member, :minimal_access, source: root_namespace, user: user)
+        end
+
+        it 'changes the seat type to free' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('free')
+        end
       end
     end
   end
