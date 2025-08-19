@@ -46,6 +46,8 @@ fragment Project on Project {
       ...CiIcon
     }
   }
-  markedForDeletionOn
+  markedForDeletion
+  isSelfDeletionInProgress
+  isSelfDeletionScheduled
   permanentDeletionDate
 }
