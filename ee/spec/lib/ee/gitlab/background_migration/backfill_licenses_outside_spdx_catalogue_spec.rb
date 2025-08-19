@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::BackfillLicensesOutsideSpdxCatalogue, feature_category: :security_policy_management do
+RSpec.describe Gitlab::BackgroundMigration::BackfillLicensesOutsideSpdxCatalogue,
+  feature_category: :security_policy_management,
+  schema: 20250505171359 do
   let(:organizations) { table(:organizations) }
   let(:namespaces) { table(:namespaces) }
   let(:projects) { table(:projects) }
