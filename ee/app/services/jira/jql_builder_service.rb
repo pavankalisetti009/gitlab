@@ -105,7 +105,7 @@ module Jira
       return if vulnerability_ids.blank?
 
       vulnerability_ids
-        .map { |vulnerability_id| %(description ~ "/-/security/vulnerabilities/#{escape_quotes(vulnerability_id.to_s)}") }
+        .map { |vulnerability_id| %(description ~ "#{escape_quotes("\"Issue created from vulnerability #{vulnerability_id}\"")}") }
         .join(' OR ')
         .then { |query| "(#{query})" }
     end
