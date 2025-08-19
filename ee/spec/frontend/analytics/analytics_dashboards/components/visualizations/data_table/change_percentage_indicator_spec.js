@@ -1,4 +1,5 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { TREND_STYLE_DESC } from 'ee/analytics/dashboards/constants';
 import ChangePercentageIndicator from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/change_percentage_indicator.vue';
 
 describe('ChangePercentageIndicator', () => {
@@ -60,10 +61,10 @@ describe('ChangePercentageIndicator', () => {
     });
   });
 
-  describe('invertTrendColor = true', () => {
+  describe('with trendStyle = DESC', () => {
     beforeEach(() => {
       wrapper = mountExtended(ChangePercentageIndicator, {
-        propsData: { value: 0.25, invertTrendColor: true },
+        propsData: { value: 0.25, trendStyle: TREND_STYLE_DESC },
       });
     });
 
@@ -74,7 +75,7 @@ describe('ChangePercentageIndicator', () => {
 
     it('renders the down trend indicator as positive', () => {
       wrapper = mountExtended(ChangePercentageIndicator, {
-        propsData: { value: -0.25, invertTrendColor: true },
+        propsData: { value: -0.25, trendStyle: TREND_STYLE_DESC },
       });
 
       expect(findDownTrendIndicator().exists()).toBe(true);

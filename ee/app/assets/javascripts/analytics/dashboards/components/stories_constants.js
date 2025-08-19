@@ -1,4 +1,5 @@
 /* eslint-disable @gitlab/require-i18n-strings */
+import { TREND_STYLE_DESC } from '../constants';
 
 export const comparisonTableData = [
   {
@@ -31,7 +32,7 @@ export const comparisonTableData = [
     },
   },
   {
-    invertTrendColor: true,
+    trendStyle: TREND_STYLE_DESC,
     metric: {
       identifier: 'change_failure_rate',
       value: 'Change failure rate',

@@ -104,7 +104,7 @@ describe('Analytics Dashboards utils', () => {
     it('returns blank row data for each metric', () => {
       const tableData = generateSkeletonTableData();
       tableData.forEach((data) =>
-        expect(Object.keys(data)).toEqual(['invertTrendColor', 'metric', 'valueLimit']),
+        expect(Object.keys(data)).toEqual(['trendStyle', 'metric', 'valueLimit']),
       );
     });
 

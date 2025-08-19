@@ -1,4 +1,5 @@
 import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
+import { TREND_STYLE_DESC } from '../../../../dashboards/constants';
 import DataTable from './data_table.vue';
 
 export default {
@@ -25,7 +26,7 @@ const changePercentData = [
   { value: 0 },
   { value: -0.4 },
   { value: 0.12 },
-  { value: 0.14, invertTrendColor: true },
+  { value: 0.14, trendStyle: TREND_STYLE_DESC },
 ];
 
 const data = {

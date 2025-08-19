@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import { TREND_STYLE_DESC, TREND_STYLE_NONE } from 'ee/analytics/dashboards/constants';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
 
 describe('Analytics trend indicator', () => {
@@ -18,13 +19,18 @@ describe('Analytics trend indicator', () => {
     expect(wrapper.classes('gl-text-danger')).toBe(true);
   });
 
-  it('renders a positive change with red text when invertColor = true', () => {
-    createComponent({ change: 100, invertColor: true });
+  it('renders a positive change with red text when trendStyle = DESC', () => {
+    createComponent({ change: 100, trendStyle: TREND_STYLE_DESC });
     expect(wrapper.classes('gl-text-danger')).toBe(true);
   });
 
-  it('renders a negative change with green text when invertColor = true', () => {
-    createComponent({ change: -100, invertColor: true });
+  it('renders a negative change with green text when trendStyle = DESC', () => {
+    createComponent({ change: -100, trendStyle: TREND_STYLE_DESC });
     expect(wrapper.classes('gl-text-success')).toBe(true);
+  });
+
+  it('renders the change with default color when trendStyle = NONE', () => {
+    createComponent({ change: 100, trendStyle: TREND_STYLE_NONE });
+    expect(wrapper.classes('gl-text-color-default')).toBe(true);
   });
 });

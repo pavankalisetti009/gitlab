@@ -1,13 +1,10 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { setLanguage } from 'jest/__helpers__/locale_helper';
-import {
-  TABLE_METRICS,
-  CHART_GRADIENT,
-  CHART_GRADIENT_INVERTED,
-} from 'ee/analytics/dashboards/constants';
+import { TABLE_METRICS, TREND_STYLE_DESC } from 'ee/analytics/dashboards/constants';
 import ComparisonTable from 'ee/analytics/dashboards/components/comparison_table.vue';
 import { VSD_COMPARISON_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
+import TrendLine from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/trend_line.vue';
 import { mockComparativeTableData } from '../mock_data';
 
 describe('Comparison table', () => {
@@ -35,8 +32,8 @@ describe('Comparison table', () => {
 
   const findMetricTableCell = (identifier) => wrapper.findByTestId(`${identifier}-metric-cell`);
   const findMetricComparisonSkeletons = () => wrapper.findAllByTestId('metric-comparison-skeleton');
-  const findChart = () => wrapper.findByTestId('metric-chart');
-  const findChartSkeleton = () => wrapper.findByTestId('metric-chart-skeleton');
+  const findTrendLine = () => wrapper.findComponent(TrendLine);
+  const findTrendLineSkeleton = () => wrapper.findByTestId('metric-chart-skeleton');
   const findTrendIndicator = () => wrapper.findByTestId('metric-trend-indicator');
   const findValueLimitInfoIcon = () => wrapper.findByTestId('metric-max-value-info-icon');
 
@@ -171,8 +168,8 @@ describe('Comparison table', () => {
 
     it('renders the skeleton when there is no data', () => {
       createWrapper({ tableData: [{ metric: mockMetric }] });
-      expect(findChart().exists()).toBe(false);
-      expect(findChartSkeleton().exists()).toBe(true);
+      expect(findTrendLine().exists()).toBe(false);
+      expect(findTrendLineSkeleton().exists()).toBe(true);
     });
 
     it('renders the line when there is data', () => {
@@ -186,37 +183,23 @@ describe('Comparison table', () => {
           },
         ],
       });
-      expect(findChartSkeleton().exists()).toBe(false);
-      expect(findChart().exists()).toBe(true);
+      expect(findTrendLineSkeleton().exists()).toBe(false);
+      expect(findTrendLine().exists()).toBe(true);
     });
 
-    it('applies the default gradient', () => {
+    it('applies the metric trend style', () => {
       createWrapper({
         tableData: [
           {
             metric: mockMetric,
+            trendStyle: TREND_STYLE_DESC,
             chart: {
               data: [['', 1]],
             },
           },
         ],
       });
-      expect(findChart().props('gradient')).toEqual(CHART_GRADIENT);
-    });
-
-    it('applies the inverted gradient when `invertTrendColor == true`', () => {
-      createWrapper({
-        tableData: [
-          {
-            metric: mockMetric,
-            invertTrendColor: true,
-            chart: {
-              data: [['', 1]],
-            },
-          },
-        ],
-      });
-      expect(findChart().props('gradient')).toEqual(CHART_GRADIENT_INVERTED);
+      expect(findTrendLine().props('trendStyle')).toEqual(TREND_STYLE_DESC);
     });
   });
 });

@@ -413,18 +413,11 @@ export default {
       </span>
     </template>
 
-    <template
-      #cell(change)="{ value: { value, tooltip }, item: { invertTrendColor, isNeutralChange } }"
-    >
+    <template #cell(change)="{ value: { value, tooltip }, item: { trendStyle } }">
       <span v-if="value === undefined" data-testid="metric-skeleton-loader">
         <gl-skeleton-loader :lines="1" :width="50" />
       </span>
-      <trend-indicator
-        v-else-if="isValidTrend(value)"
-        :change="value"
-        :invert-color="invertTrendColor"
-        :is-neutral-change="isNeutralChange"
-      />
+      <trend-indicator v-else-if="isValidTrend(value)" :change="value" :trend-style="trendStyle" />
       <span
         v-else
         v-gl-tooltip="tooltip"
@@ -437,15 +430,12 @@ export default {
       </span>
     </template>
 
-    <template
-      #cell(chart)="{ value: { data, tooltipLabel }, item: { invertTrendColor, showGradient } }"
-    >
+    <template #cell(chart)="{ value: { data, tooltipLabel }, item: { trendStyle } }">
       <trend-line
         v-if="data"
         :data="data"
         :tooltip-label="tooltipLabel"
-        :invert-trend-color="invertTrendColor"
-        :show-gradient="showGradient"
+        :trend-style="trendStyle"
       />
       <div v-else class="gl-py-4" data-testid="metric-chart-skeleton">
         <gl-skeleton-loader :lines="1" :width="100" />

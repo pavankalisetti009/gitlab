@@ -106,8 +106,8 @@ export const percentChange = ({ current, previous }) =>
 export const generateSkeletonTableData = (excludeMetrics = []) =>
   Object.entries(TABLE_METRICS)
     .filter(([identifier]) => !excludeMetrics.includes(identifier))
-    .map(([identifier, { label, invertTrendColor, valueLimit }]) => ({
-      invertTrendColor,
+    .map(([identifier, { label, trendStyle, valueLimit }]) => ({
+      trendStyle,
       metric: { identifier, value: label },
       valueLimit,
     }));

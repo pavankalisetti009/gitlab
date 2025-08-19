@@ -30,8 +30,8 @@ export default {
     units() {
       return DORA_TABLE_METRICS[this.metricType].units;
     },
-    invertTrendColor() {
-      return DORA_TABLE_METRICS[this.metricType].invertTrendColor;
+    trendStyle() {
+      return DORA_TABLE_METRICS[this.metricType].trendStyle;
     },
     convertedMetric() {
       switch (this.metricType) {
@@ -54,6 +54,6 @@ export default {
 <template>
   <div>
     {{ formattedMetric }}
-    <trend-indicator v-if="trend !== 0" :change="trend" :invert-color="invertTrendColor" />
+    <trend-indicator v-if="trend !== 0" :change="trend" :trend-style="trendStyle" />
   </div>
 </template>

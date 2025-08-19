@@ -15,7 +15,7 @@ import {
   isMetricInTimePeriods,
   sanitizeSparklineData,
 } from '../utils';
-import { CHART_TOOLTIP_UNITS } from '../constants';
+import { CHART_TOOLTIP_UNITS, TREND_STYLE_ASC } from '../constants';
 import { AI_IMPACT_TABLE_METRICS } from './constants';
 
 const currentMonthColumnKey = 'this-month';
@@ -98,17 +98,10 @@ export const generateTableColumns = (now) => [
 export const generateSkeletonTableData = (excludeMetrics = []) =>
   Object.entries(AI_IMPACT_TABLE_METRICS)
     .filter(([identifier]) => !excludeMetrics.includes(identifier))
-    .map(
-      ([
-        identifier,
-        { label, invertTrendColor, showGradient = true, isNeutralChange = false },
-      ]) => ({
-        metric: { identifier, value: label },
-        invertTrendColor,
-        showGradient,
-        isNeutralChange,
-      }),
-    );
+    .map(([identifier, { label, trendStyle = TREND_STYLE_ASC }]) => ({
+      metric: { identifier, value: label },
+      trendStyle,
+    }));
 
 export const calculateChange = (current, previous) => {
   const isInvalid = (value) => isNil(value) || value === '-';

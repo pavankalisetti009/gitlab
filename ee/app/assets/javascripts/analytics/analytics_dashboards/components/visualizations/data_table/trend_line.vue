@@ -1,7 +1,7 @@
 <script>
 import { GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/dist/charts';
-import { CHART_GRADIENT, CHART_GRADIENT_INVERTED } from '../../../../dashboards/constants';
+import { TREND_STYLES, TREND_STYLE_ASC, TREND_STYLE_DESC } from '../../../../dashboards/constants';
 
 export default {
   name: 'TrendLine',
@@ -22,23 +22,25 @@ export default {
       required: false,
       default: '',
     },
-    invertTrendColor: {
-      type: Boolean,
+    trendStyle: {
+      type: String,
       required: false,
-      default: false,
-    },
-    showGradient: {
-      type: Boolean,
-      required: false,
-      default: true,
+      default: TREND_STYLE_ASC,
+      validator: (style) => TREND_STYLES.includes(style),
     },
   },
-  methods: {
-    chartGradient(invert, showGradient) {
-      if (showGradient) {
-        return invert ? CHART_GRADIENT_INVERTED : CHART_GRADIENT;
+  computed: {
+    gradient() {
+      const colors = ['#499767', '#5252B5'];
+
+      switch (this.trendStyle) {
+        case TREND_STYLE_ASC:
+          return colors;
+        case TREND_STYLE_DESC:
+          return colors.reverse();
+        default:
+          return [];
       }
-      return [];
     },
   },
 };
@@ -52,7 +54,7 @@ export default {
       :show-last-y-value="false"
       :data="data"
       :smooth="0.2"
-      :gradient="chartGradient(invertTrendColor, showGradient)"
+      :gradient="gradient"
       connect-nulls
       data-testid="metric-chart"
     />
