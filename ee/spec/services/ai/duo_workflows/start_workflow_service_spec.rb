@@ -23,6 +23,10 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     }
   end
 
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+  end
+
   shared_examples "success" do
     it 'creates a workload to execute workflow with the correct definition' do
       shadowed_project = project

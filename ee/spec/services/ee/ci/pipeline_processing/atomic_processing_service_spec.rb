@@ -17,6 +17,10 @@ RSpec.describe Ci::PipelineProcessing::AtomicProcessingService, feature_category
       project.add_owner(user)
     end
 
+    before do
+      stub_feature_flags(ci_validate_config_options: false)
+    end
+
     subject(:process_pipeline) { described_class.new(pipeline).execute }
 
     context 'when protected environments are defined', :sidekiq_inline do

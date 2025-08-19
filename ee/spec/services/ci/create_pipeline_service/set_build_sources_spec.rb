@@ -100,6 +100,10 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       service.execute(:push, **opts)
     end
 
+    before do
+      stub_feature_flags(ci_validate_config_options: false)
+    end
+
     context 'with security policy' do
       let(:scan_execution_policy) do
         build(:scan_execution_policy, actions: [

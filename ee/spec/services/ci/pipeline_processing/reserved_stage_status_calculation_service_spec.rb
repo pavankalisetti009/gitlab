@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe Ci::PipelineProcessing::ReservedStageStatusCalculationService, '#execute', feature_category: :continuous_integration do
   using RSpec::Parameterized::TableSyntax
 
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+  end
+
   let_it_be(:project) { create(:project, :repository) }
   let_it_be_with_reload(:pipeline) { create(:ci_empty_pipeline, ref: 'master', project: project) }
 

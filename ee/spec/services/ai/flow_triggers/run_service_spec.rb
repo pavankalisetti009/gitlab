@@ -55,6 +55,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
     end
 
     before do
+      stub_feature_flags(ci_validate_config_options: false)
       authorizer_double = instance_double(::Gitlab::Llm::Utils::Authorizer::Response)
       allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer)
         .to receive(:resource)

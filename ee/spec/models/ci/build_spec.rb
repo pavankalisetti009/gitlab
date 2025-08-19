@@ -34,6 +34,10 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     }
   end
 
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+  end
+
   it_behaves_like 'has secrets', :ci_build
 
   it_behaves_like 'a deployable job in EE' do
