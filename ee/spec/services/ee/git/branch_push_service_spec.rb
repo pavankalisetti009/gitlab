@@ -309,6 +309,51 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
       end
     end
 
+    describe 'trigger enqueue_code_embedding_indexing', feature_category: :code_suggestions do
+      shared_examples 'does not trigger enqueue_code_embedding_indexing' do
+        it 'does not schedule a IncrementalRepositoryIndexWorker' do
+          expect(::Ai::ActiveContext::Code::RepositoryIndexWorker).not_to receive(:perform_async)
+
+          branch_push_service.execute
+        end
+      end
+
+      context 'when ff active_context_code_incremental_index_project is disabled' do
+        before do
+          stub_feature_flags(run_code_embedding_indexing: false)
+        end
+
+        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
+      end
+
+      context 'when pushing to a non-default branch' do
+        let(:ref) { 'refs/heads/other' }
+
+        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
+      end
+
+      context 'when there is no Ai::ActiveContext::Code::Repository' do
+        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
+      end
+
+      context 'when the Ai::ActiveContext::Code::Repository is not ready' do
+        let_it_be(:repository) { create(:ai_active_context_code_repository, state: :pending, project: project) }
+
+        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
+
+        context 'when the Ai::ActiveContext::Code::Repository is ready' do
+          before do
+            repository.update!(state: :ready)
+          end
+
+          it 'triggers perform_async on RepositoryIndexWorker' do
+            expect(::Ai::ActiveContext::Code::RepositoryIndexWorker).to receive(:perform_async).with(repository.id)
+            branch_push_service.execute
+          end
+        end
+      end
+    end
+
     describe 'Pipeline execution policy metadata sync' do
       let(:feature_licensed) { true }
 

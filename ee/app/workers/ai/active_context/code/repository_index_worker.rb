@@ -5,6 +5,7 @@ module Ai
     module Code
       class RepositoryIndexWorker
         include ApplicationWorker
+        include Gitlab::Loggable
         include Gitlab::Utils::StrongMemoize
         include Gitlab::ExclusiveLeaseHelpers
         prepend ::Geo::SkipSecondary
@@ -28,10 +29,18 @@ module Ai
 
           repository = Ai::ActiveContext::Code::Repository.find_by_id(id)
 
-          return false unless repository&.pending?
+          return false unless repository&.pending? || repository&.ready?
 
           in_lock(lease_key(id), ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER, retries: LEASE_RETRIES) do
-            InitialIndexingService.execute(repository)
+            if repository.pending?
+              log_indexing(repository, 'initial') do
+                InitialIndexingService.execute(repository)
+              end
+            elsif repository.ready?
+              log_indexing(repository, 'incremental') do
+                IncrementalIndexingService.execute(repository)
+              end
+            end
           end
         rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError
           self.class.perform_in(RETRY_IN_IF_LOCKED, id)
@@ -39,6 +48,26 @@ module Ai
 
         def lease_key(id)
           "#{self.class.name}/#{id}"
+        end
+
+        def logger
+          @logger ||= ::ActiveContext::Config.logger
+        end
+
+        def log_indexing(repository, indexing_mode)
+          logger.info(build_structured_payload(
+            message: 'Indexing started',
+            ai_active_context_code_repository_id: repository.id,
+            project_id: repository.project_id,
+            indexing_mode: indexing_mode))
+
+          yield
+
+          logger.info(build_structured_payload(
+            message: 'Indexing done',
+            ai_active_context_code_repository_id: repository.id,
+            project_id: repository.project_id,
+            indexing_mode: indexing_mode))
         end
       end
     end

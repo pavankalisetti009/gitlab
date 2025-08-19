@@ -10,6 +10,7 @@ module EE
         enqueue_elasticsearch_indexing
         enqueue_zoekt_indexing
         enqueue_knowledge_graph_indexing
+        enqueue_code_embedding_indexing
         enqueue_update_external_pull_requests
         enqueue_product_analytics_event_metrics
         enqueue_repository_xray
@@ -47,6 +48,16 @@ module EE
         return false unless project.use_zoekt?
 
         project.repository.async_update_zoekt_index
+      end
+
+      def enqueue_code_embedding_indexing
+        return false unless ::Feature.enabled?(:active_context_code_incremental_index_project, project)
+        return false unless default_branch?
+
+        repository = Ai::ActiveContext::Code::Repository.find_by_project_id(project.id)
+        return false unless repository&.ready?
+
+        ::Ai::ActiveContext::Code::RepositoryIndexWorker.perform_async(repository.id)
       end
 
       def enqueue_knowledge_graph_indexing
