@@ -349,38 +349,4 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       end
     end
   end
-
-  describe '#duo_remote_flows_enabled' do
-    context 'when resource is not a Project' do
-      it 'returns false for non-project resources' do
-        expect(helper.send(:duo_remote_flows_enabled, group)).to be(false)
-      end
-
-      it 'returns false for nil resource' do
-        expect(helper.send(:duo_remote_flows_enabled, nil)).to be(false)
-      end
-    end
-
-    context 'when resource is a Project' do
-      it 'returns false when project does not respond to duo_remote_flows_enabled' do
-        allow(project).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(false)
-
-        expect(helper.send(:duo_remote_flows_enabled, project)).to be_falsy
-      end
-
-      it 'returns false when project has duo_remote_flows_enabled disabled' do
-        allow(project).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(true)
-        allow(project).to receive(:duo_remote_flows_enabled).and_return(false)
-
-        expect(helper.send(:duo_remote_flows_enabled, project)).to be_falsy
-      end
-
-      it 'returns true when project has duo_remote_flows_enabled enabled' do
-        allow(project).to receive(:respond_to?).with(:duo_remote_flows_enabled).and_return(true)
-        allow(project).to receive(:duo_remote_flows_enabled).and_return(true)
-
-        expect(helper.send(:duo_remote_flows_enabled, project)).to be_truthy
-      end
-    end
-  end
 end
