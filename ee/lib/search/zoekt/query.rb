@@ -29,7 +29,7 @@ module Search
                end
         return term if filters.empty?
 
-        if source == :api && Feature.enabled?(:zoekt_syntax_transpile, Feature.current_request)
+        if source == :api
           filters.each do |filter|
             filter_name = filter[%r{^-?(\w+):}, 1]
             next if ADVANCED_SYNTAX_FILTERS.exclude?(filter_name)
