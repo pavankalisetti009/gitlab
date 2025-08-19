@@ -323,6 +323,21 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_
       end
     end
 
+    context 'when zoekt traversal ID queries are disabled' do
+      before do
+        allow(::Search::Zoekt).to receive(:use_traversal_id_queries?).and_return(false)
+      end
+
+      context 'and no targets are provided' do
+        let(:targets) { {} }
+
+        it 'returns an empty response' do
+          expect(search.file_count).to eq 0
+          expect(search.result[:Files]).to be_empty
+        end
+      end
+    end
+
     it_behaves_like 'an authenticated zoekt request' do
       let(:make_request) { search }
     end
