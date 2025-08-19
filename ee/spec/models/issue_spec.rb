@@ -1526,4 +1526,15 @@ RSpec.describe Issue, feature_category: :team_planning do
       expect(issue.es_parent).to eq("group_#{issue.namespace.root_ancestor.id}")
     end
   end
+
+  describe '#ensure_namespace_traversal_ids' do
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:group) { create(:group, parent: root_group) }
+
+    it 'set the namespace_traversal_ids for a group issue' do
+      issue = create(:issue, :group_level, namespace: group)
+
+      expect(issue.namespace_traversal_ids).to eq([root_group.id, group.id])
+    end
+  end
 end
