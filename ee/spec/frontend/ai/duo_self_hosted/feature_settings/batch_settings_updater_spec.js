@@ -66,6 +66,7 @@ describe('DuoSelfHostedBatchSettingsUpdater', () => {
   it('renders `BatchUpdateButton` component', () => {
     createComponent();
 
+    expect(findBatchUpdateButton().text()).toBe('Apply to all');
     expect(findBatchUpdateButton().props()).toEqual({
       tooltipTitle: 'Apply to all GitLab Duo Chat sub-features',
       disabled: false,

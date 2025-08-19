@@ -8352,7 +8352,7 @@ msgstr ""
 msgid "Apply this approval rule to all branches or a specific protected branch."
 msgstr ""
 
-msgid "Apply to all button"
+msgid "Apply to all"
 msgstr ""
 
 msgid "Applying"

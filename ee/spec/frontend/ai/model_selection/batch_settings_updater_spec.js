@@ -67,6 +67,7 @@ describe('ModelSelectionBatchSettingsUpdater', () => {
   it('renders `BatchUpdateButton` component', () => {
     createComponent();
 
+    expect(findBatchUpdateButton().text()).toBe('Apply to all');
     expect(findBatchUpdateButton().props()).toEqual({
       tooltipTitle: 'Apply to all Code Suggestions sub-features',
       disabled: false,
