@@ -2,7 +2,7 @@
 
 module GitlabSubscriptions
   module Trials
-    module Ultimate
+    module DuoEnterprise
       class ResubmitComponent < Trials::ResubmitComponent
         extend ::Gitlab::Utils::Override
 
@@ -10,7 +10,7 @@ module GitlabSubscriptions
 
         override :top_page_component
         def top_page_component
-          GitlabSubscriptions::Trials::Ultimate::TopPageComponent
+          GitlabSubscriptions::Trials::DuoEnterprise::TopPageComponent
         end
       end
     end

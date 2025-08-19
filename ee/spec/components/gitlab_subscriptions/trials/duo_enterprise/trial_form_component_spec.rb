@@ -6,10 +6,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::TrialFormComponent, :
   let(:eligible_namespaces) { Group.none }
   let(:user) { build(:user) }
   let(:form_params) do
-    ActionController::Parameters.new(
+    {
       garbage: 'garbage',
       namespace_id: 1
-    )
+    }.with_indifferent_access
   end
 
   let(:kwargs) do

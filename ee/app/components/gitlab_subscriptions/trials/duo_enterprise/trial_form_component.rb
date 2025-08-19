@@ -52,7 +52,10 @@ module GitlabSubscriptions
         end
 
         def submit_path
-          trials_duo_enterprise_path(step: GitlabSubscriptions::Trials::DuoEnterpriseCreateService::FULL)
+          trials_duo_enterprise_path(
+            step: GitlabSubscriptions::Trials::DuoEnterpriseCreateService::FULL,
+            **params.slice(*::Onboarding::StatusPresenter::GLM_PARAMS)
+          )
         end
 
         def namespace_data

@@ -187,11 +187,4 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
     wait_for_requests
   end
-
-  def expect_to_be_on_trial_form_with_name_fields
-    within_testid('trial-form') do
-      expect(find_by_testid('first-name-field').value).to have_content(user.first_name)
-      expect(find_by_testid('last-name-field').value).to have_content(user.last_name)
-    end
-  end
 end

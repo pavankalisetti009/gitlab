@@ -81,6 +81,13 @@ module Features
       end
     end
 
+    def expect_to_be_on_trial_form_with_name_fields
+      within_testid('trial-form') do
+        expect(find_by_testid('first-name-field').value).to have_content(user.first_name)
+        expect(find_by_testid('last-name-field').value).to have_content(user.last_name)
+      end
+    end
+
     def fill_in_trial_selection_form(from: 'Select a group', group_select: true)
       select_from_listbox group.name, from: from if group_select
     end
@@ -145,6 +152,54 @@ module Features
       wait_for_requests
     end
 
+    def duo_enterprise_submit_trial_form(
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      glm: {},
+      last_name: user.last_name
+    )
+      # lead
+      expect_duo_enterprise_lead_submission(lead_result, last_name: last_name, glm: glm)
+
+      # trial
+      if lead_result.success?
+        stub_apply_duo_enterprise_trial(result: trial_result, extra_params: glm)
+        stub_duo_landing_page_data
+      end
+
+      click_button 'Activate my trial'
+
+      wait_for_requests
+    end
+
+    def duo_enterprise_resubmit_full_request(
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      glm: {}
+    )
+      # lead
+      expect_duo_enterprise_lead_submission(lead_result, last_name: user.last_name, glm: glm)
+
+      # trial
+      if lead_result.success?
+        stub_apply_duo_enterprise_trial(result: trial_result, extra_params: existing_group_attrs)
+        stub_duo_landing_page_data
+      end
+
+      click_button 'Resubmit request'
+
+      wait_for_requests
+    end
+
+    def duo_enterprise_resubmit_trial_request(result: ServiceResponse.success)
+      stub_apply_duo_enterprise_trial(result: result, extra_params: existing_group_attrs)
+      stub_duo_landing_page_data
+
+      click_button 'Resubmit request'
+
+      wait_for_requests
+    end
+
     def resubmit_trial_request(result: ServiceResponse.success)
       stub_apply_trial(namespace_id: group.id, result: result, extra_params: existing_group_attrs)
       stub_duo_landing_page_data
@@ -177,6 +232,32 @@ module Features
       }.merge(glm)
 
       expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+        expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
+      end
+    end
+
+    def expect_duo_enterprise_lead_submission(lead_result, glm:, last_name: user.last_name)
+      trial_user_params = {
+        company_name: form_data[:company_name],
+        first_name: user.first_name,
+        last_name: last_name,
+        phone_number: form_data[:phone_number],
+        country: form_data.dig(:country, :id),
+        work_email: user.email,
+        uid: user.id,
+        setup_for_company: user.onboarding_status_setup_for_company,
+        skip_email_confirmation: true,
+        gitlab_com_trial: true,
+        provider: 'gitlab',
+        state: form_data.dig(:state, :id),
+        product_interaction: 'duo_enterprise_trial',
+        preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
+        opt_in: user.onboarding_status_email_opt_in,
+        add_on_name: 'duo_enterprise',
+        existing_plan: 'ultimate'
+      }.merge(glm)
+
+      expect_next_instance_of(GitlabSubscriptions::Trials::CreateAddOnLeadService) do |service|
         expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
       end
     end
