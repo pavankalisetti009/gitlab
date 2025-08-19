@@ -26815,22 +26815,6 @@ CREATE TABLE work_item_progresses (
     CONSTRAINT check_60f0b9e790 CHECK ((namespace_id IS NOT NULL))
 );
 
-CREATE TABLE work_item_related_link_restrictions (
-    id bigint NOT NULL,
-    source_type_id bigint NOT NULL,
-    target_type_id bigint NOT NULL,
-    link_type smallint DEFAULT 0 NOT NULL
-);
-
-CREATE SEQUENCE work_item_related_link_restrictions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE work_item_related_link_restrictions_id_seq OWNED BY work_item_related_link_restrictions.id;
-
 CREATE TABLE work_item_select_field_values (
     id bigint NOT NULL,
     namespace_id bigint NOT NULL,
@@ -29278,8 +29262,6 @@ ALTER TABLE ONLY work_item_hierarchy_restrictions ALTER COLUMN id SET DEFAULT ne
 ALTER TABLE ONLY work_item_number_field_values ALTER COLUMN id SET DEFAULT nextval('work_item_number_field_values_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_parent_links ALTER COLUMN id SET DEFAULT nextval('work_item_parent_links_id_seq'::regclass);
-
-ALTER TABLE ONLY work_item_related_link_restrictions ALTER COLUMN id SET DEFAULT nextval('work_item_related_link_restrictions_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_select_field_values ALTER COLUMN id SET DEFAULT nextval('work_item_select_field_values_id_seq'::regclass);
 
@@ -32629,9 +32611,6 @@ ALTER TABLE ONLY work_item_parent_links
 
 ALTER TABLE ONLY work_item_progresses
     ADD CONSTRAINT work_item_progresses_pkey PRIMARY KEY (issue_id);
-
-ALTER TABLE ONLY work_item_related_link_restrictions
-    ADD CONSTRAINT work_item_related_link_restrictions_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY work_item_select_field_values
     ADD CONSTRAINT work_item_select_field_values_pkey PRIMARY KEY (id);
@@ -39408,8 +39387,6 @@ CREATE UNIQUE INDEX index_work_item_hierarchy_restrictions_on_parent_and_child O
 
 CREATE INDEX index_work_item_hierarchy_restrictions_on_parent_type_id ON work_item_hierarchy_restrictions USING btree (parent_type_id);
 
-CREATE UNIQUE INDEX index_work_item_link_restrictions_on_source_link_type_target ON work_item_related_link_restrictions USING btree (source_type_id, link_type, target_type_id);
-
 CREATE INDEX index_work_item_number_field_values_on_custom_field_id ON work_item_number_field_values USING btree (custom_field_id);
 
 CREATE INDEX index_work_item_number_field_values_on_namespace_id ON work_item_number_field_values USING btree (namespace_id);
@@ -39421,8 +39398,6 @@ CREATE UNIQUE INDEX index_work_item_parent_links_on_work_item_id ON work_item_pa
 CREATE INDEX index_work_item_parent_links_on_work_item_parent_id ON work_item_parent_links USING btree (work_item_parent_id);
 
 CREATE INDEX index_work_item_progresses_on_namespace_id ON work_item_progresses USING btree (namespace_id);
-
-CREATE INDEX index_work_item_related_link_restrictions_on_target_type_id ON work_item_related_link_restrictions USING btree (target_type_id);
 
 CREATE INDEX index_work_item_select_field_values_on_custom_field_id ON work_item_select_field_values USING btree (custom_field_id);
 
