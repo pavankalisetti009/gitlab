@@ -105,6 +105,14 @@ module QA
               raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
             end
 
+            def wait_for_vuln_report_to_ingest
+              wait_for_requests
+              wait_until(max_duration: 120, sleep_interval: 10, message: "Vulnerabilities not loaded yet", reload: true) do
+                page.has_content?('Security reports last updated')
+              end
+              raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
+            end
+
             def has_sent_via_email_alert?
               wait_for_requests
               page.has_content?("Report export in progress. After the report is generated, an email will be sent with the download link.")

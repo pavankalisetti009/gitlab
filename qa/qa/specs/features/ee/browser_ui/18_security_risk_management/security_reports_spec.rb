@@ -120,7 +120,7 @@ module QA
         Page::Project::Menu.perform(&:click_project)
         Page::Project::Menu.perform(&:go_to_vulnerability_report)
 
-        EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_load)
+        EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_ingest)
 
         EE::Page::Project::Secure::Show.perform do |dashboard|
           dashboard.filter_by(token_name: 'Scanner', token_value: 'gemnasium') do
@@ -223,7 +223,7 @@ module QA
 
         Page::Project::Menu.perform(&:go_to_vulnerability_report)
 
-        EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_load)
+        EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_ingest)
 
         EE::Page::Project::Secure::Show.perform do |security_dashboard|
           security_dashboard.filter_report_type("Brakeman") do
