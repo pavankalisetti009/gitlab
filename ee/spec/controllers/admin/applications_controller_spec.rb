@@ -43,7 +43,7 @@ RSpec.describe Admin::ApplicationsController, feature_category: :shared do
       create_params = attributes_for(:application, trusted: true)
 
       expect do
-        post :create, params: { doorkeeper_application: create_params }
+        post :create, params: { authn_oauth_application: create_params }
       end.to change { AuditEvent.count }.by(1)
     end
   end

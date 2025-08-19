@@ -110,8 +110,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
     context 'when the duo workflow oauth application does not already exists' do
       it 'creates a new doorkeeper oauth application' do
         expect(::Gitlab::CurrentSettings).to receive(:expire_current_application_settings).and_call_original
-        expect { execute }.to change { Doorkeeper::Application.count }.by(1)
-        expect(application_settings.duo_workflow_oauth_application_id).to eq(Doorkeeper::Application.last&.id)
+        expect { execute }.to change { Authn::OauthApplication.count }.by(1)
+        expect(application_settings.duo_workflow_oauth_application_id).to eq(Authn::OauthApplication.last&.id)
       end
     end
 

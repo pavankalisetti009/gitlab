@@ -17,10 +17,10 @@ module Ai
       inclusion: { in: [true, false] },
       if: :will_save_change_to_duo_core_features_enabled?
 
-    belongs_to :amazon_q_oauth_application, class_name: 'Doorkeeper::Application', optional: true
+    belongs_to :amazon_q_oauth_application, class_name: 'Authn::OauthApplication', optional: true
     belongs_to :amazon_q_service_account_user, class_name: 'User', optional: true
 
-    belongs_to :duo_workflow_oauth_application, class_name: 'Doorkeeper::Application', optional: true
+    belongs_to :duo_workflow_oauth_application, class_name: 'Authn::OauthApplication', optional: true
     belongs_to :duo_workflow_service_account_user, class_name: 'User', optional: true
 
     after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_core_features_enabled?

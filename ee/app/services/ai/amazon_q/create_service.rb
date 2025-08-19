@@ -111,7 +111,7 @@ module Ai
         @application = existing_q_oauth_application
         return true if @application
 
-        @application = Doorkeeper::Application.new(
+        @application = Authn::OauthApplication.new(
           name: 'Amazon Q OAuth',
           redirect_uri: oauth_callback_url,
           scopes: ::Gitlab::Auth::Q_SCOPES + [::Gitlab::Auth::DYNAMIC_USER],
@@ -142,7 +142,7 @@ module Ai
       end
 
       def oauth_application
-        Doorkeeper::Application.find_by_id(oauth_app_id)
+        Authn::OauthApplication.find_by_id(oauth_app_id)
       end
 
       def oauth_callback_url

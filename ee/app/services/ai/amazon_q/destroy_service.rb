@@ -38,7 +38,7 @@ module Ai
       def destroy_oauth_application!
         return unless delete_amazon_q_onboarding.success?
 
-        oauth_application = Doorkeeper::Application.find_by_id(ai_settings.amazon_q_oauth_application_id)
+        oauth_application = Authn::OauthApplication.find_by_id(ai_settings.amazon_q_oauth_application_id)
         oauth_application&.destroy!
 
         true

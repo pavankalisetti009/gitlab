@@ -82,7 +82,7 @@ module Ai
       def find_or_create_oauth_app!
         return oauth_application if oauth_application
 
-        Doorkeeper::Application.create!(
+        Authn::OauthApplication.create!(
           name: 'GitLab Duo Agent Platform Composite OAuth Application',
           redirect_uri: oauth_callback_url,
           scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::DYNAMIC_USER],

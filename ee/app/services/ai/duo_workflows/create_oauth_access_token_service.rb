@@ -47,7 +47,7 @@ module Ai
           # now just skip.
           next if oauth_application
 
-          application = Doorkeeper::Application.new(
+          application = Authn::OauthApplication.new(
             name: 'GitLab Duo Agent Platform',
             redirect_uri: oauth_callback_url,
             scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES,
@@ -71,7 +71,7 @@ module Ai
         oauth_application_id = application_settings.duo_workflow_oauth_application_id
         return unless oauth_application_id
 
-        Doorkeeper::Application.find(oauth_application_id)
+        Authn::OauthApplication.find(oauth_application_id)
       end
 
       def oauth_callback_url

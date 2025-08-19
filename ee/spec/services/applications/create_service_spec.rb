@@ -31,7 +31,7 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
           name: 'oauth_application_created',
           author: user,
           scope: owner || user,
-          target: instance_of(::Doorkeeper::Application),
+          target: instance_of(::Authn::OauthApplication),
           message: 'OAuth application added',
           additional_details: hash_including(
             application_name: anything,
