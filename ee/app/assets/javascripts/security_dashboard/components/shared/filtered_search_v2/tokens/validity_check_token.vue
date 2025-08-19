@@ -2,14 +2,17 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
-import QuerystringSync from '../../filters/querystring_sync.vue';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import eventHub from '../event_hub';
 
 export default {
   validValues: ['ACTIVE', 'INACTIVE', 'UNKNOWN'],
+  transformFilters: (filters) => {
+    return { validity: Array.isArray(filters) ? filters[0] : filters };
+  },
+  transformQueryParams: (params) => {
+    return Array.isArray(params) ? params[0] : params;
+  },
   components: {
-    QuerystringSync,
     GlFilteredSearchToken,
     SearchSuggestion,
   },
@@ -18,7 +21,6 @@ export default {
       type: Object,
       required: true,
     },
-    // contains the token, with the selected operand (e.g.: '=') and the data (comma separated, e.g.: 'MIT, GNU')
     value: {
       type: Object,
       required: true,
@@ -48,30 +50,19 @@ export default {
     },
     toggleText() {
       return getSelectedOptionsText({
-        options: this.$options.items,
         selected: [this.selectedValidityCheck],
+        options: this.$options.items,
+        placeholder: this.$options.i18n.label,
       });
     },
   },
   methods: {
-    resetSelected() {
-      this.selectedValidityCheck = undefined;
-      this.emitFiltersChanged();
-    },
     toggleSelected(selectedValue) {
       this.selectedValidityCheck = selectedValue;
-      this.emitFiltersChanged();
-    },
-    updateSelectedFromQS(value) {
-      this.selectedValidityCheck = value?.[0];
-      this.emitFiltersChanged();
-    },
-    emitFiltersChanged() {
-      eventHub.$emit('filters-changed', { validityCheck: this.selectedValidityCheck });
     },
   },
   i18n: {
-    label: s__('SecurityReports|Validity check'),
+    label: s__('SecurityReports|Validity Check'),
   },
   items: [
     {
@@ -91,33 +82,25 @@ export default {
 </script>
 
 <template>
-  <querystring-sync
-    querystring-key="validityCheck"
-    :value="queryStringValue"
-    :valid-values="$options.validValues"
-    @input="updateSelectedFromQS"
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :value="tokenValue"
+    v-on="$listeners"
+    @select="toggleSelected"
   >
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :value="tokenValue"
-      v-on="$listeners"
-      @select="toggleSelected"
-      @destroy="resetSelected"
-    >
-      <template #view>
-        <span data-testid="validity-check-token-placeholder">{{ toggleText }}</span>
-      </template>
-      <template #suggestions>
-        <search-suggestion
-          v-for="item in $options.items"
-          :key="item.value"
-          :value="item.value"
-          :text="item.text"
-          :selected="item.value === selectedValidityCheck"
-          :data-testid="`suggestion-${item.value}`"
-        />
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+    <template #view>
+      <span data-testid="validity-check-token-placeholder">{{ toggleText }}</span>
+    </template>
+    <template #suggestions>
+      <search-suggestion
+        v-for="item in $options.items"
+        :key="item.value"
+        :value="item.value"
+        :text="item.text"
+        :selected="item.value === selectedValidityCheck"
+        :data-testid="`suggestion-${item.value}`"
+      />
+    </template>
+  </gl-filtered-search-token>
 </template>
