@@ -134,7 +134,7 @@ RSpec.describe Jira::JqlBuilderService, feature_category: :integrations do
 
         it 'builds jql' do
           expect(subject)
-            .to eq(%(project in (#{expected_project_keys}) AND (description ~ "/-/security/vulnerabilities/1" OR description ~ "/-/security/vulnerabilities/25") order by created DESC))
+            .to eq(%(project in (#{expected_project_keys}) AND (description ~ "\\"Issue created from vulnerability 1\\"" OR description ~ "\\"Issue created from vulnerability 25\\"") order by created DESC))
         end
       end
 
