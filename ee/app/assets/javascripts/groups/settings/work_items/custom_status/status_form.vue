@@ -176,7 +176,7 @@ export default {
           :class="{ 'gl-flex-col gl-items-stretch': showDescriptionField }"
         >
           <gl-form-group
-            :label="s__('WorkItem|Title')"
+            :label="s__('WorkItemStatus|Name')"
             label-for="status-name"
             label-sr-only
             class="gl-mb-0 gl-shrink-0"
@@ -186,7 +186,7 @@ export default {
             <gl-form-input
               id="status-name"
               ref="title"
-              :placeholder="__('Name')"
+              :placeholder="s__('WorkItemStatus|Name')"
               :value="formData.name"
               :maxlength="32"
               width="sm"
