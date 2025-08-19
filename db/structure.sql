@@ -16907,6 +16907,7 @@ CREATE TABLE issues (
     project_id_convert_to_bigint bigint,
     promoted_to_epic_id_convert_to_bigint bigint,
     updated_by_id_convert_to_bigint bigint,
+    namespace_traversal_ids bigint[] DEFAULT '{}'::bigint[],
     CONSTRAINT check_2addf801cd CHECK ((work_item_type_id IS NOT NULL)),
     CONSTRAINT check_c33362cd43 CHECK ((namespace_id IS NOT NULL)),
     CONSTRAINT check_fba63f706d CHECK ((lock_version IS NOT NULL))
