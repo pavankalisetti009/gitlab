@@ -18,7 +18,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
   let(:api_version) { API::API.version }
 
   context 'associations' do
-    it { is_expected.to belong_to(:oauth_application).class_name('Doorkeeper::Application').dependent(:destroy).autosave(true) }
+    it { is_expected.to belong_to(:oauth_application).class_name('Authn::OauthApplication').dependent(:destroy).autosave(true) }
 
     it { is_expected.to have_many(:geo_node_namespace_links) }
     it { is_expected.to have_many(:namespaces).through(:geo_node_namespace_links) }
@@ -206,7 +206,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
             expect do
               expect(primary_node).to be_valid
-            end.to change(Doorkeeper::Application, :count).by(-1)
+            end.to change(Authn::OauthApplication, :count).by(-1)
 
             expect(primary_node.oauth_application).to be_nil
           end

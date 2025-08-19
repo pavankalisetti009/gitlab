@@ -509,7 +509,7 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
         stub_current_geo_node(secondary_node)
         allow(described_class)
           .to receive(:oauth_authentication)
-          .and_return(double('Doorkeeper::Application', uid: 'uid-test', secret: 'top-secret'))
+          .and_return(double('Authn::OauthApplication', uid: 'uid-test', secret: 'top-secret'))
       end
 
       it 'returns a cached uid' do

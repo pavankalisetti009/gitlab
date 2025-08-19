@@ -48,7 +48,7 @@ RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_cate
       it 'creates a new oauth application' do
         expect(Ai::Setting.instance.duo_workflow_oauth_application_id).to be_nil
 
-        expect(Doorkeeper::Application).to receive(:new).with(
+        expect(Authn::OauthApplication).to receive(:new).with(
           {
             name: 'GitLab Duo Agent Platform Composite OAuth Application',
             redirect_uri: Gitlab::Routing.url_helpers.root_url,
@@ -73,7 +73,7 @@ RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_cate
         expect { instance.execute }.not_to change {
           Ai::Setting.instance.duo_workflow_oauth_application_id
         }
-        expect(Doorkeeper::Application).not_to receive(:new)
+        expect(Authn::OauthApplication).not_to receive(:new)
       end
     end
 

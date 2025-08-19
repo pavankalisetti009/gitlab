@@ -7,7 +7,7 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
 
   describe 'associations', :aggregate_failures do
     it 'has expected associations' do
-      is_expected.to belong_to(:amazon_q_oauth_application).class_name('Doorkeeper::Application').optional
+      is_expected.to belong_to(:amazon_q_oauth_application).class_name('Authn::OauthApplication').optional
       is_expected.to belong_to(:amazon_q_service_account_user).class_name('User').optional
     end
   end

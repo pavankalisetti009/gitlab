@@ -19,7 +19,7 @@ RSpec.describe Oauth::ApplicationsController, feature_category: :system_access d
         application = build(:oauth_application)
         application_attributes = application.attributes.merge("scopes" => [])
 
-        expect { post :create, params: { doorkeeper_application: application_attributes } }.to change { AuditEvent.count }.by(1)
+        expect { post :create, params: { authn_oauth_application: application_attributes } }.to change { AuditEvent.count }.by(1)
       end
     end
   end

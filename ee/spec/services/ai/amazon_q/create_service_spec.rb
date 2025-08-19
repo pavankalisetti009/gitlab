@@ -218,7 +218,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
             ).and_call_original
         end
 
-        expect(Doorkeeper::Application).to receive(:new).with(
+        expect(Authn::OauthApplication).to receive(:new).with(
           {
             name: 'Amazon Q OAuth',
             redirect_uri: Gitlab::Routing.url_helpers.root_url,
@@ -251,7 +251,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
       end
 
       it 'does not create a new oauth application' do
-        expect(Doorkeeper::Application).not_to receive(:new)
+        expect(Authn::OauthApplication).not_to receive(:new)
 
         expect_next_instance_of(::Gitlab::Llm::QAi::Client, user) do |client|
           expect(client).to receive(:perform_create_auth_application)
