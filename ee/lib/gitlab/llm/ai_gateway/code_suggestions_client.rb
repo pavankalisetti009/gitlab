@@ -64,7 +64,7 @@ module Gitlab
         def call_endpoint(endpoint, body)
           Gitlab::HTTP.post(
             endpoint,
-            headers: Gitlab::AiGateway.headers(user: user, service: service),
+            headers: ai_gateway_headers,
             body: body,
             timeout: COMPLETION_CHECK_TIMEOUT,
             allow_local_requests: true
@@ -79,7 +79,7 @@ module Gitlab
 
           response = Gitlab::HTTP.post(
             Gitlab::AiGateway.access_token_url(code_completions_feature_setting),
-            headers: Gitlab::AiGateway.headers(user: user, service: service),
+            headers: ai_gateway_headers,
             body: nil,
             timeout: DEFAULT_TIMEOUT,
             allow_local_requests: true,
@@ -109,6 +109,10 @@ module Gitlab
 
         attr_reader :user
 
+        def ai_gateway_headers
+          Gitlab::AiGateway.headers(user: user, service: service, ai_feature_name: task.feature_name)
+        end
+
         # We only need to look at the code completion feature setting for self-hosted models.
         # Namespace level model switching record for code completions
         # (::Ai::ModelSelection::NamespaceFeatureSetting) need not be looked at because
@@ -130,7 +134,7 @@ module Gitlab
         end
 
         def service
-          ::CloudConnector::AvailableServices.find_by_name(:code_suggestions)
+          ::CloudConnector::AvailableServices.find_by_name(task.unit_primitive_name)
         end
 
         def choice?(response)

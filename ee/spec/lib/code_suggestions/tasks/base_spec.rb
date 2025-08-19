@@ -12,7 +12,8 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
         def model_details
           @model_details ||= CodeSuggestions::ModelDetails::Base.new(
             current_user: current_user,
-            feature_setting_name: :code_generations
+            feature_setting_name: :code_generations,
+            unit_primitive_name: :generate_code
           )
         end
       end

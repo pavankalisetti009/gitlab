@@ -16,6 +16,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     }.with_indifferent_access
   end
 
+  let(:expected_unit_primitive_name) { :generate_code }
+
   let(:expected_current_file) do
     { current_file: { file_name: 'test.py', content_above_cursor: 'sor', content_below_cursor: 'som' } }
   end
@@ -285,6 +287,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
 
   context 'when amazon q is connected' do
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+    let(:expected_unit_primitive_name) { :amazon_q_integration }
 
     let(:unsafe_params) do
       {

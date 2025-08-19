@@ -6,7 +6,10 @@ module API
       def push_ai_gateway_headers
         push_feature_flags
 
-        Gitlab::AiGateway.public_headers(user: current_user, service_name: :duo_workflow).each do |name, value|
+        Gitlab::AiGateway.public_headers(
+          user: current_user,
+          ai_feature_name: :duo_workflow,
+          service_name: :duo_workflow_execute_workflow).each do |name, value|
           header(name, value)
         end
       end

@@ -8,7 +8,10 @@ module CodeSuggestions
       FEATURE_SETTING_NAME = 'code_completions'
 
       def initialize(current_user:, root_namespace: nil)
-        super(current_user: current_user, feature_setting_name: FEATURE_SETTING_NAME, root_namespace: root_namespace)
+        super(
+          current_user: current_user, feature_setting_name: FEATURE_SETTING_NAME,
+          unit_primitive_name: :complete_code, root_namespace: root_namespace
+        )
       end
 
       # Returns model details for using direct connection in the IDE.

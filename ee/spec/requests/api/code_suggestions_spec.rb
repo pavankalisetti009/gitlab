@@ -28,7 +28,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:global_instance_id) { 'instance-ABC' }
   let(:global_user_id) { 'user-ABC' }
   let(:gitlab_realm) { 'saas' }
-  let(:service_name) { :code_suggestions }
+  let(:unit_primitive_name) { :complete_code }
   let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
   let(:expected_prompt_version) { "2.0.0" }
 
@@ -53,8 +53,13 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
 
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
-    allow(service).to receive_messages(access_token: token, name: service_name, add_on_names: ['code_suggestions'])
+    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(unit_primitive_name).and_return(service)
+    allow(service).to receive_messages(
+      access_token: token, name: unit_primitive_name, add_on_names: ['code_suggestions']
+    )
+    allow(::CloudConnector::Tokens).to receive(:get)
+      .with(unit_primitive: unit_primitive_name, resource: authorized_user)
+      .and_return(token)
 
     purchases = class_double(GitlabSubscriptions::AddOnPurchase)
     mock_purchase = instance_double(GitlabSubscriptions::AddOnPurchase, normalized_add_on_name: 'duo_pro')
@@ -474,6 +479,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           context 'with generation intent' do
             let(:additional_params) { { intent: 'generation' } }
+            let(:unit_primitive_name) { :generate_code }
 
             it 'passes generation intent into TaskFactory.new' do
               expect(::CodeSuggestions::TaskFactory).to receive(:new)
@@ -507,6 +513,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
         context 'when passing generation_type parameter' do
           let(:additional_params) { { generation_type: :small_file } }
+          let(:unit_primitive_name) { :generate_code }
 
           it 'passes generation_type into TaskFactory.new' do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
@@ -568,6 +575,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
         context 'when passing user_instruction parameter' do
           let(:additional_params) { { user_instruction: 'Generate tests for this file' } }
+          let(:unit_primitive_name) { :generate_code }
 
           it 'passes user_instruction into TaskFactory.new' do
             expect(::CodeSuggestions::TaskFactory).to receive(:new)
@@ -742,6 +750,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           context 'when the task is code generation' do
+            let(:unit_primitive_name) { :generate_code }
             let(:content_above_cursor) do
               <<~CONTENT_ABOVE_CURSOR
                 def is_even(n: int) ->
@@ -1042,7 +1051,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
         context 'when code suggestions feature is self hosted' do
           let(:top_level_namespace) { nil }
-          let(:service_name) { :self_hosted_models }
+          let(:unit_primitive_name) { :self_hosted_models }
 
           before do
             stub_licensed_features(ai_features: true)
@@ -1063,7 +1072,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         end
 
         context 'when Amazon Q is connected' do
-          let(:service_name) { :amazon_q_integration }
+          let(:unit_primitive_name) { :amazon_q_integration }
 
           before do
             stub_licensed_features(amazon_q: true)

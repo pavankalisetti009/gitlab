@@ -7,6 +7,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
   let(:endpoint_path) { 'v2/code/completions' }
 
+  let(:expected_unit_primitive_name) { :complete_code }
+
   let(:current_file) do
     {
       'file_name' => 'test.py',
@@ -511,6 +513,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
   describe 'when amazon q is connected' do
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+    let(:expected_unit_primitive_name) { :amazon_q_integration }
 
     before do
       stub_licensed_features(amazon_q: true)

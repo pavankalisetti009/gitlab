@@ -53,20 +53,15 @@ module CloudConnector
       GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_on_names, resource).uniq_add_on_names
     end
 
-    def use_new_token_path_for?(unit_primitive, _user_or_namespace)
+    def use_new_token_path_for?(unit_primitive, actor)
       return true if ROLLED_OUT_UNIT_PRIMITIVES.include?(unit_primitive)
 
-      # Add a feature flag temporary logic here. Rollout first less critical unit_primitives
-      # Once feature flag is rolled out, this will be removed.
-      #
-      # Example:
-      #   case unit_primitive
-      #   when :troubleshooting_job
-      #     Feature.enabled?(:use_cloud_connector_tokens_for_troubleshooting_job, _user_or_namespace)
-      #   else
-      #     false
-      #   end
-      false
+      case unit_primitive
+      when :complete_code, :generate_code
+        Feature.enabled?(:code_suggestions_new_tokens_path, actor)
+      else
+        false
+      end
     end
 
     def use_self_signed_token?(unit_primitive)

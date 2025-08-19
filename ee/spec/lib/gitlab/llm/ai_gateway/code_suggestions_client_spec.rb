@@ -4,10 +4,12 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
-  let_it_be(:instance_token) { create(:service_access_token, :active) }
-  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: :code_suggestions) }
+
+  let(:unit_primitive) { :complete_code }
+  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: unit_primitive) }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:enablement_type) { 'add_on' }
+  let(:ai_gateway_headers) { { 'header' => 'value' } }
   let(:auth_response) do
     instance_double(Ai::UserAuthorizable::Response,
       namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
@@ -19,18 +21,22 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
 
   let(:self_hosted_auth_endpoint_url) { "#{Gitlab::AiGateway.self_hosted_url}#{Gitlab::AiGateway::ACCESS_TOKEN_PATH}" }
 
+  let(:expected_ai_feature) { :code_suggestions }
+
   let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
   let(:code) { 200 }
 
   before do
-    allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-    allow(service).to receive(:access_token).and_return(instance_token&.token)
+    allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(unit_primitive).and_return(service)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
     allow(Gitlab::AiGateway).to receive_messages(
       self_hosted_url: 'http://local-aigw:5052',
       cloud_connector_url: 'https://cloud-connector.gitlab.com',
       cloud_connector_auth_url: 'https://cloud-connector.gitlab.com/auth'
     )
+    allow(Gitlab::AiGateway).to receive(:headers).with(
+      user: user, service: service, ai_feature_name: expected_ai_feature
+    ).and_return(ai_gateway_headers)
   end
 
   shared_examples "error response" do |message|
@@ -47,14 +53,13 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     end
   end
 
-  shared_context 'with tests requests' do |expected_service_name|
+  shared_context 'with tests requests' do
     before do
       stub_request(:post, /#{Gitlab::AiGateway.url}/)
         .to_return(status: code, body: body.to_json, headers: { "Content-Type" => "application/json" })
     end
 
     it 'returns nil if there is no error' do
-      expect(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_service_name)
       expect(result).to be_nil
     end
 
@@ -76,7 +81,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   describe "#test_completion" do
     subject(:result) { described_class.new(user).test_completion }
 
-    include_examples 'with tests requests', :code_suggestions do
+    include_examples 'with tests requests' do
       include_examples 'with completions'
     end
 
@@ -142,7 +147,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         "your AI Gateway URL is configured correctly."
     end
 
-    include_examples 'with tests requests', :code_suggestions
+    include_examples 'with tests requests'
   end
 
   describe '#direct_access_token', :with_cloud_connector do
@@ -154,20 +159,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     let(:response_body) { expected_response.to_json }
     let(:http_status) { 200 }
     let(:client) { described_class.new(user) }
-    let(:expected_request_headers) do
-      {
-        'X-Gitlab-Instance-Id' => Gitlab::GlobalAnonymousId.instance_id,
-        'X-Gitlab-Global-User-Id' => Gitlab::GlobalAnonymousId.user_id(user),
-        'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-        'X-Gitlab-Realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
-        'X-Gitlab-Authentication-Type' => 'oidc',
-        'Authorization' => "Bearer #{instance_token.token}",
-        "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
-        'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-        'Content-Type' => 'application/json',
-        'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
-      }
-    end
 
     let(:auth_url) { self_hosted_auth_endpoint_url }
 
@@ -177,7 +168,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       stub_request(:post, auth_url)
         .with(
           body: nil,
-          headers: expected_request_headers
+          headers: ai_gateway_headers
         )
         .to_return(
           status: http_status,
@@ -199,6 +190,8 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     end
 
     context 'when code_completions is self-hosted' do
+      let(:expected_ai_feature) { :self_hosted_models }
+
       before do
         create(:ai_feature_setting, :code_completions, provider: :self_hosted)
       end
@@ -251,7 +244,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         stub_request(:post, auth_url)
           .with(
             body: nil,
-            headers: expected_request_headers
+            headers: ai_gateway_headers
           )
           .to_return(
             status: http_status,

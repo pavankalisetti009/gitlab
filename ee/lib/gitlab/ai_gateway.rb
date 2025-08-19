@@ -80,7 +80,7 @@ module Gitlab
       name.to_sym == :expanded_ai_logging && self_managed_instance
     end
 
-    def self.headers(user:, service:, agent: nil, lsp_version: nil)
+    def self.headers(user:, service:, ai_feature_name: service.name, agent: nil, lsp_version: nil)
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{cloud_connector_token(service, user)}",
@@ -90,7 +90,7 @@ module Gitlab
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency
         'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s
-      }.merge(public_headers(user: user, service_name: service.name))
+      }.merge(public_headers(user: user, ai_feature_name: ai_feature_name, service_name: service.name))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
           if current_context[:x_gitlab_client_type]
@@ -117,8 +117,8 @@ module Gitlab
         end
     end
 
-    def self.public_headers(user:, service_name:)
-      auth_response = user&.allowed_to_use(service_name)
+    def self.public_headers(user:, ai_feature_name:, service_name:)
+      auth_response = user&.allowed_to_use(ai_feature_name, service_name: service_name)
       enablement_type = auth_response&.enablement_type || ''
       namespace_ids = auth_response&.namespace_ids || []
 
