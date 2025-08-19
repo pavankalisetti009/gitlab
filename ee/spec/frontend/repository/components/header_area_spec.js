@@ -1,5 +1,7 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
 import { RouterLinkStub } from '@vue/test-utils';
+import { createTestingPinia } from '@pinia/testing';
+import { PiniaVuePlugin } from 'pinia';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HeaderArea from '~/repository/components/header_area.vue';
 import HeaderLockIcon from 'ee_component/repository/components/header_area/header_lock_icon.vue';
@@ -9,6 +11,8 @@ import BlobControls from '~/repository/components/header_area/blob_controls.vue'
 import CodeDropdown from '~/vue_shared/components/code_dropdown/code_dropdown.vue';
 import CloneCodeDropdown from '~/vue_shared/components/code_dropdown/clone_code_dropdown.vue';
 import { headerAppInjected } from 'ee_else_ce_jest/repository/mock_data';
+import { useFileTreeBrowserVisibility } from '~/repository/stores/file_tree_browser_visibility';
+import { useViewport } from '~/pinia/global_stores/viewport';
 
 const defaultMockRoute = {
   params: {
@@ -22,8 +26,11 @@ const defaultMockRoute = {
   },
 };
 
+Vue.use(PiniaVuePlugin);
+
 describe('HeaderArea', () => {
   let wrapper;
+  let pinia;
 
   const findHeaderLockIcon = () => wrapper.findComponent(HeaderLockIcon);
   const findLockDirectoryButton = () => wrapper.findComponent(LockDirectoryButton);
@@ -62,10 +69,14 @@ describe('HeaderArea', () => {
           ...route,
         },
       },
+      pinia,
     });
   };
 
   beforeEach(() => {
+    pinia = createTestingPinia({ stubActions: false });
+    useViewport();
+    useFileTreeBrowserVisibility();
     wrapper = createComponent();
   });
 
