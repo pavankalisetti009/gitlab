@@ -137,10 +137,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       end
     end
 
-    after do
-      params[:use_service_account] = false
-    end
-
     it 'creates developer authorization for service account' do
       execute
       expect(project.member(service_account).access_level).to eq(Gitlab::Access::DEVELOPER)
