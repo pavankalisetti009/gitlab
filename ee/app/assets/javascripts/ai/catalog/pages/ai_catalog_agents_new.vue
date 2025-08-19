@@ -77,7 +77,7 @@ export default {
       mode="create"
       :is-loading="isSubmitting"
       :error-messages="errorMessages"
-      @dismiss-error="resetErrorMessages"
+      @dismiss-errors="resetErrorMessages"
       @submit="handleSubmit"
     />
   </div>

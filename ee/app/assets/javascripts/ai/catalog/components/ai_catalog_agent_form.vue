@@ -30,11 +30,13 @@ import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
+import ErrorsAlert from './errors_alert.vue';
 
 const tmpProjectId = 'gid://gitlab/Project/1000000';
 
 export default {
   components: {
+    ErrorsAlert,
     AiCatalogFormButtons,
     GlAlert,
     GlButton,
@@ -64,8 +66,7 @@ export default {
     },
     errorMessages: {
       type: Array,
-      required: false,
-      default: () => [],
+      required: true,
     },
     initialValues: {
       type: Object,
@@ -239,20 +240,7 @@ export default {
       }));
     },
   },
-  watch: {
-    errorMessages(newValue) {
-      if (newValue.length === 0) {
-        return;
-      }
 
-      this.$nextTick(() => {
-        this.$refs.alertRef?.$el?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        });
-      });
-    },
-  },
   methods: {
     handleSubmit() {
       const transformedValues = {
@@ -280,21 +268,7 @@ export default {
 
 <template>
   <div>
-    <gl-alert
-      v-show="errorMessages.length"
-      ref="alertRef"
-      class="gl-mb-3 gl-mt-5"
-      variant="danger"
-      data-testid="agent-form-error-alert"
-      @dismiss="$emit('dismiss-error')"
-    >
-      <span v-if="errorMessages.length === 1">{{ errorMessages[0] }}</span>
-      <ul v-else class="!gl-mb-0 gl-pl-5">
-        <li v-for="(errorMessage, index) in errorMessages" :key="index">
-          {{ errorMessage }}
-        </li>
-      </ul>
-    </gl-alert>
+    <errors-alert :error-messages="errorMessages" @dismiss="$emit('dismiss-errors')" />
     <gl-form :id="formId" @submit.prevent="">
       <gl-form-fields
         v-model="formValues"
