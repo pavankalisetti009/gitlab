@@ -4,10 +4,9 @@ module Search
   module ZoektSearchable
     include ::Gitlab::Utils::StrongMemoize
 
+    # TODO: rename to search_code_with_zoekt?
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/421619
     def use_zoekt?
-      # TODO: rename to search_code_with_zoekt?
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/421619
-      return false if skip_api?
       return false unless ::Search::Zoekt.enabled_for_user?(current_user) && zoekt_searchable_scope?
       return false if Feature.enabled?(:disable_zoekt_search_for_saas, root_ancestor)
 
@@ -52,13 +51,6 @@ module Search
 
     def zoekt_node_available_for_search?
       zoekt_nodes.exists?
-    end
-
-    def skip_api?
-      return false unless params[:source] == 'api'
-      return false if params[:search_type] == 'zoekt'
-
-      Feature.disabled?(:zoekt_search_api, root_ancestor, type: :ops)
     end
 
     def use_traversal_id_queries?

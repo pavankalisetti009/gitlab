@@ -545,20 +545,6 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
             get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
           end
         end
-
-        context 'when feature flag zoekt_search_api is disabled', :elastic, :sidekiq_inline do
-          before do
-            project.repository.index_commits_and_blobs
-            ensure_elasticsearch_index!
-            stub_feature_flags(zoekt_search_api: false)
-          end
-
-          it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 3 do
-            before do
-              get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
-            end
-          end
-        end
       end
     end
   end
