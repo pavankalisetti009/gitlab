@@ -22,13 +22,9 @@ export default {
 </script>
 <template>
   <div ref="batchUpdateButton">
-    <gl-button
-      :aria-label="__('Apply to all button')"
-      category="primary"
-      icon="duplicate"
-      :disabled="disabled"
-      @click="$emit('batch-update')"
-    />
+    <gl-button category="secondary" :disabled="disabled" @click="$emit('batch-update')">
+      {{ __('Apply to all') }}
+    </gl-button>
     <gl-tooltip
       data-testid="model-batch-assignment-tooltip"
       :target="() => $refs.batchUpdateButton"
