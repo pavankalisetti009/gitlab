@@ -45236,6 +45236,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetnotesdiscussionsfilter"></a>`filter` | [`NotesFilterType`](#notesfiltertype) | Type of notes collection: ALL_NOTES, ONLY_COMMENTS, ONLY_ACTIVITY. |
+| <a id="workitemwidgetnotesdiscussionssort"></a>`sort` | [`WorkItemDiscussionsSort`](#workitemdiscussionssort) | Sort order for the discussions. |
 
 ##### `WorkItemWidgetNotes.notes`
 
@@ -49519,6 +49520,15 @@ Values for work item award emoji update enum.
 | <a id="workitemawardemojiupdateactionadd"></a>`ADD` | Adds the emoji. |
 | <a id="workitemawardemojiupdateactionremove"></a>`REMOVE` | Removes the emoji. |
 | <a id="workitemawardemojiupdateactiontoggle"></a>`TOGGLE` | Toggles the status of the emoji. |
+
+### `WorkItemDiscussionsSort`
+
+Values for sorting work item discussions.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="workitemdiscussionssortcreated_asc"></a>`CREATED_ASC` | Created at in ascending order. |
+| <a id="workitemdiscussionssortcreated_desc"></a>`CREATED_DESC` | Created at in descending order. |
 
 ### `WorkItemParentWildcardId`
 

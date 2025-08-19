@@ -28,7 +28,7 @@ module Analytics
     def first_comment_at
       merge_request.related_notes.by_humans
         .where.not(author_id: merge_request.author_id)
-        .fresh.first&.created_at
+        .order_created_at_id_asc.first&.created_at
     end
     # rubocop: enable CodeReuse/ActiveRecord
 

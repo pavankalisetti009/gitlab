@@ -13,7 +13,7 @@ module Ai
     def execute
       return Note.none unless Ability.allowed?(current_user, :read_note, resource)
 
-      limited_notes = resource.notes.user.without_hidden.fresh
+      limited_notes = resource.notes.user.without_hidden.order_created_at_id_asc
 
       return limited_notes.not_internal if @is_duo_code_review
       return limited_notes.not_internal unless Ability.allowed?(current_user, :read_internal_note, resource)
