@@ -8932,7 +8932,8 @@ CREATE TABLE analytics_devops_adoption_segments (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     namespace_id bigint,
-    display_namespace_id bigint
+    display_namespace_id bigint,
+    CONSTRAINT check_fc420e89ee CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE analytics_devops_adoption_segments_id_seq
