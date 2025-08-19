@@ -7,3 +7,5 @@ class ReviseVulnerabilitiesMappingsAndFieldTypes < Elastic::Migration
     %w[Vulnerability]
   end
 end
+
+ReviseVulnerabilitiesMappingsAndFieldTypes.prepend ::Search::Elastic::MigrationObsolete

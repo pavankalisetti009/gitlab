@@ -6,6 +6,6 @@ description: Introduces a subfield for the identifier_names for aggregation and 
 group: group::group::security infrastructure
 milestone: '18.0'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/189013
-obsolete: false
-marked_obsolete_by_url:
-marked_obsolete_in_milestone:
+obsolete: true
+marked_obsolete_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201688
+marked_obsolete_in_milestone: '18.4'
