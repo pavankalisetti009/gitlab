@@ -293,8 +293,6 @@ module EE
       end
 
       condition(:agentic_chat_allowed_for_group, scope: :subject) do
-        next true unless ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-
         ::Gitlab::Llm::StageCheck.available?(@subject, :agentic_chat)
       end
 

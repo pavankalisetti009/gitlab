@@ -62,6 +62,8 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       let(:container_params) { { namespace_id: group.id } }
 
       it 'has correct attributes in checkpoint records' do
+        expect(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(true)
+
         post api(path, user), params: params
 
         expect(response).to have_gitlab_http_status(:created)
@@ -168,6 +170,8 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       let(:container_params) { { namespace_id: group.id } }
 
       it 'allows updating a workflow' do
+        expect(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(true)
+
         post api(path, user), params: params
 
         expect(response).to have_gitlab_http_status(:success)
@@ -264,6 +268,8 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
         let(:container_params) { { namespace_id: group.id } }
 
         it 'allows updating a workflow' do
+          expect(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :agentic_chat).and_return(true)
+
           post api(path, user), params: params
 
           created_event = Ai::DuoWorkflows::Event.last
