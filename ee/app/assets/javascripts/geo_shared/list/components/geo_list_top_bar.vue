@@ -1,4 +1,5 @@
 <script>
+import { GlIcon } from '@gitlab/ui';
 import { __ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import GeoListFilteredSearchBar from './geo_list_filtered_search_bar.vue';
@@ -6,6 +7,7 @@ import GeoListBulkActions from './geo_list_bulk_actions.vue';
 
 export default {
   components: {
+    GlIcon,
     PageHeading,
     GeoListFilteredSearchBar,
     GeoListBulkActions,
@@ -18,6 +20,16 @@ export default {
     pageHeadingDescription: {
       type: String,
       required: true,
+    },
+    listCountIcon: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    listCountText: {
+      type: String,
+      required: false,
+      default: '',
     },
     listboxHeaderText: {
       type: String,
@@ -69,7 +81,12 @@ export default {
         />
       </template>
       <template #description>
-        {{ pageHeadingDescription }}
+        <div>{{ pageHeadingDescription }}</div>
+        <span v-if="listCountText" data-testid="list-count"
+          ><gl-icon v-if="listCountIcon" :name="listCountIcon" class="gl-mr-2" />{{
+            listCountText
+          }}</span
+        >
       </template>
     </page-heading>
     <geo-list-filtered-search-bar

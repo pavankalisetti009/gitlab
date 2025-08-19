@@ -13,6 +13,7 @@ exports[`buildReplicableTypeQuery query fields shows correct fields when verific
       pageInfo {
         ...PageInfo
       }
+      count
       nodes {
         id
         state
@@ -51,6 +52,7 @@ exports[`buildReplicableTypeQuery query fields shows correct fields when verific
       pageInfo {
         ...PageInfo
       }
+      count
       nodes {
         id
         state

@@ -82,6 +82,7 @@ describe('GeoReplicableApp', () => {
       geoNode: {
         [defaultProvide.replicableClass.graphqlFieldName]: {
           nodes: MOCK_BASIC_GRAPHQL_DATA,
+          count: MOCK_BASIC_GRAPHQL_DATA.length,
           pageInfo: MOCK_GRAPHQL_PAGINATION_DATA,
         },
       },
@@ -93,6 +94,7 @@ describe('GeoReplicableApp', () => {
       geoNode: {
         [defaultProvide.replicableClass.graphqlFieldName]: {
           nodes: [],
+          count: 0,
           pageInfo: {},
         },
       },
@@ -161,10 +163,10 @@ describe('GeoReplicableApp', () => {
   });
 
   describe.each`
-    hasItems | handler
-    ${true}  | ${MOCK_QUERY_HANDLER_WITH_DATA}
-    ${false} | ${MOCK_QUERY_HANDLER_WITHOUT_DATA}
-  `('GeoList state', ({ hasItems, handler }) => {
+    hasItems | handler                            | expectedPagination
+    ${true}  | ${MOCK_QUERY_HANDLER_WITH_DATA}    | ${{ ...MOCK_GRAPHQL_PAGINATION_DATA, count: MOCK_BASIC_GRAPHQL_DATA.length }}
+    ${false} | ${MOCK_QUERY_HANDLER_WITHOUT_DATA} | ${{ count: 0 }}
+  `('GeoList state', ({ hasItems, handler, expectedPagination }) => {
     describe(`${hasItems ? 'does' : 'does not'} have replicableItems`, () => {
       beforeEach(async () => {
         createComponent({ handler });
@@ -180,8 +182,9 @@ describe('GeoReplicableApp', () => {
         });
       });
 
-      it('renders GeoReplicable in the default slot of GeoList always', () => {
+      it('renders GeoReplicable in the default slot of GeoList always with correct pageInfo props', () => {
         expect(findGeoReplicable().exists()).toBe(true);
+        expect(findGeoReplicable().props('pageInfo')).toStrictEqual(expectedPagination);
       });
     });
   });
@@ -344,6 +347,41 @@ describe('GeoReplicableApp', () => {
       expect(findGeoListTopBar().props('pageHeadingDescription')).toBe(
         'Review replication status, and resynchronize and reverify items with the primary site.',
       );
+    });
+  });
+
+  describe.each`
+    count   | expectedText
+    ${null} | ${null}
+    ${0}    | ${null}
+    ${1}    | ${'1 Registry'}
+    ${500}  | ${'500 Registries'}
+    ${1000} | ${'1000 Registries'}
+    ${1001} | ${'1000+ Registries'}
+    ${5000} | ${'1000+ Registries'}
+  `('list count when count is $count', ({ count, expectedText }) => {
+    const MOCK_QUERY_HANDLER_WITH_COUNT = jest.fn().mockResolvedValue({
+      data: {
+        geoNode: {
+          [defaultProvide.replicableClass.graphqlFieldName]: {
+            nodes: MOCK_BASIC_GRAPHQL_DATA,
+            count,
+            pageInfo: MOCK_GRAPHQL_PAGINATION_DATA,
+          },
+        },
+      },
+    });
+
+    beforeEach(async () => {
+      createComponent({
+        handler: MOCK_QUERY_HANDLER_WITH_COUNT,
+      });
+
+      await waitForPromises();
+    });
+
+    it(`passes ${expectedText} as the listCountText prop to the topBar`, () => {
+      expect(findGeoListTopBar().props('listCountText')).toBe(expectedText);
     });
   });
 

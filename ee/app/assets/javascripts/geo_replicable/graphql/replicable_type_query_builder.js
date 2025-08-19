@@ -10,6 +10,7 @@ export default (graphQlFieldName, verificationEnabled) => {
           pageInfo {
             ...PageInfo
           }
+          count
           nodes {
             id
             state

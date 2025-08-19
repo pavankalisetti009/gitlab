@@ -3,7 +3,7 @@ import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import replicableTypeUpdateMutation from 'ee/geo_shared/graphql/replicable_type_update_mutation.graphql';
 import replicableTypeBulkUpdateMutation from 'ee/geo_shared/graphql/replicable_type_bulk_update_mutation.graphql';
-import { sprintf, s__ } from '~/locale';
+import { sprintf, s__, n__ } from '~/locale';
 import { createAlert } from '~/alert';
 import toast from '~/vue_shared/plugins/global_toast';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
@@ -69,7 +69,10 @@ export default {
         return { ...this.cursor, ...getGraphqlFilterVariables(this.activeFilteredSearchFilters) };
       },
       result({ data }) {
-        this.pageInfo = data?.geoNode?.[this.replicableClass.graphqlFieldName]?.pageInfo || {};
+        const pageInfo = data?.geoNode?.[this.replicableClass.graphqlFieldName]?.pageInfo || {};
+        const count = data?.geoNode?.[this.replicableClass.graphqlFieldName]?.count || 0;
+
+        this.pageInfo = { ...pageInfo, count };
       },
       update(data) {
         const res = data?.geoNode?.[this.replicableClass.graphqlFieldName]?.nodes || [];
@@ -122,6 +125,15 @@ export default {
     },
     pageHeadingTitle() {
       return sprintf(s__('Geo|Geo Replication - %{siteName}'), { siteName: this.siteName });
+    },
+    humanizedPageCount() {
+      if (!this.pageInfo.count) {
+        return null;
+      }
+
+      return this.pageInfo.count > 1000
+        ? s__('Geo|1000+ Registries')
+        : n__('Geo|%d Registry', 'Geo|%d Registries', this.pageInfo.count);
     },
   },
   created() {
@@ -237,6 +249,8 @@ export default {
           'Geo|Review replication status, and resynchronize and reverify items with the primary site.',
         )
       "
+      list-count-icon="earth"
+      :list-count-text="humanizedPageCount"
       :listbox-header-text="s__('Geo|Select replicable type')"
       :active-listbox-item="activeReplicableType"
       :active-filtered-search-filters="activeFilteredSearchFilters"

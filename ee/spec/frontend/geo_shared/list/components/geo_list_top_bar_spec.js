@@ -1,3 +1,4 @@
+import { GlIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
@@ -34,6 +35,8 @@ describe('GeoListTopBar', () => {
   const findFilteredSearch = () => wrapper.findComponent(GeoListFilteredSearchBar);
   const findBulkActions = () => wrapper.findComponent(GeoListBulkActions);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findListCount = () => wrapper.findByTestId('list-count');
+  const findListCountIcon = () => wrapper.findComponent(GlIcon);
 
   describe('GeoListFilteredSearchBar', () => {
     beforeEach(() => {
@@ -71,6 +74,25 @@ describe('GeoListTopBar', () => {
     it('renders with correct props and text', () => {
       expect(findPageHeading().props('heading')).toBe(defaultProps.pageHeadingTitle);
       expect(findPageHeading().text()).toContain(defaultProps.pageHeadingDescription);
+    });
+  });
+
+  describe.each`
+    description                               | props                                                        | showText | showIcon
+    ${'when no count is provided'}            | ${null}                                                      | ${false} | ${false}
+    ${'when count is provided without icon'}  | ${{ listCountText: '1000 Results' }}                         | ${true}  | ${false}
+    ${'when both count and icon is provided'} | ${{ listCountIcon: 'earth', listCountText: '1000 Results' }} | ${true}  | ${true}
+  `('list count $description', ({ props, showText, showIcon }) => {
+    beforeEach(() => {
+      createComponent({ props });
+    });
+
+    it(`${showText ? 'does' : 'does not'} render the list count text`, () => {
+      expect(findListCount().exists()).toBe(showText);
+    });
+
+    it(`${showIcon ? 'does' : 'does not'} render the list count icon`, () => {
+      expect(findListCountIcon().exists()).toBe(showIcon);
     });
   });
 
