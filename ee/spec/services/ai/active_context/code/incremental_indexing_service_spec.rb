@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category: :global_search do
+RSpec.describe Ai::ActiveContext::Code::IncrementalIndexingService, feature_category: :global_search do
   let_it_be(:collection) { create(:ai_active_context_collection) }
   let_it_be(:project) { create(:project) }
-  let_it_be_with_reload(:repository) { create(:ai_active_context_code_repository, state: :pending, project: project) }
+  let_it_be_with_reload(:repository) { create(:ai_active_context_code_repository, state: :ready, project: project) }
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
 
@@ -27,7 +27,7 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
     subject(:execute) { described_class.execute(repository) }
 
     it 'calls the indexer with a block and tracks refs for each id as it processes' do
-      expect(repository.state).to eq('pending')
+      expect(repository.state).to eq('ready')
 
       expect(Ai::ActiveContext::Code::Indexer).to receive(:run!) do |repo, &block|
         expect(repo).to eq(repository)
@@ -36,19 +36,17 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
       end
 
       expect(::Ai::ActiveContext::Collections::Code).to receive(:track_refs!)
-        .with(hashes: ['hash1'], routing: repository.project_id)
+                                                          .with(hashes: ['hash1'], routing: repository.project_id)
       expect(::Ai::ActiveContext::Collections::Code).to receive(:track_refs!)
-        .with(hashes: ['hash2'], routing: repository.project_id)
+                                                          .with(hashes: ['hash2'], routing: repository.project_id)
 
-      expect(logger).to receive(:info).with(build_log_payload('code_indexing_in_progress')).ordered
       expect(logger).to receive(:info).with(
         build_log_payload('set_highest_enqueued_item', initial_indexing_last_queued_item: 'hash2')
       ).ordered
-      expect(logger).to receive(:info).with(build_log_payload('embedding_indexing_in_progress')).ordered
 
       execute
 
-      expect(repository.state).to eq('embedding_indexing_in_progress')
+      expect(repository.state).to eq('ready')
       expect(repository.initial_indexing_last_queued_item).to eq('hash2')
     end
 
@@ -61,12 +59,12 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
 
       it 'sets the repository to failed and passes the error on' do
         expect(logger).to receive(:error).with(
-          build_log_payload('failed', last_error: error.message)
+          build_log_payload('incremental indexing failed', last_error: error.message)
         )
 
         expect { execute }.to raise_error(error)
 
-        expect(repository.state).to eq('failed')
+        expect(repository.state).to eq('ready')
         expect(repository.last_error).to eq(error.message)
       end
     end

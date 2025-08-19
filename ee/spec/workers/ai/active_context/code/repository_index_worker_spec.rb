@@ -15,24 +15,46 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
     before do
       allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
       allow(Ai::ActiveContext::Code::InitialIndexingService).to receive(:execute)
+      allow(Ai::ActiveContext::Code::IncrementalIndexingService).to receive(:execute)
     end
 
     context 'when ActiveContext indexing is enabled' do
       context 'with a valid pending repository' do
+        before do
+          repository.pending!
+        end
+
         it 'calls InitialIndexingService.execute with the repository' do
           worker.perform(repository.id)
 
           expect(Ai::ActiveContext::Code::InitialIndexingService).to have_received(:execute).with(repository)
+          expect(Ai::ActiveContext::Code::IncrementalIndexingService).not_to have_received(:execute).with(repository)
         end
       end
 
-      context 'with a repository that is not pending' do
-        let_it_be(:ready_repository) { create(:ai_active_context_code_repository, state: :ready) }
+      context 'with a valid ready repository' do
+        before do
+          repository.ready!
+        end
 
-        it 'does not call InitialIndexingService.execute' do
-          worker.perform(ready_repository.id)
+        it 'calls IncrementalIndexingService.execute' do
+          worker.perform(repository.id)
 
           expect(Ai::ActiveContext::Code::InitialIndexingService).not_to have_received(:execute)
+          expect(Ai::ActiveContext::Code::IncrementalIndexingService).to have_received(:execute).with(repository)
+        end
+      end
+
+      context 'with a valid repository that is not pending or ready' do
+        before do
+          repository.failed!
+        end
+
+        it 'does not call any indexing service' do
+          expect(Ai::ActiveContext::Code::InitialIndexingService).not_to receive(:execute)
+          expect(Ai::ActiveContext::Code::IncrementalIndexingService).not_to receive(:execute)
+
+          worker.perform(repository.id)
         end
       end
 
@@ -48,6 +70,7 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
     context 'when indexing is disabled' do
       before do
         allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
+        repository.pending!
       end
 
       it 'does not call InitialIndexingService.execute' do
@@ -63,6 +86,7 @@ RSpec.describe Ai::ActiveContext::Code::RepositoryIndexWorker, feature_category:
       let(:lease_key) { "Ai::ActiveContext::Code::RepositoryIndexWorker/#{repository.id}" }
 
       before do
+        repository.pending!
         stub_exclusive_lease_taken(lease_key, timeout: described_class::LEASE_TTL)
       end
 
