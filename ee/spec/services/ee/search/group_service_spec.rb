@@ -301,34 +301,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         expect(service.use_zoekt?).to be(true)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
-
-      context 'when zoekt_search_api is disabled' do
-        before do
-          stub_feature_flags(zoekt_search_api: false)
-        end
-
-        it 'does not search with Zoekt' do
-          expect(service.use_zoekt?).to be(false)
-          expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
-        end
-
-        context 'when search_type is zoekt' do
-          let(:service) do
-            described_class.new(user, group,
-              search: 'foobar',
-              scope: scope,
-              page: page,
-              source: source,
-              search_type: 'zoekt'
-            )
-          end
-
-          it 'searches with Zoekt' do
-            expect(service.use_zoekt?).to be(true)
-            expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
-          end
-        end
-      end
     end
 
     context 'when feature flag disable_zoekt_search_for_saas is enabled' do
