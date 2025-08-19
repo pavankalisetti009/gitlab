@@ -5655,6 +5655,29 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '.public_or_visible_to_user' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:role) { create(:admin_member_role, :read_admin_projects, user: user) }
+
+    let_it_be(:private_authorized_project) { create(:project, :private, creator: user) }
+    let_it_be(:private_unauthorized_project) { create(:project, :private) } # project the user is not a member of
+    let_it_be(:internal_project) { create(:project, :internal) }
+    let_it_be(:public_project) { create(:project, :public) }
+
+    subject(:projects) { described_class.all.public_or_visible_to_user(user) }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+      enable_admin_mode!(user)
+    end
+
+    it 'returns all projects' do
+      expect(projects).to match_array(
+        [private_authorized_project, private_unauthorized_project, internal_project, public_project]
+      )
+    end
+  end
+
   describe 'auto_duo_code_review_enabled cascading' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }

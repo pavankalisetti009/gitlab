@@ -1,0 +1,10 @@
+---
+name: custom_ability_read_admin_projects
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557844
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201581
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/561997
+milestone: '18.4'
+group: group::authorization
+type: beta
+default_enabled: false

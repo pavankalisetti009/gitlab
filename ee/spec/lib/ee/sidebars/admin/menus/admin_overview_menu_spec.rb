@@ -54,6 +54,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminOverviewMenu, feature_category: :nav
       :read_admin_users       | [_('Dashboard'), _('Users')]
       :read_admin_monitoring  | [_('Dashboard'), _('Gitaly servers')]
       :read_admin_groups      | [_('Dashboard'), _('Groups')]
+      :read_admin_projects    | [_('Dashboard'), _('Projects')]
     end
 
     with_them do
