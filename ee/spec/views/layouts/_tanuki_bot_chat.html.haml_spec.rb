@@ -40,18 +40,6 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
     end
   end
 
-  context 'when duo_workflow_workhorse feature flag is disabled' do
-    before do
-      stub_feature_flags(duo_workflow_workhorse: false)
-    end
-
-    it 'does not render agentic' do
-      render
-
-      expect(rendered).not_to have_css("#js-duo-agentic-chat-app[data-project-id='#{project.to_global_id}']")
-    end
-  end
-
   it 'includes the root_namespace_id in the data attributes' do
     render
 

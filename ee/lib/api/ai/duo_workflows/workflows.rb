@@ -187,8 +187,6 @@ module API
             end
 
             get :ws do
-              forbidden! if Feature.disabled?(:duo_workflow_workhorse, current_user)
-
               authorize_feature_flag!
 
               require_gitlab_workhorse!

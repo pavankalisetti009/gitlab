@@ -27,18 +27,6 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
       expect(rendered).to have_selector('.js-tanuki-bot-chat-toggle[aria-label="GitLab Duo Chat"]')
     end
 
-    context 'when duo_workflow_workhorse feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_workflow_workhorse: false)
-      end
-
-      it 'renders the Duo Chat and Duo Agentic Chat button with correct aria-label' do
-        render
-
-        expect(rendered).to have_selector('.js-tanuki-bot-chat-toggle[aria-label="GitLab Duo Chat"]')
-      end
-    end
-
     context 'when duo agentic chat is not available' do
       before do
         allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(false)

@@ -814,18 +814,6 @@ expires_at: duo_workflow_service_token_expires_at })
         end
       end
 
-      context 'when duo_workflow_workhorse feature flag is disabled' do
-        before do
-          stub_feature_flags(duo_workflow_workhorse: false)
-        end
-
-        it 'is forbidden' do
-          get api(path, user), headers: workhorse_headers
-
-          expect(response).to have_gitlab_http_status(:forbidden)
-        end
-      end
-
       context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
         before do
           stub_feature_flags(duo_workflow: false)
