@@ -4,6 +4,9 @@ module Mutations
   module Security
     module Finding
       class RefreshFindingTokenStatus < BaseMutation
+        # We will deprecate this mutation in 18.3
+        # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200878#note_2694064620
+
         graphql_name 'RefreshFindingTokenStatus'
 
         include Gitlab::Graphql::Authorize::AuthorizeResource

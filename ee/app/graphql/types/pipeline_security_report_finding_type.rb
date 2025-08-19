@@ -103,8 +103,9 @@ module Types
 
     field :finding_token_status, Types::Vulnerabilities::FindingTokenStatusType,
       null: true,
-      description: 'Status of the secret token associated with this vulnerability.',
-      resolver: Resolvers::Vulnerabilities::FindingTokenStatusResolver
+      description: 'Status of the secret token associated with this finding. ' \
+        'Returns `null` if the `validity_checks_security_finding_status` feature flag is disabled.',
+      resolver: Resolvers::Security::FindingTokenStatusResolver
 
     field :issue_links,
       type: ::Types::Vulnerability::IssueLinkType.connection_type,
