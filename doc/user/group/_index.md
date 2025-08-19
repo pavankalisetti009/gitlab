@@ -270,7 +270,7 @@ This action adds a background job to mark a group for deletion. On GitLab.com, t
 you can modify the retention period through the [instance settings](../../administration/settings/visibility_and_access_controls.md#deletion-protection).
 
 If the user who scheduled the group deletion loses access to the group (for example, by leaving the group, having their role downgraded, or being banned from the group) before the deletion occurs,
-the deletion job will instead restore and unarchive the group, so the group will no longer be scheduled for deletion.
+the deletion job will instead restore the group, so the group will no longer be scheduled for deletion.
 
    {{< alert type="warning" >}}
 
@@ -299,8 +299,9 @@ Groups that are marked for deletion are labeled **Pending deletion**.
 
 {{< history >}}
 
-- Enabled delayed deletion by default and removed the option to delete immediately [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
+- Enabled delayed deletion by default [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
 - [Moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
+- Deleting a group immediately once it's scheduled for deletion is not allowed anymore in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
 
 {{< /history >}}
 
