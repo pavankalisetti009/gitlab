@@ -48,11 +48,7 @@ module GitlabSubscriptions
     private
 
     def create_params
-      params.permit(
-        *::Onboarding::StatusPresenter::GLM_PARAMS,
-        :company_name, :first_name, :last_name, :phone_number,
-        :country, :state, :new_group_name, :namespace_id
-      ).with_defaults(organization_id: Current.organization.id).to_h
+      form_params.with_defaults(organization_id: Current.organization.id).to_h
     end
 
     def form_params

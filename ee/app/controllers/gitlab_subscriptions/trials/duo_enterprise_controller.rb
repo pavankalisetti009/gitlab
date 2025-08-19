@@ -37,6 +37,39 @@ module GitlabSubscriptions
       end
 
       def create
+        if [
+          GitlabSubscriptions::Trials::DuoEnterpriseCreateService::FULL,
+          GitlabSubscriptions::Trials::DuoEnterpriseCreateService::RESUBMIT_LEAD,
+          GitlabSubscriptions::Trials::DuoEnterpriseCreateService::RESUBMIT_TRIAL
+        ].include?(general_params[:step])
+          new_create
+        else
+          legacy_create
+        end
+      end
+
+      private
+
+      def new_create
+        result = GitlabSubscriptions::Trials::DuoEnterpriseCreateService.new(
+          step: general_params[:step], params: create_params, user: current_user
+        ).execute
+
+        if result.success?
+          # lead and trial created
+          flash[:success] = success_flash_message(result.payload[:add_on_purchase])
+
+          redirect_to group_settings_gitlab_duo_path(result.payload[:namespace])
+        elsif result.reason == GitlabSubscriptions::Trials::DuoEnterpriseCreateService::NOT_FOUND
+          render_404
+        else
+          render GitlabSubscriptions::Trials::DuoEnterprise::CreationFailureComponent.new(
+            params: form_params, result: result
+          )
+        end
+      end
+
+      def legacy_create
         @result = GitlabSubscriptions::Trials::CreateDuoEnterpriseService.new(
           step: general_params[:step], lead_params: lead_params, trial_params: trial_params, user: current_user
         ).execute
@@ -53,31 +86,27 @@ module GitlabSubscriptions
           # namespace not found/not permitted to create
           render_404
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD_FAILED
-
-          render GitlabSubscriptions::Trials::DuoEnterprise::LeadFormWithErrorsComponent
-                   .new(
-                     user: current_user,
-                     namespace_id: general_params[:namespace_id],
-                     eligible_namespaces: eligible_namespaces,
-                     submit_path: trial_submit_path,
-                     form_params: lead_form_params,
-                     errors: @result.errors,
-                     reason: @result.reason
-                   )
-
+          render GitlabSubscriptions::Trials::DuoEnterprise::LeadFormWithErrorsComponent.new(
+            user: current_user,
+            namespace_id: general_params[:namespace_id],
+            eligible_namespaces: eligible_namespaces,
+            submit_path: trial_submit_path,
+            form_params: lead_form_params,
+            errors: @result.errors,
+            reason: @result.reason
+          )
         else
           # trial creation failed
           params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
-          render GitlabSubscriptions::Trials::DuoEnterprise::LegacyTrialFormWithErrorsComponent
-                           .new(eligible_namespaces: eligible_namespaces,
-                             params: trial_params,
-                             errors: @result.errors,
-                             reason: @result.reason)
+          render GitlabSubscriptions::Trials::DuoEnterprise::LegacyTrialFormWithErrorsComponent.new(
+            eligible_namespaces: eligible_namespaces,
+            params: trial_params,
+            errors: @result.errors,
+            reason: @result.reason
+          )
         end
       end
-
-      private
 
       def eligible_namespaces
         Users::AddOnTrialEligibleNamespacesFinder.new(current_user, add_on: :duo_enterprise).execute
@@ -99,6 +128,10 @@ module GitlabSubscriptions
 
       def trial_params
         params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id).to_h
+      end
+
+      def create_params
+        form_params.to_h.symbolize_keys
       end
 
       def form_params
