@@ -16,8 +16,6 @@ module Gitlab
       end
 
       def self.agentic_mode_available?(user:, project:, group:)
-        return false unless Feature.enabled?(:duo_workflow_workhorse, user)
-
         if project.present? && project.persisted?
           user.can?(:access_duo_agentic_chat, project)
         elsif group.present? && group.persisted?

@@ -60,110 +60,98 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     let_it_be(:project) { create(:project) }
     let_it_be(:group) { create(:group) }
 
-    context 'when duo_workflow_workhorse feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_workflow_workhorse: false)
+    context 'with a persisted project' do
+      context 'when user can access duo agentic chat for project' do
+        before do
+          allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(true)
+        end
+
+        it 'returns true' do
+          expect(described_class.agentic_mode_available?(user: user, project: project, group: nil)).to be(true)
+        end
       end
 
-      it 'returns false regardless of user permissions' do
-        expect(described_class.agentic_mode_available?(user: user, project: project, group: nil)).to be(false)
+      context 'when user cannot access duo agentic chat for project' do
+        before do
+          allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(false)
+        end
+
+        it 'returns false' do
+          expect(described_class.agentic_mode_available?(user: user, project: project, group: nil)).to be(false)
+        end
       end
     end
 
-    context 'when duo_workflow_workhorse feature flag is enabled' do
-      context 'with a persisted project' do
-        context 'when user can access duo agentic chat for project' do
-          before do
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(true)
-          end
-
-          it 'returns true' do
-            expect(described_class.agentic_mode_available?(user: user, project: project, group: nil)).to be(true)
-          end
-        end
-
-        context 'when user cannot access duo agentic chat for project' do
-          before do
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(false)
-          end
-
-          it 'returns false' do
-            expect(described_class.agentic_mode_available?(user: user, project: project, group: nil)).to be(false)
-          end
-        end
-      end
-
-      context 'with a persisted group' do
-        context 'when user can access duo agentic chat for group' do
-          before do
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(true)
-          end
-
-          it 'returns true' do
-            expect(described_class.agentic_mode_available?(user: user, project: nil, group: group)).to be(true)
-          end
-        end
-
-        context 'when user cannot access duo agentic chat for group' do
-          before do
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(false)
-          end
-
-          it 'returns false' do
-            expect(described_class.agentic_mode_available?(user: user, project: nil, group: group)).to be(false)
-          end
-        end
-      end
-
-      context 'with both project and group present' do
-        context 'when user can access duo agentic chat for project' do
-          before do
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(true)
-          end
-
-          it 'prioritizes project and returns true' do
-            expect(described_class.agentic_mode_available?(user: user, project: project, group: group)).to be(true)
-          end
-        end
-
-        context 'when user cannot access duo agentic chat for project but can for group' do
-          before do
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(false)
-            allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(true)
-          end
-
-          it 'prioritizes project and returns false' do
-            expect(described_class.agentic_mode_available?(user: user, project: project, group: group)).to be(false)
-          end
-        end
-      end
-
-      context 'with non-persisted project' do
-        let(:non_persisted_project) { build(:project) }
-
+    context 'with a persisted group' do
+      context 'when user can access duo agentic chat for group' do
         before do
           allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(true)
         end
 
-        it 'falls back to group check' do
-          expect(described_class.agentic_mode_available?(user: user, project: non_persisted_project,
-            group: group)).to be(true)
+        it 'returns true' do
+          expect(described_class.agentic_mode_available?(user: user, project: nil, group: group)).to be(true)
         end
       end
 
-      context 'with non-persisted group' do
-        let(:non_persisted_group) { build(:group) }
+      context 'when user cannot access duo agentic chat for group' do
+        before do
+          allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(false)
+        end
 
         it 'returns false' do
-          expect(described_class.agentic_mode_available?(user: user, project: nil,
-            group: non_persisted_group)).to be(false)
+          expect(described_class.agentic_mode_available?(user: user, project: nil, group: group)).to be(false)
+        end
+      end
+    end
+
+    context 'with both project and group present' do
+      context 'when user can access duo agentic chat for project' do
+        before do
+          allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(true)
+        end
+
+        it 'prioritizes project and returns true' do
+          expect(described_class.agentic_mode_available?(user: user, project: project, group: group)).to be(true)
         end
       end
 
-      context 'with nil project and nil group' do
-        it 'returns false' do
-          expect(described_class.agentic_mode_available?(user: user, project: nil, group: nil)).to be(false)
+      context 'when user cannot access duo agentic chat for project but can for group' do
+        before do
+          allow(user).to receive(:can?).with(:access_duo_agentic_chat, project).and_return(false)
+          allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(true)
         end
+
+        it 'prioritizes project and returns false' do
+          expect(described_class.agentic_mode_available?(user: user, project: project, group: group)).to be(false)
+        end
+      end
+    end
+
+    context 'with non-persisted project' do
+      let(:non_persisted_project) { build(:project) }
+
+      before do
+        allow(user).to receive(:can?).with(:access_duo_agentic_chat, group).and_return(true)
+      end
+
+      it 'falls back to group check' do
+        expect(described_class.agentic_mode_available?(user: user, project: non_persisted_project,
+          group: group)).to be(true)
+      end
+    end
+
+    context 'with non-persisted group' do
+      let(:non_persisted_group) { build(:group) }
+
+      it 'returns false' do
+        expect(described_class.agentic_mode_available?(user: user, project: nil,
+          group: non_persisted_group)).to be(false)
+      end
+    end
+
+    context 'with nil project and nil group' do
+      it 'returns false' do
+        expect(described_class.agentic_mode_available?(user: user, project: nil, group: nil)).to be(false)
       end
     end
   end
