@@ -23,15 +23,27 @@ RSpec.describe RemoteDevelopment::DevfileOperations::YamlParser, feature_categor
     )
   end
 
-  context "when devfile YAML cannot be loaded" do
+  context "when devfile YAML is not a Hash" do
     let(:devfile_path) { ".devfile.yaml" }
-    let(:devfile_yaml) { "invalid: yaml: boom" }
+    let(:devfile_yaml) { "StringWord" }
 
-    it "returns an err Result containing error details" do
+    it "returns an err Result containing parsing error" do
       message = result.unwrap_err
       expect(message).to be_a(RemoteDevelopment::Messages::DevfileYamlParseFailed)
       message.content => { details: String => error_details }
-      expect(error_details).to match(/Devfile YAML could not be parsed: .*mapping values are not allowed/i)
+      expect(error_details).to match(/type instead of 'Hash'/i)
+    end
+  end
+
+  context "when devfile YAML syntax is incorrect" do
+    let(:devfile_path) { ".devfile.yaml" }
+    let(:devfile_yaml) { "schemaVersion: 2.2.0\nc" }
+
+    it "returns an err Result containing SyntaxError" do
+      message = result.unwrap_err
+      expect(message).to be_a(RemoteDevelopment::Messages::DevfileYamlParseFailed)
+      message.content => { details: String => error_details }
+      expect(error_details).to match(/syntax error in the devfile YAML/i)
     end
   end
 
@@ -47,8 +59,20 @@ RSpec.describe RemoteDevelopment::DevfileOperations::YamlParser, feature_categor
       #       fails when we run "scripts/remote_development/run-smoke-test-suite.sh" . Hence, to keep the script
       #       functional until we fix the issue in https://gitlab.com/gitlab-org/gitlab/-/issues/546355 ,
       #       the regex match has been shortened.
-      expect(error_details).to match(/Devfile YAML could not be parsed: /i)
+      expect(error_details).to match(/Devfile YAML could not be converted to JSON/i)
       expect(actual_context).to eq(context)
+    end
+  end
+
+  context "when devfile can not be parsed" do
+    let(:devfile_path) { ".devfile.yaml" }
+    let(:devfile_yaml) { "x: &anchor\n  y: *anchor" }
+
+    it "returns an err Result containing StandardError" do
+      message = result.unwrap_err
+      expect(message).to be_a(RemoteDevelopment::Messages::DevfileYamlParseFailed)
+      message.content => { details: String => error_details }
+      expect(error_details).to match(/error parsing or loading the devfile/i)
     end
   end
 end
