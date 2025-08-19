@@ -130,6 +130,7 @@ describe('autocompleteDataSources when extensible reference filters enabled', ()
       snippets: buildUrl('snippets'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 
@@ -152,6 +153,7 @@ describe('autocompleteDataSources when extensible reference filters enabled', ()
       snippets: buildUrl('snippets'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 
@@ -179,6 +181,7 @@ describe('autocompleteDataSources when extensible reference filters enabled', ()
       iterations: buildUrl('iterations'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 
@@ -205,6 +208,7 @@ describe('autocompleteDataSources when extensible reference filters enabled', ()
       iterations: buildUrl('iterations'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 });
@@ -238,6 +242,7 @@ describe('autocompleteDataSources when extensible reference filters disabled', (
       snippets: buildUrl('snippets'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 
@@ -258,6 +263,7 @@ describe('autocompleteDataSources when extensible reference filters disabled', (
       snippets: buildUrl('snippets'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 
@@ -283,6 +289,7 @@ describe('autocompleteDataSources when extensible reference filters disabled', (
       iterations: buildUrl('iterations'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 
@@ -307,6 +314,7 @@ describe('autocompleteDataSources when extensible reference filters disabled', (
       iterations: buildUrl('iterations'),
       vulnerabilities: buildUrl('vulnerabilities'),
       wikis: buildUrl('wikis'),
+      statuses: true,
     });
   });
 });

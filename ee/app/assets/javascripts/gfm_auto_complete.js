@@ -233,14 +233,14 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
 
   setupAutoCompleteStatuses = ($input, defaultCallbacks) => {
     const instance = this;
-    const MEMBER_COMMAND = {
+    const STATUS_COMMAND = {
       STATUS: '/status',
     };
     let command = '';
     $input.atwho({
       at: '"',
       alias: STATUSES_ALIAS,
-      delay: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      alwaysHighlightFirst: true,
       searchKey: 'search',
       limit: 100,
       displayTpl(value) {
@@ -273,7 +273,7 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
 
           // Check if " is followed by '/status' command.
           command = subtextNodes.find((node) => {
-            if (Object.values(MEMBER_COMMAND).includes(node)) {
+            if (Object.values(STATUS_COMMAND).includes(node)) {
               return node;
             }
             return null;
@@ -296,7 +296,7 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
           return match && match.length ? match[1] : null;
         },
         filter() {
-          if (command === MEMBER_COMMAND.STATUS) {
+          if (command === STATUS_COMMAND.STATUS) {
             const { workItemFullPath, workItemTypeId } = this.$inputor
               .get(0)
               .closest('.js-gfm-wrapper').dataset;
