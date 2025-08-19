@@ -118,6 +118,24 @@ describe('VirtualRegistriesApi', () => {
     });
   });
 
+  describe('deleteMavenRegistryCache', () => {
+    it('deletes upstream cache entry', async () => {
+      const requestPath = 'virtual_registries/packages/maven/registries';
+      const registryId = '5';
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${registryId}/cache`;
+      const expectedParams = {
+        id: registryId,
+      };
+
+      mock.onDelete(expectedUrl).reply(HTTP_STATUS_OK, []);
+
+      const { data } = await VirtualRegistryApi.deleteMavenRegistryCache(expectedParams);
+
+      expect(data).toEqual([]);
+      expect(axios.delete).toHaveBeenCalledWith(expectedUrl);
+    });
+  });
+
   describe('deleteMavenUpstreamCache', () => {
     it('deletes upstream cache entry', async () => {
       const requestPath = 'virtual_registries/packages/maven/upstreams';
