@@ -53,11 +53,6 @@ module EE
         can?(:read_merge_request, @subject.target_project)
       end
 
-      with_scope :subject
-      condition(:custom_roles_allowed) do
-        subject&.project&.custom_roles_enabled?
-      end
-
       condition(:generate_commit_message_enabled) do
         subject.project.project_setting.duo_features_enabled?
       end
@@ -130,7 +125,7 @@ module EE
 
       rule { approval_rules_licence_enabled }.enable :create_merge_request_approval_rules
 
-      rule { custom_roles_allowed & role_enables_admin_merge_request }.policy do
+      rule { role_enables_admin_merge_request }.policy do
         enable :approve_merge_request
       end
 

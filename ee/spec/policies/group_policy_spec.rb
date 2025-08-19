@@ -3996,6 +3996,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let_it_be(:parent_group) { create(:group) }
     let_it_be(:group) { create(:group, parent: parent_group) }
     let_it_be(:resource) { parent_group }
+    let_it_be(:resource_parent) { resource.root_ancestor }
 
     let_it_be(:parent_group_member_guest) do
       create(
