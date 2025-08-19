@@ -40377,8 +40377,10 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectnamespacelinksnewcommenttemplate"></a>`newCommentTemplate` | [`[CommentTemplatePath!]`](#commenttemplatepath) | Namespace new_comment_template_paths. |
 | <a id="projectnamespacelinksnewproject"></a>`newProject` | [`String`](#string) | Namespace new_project. |
 | <a id="projectnamespacelinksnewworkitememailaddress"></a>`newWorkItemEmailAddress` | [`String`](#string) | Email address that can be used to create a new work item in this project. Returns null if incoming email is not configured. More details on how to configure incoming email is in this [documentation](https://docs.gitlab.com/administration/incoming_email/#set-it-up). |
+| <a id="projectnamespacelinksprojectimportjirapath"></a>`projectImportJiraPath` | [`String`](#string) | JIRA import path. |
 | <a id="projectnamespacelinksquickactionshelppath"></a>`quickActionsHelpPath` | [`String`](#string) | Help page path for quick actions. |
 | <a id="projectnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
+| <a id="projectnamespacelinksreleasespath"></a>`releasesPath` | [`String`](#string) | Project releases path. |
 | <a id="projectnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="projectnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
 | <a id="projectnamespacelinksuserexportemail"></a>`userExportEmail` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 18.3. **Status**: Experiment. User email for export CSV. Returns `null` for user namespaces. |
