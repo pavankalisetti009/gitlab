@@ -8,6 +8,9 @@ module EE
         include ::API::Helpers::Presentable
 
         expose :id, documentation: { type: "integer", example: 123 }
+        expose :work_item_id, documentation: {
+          type: "integer", example: 123, documentation: "ID of the corresponding work item for a legacy epic"
+        }
         expose :iid, documentation: { type: "integer", example: 123 }
         expose :color, documentation: { type: "string", example: "#1068bf" }
         expose :text_color, documentation: { type: "string", example: "#1068bf" }

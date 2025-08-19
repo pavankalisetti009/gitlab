@@ -64,6 +64,10 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
   end
   alias_method :due_date_is_fixed?, :start_date_is_fixed?
 
+  def work_item_id
+    epic.issue_id
+  end
+
   private
 
   def rollupable_dates
