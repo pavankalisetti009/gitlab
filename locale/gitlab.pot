@@ -72088,6 +72088,9 @@ msgstr ""
 msgid "WorkItemStatus|%{status_name} is not a valid status for this item."
 msgstr ""
 
+msgid "WorkItemStatus|Name"
+msgstr ""
+
 msgid "WorkItemStatus|Options could not be loaded for field: %{dropdownLabel}. Please try again."
 msgstr ""
 
@@ -73076,9 +73079,6 @@ msgid "WorkItem|Ticket"
 msgstr ""
 
 msgid "WorkItem|Time tracking"
-msgstr ""
-
-msgid "WorkItem|Title"
 msgstr ""
 
 msgid "WorkItem|To do"

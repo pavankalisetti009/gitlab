@@ -10,37 +10,115 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
 
   before do
     stub_licensed_features(work_item_status: true)
-    sign_in(maintainer)
   end
 
   context 'with root group' do
     context 'when user is authorized' do
-      it 'allows to configure statuses' do
+      it 'can add statuses' do
+        sign_in(maintainer)
         visit group_settings_issues_path(group)
 
         click_button('Edit statuses')
-
         within_testid('category-triage') do
           click_button('Add status')
-          fill_in 'status-name', with: 'Triage custom status'
+          fill_in 'Name', with: 'Triage custom status'
           click_button('Add description')
-          fill_in 'status-description', with: 'Deciding what to do with things'
+          fill_in 'Description', with: 'Deciding what to do with things'
           click_button('Save')
         end
 
-        wait_for_requests
+        click_button('Edit statuses')
+        within_testid('category-to_do') do
+          click_button('Add status')
+          fill_in 'Name', with: 'To do custom status'
+          click_button('Add description')
+          fill_in 'Description', with: 'Things to do'
+          click_button('Save')
+        end
 
-        expect(page).to have_content('Triage custom status')
+        within_testid('category-in_progress') do
+          click_button('Add status')
+          fill_in 'Name', with: 'In progress custom status'
+          click_button('Add description')
+          fill_in 'Description', with: 'Things in progress'
+          click_button('Save')
+        end
+
+        within_testid('category-done') do
+          click_button('Add status')
+          fill_in 'Name', with: 'Done custom status'
+          click_button('Add description')
+          fill_in 'Description', with: 'Things done'
+          click_button('Save')
+        end
+
+        within_testid('category-canceled') do
+          click_button('Add status')
+          fill_in 'Name', with: 'Canceled custom status'
+          click_button('Add description')
+          fill_in 'Description', with: 'Things canceled'
+          click_button('Save')
+        end
+
+        within_testid('lifecycle-container') do
+          expect(page).to have_text('Triage custom status')
+          expect(page).to have_text('To do custom status')
+          expect(page).to have_text('In progress custom status')
+          expect(page).to have_text('Done custom status')
+          expect(page).to have_text('Canceled custom status')
+        end
+      end
+
+      it 'can edit and remove statuses' do
+        sign_in(maintainer)
+        visit group_settings_issues_path(group)
+
+        click_button('Edit statuses')
+        within_testid('category-triage') do
+          click_button('Add status')
+          fill_in 'Name', with: 'Edit me'
+          click_button('Add description')
+          fill_in 'Description', with: 'Change is inevitable'
+          click_button('Save')
+        end
+
+        within_testid('lifecycle-container') do
+          expect(page).to have_text('Edit me')
+        end
+
+        click_button('Edit statuses')
+        within_testid('category-triage') do
+          click_button('More actions')
+          click_button('Edit status')
+          fill_in 'Name', with: 'Delete me'
+          click_button('Update')
+        end
+        click_button('Close', match: :first)
+
+        within_testid('lifecycle-container') do
+          expect(page).not_to have_text('Edit me')
+          expect(page).to have_text('Delete me')
+        end
+
+        click_button('Edit statuses')
+        within_testid('category-triage') do
+          click_button('More actions')
+          click_button('Remove status')
+        end
+        click_button('Remove')
+        click_button('Close', match: :first)
+
+        within_testid('lifecycle-container') do
+          expect(page).not_to have_text('Edit me')
+          expect(page).not_to have_text('Delete me')
+        end
       end
     end
 
     context 'when user is not authorized' do
-      before do
-        sign_in(developer)
-      end
-
       it 'returns 404' do
-        visit group_settings_issues_path(subgroup)
+        sign_in(developer)
+        visit group_settings_issues_path(group)
 
         expect(page).to have_content('404: Page not found')
       end
@@ -49,6 +127,7 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
 
   context 'with subgroup' do
     it 'returns 404' do
+      sign_in(maintainer)
       visit group_settings_issues_path(subgroup)
 
       expect(page).to have_content('404: Page not found')
