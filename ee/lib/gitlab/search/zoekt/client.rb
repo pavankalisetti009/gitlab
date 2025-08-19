@@ -49,6 +49,11 @@ module Gitlab
             return Gitlab::Search::Zoekt::Response.empty
           end
 
+          if !::Search::Zoekt.use_traversal_id_queries?(current_user) && targets.blank?
+            log_debug('No targets provided, returning empty response') if debug?
+            return Gitlab::Search::Zoekt::Response.empty
+          end
+
           if use_ast_search_payload?(current_user)
             payload = ::Search::Zoekt::SearchRequest.new(
               current_user: current_user,
