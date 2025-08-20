@@ -21,12 +21,14 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
 
   describe '#execute' do
     let(:project) { task.zoekt_repository.project }
+    let(:empty_repo) { false }
 
     before do
       allow(project).to receive(:archived?).and_return(true)
+      allow(::Search::Zoekt).to receive(:missing_repo?).with(project).and_return(empty_repo)
     end
 
-    it 'serializes the task' do
+    it 'serializes the task with GitalyConnectionInfo' do
       expect(execute_task[:name]).to eq(:index)
       expect(execute_task[:payload].keys).to contain_exactly(
         :GitalyConnectionInfo,
@@ -36,6 +38,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
         :Timeout,
         :Parallelism,
         :FileCountLimit,
+        :MissingRepo,
         :Metadata
       )
 
@@ -46,6 +49,40 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
       expect(meta[:repository_access_level]).to eq(project.repository_access_level.to_s)
       expect(meta[:forked]).to eq("f")
       expect(meta[:archived]).to eq("t")
+    end
+
+    it 'sets MissingRepo to false' do
+      expect(execute_task[:payload][:MissingRepo]).to be false
+    end
+
+    context 'when repo does not exist' do
+      let(:empty_repo) { true }
+
+      it 'serializes the task without GitalyConnectionInfo' do
+        expect(execute_task[:name]).to eq(:index)
+        expect(execute_task[:payload].keys).to contain_exactly(
+          :Callback,
+          :RepoId,
+          :FileSizeLimit,
+          :Timeout,
+          :Parallelism,
+          :FileCountLimit,
+          :MissingRepo,
+          :Metadata
+        )
+
+        meta = execute_task[:payload][:Metadata]
+        expect(meta[:project_id]).to eq(project.id.to_s)
+        expect(meta[:traversal_ids]).to eq(project.namespace_ancestry)
+        expect(meta[:visibility_level]).to eq(project.visibility_level.to_s)
+        expect(meta[:repository_access_level]).to eq(project.repository_access_level.to_s)
+        expect(meta[:forked]).to eq("f")
+        expect(meta[:archived]).to eq("t")
+      end
+
+      it 'sets MissingRepo to true' do
+        expect(execute_task[:payload][:MissingRepo]).to be true
+      end
     end
 
     context 'when local socket is used' do
@@ -75,6 +112,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
           :Force,
           :Parallelism,
           :FileCountLimit,
+          :MissingRepo,
           :Metadata
         )
       end
