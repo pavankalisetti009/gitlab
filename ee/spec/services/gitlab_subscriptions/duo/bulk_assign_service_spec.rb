@@ -418,6 +418,15 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
             end
           end
 
+          it 'does not call the worker when sm_duo_seat_assignment_email flag is off' do
+            stub_feature_flags(sm_duo_seat_assignment_email: false)
+
+            expect(::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker)
+              .not_to receive(:perform_async)
+
+            bulk_assign
+          end
+
           context 'when some users are invalid' do
             let(:bot_user) { create(:user, :bot) }
             let(:ghost_user) { create(:user, :ghost) }
