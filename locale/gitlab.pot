@@ -3486,7 +3486,7 @@ msgstr ""
 msgid "AccessTokens|No access tokens"
 msgstr ""
 
-msgid "AccessTokens|Not eligible to rotate token with access level higher than the user"
+msgid "AccessTokens|Not eligible to rotate tokens with permissions not held by the user"
 msgstr ""
 
 msgid "AccessTokens|Personal access tokens"
