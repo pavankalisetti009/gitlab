@@ -1,5 +1,9 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/src/charts';
+import {
+  GL_COLOR_THEME_GREEN_400,
+  GL_COLOR_THEME_INDIGO_600,
+} from '@gitlab/ui/src/tokens/build/js/tokens';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { TREND_STYLE_DESC, TREND_STYLE_NONE } from 'ee/analytics/dashboards/constants';
 import TrendLine from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/trend_line.vue';
@@ -31,7 +35,10 @@ describe('TrendLine', () => {
     });
 
     it('renders the default color gradient', () => {
-      expect(findSparkline().props('gradient')).toEqual(['#499767', '#5252B5']);
+      expect(findSparkline().props('gradient')).toEqual([
+        GL_COLOR_THEME_GREEN_400,
+        GL_COLOR_THEME_INDIGO_600,
+      ]);
     });
 
     it('passes the tooltipLabel to the sparkline', () => {
@@ -58,7 +65,10 @@ describe('TrendLine', () => {
     });
 
     it('reverses the default color gradient', () => {
-      expect(findSparkline().props('gradient')).toEqual(['#5252B5', '#499767']);
+      expect(findSparkline().props('gradient')).toEqual([
+        GL_COLOR_THEME_INDIGO_600,
+        GL_COLOR_THEME_GREEN_400,
+      ]);
     });
   });
 
