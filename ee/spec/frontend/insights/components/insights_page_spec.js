@@ -1,5 +1,5 @@
 import { GlEmptyState } from '@gitlab/ui';
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports

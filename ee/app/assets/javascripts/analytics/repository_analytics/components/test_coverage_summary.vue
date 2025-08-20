@@ -1,7 +1,7 @@
 <script>
 import emptyStateIllustrationUrl from '@gitlab/svgs/dist/illustrations/empty-state/empty-radar-md.svg?url';
 import { GlCard, GlSprintf, GlSkeletonLoader, GlPopover, GlEmptyState } from '@gitlab/ui';
-import { GlSingleStat, GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlSingleStat, GlAreaChart } from '@gitlab/ui/src/charts';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import {
   formatDate,

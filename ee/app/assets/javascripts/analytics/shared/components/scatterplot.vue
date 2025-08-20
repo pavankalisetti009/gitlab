@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script>
-import { GlDiscreteScatterChart } from '@gitlab/ui/dist/charts';
+import { GlDiscreteScatterChart } from '@gitlab/ui/src/charts';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
 import { scatterChartLineProps } from '../constants';

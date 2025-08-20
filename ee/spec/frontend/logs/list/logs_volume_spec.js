@@ -1,5 +1,5 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
-import { GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LogsVolume from 'ee/logs/list/logs_volume.vue';
 import { stubComponent } from 'helpers/stub_component';

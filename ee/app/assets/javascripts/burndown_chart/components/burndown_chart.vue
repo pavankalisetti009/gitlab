@@ -1,5 +1,5 @@
 <script>
-import { GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart } from '@gitlab/ui/src/charts';
 import { merge } from 'lodash';
 import dateFormat from '~/lib/dateformat';
 import { __, n__, s__, sprintf } from '~/locale';

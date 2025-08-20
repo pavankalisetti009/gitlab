@@ -1,4 +1,4 @@
-import { GlChartLegend, GlDiscreteScatterChart } from '@gitlab/ui/dist/charts';
+import { GlChartLegend, GlDiscreteScatterChart } from '@gitlab/ui/src/charts';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import StageScatterChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_scatter_chart.vue';

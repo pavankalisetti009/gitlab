@@ -1,4 +1,4 @@
-import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LineChart from 'ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue';
 import { stubComponent } from 'helpers/stub_component';

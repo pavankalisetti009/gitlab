@@ -1,5 +1,5 @@
 <script>
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { merge } from 'lodash';
 import { AREA_CHART_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
 import { formatVisualizationTooltipTitle, formatVisualizationValue } from './utils';

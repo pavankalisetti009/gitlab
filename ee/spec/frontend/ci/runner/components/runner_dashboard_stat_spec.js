@@ -1,4 +1,4 @@
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import { INSTANCE_TYPE, GROUP_TYPE } from '~/ci/runner/constants';

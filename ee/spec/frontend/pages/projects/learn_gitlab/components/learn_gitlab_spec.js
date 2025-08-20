@@ -1,5 +1,5 @@
 import { GlAlert } from '@gitlab/ui';
-import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
+import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';

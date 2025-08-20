@@ -1,4 +1,4 @@
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ObservabilityUsageChart from 'ee/usage_quotas/observability/components/observability_usage_chart.vue';
 import { stubComponent } from 'helpers/stub_component';

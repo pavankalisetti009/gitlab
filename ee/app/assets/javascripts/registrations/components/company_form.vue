@@ -1,6 +1,6 @@
 <script>
 import { GlForm, GlButton, GlFormFields } from '@gitlab/ui';
-import { formValidators } from '@gitlab/ui/dist/utils';
+import { formValidators } from '@gitlab/ui/src/utils';
 import {
   COUNTRIES_WITH_STATES_ALLOWED,
   LEADS_COMPANY_NAME_LABEL,

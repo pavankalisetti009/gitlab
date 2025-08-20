@@ -1,4 +1,4 @@
-import { GlBarChart } from '@gitlab/ui/dist/charts';
+import { GlBarChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import BarChart from 'ee/analytics/analytics_dashboards/components/visualizations/bar_chart.vue';
 

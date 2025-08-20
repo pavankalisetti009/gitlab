@@ -1,5 +1,5 @@
 <script>
-import { GlHeatmap } from '@gitlab/ui/dist/charts';
+import { GlHeatmap } from '@gitlab/ui/src/charts';
 import { s__ } from '~/locale';
 import { formatDate, convertNanoToMs } from '~/lib/utils/datetime_utility';
 

@@ -1,6 +1,6 @@
 import { nextTick } from 'vue';
 import { GlLink } from '@gitlab/ui';
-import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import { stubComponent } from 'helpers/stub_component';
 import OpenVulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';

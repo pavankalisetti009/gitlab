@@ -1,4 +1,4 @@
-import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { nextTick } from 'vue';
 import MetricsLineChart from 'ee/metrics/details/metrics_line_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';

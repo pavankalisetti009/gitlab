@@ -1,5 +1,5 @@
 import { GlAvatar, GlIcon } from '@gitlab/ui';
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import UsageOverview from 'ee/analytics/analytics_dashboards/components/visualizations/usage_overview.vue';

@@ -1,5 +1,5 @@
 <script>
-import { GlDiscreteScatterChart } from '@gitlab/ui/dist/charts';
+import { GlDiscreteScatterChart } from '@gitlab/ui/src/charts';
 import { s__, __ } from '~/locale';
 import { convertNanoToMs } from '~/lib/utils/datetime_utility';
 

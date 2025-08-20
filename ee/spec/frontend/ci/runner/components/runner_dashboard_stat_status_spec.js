@@ -1,5 +1,5 @@
 import { GlIcon } from '@gitlab/ui';
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { INSTANCE_TYPE, GROUP_TYPE, STATUS_ONLINE, STATUS_OFFLINE } from '~/ci/runner/constants';
 import RunnerDashboardStat from 'ee/ci/runner/components/runner_dashboard_stat.vue';

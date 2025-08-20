@@ -3,7 +3,7 @@ import Vue, { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import axios from '~/lib/utils/axios_utils';
 import IssuesAnalyticsChart from 'ee/issues_analytics/components/issues_analytics_chart.vue';
 import IssuesAnalyticsEmptyState from 'ee/issues_analytics/components/issues_analytics_empty_state.vue';

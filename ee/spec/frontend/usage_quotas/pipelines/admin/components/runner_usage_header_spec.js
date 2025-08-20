@@ -1,4 +1,4 @@
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import RunnerUsageHeader from 'ee/usage_quotas/pipelines/admin/components/runner_usage_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 

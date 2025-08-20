@@ -4,7 +4,7 @@ import {
   GlLineChart,
   GlStackedColumnChart,
   GlChartSeriesLabel,
-} from '@gitlab/ui/dist/charts';
+} from '@gitlab/ui/src/charts';
 
 import { isNumber } from 'lodash';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';

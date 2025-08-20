@@ -1,4 +1,4 @@
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { groupUsageDataByYear } from 'ee/usage_quotas/pipelines/namespace/utils';
 import SharedRunnerUsageMonthChart from 'ee/usage_quotas/pipelines/namespace/components/shared_runner_usage_month_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';

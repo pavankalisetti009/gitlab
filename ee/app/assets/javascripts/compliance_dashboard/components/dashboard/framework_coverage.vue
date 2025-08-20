@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlEmptyState } from '@gitlab/ui';
-import { GlChart } from '@gitlab/ui/dist/charts';
+import { GlChart } from '@gitlab/ui/src/charts';
 
 import { GL_LIGHT } from '~/constants';
 import { s__, sprintf } from '~/locale';

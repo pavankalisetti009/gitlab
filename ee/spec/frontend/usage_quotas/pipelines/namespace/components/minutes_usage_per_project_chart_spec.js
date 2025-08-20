@@ -1,4 +1,4 @@
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import {
   Y_AXIS_PROJECT_LABEL,
   Y_AXIS_SHARED_RUNNER_LABEL,

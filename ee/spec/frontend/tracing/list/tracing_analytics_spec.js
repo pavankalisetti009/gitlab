@@ -1,4 +1,4 @@
-import { GlLineChart, GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlColumnChart } from '@gitlab/ui/src/charts';
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingAnalytics from 'ee/tracing/list/tracing_analytics.vue';

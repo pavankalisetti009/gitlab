@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlBarChart } from '@gitlab/ui/dist/charts';
+import { GlBarChart } from '@gitlab/ui/src/charts';
 
 import { GL_LIGHT } from '~/constants';
 import StatusChart from 'ee/compliance_dashboard/components/dashboard/components/status_chart.vue';

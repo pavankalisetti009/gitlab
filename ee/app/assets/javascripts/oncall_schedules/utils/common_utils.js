@@ -54,7 +54,7 @@ import {
   GL_COLOR_DATA_ORANGE_800,
   GL_COLOR_DATA_ORANGE_900,
   GL_COLOR_DATA_ORANGE_950,
-} from '@gitlab/ui/dist/tokens/build/js/tokens';
+} from '@gitlab/ui/src/tokens/build/js/tokens';
 import { darkModeEnabled } from '~/lib/utils/color_utils';
 import { newDate } from '~/lib/utils/datetime_utility';
 import {

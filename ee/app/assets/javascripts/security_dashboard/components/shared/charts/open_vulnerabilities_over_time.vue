@@ -1,7 +1,7 @@
 <script>
 import { camelCase } from 'lodash';
 import { GlLink } from '@gitlab/ui';
-import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
 import { COLORS } from 'ee/security_dashboard/components/shared/vulnerability_report/constants';
 

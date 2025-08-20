@@ -1,4 +1,4 @@
-import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
+import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports

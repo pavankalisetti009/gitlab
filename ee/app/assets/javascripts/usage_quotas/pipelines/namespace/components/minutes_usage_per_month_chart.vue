@@ -1,5 +1,5 @@
 <script>
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import {
   USAGE_BY_MONTH,

@@ -1,6 +1,6 @@
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
-import { GlStackedColumnChart } from '@gitlab/ui/dist/charts';
+import { GlStackedColumnChart } from '@gitlab/ui/src/charts';
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';

@@ -1,5 +1,5 @@
 <script>
-import { GlLineChart, GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlColumnChart } from '@gitlab/ui/src/charts';
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';

@@ -1,7 +1,7 @@
 <script>
 import { GlFormGroup, GlFormInput, GlTooltipDirective, GlFormCheckbox } from '@gitlab/ui';
 
-import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
+import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
 import { debounce } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';

@@ -1,4 +1,4 @@
-import { GRAY_500 } from '@gitlab/ui/dist/tokens/build/js/tokens';
+import { GRAY_500 } from '@gitlab/ui/src/tokens/build/js/tokens';
 
 export const LENGTH_ENUM = {
   hours: 'HOURS',

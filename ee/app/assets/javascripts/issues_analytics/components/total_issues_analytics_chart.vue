@@ -1,6 +1,6 @@
 <script>
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
-import { GlStackedColumnChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlStackedColumnChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, n__, sprintf, __ } from '~/locale';
 import { isValidDate, differenceInMonths } from '~/lib/utils/datetime_utility';

@@ -1,5 +1,5 @@
 <script>
-import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import merge from 'lodash/merge';
 
 import {

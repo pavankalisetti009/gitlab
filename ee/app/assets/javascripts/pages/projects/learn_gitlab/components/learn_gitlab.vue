@@ -1,6 +1,6 @@
 <script>
 import { GlSprintf, GlAlert, GlButton } from '@gitlab/ui';
-import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
+import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
 import eventHub from '~/invite_members/event_hub';
 import { s__, n__ } from '~/locale';
 import { getCookie, removeCookie, parseBoolean } from '~/lib/utils/common_utils';

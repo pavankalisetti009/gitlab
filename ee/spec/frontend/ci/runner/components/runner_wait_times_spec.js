@@ -1,5 +1,5 @@
 import { GlLink, GlLoadingIcon, GlSkeletonLoader, GlEmptyState } from '@gitlab/ui';
-import { GlSingleStat, GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlSingleStat, GlLineChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useFakeDate } from 'helpers/fake_date';
 import { stubComponent } from 'helpers/stub_component';

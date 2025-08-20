@@ -1,4 +1,4 @@
-import { GlSingleStat, GlSparklineChart } from '@gitlab/ui/dist/charts';
+import { GlSingleStat, GlSparklineChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SingleMetricTrend from 'ee/analytics/analytics_dashboards/components/visualizations/single_metric_trend.vue';
 

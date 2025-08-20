@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { GlIcon } from '@gitlab/ui';
 import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';

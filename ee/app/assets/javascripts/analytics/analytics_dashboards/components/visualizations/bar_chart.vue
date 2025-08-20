@@ -1,5 +1,5 @@
 <script>
-import { GlBarChart } from '@gitlab/ui/dist/charts';
+import { GlBarChart } from '@gitlab/ui/src/charts';
 
 export default {
   name: 'BarChart',

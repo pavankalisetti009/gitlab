@@ -8,7 +8,7 @@ import {
   GlIcon,
   GlAlert,
 } from '@gitlab/ui';
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions, mapGetters } from 'vuex';
 import { dateFormats } from '~/analytics/shared/constants';

@@ -1,6 +1,6 @@
 <script>
 import { GlSkeletonLoader, GlCard, GlLink, GlPopover } from '@gitlab/ui';
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { createAlert } from '~/alert';
 import { percent, percentHundred } from '~/lib/utils/unit_format';
 import { helpPagePath } from '~/helpers/help_page_helper';
