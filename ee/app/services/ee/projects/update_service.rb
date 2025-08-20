@@ -154,8 +154,6 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
-
-        ::Security::ScanResultPolicies::SyncProjectWorker.perform_async(project.id)
       end
 
       override :audit_topic_change

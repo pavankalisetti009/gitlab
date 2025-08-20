@@ -45,17 +45,6 @@ RSpec.describe ::Security::RefreshComplianceFrameworkSecurityPoliciesWorker, fea
     end
   end
 
-  it 'invokes Security::ProcessScanResultPolicyWorker with the project_id and configuration_id' do
-    expect(Security::ProcessScanResultPolicyWorker).to receive(:perform_async).once.with(project.id,
-      policy_configuration.id)
-    expect(Security::ProcessScanResultPolicyWorker).to receive(:perform_async).with(project.id,
-      project_policy_configuration.id)
-    expect(Security::ProcessScanResultPolicyWorker).not_to receive(:perform_async).with(project.id,
-      other_policy_configuration.id)
-
-    consume_event(subscriber: described_class, event: compliance_framework_changed_event)
-  end
-
   context 'with security_policies' do
     let_it_be(:security_policy) do
       create(:security_policy,

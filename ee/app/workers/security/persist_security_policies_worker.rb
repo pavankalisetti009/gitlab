@@ -29,8 +29,6 @@ module Security
         force_resync
       )
 
-      Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService.new(configuration).execute
-
       track_csp_usage(configuration)
 
       Security::CollectPoliciesLimitAuditEventsWorker.perform_async(configuration.id)

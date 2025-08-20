@@ -120,7 +120,6 @@ module EE
         configurations = group_security_orchestration_policy_configurations
 
         configurations.each do |configuration|
-          ::Security::ProcessScanResultPolicyWorker.perform_async(project.id, configuration.id)
           ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
         end
       end

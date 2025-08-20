@@ -4,7 +4,6 @@ module Security
   module ScanResultPolicy
     extend ActiveSupport::Concern
 
-    RULES_LIMIT = 5
     # Maximum limit that can be set via ApplicationSetting
     POLICIES_LIMIT = 20
 
