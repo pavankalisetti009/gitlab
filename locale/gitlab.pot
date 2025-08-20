@@ -4618,6 +4618,12 @@ msgstr ""
 msgid "AdminLabels|They can be used to categorize issues and merge requests."
 msgstr ""
 
+msgid "AdminMode|Learn more about authentication requirements: "
+msgstr ""
+
+msgid "AdminMode|Step-up authentication failed."
+msgstr ""
+
 msgid "AdminProjects| You’re about to permanently delete the project %{projectName}, its repository, and all related resources, including issues and merge requests. After you confirm and press %{strong_start}Delete project%{strong_end}, it cannot be undone or recovered."
 msgstr ""
 
@@ -62400,9 +62406,6 @@ msgid "Step 3."
 msgstr ""
 
 msgid "Step 4."
-msgstr ""
-
-msgid "Step-up auth not successful"
 msgstr ""
 
 msgid "Still loading…"
