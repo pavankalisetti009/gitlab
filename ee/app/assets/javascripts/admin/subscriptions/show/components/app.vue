@@ -152,8 +152,6 @@ export default {
         <gl-button
           category="secondary"
           variant="confirm"
-          icon="external-link"
-          target="_blank"
           data-testid="customers-portal-btn"
           :href="customersPortalUrl"
           >{{ $options.i18n.customersPortalBtnText }}
