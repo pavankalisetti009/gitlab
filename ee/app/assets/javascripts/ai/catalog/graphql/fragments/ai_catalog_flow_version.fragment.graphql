@@ -2,4 +2,12 @@
 
 fragment BaseAiCatalogFlowVersion on AiCatalogFlowVersion {
   ...BaseAiCatalogItemVersion
+  steps {
+    nodes {
+      agent {
+        id
+        name
+      }
+    }
+  }
 }

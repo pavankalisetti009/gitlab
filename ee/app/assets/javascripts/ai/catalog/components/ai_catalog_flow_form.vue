@@ -61,6 +61,7 @@ export default {
           projectId: tmpProjectId,
           name: '',
           description: '',
+          steps: [],
         };
       },
     },
@@ -130,6 +131,12 @@ export default {
             ),
           },
         },
+        steps: {
+          label: s__('AICatalog|Flow nodes'),
+          groupAttrs: {
+            labelDescription: s__('AICatalog|Nodes run sequentially.'),
+          },
+        },
       };
     },
   },
@@ -140,7 +147,7 @@ export default {
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
-        steps: [],
+        steps: this.formValues.steps.map((s) => ({ agentId: s.id })),
       };
       this.$emit('submit', transformedValues);
     },
@@ -209,8 +216,10 @@ export default {
             {{ visibilityLevelAlertText }}
           </gl-alert>
         </template>
+        <template #input(steps)>
+          <ai-catalog-steps-editor v-model="formValues.steps" class="gl-mb-4" />
+        </template>
       </gl-form-fields>
-      <ai-catalog-steps-editor class="gl-mb-4" />
       <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
         <gl-button
           class="js-no-auto-disable gl-w-full sm:gl-w-auto"

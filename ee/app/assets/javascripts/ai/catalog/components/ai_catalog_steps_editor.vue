@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlIcon, GlModal } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { fetchPolicies } from '~/lib/graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -11,8 +11,18 @@ export default {
   components: {
     AiCatalogNodeField,
     GlCollapsibleListbox,
-    GlIcon,
     GlModal,
+  },
+  model: {
+    prop: 'steps',
+    event: 'setSteps',
+  },
+  props: {
+    steps: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -52,6 +62,17 @@ export default {
       }
       return s__('AICatalog|Select agent');
     },
+    formattedSteps() {
+      return this.steps.map((agent) => ({
+        value: agent.id,
+        text: agent.name,
+      }));
+    },
+  },
+  mounted() {
+    if (this.formattedSteps.length > 0) {
+      [this.selectedAgent] = this.formattedSteps;
+    }
   },
   methods: {
     openAgentModal() {
@@ -59,6 +80,12 @@ export default {
     },
     selectAgent(agentId) {
       this.selectedAgent = this.aiCatalogAgents.find((agent) => agent.value === agentId);
+      this.$emit('setSteps', [
+        {
+          id: agentId,
+          name: this.selectedAgent.text,
+        },
+      ]);
     },
     onSearch: debounce(function debouncedSearch(searchTerm) {
       this.searchTerm = searchTerm;
@@ -72,10 +99,6 @@ export default {
 
 <template>
   <div>
-    <label id="flow-edit-steps" class="gl-font-bold" data-testid="flow-edit-steps">
-      <gl-icon name="diagram" />
-      {{ s__('AICatalog| Flow nodes (Coming soon)') }}
-    </label>
     <ai-catalog-node-field
       :selected="selectedAgent"
       aria-labelledby="flow-edit-steps"

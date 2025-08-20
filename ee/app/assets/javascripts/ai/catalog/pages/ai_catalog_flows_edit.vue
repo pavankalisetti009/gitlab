@@ -37,6 +37,10 @@ export default {
         name: this.flowName,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
+        steps: this.aiCatalogFlow.latestVersion.steps.nodes.map((s) => ({
+          id: s.agent.id,
+          name: s.agent.name,
+        })),
       };
     },
   },
@@ -45,7 +49,7 @@ export default {
       this.isSubmitting = true;
       this.resetErrorMessages();
       try {
-        const { name, description, public: publicValue } = input;
+        const { name, description, public: publicValue, steps } = input;
 
         const { data } = await this.$apollo.mutate({
           mutation: updateAiCatalogFlow,
@@ -55,6 +59,7 @@ export default {
               name,
               description,
               public: publicValue,
+              steps,
             },
           },
         });
