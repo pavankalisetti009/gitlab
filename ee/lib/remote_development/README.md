@@ -1388,6 +1388,9 @@ foo.save! # => A new agent version is created
 bar.reload.workspaces_agent_config # => workspaces_per_user_quota: 10
 ```
 
+### Adding a new config to the agent_config
+If a new attribute is added to `agent_config` all the older versions of agent_config stored in `workspaces_agent_config_version` must be backfilled to ensure the current flow does not break due to lack of value. 
+
 ## Using the DeclarativePolicy authorization framework
 
 ### DeclarativePolicy guidelines
