@@ -44,8 +44,7 @@ module Ai
       private
 
       def populate_organization
-        self.organization_id ||= user.organizations.first&.id ||
-          Organizations::Organization.first.id
+        self.organization_id ||= user.organization.id
       end
     end
   end

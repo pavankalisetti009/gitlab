@@ -75,22 +75,12 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
     describe 'before_create :populate_organization_id' do
       let_it_be(:organization) { create(:organization) }
 
-      let(:user) { create(:user, organizations: [organization]) }
+      let(:user) { create(:user, organization: organization) }
 
       it 'assigns organization_id from user organization' do
         thread = described_class.create!(user: user, conversation_type: :duo_chat)
 
-        expect(thread.organization_id).to eq(user.organizations.first.id)
-      end
-
-      context 'when user is not assigned to an organization' do
-        let(:user) { create(:user, organizations: []) }
-
-        it 'assigns organization_id from first found organization' do
-          thread = described_class.create!(user: user, conversation_type: :duo_chat)
-
-          expect(thread.organization_id).to eq(Organizations::Organization.first.id)
-        end
+        expect(thread.organization_id).to eq(user.organization.id)
       end
     end
   end

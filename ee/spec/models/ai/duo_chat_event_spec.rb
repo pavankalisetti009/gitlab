@@ -7,7 +7,7 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
 
   let(:attributes) { { event: 'request_duo_chat_response' } }
   let_it_be(:personal_namespace) { create(:namespace) }
-  let_it_be(:user) { create(:user, namespace: personal_namespace, organizations: [personal_namespace.organization]) }
+  let_it_be(:user) { create(:user, namespace: personal_namespace) }
 
   it_behaves_like 'common ai_usage_event'
 
@@ -71,7 +71,7 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,
                                                  personal_namespace_id: personal_namespace.id,
-                                                 organization_id: user.organizations.first.id
+                                                 organization_id: user.organization.id
                                                }.with_indifferent_access)
 
         event.store_to_pg

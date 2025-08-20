@@ -7,7 +7,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
 
   let(:attributes) { { event: 'troubleshoot_job' } }
   let_it_be(:namespace) { create(:namespace) }
-  let_it_be(:user) { create(:user, namespace: namespace, organizations: [namespace.organization]) }
+  let_it_be(:user) { create(:user, namespace: namespace) }
 
   it { is_expected.to belong_to(:user) }
 
@@ -124,7 +124,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
                                                  event: 'troubleshoot_job',
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,
-                                                 organization_id: user.organizations.first.id,
+                                                 organization_id: user.organization.id,
                                                  namespace_id: namespace.id,
                                                  extras: {}
                                                }.with_indifferent_access)
