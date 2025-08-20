@@ -2743,6 +2743,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: merge_requests_audit_update_status_check_response
+  :worker_name: MergeRequests::AuditUpdateStatusCheckResponseWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: merge_requests_capture_suggested_reviewers_accepted
   :worker_name: MergeRequests::CaptureSuggestedReviewersAcceptedWorker
   :feature_category: :code_review_workflow

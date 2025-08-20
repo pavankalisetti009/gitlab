@@ -11,6 +11,7 @@ module ExternalStatusChecks
       if last_response.update(retried_at: Time.current, status: 'pending')
         data = params[:merge_request].to_hook_data(current_user)
         rule.async_execute(data)
+        MergeRequests::StatusCheckResponses::AuditUpdateResponseService.new(last_response, current_user).execute
         ServiceResponse.success(payload: { rule: rule })
       else
         ServiceResponse.error(message: 'Failed to retry rule',
