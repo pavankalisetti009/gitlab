@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vulnerability_management do
+RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :security_asset_inventories do
   let_it_be(:root_group) { create(:group) }
   let_it_be(:group) { create(:group, parent: root_group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -154,34 +154,32 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
           it 'creates new records for analyzers in the pipeline with their aggregated types' do
             expect { execute }.to change { Security::AnalyzerProjectStatus.count }.from(0).to(8)
+            statuses_by_type = Security::AnalyzerProjectStatus.where(project: project).index_by(&:analyzer_type)
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast))
+            expect(statuses_by_type['sast'])
               .to have_attributes(status: 'success', build_id: sast_build.id)
 
-            expect(Security::AnalyzerProjectStatus
-              .find_by(project: project, analyzer_type: :container_scanning_pipeline_based))
+            expect(statuses_by_type['container_scanning_pipeline_based'])
               .to have_attributes(status: 'failed', build_id: container_scanning_build.id)
 
             # aggregated status
-            expect(Security::AnalyzerProjectStatus
-              .find_by(project: project, analyzer_type: :container_scanning))
+            expect(statuses_by_type['container_scanning'])
               .to have_attributes(status: 'failed')
 
-            expect(Security::AnalyzerProjectStatus
-              .find_by(project: project, analyzer_type: :secret_detection_pipeline_based))
+            expect(statuses_by_type['secret_detection_pipeline_based'])
               .to have_attributes(status: 'success', build_id: secret_detection_build.id)
 
             # aggregated status
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+            expect(statuses_by_type['secret_detection'])
               .to have_attributes(status: 'success')
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_iac))
+            expect(statuses_by_type['sast_iac'])
               .to have_attributes(status: 'success', build_id: kics_build.id)
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_advanced))
+            expect(statuses_by_type['sast_advanced'])
               .to have_attributes(status: 'success', build_id: advanced_sast_build.id)
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning))
+            expect(statuses_by_type['dependency_scanning'])
               .to have_attributes(status: 'failed', build_id: dependency_scanning_build.id)
           end
 
