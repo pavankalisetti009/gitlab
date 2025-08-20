@@ -90,17 +90,6 @@ module EE
         end
       end
 
-      override :build_user_params_for_non_admin
-      def build_user_params_for_non_admin
-        super
-
-        return unless params[:trial_registration]
-
-        experiment(:lightweight_trial_registration_redesign, actor: current_user) do |e|
-          e.candidate { @user_params[:name] = user_params[:username] } # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Needed to assign the user_params[:name] in the experiment block
-        end
-      end
-
       def scim_identity_attributes
         [:group_id, :extern_uid]
       end

@@ -56,9 +56,17 @@ class TrialRegistrationsController < RegistrationsController
 
   override :resource
   def resource
-    @resource ||= Users::AuthorizedBuildService.new(
-      current_user, sign_up_params.merge(organization_id: Current.organization.id, trial_registration: true)
-    ).execute
+    return @resource if @resource
+
+    params_for_build = sign_up_params.merge(organization_id: Current.organization.id, trial_registration: true)
+
+    experiment(:lightweight_trial_registration_redesign, actor: current_user) do |e|
+      e.candidate do
+        params_for_build[:name] = params_for_build[:username] if params_for_build[:username].present?
+      end
+    end
+
+    @resource = Users::AuthorizedBuildService.new(current_user, params_for_build).execute
   end
 
   override :preregistration_tracking_label
