@@ -1,6 +1,7 @@
 <script>
 import { GlIcon, GlTooltip, GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemLinkChildMetadata from '~/work_items/components/shared/work_item_link_child_metadata.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
@@ -31,7 +32,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [timeagoMixin],
+  mixins: [timeagoMixin, glFeatureFlagsMixin()],
   inject: ['hasIterationsFeature'],
   props: {
     reference: {
@@ -105,7 +106,14 @@ export default {
       return humanTimeframe(newDate(this.startDate), newDate(this.dueDate));
     },
     weightTooltip() {
-      return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC ? __('Issue weight') : __('Weight');
+      if (
+        !this.glFeatures.useCachedRolledUpWeights &&
+        this.workItemType === WORK_ITEM_TYPE_NAME_EPIC
+      ) {
+        return __('Issue weight');
+      }
+
+      return __('Weight');
     },
     isOverdue() {
       if (!this.dueDate) {
