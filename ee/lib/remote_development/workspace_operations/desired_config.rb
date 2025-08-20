@@ -20,6 +20,7 @@ module RemoteDevelopment
         detail_errors: true,
         size_limit: 64.kilobytes
       }
+      validates :desired_config_array, 'remote_development/desired_config_array': true
 
       # @param [DesiredConfig] other
       # @return [Boolean]

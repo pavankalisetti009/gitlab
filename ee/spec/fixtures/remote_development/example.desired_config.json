@@ -334,6 +334,39 @@
   },
   {
     "apiVersion": "v1",
+    "kind": "PersistentVolumeClaim",
+    "metadata": {
+      "annotations": {
+        "environment": "production",
+        "team": "engineering",
+        "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+        "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.dev.test",
+        "workspaces.gitlab.com/id": "993",
+        "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+      },
+      "creationTimestamp": null,
+      "labels": {
+        "app": "workspace",
+        "tier": "development",
+        "agent.gitlab.com/id": "991"
+      },
+      "name": "workspace-991-990-fedcba-gl-workspace-custom-pvc",
+      "namespace": "gl-rd-ns-991-990-fedcba"
+    },
+    "spec": {
+      "accessModes": [
+        "ReadWriteOnce"
+      ],
+      "resources": {
+        "requests": {
+          "storage": "50Gi"
+        }
+      }
+    },
+    "status": {}
+  },
+  {
+    "apiVersion": "v1",
     "automountServiceAccountToken": false,
     "imagePullSecrets": [
       {
