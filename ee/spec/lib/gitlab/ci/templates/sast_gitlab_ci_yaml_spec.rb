@@ -143,7 +143,7 @@ RSpec.describe 'SAST.gitlab-ci.yml', feature_category: :static_application_secur
           'ECMAScript Modules with advanced SAST'          | ['app.mjs']                    | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast]
           'C# with advanced SAST'                          | ['app.cs']                     | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast]
           'Ruby with advanced SAST'                        | ['config/routes.rb']           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast]
-          'PHP with advanced SAST'                         | ['app.php']                    | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast semgrep-sast]
+          'PHP with advanced SAST'                         | ['app.php']                    | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast]
           'Python and Ruby with advanced SAST'             | ['app.py', 'config/routes.rb'] | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast]
           'Python and Objective C with advanced SAST'      | ['app.py', 'app.m']            | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }  | %w[gitlab-advanced-sast semgrep-sast]
           'Python without advanced SAST'                   | ['app.py']                     | {}                                            | %w[semgrep-sast]
