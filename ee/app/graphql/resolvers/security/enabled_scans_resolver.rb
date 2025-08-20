@@ -11,10 +11,17 @@ module Resolvers
       def resolve(...)
         enabled_scans = ::Security::Scan.scan_types.transform_values { false }
         scans_in_pipeline.each { |scan_type| enabled_scans[scan_type] = true }
-        enabled_scans
+        enabled_scans.merge({ ready: ready })
       end
 
       private
+
+      def ready
+        !::Security::Scan
+          .by_pipeline_ids(pipeline_ids)
+          .processing
+          .exists?
+      end
 
       def scans_in_pipeline
         model.by_pipeline_ids(pipeline_ids).distinct_scan_types

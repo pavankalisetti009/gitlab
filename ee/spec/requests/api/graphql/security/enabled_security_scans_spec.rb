@@ -19,6 +19,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
       project(fullPath: $fullPath) {
         pipeline(iid: $pipelineIid) {
           enabledSecurityScans {
+            ready
             apiFuzzing
             clusterImageScanning
             containerScanning
@@ -29,6 +30,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
             secretDetection
           }
           enabledPartialSecurityScans {
+            ready
             apiFuzzing
             clusterImageScanning
             containerScanning
@@ -61,34 +63,43 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
       project.add_developer(user)
     end
 
-    it 'returns false for all fields when there are no scans' do
-      send_request
+    context 'when there are no scans' do
+      it 'returns false for all scanners' do
+        send_request
 
-      expect(enabled_scans).to eq({
-        'apiFuzzing' => false,
-        'clusterImageScanning' => false,
-        'containerScanning' => false,
-        'coverageFuzzing' => false,
-        'dast' => false,
-        'dependencyScanning' => false,
-        'sast' => false,
-        'secretDetection' => false
-      })
-      expect(enabled_partial_scans).to eq({
-        'apiFuzzing' => false,
-        'clusterImageScanning' => false,
-        'containerScanning' => false,
-        'coverageFuzzing' => false,
-        'dast' => false,
-        'dependencyScanning' => false,
-        'sast' => false,
-        'secretDetection' => false
-      })
+        expect(enabled_scans).to include(
+          'apiFuzzing' => false,
+          'clusterImageScanning' => false,
+          'containerScanning' => false,
+          'coverageFuzzing' => false,
+          'dast' => false,
+          'dependencyScanning' => false,
+          'sast' => false,
+          'secretDetection' => false
+        )
+        expect(enabled_partial_scans).to include(
+          'apiFuzzing' => false,
+          'clusterImageScanning' => false,
+          'containerScanning' => false,
+          'coverageFuzzing' => false,
+          'dast' => false,
+          'dependencyScanning' => false,
+          'sast' => false,
+          'secretDetection' => false
+        )
+      end
+
+      it 'indicates results are ready' do
+        send_request
+
+        expect(enabled_scans).to include('ready' => true)
+        expect(enabled_partial_scans).to include('ready' => true)
+      end
     end
 
     context 'when there are scans in the pipeline' do
-      let_it_be(:sast_scan) { create(:security_scan, pipeline: pipeline, scan_type: :sast) }
-      let_it_be(:dast_scan) { create(:security_scan, pipeline: pipeline, scan_type: :dast) }
+      let_it_be(:sast_scan) { create(:security_scan, status: :succeeded, pipeline: pipeline, scan_type: :sast) }
+      let_it_be(:dast_scan) { create(:security_scan, status: :succeeded, pipeline: pipeline, scan_type: :dast) }
       let_it_be(:sast_partial_scan) do
         create(:vulnerabilities_partial_scan, scan: sast_scan, pipeline: pipeline, scan_type: :sast)
       end
@@ -97,6 +108,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
         send_request
 
         expect(enabled_scans).to eq({
+          'ready' => true,
           'apiFuzzing' => false,
           'clusterImageScanning' => false,
           'containerScanning' => false,
@@ -107,6 +119,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
           'secretDetection' => false
         })
         expect(enabled_partial_scans).to eq({
+          'ready' => true,
           'apiFuzzing' => false,
           'clusterImageScanning' => false,
           'containerScanning' => false,
@@ -117,12 +130,27 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
           'secretDetection' => false
         })
       end
+
+      context 'when scan processing is not done yet' do
+        let!(:sast_scan) { create(:security_scan, status: status, pipeline: pipeline, scan_type: :sast) }
+
+        where(:status) { %i[created preparing] }
+
+        with_them do
+          it 'indicates results are not ready' do
+            send_request
+
+            expect(enabled_scans).to include('ready' => false)
+            expect(enabled_partial_scans).to include('ready' => false)
+          end
+        end
+      end
     end
 
     context 'when the scans are in a child pipeline' do
       let_it_be(:child_pipeline) { create(:ci_pipeline, child_of: pipeline) }
-      let_it_be(:sast_scan) { create(:security_scan, pipeline: child_pipeline, scan_type: :sast) }
-      let_it_be(:dast_scan) { create(:security_scan, pipeline: child_pipeline, scan_type: :dast) }
+      let_it_be(:sast_scan) { create(:security_scan, status: :succeeded, pipeline: child_pipeline, scan_type: :sast) }
+      let_it_be(:dast_scan) { create(:security_scan, status: :succeeded, pipeline: child_pipeline, scan_type: :dast) }
       let_it_be(:sast_partial_scan) do
         create(:vulnerabilities_partial_scan, scan: sast_scan, pipeline: child_pipeline, scan_type: :sast)
       end
@@ -131,6 +159,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
         send_request
 
         expect(enabled_scans).to eq({
+          'ready' => true,
           'apiFuzzing' => false,
           'clusterImageScanning' => false,
           'containerScanning' => false,
@@ -141,6 +170,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
           'secretDetection' => false
         })
         expect(enabled_partial_scans).to eq({
+          'ready' => true,
           'apiFuzzing' => false,
           'clusterImageScanning' => false,
           'containerScanning' => false,
@@ -150,6 +180,21 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
           'sast' => true,
           'secretDetection' => false
         })
+      end
+
+      context 'when scan processing is not done yet' do
+        let!(:sast_scan) { create(:security_scan, status: status, pipeline: child_pipeline, scan_type: :sast) }
+
+        where(:status) { %i[created preparing] }
+
+        with_them do
+          it 'indicates results are not ready' do
+            send_request
+
+            expect(enabled_scans).to include('ready' => false)
+            expect(enabled_partial_scans).to include('ready' => false)
+          end
+        end
       end
     end
   end
