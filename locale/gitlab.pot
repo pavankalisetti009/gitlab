@@ -25643,6 +25643,9 @@ msgstr ""
 msgid "Environment"
 msgstr ""
 
+msgid "Environment %{environment_name}"
+msgstr ""
+
 msgid "Environment scope"
 msgstr ""
 
