@@ -51,7 +51,7 @@ module Tasks
             **@context_defaults
           ))
           panels << Sidebars::Organizations::Panel.new(Sidebars::Context.new(
-            container: @user.organizations.first,
+            container: @user.organization,
             **@context_defaults
           ))
           panels << Sidebars::Admin::Panel.new(Sidebars::Context.new(
@@ -60,7 +60,7 @@ module Tasks
           ))
           panels << Sidebars::Explore::Panel.new(Sidebars::Context.new(
             container: nil,
-            current_organization: @user.organizations.first,
+            current_organization: @user.organization,
             **@context_defaults
           ))
 
