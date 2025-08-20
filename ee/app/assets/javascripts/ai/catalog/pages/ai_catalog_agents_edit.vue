@@ -100,7 +100,7 @@ export default {
       :error-messages="errorMessages"
       :initial-values="initialValues"
       :is-loading="isSubmitting"
-      @dismiss-error="resetErrorMessages"
+      @dismiss-errors="resetErrorMessages"
       @submit="handleSubmit"
     />
   </div>

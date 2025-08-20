@@ -76,7 +76,7 @@ describe('FlowTriggerForm', () => {
       expect(findErrorAlert().findAll('li')).toHaveLength(2);
     });
 
-    it('emits dismiss-error event', () => {
+    it('emits dismiss-errors event', () => {
       findErrorAlert().vm.$emit('dismiss');
 
       expect(wrapper.emitted('dismiss-errors')).toHaveLength(1);

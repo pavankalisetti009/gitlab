@@ -8,6 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_built_in_tools.query.graphql';
+import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
 
 import { mockToolQueryResponse, toolTitles } from '../mock_data';
 
@@ -17,7 +18,7 @@ describe('AiCatalogAgentForm', () => {
   let wrapper;
   let mockApollo;
 
-  const findErrorAlert = () => wrapper.findByTestId('agent-form-error-alert');
+  const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findProjectIdField = () => wrapper.findByTestId('agent-form-input-project-id');
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
@@ -38,6 +39,7 @@ describe('AiCatalogAgentForm', () => {
   const defaultProps = {
     mode: 'create',
     isLoading: false,
+    errorMessages: [],
   };
 
   const initialValues = {
@@ -68,12 +70,6 @@ describe('AiCatalogAgentForm', () => {
   };
 
   describe('Initial Rendering', () => {
-    it('does not render error alert', () => {
-      createWrapper();
-
-      expect(findErrorAlert().isVisible()).toBe(false);
-    });
-
     it('renders the form with the correct initial values when props are provided', () => {
       createWrapper({ initialValues, mode: 'edit' });
 
@@ -225,36 +221,14 @@ describe('AiCatalogAgentForm', () => {
       createWrapper({ errorMessages: [mockErrorMessage] });
     });
 
-    it('renders error alert', () => {
-      expect(findErrorAlert().text()).toBe(mockErrorMessage);
+    it('passes error alert', () => {
+      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage]);
     });
 
-    it('renders error alert with list for multiple errors', () => {
-      createWrapper({ errorMessages: ['error1', 'error2'] });
-
-      expect(findErrorAlert().findAll('li')).toHaveLength(2);
-    });
-
-    it('emits dismiss-error event', () => {
+    it('emits dismiss-errors event', () => {
       findErrorAlert().vm.$emit('dismiss');
 
-      expect(wrapper.emitted('dismiss-error')).toHaveLength(1);
-    });
-
-    it('scrolls to error alert when errorMessages are set', async () => {
-      const scrollIntoViewMock = jest.fn();
-      const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
-      HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
-      createWrapper();
-
-      await wrapper.setProps({ errorMessages: ['Error occurred'] });
-      await nextTick();
-
-      expect(scrollIntoViewMock).toHaveBeenCalledWith({
-        behavior: 'smooth',
-        block: 'center',
-      });
-      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      expect(wrapper.emitted('dismiss-errors')).toHaveLength(1);
     });
   });
 });

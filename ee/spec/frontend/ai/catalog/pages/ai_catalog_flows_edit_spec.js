@@ -133,7 +133,7 @@ describe('AiCatalogFlowsEdit', () => {
       });
 
       it('allows user to dismiss errors', async () => {
-        await findForm().vm.$emit('dismiss-error');
+        await findForm().vm.$emit('dismiss-errors');
 
         expect(findForm().props('errorMessages')).toEqual([]);
       });
