@@ -141,10 +141,13 @@ module EE
 
     override :sign_commits?
     def sign_commits?
-      return super unless ::Feature.enabled?(:use_web_based_commit_signing_enabled, project)
       return super unless ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing)
 
-      project.web_based_commit_signing_enabled
+      actor = project || group
+      return false unless actor
+      return super unless ::Feature.enabled?(:use_web_based_commit_signing_enabled, actor)
+
+      actor.web_based_commit_signing_enabled
     end
 
     def diverged?(branch_name, remote_ref)

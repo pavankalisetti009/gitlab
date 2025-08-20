@@ -426,9 +426,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
   end
 
   describe '#commit_files' do
-    let_it_be_with_refind(:project) { create(:project, :repository) }
-    let(:target_sha) { repository.commit('master').sha }
-    let(:user) { project.owner }
+    let(:target_sha) { repository.commit.sha }
     let(:expected_params) do
       [
         user, # user
@@ -481,15 +479,72 @@ RSpec.describe Repository, feature_category: :source_code_management do
       before do
         stub_saas_features(repositories_web_based_commit_signing: repositories_web_based_commit_signing)
         stub_feature_flags(use_web_based_commit_signing_enabled: use_web_based_commit_signing_enabled)
-        project.web_based_commit_signing_enabled = web_based_commit_signing_enabled
       end
 
-      it 'calls UserCommitFiles with the expected value for sign' do
-        expect_next_instance_of(Gitlab::GitalyClient::OperationService) do |client|
-          expect(client).to receive(:user_commit_files).with(*expected_params)
+      context 'when repository belongs to a project' do
+        let_it_be_with_refind(:project) { create(:project, :repository) }
+        let(:user) { project.owner }
+
+        before do
+          project.web_based_commit_signing_enabled = web_based_commit_signing_enabled
         end
 
-        commit_files
+        it 'calls UserCommitFiles with the expected value for sign' do
+          expect_next_instance_of(Gitlab::GitalyClient::OperationService) do |client|
+            expect(client).to receive(:user_commit_files).with(*expected_params)
+          end
+
+          commit_files
+        end
+      end
+
+      context 'when repository belongs to a group' do
+        let_it_be_with_refind(:group_wiki) { create(:group_wiki_repository) }
+        let_it_be(:group) { group_wiki.group }
+        let_it_be(:user) { create(:user, owner_of: group) }
+        let(:repository) { group_wiki.repository }
+        let(:target_sha) { Gitlab::Git::SHA1_BLANK_SHA }
+
+        before do
+          group.namespace_settings.update!(web_based_commit_signing_enabled: web_based_commit_signing_enabled)
+        end
+
+        it 'calls UserCommitFiles with the expected value for sign' do
+          expect_next_instance_of(Gitlab::GitalyClient::OperationService) do |client|
+            expect(client).to receive(:user_commit_files).with(*expected_params)
+          end
+
+          commit_files
+        end
+      end
+    end
+
+    context 'when repository does not belong to group or project' do
+      let_it_be_with_refind(:personal_snippet) { create(:personal_snippet, :repository) }
+      let(:user) { personal_snippet.author }
+      let(:repository) { personal_snippet.repository }
+      let(:target_sha) { repository.commit.sha }
+
+      where(:repositories_web_based_commit_signing, :use_web_based_commit_signing_enabled, :expected_sign) do
+        true  | true  | false
+        true  | false | false
+        false | true  | true
+        false | false | true
+      end
+
+      before do
+        stub_saas_features(repositories_web_based_commit_signing: repositories_web_based_commit_signing)
+        stub_feature_flags(use_web_based_commit_signing_enabled: use_web_based_commit_signing_enabled)
+      end
+
+      with_them do
+        it 'calls UserCommitFiles with the expected value for sign' do
+          expect_next_instance_of(Gitlab::GitalyClient::OperationService) do |client|
+            expect(client).to receive(:user_commit_files).with(*expected_params)
+          end
+
+          commit_files
+        end
       end
     end
   end
