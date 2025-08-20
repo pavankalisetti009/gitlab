@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`buildReplicableTypeQuery query fields shows correct fields when verification=false 1`] = `
-"query ($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum) {
+"query ($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum, $verificationState: VerificationStateEnum) {
   geoNode {
     designManagementRepositoryRegistries(
       first: $first
@@ -9,6 +9,7 @@ exports[`buildReplicableTypeQuery query fields shows correct fields when verific
       before: $before
       after: $after
       replicationState: $replicationState
+      verificationState: $verificationState
     ) {
       pageInfo {
         ...PageInfo
@@ -40,7 +41,7 @@ fragment PageInfo on PageInfo {
 `;
 
 exports[`buildReplicableTypeQuery query fields shows correct fields when verification=true 1`] = `
-"query ($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum) {
+"query ($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum, $verificationState: VerificationStateEnum) {
   geoNode {
     designManagementRepositoryRegistries(
       first: $first
@@ -48,6 +49,7 @@ exports[`buildReplicableTypeQuery query fields shows correct fields when verific
       before: $before
       after: $after
       replicationState: $replicationState
+      verificationState: $verificationState
     ) {
       pageInfo {
         ...PageInfo

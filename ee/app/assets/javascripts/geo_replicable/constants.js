@@ -69,30 +69,64 @@ export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
 
 export const GEO_FEEDBACK_BANNER_DISMISSED_KEY = 'geo_feedback_banner_dismissed';
 
-export const REPLICATION_STATUS_STATES = {
+const GEO_SHARED_STATUS_STATES = {
   PENDING: {
-    title: __('Pending'),
+    title: s__('Geo|Pending'),
     value: 'pending',
+    order: 0,
   },
   STARTED: {
-    title: __('Started'),
+    title: s__('Geo|Started'),
     value: 'started',
-  },
-  SYNCED: {
-    title: __('Synced'),
-    value: 'synced',
+    order: 1,
   },
   FAILED: {
-    title: __('Failed'),
+    title: s__('Geo|Failed'),
     value: 'failed',
+    order: 3,
+  },
+  UNKNOWN: {
+    title: s__('Geo|Unknown'),
+    value: null,
+    order: 5,
   },
 };
 
-export const REPLICATION_STATUS_STATES_ARRAY = Object.values(REPLICATION_STATUS_STATES);
+export const REPLICATION_STATUS_STATES = {
+  ...GEO_SHARED_STATUS_STATES,
+  SYNCED: {
+    title: s__('Geo|Synced'),
+    value: 'synced',
+    order: 2,
+  },
+};
+
+export const VERIFICATION_STATUS_STATES = {
+  ...GEO_SHARED_STATUS_STATES,
+  SUCCEEDED: {
+    title: s__('Geo|Succeeded'),
+    value: 'succeeded',
+    order: 2,
+  },
+  DISABLED: {
+    title: s__('Geo|Disabled'),
+    value: 'disabled',
+    order: 4,
+  },
+};
+
+export const REPLICATION_STATUS_STATES_ARRAY = Object.values(REPLICATION_STATUS_STATES).sort(
+  (a, b) => a.order - b.order,
+);
+
+export const VERIFICATION_STATUS_STATES_ARRAY = Object.values(VERIFICATION_STATUS_STATES).sort(
+  (a, b) => a.order - b.order,
+);
 
 export const TOKEN_TYPES = {
   REPLICABLE_TYPE: 'replicable_type',
   REPLICATION_STATUS: 'replication_status',
+  VERIFICATION_STATUS: 'verification_status',
 };
 
 export const FILTERED_SEARCH_TOKENS = [
@@ -104,6 +138,15 @@ export const FILTERED_SEARCH_TOKENS = [
     operators: OPERATORS_IS,
     unique: true,
     options: REPLICATION_STATUS_STATES_ARRAY,
+  },
+  {
+    title: s__('Geo|Verification status'),
+    type: TOKEN_TYPES.VERIFICATION_STATUS,
+    icon: 'check-circle',
+    token: GlFilteredSearchToken,
+    operators: OPERATORS_IS,
+    unique: true,
+    options: VERIFICATION_STATUS_STATES_ARRAY,
   },
 ];
 

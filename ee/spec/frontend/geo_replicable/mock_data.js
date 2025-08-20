@@ -108,3 +108,10 @@ export const MOCK_REPLICATION_STATUS_FILTER = {
     data: 'synced',
   },
 };
+
+export const MOCK_VERIFICATION_STATUS_FILTER = {
+  type: TOKEN_TYPES.VERIFICATION_STATUS,
+  value: {
+    data: 'succeeded',
+  },
+};

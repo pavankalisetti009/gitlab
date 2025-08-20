@@ -1,5 +1,5 @@
 import { pathSegments } from '~/lib/utils/url_utility';
-import { TOKEN_TYPES } from './constants';
+import { FILTERED_SEARCH_TOKENS, TOKEN_TYPES } from './constants';
 
 export const formatListboxItems = (items) => {
   return items.map((type) => ({
@@ -28,6 +28,15 @@ export const getReplicationStatusFilter = (data) => {
   };
 };
 
+export const getVerificationStatusFilter = (data) => {
+  return {
+    type: TOKEN_TYPES.VERIFICATION_STATUS,
+    value: {
+      data,
+    },
+  };
+};
+
 export const processFilters = (filters) => {
   // URL Structure: /admin/geo/sites/${SITE_ID}/replication/${REPLICABLE_TYPE}?${FILTERS}
   const url = new URL(window.location.href);
@@ -43,6 +52,10 @@ export const processFilters = (filters) => {
     if (filter.type === TOKEN_TYPES.REPLICATION_STATUS) {
       query[TOKEN_TYPES.REPLICATION_STATUS] = filter.value.data;
     }
+
+    if (filter.type === TOKEN_TYPES.VERIFICATION_STATUS) {
+      query[TOKEN_TYPES.VERIFICATION_STATUS] = filter.value.data;
+    }
   });
 
   return { query, url };
@@ -51,6 +64,7 @@ export const processFilters = (filters) => {
 export const getGraphqlFilterVariables = (filters) => {
   const variables = {
     replicationState: null,
+    verificationState: null,
   };
 
   variables.replicationState =
@@ -58,5 +72,18 @@ export const getGraphqlFilterVariables = (filters) => {
       .find(({ type }) => type === TOKEN_TYPES.REPLICATION_STATUS)
       ?.value?.data?.toUpperCase() || null;
 
+  variables.verificationState =
+    filters
+      .find(({ type }) => type === TOKEN_TYPES.VERIFICATION_STATUS)
+      ?.value?.data?.toUpperCase() || null;
+
   return variables;
+};
+
+export const getAvailableFilteredSearchTokens = (verificationEnabled) => {
+  if (verificationEnabled) {
+    return FILTERED_SEARCH_TOKENS;
+  }
+
+  return FILTERED_SEARCH_TOKENS.filter((filter) => filter.type !== TOKEN_TYPES.VERIFICATION_STATUS);
 };

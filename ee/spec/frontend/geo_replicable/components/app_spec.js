@@ -28,6 +28,7 @@ import {
   MOCK_REPLICABLE_CLASS,
   MOCK_REPLICABLE_TYPE_FILTER,
   MOCK_REPLICATION_STATUS_FILTER,
+  MOCK_VERIFICATION_STATUS_FILTER,
   MOCK_GRAPHQL_PAGINATION_DATA,
 } from '../mock_data';
 
@@ -36,7 +37,10 @@ const MOCK_PROCESSED_FILTERS = { query: MOCK_FILTERS, url: { href: 'mock-url/par
 const MOCK_UPDATED_URL = 'mock-url/params?foo=bar';
 
 const MOCK_BASE_LOCATION = `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}`;
-const MOCK_LOCATION_WITH_FILTERS = `${MOCK_BASE_LOCATION}?${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`;
+const MOCK_REPLICATION_STATUS_QUERY = `${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`;
+const MOCK_VERIFICATION_STATUS_QUERY = `${MOCK_VERIFICATION_STATUS_FILTER.type}=${MOCK_VERIFICATION_STATUS_FILTER.value.data}`;
+
+const MOCK_LOCATION_WITH_FILTERS = `${MOCK_BASE_LOCATION}?${MOCK_REPLICATION_STATUS_QUERY}&${MOCK_VERIFICATION_STATUS_QUERY}`;
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -117,7 +121,12 @@ describe('GeoReplicableApp', () => {
     },
   });
 
-  const createComponent = ({ handler, singleMutationHandler, bulkMutationHandler } = {}) => {
+  const createComponent = ({
+    provide,
+    handler,
+    singleMutationHandler,
+    bulkMutationHandler,
+  } = {}) => {
     const apolloQueryHandler = handler || MOCK_QUERY_HANDLER_WITH_DATA;
     const apolloSingleMutationHandler = singleMutationHandler || MOCK_SINGLE_MUTATION_HANDLER;
     const apolloBulkMutationHandler = bulkMutationHandler || MOCK_BULK_MUTATION_HANDLER;
@@ -132,6 +141,7 @@ describe('GeoReplicableApp', () => {
       apolloProvider,
       provide: {
         ...defaultProvide,
+        ...provide,
       },
     });
   };
@@ -246,19 +256,41 @@ describe('GeoReplicableApp', () => {
     });
 
     describe('when query is present', () => {
-      beforeEach(() => {
-        setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
+      describe('when verification is enabled', () => {
+        beforeEach(() => {
+          setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
 
-        createComponent();
+          createComponent();
+        });
+
+        it('renders top bar with correct listbox item and search filters including verification status', () => {
+          expect(findGeoListTopBar().props('activeListboxItem')).toBe(
+            MOCK_REPLICABLE_TYPE_FILTER.value,
+          );
+          expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([
+            MOCK_REPLICATION_STATUS_FILTER,
+            MOCK_VERIFICATION_STATUS_FILTER,
+          ]);
+        });
       });
 
-      it('renders top bar with correct listbox item and search filters', () => {
-        expect(findGeoListTopBar().props('activeListboxItem')).toBe(
-          MOCK_REPLICABLE_TYPE_FILTER.value,
-        );
-        expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([
-          MOCK_REPLICATION_STATUS_FILTER,
-        ]);
+      describe('when verification is disabled', () => {
+        beforeEach(() => {
+          setWindowLocation(MOCK_LOCATION_WITH_FILTERS);
+
+          createComponent({
+            provide: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: false } },
+          });
+        });
+
+        it('renders top bar with correct listbox item and search filters excluding verification status', () => {
+          expect(findGeoListTopBar().props('activeListboxItem')).toBe(
+            MOCK_REPLICABLE_TYPE_FILTER.value,
+          );
+          expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([
+            MOCK_REPLICATION_STATUS_FILTER,
+          ]);
+        });
       });
     });
   });
@@ -400,6 +432,10 @@ describe('GeoReplicableApp', () => {
       expect(processFilters).toHaveBeenCalledWith([
         { type: MOCK_REPLICABLE_TYPE_FILTER.type, value: MOCK_NEW_REPLICABLE_TYPE },
         { type: MOCK_REPLICATION_STATUS_FILTER.type, value: MOCK_REPLICATION_STATUS_FILTER.value },
+        {
+          type: MOCK_VERIFICATION_STATUS_FILTER.type,
+          value: MOCK_VERIFICATION_STATUS_FILTER.value,
+        },
       ]);
       expect(setUrlParams).toHaveBeenCalledWith(
         MOCK_PROCESSED_FILTERS.query,
