@@ -72,8 +72,7 @@ RSpec.describe 'getting AI catalog items', :with_current_organization, feature_c
 
     post_graphql(query, current_user: nil) # Warm up
 
-    create(:ai_catalog_item_version, item: catalog_item_1)
-    create(:ai_catalog_item_version, item: catalog_item_2)
+    expect(graphql_data_at(:ai_catalog_items, :nodes, :versions, :nodes).size).to eq(2)
 
     control_count = ActiveRecord::QueryRecorder.new do
       post_graphql(query, current_user: nil)

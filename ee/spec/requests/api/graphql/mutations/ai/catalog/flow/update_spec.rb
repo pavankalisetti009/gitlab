@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be_with_reload(:flow) { create(:ai_catalog_flow, :with_version, project: project) }
+  let_it_be_with_reload(:flow) { create(:ai_catalog_flow, project: project) }
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_flow_version, version: '1.1.0', item: flow) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_v1) { create(:ai_catalog_agent_version, version: '1.0.0', item: agent) }
@@ -59,7 +59,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
   end
 
   context 'when user does not have access to a step agent' do
-    let_it_be(:agent) { create(:ai_catalog_agent, :with_version) }
+    let_it_be(:agent) { create(:ai_catalog_agent) }
 
     it 'returns the service error message and item with original attributes' do
       original_name = flow.name

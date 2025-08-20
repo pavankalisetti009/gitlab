@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be_with_reload(:agent) { create(:ai_catalog_agent, :with_version, project: project) }
+  let_it_be_with_reload(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be_with_reload(:agent_version) { agent.versions.last }
 
   let(:current_user) { maintainer }
@@ -133,7 +133,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
   end
 
   context 'with mismatched agent type and agent version' do
-    let_it_be(:flow) { create(:ai_catalog_flow, :with_version, project: project) }
+    let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
     let_it_be(:flow_version) { flow.versions.last }
 
     context 'when a flow item is passed with an agent item version' do
@@ -171,7 +171,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     end
 
     context "when an agent is passed with a different agent's version" do
-      let_it_be(:other_agent) { create(:ai_catalog_agent, :with_version, project: project) }
+      let_it_be(:other_agent) { create(:ai_catalog_agent, project: project) }
       let_it_be(:other_agent_version) { other_agent.versions.last }
 
       let(:params) do

@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Delete, feature_category: :workflow
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be_with_reload(:flow) { create(:ai_catalog_flow, :with_version, project: project) }
+  let_it_be_with_reload(:flow) { create(:ai_catalog_flow, project: project) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_catalog_flow_delete, params) }

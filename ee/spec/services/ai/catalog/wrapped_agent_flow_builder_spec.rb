@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, feature_category: :duo_workflow do
   let_it_be(:organization) { create(:organization) }
   let_it_be(:project) { create(:project, organization: organization) }
-  let_it_be(:agent) { create(:ai_catalog_agent, :with_version, organization: organization, project: project) }
+  let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
 
   let(:builder) { described_class.new(agent, agent_version) }
@@ -20,7 +20,7 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
     end
 
     context 'when wrong item type is passed as agent' do
-      let(:flow) { build(:ai_catalog_flow, :with_version, organization: organization, project: project) }
+      let(:flow) { build(:ai_catalog_flow, organization: organization, project: project) }
       let(:flow_version) { flow.versions.last }
       let(:builder) { described_class.new(flow, flow_version) }
 
@@ -38,7 +38,7 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
     end
 
     context 'when agent_version does not belong to the agent' do
-      let(:other_agent) { build(:ai_catalog_agent, :with_version, organization: organization, project: project) }
+      let(:other_agent) { build(:ai_catalog_agent, organization: organization, project: project) }
       let(:other_agent_version) { other_agent.versions.last }
       let(:builder) { described_class.new(agent, other_agent_version) }
 

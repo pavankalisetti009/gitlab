@@ -31,6 +31,7 @@ module Ai
       def build_flow_from_agent
         @flow = build_flow_item
         flow_version = build_flow_version
+        @flow.latest_version = flow_version
         @flow.versions = [flow_version]
         @flow.readonly!
       end

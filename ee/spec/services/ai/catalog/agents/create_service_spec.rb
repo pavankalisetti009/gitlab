@@ -55,7 +55,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
         public: true,
         item_type: Ai::Catalog::Item::AGENT_TYPE.to_s
       )
-      expect(item.versions.first).to have_attributes(
+      expect(item.latest_version).to have_attributes(
         schema_version: 1,
         version: '1.0.0',
         release_date: Time.zone.now,
@@ -94,7 +94,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
         params[:name] = nil
       end
 
-      it_behaves_like 'an error response', ["Name can't be blank", 'Versions is invalid']
+      it_behaves_like 'an error response', ["Name can't be blank"]
     end
 
     context 'when user is a developer' do

@@ -24,7 +24,7 @@ module Ai
           latest_version.definition = latest_version.definition.merge(steps: steps) if params.key?(:steps)
           latest_version.schema_version = SCHEMA_VERSION if latest_version.definition_changed?
 
-          if latest_version.save
+          if flow.save
             track_ai_item_events('update_ai_catalog_item', flow.item_type)
             return ServiceResponse.success(payload: payload)
           end

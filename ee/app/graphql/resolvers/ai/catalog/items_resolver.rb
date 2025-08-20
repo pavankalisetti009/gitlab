@@ -34,9 +34,7 @@ module Resolvers
 
         def preloads
           {
-            versions: :versions,
-            # TODO: Optimize loading of latest version https://gitlab.com/gitlab-org/gitlab/-/issues/554673
-            latest_version: :latest_version
+            versions: :versions
           }
         end
       end

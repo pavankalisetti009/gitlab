@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be_with_reload(:agent) { create(:ai_catalog_item, :with_version, project: project) }
+  let_it_be_with_reload(:agent) { create(:ai_catalog_item, project: project) }
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_item_version, version: '1.1.0', item: agent) }
 
   let(:current_user) { maintainer }
@@ -100,7 +100,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       execute
 
       expect(graphql_dig_at(mutation_response, :item, :name)).to eq(original_name)
-      expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly("Item name can't be blank")
+      expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly("Name can't be blank")
     end
   end
 
@@ -113,7 +113,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       execute
 
       expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly(
-        "Schema version can't be blank", 'Definition unable to validate definition'
+        "Latest version schema version can't be blank", 'Latest version definition unable to validate definition'
       )
     end
   end
@@ -165,6 +165,8 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       latest_version.update!(release_date: Time.zone.now)
 
       execute
+
+      agent.reload
 
       expect(graphql_dig_at(mutation_response, :item, :latest_version)).not_to match(
         a_graphql_entity_for(latest_version)

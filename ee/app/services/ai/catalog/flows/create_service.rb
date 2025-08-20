@@ -27,7 +27,7 @@ module Ai
           }
 
           item = Ai::Catalog::Item.new(item_params)
-          item.versions.build(version_params)
+          item.build_new_version(version_params)
 
           if item.save
             track_ai_item_events('create_ai_catalog_item', item.item_type)
