@@ -5161,8 +5161,15 @@ CREATE TABLE p_knowledge_graph_tasks (
 )
 PARTITION BY LIST (partition_id);
 
+CREATE SEQUENCE sent_notifications_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE p_sent_notifications (
-    id bigint NOT NULL,
+    id bigint DEFAULT nextval('sent_notifications_id_seq'::regclass) NOT NULL,
     project_id bigint,
     noteable_id bigint,
     recipient_id bigint,
@@ -23836,20 +23843,11 @@ CREATE TABLE sent_notifications (
     commit_id character varying,
     reply_key character varying NOT NULL,
     in_reply_to_discussion_id character varying,
-    id bigint NOT NULL,
+    id bigint DEFAULT nextval('sent_notifications_id_seq'::regclass) NOT NULL,
     issue_email_participant_id bigint,
     created_at timestamp with time zone NOT NULL,
     namespace_id bigint NOT NULL
 );
-
-CREATE SEQUENCE sent_notifications_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE sent_notifications_id_seq OWNED BY sent_notifications.id;
 
 CREATE TABLE sentry_issues (
     id bigint NOT NULL,
@@ -28742,8 +28740,6 @@ ALTER TABLE ONLY p_knowledge_graph_enabled_namespaces ALTER COLUMN id SET DEFAUL
 
 ALTER TABLE ONLY p_knowledge_graph_replicas ALTER COLUMN id SET DEFAULT nextval('p_knowledge_graph_replicas_id_seq'::regclass);
 
-ALTER TABLE ONLY p_sent_notifications ALTER COLUMN id SET DEFAULT nextval('p_sent_notifications_id_seq'::regclass);
-
 ALTER TABLE ONLY packages_build_infos ALTER COLUMN id SET DEFAULT nextval('packages_build_infos_id_seq'::regclass);
 
 ALTER TABLE ONLY packages_conan_file_metadata ALTER COLUMN id SET DEFAULT nextval('packages_conan_file_metadata_id_seq'::regclass);
@@ -29045,8 +29041,6 @@ ALTER TABLE ONLY security_scans ALTER COLUMN id SET DEFAULT nextval('security_sc
 ALTER TABLE ONLY security_training_providers ALTER COLUMN id SET DEFAULT nextval('security_training_providers_id_seq'::regclass);
 
 ALTER TABLE ONLY security_trainings ALTER COLUMN id SET DEFAULT nextval('security_trainings_id_seq'::regclass);
-
-ALTER TABLE ONLY sent_notifications ALTER COLUMN id SET DEFAULT nextval('sent_notifications_id_seq'::regclass);
 
 ALTER TABLE ONLY sentry_issues ALTER COLUMN id SET DEFAULT nextval('sentry_issues_id_seq'::regclass);
 
