@@ -11,11 +11,7 @@ module QA
 
       it(
         'can delete a group wiki page',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/374707',
-        quarantine: {
-          type: :investigating,
-          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/561679"
-        }) do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/374707') do
         initial_wiki.visit!
 
         EE::Page::Group::Wiki::Show.perform(&:click_edit)
