@@ -142,16 +142,20 @@ module SecretsManagement
         # I have added specs to make sure the bound_audiences include the expected server_url in provision_service_spec.
         return if Rails.env.test?
 
-        # This is a temporary code to update the JWT bound_audiences in Staging and Production.
-        jwt = SecretsManagement::SecretsManagerJwt.new(
-          current_user: current_user,
-          project: project,
-          old_aud: 'openbao'
-        ).encoded
+        begin
+          secrets_manager_client.read_jwt_role('gitlab_rails_jwt', 'app')
+        rescue SecretsManagement::SecretsManagerClient::ConnectionError
+          # This is a temporary code to update the JWT bound_audiences in Staging and Production.
+          jwt = SecretsManagement::SecretsManagerJwt.new(
+            current_user: current_user,
+            project: project,
+            old_aud: 'openbao'
+          ).encoded
 
-        client = SecretsManagement::SecretsManagerClient.new(jwt: jwt)
+          client = SecretsManagement::SecretsManagerClient.new(jwt: jwt)
 
-        client.update_gitlab_rails_jwt_role(openbao_url: SecretsManagement::ProjectSecretsManager.server_url)
+          client.update_gitlab_rails_jwt_role(openbao_url: SecretsManagement::ProjectSecretsManager.server_url)
+        end
       end
 
       def activate_secrets_manager
