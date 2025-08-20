@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Ai::Catalog::FlowDefinition, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
-  let_it_be(:flow_item) { create(:ai_catalog_flow, :with_version) }
-  let_it_be(:agent_1) { create(:ai_catalog_agent, :with_version) }
-  let_it_be(:agent_2) { create(:ai_catalog_agent, :with_version) }
+  let_it_be(:flow_item) { create(:ai_catalog_flow) }
+  let_it_be(:agent_1) { create(:ai_catalog_agent) }
+  let_it_be(:agent_2) { create(:ai_catalog_agent) }
   let_it_be(:definition) do
     {
       'triggers' => [1],

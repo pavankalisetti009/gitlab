@@ -6,7 +6,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
-  let_it_be_with_reload(:catalog_item) { create(:ai_catalog_item, :with_version, project: project, public: true) }
+  let_it_be_with_reload(:catalog_item) { create(:ai_catalog_item, project: project, public: true) }
 
   let(:latest_version) { catalog_item.latest_version }
   let(:data) { graphql_data_at(:ai_catalog_item) }
@@ -144,7 +144,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   end
 
   context 'with a private catalog item' do
-    let_it_be(:catalog_item) { create(:ai_catalog_item, :with_version, project: project) }
+    let_it_be(:catalog_item) { create(:ai_catalog_item, project: project) }
 
     context 'when developer' do
       let(:current_user) do

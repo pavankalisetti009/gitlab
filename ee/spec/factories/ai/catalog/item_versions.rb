@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :ai_catalog_item_version, class: 'Ai::Catalog::ItemVersion' do
-    version { '1.0.0' }
+    version { FFaker::Number.unique.number(digits: 6).to_s.scan(/.{2}/).join('.') }
     schema_version { 1 }
     for_agent
     release_date { nil }
@@ -35,6 +35,12 @@ FactoryBot.define do
           ]
         }
       end
+    end
+
+    after(:create) do |version, _|
+      item = version.item
+      item.latest_version = version
+      item.save!
     end
   end
 end

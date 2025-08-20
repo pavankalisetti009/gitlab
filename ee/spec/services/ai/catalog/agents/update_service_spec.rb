@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
-  let_it_be_with_reload(:agent) { create(:ai_catalog_item, :with_version, public: false, project: project) }
+  let_it_be_with_reload(:agent) { create(:ai_catalog_item, public: false, project: project) }
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_item_version, version: '1.1.0', item: agent) }
 
   let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
@@ -188,13 +188,16 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
 
       describe 'updating the latest version schema version' do
         before do
-          stub_const('Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION', 987)
-          allow(agent).to receive(:latest_version).and_return(latest_version)
-          allow(latest_version).to receive(:json_schema_filename).and_return('agent_v1')
+          allow_next_instance_of(JsonSchemaValidator) do |validator|
+            allow(validator).to receive(:validate).and_return(true)
+          end
+
+          latest_version.update!(schema_version: 999)
         end
 
         it 'sets it to the current schema version' do
-          expect { execute_service }.to change { latest_version.reload.schema_version }.to(987)
+          expect { execute_service }.to change { latest_version.reload.schema_version }
+            .to(Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION)
         end
 
         context 'when the only change to the version is that it is being released' do
@@ -226,7 +229,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
           }
         end
 
-        it_behaves_like 'an error response', "Item name can't be blank"
+        it_behaves_like 'an error response', "Name can't be blank"
       end
 
       context 'when updated latest version is invalid' do
@@ -235,7 +238,8 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         end
 
         it_behaves_like 'an error response', [
-          "Schema version can't be blank", 'Definition unable to validate definition'
+          "Latest version schema version can't be blank",
+          'Latest version definition unable to validate definition'
         ]
       end
 

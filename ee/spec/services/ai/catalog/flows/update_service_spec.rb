@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
-  let_it_be_with_reload(:flow) { create(:ai_catalog_item, :with_version, item_type: :flow, project: project) }
+  let_it_be_with_reload(:flow) { create(:ai_catalog_item, item_type: :flow, project: project) }
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_flow_version, version: '1.1.0', item: flow) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:v1_0) { create(:ai_catalog_agent_version, item: agent, version: '1.0.0') }

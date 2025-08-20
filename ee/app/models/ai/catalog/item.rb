@@ -8,7 +8,7 @@ module Ai
 
       self.table_name = "ai_catalog_items"
 
-      validates :organization, :item_type, :description, :name, presence: true
+      validates :organization, :latest_version, :item_type, :description, :name, presence: true
 
       validates :name, length: { maximum: 255 }
       validates :description, length: { maximum: 1_024 }
@@ -18,12 +18,11 @@ module Ai
 
       belongs_to :organization, class_name: 'Organizations::Organization', optional: false
       belongs_to :project
+      belongs_to :latest_version, class_name: 'Ai::Catalog::ItemVersion', optional: false, autosave: true
 
       validate :organization_match
 
       has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
-      has_one :latest_version, -> { order(id: :desc) }, class_name: 'Ai::Catalog::ItemVersion',
-        foreign_key: :ai_catalog_item_id, inverse_of: :item
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
       scope :for_organization, ->(organization) { where(organization: organization) }
@@ -84,6 +83,12 @@ module Ai
           sanitized_prefix = sanitize_sql_like(pinned_version_prefix)
           # TODO: switch to VersionSorter https://gitlab.com/gitlab-org/gitlab/-/merge_requests/200213#note_2668488811
           versions.where('version LIKE ?', "#{sanitized_prefix}.%").order(id: :desc).first
+        end
+      end
+
+      def build_new_version(version_params)
+        versions.build(version_params).tap do |new_version|
+          self.latest_version = new_version
         end
       end
 

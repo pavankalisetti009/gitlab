@@ -101,8 +101,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
 
       expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to contain_exactly(
         "Description can't be blank",
-        "Name can't be blank",
-        "Versions is invalid"
+        "Name can't be blank"
       )
       expect(graphql_data_at(:ai_catalog_agent_create, :item)).to be_nil
     end
@@ -119,7 +118,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       public: true,
       item_type: Ai::Catalog::Item::AGENT_TYPE.to_s
     )
-    expect(item.versions.first).to have_attributes(
+    expect(item.latest_version).to have_attributes(
       schema_version: 1,
       release_date: Time.zone.now,
       version: '1.0.0',
@@ -160,7 +159,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
 
       item = Ai::Catalog::Item.last
 
-      expect(item.versions.first.definition['tools']).to eq([])
+      expect(item.latest_version.definition['tools']).to eq([])
     end
   end
 end

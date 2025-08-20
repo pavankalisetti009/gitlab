@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper, :aggregate_failures, feature_category: :duo_workflow do
   let_it_be(:project) { create(:project) }
-  let_it_be(:agent) { create(:ai_catalog_agent, :with_version, project: project) }
+  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
   let_it_be(:flow) { Ai::Catalog::WrappedAgentFlowBuilder.new(agent, agent_version).build }
   let_it_be(:flow_version) { flow.versions.last }

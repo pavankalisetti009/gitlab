@@ -19,15 +19,15 @@ module Ai
           agent_params = params.slice(*AGENT_ATTRIBUTES)
           agent.assign_attributes(agent_params)
 
-          version_to_update = prepare_version_to_update
+          prepare_version_to_update
 
-          # Changes to the agent record are also saved through version_to_update
-          if version_to_update.save
+          # Changes to the latest version record are also saved
+          if agent.save
             track_ai_item_events('update_ai_catalog_item', agent.item_type)
             return ServiceResponse.success(payload: payload)
           end
 
-          error(version_to_update.errors.full_messages, payload: payload)
+          error(agent.errors.full_messages, payload: payload)
         end
 
         private
@@ -86,7 +86,7 @@ module Ai
             version: calculate_next_version(latest_version)
           )
 
-          agent.versions.build(new_version_params)
+          agent.build_new_version(new_version_params)
         end
 
         def calculate_next_version(latest_version)

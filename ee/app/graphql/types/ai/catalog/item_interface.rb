@@ -41,6 +41,19 @@ module Types
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType
 
+        def latest_version
+          lazy_version = Gitlab::Graphql::Loaders::BatchModelLoader.new(
+            ::Ai::Catalog::ItemVersion,
+            object.latest_version_id
+          ).find
+
+          # `ItemVersion#item` is needed for `VersionInterface.resolve_type` and authorization checks.
+          # After batch loading, set the association in place to avoid further loading of `Item` records.
+          Gitlab::Graphql::Lazy.with_value(lazy_version) do |version|
+            version.tap { |v| v.item = object }
+          end
+        end
+
         def self.resolve_type(item, _context)
           RESOLVE_TYPES[item.item_type.to_sym] or raise "Unknown catalog item type: #{item.item_type}" # rubocop:disable Style/AndOr -- Syntax error when || is used
         end

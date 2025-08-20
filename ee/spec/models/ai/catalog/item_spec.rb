@@ -6,26 +6,17 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   describe 'associations' do
     it { is_expected.to belong_to(:organization).required }
     it { is_expected.to belong_to(:project).optional }
+    it { is_expected.to belong_to(:latest_version).required }
 
     it { is_expected.to have_many(:versions) }
     it { is_expected.to have_many(:consumers) }
-
-    it { is_expected.to have_one(:latest_version) }
-
-    describe '#latest_version' do
-      it 'returns the latest version' do
-        item = create(:ai_catalog_item, :with_version)
-        latest_version = create(:ai_catalog_item_version, item: item, version: '1.0.1')
-
-        expect(item.latest_version).to eq(latest_version)
-      end
-    end
   end
 
   describe 'validations' do
     it { expect(build(:ai_catalog_item)).to be_valid }
 
     it { is_expected.to validate_presence_of(:organization) }
+    it { is_expected.to validate_presence_of(:latest_version) }
     it { is_expected.to validate_presence_of(:item_type) }
     it { is_expected.to validate_presence_of(:description) }
     it { is_expected.to validate_presence_of(:name) }
@@ -260,7 +251,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     let(:version) { item.latest_version }
 
     context 'when item_type is agent' do
-      let(:item) { create(:ai_catalog_agent, :with_version) }
+      let(:item) { create(:ai_catalog_agent) }
 
       it 'returns an AgentDefinition instance' do
         result = item.definition(version.version)
@@ -276,7 +267,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
 
     context 'when item_type is flow' do
-      let(:item) { create(:ai_catalog_flow, :with_version) }
+      let(:item) { create(:ai_catalog_flow) }
 
       it 'returns a FlowDefinition instance' do
         result = item.definition(version.version)
@@ -361,6 +352,19 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       it 'resolves the correct version' do
         expect(item.resolve_version('1.1.0')).to eq(v1_1)
       end
+    end
+  end
+
+  describe '#build_new_versions' do
+    let(:item) { described_class.new }
+
+    it 'builds new versions, and sets #latest_version' do
+      item.build_new_version({ id: 1 })
+      item.build_new_version({ id: 2 })
+
+      expect(item.versions.size).to eq(2)
+      expect(item.latest_version).to be_present
+      expect(item.latest_version).to eq(item.versions.last)
     end
   end
 end

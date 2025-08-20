@@ -10,21 +10,21 @@ FactoryBot.define do
     factory :ai_catalog_flow, traits: [:flow]
 
     trait :agent do
-      item_type { 1 }
+      item_type { 'agent' }
     end
 
     trait :flow do
-      item_type { 2 }
+      item_type { 'flow' }
     end
 
-    trait :with_version do
-      after(:build) do |item|
-        version_factory = item.agent? ? :ai_catalog_agent_version : :ai_catalog_flow_version
-        item.versions = build_list(version_factory, 1)
-      end
+    versions do |item|
+      version_factory = "ai_catalog_#{item.item_type}_version"
+      build_list(version_factory, 1, item: nil)
     end
 
     after(:build) do |item, _|
+      item.latest_version ||= item.versions.first
+
       item.organization ||=
         # The ordering of Organizations by created_at does not match ordering by the id column.
         # This is because Organization::DEFAULT_ORGANIZATION_ID is 1, but in the specs the default

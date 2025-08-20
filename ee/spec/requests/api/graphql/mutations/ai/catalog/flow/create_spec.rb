@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be(:agent) { create(:ai_catalog_agent, :with_version, project: project) }
+  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_catalog_flow_create, params) }
@@ -71,8 +71,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
 
       expect(graphql_data_at(:ai_catalog_flow_create, :errors)).to contain_exactly(
         "Description can't be blank",
-        "Name can't be blank",
-        "Versions is invalid"
+        "Name can't be blank"
       )
       expect(graphql_data_at(:ai_catalog_flow_create, :item)).to be_nil
     end
@@ -88,7 +87,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       item_type: Ai::Catalog::Item::FLOW_TYPE.to_s,
       public: true
     )
-    expect(item.versions.first).to have_attributes(
+    expect(item.latest_version).to have_attributes(
       schema_version: 1,
       version: '1.0.0',
       definition: {

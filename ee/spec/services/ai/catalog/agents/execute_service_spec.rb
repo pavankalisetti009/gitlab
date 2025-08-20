@@ -6,7 +6,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:organization) { create(:organization) }
   let_it_be(:project) { create(:project, organization: organization, maintainers: maintainer) }
-  let_it_be(:agent) { create(:ai_catalog_agent, :with_version, organization: organization, project: project) }
+  let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
 
   let(:current_user) { maintainer }
@@ -68,7 +68,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
     end
 
     context 'when agent_version does not belong to the agent' do
-      let(:other_agent) { build(:ai_catalog_agent, :with_version, organization: organization, project: project) }
+      let(:other_agent) { build(:ai_catalog_agent, organization: organization, project: project) }
       let(:other_agent_version) { other_agent.versions.last }
       let(:service) { described_class.new(agent, other_agent_version, current_user) }
 

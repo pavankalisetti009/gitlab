@@ -27,7 +27,7 @@ module Ai
       validate :validate_readonly
 
       belongs_to :item, class_name: 'Ai::Catalog::Item',
-        foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false, autosave: true
+        foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false
       belongs_to :organization, class_name: 'Organizations::Organization'
 
       before_create :populate_organization

@@ -57,7 +57,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
         item_type: Ai::Catalog::Item::FLOW_TYPE.to_s,
         public: true
       )
-      expect(item.versions.first).to have_attributes(
+      expect(item.latest_version).to have_attributes(
         schema_version: 1,
         version: '1.0.0',
         definition: {
@@ -86,7 +86,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
         params[:name] = nil
       end
 
-      it_behaves_like 'an error response', ["Name can't be blank", 'Versions is invalid']
+      it_behaves_like 'an error response', ["Name can't be blank"]
     end
 
     context 'when including a pinned_version_prefix' do

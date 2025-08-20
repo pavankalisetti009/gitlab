@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Delete, feature_category: :workflo
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be_with_reload(:agent) { create(:ai_catalog_agent, :with_version, project: project) }
+  let_it_be_with_reload(:agent) { create(:ai_catalog_agent, project: project) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_catalog_agent_delete, params) }
