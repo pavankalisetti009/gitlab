@@ -22,8 +22,6 @@ module Security
         .security_orchestration_policy_configurations
         .with_security_policies.id_in(policy_configuration_ids)
         .find_each do |config|
-          Security::ProcessScanResultPolicyWorker.perform_async(project.id, config.id)
-
           config.security_policies.undeleted.find_each do |security_policy|
             Security::SecurityOrchestrationPolicies::SyncPolicyEventService.new(
               project: project,

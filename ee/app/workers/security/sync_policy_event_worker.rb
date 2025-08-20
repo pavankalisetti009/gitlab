@@ -62,8 +62,6 @@ module Security
         .security_orchestration_policy_configurations
         .with_security_policies.id_in(policy_configuration_ids)
         .find_each do |config|
-          Security::ProcessScanResultPolicyWorker.perform_async(project.id, config.id)
-
           config.security_policies.undeleted.pluck_primary_key.each do |security_policy_id|
             sync_project_policy(project, security_policy_id, event)
           end

@@ -15,14 +15,7 @@ module Security
       DELAY_INTERVAL = 30.seconds.to_i
 
       def perform(project_id)
-        project = Project.find_by_id(project_id)
-        return unless project
-
-        return unless project&.licensed_feature_available?(:security_orchestration_policies)
-
-        project.all_security_orchestration_policy_configurations.each_with_index do |configuration, index|
-          Security::ProcessScanResultPolicyWorker.perform_in(index * DELAY_INTERVAL, project.id, configuration.id)
-        end
+        # no-op - scan result policy processing via YAML was deprecated after issue https://gitlab.com/gitlab-org/gitlab/-/issues/543955
       end
     end
   end

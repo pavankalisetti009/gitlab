@@ -40,7 +40,6 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         end
 
         it 'does not sync rules' do
-          expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).not_to receive(:new)
           expect(Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
 
           handle_event
@@ -263,17 +262,6 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
           allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
         end
-      end
-
-      it 'invokes Security::ProcessScanResultPolicyWorker with the project_id and configuration_id' do
-        expect(Security::ProcessScanResultPolicyWorker).to receive(:perform_async).once.with(project.id,
-          policy_configuration.id)
-        expect(Security::ProcessScanResultPolicyWorker).to receive(:perform_async).with(project.id,
-          project_policy_configuration.id)
-        expect(Security::ProcessScanResultPolicyWorker).not_to receive(:perform_async).with(project.id,
-          other_policy_configuration.id)
-
-        consume_event(subscriber: described_class, event: compliance_framework_changed_event)
       end
 
       context 'with security_policies' do

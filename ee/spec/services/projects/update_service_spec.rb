@@ -812,24 +812,6 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
     end
   end
 
-  context "with security orchestration configuration" do
-    let!(:config) do
-      create(:security_orchestration_policy_configuration, project: project)
-    end
-
-    let(:worker) { Security::ScanResultPolicies::SyncProjectWorker }
-
-    before do
-      allow(project).to receive(:all_security_orchestration_policy_configurations).and_return([config])
-    end
-
-    it 'syncs scan result policies' do
-      expect(worker).to receive(:perform_async).with(project.id)
-
-      update_project(project, admin, default_branch: 'feature')
-    end
-  end
-
   describe 'when updating duo_features_enabled' do
     let_it_be(:project) { create(:project) }
     let_it_be(:service_account) { create(:user) }
