@@ -252,6 +252,26 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
           end
         end
 
+        context 'when promotion would reach the depth limit' do
+          let_it_be(:epic_issue) do
+            create(:epic_issue, :with_parent_link, epic: parent_epic, issue: issue)
+          end
+
+          before do
+            epic_type = WorkItems::Type.default_by_type(:epic)
+
+            WorkItems::HierarchyRestriction.where(parent_type: epic_type,
+              child_type: epic_type).update!(maximum_depth: 0)
+          end
+
+          it 'rejects promoting an issue to an epic' do
+            expect { service.execute(issue) }
+              .to not_change { Epic.count }
+              .and not_change { WorkItem.count }
+              .and raise_error(::Epics::IssuePromoteService::PromoteError, /reached maximum depth/)
+          end
+        end
+
         context 'when an issue belongs to an epic' do
           let_it_be(:epic_issue) do
             create(:epic_issue, :with_parent_link, epic: parent_epic, issue: issue)

@@ -9,6 +9,24 @@ module EE
 
           BATCH_SIZE = ::WorkItems::DataSync::Widgets::Base::BATCH_SIZE
 
+          def after_create
+            return unless params[:operation] == :promote
+            return unless target_work_item.get_widget(:hierarchy)
+
+            # For promotions we only handle parents for now.
+            handle_parent
+          end
+
+          override :after_save_commit
+          def after_save_commit
+            # When promoting, we want to handle the hierarchy sync in the transaction (after_create).
+            # Because it could be the case that the promotion exceeds the hierarchy limit, and we want to rollback
+            # the promotion.
+            return if params[:operation] == :promote
+
+            super
+          end
+
           private
 
           override :relink_children_to_target_work_item
