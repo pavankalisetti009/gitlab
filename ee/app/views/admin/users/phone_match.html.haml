@@ -30,7 +30,7 @@
             %td
               = link_to(user.username, admin_user_path(user))
               - if user == @user
-                = render Pajamas::BadgeComponent.new(_('This user'), variant: 'muted')
+                = render Pajamas::BadgeComponent.new(_('This user'), variant: 'neutral')
               - if user.banned?
                 = render Pajamas::BadgeComponent.new(_('Banned'), variant: 'danger')
               - elsif user.blocked?

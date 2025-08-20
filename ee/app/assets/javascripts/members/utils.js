@@ -45,7 +45,7 @@ export const generateBadges = ({ member, isCurrentUser, canManageMembers }) => [
   {
     show: member.user?.isServiceAccount ?? false,
     text: __('Service Account'),
-    variant: 'muted',
+    variant: 'neutral',
   },
 ];
 

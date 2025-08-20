@@ -214,7 +214,7 @@ export default {
                 '!gl-bg-blue-500 !gl-text-white': selectedStepNumber === stepNumber,
               }"
               size="lg"
-              variant="muted"
+              variant="neutral"
             >
               <strong v-if="selectedStepNumber === stepNumber">{{ stepNumber }}</strong>
               <span v-else>{{ stepNumber }}</span>
@@ -228,7 +228,7 @@ export default {
                 :data-testid="nodeType"
                 class="gl-mr-3 gl-pl-4 gl-pr-4"
                 size="md"
-                variant="muted"
+                variant="neutral"
               >
                 {{ nodeType }}
               </gl-badge>

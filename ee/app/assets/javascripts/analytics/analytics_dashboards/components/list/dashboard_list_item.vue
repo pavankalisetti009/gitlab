@@ -109,7 +109,7 @@ export default {
         <div>
           <gl-badge
             v-if="isBuiltInDashboard"
-            variant="muted"
+            variant="neutral"
             icon="tanuki-verified"
             data-testid="dashboard-by-gitlab"
             >{{ s__('Analytics|Created by GitLab') }}</gl-badge

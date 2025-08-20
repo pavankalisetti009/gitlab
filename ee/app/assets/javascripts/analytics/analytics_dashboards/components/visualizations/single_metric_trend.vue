@@ -60,7 +60,7 @@ export default {
         :title-icon="options.titleIcon"
         :unit="humanizedUnit"
         :animation-decimal-places="decimalPlaces"
-        variant="muted"
+        variant="neutral"
         should-animate
         use-delimiters
       />

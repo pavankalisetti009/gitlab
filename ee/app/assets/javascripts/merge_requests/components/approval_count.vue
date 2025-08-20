@@ -58,7 +58,7 @@ export default {
       );
     },
     badgeVariant() {
-      return this.mergeRequest.approved ? 'success' : 'muted';
+      return this.mergeRequest.approved ? 'success' : 'neutral';
     },
     badgeIcon() {
       if (this.mergeRequest.approved && this.approvedByCurrentUser) return 'approval-solid';

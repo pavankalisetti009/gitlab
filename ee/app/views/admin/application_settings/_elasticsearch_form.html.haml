@@ -263,7 +263,7 @@
           %h3.gl-self-center.gl-text-base.gl-inline-flex.gl-gap-2.gl-items-center.gl-m-0
             - approximate_index_count = @last_elasticsearch_reindexing_task.subtasks.count
             = s_('GlobalSearch|Overview')
-            = render Pajamas::BadgeComponent.new(approximate_index_count, variant: :muted)
+            = render Pajamas::BadgeComponent.new(approximate_index_count, variant: :neutral)
 
           .gl-flex.gl-flex-col.gl-h-full.gl-items-stretch
             - ordered_subtasks = @last_elasticsearch_reindexing_task.subtasks.order_by_alias_name_asc
@@ -289,7 +289,7 @@
           %h3.gl-self-center.gl-text-base.gl-inline-flex.gl-gap-2.gl-items-center.gl-m-0
             - unused_indices_count = Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.sum { |task| task.subtasks.size }
             = _('Unused indices scheduled for deletion')
-            = render Pajamas::BadgeComponent.new(unused_indices_count, variant: :muted)
+            = render Pajamas::BadgeComponent.new(unused_indices_count, variant: :neutral)
 
           .gl-flex.gl-flex-col.gl-h-full.gl-items-stretch
             - Search::Elastic::ReindexingTask.old_indices_scheduled_for_deletion.each do |task|

@@ -33,8 +33,8 @@ const STATE_TO_VARIANT = {
   [WORKSPACE_STATES.error]: 'danger',
   [WORKSPACE_STATES.stopping]: 'info',
   [WORKSPACE_STATES.stopped]: 'info',
-  [WORKSPACE_STATES.terminating]: 'muted',
-  [WORKSPACE_STATES.terminated]: 'muted',
+  [WORKSPACE_STATES.terminating]: 'neutral',
+  [WORKSPACE_STATES.terminated]: 'neutral',
   [WORKSPACE_STATES.unknown]: 'danger',
 };
 

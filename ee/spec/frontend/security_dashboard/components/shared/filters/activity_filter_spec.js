@@ -55,7 +55,7 @@ describe('Activity Filter component', () => {
 
       expect(header.findComponent(GlBadge).attributes()).toMatchObject({
         icon,
-        variant: variant ?? 'muted',
+        variant: variant ?? 'neutral',
       });
     });
   });

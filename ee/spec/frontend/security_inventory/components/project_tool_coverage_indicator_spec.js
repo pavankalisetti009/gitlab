@@ -91,7 +91,7 @@ describe('ProjectToolCoverageIndicator', () => {
         props: { analyzerStatuses: [] },
       });
 
-      expect(findBadge(key).props('variant')).toBe('muted');
+      expect(findBadge(key).props('variant')).toBe('neutral');
       expect(findBadge(key).classes()).toContain('gl-border-dashed');
       expect(findBadge(key).text()).toBe(label);
     });
@@ -104,7 +104,7 @@ describe('ProjectToolCoverageIndicator', () => {
       createComponent({
         props: { analyzerStatuses: disabledScanners },
       });
-      expect(findBadge(key).props('variant')).toBe('muted');
+      expect(findBadge(key).props('variant')).toBe('neutral');
       expect(findBadge(key).classes()).toContain('gl-border-dashed');
       expect(findBadge(key).text()).toBe(label);
     });
@@ -133,9 +133,9 @@ describe('ProjectToolCoverageIndicator', () => {
   describe.each`
     analyzer                             | propKey                                  | enabled  | expectedVariant | expectedClass
     ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${true}  | ${'success'}    | ${'gl-border-transparent'}
-    ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${false} | ${'muted'}      | ${'gl-border-dashed'}
+    ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${false} | ${'neutral'}    | ${'gl-border-dashed'}
     ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'success'}    | ${'gl-border-transparent'}
-    ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${false} | ${'muted'}      | ${'gl-border-dashed'}
+    ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${false} | ${'neutral'}    | ${'gl-border-dashed'}
   `(
     '$analyzer badge rendering',
     ({ analyzer, propKey, enabled, expectedVariant, expectedClass }) => {

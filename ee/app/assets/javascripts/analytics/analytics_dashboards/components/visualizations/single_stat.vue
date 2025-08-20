@@ -55,7 +55,7 @@ export default {
       :animation-decimal-places="decimalPlaces"
       :should-animate="true"
       :use-delimiters="true"
-      variant="muted"
+      variant="neutral"
     />
   </div>
 </template>

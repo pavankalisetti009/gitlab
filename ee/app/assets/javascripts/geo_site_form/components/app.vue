@@ -45,7 +45,7 @@ export default {
     },
     pillDetails() {
       return {
-        variant: this.isSitePrimary ? 'info' : 'muted',
+        variant: this.isSitePrimary ? 'info' : 'neutral',
         label: this.isSitePrimary ? this.$options.i18n.primary : this.$options.i18n.secondary,
       };
     },
