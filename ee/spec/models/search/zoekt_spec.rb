@@ -434,4 +434,62 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       end
     end
   end
+
+  describe '.missing_repo?' do
+    let(:repo_exists) { true }
+    let(:empty_repo) { false }
+
+    subject { described_class.missing_repo?(project) }
+
+    before do
+      allow(project).to receive_messages(repo_exists?: repo_exists, empty_repo?: empty_repo)
+    end
+
+    context 'when repository does not exist' do
+      let(:repo_exists) { false }
+      let(:empty_repo) { true }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when repository exists' do
+      context 'and is empty' do
+        let(:empty_repo) { true }
+
+        it { is_expected.to be true }
+      end
+
+      context 'and is not empty' do
+        it { is_expected.to be false }
+      end
+    end
+  end
+
+  describe '.should_create_indexing_task?' do
+    subject { described_class.should_create_indexing_task?(project) }
+
+    before do
+      allow(described_class).to receive(:missing_repo?).with(project).and_return(missing_repo)
+    end
+
+    context 'when repo is not missing' do
+      let(:missing_repo) { false }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when repo is missing' do
+      let(:missing_repo) { true }
+
+      it { is_expected.to be true }
+
+      context 'and zoekt_index_empty_repos feature flag is disabled' do
+        before do
+          stub_feature_flags(zoekt_index_empty_repos: false)
+        end
+
+        it { is_expected.to be false }
+      end
+    end
+  end
 end

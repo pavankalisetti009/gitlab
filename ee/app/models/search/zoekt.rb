@@ -102,8 +102,14 @@ module Search
         Gitlab.config.zoekt.bin_path
       end
 
-      def skip_empty_repositories?
-        Feature.disabled?(:zoekt_index_empty_repos, Feature.current_request)
+      def missing_repo?(project)
+        !project.repo_exists? || project.empty_repo?
+      end
+
+      def should_create_indexing_task?(project)
+        return true unless missing_repo?(project)
+
+        Feature.enabled?(:zoekt_index_empty_repos, Feature.current_request)
       end
 
       private

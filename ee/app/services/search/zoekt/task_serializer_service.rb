@@ -59,6 +59,7 @@ module Search
           Parallelism: ::Gitlab::CurrentSettings.zoekt_indexing_parallelism,
           Timeout: "#{::Search::Zoekt::Settings.indexing_timeout.to_i}s",
           FileCountLimit: ::Gitlab::CurrentSettings.zoekt_maximum_files,
+          MissingRepo: ::Search::Zoekt.missing_repo?(project),
           Metadata: {
             project_id: project.id,
             traversal_ids: project.namespace_ancestry,
@@ -101,6 +102,10 @@ module Search
       end
 
       def gitaly_payload(project)
+        if Feature.enabled?(:zoekt_index_empty_repos, Feature.current_request) && ::Search::Zoekt.missing_repo?(project)
+          return {}
+        end
+
         repository_storage = project.repository_storage
         connection_info = Gitlab::GitalyClient.connection_data(repository_storage)
         repository_path = "#{project.repository.disk_path}.git"
