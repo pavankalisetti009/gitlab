@@ -99,16 +99,23 @@ To disable the restriction:
 - Enabled delayed deletion for projects by default [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
 - [Changed to default behavior for groups](https://gitlab.com/gitlab-org/gitlab/-/issues/389557) on the Premium and Ultimate tier in GitLab 16.0.
 - [Moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
-- Deleting a group or project immediately once it's scheduled for deletion is not allowed anymore in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
+- Support for disallowing immediate deletion for groups or projects scheduled for deletion [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201957) in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
 
 {{< /history >}}
+
+{{< alert type="flag" >}}
+
+The availability of this feature is controlled by a feature flag.
+For more information, see the history.
+
+{{< /alert >}}
 
 These protections help guard against accidental deletion of groups and projects on your instance.
 
 ### Retention period
 
 Groups and projects remain restorable during the retention period you define. By default,
-this is 30 days, but you can change it to a value between `1` and `90` days.
+the retention period is 30 days, but you can change it to a value between `1` and `90` days.
 
 Prerequisites:
 
