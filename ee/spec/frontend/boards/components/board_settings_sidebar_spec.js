@@ -11,7 +11,7 @@ describe('ee/BoardSettingsSidebar', () => {
   const createComponent = ({ isWipLimitsOn = false, list = {}, provide = {} } = {}) => {
     wrapper = shallowMount(BoardSettingsSidebar, {
       provide: {
-        glFeatures: {
+        glLicensedFeatures: {
           wipLimits: isWipLimitsOn,
         },
         canAdminList: false,
