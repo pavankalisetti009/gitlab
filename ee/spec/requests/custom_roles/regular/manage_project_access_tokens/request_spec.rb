@@ -54,8 +54,8 @@ RSpec.describe 'User with manage_project_access_tokens custom role', feature_cat
 
           parsed_body = Gitlab::Json.parse(response.body)
           expect(parsed_body['new_token']).to be_blank
-          expect(parsed_body['errors']).to contain_exactly("Access level of the token can't be greater the access\
- level of the user who created the token")
+          expect(parsed_body['errors']).to contain_exactly("Access level of the token contains permissions not\
+ held by the creating user")
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
         end
       end

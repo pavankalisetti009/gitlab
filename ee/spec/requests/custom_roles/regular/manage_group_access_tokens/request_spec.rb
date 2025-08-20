@@ -46,7 +46,7 @@ RSpec.describe 'User with manage_group_access_tokens custom role', feature_categ
         it_behaves_like 'POST resource access tokens available'
       end
 
-      context 'when creating a token with an access level that is higher than the current users access level' do
+      context 'when creating a token with greater privileges than the current users access level' do
         let(:access_level) { 20 }
 
         it 'renders JSON with an error' do
@@ -54,7 +54,7 @@ RSpec.describe 'User with manage_group_access_tokens custom role', feature_categ
 
           expect(response.parsed_body['new_token']).to be_blank
           expect(response.parsed_body['errors'])
-            .to include("Access level of the token can't be greater the access level of the user who created the token")
+            .to include("Access level of the token contains permissions not held by the creating user")
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
         end
       end
