@@ -33,7 +33,6 @@ fragment Project on Project {
     archiveProject
     removeProject
     viewEditPage
-    adminAllResources @gl_introduced(version: "18.3.0")
   }
   maxAccessLevel {
     integerValue
