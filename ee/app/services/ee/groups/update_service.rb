@@ -9,8 +9,7 @@ module EE
         :remove_dormant_members,
         :remove_dormant_members_period,
         :allow_enterprise_bypass_placeholder_confirmation,
-        :enterprise_bypass_expires_at,
-        :auto_duo_code_review_enabled
+        :enterprise_bypass_expires_at
       ].freeze
 
       override :execute

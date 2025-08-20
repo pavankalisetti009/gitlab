@@ -25,6 +25,8 @@ module EE
 
         params[:enable_member_promotion_management] = get_enable_member_promotion_management
 
+        filter_auto_duo_code_review_param
+
         if result = super
           find_or_create_elasticsearch_index if params.keys.any? { |key| key.to_s.start_with?('elasticsearch') }
           update_elasticsearch_containers(ElasticsearchIndexedNamespace, elasticsearch_namespace_ids)
@@ -84,6 +86,13 @@ module EE
       end
 
       private
+
+      def filter_auto_duo_code_review_param
+        return unless params.key?(:auto_duo_code_review_enabled)
+        return if application_setting.auto_duo_code_review_settings_available?
+
+        params.delete(:auto_duo_code_review_enabled)
+      end
 
       def duo_features_changed?
         application_setting.previous_changes.include?(:duo_features_enabled)
