@@ -52,8 +52,7 @@ module Search
       end
 
       def use_traversal_id_queries?(user)
-        Feature.enabled?(:zoekt_ast_search_payload, user) &&
-          Feature.enabled?(:zoekt_traversal_id_queries, user) &&
+        Feature.enabled?(:zoekt_traversal_id_queries, user) &&
           traversal_id_searchable?
       end
 

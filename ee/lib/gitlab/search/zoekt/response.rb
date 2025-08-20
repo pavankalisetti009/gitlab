@@ -39,14 +39,12 @@ module Gitlab
 
         def file_count
           return result[:FileMatchCount] if result[:FileMatchCount].present?
-          return result[:FileCount] unless count_search_results?
 
           @file_count ||= result['Files']&.count.to_i
         end
 
         def match_count
           return result[:LineMatchCount] if result[:LineMatchCount].present?
-          return result[:MatchCount] unless count_search_results?
 
           @match_count ||= (result['Files']&.sum { |x| x['LineMatches']&.count }).to_i
         end
@@ -57,12 +55,6 @@ module Gitlab
           files.each do |file|
             yield file
           end
-        end
-
-        private
-
-        def count_search_results?
-          Feature.enabled?(:zoekt_ast_search_payload, current_user)
         end
       end
     end
