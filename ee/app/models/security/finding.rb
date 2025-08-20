@@ -196,7 +196,9 @@ module Security
       # It is possible that this logic gets called before the `security_findings` table
       # becomes partitioned, therefore, we return the default column value if there is no partition yet.
       def active_partition_number
-        active_partition&.value || column_defaults['partition_number']
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          active_partition&.value || column_defaults['partition_number']
+        end
       end
 
       def distinct_uuids
