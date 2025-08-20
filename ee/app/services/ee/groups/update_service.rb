@@ -9,7 +9,8 @@ module EE
         :remove_dormant_members,
         :remove_dormant_members_period,
         :allow_enterprise_bypass_placeholder_confirmation,
-        :enterprise_bypass_expires_at
+        :enterprise_bypass_expires_at,
+        :auto_duo_code_review_enabled
       ].freeze
 
       override :execute
@@ -72,6 +73,10 @@ module EE
 
         unless ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing) && ::Feature.enabled?(:configure_web_based_commit_signing, group)
           params.delete(:web_based_commit_signing_enabled)
+        end
+
+        unless group.auto_duo_code_review_settings_available?
+          params.delete(:auto_duo_code_review_enabled)
         end
 
         super

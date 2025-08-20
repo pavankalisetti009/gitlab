@@ -17,7 +17,8 @@ RSpec.describe Groups::Settings::MergeRequestsController, feature_category: :cod
         namespace_setting: {
           only_allow_merge_if_pipeline_succeeds: true,
           allow_merge_on_skipped_pipeline: true,
-          only_allow_merge_if_all_discussions_are_resolved: true
+          only_allow_merge_if_all_discussions_are_resolved: true,
+          auto_duo_code_review_enabled: true
         }
       }
     end
@@ -38,6 +39,8 @@ RSpec.describe Groups::Settings::MergeRequestsController, feature_category: :cod
 
       before do
         stub_licensed_features(group_level_merge_checks_setting: true)
+        stub_feature_flags(cascading_auto_duo_code_review_settings: true)
+        allow(group).to receive(:auto_duo_code_review_settings_available?).and_return(true)
         group.add_owner(user)
       end
 
@@ -66,7 +69,8 @@ RSpec.describe Groups::Settings::MergeRequestsController, feature_category: :cod
           expect(group.namespace_settings.reload).to have_attributes(
             only_allow_merge_if_pipeline_succeeds: true,
             allow_merge_on_skipped_pipeline: true,
-            only_allow_merge_if_all_discussions_are_resolved: true
+            only_allow_merge_if_all_discussions_are_resolved: true,
+            auto_duo_code_review_enabled: true
           )
         end
       end

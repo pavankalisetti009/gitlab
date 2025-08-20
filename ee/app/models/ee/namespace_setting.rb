@@ -256,6 +256,7 @@ module EE
         duo_core_features_enabled
         duo_features_enabled
         lock_duo_features_enabled
+        auto_duo_code_review_enabled
         enterprise_users_extensions_marketplace_opt_in_status
         allow_enterprise_bypass_placeholder_confirmation
         web_based_commit_signing_enabled

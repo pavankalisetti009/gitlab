@@ -64,6 +64,9 @@ module EE
             optional :lock_duo_features_enabled,
               type: ::Grape::API::Boolean,
               desc: "Indicates if the GitLab Duo features enabled setting is enforced for all subgroups"
+            optional :auto_duo_code_review_enabled,
+              type: ::Grape::API::Boolean,
+              desc: "Enable automatic reviews by GitLab Duo on merge requests"
             optional :web_based_commit_signing_enabled,
               type: ::Grape::API::Boolean,
               desc: 'Enable web based commit signing for this group'

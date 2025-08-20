@@ -10,7 +10,7 @@ module Groups
       feature_category :code_review_workflow
 
       def update
-        return render_404 unless @group.licensed_feature_available?(:group_level_merge_checks_setting)
+        return render_404 unless merge_request_settings_available?
 
         if Groups::UpdateService.new(@group, current_user, group_settings_params).execute
           notice = format(
@@ -37,8 +37,14 @@ module Groups
             allow_merge_on_skipped_pipeline
             only_allow_merge_if_all_discussions_are_resolved
             allow_merge_without_pipeline
+            auto_duo_code_review_enabled
           ]
         )
+      end
+
+      def merge_request_settings_available?
+        @group.licensed_feature_available?(:group_level_merge_checks_setting) ||
+          @group.auto_duo_code_review_settings_available?
       end
     end
   end

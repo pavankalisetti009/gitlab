@@ -188,6 +188,7 @@ module EE
         to: :namespace_limit, allow_nil: true
       delegate :duo_core_features_enabled, :duo_core_features_enabled=, :duo_features_enabled,
         :lock_duo_features_enabled, :duo_availability,
+        :auto_duo_code_review_enabled, :auto_duo_code_review_enabled=,
         to: :namespace_settings, allow_nil: true
       delegate :pipeline_execution_policies_per_configuration_limit,
         :pipeline_execution_policies_per_configuration_limit=, :scan_execution_policies_per_configuration_limit,
@@ -268,6 +269,12 @@ module EE
       ::GitlabSubscriptions::AddOnPurchase
         .for_active_add_ons(add_on, self)
         .any?
+    end
+
+    def auto_duo_code_review_settings_available?
+      return false unless ::Feature.enabled?(:cascading_auto_duo_code_review_settings, self)
+
+      namespace_settings&.duo_features_enabled? && has_active_add_on_purchase?(:duo_enterprise)
     end
 
     def namespace_limit
