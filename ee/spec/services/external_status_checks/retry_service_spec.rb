@@ -51,6 +51,23 @@ RSpec.describe ExternalStatusChecks::RetryService, feature_category: :groups_and
             expect(status_check_response.status).to be('pending')
             expect(status_check_response.retried_at).not_to be_nil
           end
+
+          it 'logs an audit event' do
+            expect(::MergeRequests::StatusCheckResponses::AuditUpdateResponseService).to receive(:new).with(
+              status_check_response, user
+            ).and_call_original
+
+            expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(
+              name: 'status_check_response_update',
+              author: user,
+              additional_details: a_hash_including(
+                external_status_check_id: status_check_response.external_status_check_id,
+                status: 'pending'
+              )
+            )).once
+
+            subject
+          end
         end
 
         context 'when rule retry operation fails' do

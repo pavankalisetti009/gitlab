@@ -13,8 +13,11 @@ module ComplianceManagement
     urgency :high
 
     def perform
-      ::MergeRequests::StatusCheckResponse.pending.each_batch do |batch|
-        batch.timeout_eligible.update_all(status: 'failed')
+      ::MergeRequests::StatusCheckResponse.pending.timeout_eligible.each_batch do |batch|
+        record_ids = batch.pluck_primary_key
+        batch.update_all(status: 'failed')
+
+        ::MergeRequests::AuditUpdateStatusCheckResponseWorker.perform_async(record_ids)
       end
     end
   end

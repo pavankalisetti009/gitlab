@@ -27,6 +27,14 @@ RSpec.describe ComplianceManagement::TimeoutPendingStatusCheckResponsesWorker, f
       expect(old_retried_pending_status_check_response.status).to eq('failed')
     end
 
+    it 'enqueues a audit update status check response worker with the qualified IDs' do
+      expect(::MergeRequests::AuditUpdateStatusCheckResponseWorker).to receive(:perform_async).with(
+        match_array([old_pending_status_check_response.id, old_retried_pending_status_check_response.id])
+      )
+
+      worker.perform
+    end
+
     it 'does not update existing `passed` or `failed` status check responses' do
       expect(old_passed_status_check_response.status).to eq('passed')
       expect(old_failed_status_check_response.status).to eq('failed')

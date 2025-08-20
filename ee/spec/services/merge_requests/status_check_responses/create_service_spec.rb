@@ -64,6 +64,10 @@ RSpec.describe MergeRequests::StatusCheckResponses::CreateService, feature_categ
           end
 
           it 'logs an audit event and returns success response' do
+            expect(::MergeRequests::StatusCheckResponses::AuditUpdateResponseService).to receive(:new).with(
+              an_instance_of(MergeRequests::StatusCheckResponse), user
+            ).and_call_original
+
             expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
               name: 'status_check_response_update',
               author: user,
