@@ -174,6 +174,12 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
 
         it { is_expected.to eq(:project) }
       end
+
+      context 'and group_id is not provided' do
+        let(:options) { { project_id: 99 } }
+
+        it { is_expected.to eq(:project) }
+      end
     end
 
     context 'when neither group_id nor project_id is provided' do

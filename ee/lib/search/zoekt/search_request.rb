@@ -24,10 +24,10 @@ module Search
       end
 
       def search_level
-        @search_level ||= if options[:group_id].present? && options[:project_id].blank?
-                            :group
-                          elsif options[:project_id].present?
+        @search_level ||= if options[:project_id].present?
                             :project
+                          elsif options[:group_id].present?
+                            :group
                           else
                             :global
                           end
