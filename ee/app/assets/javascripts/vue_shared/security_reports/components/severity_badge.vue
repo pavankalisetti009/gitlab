@@ -84,11 +84,9 @@ export default {
     class="severity-badge gl-whitespace-nowrap gl-text-default sm:gl-text-left"
   >
     <span :class="className"
-      ><gl-icon v-gl-tooltip="tooltipTitle" :name="iconName" :size="12" class="gl-mr-3"
-    /></span>
-    {{ severityTitle }}
-
-    <span
+      ><gl-icon v-gl-tooltip="tooltipTitle" :name="iconName" :size="12" class="gl-mr-3" /></span
+    >{{ severityTitle
+    }}<span
       v-if="shouldShowSeverityOverrides"
       class="gl-text-orange-300"
       data-testid="severity-override"
