@@ -37,8 +37,8 @@
 #     or                     - Hash with keys that can be combined using OR logic
 #
 module EE
-  module WorkItems
-    module Glql
+  module Search
+    module AdvancedFinders
       module WorkItemsFinder
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
@@ -59,9 +59,13 @@ module EE
         FILTER_MILESTONE_UPCOMING = 'upcoming'
         FILTER_MILESTONE_STARTED = 'started'
 
-        GLQL_SOURCE = 'glql'
+        GLQL_SOURCE = 'GLQL'
+        WORK_ITEMS_LIST_SOURCE = %w[getWorkItemsFullEE getWorkItemsSlimEE].freeze
 
         INDEX_NAME = ::Search::Elastic::References::WorkItem.index
+        # Search query used for Elasticsearch work item queries.
+        # - When set to '*', performs a match-all query returning all work items that match the filters
+        # - When set to a specific keyword, searches across title description, iid fields
         QUERY = '*'
 
         attr_reader :current_user, :context, :params
@@ -81,7 +85,7 @@ module EE
 
         override :use_elasticsearch_finder?
         def use_elasticsearch_finder?
-          glql_request? &&
+          allowed_request_source? &&
             url_param_enabled? &&
             use_elasticsearch? &&
             elasticsearch_enabled_for_namespace? &&
@@ -114,14 +118,12 @@ module EE
 
         def base_params
           {
-            source: GLQL_SOURCE,
-            search: '*',
-            per_page: 100,
             sort: 'created_desc',
             state: params[:state],
             confidential: params[:confidential],
             work_item_type_ids: type_ids_from(params[:issue_types]),
             current_user: current_user,
+            # NOTE: when set to true is does a global search
             public_and_internal_projects: false,
             root_ancestor_ids: [resource_parent.root_ancestor.id]
           }.merge(
@@ -311,10 +313,22 @@ module EE
           resource_parent.use_elasticsearch?
         end
 
+        def allowed_request_source?
+          glql_request? || work_items_list_request?
+        end
+
         def glql_request?
+          operation_name&.start_with?(GLQL_SOURCE)
+        end
+
+        def work_items_list_request?
+          WORK_ITEMS_LIST_SOURCE.include?(operation_name)
+        end
+
+        def operation_name
           return unless request_params.present?
 
-          request_params.fetch('operationName', nil) == 'GLQL'
+          request_params.fetch('operationName', nil)
         end
 
         def url_param_enabled?

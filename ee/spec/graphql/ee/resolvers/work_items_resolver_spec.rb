@@ -316,8 +316,7 @@ RSpec.describe Resolvers::WorkItemsResolver do
       end
     end
 
-    context 'when searching for work items in ES for GLQL request' do
-      let(:request_params) { { 'operationName' => 'GLQL' } }
+    context 'when searching for work items in ES' do
       let(:glql_ctx) do
         { request: instance_double(ActionDispatch::Request, params: request_params, referer: 'http://localhost') }
       end
@@ -335,27 +334,124 @@ RSpec.describe Resolvers::WorkItemsResolver do
         })
       end
 
-      context 'when feature flag is enabled' do
-        before do
-          stub_feature_flags(glql_es_integration: true)
-        end
+      shared_examples 'uses advanced finder for ES' do
+        it 'uses WorkItems::AdvancedFinders::WorkItemsFinder' do
+          expect(::Search::AdvancedFinders::WorkItemsFinder).to receive(:new).and_call_original
 
-        it 'uses GLQL WorkItemsFinder' do
+          expect(::WorkItems::WorkItemsFinder).not_to receive(:new)
+
           result = batch_sync { resolve_items({ label_name: work_item1.labels }, glql_ctx).to_a }
-
           expect(result).to contain_exactly(work_item1)
         end
       end
 
-      context 'when feature flag is not enabled' do
-        before do
-          stub_feature_flags(glql_es_integration: false)
-        end
-
+      shared_examples 'falls back to regular finder' do
         it 'falls back to old WorkItemsFinder' do
-          expect(::WorkItems::Glql::WorkItemsFinder).not_to receive(:new)
+          expect(::WorkItems::WorkItemsFinder).to receive(:new).and_call_original
 
           batch_sync { resolve_items({ label_name: work_item1.labels }, glql_ctx).to_a }
+        end
+      end
+
+      context 'with GLQL request' do
+        let(:request_params) { { 'operationName' => 'GLQL' } }
+
+        context 'when glql_es_integration feature flag is enabled' do
+          before do
+            stub_feature_flags(glql_es_integration: true, work_items_list_es_integration: false)
+          end
+
+          it_behaves_like 'uses advanced finder for ES'
+        end
+
+        context 'when glql_es_integration feature flag is disabled' do
+          before do
+            stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: false)
+          end
+
+          it_behaves_like 'falls back to regular finder'
+        end
+      end
+
+      context 'with getWorkItemsFullEE request' do
+        let(:request_params) { { 'operationName' => 'getWorkItemsFullEE' } }
+
+        context 'when work_items_list_es_integration feature flag is enabled' do
+          before do
+            stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: true)
+          end
+
+          it_behaves_like 'uses advanced finder for ES'
+        end
+
+        context 'when work_items_list_es_integration feature flag is disabled' do
+          before do
+            stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: false)
+          end
+
+          it_behaves_like 'falls back to regular finder'
+        end
+      end
+
+      context 'with getWorkItemsSlimEE request' do
+        let(:request_params) { { 'operationName' => 'getWorkItemsSlimEE' } }
+
+        context 'when work_items_list_es_integration feature flag is enabled' do
+          before do
+            stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: true)
+          end
+
+          it_behaves_like 'uses advanced finder for ES'
+        end
+
+        context 'when work_items_list_es_integration feature flag is disabled' do
+          before do
+            stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: false)
+          end
+
+          it_behaves_like 'falls back to regular finder'
+        end
+      end
+
+      context 'when both feature flags are enabled' do
+        before do
+          stub_feature_flags(glql_es_integration: true, work_items_list_es_integration: true)
+        end
+
+        context 'with GLQL operation name' do
+          let(:request_params) { { 'operationName' => 'GLQL' } }
+
+          it_behaves_like 'uses advanced finder for ES'
+        end
+
+        context 'with getWorkItemsFullEE operation name' do
+          let(:request_params) { { 'operationName' => 'getWorkItemsFullEE' } }
+
+          it_behaves_like 'uses advanced finder for ES'
+        end
+
+        context 'with getWorkItemsSlimEE operation name' do
+          let(:request_params) { { 'operationName' => 'getWorkItemsSlimEE' } }
+
+          it_behaves_like 'uses advanced finder for ES'
+        end
+
+        context 'with unsupported operation name' do
+          let(:request_params) { { 'operationName' => 'UnsupportedOperation' } }
+
+          it_behaves_like 'falls back to regular finder'
+        end
+
+        context 'with no operation name' do
+          let(:request_params) { {} }
+
+          it_behaves_like 'falls back to regular finder'
+        end
+
+        context 'with nil operation name' do
+          let(:request_params) { { 'operationName' => nil } }
+
+          it_behaves_like 'falls back to regular finder'
         end
       end
     end

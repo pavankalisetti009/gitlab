@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe WorkItems::Glql::WorkItemsFinder, :elastic_delete_by_query, :sidekiq_inline, feature_category: :markdown do
+RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_query, :sidekiq_inline, feature_category: :markdown do
   let_it_be(:group)           { create(:group) }
   let_it_be(:project)         { create(:project, group: group) }
   let_it_be(:current_user)    { create(:user) }
@@ -41,8 +41,10 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, :elastic_delete_by_query, :side
     let(:resource_parent) { group }
 
     context 'when falling back to legacy finder' do
-      context 'when the request is not a GLQL request' do
-        let(:request_params) { { 'operationName' => 'Not GLQL' } }
+      context 'when the request is not allowed operation name' do
+        # NOTE: We currently allow the following operation names:
+        # GLQL, getWorkItemsFullEE, and getWorkItemsSlimEE
+        let(:request_params) { { 'operationName' => 'Not allowed' } }
 
         it 'returns false' do
           expect(finder.use_elasticsearch_finder?).to be_falsey
@@ -143,6 +145,22 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, :elastic_delete_by_query, :side
 
       context 'when url param is missing (since we do not want to force using this param)' do
         let(:url_query) { '' }
+
+        it 'returns true' do
+          expect(finder.use_elasticsearch_finder?).to be_truthy
+        end
+      end
+
+      context 'when the request is a getWorkItemsFullEE request' do
+        let(:request_params) { { 'operationName' => 'getWorkItemsFullEE' } }
+
+        it 'returns true' do
+          expect(finder.use_elasticsearch_finder?).to be_truthy
+        end
+      end
+
+      context 'when the request is a getWorkItemsSlimEE request' do
+        let(:request_params) { { 'operationName' => 'getWorkItemsSlimEE' } }
 
         it 'returns true' do
           expect(finder.use_elasticsearch_finder?).to be_truthy
