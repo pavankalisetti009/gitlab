@@ -456,7 +456,14 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   end
 
   describe '.active_partition_number' do
-    subject { described_class.active_partition_number }
+    subject(:active_partition_number) { described_class.active_partition_number }
+
+    it 'enforces that the sec database connection is use to retrive partition number' do
+      expect(Gitlab::Database::SharedModel).to receive(:using_connection).with(::SecApplicationRecord.connection)
+        .and_call_original
+
+      active_partition_number
+    end
 
     context 'when the `security_findings` is partitioned' do
       let(:expected_partition_number) { 9999 }
