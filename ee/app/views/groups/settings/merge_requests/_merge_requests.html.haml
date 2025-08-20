@@ -1,8 +1,27 @@
-- if @group.licensed_feature_available?(:group_level_merge_checks_setting)
+- show_merge_checks = @group.licensed_feature_available?(:group_level_merge_checks_setting)
+- show_duo_code_review = @group.auto_duo_code_review_settings_available?
+
+- if show_merge_checks || show_duo_code_review
   = render ::Layouts::SettingsBlockComponent.new(_('Merge requests'),
     id: 'js-merge-requests-settings',
     expanded: expanded) do |c|
     - c.with_description do
-      = s_('GroupSettings|Choose the merge request checks for projects in this group. This setting overrides the same settings configured on each project in this group.')
+      - if show_merge_checks && show_duo_code_review
+        = s_('GroupSettings|Configure merge request checks and automatic reviews by GitLab Duo for projects in this group. These settings cascade to subgroups and projects.')
+      - elsif show_merge_checks
+        = s_('GroupSettings|Choose the merge request checks for projects in this group. This setting overrides the same settings configured on each project in this group.')
+      - else
+        = s_('GroupSettings|Configure automatic reviews by GitLab Duo for merge requests in this group. This setting cascades to subgroups and projects but can be overridden.')
     - c.with_body do
-      = render 'groups/settings/merge_requests/merge_request_pipelines_and_threads_options'
+      = gitlab_ui_form_for @group.namespace_settings, url: group_settings_merge_requests_path(@group), html: { multipart: true, class: 'merge-request-settings-form js-mr-settings-form' }, authenticity_token: true do |f|
+
+        - if show_merge_checks
+          %input{ name: 'update_section', type: 'hidden', value: 'js-merge-request-settings' }
+          = render 'groups/settings/merge_requests/merge_request_pipelines_and_threads_options', form: f
+
+        - if show_duo_code_review
+          - if show_merge_checks
+            %hr.gl-border-gray-100
+          = render 'groups/settings/merge_requests/duo_code_review_settings', form: f
+
+        = f.submit _('Save changes'), pajamas_button: true, data: { testid: 'save_merge_request_changes' }

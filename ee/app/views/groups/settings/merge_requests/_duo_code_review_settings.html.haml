@@ -1,0 +1,7 @@
+%fieldset.form-group.gl-form-group
+  %h5= s_('DuoCodeReview|GitLab Duo Code Review')
+  %p.gl-text-subtle= s_('DuoCodeReview|Control whether GitLab Duo automatically reviews merge requests. This setting cascades to subgroups and projects but can be overridden.')
+  .form-group.gl-mb-3
+    = form.gitlab_ui_checkbox_component :auto_duo_code_review_enabled,
+      s_('DuoCodeReview|Enable automatic reviews by GitLab Duo'),
+      help_text: s_('DuoCodeReview|When enabled, GitLab Duo will automatically review new merge requests. Draft merge requests and merge requests without changes are skipped.')

@@ -24348,6 +24348,12 @@ msgstr ""
 msgid "DuoCodeReview|Can't access the merge request. When SAML single sign-on is enabled on a group or its parent, Duo Code Reviews can't be requested from the API. Request a review from the GitLab UI instead."
 msgstr ""
 
+msgid "DuoCodeReview|Control whether GitLab Duo automatically reviews merge requests. This setting cascades to subgroups and projects but can be overridden."
+msgstr ""
+
+msgid "DuoCodeReview|Enable automatic reviews by GitLab Duo"
+msgstr ""
+
 msgid "DuoCodeReview|GitLab Duo Code Review"
 msgstr ""
 
@@ -24358,6 +24364,9 @@ msgid "DuoCodeReview|I finished my review and found nothing to comment on. Nice 
 msgstr ""
 
 msgid "DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later."
+msgstr ""
+
+msgid "DuoCodeReview|When enabled, GitLab Duo will automatically review new merge requests. Draft merge requests and merge requests without changes are skipped."
 msgstr ""
 
 msgid "DuoCodeReview|Your account doesn't have GitLab Duo access. Please contact your system administrator for access."
@@ -31572,7 +31581,13 @@ msgstr ""
 msgid "GroupSettings|Choose the merge request checks for projects in this group. This setting overrides the same settings configured on each project in this group."
 msgstr ""
 
+msgid "GroupSettings|Configure automatic reviews by GitLab Duo for merge requests in this group. This setting cascades to subgroups and projects but can be overridden."
+msgstr ""
+
 msgid "GroupSettings|Configure limits on the number of repositories users can download, clone, or fork in a given time."
+msgstr ""
+
+msgid "GroupSettings|Configure merge request checks and automatic reviews by GitLab Duo for projects in this group. These settings cascade to subgroups and projects."
 msgstr ""
 
 msgid "GroupSettings|Contact source"
@@ -50589,6 +50604,9 @@ msgid "ProjectSettings|The host of your data collector instance."
 msgstr ""
 
 msgid "ProjectSettings|These checks must pass before merge requests can be merged."
+msgstr ""
+
+msgid "ProjectSettings|These checks must pass before merge requests can be merged. Subgroups and projects cannot override these settings."
 msgstr ""
 
 msgid "ProjectSettings|This feature is an experiment. When you enable this, you accept the %{link}."
