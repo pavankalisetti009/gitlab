@@ -1,4 +1,4 @@
-import { GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import BurndownChart from 'ee/burndown_chart/components/burndown_chart.vue';
 

@@ -1,10 +1,10 @@
-import { formValidators } from '@gitlab/ui/dist/utils';
+import { formValidators } from '@gitlab/ui/src/utils';
 // eslint-disable-next-line no-restricted-imports
 import { s__, sprintf } from '~/locale';
 import { createFieldValidators } from 'ee/ai/catalog/utils';
 
 // Mock the dependencies
-jest.mock('@gitlab/ui/dist/utils', () => ({
+jest.mock('@gitlab/ui/src/utils', () => ({
   formValidators: {
     required: jest.fn(),
     factory: jest.fn(),

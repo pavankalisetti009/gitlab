@@ -1,4 +1,4 @@
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/admin/components/visualization_types/minutes_usage_per_month.vue';
 import NoMinutesAlert from 'ee/usage_quotas/pipelines/admin/components/shared/no_minutes_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';

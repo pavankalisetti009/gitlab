@@ -1,5 +1,5 @@
 <script>
-import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { s__ } from '~/locale';
 import { formatDate, convertNanoToMs } from '~/lib/utils/datetime_utility';
 import { SHORT_DATE_TIME_FORMAT } from '~/observability/constants';

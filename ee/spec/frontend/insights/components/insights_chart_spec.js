@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlColumnChart, GlLineChart, GlStackedColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart, GlLineChart, GlStackedColumnChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import { visitUrl } from '~/lib/utils/url_utility';
 

@@ -1,5 +1,5 @@
 <script>
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import merge from 'lodash/merge';
 
 import { formatVisualizationTooltipTitle, formatVisualizationValue } from './utils';

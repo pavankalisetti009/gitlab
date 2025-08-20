@@ -1,5 +1,5 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import UsageByMonth from 'ee/usage_quotas/transfer/components/usage_by_month.vue';

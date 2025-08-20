@@ -1,5 +1,5 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
-import { GlSparklineChart } from '@gitlab/ui/dist/charts';
+import { GlSparklineChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { TREND_STYLE_DESC, TREND_STYLE_NONE } from 'ee/analytics/dashboards/constants';
 import TrendLine from 'ee/analytics/analytics_dashboards/components/visualizations/data_table/trend_line.vue';

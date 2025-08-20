@@ -8,7 +8,7 @@ import {
   GlLink,
   GlSprintf,
 } from '@gitlab/ui';
-import { formValidators } from '@gitlab/ui/dist/utils';
+import { formValidators } from '@gitlab/ui/src/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';

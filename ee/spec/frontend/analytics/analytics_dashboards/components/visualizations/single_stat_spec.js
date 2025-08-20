@@ -1,4 +1,4 @@
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SingleStat from 'ee/analytics/analytics_dashboards/components/visualizations/single_stat.vue';
 

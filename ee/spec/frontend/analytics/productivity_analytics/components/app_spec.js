@@ -1,5 +1,5 @@
 import { GlEmptyState, GlLoadingIcon, GlCollapsibleListbox, GlButton, GlAlert } from '@gitlab/ui';
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
 import Vue, { nextTick } from 'vue';

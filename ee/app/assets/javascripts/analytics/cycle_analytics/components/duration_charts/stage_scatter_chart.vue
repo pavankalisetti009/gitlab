@@ -1,5 +1,5 @@
 <script>
-import { GlDiscreteScatterChart, GlChartLegend } from '@gitlab/ui/dist/charts';
+import { GlDiscreteScatterChart, GlChartLegend } from '@gitlab/ui/src/charts';
 import { isNil } from 'lodash';
 import { DURATION_STAGE_TIME_LABEL } from 'ee/analytics/cycle_analytics/constants';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';

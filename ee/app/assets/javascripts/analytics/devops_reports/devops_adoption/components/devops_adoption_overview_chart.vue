@@ -1,5 +1,5 @@
 <script>
-import { GlStackedColumnChart } from '@gitlab/ui/dist/charts';
+import { GlStackedColumnChart } from '@gitlab/ui/src/charts';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
 import { formatNumber } from '~/locale';

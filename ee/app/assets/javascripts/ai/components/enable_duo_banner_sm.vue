@@ -1,6 +1,6 @@
 <script>
 import { GlSprintf, GlLink, GlBanner, GlButton } from '@gitlab/ui';
-import { sprintf } from '@gitlab/ui/dist/utils/i18n';
+import { sprintf } from '@gitlab/ui/src/utils/i18n';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';

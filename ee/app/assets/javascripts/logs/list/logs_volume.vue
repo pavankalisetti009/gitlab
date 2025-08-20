@@ -1,5 +1,5 @@
 <script>
-import { GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart } from '@gitlab/ui/src/charts';
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
 import { s__ } from '~/locale';

@@ -1,5 +1,5 @@
 <script>
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import { X_AXIS_MONTH_LABEL, X_AXIS_CATEGORY, Y_AXIS_SHARED_RUNNER_LABEL } from '../constants';

@@ -4,11 +4,11 @@ import {
   DATA_VIZ_ORANGE_400,
   DATA_VIZ_MAGENTA_500,
   GRAY_900,
-} from '@gitlab/ui/dist/tokens/build/js/tokens';
+} from '@gitlab/ui/src/tokens/build/js/tokens';
 import {
   GL_TEXT_COLOR_DEFAULT as GL_TEXT_COLOR_DEFAULT_DARK,
   GRAY_900 as GRAY_900_DARK,
-} from '@gitlab/ui/dist/tokens/build/js/tokens.dark';
+} from '@gitlab/ui/src/tokens/build/js/tokens.dark';
 import { getColors } from 'ee/compliance_dashboard/components/dashboard/utils/chart';
 import { GL_DARK, GL_LIGHT } from '~/constants';
 

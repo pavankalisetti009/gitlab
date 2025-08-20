@@ -1,6 +1,6 @@
 <script>
 import { GlTab, GlTabs } from '@gitlab/ui';
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { __, s__ } from '~/locale';
 import NoMinutesAlert from '../shared/no_minutes_alert.vue';
 

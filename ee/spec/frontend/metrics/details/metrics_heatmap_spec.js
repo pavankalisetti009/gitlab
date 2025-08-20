@@ -1,4 +1,4 @@
-import { GlHeatmap } from '@gitlab/ui/dist/charts';
+import { GlHeatmap } from '@gitlab/ui/src/charts';
 import MetricsHeatmap from 'ee/metrics/details/metrics_heatmap.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 

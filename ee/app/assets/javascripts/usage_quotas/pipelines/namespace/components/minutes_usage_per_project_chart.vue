@@ -1,5 +1,5 @@
 <script>
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import {
   X_AXIS_PROJECT_LABEL,
   X_AXIS_CATEGORY,

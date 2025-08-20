@@ -1,5 +1,5 @@
 import { GlIcon } from '@gitlab/ui';
-import { GlLineChart } from '@gitlab/ui/dist/charts';
+import { GlLineChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import { DURATION_STAGE_TIME_DESCRIPTION } from 'ee/analytics/cycle_analytics/constants';
 import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_chart.vue';

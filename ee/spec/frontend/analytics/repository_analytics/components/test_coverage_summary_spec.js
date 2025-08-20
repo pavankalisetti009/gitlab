@@ -1,5 +1,5 @@
 import { GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import TestCoverageSummary from 'ee/analytics/repository_analytics/components/test_coverage_summary.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';

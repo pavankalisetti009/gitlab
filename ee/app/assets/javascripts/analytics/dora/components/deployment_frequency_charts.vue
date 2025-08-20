@@ -1,6 +1,6 @@
 <script>
 import { GlToggle, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
-import { GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
 import { linearRegression } from 'ee/analytics/shared/utils';

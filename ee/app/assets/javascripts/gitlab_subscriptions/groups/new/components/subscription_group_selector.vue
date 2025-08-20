@@ -10,7 +10,7 @@ import {
   GlAlert,
 } from '@gitlab/ui';
 import { debounce } from 'lodash';
-import { formValidators } from '@gitlab/ui/dist/utils';
+import { formValidators } from '@gitlab/ui/src/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, sprintf } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';

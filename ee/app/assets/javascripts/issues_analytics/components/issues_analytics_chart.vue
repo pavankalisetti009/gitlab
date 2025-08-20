@@ -1,7 +1,7 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
-import { GlColumnChart, GlChartLegend } from '@gitlab/ui/dist/charts';
-import { engineeringNotation, sum, average } from '@gitlab/ui/dist/utils/number_utils';
+import { GlColumnChart, GlChartLegend } from '@gitlab/ui/src/charts';
+import { engineeringNotation, sum, average } from '@gitlab/ui/src/utils/number_utils';
 // eslint-disable-next-line no-restricted-imports
 import { mapGetters, mapActions, mapState } from 'vuex';
 import { getMonthNames } from '~/lib/utils/datetime_utility';

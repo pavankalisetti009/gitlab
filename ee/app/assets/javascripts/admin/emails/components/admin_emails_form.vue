@@ -7,7 +7,7 @@ import {
   GlAlert,
   GlFormFields,
 } from '@gitlab/ui';
-import { formValidators } from '@gitlab/ui/dist/utils';
+import { formValidators } from '@gitlab/ui/src/utils';
 import { debounce } from 'lodash';
 
 import { getGroups, getProjects } from '~/rest_api';

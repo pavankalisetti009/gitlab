@@ -1,5 +1,5 @@
 <script>
-import { GlStackedColumnChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlStackedColumnChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { GlSkeletonLoader, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { initial } from 'lodash';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';

@@ -1,5 +1,5 @@
 <script>
-import { GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { formatNumber } from '~/locale';
 import { INSTANCE_TYPE, GROUP_TYPE } from '~/ci/runner/constants';
 import RunnerCount from '~/ci/runner/components/stat/runner_count.vue';

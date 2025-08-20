@@ -1,4 +1,4 @@
-import { GREEN_400, ORANGE_400, RED_400, GRAY_400 } from '@gitlab/ui/dist/tokens/build/js/tokens';
+import { GREEN_400, ORANGE_400, RED_400, GRAY_400 } from '@gitlab/ui/src/tokens/build/js/tokens';
 import { s__, n__, sprintf } from '~/locale';
 
 export const DORA_PERFORMERS_SCORE_CATEGORY_TYPES = {

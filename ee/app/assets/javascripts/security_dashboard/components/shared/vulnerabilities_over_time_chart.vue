@@ -1,6 +1,6 @@
 <script>
 import { GlTooltipDirective, GlTableLite } from '@gitlab/ui';
-import { GlSparklineChart } from '@gitlab/ui/dist/charts';
+import { GlSparklineChart } from '@gitlab/ui/src/charts';
 import { set } from 'lodash';
 import {
   SEVERITY_LEVEL_CRITICAL,

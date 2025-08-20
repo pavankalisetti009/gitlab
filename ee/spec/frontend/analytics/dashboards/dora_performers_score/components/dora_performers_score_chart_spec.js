@@ -1,4 +1,4 @@
-import { GlStackedColumnChart } from '@gitlab/ui/dist/charts';
+import { GlStackedColumnChart } from '@gitlab/ui/src/charts';
 import { GlSkeletonLoader, GlIcon } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';

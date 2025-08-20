@@ -1,5 +1,5 @@
 <script>
-import { GlAreaChart } from '@gitlab/ui/dist/charts';
+import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { numberToHumanSize } from '~/lib/utils/number_utils';

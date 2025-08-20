@@ -1,4 +1,4 @@
-import { GlDiscreteScatterChart } from '@gitlab/ui/dist/charts';
+import { GlDiscreteScatterChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingScatterChart from 'ee/tracing/list/tracing_scatter_chart.vue';
 

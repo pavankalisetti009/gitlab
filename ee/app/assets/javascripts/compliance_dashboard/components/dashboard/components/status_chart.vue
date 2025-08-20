@@ -1,5 +1,5 @@
 <script>
-import { GlBarChart } from '@gitlab/ui/dist/charts';
+import { GlBarChart } from '@gitlab/ui/src/charts';
 import { s__ } from '~/locale';
 import { GL_LIGHT } from '~/constants';
 import { getColors } from '../utils/chart';

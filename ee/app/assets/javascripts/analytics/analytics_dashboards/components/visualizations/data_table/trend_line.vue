@@ -1,6 +1,6 @@
 <script>
 import { GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
-import { GlSparklineChart } from '@gitlab/ui/dist/charts';
+import { GlSparklineChart } from '@gitlab/ui/src/charts';
 import { TREND_STYLES, TREND_STYLE_ASC, TREND_STYLE_DESC } from '../../../../dashboards/constants';
 
 export default {

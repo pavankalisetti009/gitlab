@@ -9,7 +9,7 @@ import {
   GlFormGroup,
   GlFormSelect,
 } from '@gitlab/ui';
-import { formValidators } from '@gitlab/ui/dist/utils';
+import { formValidators } from '@gitlab/ui/src/utils';
 import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';

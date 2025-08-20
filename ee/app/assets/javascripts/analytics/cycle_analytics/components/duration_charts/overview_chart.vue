@@ -1,5 +1,5 @@
 <script>
-import { GlAreaChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
+import { GlAreaChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { buildNullSeries } from 'ee/analytics/shared/utils';

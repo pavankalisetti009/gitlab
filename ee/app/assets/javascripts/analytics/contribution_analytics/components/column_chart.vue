@@ -1,5 +1,5 @@
 <script>
-import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import { GlColumnChart } from '@gitlab/ui/src/charts';
 import { getDataZoomOption } from '~/analytics/shared/utils';
 import { truncateWidth } from '~/lib/utils/text_utility';
 

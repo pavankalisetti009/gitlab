@@ -1,5 +1,5 @@
 <script>
-import { GlSparklineChart, GlSingleStat } from '@gitlab/ui/dist/charts';
+import { GlSparklineChart, GlSingleStat } from '@gitlab/ui/src/charts';
 import { humanizeDisplayUnit, calculateDecimalPlaces } from './utils';
 
 export default {
