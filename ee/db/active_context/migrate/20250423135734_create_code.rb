@@ -5,7 +5,7 @@ class CreateCode < ActiveContext::Migration[1.0]
 
   # Set number of partitions based on expected number of documents before enabling gem in production
   # https://gitlab.com/gitlab-org/gitlab/-/issues/536216#note_2484267969
-  NUMBER_OF_PARTITIONS = 1
+  NUMBER_OF_PARTITIONS = 2
 
   def migrate!
     create_collection :code, number_of_partitions: NUMBER_OF_PARTITIONS, options: { include_ref_fields: false } do |c|
