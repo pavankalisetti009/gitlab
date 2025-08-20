@@ -851,6 +851,49 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         end
       end
     end
+
+    context 'for /promote_to epic' do
+      let_it_be_with_reload(:noteable) { create(:work_item, :issue, project: project) }
+      let_it_be(:note_text) { '/promote_to Epic' }
+      let(:note) { create(:note_on_issue, noteable: noteable, project: project, note: note_text) }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      before do
+        stub_licensed_features(epics: true, subepics: true)
+      end
+
+      context 'when it is valid' do
+        it 'promotes the issue to an epic' do
+          expect { service.execute(note) }.to change { Epic.count }.by(1)
+
+          expect(noteable.reload.promoted_to_epic).to be_present
+        end
+      end
+
+      context 'when it is not valid' do
+        let_it_be(:parent_link) do
+          create(:parent_link, :with_epic_issue,
+            work_item_parent: create(:work_item, :epic_with_legacy_epic, namespace: project.group), work_item: noteable)
+        end
+
+        before do
+          epic_type = WorkItems::Type.default_by_type(:epic)
+
+          WorkItems::HierarchyRestriction.where(parent_type: epic_type,
+            child_type: epic_type).update!(maximum_depth: 0)
+        end
+
+        it 'does not promote the issue and returns an error message' do
+          _content, _update_params, message, _ = service.execute(note)
+
+          expect(noteable.reload.promoted_to_epic).to be_nil
+          expect(message).to eq "Failed to promote this work item: Work item reached maximum depth."
+        end
+      end
+    end
   end
 
   context '/checkin_reminder' do

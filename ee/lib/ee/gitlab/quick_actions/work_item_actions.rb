@@ -75,8 +75,8 @@ module EE
               .execute(quick_action_target)
 
             success_msg[command]
-          rescue StandardError
-            error_msg(:not_found, action: 'promote')
+          rescue StandardError => e
+            error_msg(:not_found, action: 'promote', error_message: e.message)
           end
         end
 

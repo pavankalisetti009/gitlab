@@ -45,6 +45,28 @@ RSpec.describe WorkItems::DataSync::Widgets::Hierarchy, feature_category: :team_
           allow(target_work_item).to receive(:get_widget).with(:hierarchy).and_return(true)
         end
 
+        context 'when operation: promote' do
+          let(:params) { { operation: :promote } }
+
+          it 'does not copy children or parent hierarchy data' do
+            expect(callback).not_to receive(:handle_parent).and_call_original
+            expect(callback).not_to receive(:handle_children).and_call_original
+
+            callback.after_save_commit
+          end
+        end
+
+        context 'when operation: clone' do
+          let(:params) { { operation: :clone } }
+
+          it 'does not copy children or parent hierarchy data' do
+            expect(callback).to receive(:handle_parent).and_call_original
+            expect(callback).not_to receive(:handle_children).and_call_original
+
+            callback.after_save_commit
+          end
+        end
+
         it 'copies hierarchy data from work_item to target_work_item' do
           expect(callback).to receive(:handle_parent).and_call_original
           expect(callback).to receive(:handle_children).and_call_original
@@ -84,7 +106,7 @@ RSpec.describe WorkItems::DataSync::Widgets::Hierarchy, feature_category: :team_
           expect(callback).not_to receive(:new_work_item_child_link)
           expect(::WorkItems::ParentLink).not_to receive(:upsert_all)
 
-          callback.after_create
+          callback.after_save_commit
 
           expect(target_work_item.reload.work_item_children).to be_empty
         end
@@ -96,6 +118,55 @@ RSpec.describe WorkItems::DataSync::Widgets::Hierarchy, feature_category: :team_
     let_it_be_with_reload(:work_item) { create(:work_item, :issue, project: project) }
     let_it_be_with_reload(:target_work_item) { create(:work_item, :issue, project: another_project) }
     let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
+
+    describe '#after_create' do
+      context 'when operation: move' do
+        let(:params) { { operation: :move } }
+
+        it 'does not copy children or parent hierarchy data' do
+          expect(callback).not_to receive(:handle_parent).and_call_original
+          expect(callback).not_to receive(:handle_children).and_call_original
+
+          callback.after_create
+        end
+      end
+
+      context 'when operation: clone' do
+        let(:params) { { operation: :clone } }
+
+        it 'does not copy children or parent hierarchy data' do
+          expect(callback).not_to receive(:handle_parent).and_call_original
+          expect(callback).not_to receive(:handle_children).and_call_original
+
+          callback.after_create
+        end
+      end
+
+      context 'when operation: promote' do
+        let(:params) { { operation: :promote } }
+
+        let_it_be_with_reload(:target_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+        let_it_be_with_reload(:parent_link) do
+          create(:parent_link, :with_epic_issue, work_item: work_item, work_item_parent: epic.work_item,
+            relative_position: 20)
+        end
+
+        it "sets the correct data on the legacy epic parent relationship" do
+          expect { callback.after_create }.to not_change { EpicIssue.count }
+            .and change { WorkItems::ParentLink.count }.by(1)
+
+          parent_link = target_work_item.parent_link
+          parent_epic = target_work_item.sync_object.reload
+
+          expect(parent_epic.parent).to eq(epic)
+          expect(parent_epic.work_item_parent_link).to eq(parent_link)
+          expect(parent_link.relative_position).to eq(parent_epic.relative_position)
+
+          expect(target_work_item.epic_issue).to be_nil
+          expect(parent_link.work_item_parent).to eq(epic.work_item)
+        end
+      end
+    end
 
     describe '#after_save_commit' do
       it "does not copy the epic issue when there is none" do

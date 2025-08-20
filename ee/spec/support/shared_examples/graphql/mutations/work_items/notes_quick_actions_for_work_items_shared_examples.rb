@@ -78,7 +78,7 @@ RSpec.shared_examples 'work item supports promotion via quick actions' do
 
           expect(response).to have_gitlab_http_status(:success)
           expect(mutation_response['quickActionsStatus']['messages'])
-            .to include('Failed to promote this work item: Provided type is not supported.')
+            .to include("Failed to promote this work item: #{error_message}.")
         end
       end
 
@@ -95,6 +95,8 @@ RSpec.shared_examples 'work item supports promotion via quick actions' do
       end
 
       context 'when issue cannot be promoted to an epic' do
+        let(:error_message) { 'Provided type is not supported' }
+
         before do
           noteable.update!(promoted_to_epic_id: create(:epic).id)
         end
@@ -103,9 +105,11 @@ RSpec.shared_examples 'work item supports promotion via quick actions' do
       end
 
       context 'with PromoteError exceptions' do
+        let(:error_message) { 'some error' }
+
         before do
           allow_next_instance_of(::WorkItems::LegacyEpics::IssuePromoteService) do |instance|
-            allow(instance).to receive(:execute).and_raise(Epics::IssuePromoteService::PromoteError)
+            allow(instance).to receive(:execute).and_raise(Epics::IssuePromoteService::PromoteError, error_message)
           end
         end
 
