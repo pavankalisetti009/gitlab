@@ -52,6 +52,7 @@ module Vulnerabilities
           SUM(info) AS info
         FROM expanded_paths
         GROUP BY namespace_id, traversal_ids
+        ORDER BY namespace_id, traversal_ids
       SQL
 
       UPSERT_SQL = <<~SQL
@@ -79,6 +80,7 @@ module Vulnerabilities
           now(),
           now()
         FROM aggregated_paths ap
+        ORDER BY ap.namespace_id
         ON CONFLICT (namespace_id)
         DO UPDATE SET
           traversal_ids = excluded.traversal_ids,

@@ -48,11 +48,13 @@ module Vulnerabilities
           AND vulnerability_statistics.traversal_ids >= namespace_data.traversal_ids
           AND vulnerability_statistics.traversal_ids < namespace_data.next_traversal_id
         GROUP BY namespace_data.traversal_ids, namespace_id
+        ORDER BY namespace_data.traversal_ids, namespace_id
       SQL
 
       SELECT_NEW_VALUES_SQL = <<~SQL
         SELECT total, info, unknown, low, medium, high, critical, traversal_ids, namespace_id, created_at, updated_at
         FROM new_values
+        ORDER BY namespace_id
       SQL
 
       OLD_VALUES_SQL = <<~SQL
@@ -68,6 +70,7 @@ module Vulnerabilities
           info
         FROM vulnerability_namespace_statistics
         WHERE namespace_id IN (SELECT namespace_id FROM new_values)
+        ORDER BY namespace_id
       SQL
 
       NAMESPACE_DIFF_SQL = <<~SQL
@@ -89,6 +92,7 @@ module Vulnerabilities
           FROM upserted
           WHERE upserted.namespace_id = new_values.namespace_id
         )
+        ORDER BY new_values.namespace_id
       SQL
 
       UPSERT_WITH_DIFF_SQL = <<~SQL
@@ -111,6 +115,7 @@ module Vulnerabilities
           medium != 0 OR
           high != 0 OR
           critical != 0
+        ORDER BY namespace_id
       SQL
 
       MAX_NAMESPACES = 1_000
