@@ -1,6 +1,10 @@
 <script>
 import { GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
 import { GlSparklineChart } from '@gitlab/ui/src/charts';
+import {
+  GL_COLOR_THEME_GREEN_400,
+  GL_COLOR_THEME_INDIGO_600,
+} from '@gitlab/ui/src/tokens/build/js/tokens';
 import { TREND_STYLES, TREND_STYLE_ASC, TREND_STYLE_DESC } from '../../../../dashboards/constants';
 
 export default {
@@ -31,13 +35,11 @@ export default {
   },
   computed: {
     gradient() {
-      const colors = ['#499767', '#5252B5'];
-
       switch (this.trendStyle) {
         case TREND_STYLE_ASC:
-          return colors;
+          return [GL_COLOR_THEME_GREEN_400, GL_COLOR_THEME_INDIGO_600];
         case TREND_STYLE_DESC:
-          return colors.reverse();
+          return [GL_COLOR_THEME_INDIGO_600, GL_COLOR_THEME_GREEN_400];
         default:
           return [];
       }
