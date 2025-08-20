@@ -355,10 +355,10 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
   end
 
-  describe '#build_new_versions' do
+  describe '#build_new_version' do
     let(:item) { described_class.new }
 
-    it 'builds new versions, and sets #latest_version' do
+    it 'builds new version, and sets #latest_version' do
       item.build_new_version({ id: 1 })
       item.build_new_version({ id: 2 })
 
