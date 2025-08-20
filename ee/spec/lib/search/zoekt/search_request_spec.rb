@@ -152,4 +152,32 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
       end
     end
   end
+
+  describe '#search_level' do
+    subject(:search_level) do
+      described_class.new(current_user: user, query: 'test', **options).search_level
+    end
+
+    context 'when group_id is provided' do
+      let(:options) { { group_id: 42 } }
+
+      it { is_expected.to eq(:group) }
+    end
+
+    context 'when project_id is provided' do
+      let(:options) { { project_id: 99 } }
+
+      it { is_expected.to eq(:project) }
+
+      context 'and group_id is also provided' do
+        let(:options) { { group_id: 42, project_id: 99 } }
+
+        it { is_expected.to eq(:project) }
+      end
+    end
+
+    context 'when neither group_id nor project_id is provided' do
+      it { is_expected.to eq(:global) }
+    end
+  end
 end

@@ -23,6 +23,16 @@ module Search
         }
       end
 
+      def search_level
+        @search_level ||= if options[:group_id].present? && options[:project_id].blank?
+                            :group
+                          elsif options[:project_id].present?
+                            :project
+                          else
+                            :global
+                          end
+      end
+
       private
 
       def max_line_match_results_per_file
@@ -74,16 +84,6 @@ module Search
                        end
                      end
                    end
-      end
-
-      def search_level
-        @search_level ||= if options[:group_id].present?
-                            :group
-                          elsif options[:project_id].present?
-                            :project
-                          else
-                            :global
-                          end
       end
 
       def root_ancestor
