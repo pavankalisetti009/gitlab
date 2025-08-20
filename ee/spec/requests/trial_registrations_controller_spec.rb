@@ -246,6 +246,35 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
     end
 
     context 'with experiment lightweight_trial_registration_redesign' do
+      let(:username) { 'test_username' }
+      let(:user_params) { super().merge(username: username) }
+
+      before do
+        stub_experiments(lightweight_trial_registration_redesign: :candidate)
+      end
+
+      it 'sets name to username when in candidate group' do
+        expect_successful_post_create
+
+        created_user = User.find_by_email(user_params[:email])
+        expect(created_user.name).to eq(username)
+      end
+
+      context 'when in control group' do
+        before do
+          stub_experiments(lightweight_trial_registration_redesign: :control)
+        end
+
+        it 'sets name from first and last name' do
+          expect_successful_post_create
+
+          created_user = User.find_by_email(user_params[:email])
+          expect(created_user.name).to eq(full_name(user_params[:first_name], user_params[:last_name]))
+        end
+      end
+    end
+
+    context 'with tracking' do
       let(:experiment) { instance_double(ApplicationExperiment) }
 
       before do
@@ -260,7 +289,7 @@ RSpec.describe TrialRegistrationsController, :with_current_organization, feature
         allow(experiment).to receive(:run)
       end
 
-      it 'tracks registration completion' do
+      it 'tracks experiment registration completion' do
         expect(experiment).to receive(:track).with(:completed_trial_registration_form)
 
         post_create
