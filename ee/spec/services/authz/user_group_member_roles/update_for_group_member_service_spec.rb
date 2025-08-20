@@ -22,14 +22,6 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupMemberService, feature
 
       expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to have_received(:perform_async).with(member.id)
     end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(cache_user_group_member_roles: false)
-      end
-
-      it_behaves_like 'does not enqueue UpdateForGroupWorker job'
-    end
   end
 
   context 'when no old_values_map is passed (i.e. member has just been created)' do

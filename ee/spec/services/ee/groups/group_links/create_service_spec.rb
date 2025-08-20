@@ -188,19 +188,6 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
 
         before do
           stub_licensed_features(custom_roles: true)
-          stub_feature_flags(cache_user_group_member_roles: group)
-        end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(cache_user_group_member_roles: false)
-          end
-
-          it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
-            expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).not_to receive(:perform_async)
-
-            create_service
-          end
         end
 
         it 'enqueues a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do

@@ -135,15 +135,6 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
 
       before do
         stub_licensed_features(custom_roles: true)
-        stub_feature_flags(cache_user_group_member_roles: group)
-      end
-
-      shared_examples 'does not enqueue UpdateForSharedGroupWorker job' do
-        it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
-          expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).not_to receive(:perform_async)
-
-          update_service
-        end
       end
 
       shared_examples 'enqueues UpdateForSharedGroupWorker job' do
@@ -157,19 +148,15 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
         end
       end
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(cache_user_group_member_roles: false)
-        end
-
-        it_behaves_like 'does not enqueue UpdateForSharedGroupWorker job'
-      end
-
       context 'when neither member role nor access level was updated' do
         let(:link) { link_with_member_role }
         let(:group_link_params) { { expires_at: expiry_date } }
 
-        it_behaves_like 'does not enqueue UpdateForSharedGroupWorker job'
+        it 'does not enqueue a ::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::UpdateForSharedGroupWorker).not_to receive(:perform_async)
+
+          update_service
+        end
       end
 
       context 'when only access level was updated' do

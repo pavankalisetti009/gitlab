@@ -14,8 +14,6 @@ module Authz
 
       def execute
         return unless member.source.is_a?(::Group)
-        return unless ::Feature.enabled?(:cache_user_group_member_roles, member.source.root_ancestor)
-
         return unless with_possible_changes_after_update? || with_possible_changes_after_create?
 
         member.run_after_commit_or_now do

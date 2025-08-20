@@ -153,7 +153,6 @@ module EE
         group = member.source
 
         return unless group.is_a?(Group)
-        return unless ::Feature.enabled?(:cache_user_group_member_roles, group.root_ancestor)
 
         return unless member.member_role_id ||
           Authz::UserGroupMemberRole.for_user_in_group_and_shared_groups(member.user, group).exists?
