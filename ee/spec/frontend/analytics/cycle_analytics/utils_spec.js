@@ -18,9 +18,8 @@ import {
   generateFilterTextDescription,
   groupDurationsByDay,
   formatDurationOverviewChartData,
-  getValueStreamGraphQLId,
-  getValueStreamStageGraphQLId,
   formatDurationChartDate,
+  parseAverageDurationsQueryResponse,
 } from 'ee/analytics/cycle_analytics/utils';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
@@ -46,6 +45,7 @@ import {
   issueStage,
   rawCustomStage,
   rawTasksByTypeData,
+  averageDurationsStageData,
 } from './mock_data';
 
 const labelEventIds = labelEvents.map((ev) => ev.identifier);
@@ -504,19 +504,14 @@ describe('Value Stream Analytics utils', () => {
     );
   });
 
-  describe('getValueStreamGraphQLId', () => {
-    it(`returns the value stream's GraphQL ID as expected`, () => {
-      expect(getValueStreamGraphQLId(100)).toBe(
-        'gid://gitlab/Analytics::CycleAnalytics::ValueStream/100',
+  describe('parseAverageDurationsQueryResponse', () => {
+    it('formats and fills the data to be used in the stage charts', () => {
+      const result = parseAverageDurationsQueryResponse(
+        new Date('2019-01-01'),
+        new Date('2019-01-10'),
+        averageDurationsStageData,
       );
-    });
-  });
-
-  describe('getValueStreamStageGraphQLId', () => {
-    it(`returns the value stream stage's GraphQL ID as expected`, () => {
-      expect(getValueStreamStageGraphQLId(120)).toBe(
-        'gid://gitlab/Analytics::CycleAnalytics::Stage/120',
-      );
+      expect(result).toMatchSnapshot();
     });
   });
 

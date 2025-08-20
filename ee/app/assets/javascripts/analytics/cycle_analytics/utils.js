@@ -11,6 +11,7 @@ import {
   dayAfter,
   getDatesInRange,
   localeDateFormat,
+  toISODateFormat,
   newDate,
 } from '~/lib/utils/datetime_utility';
 import { isNumeric } from '~/lib/utils/number_utils';
@@ -19,7 +20,7 @@ import {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 const EVENT_TYPE_LABEL = 'label';
 
@@ -537,22 +538,82 @@ export const generateFilterTextDescription = ({
 };
 
 /**
- * Generates value stream's GraphQL ID
+ * Given the data for all stages in a value stream, returns a Set of dates
+ * which contain stage data. As long as a single stage contains data for a day,
+ * that day will be returned in the result.
  *
- * @param id - Value stream's ID
- * @returns {String} - Value stream's GraphQL ID
+ * @param {Object} data The raw value stream stages data from the GraphQL response
+ * @returns {Set} Set of isoDate strings that have some stage data.
  */
-export const getValueStreamGraphQLId = (id) =>
-  convertToGraphQLId('Analytics::CycleAnalytics::ValueStream', id);
+const getDaysWithStageData = (data) =>
+  new Set(
+    data
+      .map(
+        ({
+          metrics: {
+            series: { averageDurations },
+          },
+        }) => averageDurations.map(({ date }) => date),
+      )
+      .flat(),
+  );
 
 /**
- * Generates value stream stage's GraphQL ID
+ * Prepares the average durations data returned via GraphQL to be rendered in
+ * the overview and stage charts.
  *
- * @param id - Value stream stage's ID
- * @returns {String} - Value stream stage's GraphQL ID
+ * The data returned from the API may not have data for every day in the date range,
+ * but for rendering purposes we want to ensure that we define a default value for
+ * each day in the range. This default value will be zero if any other stage has data
+ * on the same day, or `null` if all stages have no data for the day.
+ *
+ * @param {Object}  params
+ * @param {Date}    params.from
+ * @param {Date}    params.to
+ * @param {Array}   params.averageDurations Array of data points in the format `{ date, value }`
+ * @param {Set}     params.daysWithStageData Set of isoDate strings that have some stage data.
+ * This determines whether the default value for a day with blank data will be `null` or `0`.
+ * @returns {Array} The original data from `averageDurations`,
+ * but with data points for every day in the time period.
  */
-export const getValueStreamStageGraphQLId = (id) =>
-  convertToGraphQLId('Analytics::CycleAnalytics::Stage', id);
+const fillAverageDurationsData = ({ from, to, averageDurations, daysWithStageData }) => {
+  // For faster lookups, convert from array of data points:
+  // `[{ date: '10-10-2000', value: 1234 }, { date: '11-10-2000', value: 2345 }, ...]`
+  // to a keyed object by day:
+  // `{ '200-10-10': 1234, '2000-10-11': 2345, ... }`
+  const dataByDay = Object.fromEntries(averageDurations.map(({ date, value }) => [date, value]));
+
+  return getDatesInRange(from, to, toISODateFormat).map((day) => {
+    const defaultValue = daysWithStageData.has(day) ? 0 : null;
+    return [day, dataByDay[day] ?? defaultValue];
+  });
+};
+
+/**
+ * Takes the raw average durations data from the GraphQL request, and formats them
+ * to be rendered in the overview and stage charts.
+ *
+ * @param {Date}    from
+ * @param {Date}    to
+ * @param {Object}  stageData The raw average durations GraphQL response for all stages.
+ * @returns {Array} The average durations data formatted for the overview and stage charts.
+ */
+export const parseAverageDurationsQueryResponse = (from, to, stageData) => {
+  const daysWithStageData = getDaysWithStageData(stageData);
+  return stageData.map(
+    ({
+      id,
+      name,
+      metrics: {
+        series: { averageDurations },
+      },
+    }) => ({
+      id: getIdFromGraphQLId(id),
+      name,
+      data: fillAverageDurationsData({ from, to, averageDurations, daysWithStageData }),
+    }),
+  );
+};
 
 /**
  * Formats date for display in Value Stream Analytics duration charts

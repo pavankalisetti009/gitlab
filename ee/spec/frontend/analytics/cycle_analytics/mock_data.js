@@ -567,3 +567,64 @@ export const mockValueStreamStageMetricsNoDataResponse = {
     group: valueStreamStageMetricsNoData,
   },
 };
+
+export const averageDurationsStageData = [
+  {
+    id: 'gid://gitlab/Analytics::CycleAnalytics::Stage/1',
+    name: 'issue',
+    metrics: {
+      series: {
+        averageDurations: [
+          { date: '2019-01-02', value: 1032202 },
+          { date: '2019-01-03', value: 1295998 },
+          { date: '2019-01-04', value: 552478 },
+        ],
+      },
+    },
+  },
+  {
+    id: 'gid://gitlab/Analytics::CycleAnalytics::Stage/2',
+    name: 'plan',
+    metrics: {
+      series: {
+        averageDurations: [
+          { date: '2019-01-01', value: 54760 },
+          { date: '2019-01-02', value: 340918 },
+          { date: '2019-01-06', value: 237218 },
+        ],
+      },
+    },
+  },
+  {
+    id: 'gid://gitlab/Analytics::CycleAnalytics::Stage/3',
+    name: 'review',
+    metrics: {
+      series: {
+        averageDurations: [
+          { date: '2019-01-02', value: 340918 },
+          { date: '2019-01-05', value: 54760 },
+          { date: '2019-01-08', value: 16416 },
+          { date: '2019-01-09', value: 237218 },
+        ],
+      },
+    },
+  },
+];
+
+export const averageDurationsStageQueryResponses = averageDurationsStageData.map((stage) => ({
+  data: {
+    project: null,
+    group: {
+      id: 'gid://gitlab/Group/33',
+      valueStreams: {
+        nodes: [
+          {
+            __typename: 'ValueStream',
+            stages: [stage],
+          },
+        ],
+        __typename: 'ValueStreamConnection',
+      },
+    },
+  },
+}));

@@ -1,6 +1,4 @@
-#import "~/graphql_shared/fragments/page_info.fragment.graphql"
-
-fragment ValueStreamStageMetrics on ValueStreamConnection {
+fragment ValueStreamStageAverageDurations on ValueStreamConnection {
   # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
   # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
   # if you are modifying this file and it turns out selecting the ID makes sense here.
@@ -10,26 +8,18 @@ fragment ValueStreamStageMetrics on ValueStreamConnection {
       id
       name
       metrics(
-        timeframe: { start: $startDate, end: $endDate }
         projectIds: $projectIds
-        assigneeUsernames: $assigneeUsernames
-        authorUsername: $authorUsername
         milestoneTitle: $milestoneTitle
+        authorUsername: $authorUsername
         labelNames: $labelNames
+        assigneeUsernames: $assigneeUsernames
         not: $not
+        timeframe: { start: $startDate, end: $endDate }
       ) {
-        items(sort: END_EVENT_ASC, first: 100, after: $endCursor) {
-          edges {
-            node {
-              durationInMilliseconds
-              endEventTimestamp
-              record {
-                __typename
-              }
-            }
-          }
-          pageInfo {
-            ...PageInfo
+        series {
+          averageDurations {
+            date
+            value
           }
         }
       }

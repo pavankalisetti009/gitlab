@@ -2,12 +2,9 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import MockAdapter from 'axios-mock-adapter';
 import { shallowMount } from '@vue/test-utils';
 import { GlAlert } from '@gitlab/ui';
-import axios from '~/lib/utils/axios_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -16,13 +13,12 @@ import DurationChartLoader from 'ee/analytics/cycle_analytics/components/duratio
 import StageChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_chart.vue';
 import StageScatterChart from 'ee/analytics/cycle_analytics/components/duration_charts/stage_scatter_chart.vue';
 import OverviewChart from 'ee/analytics/cycle_analytics/components/duration_charts/overview_chart.vue';
+import getValueStreamStageAverageDurationsQuery from 'ee/analytics/cycle_analytics/graphql/queries/get_value_stream_stage_average_durations.query.graphql';
 import getValueStreamStageMetricsQuery from 'ee/analytics/cycle_analytics/graphql/queries/get_value_stream_stage_metrics.query.graphql';
 import {
   allowedStages as stages,
-  transformedDurationData,
-  durationOverviewChartPlottableData,
-  endpoints,
   valueStreams,
+  averageDurationsStageQueryResponses,
   mockProjectValueStreamStageMetricsResponse,
   mockGroupValueStreamStageMetricsResponse,
   mockValueStreamStageMetricsNoDataResponse,
@@ -37,18 +33,16 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('DurationChartLoader', () => {
   let wrapper;
-  let mock;
   let store;
+  let averageDurationsQueryHandler;
   let valueStreamStageMetricsQueryHandler;
 
   const [valueStream] = valueStreams;
   const [selectedStage] = stages;
   const namespacePath = 'fake/group/path';
-  const namespaceRestApiRequestPath = 'fake/group/rest-api-path';
   const namespace = {
     name: 'GitLab Org',
     path: namespacePath,
-    restApiRequestPath: namespaceRestApiRequestPath,
   };
 
   const cycleAnalyticsRequestParams = {
@@ -62,6 +56,7 @@ describe('DurationChartLoader', () => {
   };
 
   const gqlTransformedFilters = {
+    projectIds: null,
     authorUsername: null,
     assigneeUsernames: null,
     milestoneTitle: null,
@@ -95,7 +90,6 @@ describe('DurationChartLoader', () => {
         isOverviewStageSelected: () => isOverviewStageSelected,
         activeStages: () => stages,
         cycleAnalyticsRequestParams: () => cycleAnalyticsRequestParams,
-        namespaceRestApiRequestPath: () => namespaceRestApiRequestPath,
         currentValueStreamId: () => valueStream.id,
         isProjectNamespace: () => isProjectNamespace,
       },
@@ -111,10 +105,24 @@ describe('DurationChartLoader', () => {
     isOverviewStageSelected = true,
     isProjectNamespace = false,
     features = {},
-    valueStreamStageMetricsResponseHandler,
+    averageDurationsResponseHandler = null,
+    valueStreamStageMetricsResponseHandler = null,
   } = {}) => {
+    averageDurationsQueryHandler =
+      averageDurationsResponseHandler ||
+      jest
+        .fn()
+        .mockResolvedValueOnce(averageDurationsStageQueryResponses[0])
+        .mockResolvedValueOnce(averageDurationsStageQueryResponses[1])
+        .mockResolvedValueOnce(averageDurationsStageQueryResponses[2]);
+
+    valueStreamStageMetricsQueryHandler =
+      valueStreamStageMetricsResponseHandler ||
+      jest.fn().mockResolvedValue(mockGroupValueStreamStageMetricsResponse);
+
     const apolloProvider = createMockApollo([
-      [getValueStreamStageMetricsQuery, valueStreamStageMetricsResponseHandler],
+      [getValueStreamStageAverageDurationsQuery, averageDurationsQueryHandler],
+      [getValueStreamStageMetricsQuery, valueStreamStageMetricsQueryHandler],
     ]);
 
     store = createStore({ isOverviewStageSelected, isProjectNamespace });
@@ -133,48 +141,14 @@ describe('DurationChartLoader', () => {
   const findStageChart = () => wrapper.findComponent(StageChart);
   const findStageScatterChart = () => wrapper.findComponent(StageScatterChart);
 
-  const mockApiData = () => {
-    // The first 2 stages have different duration values,
-    // all subsequent requests should get the same data
-    mock
-      .onGet(endpoints.durationData)
-      .replyOnce(HTTP_STATUS_OK, transformedDurationData[0].data)
-      .onGet(endpoints.durationData)
-      .replyOnce(HTTP_STATUS_OK, transformedDurationData[1].data)
-      .onGet(endpoints.durationData)
-      .reply(HTTP_STATUS_OK, transformedDurationData[2].data);
-  };
-
-  const stagesRestApiRequests = stages.map((stage) =>
-    expect.objectContaining({
-      url: `/${namespaceRestApiRequestPath}/-/analytics/value_stream_analytics/value_streams/1/stages/${stage.id}/average_duration_chart`,
-      params: cycleAnalyticsRequestParams,
-    }),
-  );
-
-  beforeEach(() => {
-    mock = new MockAdapter(axios);
-  });
-
-  afterEach(() => {
-    mock.restore();
-  });
-
   describe('fetches chart data', () => {
     describe('default', () => {
       beforeEach(() => {
-        valueStreamStageMetricsQueryHandler = jest
-          .fn()
-          .mockResolvedValue(mockGroupValueStreamStageMetricsResponse);
-        mockApiData();
-
-        return createWrapper({
-          valueStreamStageMetricsResponseHandler: valueStreamStageMetricsQueryHandler,
-        });
+        return createWrapper();
       });
 
       it('fetches overview chart data', () => {
-        expect(mock.history.get).toEqual(stagesRestApiRequests);
+        expect(averageDurationsQueryHandler).toHaveBeenCalledTimes(stages.length);
       });
 
       it('does not fetch stage scatter chart data', () => {
@@ -190,12 +164,9 @@ describe('DurationChartLoader', () => {
       'individual stage selected and isProjectNamespace=$isProjectNamespace',
       ({ isProjectNamespace, singlePageResponse, paginatedResponse }) => {
         beforeEach(() => {
-          valueStreamStageMetricsQueryHandler = jest.fn().mockResolvedValue(singlePageResponse);
-          mockApiData();
-
           return createWrapper({
             isOverviewStageSelected: false,
-            valueStreamStageMetricsResponseHandler: valueStreamStageMetricsQueryHandler,
+            valueStreamStageMetricsResponseHandler: jest.fn().mockResolvedValue(singlePageResponse),
             isProjectNamespace,
           });
         });
@@ -208,21 +179,18 @@ describe('DurationChartLoader', () => {
         });
 
         it('does not fetch overview chart data', () => {
-          expect(mock.history.get).toHaveLength(0);
+          expect(averageDurationsQueryHandler).not.toHaveBeenCalled();
         });
 
         describe('with additional page of data', () => {
           beforeEach(() => {
-            valueStreamStageMetricsQueryHandler = jest
-              .fn()
-              .mockResolvedValueOnce(paginatedResponse)
-              .mockResolvedValueOnce(singlePageResponse);
-            mockApiData();
-
             return createWrapper({
               isOverviewStageSelected: false,
-              valueStreamStageMetricsResponseHandler: valueStreamStageMetricsQueryHandler,
               isProjectNamespace,
+              valueStreamStageMetricsResponseHandler: jest
+                .fn()
+                .mockResolvedValueOnce(paginatedResponse)
+                .mockResolvedValueOnce(singlePageResponse),
             });
           });
 
@@ -258,7 +226,7 @@ describe('DurationChartLoader', () => {
           });
 
           it('does not fetch overview chart data', () => {
-            expect(mock.history.get).toHaveLength(0);
+            expect(averageDurationsQueryHandler).not.toHaveBeenCalled();
           });
         });
       },
@@ -278,52 +246,27 @@ describe('DurationChartLoader', () => {
 
     describe('when error is thrown', () => {
       beforeEach(() => {
-        mock.onGet(endpoints.durationData).reply(HTTP_STATUS_NOT_FOUND);
-        return createWrapper();
+        return createWrapper({
+          averageDurationsResponseHandler: jest.fn().mockRejectedValue(new Error('oopsies')),
+        });
       });
 
       it('shows the error message', () => {
-        expect(findAlert().text()).toBe('Request failed with status code 404');
+        expect(findAlert().text()).toBe('oopsies');
       });
 
       it('logs the error to sentry', () => {
         expect(Sentry.captureException).toHaveBeenCalled();
       });
-
-      describe('when selected stage is changed', () => {
-        const [, newStage] = stages;
-
-        beforeEach(() => {
-          store.commit('setSelectedStage', newStage);
-        });
-
-        it('clears the error alert', () => {
-          expect(findAlert().exists()).toBe(false);
-        });
-      });
-    });
-
-    describe('no data', () => {
-      beforeEach(() => {
-        mock.onGet(endpoints.durationData).reply(HTTP_STATUS_OK, []);
-        return createWrapper();
-      });
-
-      it('shows an empty chart', () => {
-        expect(findOverviewChart().props('plottableData')).toEqual([]);
-      });
     });
 
     describe('with data', () => {
       beforeEach(() => {
-        mockApiData();
         return createWrapper();
       });
 
       it('shows the chart with the plottable data', () => {
-        expect(findOverviewChart().props()).toMatchObject({
-          plottableData: expect.arrayContaining(durationOverviewChartPlottableData),
-        });
+        expect(findOverviewChart().props().plottableData).toMatchSnapshot();
       });
 
       it('does not show the stage chart', () => {
@@ -387,13 +330,8 @@ describe('DurationChartLoader', () => {
 
     describe('with data', () => {
       beforeEach(() => {
-        valueStreamStageMetricsQueryHandler = jest
-          .fn()
-          .mockResolvedValue(mockGroupValueStreamStageMetricsResponse);
-
         return createWrapper({
           isOverviewStageSelected: false,
-          valueStreamStageMetricsResponseHandler: valueStreamStageMetricsQueryHandler,
         });
       });
 
@@ -423,22 +361,20 @@ describe('DurationChartLoader', () => {
         let resolveSecondPage;
 
         beforeEach(() => {
-          valueStreamStageMetricsQueryHandler = jest
-            .fn()
-            .mockResolvedValueOnce(
-              new Promise((resolve) => {
-                resolveFirstPage = resolve;
-              }),
-            )
-            .mockResolvedValueOnce(
-              new Promise((resolve) => {
-                resolveSecondPage = resolve;
-              }),
-            );
-
           return createWrapper({
             isOverviewStageSelected: false,
-            valueStreamStageMetricsResponseHandler: valueStreamStageMetricsQueryHandler,
+            valueStreamStageMetricsResponseHandler: jest
+              .fn()
+              .mockResolvedValueOnce(
+                new Promise((resolve) => {
+                  resolveFirstPage = resolve;
+                }),
+              )
+              .mockResolvedValueOnce(
+                new Promise((resolve) => {
+                  resolveSecondPage = resolve;
+                }),
+              ),
           });
         });
 
@@ -498,19 +434,13 @@ describe('DurationChartLoader', () => {
   describe('`vsaStageTimeScatterChart` feature flag is disabled', () => {
     describe('fetches chart data', () => {
       beforeEach(() => {
-        valueStreamStageMetricsQueryHandler = jest
-          .fn()
-          .mockResolvedValue(mockGroupValueStreamStageMetricsResponse);
-
-        mockApiData();
         return createWrapper({
-          valueStreamStageMetricsResponseHandler: valueStreamStageMetricsQueryHandler,
           features: { vsaStageTimeScatterChart: false },
         });
       });
 
       it('when the component is created', () => {
-        expect(mock.history.get).toEqual(stagesRestApiRequests);
+        expect(averageDurationsQueryHandler).toHaveBeenCalledTimes(stages.length);
         expect(valueStreamStageMetricsQueryHandler).not.toHaveBeenCalled();
       });
 
@@ -520,7 +450,7 @@ describe('DurationChartLoader', () => {
 
         await waitForPromises();
 
-        expect(mock.history.get).toEqual([...stagesRestApiRequests, ...stagesRestApiRequests]);
+        expect(averageDurationsQueryHandler).toHaveBeenCalledTimes(stages.length);
         expect(valueStreamStageMetricsQueryHandler).not.toHaveBeenCalled();
       });
     });
@@ -541,51 +471,24 @@ describe('DurationChartLoader', () => {
 
       describe('when error is thrown', () => {
         beforeEach(() => {
-          mock.onGet(endpoints.durationData).reply(HTTP_STATUS_NOT_FOUND);
           return createWrapper({
             isOverviewStageSelected: false,
             features: { vsaStageTimeScatterChart: false },
+            averageDurationsResponseHandler: jest.fn().mockRejectedValue(new Error('oopsies')),
           });
         });
 
         it('shows the error message', () => {
-          expect(findAlert().text()).toBe('Request failed with status code 404');
+          expect(findAlert().text()).toBe('oopsies');
         });
 
         it('logs the error to sentry', () => {
           expect(Sentry.captureException).toHaveBeenCalled();
         });
-
-        describe('when selected stage is changed', () => {
-          const [, newStage] = stages;
-
-          beforeEach(() => {
-            store.commit('setSelectedStage', newStage);
-          });
-
-          it('clears the error alert', () => {
-            expect(findAlert().exists()).toBe(false);
-          });
-        });
-      });
-
-      describe('no data', () => {
-        beforeEach(() => {
-          mock.onGet(endpoints.durationData).reply(HTTP_STATUS_OK, []);
-          return createWrapper({
-            isOverviewStageSelected: false,
-            features: { vsaStageTimeScatterChart: false },
-          });
-        });
-
-        it('shows an empty chart', () => {
-          expect(findStageChart().props('plottableData')).toEqual([]);
-        });
       });
 
       describe('with data', () => {
         beforeEach(() => {
-          mockApiData();
           return createWrapper({
             isOverviewStageSelected: false,
             features: { vsaStageTimeScatterChart: false },
@@ -593,13 +496,8 @@ describe('DurationChartLoader', () => {
         });
 
         it('shows the chart with the plottable data', () => {
-          expect(findStageChart().props()).toMatchObject({
-            stageTitle: selectedStage.title,
-            plottableData: expect.arrayContaining([
-              ['2019-01-01', 1134000],
-              ['2019-01-02', 2321000],
-            ]),
-          });
+          expect(findStageChart().props().stageTitle).toBe(selectedStage.title);
+          expect(findStageChart().props().plottableData).toMatchSnapshot();
         });
 
         it('does not show the overview chart', () => {

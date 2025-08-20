@@ -1,12 +1,11 @@
-#import "../fragments/value_stream_stage_metrics.fragment.graphql"
+#import "../fragments/value_stream_stage_average_durations.fragment.graphql"
 
-query getValueStreamStageMetrics(
+query getValueStreamStageAverageDurations(
   $fullPath: ID!
   $valueStreamId: ID!
   $stageId: ID!
   $startDate: Date!
   $endDate: Date!
-  $endCursor: String = ""
   $projectIds: [ProjectID!]
   $assigneeUsernames: [String!]
   $authorUsername: String
@@ -18,13 +17,13 @@ query getValueStreamStageMetrics(
   group(fullPath: $fullPath) @skip(if: $isProject) {
     id
     valueStreams(id: $valueStreamId) {
-      ...ValueStreamStageMetrics
+      ...ValueStreamStageAverageDurations
     }
   }
   project(fullPath: $fullPath) @include(if: $isProject) {
     id
     valueStreams(id: $valueStreamId) {
-      ...ValueStreamStageMetrics
+      ...ValueStreamStageAverageDurations
     }
   }
 }
