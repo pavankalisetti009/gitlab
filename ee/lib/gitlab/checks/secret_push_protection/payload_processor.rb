@@ -212,15 +212,13 @@ module Gitlab
           # Get new commits
           commits = project.repository.new_commits(revisions)
 
-          if Feature.enabled?(:secret_detection_filter_deleted_files, project)
-            diff_filters = [
-              :DIFF_STATUS_ADDED,
-              :DIFF_STATUS_MODIFIED,
-              :DIFF_STATUS_TYPE_CHANGE,
-              :DIFF_STATUS_COPIED,
-              :DIFF_STATUS_RENAMED
-            ]
-          end
+          diff_filters = [
+            :DIFF_STATUS_ADDED,
+            :DIFF_STATUS_MODIFIED,
+            :DIFF_STATUS_TYPE_CHANGE,
+            :DIFF_STATUS_COPIED,
+            :DIFF_STATUS_RENAMED
+          ]
 
           # Get changed paths
           paths = project.repository.find_changed_paths(commits, merge_commit_diff_mode: :all_parents,

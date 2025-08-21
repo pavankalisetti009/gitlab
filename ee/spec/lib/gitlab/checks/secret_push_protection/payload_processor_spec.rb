@@ -87,23 +87,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       end
     end
 
-    context 'when secret_detection_filter_deleted_files is disabled' do
-      before do
-        stub_feature_flags(secret_detection_filter_deleted_files: false)
-      end
-
-      context 'with a valid diff blob' do
-        it 'does not pass diff filters to find_changed_paths' do
-          expect(project.repository).to receive(:find_changed_paths).with(
-            anything,
-            hash_including(diff_filters: nil)
-          ).and_call_original
-
-          payload_processor.standardize_payloads
-        end
-      end
-    end
-
     context 'when parse_diffs returns an empty array due to invalid hunk header' do
       let(:bad_diff_blob) do
         ::Gitlab::GitalyClient::DiffBlob.new(
