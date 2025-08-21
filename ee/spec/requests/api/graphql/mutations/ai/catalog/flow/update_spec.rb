@@ -143,5 +143,19 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       )
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
     end
+
+    context 'when passing only required arguments (test that mutation handles absence of optional args)' do
+      let(:params) { { id: flow.to_global_id } }
+
+      it 'works without errors' do
+        execute
+
+        expect(graphql_dig_at(mutation_response, :errors)).to be_empty
+      end
+
+      it 'does not change the definition' do
+        expect { execute }.not_to change { latest_version.reload.attributes }
+      end
+    end
   end
 end
