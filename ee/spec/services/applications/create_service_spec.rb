@@ -11,7 +11,7 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
   let(:group) { create(:group) }
   let(:params) { attributes_for(:application, scopes: %w[read_user]) }
 
-  subject(:service) { described_class.new(user, params) }
+  subject(:service) { described_class.new(user, test_request, params) }
 
   describe '#audit_oauth_application_creation' do
     where(:case_name, :owner, :entity_type) do
@@ -41,11 +41,11 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
           ip_address: test_request.remote_ip
         )
 
-        service.execute(test_request)
+        service.execute
       end
 
       it 'creates AuditEvent with correct entity type' do
-        expect { service.execute(test_request) }.to change(AuditEvent, :count).by(1)
+        expect { service.execute }.to change(AuditEvent, :count).by(1)
         expect(AuditEvent.last.entity_type).to eq(entity_type)
       end
     end
@@ -62,7 +62,7 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
           )
         )
 
-        service.execute(test_request)
+        service.execute
       end
     end
   end
@@ -82,7 +82,7 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
       end
 
       it 'sets ropc_enabled? correctly' do
-        expect(service.execute(test_request).ropc_enabled?).to eq(ropc_enabled)
+        expect(service.execute.ropc_enabled?).to eq(ropc_enabled)
       end
     end
   end
