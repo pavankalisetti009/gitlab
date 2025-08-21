@@ -9,6 +9,7 @@ import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
+import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 
 import { mockToolQueryResponse, toolTitles } from '../mock_data';
 
@@ -20,7 +21,7 @@ describe('AiCatalogAgentForm', () => {
 
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
-  const findProjectIdField = () => wrapper.findByTestId('agent-form-input-project-id');
+  const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
@@ -71,9 +72,9 @@ describe('AiCatalogAgentForm', () => {
 
   describe('Initial Rendering', () => {
     it('renders the form with the correct initial values when props are provided', () => {
-      createWrapper({ initialValues, mode: 'edit' });
+      createWrapper({ initialValues });
 
-      expect(findProjectIdField().props('value')).toBe(initialValues.projectId);
+      expect(findProjectDropdown().props('value')).toBe(initialValues.projectId);
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
@@ -84,12 +85,18 @@ describe('AiCatalogAgentForm', () => {
     it('renders the form with default values when no props are provided', () => {
       createWrapper();
 
-      expect(findProjectIdField().props('value')).toBe('gid://gitlab/Project/1000000');
+      expect(findProjectDropdown().props('value')).toBe(null);
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
       expect(findUserPromptField().props('value')).toBe('');
       expect(findVisibilityLevel().attributes('checked')).toBe(String(VISIBILITY_LEVEL_PRIVATE));
+    });
+
+    it('does not render project dropdown when in edit mode', () => {
+      createWrapper({ mode: 'edit' });
+
+      expect(findProjectDropdown().exists()).toBe(false);
     });
   });
 
@@ -187,7 +194,7 @@ describe('AiCatalogAgentForm', () => {
 
   describe('Form Submission', () => {
     it('emits form values when user clicks submit', async () => {
-      createWrapper({ initialValues, mode: 'edit' });
+      createWrapper({ initialValues });
 
       await findFormFields().vm.$emit('submit');
 
@@ -199,7 +206,6 @@ describe('AiCatalogAgentForm', () => {
 
       const formValuesWithRandomSpaces = {
         ...initialValues,
-        projectId: addRandomSpacesToString(initialValues.projectId),
         name: addRandomSpacesToString(initialValues.name),
         description: addRandomSpacesToString(initialValues.description),
         systemPrompt: addRandomSpacesToString(initialValues.systemPrompt),
@@ -214,7 +220,7 @@ describe('AiCatalogAgentForm', () => {
     });
   });
 
-  describe('with error message', () => {
+  describe('with error messages', () => {
     const mockErrorMessage = 'The agent could not be created';
 
     beforeEach(() => {
@@ -223,6 +229,14 @@ describe('AiCatalogAgentForm', () => {
 
     it('passes error alert', () => {
       expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage]);
+    });
+
+    it('renders errors with form errors', async () => {
+      const formError = 'Project is required';
+
+      await findProjectDropdown().vm.$emit('error', formError);
+
+      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage, formError]);
     });
 
     it('emits dismiss-errors event', () => {

@@ -10,6 +10,7 @@ const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_PROJECT = 'Project';
+const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 
 const mockProject = {
   id: 'gid://gitlab/Project/1',
@@ -22,6 +23,46 @@ export const mockPageInfo = {
   startCursor: 'eyJpZCI6IjUxIn0',
   endCursor: 'eyJpZCI6IjM1In0',
   __typename: 'PageInfo',
+};
+
+export const mockProjects = [
+  {
+    id: 'gid://gitlab/Project/1',
+    name: 'Project 1',
+    nameWithNamespace: 'Group / Project 1',
+    __typename: TYPENAME_PROJECT,
+  },
+  {
+    id: 'gid://gitlab/Project/2',
+    name: 'Project 2',
+    nameWithNamespace: 'Group / Project 2',
+    __typename: TYPENAME_PROJECT,
+  },
+];
+
+export const mockProjectsResponse = {
+  data: {
+    projects: {
+      nodes: mockProjects,
+      pageInfo: mockPageInfo,
+      __typename: TYPENAME_PROJECTS_CONNECTION,
+    },
+  },
+};
+
+export const mockEmptyProjectsResponse = {
+  data: {
+    projects: {
+      nodes: [],
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+      __typename: TYPENAME_PROJECTS_CONNECTION,
+    },
+  },
 };
 
 export const toolTitles = ['Gitlab Blob Search', 'Ci Linter', 'Run Git Command'];

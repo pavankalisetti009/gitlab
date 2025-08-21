@@ -2566,10 +2566,10 @@ msgstr ""
 msgid "AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include..."
 msgstr ""
 
-msgid "AICatalog|Project ID"
+msgid "AICatalog|Project"
 msgstr ""
 
-msgid "AICatalog|Project ID is required."
+msgid "AICatalog|Project is required."
 msgstr ""
 
 msgid "AICatalog|Provide default instructions or context that will be included with every user interaction."

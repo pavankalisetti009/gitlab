@@ -54,7 +54,6 @@ export default {
             input: {
               ...formValues,
               id: this.aiCatalogAgent.id,
-              projectId: undefined,
             },
           },
         });

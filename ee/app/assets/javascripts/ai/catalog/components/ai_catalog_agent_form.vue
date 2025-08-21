@@ -31,13 +31,13 @@ import { createFieldValidators } from '../utils';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import ErrorsAlert from './errors_alert.vue';
-
-const tmpProjectId = 'gid://gitlab/Project/1000000';
+import FormProjectDropdown from './form_project_dropdown.vue';
 
 export default {
   components: {
     ErrorsAlert,
     AiCatalogFormButtons,
+    FormProjectDropdown,
     GlAlert,
     GlButton,
     GlForm,
@@ -73,7 +73,7 @@ export default {
       required: false,
       default() {
         return {
-          projectId: tmpProjectId,
+          projectId: null,
           name: '',
           description: '',
           systemPrompt: '',
@@ -95,6 +95,7 @@ export default {
           ? VISIBILITY_LEVEL_PUBLIC
           : VISIBILITY_LEVEL_PRIVATE,
       },
+      formErrors: [],
     };
   },
   computed: {
@@ -103,6 +104,9 @@ export default {
     },
     isEditMode() {
       return this.mode === 'edit';
+    },
+    allErrorMessages() {
+      return [...this.errorMessages, ...this.formErrors];
     },
     submitButtonText() {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create agent');
@@ -142,23 +146,24 @@ export default {
       return '';
     },
     fields() {
+      const projectIdField = this.isEditMode
+        ? {}
+        : {
+            projectId: {
+              label: s__('AICatalog|Project'),
+              validators: createFieldValidators({
+                requiredLabel: s__('AICatalog|Project is required.'),
+              }),
+              groupAttrs: {
+                labelDescription: s__(
+                  'AICatalog|Select a project for your AI agent to be associated with.',
+                ),
+              },
+            },
+          };
+
       return {
-        projectId: {
-          label: s__('AICatalog|Project ID'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|Project ID is required.'),
-          }),
-          inputAttrs: {
-            'data-testid': 'agent-form-input-project-id',
-            placeholder: tmpProjectId,
-            disabled: this.isEditMode,
-          },
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Select a project for your AI agent to be associated with.',
-            ),
-          },
-        },
+        ...projectIdField,
         name: {
           label: __('Name'),
           validators: createFieldValidators({
@@ -244,7 +249,7 @@ export default {
   methods: {
     handleSubmit() {
       const transformedValues = {
-        projectId: this.formValues.projectId.trim(),
+        projectId: this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         systemPrompt: this.formValues.systemPrompt.trim(),
@@ -261,6 +266,13 @@ export default {
     handleToolSearch(search) {
       this.toolFilter = search;
     },
+    onError(error) {
+      this.formErrors.push(error);
+    },
+    dismissErrors() {
+      this.formErrors = [];
+      this.$emit('dismiss-errors');
+    },
   },
   indexRoute: AI_CATALOG_AGENTS_ROUTE,
 };
@@ -268,7 +280,7 @@ export default {
 
 <template>
   <div>
-    <errors-alert :error-messages="errorMessages" @dismiss="$emit('dismiss-errors')" />
+    <errors-alert :error-messages="allErrorMessages" @dismiss="dismissErrors" />
     <gl-form :id="formId" @submit.prevent="">
       <gl-form-fields
         v-model="formValues"
@@ -276,6 +288,9 @@ export default {
         :fields="fields"
         @submit="handleSubmit"
       >
+        <template #input(projectId)="{ id }">
+          <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
+        </template>
         <template #input(description)="{ id, input, value, blur, validation }">
           <gl-form-textarea
             :id="id"
