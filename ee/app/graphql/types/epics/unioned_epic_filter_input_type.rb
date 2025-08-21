@@ -22,6 +22,11 @@ module Types
       argument :author_usernames, [GraphQL::Types::String],
         required: false,
         description: 'Filters epics that are authored by one of the given users.'
+
+      argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+        required: false,
+        experiment: { milestone: '18.4' },
+        description: 'Filter custom fields by one of the given values.'
     end
   end
 end

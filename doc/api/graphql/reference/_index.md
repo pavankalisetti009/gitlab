@@ -53614,6 +53614,7 @@ Attributes for defining a tracking event.
 | ---- | ---- | ----------- |
 | <a id="unionedepicfilterinputauthorusername"></a>`authorUsername` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Deprecated**: Use authorUsernames instead. Deprecated in GitLab 16.6. |
 | <a id="unionedepicfilterinputauthorusernames"></a>`authorUsernames` | [`[String!]`](#string) | Filters epics that are authored by one of the given users. |
+| <a id="unionedepicfilterinputcustomfield"></a>`customField` {{< icon name="warning-solid" >}} | [`[WorkItemWidgetCustomFieldFilterInputType!]`](#workitemwidgetcustomfieldfilterinputtype) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.4. |
 | <a id="unionedepicfilterinputlabelname"></a>`labelName` {{< icon name="warning-solid" >}} | [`[String!]`](#string) | **Deprecated**: Use labelNames instead. Deprecated in GitLab 16.6. |
 | <a id="unionedepicfilterinputlabelnames"></a>`labelNames` | [`[String!]`](#string) | Filters epics that have at least one of the given labels. |
 
@@ -53625,6 +53626,7 @@ Attributes for defining a tracking event.
 | ---- | ---- | ----------- |
 | <a id="unionedissuefilterinputassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Filters issues that are assigned to at least one of the given users. |
 | <a id="unionedissuefilterinputauthorusernames"></a>`authorUsernames` | [`[String!]`](#string) | Filters issues that are authored by one of the given users. |
+| <a id="unionedissuefilterinputcustomfield"></a>`customField` {{< icon name="warning-solid" >}} | [`[WorkItemWidgetCustomFieldFilterInputType!]`](#workitemwidgetcustomfieldfilterinputtype) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.4. |
 | <a id="unionedissuefilterinputlabelnames"></a>`labelNames` | [`[String!]`](#string) | Filters issues that have at least one of the given labels. |
 
 ### `UnionedMergeRequestFilterInput`
@@ -53646,6 +53648,7 @@ Attributes for defining a tracking event.
 | ---- | ---- | ----------- |
 | <a id="unionedworkitemfilterinputassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Filters work items that are assigned to at least one of the given users. |
 | <a id="unionedworkitemfilterinputauthorusernames"></a>`authorUsernames` | [`[String!]`](#string) | Filters work items that are authored by one of the given users. |
+| <a id="unionedworkitemfilterinputcustomfield"></a>`customField` {{< icon name="warning-solid" >}} | [`[WorkItemWidgetCustomFieldFilterInputType!]`](#workitemwidgetcustomfieldfilterinputtype) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.4. |
 | <a id="unionedworkitemfilterinputlabelnames"></a>`labelNames` | [`[String!]`](#string) | Filters work items that have at least one of the given labels. |
 
 ### `UpdateDiffImagePositionInput`

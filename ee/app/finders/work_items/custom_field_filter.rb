@@ -17,6 +17,10 @@ module WorkItems
         issuables = apply_custom_field_filters(issuables, not_params[:custom_field], :exclude)
       end
 
+      if or_params && or_params[:custom_field].present?
+        issuables = apply_custom_field_filters(issuables, or_params[:custom_field], :or_include)
+      end
+
       issuables
     end
 
@@ -55,10 +59,15 @@ module WorkItems
 
       if filter_params[:selected_option_ids].nil? &&
           select_option_ids.size != filter_params[:selected_option_values].size
-        if filter_type == :include
+
+        case filter_type
+        when :include
           return issuables.none
-        elsif filter_type == :exclude
+        when :exclude
           return issuables
+        when :or_include
+          # Return none records only when selected options are empty, in any other case we will perform the query.
+          return issuables.none if select_option_ids.empty?
         end
       end
 
@@ -67,6 +76,8 @@ module WorkItems
         apply_include_filter(issuables, custom_field, select_option_ids)
       when :exclude
         apply_exclude_filter(issuables, custom_field, select_option_ids)
+      when :or_include
+        apply_or_include_filter(issuables, custom_field, select_option_ids)
       end
     end
 
@@ -85,6 +96,10 @@ module WorkItems
 
     def apply_exclude_filter(issuables, custom_field, select_option_ids)
       issuables.where_not_exists(matching_select_option_clause(issuables, custom_field, select_option_ids))
+    end
+
+    def apply_or_include_filter(issuables, custom_field, select_option_ids)
+      issuables.where_exists(matching_select_option_clause(issuables, custom_field, select_option_ids))
     end
 
     def matching_select_option_clause(issuables, custom_field, select_option_ids)
