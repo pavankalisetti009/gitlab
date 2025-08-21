@@ -25952,6 +25952,9 @@ msgstr ""
 msgid "Environments|Stop environment"
 msgstr ""
 
+msgid "Environments|Stop environment %{environmentName}"
+msgstr ""
+
 msgid "Environments|Stop environments that have not been updated since the specified date:"
 msgstr ""
 
