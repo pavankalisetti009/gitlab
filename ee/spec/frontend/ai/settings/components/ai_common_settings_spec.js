@@ -36,6 +36,11 @@ describe('AiCommonSettings', () => {
           },
         },
       },
+      slots: {
+        'ai-common-settings-top': '<div data-testid="top-slot-content">Top slot content</div>',
+        'ai-common-settings-bottom':
+          '<div data-testid="bottom-slot-content">Bottom slot content</div>',
+      },
     });
   };
 
@@ -44,6 +49,8 @@ describe('AiCommonSettings', () => {
     wrapper.findByTestId('general-settings-subtitle');
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findForm = () => wrapper.findComponent(AiCommonSettingsForm);
+  const findTopSettingsSlot = () => wrapper.findByTestId('top-slot-content');
+  const findBottomSettingsSlot = () => wrapper.findByTestId('bottom-slot-content');
 
   beforeEach(() => {
     createComponent();
@@ -95,6 +102,11 @@ describe('AiCommonSettings', () => {
         'Configure AI-native GitLab Duo features',
       );
     });
+
+    it('renders ai-common-settings slots', () => {
+      expect(findTopSettingsSlot().exists()).toBe(true);
+      expect(findBottomSettingsSlot().exists()).toBe(true);
+    });
   });
 
   describe('when not on general settings page', () => {
@@ -112,6 +124,11 @@ describe('AiCommonSettings', () => {
 
     it('renders correct subtitle in PageHeading', () => {
       expect(wrapper.findByTestId('configuration-page-subtitle').exists()).toBe(true);
+    });
+
+    it('renders ai-common-settings slots', () => {
+      expect(findTopSettingsSlot().exists()).toBe(true);
+      expect(findBottomSettingsSlot().exists()).toBe(true);
     });
   });
 });
