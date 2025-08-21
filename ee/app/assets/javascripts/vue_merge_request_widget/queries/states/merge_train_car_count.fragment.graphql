@@ -1,6 +1,6 @@
 fragment MergeTrainCarCount on Project {
   id
-  mergeTrains {
+  mergeTrains(targetBranches: $targetBranches) {
     nodes {
       cars {
         count

@@ -79,6 +79,7 @@ describe('Requested changes merge checks component', () => {
         mr: {
           targetProjectFullPath: 'gitlab-org/gitlab',
           iid: '1',
+          targetBranch: 'master',
         },
         check: {
           identifier: 'requested_changes',
@@ -160,11 +161,13 @@ describe('Requested changes merge checks component', () => {
     it('sends GraphQL mutation when confirming in modal', () => {
       findGlModal().vm.$emit('primary');
 
-      expect(updateMergeRequestMutationMock).toHaveBeenCalledWith({
-        iid: '1',
-        overrideRequestedChanges: true,
-        projectPath: 'gitlab-org/gitlab',
-      });
+      expect(updateMergeRequestMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          iid: '1',
+          overrideRequestedChanges: true,
+          projectPath: 'gitlab-org/gitlab',
+        }),
+      );
     });
 
     it('renders list of change requesters', () => {
@@ -200,11 +203,13 @@ describe('Requested changes merge checks component', () => {
     it('sends GraphQL mutation when confirming in modal', () => {
       findGlModal().vm.$emit('primary');
 
-      expect(updateMergeRequestMutationMock).toHaveBeenCalledWith({
-        iid: '1',
-        overrideRequestedChanges: false,
-        projectPath: 'gitlab-org/gitlab',
-      });
+      expect(updateMergeRequestMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          iid: '1',
+          overrideRequestedChanges: false,
+          projectPath: 'gitlab-org/gitlab',
+        }),
+      );
     });
   });
 
@@ -247,10 +252,12 @@ describe('Requested changes merge checks component', () => {
       it('sends GraphQL mutation when confirming in modal', () => {
         findRemoveChangeRequestModel().vm.$emit('primary');
 
-        expect(removeChangeRequestMutationMock).toHaveBeenCalledWith({
-          iid: '1',
-          projectPath: 'gitlab-org/gitlab',
-        });
+        expect(removeChangeRequestMutationMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            iid: '1',
+            projectPath: 'gitlab-org/gitlab',
+          }),
+        );
       });
     });
   });
