@@ -171,6 +171,7 @@ gem 'apollo_upload_server', '~> 2.1.6', feature_category: :api
 # Cells
 gem 'gitlab-topology-service-client', '~> 0.1',
   path: 'vendor/gems/gitlab-topology-service-client',
+  require: 'gitlab/cells/topology_service',
   feature_category: :cell
 
 # Duo Workflow
