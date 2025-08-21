@@ -92,7 +92,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
   end
 
   context 'when agent cannot be updated' do
-    let(:params) { super().merge(name: '') }
+    let(:params) { super().merge(name: nil) }
 
     it 'returns the service error message and item with original attributes' do
       original_name = agent.name

@@ -131,7 +131,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         let(:params) do
           {
             flow: flow,
-            name: ''
+            name: nil
           }
         end
 

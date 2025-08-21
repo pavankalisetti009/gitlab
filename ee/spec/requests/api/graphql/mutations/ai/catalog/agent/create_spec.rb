@@ -101,7 +101,8 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
 
       expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to contain_exactly(
         "Description can't be blank",
-        "Name can't be blank"
+        "Name can't be blank",
+        "Name is too short (minimum is 3 characters)"
       )
       expect(graphql_data_at(:ai_catalog_agent_create, :item)).to be_nil
     end

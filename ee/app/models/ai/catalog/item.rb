@@ -10,8 +10,8 @@ module Ai
 
       validates :organization, :latest_version, :item_type, :description, :name, presence: true
 
-      validates :name, length: { maximum: 255 }
-      validates :description, length: { maximum: 1_024 }
+      validates :name, length: { minimum: 3, maximum: 255 }, allow_nil: true
+      validates :description, length: { maximum: 1_024 }, allow_nil: true
 
       validates_inclusion_of :public, in: [true, false]
       validate :validate_public_item_cannot_become_private

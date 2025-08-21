@@ -105,7 +105,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
   end
 
   context 'when flow cannot be updated' do
-    let(:params) { super().merge(name: '') }
+    let(:params) { super().merge(name: nil) }
 
     it 'returns the service error message and item with original attributes' do
       original_name = flow.name

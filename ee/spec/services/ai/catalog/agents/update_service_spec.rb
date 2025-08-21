@@ -225,7 +225,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         let(:params) do
           {
             agent: agent,
-            name: ''
+            name: nil
           }
         end
 
