@@ -21,6 +21,11 @@ module EE
             required: false,
             description: 'Filter by negated iteration ID wildcard.'
 
+          argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+            required: false,
+            experiment: { milestone: '18.4' },
+            description: 'Filter by negated custom fields.'
+
           validates mutually_exclusive: [:iteration_id, :iteration_wildcard_id]
         end
       end

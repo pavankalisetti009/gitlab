@@ -9,54 +9,92 @@ module WorkItems
     end
 
     def filter(issuables)
-      return issuables if params[:custom_field].blank?
-      return issuables if parent && !parent.licensed_feature_available?(:custom_fields)
-
-      params[:custom_field].inject(issuables) do |issuables, filter_params|
-        custom_field = if filter_params[:custom_field_id]
-                         Issuables::CustomField.find_by_id(filter_params[:custom_field_id])
-                       elsif @parent
-                         Issuables::CustomField.of_namespace(@parent.root_ancestor)
-                                        .find_by_case_insensitive_name(
-                                          filter_params[:custom_field_name]
-                                        )
-                       end
-
-        next issuables.none if custom_field.nil?
-
-        filter_by_field_type(issuables, custom_field, filter_params)
+      if params[:custom_field].present?
+        issuables = apply_custom_field_filters(issuables, params[:custom_field], :include)
       end
+
+      if not_params && not_params[:custom_field].present?
+        issuables = apply_custom_field_filters(issuables, not_params[:custom_field], :exclude)
+      end
+
+      issuables
     end
 
     private
 
-    def filter_by_field_type(issuables, custom_field, filter_params)
-      return issuables.none unless custom_field.field_type_select?
+    def apply_custom_field_filters(issuables, custom_field_params, filter_type)
+      return issuables if custom_field_params.blank?
+      return issuables if parent && !parent.licensed_feature_available?(:custom_fields)
 
-      filter_select_field(issuables, custom_field, filter_params)
+      custom_field_params.inject(issuables) do |issuables, filter_params|
+        custom_field = find_custom_field(filter_params)
+        next issuables.none if custom_field.nil?
+
+        filter_by_field_type(issuables, custom_field, filter_params, filter_type)
+      end
     end
 
-    def filter_select_field(issuables, custom_field, filter_params)
-      select_option_ids = filter_params[:selected_option_ids] ||
-        Issuables::CustomFieldSelectOption.of_field(custom_field)
-          .with_case_insensitive_values(filter_params[:selected_option_values]).pluck_primary_key
+    def find_custom_field(filter_params)
+      if filter_params[:custom_field_id]
+        Issuables::CustomField.find_by_id(filter_params[:custom_field_id])
+      elsif @parent
+        Issuables::CustomField
+          .of_namespace(@parent.root_ancestor)
+          .find_by_case_insensitive_name(filter_params[:custom_field_name])
+      end
+    end
+
+    def filter_by_field_type(issuables, custom_field, filter_params, filter_type)
+      return issuables.none unless custom_field.field_type_select?
+
+      filter_select_field(issuables, custom_field, filter_params, filter_type)
+    end
+
+    def filter_select_field(issuables, custom_field, filter_params, filter_type)
+      select_option_ids = get_select_option_ids(custom_field, filter_params)
 
       if filter_params[:selected_option_ids].nil? &&
           select_option_ids.size != filter_params[:selected_option_values].size
-        return issuables.none
+        if filter_type == :include
+          return issuables.none
+        elsif filter_type == :exclude
+          return issuables
+        end
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord -- Used only for this filter
-      select_option_ids.inject(issuables) do |issuables, select_option_id|
-        issuables.where_exists(
-          WorkItems::SelectFieldValue.where(
-            custom_field_id: custom_field.id,
-            custom_field_select_option_id: select_option_id
-          ).where(
-            WorkItems::SelectFieldValue.arel_table[:work_item_id].eq(issuables.arel_table[@work_item_id_column])
-          )
-        )
+      case filter_type
+      when :include
+        apply_include_filter(issuables, custom_field, select_option_ids)
+      when :exclude
+        apply_exclude_filter(issuables, custom_field, select_option_ids)
       end
+    end
+
+    def get_select_option_ids(custom_field, filter_params)
+      filter_params[:selected_option_ids] ||
+        Issuables::CustomFieldSelectOption.of_field(custom_field)
+          .with_case_insensitive_values(filter_params[:selected_option_values])
+          .pluck_primary_key
+    end
+
+    def apply_include_filter(issuables, custom_field, select_option_ids)
+      select_option_ids.inject(issuables) do |issuables, select_option_id|
+        issuables.where_exists(matching_select_option_clause(issuables, custom_field, select_option_id))
+      end
+    end
+
+    def apply_exclude_filter(issuables, custom_field, select_option_ids)
+      issuables.where_not_exists(matching_select_option_clause(issuables, custom_field, select_option_ids))
+    end
+
+    def matching_select_option_clause(issuables, custom_field, select_option_ids)
+      # rubocop: disable CodeReuse/ActiveRecord -- Used only for this filter
+      WorkItems::SelectFieldValue.where(
+        custom_field_id: custom_field.id,
+        custom_field_select_option_id: select_option_ids
+      ).where(
+        WorkItems::SelectFieldValue.arel_table[:work_item_id].eq(issuables.arel_table[@work_item_id_column])
+      )
       # rubocop: enable CodeReuse/ActiveRecord
     end
   end

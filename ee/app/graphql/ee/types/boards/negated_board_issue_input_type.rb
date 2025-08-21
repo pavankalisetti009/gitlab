@@ -14,6 +14,10 @@ module EE
             required: false,
             description: 'Health status not applied to the issue.
                     Includes issues where health status is not set.'
+          argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+            required: false,
+            experiment: { milestone: '18.4' },
+            description: 'Filter by negated custom fields.'
         end
       end
     end
