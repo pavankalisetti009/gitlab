@@ -31,14 +31,18 @@ RSpec.describe ::CloudConnector, feature_category: :system_access do
       let(:user) { build(:user, id: 1) }
 
       it 'generates a hash with the required fields based on the user' do
-        expect(headers).to match(expected_headers.merge('x-gitlab-global-user-id' => an_instance_of(String)))
+        user_headers = {
+          'x-gitlab-global-user-id' => an_instance_of(String),
+          'x-gitlab-user-id' => user.id.to_s
+        }
+        expect(headers).to match(expected_headers.merge(user_headers))
       end
     end
 
     context 'when the the user argument is nil' do
       let(:user) { nil }
 
-      it 'generates a hash without `X-Gitlab-Global-User-Id`' do
+      it 'generates a hash without `X-Gitlab-Global-User-Id` and `X-Gitlab-User-Id`' do
         expect(headers).to match(expected_headers)
       end
     end

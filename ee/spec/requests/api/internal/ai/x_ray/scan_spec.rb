@@ -51,6 +51,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         "X-Gitlab-Is-Team-Member" => [gitlab_team_member.to_s],
         "x-gitlab-realm" => [gitlab_realm],
         "x-gitlab-global-user-id" => [global_user_id],
+        "x-gitlab-user-id" => [user.id.to_s],
         "x-gitlab-version" => [Gitlab.version_info.to_s],
         "X-Request-ID" => [an_instance_of(String)],
         "X-Gitlab-Rails-Send-Start" => [an_instance_of(String)],
