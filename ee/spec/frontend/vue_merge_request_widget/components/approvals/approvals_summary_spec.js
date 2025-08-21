@@ -56,6 +56,28 @@ describe('MRWidget approvals summary', () => {
     });
   });
 
+  describe('when approval is optional', () => {
+    it('renders approval optional text', () => {
+      createComponent(approvalRulesResponse, { optional: true });
+
+      expect(wrapper.text()).toContain('Approval is optional');
+    });
+
+    it("renders why popover when can't approve", () => {
+      window.gon.current_user_id = 1;
+
+      const approvalData = JSON.parse(JSON.stringify(approvalRulesResponse));
+
+      approvalData.data.project.mergeRequest.committers.nodes.push({
+        id: 'gid://gitlab/Users/1',
+      });
+
+      createComponent(approvalData, { optional: true, disableCommittersApproval: true });
+
+      expect(wrapper.find('[data-testid="commit-cant-approve"]').exists()).toBe(true);
+    });
+  });
+
   describe('user committed', () => {
     afterEach(() => {
       window.gon.current_user_id = null;
