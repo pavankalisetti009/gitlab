@@ -18,6 +18,7 @@ module CloudConnector
       'x-gitlab-version' => Gitlab.version_info.to_s
     }.tap do |result|
       result['x-gitlab-global-user-id'] = Gitlab::GlobalAnonymousId.user_id(user) if user
+      result['x-gitlab-user-id'] = user.id.to_s if user
     end
   end
 

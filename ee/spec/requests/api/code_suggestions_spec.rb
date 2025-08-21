@@ -323,6 +323,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'X-Gitlab-Authentication-Type' => ['oidc'],
             'x-gitlab-instance-id' => [global_instance_id],
             'x-gitlab-global-user-id' => [global_user_id],
+            'x-gitlab-user-id' => [current_user.id.to_s],
             'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
             'x-gitlab-realm' => [gitlab_realm],
             'Authorization' => ["Bearer #{token}"],
@@ -400,6 +401,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'X-Gitlab-Authentication-Type' => ['oidc'],
               'x-gitlab-instance-id' => [global_instance_id],
               'x-gitlab-global-user-id' => [global_user_id],
+              'x-gitlab-user-id' => [current_user.id.to_s],
               'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
               'x-gitlab-realm' => [gitlab_realm],
               'Authorization' => ["Bearer #{token}"],
@@ -451,6 +453,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'Content-Type' => ['application/json'],
               'x-gitlab-instance-id' => [global_instance_id],
               'x-gitlab-global-user-id' => [global_user_id],
+              'x-gitlab-user-id' => [current_user.id.to_s],
               'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
               'x-gitlab-realm' => [gitlab_realm],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
@@ -1232,6 +1235,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       let(:base_headers) do
         {
           'x-gitlab-global-user-id' => global_user_id,
+          'x-gitlab-user-id' => current_user.id.to_s,
           'x-gitlab-instance-id' => global_instance_id,
           'x-gitlab-host-name' => Gitlab.config.gitlab.host,
           'x-gitlab-realm' => gitlab_realm,
