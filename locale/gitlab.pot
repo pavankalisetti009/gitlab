@@ -1183,6 +1183,9 @@ msgstr ""
 msgid "%{name} checked"
 msgstr ""
 
+msgid "%{name} feature flag status"
+msgstr ""
+
 msgid "%{name} is already being used for another emoji"
 msgstr ""
 
