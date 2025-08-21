@@ -9,11 +9,11 @@ module EE
 
         private
 
-        override :enterprise_bypass_confirmation?
-        def enterprise_bypass_confirmation?
+        override :enterprise_skip_reassignment_confirmation?
+        def enterprise_skip_reassignment_confirmation?
           ::Import::UserMapping::EnterpriseBypassAuthorizer.new(root_namespace, assignee_user, current_user).allowed?
         end
-        strong_memoize_attr :enterprise_bypass_confirmation?
+        strong_memoize_attr :enterprise_skip_reassignment_confirmation?
 
         override :run_validations
         def run_validations
