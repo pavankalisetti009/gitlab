@@ -24,7 +24,7 @@ class PushRule < ApplicationRecord
     if global?
       License.feature_available?(feature_sym)
     else
-      object ||= (project || group)
+      object ||= container
       object&.feature_available?(feature_sym)
     end
   end
@@ -69,7 +69,15 @@ class PushRule < ApplicationRecord
     true
   end
 
+  def organization
+    container&.organization
+  end
+
   private
+
+  def container
+    project || group
+  end
 
   def convert_to_re2
     self.regexp_uses_re2 = true
@@ -79,13 +87,14 @@ class PushRule < ApplicationRecord
     value = read_attribute(setting)
 
     # return if value is true/false or if current object is the global setting
+    # for OrganizationPushRule this will always return value
     return value if global? || !value.nil?
 
-    PushRuleFinder.new.execute&.public_send(setting)
+    PushRuleFinder.new(organization).execute&.public_send(setting)
   end
 
   def write_setting_with_global_default(setting, value)
-    enabled_globally = PushRuleFinder.new.execute&.public_send(setting)
+    enabled_globally = PushRuleFinder.new(organization).execute&.public_send(setting)
     is_disabled = !Gitlab::Utils.to_boolean(value)
 
     # If setting is globally disabled and user disable it at project level,

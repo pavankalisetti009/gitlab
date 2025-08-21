@@ -212,7 +212,7 @@ RSpec.describe EE::Gitlab::Checks::PushRules::CommitCheck, feature_category: :so
       context 'when it is only enabled in Global settings' do
         before do
           project.push_rule.update_column(:reject_unsigned_commits, nil)
-          create(:push_rule_sample, reject_unsigned_commits: true)
+          create(:push_rule_sample, reject_unsigned_commits: true, organization: project.organization)
         end
 
         context 'and commit is not signed' do

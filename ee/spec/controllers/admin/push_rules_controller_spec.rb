@@ -40,13 +40,14 @@ RSpec.describe Admin::PushRulesController, :with_current_organization, feature_c
 
     context 'when a sample rule does not exist' do
       it_behaves_like 'successful push rule update', count_change: 1
+
       it 'assigns correct organization' do
         expect(::PushRules::CreateOrUpdateService)
           .to receive(:new).with(hash_including(container: current_organization)).and_call_original
 
         patch :update, params: { push_rule: params }
 
-        expect(PushRuleFinder.new.execute.organization).to eq(current_organization)
+        expect(PushRuleFinder.new(current_organization).execute.organization).to eq(current_organization)
       end
     end
 
@@ -54,17 +55,6 @@ RSpec.describe Admin::PushRulesController, :with_current_organization, feature_c
       let_it_be(:push_rule) { create(:push_rule_sample, organization: current_organization) }
 
       it_behaves_like 'successful push rule update', count_change: 0
-    end
-
-    context 'when a sample rule exists but with a different org' do
-      let_it_be(:organization) { create(:organization) }
-      let_it_be(:push_rule) { create(:push_rule_sample, organization: organization) }
-
-      it_behaves_like 'successful push rule update', count_change: 0
-
-      it 'does not change organization' do
-        expect { patch :update, params: { push_rule: params } }.not_to change { push_rule.reload.organization }
-      end
     end
 
     it 'links push rule with application settings' do

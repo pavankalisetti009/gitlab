@@ -5,10 +5,11 @@ require 'spec_helper'
 RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   using RSpec::Parameterized::TableSyntax
 
-  let(:global_push_rule) { create(:push_rule_sample) }
-  let(:push_rule) { create(:push_rule) }
-  let(:user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organization: organization) }
+  # Call CreateService directly so create_predefined_push_rule method can run
   let(:project) { Projects::CreateService.new(user, { name: 'test', namespace: user.namespace }).execute }
+  let(:global_push_rule) { create(:push_rule_sample) }
 
   it_behaves_like 'cleanup by a loose foreign key' do
     let!(:parent) { create(:organization) }
@@ -88,7 +89,8 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     end
   end
 
-  describe '#commit_validation?' do
+  shared_examples 'commit validated push rule' do |factory_name|
+    let(:global_push_rule) { create(factory_name, organization_id: organization.id) }
     let(:settings_with_global_default) { %i[reject_unsigned_commits] }
 
     where(:setting, :value, :result) do
@@ -124,10 +126,26 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     end
   end
 
-  describe '#commit_signature_allowed?' do
+  describe '#commit_validation?' do
+    context 'with read_organization_push_rules feature flag disabled' do
+      before do
+        stub_feature_flags(read_organization_push_rules: false)
+      end
+
+      include_examples 'commit validated push rule', :push_rule_sample
+    end
+
+    context 'with read_organization_push_rules feature flag enabled' do
+      include_examples 'commit validated push rule', :organization_push_rule
+    end
+  end
+
+  shared_examples 'commit signature allowed push rule' do |factory_name|
+    let(:global_push_rule) { create(factory_name, organization_id: organization.id) }
     let!(:premium_license) { create(:license, plan: License::PREMIUM_PLAN) }
     let(:signed_commit) { instance_double(Commit, has_signature?: true) }
     let(:unsigned_commit) { instance_double(Commit, has_signature?: false) }
+    let(:push_rule) { create(:push_rule, project: project) }
 
     context 'when feature is not licensed and it is enabled' do
       before do
@@ -213,7 +231,26 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     end
   end
 
+  describe '#commit_signature_allowed?' do
+    context 'with read_organization_push_rules feature flag disabled' do
+      before do
+        stub_feature_flags(read_organization_push_rules: false)
+      end
+
+      include_examples 'commit signature allowed push rule', :push_rule_sample
+    end
+
+    context 'with read_organization_push_rules feature flag enabled' do
+      before do
+        stub_feature_flags(read_organization_push_rules: true)
+      end
+
+      include_examples 'commit signature allowed push rule', :organization_push_rule
+    end
+  end
+
   context 'with caching', :request_store do
+    let(:push_rule) { create(:push_rule) }
     let(:push_rule_second) { create(:push_rule) }
 
     it 'memoizes the right push rules' do
