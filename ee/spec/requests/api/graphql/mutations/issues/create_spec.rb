@@ -130,20 +130,5 @@ RSpec.describe 'Create an issue', feature_category: :team_planning do
 
       it_behaves_like 'a mutation that returns top-level errors', errors: ["Status doesn't exist."]
     end
-
-    context 'when work_item_status_feature_flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it 'ignores the status argument' do
-        post_graphql_mutation(mutation, current_user: current_user)
-
-        expect(response).to have_gitlab_http_status(:success)
-        expect_graphql_errors_to_be_empty
-
-        is_expected.to be_nil
-      end
-    end
   end
 end

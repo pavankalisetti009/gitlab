@@ -7,7 +7,7 @@ module WorkItems
         include Gitlab::Utils::StrongMemoize
 
         def after_save
-          return unless target_root_ancestor&.try(:work_item_status_feature_available?)
+          return unless target_root_ancestor&.licensed_feature_available?(:work_item_status)
           return unless target_work_item.get_widget(:status)
 
           current_status = target_work_item.build_current_status

@@ -863,17 +863,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
       end
     end
 
-    context 'when work_item_status_feature_flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it 'returns feature not available error' do
-        expect(result).to be_error
-        expect(result.message).to eq('This feature is currently behind a feature flag, and it is not available.')
-      end
-    end
-
     context 'when user is not authorized' do
       let(:user) { create(:user, guest_of: group) }
 

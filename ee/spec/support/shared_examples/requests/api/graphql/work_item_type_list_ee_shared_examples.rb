@@ -60,19 +60,6 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
             end
           end
         end
-
-        context 'with work_item_status_feature_flag disabled' do
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-            post_graphql(query, current_user: current_user)
-          end
-
-          it 'does not return status widget' do
-            status_widgets = extract_status_widgets
-
-            expect(status_widgets).to be_empty
-          end
-        end
       end
 
       context 'with custom statuses' do
@@ -129,19 +116,6 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
             end
           end
         end
-
-        context 'with work_item_status_feature_flag disabled' do
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-            post_graphql(query, current_user: current_user)
-          end
-
-          it 'does not return status widget' do
-            status_widgets = extract_status_widgets
-
-            expect(status_widgets).to be_empty
-          end
-        end
       end
     end
 
@@ -174,7 +148,9 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
       context 'when feature is available' do
         it 'returns the associated licensed widget' do
           widgets.each do |widget|
-            next unless status_widget_available?(widget)
+            root_ancestor = parent&.resource_parent&.root_ancestor
+
+            next unless widget_available_in_namespace?(widget, root_ancestor)
 
             expect(returned_widgets).to include(widget_to_enum_string(widget))
           end
@@ -195,6 +171,16 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
     end
   end
 
+  def widget_available_in_namespace?(widget, namespace)
+    group_only_widgets = [
+      ::WorkItems::Widgets::CustomFields,
+      ::WorkItems::Widgets::Iteration,
+      ::WorkItems::Widgets::Status
+    ]
+
+    !(group_only_widgets.include?(widget) && namespace&.user_namespace?)
+  end
+
   def widget_to_enum_string(widget)
     widget.type.to_s.upcase
   end
@@ -213,11 +199,6 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
 
   def status_widget_supported?(work_item_type_name)
     widget_available_for?(work_item_type_name: work_item_type_name, widget_type: 'status') &&
-      parent&.resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
-  end
-
-  def status_widget_available?(widget)
-    widget == WorkItems::Widgets::Status &&
-      parent.resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
+      parent&.resource_parent&.root_ancestor&.licensed_feature_available?(:work_item_status)
   end
 end

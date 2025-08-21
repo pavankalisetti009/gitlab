@@ -247,49 +247,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
-    describe '#work_item_status_feature_available?' do
-      let_it_be(:group) { create(:group) }
-      let_it_be(:group_project) { create(:project, namespace: group) }
-
-      subject { project.work_item_status_feature_available? }
-
-      shared_examples 'work item status availability' do |expected_result|
-        context 'when project belongs to group' do
-          let(:project) { group_project }
-
-          it { is_expected.to be expected_result }
-        end
-
-        context 'when project belongs to user namespace' do
-          it { is_expected.to be false }
-        end
-      end
-
-      context 'when work_item_status licensed feature is enabled' do
-        before do
-          stub_licensed_features(work_item_status: true)
-        end
-
-        it_behaves_like 'work item status availability', true
-      end
-
-      context 'when work_item_status licensed feature is disabled' do
-        before do
-          stub_licensed_features(work_item_status: false)
-        end
-
-        it_behaves_like 'work item status availability', false
-      end
-
-      context 'when work_item_status_feature_flag is disabled' do
-        before do
-          stub_feature_flags(work_item_status_feature_flag: false)
-        end
-
-        it_behaves_like 'work item status availability', false
-      end
-    end
-
     context 'import_state dependant predicate method' do
       shared_examples 'returns expected values' do
         context 'when project lacks a import_state relation' do

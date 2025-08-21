@@ -62213,9 +62213,6 @@ msgstr ""
 msgid "Status checks must pass."
 msgstr ""
 
-msgid "Status feature not available"
-msgstr ""
-
 msgid "Status list requires either a system defined status or custom status"
 msgstr ""
 

@@ -578,14 +578,6 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
 
           it_behaves_like 'an empty collection'
         end
-
-        context 'when work_item_status_feature_flag feature flag is disabled' do
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-          end
-
-          it_behaves_like 'an unfiltered collection'
-        end
       end
     end
 
@@ -606,14 +598,6 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
           let(:status_name) { 'invalid' }
 
           it_behaves_like 'an empty collection'
-        end
-
-        context 'when work_item_status_feature_flag feature flag is disabled' do
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-          end
-
-          it_behaves_like 'an unfiltered collection'
         end
       end
     end

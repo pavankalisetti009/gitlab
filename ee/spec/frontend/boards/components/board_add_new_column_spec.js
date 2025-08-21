@@ -251,78 +251,56 @@ describe('BoardAddNewColumn', () => {
     });
 
     describe('status list', () => {
-      describe('when feature flag is true', () => {
-        beforeEach(async () => {
-          mountComponent({
-            provide: {
-              glFeatures: {
-                workItemStatusFeatureFlag: true,
-              },
-            },
-          });
-          listTypeSelect(ListType.status);
+      beforeEach(async () => {
+        mountComponent();
+        listTypeSelect(ListType.status);
 
-          await nextTick();
-        });
-
-        it('shows the `status` as one of the radio buttons', () => {
-          expect(findAllListTypes()).toHaveLength(5);
-
-          expect(findAllListTypes().at(4).text()).toBe('Status');
-        });
-
-        it('sets status placeholder text in form', () => {
-          expect(findForm().props('searchLabel')).toBe(BoardAddNewColumn.i18n.value);
-          expect(findDropdown().props('searchPlaceholder')).toBe('Search status');
-        });
-
-        it('shows list of status', () => {
-          const statusList = wrapper.findAllByTestId('status-list-item');
-
-          expect(statusList).toHaveLength(allowedStatus.length);
-          expect(statusList.at(0).text()).toContain(allowedStatus[0].name);
-        });
-
-        it('uses fuzzaldrin logic to search on frontend', async () => {
-          search('TO DO');
-
-          await nextTick();
-
-          const statusList = wrapper.findAllByTestId('status-list-item');
-
-          expect(statusList).toHaveLength(1);
-          expect(statusList.at(0).text()).toContain('To do');
-        });
-
-        it('adds status list', async () => {
-          await waitForPromises();
-
-          selectItem(mockWorkItemStatus.id);
-
-          findForm().vm.$emit('add-list');
-
-          await nextTick();
-
-          expect(wrapper.emitted('highlight-list')).toBeUndefined();
-          expect(createBoardListQueryHandler).toHaveBeenCalledWith({
-            statusId: mockWorkItemStatus.id,
-            position: null,
-            boardId: 'gid://gitlab/Board/1',
-          });
-        });
+        await nextTick();
       });
 
-      describe('when the feature flag is false', () => {
-        it('does not have the ability to add list by status', () => {
-          mountComponent({
-            provide: {
-              glFeatures: {
-                workItemStatusFeatureFlag: false,
-              },
-            },
-          });
+      it('shows the `status` as one of the radio buttons', () => {
+        expect(findAllListTypes()).toHaveLength(5);
 
-          expect(findAllListTypes()).toHaveLength(4);
+        expect(findAllListTypes().at(4).text()).toBe('Status');
+      });
+
+      it('sets status placeholder text in form', () => {
+        expect(findForm().props('searchLabel')).toBe(BoardAddNewColumn.i18n.value);
+        expect(findDropdown().props('searchPlaceholder')).toBe('Search status');
+      });
+
+      it('shows list of status', () => {
+        const statusList = wrapper.findAllByTestId('status-list-item');
+
+        expect(statusList).toHaveLength(allowedStatus.length);
+        expect(statusList.at(0).text()).toContain(allowedStatus[0].name);
+      });
+
+      it('uses fuzzaldrin logic to search on frontend', async () => {
+        search('TO DO');
+
+        await nextTick();
+
+        const statusList = wrapper.findAllByTestId('status-list-item');
+
+        expect(statusList).toHaveLength(1);
+        expect(statusList.at(0).text()).toContain('To do');
+      });
+
+      it('adds status list', async () => {
+        await waitForPromises();
+
+        selectItem(mockWorkItemStatus.id);
+
+        findForm().vm.$emit('add-list');
+
+        await nextTick();
+
+        expect(wrapper.emitted('highlight-list')).toBeUndefined();
+        expect(createBoardListQueryHandler).toHaveBeenCalledWith({
+          statusId: mockWorkItemStatus.id,
+          position: null,
+          boardId: 'gid://gitlab/Board/1',
         });
       });
     });
@@ -383,11 +361,6 @@ describe('BoardAddNewColumn', () => {
       beforeEach(async () => {
         mountComponent({
           namespaceHandler: namespaceQueryHandlerFailure,
-          provide: {
-            glFeatures: {
-              workItemStatusFeatureFlag: true,
-            },
-          },
         });
         listTypeSelect(ListType.status);
 

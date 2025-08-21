@@ -12,8 +12,6 @@ module EE
         def execute(board)
           return license_validation_error unless valid_license?(board.resource_parent)
 
-          return ServiceResponse.error(message: _('Status feature not available')) if status_feature_unavailable?(board)
-
           super
         end
 
@@ -119,10 +117,6 @@ module EE
 
         def limit_metric_by_params
           params[:limit_metric]
-        end
-
-        def status_feature_unavailable?(board)
-          type == :status && !board.resource_parent.root_ancestor.try(:work_item_status_feature_available?)
         end
       end
     end

@@ -12,7 +12,6 @@ module Groups
       urgency :low
 
       before_action do
-        push_frontend_feature_flag(:work_item_status_feature_flag, group)
         push_frontend_feature_flag(:work_item_status_mvc2, group)
       end
 
@@ -37,7 +36,7 @@ module Groups
       end
 
       def can_admin_work_item_statuses?
-        group.work_item_status_feature_available? && can?(current_user, :admin_work_item_lifecycle, group)
+        group.licensed_feature_available?(:work_item_status) && can?(current_user, :admin_work_item_lifecycle, group)
       end
     end
   end

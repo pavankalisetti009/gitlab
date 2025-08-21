@@ -109,22 +109,6 @@ RSpec.describe 'User adds milestone/iterations/status lists', :js, :aggregate_fa
           .to have_content(issue_with_custom_status.title)
       end
     end
-
-    context 'when work_item_status_feature_flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-        page.refresh
-      end
-
-      it 'does not show Status list button type', :aggregate_failures do
-        click_button 'New list'
-        wait_for_all_requests
-
-        within_testid('board-add-new-column') do
-          expect(page).not_to have_text('Status')
-        end
-      end
-    end
   end
 
   describe 'without a license' do

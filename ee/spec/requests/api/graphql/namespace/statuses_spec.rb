@@ -85,14 +85,6 @@ RSpec.describe 'Namespace.statuses', feature_category: :team_planning do
 
       it_behaves_like 'does not return statuses'
     end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it_behaves_like 'does not return statuses'
-    end
   end
 
   context 'when user does not have permission to read statuses' do

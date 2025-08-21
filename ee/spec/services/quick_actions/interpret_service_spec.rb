@@ -1646,17 +1646,6 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           it_behaves_like 'command is not available'
           it_behaves_like 'a failed command execution'
         end
-
-        context 'when work_item_status_feature_flag feature flag is disabled' do
-          let(:expected_message) { generic_error_message }
-
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-          end
-
-          it_behaves_like 'command is not available'
-          it_behaves_like 'a failed command execution'
-        end
       end
 
       let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }

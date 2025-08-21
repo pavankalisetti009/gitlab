@@ -70,14 +70,6 @@ RSpec.describe Gitlab::HookData::IssueBuilder, feature_category: :webhooks do
         it { is_expected.not_to include(:status) }
       end
 
-      context "when the feature flag is disabled" do
-        before do
-          stub_feature_flags(work_item_status_feature_flag: false)
-        end
-
-        it { is_expected.not_to include(:status) }
-      end
-
       context "when the license exists" do
         before do
           stub_licensed_features(work_item_status: true)

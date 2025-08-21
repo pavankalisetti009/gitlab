@@ -470,14 +470,6 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
               expect_graphql_errors_to_be_empty
             end
           end
-
-          context 'when work_item_status_feature_flag is disabled' do
-            before do
-              stub_feature_flags(work_item_status_feature_flag: false)
-            end
-
-            it_behaves_like 'does not update work item statuses'
-          end
         end
 
         context 'when work_item_status feature is disabled' do

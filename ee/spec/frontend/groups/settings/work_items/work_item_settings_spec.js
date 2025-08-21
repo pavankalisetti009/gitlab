@@ -7,15 +7,10 @@ describe('WorkItemSettings', () => {
   let wrapper;
   const fullPath = 'group/project';
 
-  const createComponent = ({ workItemStatusFeatureFlag = false } = {}) => {
+  const createComponent = () => {
     wrapper = shallowMount(WorkItemSettings, {
       propsData: {
         fullPath,
-      },
-      provide: {
-        glFeatures: {
-          workItemStatusFeatureFlag,
-        },
       },
     });
   };
@@ -30,23 +25,9 @@ describe('WorkItemSettings', () => {
     expect(findCustomFieldsList().props('fullPath')).toBe(fullPath);
   });
 
-  describe('when workItemStatusFeatureFlag is disabled', () => {
-    beforeEach(() => {
-      createComponent({ workItemStatusFeatureFlag: false });
-    });
+  it('renders CustomStatusSettings component with correct props', () => {
+    createComponent();
 
-    it('does not render CustomStatusSettings component', () => {
-      expect(findCustomStatusSettings().exists()).toBe(false);
-    });
-  });
-
-  describe('when workItemStatusFeatureFlag is enabled', () => {
-    beforeEach(() => {
-      createComponent({ workItemStatusFeatureFlag: true });
-    });
-
-    it('renders CustomStatusSettings component with correct props', () => {
-      expect(findCustomStatusSettings().exists()).toBe(true);
-    });
+    expect(findCustomStatusSettings().exists()).toBe(true);
   });
 });

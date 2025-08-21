@@ -20,7 +20,6 @@ describe('IssueBoardFilter', () => {
     hasCustomFieldsFeature = false,
     statusListsAvailable = false,
     hasStatusFeature = false,
-    workItemStatusFeatureFlagEnabled = false,
     workItemsBeta = false,
     customFieldsData = [
       {
@@ -66,7 +65,6 @@ describe('IssueBoardFilter', () => {
         statusListsAvailable,
         hasStatusFeature,
         glFeatures: {
-          workItemStatusFeatureFlag: workItemStatusFeatureFlagEnabled,
           workItemsBeta,
         },
       },
@@ -130,7 +128,6 @@ describe('IssueBoardFilter', () => {
         });
         createComponent({
           statusListsAvailable: true,
-          workItemStatusFeatureFlagEnabled: true,
           hasStatusFeature: true,
         });
 
@@ -149,7 +146,6 @@ describe('IssueBoardFilter', () => {
         });
         createComponent({
           statusListsAvailable: false,
-          workItemStatusFeatureFlagEnabled: false,
           hasStatusFeature: false,
         });
 

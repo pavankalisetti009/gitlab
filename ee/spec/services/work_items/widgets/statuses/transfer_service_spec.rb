@@ -22,7 +22,6 @@ RSpec.describe WorkItems::Widgets::Statuses::TransferService, feature_category: 
       let(:new_root_namespace) { old_root_namespace }
 
       it 'returns early without processing' do
-        expect(old_root_namespace).not_to receive(:work_item_status_feature_available?)
         expect(WorkItems::Widgets::Statuses::BulkStatusUpdater).not_to receive(:new)
         service.execute
       end

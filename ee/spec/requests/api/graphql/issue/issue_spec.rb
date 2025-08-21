@@ -189,18 +189,6 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
           expect(issue_data['status']).to be_nil
         end
       end
-
-      context 'when work_item_status_feature_flag is disabled' do
-        before do
-          stub_feature_flags(work_item_status_feature_flag: false)
-        end
-
-        it 'returns nil' do
-          post_graphql(query, current_user: current_user)
-
-          expect(issue_data['status']).to be_nil
-        end
-      end
     end
   end
 end

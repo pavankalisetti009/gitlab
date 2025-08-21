@@ -4,7 +4,7 @@ module WorkItems
   class StatusFilter < ::Issuables::BaseFilter
     def filter(issuables)
       return issuables unless status_param_present?
-      return issuables unless @parent&.root_ancestor.try(:work_item_status_feature_available?)
+      return issuables unless @parent&.root_ancestor&.licensed_feature_available?(:work_item_status)
       return issuables unless issuables.respond_to?(:with_status)
 
       status = params.dig(:status, :id)

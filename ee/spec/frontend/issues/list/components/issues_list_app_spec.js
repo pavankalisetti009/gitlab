@@ -124,7 +124,6 @@ describe('EE IssuesListApp component', () => {
     provide = {},
     issuesListCreateModal = false,
     okrsMvc = false,
-    workItemStatusFeatureFlag = true,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
     issuesCountsQueryResponse = jest.fn().mockResolvedValue(getIssuesCountsQueryResponse),
     customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse),
@@ -143,7 +142,6 @@ describe('EE IssuesListApp component', () => {
         glFeatures: {
           issuesListCreateModal,
           okrsMvc,
-          workItemStatusFeatureFlag,
         },
         ...defaultProvide,
         ...provide,
@@ -241,18 +239,6 @@ describe('EE IssuesListApp component', () => {
           { type: TOKEN_TYPE_WEIGHT },
         ]);
       });
-    });
-  });
-
-  describe('custom status token', () => {
-    it('does not render `WorkItemStatusToken` token when the `work_item_status_feature_flag` is off', () => {
-      wrapper = mountComponent({
-        provide: {
-          workItemStatusFeatureFlag: false,
-        },
-      });
-
-      expect(findIssuableList().props('searchTokens')).not.toContain([{ type: TOKEN_TYPE_STATUS }]);
     });
   });
 

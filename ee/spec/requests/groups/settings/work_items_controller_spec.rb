@@ -23,7 +23,6 @@ RSpec.describe Groups::Settings::WorkItemsController, feature_category: :team_pl
     it 'exposes feature flags' do
       subject
 
-      expect(response.body).to have_pushed_frontend_feature_flags(workItemStatusFeatureFlag: true)
       expect(response.body).to have_pushed_frontend_feature_flags(workItemStatusMvc2: true)
     end
   end

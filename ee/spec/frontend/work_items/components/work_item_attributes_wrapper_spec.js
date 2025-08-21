@@ -328,52 +328,28 @@ describe('EE WorkItemAttributesWrapper component', () => {
   });
 
   describe('status widget', () => {
-    it('renders when flag `workItemStatusFeatureFlag` is enabled and widget is present', async () => {
+    it('renders when widget is present and license feature is available', async () => {
       const response = workItemResponseFactory({ statusWidgetPresent: true });
       createComponent({
         workItem: response.data.workItem,
-        featureFlags: { workItemStatusFeatureFlag: true },
       });
       await waitForPromises();
 
       expect(findWorkItemCustomStatus().exists()).toBe(true);
     });
 
-    it('does not render when flag `workItemStatusFeatureFlag` is enabled and widget is not present', async () => {
-      createComponent({
-        featureFlags: { workItemStatusFeatureFlag: true },
-      });
+    it('does not render when widget is not present', async () => {
+      createComponent();
       await waitForPromises();
 
       expect(findWorkItemCustomStatus().exists()).toBe(false);
     });
 
-    it('does not render when flag `workItemStatusFeatureFlag` is enabled and license is false', async () => {
+    it('does not render when license feature is not available', async () => {
       createComponent({
-        featureFlags: { workItemStatusFeatureFlag: true },
         hasStatusFeature: false,
       });
 
-      await waitForPromises();
-
-      expect(findWorkItemCustomStatus().exists()).toBe(false);
-    });
-
-    it('does not render when flag `workItemStatusFeatureFlag` is disabled and widget is not present', async () => {
-      createComponent({
-        featureFlags: { workItemStatusFeatureFlag: false },
-      });
-      await waitForPromises();
-
-      expect(findWorkItemCustomStatus().exists()).toBe(false);
-    });
-
-    it('does not render when flag `workItemStatusFeatureFlag` is disabled and the status widget is present', async () => {
-      const response = workItemResponseFactory({ statusWidgetPresent: true });
-      createComponent({
-        workItem: response.data.workItem,
-        featureFlags: { workItemStatusFeatureFlag: false },
-      });
       await waitForPromises();
 
       expect(findWorkItemCustomStatus().exists()).toBe(false);

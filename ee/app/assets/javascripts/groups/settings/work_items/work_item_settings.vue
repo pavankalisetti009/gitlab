@@ -15,17 +15,12 @@ export default {
       required: true,
     },
   },
-  computed: {
-    workItemStatusFeatureFlagEnabled() {
-      return this.glFeatures.workItemStatusFeatureFlag;
-    },
-  },
 };
 </script>
 
 <template>
   <div>
-    <custom-status-settings v-if="workItemStatusFeatureFlagEnabled" :full-path="fullPath" />
+    <custom-status-settings :full-path="fullPath" />
     <custom-fields-list :full-path="fullPath" />
   </div>
 </template>

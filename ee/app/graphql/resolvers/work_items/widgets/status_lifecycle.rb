@@ -10,7 +10,7 @@ module Resolvers
         private
 
         def status_lifecycle
-          return unless root_ancestor&.try(:work_item_status_feature_available?)
+          return unless root_ancestor&.licensed_feature_available?(:work_item_status)
 
           work_item_type.status_lifecycle_for(root_ancestor&.id)
         end
