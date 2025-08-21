@@ -10,7 +10,11 @@ query namespacePolicies(
 ) {
   namespace(fullPath: $fullPath) {
     id
-    approvalPolicies(after: $approvalPoliciesAfter, relationship: DESCENDANT) {
+    approvalPolicies(
+      after: $approvalPoliciesAfter
+      relationship: DESCENDANT
+      deduplicatePolicies: true
+    ) {
       nodes {
         name
         yaml
@@ -37,7 +41,11 @@ query namespacePolicies(
         ...PageInfo
       }
     }
-    scanExecutionPolicies(after: $scanExecutionPoliciesAfter, relationship: DESCENDANT) {
+    scanExecutionPolicies(
+      after: $scanExecutionPoliciesAfter
+      relationship: DESCENDANT
+      deduplicatePolicies: true
+    ) {
       nodes {
         name
         yaml
@@ -53,7 +61,11 @@ query namespacePolicies(
         ...PageInfo
       }
     }
-    pipelineExecutionPolicies(after: $pipelineExecutionPoliciesAfter, relationship: DESCENDANT) {
+    pipelineExecutionPolicies(
+      after: $pipelineExecutionPoliciesAfter
+      relationship: DESCENDANT
+      deduplicatePolicies: true
+    ) {
       nodes {
         name
         yaml
@@ -72,6 +84,7 @@ query namespacePolicies(
     vulnerabilityManagementPolicies(
       after: $vulnerabilityManagementPoliciesAfter
       relationship: DESCENDANT
+      deduplicatePolicies: true
     ) {
       nodes {
         name
