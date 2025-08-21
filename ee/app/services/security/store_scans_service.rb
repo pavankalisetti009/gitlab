@@ -26,6 +26,8 @@ module Security
         results += sbom_report_artifacts.map do |file_type, artifacts|
           StoreGroupedSbomScansService.execute(artifacts, pipeline, file_type)
         end
+
+        remove_dangling_dependency_scans
       end
 
       sync_findings_to_approval_rules unless pipeline.default_branch?
@@ -66,6 +68,23 @@ module Security
       end
     end
     strong_memoize_attr :sbom_report_artifacts
+
+    def remove_dangling_dependency_scans
+      # Security::InitializeSecurityScansServce creates scans in the `created` status as soon as the
+      # build completes. However, we can only produce a security report if the SBoM contains source information.
+      # After we've ingested findings, the SBoM scans that we were able to produce security reports for
+      # will have their status updated to `succeeded` or `job_failed`, and any ones which are still
+      # in the `created` status can be removed since the SBoMs must not have source information.
+      build_ids = grouped_report_artifacts['cyclonedx']&.pluck(:job_id)
+
+      return if build_ids.blank?
+
+      ::Security::Scan
+        .by_scan_types([:dependency_scanning])
+        .by_build_ids(build_ids)
+        .created
+        .delete_all
+    end
 
     def security_report_file_types
       EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types

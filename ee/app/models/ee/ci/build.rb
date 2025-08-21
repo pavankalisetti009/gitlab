@@ -34,6 +34,7 @@ module EE
         include ::Ai::Model
 
         has_many :security_scans, class_name: 'Security::Scan', foreign_key: :build_id
+        has_many :security_report_artifacts, ->(build) { in_partition(build).security_reports }, class_name: 'Ci::JobArtifact'
 
         has_one :dast_site_profiles_build, class_name: 'Dast::SiteProfilesBuild', foreign_key: :ci_build_id
         has_one :dast_site_profile, class_name: 'DastSiteProfile', through: :dast_site_profiles_build, disable_joins: true
@@ -71,6 +72,12 @@ module EE
           after_transition any => [:success, :failed, :canceled] do |build|
             build.run_after_commit do
               ::Ci::Minutes::UpdateBuildMinutesService.new(build.project, nil).execute(build)
+            end
+          end
+
+          after_transition any => ::Ci::Build.completed_with_manual_statuses do |build|
+            build.run_after_commit do
+              ::Security::InitializeSecurityScansService.execute(build)
             end
           end
 

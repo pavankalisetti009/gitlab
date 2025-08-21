@@ -8,6 +8,8 @@
 # @param deduplicate [Boolean] attribute to force running deduplication logic.
 module Security
   class StoreScanService
+    include Gitlab::Utils::StrongMemoize
+
     DEDUPLICATE_BATCH_SIZE = 50
     SCAN_INGESTION_ERROR = {
       type: 'ScanIngestionError',
@@ -55,14 +57,23 @@ module Security
     end
 
     def security_scan
-      @security_scan ||= Security::Scan.safe_find_or_create_by!(build: job, scan_type: security_report.type) do |scan|
-        scan.created_at = pipeline.security_scans_created_at
-        scan.processing_errors = security_report.errors.map(&:stringify_keys) if security_report.errored?
-        scan.processing_warnings = security_report.warnings.map(&:stringify_keys) if security_report.warnings?
-        scan.status = initial_scan_status
-        scan.findings_partition_number = security_findings_partition_number
-      end
+      # rubocop:disable CodeReuse/ActiveRecord -- A class method would just be an alias of find_by
+      # and would not offer any value in terms of code deduplication.
+      scan = Security::Scan.find_or_initialize_by(build: job, scan_type: security_report.type)
+      # rubocop:enable CodeReuse/ActiveRecord
+      scan.created_at = pipeline.security_scans_created_at
+      scan.processing_errors = security_report.errors.map(&:stringify_keys) if security_report.errored?
+      scan.processing_warnings = security_report.warnings.map(&:stringify_keys) if security_report.warnings?
+      scan.status = initial_scan_status
+      scan.findings_partition_number = security_findings_partition_number
+      scan.save!
+      scan
+    rescue ActiveRecord::RecordNotUnique
+      # A record was created after `find_or_initialize_by` executed, but before the record was saved.
+      # Try again, which should find the record.
+      security_scan
     end
+    strong_memoize_attr :security_scan
     alias_method :store_security_scan, :security_scan
 
     def store_partial_scan
