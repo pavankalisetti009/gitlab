@@ -10,7 +10,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
   let(:allowed_to_be_missing_sharding_key) do
     [
       'web_hook_logs_daily', # temporary copy of web_hook_logs
-      'ci_gitlab_hosted_runner_monthly_usages', # Dedicated only table, to be sharded
+      'ci_gitlab_hosted_runner_monthly_usages', # https://gitlab.com/gitlab-org/gitlab/-/issues/553104
       'uploads_9ba88c4165' # https://gitlab.com/gitlab-org/gitlab/-/issues/398199
     ]
   end
@@ -19,9 +19,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
   # the table name to remove this once a decision has been made.
   let(:allowed_to_be_missing_not_null) do
     [
-      *['badges.project_id', 'badges.group_id'],
+      *['badges.project_id', 'badges.group_id'], # https://gitlab.com/gitlab-org/gitlab/-/issues/562439
       'member_roles.namespace_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/444161
-      *['todos.project_id', 'todos.group_id'],
+      *['todos.project_id', 'todos.group_id'], # https://gitlab.com/gitlab-org/gitlab/-/issues/562437
       *uploads_and_partitions
     ]
   end
