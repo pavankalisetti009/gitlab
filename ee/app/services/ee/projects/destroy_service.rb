@@ -95,10 +95,16 @@ module EE
           author: current_user,
           scope: audit_scope,
           target: project,
-          message: 'Project destroyed',
+          message: "Project '#{project.full_path}' was deleted",
           target_details: project.full_path,
           additional_details: {
-            remove: 'project'
+            remove: 'project',
+            project_id: project.id,
+            project_name: project.name,
+            project_full_path: project.full_path,
+            namespace_id: project.namespace_id,
+            namespace_name: project.namespace&.name,
+            namespace_path: project.namespace&.path
           }
         }
 

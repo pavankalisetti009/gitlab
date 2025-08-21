@@ -237,7 +237,13 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
               target_type: 'Project',
               target_details: project.full_path,
               author_class: user.class.name,
-              custom_message: 'Project destroyed'
+              custom_message: "Project '#{project.full_path}' was deleted",
+              project_id: project.id,
+              project_name: project.name,
+              project_full_path: project.full_path,
+              namespace_id: project.namespace_id,
+              namespace_name: project.namespace.name,
+              namespace_path: project.namespace.path
             }
           }
         end
@@ -274,10 +280,39 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
               target_type: 'Project',
               target_details: project.full_path,
               author_class: user.class.name,
-              custom_message: 'Project destroyed'
+              custom_message: "Project '#{project.full_path}' was deleted",
+              project_id: project.id,
+              project_name: project.name,
+              project_full_path: project.full_path,
+              namespace_id: project.namespace_id,
+              namespace_name: project.namespace.name,
+              namespace_path: project.namespace.path
             }
           }
         end
+      end
+    end
+
+    context 'audit event details verification' do
+      let(:group) { create :group }
+      let(:project) { create :project, namespace: group }
+
+      before do
+        group.add_owner(user)
+        stub_licensed_features(extended_audit_events: true)
+      end
+
+      it 'creates an audit event with all expected additional details' do
+        expect { project_destroy_service.execute }.to change(AuditEvent, :count).by(1)
+
+        audit_event = AuditEvent.last
+        expect(audit_event.details[:custom_message]).to eq("Project '#{project.full_path}' was deleted")
+        expect(audit_event.details[:project_id]).to eq(project.id)
+        expect(audit_event.details[:project_name]).to eq(project.name)
+        expect(audit_event.details[:project_full_path]).to eq(project.full_path)
+        expect(audit_event.details[:namespace_id]).to eq(project.namespace_id)
+        expect(audit_event.details[:namespace_name]).to eq(project.namespace.name)
+        expect(audit_event.details[:namespace_path]).to eq(project.namespace.path)
       end
     end
   end
