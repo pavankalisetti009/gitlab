@@ -97,6 +97,14 @@ describe('VulnerabilitiesForSeverityPanel', () => {
       it('shows alert state in dashboard panel', () => {
         expect(findDashboardPanel().attributes('show-alert-state')).toBe('true');
       });
+
+      it('passes error icon, color class, and border styling', () => {
+        expect(findDashboardPanel().props()).toMatchObject({
+          titleIcon: 'error',
+          titleIconClass: 'gl-text-red-500',
+          borderColorClass: 'gl-border-t-red-500',
+        });
+      });
     });
 
     describe('zero count state', () => {

@@ -7,6 +7,7 @@ import ProjectToken from 'ee/security_dashboard/components/shared/filtered_searc
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
+import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_utils';
 
 const PROJECT_TOKEN_DEFINITION = {
   type: 'projectId',
@@ -31,7 +32,6 @@ export default {
     GlDashboardLayout,
     FilteredSearch,
   },
-  inject: ['groupFullPath'],
   data() {
     return {
       filters: {},
@@ -46,8 +46,9 @@ export default {
           'SecurityReports|This dashboard provides an overview of your security vulnerabilities.',
         ),
         panels: [
+          ...generateVulnerabilitiesForSeverityPanels(this.filters),
           {
-            id: '1',
+            id: 'vulnerabilities-over-time',
             component: markRaw(GroupVulnerabilitiesOverTimePanel),
             componentProps: {
               filters: this.filters,

@@ -1,0 +1,19 @@
+query groupVulnerabilitiesPerSeverity(
+  $fullPath: ID!
+  $projectId: [ID!]
+  $reportType: [VulnerabilityReportType!]
+) {
+  group(fullPath: $fullPath) {
+    id
+    securityMetrics(projectId: $projectId, reportType: $reportType) {
+      vulnerabilitiesPerSeverity {
+        critical
+        high
+        medium
+        low
+        info
+        unknown
+      }
+    }
+  }
+}

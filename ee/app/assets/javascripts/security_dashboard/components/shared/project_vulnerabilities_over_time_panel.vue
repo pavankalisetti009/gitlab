@@ -3,7 +3,7 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { fetchPolicies } from '~/lib/graphql';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
-import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_project_vulnerabilities_over_time.query.graphql';
+import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
 import OverTimeSeverityFilter from './over_time_severity_filter.vue';
@@ -27,7 +27,7 @@ export default {
   apollo: {
     vulnerabilitiesOverTime: {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
-      query: getVulnerabilitiesOverTime,
+      query: projectVulnerabilitiesOverTime,
       variables() {
         const lookbackDate = getDateInPast(new Date(), DASHBOARD_LOOKBACK_DAYS);
         const startDate = formatDate(lookbackDate, 'isoDate');

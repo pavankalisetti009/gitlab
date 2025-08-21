@@ -34,9 +34,17 @@ export default {
       return SEVERITY_LEVELS[this.severity];
     },
     icon() {
+      if (this.error) {
+        return 'error';
+      }
+
       return `severity-${this.severity}`;
     },
     iconClass() {
+      if (this.error) {
+        return 'gl-text-red-500';
+      }
+
       return `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[this.severity]}`;
     },
   },
@@ -50,6 +58,7 @@ export default {
     :title-icon-class="iconClass"
     :loading="loading"
     :show-alert-state="error"
+    :border-color-class="error ? 'gl-border-t-red-500' : ''"
   >
     <template #body>
       <gl-single-stat v-if="!error" title="" :value="count" />

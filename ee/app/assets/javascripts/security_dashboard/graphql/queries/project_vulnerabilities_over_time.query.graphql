@@ -1,6 +1,5 @@
-query getGroupVulnerabilitiesOverTime(
+query projectVulnerabilitiesOverTime(
   $fullPath: ID!
-  $projectId: [ID!]
   $reportType: [VulnerabilityReportType!]
   $startDate: ISO8601Date!
   $endDate: ISO8601Date!
@@ -8,9 +7,9 @@ query getGroupVulnerabilitiesOverTime(
   $includeByReportType: Boolean!
   $severity: [VulnerabilitySeverity!]
 ) {
-  group(fullPath: $fullPath) {
+  project(fullPath: $fullPath) {
     id
-    securityMetrics(projectId: $projectId, reportType: $reportType) {
+    securityMetrics(reportType: $reportType) {
       vulnerabilitiesOverTime(startDate: $startDate, endDate: $endDate, severity: $severity) {
         nodes {
           date
