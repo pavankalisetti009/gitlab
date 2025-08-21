@@ -260,8 +260,17 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
           before do
             epic_type = WorkItems::Type.default_by_type(:epic)
 
-            WorkItems::HierarchyRestriction.where(parent_type: epic_type,
-              child_type: epic_type).update!(maximum_depth: 0)
+            allow(WorkItems::SystemDefined::HierarchyRestriction).to receive(:find_by).with(
+              parent_type_id: epic_type.id,
+              child_type_id: epic_type.id
+            ).and_return(
+              instance_double(
+                WorkItems::SystemDefined::HierarchyRestriction,
+                maximum_depth: 0,
+                parent_type_id: epic_type.id,
+                child_type_id: epic_type.id
+              )
+            )
           end
 
           it 'rejects promoting an issue to an epic' do
