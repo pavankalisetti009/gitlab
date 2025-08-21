@@ -1,6 +1,7 @@
 import {
   formatVulnerabilitiesOverTimeData,
   constructVulnerabilitiesReportWithFiltersPath,
+  generateVulnerabilitiesForSeverityPanels,
 } from 'ee/security_dashboard/utils/chart_utils';
 
 describe('Security Dashboard - Chart Utils', () => {
@@ -248,6 +249,32 @@ describe('Security Dashboard - Chart Utils', () => {
           `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL`,
         );
       });
+    });
+  });
+
+  describe('generateVulnerabilitiesForSeverityPanels', () => {
+    const filters = {
+      reportType: ['SAST'],
+      projectId: ['1'],
+    };
+    const widthConstant = 2;
+    const expected = severities.map((severity, index) => ({
+      id: severity.toLowerCase(),
+      componentProps: {
+        severity: severity.toLowerCase(),
+        filters,
+      },
+      gridAttributes: {
+        width: widthConstant,
+        height: 1,
+        yPos: 0,
+        xPos: widthConstant * index,
+      },
+    }));
+
+    it('returns array with panels config for each severity', () => {
+      const panels = generateVulnerabilitiesForSeverityPanels(filters);
+      expect(panels).toMatchObject(expected);
     });
   });
 });

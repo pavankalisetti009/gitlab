@@ -6,7 +6,7 @@ import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/share
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
 import OverTimeSeverityFilter from 'ee/security_dashboard/components/shared/over_time_severity_filter.vue';
-import getVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/get_group_vulnerabilities_over_time.query.graphql';
+import vulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useFakeDate } from 'helpers/fake_date';
@@ -72,7 +72,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       jest.fn().mockResolvedValue(defaultMockVulnerabilitiesOverTimeData);
 
     const apolloProvider = createMockApollo([
-      [getVulnerabilitiesOverTime, vulnerabilitiesOverTimeHandler],
+      [vulnerabilitiesOverTime, vulnerabilitiesOverTimeHandler],
     ]);
 
     wrapper = shallowMountExtended(GroupVulnerabilitiesOverTimePanel, {
