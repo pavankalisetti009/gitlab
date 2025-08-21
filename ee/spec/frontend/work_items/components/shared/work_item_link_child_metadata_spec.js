@@ -19,10 +19,12 @@ describe('WorkItemLinkChildMetadataEE', () => {
     workItemType = 'Task',
     isChildItemOpen = true,
     hasIterationsFeature = false,
+    useCachedRolledUpWeights = false,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemLinkChildMetadata, {
       provide: {
         hasIterationsFeature,
+        glFeatures: { useCachedRolledUpWeights },
       },
       propsData: {
         iid: '1',
@@ -133,6 +135,15 @@ describe('WorkItemLinkChildMetadataEE', () => {
       });
 
       expect(findWeightTooltip().text()).toBe('Issue weight');
+    });
+
+    it('shows `Weight` in the tooltip when useCachedRolledUpWeights is true', () => {
+      createComponent({
+        workItemType: 'Epic',
+        useCachedRolledUpWeights: true,
+      });
+
+      expect(findWeightTooltip().text()).toBe('Weight');
     });
   });
 
