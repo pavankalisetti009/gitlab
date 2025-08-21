@@ -38,19 +38,6 @@ RSpec.describe Boards::Lists::CreateService, feature_category: :portfolio_manage
       end
     end
 
-    shared_examples 'returns error when status feature unavailable' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it 'returns an error' do
-        response = service.execute(board)
-
-        expect(response.success?).to eq(false)
-        expect(response.errors).to include('Status feature not available')
-      end
-    end
-
     context 'when assignee_id param is sent' do
       let_it_be(:other_user) { create(:user) }
 
@@ -166,7 +153,6 @@ RSpec.describe Boards::Lists::CreateService, feature_category: :portfolio_manage
 
       it_behaves_like 'creates a status list'
       it_behaves_like 'returns error when status list license unavailable'
-      it_behaves_like 'returns error when status feature unavailable'
 
       context 'when status is not found' do
         let(:system_defined_status_identifier) { 10 }
@@ -191,7 +177,6 @@ RSpec.describe Boards::Lists::CreateService, feature_category: :portfolio_manage
 
       it_behaves_like 'creates a status list'
       it_behaves_like 'returns error when status list license unavailable'
-      it_behaves_like 'returns error when status feature unavailable'
 
       context 'when status is not found' do
         let(:custom_status_id) { 10 }

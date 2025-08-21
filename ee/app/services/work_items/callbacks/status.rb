@@ -12,7 +12,7 @@ module WorkItems
       end
 
       def after_create
-        return unless root_ancestor&.try(:work_item_status_feature_available?)
+        return unless work_item_status_licensed_feature_available?
 
         if status_from_params
           update_current_status(status_from_params)
@@ -26,7 +26,7 @@ module WorkItems
 
       def after_update
         return if excluded_in_new_type?
-        return unless root_ancestor&.try(:work_item_status_feature_available?)
+        return unless work_item_status_licensed_feature_available?
 
         update_current_status(status_from_params)
       end
@@ -60,6 +60,10 @@ module WorkItems
             ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute
           end
         end
+      end
+
+      def work_item_status_licensed_feature_available?
+        root_ancestor&.licensed_feature_available?(:work_item_status)
       end
 
       def lifecycle

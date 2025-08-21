@@ -594,7 +594,6 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
     before do
       stub_licensed_features(work_item_status: true)
-      stub_feature_flags(work_item_status_feature_flag: true)
     end
 
     subject(:result) { work_item_status_for_issuable(issue) }
@@ -633,14 +632,6 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
         it { is_expected.to be_nil }
       end
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it { is_expected.to be_nil }
     end
 
     context 'when licensed feature is not available' do

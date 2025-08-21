@@ -39,12 +39,4 @@ RSpec.shared_examples 'work item status widget mutation rejects invalid inputs' 
 
     it_behaves_like 'work item mutation with status widget with error'
   end
-
-  context 'when work_item_status_feature_flag feature flag is disabled' do
-    before do
-      stub_feature_flags(work_item_status_feature_flag: false)
-    end
-
-    it_behaves_like 'work item mutation with status widget with error'
-  end
 end

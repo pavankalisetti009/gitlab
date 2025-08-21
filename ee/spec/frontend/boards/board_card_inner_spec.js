@@ -33,12 +33,7 @@ describe('Board card component', () => {
 
   const mockApollo = createMockApollo();
 
-  const createComponent = ({
-    props = {},
-    isShowingLabels = true,
-    isEpicBoard = false,
-    workItemStatusFeatureFlagEnabled = false,
-  } = {}) => {
+  const createComponent = ({ props = {}, isShowingLabels = true, isEpicBoard = false } = {}) => {
     mockApollo.clients.defaultClient.cache.writeQuery({
       query: isShowingLabelsQuery,
       data: {
@@ -64,9 +59,6 @@ describe('Board card component', () => {
         issuableType: TYPE_ISSUE,
         isGroupBoard: true,
         disabled: false,
-        glFeatures: {
-          workItemStatusFeatureFlag: workItemStatusFeatureFlagEnabled,
-        },
       },
       stubs: {
         GlSprintf,
@@ -190,31 +182,14 @@ describe('Board card component', () => {
   });
 
   describe('custom status', () => {
-    it('does not render status if issue has custom status and FF disabled', () => {
-      createComponent({
-        workItemStatusFeatureFlagEnabled: false,
-        props: {
-          item: {
-            ...issue,
-            status: mockWorkItemStatus,
-          },
-        },
-      });
-
-      expect(findIssueStatusBadge().exists()).toBe(false);
-    });
-
-    it('does not render status if issue has no custom status and FF enabled', () => {
-      createComponent({
-        workItemStatusFeatureFlagEnabled: true,
-      });
+    it('does not render status if issue has no custom status', () => {
+      createComponent();
 
       expect(findIssueStatusBadge().exists()).toBe(false);
     });
 
     it('renders status badge if issue has an status assigned', () => {
       createComponent({
-        workItemStatusFeatureFlagEnabled: true,
         props: {
           item: {
             ...issue,
@@ -236,7 +211,6 @@ describe('Board card component', () => {
       };
 
       createComponent({
-        workItemStatusFeatureFlagEnabled: true,
         props: {
           item: {
             ...issue,

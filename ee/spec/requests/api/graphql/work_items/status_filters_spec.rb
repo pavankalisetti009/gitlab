@@ -64,14 +64,6 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
       end
     end
 
-    context 'when work_item_status_feature_flag feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it_behaves_like 'an unfiltered list'
-    end
-
     context 'when status param is not given' do
       let(:params) { {} }
 
@@ -98,14 +90,6 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
         expect(model_ids).to be_empty
       end
-    end
-
-    context 'when work_item_status_feature_flag feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it_behaves_like 'an unfiltered list'
     end
   end
 

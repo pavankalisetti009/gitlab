@@ -106,7 +106,7 @@ RSpec.shared_context 'with work item types request context EE' do
 
   def status_widget_available_for?(work_item_type, resource_parent)
     widget_available_for?(work_item_type_id: work_item_type.id, widget_type: 'status') &&
-      resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
+      resource_parent&.root_ancestor&.licensed_feature_available?(:work_item_status)
   end
 
   def widget_available_for?(widget_type:, work_item_type_id: nil, work_item_type_name: nil)

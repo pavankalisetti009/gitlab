@@ -55,14 +55,6 @@ RSpec.describe WorkItems::DataSync::Widgets::Status, feature_category: :team_pla
       it_behaves_like "does not create current status record"
     end
 
-    context "when feature flag is disabled" do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it_behaves_like "does not create current status record"
-    end
-
     context "when target_work_item does not have a status widget" do
       let_it_be(:target_work_item) { create(:work_item, :objective, project: target_project) }
 

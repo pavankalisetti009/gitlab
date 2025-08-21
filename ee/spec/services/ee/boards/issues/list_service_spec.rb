@@ -171,14 +171,6 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
 
               it_behaves_like 'includes status issue'
             end
-
-            context 'when work_item_status_feature_flag is disabled' do
-              before do
-                stub_feature_flags(work_item_status_feature_flag: false)
-              end
-
-              it_behaves_like 'includes status issue'
-            end
           end
 
           context 'with closed list' do
@@ -198,14 +190,6 @@ RSpec.describe Boards::Issues::ListService, :services, feature_category: :portfo
             context 'when work_item_status feature is not available' do
               before do
                 stub_licensed_features(board_status_lists: true, work_item_status: false)
-              end
-
-              it_behaves_like 'includes status issue'
-            end
-
-            context 'when work_item_status_feature_flag is disabled' do
-              before do
-                stub_feature_flags(work_item_status_feature_flag: false)
               end
 
               it_behaves_like 'includes status issue'

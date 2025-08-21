@@ -101,11 +101,7 @@ export default {
         : this.fullPath.slice(0, this.fullPath.lastIndexOf('/'));
     },
     showCustomStatusFilter() {
-      return (
-        this.statusListsAvailable &&
-        this.hasStatusFeature &&
-        this.glFeatures.workItemStatusFeatureFlag
-      );
+      return this.statusListsAvailable && this.hasStatusFeature;
     },
     // eslint-disable-next-line vue/no-unused-properties -- This component inherits from `IssueBoardFilteredSearchFoss` which calls `tokens()` internally
     tokens() {

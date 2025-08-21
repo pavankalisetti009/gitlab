@@ -173,23 +173,9 @@ RSpec.describe Mutations::Boards::Lists::Create do
           end
         end
 
-        shared_examples 'returns error when status feature unavailable' do
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-          end
-
-          it 'returns an error about status lists being unavailable' do
-            expect { subject }.not_to change { board.lists.count }
-
-            expect(subject[:list]).to be_nil
-            expect(subject[:errors]).to include('Status feature not available')
-          end
-        end
-
         context 'with system-defined status' do
           it_behaves_like 'creates a status list', 'system_defined_status'
           it_behaves_like 'returns error when status list license unavailable'
-          it_behaves_like 'returns error when status feature unavailable'
 
           context 'when status not found' do
             let(:status_gid) { "gid://gitlab/WorkItems::Statuses::SystemDefined::Status/10" }
@@ -203,7 +189,6 @@ RSpec.describe Mutations::Boards::Lists::Create do
 
           it_behaves_like 'creates a status list', 'custom_status'
           it_behaves_like 'returns error when status list license unavailable'
-          it_behaves_like 'returns error when status feature unavailable'
 
           context 'when status not found' do
             let(:status_gid) { "gid://gitlab/WorkItems::Statuses::Custom::Status/10" }

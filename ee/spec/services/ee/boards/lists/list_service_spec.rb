@@ -106,14 +106,6 @@ RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_manageme
 
         it_behaves_like 'filters out status lists'
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(work_item_status_feature_flag: false)
-        end
-
-        it_behaves_like 'filters out status lists'
-      end
     end
 
     context 'when board parent is a project in user namespace' do

@@ -11,7 +11,7 @@ module Resolvers
         alias_method :widget_definition, :object
 
         def resolve
-          return [] unless work_item_status_feature_available?
+          return [] unless work_item_status_licensed_feature_available?
 
           status_lifecycle&.ordered_statuses || []
         end

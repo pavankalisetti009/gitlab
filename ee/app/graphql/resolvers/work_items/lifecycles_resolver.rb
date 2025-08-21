@@ -13,7 +13,7 @@ module Resolvers
       # Only apply preloading to custom lifecycles (ActiveRecord model)
       # Return system-defined lifecycles (Fixed model) as is
       def resolve_with_lookahead
-        return unless work_item_status_feature_available?
+        return unless work_item_status_licensed_feature_available?
 
         lifecycles = namespace.lifecycles
 

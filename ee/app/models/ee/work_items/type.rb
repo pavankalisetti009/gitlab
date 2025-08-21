@@ -48,10 +48,6 @@ module EE
         strong_memoize_with(:widgets, resource_parent) do
           unavailable_widgets = unlicensed_widget_classes(resource_parent)
 
-          unless resource_parent.root_ancestor.try(:work_item_status_feature_available?)
-            unavailable_widgets << ::WorkItems::Widgets::Status
-          end
-
           super.reject { |widget_def| unavailable_widgets.include?(widget_def.widget_class) }
         end
       end

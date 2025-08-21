@@ -4084,34 +4084,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#work_item_status_feature_available?' do
-    subject { group.work_item_status_feature_available? }
-
-    context 'when work_item_status licensed feature is enabled' do
-      before do
-        stub_licensed_features(work_item_status: true)
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when work_item_status licensed feature is disabled' do
-      before do
-        stub_licensed_features(work_item_status: false)
-      end
-
-      it { is_expected.to be false }
-    end
-
-    context 'when work_item_status_feature_flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#can_manage_extensions_marketplace_for_enterprise_users?' do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:child_group) { create(:group, parent: root_group) }

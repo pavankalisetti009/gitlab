@@ -5,10 +5,6 @@ module WorkItems
     class UpdateService < BaseService
       include Gitlab::InternalEventsTracking
 
-      FeatureNotAvailableError = ServiceResponse.error(
-        message: 'This feature is currently behind a feature flag, and it is not available.'
-      )
-
       NotAuthorizedError = ServiceResponse.error(
         message: "You don't have permission to update a lifecycle for this namespace."
       )
@@ -26,7 +22,6 @@ module WorkItems
       end
 
       def execute
-        return FeatureNotAvailableError unless feature_available?
         return NotAuthorizedError unless authorized?
         return InvalidLifecycleTypeError if invalid_lifecycle_type?
         return LifecycleUpdateForbiddenError if lifecycle_update_forbidden?

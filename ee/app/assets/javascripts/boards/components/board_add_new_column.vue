@@ -370,7 +370,7 @@ export default {
         types.push({ value: ListType.iteration, text: __('Iteration') });
       }
 
-      if (this.statusListsAvailable && this.glFeatures.workItemStatusFeatureFlag) {
+      if (this.statusListsAvailable) {
         types.push({ value: ListType.status, text: __('Status') });
       }
 

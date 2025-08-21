@@ -85,7 +85,6 @@ describe('EE Create work item component', () => {
     mutationHandler = createWorkItemSuccessHandler,
     namespaceHandler = namespaceWorkItemTypesHandler,
     preselectedWorkItemType = WORK_ITEM_TYPE_NAME_EPIC,
-    workItemStatusFeatureFlag = false,
     workItemPlanningViewEnabled = false,
   } = {}) => {
     mockApollo = createMockApollo(
@@ -114,9 +113,6 @@ describe('EE Create work item component', () => {
         hasWorkItemStatusFeature: true,
         workItemPlanningViewEnabled,
         issuesSettings: '/groups/twitter/-/settings/issues',
-        glFeatures: {
-          workItemStatusFeatureFlag,
-        },
       },
       stubs: {
         WorkItemStatus,
@@ -199,10 +195,9 @@ describe('EE Create work item component', () => {
       ]);
     });
 
-    it('renders the work item status widget when flag is true', async () => {
+    it('renders the work item status widget', async () => {
       createComponent({
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE,
-        workItemStatusFeatureFlag: true,
       });
       await waitForPromises();
 
@@ -237,17 +232,9 @@ describe('EE Create work item component', () => {
       ]);
     });
 
-    it('does not render the work item status widget when flag is false', async () => {
-      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_TASK });
-      await waitForPromises();
-
-      expect(findStatusWidget().exists()).toBe(false);
-    });
-
-    it('renders the work item status widget when flag is true', async () => {
+    it('renders the work item status widget', async () => {
       createComponent({
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_TASK,
-        workItemStatusFeatureFlag: true,
       });
       await waitForPromises();
 

@@ -253,10 +253,6 @@ module WorkItems
         end
       end
 
-      def feature_available?
-        group.try(:work_item_status_feature_available?)
-      end
-
       def authorized?
         can?(current_user, :admin_work_item_lifecycle, group)
       end

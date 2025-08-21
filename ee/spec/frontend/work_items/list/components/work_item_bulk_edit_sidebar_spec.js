@@ -143,11 +143,6 @@ describe('WorkItemBulkEditSidebar component EE', () => {
     const status = 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2';
     const iterationId = 'gid://gitlab/Iteration/1215';
     createComponent({
-      provide: {
-        glFeatures: {
-          workItemStatusFeatureFlag: true,
-        },
-      },
       props: { isEpicsList: false },
     });
     await waitForPromises();
@@ -199,13 +194,8 @@ describe('WorkItemBulkEditSidebar component EE', () => {
   });
 
   describe('"Status" component', () => {
-    it('renders status dropdown when required feature is available and feature-flags are enabled', async () => {
+    it('renders status dropdown when required feature is available', async () => {
       createComponent({
-        provide: {
-          glFeatures: {
-            workItemStatusFeatureFlag: true,
-          },
-        },
         props: {
           isEpicsList: false,
         },

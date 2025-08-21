@@ -7,7 +7,7 @@ module Resolvers
         type Types::WorkItems::StatusType, null: true
 
         def resolve
-          return unless work_item_status_feature_available?
+          return unless work_item_status_licensed_feature_available?
 
           work_item.status_with_fallback
         end

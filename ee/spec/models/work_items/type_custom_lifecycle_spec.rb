@@ -50,27 +50,16 @@ RSpec.describe WorkItems::TypeCustomLifecycle, feature_category: :team_planning 
         expect(type_custom_lifecycle).to be_invalid
         expect(type_custom_lifecycle.errors[:work_item_type]).to include('does not support status widget')
       end
+    end
 
-      context 'when work_item_status licensed feature is not available' do
-        before do
-          stub_licensed_features(work_item_status: false)
-        end
-
-        it 'is invalid' do
-          expect(type_custom_lifecycle).to be_invalid
-          expect(type_custom_lifecycle.errors[:work_item_type]).to include('does not support status widget')
-        end
+    context 'when work_item_status licensed feature is not available' do
+      before do
+        stub_licensed_features(work_item_status: false)
       end
 
-      context 'when work_item_status_feature_flag feature flag is disabled' do
-        before do
-          stub_feature_flags(work_item_status_feature_flag: false)
-        end
-
-        it 'is invalid' do
-          expect(type_custom_lifecycle).to be_invalid
-          expect(type_custom_lifecycle.errors[:work_item_type]).to include('does not support status widget')
-        end
+      it 'is invalid' do
+        expect(type_custom_lifecycle).to be_invalid
+        expect(type_custom_lifecycle.errors[:work_item_type]).to include('does not support status widget')
       end
     end
   end

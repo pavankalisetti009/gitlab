@@ -106,9 +106,6 @@ export default {
     isOkrsEnabled() {
       return this.hasOkrsFeature && this.glFeatures.okrsMvc;
     },
-    showCustomStatusFilter() {
-      return this.glFeatures.workItemStatusFeatureFlag && this.hasStatusFeature;
-    },
     searchTokens() {
       const tokens = [];
 
@@ -175,7 +172,7 @@ export default {
         });
       }
 
-      if (this.showCustomStatusFilter) {
+      if (this.hasStatusFeature) {
         tokens.push({
           type: TOKEN_TYPE_STATUS,
           title: TOKEN_TITLE_STATUS,

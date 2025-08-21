@@ -9,7 +9,7 @@ module Resolvers
       alias_method :namespace, :object
 
       def resolve
-        return unless work_item_status_feature_available?
+        return unless work_item_status_licensed_feature_available?
 
         namespace.statuses
       end

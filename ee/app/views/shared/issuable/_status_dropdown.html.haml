@@ -1,6 +1,6 @@
 - parent = local_assigns.fetch(:parent)
 
-- return unless ::Feature.enabled?(:work_item_status_feature_flag, parent&.root_ancestor) && parent&.feature_available?(:work_item_status)
+- return unless parent&.feature_available?(:work_item_status)
 
 .block
   .title

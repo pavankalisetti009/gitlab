@@ -68,7 +68,7 @@ module EE
     end
 
     def supports_status?
-      is_a?(Issue) && resource_parent.work_item_status_feature_available?
+      is_a?(Issue) && resource_parent&.licensed_feature_available?(:work_item_status)
     end
 
     override :hook_association_changes

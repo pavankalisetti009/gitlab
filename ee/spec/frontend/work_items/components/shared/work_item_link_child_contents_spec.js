@@ -18,7 +18,6 @@ describe('WorkItemLinkChildContentsEE', () => {
     showLabels = true,
     workItemFullPath = 'test-project-path',
     isGroup = false,
-    workItemStatusFeatureFlag = true,
   } = {}) => {
     wrapper = mountExtended(WorkItemLinkChildContents, {
       propsData: {
@@ -30,9 +29,6 @@ describe('WorkItemLinkChildContentsEE', () => {
       provide: {
         isGroup,
         hasIterationsFeature: true,
-        glFeatures: {
-          workItemStatusFeatureFlag,
-        },
       },
     });
   };
@@ -78,12 +74,6 @@ describe('WorkItemLinkChildContentsEE', () => {
           widgets: [],
         },
       });
-
-      expect(findStatusBadgeComponent().exists()).toBe(false);
-    });
-
-    it('does not show the badge if the widget exists and the feature flag is disabled', () => {
-      createComponent({ workItemStatusFeatureFlag: false });
 
       expect(findStatusBadgeComponent().exists()).toBe(false);
     });

@@ -254,7 +254,7 @@ module EE
           end
 
           def can_admin_work_item_statuses?
-            context.group.work_item_status_feature_available? &&
+            context.group.licensed_feature_available?(:work_item_status) &&
               can?(context.current_user, :admin_work_item_lifecycle, context.group)
           end
         end

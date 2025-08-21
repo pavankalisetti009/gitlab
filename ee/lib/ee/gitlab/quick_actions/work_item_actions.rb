@@ -37,7 +37,7 @@ module EE
           types WorkItem
           params '"Name of the status"'
           condition do
-            quick_action_target.resource_parent&.root_ancestor&.work_item_status_feature_available? &&
+            quick_action_target.resource_parent&.root_ancestor&.licensed_feature_available?(:work_item_status) &&
               current_user.can?(:"update_#{quick_action_target.to_ability_name}", quick_action_target)
           end
           parse_params do |status_name|

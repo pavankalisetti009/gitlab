@@ -122,7 +122,7 @@ module EE
         end
 
         def without_status_from_lists(issues)
-          return issues unless parent&.root_ancestor.try(:work_item_status_feature_available?)
+          return issues unless parent&.root_ancestor&.licensed_feature_available?(:work_item_status)
 
           open_status_lists = all_open_status_lists
           return issues if open_status_lists.empty?
