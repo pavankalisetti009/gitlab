@@ -252,6 +252,25 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
 
         expect(Security::StoreFindingsService).not_to have_received(:execute)
       end
+
+      context 'with an existing scan' do
+        let_it_be(:security_scan) { create(:security_scan, build: artifact.job, scan_type: :sast, status: :created) }
+
+        it 'sets status to preparing' do
+          expect { store_scan }.to change { security_scan.reload.status }.from('created').to('preparing')
+        end
+
+        context 'when scan was created after scan was initialized' do
+          before do
+            allow(Security::Scan).to receive(:find_or_initialize_by)
+              .and_return(Security::Scan.new(build: artifact.job, scan_type: :sast), security_scan)
+          end
+
+          it 'sets status to preparing' do
+            expect { store_scan }.to change { security_scan.reload.status }.from('created').to('preparing')
+          end
+        end
+      end
     end
 
     context 'when the report does not have any errors' do
@@ -341,7 +360,7 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
       end
 
       context 'when the security scan already exists for the artifact' do
-        let_it_be(:security_scan) { create(:security_scan, build: artifact.job, scan_type: :sast, status: :succeeded) }
+        let_it_be(:security_scan) { create(:security_scan, build: artifact.job, scan_type: :sast, status: :created) }
         let_it_be(:unique_security_finding) do
           create(:security_finding, scan: security_scan, uuid: unique_finding_uuid)
         end
@@ -352,6 +371,10 @@ RSpec.describe Security::StoreScanService, feature_category: :vulnerability_mana
 
         it 'does not create a new security scan' do
           expect { store_scan }.not_to change { artifact.job.security_scans.count }
+        end
+
+        it 'changes the scan status' do
+          expect { store_scan }.to change { security_scan.reload.status }.from('created').to('succeeded')
         end
 
         context 'when the `deduplicate` param is set as false' do

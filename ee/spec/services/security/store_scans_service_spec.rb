@@ -115,6 +115,18 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
               expect(Security::StoreGroupedSbomScansService).to have_received(:execute)
                 .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
             end
+
+            context 'when there is a created dependency scan' do
+              let_it_be(:dependency_scan) do
+                create(:security_scan, build: cyclonedx_cs_build, scan_type: :dependency_scanning, status: :created)
+              end
+
+              it 'deletes the scan' do
+                expect { store_group_of_artifacts }.to change {
+                  Security::Scan.exists?(dependency_scan.id)
+                }.from(true).to(false)
+              end
+            end
           end
         end
 

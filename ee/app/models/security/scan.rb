@@ -50,6 +50,10 @@ module Security
 
     before_save :ensure_project_id_pipeline_id
 
+    # This needs to come below callbacks to avoid MethodNotAllowedError.
+    # We set project_id and pipeline_id when inserting records.
+    include BulkInsertSafe
+
     def self.distinct_scan_types
       select(:scan_type).distinct.pluck(:scan_type)
     end
