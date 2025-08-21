@@ -46776,16 +46776,7 @@ msgstr ""
 msgid "PipelineEditor|Editor accessibility guide"
 msgstr ""
 
-msgid "PipelineEditor|Git push event to the default branch"
-msgstr ""
-
 msgid "PipelineEditor|Lint CI/CD sample"
-msgstr ""
-
-msgid "PipelineEditor|Other pipeline sources are not available yet."
-msgstr ""
-
-msgid "PipelineEditor|Pipeline Source"
 msgstr ""
 
 msgid "PipelineEditor|Pipeline behavior will be simulated including the %{codeStart}rules%{codeEnd} %{codeStart}only%{codeEnd} %{codeStart}except%{codeEnd} and %{codeStart}needs%{codeEnd} job dependencies."
@@ -46794,7 +46785,13 @@ msgstr ""
 msgid "PipelineEditor|Pipeline behavior will be simulated including the %{codeStart}rules%{codeEnd} %{codeStart}only%{codeEnd} %{codeStart}except%{codeEnd} and %{codeStart}needs%{codeEnd} job dependencies. %{linkStart}Learn more%{linkEnd}"
 msgstr ""
 
+msgid "PipelineEditor|Pipeline run source"
+msgstr ""
+
 msgid "PipelineEditor|Pipeline simulation completed with errors"
+msgstr ""
+
+msgid "PipelineEditor|Select branch"
 msgstr ""
 
 msgid "PipelineEditor|Simulated a %{codeStart}git push%{codeEnd} event for a default branch. %{codeStart}Rules%{codeEnd}, %{codeStart}only%{codeEnd}, %{codeStart}except%{codeEnd}, and %{codeStart}needs%{codeEnd} job dependencies logic have been evaluated. %{linkStart}Learn more%{linkEnd}"
