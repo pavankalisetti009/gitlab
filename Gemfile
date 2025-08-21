@@ -528,9 +528,6 @@ group :development, :test do
   gem 'benchmark-ips', '~> 2.14.0', require: false, feature_category: :shared
   gem 'benchmark-memory', '~> 0.1', require: false, feature_category: :shared
 
-  # Profiling data from CI/CD pipelines
-  gem 'influxdb-client', '~> 3.1', require: false, feature_category: :tooling
-
   gem 'knapsack', '~> 4.0.0', feature_category: :tooling
   gem 'gitlab-crystalball', '~> 1.1.0', require: false, feature_category: :tooling
   gem 'test_file_finder', '~> 0.3.1', feature_category: :tooling
