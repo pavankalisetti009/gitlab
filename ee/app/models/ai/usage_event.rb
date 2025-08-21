@@ -32,6 +32,7 @@ module Ai
     scope :sort_by_timestamp_id, ->(dir: :desc) { order(timestamp: dir, id: dir) }
 
     scope :in_timeframe, ->(range) { where(timestamp: range) }
+    scope :with_events, ->(event_names) { where(event: event_names) }
     scope :for_namespace_hierarchy, ->(namespace) do
       base_usage_events = sort_by_timestamp_id
       related_namespaces = namespace.self_and_descendant_ids(skope: Namespace)

@@ -35185,7 +35185,7 @@ CREATE INDEX index_ai_troubleshoot_job_events_on_project_id ON ONLY ai_troublesh
 
 CREATE INDEX index_ai_troubleshoot_job_events_on_user_id ON ONLY ai_troubleshoot_job_events USING btree (user_id);
 
-CREATE INDEX index_ai_usage_events_on_namespace_id_timestamp_and_id ON ONLY ai_usage_events USING btree (namespace_id, "timestamp", id);
+CREATE INDEX index_ai_usage_events_on_namespace_id_event_timestamp_and_id ON ONLY ai_usage_events USING btree (namespace_id, event, "timestamp", id);
 
 CREATE INDEX index_ai_usage_events_on_organization_id ON ONLY ai_usage_events USING btree (organization_id);
 

@@ -61,6 +61,17 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     end
   end
 
+  describe '.with_events' do
+    let_it_be(:shown_event) { create(:ai_usage_event, event: 'code_suggestion_shown_in_ide') }
+    let_it_be(:accepted_event) { create(:ai_usage_event, event: 'code_suggestion_accepted_in_ide') }
+    let_it_be(:rejected_event) { create(:ai_usage_event, event: 'code_suggestion_rejected_in_ide') }
+
+    it 'returns events matching provided event names' do
+      expect(described_class.with_events(%w[code_suggestion_shown_in_ide code_suggestion_accepted_in_ide]).to_a)
+        .to match_array([shown_event, accepted_event])
+    end
+  end
+
   describe '.for_namespace_hierarchy' do
     let_it_be(:group) { create(:group) }
     let_it_be(:subgroup) { create(:group, parent: group) }

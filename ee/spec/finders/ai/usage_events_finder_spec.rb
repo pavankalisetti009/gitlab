@@ -12,7 +12,11 @@ RSpec.describe Ai::UsageEventsFinder, feature_category: :value_stream_management
   let_it_be(:to) { Time.current }
   let_it_be(:from) { 20.days.ago(to) }
 
-  subject(:finder) { described_class.new(user, resource: group, from: from, to: to).execute }
+  let(:finder_params) do
+    { resource: group, from: from, to: to }
+  end
+
+  subject(:finder) { described_class.new(user, **finder_params).execute }
 
   describe '#execute' do
     before do
@@ -42,11 +46,13 @@ RSpec.describe Ai::UsageEventsFinder, feature_category: :value_stream_management
 
       context 'when there are events' do
         let_it_be(:event1) do
-          create(:ai_usage_event, user: user, namespace: group, timestamp: 2.days.ago)
+          create(:ai_usage_event, user: user, namespace: group,
+            timestamp: 2.days.ago, event: 'code_suggestion_shown_in_ide')
         end
 
         let_it_be(:event2) do
-          create(:ai_usage_event, user: user, namespace: group, timestamp: 1.day.ago)
+          create(:ai_usage_event, user: user, namespace: group,
+            timestamp: 1.day.ago, event: 'code_suggestion_accepted_in_ide')
         end
 
         let_it_be(:too_old_event) do
@@ -70,6 +76,26 @@ RSpec.describe Ai::UsageEventsFinder, feature_category: :value_stream_management
           _other_namespace_event = create(:ai_usage_event, user: user, namespace: create(:group), timestamp: to)
 
           expect(finder).to contain_exactly(event1, event2, child_event)
+        end
+
+        context 'when event names filter specified' do
+          let(:finder_params) do
+            super().merge(events: ['code_suggestion_accepted_in_ide'])
+          end
+
+          it 'returns only events with corresponding event name' do
+            expect(finder.to_a).to eq([event2])
+          end
+        end
+
+        context 'when event names filter is empty' do
+          let(:finder_params) do
+            super().merge(events: [])
+          end
+
+          it "doesn't apply any event filtering" do
+            expect(finder.to_a).to match_array([event1, event2])
+          end
         end
       end
 
