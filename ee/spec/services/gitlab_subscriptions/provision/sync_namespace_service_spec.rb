@@ -285,6 +285,10 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
             expect do
               expect(result).to be_error
               expect(result.message).to match(/subscription seats can't be blank/)
+              expect(result.payload[:base_product][:message]).to match(/subscription seats can't be blank/)
+              expect(result.payload[:storage][:message]).to be_nil
+              expect(result.payload[:compute_minutes][:message]).to be_nil
+              expect(result.payload[:add_on_purchases][:message]).to be_nil
             end.not_to change { namespace.reload.gitlab_subscription }
 
             expect(namespace.additional_purchased_storage_size).to eq(100)
@@ -301,6 +305,10 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
             expect do
               expect(result).to be_error
               expect(result.message).to match(/purchased storage size can't be blank/)
+              expect(result.payload[:base_product][:message]).to be_nil
+              expect(result.payload[:storage][:message]).to match(/purchased storage size can't be blank/)
+              expect(result.payload[:compute_minutes][:message]).to be_nil
+              expect(result.payload[:add_on_purchases][:message]).to be_nil
             end.not_to change { namespace.reload.additional_purchased_storage_size }
 
             expect(namespace.reload.gitlab_subscription.plan_name).to eq('ultimate')
@@ -317,6 +325,10 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
             expect do
               expect(result).to be_error
               expect(result.message).to match(/Validation failed/)
+              expect(result.payload[:base_product][:message]).to be_nil
+              expect(result.payload[:storage][:message]).to be_nil
+              expect(result.payload[:compute_minutes][:message]).to match(/Validation failed/)
+              expect(result.payload[:add_on_purchases][:message]).to be_nil
             end.not_to change { namespace.reload.extra_shared_runners_minutes_limit }
 
             expect(namespace.reload.gitlab_subscription.plan_name).to eq('ultimate')
@@ -333,12 +345,42 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
             expect do
               expect(result).to be_error
               expect(result.message).to match(/Validation failed/)
+              expect(result.payload[:base_product][:message]).to be_nil
+              expect(result.payload[:storage][:message]).to be_nil
+              expect(result.payload[:compute_minutes][:message]).to be_nil
+              expect(result.payload[:add_on_purchases][:message]).to match(/Validation failed/)
             end.not_to change { namespace.subscription_add_on_purchases.count }
 
             expect(namespace.reload.gitlab_subscription.plan_name).to eq('ultimate')
             expect(namespace.additional_purchased_storage_size).to eq(100)
             expect(namespace.extra_shared_runners_minutes_limit).to eq(90)
           end
+        end
+      end
+
+      context 'when all provisioning fails' do
+        before do
+          params[:base_product][:seats] = nil
+          params[:storage][:additional_purchased_storage_size] = nil
+          allow_next_instance_of(GitlabSubscriptions::Provision::SyncComputeMinutesService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Validation failed'))
+          end
+          allow_next_instance_of(::GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Validation failed'))
+          end
+        end
+
+        it 'returns all error messages' do
+          expect do
+            expect(result).to be_error
+            expect(result.payload[:base_product][:message]).to match(/subscription seats can't be blank/)
+            expect(result.payload[:storage][:message]).to match(/purchased storage size can't be blank/)
+            expect(result.payload[:compute_minutes][:message]).to match(/Validation failed/)
+            expect(result.payload[:add_on_purchases][:message]).to match(/Validation failed/)
+          end.to not_change { namespace.reload.additional_purchased_storage_size }
+            .and not_change { namespace.reload.gitlab_subscription }
+            .and not_change { namespace.reload.extra_shared_runners_minutes_limit }
+            .and not_change { namespace.subscription_add_on_purchases.count }
         end
       end
     end
