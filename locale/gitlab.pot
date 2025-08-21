@@ -70169,9 +70169,6 @@ msgid_plural "VirtualRegistry|%{hours} hours cache"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "VirtualRegistry|%{size} storage used"
-msgstr ""
-
 msgid "VirtualRegistry|Add upstream"
 msgstr ""
 
