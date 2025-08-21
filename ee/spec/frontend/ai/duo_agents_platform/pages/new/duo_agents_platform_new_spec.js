@@ -12,6 +12,7 @@ describe('DuoAgentsPlatformNew', () => {
   };
   const defaultProvide = {
     projectId: '123',
+    projectPath: 'group/project',
     duoAgentsInvokePath: '/api/v4/projects/123/duo_workflow/invoke',
   };
 
@@ -41,6 +42,7 @@ describe('DuoAgentsPlatformNew', () => {
       defaultAgentFlowType: AGENTFLOW_TYPE_JENKINS_TO_CI,
       duoAgentsInvokePath: defaultProvide.duoAgentsInvokePath,
       projectId: Number(defaultProvide.projectId),
+      projectPath: defaultProvide.projectPath,
       flows: expect.any(Array),
     });
   });

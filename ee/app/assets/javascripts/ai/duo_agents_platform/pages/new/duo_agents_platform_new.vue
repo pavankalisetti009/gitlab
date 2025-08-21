@@ -9,7 +9,7 @@ export default {
   components: {
     RunAgentFlowForm,
   },
-  inject: ['projectId', 'duoAgentsInvokePath'],
+  inject: ['projectId', 'projectPath', 'duoAgentsInvokePath'],
   computed: {
     castProjectId() {
       return Number(this.projectId);
@@ -46,6 +46,7 @@ export default {
         :default-agent-flow-type="$options.defaultAgentFlowType"
         :duo-agents-invoke-path="duoAgentsInvokePath"
         :project-id="castProjectId"
+        :project-path="projectPath"
         :flows="$options.flows"
         @agent-flow-started="handleAgentFlowStarted"
       />
