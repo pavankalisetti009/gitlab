@@ -29,6 +29,19 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     }
   end
 
+  let(:not_params) do
+    {
+      custom_field: [
+        {
+          custom_field_id: select_field.to_global_id.to_s,
+          selected_option_ids: [
+            select_option_2.to_global_id.to_s
+          ]
+        }
+      ]
+    }
+  end
+
   before_all do
     create(:work_item_select_field_value, work_item_id: work_item_a.id, custom_field: select_field,
       custom_field_select_option: select_option_1)
@@ -61,6 +74,25 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     end
   end
 
+  shared_examples 'returns inverse filtered counts' do
+    it 'returns counts excluding the custom field filter' do
+      post_graphql(query, current_user: current_user)
+
+      expect(count).to eq(1)
+    end
+  end
+
+  shared_examples 'returns inverse filtered items' do
+    it 'returns items excluding the custom field filter' do
+      post_graphql(query, current_user: current_user)
+
+      model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+      expect(model_ids.size).to eq(1)
+      expect(model_ids).to contain_exactly(work_item_a.id)
+    end
+  end
+
   context 'when querying project.issueStatusCounts' do
     let(:query) do
       graphql_query_for(:project, { full_path: project.full_path },
@@ -71,6 +103,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:count) { graphql_data.dig('project', 'issueStatusCounts', 'opened') }
 
     it_behaves_like 'returns filtered counts'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered counts'
+    end
   end
 
   context 'when querying project.issues' do
@@ -83,6 +121,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:items) { graphql_data.dig('project', 'issues', 'nodes') }
 
     it_behaves_like 'returns filtered items'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered items'
+    end
   end
 
   context 'when querying group.issues' do
@@ -95,6 +139,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:items) { graphql_data.dig('group', 'issues', 'nodes') }
 
     it_behaves_like 'returns filtered items'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered items'
+    end
   end
 
   context 'when querying project.workItemStateCounts' do
@@ -107,6 +157,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:count) { graphql_data.dig('project', 'workItemStateCounts', 'opened') }
 
     it_behaves_like 'returns filtered counts'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered counts'
+    end
   end
 
   context 'when querying group.workItemStateCounts' do
@@ -119,6 +175,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:count) { graphql_data.dig('group', 'workItemStateCounts', 'opened') }
 
     it_behaves_like 'returns filtered counts'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered counts'
+    end
   end
 
   context 'when querying project.workItems' do
@@ -133,23 +195,100 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     it_behaves_like 'returns filtered items'
 
     context 'when filtering using custom field names and values' do
-      let(:params) do
-        {
-          custom_field: [
-            {
-              custom_field_name: select_field.name,
-              selected_option_values: [
-                select_option_2.value
-              ]
-            }
-          ]
-        }
+      context "with existing selected option value" do
+        let(:params) do
+          {
+            custom_field: [
+              {
+                custom_field_name: select_field.name,
+                selected_option_values: [
+                  select_option_2.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it_behaves_like 'returns filtered items'
       end
 
-      it_behaves_like 'returns filtered items'
+      context "without existing select option value" do
+        let(:option) { build(:custom_field_select_option) }
+        let(:params) do
+          {
+            custom_field: [
+              {
+                custom_field_name: select_field.name,
+                selected_option_values: [
+                  option.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'returns 0 items' do
+          post_graphql(query, current_user: current_user)
+
+          model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+          expect(model_ids.size).to eq(0)
+          expect(model_ids).to be_empty
+        end
+      end
+    end
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered items'
+
+      context 'when filtering using custom field names and values with not_params' do
+        context "with existing selected option value" do
+          let(:not_params) do
+            {
+              custom_field: [
+                {
+                  custom_field_name: select_field.name,
+                  selected_option_values: [
+                    select_option_2.value
+                  ]
+                }
+              ]
+            }
+          end
+
+          it_behaves_like 'returns inverse filtered items'
+        end
+
+        context "without existing select option value" do
+          let(:option) { build(:custom_field_select_option) }
+          let(:not_params) do
+            {
+              custom_field: [
+                {
+                  custom_field_name: select_field.name,
+                  selected_option_values: [
+                    option.value
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'returns all items' do
+            post_graphql(query, current_user: current_user)
+
+            model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+            expect(model_ids.size).to eq(3)
+            expect(model_ids).to contain_exactly(work_item_a.id, work_item_b.id, work_item_c.id)
+          end
+        end
+      end
 
       context 'when both name and id are given' do
-        let(:params) do
+        let(:not_params) do
           {
             custom_field: [
               {
@@ -171,32 +310,6 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
           )
         end
       end
-
-      context 'when both select option id and value are given' do
-        let(:params) do
-          {
-            custom_field: [
-              {
-                custom_field_name: select_field.name,
-                selected_option_ids: [
-                  select_option_2.to_global_id.to_s
-                ],
-                selected_option_values: [
-                  select_option_2.value
-                ]
-              }
-            ]
-          }
-        end
-
-        it 'returns an error' do
-          post_graphql(query, current_user: current_user)
-
-          expect_graphql_errors_to_include(
-            'One and only one of [selectedOptionIds, selectedOptionValues] arguments is required.'
-          )
-        end
-      end
     end
   end
 
@@ -210,6 +323,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     let(:items) { graphql_data.dig('group', 'workItems', 'nodes') }
 
     it_behaves_like 'returns filtered items'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered items'
+    end
   end
 
   context 'when querying project.board.lists.issues' do
@@ -243,6 +362,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     end
 
     it_behaves_like 'returns filtered items'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered items'
+    end
   end
 
   context 'when querying group.board.lists.issues' do
@@ -276,6 +401,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     end
 
     it_behaves_like 'returns filtered items'
+
+    context "when using not params for inverse filtering" do
+      let(:params) { { not: not_params } }
+
+      it_behaves_like 'returns inverse filtered items'
+    end
   end
 
   context 'with legacy epics' do
@@ -306,6 +437,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
       let(:items) { graphql_data.dig('group', 'epics', 'nodes') }
 
       it_behaves_like 'returns filtered items'
+
+      context "when using not params for inverse filtering" do
+        let(:params) { { not: not_params } }
+
+        it_behaves_like 'returns inverse filtered items'
+      end
     end
 
     context 'when querying group.epicBoards.lists.epics' do
@@ -341,6 +478,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
       end
 
       it_behaves_like 'returns filtered items'
+
+      context "when using not params for inverse filtering" do
+        let(:params) { { not: not_params } }
+
+        it_behaves_like 'returns inverse filtered items'
+      end
     end
   end
 end

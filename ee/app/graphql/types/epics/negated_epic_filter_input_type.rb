@@ -14,6 +14,11 @@ module Types
       argument :my_reaction_emoji, GraphQL::Types::String,
         required: false,
         description: 'Filter by reaction emoji applied by the current user.'
+
+      argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+        required: false,
+        experiment: { milestone: '18.4' },
+        description: 'Filter by negated custom fields.'
     end
   end
 end

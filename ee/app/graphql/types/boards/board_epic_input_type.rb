@@ -6,6 +6,10 @@ module Types
       graphql_name 'EpicFilters'
 
       class NegatedEpicBoardIssueInputType < BoardIssuableInputBaseType
+        argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+          required: false,
+          experiment: { milestone: '18.4' },
+          description: 'Filter by negated custom fields.'
       end
 
       argument :not, NegatedEpicBoardIssueInputType,
