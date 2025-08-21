@@ -13,22 +13,12 @@ module GitlabSubscriptions
       def execute
         return ServiceResponse.error(message: 'Invalid params') unless source&.root_ancestor
 
-        namespace_id = source.root_ancestor.id
-        organization_id = source.root_ancestor.organization_id
+        recently_added_members_user_ids.each_slice(BATCH_SIZE) do |user_ids|
+          users = User.find(user_ids)
+          seat_types = GitlabSubscriptions::SeatTypeCalculator.bulk_execute(users, source.root_ancestor)
+          seat_assignments = user_ids.map { |user_id| seat_assignment(user_id, seat_types[user_id]) }
 
-        recently_added_members_user_ids.each_slice(BATCH_SIZE) do |batch|
-          seat_assignments = batch.map do |user_id|
-            {
-              namespace_id: namespace_id,
-              user_id: user_id,
-              organization_id: organization_id
-            }
-          end
-
-          GitlabSubscriptions::SeatAssignment.insert_all(
-            seat_assignments,
-            unique_by: [:namespace_id, :user_id]
-          )
+          GitlabSubscriptions::SeatAssignment.upsert_all(seat_assignments, unique_by: [:namespace_id, :user_id])
         end
 
         ServiceResponse.success(message: 'Member added activity tracked')
@@ -40,6 +30,23 @@ module GitlabSubscriptions
 
       def recently_added_members_user_ids
         source.members.connected_to_user.including_user_ids(invited_user_ids).pluck_user_ids
+      end
+
+      def namespace_id
+        source.root_ancestor.id
+      end
+
+      def organization_id
+        source.root_ancestor.organization_id
+      end
+
+      def seat_assignment(user_id, seat_type)
+        {
+          namespace_id: namespace_id,
+          organization_id: organization_id,
+          user_id: user_id,
+          seat_type: seat_type
+        }
       end
     end
   end
