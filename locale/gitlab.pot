@@ -37341,6 +37341,9 @@ msgstr ""
 msgid "Large File Storage"
 msgstr ""
 
+msgid "Large table corruption checks skipped. Manual checking recommended."
+msgstr ""
+
 msgid "Last %d day"
 msgid_plural "Last %d days"
 msgstr[0] ""
@@ -61074,6 +61077,9 @@ msgstr ""
 msgid "Size Limits"
 msgstr ""
 
+msgid "Size limit"
+msgstr ""
+
 msgid "Size limit per repository (MiB)"
 msgstr ""
 
@@ -61087,6 +61093,9 @@ msgid "Skipped"
 msgstr ""
 
 msgid "Skipped deployment to"
+msgstr ""
+
+msgid "Skipped indexes"
 msgstr ""
 
 msgid "Slack logo"
@@ -63246,6 +63255,9 @@ msgid "Table"
 msgstr ""
 
 msgid "Table of contents"
+msgstr ""
+
+msgid "Table size"
 msgstr ""
 
 msgid "Tables containing block elements (like multiple paragraphs, lists or blockquotes) are not supported in Markdown and will be converted to HTML."
