@@ -13,6 +13,13 @@ module Sbom
     def initialize(project)
       @project = project
       @cache_key_service = Sbom::LatestGraphTimestampCacheKey.new(project: project)
+      @all_paths = {}
+      # This cache tracks a list of top-level nodes reachable from a given ancestor and the respective distance.
+      # Any node in the graph could reach multiple top-level nodes, hence why this is a Set.
+      # It is shared between all traversals so later traversals benefit from earlier searching, removing
+      # significant repeated work.
+      @cache = Hash.new { |hash, key| hash[key] = Set.new }
+      @stats = { cache_hit: 0, cache_miss: 0 }
     end
 
     def timestamp
@@ -38,14 +45,50 @@ module Sbom
 
     private
 
-    attr_reader :project
+    attr_reader :project, :all_paths, :cache, :stats
 
     def build_dependency_graph
-      direct_dependencies = sbom_occurrences.select(&:top_level?)
+      create_graph_edges
 
-      all_paths = []
+      # `graph` is an adjacency list of descendant->parent edges for a given descendant.
+      graph = Hash.new { |hash, key| hash[key] = [] }
 
-      # Process each occurrence to find direct parent-child relationships
+      all_ancestors = []
+      # Build an adjacency list from the direct paths
+      all_paths.each_value do |path|
+        graph[path[:descendant_id]] << path
+        all_ancestors << path[:ancestor_id]
+      end
+
+      # Leaf nodes are where we will start our full traversal from. The graph is keyed by descendant,
+      # so leaf nodes are all descendants (graph.keys) that are never found as an ancestor.
+      leaf_nodes = graph.keys - all_ancestors
+
+      # Let's get buildin' the graph!
+      leaf_nodes.each do |leaf|
+        graph[leaf].each do |ancestor|
+          iterate_path(graph, ancestor)
+        end
+      end
+
+      stats_total = stats[:cache_hit] + stats[:cache_miss]
+
+      ::Gitlab::AppLogger.info(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.namespace&.name,
+        namespace_id: project.namespace&.id,
+        count_path_nodes: all_paths.count,
+        cache_hit: stats[:cache_hit],
+        cache_miss: stats[:cache_miss],
+        cache_hit_rate: stats_total > 0 ? stats[:cache_hit].to_f / stats_total : 0,
+        cache_miss_rate: stats_total > 0 ? stats[:cache_miss].to_f / stats_total : 0
+      )
+      all_paths.values
+    end
+
+    def create_graph_edges
       sbom_occurrences.each do |occurrence|
         next if occurrence.ancestors.empty?
 
@@ -64,44 +107,59 @@ module Sbom
           next unless parent_occurrence
 
           # Create a direct path
-          all_paths << Sbom::GraphPath.new(
-            ancestor_id: parent_occurrence.id,
-            descendant_id: occurrence.id,
-            project_id: project.id,
-            path_length: 1,
-            created_at: timestamp,
-            updated_at: timestamp,
-            top_level_ancestor: parent_occurrence.top_level?
-          )
+          collect(parent_occurrence.id, occurrence.id, 1, parent_occurrence.top_level?)
         end
       end
+    end
 
-      # Build an adjacency list from the direct paths
-      graph = {}
-      all_paths.each do |path|
-        graph[path[:ancestor_id]] ||= []
-        graph[path[:ancestor_id]] << path[:descendant_id]
+    def iterate_path(graph, current_node, current_path = [], depth = 1)
+      collect_path(current_path, current_node, depth, false) if current_node.top_level_ancestor
+      # We don't stop processing if we find a top_level_ancestor. A node can be a top_level node which is also
+      # a descendant of another top_level node. We must keep searching.
+      ancestors = graph[current_node.ancestor_id]
+      return unless ancestors
+
+      current_path << current_node
+
+      ancestors.each do |ancestor|
+        # Check for a cycle. If we find one we can safely stop processing this step.
+        next if current_path.any? { |path| path.ancestor_id == ancestor.ancestor_id }
+
+        # Have we already traversed this path?
+        if cache[ancestor.descendant_id].present? && cache[ancestor.ancestor_id].present?
+          # For each top_level_ancestor we've already found from this descendant:
+          cache[ancestor.descendant_id].each do |top_level_ancestor|
+            collect_path(current_path, top_level_ancestor[:top_level], depth + top_level_ancestor[:depth], true)
+          end
+        else
+          iterate_path(graph, ancestor, current_path.clone, depth + 1)
+        end
       end
+    end
 
-      transitive_paths = {}
-
-      # For each direct dependency, find all possible paths to other dependencies
-      direct_dependencies.each do |direct_dep|
-        find_all_paths(direct_dep.id, graph, transitive_paths)
+    def collect_path(current_path, top_level_ancestor, depth, cache_hit)
+      current_path.each do |partial|
+        collect(top_level_ancestor.ancestor_id, partial.descendant_id, depth, true)
+        # Cache that this path partial can reach this top_level_ancestor.
+        cache[partial.descendant_id] << { top_level: top_level_ancestor, depth: depth }
+        stats[cache_hit ? :cache_hit : :cache_miss] += 1
+        depth -= 1
       end
+    end
 
-      result = all_paths.concat(transitive_paths.values)
+    def collect(ancestor_id, descendant_id, path_length, top_level)
+      key = "#{ancestor_id}-#{descendant_id}-#{path_length}"
+      return if all_paths.has_key?(key)
 
-      ::Gitlab::AppLogger.info(
-        message: "New graph creation complete",
-        project: project.name,
+      all_paths[key] = Sbom::GraphPath.new(
+        ancestor_id: ancestor_id,
+        descendant_id: descendant_id,
         project_id: project.id,
-        namespace: project.group&.name,
-        namespace_id: project.group&.id,
-        count_path_nodes: result.count
+        path_length: path_length,
+        created_at: timestamp,
+        updated_at: timestamp,
+        top_level_ancestor: top_level
       )
-
-      result
     end
 
     def bulk_insert_paths(paths)
@@ -114,42 +172,6 @@ module Sbom
       Sbom::Occurrence.by_project_ids(project.id).with_version.order_by_id
     end
     strong_memoize_attr :sbom_occurrences
-
-    # Recursive Depth First Search to find all possible paths
-    def find_all_paths(
-      current_id, graph, all_paths, visited = Set.new, path_start = nil,
-      current_length = 0)
-      # Record the starting node if this is the beginning of a path
-      path_start ||= current_id
-
-      # Add current node to visited set to avoid cycles
-      visited = visited.clone
-      visited.add(current_id)
-
-      # Get all direct neighbors
-      neighbors = graph[current_id] || []
-
-      new_length = current_length + 1
-
-      neighbors.each do |neighbor_id|
-        next if visited.include?(neighbor_id)
-
-        if new_length > 1
-          key = "#{path_start}-#{neighbor_id}-#{new_length}"
-          all_paths[key] = Sbom::GraphPath.new(
-            ancestor_id: path_start,
-            descendant_id: neighbor_id,
-            project_id: project.id,
-            path_length: new_length,
-            created_at: timestamp,
-            updated_at: timestamp,
-            top_level_ancestor: true # path start is always a top_level occurrence here.
-          )
-        end
-
-        find_all_paths(neighbor_id, graph, all_paths, visited, path_start, new_length)
-      end
-    end
 
     # This is convoluted *but*:
     # `Sbom::Occurrence#ancestors` is `Array[Hash]`.

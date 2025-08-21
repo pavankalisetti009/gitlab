@@ -106,7 +106,94 @@ RSpec.describe Sbom::BuildDependencyGraph, :unlimited_max_formatted_output_lengt
         project_id: project.id,
         namespace: project.group.name,
         namespace_id: project.group.id,
-        count_path_nodes: 14
+        count_path_nodes: 14,
+        cache_hit: 0,
+        cache_hit_rate: 0.0,
+        cache_miss: 9,
+        cache_miss_rate: 1
+      )
+      service.execute
+    end
+  end
+
+  describe "base test case variant" do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:ancestor) { create(:sbom_occurrence, project: project, ancestors: [{}]) }
+    let_it_be(:descendant) do
+      create(:sbom_occurrence, ancestors: [{ name: ancestor.component_name, version: ancestor.version }, {}],
+        input_file_path: ancestor.input_file_path, project: project)
+    end
+
+    let_it_be(:descendant2) do
+      create(:sbom_occurrence, ancestors: [{ name: ancestor.component_name, version: ancestor.version }, {}],
+        input_file_path: ancestor.input_file_path, project: project)
+    end
+
+    let_it_be(:grandchild) do
+      create(:sbom_occurrence,
+        ancestors: [
+          { name: descendant.component_name, version: descendant.version }
+        ],
+        input_file_path: descendant.input_file_path, project: project)
+    end
+
+    let_it_be(:grandchild2) do
+      create(:sbom_occurrence, ancestors: [{ name: descendant.component_name, version: descendant.version }],
+        input_file_path: descendant.input_file_path, project: project)
+    end
+
+    let_it_be(:grandchild3) do
+      create(:sbom_occurrence, ancestors: [{ name: descendant2.component_name, version: descendant2.version }],
+        input_file_path: descendant2.input_file_path, project: project)
+    end
+
+    let_it_be(:grandchild4) do
+      create(:sbom_occurrence, ancestors: [{ name: descendant2.component_name, version: descendant2.version }],
+        input_file_path: descendant2.input_file_path, project: project)
+    end
+
+    let_it_be(:deep_one) do
+      create(:sbom_occurrence, ancestors: [{ name: grandchild4.component_name, version: grandchild4.version }],
+        input_file_path: grandchild4.input_file_path, project: project)
+    end
+
+    let(:expected_cache_key) { Sbom::LatestGraphTimestampCacheKey.new(project: project).cache_key }
+
+    subject(:service) { described_class.new(project) }
+
+    it "builds a dependency tree", :aggregate_failures, :freeze_time do
+      service.execute
+      resulting_paths = Sbom::GraphPath.by_projects(project)
+      expect(resulting_paths).to contain_exactly(
+        match_path(ancestor.id, descendant.id, project.id, 1, service.timestamp, true),
+        match_path(ancestor.id, descendant2.id, project.id, 1, service.timestamp, true),
+        match_path(descendant.id, grandchild.id, project.id, 1, service.timestamp, true),
+        match_path(descendant.id, grandchild2.id, project.id, 1, service.timestamp, true),
+        match_path(descendant2.id, grandchild3.id, project.id, 1, service.timestamp, true),
+        match_path(descendant2.id, grandchild4.id, project.id, 1, service.timestamp, true),
+        match_path(grandchild4.id, deep_one.id, project.id, 1, service.timestamp, false),
+        match_path(ancestor.id, grandchild.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor.id, grandchild2.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor.id, grandchild3.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor.id, grandchild4.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor.id, deep_one.id, project.id, 3, service.timestamp, true),
+        match_path(descendant2.id, deep_one.id, project.id, 2, service.timestamp, true)
+      )
+    end
+
+    it "logs the expected message when the build completes" do
+      expect(::Gitlab::AppLogger).to receive(:info).with(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group.name,
+        namespace_id: project.group.id,
+        count_path_nodes: 13,
+        cache_hit: 0,
+        cache_hit_rate: 0.0,
+        cache_miss: 6,
+        cache_miss_rate: 1.0
       )
       service.execute
     end
@@ -170,6 +257,22 @@ RSpec.describe Sbom::BuildDependencyGraph, :unlimited_max_formatted_output_lengt
         match_path(ancestor.id, cycle_3.id, project.id, 3, service.timestamp, true),
         match_path(ancestor.id, leaf.id, project.id, 4, service.timestamp, true)
       )
+    end
+
+    it "logs the expected message when the build completes" do
+      expect(::Gitlab::AppLogger).to receive(:info).with(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group.name,
+        namespace_id: project.group.id,
+        count_path_nodes: 8,
+        cache_hit: 0,
+        cache_hit_rate: 0.0,
+        cache_miss: 3,
+        cache_miss_rate: 1.0
+      )
+      service.execute
     end
   end
 
@@ -271,6 +374,22 @@ RSpec.describe Sbom::BuildDependencyGraph, :unlimited_max_formatted_output_lengt
         match_path(ancestor.id, leaf_2.id, project.id, 6, service.timestamp, true)
       )
     end
+
+    it "logs the expected message when the build completes" do
+      expect(::Gitlab::AppLogger).to receive(:info).with(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group.name,
+        namespace_id: project.group.id,
+        count_path_nodes: 19,
+        cache_hit: 4,
+        cache_hit_rate: 0.3333333333333333,
+        cache_miss: 8,
+        cache_miss_rate: 0.6666666666666666
+      )
+      service.execute
+    end
   end
 
   describe "early branch with a long right branch" do
@@ -371,6 +490,22 @@ RSpec.describe Sbom::BuildDependencyGraph, :unlimited_max_formatted_output_lengt
         match_path(ancestor.id, leaf_2.id, project.id, 6, service.timestamp, true)
       )
     end
+
+    it "logs the expected message when the build completes" do
+      expect(::Gitlab::AppLogger).to receive(:info).with(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group.name,
+        namespace_id: project.group.id,
+        count_path_nodes: 19,
+        cache_hit: 4,
+        cache_hit_rate: 0.3333333333333333,
+        cache_miss: 8,
+        cache_miss_rate: 0.6666666666666666
+      )
+      service.execute
+    end
   end
 
   describe "equal length branches" do
@@ -467,6 +602,124 @@ RSpec.describe Sbom::BuildDependencyGraph, :unlimited_max_formatted_output_lengt
         match_path(ancestor.id, leaf_1.id, project.id, 5, service.timestamp, true),
         match_path(ancestor.id, leaf_2.id, project.id, 5, service.timestamp, true)
       )
+    end
+
+    it "logs the expected message when the build completes" do
+      expect(::Gitlab::AppLogger).to receive(:info).with(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group.name,
+        namespace_id: project.group.id,
+        count_path_nodes: 16,
+        cache_hit: 2,
+        cache_hit_rate: 0.2,
+        cache_miss: 8,
+        cache_miss_rate: 0.8
+      )
+      service.execute
+    end
+  end
+
+  describe "'I' shape graph'" do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:ancestor_left) do
+      create(:sbom_occurrence, project: project, input_file_path: 'package.json', ancestors: [{}])
+    end
+
+    let_it_be(:ancestor_right) do
+      create(:sbom_occurrence, project: project, input_file_path: 'package.json', ancestors: [{}])
+    end
+
+    let_it_be(:ancestor_middle) do
+      create(:sbom_occurrence,
+        project: project,
+        ancestors: [
+          { name: ancestor_left.component_name, version: ancestor_left.version },
+          { name: ancestor_right.component_name, version: ancestor_right.version },
+          {}
+        ],
+        input_file_path: ancestor_left.input_file_path
+      )
+    end
+
+    let_it_be(:child_1) do
+      create(:sbom_occurrence,
+        ancestors: [{ name: ancestor_middle.component_name, version: ancestor_middle.version }],
+        input_file_path: ancestor_middle.input_file_path,
+        project: project
+      )
+    end
+
+    let_it_be(:child_2) do
+      create(:sbom_occurrence,
+        ancestors: [{ name: child_1.component_name, version: child_1.version }],
+        input_file_path: child_1.input_file_path,
+        project: project
+      )
+    end
+
+    let_it_be(:leaf_1) do
+      create(:sbom_occurrence,
+        ancestors: [{ name: child_2.component_name, version: child_2.version }],
+        input_file_path: child_2.input_file_path,
+        project: project
+      )
+    end
+
+    let_it_be(:leaf_2) do
+      create(:sbom_occurrence,
+        ancestors: [{ name: child_2.component_name, version: child_2.version }],
+        input_file_path: child_2.input_file_path,
+        project: project
+      )
+    end
+
+    subject(:service) { described_class.new(project) }
+
+    it "builds expected dependency tree", :aggregate_failures, :freeze_time do
+      service.execute
+      resulting_paths = Sbom::GraphPath.by_projects(project)
+      expect(resulting_paths).to contain_exactly(
+        # All single paths
+        match_path(ancestor_left.id, ancestor_middle.id, project.id, 1, service.timestamp, true),
+        match_path(ancestor_right.id, ancestor_middle.id, project.id, 1, service.timestamp, true),
+        match_path(ancestor_middle.id, child_1.id, project.id, 1, service.timestamp, true),
+        match_path(child_1.id, child_2.id, project.id, 1, service.timestamp, false),
+        match_path(child_2.id, leaf_1.id, project.id, 1, service.timestamp, false),
+        match_path(child_2.id, leaf_2.id, project.id, 1, service.timestamp, false),
+        # ancestor_left paths
+        match_path(ancestor_left.id, child_1.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor_left.id, child_2.id, project.id, 3, service.timestamp, true),
+        match_path(ancestor_left.id, leaf_1.id, project.id, 4, service.timestamp, true),
+        match_path(ancestor_left.id, leaf_2.id, project.id, 4, service.timestamp, true),
+        # ancestor_right paths
+        match_path(ancestor_right.id, child_1.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor_right.id, child_2.id, project.id, 3, service.timestamp, true),
+        match_path(ancestor_right.id, leaf_1.id, project.id, 4, service.timestamp, true),
+        match_path(ancestor_right.id, leaf_2.id, project.id, 4, service.timestamp, true),
+        # ancestor_middle paths
+        match_path(ancestor_middle.id, child_2.id, project.id, 2, service.timestamp, true),
+        match_path(ancestor_middle.id, leaf_1.id, project.id, 3, service.timestamp, true),
+        match_path(ancestor_middle.id, leaf_2.id, project.id, 3, service.timestamp, true)
+      )
+    end
+
+    it "logs the expected message when the build completes" do
+      expect(::Gitlab::AppLogger).to receive(:info).with(
+        message: "New graph creation complete",
+        project: project.name,
+        project_id: project.id,
+        namespace: project.group.name,
+        namespace_id: project.group.id,
+        count_path_nodes: 17,
+        cache_hit: 3,
+        cache_hit_rate: 0.2727272727272727,
+        cache_miss: 8,
+        cache_miss_rate: 0.7272727272727273
+      )
+      service.execute
     end
   end
 end
