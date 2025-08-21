@@ -32,7 +32,7 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
     end
   end
 
-  let(:base_arguments) { { parent_id: parent.to_gid.to_s, ids: work_item_ids } }
+  let(:base_arguments) { { full_path: parent.full_path.to_s, ids: work_item_ids } }
 
   let(:widget_arguments) do
     {
@@ -44,7 +44,7 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
   end
 
   context 'when user can update all issues' do
-    context 'when scoping to a parent group using parent_id' do
+    context 'when scoping to a parent group' do
       let(:parent) { group }
 
       context 'when group_bulk_edit feature is available' do
@@ -255,6 +255,20 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
               'updatedWorkItemCount' => 3
             )
           end
+        end
+      end
+
+      context 'when group_bulk_edit feature is not available' do
+        before do
+          stub_licensed_features(epics: true, group_bulk_edit: false)
+        end
+
+        it 'returns a licensed feature not available message' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect_graphql_errors_to_include(
+            _('Group work item bulk edit is a licensed feature not available for this group.')
+          )
         end
       end
 
@@ -480,59 +494,9 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
           it_behaves_like 'does not update work item statuses'
         end
       end
-
-      context 'when group_bulk_edit feature is not available' do
-        before do
-          stub_licensed_features(epics: true, group_bulk_edit: false)
-        end
-
-        it 'returns a resource not available message' do
-          post_graphql_mutation(mutation, current_user: current_user)
-
-          expect_graphql_errors_to_include(
-            _('Group work item bulk edit is a licensed feature not available for this group.')
-          )
-        end
-      end
     end
 
-    context 'when scoping to a group using full_path' do
-      let(:base_arguments) { { full_path: group.full_path, ids: work_item_ids } }
-
-      context 'when group_bulk_edit feature is not available' do
-        before do
-          stub_licensed_features(epics: true, group_bulk_edit: false)
-        end
-
-        it 'returns a licensed feature not available not available message' do
-          post_graphql_mutation(mutation, current_user: current_user)
-
-          expect_graphql_errors_to_include(
-            _('Group work item bulk edit is a licensed feature not available for this group.')
-          )
-        end
-      end
-
-      context 'when group_bulk_edit feature is available' do
-        before do
-          stub_licensed_features(epics: true, group_bulk_edit: true)
-        end
-
-        it 'updates work items' do
-          expect do
-            post_graphql_mutation(mutation, current_user: current_user)
-          end.to change { work_item1.reload.label_ids }.from([label1.id]).to([label2.id])
-            .and change { work_item2.reload.label_ids }.from([label1.id]).to([label2.id])
-            .and change { epic.reload.label_ids }.from([label1.id]).to([label2.id])
-            .and not_change { work_item3.reload.label_ids }.from([label1.id])
-            .and not_change { work_item4.reload.label_ids }.from([label3.id])
-
-          expect(mutation_response).to include('updatedWorkItemCount' => 3)
-        end
-      end
-    end
-
-    context 'when scoping to a project using full_path' do
+    context 'when scoping to a project' do
       let(:base_arguments) { { full_path: project.full_path, ids: work_item_ids } }
 
       it 'updates work items' do
