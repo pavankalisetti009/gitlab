@@ -114,5 +114,5 @@ export const deleteParams = (item) => {
     return {};
   }
 
-  return {};
+  return { permanently_remove: true };
 };
