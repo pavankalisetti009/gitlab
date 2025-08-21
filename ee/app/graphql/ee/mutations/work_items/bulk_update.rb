@@ -30,7 +30,7 @@ module EE
         private
 
         override :resource_parent!
-        def resource_parent!(parent_id, full_path)
+        def resource_parent!(full_path)
           parent = super
           return parent unless parent.is_a?(::Group)
 
