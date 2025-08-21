@@ -72957,6 +72957,9 @@ msgstr ""
 msgid "WorkItem|Select parent"
 msgstr ""
 
+msgid "WorkItem|Select project"
+msgstr ""
+
 msgid "WorkItem|Select template"
 msgstr ""
 
