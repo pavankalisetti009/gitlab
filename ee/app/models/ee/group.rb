@@ -808,8 +808,10 @@ module EE
 
     override :has_active_hooks?
     def has_active_hooks?(hooks_scope = :push_hooks)
-      feature_available?(:group_webhooks) &&
-        GroupHook.where(group_id: self_and_ancestors).hooks_for(hooks_scope).any?
+      strong_memoize_with(:has_active_hooks, hooks_scope) do
+        feature_available?(:group_webhooks) &&
+          GroupHook.where(group_id: self_and_ancestors).hooks_for(hooks_scope).any?
+      end
     end
 
     override :git_transfer_in_progress?

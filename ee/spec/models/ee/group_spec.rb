@@ -2987,6 +2987,20 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     subject { group.has_active_hooks?(hooks_scope) }
 
+    before do
+      group.clear_memoization(:has_active_hooks)
+    end
+
+    it 'avoids calling extra queries with memoization' do
+      queries = ActiveRecord::QueryRecorder.new do
+        2.times { group.has_active_hooks?(:push_hooks) }
+        2.times { group.has_active_hooks?(:milestone_hooks) }
+        # Each line produces just one query
+      end
+
+      expect(queries.count).to eq(2)
+    end
+
     context 'when group_webhooks feature is available' do
       before do
         stub_licensed_features(group_webhooks: true)
