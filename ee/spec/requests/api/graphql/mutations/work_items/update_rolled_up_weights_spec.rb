@@ -212,6 +212,31 @@ RSpec.describe 'Rolled up weight updates on work item changes', :aggregate_failu
     end
   end
 
+  describe 'reordering work items in the hierarchy tree' do
+    let_it_be(:root_work_item) { create(:work_item, :epic, namespace: group) }
+    let_it_be(:new_parent_work_item) { create(:work_item, :issue, project: project) }
+
+    before_all do
+      create(:parent_link, work_item: parent_work_item, work_item_parent: root_work_item)
+      create(:parent_link, work_item: new_parent_work_item, work_item_parent: root_work_item)
+    end
+
+    it 'updates the rolled up weight of both old and new parents' do
+      expect(parent_work_item.reload.weights_source.rolled_up_weight).to eq(10)
+      expect(new_parent_work_item.reload.weights_source).to be_nil
+
+      post_graphql_mutation(
+        graphql_mutation(:workItemsHierarchyReorder, {
+          id: child_task_3.to_gid.to_s, parent_id: new_parent_work_item.to_gid.to_s
+        }),
+        current_user: current_user
+      )
+
+      expect(parent_work_item.reload.weights_source.rolled_up_weight).to eq(5)
+      expect(new_parent_work_item.reload.weights_source.rolled_up_weight).to eq(5)
+    end
+  end
+
   describe 'error handling' do
     context 'when user lacks permissions' do
       let(:unauthorized_user) { create(:user) }
