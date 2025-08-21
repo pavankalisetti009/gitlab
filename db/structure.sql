@@ -15412,7 +15412,8 @@ CREATE TABLE gpg_keys (
     fingerprint bytea,
     key text,
     externally_verified boolean DEFAULT false NOT NULL,
-    externally_verified_at timestamp with time zone
+    externally_verified_at timestamp with time zone,
+    CONSTRAINT check_db8a6cf29e CHECK ((user_id IS NOT NULL))
 );
 
 CREATE SEQUENCE gpg_keys_id_seq
