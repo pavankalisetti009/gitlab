@@ -2,8 +2,9 @@
 
 module Vulnerabilities
   class BulkEsOperationService
-    def initialize(relation)
+    def initialize(relation, preload_associations: true)
       @relation = relation
+      @preload_associations = preload_associations
     end
 
     def execute
@@ -11,6 +12,24 @@ module Vulnerabilities
 
       return yield relation unless ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
 
+      vulnerabilities = if preload_associations
+                          preload(relation)
+                        else
+                          relation
+                        end
+
+      eligible_vulnerabilities = vulnerabilities.select(&:maintaining_elasticsearch?)
+
+      yield relation
+
+      ::Elastic::ProcessBookkeepingService.track!(*eligible_vulnerabilities)
+    end
+
+    private
+
+    attr_reader :relation, :preload_associations
+
+    def preload(relation)
       vulnerabilities = relation.dup
 
       vulnerabilities.load
@@ -30,15 +49,11 @@ module Vulnerabilities
         associations: associations
       ).call
 
-      eligible_vulnerabilities = vulnerabilities.select(&:maintaining_elasticsearch?)
+      # And finally preload root_ancestor for Vulnerabilities::Read.generate_es_parent method
+      preloaded_namespaces = vulnerabilities.map { |record| record.project.namespace }
+      ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_namespaces).execute
 
-      yield relation
-
-      ::Elastic::ProcessBookkeepingService.track!(*eligible_vulnerabilities)
+      vulnerabilities
     end
-
-    private
-
-    attr_reader :relation
   end
 end
