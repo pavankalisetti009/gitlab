@@ -40,14 +40,14 @@ module Analytics
         SELECT %{fields}
       SQL
 
-      DUO_USED_COUNT_QUERY = <<~SQL
+      DUO_USED_COUNT_QUERY = <<~SQL.freeze
         SELECT COUNT(user_id) FROM (
           SELECT DISTINCT user_id
           FROM duo_chat_events_daily
           WHERE user_id IN (SELECT author_id FROM contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}
-          AND event = 1
+          AND event = #{Ai::UsageEvent.events[:request_duo_chat_response]}
           UNION DISTINCT
           SELECT DISTINCT user_id
           FROM code_suggestion_events_daily

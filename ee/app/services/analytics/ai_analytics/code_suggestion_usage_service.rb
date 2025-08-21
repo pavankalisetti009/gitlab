@@ -43,7 +43,7 @@ module Analytics
       CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM contributors"
       private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
 
-      code_suggestion_usage_events = ::Ai::CodeSuggestionEvent.events.values_at(
+      code_suggestion_usage_events = ::Ai::UsageEvent.events.values_at(
         'code_suggestions_requested',
         'code_suggestion_shown_in_ide',
         'code_suggestion_direct_access_token_refresh'
@@ -69,7 +69,7 @@ module Analytics
         WHERE user_id IN (SELECT author_id FROM contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide']}
+        AND event = #{::Ai::UsageEvent.events['code_suggestion_shown_in_ide']}
       SQL
       private_constant :CODE_SUGGESTIONS_SHOWN_COUNT_QUERY
 
@@ -81,7 +81,7 @@ module Analytics
         WHERE user_id IN (SELECT author_id FROM contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']}
+        AND event = #{::Ai::UsageEvent.events['code_suggestion_accepted_in_ide']}
       SQL
       private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
 
@@ -108,33 +108,33 @@ module Analytics
 
       SHOWN_COUNT_QUERY = build_query(
         field_select_sql: 'SUM(occurrences)',
-        event_types_filter: ::Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide']
+        event_types_filter: ::Ai::UsageEvent.events['code_suggestion_shown_in_ide']
       ).freeze
       private_constant :SHOWN_COUNT_QUERY
 
       SUGGESTIONS_SHOWN_LOC_QUERY = build_query(
         field_select_sql: 'SUM(suggestions_size_sum)',
-        event_types_filter: ::Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide']
+        event_types_filter: ::Ai::UsageEvent.events['code_suggestion_shown_in_ide']
       ).freeze
       private_constant :SUGGESTIONS_SHOWN_LOC_QUERY
 
       ACCEPTED_COUNT_QUERY = build_query(
         field_select_sql: 'SUM(occurrences)',
-        event_types_filter: ::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']
+        event_types_filter: ::Ai::UsageEvent.events['code_suggestion_accepted_in_ide']
       ).freeze
       private_constant :ACCEPTED_COUNT_QUERY
 
       SUGGESTIONS_ACCEPTED_LOC_QUERY = build_query(
         field_select_sql: 'SUM(suggestions_size_sum)',
-        event_types_filter: ::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']
+        event_types_filter: ::Ai::UsageEvent.events['code_suggestion_accepted_in_ide']
       ).freeze
       private_constant :SUGGESTIONS_ACCEPTED_LOC_QUERY
 
       LANGUAGES_QUERY = build_query(
         field_select_sql: 'groupArray(DISTINCT language)',
         event_types_filter: [
-          ::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide'],
-          ::Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide']
+          ::Ai::UsageEvent.events['code_suggestion_accepted_in_ide'],
+          ::Ai::UsageEvent.events['code_suggestion_shown_in_ide']
         ]
       ).freeze
       private_constant :LANGUAGES_QUERY

@@ -56,7 +56,7 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
 
       context 'with data' do
         before do
-          clickhouse_fixture(:code_suggestion_events, [
+          clickhouse_fixture(:ai_usage_events, [
             { user_id: user1.id, namespace_path: container.traversal_path, event: 3, timestamp: to - 3.days },
             { user_id: user1.id, namespace_path: container.traversal_path, event: 3,
               timestamp: to - 3.days + 1.second },
@@ -71,17 +71,17 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
             { user_id: user3.id, namespace_path: strange_namespace.traversal_path, event: 3, timestamp: from - 2.days }
           ])
 
-          clickhouse_fixture(:duo_chat_events, [
-            { user_id: user1.id, namespace_path: container.traversal_path, event: 1, timestamp: to - 3.days },
-            { user_id: user1.id, namespace_path: strange_namespace.traversal_path, event: 1,
+          clickhouse_fixture(:ai_usage_events, [
+            { user_id: user1.id, namespace_path: container.traversal_path, event: 6, timestamp: to - 3.days },
+            { user_id: user1.id, namespace_path: strange_namespace.traversal_path, event: 6,
               timestamp: to - 3.days + 1.second },
-            { user_id: user2.id, namespace_path: container.traversal_path, event: 1, timestamp: to - 2.days },
-            { user_id: stranger_user.id, namespace_path: strange_namespace.traversal_path, event: 1,
+            { user_id: user2.id, namespace_path: container.traversal_path, event: 6, timestamp: to - 2.days },
+            { user_id: stranger_user.id, namespace_path: strange_namespace.traversal_path, event: 6,
               timestamp: to - 2.days },
-            { user_id: stranger_user.id, namespace_path: strange_namespace.traversal_path, event: 1,
+            { user_id: stranger_user.id, namespace_path: strange_namespace.traversal_path, event: 6,
               timestamp: to - 2.days + 1.second },
-            { user_id: user3.id, namespace_path: container.traversal_path, event: 1, timestamp: to + 2.days },
-            { user_id: user3.id, namespace_path: strange_namespace.traversal_path, event: 1, timestamp: from - 2.days }
+            { user_id: user3.id, namespace_path: container.traversal_path, event: 6, timestamp: to + 2.days },
+            { user_id: user3.id, namespace_path: strange_namespace.traversal_path, event: 6, timestamp: from - 2.days }
           ])
         end
 

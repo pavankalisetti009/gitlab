@@ -41,13 +41,13 @@ module Analytics
       CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM contributors"
       private_constant :CONTRIBUTORS_COUNT_QUERY
 
-      DUO_CHAT_CONTRIBUTORS_COUNT_QUERY = <<~SQL
+      DUO_CHAT_CONTRIBUTORS_COUNT_QUERY = <<~SQL.freeze
         SELECT COUNT(DISTINCT user_id)
           FROM duo_chat_events_daily
           WHERE user_id IN (SELECT author_id FROM contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}
-          AND event = 1
+          AND event = #{Ai::UsageEvent.events[:request_duo_chat_response]}
       SQL
       private_constant :DUO_CHAT_CONTRIBUTORS_COUNT_QUERY
 
