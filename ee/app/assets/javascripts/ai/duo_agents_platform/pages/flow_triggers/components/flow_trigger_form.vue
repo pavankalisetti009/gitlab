@@ -11,6 +11,7 @@ import {
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
+import projectServiceAccountsQuery from '../../../graphql/queries/get_project_service_accounts.query.graphql';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../../router/constants';
 
 const MODE_CREATE = 'create';
@@ -91,14 +92,6 @@ export default {
         selectedOptions.join(', ') || s__('DuoAgentsPlatform|Select one or multiple event types')
       );
     },
-    currentUser() {
-      return {
-        username: gon?.current_username,
-        name: gon?.current_user_fullname,
-        avatarUrl: gon?.current_user_avatar_url,
-        canMerge: false,
-      };
-    },
     selectedUserName() {
       return this.selectedUsers.length > 0
         ? this.selectedUsers[0].name
@@ -136,8 +129,12 @@ export default {
       };
       this.$emit('submit', formValues);
     },
+    usersProcessor(data) {
+      return data.project?.projectMembers?.nodes?.map(({ user }) => user) || [];
+    },
   },
   indexRoute: FLOW_TRIGGERS_INDEX_ROUTE,
+  projectServiceAccountsQuery,
 };
 </script>
 
@@ -198,7 +195,8 @@ export default {
           :header-text="s__('DuoAgentsPlatform|Select a service account user')"
           :full-path="projectPath"
           :allow-multiple-assignees="false"
-          :current-user="currentUser"
+          :custom-search-users-query="$options.projectServiceAccountsQuery"
+          :custom-search-users-processor="usersProcessor"
           class="gl-w-full"
           @input="onUserSelect"
           @error="onUserSelectError"
