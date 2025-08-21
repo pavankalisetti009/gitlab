@@ -15,29 +15,65 @@ RSpec.describe GitlabSubscriptions::Members::AddedService, :clean_gitlab_redis_s
     describe 'with valid params' do
       let(:source) { create(:group, parent: namespace) }
 
-      it 'create a new seat assignment record' do
+      before do
         source.add_developer(user)
-
-        expect do
-          expect(execute).to be_success
-        end.to change { GitlabSubscriptions::SeatAssignment.where(user: user, namespace: namespace).count }
-          .by(1)
       end
 
-      it 'does not create new seat_assignment record, if one already exists' do
-        create(:gitlab_subscription_seat_assignment, namespace: namespace, user: user)
+      it 'returns success response' do
+        expect(execute).to be_success
+      end
 
-        expect do
-          expect(execute).to be_success
-        end.not_to change { GitlabSubscriptions::SeatAssignment.count }
+      it 'creates a new seat assignment record' do
+        expect { execute }.to change { GitlabSubscriptions::SeatAssignment.count }.from(0).to(1)
+      end
+
+      context 'for Self-Managed' do
+        it 'sets seat type to nil' do
+          execute
+
+          expect(GitlabSubscriptions::SeatAssignment.last).to have_attributes(seat_type: nil)
+        end
+      end
+
+      context 'when on SaaS' do
+        it 'sets seat type', :saas do
+          execute
+
+          expect(GitlabSubscriptions::SeatAssignment.last).to have_attributes(seat_type: 'base')
+        end
+      end
+
+      context 'with existing seat assignment record' do
+        before do
+          create(
+            :gitlab_subscription_seat_assignment,
+            namespace: namespace,
+            user: user,
+            seat_type: 'free'
+          )
+        end
+
+        it 'does not create new seat assignment record' do
+          expect { execute }.not_to change { GitlabSubscriptions::SeatAssignment.count }
+        end
+
+        context 'for Self-Managed' do
+          it 'resets the seat type' do
+            expect { execute }.to change { GitlabSubscriptions::SeatAssignment.last.seat_type }.from('free').to(nil)
+          end
+        end
+
+        context 'when on SaaS', :saas do
+          it 'updates the seat type' do
+            expect { execute }.to change { GitlabSubscriptions::SeatAssignment.last.seat_type }.from('free').to('base')
+          end
+        end
       end
 
       context "when source is of type 'Project'" do
         let(:source) { build(:project, namespace: namespace) }
 
         it 'creates new seat assignment record' do
-          source.add_developer(user)
-
           expect do
             expect(execute).to be_success
           end.to change { GitlabSubscriptions::SeatAssignment.where(user: user, namespace: namespace).count }.by(1)
