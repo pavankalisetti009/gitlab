@@ -1,11 +1,12 @@
 import VueApollo from 'vue-apollo';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import { GlAlert } from '@gitlab/ui';
 
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
@@ -14,6 +15,7 @@ import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import aiCatalogFlowsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flows.query.graphql';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
+import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
   mockFlow,
   mockAiCatalogFlowResponse,
@@ -43,7 +45,7 @@ describe('AiCatalogFlows', () => {
     show: jest.fn(),
   };
 
-  const createComponent = ({ $route = {} } = {}) => {
+  const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogFlowQuery, mockFlowQueryHandler],
       [aiCatalogFlowsQuery, mockCatalogItemsQueryHandler],
@@ -120,27 +122,45 @@ describe('AiCatalogFlows', () => {
   });
 
   describe('when linking directly to a flow via URL', () => {
-    describe('when item id is found in list', () => {
+    describe('when flow exists', () => {
+      let resolveDetails;
+
       beforeEach(async () => {
-        await createComponent({ $route: { query: { show: '4' } } });
+        // keep state as loading until we manually resolve
+        mockFlowQueryHandler.mockReturnValue(
+          new Promise((resolve) => {
+            resolveDetails = resolve;
+          }),
+        );
+        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockFlows[0].id) } } });
+        await nextTick();
       });
 
-      it('fetches full flow details', () => {
+      it('fetches flow details with correct GraphQL ID', () => {
         expect(mockFlowQueryHandler).toHaveBeenCalledTimes(1);
         expect(mockFlowQueryHandler).toHaveBeenCalledWith({
-          id: mockFlows[0].id,
+          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, mockFlows[0].id),
         });
       });
 
-      it('opens the drawer and passes found activeItem while loading', () => {
-        expect(findAiCatalogItemDrawer().props()).toMatchObject({
-          isOpen: true,
-          isItemDetailsLoading: true,
-          activeItem: mockFlows[0],
-        });
+      it('opens the drawer immediately', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
       });
 
-      it('passes full details to drawer when loading is complete', async () => {
+      it('shows loading state initially', () => {
+        expect(findAiCatalogItemDrawer().props('isItemDetailsLoading')).toBe(true);
+      });
+
+      it('provides fallback data while flow is loading', () => {
+        const activeItem = findAiCatalogItemDrawer().props('activeItem');
+        expect(activeItem).toBeDefined();
+
+        expect(activeItem).toEqual(mockFlows[0]);
+      });
+
+      it('displays fetched flow details after loading completes', async () => {
+        // resolve to complete loading
+        resolveDetails(mockAiCatalogFlowResponse);
         await waitForPromises();
 
         expect(findAiCatalogItemDrawer().props()).toMatchObject({
@@ -155,8 +175,11 @@ describe('AiCatalogFlows', () => {
           findAiCatalogItemDrawer().vm.$emit('close');
         });
 
-        it('closes the drawer on drawer `close` event', () => {
-          expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+        it('removes show query param from URL', () => {
+          expect(mockRouter.push).toHaveBeenCalledWith({
+            path: undefined,
+            query: {},
+          });
         });
 
         it('updates router', () => {
@@ -165,17 +188,25 @@ describe('AiCatalogFlows', () => {
       });
     });
 
-    describe('when item id is not found in list', () => {
+    describe('when flow fetch fails', () => {
       beforeEach(async () => {
-        await createComponent({ $route: { query: { show: '100' } } });
+        mockFlowQueryHandler.mockRejectedValue(new Error('Flow not found'));
+        createComponent({ $route: { query: { show: 'invalid-id' } } });
+        await waitForPromises();
       });
 
-      it('does not fetch full flow details', () => {
-        expect(mockFlowQueryHandler).not.toHaveBeenCalled();
+      it('closes the drawer automatically', () => {
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          path: undefined,
+          query: {},
+        });
       });
 
-      it('does not open the drawer', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      it('displays error message', () => {
+        expect(findGlAlert().text()).toBe('Flow not found');
+      });
+      it('logs error to Sentry', () => {
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });
