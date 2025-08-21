@@ -104,6 +104,9 @@ export default {
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
             </template>
+            <template #ai-common-settings-bottom>
+              <slot name="ai-common-settings-bottom"></slot>
+            </template>
           </ai-common-settings-form>
         </template>
       </settings-block>
