@@ -10,9 +10,11 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
     stub_licensed_features(epics: true)
   end
 
+  let_it_be(:group) { create(:group) }
+
   let(:fields) do
     %i[
-      id iid title titleHtml description descriptionHtml confidential state group
+      id iid work_item_id title titleHtml description descriptionHtml confidential state group
       parent author labels start_date start_date_is_fixed start_date_fixed
       start_date_from_milestones start_date_from_inherited_source due_date
       due_date_is_fixed due_date_fixed due_date_from_milestones due_date_from_inherited_source
@@ -51,8 +53,15 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
 
   it { expect(described_class).to have_graphql_field(:linked_work_items, complexity: 5) }
 
+  context 'for work_item_id' do
+    let_it_be(:epic) { create(:epic, group: group) }
+
+    it 'resolves correct work item ID' do
+      expect(resolve_field(:work_item_id, epic)).to eq(epic.work_item.to_gid)
+    end
+  end
+
   describe 'relation_path' do
-    let_it_be(:group) { create(:group) }
     let_it_be(:parent_epic) { create(:epic, group: group) }
 
     context 'when the epic has a parent' do

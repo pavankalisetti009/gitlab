@@ -29,6 +29,8 @@ module Types
 
     field :id, GraphQL::Types::ID, null: false, description: 'ID of the epic.'
 
+    field :work_item_id, ::Types::GlobalIDType[::WorkItem], null: false, description: 'ID of the corresponding work item for a legacy epic.'
+
     field :iid, GraphQL::Types::String, null: false, description: 'Internal ID of the epic.'
 
     field :state, EpicStateEnum, null: false, description: 'State of the epic.'
@@ -274,6 +276,10 @@ module Types
       # We no longer have the EpicLinksController or routes, so we need to build the URL statically
       # to not break the REST API.
       "#{::Gitlab::Routing.url_helpers.group_epic_path(object.parent.group, object.parent.iid)}/links/#{object.id}"
+    end
+
+    def work_item_id
+      object.work_item.to_gid
     end
   end
 end

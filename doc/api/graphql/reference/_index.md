@@ -24024,6 +24024,7 @@ Represents an epic on an issue board.
 | <a id="boardepicuserpreferences"></a>`userPreferences` | [`BoardEpicUserPreferences`](#boardepicuserpreferences) | User preferences for the epic on the issue board. |
 | <a id="boardepicwebpath"></a>`webPath` | [`String!`](#string) | Web path of the epic. |
 | <a id="boardepicweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the epic. |
+| <a id="boardepicworkitemid"></a>`workItemId` | [`WorkItemID!`](#workitemid) | ID of the corresponding work item for a legacy epic. |
 
 #### Fields with arguments
 
@@ -28606,6 +28607,7 @@ Represents an epic.
 | <a id="epicuserpermissions"></a>`userPermissions` | [`EpicPermissions!`](#epicpermissions) | Permissions for the current user on the resource. |
 | <a id="epicwebpath"></a>`webPath` | [`String!`](#string) | Web path of the epic. |
 | <a id="epicweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the epic. |
+| <a id="epicworkitemid"></a>`workItemId` | [`WorkItemID!`](#workitemid) | ID of the corresponding work item for a legacy epic. |
 
 #### Fields with arguments
 
