@@ -8,15 +8,9 @@
       - scheduler_failure
       - stuck_or_timeout_failure
       - unknown_failure
+    # See https://docs.gitlab.com/ee/development/pipelines/internals.html#custom-exit-codes
     exit_codes:
-      # https://docs.gitlab.com/ee/development/pipelines/internals.html#custom-exit-codes
-      - 110  # network connection error
-      - 111  # low free disk space
-      - 160  # failed to upload/download job artifact
-      - 162  # gitaly spawn failed
-      - 164  # Redis cluster error
-      - 165  # segmentation fault
-      - 166  # EEXIST: file already exists
+      - 201  # low free disk space
 
 .default-utils-before_script:
   before_script:
