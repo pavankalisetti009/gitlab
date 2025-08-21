@@ -55,13 +55,8 @@ module EE
 
       condition(:code_suggestions_enabled_for_user) do
         next false unless @user
-        next true if @user.allowed_to_use?(:code_suggestions)
 
-        if ::Ai::FeatureSetting.code_suggestions_self_hosted?
-          next @user.allowed_to_use?(:code_suggestions, service_name: :self_hosted_models)
-        end
-
-        false
+        @user.allowed_to_use?(:code_suggestions)
       end
 
       condition(:ai_features_banned) do
@@ -77,11 +72,7 @@ module EE
       end
 
       condition(:duo_chat_enabled_for_user) do
-        if duo_chat_self_hosted?
-          @user.allowed_to_use?(:duo_chat, service_name: :self_hosted_models)
-        else
-          @user.allowed_to_use?(:duo_chat)
-        end
+        @user.allowed_to_use?(:duo_chat)
       end
 
       condition(:duo_agentic_chat_enabled) do

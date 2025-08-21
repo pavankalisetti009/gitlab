@@ -467,7 +467,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           }
         end
 
-        let(:expected_feature_name) { :self_hosted_models }
+        let(:expected_feature_name) { :code_suggestions }
       end
     end
 

@@ -196,7 +196,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     end
 
     context 'on setting the provider as `self_hosted`' do
-      let(:expected_feature_name) { :self_hosted_models }
+      let(:expected_feature_name) { :code_suggestions }
       let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :self_hosted) }
 
       it_behaves_like 'code suggestion task' do

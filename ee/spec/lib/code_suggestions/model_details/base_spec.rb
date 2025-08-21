@@ -83,33 +83,6 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     end
   end
 
-  describe '#self_hosted?' do
-    it_behaves_like 'feature_setting cannot be inferred for method', :self_hosted?, false
-
-    context 'when the feature is governed via self-hosted models' do
-      let_it_be(:feature_setting) { create(:ai_feature_setting, feature: feature_setting_name) }
-
-      it 'returns true' do
-        expect(model_details.self_hosted?).to be(true)
-      end
-    end
-
-    context 'when the feature is governed via model selection namespace feature setting' do
-      let(:root_namespace) { create(:group) }
-
-      before do
-        create(:ai_namespace_feature_setting,
-          namespace: root_namespace,
-          feature: feature_setting_name
-        )
-      end
-
-      it 'returns false' do
-        expect(model_details.self_hosted?).to be(false)
-      end
-    end
-  end
-
   describe '#namespace_feature_setting?' do
     subject(:namespace_feature_setting?) { model_details.namespace_feature_setting? }
 
