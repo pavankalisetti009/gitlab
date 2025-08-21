@@ -261,6 +261,21 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         registry.upstreams.each(&:destroy!)
       end
     end
+
+    context 'with existing duplicate credentials' do
+      before_all do
+        group.add_maintainer(user)
+        registry.upstreams.delete_all
+      end
+
+      before do
+        create(:virtual_registries_packages_maven_upstream, **params.merge(group:))
+      end
+
+      it_behaves_like 'returning response status with message',
+        status: :bad_request,
+        message: { 'group' => ['already has an upstream with the same credentials'] }
+    end
   end
 
   describe 'GET /api/v4/virtual_registries/packages/maven/upstreams/:id' do
@@ -383,6 +398,19 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       with_them do
         it_behaves_like 'returning response status', params[:status]
       end
+    end
+
+    context 'with existing duplicate credentials' do
+      let_it_be(:existing_upstream) { create(:virtual_registries_packages_maven_upstream, group:) }
+      let(:params) { existing_upstream.attributes.slice('url', 'username', 'password') }
+
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      it_behaves_like 'returning response status with message',
+        status: :bad_request,
+        message: { 'group' => ['already has an upstream with the same credentials'] }
     end
   end
 

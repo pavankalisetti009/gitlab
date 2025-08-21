@@ -33,6 +33,8 @@ module VirtualRegistries
         validates :name, presence: true, length: { maximum: 255 }
         validates :description, length: { maximum: 1024 }
 
+        validate :credentials_uniqueness_for_group, if: -> { %i[url username password].any? { |f| changes.key?(f) } }
+
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
 
@@ -99,6 +101,18 @@ module VirtualRegistries
           return unless url.start_with?('https://repo1.maven.org/maven2')
 
           self.cache_validity_hours = 0
+        end
+
+        def credentials_uniqueness_for_group
+          return unless group
+
+          return if self.class.for_group(group)
+            .select(:username, :password)
+            .then { |q| new_record? ? q : q.where.not(id:) }
+            .where(url:)
+            .none? { |u| u.username == username && Rack::Utils.secure_compare(u.password.to_s, password.to_s) }
+
+          errors.add(:group, 'already has an upstream with the same credentials')
         end
       end
     end
