@@ -2,14 +2,14 @@
 import { GlTabs, GlTab } from '@gitlab/ui';
 import AgentFlowHeader from './agent_flow_header.vue';
 import AgentFlowInfo from './agent_flow_info.vue';
-import AgentFlowLogs from './agent_flow_logs.vue';
+import AgentActivityLogs from './agent_activity_logs.vue';
 
 export default {
   name: 'AgentFlowDetails',
   components: {
     AgentFlowHeader,
     AgentFlowInfo,
-    AgentFlowLogs,
+    AgentActivityLogs,
     GlTabs,
     GlTab,
   },
@@ -50,10 +50,10 @@ export default {
   <div>
     <agent-flow-header :is-loading="isLoading" :agent-flow-definition="agentFlowDefinition" />
     <div class="gl-mt-6 gl-flex">
-      <gl-tabs class="gl-w-full">
+      <gl-tabs class="gl-w-full" content-class="gl-py-0">
         <gl-tab :title="s__('DuoAgentPlatform|Activity')">
-          <agent-flow-logs
-            class="gl-mt-5"
+          <agent-activity-logs
+            class="gl-overflow-auto"
             :is-loading="isLoading"
             :agent-flow-checkpoint="agentFlowCheckpoint"
           />

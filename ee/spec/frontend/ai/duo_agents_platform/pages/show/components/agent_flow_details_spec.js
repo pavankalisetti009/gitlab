@@ -2,7 +2,8 @@ import { shallowMount } from '@vue/test-utils';
 import AgentFlowDetails from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_details.vue';
 import AgentFlowHeader from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_header.vue';
 import AgentFlowInfo from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_info.vue';
-import AgentFlowLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_logs.vue';
+import AgentActivityLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_activity_logs.vue';
+
 import { mockAgentFlowCheckpoint } from '../../../../mocks';
 
 describe('AgentFlowDetails', () => {
@@ -29,7 +30,7 @@ describe('AgentFlowDetails', () => {
 
   const findAgentFlowHeader = () => wrapper.findComponent(AgentFlowHeader);
   const findAgentFlowInfo = () => wrapper.findComponent(AgentFlowInfo);
-  const findAgentFlowLogs = () => wrapper.findComponent(AgentFlowLogs);
+  const findAgentActivityLogs = () => wrapper.findComponent(AgentActivityLogs);
 
   beforeEach(() => {
     createComponent();
@@ -38,12 +39,12 @@ describe('AgentFlowDetails', () => {
   it('renders all tab components and their content', () => {
     expect(findAgentFlowHeader().exists()).toBe(true);
     expect(findAgentFlowInfo().exists()).toBe(true);
-    expect(findAgentFlowLogs().exists()).toBe(true);
+    expect(findAgentActivityLogs().exists()).toBe(true);
   });
 
   describe('props passing', () => {
     it('passes agentFlowCheckpoint to AgentFlowLogs', () => {
-      expect(findAgentFlowLogs().props('agentFlowCheckpoint')).toEqual(
+      expect(findAgentActivityLogs().props('agentFlowCheckpoint')).toEqual(
         defaultProps.agentFlowCheckpoint,
       );
     });
