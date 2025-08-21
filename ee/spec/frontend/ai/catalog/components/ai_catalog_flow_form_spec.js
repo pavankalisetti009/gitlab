@@ -3,13 +3,14 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import AiCatalogStepsEditor from 'ee/ai/catalog/components/ai_catalog_steps_editor.vue';
 import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
+import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 
 describe('AiCatalogFlowForm', () => {
   let wrapper;
 
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
-  const findProjectIdField = () => wrapper.findByTestId('flow-form-input-project-id');
+  const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
   const findNameField = () => wrapper.findByTestId('flow-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('flow-form-textarea-description');
   const findSubmitButton = () => wrapper.findByTestId('flow-form-submit-button');
@@ -43,9 +44,9 @@ describe('AiCatalogFlowForm', () => {
 
   describe('Initial Rendering', () => {
     it('renders the form with the correct initial values when props are provided', () => {
-      createWrapper({ initialValues, mode: 'edit' });
+      createWrapper({ initialValues });
 
-      expect(findProjectIdField().props('value')).toBe(initialValues.projectId);
+      expect(findProjectDropdown().props('value')).toBe(initialValues.projectId);
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
     });
@@ -53,9 +54,15 @@ describe('AiCatalogFlowForm', () => {
     it('renders the form with default values when no props are provided', () => {
       createWrapper();
 
-      expect(findProjectIdField().props('value')).toBe('gid://gitlab/Project/1000000');
+      expect(findProjectDropdown().props('value')).toBe(null);
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
+    });
+
+    it('does not render project dropdown when in edit mode', () => {
+      createWrapper({ mode: 'edit' });
+
+      expect(findProjectDropdown().exists()).toBe(false);
     });
 
     it('renders steps editor', () => {
@@ -81,7 +88,7 @@ describe('AiCatalogFlowForm', () => {
 
   describe('Form Submission', () => {
     it('emits form values when user clicks submit', async () => {
-      createWrapper({ initialValues, mode: 'edit' });
+      createWrapper({ initialValues });
 
       await findFormFields().vm.$emit('submit');
 
@@ -93,7 +100,6 @@ describe('AiCatalogFlowForm', () => {
 
       const formValuesWithRandomSpaces = {
         ...initialValues,
-        projectId: addRandomSpacesToString(initialValues.projectId),
         name: addRandomSpacesToString(initialValues.name),
         description: addRandomSpacesToString(initialValues.description),
       };
@@ -106,7 +112,7 @@ describe('AiCatalogFlowForm', () => {
     });
   });
 
-  describe('with error message', () => {
+  describe('with error messages', () => {
     const mockErrorMessage = 'The flow could not be created';
 
     beforeEach(() => {
@@ -115,6 +121,14 @@ describe('AiCatalogFlowForm', () => {
 
     it('passes error alert', () => {
       expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage]);
+    });
+
+    it('renders errors with form errors', async () => {
+      const formError = 'Project is required';
+
+      await findProjectDropdown().vm.$emit('error', formError);
+
+      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage, formError]);
     });
 
     it('emits dismiss-errors event', () => {
