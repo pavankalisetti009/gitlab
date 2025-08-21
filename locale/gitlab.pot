@@ -3555,9 +3555,6 @@ msgstr ""
 msgid "AccessTokens|The token was revoked successfully."
 msgstr ""
 
-msgid "AccessTokens|They are the only accepted password when you have Two-Factor Authentication (2FA) enabled."
-msgstr ""
-
 msgid "AccessTokens|Token already revoked"
 msgstr ""
 
@@ -3586,12 +3583,6 @@ msgid "AccessTokens|Use Demonstrating Proof of Possession (DPoP)"
 msgstr ""
 
 msgid "AccessTokens|View token usage information"
-msgstr ""
-
-msgid "AccessTokens|You can also use personal access tokens to authenticate against Git over HTTP."
-msgstr ""
-
-msgid "AccessTokens|You can generate a personal access token for each application you use that needs access to the GitLab API."
 msgstr ""
 
 msgid "AccessTokens|You can generate a personal access token for each application you use that needs access to the GitLab API. You can also use personal access tokens to authenticate against Git over HTTP. They are the only accepted password when you have Two-Factor Authentication (2FA) enabled."
@@ -3751,9 +3742,6 @@ msgid "Active"
 msgstr ""
 
 msgid "Active group access tokens"
-msgstr ""
-
-msgid "Active personal access tokens"
 msgstr ""
 
 msgid "Active pipeline trigger tokens"
@@ -66885,6 +66873,9 @@ msgstr ""
 msgid "Token"
 msgstr ""
 
+msgid "Token '%{name}' expires today"
+msgstr ""
+
 msgid "Token name"
 msgstr ""
 
@@ -77079,9 +77070,6 @@ msgid "per user/month"
 msgstr ""
 
 msgid "personal access token"
-msgstr ""
-
-msgid "personal access tokens"
 msgstr ""
 
 msgid "pipelineEditorWalkthrough|Let's do this!"
