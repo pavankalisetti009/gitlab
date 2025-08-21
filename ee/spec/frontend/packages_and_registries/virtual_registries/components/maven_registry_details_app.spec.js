@@ -1,12 +1,10 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlAlert } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistryDetailsApp from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
-import TitleArea from '~/vue_shared/components/registry/title_area.vue';
-import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
@@ -30,16 +28,11 @@ describe('MavenRegistryDetailsApp', () => {
   const { upstreams } = mavenVirtualRegistry;
 
   const defaultProps = {
-    registry: {
-      id: 1,
-      name: 'Registry title',
-      description: 'Registry description',
-    },
+    registryId: 1,
     upstreams,
   };
 
   const defaultProvide = {
-    registryEditPath: 'edit_path',
     glAbilities: {
       createVirtualRegistry: true,
       updateVirtualRegistry: true,
@@ -81,15 +74,11 @@ describe('MavenRegistryDetailsApp', () => {
   const errorHandler = jest.fn().mockRejectedValue(mockGraphQLError);
   const showToastSpy = jest.fn();
 
-  const findDescription = () => wrapper.findByTestId('description');
-  const findTitleArea = () => wrapper.findComponent(TitleArea);
-  const findButton = () => wrapper.findComponent(GlButton);
   const findAddUpstreamButton = () => wrapper.findByTestId('add-upstream-button');
   const findClearRegistryCacheButton = () => wrapper.findByTestId('clear-registry-cache-button');
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findClearRegistryCacheModal = () => wrapper.findByTestId('clear-registry-cache-modal');
   const findClearUpstreamCacheModal = () => wrapper.findByTestId('clear-upstream-cache-modal');
-  const findMetadataItems = () => wrapper.findAllComponents(MetadataItem);
   const findCreateUpstreamForm = () => wrapper.findComponent(RegistryUpstreamForm);
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
   const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
@@ -113,7 +102,6 @@ describe('MavenRegistryDetailsApp', () => {
         ...provide,
       },
       stubs: {
-        TitleArea,
         CrudComponent,
         ...stubs,
       },
@@ -128,14 +116,6 @@ describe('MavenRegistryDetailsApp', () => {
   describe('component rendering', () => {
     beforeEach(() => {
       createComponent();
-    });
-
-    it('renders the TitleArea component with correct props', () => {
-      expect(findTitleArea().props('title')).toBe(defaultProps.registry.name);
-    });
-
-    it('renders the description', () => {
-      expect(findDescription().text()).toBe(defaultProps.registry.description);
     });
 
     it('renders the Crud component with correct props', () => {
@@ -181,35 +161,12 @@ describe('MavenRegistryDetailsApp', () => {
       expect(findAddUpstreamButton().props('disabled')).toBe(true);
     });
 
-    it('renders the edit button with correct href', () => {
-      expect(findButton().attributes('href')).toBe(defaultProvide.registryEditPath);
-    });
-
-    it('hides the edit button if user does not have ability', () => {
-      createComponent({ provide: { glAbilities: { updateVirtualRegistry: false } } });
-
-      expect(findButton().exists()).toBe(false);
-    });
-
     it('hides the registry clear cache modal', () => {
       expect(findClearRegistryCacheModal().props('visible')).toBe(false);
     });
 
     it('hides the upstream clear cache modal', () => {
       expect(findClearUpstreamCacheModal().props('visible')).toBe(false);
-    });
-  });
-
-  describe('metadata items', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('renders the registry type metadata item', () => {
-      const registryTypeItem = findMetadataItems().at(0);
-
-      expect(registryTypeItem.props('icon')).toBe('infrastructure-registry');
-      expect(registryTypeItem.props('text')).toBe('Maven');
     });
   });
 

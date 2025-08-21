@@ -1,8 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlModal } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import TitleArea from '~/vue_shared/components/registry/title_area.vue';
-import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sprintf, s__, __ } from '~/locale';
@@ -23,26 +21,18 @@ export default {
     GlAlert,
     GlButton,
     GlModal,
-    MetadataItem,
-    TitleArea,
     CrudComponent,
     RegistryUpstreamItem,
     RegistryUpstreamForm,
   },
   mixins: [glAbilitiesMixin()],
-  inject: {
-    registryEditPath: {
-      default: '',
-    },
-  },
   props: {
     /**
      * The registry object
      */
-    registry: {
-      type: Object,
-      required: false,
-      default: () => ({}),
+    registryId: {
+      type: Number,
+      required: true,
     },
     /**
      * The upstreams object
@@ -102,13 +92,6 @@ export default {
     sortedUpstreamItems() {
       return [...this.upstreamItems].sort((a, b) => a.position - b.position);
     },
-    storageUsed() {
-      const { storageSize } = this.registry;
-
-      return storageSize
-        ? sprintf(s__('VirtualRegistry|%{size} storage used'), { size: storageSize })
-        : '';
-    },
     canCreate() {
       return this.glAbilities.createVirtualRegistry;
     },
@@ -116,7 +99,7 @@ export default {
       return this.upstreams.length;
     },
     mavenVirtualRegistryID() {
-      return convertToMavenRegistryGraphQLId(this.registry.id);
+      return convertToMavenRegistryGraphQLId(this.registryId);
     },
     clearUpstreamCacheModalTitle() {
       if (!this.upstreamClearCacheModalIsShown) return '';
@@ -201,7 +184,7 @@ export default {
       this.resetUpdateActionErrorMessage();
       this.hideRegistryClearCacheModal();
       try {
-        await deleteMavenRegistryCache({ id: this.registry.id });
+        await deleteMavenRegistryCache({ id: this.registryId });
         this.$toast.show(s__('VirtualRegistry|Registry cache cleared successfully.'));
       } catch (error) {
         this.updateActionErrorMessage = s__(
@@ -268,123 +251,106 @@ export default {
 </script>
 
 <template>
-  <div>
-    <title-area :title="registry.name">
-      <template #metadata-registry-type>
-        <metadata-item icon="infrastructure-registry" :text="s__('VirtualRegistry|Maven')" />
-      </template>
-      <template v-if="storageUsed" #metadata-registry-storage>
-        <metadata-item icon="container-image" :text="storageUsed" />
-      </template>
-      <p data-testid="description">{{ registry.description }}</p>
-      <template v-if="canEdit" #right-actions>
-        <gl-button :href="registryEditPath">
-          {{ __('Edit') }}
-        </gl-button>
-      </template>
-    </title-area>
-    <crud-component
-      ref="registryDetailsCrud"
-      :title="s__('VirtualRegistry|Upstreams')"
-      icon="infrastructure-registry"
-      :description="
-        s__(
-          'VirtualRegistry|Use the arrow buttons to reorder upstreams. Artifacts are resolved from top to bottom.',
-        )
-      "
-      :count="upstreamsCount"
-    >
-      <template #actions="{ showForm, isFormVisible }">
-        <gl-button
-          v-if="canClearRegistryCache"
-          data-testid="clear-registry-cache-button"
-          size="small"
-          category="tertiary"
-          @click="showClearRegistryCacheModal"
+  <crud-component
+    ref="registryDetailsCrud"
+    :title="s__('VirtualRegistry|Upstreams')"
+    icon="infrastructure-registry"
+    :description="
+      s__(
+        'VirtualRegistry|Use the arrow buttons to reorder upstreams. Artifacts are resolved from top to bottom.',
+      )
+    "
+    :count="upstreamsCount"
+  >
+    <template #actions="{ showForm, isFormVisible }">
+      <gl-button
+        v-if="canClearRegistryCache"
+        data-testid="clear-registry-cache-button"
+        size="small"
+        category="tertiary"
+        @click="showClearRegistryCacheModal"
+      >
+        {{ s__('VirtualRegistry|Clear all caches') }}
+      </gl-button>
+      <gl-button
+        v-if="canCreate"
+        :disabled="isFormVisible"
+        data-testid="add-upstream-button"
+        size="small"
+        @click="showForm"
+        >{{ s__('VirtualRegistry|Add upstream') }}</gl-button
+      >
+    </template>
+    <template #default>
+      <div v-if="upstreamsCount" class="gl-flex gl-flex-col gl-gap-3">
+        <gl-alert
+          v-if="updateActionErrorMessage"
+          data-testid="update-action-error-alert"
+          variant="danger"
+          @dismiss="resetUpdateActionErrorMessage"
         >
-          {{ s__('VirtualRegistry|Clear all caches') }}
-        </gl-button>
-        <gl-button
-          v-if="canCreate"
-          :disabled="isFormVisible"
-          data-testid="add-upstream-button"
-          size="small"
-          @click="showForm"
-          >{{ s__('VirtualRegistry|Add upstream') }}</gl-button
-        >
-      </template>
-      <template #default>
-        <div v-if="upstreamsCount" class="gl-flex gl-flex-col gl-gap-3">
-          <gl-alert
-            v-if="updateActionErrorMessage"
-            data-testid="update-action-error-alert"
-            variant="danger"
-            @dismiss="resetUpdateActionErrorMessage"
-          >
-            {{ updateActionErrorMessage }}
-          </gl-alert>
-          <registry-upstream-item
-            v-for="(upstream, index) in sortedUpstreamItems"
-            :key="upstream.id"
-            :upstream="upstream"
-            :upstreams-count="upstreamsCount"
-            :index="index"
-            @reorderUpstream="reorderUpstream"
-            @clearCache="showClearUpstreamCacheModal"
-            @deleteUpstream="deleteUpstream"
-          />
-          <gl-modal
-            v-model="registryClearCacheModalIsShown"
-            data-testid="clear-registry-cache-modal"
-            modal-id="clear-registry-cache-modal"
-            size="sm"
-            :title="s__('VirtualRegistry|Clear all caches?')"
-            :action-primary="$options.modal.primaryAction"
-            :action-cancel="$options.modal.cancelAction"
-            @canceled="hideRegistryClearCacheModal"
-            @primary="clearRegistryCache"
-          >
-            {{
-              s__(
-                'VirtualRegistry|This will delete all cached packages for exclusive upstream registries in this virtual registry. If any upstream is unavailable or misconfigured after clearing, jobs that rely on those packages might fail. Are you sure you want to continue?',
-              )
-            }}
-          </gl-modal>
-          <gl-modal
-            v-model="upstreamClearCacheModalIsShown"
-            data-testid="clear-upstream-cache-modal"
-            modal-id="clear-upstream-cache-modal"
-            size="sm"
-            :title="clearUpstreamCacheModalTitle"
-            :action-primary="$options.modal.primaryAction"
-            :action-cancel="$options.modal.cancelAction"
-            @canceled="hideUpstreamClearCacheModal"
-            @primary="clearUpstreamCache"
-          >
-            {{
-              s__(
-                'VirtualRegistry|This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?',
-              )
-            }}
-          </gl-modal>
-        </div>
-        <p v-else class="gl-text-subtle">
-          {{ s__('VirtualRegistry|No upstreams yet') }}
-        </p>
-      </template>
-      <template #form>
-        <gl-alert v-if="createUpstreamError" variant="danger" @dismiss="createUpstreamError = ''">
-          {{ createUpstreamError }}
+          {{ updateActionErrorMessage }}
         </gl-alert>
-        <registry-upstream-form
-          :registry="registry"
-          :loading="createUpstreamMutationLoading"
-          :can-test-upstream="canTestUpstream"
-          @submit="createUpstream"
-          @testUpstream="testUpstream"
-          @cancel="hideForm"
+        <registry-upstream-item
+          v-for="(upstream, index) in sortedUpstreamItems"
+          :key="upstream.id"
+          :upstream="upstream"
+          :upstreams-count="upstreamsCount"
+          :index="index"
+          @reorderUpstream="reorderUpstream"
+          @clearCache="showClearUpstreamCacheModal"
+          @deleteUpstream="deleteUpstream"
         />
-      </template>
-    </crud-component>
-  </div>
+        <gl-modal
+          v-model="registryClearCacheModalIsShown"
+          data-testid="clear-registry-cache-modal"
+          modal-id="clear-registry-cache-modal"
+          size="sm"
+          :title="s__('VirtualRegistry|Clear all caches?')"
+          :action-primary="$options.modal.primaryAction"
+          :action-cancel="$options.modal.cancelAction"
+          @canceled="hideRegistryClearCacheModal"
+          @primary="clearRegistryCache"
+        >
+          {{
+            s__(
+              'VirtualRegistry|This will delete all cached packages for exclusive upstream registries in this virtual registry. If any upstream is unavailable or misconfigured after clearing, jobs that rely on those packages might fail. Are you sure you want to continue?',
+            )
+          }}
+        </gl-modal>
+        <gl-modal
+          v-model="upstreamClearCacheModalIsShown"
+          data-testid="clear-upstream-cache-modal"
+          modal-id="clear-upstream-cache-modal"
+          size="sm"
+          :title="clearUpstreamCacheModalTitle"
+          :action-primary="$options.modal.primaryAction"
+          :action-cancel="$options.modal.cancelAction"
+          @canceled="hideUpstreamClearCacheModal"
+          @primary="clearUpstreamCache"
+        >
+          {{
+            s__(
+              'VirtualRegistry|This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?',
+            )
+          }}
+        </gl-modal>
+      </div>
+      <p v-else class="gl-text-subtle">
+        {{ s__('VirtualRegistry|No upstreams yet') }}
+      </p>
+    </template>
+    <template #form>
+      <gl-alert v-if="createUpstreamError" variant="danger" @dismiss="createUpstreamError = ''">
+        {{ createUpstreamError }}
+      </gl-alert>
+      <registry-upstream-form
+        :loading="createUpstreamMutationLoading"
+        :can-test-upstream="canTestUpstream"
+        @submit="createUpstream"
+        @testUpstream="testUpstream"
+        @cancel="hideForm"
+      />
+    </template>
+  </crud-component>
 </template>

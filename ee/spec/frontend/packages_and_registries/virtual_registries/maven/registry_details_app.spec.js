@@ -25,7 +25,7 @@ const mockMavenRegistryUpstreams = {
 const defaultProvide = {
   groupPath: 'flightjs',
   registry: {
-    id: '1',
+    id: 1,
     name: 'Registry 1',
     description: 'Maven Registry',
   },
