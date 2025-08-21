@@ -163,5 +163,13 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
         end
       end
     end
+
+    it_behaves_like 'sync vulnerabilities changes to ES' do
+      let(:expected_vulnerabilities) { vulnerabilities + [resolved_vulnerability] }
+
+      subject do
+        remove_vulnerabilities
+      end
+    end
   end
 end
