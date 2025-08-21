@@ -68,6 +68,14 @@ describe('FlowTriggerForm', () => {
       });
     });
 
+    it('customSearchUsersProcessor handles project service account response mapping', () => {
+      const user1 = { id: 1, name: 'a' };
+      const user2 = { id: 2, name: 'b' };
+      const data = { project: { projectMembers: { nodes: [{ user: user1 }, { user: user2 }] } } };
+
+      expect(findUserSelect().props('customSearchUsersProcessor')(data)).toContain(user1, user2);
+    });
+
     it('renders error alert with list for multiple errors', async () => {
       await wrapper.setProps({
         errorMessages: ['error1', 'error2'],
