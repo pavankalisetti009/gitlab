@@ -9,7 +9,7 @@ module WorkItems
         has_many :own_label_links, class_name: 'LabelLink', as: :target, inverse_of: :target
         has_many :own_labels, through: :own_label_links
 
-        has_many :label_links, as: :target, inverse_of: :target, dependent: :delete_all do # rubocop:disable Cop/ActiveRecordDependent -- Polymorphic association, so no FK
+        has_many :label_links, as: :target do
           def load_target
             return super unless proxy_association.owner.unified_associations?
 
