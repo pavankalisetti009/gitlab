@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :global_search do
   describe 'callbacks' do
-    let_it_be_with_reload(:group) { create(:group) }
+    let_it_be_with_refind(:group) { create(:group) }
 
     describe '.after_create_commit' do
       context 'when elastic is enabled' do
@@ -59,8 +59,8 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
 
       context 'when visibility_level is changed' do
         it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!' do
-          expect(Elastic::ProcessBookkeepingService).to receive(
-            :maintain_indexed_namespace_associations!).with(group).once
+          expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
+            .with(group).once
 
           group.update_attribute(:visibility_level, new_visibility_level)
         end
@@ -68,8 +68,8 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
 
       context 'when visibility_level is not changed' do
         it 'does not call Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!' do
-          expect(Elastic::ProcessBookkeepingService).not_to receive(
-            :maintain_indexed_namespace_associations!).with(group)
+          expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_namespace_associations!)
+            .with(group)
 
           group.update_attribute(:name, "#{group.name}_new")
         end
@@ -82,10 +82,9 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
           allow(group).to receive(:use_elasticsearch?).and_return true
         end
 
-        it 'calls Search::Wiki::ElasticDeleteGroupWikiWorker',
-          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537941' do
-          expect(Search::Wiki::ElasticDeleteGroupWikiWorker).to receive(:perform_async).with(group.id,
-            'namespace_routing_id' => group.root_ancestor.id)
+        it 'calls Search::Wiki::ElasticDeleteGroupWikiWorker' do
+          expect(Search::Wiki::ElasticDeleteGroupWikiWorker).to receive(:perform_async)
+            .with(group.id, 'namespace_routing_id' => group.root_ancestor.id)
           group.destroy!
         end
       end
@@ -102,8 +101,8 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
       end
 
       it 'enqueues Search::ElasticGroupAssociationDeletionWorker' do
-        expect(Search::ElasticGroupAssociationDeletionWorker).to receive(:perform_async).with(group.id,
-          group.root_ancestor.id).once
+        expect(Search::ElasticGroupAssociationDeletionWorker).to receive(:perform_async)
+          .with(group.id, group.root_ancestor.id).once
 
         group.destroy!
       end
