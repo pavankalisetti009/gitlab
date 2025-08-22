@@ -255,6 +255,32 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
           include_examples 'calls namespace related services'
         end
 
+        context 'with cyclonedx report' do
+          context 'when job name includes dependency-scanning' do
+            let!(:cyclonedx_build) do
+              create(:ci_build, :sbom_dependency_scanning, :success, pipeline: pipeline, name: "dependency_scanning")
+            end
+
+            it 'maps cyclonedx report to dependency_scanning analyzer type' do
+              execute
+
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning))
+                .to have_attributes(status: 'success', build_id: cyclonedx_build.id)
+            end
+          end
+
+          context 'when job name doesnt include dependency-scanning' do
+            let!(:cyclonedx_build) { create(:ci_build, :sbom_dependency_scanning, :success, pipeline: pipeline) }
+
+            it 'does not map cyclonedx report to dependency_scanning analyzer type' do
+              execute
+
+              expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning))
+                .to be_nil
+            end
+          end
+        end
+
         context 'with multiple jobs of the same analyzer group type' do
           let!(:sast_build_1) { create(:ci_build, :sast, :success, pipeline: pipeline) }
           let!(:sast_build_2) { create(:ci_build, :sast, :failed, pipeline: pipeline) }

@@ -5,7 +5,7 @@ module Types
     graphql_name 'SecurityScannerType'
     description 'The type of the security scanner'
 
-    ::Security::SecurityJobsFinder.allowed_job_types.each do |scanner|
+    Enums::Security.analyzer_types.each_key do |scanner|
       upcase_type = scanner.upcase.to_s
       human_type = case scanner
                    when :dast, :sast then upcase_type
