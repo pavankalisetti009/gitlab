@@ -62,7 +62,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         }
       end
 
-      let(:vulnerability) { subject.payload[:vulnerability] }
+      let(:vulnerability) { create_vulnerability.payload[:vulnerability] }
 
       context 'with custom external_type and external_id' do
         let(:identifier_attributes) do
@@ -87,15 +87,15 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
       end
 
       it 'increases vulnerability count by 1' do
-        expect { subject }.to change { project.reload.security_statistics.vulnerability_count }.by(1)
+        expect { create_vulnerability }.to change { project.reload.security_statistics.vulnerability_count }.by(1)
       end
 
       it 'creates a new Vulnerability' do
-        expect { subject }.to change(Vulnerability, :count).by(1)
+        expect { create_vulnerability }.to change { Vulnerability.count }.by(1)
       end
 
       it 'marks the project as vulnerable' do
-        expect { subject }.to change { project.reload.project_setting.has_vulnerabilities? }.to(true)
+        expect { create_vulnerability }.to change { project.reload.project_setting.has_vulnerabilities? }.to(true)
       end
 
       it 'creates a Vulnerability with correct attributes' do
@@ -105,16 +105,16 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
       end
 
       it 'creates associated objects', :aggregate_failures do
-        expect { subject }.to change(Vulnerabilities::Finding, :count).by(1)
-          .and change(Vulnerabilities::Scanner, :count).by(1)
-          .and change(Vulnerabilities::Identifier, :count).by(1)
+        expect { create_vulnerability }.to change { Vulnerabilities::Finding.count }.by(1)
+          .and change { Vulnerabilities::Scanner.count }.by(1)
+          .and change { Vulnerabilities::Identifier.count }.by(1)
       end
 
       context 'when Scanner already exists' do
         let!(:scanner) { create(:vulnerabilities_scanner, external_id: scanner_attributes[:id], project: project) }
 
         it 'does not create a new Scanner' do
-          expect { subject }.to not_change(Vulnerabilities::Scanner, :count)
+          expect { create_vulnerability }.to not_change(Vulnerabilities::Scanner, :count)
           expect(vulnerability.finding.scanner_id).to eq(scanner.id)
         end
       end
@@ -124,7 +124,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         let!(:scanner) { create(:vulnerabilities_scanner, external_id: scanner_attributes[:id], project: different_project) }
 
         it 'creates a new Scanner in the correct project', :aggregate_failures do
-          expect { subject }.to change(Vulnerabilities::Scanner, :count).by(1)
+          expect { create_vulnerability }.to change { Vulnerabilities::Scanner.count }.by(1)
           expect(vulnerability.finding.scanner_id).not_to eq(scanner.id)
         end
       end
@@ -134,7 +134,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         let!(:identifier) { create(:vulnerabilities_identifier, attributes) }
 
         it 'does not create a new Identifier' do
-          expect { subject }.not_to change(Vulnerabilities::Identifier, :count)
+          expect { create_vulnerability }.not_to change { Vulnerabilities::Identifier.count }
         end
       end
 
@@ -222,9 +222,9 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         end
 
         it 'returns an error' do
-          result = subject
+          result = create_vulnerability
           expect(result.success?).to be_falsey
-          expect(subject.message).to match(/confirmed_at can only be set/)
+          expect(create_vulnerability.message).to match(/confirmed_at can only be set/)
         end
       end
 
@@ -246,7 +246,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         with_them do
           it 'sets the current time' do
             freeze_time do
-              expect(subject).to be_success
+              expect(create_vulnerability).to be_success
               expect(vulnerability.send("#{state}_at")).to eq(Time.zone.now)
             end
           end
@@ -261,7 +261,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         end
 
         it 'does not create the vulnerability' do
-          expect { subject }.not_to change(Vulnerability, :count)
+          expect { create_vulnerability }.not_to change { Vulnerability.count }
         end
       end
 
@@ -284,19 +284,19 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
       end
 
       it 'returns an error' do
-        expect(subject.error?).to be_truthy
+        expect(create_vulnerability.error?).to be_truthy
       end
 
       it 'returns all ActiveRecord errors' do
-        expect(subject.payload[:errors]).to include("Name can't be blank", "Severity can't be blank")
+        expect(create_vulnerability.payload[:errors]).to include("Name can't be blank", "Severity can't be blank")
       end
 
       it 'does not mark project as vulnerable' do
-        expect { subject }.not_to change { project.reload.project_setting.has_vulnerabilities? }.from(false)
+        expect { create_vulnerability }.not_to change { project.reload.project_setting.has_vulnerabilities? }.from(false)
       end
 
       it 'does not change vulnerability_count' do
-        expect { subject }.to not_change { project.reload.security_statistics.vulnerability_count }
+        expect { create_vulnerability }.to not_change { project.reload.security_statistics.vulnerability_count }
       end
     end
   end
@@ -309,7 +309,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
     end
 
     it 'raises an "access denied" error' do
-      expect { subject }.to raise_error(Gitlab::Access::AccessDeniedError)
+      expect { create_vulnerability }.to raise_error(Gitlab::Access::AccessDeniedError)
     end
   end
 end
