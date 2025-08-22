@@ -53,6 +53,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
           expect { execute_service }
             .to trigger_internal_events('delete_ai_catalog_item')
             .with(user: user, project: project, additional_properties: { label: item.item_type })
+            .and increment_usage_metrics('counts.count_total_delete_ai_catalog_item')
         end
 
         it 'returns success response' do

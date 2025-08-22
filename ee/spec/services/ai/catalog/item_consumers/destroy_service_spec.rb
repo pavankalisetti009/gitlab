@@ -45,7 +45,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
             user: maintainer,
             project: project,
             namespace: nil
-          )
+          ).and increment_usage_metrics('counts.count_total_delete_ai_catalog_item_consumer')
         end
 
         context 'when destroy fails' do
