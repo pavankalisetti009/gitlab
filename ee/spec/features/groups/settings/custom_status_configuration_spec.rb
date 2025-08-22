@@ -7,17 +7,31 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:maintainer) { create(:user, maintainer_of: [group, subgroup]) }
   let_it_be(:developer) { create(:user, developer_of: [group, subgroup]) }
+  let(:user) { maintainer }
 
   before do
     stub_licensed_features(work_item_status: true)
   end
 
-  context 'with root group' do
-    context 'when user is authorized' do
-      it 'can add statuses' do
-        sign_in(maintainer)
-        visit group_settings_issues_path(group)
+  shared_examples 'prevents access' do
+    it 'returns 404' do
+      sign_in(user)
+      visit group_settings_issues_path(target_group)
 
+      expect(page).to have_content('404: Page not found')
+    end
+  end
+
+  context 'with root group' do
+    let(:target_group) { group }
+
+    context 'when user is authorized' do
+      before do
+        sign_in(user)
+        visit group_settings_issues_path(target_group)
+      end
+
+      it 'can add statuses' do
         click_button('Edit statuses')
         within_testid('category-triage') do
           click_button('Add status')
@@ -70,9 +84,6 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
       end
 
       it 'can edit and remove statuses' do
-        sign_in(maintainer)
-        visit group_settings_issues_path(group)
-
         click_button('Edit statuses')
         within_testid('category-triage') do
           click_button('Add status')
@@ -116,21 +127,31 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
     end
 
     context 'when user is not authorized' do
-      it 'returns 404' do
-        sign_in(developer)
-        visit group_settings_issues_path(group)
-
-        expect(page).to have_content('404: Page not found')
+      it_behaves_like 'prevents access' do
+        let(:user) { developer }
       end
+    end
+
+    context 'without the licensed feature' do
+      before do
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it_behaves_like 'prevents access'
     end
   end
 
   context 'with subgroup' do
-    it 'returns 404' do
-      sign_in(maintainer)
-      visit group_settings_issues_path(subgroup)
+    let(:target_group) { subgroup }
 
-      expect(page).to have_content('404: Page not found')
+    it_behaves_like 'prevents access'
+
+    context 'without the licensed feature' do
+      before do
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it_behaves_like 'prevents access'
     end
   end
 end

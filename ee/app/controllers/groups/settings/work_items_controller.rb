@@ -28,15 +28,7 @@ module Groups
       end
 
       def can_access_work_item_settings?
-        can_admin_custom_fields? || can_admin_work_item_statuses?
-      end
-
-      def can_admin_custom_fields?
-        group.licensed_feature_available?(:custom_fields) && can?(current_user, :admin_custom_field, group)
-      end
-
-      def can_admin_work_item_statuses?
-        group.licensed_feature_available?(:work_item_status) && can?(current_user, :admin_work_item_lifecycle, group)
+        can?(current_user, :admin_custom_field, group) || can?(current_user, :admin_work_item_lifecycle, group)
       end
     end
   end
