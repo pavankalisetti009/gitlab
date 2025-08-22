@@ -1,6 +1,7 @@
 import { GlIcon, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AddCodeActionItem from 'ee/pages/projects/get_started/components/add_code_action_item.vue';
+import CommandLineModal from 'ee/pages/projects/get_started/components/command_line_modal.vue';
 import UploadBlobModal from '~/repository/components/upload_blob_modal.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
@@ -39,8 +40,10 @@ describe('AddCodeActionItem', () => {
 
   const findActionIcon = () => wrapper.findByTestId('action-icon');
   const findActionTitle = () => wrapper.find('span');
+  const findCommandLineButton = () => wrapper.findByTestId('command-line-button');
   const findUploadFilesButton = () => wrapper.findByTestId('upload-files-button');
   const findWebIdeLink = () => wrapper.findComponent(GlLink);
+  const findCommandLineModal = () => wrapper.findComponent(CommandLineModal);
   const findUploadBlobModal = () => wrapper.findComponent(UploadBlobModal);
   const findActionsList = () => wrapper.find('ul');
 
@@ -91,6 +94,12 @@ describe('AddCodeActionItem', () => {
       createComponent({ completed: false });
     });
 
+    it('renders command line instructions button', () => {
+      expect(findCommandLineButton().exists()).toBe(true);
+      expect(findCommandLineButton().text()).toBe('Use the command line');
+      expect(findCommandLineButton().props('variant')).toBe('link');
+    });
+
     it('renders upload files button when user can push code', () => {
       expect(findUploadFilesButton().exists()).toBe(true);
       expect(findUploadFilesButton().text()).toBe('Upload files');
@@ -101,12 +110,14 @@ describe('AddCodeActionItem', () => {
       createComponent({ completed: false }, { canPushCode: false });
 
       expect(findUploadFilesButton().exists()).toBe(false);
+      expect(findCommandLineButton().text()).toBe('Use the command line');
     });
 
     it('does not render upload files button when user cannot push to branch', () => {
       createComponent({ completed: false }, { canPushToBranch: false });
 
       expect(findUploadFilesButton().exists()).toBe(false);
+      expect(findCommandLineButton().text()).toBe('Use the command line');
     });
 
     it('renders WebIDE link', () => {
@@ -141,6 +152,12 @@ describe('AddCodeActionItem', () => {
       createComponent({ completed: false });
     });
 
+    it('renders command line modal with correct props', () => {
+      expect(findCommandLineModal().exists()).toBe(true);
+      expect(findCommandLineModal().props('defaultBranch')).toBe('main');
+      expect(findCommandLineModal().props('modalId')).toMatch(/command-line-modal/);
+    });
+
     it('renders upload blob modal when user can push code', () => {
       expect(findUploadBlobModal().props()).toMatchObject({
         commitMessage: 'Upload New File',
@@ -173,6 +190,18 @@ describe('AddCodeActionItem', () => {
       createComponent({ completed: false });
     });
 
+    it('should call trackEvent method when command line button is clicked', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await findCommandLineButton().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_command_line_instructions_in_get_started',
+        {},
+        undefined,
+      );
+    });
+
     it('should call trackEvent method when upload files button is clicked', async () => {
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
@@ -201,6 +230,7 @@ describe('AddCodeActionItem', () => {
     it('generates unique modal IDs', () => {
       createComponent();
 
+      expect(findCommandLineModal().props('modalId')).toMatch(/command-line-modal/);
       expect(findUploadBlobModal().props('modalId')).toMatch(/modal-upload-blob/);
     });
 

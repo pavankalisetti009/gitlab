@@ -253,7 +253,7 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
     subject(:provide) { presenter.provide }
 
     it 'returns a JSON string with provide' do
-      keys = %w[projectName defaultBranch canPushCode canPushToBranch uploadPath]
+      keys = %w[projectName projectPath sshUrl httpUrl defaultBranch canPushCode canPushToBranch uploadPath sshKeyPath]
 
       expect(provide).to be_a(String)
       expect(parsed_provide).to include(*keys)
@@ -263,10 +263,14 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       expect(parsed_provide['canPushCode']).to be(false)
       expect(parsed_provide['canPushToBranch']).to be(false)
       expect(parsed_provide['uploadPath']).to include(project.full_path)
+      expect(parsed_provide['sshUrl']).to include(project.ssh_url_to_repo)
+      expect(parsed_provide['httpUrl']).to include(project.http_url_to_repo)
       expect(parsed_provide['defaultBranch']).to include(project.default_branch_or_main)
       expect(parsed_provide['projectName']).to eq(project.name)
+      expect(parsed_provide['projectPath']).to eq(project.full_path)
       expect(parsed_provide['uploadPath']).to include(project.default_branch_or_main)
       expect(parsed_provide['uploadPath']).to include(project.full_path)
+      expect(parsed_provide['sshKeyPath']).to include(user_settings_ssh_keys_path)
     end
 
     context 'for when user can push code' do

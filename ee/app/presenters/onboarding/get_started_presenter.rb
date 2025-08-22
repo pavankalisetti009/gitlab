@@ -21,10 +21,14 @@ module Onboarding
       ::Gitlab::Json.generate(
         {
           projectName: project.name,
+          projectPath: project.full_path,
+          sshUrl: project.ssh_url_to_repo,
+          httpUrl: project.http_url_to_repo,
           defaultBranch: project.default_branch_or_main,
           canPushCode: user.can?(:push_code, project),
           canPushToBranch: user_access.can_push_to_branch?(project.default_branch_or_main),
-          uploadPath: project_create_blob_path(project, project.default_branch_or_main)
+          uploadPath: project_create_blob_path(project, project.default_branch_or_main),
+          sshKeyPath: url_helpers.user_settings_ssh_keys_path
         }
       )
     end

@@ -3891,6 +3891,9 @@ msgstr ""
 msgid "Add an SSH key for secure access to GitLab. %{help_link_start}Learn more%{help_link_end}."
 msgstr ""
 
+msgid "Add an SSH key to your GitLab account"
+msgstr ""
+
 msgid "Add an existing issue"
 msgstr ""
 
@@ -13708,6 +13711,9 @@ msgstr ""
 msgid "Clientside traces sample rate"
 msgstr ""
 
+msgid "Clone and add files"
+msgstr ""
+
 msgid "Clone repository"
 msgstr ""
 
@@ -15308,6 +15314,9 @@ msgid "Command id '%{command}' must not start with '%{prefix}'"
 msgstr ""
 
 msgid "Command line instructions"
+msgstr ""
+
+msgid "Command-line instructions"
 msgstr ""
 
 msgid "CommandPalette|Global Commands"
@@ -29375,6 +29384,9 @@ msgstr ""
 msgid "Get started"
 msgstr ""
 
+msgid "Get started with Git"
+msgstr ""
+
 msgid "Get started with embedded views"
 msgstr ""
 
@@ -37802,6 +37814,9 @@ msgid "LearnGitLab|Use GitLab to deploy your application, monitor its health, an
 msgstr ""
 
 msgid "LearnGitLab|Use the built-in editor, WebIDE, or upload code using your preferred method."
+msgstr ""
+
+msgid "LearnGitLab|Use the command line"
 msgstr ""
 
 msgid "LearnGitLab|Uses open files in your IDE, content before and after the cursor, filename, and extension type to provide relevant suggestions."
@@ -52078,6 +52093,9 @@ msgstr ""
 msgid "Push an existing folder"
 msgstr ""
 
+msgid "Push an existing repository"
+msgstr ""
+
 msgid "Push code to the repository."
 msgstr ""
 
@@ -53519,6 +53537,9 @@ msgid "Repository"
 msgstr ""
 
 msgid "Repository Graph"
+msgstr ""
+
+msgid "Repository URL"
 msgstr ""
 
 msgid "Repository already read-only"
@@ -68771,6 +68792,9 @@ msgid "Use CRON syntax. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
 msgid "Use Regular Expression"
+msgstr ""
+
+msgid "Use SSH keys to communicate with GitLab"
 msgstr ""
 
 msgid "Use a one-time password authenticator on your mobile device or computer to enable two-factor authentication (2FA)."
