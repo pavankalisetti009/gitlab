@@ -25,13 +25,17 @@ module Mutations
             required: false,
             description: 'Whether to lock the item configuration (groups only).'
 
+          argument :pinned_version_prefix, GraphQL::Types::String,
+            required: false,
+            description: 'Major version, minor version, or patch to pin the item to.'
+
           argument :target, Types::Ai::Catalog::ItemConsumerTargetInputType,
             required: true,
             description: 'Target in which the catalog item is configured.'
 
           authorize :admin_ai_catalog_item_consumer
 
-          def resolve(item:, target:, enabled: true, locked: true)
+          def resolve(item:, target:, **args)
             group_id = target[:group_id]
             group = group_id ? authorized_find!(id: group_id) : nil
             project_id = target[:project_id]
@@ -42,11 +46,7 @@ module Mutations
             result = ::Ai::Catalog::ItemConsumers::CreateService.new(
               container: group || project,
               current_user: current_user,
-              params: {
-                item: item,
-                enabled: enabled,
-                locked: locked
-              }
+              params: service_args(item, args)
             ).execute
 
             { item_consumer: result.payload&.dig(:item_consumer), errors: result.errors }
@@ -56,6 +56,13 @@ module Mutations
 
           def allowed?(item)
             Ability.allowed?(current_user, :read_ai_catalog_item, item)
+          end
+
+          def service_args(item, args)
+            args[:item] = item
+            args[:enabled] = true if args[:enabled].nil?
+            args[:locked] = true if args[:locked].nil?
+            args
           end
         end
       end

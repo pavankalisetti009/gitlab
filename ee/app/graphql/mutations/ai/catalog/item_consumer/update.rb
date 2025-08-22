@@ -24,12 +24,16 @@ module Mutations
             required: false,
             description: 'Whether the configuration is locked.'
 
+          argument :pinned_version_prefix, GraphQL::Types::String,
+            required: false,
+            description: 'Major version, minor version, or patch to pin the item to.'
+
           authorize :admin_ai_catalog_item_consumer
 
           def resolve(args)
             item_consumer = authorized_find!(id: args[:id])
 
-            params = args.slice(:enabled, :locked)
+            params = args.slice(:enabled, :locked, :pinned_version_prefix)
 
             result = ::Ai::Catalog::ItemConsumers::UpdateService.new(
               item_consumer,
