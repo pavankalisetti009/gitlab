@@ -72305,6 +72305,9 @@ msgstr ""
 msgid "WorkItem|An error occurred while reordering statuses."
 msgstr ""
 
+msgid "WorkItem|An error occurred while reordering work items."
+msgstr ""
+
 msgid "WorkItem|An error occurred while saving the custom field."
 msgstr ""
 
