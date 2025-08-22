@@ -39,8 +39,8 @@ module Search
       end
 
       def objects(_scope = 'blobs', page: 1, per_page: DEFAULT_PER_PAGE, preload_method: nil)
-        blobs, @file_count = blobs_and_file_count(page: page, per_page: per_page, preload_method: preload_method)
-        blobs
+        @blobs, @file_count = blobs_and_file_count(page: page, per_page: per_page, preload_method: preload_method)
+        @blobs
       end
 
       def formatted_count(_scope = 'blobs')
@@ -48,7 +48,7 @@ module Search
       end
 
       def blobs_count
-        @blobs_count ||= blobs_and_file_count[0].total_count
+        @blobs_count ||= @blobs&.total_count || blobs_and_file_count(count_only: true)[0].total_count
       end
 
       # These aliases act as an adapter to the Gitlab::SearchResults
