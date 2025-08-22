@@ -54,6 +54,7 @@ describe('CentralizedSecurityPolicyManagement', () => {
   let wrapper;
   let requestHandler;
   let showModalWindowSpy;
+  let glTooltipDirectiveMock;
 
   const createMockApolloProvider = (handler) => {
     Vue.use(VueApollo);
@@ -65,10 +66,15 @@ describe('CentralizedSecurityPolicyManagement', () => {
     props = {},
     handler = jest.fn().mockResolvedValue(mockGroupsResponse),
   } = {}) => {
+    glTooltipDirectiveMock = jest.fn();
     showModalWindowSpy = jest.fn();
     wrapper = shallowMountExtended(CentralizedSecurityPolicyManagement, {
       apolloProvider: createMockApolloProvider(handler),
+      directives: {
+        GlTooltip: glTooltipDirectiveMock,
+      },
       propsData: {
+        centralizedSecurityPolicyGroupLocked: false,
         formId: 'test-form',
         newGroupPath,
         ...props,
@@ -100,8 +106,9 @@ describe('CentralizedSecurityPolicyManagement', () => {
   });
 
   describe('rendering', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent();
+      await waitForPromises();
     });
 
     it('renders the collapsible listbox with correct props', () => {
@@ -115,6 +122,8 @@ describe('CentralizedSecurityPolicyManagement', () => {
 
     it('renders save button', () => {
       expect(findSaveButton().exists()).toBe(true);
+      expect(findSaveButton().props('disabled')).toBe(false);
+      expect(glTooltipDirectiveMock.mock.calls[0][1].value.disabled).toBe(true);
     });
   });
 
@@ -291,6 +300,16 @@ describe('CentralizedSecurityPolicyManagement', () => {
 
       expect(findListbox().props('loading')).toBe(true);
       expect(findSaveButton().props('disabled')).toBe(true);
+    });
+
+    it('disables save button if 10min have not passed since last change', async () => {
+      const props = {
+        centralizedSecurityPolicyGroupLocked: true,
+      };
+      createComponent({ props });
+      await waitForPromises();
+      expect(findSaveButton().props('disabled')).toBe(true);
+      expect(glTooltipDirectiveMock.mock.calls[0][1].value.disabled).toBe(false);
     });
   });
 

@@ -23759,7 +23759,8 @@ CREATE TABLE security_policy_settings (
     id bigint NOT NULL,
     csp_namespace_id bigint,
     singleton boolean DEFAULT true NOT NULL,
-    organization_id bigint NOT NULL
+    organization_id bigint NOT NULL,
+    csp_namespace_locked_until timestamp with time zone
 );
 
 COMMENT ON COLUMN security_policy_settings.singleton IS 'Always true, used for singleton enforcement';
