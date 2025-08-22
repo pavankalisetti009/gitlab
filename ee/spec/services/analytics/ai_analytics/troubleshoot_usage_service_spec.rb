@@ -79,13 +79,15 @@ RSpec.describe Analytics::AiAnalytics::TroubleshootUsageService, feature_categor
         before do
           project_namespace = project.project_namespace.reload
 
-          clickhouse_fixture(:troubleshoot_job_events, [
-            { user_id: user1.id, namespace_path: group.traversal_path, timestamp: to - 3.days },
-            { user_id: user1.id, namespace_path: project_namespace.traversal_path, timestamp: to - 4.days },
-            { user_id: user2.id, namespace_path: project_namespace.traversal_path, timestamp: to - 2.days },
-            { user_id: user4.id, namespace_path: subgroup.traversal_path, timestamp: to - 2.days },
-            { user_id: user3.id, namespace_path: group.traversal_path, timestamp: to + 2.days }, # outside time range
-            { user_id: user3.id, namespace_path: group.traversal_path, timestamp: from - 2.days } # outside time range
+          clickhouse_fixture(:ai_usage_events, [
+            { user_id: user1.id, event: 7, namespace_path: group.traversal_path, timestamp: to - 3.days },
+            { user_id: user1.id, event: 7, namespace_path: project_namespace.traversal_path, timestamp: to - 4.days },
+            { user_id: user2.id, event: 7, namespace_path: project_namespace.traversal_path, timestamp: to - 2.days },
+            { user_id: user4.id, event: 7, namespace_path: subgroup.traversal_path, timestamp: to - 2.days },
+            # not matching
+            { user_id: user3.id, event: 7, namespace_path: group.traversal_path, timestamp: to + 2.days }, # too new
+            { user_id: user3.id, event: 7, namespace_path: group.traversal_path, timestamp: from - 2.days }, # too old
+            { user_id: user3.id, event: 1, namespace_path: group.traversal_path, timestamp: to - 2.days }
           ])
         end
 
