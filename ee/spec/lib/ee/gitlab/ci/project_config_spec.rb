@@ -233,6 +233,21 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
                 let(:has_execution_policy_pipelines) { true }
 
                 it_behaves_like 'includes security policies default pipeline configuration content'
+
+                context 'when branch_type is target_default' do
+                  let(:rule) { { type: 'pipeline', branch_type: 'target_default' } }
+
+                  context 'with open merge request created targeting default branch' do
+                    let(:source_branch) { 'dev' }
+
+                    before do
+                      create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+                        target_project: project, target_branch: project.default_branch)
+                    end
+
+                    it_behaves_like 'includes security policies default pipeline configuration content'
+                  end
+                end
               end
 
               context 'when pipeline execution policies are not enforced' do
