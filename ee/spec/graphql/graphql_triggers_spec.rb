@@ -188,4 +188,40 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
       end
     end
   end
+
+  describe '.security_policies_sync_updated', feature_category: :security_policy_management do
+    subject(:trigger) do
+      described_class.security_policies_sync_updated(
+        policy_configuration,
+        projects,
+        projects_total,
+        failed_projects,
+        merge_requests,
+        merge_requests_total
+      )
+    end
+
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let(:projects) { 75.5 }
+    let(:projects_total) { 100 }
+    let(:failed_projects) { [non_existing_record_id.to_s] }
+    let(:merge_requests) { 50.0 }
+    let(:merge_requests_total) { 200 }
+
+    specify do
+      expect(GitlabSchema.subscriptions).to receive(:trigger).with(
+        :security_policies_sync_updated,
+        { policy_configuration_id: policy_configuration.to_global_id },
+        {
+          projects_progress: projects,
+          projects_total: projects_total,
+          failed_projects: failed_projects,
+          merge_requests_progress: merge_requests,
+          merge_requests_total: merge_requests_total
+        }
+      ).and_call_original
+
+      trigger
+    end
+  end
 end

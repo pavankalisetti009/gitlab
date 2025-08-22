@@ -40,6 +40,11 @@ module EE
           subscription: Subscriptions::Security::PolicyProjectCreated, null: true,
           description: 'Triggered when the security policy project is created for a specific group or project.',
           experiment: { milestone: '17.3' }
+
+        field :security_policies_sync_updated,
+          subscription: Subscriptions::Security::PoliciesSyncUpdated, null: true,
+          description: 'Triggered when the security policy sync updates the status.',
+          experiment: { milestone: '18.4' }
       end
     end
   end

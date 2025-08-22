@@ -2139,6 +2139,7 @@ Input type: `AdminSidekiqQueuesDeleteJobsInput`
 | <a id="mutationadminsidekiqqueuesdeletejobsmergeactionstatus"></a>`mergeActionStatus` | [`String`](#string) | Delete jobs matching merge_action_status in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsorganizationid"></a>`organizationId` | [`String`](#string) | Delete jobs matching organization_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobspipelineid"></a>`pipelineId` | [`String`](#string) | Delete jobs matching pipeline_id in the context metadata. |
+| <a id="mutationadminsidekiqqueuesdeletejobspolicysyncconfigid"></a>`policySyncConfigId` | [`String`](#string) | Delete jobs matching policy_sync_config_id in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsproject"></a>`project` | [`String`](#string) | Delete jobs matching project in the context metadata. |
 | <a id="mutationadminsidekiqqueuesdeletejobsqueuename"></a>`queueName` | [`String!`](#string) | Name of the queue to delete jobs from. |
 | <a id="mutationadminsidekiqqueuesdeletejobsrelatedclass"></a>`relatedClass` | [`String`](#string) | Delete jobs matching related_class in the context metadata. |
@@ -37503,6 +37504,20 @@ Check permissions for the current user on a vulnerability finding.
 | <a id="pipelinetriggerowner"></a>`owner` | [`UserCore!`](#usercore) | Owner of the pipeline trigger token. |
 | <a id="pipelinetriggertoken"></a>`token` | [`String!`](#string) | Value of the pipeline trigger token. |
 
+### `PoliciesSyncUpdated`
+
+Security policy state synchronization update. Returns `null` if the `security_policy_sync_propagation_tracking` feature flag is disabled.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="policiessyncupdatedfailedprojects"></a>`failedProjects` | [`[String!]`](#string) | IDs of failed projects. |
+| <a id="policiessyncupdatedmergerequestsprogress"></a>`mergeRequestsProgress` | [`Float`](#float) | Percentage of merge requests synced. |
+| <a id="policiessyncupdatedmergerequeststotal"></a>`mergeRequestsTotal` | [`Int`](#int) | Total number of merge requests synced. |
+| <a id="policiessyncupdatedprojectsprogress"></a>`projectsProgress` | [`Float`](#float) | Percentage of projects synced. |
+| <a id="policiessyncupdatedprojectstotal"></a>`projectsTotal` | [`Int`](#int) | Total number of projects synced. |
+
 ### `PolicyAnyMergeRequestViolation`
 
 Represents policy violation for `any_merge_request` report_type.
@@ -50890,6 +50905,12 @@ An example `SbomComponentVersionID` is: `"gid://gitlab/Sbom::ComponentVersion/1"
 A `SbomOccurrenceID` is a global ID. It is encoded as a string.
 
 An example `SbomOccurrenceID` is: `"gid://gitlab/Sbom::Occurrence/1"`.
+
+### `SecurityOrchestrationPolicyConfigurationID`
+
+A `SecurityOrchestrationPolicyConfigurationID` is a global ID. It is encoded as a string.
+
+An example `SecurityOrchestrationPolicyConfigurationID` is: `"gid://gitlab/Security::OrchestrationPolicyConfiguration/1"`.
 
 ### `SecurityProjectSecurityExclusionID`
 

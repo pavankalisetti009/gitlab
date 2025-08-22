@@ -10,11 +10,13 @@ module EE
 
       EE_KNOWN_KEYS = [
         :subscription_plan,
-        :ai_resource
+        :ai_resource,
+        ::Security::SecurityOrchestrationPolicies::PolicySyncState::POLICY_SYNC_CONTEXT_KEY
       ].freeze
 
       EE_APPLICATION_ATTRIBUTES = [
-        Attribute.new(:ai_resource, ::GlobalID)
+        Attribute.new(:ai_resource, ::GlobalID),
+        Attribute.new(::Security::SecurityOrchestrationPolicies::PolicySyncState::POLICY_SYNC_CONTEXT_KEY, Integer)
       ].freeze
 
       class_methods do
@@ -35,6 +37,9 @@ module EE
       def to_lazy_hash
         super.tap do |hash|
           assign_hash_if_value(hash, :ai_resource)
+          # rubocop:disable Layout/LineLength -- namespaced constant
+          assign_hash_if_value(hash, ::Security::SecurityOrchestrationPolicies::PolicySyncState::POLICY_SYNC_CONTEXT_KEY)
+          # rubocop:enable Layout/LineLength
 
           hash[:subscription_plan] = -> { subcription_plan_name } if include_namespace?
         end
