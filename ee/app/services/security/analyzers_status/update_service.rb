@@ -75,7 +75,7 @@ module Security
       def analyzer_groups_from_build(build)
         report_artifacts = build_reports(build)
         existing_group_types = report_artifacts & Enums::Security.extended_analyzer_types.keys
-        normalize_sast_types = normalize_sast_analyzers(build, existing_group_types)
+        normalize_sast_types = normalize_special_report_types(build, existing_group_types, report_artifacts)
         normalize_aggregated_types(normalize_sast_types)
       end
 
@@ -88,7 +88,11 @@ module Security
         end
       end
 
-      def normalize_sast_analyzers(build, existing_group_types)
+      def normalize_special_report_types(build, existing_group_types, report_artifacts)
+        if report_artifacts.include?(:cyclonedx) && build.name.include?("dependency_scanning")
+          existing_group_types.push(:dependency_scanning)
+        end
+
         return existing_group_types unless existing_group_types.include?(:sast)
 
         # Because :sast_iac and :sast_advanced reports belong to a report with a name of 'sast',
