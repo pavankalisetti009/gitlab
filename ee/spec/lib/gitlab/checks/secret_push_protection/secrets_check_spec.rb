@@ -235,29 +235,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                 expect { secrets_check.validate! }.not_to raise_error
               end
 
-              context 'when secret_detection_transition_to_raw_info_gitaly_endpoint is disabled' do
-                before do
-                  stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)
-                end
-
-                it 'tracks and recovers errors when getting diff' do
-                  expect(repository).to receive(:diff_blobs).and_raise(::GRPC::InvalidArgument)
-                  expect(::Gitlab::ErrorTracking).to receive(:track_exception)
-                    .with(instance_of(::GRPC::InvalidArgument))
-                  expect(secret_detection_logger).to receive(:error)
-                    .once
-                    .with(
-                      hash_including(
-                        "message" => error_messages[:invalid_input_error],
-                        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
-                      )
-                    )
-
-                  allow(secret_detection_logger).to receive(:info)
-                  expect { secrets_check.validate! }.not_to raise_error
-                end
-              end
-
               context 'when the protocol is web' do
                 subject(:secrets_check) { described_class.new(changes_access_web) }
 

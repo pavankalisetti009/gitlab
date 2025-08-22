@@ -57,36 +57,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       end
     end
 
-    context 'when secret_detection_transition_to_raw_info_gitaly_endpoint is disabled' do
-      before do
-        stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)
-      end
-
-      context 'with a valid diff blob' do
-        it 'returns a single GRPC payload built from the diff blob' do
-          expect(project.repository).to receive(:diff_blobs) do |blob_pairs, _options|
-            expect(blob_pairs).to be_an(Array)
-            expect(blob_pairs.size).to eq(1)
-
-            blob_pair = blob_pairs.first
-            expect(blob_pair).to be_a(Gitaly::DiffBlobsRequest::BlobPair)
-            expect(blob_pair.left_blob).to eq("0000000000000000000000000000000000000000")
-            expect(blob_pair.right_blob).to eq("da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda")
-          end.and_call_original
-
-          payloads = payload_processor.standardize_payloads
-          expect(payloads).to be_an(Array)
-          expect(payloads.size).to eq(1)
-
-          payload = payloads.first
-          expect(payload).to be_a(::Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
-          expect(payload.id).to eq(new_blob_reference)
-          expect(payload.data).to include("BASE_URL=https://foo.bar")
-          expect(payload.offset).to eq(1)
-        end
-      end
-    end
-
     context 'when parse_diffs returns an empty array due to invalid hunk header' do
       let(:bad_diff_blob) do
         ::Gitlab::GitalyClient::DiffBlob.new(

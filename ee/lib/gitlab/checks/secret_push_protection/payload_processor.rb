@@ -179,16 +179,6 @@ module Gitlab
 
         private
 
-        def diff_blobs(paths_slice)
-          blob_pair_ids = paths_slice.map do |path|
-            Gitaly::DiffBlobsRequest::BlobPair.new(
-              left_blob: path.old_blob_id,
-              right_blob: path.new_blob_id
-            )
-          end
-          project.repository.diff_blobs(blob_pair_ids, patch_bytes_limit: PAYLOAD_BYTES_LIMIT).to_a
-        end
-
         def diff_blobs_with_raw_info(paths_slice)
           raw_info_data = paths_slice.map do |path|
             Gitaly::ChangedPaths.new(
@@ -228,13 +218,9 @@ module Gitlab
           # -- TODO: pass changed paths with diff blob objects and move this exclusion process into the gem.
           paths.reject! { |changed_path| exclusions_manager.matches_excluded_path?(changed_path.path) }
 
-          # Make multiple DiffBlobsRequests with smaller batch sizes to prevent timeout when generating diffs
+          # Make multiple requests with smaller batch sizes to prevent timeout when generating diffs
           paths.each_slice(PATHS_BATCH_SIZE) do |paths_slice|
-            diff_slice = if Feature.enabled?(:secret_detection_transition_to_raw_info_gitaly_endpoint, project)
-                           diff_blobs_with_raw_info(paths_slice)
-                         else
-                           diff_blobs(paths_slice)
-                         end
+            diff_slice = diff_blobs_with_raw_info(paths_slice)
 
             # Filter out diffs above 1 Megabyte and binary diffs
             filtered_diffs = diff_slice.reject { |diff| diff.over_patch_bytes_limit || diff.binary }
