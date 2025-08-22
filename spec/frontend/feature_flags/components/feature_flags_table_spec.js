@@ -125,6 +125,9 @@ describe('Feature flag table', () => {
     it('should render an actions column', () => {
       expect(wrapper.findByTestId('flags-table-action-buttons').exists()).toBe(true);
       expect(wrapper.findByTestId('feature-flag-delete-button').exists()).toBe(true);
+      expect(wrapper.findByTestId('feature-flag-delete-button').attributes('aria-label')).toBe(
+        'Delete flag name',
+      );
       expect(wrapper.findByTestId('feature-flag-edit-button').exists()).toBe(true);
       expect(wrapper.findByTestId('feature-flag-edit-button').attributes()).toMatchObject({
         'aria-label': 'Edit flag name',
@@ -172,10 +175,10 @@ describe('Feature flag table', () => {
       spy = mockTracking('_category_', toggle.element, jest.spyOn);
     });
 
-    it('should have a toggle', () => {
+    it('should have a toggle with descriptive label', () => {
       expect(toggle.exists()).toBe(true);
       expect(toggle.props()).toMatchObject({
-        label: FeatureFlagsTable.i18n.toggleLabel,
+        label: 'flag name feature flag status',
         value: true,
       });
     });
