@@ -23,6 +23,10 @@ export default {
       type: Number,
       required: true,
     },
+    projectPath: {
+      type: String,
+      required: true,
+    },
     flows: {
       type: Array,
       required: true,
@@ -96,6 +100,7 @@ export default {
     <duo-workflow-action
       :agent-privileges="selectedAgentFlowItem.agentPrivileges"
       :project-id="projectId"
+      :project-path="projectPath"
       :title="s__('DuoAgentsPlatform|Start agent session')"
       :goal="prompt"
       :workflow-definition="selectedAgentFlowItem.value"
