@@ -68,6 +68,22 @@ module EE
           { status: status, errors: errors, error_message: error_message, project: security_policy_project }
         )
       end
+
+      def self.security_policies_sync_updated(
+        policy_configuration,
+        projects_progress,
+        projects_total,
+        failed_projects,
+        merge_requests_progress,
+        merge_requests_total
+      )
+        ::GitlabSchema.subscriptions.trigger(
+          :security_policies_sync_updated,
+          { policy_configuration_id: policy_configuration.to_global_id },
+          { projects_progress: projects_progress, projects_total: projects_total, failed_projects: failed_projects,
+            merge_requests_progress: merge_requests_progress, merge_requests_total: merge_requests_total }
+        )
+      end
     end
   end
 end

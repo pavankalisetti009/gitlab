@@ -1,0 +1,10 @@
+---
+name: security_policy_sync_propagation_tracking
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/559273
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201777
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/561007
+milestone: '18.4'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false
