@@ -10,6 +10,8 @@ module QA
             include QA::Scenario::SharedAttributes
 
             tags :group_saml
+
+            pipeline_mappings test_on_omnibus: %w[group-saml]
           end
         end
       end
