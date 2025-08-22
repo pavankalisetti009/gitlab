@@ -77,7 +77,8 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
        .with(user: user, project: project, additional_properties: { label: 'flow' })
        .and increment_usage_metrics(
          'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_weekly',
-         'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly'
+         'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly',
+         'counts.count_total_create_ai_catalog_item'
        )
     end
 

@@ -64,7 +64,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         label: 'true',
         property: 'true'
       }
-    )
+    ).and increment_usage_metrics('counts.count_total_create_ai_catalog_item_consumer')
   end
 
   context 'when the item is already configured in the project' do

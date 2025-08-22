@@ -54,7 +54,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
               label: 'false',
               property: 'false'
             }
-          )
+          ).and increment_usage_metrics('counts.count_total_update_ai_catalog_item_consumer')
         end
 
         context 'when the item consumer cannot be updated' do

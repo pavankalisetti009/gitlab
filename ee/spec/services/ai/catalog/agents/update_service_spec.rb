@@ -95,6 +95,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         expect { execute_service }
          .to trigger_internal_events('update_ai_catalog_item')
          .with(user: user, project: project, additional_properties: { label: 'agent' })
+         .and increment_usage_metrics('counts.count_total_update_ai_catalog_item')
       end
 
       context 'when the latest version has been released' do
