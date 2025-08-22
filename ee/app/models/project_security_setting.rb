@@ -10,8 +10,6 @@ class ProjectSecuritySetting < ApplicationRecord
 
   scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
 
-  ignore_column :pre_receive_secret_detection_enabled, remove_with: '17.9', remove_after: '2025-02-15'
-
   # saved_change_to_project_id? will return true on creating a new instance as project_id is the primary key
   after_commit -> { schedule_analyzer_status_update_worker_for_type('container_scanning') },
     if: -> { saved_change_to_container_scanning_for_registry_enabled? || saved_change_to_project_id? }
