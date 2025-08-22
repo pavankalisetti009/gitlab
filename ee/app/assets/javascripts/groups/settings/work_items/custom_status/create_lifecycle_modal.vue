@@ -204,9 +204,12 @@ export default {
           <div class="gl-border gl-rounded-lg gl-border-strong gl-bg-strong gl-p-4">
             <lifecycle-detail
               :lifecycle="defaultLifecycle"
+              :full-path="fullPath"
               :class="{
                 'gl-border-blue-500': formData.selectedLifecycleId === defaultLifecycle.id,
               }"
+              :show-usage-section="false"
+              :show-not-in-use-section="false"
               is-default-lifecycle
               show-radio-selection
             >
@@ -238,11 +241,15 @@ export default {
               <lifecycle-detail
                 v-for="lifecycle in filteredLifecycles"
                 :key="lifecycle.id"
+                :full-path="fullPath"
                 :class="{
                   'gl-border-blue-500': formData.selectedLifecycleId === lifecycle.id,
                 }"
                 :lifecycle="lifecycle"
                 show-radio-selection
+                show-not-in-use-section
+                :show-usage-section="false"
+                :show-remove-lifecycle-cta="false"
               >
                 <template #radio-selection>
                   <gl-form-radio :key="lifecycle.id" :value="lifecycle.id">

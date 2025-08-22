@@ -11,6 +11,7 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
 
   before do
     stub_licensed_features(work_item_status: true)
+    stub_feature_flags(work_item_status_mvc2: false)
   end
 
   shared_examples 'prevents access' do

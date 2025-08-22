@@ -7,6 +7,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status/custom_status_settings.vue';
+import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
+import CreateLifecycleModal from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
 
 Vue.use(VueApollo);
@@ -66,9 +68,14 @@ describe('CustomStatusSettings', () => {
   const findStatusBadges = () => wrapper.findAllComponents(WorkItemStatusBadge);
   const findEditButtons = () => wrapper.findAllComponents(GlButton);
   const findHelpPageLink = () => wrapper.findByTestId('settings-help-page-link');
+  const findMoreLifecycleInformation = () => wrapper.findByTestId('more-lifecycle-information');
+  const findCreateLifecycleButton = () => wrapper.findByTestId('create-lifecycle');
+  const findLifecyclesDetails = () => wrapper.findAllComponents(LifecycleDetail);
+  const findCreateLifecycleModal = () => wrapper.findComponent(CreateLifecycleModal);
 
   const createComponent = ({
     props = {},
+    workItemStatusMvc2Enabled = true,
     queryHandler = jest.fn().mockResolvedValue(createQueryResponse()),
   } = {}) => {
     apolloProvider = createMockApollo([[namespaceStatusesQuery, queryHandler]]);
@@ -79,6 +86,11 @@ describe('CustomStatusSettings', () => {
         ...props,
       },
       apolloProvider,
+      provide: {
+        glFeatures: {
+          workItemStatusMvc2: workItemStatusMvc2Enabled,
+        },
+      },
     });
   };
 
@@ -93,7 +105,7 @@ describe('CustomStatusSettings', () => {
 
   describe('query success', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({ workItemStatusMvc2Enabled: false });
       return waitForPromises();
     });
 
@@ -148,6 +160,7 @@ describe('CustomStatusSettings', () => {
     beforeEach(() => {
       createComponent({
         queryHandler: jest.fn().mockRejectedValue(error),
+        workItemStatusMvc2Enabled: false,
       });
       return waitForPromises();
     });
@@ -171,6 +184,32 @@ describe('CustomStatusSettings', () => {
       await nextTick();
 
       expect(findAlert().exists()).toBe(false);
+    });
+  });
+
+  describe('when `workItemStatusMvc2Enabled` FF is true', () => {
+    beforeEach(() => {
+      createComponent({
+        workItemStatusMvc2Enabled: true,
+      });
+      return waitForPromises();
+    });
+
+    it('shows lifecycle information', () => {
+      expect(findMoreLifecycleInformation().exists()).toBe(true);
+    });
+
+    it('shows create lifecycle button and modal', async () => {
+      expect(findCreateLifecycleButton().exists()).toBe(true);
+      expect(findCreateLifecycleModal().props('visible')).toBe(false);
+
+      await findCreateLifecycleButton().vm.$emit('click');
+
+      expect(findCreateLifecycleModal().props('visible')).toBe(true);
+    });
+
+    it('renders lifecycle detail components', () => {
+      expect(findLifecyclesDetails()).toHaveLength(2);
     });
   });
 });
