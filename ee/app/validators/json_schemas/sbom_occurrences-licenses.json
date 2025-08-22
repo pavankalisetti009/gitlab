@@ -12,7 +12,7 @@
             "null"
           ],
           "minLength": 1,
-          "maxLength": 50
+          "maxLength": 255
         },
         "name": {
           "type": [
@@ -29,9 +29,7 @@
           "format": "uri"
         }
       },
-      "required": [
-
-      ],
+      "required": [],
       "anyOf": [
         {
           "required": [

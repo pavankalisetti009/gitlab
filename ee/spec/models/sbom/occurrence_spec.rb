@@ -92,7 +92,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
 
       context 'when spdx_identifier is too long' do
         # max length derived from `pm_licenses`.`spdx_identifier` column
-        let(:licenses) { [mit.merge(spdx_identifier: 'X' * 51)] }
+        let(:licenses) { [mit.merge(spdx_identifier: 'X' * 256)] }
 
         it { is_expected.to be_invalid }
       end
