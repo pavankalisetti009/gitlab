@@ -9,6 +9,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
 
   let_it_be(:guest) { create(:user) }
   let_it_be(:developer) { create(:user) }
+  let_it_be(:planner) { create(:user) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:admin) { create(:admin) }
@@ -26,6 +27,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
 
   before do
     project.add_guest(guest)
+    project.add_planner(planner)
     project.add_developer(developer)
     project.add_maintainer(maintainer)
     project.add_reporter(reporter)
@@ -274,86 +276,92 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
   end
 
   context 'for a merge request on a protected branch' do
-    let(:branch_name) { 'feature' }
-    let_it_be(:user) { create :user }
-    let(:protected_branch) { create(:protected_branch, project: project, name: branch_name) }
+    using RSpec::Parameterized::TableSyntax
+
     let_it_be(:approver_group) { create(:group) }
-
-    let(:merge_request) { create(:merge_request, source_project: project, target_project: project, target_branch: branch_name) }
-
-    before do
-      project.add_reporter(user)
+    let_it_be_with_reload(:project2) { create(:project, :internal) }
+    let(:branch_name) { 'feature' }
+    let(:protected_branch) { create(:protected_branch, project: project2, name: branch_name) }
+    let(:merge_request) do
+      create(:merge_request, source_project: project2, target_project: project2, target_branch: branch_name)
     end
 
-    subject { described_class.new(user, merge_request) }
+    let(:permission) { :approve_merge_request }
 
-    context 'when the reporter nor the group is added' do
-      specify do
-        expect(subject).not_to be_allowed(:approve_merge_request)
+    where(:role, :allowed) do
+      :guest      | false
+      :planner    | true
+      :reporter   | true
+      :developer  | true
+      :maintainer | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+      let(:access_level) { Gitlab::Access.const_get(role.to_s.upcase, false) }
+
+      subject { policy_for(current_user) }
+
+      context 'when the role nor the group is added' do
+        it { is_expected.to be_disallowed(permission) }
       end
-    end
 
-    context 'when a group-level approval rule exists' do
-      let(:approval_project_rule) { create :approval_project_rule, project: project, approvals_required: 1 }
-
-      context 'when the merge request targets the protected branch' do
-        before do
-          approval_project_rule.protected_branches << protected_branch
-          approval_project_rule.groups << approver_group
+      context 'when a group-level approval rule exists' do
+        let(:approval_project_rule) do
+          create :approval_project_rule, project: project2, approvals_required: 1
         end
 
-        context 'when the reporter is not a group member' do
-          specify do
-            expect(subject).not_to be_allowed(:approve_merge_request)
-          end
-        end
-
-        context 'when the reporter is a group member' do
+        context 'when the merge request targets the protected branch' do
           before do
-            approver_group.add_reporter(user)
+            approval_project_rule.protected_branches << protected_branch
+            approval_project_rule.groups << approver_group
           end
 
-          specify do
-            expect(subject).to be_allowed(:approve_merge_request)
+          context 'when the user is not a group member' do
+            it { is_expected.to be_disallowed(permission) }
           end
-        end
-      end
 
-      context 'when the reporter has permission for a different protected branch' do
-        let(:protected_branch2) { create(:protected_branch, project: project, name: branch_name, code_owner_approval_required: true) }
+          context 'when the user is a group member' do
+            before do
+              approver_group.add_member(current_user, access_level)
+            end
 
-        before do
-          approval_project_rule.protected_branches << protected_branch2
-          approval_project_rule.groups << approver_group
-        end
-
-        it 'does not allow approval of the merge request' do
-          expect(subject).not_to be_allowed(:approve_merge_request)
-        end
-      end
-
-      context 'when the protected branch name is a wildcard' do
-        let(:wildcard_protected_branch) { create(:protected_branch, project: project, name: '*-stable') }
-
-        before do
-          approval_project_rule.protected_branches << wildcard_protected_branch
-          approval_project_rule.groups << approver_group
-          approver_group.add_reporter(user)
-        end
-
-        context 'when the reporter has permission for the wildcarded branch' do
-          let(:branch_name) { '13-4-stable' }
-
-          it 'does allows approval of the merge request' do
-            expect(subject).to be_allowed(:approve_merge_request)
+            it { is_expected.to(allowed ? be_allowed(permission) : be_disallowed(permission)) }
           end
         end
 
-        context 'when the reporter does not have permission for the wildcarded branch' do
-          let(:branch_name) { '13-4-pre' }
+        context 'when the user has permission for a different protected branch' do
+          let(:protected_branch2) do
+            create(:protected_branch, project: project2, name: branch_name, code_owner_approval_required: true)
+          end
 
-          it 'does allows approval of the merge request' do
-            expect(subject).not_to be_allowed(:approve_merge_request)
+          before do
+            approval_project_rule.protected_branches << protected_branch2
+            approval_project_rule.groups << approver_group
+          end
+
+          it { is_expected.to be_disallowed(permission) }
+        end
+
+        context 'when the protected branch name is a wildcard' do
+          let(:wildcard_protected_branch) { create(:protected_branch, project: project2, name: '*-stable') }
+
+          before do
+            approval_project_rule.protected_branches << wildcard_protected_branch
+            approval_project_rule.groups << approver_group
+            approver_group.add_member(current_user, access_level)
+          end
+
+          context 'when the user has permission for the wildcarded branch' do
+            let_it_be(:branch_name) { '13-4-stable' }
+
+            it { is_expected.to(allowed ? be_allowed(permission) : be_disallowed(permission)) }
+          end
+
+          context 'when the user does not have permission for the wildcarded branch' do
+            let_it_be(:branch_name) { '13-4-pre' }
+
+            it { is_expected.to be_disallowed(permission) }
           end
         end
       end

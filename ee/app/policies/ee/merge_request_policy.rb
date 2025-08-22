@@ -77,7 +77,9 @@ module EE
       end
 
       def group_access?(protected_branch)
-        protected_branch.approval_project_rules.for_groups(@user.group_members.reporters.select(:source_id)).exists?
+        protected_branch.approval_project_rules.for_groups(
+          @user.group_members.with_at_least_access_level(::Gitlab::Access::PLANNER).select(:source_id)
+        ).exists?
       end
 
       def new_editing_rules?
