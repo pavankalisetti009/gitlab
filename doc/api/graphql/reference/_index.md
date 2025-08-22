@@ -151,6 +151,48 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryadminmemberrolesorderby"></a>`orderBy` | [`MemberRolesOrderBy`](#memberrolesorderby) | Ordering column. Default is NAME. |
 | <a id="queryadminmemberrolessort"></a>`sort` | [`SortDirectionEnum`](#sortdirectionenum) | Ordering column. Default is ASC. |
 
+### `Query.adminProjects`
+
+{{< details >}}
+**Introduced** in GitLab 18.4.
+**Status**: Experiment.
+{{< /details >}}
+
+Find projects visible to the current admin.
+
+Returns [`ProjectInterfaceConnection`](#projectinterfaceconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryadminprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not marked for deletion. |
+| <a id="queryadminprojectsaimedfordeletion"></a>`aimedForDeletion` | [`Boolean`](#boolean) | Return only projects marked for deletion. |
+| <a id="queryadminprojectsarchived"></a>`archived` | [`ProjectArchived`](#projectarchived) | Filter projects by archived status. |
+| <a id="queryadminprojectsfullpaths"></a>`fullPaths` | [`[String!]`](#string) | Filter projects by full paths. You cannot provide more than 50 full paths. |
+| <a id="queryadminprojectsids"></a>`ids` | [`[ID!]`](#id) | Filter projects by IDs. |
+| <a id="queryadminprojectsincludehidden"></a>`includeHidden` | [`Boolean`](#boolean) | Include hidden projects. |
+| <a id="queryadminprojectsmarkedfordeletionon"></a>`markedForDeletionOn` | [`Date`](#date) | Date when the project was marked for deletion. |
+| <a id="queryadminprojectsmembership"></a>`membership` | [`Boolean`](#boolean) | Return only projects that the current user is a member of. |
+| <a id="queryadminprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
+| <a id="queryadminprojectsnamespacepath"></a>`namespacePath` | [`ID`](#id) | Filter projects by their namespace's full path (group or user). |
+| <a id="queryadminprojectsnotaimedfordeletion"></a>`notAimedForDeletion` | [`Boolean`](#boolean) | Exclude projects that are marked for deletion. |
+| <a id="queryadminprojectspersonal"></a>`personal` | [`Boolean`](#boolean) | Return only personal projects. |
+| <a id="queryadminprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: "css" or "ruby". |
+| <a id="queryadminprojectssearch"></a>`search` | [`String`](#string) | Search query, which can be for the project name, a path, or a description. |
+| <a id="queryadminprojectssearchnamespaces"></a>`searchNamespaces` | [`Boolean`](#boolean) | Include namespace in project search. |
+| <a id="queryadminprojectssort"></a>`sort` | [`String`](#string) | Sort order of results. Format: `<field_name>_<sort_direction>`, for example: `id_desc` or `name_asc`. Defaults to `id_desc`, or `similarity` if search used. |
+| <a id="queryadminprojectstopics"></a>`topics` | [`[String!]`](#string) | Filter projects by topics. |
+| <a id="queryadminprojectstrending"></a>`trending` | [`Boolean`](#boolean) | Return only projects that are trending. |
+| <a id="queryadminprojectsvisibilitylevel"></a>`visibilityLevel` | [`VisibilityLevelsEnum`](#visibilitylevelsenum) | Filter projects by visibility level. |
+| <a id="queryadminprojectswithcodeembeddingsindexed"></a>`withCodeEmbeddingsIndexed` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.2. **Status**: Experiment. Include projects with indexed code embeddings. Requires `ids` to be sent. Applies only if the feature flag `allow_with_code_embeddings_indexed_projects_filter` is enabled. |
+| <a id="queryadminprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
+| <a id="queryadminprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
+
 ### `Query.aiCatalogBuiltInTools`
 
 {{< details >}}
@@ -19898,6 +19940,30 @@ The edge type for [`Project`](#project).
 | ---- | ---- | ----------- |
 | <a id="projectedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="projectedgenode"></a>`node` | [`Project`](#project) | The item at the end of the edge. |
+
+#### `ProjectInterfaceConnection`
+
+The connection type for [`ProjectInterface`](#projectinterface).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectinterfaceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
+| <a id="projectinterfaceconnectionedges"></a>`edges` | [`[ProjectInterfaceEdge]`](#projectinterfaceedge) | A list of edges. |
+| <a id="projectinterfaceconnectionnodes"></a>`nodes` | [`[ProjectInterface]`](#projectinterface) | A list of nodes. |
+| <a id="projectinterfaceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `ProjectInterfaceEdge`
+
+The edge type for [`ProjectInterface`](#projectinterface).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectinterfaceedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="projectinterfaceedgenode"></a>`node` | [`ProjectInterface`](#projectinterface) | The item at the end of the edge. |
 
 #### `ProjectMemberConnection`
 
@@ -40394,6 +40460,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectminimalaccessid"></a>`id` | [`ID`](#id) | ID of the project. |
 | <a id="projectminimalaccessname"></a>`name` | [`String!`](#string) | Name of the project without the namespace. |
 | <a id="projectminimalaccessnamewithnamespace"></a>`nameWithNamespace` | [`String!`](#string) | Name of the project including the namespace. |
+| <a id="projectminimalaccessuserpermissions"></a>`userPermissions` | [`ProjectPermissions`](#projectpermissions) | Permissions for the current user on the project. |
 | <a id="projectminimalaccessweburl"></a>`webUrl` | [`String`](#string) | Web URL of the project. |
 
 ### `ProjectNamespaceLinks`
@@ -52075,6 +52142,7 @@ Implementations:
 | <a id="projectinterfaceid"></a>`id` | [`ID`](#id) | ID of the project. |
 | <a id="projectinterfacename"></a>`name` | [`String`](#string) | Name of the project without the namespace. |
 | <a id="projectinterfacenamewithnamespace"></a>`nameWithNamespace` | [`String`](#string) | Name of the project including the namespace. |
+| <a id="projectinterfaceuserpermissions"></a>`userPermissions` | [`ProjectPermissions`](#projectpermissions) | Permissions for the current user on the project. |
 | <a id="projectinterfaceweburl"></a>`webUrl` | [`String`](#string) | Web URL of the project. |
 
 #### `ResolvableInterface`
