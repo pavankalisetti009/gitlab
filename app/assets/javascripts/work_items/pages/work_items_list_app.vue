@@ -1287,6 +1287,7 @@ export default {
               :preselected-work-item-type="preselectedWorkItemType"
               @workItemCreated="refetchItems"
             />
+            <work-item-list-actions />
           </div>
         </template>
 
