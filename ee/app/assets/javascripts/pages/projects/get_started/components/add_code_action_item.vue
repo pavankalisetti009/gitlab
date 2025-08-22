@@ -4,6 +4,7 @@ import { uniqueId } from 'lodash';
 import Tracking, { InternalEvents } from '~/tracking';
 import UploadBlobModal from '~/repository/components/upload_blob_modal.vue';
 import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from '../constants';
+import CommandLineModal from './command_line_modal.vue';
 
 export default {
   name: 'AddCodeActionItem',
@@ -11,6 +12,7 @@ export default {
     GlIcon,
     GlLink,
     GlButton,
+    CommandLineModal,
     UploadBlobModal,
   },
   directives: {
@@ -31,11 +33,17 @@ export default {
     uploadBlobModalId() {
       return uniqueId('modal-upload-blob');
     },
+    commandLineModalId() {
+      return uniqueId('command-line-modal');
+    },
     canCommitFiles() {
       return this.canPushCode && this.canPushToBranch;
     },
   },
   methods: {
+    trackCommandLineClick() {
+      this.trackEvent('click_command_line_instructions_in_get_started');
+    },
     trackUploadFilesClick() {
       this.trackEvent('click_upload_files_in_get_started');
     },
@@ -60,6 +68,16 @@ export default {
     </div>
 
     <ul v-if="!action.completed" class="gl-flex gl-list-none gl-flex-col gl-gap-3 gl-pl-6">
+      <li>
+        <gl-button
+          v-gl-modal="commandLineModalId"
+          variant="link"
+          data-testid="command-line-button"
+          @click="trackCommandLineClick"
+        >
+          {{ s__('LearnGitLab|Use the command line') }}
+        </gl-button>
+      </li>
       <li v-if="canCommitFiles">
         <gl-button
           v-gl-modal="uploadBlobModalId"
@@ -77,6 +95,8 @@ export default {
         </gl-link>
       </li>
     </ul>
+
+    <command-line-modal :modal-id="commandLineModalId" :default-branch="defaultBranch" />
 
     <upload-blob-modal
       v-if="canCommitFiles"
