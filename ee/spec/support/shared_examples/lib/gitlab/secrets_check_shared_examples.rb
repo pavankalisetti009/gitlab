@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'calls SDS' do
+RSpec.shared_examples 'calls SDS' do |extra_headers|
   include_context 'secrets check context'
   it 'calls SDS' do
-    secrets_check.validate!
+    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient) do |instance|
+      expectation = expect(instance).to receive(:send_request_to_sds)
 
-    expect_any_instance_of(Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient) do |instance|
-      expect(instance).to have_received(:send_request_to_sds)
+      expectation.with(anything, hash_including(extra_headers: hash_including(extra_headers))) if extra_headers
     end
+
+    secrets_check.validate!
   end
 end
 
@@ -95,6 +97,7 @@ RSpec.shared_examples 'sends requests to the SDS' do
       let(:expected_request) do
         ::Gitlab::SecretDetection::GRPC::ScanRequest.new(
           payloads: [payload],
+          extra_headers: { "x-correlation-id": correlation_id },
           exclusions: [exclusion],
           tags: []
         )

@@ -152,6 +152,15 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClien
       client.send_request_to_sds([payload], exclusions: { path: [exclusion] })
     end
 
+    it 'logs the request and response' do
+      allow(grpc_client).to receive(:run_scan)
+
+      client.send_request_to_sds([payload], exclusions: { path: [exclusion] },
+        extra_headers: { 'x-correlation-id': "ABC123", 'x-request-type': 'dark-launch' })
+
+      expect(logged_messages[:info]).to include("Sending request to SDS with type: dark-launch")
+    end
+
     it 'rescues and tracks on error' do
       allow(grpc_client).to receive(:run_scan).and_raise(StandardError)
       expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(kind_of(StandardError))
