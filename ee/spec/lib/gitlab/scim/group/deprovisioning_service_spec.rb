@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::Gitlab::Scim::Group::DeprovisioningService, feature_category: :system_access do
+RSpec.describe ::Gitlab::Scim::Group::DeprovisioningService, feature_category: :system_access do
   describe '#execute' do
     let(:identity) { create(:scim_identity, active: true) }
     let(:group) { identity.group }
