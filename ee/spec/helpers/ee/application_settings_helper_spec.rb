@@ -526,6 +526,32 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
   end
 
+  describe '#compliance_security_policy_group_locked?' do
+    subject { helper.compliance_security_policy_group_locked? }
+
+    before do
+      allow(Security::PolicySetting).to receive(:for_organization).and_return(policy_setting)
+    end
+
+    context 'without csp_namespace_locked_until' do
+      let(:policy_setting) { build_stubbed(:security_policy_settings) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when locked' do
+      let(:policy_setting) { build_stubbed(:security_policy_settings, csp_namespace_locked_until: 1.minute.from_now) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when unlocked' do
+      let(:policy_setting) { build_stubbed(:security_policy_settings, csp_namespace_locked_until: 1.minute.ago) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '#custom_admin_roles_available?' do
     subject { helper.custom_admin_roles_available? }
 

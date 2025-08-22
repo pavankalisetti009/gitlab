@@ -346,7 +346,11 @@ module EE
     end
 
     def compliance_security_policy_group_id
-      Security::PolicySetting.for_organization(::Organizations::Organization.default_organization).csp_namespace_id
+      policy_setting.csp_namespace_id
+    end
+
+    def compliance_security_policy_group_locked?
+      policy_setting.csp_namespace_locked?
     end
 
     override :custom_admin_roles_available?
@@ -355,6 +359,10 @@ module EE
     end
 
     private
+
+    def policy_setting
+      Security::PolicySetting.for_organization(::Organizations::Organization.default_organization)
+    end
 
     def identity_verification_attributes
       return [] unless ::Gitlab::Saas.feature_available?(:identity_verification)

@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::PolicySetting, feature_category: :security_policy_management, type: :model do
   let_it_be(:organization) { create(:organization) }
+  let_it_be(:group) { create(:group) }
 
   subject(:settings) { build(:security_policy_settings, organization: organization) }
 
@@ -36,6 +37,37 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
         expect(settings).to be_invalid
         expect(settings.errors[:csp_namespace]).to include('must be a group')
+      end
+    end
+
+    describe 'csp_namespace duration-locking' do
+      let_it_be(:settings) { create(:security_policy_settings, organization: organization, csp_namespace: group) }
+      let_it_be(:other_group) { create(:group) }
+
+      context 'when locked' do
+        before do
+          settings.update!(csp_namespace_locked_until: ::Security::PolicySetting::CSP_NAMESPACE_LOCK_DURATION.from_now)
+        end
+
+        it 'is invalid' do
+          settings.csp_namespace = other_group
+          settings.validate
+
+          expect(settings.errors[:csp_namespace_id]).to include(/locked until/)
+        end
+      end
+
+      context 'when unlocked' do
+        before do
+          settings.update!(csp_namespace_locked_until: 1.minute.ago)
+        end
+
+        it 'is valid' do
+          settings.csp_namespace = other_group
+          settings.validate
+
+          expect(settings).to be_valid
+        end
       end
     end
   end
@@ -118,6 +150,51 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
     end
   end
 
+  describe '#csp_namespace_locked?', :freeze_time do
+    subject(:csp_namespace_locked?) { settings.csp_namespace_locked? }
+
+    context 'without csp_namespace_locked_until' do
+      before do
+        settings.csp_namespace_locked_until = nil
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when csp_namespace_locked_until is in the past' do
+      before do
+        settings.csp_namespace_locked_until = 1.minute.ago
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when csp_namespace_locked_until is in the future' do
+      before do
+        settings.csp_namespace_locked_until = 1.minute.from_now
+      end
+
+      it { is_expected.to be(true) }
+    end
+  end
+
+  describe 'callbacks' do
+    describe '#set_csp_namespace_lock' do
+      it 'sets the lock time when csp_namespace_id changes' do
+        freeze_time do
+          expect { settings.update!(csp_namespace: group) }.to change { settings.csp_namespace_locked_until }
+            .to(Security::PolicySetting::CSP_NAMESPACE_LOCK_DURATION.from_now)
+        end
+      end
+
+      it 'does not set the lock time when csp_namespace_id does not change' do
+        settings.update!(csp_namespace: group)
+
+        expect { settings.touch }.not_to change { settings.csp_namespace_locked_until }
+      end
+    end
+  end
+
   describe '#trigger_security_policies_updates' do
     subject(:policy_settings) { create(:security_policy_settings, organization: organization) }
 
@@ -155,7 +232,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
     context 'when csp_namespace_id changes from one group to another' do
       before do
-        policy_settings.update!(csp_namespace: old_group)
+        policy_settings.update_column(:csp_namespace_id, old_group.id)
       end
 
       it 'schedules all three workers for old and new groups' do
@@ -173,7 +250,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
         let(:old_group_without_config) { create(:group) }
 
         before do
-          policy_settings.update!(csp_namespace: old_group_without_config)
+          policy_settings.update_column(:csp_namespace_id, old_group_without_config.id)
         end
 
         it 'only schedules SyncScanPoliciesWorker for the new group' do
@@ -200,7 +277,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
     context 'when csp_namespace_id changes from a group to nil' do
       before do
-        policy_settings.update!(csp_namespace: old_group)
+        policy_settings.update_column(:csp_namespace_id, old_group.id)
       end
 
       it 'schedules RecreateOrchestrationConfigurationWorker and ProjectSettingsDestroyWorker for the old group' do
@@ -217,7 +294,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
         let(:old_group_without_config) { create(:group) }
 
         before do
-          policy_settings.update!(csp_namespace: old_group_without_config)
+          policy_settings.update_column(:csp_namespace_id, old_group_without_config.id)
         end
 
         it 'does not schedule any workers' do
@@ -231,7 +308,7 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
 
     context 'when csp_namespace_id does not change' do
       before do
-        policy_settings.update!(csp_namespace: old_group)
+        policy_settings.update_column(:csp_namespace_id, old_group.id)
       end
 
       it 'does not schedule any workers when updating other attributes' do

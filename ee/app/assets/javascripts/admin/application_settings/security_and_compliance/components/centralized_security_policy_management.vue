@@ -1,7 +1,7 @@
 <script>
 import { debounce } from 'lodash';
 import produce from 'immer';
-import { GlAvatarLabeled, GlButton, GlCollapsibleListbox } from '@gitlab/ui';
+import { GlAvatarLabeled, GlButton, GlCollapsibleListbox, GlTooltipDirective } from '@gitlab/ui';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
@@ -57,7 +57,14 @@ export default {
     GlButton,
     GlCollapsibleListbox,
   },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   props: {
+    centralizedSecurityPolicyGroupLocked: {
+      type: Boolean,
+      required: true,
+    },
     formId: {
       type: String,
       required: true,
@@ -82,6 +89,9 @@ export default {
     };
   },
   computed: {
+    disableSave() {
+      return this.centralizedSecurityPolicyGroupLocked || this.loading;
+    },
     hasNextPage() {
       return this.pageInfo.hasNextPage;
     },
@@ -197,16 +207,26 @@ export default {
       </template>
     </gl-collapsible-listbox>
     <div>
-      <gl-button
-        data-testid="save-button"
-        class="gl-mt-5"
-        category="primary"
-        variant="confirm"
-        :disabled="loading"
-        @click="showModalWindow"
+      <div
+        v-gl-tooltip="{
+          disabled: !centralizedSecurityPolicyGroupLocked,
+          title: s__(
+            'SecurityOrchestration|This setting will be locked for 10 minutes after making changes to prevent further performance issues.',
+          ),
+        }"
+        class="gl-inline"
       >
-        {{ s__('SecurityOrchestration|Save changes') }}
-      </gl-button>
+        <gl-button
+          data-testid="save-button"
+          class="gl-mt-5"
+          category="primary"
+          variant="confirm"
+          :disabled="disableSave"
+          @click="showModalWindow"
+        >
+          {{ s__('SecurityOrchestration|Save changes') }}
+        </gl-button>
+      </div>
     </div>
     <confirmation-modal ref="confirmationModal" @change="assignGroup" />
   </div>

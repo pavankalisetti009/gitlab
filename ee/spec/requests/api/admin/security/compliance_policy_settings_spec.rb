@@ -84,7 +84,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
 
       context 'when csp_namespace_id is nil' do
         before do
-          policy_setting.update!(csp_namespace_id: nil)
+          policy_setting.update_column(:csp_namespace_id, nil)
         end
 
         it 'returns null for csp_namespace_id' do
@@ -128,7 +128,7 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
 
       context 'with nil csp_namespace_id' do
         before do
-          policy_setting.update!(csp_namespace_id: group.id)
+          policy_setting.update_column(:csp_namespace_id, group.id)
         end
 
         it 'clears the csp_namespace_id' do

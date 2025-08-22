@@ -58716,6 +58716,9 @@ msgstr ""
 msgid "SecurityOrchestration|This project"
 msgstr ""
 
+msgid "SecurityOrchestration|This setting will be locked for 10 minutes after making changes to prevent further performance issues."
+msgstr ""
+
 msgid "SecurityOrchestration|This view only shows scan results for the agent %{agent}. You can view scan results for all agents in the %{linkStart}Operational Vulnerabilities tab of the vulnerability report%{linkEnd}."
 msgstr ""
 
@@ -76468,6 +76471,9 @@ msgid "load it anyway"
 msgstr ""
 
 msgid "locked by %{path_lock_user_name} %{created_at}"
+msgstr ""
+
+msgid "locked until %{timestamp}"
 msgstr ""
 
 msgid "main"

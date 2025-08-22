@@ -83,6 +83,13 @@ export default {
             )
           }}
         </li>
+        <li>
+          {{
+            s__(
+              'SecurityOrchestration|This setting will be locked for 10 minutes after making changes to prevent further performance issues.',
+            )
+          }}
+        </li>
       </ul>
     </gl-alert>
 

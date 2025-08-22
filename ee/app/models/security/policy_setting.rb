@@ -4,14 +4,19 @@ module Security
   class PolicySetting < ApplicationRecord
     self.table_name = 'security_policy_settings'
 
+    CSP_NAMESPACE_LOCK_DURATION = 10.minutes
+
     validates :csp_namespace, top_level_group: true
     validates :organization, uniqueness: true
 
     validate :validate_csp_is_group
+    validate :validate_csp_namespace_unlocked, if: :will_save_change_to_csp_namespace_id?
 
     # A group for managing Centralized Security Policies
     belongs_to :organization, class_name: 'Organizations::Organization'
     belongs_to :csp_namespace, class_name: 'Group', optional: true
+
+    before_save :set_csp_namespace_lock, if: :will_save_change_to_csp_namespace_id?
 
     after_commit :trigger_security_policies_updates, if: :saved_change_to_csp_namespace_id?
 
@@ -31,6 +36,10 @@ module Security
       )
     end
 
+    def csp_namespace_locked?
+      csp_namespace_locked_until&.future? || false
+    end
+
     private
 
     def validate_csp_is_group
@@ -38,6 +47,22 @@ module Security
       return if csp_namespace&.group_namespace?
 
       errors.add(:csp_namespace, 'must be a group')
+    end
+
+    def validate_csp_namespace_unlocked
+      return unless csp_namespace_locked?
+
+      errors.add(
+        :csp_namespace_id,
+        format(
+          s_("locked until %{timestamp}"),
+          timestamp: csp_namespace_locked_until.strftime("%H:%M UTC")
+        )
+      )
+    end
+
+    def set_csp_namespace_lock
+      self.csp_namespace_locked_until = CSP_NAMESPACE_LOCK_DURATION.from_now
     end
 
     def trigger_security_policies_updates
