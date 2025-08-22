@@ -21,6 +21,8 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
 
   before do
     stub_licensed_features(custom_roles: true)
+
+    stub_feature_flags(track_user_group_member_roles_accuracy: false)
   end
 
   shared_examples 'custom roles' do |ability|
@@ -203,6 +205,107 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
       let(:groups_list) { [sub_group_1.id, sub_group_2.id] }
 
       it_behaves_like 'returns expected member role abilities for the user'
+    end
+  end
+
+  context 'when track_user_group_member_roles_accuracy feature flag is enabled', :saas do
+    let_it_be(:ability) { MemberRole.all_customizable_group_permissions.first }
+    let_it_be(:member_role) { create_member_role(group, ability) }
+    let_it_be(:expected_abilities) { expected_group_abilities(ability) }
+
+    let(:groups_list) { [sub_group_1] }
+    let(:base_log_payload) do
+      {
+        class: described_class.name,
+        event: 'Inaccurate user_group_member_roles data',
+        user_id: user.id
+      }
+    end
+
+    let(:log_payload) do
+      base_log_payload.merge({
+        group_id: sub_group_1.id,
+        permissions: instance_of(String),
+        user_group_member_roles_permissions: instance_of(String)
+      })
+    end
+
+    before do
+      stub_feature_flags(track_user_group_member_roles_accuracy: true)
+
+      sub_group_1_member.update!(member_role: member_role)
+
+      allow(Gitlab::AppLogger).to receive(:info)
+    end
+
+    # Here, the result will be different because there are no
+    # user_group_member_roles records for user i.e.
+    # ::Authz::UserGroupMemberRoles::UpdateForGroupService was not run on the
+    # user's member record for sub_group_1.
+    context 'when result of query using user_group_member_roles table is different' do
+      it 'logs' do
+        expect(Gitlab::AppLogger).to receive(:info).with({
+          **log_payload,
+          permissions: expected_abilities.join(', '),
+          user_group_member_roles_permissions: ''
+        })
+
+        result
+      end
+
+      context 'when there are multiple groups with different results' do
+        let(:groups_list) { [sub_group_1, sub_group_2] }
+
+        let(:log_payload) do
+          base_log_payload.merge({ group_ids: groups_list.map(&:id) })
+        end
+
+        before do
+          role = create_member_role(group, MemberRole.all_customizable_group_permissions.second)
+          sub_group_2_member.update!(member_role: role)
+        end
+
+        it 'logs' do
+          expect(Gitlab::AppLogger).to receive(:info).with(log_payload)
+
+          result
+        end
+
+        it 'does not execute additional queries' do
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            described_class.new(groups: [sub_group_1], user: user).execute
+          end
+
+          # add with_threshold(1) since
+          # group.root_ancestor.should_process_custom_roles? is called for each
+          # input group
+          expect { result }.to issue_same_number_of_queries_as(control).with_threshold(1)
+        end
+      end
+
+      context 'when track_user_group_member_roles_accuracy feature flag is disabled' do
+        before do
+          stub_feature_flags(track_user_group_member_roles_accuracy: false)
+        end
+
+        it 'does not log' do
+          expect(Gitlab::AppLogger).to receive(:info).once
+
+          result
+        end
+      end
+    end
+
+    context 'when result of query using user_group_member_roles table is the same' do
+      before do
+        ::Authz::UserGroupMemberRoles::UpdateForGroupService.new(sub_group_1_member).execute
+      end
+
+      it 'does not log' do
+        expect(Gitlab::AppLogger).to receive(:info).once
+
+        result
+      end
     end
   end
 end
