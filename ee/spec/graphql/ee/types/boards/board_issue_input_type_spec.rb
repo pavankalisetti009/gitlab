@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['BoardIssueInput'] do
   it 'has specific fields' do
-    allowed_args = %w[epicId epicWildcardId iterationTitle iterationWildcardId weight healthStatusFilter status]
+    allowed_args = %w[epicId epicWildcardId includeSubepics iterationTitle iterationWildcardId weight
+      healthStatusFilter status]
 
     expect(described_class.arguments.keys).to include(*allowed_args)
   end

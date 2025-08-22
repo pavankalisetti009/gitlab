@@ -56,6 +56,31 @@ RSpec.describe Resolvers::BoardListIssuesResolver do
 
         expect(result).to contain_exactly(issue2, issue3, issue4)
       end
+
+      context 'with nested epics' do
+        let_it_be(:child_epic) { create(:epic, group: group, parent: epic) }
+        let_it_be(:grandchild_epic) { create(:epic, group: group, parent: child_epic) }
+        let_it_be(:child_epic_issue) { create(:epic_issue, epic: child_epic, issue: issue2) }
+        let_it_be(:grandchild_epic_issue) { create(:epic_issue, epic: grandchild_epic, issue: issue3) }
+
+        it 'includes issues from descendant epics by default' do
+          result = resolve_board_list_issues({ filters: { epic_id: epic.to_global_id } })
+
+          expect(result).to contain_exactly(issue1, issue2, issue3)
+        end
+
+        it 'includes issues from descendant epics when include_subepics is true' do
+          result = resolve_board_list_issues({ filters: { epic_id: epic.to_global_id, include_subepics: true } })
+
+          expect(result).to contain_exactly(issue1, issue2, issue3)
+        end
+
+        it 'excludes issues from descendant epics when include_subepics is false' do
+          result = resolve_board_list_issues({ filters: { epic_id: epic.to_global_id, include_subepics: false } })
+
+          expect(result).to contain_exactly(issue1)
+        end
+      end
     end
 
     context 'filtering by weight' do
