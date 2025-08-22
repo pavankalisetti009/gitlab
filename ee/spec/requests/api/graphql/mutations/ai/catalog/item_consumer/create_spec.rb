@@ -87,13 +87,20 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       'item' => a_hash_including('id' => item.to_global_id.to_s),
       'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
       'enabled' => true,
-      'locked' => true
+      'locked' => true,
+      'pinnedVersionPrefix' => nil
     )
   end
 
   context 'with a group_id' do
     let(:params) do
-      { item_id: item.to_global_id, target: { group_id: consumer_group.to_global_id }, enabled: false, locked: false }
+      {
+        item_id: item.to_global_id,
+        target: { group_id: consumer_group.to_global_id },
+        enabled: false,
+        locked: false,
+        pinned_version_prefix: '1.0'
+      }
     end
 
     it 'creates a catalog item consumer with expected data' do
@@ -103,7 +110,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
         'item' => a_hash_including('id' => item.to_global_id.to_s),
         'group' => a_hash_including('id' => consumer_group.to_global_id.to_s),
         'enabled' => false,
-        'locked' => false
+        'locked' => false,
+        'pinnedVersionPrefix' => '1.0'
       )
     end
   end

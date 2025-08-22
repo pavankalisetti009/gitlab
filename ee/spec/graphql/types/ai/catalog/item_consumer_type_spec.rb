@@ -15,6 +15,7 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
       item
       locked
       organization
+      pinned_version_prefix
       project
     ]
 

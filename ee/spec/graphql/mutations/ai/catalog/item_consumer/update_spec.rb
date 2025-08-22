@@ -13,5 +13,5 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
 
   it { is_expected.to have_graphql_fields(:item_consumer, :errors, :client_mutation_id) }
 
-  it { is_expected.to have_graphql_arguments(:id, :enabled, :locked, :client_mutation_id) }
+  it { is_expected.to have_graphql_arguments(:id, :enabled, :locked, :pinned_version_prefix, :client_mutation_id) }
 end

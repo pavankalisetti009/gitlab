@@ -28,6 +28,9 @@ module Types
         field :organization, ::Types::Organizations::OrganizationType,
           null: true,
           description: 'Organization in which the catalog item is configured.'
+        field :pinned_version_prefix, GraphQL::Types::String,
+          null: true,
+          description: 'Major version, minor version, or patch item is pinned to.'
         field :project, ::Types::ProjectType,
           null: true,
           description: 'Project in which the catalog item is configured.'

@@ -28,7 +28,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
     {
       id: item_consumer.to_global_id,
       enabled: false,
-      locked: false
+      locked: false,
+      pinned_version_prefix: '1.0'
     }
   end
 
@@ -90,7 +91,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
 
       expect(item_consumer.reload).to have_attributes(
         enabled: false,
-        locked: false
+        locked: false,
+        pinned_version_prefix: '1.0'
       )
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
       expect(graphql_dig_at(mutation_response, :item_consumer)).to match(
