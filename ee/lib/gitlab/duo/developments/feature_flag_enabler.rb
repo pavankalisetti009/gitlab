@@ -10,6 +10,9 @@ module Gitlab
           code_completion_opt_out_fireworks
           incident_fail_over_completion_provider
           incident_fail_over_generation_provider
+
+          # Model-specific feature flags disabled by default as they require specific configuration
+          duo_agentic_chat_openai_gpt_5 # Ref: https://gitlab.com/gitlab-org/gitlab/-/issues/560561
         ].freeze
 
         def self.execute
