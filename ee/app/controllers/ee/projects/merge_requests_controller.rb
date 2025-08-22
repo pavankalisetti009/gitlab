@@ -17,6 +17,7 @@ module EE
 
         before_action do
           push_frontend_feature_flag(:mr_reports_tab, @project)
+          push_frontend_feature_flag(:validity_checks_security_finding_status, @project)
         end
 
         before_action :authorize_read_pipeline!, only: [:metrics_reports]
