@@ -95,7 +95,7 @@ module EE
           end
 
           def applicable_for_branch?(service, policy)
-            applicable_branches = service.scan_execution_branches(policy[:rules])
+            applicable_branches = service.scan_execution_branches(policy[:rules], source_branch)
 
             source_branch.in?(applicable_branches)
           end
