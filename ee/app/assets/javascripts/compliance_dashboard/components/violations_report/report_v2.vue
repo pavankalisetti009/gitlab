@@ -176,8 +176,8 @@ export default {
       return this.$options.i18n.auditEventUnknownAuthor;
     },
     getComplianceControlTitle(control) {
-      if (!control || !control.name) {
-        return '';
+      if (!control || !control.name || control.name === '') {
+        return this.$options.i18n.invalidControl;
       }
 
       const statusInfo = statusesInfo[control.name];
@@ -260,6 +260,7 @@ export default {
     auditEventGeneric: s__('ComplianceReport|Generic Audit event'),
     auditEventAuthor: s__('ComplianceReport|By %{name}'),
     auditEventUnknownAuthor: s__('ComplianceReport|Unknown author'),
+    invalidControl: s__('ComplianceReport|Invalid control'),
   },
 };
 </script>
@@ -298,6 +299,7 @@ export default {
         </div>
         <compliance-framework-badge
           v-if="
+            item.complianceControl &&
             item.complianceControl.complianceRequirement &&
             item.complianceControl.complianceRequirement.framework
           "

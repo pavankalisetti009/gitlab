@@ -16356,6 +16356,9 @@ msgstr ""
 msgid "ComplianceReport|However, there is still a configured compliance pipeline that must be removed. Otherwise, the compliance pipeline will continue to take precedence over the new pipeline execution policy."
 msgstr ""
 
+msgid "ComplianceReport|Invalid control"
+msgstr ""
+
 msgid "ComplianceReport|Less than 2 approvers"
 msgstr ""
 

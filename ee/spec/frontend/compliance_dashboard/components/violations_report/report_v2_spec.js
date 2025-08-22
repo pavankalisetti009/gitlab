@@ -365,6 +365,104 @@ describe('ComplianceViolationsReportV2 component', () => {
     });
   });
 
+  describe('when control metadata is misconfigured', () => {
+    beforeEach(async () => {
+      const responseWithInvalidControl = {
+        data: {
+          group: {
+            id: 'gid://gitlab/Group/1',
+            name: 'Test Group',
+            projectComplianceViolations: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/ComplianceViolation/1',
+                  createdAt: '2025-06-08T10:00:00Z',
+                  status: 'detected',
+                  project: {
+                    id: 'gid://gitlab/Project/1',
+                    name: 'Frontend Project',
+                    fullPath: 'foo/bar',
+                  },
+                  complianceControl: null, // Misconfigured control
+                  auditEvent: {
+                    id: 'gid://gitlab/AuditEvent/1',
+                    createdAt: '2025-06-08T09:30:00Z',
+                    details: '{}',
+                    eventName: 'test_event',
+                    entityPath: 'foo/bar',
+                    entityType: 'Project',
+                    targetDetails: 'Test target',
+                    targetType: 'Test',
+                    author: {
+                      id: 'gid://gitlab/User/1',
+                      name: 'John Doe',
+                      username: 'johndoe',
+                    },
+                  },
+                },
+                {
+                  id: 'gid://gitlab/ComplianceViolation/2',
+                  createdAt: '2025-06-08T10:00:00Z',
+                  status: 'detected',
+                  project: {
+                    id: 'gid://gitlab/Project/2',
+                    name: 'Backend Project',
+                    fullPath: 'foo/baz',
+                  },
+                  complianceControl: {
+                    id: 'gid://gitlab/ComplianceControl/2',
+                    name: null, // Misconfigured control name
+                    complianceRequirement: null,
+                  },
+                  auditEvent: {
+                    id: 'gid://gitlab/AuditEvent/2',
+                    createdAt: '2025-06-08T09:30:00Z',
+                    details: '{}',
+                    eventName: 'test_event_2',
+                    entityPath: 'foo/baz',
+                    entityType: 'Project',
+                    targetDetails: 'Test target 2',
+                    targetType: 'Test',
+                    author: {
+                      id: 'gid://gitlab/User/2',
+                      name: 'Jane Doe',
+                      username: 'janedoe',
+                    },
+                  },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                startCursor: 'cursor1',
+                endCursor: 'cursor2',
+              },
+            },
+          },
+        },
+      };
+      const mockResolver = jest.fn().mockResolvedValue(responseWithInvalidControl);
+      wrapper = createComponent({ mountFn: mount, resolverMock: mockResolver });
+      await waitForPromises();
+    });
+
+    it('displays "Invalid control" when complianceControl is null', () => {
+      const firstRow = tableRows().at(0);
+      const complianceControlCell = firstRow.findAll('td').at(1);
+      expect(complianceControlCell.text()).toContain('Invalid control');
+    });
+
+    it('displays "Invalid control" when complianceControl.name is null', () => {
+      const secondRow = tableRows().at(1);
+      const complianceControlCell = secondRow.findAll('td').at(1);
+      expect(complianceControlCell.text()).toContain('Invalid control');
+    });
+
+    it('renders the correct number of violations with invalid controls', () => {
+      expect(tableRows()).toHaveLength(2);
+    });
+  });
+
   describe('status change functionality', () => {
     beforeEach(async () => {
       wrapper = createComponent({
@@ -711,7 +809,7 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('SAST running');
+      expect(result).toBe(statusesInfo.scanner_sast_running.title || 'scanner_sast_running');
     });
 
     it('returns linkTitle for known control names', () => {
@@ -720,7 +818,9 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('At least one approval');
+      expect(result).toBe(
+        statusesInfo.minimum_approvals_required_1.title || 'minimum_approvals_required_1',
+      );
     });
 
     it('returns original name when control name not found in statusesInfo', () => {
@@ -732,16 +832,43 @@ describe('ComplianceViolationsReportV2 component', () => {
       expect(result).toBe('unknown_control_name');
     });
 
-    it('returns empty string when control is null or undefined', () => {
-      expect(wrapper.vm.getComplianceControlTitle(null)).toBe('');
-      expect(wrapper.vm.getComplianceControlTitle(undefined)).toBe('');
+    it('returns "Invalid control" when control is null or undefined', () => {
+      expect(wrapper.vm.getComplianceControlTitle(null)).toBe('Invalid control');
+      expect(wrapper.vm.getComplianceControlTitle(undefined)).toBe('Invalid control');
     });
 
-    it('returns empty string when control.name is missing', () => {
+    it('returns "Invalid control" when control.name is missing', () => {
       const control = {};
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('');
+      expect(result).toBe('Invalid control');
+    });
+
+    it('returns "Invalid control" when control.name is null', () => {
+      const control = {
+        name: null,
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('Invalid control');
+    });
+
+    it('returns "Invalid control" when control.name is undefined', () => {
+      const control = {
+        name: undefined,
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('Invalid control');
+    });
+
+    it('returns "Invalid control" when control.name is an empty string', () => {
+      const control = {
+        name: '',
+      };
+
+      const result = wrapper.vm.getComplianceControlTitle(control);
+      expect(result).toBe('Invalid control');
     });
 
     it('handles edge cases in statusesInfo structure', () => {
@@ -750,7 +877,9 @@ describe('ComplianceViolationsReportV2 component', () => {
       };
 
       const result = wrapper.vm.getComplianceControlTitle(control);
-      expect(result).toBe('Default branch protected');
+      expect(result).toBe(
+        statusesInfo.default_branch_protected?.title || 'default_branch_protected',
+      );
     });
 
     it('handles statusInfo with null/undefined fixes', () => {
