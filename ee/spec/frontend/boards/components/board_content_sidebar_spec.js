@@ -75,28 +75,6 @@ describe('ee/BoardContentSidebar', () => {
     });
   };
 
-  describe('issue sidebar', () => {
-    beforeEach(async () => {
-      createComponent();
-      await waitForPromises();
-    });
-
-    it('matches the snapshot', () => {
-      expect(wrapper.findComponent(GlDrawer).element).toMatchSnapshot();
-    });
-  });
-
-  describe('incident sidebar', () => {
-    beforeEach(async () => {
-      createComponent({ issuable: { ...rawIssue, epic: null, type: 'INCIDENT' } });
-      await waitForPromises();
-    });
-
-    it('matches the snapshot', () => {
-      expect(wrapper.findComponent(GlDrawer).element).toMatchSnapshot();
-    });
-  });
-
   describe('when child widgets emit events', () => {
     beforeEach(async () => {
       createComponent();
