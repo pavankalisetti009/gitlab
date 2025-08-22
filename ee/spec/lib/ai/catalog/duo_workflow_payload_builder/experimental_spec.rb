@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_category: :duo_workflow do
+RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
   let_it_be(:flow_item) { create(:ai_catalog_flow, project: project) }
   let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }

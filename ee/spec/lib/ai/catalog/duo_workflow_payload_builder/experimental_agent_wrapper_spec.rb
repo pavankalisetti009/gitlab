@@ -2,11 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper, :aggregate_failures, feature_category: :duo_workflow do
+RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:project) { create(:project) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
-  let_it_be(:flow) { Ai::Catalog::WrappedAgentFlowBuilder.new(agent, agent_version).build }
+  let_it_be(:wrapped_agent_response) { Ai::Catalog::WrappedAgentFlowBuilder.new(agent, agent_version).execute }
+  let_it_be(:flow) { wrapped_agent_response.payload[:flow] }
   let_it_be(:flow_version) { flow.versions.last }
   let_it_be(:pinned_version_prefix) { nil }
 

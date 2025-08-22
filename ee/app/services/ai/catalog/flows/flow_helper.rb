@@ -6,8 +6,6 @@ module Ai
       module FlowHelper
         include Gitlab::Utils::StrongMemoize
 
-        # TODO: Remove and reference Ai::Catalog::Item::FLOW_SCHEMA_VERSION
-        SCHEMA_VERSION = 1
         MAX_STEPS = 100
 
         private

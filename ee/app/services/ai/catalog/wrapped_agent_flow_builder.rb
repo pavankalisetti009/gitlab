@@ -3,6 +3,8 @@
 module Ai
   module Catalog
     class WrappedAgentFlowBuilder
+      include Gitlab::Utils::StrongMemoize
+
       GENERATED_FLOW_VERSION = '1.0.0'
 
       def initialize(agent, agent_version)
@@ -11,22 +13,31 @@ module Ai
         @flow = nil
       end
 
-      def build
-        validate_inputs!
+      def execute
+        return validate if validate.error?
+
         build_flow_from_agent
-        validate_flow
-        flow
+
+        return validate_flow if validate_flow.error?
+
+        ServiceResponse.success(payload: { flow: flow })
       end
 
       private
 
       attr_reader :agent, :agent_version, :flow
 
-      def validate_inputs!
-        raise ArgumentError, 'Agent is required' unless agent && agent.agent?
-        raise ArgumentError, 'Agent version is required' unless agent_version
-        raise ArgumentError, 'Agent version must belong to the agent' unless agent_version.item == agent
+      def validate
+        return ServiceResponse.error(message: 'Agent is required') unless agent && agent.agent?
+        return ServiceResponse.error(message: 'Agent version is required') unless agent_version
+
+        unless agent_version.item == agent
+          return ServiceResponse.error(message: 'Agent version must belong to the agent')
+        end
+
+        ServiceResponse.success
       end
+      strong_memoize_attr :validate
 
       def build_flow_from_agent
         @flow = build_flow_item
@@ -67,8 +78,13 @@ module Ai
       end
 
       def validate_flow
-        raise ArgumentError, "Generated flow is invalid: #{flow.errors.full_messages.join(', ')}" unless flow.valid?
+        unless flow.valid?
+          return ServiceResponse.error(message: "Generated flow is invalid: #{flow.errors.full_messages.join(', ')}")
+        end
+
+        ServiceResponse.success
       end
+      strong_memoize_attr :validate_flow
     end
   end
 end

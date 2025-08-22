@@ -71,7 +71,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
           public: true
         )
         expect(latest_version.reload).to have_attributes(
-          schema_version: 1,
+          schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
           version: '1.1.0',
           definition: {
             steps: [
