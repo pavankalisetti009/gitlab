@@ -1,0 +1,10 @@
+---
+name: track_user_group_member_roles_accuracy
+description: Log difference between result of existing query used in UserMemberRolesInGroupsPreloader and new query backed by user_group_member_roles table
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/513033
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/199106
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557215
+milestone: '18.4'
+group: group::authorization
+type: gitlab_com_derisk
+default_enabled: false
