@@ -197,6 +197,12 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
           average_form_depth: 4.7,
           crawl_surface_area: 2004
         }
+        'collect_dast_scan_version_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          value: 6,
+          label: '12',
+          patch: 0
+        }
         'collect_dast_scan_vulnerability_metrics_from_pipeline' | {
           property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
           value: 5,
