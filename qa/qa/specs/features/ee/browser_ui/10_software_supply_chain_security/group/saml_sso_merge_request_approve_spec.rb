@@ -54,7 +54,10 @@ module QA
       end
 
       it 'can be approved when requiring a password',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/440729' do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/440729', quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/562556',
+          type: :investigating
+        } do
         merge_request.visit!
         expect(page).to have_text("Approve with SAML", wait: 10)
 
