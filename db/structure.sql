@@ -9009,7 +9009,8 @@ CREATE TABLE abuse_report_user_mentions (
     note_id bigint NOT NULL,
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
-    mentioned_groups_ids bigint[]
+    mentioned_groups_ids bigint[],
+    organization_id bigint
 );
 
 CREATE SEQUENCE abuse_report_user_mentions_id_seq
@@ -37146,6 +37147,8 @@ CREATE UNIQUE INDEX index_abuse_report_user_mentions_on_abuse_report_id_and_note
 
 CREATE INDEX index_abuse_report_user_mentions_on_note_id ON abuse_report_user_mentions USING btree (note_id);
 
+CREATE INDEX index_abuse_report_user_mentions_on_organization_id ON abuse_report_user_mentions USING btree (organization_id);
+
 CREATE INDEX index_abuse_reports_on_assignee_id ON abuse_reports USING btree (assignee_id);
 
 CREATE INDEX index_abuse_reports_on_organization_id ON abuse_reports USING btree (organization_id);
@@ -48345,6 +48348,9 @@ ALTER TABLE ONLY approval_policy_merge_request_bypass_events
 
 ALTER TABLE ONLY user_group_member_roles
     ADD CONSTRAINT fk_f3b8fc5e4e FOREIGN KEY (shared_with_group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY abuse_report_user_mentions
+    ADD CONSTRAINT fk_f4c2b15ef9 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY scan_result_policy_violations
     ADD CONSTRAINT fk_f53706dbdd FOREIGN KEY (scan_result_policy_id) REFERENCES scan_result_policies(id) ON DELETE CASCADE;
