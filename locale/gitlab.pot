@@ -41865,6 +41865,9 @@ msgstr ""
 msgid "NavigationTheme|Blue"
 msgstr ""
 
+msgid "NavigationTheme|Default"
+msgstr ""
+
 msgid "NavigationTheme|Gray"
 msgstr ""
 
@@ -41872,21 +41875,6 @@ msgid "NavigationTheme|Green"
 msgstr ""
 
 msgid "NavigationTheme|Indigo"
-msgstr ""
-
-msgid "NavigationTheme|Light Blue"
-msgstr ""
-
-msgid "NavigationTheme|Light Green"
-msgstr ""
-
-msgid "NavigationTheme|Light Indigo"
-msgstr ""
-
-msgid "NavigationTheme|Light Red"
-msgstr ""
-
-msgid "NavigationTheme|Neutral"
 msgstr ""
 
 msgid "NavigationTheme|Red"
