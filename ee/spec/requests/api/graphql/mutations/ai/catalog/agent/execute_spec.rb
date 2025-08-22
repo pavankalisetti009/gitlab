@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feature_category: :duo_workflow do
+RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }

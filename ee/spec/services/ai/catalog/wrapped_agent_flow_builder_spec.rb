@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, feature_category: :duo_workflow do
+RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:organization) { create(:organization) }
   let_it_be(:project) { create(:project, organization: organization) }
   let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
@@ -10,13 +10,20 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
 
   let(:builder) { described_class.new(agent, agent_version) }
 
+  shared_examples "returns error response" do |expected_message|
+    it "returns an error service response" do
+      result = builder.execute
+
+      expect(result).to be_error
+      expect(result.message).to eq(expected_message)
+    end
+  end
+
   describe 'validation' do
     context 'when agent is nil' do
       let(:builder) { described_class.new(nil, agent_version) }
 
-      it 'raises an ArgumentError' do
-        expect { builder.build }.to raise_error(ArgumentError, 'Agent is required')
-      end
+      it_behaves_like 'returns error response', 'Agent is required'
     end
 
     context 'when wrong item type is passed as agent' do
@@ -24,17 +31,13 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
       let(:flow_version) { flow.versions.last }
       let(:builder) { described_class.new(flow, flow_version) }
 
-      it 'raises an ArgumentError' do
-        expect { builder.build }.to raise_error(ArgumentError, 'Agent is required')
-      end
+      it_behaves_like 'returns error response', 'Agent is required'
     end
 
     context 'when agent_version is nil' do
       let(:builder) { described_class.new(agent, nil) }
 
-      it 'raises an ArgumentError' do
-        expect { builder.build }.to raise_error(ArgumentError, 'Agent version is required')
-      end
+      it_behaves_like 'returns error response', 'Agent version is required'
     end
 
     context 'when agent_version does not belong to the agent' do
@@ -42,9 +45,18 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
       let(:other_agent_version) { other_agent.versions.last }
       let(:builder) { described_class.new(agent, other_agent_version) }
 
-      it 'raises an ArgumentError' do
-        expect { builder.build }.to raise_error(ArgumentError, 'Agent version must belong to the agent')
+      it_behaves_like 'returns error response', 'Agent version must belong to the agent'
+    end
+
+    context 'when generated flow is invalid' do
+      let(:generated_flow) { build(:ai_catalog_flow) }
+
+      before do
+        allow(builder).to receive(:flow).and_return(generated_flow)
+        allow(generated_flow).to receive(:valid?).and_return(false)
       end
+
+      it_behaves_like 'returns error response', 'Generated flow is invalid: '
     end
   end
 
@@ -54,11 +66,13 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
     end
   end
 
-  describe '#build' do
-    subject(:build) { builder.build }
+  describe '#execute' do
+    subject(:execute) { builder.execute }
+
+    let(:generated_flow) { execute.payload[:flow] }
 
     it 'returns a flow item with the correct attributes' do
-      flow = build
+      flow = generated_flow
 
       expect(flow).to be_a(::Ai::Catalog::Item)
       expect(flow.item_type).to eq(::Ai::Catalog::Item::FLOW_TYPE.to_s)
@@ -66,7 +80,7 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
     end
 
     it 'creates a flow version with the correct attributes' do
-      flow = build
+      flow = generated_flow
       flow_version = flow.versions.last
 
       expect(flow_version).to be_a(::Ai::Catalog::ItemVersion)
@@ -75,7 +89,7 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
     end
 
     it 'creates a flow definition with the correct structure' do
-      flow = build
+      flow = generated_flow
       flow_version = flow.versions.first
       definition = flow_version.definition
 

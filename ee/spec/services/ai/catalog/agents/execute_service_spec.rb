@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature_category: :duo_workflow do
+RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:organization) { create(:organization) }
   let_it_be(:project) { create(:project, organization: organization, maintainers: maintainer) }
@@ -47,6 +47,22 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
       let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
 
       it_behaves_like 'returns error response', 'You have insufficient permission to execute this agent'
+
+      context 'when current_user is nil' do
+        let(:current_user) { nil }
+
+        it_behaves_like 'returns error response', 'You have insufficient permission to execute this agent'
+      end
+    end
+
+    context 'when wrapped_agent_response has error' do
+      before do
+        allow_next_instance_of(::Ai::Catalog::WrappedAgentFlowBuilder) do |builder|
+          allow(builder).to receive(:execute).and_return(ServiceResponse.error(message: 'Generated flow is invalid'))
+        end
+      end
+
+      it_behaves_like 'returns error response', 'Generated flow is invalid'
     end
 
     context 'when agent is nil' do

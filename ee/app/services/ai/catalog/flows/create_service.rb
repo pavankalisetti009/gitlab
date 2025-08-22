@@ -18,7 +18,7 @@ module Ai
             project_id: project.id
           )
           version_params = {
-            schema_version: SCHEMA_VERSION,
+            schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
             definition: {
               triggers: [],

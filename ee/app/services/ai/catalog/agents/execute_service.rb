@@ -14,7 +14,11 @@ module Ai
 
         def execute
           return validate unless validate.success?
-          return error_no_permissions if current_user.nil? || !allowed?
+          return error_no_permissions unless allowed?
+
+          return wrapped_agent_response if wrapped_agent_response.error?
+
+          @flow = wrapped_agent_response.payload[:flow]
 
           flow_config = generate_flow_config
           yaml_config = flow_config.to_yaml
@@ -24,7 +28,7 @@ module Ai
 
         private
 
-        attr_reader :agent, :agent_version, :current_user
+        attr_reader :agent, :agent_version, :current_user, :flow
 
         def allowed?
           Ability.allowed?(current_user, :admin_ai_catalog_item, agent)
@@ -46,10 +50,10 @@ module Ai
         end
         strong_memoize_attr :validate
 
-        def flow
-          WrappedAgentFlowBuilder.new(agent, agent_version).build
+        def wrapped_agent_response
+          WrappedAgentFlowBuilder.new(agent, agent_version).execute
         end
-        strong_memoize_attr :flow
+        strong_memoize_attr :wrapped_agent_response
 
         def generate_flow_config
           payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper.new(
