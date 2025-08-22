@@ -2431,6 +2431,9 @@ msgstr ""
 msgid "AICatalog|Agent deleted successfully."
 msgstr ""
 
+msgid "AICatalog|Agent executed successfully."
+msgstr ""
+
 msgid "AICatalog|Agent not found."
 msgstr ""
 
@@ -2473,6 +2476,9 @@ msgstr ""
 msgid "AICatalog|Connect AI agents to automate complicated tasks."
 msgstr ""
 
+msgid "AICatalog|Copy flow config"
+msgstr ""
+
 msgid "AICatalog|Create agent"
 msgstr ""
 
@@ -2512,7 +2518,7 @@ msgstr ""
 msgid "AICatalog|Failed to delete flow. %{error}"
 msgstr ""
 
-msgid "AICatalog|Failed to run agent."
+msgid "AICatalog|Failed to execute agent."
 msgstr ""
 
 msgid "AICatalog|Flow created successfully."

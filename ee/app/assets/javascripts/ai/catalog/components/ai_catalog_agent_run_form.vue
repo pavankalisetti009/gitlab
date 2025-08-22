@@ -94,8 +94,7 @@ export default {
         icon="play"
         :loading="isSubmitting"
       >
-        <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
-        {{ s__('AICatalog|Run') }} (Coming soon)
+        {{ s__('AICatalog|Run') }}
       </gl-button>
     </ai-catalog-form-buttons>
   </gl-form>

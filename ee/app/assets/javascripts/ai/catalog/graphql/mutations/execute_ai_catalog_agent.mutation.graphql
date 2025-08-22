@@ -1,0 +1,6 @@
+mutation executeAiCatalogAgent($input: AiCatalogAgentExecuteInput!) {
+  aiCatalogAgentExecute(input: $input) {
+    errors
+    flowConfig
+  }
+}
