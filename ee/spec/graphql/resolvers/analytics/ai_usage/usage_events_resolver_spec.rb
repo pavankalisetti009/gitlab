@@ -36,15 +36,6 @@ RSpec.describe Resolvers::Analytics::AiUsage::UsageEventsResolver, feature_categ
   end
 
   describe '#ready', :freeze_time do
-    it 'raises an error when the unified_ai_events_graphql feature flag is disabled' do
-      stub_feature_flags(unified_ai_events_graphql: false)
-
-      expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
-        "Not available for this resource.") do
-        resolver
-      end
-    end
-
     it 'raises an error when timeframe is too large' do
       expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
         "maximum date range is 1 month") do

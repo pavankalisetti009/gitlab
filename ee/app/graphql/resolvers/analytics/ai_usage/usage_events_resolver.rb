@@ -15,7 +15,6 @@ module Resolvers
           description: 'Date range to end at. Default is the end of current day.'
 
         def ready?(**args)
-          check_feature_availability!
           validate_params!(args)
 
           super
@@ -38,12 +37,6 @@ module Resolvers
           return if params[:start_date] > params[:end_date] - 1.month
 
           raise Gitlab::Graphql::Errors::ArgumentError, 'maximum date range is 1 month'
-        end
-
-        def check_feature_availability!
-          return if Feature.enabled?(:unified_ai_events_graphql, object)
-
-          raise Gitlab::Graphql::Errors::ArgumentError, 'Not available for this resource.'
         end
 
         def namespace
