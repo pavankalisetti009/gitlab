@@ -176,5 +176,24 @@ describe('CreateLifecycle', () => {
 
       expect(defaultDetail.classes()).toContain('gl-border-blue-500');
     });
+
+    it('usage section props for default lifecycle details', () => {
+      const defaultLifecycleDetail = findLifecycleDetails().at(0);
+
+      expect(defaultLifecycleDetail.props()).toMatchObject({
+        showUsageSection: false,
+        showNotInUseSection: false,
+      });
+    });
+
+    it('usage section props for existing lifecycle', () => {
+      const existingLifecycleDetail = findLifecycleDetails().at(1);
+
+      expect(existingLifecycleDetail.props()).toMatchObject({
+        showUsageSection: false,
+        showNotInUseSection: true,
+        showRemoveLifecycleCta: false,
+      });
+    });
   });
 });

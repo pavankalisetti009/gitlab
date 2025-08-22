@@ -53162,6 +53162,9 @@ msgstr ""
 msgid "Removing the bypass will cause the merge request to be blocked if any reviews have requested changes."
 msgstr ""
 
+msgid "Rename"
+msgstr ""
+
 msgid "Render diagrams in your documents using PlantUML."
 msgstr ""
 
@@ -61705,6 +61708,9 @@ msgid "Something went wrong while updating assignees"
 msgstr ""
 
 msgid "Something went wrong while updating the modal."
+msgstr ""
+
+msgid "Something went wrong while updating the name"
 msgstr ""
 
 msgid "Something went wrong while updating your list settings"
@@ -72479,6 +72485,9 @@ msgstr ""
 msgid "WorkItem|Change appearance for all issues, epics, and tasks"
 msgstr ""
 
+msgid "WorkItem|Change lifecycle"
+msgstr ""
+
 msgid "WorkItem|Change type"
 msgstr ""
 
@@ -72748,6 +72757,12 @@ msgstr ""
 msgid "WorkItem|Lavender"
 msgstr ""
 
+msgid "WorkItem|Lifecycle name"
+msgstr ""
+
+msgid "WorkItem|Lifecycle name cannot be empty"
+msgstr ""
+
 msgid "WorkItem|Lifecycles"
 msgstr ""
 
@@ -72909,6 +72924,9 @@ msgstr ""
 msgid "WorkItem|None"
 msgstr ""
 
+msgid "WorkItem|Not in use"
+msgstr ""
+
 msgid "WorkItem|Notifications"
 msgstr ""
 
@@ -72975,6 +72993,9 @@ msgstr ""
 msgid "WorkItem|Remove"
 msgstr ""
 
+msgid "WorkItem|Remove lifecycle"
+msgstr ""
+
 msgid "WorkItem|Remove status"
 msgstr ""
 
@@ -73039,6 +73060,9 @@ msgid "WorkItem|Select template"
 msgstr ""
 
 msgid "WorkItem|Select type"
+msgstr ""
+
+msgid "WorkItem|Select type to change"
 msgstr ""
 
 msgid "WorkItem|Select types"
