@@ -178,4 +178,30 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
       expect(perform).to eq({ status: :processed, inserted_rows: 2 })
     end
   end
+
+  context 'when data contains multiple duplicates' do
+    before do
+      timestamp = Time.current
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      timestamp: timestamp, extras: { foo: '1' } },
+        Ai::UsageEvent)
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      timestamp: timestamp, extras: { foo: '2' } },
+        Ai::UsageEvent)
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      timestamp: timestamp, extras: { foo: '3' } },
+        Ai::UsageEvent)
+    end
+
+    it 'inserts only 1 row' do
+      expect(perform).to eq({ status: :processed, inserted_rows: 1 })
+      expect(inserted_records).to match([hash_including('extras' => { 'foo' => '1' })])
+    end
+  end
 end
