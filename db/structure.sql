@@ -16917,7 +16917,6 @@ CREATE TABLE issues (
     duplicated_to_id bigint,
     promoted_to_epic_id bigint,
     health_status smallint,
-    external_key character varying(255),
     sprint_id bigint,
     blocking_issues_count integer DEFAULT 0 NOT NULL,
     upvotes_count integer DEFAULT 0 NOT NULL,
