@@ -1,0 +1,142 @@
+<script>
+import { GlButton, GlLink, GlFormSelect, GlSprintf } from '@gitlab/ui';
+import { s__ } from '~/locale';
+import Tracking from '~/tracking';
+import FreePlanSection from './free_plan_section.vue';
+import PremiumPlanSection from './premium_plan_section.vue';
+import TrialPlanSection from './trial_plan_section.vue';
+
+export default {
+  name: 'PricingInformationApp',
+
+  components: {
+    GlButton,
+    GlLink,
+    GlFormSelect,
+    FreePlanSection,
+    PremiumPlanSection,
+    TrialPlanSection,
+    GlSprintf,
+  },
+
+  mixins: [Tracking.mixin({ experiment: 'user_billing_pricing_information' })],
+
+  props: {
+    groups: {
+      type: Array,
+      required: true,
+    },
+    dashboardGroupsHref: {
+      type: String,
+      required: true,
+    },
+  },
+
+  data() {
+    return {
+      selectedGroupId: this.groups.length === 1 ? this.groups[0].id : null,
+    };
+  },
+
+  computed: {
+    groupOptions() {
+      const defaultOption = {
+        value: null,
+        text: s__('Billings|Select group'),
+        disabled: true,
+      };
+
+      const groupOptions = this.groups.map((group) => ({
+        value: group.id,
+        text: group.name,
+      }));
+
+      return [defaultOption, ...groupOptions];
+    },
+    selectedGroup() {
+      return this.groups.find((group) => group.id === this.selectedGroupId);
+    },
+    trialActive() {
+      return this.selectedGroup ? Boolean(this.selectedGroup.trial_active) : false;
+    },
+    groupIds() {
+      return JSON.stringify(this.groups.map((group) => group.id));
+    },
+  },
+};
+</script>
+<template>
+  <div class="gl-mx-auto gl-mt-8 gl-max-w-xl">
+    <div class="gl-mb-5 gl-pt-8 gl-text-center">
+      <h2 class="gl-heading-2 gl-mb-3 gl-text-default">{{ s__('Billings|Billing') }}</h2>
+      <p class="gl-text-default">
+        <gl-sprintf
+          :message="
+            s__(
+              'Billings|View subscription details and manage billing for your %{linkStart}groups%{linkEnd}.',
+            )
+          "
+        >
+          <template #link="{ content }">
+            <gl-link
+              :href="dashboardGroupsHref"
+              data-track-action="click_link_navigate_to_group"
+              :data-track-property="groupIds"
+              >{{ content }}</gl-link
+            >
+          </template>
+        </gl-sprintf>
+      </p>
+    </div>
+
+    <div class="gl-mb-6">
+      <label for="group-select" class="gl-mb-2 gl-font-[700] gl-text-strong">
+        {{ s__('Billings|Group') }}
+      </label>
+      <gl-form-select
+        id="group-select"
+        v-model="selectedGroupId"
+        :options="groupOptions"
+        class="gl-max-w-full"
+        data-testid="group-select"
+        autocomplete="off"
+        data-track-action="click_dropdown_group_selection"
+        :data-track-property="groupIds"
+      />
+    </div>
+    <div v-if="selectedGroupId" data-testid="plan-sections-container">
+      <div class="gl-flex gl-flex-col md:gl-flex-row">
+        <free-plan-section v-if="!trialActive" data-testid="free-plan-section" />
+        <trial-plan-section v-if="trialActive" data-testid="trial-plan-section" />
+        <premium-plan-section
+          data-testid="premium-plan-section"
+          :group-id="selectedGroupId"
+          :group-billing-href="selectedGroup.group_billings_href"
+        />
+      </div>
+
+      <div class="gl-mt-5 gl-flex gl-grow gl-items-center gl-justify-end gl-gap-3">
+        <gl-button
+          variant="confirm"
+          category="secondary"
+          data-testid="manage-billing-button"
+          data-track-action="click_button_manage_billing"
+          :data-track-property="selectedGroupId"
+          :href="selectedGroup.group_billings_href"
+        >
+          {{ s__('Billings|Manage billing') }}
+        </gl-button>
+
+        <gl-button
+          variant="confirm"
+          data-testid="upgrade-to-premium-button"
+          data-track-action="click_button_upgrade_to_premium"
+          :data-track-property="selectedGroupId"
+          :href="selectedGroup.upgrade_to_premium_href"
+        >
+          {{ s__('Billings|Upgrade to Premium') }}
+        </gl-button>
+      </div>
+    </div>
+  </div>
+</template>
