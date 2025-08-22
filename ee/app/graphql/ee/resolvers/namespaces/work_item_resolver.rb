@@ -18,6 +18,25 @@ module EE
             )
           end
         end
+
+        private
+
+        override :log_recent_view
+        def log_recent_view(work_item)
+          base_type = work_item.work_item_type.base_type
+
+          # Only handle Epic WorkItems in EE, delegate everything else to parent
+          if base_type == 'epic' && work_item.synced_epic
+            service_class = self.class.recent_services_map[base_type]
+            return unless service_class
+
+            # Log the Epic model instead of the WorkItem
+            service_class.new(user: current_user).log_view(work_item.synced_epic)
+          else
+            # Delegate to parent implementation for all non-Epic WorkItems
+            super
+          end
+        end
       end
     end
   end
