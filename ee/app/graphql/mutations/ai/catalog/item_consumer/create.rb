@@ -37,7 +37,7 @@ module Mutations
             project_id = target[:project_id]
             project = project_id ? authorized_find!(id: project_id) : nil
 
-            raise_resource_not_available_error! unless item.flow? && allowed?(item)
+            raise_resource_not_available_error! unless allowed?(item)
 
             result = ::Ai::Catalog::ItemConsumers::CreateService.new(
               container: group || project,

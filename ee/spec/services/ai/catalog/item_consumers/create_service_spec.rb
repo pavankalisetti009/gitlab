@@ -9,7 +9,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
-  let_it_be(:item) { create(:ai_catalog_item, item_type: :flow, project: item_project) }
+  let_it_be(:item) { create(:ai_catalog_flow, project: item_project) }
 
   let(:container) { consumer_project }
   let(:params) do
@@ -133,10 +133,20 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
     it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
   end
 
-  context 'when the item is not a flow' do
-    let(:item) { create(:ai_catalog_item, item_type: :agent, project: item_project) }
+  context 'when the item is an agent' do
+    let(:item) { create(:ai_catalog_agent, project: item_project) }
 
-    it_behaves_like 'a failure', 'Catalog item is not a flow'
+    it 'creates a catalog item consumer with expected data' do
+      execute
+
+      expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+        project: consumer_project,
+        group: nil,
+        item: item,
+        enabled: true,
+        locked: true
+      )
+    end
   end
 
   context 'when save fails' do
