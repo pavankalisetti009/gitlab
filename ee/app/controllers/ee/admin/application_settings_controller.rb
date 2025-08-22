@@ -221,6 +221,8 @@ module EE
           attrs << :disabled_direct_code_suggestions
         end
 
+        attrs << :auto_duo_code_review_enabled if ::ApplicationSetting.current.auto_duo_code_review_settings_available?
+
         attrs
       end
       # rubocop:enable Metrics/PerceivedComplexity

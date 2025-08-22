@@ -2024,4 +2024,60 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end.not_to publish_event(::Analytics::ClickHouseForAnalyticsEnabledEvent)
     end
   end
+
+  describe '#auto_duo_code_review_settings_available?' do
+    let(:application_setting) { build(:application_setting) }
+
+    subject { application_setting.auto_duo_code_review_settings_available? }
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(cascading_auto_duo_code_review_settings: false)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when feature flag is enabled' do
+      before do
+        stub_feature_flags(cascading_auto_duo_code_review_settings: true)
+      end
+
+      context 'when duo_features_enabled is false' do
+        before do
+          application_setting.duo_features_enabled = false
+        end
+
+        it { is_expected.to be_falsey }
+      end
+
+      context 'when duo_features_enabled is true' do
+        let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+        before do
+          application_setting.duo_features_enabled = true
+        end
+
+        context 'without duo_enterprise add-on' do
+          it { is_expected.to be_falsey }
+        end
+
+        context 'with active duo_enterprise add-on' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: duo_enterprise_add_on)
+          end
+
+          it { is_expected.to be_truthy }
+        end
+
+        context 'with expired duo_enterprise add-on' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :expired, :self_managed, add_on: duo_enterprise_add_on)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+      end
+    end
+  end
 end

@@ -39,8 +39,9 @@ RSpec.describe Groups::Settings::MergeRequestsController, feature_category: :cod
 
       before do
         stub_licensed_features(group_level_merge_checks_setting: true)
-        stub_feature_flags(cascading_auto_duo_code_review_settings: true)
-        allow(group).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+        allow_next_found_instance_of(Group) do |instance|
+          allow(instance).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+        end
         group.add_owner(user)
       end
 

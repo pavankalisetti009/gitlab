@@ -345,5 +345,33 @@ RSpec.describe ApplicationSettings::UpdateService do
         expect(setting.reload.duo_features_enabled).to be(true)
       end
     end
+
+    context 'when updating auto_duo_code_review_enabled' do
+      let(:params) { { auto_duo_code_review_enabled: true } }
+      let(:service) { described_class.new(setting, user, params) }
+
+      context 'when setting is not available' do
+        before do
+          allow(setting).to receive(:auto_duo_code_review_settings_available?).and_return(false)
+        end
+
+        it 'filters out the parameter' do
+          expect { service.execute }
+            .not_to change { setting.reload.auto_duo_code_review_enabled }
+        end
+      end
+
+      context 'when setting is available' do
+        before do
+          allow(setting).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+        end
+
+        it 'updates the setting' do
+          expect { service.execute }
+            .to change { setting.reload.auto_duo_code_review_enabled }
+            .from(false).to(true)
+        end
+      end
+    end
   end
 end

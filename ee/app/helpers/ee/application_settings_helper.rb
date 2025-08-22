@@ -167,6 +167,7 @@ module EE
           secret_detection_service_url
           virtual_registries_endpoints_api_limit
           disable_invite_members
+          auto_duo_code_review_enabled
         ]
     end
 

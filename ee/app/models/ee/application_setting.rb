@@ -443,6 +443,13 @@ module EE
       end
     end
 
+    def auto_duo_code_review_settings_available?
+      return false unless ::Feature.enabled?(:cascading_auto_duo_code_review_settings, :instance)
+
+      duo_features_enabled &&
+        ::GitlabSubscriptions::AddOnPurchase.for_active_add_ons(:duo_enterprise, resource: :instance).any?
+    end
+
     def allowed_integrations_raw=(value)
       self.allowed_integrations = ::Gitlab::Json.parse(value)
     end
