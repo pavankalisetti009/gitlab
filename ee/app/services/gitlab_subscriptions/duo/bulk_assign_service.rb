@@ -40,7 +40,7 @@ module GitlabSubscriptions
         if gitlab_com_subscription?
           ::Onboarding::AddOnSeatAssignmentIterableTriggerWorker
             .perform_async(namespace.id, eligible_user_ids.to_a, iterable_worker_params)
-        else
+        elsif Feature.enabled?(:sm_duo_seat_assignment_email, :instance)
           ::GitlabSubscriptions::AddOnPurchases::EmailOnDuoBulkUserAssignmentsWorker
             .perform_async(eligible_user_ids.to_a, email_variant)
         end

@@ -170,6 +170,18 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
           expect { response }.to change { user.todos.count }.by(1)
           expect(user.todos.last.action).to eq(::Todo::DUO_PRO_ACCESS_GRANTED)
         end
+
+        context 'when feature flag `sm_duo_seat_assignment_email` is not enabled' do
+          before do
+            stub_feature_flags(sm_duo_seat_assignment_email: false)
+          end
+
+          it 'does not enqueue the seat assignment email' do
+            expect do
+              response
+            end.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
+          end
+        end
       end
 
       context 'when add on is duo enterprise' do
@@ -184,6 +196,18 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
         it 'creates duo access granted todo' do
           expect { response }.to change { user.todos.count }.by(1)
           expect(user.todos.last.action).to eq(::Todo::DUO_ENTERPRISE_ACCESS_GRANTED)
+        end
+
+        context 'when feature flag `sm_duo_seat_assignment_email` is not enabled' do
+          before do
+            stub_feature_flags(sm_duo_seat_assignment_email: false)
+          end
+
+          it 'does not enqueue the seat assignment email' do
+            expect do
+              response
+            end.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_enterprise_email)
+          end
         end
       end
     end
