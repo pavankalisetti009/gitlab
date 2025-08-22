@@ -2,8 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Filter issues by custom status', :js, feature_category: :team_planning do
+RSpec.describe 'Filter work items by status', :js, feature_category: :team_planning do
   include FilteredSearchHelpers
+  include ListboxHelpers
 
   let_it_be(:to_do_status_id) { WorkItems::Statuses::SystemDefined::Status.find_by_name('To do').id }
   let_it_be(:in_progress_status_id) { WorkItems::Statuses::SystemDefined::Status.find_by_name('In progress').id }
@@ -24,14 +25,14 @@ RSpec.describe 'Filter issues by custom status', :js, feature_category: :team_pl
       system_defined_status_id: in_progress_status_id)
   end
 
-  let_it_be(:done_1_issue) { create(:issue, project: project) }
-  let_it_be(:done_1_issue_current_status) do
-    create(:work_item_current_status, work_item_id: done_1_issue.id, system_defined_status_id: done_status_id)
+  let_it_be(:done_issue) { create(:issue, project: project) }
+  let_it_be(:done_issue_current_status) do
+    create(:work_item_current_status, work_item_id: done_issue.id, system_defined_status_id: done_status_id)
   end
 
-  let_it_be(:done_2_issue) { create(:issue, project: project) }
-  let_it_be(:done_2_issue_current_status) do
-    create(:work_item_current_status, work_item_id: done_2_issue.id, system_defined_status_id: done_status_id)
+  let_it_be(:done_task) { create(:work_item, :task, project: project) }
+  let_it_be(:done_task_current_status) do
+    create(:work_item_current_status, work_item_id: done_task.id, system_defined_status_id: done_status_id)
   end
 
   shared_examples 'filtering by custom status' do
@@ -63,8 +64,8 @@ RSpec.describe 'Filter issues by custom status', :js, feature_category: :team_pl
 
         expect(page).to have_css('.issue', count: 2)
         expect(page).to have_css('.issue [data-testid="work-item-status-badge"]', text: 'Done', count: 2)
-        expect(page).to have_link(done_1_issue.title)
-        expect(page).to have_link(done_2_issue.title)
+        expect(page).to have_link(done_issue.title)
+        expect(page).to have_link(done_task.title)
 
         click_button 'Clear'
 
@@ -89,14 +90,14 @@ RSpec.describe 'Filter issues by custom status', :js, feature_category: :team_pl
     end
   end
 
-  context 'on project issues page' do
-    let(:issues_page_path) { project_issues_path(project) }
+  context 'on group issues page' do
+    let(:issues_page_path) { group_work_items_path(group) }
 
     it_behaves_like 'filtering by custom status'
   end
 
-  context 'on group issues page' do
-    let(:issues_page_path) { issues_group_path(group) }
+  context 'on project issues page' do
+    let(:issues_page_path) { project_work_items_path(project) }
 
     it_behaves_like 'filtering by custom status'
   end
