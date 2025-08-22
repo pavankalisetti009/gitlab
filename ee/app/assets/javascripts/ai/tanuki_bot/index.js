@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { getCookie } from '~/lib/utils/common_utils';
+import { getCookie, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { DUO_AGENTIC_MODE_COOKIE } from 'ee/ai/tanuki_bot/constants';
 import TanukiBotChatApp from './components/app.vue';
 import store from './store';
@@ -22,6 +22,7 @@ export const initTanukiBotChatDrawer = () => {
 
   const { userId, resourceId, projectId, chatTitle, rootNamespaceId, agenticAvailable } =
     el.dataset;
+  const metadata = convertObjectPropsToCamelCase(JSON.parse(el.dataset.metadata));
 
   const toggleEls = document.querySelectorAll('.js-tanuki-bot-chat-toggle');
   if (toggleEls.length) {
@@ -51,6 +52,7 @@ export const initTanukiBotChatDrawer = () => {
           chatTitle,
           rootNamespaceId,
           agenticAvailable: JSON.parse(agenticAvailable),
+          metadata,
         },
       });
     },
