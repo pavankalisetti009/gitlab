@@ -7,9 +7,19 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
 
   let_it_be(:developer) { create(:user) }
   let_it_be(:project) { create(:project, :public, developers: developer) }
-  let_it_be(:catalog_items) { create_list(:ai_catalog_item, 2) }
+  let_it_be(:catalog_agents) { create_list(:ai_catalog_agent, 2) }
+  let_it_be(:catalog_flows) { create_list(:ai_catalog_flow, 2) }
+  let_it_be(:catalog_items) { [*catalog_agents, *catalog_flows] }
+  let_it_be(:configured_agents) do
+    catalog_agents.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
+  end
+
+  let_it_be(:configured_flows) do
+    catalog_flows.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
+  end
+
   let_it_be(:configured_items) do
-    catalog_items.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
+    [*configured_agents, *configured_flows]
   end
 
   let(:current_user) { developer }
@@ -74,6 +84,18 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
 
       expect(response).to have_gitlab_http_status(:success)
       expect(nodes).to be_empty
+    end
+  end
+
+  context 'with a specified item_type' do
+    let(:item_type) { :FLOW }
+    let(:args) { { projectId: project_gid, item_type: item_type } }
+
+    it 'returns only items of that type' do
+      post_graphql(query, current_user: current_user)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(nodes).to match_array(configured_flows.map { |flow| a_graphql_entity_for(flow) })
     end
   end
 
