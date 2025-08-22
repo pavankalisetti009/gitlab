@@ -54,6 +54,20 @@ const getDefaultProps = () => ({
       name: 'flag without description',
       description: '',
     },
+    {
+      id: 3,
+      iid: 3,
+      active: true,
+      name: 'flag with invalid strategy',
+      scopes: [],
+      strategies: [
+        {
+          name: ROLLOUT_STRATEGY_GITLAB_USER_LIST,
+          parameters: {},
+          scopes: [{ environment_scope: '*' }],
+        },
+      ],
+    },
   ],
 });
 
@@ -223,7 +237,11 @@ describe('Feature flag table', () => {
   });
 
   it('shows the name of a user list for user list', () => {
-    expect(labels.at(3).text()).toContain('User List - test list');
+    expect(labels.at(3).text()).toBe('User List - test list: All Environments');
+  });
+
+  it('shows the empty name of a user list if it is not provided', () => {
+    expect(labels.at(4).text()).toBe('User List: All Environments');
   });
 
   it('renders a feature flag without an iid', () => {
