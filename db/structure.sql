@@ -27264,7 +27264,8 @@ CREATE TABLE zentao_tracker_data (
     project_id bigint,
     group_id bigint,
     organization_id bigint,
-    CONSTRAINT check_500f588095 CHECK ((num_nonnulls(instance_integration_id, integration_id) = 1))
+    CONSTRAINT check_500f588095 CHECK ((num_nonnulls(instance_integration_id, integration_id) = 1)),
+    CONSTRAINT check_fcff5b4d60 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1))
 );
 
 CREATE SEQUENCE zentao_tracker_data_id_seq
