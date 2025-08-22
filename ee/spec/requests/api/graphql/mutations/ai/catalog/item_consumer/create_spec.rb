@@ -10,7 +10,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
-  let_it_be(:item) { create(:ai_catalog_item, item_type: :flow, project: item_project) }
+  let_it_be(:item) { create(:ai_catalog_flow, project: item_project) }
 
   let(:current_user) { user }
   let(:mutation) { graphql_mutation(:ai_catalog_item_consumer_create, params) }
@@ -66,10 +66,19 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     it_behaves_like 'an invalid argument to the mutation', argument_name: :target
   end
 
-  context 'when the item is not a flow' do
-    let(:item) { create(:ai_catalog_item, item_type: :agent, project: item_project) }
+  context 'when the item is an agent' do
+    let(:item) { create(:ai_catalog_agent, project: item_project) }
 
-    it_behaves_like 'an authorization failure'
+    it 'creates a catalog item consumer with expected data' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
+        'item' => a_hash_including('id' => item.to_global_id.to_s),
+        'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
+        'enabled' => true,
+        'locked' => true
+      )
+    end
   end
 
   context 'when global_ai_catalog feature flag is disabled' do
