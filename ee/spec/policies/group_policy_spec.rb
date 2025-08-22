@@ -4427,7 +4427,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     context 'for a member role with the `admin_runners` ability' do
-      let(:member_role_abilities) { { admin_runners: true } }
+      let(:member_role_abilities) { { read_runners: true, admin_runners: true } }
       let(:allowed_abilities) do
         [
           :admin_runners,

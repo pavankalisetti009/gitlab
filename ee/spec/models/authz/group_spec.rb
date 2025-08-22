@@ -14,7 +14,7 @@ RSpec.describe Authz::Group, feature_category: :permissions do
   let_it_be(:other_groups) { create_list(:group, 3) }
 
   let_it_be(:admin_runners_role) do
-    create(:member_role, :guest, :admin_runners, namespace: root_group)
+    create(:member_role, :guest, :read_runners, :admin_runners, namespace: root_group)
   end
 
   let_it_be(:admin_vulnerability_role) do
@@ -53,10 +53,11 @@ RSpec.describe Authz::Group, feature_category: :permissions do
         end
       end
 
-      it { is_expected.to include(root_group.id => match_array([:admin_runners])) }
+      it { is_expected.to include(root_group.id => match_array([:read_runners, :admin_runners])) }
 
       it 'includes groups in the middle of the hierarchy' do
         is_expected.to include(group.id => match_array([
+          :read_runners,
           :admin_runners,
           :admin_vulnerability,
           :read_vulnerability
@@ -65,6 +66,7 @@ RSpec.describe Authz::Group, feature_category: :permissions do
 
       it 'includes groups at the bottom of the hierarchy' do
         is_expected.to include(child_group.id => match_array([
+          :read_runners,
           :admin_runners,
           :admin_vulnerability,
           :read_dependency,
