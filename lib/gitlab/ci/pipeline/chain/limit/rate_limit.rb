@@ -58,8 +58,7 @@ module Gitlab
 
             def enforce_throttle?
               strong_memoize(:enforce_throttle) do
-                ::Feature.enabled?(:ci_enforce_throttle_pipelines_creation, project) &&
-                  !throttle_override?
+                !throttle_override?
               end
             end
 
