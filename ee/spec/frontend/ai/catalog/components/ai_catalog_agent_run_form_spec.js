@@ -34,7 +34,7 @@ describe('AiCatalogAgentRunForm', () => {
 
   it('renders form with submit button', () => {
     expect(findForm().exists()).toBe(true);
-    expect(findSubmitButton().text()).toBe('Run (Coming soon)');
+    expect(findSubmitButton().text()).toBe('Run');
   });
 
   it('renders form fields with correct initial values', () => {

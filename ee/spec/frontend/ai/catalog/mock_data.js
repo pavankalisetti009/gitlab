@@ -222,6 +222,16 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
   },
 };
 
+export const mockExecuteAgentResponse = {
+  data: {
+    aiCatalogAgentExecute: {
+      errors: [],
+      flowConfig: '---\nversion: experimental\nenvironment: remote...',
+      __typename: 'AiCatalogAgentExecutePayload',
+    },
+  },
+};
+
 /* FLOWS */
 
 const mockFlowVersion = {
