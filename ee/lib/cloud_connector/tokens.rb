@@ -56,9 +56,15 @@ module CloudConnector
     def use_new_token_path_for?(unit_primitive, actor)
       return true if ROLLED_OUT_UNIT_PRIMITIVES.include?(unit_primitive)
 
+      # Refer to https://gitlab.com/gitlab-org/cloud-connector/gitlab-cloud-connector/-/blob/main/config/services/anthropic_proxy.yml?ref_type=heads
+      anthropic_proxy_ups = %i[generate_commit_message generate_issue_description resolve_vulnerability
+        review_merge_request summarize_issue_discussions description_composer]
+
       case unit_primitive
       when :complete_code, :generate_code
         Feature.enabled?(:code_suggestions_new_tokens_path, actor)
+      when *anthropic_proxy_ups
+        Feature.enabled?(:anthropic_proxy_new_tokens_path, actor)
       else
         false
       end

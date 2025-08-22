@@ -154,12 +154,8 @@ module Gitlab
           "#{Gitlab::AiGateway.url}/v1/proxy/anthropic"
         end
 
-        def service_name
-          :anthropic_proxy
-        end
-
         def service
-          ::CloudConnector::AvailableServices.find_by_name(service_name)
+          ::CloudConnector::AvailableServices.find_by_name(unit_primitive.to_sym)
         end
 
         # We specificy the `anthropic-version` header to receive the stream word by word instead of the accumulated
@@ -168,8 +164,8 @@ module Gitlab
           {
             "Accept" => "application/json",
             'anthropic-version' => '2023-06-01',
-            'X-Gitlab-Unit-Primitive' => unit_primitive
-          }.merge(Gitlab::AiGateway.headers(user: user, service: service))
+            'X-Gitlab-Unit-Primitive' => unit_primitive.to_s
+          }.merge(Gitlab::AiGateway.headers(user: user, service: service, ai_feature_name: :anthropic_proxy))
         end
 
         def request_body(prompt:, options: {})
@@ -216,13 +212,13 @@ module Gitlab
             ai_component: 'abstraction_layer',
             ai_request_type: request_type,
             response_from_llm: response_body,
-            unit_primitive: unit_primitive)
+            unit_primitive: unit_primitive.to_s)
 
           log_info(message: "Received response from Anthropic",
             event_name: 'response_received',
             ai_component: 'abstraction_layer',
             ai_request_type: request_type,
-            unit_primitive: unit_primitive)
+            unit_primitive: unit_primitive.to_s)
         end
 
         def log_performing_request(request_type, options)
@@ -230,7 +226,7 @@ module Gitlab
             event_name: 'performing_request',
             ai_component: 'abstraction_layer',
             ai_request_type: request_type,
-            unit_primitive: unit_primitive,
+            unit_primitive: unit_primitive.to_s,
             options: options)
         end
       end
