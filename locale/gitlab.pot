@@ -10276,10 +10276,40 @@ msgstr ""
 msgid "BillingPlan|Upgrade"
 msgstr ""
 
+msgid "Billings|$29 per user/month"
+msgstr ""
+
+msgid "Billings|10,000 compute minutes per month"
+msgstr ""
+
+msgid "Billings|400 compute minutes per month"
+msgstr ""
+
+msgid "Billings|5 licensed users"
+msgstr ""
+
+msgid "Billings|AI Chat in the IDE"
+msgstr ""
+
+msgid "Billings|AI Code Suggestions in the IDE"
+msgstr ""
+
+msgid "Billings|At the end of the trial, your subscription changes to Free. Upgrade to Premium to keep using advanced features."
+msgstr ""
+
+msgid "Billings|Billing"
+msgstr ""
+
 msgid "Billings|Credit card has exceeded the daily verification limit. Use a different card or try again later."
 msgstr ""
 
 msgid "Billings|Error validating card details"
+msgstr ""
+
+msgid "Billings|Everything from Free, plus:"
+msgstr ""
+
+msgid "Billings|Features included:"
 msgstr ""
 
 msgid "Billings|Free groups are limited to %{number} seats."
@@ -10291,6 +10321,9 @@ msgstr ""
 msgid "Billings|Free tier and trial groups can invite a maximum of 20 members per day."
 msgstr ""
 
+msgid "Billings|Group"
+msgstr ""
+
 msgid "Billings|Groups in the Free tier are limited to %d seat"
 msgid_plural "Billings|Groups in the Free tier are limited to %d seats"
 msgstr[0] ""
@@ -10299,7 +10332,19 @@ msgstr[1] ""
 msgid "Billings|In a seat"
 msgstr ""
 
+msgid "Billings|Manage billing"
+msgstr ""
+
 msgid "Billings|Open source Plan Seats used"
+msgstr ""
+
+msgid "Billings|Premium"
+msgstr ""
+
+msgid "Billings|Priority Support"
+msgstr ""
+
+msgid "Billings|Release Controls"
 msgstr ""
 
 msgid "Billings|Seats in use / Seats available"
@@ -10308,7 +10353,40 @@ msgstr ""
 msgid "Billings|Seats in use / Seats in subscription"
 msgstr ""
 
+msgid "Billings|See all features and compare plans"
+msgstr ""
+
+msgid "Billings|Select group"
+msgstr ""
+
+msgid "Billings|Source Code Management & CI/CD"
+msgstr ""
+
+msgid "Billings|Team Project Management"
+msgstr ""
+
+msgid "Billings|Unlimited licensed users"
+msgstr ""
+
+msgid "Billings|Upgrade to Premium"
+msgstr ""
+
+msgid "Billings|Upgrade to Premium to improve your experience and access new advanced AI features."
+msgstr ""
+
+msgid "Billings|View subscription details and manage billing for your %{linkStart}groups%{linkEnd}."
+msgstr ""
+
 msgid "Billings|You have unlimited seat count."
+msgstr ""
+
+msgid "Billings|Your group is on a trial of Ultimate + GitLab Duo Enterprise"
+msgstr ""
+
+msgid "Billings|Your group is on the Free plan"
+msgstr ""
+
+msgid "Billings|Your trial includes all the benefits of Ultimate, plus access to advanced AI features."
 msgstr ""
 
 msgid "Billing|%d user has been successfully assigned a seat."

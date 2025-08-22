@@ -49,6 +49,30 @@ module BillingPlansHelper
     end
   end
 
+  def user_billing_data_attributes(plans_data)
+    return { groups: [] } if plans_data.blank?
+
+    premium_plan = plans_data.find { |plan| plan.code == ::Plan::PREMIUM }
+    return { groups: [] } unless premium_plan
+
+    groups = current_user.owned_groups
+                         .free_or_trial
+                         .include_gitlab_subscription
+
+    {
+      groups: groups.map do |group|
+        {
+          id: group.id,
+          name: group.name,
+          trial_active: group.trial_active?,
+          group_billings_href: group_billings_path(group),
+          upgrade_to_premium_href: plan_purchase_url(group, premium_plan)
+        }
+      end,
+      dashboardGroupsHref: dashboard_groups_path
+    }
+  end
+
   def plan_feature_list(plan)
     plans_features[plan.code] || []
   end
@@ -110,7 +134,8 @@ module BillingPlansHelper
   def add_namespace_plan_to_group_instructions
     link_end = '</a>'.html_safe
     move_link_url = help_page_path 'user/project/working_with_projects.md', anchor: "transfer-a-project"
-    move_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: move_link_url }
+    data_property = current_user.free_or_trial_owned_group_ids
+    move_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer" data-track-action="click_link_move_any_projects" data-track-property="%{data_property}">'.html_safe % { url: move_link_url, data_property: data_property }
 
     if current_user.owned_or_maintainers_groups.any?
       ERB::Util.html_escape_once(
@@ -122,13 +147,14 @@ module BillingPlansHelper
     else
       create_group_link_url = new_group_path anchor: "create-group-pane"
       create_group_link_start = '<a href="%{url}">'.html_safe % { url: create_group_link_url }
+      move_link_start_without_tracking = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: move_link_url }
 
       ERB::Util.html_escape_once(
         s_("BillingPlans|You don't have any groups. You'll need to %{create_group_link_start}create one%{create_group_link_end} and %{move_link_start}move your projects to it%{move_link_end}.")
       ).html_safe % {
         create_group_link_start: create_group_link_start,
         create_group_link_end: link_end,
-        move_link_start: move_link_start,
+        move_link_start: move_link_start_without_tracking,
         move_link_end: link_end
       }
     end

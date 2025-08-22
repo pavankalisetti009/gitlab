@@ -480,13 +480,92 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       it 'instructs to move the project to a group' do
         create(:group).add_owner current_user
 
-        expect(helper.add_namespace_plan_to_group_instructions).to eq 'Then <a href="/help/user/project/working_with_projects.md#transfer-a-project" target="_blank" rel="noopener noreferrer">move any projects</a> you wish to use with your subscription to that group.'
+        expect(helper.add_namespace_plan_to_group_instructions).to eq 'Then <a href="/help/user/project/working_with_projects.md#transfer-a-project" target="_blank" rel="noopener noreferrer" data-track-action="click_link_move_any_projects" data-track-property="[]">move any projects</a> you wish to use with your subscription to that group.'
       end
     end
 
     context 'without a group' do
       it 'instructs to create a group then move the project to a group' do
         expect(helper.add_namespace_plan_to_group_instructions).to eq 'You don&#39;t have any groups. You&#39;ll need to <a href="/groups/new#create-group-pane">create one</a> and <a href="/help/user/project/working_with_projects.md#transfer-a-project" target="_blank" rel="noopener noreferrer">move your projects to it</a>.'
+      end
+    end
+  end
+
+  describe '#user_billing_data_attributes' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:free_group) { create(:group, name: 'Free Group') }
+    let_it_be(:trial_group) { create(:group, name: 'Trial Group') }
+
+    let(:premium_plan) { double('Plan', code: ::Plan::PREMIUM, id: 1) }
+    let(:ultimate_plan) { double('Plan', code: ::Plan::ULTIMATE, id: 2) }
+    let(:plans_data) { [premium_plan, ultimate_plan] }
+
+    before_all do
+      free_group.add_owner(current_user)
+      trial_group.add_owner(current_user)
+
+      create(:gitlab_subscription, namespace: free_group, hosted_plan: create(:free_plan))
+      create(:gitlab_subscription, :active_trial, namespace: trial_group)
+    end
+
+    before do
+      allow(helper).to receive(:current_user).and_return(current_user)
+    end
+
+    subject { helper.user_billing_data_attributes(plans_data) }
+
+    context 'when validating input' do
+      context 'when plans_data is nil' do
+        let(:plans_data) { nil }
+
+        it 'returns empty groups array' do
+          expect(subject).to eq({ groups: [] })
+        end
+      end
+
+      context 'when plans_data is empty array' do
+        let(:plans_data) { [] }
+
+        it 'returns empty groups array' do
+          expect(subject).to eq({ groups: [] })
+        end
+      end
+
+      context 'when plans_data does not contain a premium plan' do
+        let(:plans_data) { [ultimate_plan] }
+
+        it 'returns empty groups array' do
+          expect(subject).to eq({ groups: [] })
+        end
+      end
+    end
+
+    it 'returns user billing data with free and trial groups' do
+      expect(subject[:groups]).to contain_exactly(
+        {
+          id: free_group.id,
+          name: 'Free Group',
+          trial_active: false,
+          group_billings_href: group_billings_path(free_group),
+          upgrade_to_premium_href: plan_purchase_url(free_group, premium_plan)
+        },
+        {
+          id: trial_group.id,
+          name: 'Trial Group',
+          trial_active: true,
+          group_billings_href: group_billings_path(trial_group),
+          upgrade_to_premium_href: plan_purchase_url(trial_group, premium_plan)
+        }
+      )
+      expect(subject[:dashboardGroupsHref]).to eq(dashboard_groups_path)
+    end
+
+    context 'when user has no owned groups' do
+      let(:current_user) { create(:user) }
+
+      it 'returns empty groups array' do
+        expect(subject[:groups]).to be_empty
+        expect(subject[:dashboardGroupsHref]).to eq(dashboard_groups_path)
       end
     end
   end
