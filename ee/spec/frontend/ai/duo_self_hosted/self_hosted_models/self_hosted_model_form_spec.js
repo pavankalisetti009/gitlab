@@ -30,7 +30,7 @@ jest.mock('~/lib/utils/url_utility');
 describe('SelfHostedModelForm', () => {
   let wrapper;
 
-  const basePath = '/admin/ai/duo_self_hosted';
+  const basePath = '/admin/gitlab_duo/self_hosted';
   const duoConfigurationSettingsPath = '/admin/gitlab_duo/configuration';
   const createMutationSuccessHandler = jest.fn().mockResolvedValue({
     data: {

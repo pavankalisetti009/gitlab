@@ -24,7 +24,7 @@ describe('GitLab Duo Home', () => {
     isAdminInstanceDuoHome = false,
     canManageSelfHostedModels = false,
     customSlotProps = {},
-    duoSelfHostedPath = '/admin/ai/duo_self_hosted',
+    duoSelfHostedPath = '/admin/gitlab_duo/self_hosted',
     modelSwitchingEnabled = false,
     modelSwitchingPath = 'groups/test/-/settings/gitlab_duo/model_selection',
   } = {}) => {
@@ -161,7 +161,7 @@ describe('GitLab Duo Home', () => {
           header: 'GitLab Duo Self-Hosted',
           description: 'Assign self-hosted models to specific AI-native features.',
           buttonText: 'Configure GitLab Duo Self-Hosted',
-          path: '/admin/ai/duo_self_hosted',
+          path: '/admin/gitlab_duo/self_hosted',
         });
       });
     });

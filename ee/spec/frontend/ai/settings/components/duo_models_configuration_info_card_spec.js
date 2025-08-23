@@ -9,7 +9,7 @@ describe('DuoModelsConfigurationInfoCard', () => {
     header: 'Models info card header',
     description: 'Models info card description',
     buttonText: 'Configure models button text',
-    path: '/admin/ai/duo_self_hosted',
+    path: '/admin/gitlab_duo/self_hosted',
   };
 
   const createComponent = (props) => {
@@ -42,6 +42,6 @@ describe('DuoModelsConfigurationInfoCard', () => {
 
   it('renders a CTA button', () => {
     expect(findConfigurationButton().text()).toBe('Configure models button text');
-    expect(findConfigurationButton().attributes('to')).toBe('/admin/ai/duo_self_hosted');
+    expect(findConfigurationButton().attributes('to')).toBe('/admin/gitlab_duo/self_hosted');
   });
 });
