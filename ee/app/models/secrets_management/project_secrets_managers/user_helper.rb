@@ -41,8 +41,8 @@ module SecretsManagement
       end
 
       def member_role_policy_template
-        "{{ if ne \"\" .member_role_id }}project_{{ .project_id }}/users/direct/member_role_{{ .member_role_id }}" \
-          "{{ end }}"
+        "{{ if and (ne nil (index . \"member_role_id\")) (ne \"\" .member_role_id) }}project_{{ .project_id }}" \
+          "/users/direct/member_role_{{ .member_role_id }}{{ end }}"
       end
 
       def group_policy_template
