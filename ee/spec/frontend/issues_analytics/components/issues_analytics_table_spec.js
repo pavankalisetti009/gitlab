@@ -116,7 +116,8 @@ describe('IssuesAnalyticsTable', () => {
       it('displays the correct issue details labels', () => {
         const { iid } = mockIssuesApiResponse[1];
         const firstDetails = findIssueDetailsCol(1);
-        const labelsId = firstDetails.findComponent('[data-testid="labels"]').attributes('id');
+
+        const labelsId = firstDetails.find('[data-testid="labels"]').attributes('id');
         const labelsPopoverTarget = firstDetails
           .findComponent('[data-testid="labelsPopover"]')
           .props('target');
