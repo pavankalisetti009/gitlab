@@ -36,8 +36,7 @@ describe('CommaSeparatedListTokenSelector', () => {
 
   const findTokenSelectorDropdown = () => findTokenSelector().find('[role="menu"]');
 
-  const findErrorMessageText = () =>
-    findTokenSelector().find('[role="menuitem"][disabled="disabled"]').text();
+  const findErrorMessageText = () => findTokenSelector().text();
 
   const setTokenSelectorInputValue = (value) => {
     const tokenSelectorInput = findTokenSelectorInput();
