@@ -14,3 +14,5 @@ class RemoveCorrectWorkItemTypeIdFromWorkItemSecondAttempt < Elastic::Migration
     'correct_work_item_type_id'
   end
 end
+
+RemoveCorrectWorkItemTypeIdFromWorkItemSecondAttempt.prepend ::Search::Elastic::MigrationObsolete
