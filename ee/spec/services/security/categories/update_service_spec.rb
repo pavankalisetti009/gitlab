@@ -18,12 +18,21 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
   let(:params) do
     {
       name: 'updated name',
-      description: 'updated description',
-      multiple_selection: true
+      description: 'updated description'
     }
   end
 
   subject(:execute) { described_class.new(category: category, params: params, current_user: current_user).execute }
+
+  context 'when security_categories_and_attributes feature is disabled' do
+    before do
+      stub_feature_flags(security_categories_and_attributes: false)
+    end
+
+    it 'raises an "access denied" error' do
+      expect { execute }.to raise_error(Gitlab::Access::AccessDeniedError)
+    end
+  end
 
   context 'when user does not have permission' do
     let(:current_user) { create(:user) }
@@ -33,7 +42,7 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
     end
 
     it 'responds with an error message' do
-      expect(execute.message).to eq('Not permitted to update security category')
+      expect(execute.message).to eq('You are not authorized to perform this action')
     end
 
     it 'responds with an error service response' do
@@ -107,7 +116,6 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
       expect(result.success?).to be true
       expect(category.name).to eq(params[:name])
       expect(category.description).to eq(params[:description])
-      expect(category.multiple_selection).to be true
     end
 
     it 'responds with a successful service response' do
@@ -131,7 +139,6 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
         expect(category.name).to eq('only name updated')
         expect(category.description).to eq('original description')
         expect(category.editable_state).to eq('editable')
-        expect(category.multiple_selection).to be false
       end
     end
 
@@ -145,21 +152,6 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
         expect(category.name).to eq('original name')
         expect(category.description).to eq('only description updated')
         expect(category.editable_state).to eq('editable')
-        expect(category.multiple_selection).to be false
-      end
-    end
-
-    context 'when updating only multiple_selection' do
-      let(:params) { { multiple_selection: true } }
-
-      it 'updates only the multiple_selection field' do
-        execute
-        category.reload
-
-        expect(category.name).to eq('original name')
-        expect(category.description).to eq('original description')
-        expect(category.editable_state).to eq('editable')
-        expect(category.multiple_selection).to be true
       end
     end
   end

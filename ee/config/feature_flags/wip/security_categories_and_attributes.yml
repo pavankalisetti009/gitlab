@@ -1,0 +1,10 @@
+---
+name: security_categories_and_attributes
+description: controls security categories and attributes access while it is in development
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/562233
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201979
+rollout_issue_url:
+milestone: '18.4'
+group: group::security platform management
+type: wip
+default_enabled: false
