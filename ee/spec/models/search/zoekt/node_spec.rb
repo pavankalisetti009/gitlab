@@ -357,6 +357,31 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(described_class.with_service(:knowledge_graph).to_a).to match_array([node2, node3])
       end
     end
+
+    describe '.with_repositories_to_reindex' do
+      let_it_be(:node_with_reindex_repos) { create(:zoekt_node, schema_version: 2) }
+      let_it_be(:node_without_reindex_repos) { create(:zoekt_node, schema_version: 2) }
+      let_it_be(:node_with_no_repos) { create(:zoekt_node) }
+
+      let_it_be(:index_with_reindex_repos) { create(:zoekt_index, node: node_with_reindex_repos) }
+      let_it_be(:index_without_reindex_repos) { create(:zoekt_index, node: node_without_reindex_repos) }
+
+      before_all do
+        # Create repositories that need reindexing (mismatched schema version)
+        create(:zoekt_repository, zoekt_index: index_with_reindex_repos, schema_version: 1, state: :ready)
+        # Create repositories that don't need reindexing (matching schema version)
+        create(:zoekt_repository, zoekt_index: index_without_reindex_repos, schema_version: 2, state: :ready)
+      end
+
+      it 'returns only nodes that have repositories needing reindexing' do
+        expect(described_class.with_repositories_to_reindex).to contain_exactly(node_with_reindex_repos)
+      end
+
+      it 'does not include nodes without repositories needing reindexing' do
+        expect(described_class.with_repositories_to_reindex)
+          .not_to include(node_without_reindex_repos, node_with_no_repos)
+      end
+    end
   end
 
   describe '.find_or_initialize_by_task_request', :freeze_time do
