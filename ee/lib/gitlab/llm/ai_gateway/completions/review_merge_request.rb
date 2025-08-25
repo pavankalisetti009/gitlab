@@ -99,7 +99,7 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            PromptResolvers::ReviewMergeRequest.execute(user: user, group: root_namespace)
+            PromptResolvers::ReviewMergeRequest.execute(user: user)
           end
 
           def user
@@ -212,11 +212,6 @@ module Gitlab
             Feature.enabled?(:duo_code_review_response_logging, user)
           end
           strong_memoize_attr :duo_code_review_logging_enabled?
-
-          def duo_code_review_custom_instructions_enabled?
-            Feature.enabled?(:duo_code_review_custom_instructions, user)
-          end
-          strong_memoize_attr :duo_code_review_custom_instructions_enabled?
 
           def process_comments(comments, diff_file, diff_refs)
             comments.each do |comment|
@@ -335,8 +330,6 @@ module Gitlab
           end
 
           def load_custom_instructions(file_paths)
-            return [] unless duo_code_review_custom_instructions_enabled?
-
             all_instructions = load_project_custom_instructions
             return [] if all_instructions.blank?
 

@@ -8,7 +8,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
   let(:tracking_context) { { request_id: 'uuid', action: :review_merge_request } }
   let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
-  let(:prompt_version) { '1.0.0' }
+  let(:prompt_version) { '1.2.0' }
   let(:received_model_metadata) { nil }
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
@@ -122,9 +122,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     before do
       stub_feature_flags(ai_model_switching: false)
-      stub_feature_flags(duo_code_review_claude_4_0_rollout: false)
-      stub_feature_flags(duo_code_review_custom_instructions: false)
-      stub_feature_flags(use_claude_code_completion: false)
       stub_feature_flags(use_duo_context_exclusion: false)
       stub_feature_flags(duo_code_review_prompt_updates: false)
 
@@ -383,22 +380,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           .and not_change { merge_request.notes.non_diff_notes.count }
 
         expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
-      end
-
-      context 'when using claude_4_0 for duo code review' do
-        let(:prompt_version) { '1.1.0' }
-
-        before do
-          stub_feature_flags(duo_code_review_claude_4_0_rollout: true)
-        end
-
-        # -- allow_next_instance_of Gitlab::Llm::AiGateway::Client
-        # in before clause will do the check
-        it 'successfully creates a note' do
-          completion.execute
-
-          expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
-        end
       end
 
       context 'when duo_code_review_prompt_updates feature flag is enabled' do
@@ -1309,12 +1290,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
     end
 
     context "with custom instructions" do
-      let(:prompt_version) { '1.2.0' }
-
-      before do
-        stub_feature_flags(duo_code_review_custom_instructions: true)
-      end
-
       context 'when custom instructions file does not exist' do
         it 'passes empty custom instructions to the review prompt' do
           expect(review_prompt_class).to receive(:new).with(
@@ -1614,78 +1589,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             end
           end
         end
-      end
-
-      context 'when duo_code_review_custom_instructions feature flag is disabled' do
-        let(:prompt_version) { '1.0.0' }
-
-        let(:yaml_content) do
-          <<~YAML
-            ---
-            instructions:
-              - name: Markdown Standards
-                instructions: Check for proper markdown formatting
-                fileFilters:
-                  - "*.md"
-          YAML
-        end
-
-        let(:blob_data) { yaml_content }
-        let(:blob) { instance_double(Blob, data: blob_data) }
-
-        before do
-          stub_feature_flags(duo_code_review_custom_instructions: false)
-          allow(merge_request.project.repository).to receive(:blob_at)
-            .with(merge_request.target_branch_sha, '.gitlab/duo/mr-review-instructions.yaml')
-            .and_return(blob)
-        end
-
-        it 'does not load custom instructions even if file exists' do
-          expect(review_prompt_class).to receive(:new).with(
-            hash_including(
-              custom_instructions: []
-            )
-          )
-
-          completion.execute
-        end
-
-        it 'does not attempt to read the custom instructions file' do
-          expect(merge_request.project.repository).not_to receive(:blob_at)
-            .with(merge_request.target_branch_sha, '.gitlab/duo/mr-review-instructions.yaml')
-
-          completion.execute
-        end
-
-        it 'uses prompt version 1.0.0' do
-          allow_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
-            service_name: :review_merge_request,
-            tracking_context: tracking_context
-          ) do |client|
-            expect(client)
-              .to receive(:complete_prompt)
-              .with(
-                hash_including(prompt_version: '1.0.0')
-              )
-          end
-
-          completion.execute
-        end
-      end
-    end
-
-    context 'when use_claude_code_completion feature flag is enabled for the root namespace of the merge request' do
-      let_it_be(:group) { create(:group) }
-      let_it_be(:subgroup) { create(:group, parent: group) }
-      let_it_be(:project) { create(:project, :repository, group: subgroup) }
-      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
-
-      before do
-        stub_feature_flags(use_claude_code_completion: group)
-      end
-
-      it_behaves_like 'review merge request with prompt version' do
-        let(:prompt_version) { '0.9.0' }
       end
     end
 
