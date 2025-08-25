@@ -4,6 +4,7 @@ import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import isString from 'lodash/isString';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_feature_mixin';
 import { VARIANT_DANGER, VARIANT_INFO, VARIANT_WARNING } from '~/alert';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import { __, s__, sprintf } from '~/locale';
@@ -77,7 +78,7 @@ export default {
         'ee/analytics/analytics_dashboards/components/visualizations/merge_requests/throughput_table.vue'
       ),
   },
-  mixins: [glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin(), glLicensedFeaturesMixin()],
   inject: [
     'namespaceId',
     'namespaceFullPath',
@@ -142,7 +143,7 @@ export default {
       return !this.showAlertState && isEmptyPanelData(this.visualization.type, this.data);
     },
     alertVariant() {
-      if (this.showLicenseRequiredState || this.errors.length > 0) return VARIANT_DANGER;
+      if (this.hasAccessError || this.errors.length > 0) return VARIANT_DANGER;
       if (this.warnings.length > 0) return VARIANT_WARNING;
       if (this.alerts.length > 0 || this.alertDescription.length) return VARIANT_INFO;
       return null;
@@ -152,7 +153,7 @@ export default {
     },
     showAlertState() {
       return (
-        this.showLicenseRequiredState ||
+        this.hasAccessError ||
         Boolean(this.alertMessages.length > 0 || this.alertDescription.length)
       );
     },
@@ -180,23 +181,50 @@ export default {
         ...this.visualizationQueryOverrides,
       };
     },
-    showLicenseRequiredState() {
+    isPermitted() {
       switch (this.visualization.slug) {
         case VISUALIZATION_SLUG_VSD_SECURITY_METRICS_TABLE:
-          return !this.glAbilities?.readSecurityResource;
+          return this.glAbilities?.readSecurityResource;
         case VISUALIZATION_SLUG_VSD_DORA_METRICS_TABLE:
         case VISUALIZATION_SLUG_DORA_PROJECTS_COMPARISON:
         case VISUALIZATION_SLUG_DORA_PERFORMERS_SCORE:
-          return !this.glAbilities?.readDora4Analytics;
+          return this.glAbilities?.readDora4Analytics;
         default:
-          return false;
+          return true;
       }
+    },
+    isLicensed() {
+      switch (this.visualization.slug) {
+        case VISUALIZATION_SLUG_VSD_SECURITY_METRICS_TABLE:
+          return this.glLicensedFeatures?.securityDashboard;
+        case VISUALIZATION_SLUG_VSD_DORA_METRICS_TABLE:
+        case VISUALIZATION_SLUG_DORA_PROJECTS_COMPARISON:
+        case VISUALIZATION_SLUG_DORA_PERFORMERS_SCORE:
+          return this.glLicensedFeatures?.dora4Analytics;
+        default:
+          return true;
+      }
+    },
+    hasAccessError() {
+      return !this.isLicensed || !this.isPermitted;
+    },
+    accessErrorMessage() {
+      if (!this.isLicensed) {
+        return __('This feature requires an Ultimate plan %{linkStart}Learn more%{linkEnd}.');
+      }
+      if (!this.isPermitted) {
+        return s__(
+          'Analytics|You have insufficient %{linkStart}permissions%{linkEnd} to view this panel.',
+        );
+      }
+
+      return null;
     },
     visualizationDocsLink() {
       return VISUALIZATION_DOCUMENTATION_LINKS[this.visualization.slug] || '';
     },
     bodyContentClasses() {
-      return this.showLicenseRequiredState ? 'gl-content-center' : '';
+      return this.hasAccessError ? 'gl-content-center' : '';
     },
     panelTooltip() {
       if (this.tooltip?.description) return this.tooltip;
@@ -348,16 +376,12 @@ export default {
   >
     <template #body>
       <div
-        v-if="showLicenseRequiredState"
+        v-if="hasAccessError"
         class="gl-flex gl-items-center gl-justify-center"
-        data-testid="dashboard-panel-license-warning"
+        data-testid="dashboard-panel-access-warning"
       >
         <span>
-          <gl-sprintf
-            :message="
-              __('This feature requires an Ultimate plan %{linkStart}Learn more%{linkEnd}.')
-            "
-          >
+          <gl-sprintf :message="accessErrorMessage">
             <template #link="{ content }">
               <gl-link :href="visualizationDocsLink">{{ content }}</gl-link>
             </template>
