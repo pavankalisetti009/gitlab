@@ -669,7 +669,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         before do
           allow(::Ai::Setting).to receive(:self_hosted?).and_return(instance_with_self_hosted_duo)
           stub_feature_flags(
-            agent_platform_model_selection: !agentic_duo_chat_feature_flag_disabled_on_the_instance
+            self_hosted_agent_platform: !agentic_duo_chat_feature_flag_disabled_on_the_instance
           )
           # setup agentic chat to be available otherwise
           stub_feature_flags(duo_agentic_chat: duo_agentic_chat_is_available_otherwise)

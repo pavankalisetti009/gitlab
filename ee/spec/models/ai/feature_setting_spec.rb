@@ -224,9 +224,9 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
       end
 
-      context 'when `agent_platform_model_selection` feature flag is disabled' do
+      context 'when `self_hosted_agent_platform` feature flag is disabled' do
         before do
-          stub_feature_flags(agent_platform_model_selection: false)
+          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it 'does not include duo_agent_platform' do
@@ -234,7 +234,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         end
       end
 
-      context 'when `agent_platform_model_selection` feature flag is enabled' do
+      context 'when `self_hosted_agent_platform` feature flag is enabled' do
         it 'includes duo_agent_platform when its flag is enabled' do
           expect(described_class.allowed_features.keys).to include('duo_agent_platform')
         end
@@ -243,7 +243,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       context 'when premium license restrictions also apply' do
         before do
           allow(::License).to receive(:current).and_return(instance_double(License, premium?: true))
-          stub_feature_flags(agent_platform_model_selection: false)
+          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it 'applies both feature flag and license restrictions' do

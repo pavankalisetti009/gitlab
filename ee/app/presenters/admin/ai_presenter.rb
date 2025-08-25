@@ -29,7 +29,7 @@ module Admin
       {
         ai_gateway_url: ai_gateway_url,
         duo_agent_platform_service_url: duo_agent_platform_service_url,
-        expose_duo_agent_platform_service_url: ::Feature.enabled?(:agent_platform_model_selection, :instance),
+        expose_duo_agent_platform_service_url: ::Feature.enabled?(:self_hosted_agent_platform, :instance),
         are_duo_core_features_enabled: duo_core_features_enabled?,
         are_experiment_settings_allowed: experiments_settings_allowed?,
         are_prompt_cache_settings_allowed: true,

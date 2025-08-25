@@ -84,7 +84,7 @@ module EE
       end
 
       condition(:agentic_chat_on_self_hosted_duo_feature_flag_disabled) do
-        ::Feature.disabled?(:agent_platform_model_selection, :instance)
+        ::Feature.disabled?(:self_hosted_agent_platform, :instance)
       end
 
       condition(:user_belongs_to_paid_namespace) do
