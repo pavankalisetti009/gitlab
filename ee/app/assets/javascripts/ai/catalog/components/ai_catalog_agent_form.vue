@@ -193,6 +193,7 @@ export default {
         tools: {
           label: s__('AICatalog|Tools'),
           groupAttrs: {
+            optional: true,
             labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
           },
         },
