@@ -53,6 +53,18 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           expect_vulnerability_to_be_resolved(vulnerability.reload)
         end
 
+        context 'when vulnerability is no longer detected' do
+          before do
+            vulnerability.update!(present_on_default_branch: false, resolved_on_default_branch: true)
+          end
+
+          it 'transitions the vulnerability to resolved' do
+            command.execute
+
+            expect_vulnerability_to_be_resolved(vulnerability.reload)
+          end
+        end
+
         it 'does not call AutoResolveService when count of resolved vulnerabilities is over limit' do
           command.instance_variable_set(:@auto_resolved_count, described_class::AUTO_RESOLVE_LIMIT + 1)
 

@@ -62,20 +62,25 @@ module Security
         (batch.pluck_primary_key - ingested_ids).then do |missing_ids|
           next if missing_ids.blank?
 
-          no_longer_detected_vulnerability_ids = Vulnerability
+          no_longer_detected_vulnerabilities = Vulnerability
             .id_in(missing_ids)
-            .with_resolution(false)
             .not_requiring_manual_resolution
-            .pluck_primary_key
+            .select(:id, :resolved_on_default_branch)
 
-          next if no_longer_detected_vulnerability_ids.blank?
+          next if no_longer_detected_vulnerabilities.blank?
 
-          mark_as_no_longer_detected(no_longer_detected_vulnerability_ids)
-          auto_resolve(no_longer_detected_vulnerability_ids)
+          mark_as_no_longer_detected(no_longer_detected_vulnerabilities)
+          auto_resolve(no_longer_detected_vulnerabilities.map(&:id))
         end
       end
 
-      def mark_as_no_longer_detected(no_longer_detected_vulnerability_ids)
+      def mark_as_no_longer_detected(vulnerabilities)
+        no_longer_detected_vulnerability_ids = vulnerabilities.filter_map do |vulnerability|
+          vulnerability.id unless vulnerability.resolved_on_default_branch
+        end
+
+        return if no_longer_detected_vulnerability_ids.blank?
+
         vulnerabilities_relation = Vulnerability.id_in(no_longer_detected_vulnerability_ids)
 
         ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_relation).execute do |relation|
