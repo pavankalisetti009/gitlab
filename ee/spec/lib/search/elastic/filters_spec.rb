@@ -3051,11 +3051,6 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       described_class.by_search_level_and_membership(query_hash: query_hash, options: options)
     end
 
-    before do
-      # ensure the memoized value doesn't pollute tests
-      described_class.clear_memoization(:groups_for_user)
-    end
-
     let(:fixtures_path) { 'ee/spec/fixtures/search/elastic/filters/by_search_level_and_membership' }
     let(:expected_query) do
       json = File.read(Rails.root.join(fixtures_path, fixture_file))

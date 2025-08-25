@@ -88,10 +88,12 @@ module EE
     private
 
     def test_dirs
-      @ee_test_dirs ||= super + %w[
+      @ee_test_dirs ||= super + %W[
         gitlab-elasticsearch-indexer
         gitlab-zoekt
         openbao
+        #{File.basename(::Search::Zoekt::ZoektProcessManager::INDEX_DIR)}
+        #{File.basename(::Search::Zoekt::ZoektProcessManager::LOG_DIR)}
       ]
     end
   end

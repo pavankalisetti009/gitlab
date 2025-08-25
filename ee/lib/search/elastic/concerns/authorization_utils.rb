@@ -4,7 +4,7 @@ module Search
   module Elastic
     module Concerns
       module AuthorizationUtils
-        include Gitlab::Utils::StrongMemoize
+        extend Gitlab::Cache::RequestCache
         include Search::Concerns::FeatureCustomAbilityMap
 
         private
@@ -31,7 +31,10 @@ module Search
           return Project.none unless user
 
           search_level = options.fetch(:search_level).to_sym
-          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+
+          authorized_projects = ::Gitlab::SafeRequestStore.fetch("user:#{user&.id}-projects_for_search") do
+            ::Search::ProjectsFinder.new(user: user).execute
+          end
 
           case search_level
           when :global
@@ -58,64 +61,10 @@ module Search
           end
         end
 
-        def project_ids_for_user(user, options)
-          return [] unless user
-
-          search_level = options.fetch(:search_level).to_sym
-          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
-
-          projects = case search_level
-                     when :global
-                       authorized_projects
-                     when :group
-                       namespace_ids = options[:group_ids]
-                       namespace_projects = Project.in_namespace(namespace_ids)
-                       if namespace_projects.present? && !namespace_projects.id_not_in(authorized_projects).exists?
-                         namespace_projects
-                       else
-                         Project.from_union([
-                           authorized_projects.in_namespace(namespace_ids),
-                           authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
-                         ])
-                       end
-                     when :project
-                       project_ids = options[:project_ids]
-                       projects_searched = Project.id_in(project_ids)
-                       if projects_searched.present? && !projects_searched.id_not_in(authorized_projects).exists?
-                         projects_searched
-                       else
-                         authorized_projects.id_in(project_ids)
-                       end
-                     end
-
-          features = Array.wrap(options[:features])
-          return projects.pluck_primary_key unless features.present?
-
-          project_ids_for_features(projects, user, features)
-        end
-
-        # @deprecated - use by_search_level_and_membership - this method is kept for legacy authorization
-        def project_ids_for_features(projects, user, features)
-          project_ids = projects.pluck_primary_key
-
-          allowed_ids = []
-          features.each do |feature|
-            allowed_ids.concat(filter_project_ids_by_feature(project_ids, user, feature))
-          end
-
-          abilities = features.map { |feature| ability_to_access_feature(feature) }
-
-          allowed_ids.concat(filter_project_ids_by_abilities(projects, user, abilities))
-          allowed_ids.uniq
-        end
-
-        def filter_project_ids_by_feature(project_ids, user, feature)
-          Project
-            .id_in(project_ids)
-            .filter_by_feature_visibility(feature, user)
-            .pluck_primary_key
-        end
-
+        # @param current_user [User] The user for whom to scope project IDs.
+        # @param project_ids [Array<Integer>, Symbol] An array of project IDs to filter, or :any to allow all projects.
+        # @return [Array<Integer>, Symbol] The scoped project IDs, or :any if no scoping is needed.
+        #   Returns an empty array if cross-project search is restricted and multiple project IDs are provided.
         def scoped_project_ids(current_user, project_ids)
           return :any if project_ids == :any
 
@@ -128,30 +77,11 @@ module Search
           project_ids
         end
 
-        # @deprecated - this method is kept for legacy authorization
-        def ability_to_access_feature(feature)
-          case feature&.to_sym
-          when :repository
-            :read_code
-          end
-        end
-
-        # @deprecated - this method is kept for legacy authorization
-        def filter_project_ids_by_abilities(projects, user, target_abilities)
-          return [] if target_abilities.empty? || user.blank?
-
-          actual_abilities = ::Authz::Project.new(user, scope: projects).permitted
-
-          projects.filter_map do |project|
-            project.id if (actual_abilities[project.id] || []).intersection(target_abilities).any?
-          end
-        end
-
         # Returns the groups for a given user based on the minimum access level.
         # @param user [User] The user for whom to retrieve groups.
         # @param min_access_level [Integer] Optional: The minimum access level required for groups.
         def groups_for_user(user:, min_access_level: nil)
-          strong_memoize_with(:groups_for_user, user, min_access_level) do
+          ::Gitlab::SafeRequestStore.fetch("user:#{user&.id}-min_access_level:#{min_access_level}-groups_for_search") do
             ::Search::GroupsFinder.new(user: user, params: { min_access_level: min_access_level }).execute
           end
         end
@@ -164,11 +94,7 @@ module Search
         def traversal_ids_for_user(user, options)
           return [] unless user
 
-          finder_params = {
-            features: Array.wrap(options[:features]),
-            min_access_level: options[:min_access_level]
-          }
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
+          authorized_groups = groups_for_user(user: user, min_access_level: options[:min_access_level])
 
           get_traversal_ids_for_search_level(authorized_groups, options)
         end
