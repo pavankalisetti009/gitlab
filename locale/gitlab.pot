@@ -70196,6 +70196,9 @@ msgstr ""
 msgid "Versions"
 msgstr ""
 
+msgid "View"
+msgstr ""
+
 msgid "View %d registry"
 msgid_plural "View %d registries"
 msgstr[0] ""

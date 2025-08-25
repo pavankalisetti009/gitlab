@@ -10,6 +10,7 @@ module Projects
       before_action do
         push_frontend_feature_flag(:vulnerabilities_pdf_export, project)
         push_frontend_feature_flag(:project_security_dashboard_new, project)
+        push_frontend_feature_flag(:new_security_dashboard_vulnerabilities_per_severity, project)
         push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: project, user: current_user)
       end
 

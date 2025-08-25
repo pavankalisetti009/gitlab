@@ -54,6 +54,7 @@ export default {
   <vulnerabilities-for-severity-panel
     :severity="severity"
     :count="vulnerabilitySeverityCount"
+    :filters="filters"
     :loading="loading"
     :error="fetchError"
   />

@@ -77,6 +77,10 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
       expect(findVulnerabilitiesForSeverityPanel().props('severity')).toBe('medium');
     });
 
+    it('passes the filters to the panel', () => {
+      expect(findVulnerabilitiesForSeverityPanel().props('filters')).toBe(defaultProps.filters);
+    });
+
     it('passes the count based on the data', async () => {
       const { medium } =
         defaultMockVulnerabilitiesPerSeverityData.data.group.securityMetrics

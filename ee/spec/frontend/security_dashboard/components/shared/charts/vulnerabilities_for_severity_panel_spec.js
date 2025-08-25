@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlDashboardPanel } from '@gitlab/ui';
+import { GlDashboardPanel, GlLink } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import VulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/charts/vulnerabilities_for_severity_panel.vue';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
@@ -10,20 +10,28 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
   const findDashboardPanel = () => wrapper.findComponent(GlDashboardPanel);
   const findSingleStat = () => wrapper.findComponent(GlSingleStat);
+  const findViewLink = () => wrapper.findComponent(GlLink);
   const findErrorMessage = () => wrapper.find('p');
 
   const defaultProps = {
     severity: 'critical',
     count: 42,
+    filters: {
+      reportType: ['SAST'],
+    },
     error: false,
     loading: false,
   };
+  const securityVulnerabilitiesPath = '/group/security/vulnerabilities';
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMount(VulnerabilitiesForSeverityPanel, {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      provide: {
+        securityVulnerabilitiesPath,
       },
     });
   };
@@ -52,6 +60,12 @@ describe('VulnerabilitiesForSeverityPanel', () => {
             `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[severity]}`,
           );
         });
+
+        it('constructs the correct link to the vulnerability report', () => {
+          expect(findViewLink().props('href')).toBe(
+            `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=${severity.toUpperCase()}&reportType=SAST`,
+          );
+        });
       },
     );
   });
@@ -64,6 +78,10 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
       it('renders GlSingleStat with correct value', () => {
         expect(findSingleStat().props('value')).toBe(defaultProps.count);
+      });
+
+      it('renders "View" link', () => {
+        expect(findViewLink().text()).toBe('View');
       });
 
       it('does not render error message', () => {
