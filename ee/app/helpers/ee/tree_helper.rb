@@ -5,7 +5,7 @@ module EE
     extend ::Gitlab::Utils::Override
 
     override :vue_tree_header_app_data
-    def vue_tree_header_app_data(project, repository, ref, pipeline)
+    def vue_tree_header_app_data(project, repository, ref, pipeline, ref_type)
       super.merge({
         kerberos_url: alternative_kerberos_url? ? project.kerberos_url_to_repo : ''
       }.merge(vue_tree_workspace_data))
