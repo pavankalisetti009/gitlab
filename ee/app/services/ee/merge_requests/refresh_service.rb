@@ -21,20 +21,9 @@ module EE
 
         reset_approvals_for_merge_requests(push.ref, push.newrev)
 
-        trigger_suggested_reviewers_fetch
         sync_any_merge_request_approval_rules
         sync_preexisting_states_approval_rules
         sync_unenforceable_approval_rules
-      end
-
-      def trigger_suggested_reviewers_fetch
-        return unless project.can_suggest_reviewers?
-
-        merge_requests_for_source_branch.each do |mr|
-          next unless mr.can_suggest_reviewers?
-
-          ::MergeRequests::FetchSuggestedReviewersWorker.perform_async(mr.id)
-        end
       end
 
       def reset_approvals_for_merge_requests(ref, newrev)

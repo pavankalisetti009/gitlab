@@ -38,64 +38,6 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
 
     it_behaves_like 'audits security policy branch bypass'
 
-    describe 'suggested reviewers' do
-      before do
-        allow(MergeRequests::FetchSuggestedReviewersWorker).to receive(:perform_async)
-        allow(merge_request).to receive(:ensure_merge_request_diff)
-      end
-
-      context 'when suggested reviewers is available for project' do
-        before do
-          allow(project).to receive(:can_suggest_reviewers?).and_return(true)
-        end
-
-        context 'when merge request can suggest reviewers' do
-          before do
-            allow(merge_request).to receive(:can_suggest_reviewers?).and_return(true)
-          end
-
-          it 'calls fetch worker for the merge request' do
-            execute
-
-            expect(merge_request).to have_received(:ensure_merge_request_diff).ordered
-            expect(MergeRequests::FetchSuggestedReviewersWorker).to have_received(:perform_async)
-              .with(merge_request.id)
-              .ordered
-          end
-        end
-
-        context 'when merge request cannot suggest reviewers' do
-          before do
-            allow(merge_request).to receive(:can_suggest_reviewers?).and_return(false)
-          end
-
-          it 'does not call fetch worker for the merge request' do
-            execute
-
-            expect(MergeRequests::FetchSuggestedReviewersWorker).not_to have_received(:perform_async)
-          end
-        end
-      end
-
-      context 'when suggested reviewers is not available for project' do
-        before do
-          allow(project).to receive(:can_suggest_reviewers?).and_return(false)
-        end
-
-        context 'when merge request can suggest reviewers' do
-          before do
-            allow(merge_request).to receive(:can_suggest_reviewers?).and_return(true)
-          end
-
-          it 'does not call fetch worker for the merge request' do
-            execute
-
-            expect(MergeRequests::FetchSuggestedReviewersWorker).not_to have_received(:perform_async)
-          end
-        end
-      end
-    end
-
     describe 'schedule_duo_code_review' do
       let(:merge_request) { create(:merge_request) }
       let(:current_user) { merge_request.author }
