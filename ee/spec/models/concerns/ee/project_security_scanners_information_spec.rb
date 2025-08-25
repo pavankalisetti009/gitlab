@@ -11,6 +11,7 @@ RSpec.describe ::EE::ProjectSecurityScannersInformation do
     create(:ci_build, :success, :dast, pipeline: pipeline)
     create(:ci_build, :success, :license_scanning, pipeline: pipeline)
     create(:ci_build, :pending, :secret_detection, pipeline: pipeline)
+    create(:ci_build, :sbom_dependency_scanning, :success, pipeline: pipeline)
   end
 
   describe '#available_scanners' do
