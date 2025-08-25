@@ -13387,7 +13387,8 @@ CREATE TABLE ci_sources_pipelines (
     partition_id bigint NOT NULL,
     source_partition_id bigint NOT NULL,
     pipeline_id bigint,
-    source_pipeline_id bigint
+    source_pipeline_id bigint,
+    CONSTRAINT check_5a76e457e6 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_sources_pipelines_id_seq
@@ -31529,9 +31530,6 @@ ALTER TABLE vulnerability_scanners
 
 ALTER TABLE push_event_payloads
     ADD CONSTRAINT check_37c617d07d CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE ci_sources_pipelines
-    ADD CONSTRAINT check_5a76e457e6 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE ONLY instance_type_ci_runners
     ADD CONSTRAINT check_5c34a3c1db UNIQUE (id);
