@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Ci::Runner, feature_category: :hosted_runners do
   let_it_be(:namespace) { create(:group, created_at: Date.new(2021, 7, 16)) }
   let_it_be(:project) { create(:project) }
+  let_it_be(:admin_bot) { create(:user, :admin_bot) }
 
   let(:shared_runners_minutes) { 400 }
 
@@ -42,7 +43,7 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
       end
 
       context 'with an admin bot created runner' do
-        let_it_be(:runner) { create(:ci_runner, creator: Users::Internal.admin_bot) }
+        let_it_be(:runner) { create(:ci_runner, creator: admin_bot) }
 
         it 'returns true' do
           expect(runner.dedicated_gitlab_hosted?).to be_truthy
@@ -67,7 +68,7 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     end
 
     context 'when not on dedicated installation' do
-      let_it_be(:runner) { create(:ci_runner, creator: Users::Internal.admin_bot) }
+      let_it_be(:runner) { create(:ci_runner, creator: admin_bot) }
 
       before do
         allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)

@@ -26,7 +26,7 @@ RSpec.describe ResourceAccessTokens::InactiveTokensDeletionCronWorker, feature_c
 
         audit_event = AuditEvent.where("details LIKE ?", "%user_destroyed%").last
 
-        author = Users::Internal.admin_bot
+        author = Users::Internal.for_organization(resource.organization).admin_bot
         expect(audit_event.author_id).to eq(author.id)
         expect(audit_event.entity).to eq(resource)
         expect(audit_event.details).to eq({

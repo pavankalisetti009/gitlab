@@ -38,7 +38,7 @@ module ComplianceManagement
 
     scope :pipl_deletable, -> do
       joins(:user)
-        .includes(:user)
+        .includes(user: :organization)
         .left_outer_joins(user: :ghost_user_migration)
         .where(ghost_user_migrations: { id: nil })
         .pipl_email_sent_on_or_before(DELETION_PERIOD.ago.end_of_day)

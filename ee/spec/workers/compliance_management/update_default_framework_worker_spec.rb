@@ -5,10 +5,10 @@ require 'spec_helper'
 RSpec.describe ComplianceManagement::UpdateDefaultFrameworkWorker, feature_category: :compliance_management do
   let_it_be(:worker) { described_class.new }
   let_it_be(:user) { create(:user) }
-  let_it_be(:admin_bot) { create(:user, :admin_bot, :admin) }
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, namespace: group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: group, name: 'GDPR') }
+  let_it_be(:admin_bot) { create(:user, :admin_bot, organization: project.organization) }
 
   let(:job_args) { [user.id, project.id, framework.id] }
 

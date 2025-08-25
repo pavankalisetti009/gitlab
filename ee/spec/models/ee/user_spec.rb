@@ -3500,8 +3500,8 @@ RSpec.describe User, feature_category: :system_access do
   end
 
   describe '#lock_access!' do
-    let_it_be(:gitlab_admin_bot) { Users::Internal.admin_bot }
     let_it_be_with_reload(:user) { create(:user) }
+    let_it_be(:gitlab_admin_bot) { Users::Internal.for_organization(user.organization).admin_bot }
 
     subject { user.lock_access! }
 

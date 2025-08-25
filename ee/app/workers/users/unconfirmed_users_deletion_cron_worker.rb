@@ -18,7 +18,6 @@ module Users
       return if ::Gitlab::CurrentSettings.email_confirmation_setting_off?
       return unless ::Gitlab::CurrentSettings.delete_unconfirmed_users?
       return unless License.feature_available?(:delete_unconfirmed_users)
-      return unless admin_bot_id
 
       in_lock(self.class.name.underscore, ttl: Gitlab::Utils::ExecutionTracker::MAX_RUNTIME, retries: 0) do
         order = Gitlab::Pagination::Keyset::Order.build([
@@ -33,7 +32,11 @@ module Users
           )
         ])
 
-        users = User.unconfirmed_and_created_before(cut_off).select(:created_at, :id, :username).order(order) # rubocop: disable CodeReuse/ActiveRecord
+        # rubocop:disable CodeReuse/ActiveRecord
+        users = User.unconfirmed_and_created_before(cut_off)
+                    .select(:created_at, :id, :organization_id, :username)
+                    .order(order)
+        # rubocop:enable CodeReuse/ActiveRecord
         delete_users(scope: users)
       end
     end
@@ -51,7 +54,8 @@ module Users
         DeleteUserWorker.bulk_perform_async_with_contexts(
           relation,
           arguments_proc: ->(user) {
-            [admin_bot_id, user.id, { skip_authorization: true, reason_for_deletion: reason_for_deletion }]
+            admin_bot = admin_bot_for_organization_id(user.organization_id)
+            [admin_bot.id, user.id, { skip_authorization: true, reason_for_deletion: reason_for_deletion }]
           },
           context_proc: ->(user) { { user: user } }
         )
@@ -63,15 +67,15 @@ module Users
     end
     strong_memoize_attr :cut_off
 
-    def admin_bot_id
-      Users::Internal.admin_bot&.id
-    end
-    strong_memoize_attr :admin_bot_id
-
     def reason_for_deletion
       "GitLab automatically deletes unconfirmed users after " \
         "#{::Gitlab::CurrentSettings.unconfirmed_users_delete_after_days} days since their creation"
     end
     strong_memoize_attr :reason_for_deletion
+
+    def admin_bot_for_organization_id(organization_id)
+      @admin_bots ||= {}
+      @admin_bots[organization_id] ||= Users::Internal.for_organization(organization_id).admin_bot
+    end
   end
 end

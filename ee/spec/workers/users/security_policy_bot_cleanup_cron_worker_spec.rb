@@ -17,11 +17,15 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       }
     end
 
+    let(:destroy_service_double) { Users::DestroyService.new(admin_user) }
+
+    before do
+      allow(Users::DestroyService).to receive(:new).and_return(destroy_service_double)
+    end
+
     context 'with no security policy bots' do
       it 'does not delete any users' do
-        expect_next_instance_of(Users::DestroyService) do |service|
-          expect(service).not_to receive(:execute)
-        end
+        expect(Users::DestroyService).not_to receive(:new)
 
         perform
       end
@@ -36,9 +40,7 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       end
 
       it 'does not delete users with project memberships' do
-        expect_next_instance_of(Users::DestroyService) do |service|
-          expect(service).not_to receive(:execute)
-        end
+        expect(Users::DestroyService).not_to receive(:new)
 
         perform
       end
@@ -57,10 +59,8 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       end
 
       it 'deletes security policy bots without project memberships' do
-        expect_next_instance_of(Users::DestroyService) do |service|
-          expect(service).to receive(:execute).with(security_policy_bot_1, expected_service_options)
-          expect(service).to receive(:execute).with(security_policy_bot_2, expected_service_options)
-        end
+        expect(destroy_service_double).to receive(:execute).with(security_policy_bot_1, expected_service_options)
+        expect(destroy_service_double).to receive(:execute).with(security_policy_bot_2, expected_service_options)
 
         perform
       end
@@ -76,10 +76,8 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       end
 
       it 'only deletes security policy bots without project memberships' do
-        expect_next_instance_of(Users::DestroyService) do |service|
-          expect(service).to receive(:execute).with(security_policy_bot_without_membership,
-            expected_service_options).and_call_original
-        end
+        expect(destroy_service_double).to receive(:execute).with(security_policy_bot_without_membership,
+          expected_service_options).and_call_original
 
         perform
       end
@@ -103,9 +101,9 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       let_it_be(:ghost_user_migration) { create(:ghost_user_migration, user: ghost_security_policy_bot) }
 
       it 'does not attempt to delete security policy bots with ghost user migration' do
-        expect_next_instance_of(Users::DestroyService) do |service|
-          expect(service).to receive(:execute).with(security_policy_bot, expected_service_options).and_call_original
-        end
+        expect(destroy_service_double).to receive(:execute).with(
+          security_policy_bot, expected_service_options
+        ).and_call_original
 
         perform
       end
@@ -120,9 +118,7 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       end
 
       it 'processes up to 2 users in a single execution' do
-        expect_next_instance_of(Users::DestroyService) do |service|
-          expect(service).to receive(:execute).twice
-        end
+        expect(destroy_service_double).to receive(:execute).twice
 
         perform
       end
@@ -133,14 +129,12 @@ RSpec.describe Users::SecurityPolicyBotCleanupCronWorker, feature_category: :sec
       let_it_be(:security_policy_bot_2) { create(:user, :security_policy_bot) }
 
       before do
-        allow_next_instance_of(Users::DestroyService) do |service|
-          allow(service).to receive(:execute).and_call_original
-          allow(service).to(
-            receive(:execute)
-              .with(security_policy_bot_1, expected_service_options)
-              .and_raise(error_class, 'Service error')
-          )
-        end
+        allow(destroy_service_double).to receive(:execute).and_call_original
+        allow(destroy_service_double).to(
+          receive(:execute)
+            .with(security_policy_bot_1, expected_service_options)
+            .and_raise(error_class, 'Service error')
+        )
       end
 
       shared_examples 'tracking error and continues processing' do
