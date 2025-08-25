@@ -67101,6 +67101,9 @@ msgstr ""
 msgid "Toggle file browser"
 msgstr ""
 
+msgid "Toggle file tree browser visibility"
+msgstr ""
+
 msgid "Toggle focus mode"
 msgstr ""
 
