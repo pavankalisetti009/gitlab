@@ -91,6 +91,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
     expect(item.latest_version).to have_attributes(
       schema_version: 1,
       version: '1.0.0',
+      release_date: nil,
       definition: {
         steps: [{
           agent_id: agent.id, current_version_id: agent.latest_version.id, pinned_version_prefix: nil
@@ -106,7 +107,21 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
     expect(graphql_data_at(:ai_catalog_flow_create, :item)).to match a_hash_including(
       'name' => name,
       'project' => a_hash_including('id' => project.to_global_id.to_s),
-      'description' => description
+      'description' => description,
+      'latestVersion' => a_hash_including('released' => false)
     )
+  end
+
+  context 'when release argument is true' do
+    let(:params) { super().merge(release: true) }
+
+    it 'releases the flow version' do
+      execute
+
+      expect(Ai::Catalog::ItemVersion.last.release_date).not_to be_nil
+      expect(graphql_data_at(:ai_catalog_flow_create, :item)).to match a_hash_including(
+        'latestVersion' => a_hash_including('released' => true)
+      )
+    end
   end
 end

@@ -17,6 +17,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
       name: 'New name',
       description: 'New description',
       public: true,
+      release: true,
       steps: [{ agent: agent }]
     }
   end
@@ -126,6 +127,89 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
          .to trigger_internal_events('update_ai_catalog_item')
          .with(user: user, project: project, additional_properties: { label: 'flow' })
          .and increment_usage_metrics('counts.count_total_update_ai_catalog_item')
+      end
+
+      context 'when the latest version has been released', :freeze_time do
+        before do
+          latest_version.update!(release_date: 1.day.ago)
+        end
+
+        it 'creates a new released version', :aggregate_failures do
+          expect { execute_service }.to change { flow.reload.versions.count }.by(1)
+          expect(flow.latest_version).not_to eq(latest_version)
+          expect(flow.latest_version).to have_attributes(
+            schema_version: 1,
+            version: '2.0.0',
+            release_date: Time.zone.now,
+            definition: {
+              steps: [
+                {
+                  agent_id: agent.id, current_version_id: v1_1.id, pinned_version_prefix: nil
+                }.stringify_keys
+              ],
+              triggers: [1]
+            }.stringify_keys
+          )
+        end
+
+        it 'does not change the older version' do
+          expect { execute_service }.not_to change { latest_version.reload.attributes }
+        end
+
+        context 'when the `ai_catalog_enforce_readonly_versions` flag is disabled' do
+          before do
+            stub_feature_flags(ai_catalog_enforce_readonly_versions: false)
+          end
+
+          it 'does not create a new version, and updates the existing version instead', :aggregate_failures do
+            expect { execute_service }.not_to change { flow.reload.versions.count }
+            expect(flow.latest_version).to eq(latest_version)
+            expect(flow.latest_version).to have_attributes(
+              schema_version: 1,
+              version: '1.1.0',
+              release_date: 1.day.ago,
+              definition: {
+                steps: [
+                  {
+                    agent_id: agent.id, current_version_id: v1_1.id, pinned_version_prefix: nil
+                  }.stringify_keys
+                ],
+                triggers: [1]
+              }.stringify_keys
+            )
+          end
+
+          context 'when the version is not being released' do
+            let(:params) { super().merge(release: false) }
+
+            it 'does not unrelease the version', :aggregate_failures do
+              expect { execute_service }.not_to change { flow.reload.versions.count }
+              expect(flow.latest_version).to be_released
+            end
+          end
+        end
+
+        context 'when the version is not being released' do
+          let(:params) { super().merge(release: nil) }
+
+          it 'creates a new unreleased version', :aggregate_failures do
+            expect { execute_service }.to change { flow.reload.versions.count }.by(1)
+            expect(flow.latest_version).not_to eq(latest_version)
+            expect(flow.latest_version.release_date).to be_nil
+          end
+        end
+
+        context 'when only flow properties are updated' do
+          let(:params) { { flow: flow, name: 'New name' } }
+
+          it 'updates the flow' do
+            expect { execute_service }.to change { flow.reload.name }.to('New name')
+          end
+
+          it 'does not create a new version' do
+            expect { execute_service }.not_to change { flow.reload.versions.count }
+          end
+        end
       end
 
       context 'when updated flow is invalid' do

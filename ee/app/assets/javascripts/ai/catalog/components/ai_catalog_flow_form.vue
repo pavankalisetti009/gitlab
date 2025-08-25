@@ -62,6 +62,7 @@ export default {
           name: '',
           description: '',
           steps: [],
+          release: true,
         };
       },
     },
@@ -153,6 +154,7 @@ export default {
         description: this.formValues.description.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
         steps: this.formValues.steps.map((s) => ({ agentId: s.id })),
+        release: this.initialValues.release,
       };
       this.$emit('submit', transformedValues);
     },
