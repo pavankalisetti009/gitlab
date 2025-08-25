@@ -8,7 +8,6 @@ import { GlToggle } from '@gitlab/ui';
 import { sendDuoChatCommand, setAgenticMode } from 'ee/ai/utils';
 import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
-import DuoChatLoggingAlert from 'ee/ai/components/duo_chat_logging_alert.vue';
 import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
@@ -117,7 +116,6 @@ describeSkipVue3(skipReason, () => {
 
   const findCallout = () => wrapper.findComponent(DuoChatCallout);
   const findSubscriptions = () => wrapper.findComponent(TanukiBotSubscriptions);
-  const findLoggingAlert = () => wrapper.findComponent(DuoChatLoggingAlert);
 
   const createComponent = ({
     initialState = {},
@@ -293,41 +291,6 @@ describeSkipVue3(skipReason, () => {
       it('does not render the DuoChat component', () => {
         expect(findDuoChat().exists()).toBe(false);
       });
-    });
-  });
-
-  describe('DuoChatLoggingAlert Integration', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isShown = true;
-    });
-
-    it('renders DuoChatLoggingAlert with correct props', () => {
-      const metadata = { is_team_member: true, extended_logging: true };
-      createComponent({
-        propsData: {
-          userId: MOCK_USER_ID,
-          resourceId: MOCK_RESOURCE_ID,
-          metadata,
-        },
-      });
-
-      expect(findLoggingAlert().exists()).toBe(true);
-      expect(findLoggingAlert().props('metadata')).toEqual(metadata);
-    });
-
-    it('renders DuoChatLoggingAlert in the subheader slot', () => {
-      createComponent();
-
-      expect(findDuoChat().vm.$slots.subheader).toBeDefined();
-      expect(findLoggingAlert().exists()).toBe(true);
-    });
-
-    it('does not render DuoChatLoggingAlert when Duo Chat is not shown', () => {
-      duoChatGlobalState.isShown = false;
-      createComponent();
-
-      expect(findDuoChat().exists()).toBe(false);
-      expect(findLoggingAlert().exists()).toBe(false);
     });
   });
 
@@ -1203,7 +1166,7 @@ describeSkipVue3(skipReason, () => {
 
     it('passes chatTitle prop to DuoChat component', async () => {
       const chatTitle = 'Custom Chat Title';
-      createComponent({ propsData: { userId: MOCK_USER_ID, chatTitle } });
+      createComponent({ propsData: { chatTitle } });
       await nextTick();
       expect(findDuoChat().props('title')).toBe(chatTitle);
     });
@@ -1216,7 +1179,7 @@ describeSkipVue3(skipReason, () => {
 
     it('updates DuoChat title when chatTitle prop changes', async () => {
       const localWrapper = shallowMountExtended(TanukiBotChatApp, {
-        propsData: { userId: MOCK_USER_ID, chatTitle: 'Initial Title' },
+        propsData: { chatTitle: 'Initial Title' },
         store: new Vuex.Store({ actions: actionSpies }),
         apolloProvider: createMockApollo([]),
       });

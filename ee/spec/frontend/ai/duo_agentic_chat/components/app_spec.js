@@ -12,7 +12,6 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/app.vue';
-import DuoChatLoggingAlert from 'ee/ai/components/duo_chat_logging_alert.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
 import {
@@ -69,11 +68,7 @@ const MOCK_USER_MESSAGE = {
   role: 'user',
   requestId: `${MOCK_WORKFLOW_ID}-0`,
 };
-const MOCK_AI_RESOURCE_DATA = JSON.stringify({
-  type: 'issue',
-  id: 789,
-  title: 'Test Issue',
-});
+const MOCK_AI_RESOURCE_DATA = JSON.stringify({ type: 'issue', id: 789, title: 'Test Issue' });
 const MOCK_CONTEXT_PRESETS_RESPONSE = {
   data: {
     aiChatContextPresets: {
@@ -151,7 +146,6 @@ Vue.use(VueApollo);
 
 jest.mock('~/lib/utils/common_utils', () => ({
   getCookie: jest.fn(),
-  setCookie: jest.fn(),
 }));
 
 jest.mock('ee/ai/utils', () => {
@@ -179,8 +173,6 @@ describe('Duo Agentic Chat', () => {
   const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(AgenticDuoChat);
-  const findLoggingAlert = () => wrapper.findComponent(DuoChatLoggingAlert);
-  const findGlToggle = () => wrapper.findComponent(GlToggle);
   const getLastSocketCall = () => {
     const { calls } = createWebSocket.mock;
     if (calls.length === 0) {
@@ -190,13 +182,11 @@ describe('Duo Agentic Chat', () => {
     return socketCallbacks;
   };
 
-  const defaultPropsData = {
-    projectId: MOCK_PROJECT_ID,
-    resourceId: MOCK_RESOURCE_ID,
-    metadata: { is_team_member: true, extended_logging: true },
-  };
-
-  const createComponent = ({ initialState = {}, propsData = {} } = {}) => {
+  const createComponent = ({
+    initialState = {},
+    propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
+    data = {},
+  } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
       state: {
@@ -218,9 +208,9 @@ describe('Duo Agentic Chat', () => {
     wrapper = shallowMountExtended(DuoAgenticChatApp, {
       store,
       apolloProvider,
-      propsData: {
-        ...defaultPropsData,
-        ...propsData,
+      propsData,
+      data() {
+        return data;
       },
     });
 
@@ -310,35 +300,6 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
-  describe('DuoChatLoggingAlert Integration', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-    });
-
-    it('renders DuoChatLoggingAlert with correct props', () => {
-      const metadata = { is_team_member: true, extended_logging: true };
-      createComponent({ propsData: { metadata } });
-
-      expect(findLoggingAlert().exists()).toBe(true);
-      expect(findLoggingAlert().props('metadata')).toEqual(metadata);
-    });
-
-    it('renders DuoChatLoggingAlert in the subheader slot', () => {
-      createComponent();
-
-      expect(findDuoChat().vm.$slots.subheader).toBeDefined();
-      expect(findLoggingAlert().exists()).toBe(true);
-    });
-
-    it('does not render DuoChatLoggingAlert when Duo Chat is not shown', () => {
-      duoChatGlobalState.isAgenticChatShown = false;
-      createComponent();
-
-      expect(findDuoChat().exists()).toBe(false);
-      expect(findLoggingAlert().exists()).toBe(false);
-    });
-  });
-
   describe('events handling', () => {
     beforeEach(() => {
       createComponent();
@@ -401,10 +362,7 @@ describe('Duo Agentic Chat', () => {
 
       it('creates a new workflow when sending a prompt for the first time with namespaceId', async () => {
         createComponent({
-          propsData: {
-            projectId: null,
-            namespaceId: MOCK_NAMESPACE_ID,
-          },
+          propsData: { namespaceId: MOCK_NAMESPACE_ID, resourceId: MOCK_RESOURCE_ID },
         });
         duoChatGlobalState.isAgenticChatShown = true;
 
@@ -457,12 +415,7 @@ describe('Duo Agentic Chat', () => {
 
       it('creates a new workflow when sending a prompt for the first time without projectId or namespaceId', async () => {
         createComponent({
-          propsData: {
-            projectId: undefined,
-            namespaceId: undefined,
-            resourceId: MOCK_RESOURCE_ID,
-            metadata: undefined,
-          },
+          propsData: { resourceId: MOCK_RESOURCE_ID },
         });
         duoChatGlobalState.isAgenticChatShown = true;
 
@@ -498,16 +451,6 @@ describe('Duo Agentic Chat', () => {
       });
 
       it('sends the correct start request to WebSocket when connected', async () => {
-        createComponent({
-          propsData: {
-            projectId: undefined,
-            namespaceId: undefined,
-            resourceId: MOCK_RESOURCE_ID,
-            metadata: undefined,
-          },
-        });
-
-        await waitForPromises(); // Wait for Apollo queries to complete
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
 
@@ -706,7 +649,7 @@ describe('Duo Agentic Chat', () => {
             workflowDefinition: 'chat',
             goal: '',
             approval: { approval: {} },
-            workflowMetadata: { is_team_member: true, extended_logging: true },
+            workflowMetadata: null,
             additionalContext: expectedAdditionalContext,
           },
         };
@@ -800,7 +743,7 @@ describe('Duo Agentic Chat', () => {
               approval: undefined,
               rejection: { message: denyMessage },
             },
-            workflowMetadata: { is_team_member: true, extended_logging: true },
+            workflowMetadata: null,
             additionalContext: expectedAdditionalContext,
           },
         };
@@ -888,7 +831,7 @@ describe('Duo Agentic Chat', () => {
               approval: undefined,
               rejection: { message: 'I do not approve this action' },
             },
-            workflowMetadata: { is_team_member: true, extended_logging: true },
+            workflowMetadata: null,
             additionalContext: expectedAdditionalContext,
           },
         };
@@ -1108,6 +1051,8 @@ describe('Duo Agentic Chat', () => {
   });
 
   describe('duoAgenticModePreference toggle', () => {
+    const findGlToggle = () => wrapper.findComponent(GlToggle);
+
     beforeEach(() => {
       duoChatGlobalState.isAgenticChatShown = true;
       jest.clearAllMocks();
@@ -1157,9 +1102,7 @@ describe('Duo Agentic Chat', () => {
     describe('@thread-selected', () => {
       it('switches to selected thread and fetches workflow events', async () => {
         const mockThread = { id: MOCK_WORKFLOW_ID };
-        const mockParsedData = {
-          checkpoint: { channel_values: { ui_chat_log: [] } },
-        };
+        const mockParsedData = { checkpoint: { channel_values: { ui_chat_log: [] } } };
 
         WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
         WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
@@ -1232,13 +1175,15 @@ describe('Duo Agentic Chat', () => {
   });
 
   describe('Agentic Mode Toggle', () => {
+    const findGlToggle = () => wrapper.findComponent(GlToggle);
+
     beforeEach(() => {
       duoChatGlobalState.isAgenticChatShown = true;
       getCookie.mockReturnValue('false');
       createComponent();
     });
 
-    it('renders the GlToggle component in footer-controls', () => {
+    it('renders the GlToggle component in subheader', () => {
       expect(findGlToggle().exists()).toBe(true);
     });
 

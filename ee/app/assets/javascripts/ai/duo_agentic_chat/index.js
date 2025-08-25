@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import store from '../tanuki_bot/store';
 import DuoAgenticChatApp from './components/app.vue';
 
@@ -18,8 +17,8 @@ export const initDuoAgenticChat = () => {
     return false;
   }
 
-  const { projectId, namespaceId, resourceId } = el.dataset;
-  const metadata = convertObjectPropsToCamelCase(JSON.parse(el.dataset.metadata));
+  const { projectId, namespaceId, resourceId, metadata } = el.dataset;
+
   return new Vue({
     el,
     store: store(),
