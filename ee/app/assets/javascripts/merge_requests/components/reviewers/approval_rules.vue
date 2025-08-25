@@ -162,9 +162,11 @@ export default {
               <td class="gl-px-5 gl-py-3">
                 <div class="gl-flex gl-justify-end">
                   <reviewer-dropdown
+                    data-testid="reviewer-dropdown"
                     :selected-reviewers="reviewers"
                     :eligible-reviewers="reviewersEligibleForRule(rule)"
                     :users="rule.eligibleApprovers"
+                    multiple-selection-enabled
                     :unique-id="rule.id"
                   />
                 </div>
