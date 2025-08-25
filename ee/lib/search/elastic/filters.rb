@@ -12,11 +12,9 @@ module Search
       TRAVERSAL_IDS_FIELD = :traversal_ids
 
       class << self
-        include ::Gitlab::Utils::StrongMemoize
         include ::Elastic::Latest::QueryContext::Aware
         include Search::Elastic::Concerns::FilterUtils
         include Search::Elastic::Concerns::AuthorizationUtils
-        include Search::Concerns::FeatureCustomAbilityMap
 
         def by_search_level_and_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
@@ -1012,36 +1010,6 @@ module Search
           ::GroupsFinder.new(user, finder_params).execute.pluck("#{Group.table_name}.#{Group.primary_key}") # rubocop:disable CodeReuse/ActiveRecord -- we need pluck only the ids from the finder
         end
 
-        def projects_for_user(user, options)
-          return [] unless user
-
-          search_level = options.fetch(:search_level).to_sym
-          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
-          case search_level
-          when :global
-            authorized_projects
-          when :group
-            namespace_ids = options[:group_ids]
-            projects = Project.in_namespace(namespace_ids)
-            if projects.present? && !projects.id_not_in(authorized_projects).exists?
-              projects
-            else
-              Project.from_union([
-                authorized_projects.in_namespace(namespace_ids),
-                authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
-              ])
-            end
-          when :project
-            project_ids = options[:project_ids]
-            projects = Project.id_in(project_ids)
-            if projects.present? && !projects.id_not_in(authorized_projects).exists?
-              projects
-            else
-              authorized_projects.id_in(project_ids)
-            end
-          end
-        end
-
         def authorized_namespace_ids(user, group_ids)
           return [] unless user && group_ids.present?
 
@@ -1302,37 +1270,6 @@ module Search
             .pluck_primary_key
         end
 
-        def project_ids_for_features(projects, user, features)
-          project_ids = projects.pluck_primary_key
-
-          allowed_ids = []
-          features.each do |feature|
-            allowed_ids.concat(filter_project_ids_by_feature(project_ids, user, feature))
-          end
-
-          abilities = features.map { |feature| ability_to_access_feature(feature) }
-
-          allowed_ids.concat(filter_project_ids_by_abilities(projects, user, abilities))
-          allowed_ids.uniq
-        end
-
-        def filter_project_ids_by_abilities(projects, user, target_abilities)
-          return [] if target_abilities.empty? || user.blank?
-
-          actual_abilities = ::Authz::Project.new(user, scope: projects).permitted
-
-          projects.filter_map do |project|
-            project.id if (actual_abilities[project.id] || []).intersection(target_abilities).any?
-          end
-        end
-
-        def ability_to_access_feature(feature)
-          case feature&.to_sym
-          when :repository
-            :read_code
-          end
-        end
-
         def find_labels_by_name(names, options)
           raise ArgumentError, 'search_level is a required option' unless options.key?(:search_level)
 
@@ -1576,20 +1513,6 @@ module Search
 
             required_feature_access_levels << access_levels[:project]
             required_feature_access_levels << access_levels[:private_project]
-          end
-        end
-
-        def get_feature_access_levels(feature)
-          {
-            project: ProjectFeature.required_minimum_access_level(feature),
-            private_project: ProjectFeature.required_minimum_access_level_for_private_project(feature)
-          }
-        end
-
-        def allowed_ids_by_ability(feature:, user_abilities:)
-          target_ability = FEATURE_TO_ABILITY_MAP[feature.to_sym]
-          user_abilities.filter_map do |id, abilities|
-            id if abilities.include?(target_ability)
           end
         end
 
