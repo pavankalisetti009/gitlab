@@ -540,7 +540,7 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           zoekt_ensure_project_indexed!(project)
         end
 
-        it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 9 do
+        it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 14 do
           before do
             get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
           end

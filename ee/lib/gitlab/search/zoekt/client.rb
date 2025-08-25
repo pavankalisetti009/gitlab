@@ -55,13 +55,16 @@ module Gitlab
           end
 
           if use_ast_search_payload?(current_user)
+            params = ::Search::Zoekt::Params.new(current_user, limit: num, **options)
             payload = ::Search::Zoekt::SearchRequest.new(
               current_user: current_user,
               query: format_query(query, source: options[:source], search_mode: search_mode),
               num_context_lines: CONTEXT_LINES_COUNT,
-              max_file_match_results: num,
-              max_line_match_results: num,
-              max_line_match_results_per_file: options[:multi_match]&.max_chunks_size,
+              max_file_match_window: params.max_file_match_window,
+              max_file_match_results: params.max_file_match_results,
+              max_line_match_window: params.max_line_match_window,
+              max_line_match_results: params.max_line_match_results,
+              max_line_match_results_per_file: params.max_line_match_results_per_file,
               search_mode: search_mode,
               **options
             ).as_json
@@ -79,7 +82,7 @@ module Gitlab
           response = post_request(join_url(proxy_node.search_base_url, PROXY_SEARCH_PATH), payload)
           log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
           log_debug('Zoekt AST request', payload: payload) if debug?
-          Gitlab::Search::Zoekt::Response.new parse_response(response)
+          Gitlab::Search::Zoekt::Response.new parse_response(response), current_user: current_user
         ensure
           add_request_details(start_time: start, path: PROXY_SEARCH_PATH, body: payload)
         end
