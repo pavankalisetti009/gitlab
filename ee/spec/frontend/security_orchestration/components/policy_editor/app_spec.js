@@ -5,6 +5,8 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import PolicyTypeSelector from 'ee/security_orchestration/components/policy_editor/policy_type_selector.vue';
 import EditorWrapper from 'ee/security_orchestration/components/policy_editor/editor_wrapper.vue';
+import AdvancedEditorBanner from 'ee/security_orchestration/components/policy_editor/advanced_editor_banner.vue';
+import AdvancedEditorToggle from 'ee/security_orchestration/components/policy_editor/advanced_editor_toggle.vue';
 
 describe('App component', () => {
   let wrapper;
@@ -12,6 +14,8 @@ describe('App component', () => {
   const findPolicySelection = () => wrapper.findComponent(PolicyTypeSelector);
   const findPolicyEditor = () => wrapper.findComponent(EditorWrapper);
   const findTitle = () => wrapper.findByTestId('page-heading').text();
+  const findAdvancedEditorBanner = () => wrapper.findComponent(AdvancedEditorBanner);
+  const findAdvancedEditorToggle = () => wrapper.findComponent(AdvancedEditorToggle);
 
   const factory = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(App, {
@@ -25,6 +29,9 @@ describe('App component', () => {
       factory();
       expect(findPolicySelection().exists()).toBe(true);
       expect(findPolicyEditor().exists()).toBe(false);
+
+      expect(findAdvancedEditorBanner().exists()).toBe(false);
+      expect(findAdvancedEditorToggle().exists()).toBe(false);
     });
 
     it('displays the policy editor when there is a type query parameter', () => {
@@ -83,6 +90,50 @@ describe('App component', () => {
         expect(findTitle()).toBe('Edit policy');
         expect(findPolicyEditor().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('split view with advanced editor', () => {
+    it('renders advance editor banner and toggle', () => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesSplitView: true,
+          },
+        },
+      });
+
+      expect(findAdvancedEditorBanner().exists()).toBe(true);
+      expect(findAdvancedEditorToggle().exists()).toBe(true);
+      expect(findAdvancedEditorToggle().props('advancedEditorEnabled')).toBe(false);
+    });
+
+    it('enables advanced editor from a banner', async () => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesSplitView: true,
+          },
+        },
+      });
+
+      await findAdvancedEditorBanner().vm.$emit('enable-advanced-editor', true);
+
+      expect(findAdvancedEditorToggle().props('advancedEditorEnabled')).toBe(true);
+    });
+
+    it('enables advanced editor from a toggle', async () => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesSplitView: true,
+          },
+        },
+      });
+
+      await findAdvancedEditorToggle().vm.$emit('enable-advanced-editor', true);
+
+      expect(findAdvancedEditorToggle().props('advancedEditorEnabled')).toBe(true);
     });
   });
 });

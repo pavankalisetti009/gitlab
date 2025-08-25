@@ -409,7 +409,10 @@ describe('EditorLayout component', () => {
 
   describe('new split view layout', () => {
     beforeEach(() => {
-      factory({ provide: { glFeatures: { securityPoliciesSplitView: true } } });
+      factory({
+        propsData: { advancedEditorEnabled: true },
+        provide: { glFeatures: { securityPoliciesSplitView: true } },
+      });
     });
 
     it('renders new layout when ff is on', () => {

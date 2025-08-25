@@ -31,6 +31,7 @@ import {
   parseExceptionsStringToItems,
   splitItemsByCommaOrSpace,
   getHostname,
+  getAdvancedEditorValue,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -47,6 +48,7 @@ import {
   ALLOWED,
   DENIED,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
+import { ADVANCED_EDITOR_STORAGE_KEY } from 'ee/security_orchestration/components/policy_editor/constants';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 jest.mock('ee/security_orchestration/utils');
@@ -686,5 +688,16 @@ describe('getHostname', () => {
       value: undefined,
     });
     expect(getHostname()).toBe('your GitLab instance');
+  });
+});
+
+describe('getAdvancedEditorValue', () => {
+  it('returns disabled state for advanced policy editor', () => {
+    expect(getAdvancedEditorValue()).toBe(false);
+  });
+
+  it('returns enabled state for advanced policy editor', () => {
+    localStorage.setItem(ADVANCED_EDITOR_STORAGE_KEY, 'true');
+    expect(getAdvancedEditorValue()).toBe(true);
   });
 });

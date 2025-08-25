@@ -6025,6 +6025,9 @@ msgstr ""
 msgid "Advanced Settings"
 msgstr ""
 
+msgid "Advanced editor"
+msgstr ""
+
 msgid "Advanced export options"
 msgstr ""
 
@@ -27055,6 +27058,9 @@ msgstr ""
 msgid "ExperimentTracking|Run"
 msgstr ""
 
+msgid "Experimental"
+msgstr ""
+
 msgid "Experiments"
 msgstr ""
 
@@ -30228,6 +30234,9 @@ msgid "Gitpod|https://gitpod.example.com"
 msgstr ""
 
 msgid "Give feedback"
+msgstr ""
+
+msgid "Give us feedback"
 msgstr ""
 
 msgid "Give us some feedback"
@@ -57758,6 +57767,9 @@ msgstr ""
 msgid "SecurityOrchestration|%{boldStart}Add branches%{boldEnd} first before selection."
 msgstr ""
 
+msgid "SecurityOrchestration|%{boldStart}Experiment:%{boldEnd} Try our new advanced policy editor for a more intuitive experience."
+msgstr ""
+
 msgid "SecurityOrchestration|%{boldStart}Send a bot message%{boldEnd} as comment to merge request creator."
 msgstr ""
 
@@ -57965,6 +57977,9 @@ msgid "SecurityOrchestration|Automate %{strongStart}vulnerability management%{st
 msgstr ""
 
 msgid "SecurityOrchestration|Automatically selected runners"
+msgstr ""
+
+msgid "SecurityOrchestration|Back to standard editor"
 msgstr ""
 
 msgid "SecurityOrchestration|Branch exceptions (%{count})"
@@ -58849,6 +58864,9 @@ msgid "SecurityOrchestration|To widen your search, change filters above or selec
 msgstr ""
 
 msgid "SecurityOrchestration|Trigger"
+msgstr ""
+
+msgid "SecurityOrchestration|Try advanced editor"
 msgstr ""
 
 msgid "SecurityOrchestration|Turn off default mode to edit scope."
