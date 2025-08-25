@@ -493,7 +493,7 @@ To set issue weight of a task:
 1. Enter a whole, positive number.
 1. Select **Apply** or press <kbd>Enter</kbd>.
 
-### View count and weight of tasks in an issue
+### View count and weight of tasks in the parent issue
 
 {{< history >}}
 
@@ -510,8 +510,8 @@ This feature is available for testing, but not ready for production use.
 
 {{< /alert >}}
 
-In the issue description, in the **Child items** section header, the number of descendant tasks and their total
-weight is displayed.
+The number of descendant tasks and their total weight is displayed in the issue
+description, in the **Child items** section header.
 
 To see the number of open and closed tasks:
 
@@ -520,7 +520,7 @@ To see the number of open and closed tasks:
 The numbers reflect all child tasks associated with the issue, including those you might
 not have permission to view.
 
-### View issue progress
+### View progress of the parent issue
 
 {{< history >}}
 
@@ -537,7 +537,7 @@ This feature is available for testing, but not ready for production use.
 
 {{< /alert >}}
 
-In the issue description, in the **Child items** section header, the issue progress percentage is displayed.
+The issue progress percentage is displayed in the issue description, in the **Child items** section header.
 
 To see the completed and total weight of child tasks:
 
