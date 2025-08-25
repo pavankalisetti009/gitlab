@@ -269,7 +269,13 @@ namespace :gitlab do
 
     ActiveRecord::Tasks::DatabaseTasks.for_each(databases) do |name|
       # Inform Rake that custom tasks should be run every time rake db:schema:dump is run
-      Rake::Task["db:schema:dump:#{name}"].enhance(['gitlab:db:create_dynamic_partitions']) do
+      prerequisites = if name == 'geo'
+                        []
+                      else
+                        ['gitlab:db:create_dynamic_partitions']
+                      end
+
+      Rake::Task["db:schema:dump:#{name}"].enhance(prerequisites) do
         Rake::Task['gitlab:db:clean_structure_sql'].invoke
       end
     end
