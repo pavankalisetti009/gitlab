@@ -301,7 +301,7 @@ export default {
               :label="avatarLabel(item)"
             >
               <template #meta>
-                <gl-badge v-if="item.invited && item.approved" variant="muted">
+                <gl-badge v-if="item.invited && item.approved" variant="neutral">
                   {{ $options.AWAITING_MEMBER_SIGNUP_TEXT }}
                 </gl-badge>
               </template>

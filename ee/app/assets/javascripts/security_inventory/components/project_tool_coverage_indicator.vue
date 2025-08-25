@@ -50,7 +50,10 @@ export default {
       if (relevantScanner.some((status) => status.status === 'SUCCESS')) {
         return { variant: 'success', class: 'gl-border-transparent' };
       }
-      return { class: '!gl-bg-default !gl-text-neutral-600 gl-border-gray-200 gl-border-dashed' };
+      return {
+        variant: 'neutral',
+        class: '!gl-bg-default !gl-text-neutral-600 gl-border-gray-200 gl-border-dashed',
+      };
     },
     getToolCoverageTitle(key) {
       return SCANNER_TYPES[key].name;

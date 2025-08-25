@@ -22,7 +22,7 @@ const GEO_SHARED_STATUS_STATES = {
   UNKNOWN: {
     title: s__('Geo|Unknown'),
     value: null,
-    variant: 'muted',
+    variant: 'neutral',
     icon: 'status-neutral',
   },
 };

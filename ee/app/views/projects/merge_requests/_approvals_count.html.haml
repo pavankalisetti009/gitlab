@@ -11,7 +11,7 @@
   - approval_tooltip = self_approved ? approved_text : unapproved_text
   - approval_icon = approved ? 'check' : 'approval'
   - approval_icon = self_approved ? 'approval-solid' : approval_icon
-  - badge_variant = approved ? :success : :muted
+  - badge_variant = approved ? :success : :neutral
   - badge_label = approved ? _("Approved") : _("%{approvals_given} of %{required} Approvals") % { approvals_given: total_given, required: required }
 
   %li.gl-flex{ class: '!gl-mr-0' }= render Pajamas::BadgeComponent.new(badge_label, variant: badge_variant, icon: approval_icon, title: approval_tooltip, class: 'has-tooltip', data: { 'testid': 'mr-approvals' })

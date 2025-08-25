@@ -34,8 +34,8 @@ describe('GeoSiteFormApp', () => {
 
     describe.each`
       formType                     | site                  | title                              | subTitle                                                 | learnMoreLink              | pillTitle                        | variant
-      ${'create a secondary site'} | ${null}               | ${GeoSiteFormApp.i18n.addGeoSite}  | ${'Configure various settings for your secondary site.'} | ${SECONDARY_SITE_SETTINGS} | ${GeoSiteFormApp.i18n.secondary} | ${'muted'}
-      ${'update a secondary site'} | ${{ primary: false }} | ${GeoSiteFormApp.i18n.editGeoSite} | ${'Configure various settings for your secondary site.'} | ${SECONDARY_SITE_SETTINGS} | ${GeoSiteFormApp.i18n.secondary} | ${'muted'}
+      ${'create a secondary site'} | ${null}               | ${GeoSiteFormApp.i18n.addGeoSite}  | ${'Configure various settings for your secondary site.'} | ${SECONDARY_SITE_SETTINGS} | ${GeoSiteFormApp.i18n.secondary} | ${'neutral'}
+      ${'update a secondary site'} | ${{ primary: false }} | ${GeoSiteFormApp.i18n.editGeoSite} | ${'Configure various settings for your secondary site.'} | ${SECONDARY_SITE_SETTINGS} | ${GeoSiteFormApp.i18n.secondary} | ${'neutral'}
       ${'update a primary site'}   | ${{ primary: true }}  | ${GeoSiteFormApp.i18n.editGeoSite} | ${'Configure various settings for your primary site.'}   | ${PRIMARY_SITE_SETTINGS}   | ${GeoSiteFormApp.i18n.primary}   | ${'info'}
     `(`form header`, ({ formType, site, title, subTitle, learnMoreLink, pillTitle, variant }) => {
       describe(`when site form is to ${formType}`, () => {

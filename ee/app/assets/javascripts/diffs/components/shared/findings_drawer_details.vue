@@ -27,7 +27,7 @@ export default {
   },
   computed: {
     findingsStatus() {
-      return this.drawer.state === SAST_FINDING_DISMISSED ? 'muted' : 'warning';
+      return this.drawer.state === SAST_FINDING_DISMISSED ? 'neutral' : 'warning';
     },
     isCodeQuality() {
       return this.drawer.scale === this.$options.codeQuality;

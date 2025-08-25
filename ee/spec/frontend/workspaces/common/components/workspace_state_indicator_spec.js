@@ -21,8 +21,8 @@ describe('WorkspaceStateIndicator', () => {
     ${WORKSPACE_STATES.running}           | ${''}       | ${'Running'}       | ${'success'}
     ${WORKSPACE_STATES.stopping}          | ${'status'} | ${'Stopping'}      | ${'info'}
     ${WORKSPACE_STATES.stopped}           | ${''}       | ${'Stopped'}       | ${'info'}
-    ${WORKSPACE_STATES.terminating}       | ${'status'} | ${'Terminating'}   | ${'muted'}
-    ${WORKSPACE_STATES.terminated}        | ${''}       | ${'Terminated'}    | ${'muted'}
+    ${WORKSPACE_STATES.terminating}       | ${'status'} | ${'Terminating'}   | ${'neutral'}
+    ${WORKSPACE_STATES.terminated}        | ${''}       | ${'Terminated'}    | ${'neutral'}
     ${WORKSPACE_STATES.failed}            | ${''}       | ${'Failed'}        | ${'danger'}
     ${WORKSPACE_STATES.error}             | ${''}       | ${'Error'}         | ${'danger'}
     ${WORKSPACE_STATES.unknown}           | ${''}       | ${'Unknown state'} | ${'danger'}

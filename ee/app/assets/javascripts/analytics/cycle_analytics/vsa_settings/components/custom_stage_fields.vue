@@ -115,7 +115,7 @@ export default {
           <template #label>
             <span class="gl-heading-3 gl-mb-0 gl-inline-flex gl-flex-wrap gl-items-center gl-gap-3">
               {{ stageLabel }}: {{ stage.name }}
-              <gl-badge variant="muted">{{ $options.i18n.CUSTOM_BADGE_LABEL }}</gl-badge>
+              <gl-badge variant="neutral">{{ $options.i18n.CUSTOM_BADGE_LABEL }}</gl-badge>
             </span>
           </template>
           <!-- eslint-disable vue/no-mutating-props -->

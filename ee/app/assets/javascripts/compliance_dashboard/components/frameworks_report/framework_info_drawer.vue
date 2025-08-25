@@ -325,7 +325,7 @@ export default {
               <h3 data-testid="sidebar-requirements-title" class="gl-heading-3 gl-mt-5 gl-px-5">
                 {{ $options.i18n.complianceRequirements }}
               </h3>
-              <gl-badge class="gl-ml-2" variant="muted" data-testid="requirements-count-badge">
+              <gl-badge class="gl-ml-2" variant="neutral" data-testid="requirements-count-badge">
                 <template v-if="$apollo.queries.controls.loading">
                   <gl-loading-icon size="sm" />
                 </template>
@@ -374,7 +374,7 @@ export default {
             <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
               {{ associatedProjectsTitle }}
             </h3>
-            <gl-badge class="gl-ml-3" variant="muted">
+            <gl-badge class="gl-ml-3" variant="neutral">
               <template v-if="!associatedProjectsCount && $apollo.queries.projects.loading">
                 <gl-loading-icon size="sm" />
               </template>
@@ -407,7 +407,7 @@ export default {
             <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
               {{ policiesTitle }}
             </h3>
-            <gl-badge class="gl-ml-3" variant="muted">{{ policiesCount }}</gl-badge>
+            <gl-badge class="gl-ml-3" variant="neutral">{{ policiesCount }}</gl-badge>
           </div>
           <ul v-if="policies.length" class="gl-pl-5">
             <li v-for="(policy, idx) in policies" :key="idx" class="gl-mt-1">

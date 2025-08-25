@@ -263,7 +263,7 @@ export default {
         :title="label.title"
         @close="$emit('removeLabel', label.id)"
       />
-      <gl-badge class="gl-ml-2" variant="muted" :aria-label="badgeAriaLabel">
+      <gl-badge class="gl-ml-2" variant="neutral" :aria-label="badgeAriaLabel">
         {{ issues.count }}
       </gl-badge>
     </div>
