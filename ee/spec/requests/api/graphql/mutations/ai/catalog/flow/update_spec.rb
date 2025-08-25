@@ -129,6 +129,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       expect(latest_version.reload).to have_attributes(
         schema_version: 1,
         version: '1.1.0',
+        release_date: nil,
         definition: {
           steps: [
             {
@@ -142,6 +143,16 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
         }.stringify_keys
       )
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
+    end
+
+    context 'when release argument is true' do
+      let(:params) { super().merge(release: true) }
+
+      it 'sets the flow version release date' do
+        execute
+
+        expect(latest_version.reload.release_date).not_to be_nil
+      end
     end
 
     context 'when passing only required arguments (test that mutation handles absence of optional args)' do

@@ -25,6 +25,7 @@ module Ai
               steps: steps
             }
           }
+          version_params[:release_date] = Time.zone.now if params[:release] == true
 
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)

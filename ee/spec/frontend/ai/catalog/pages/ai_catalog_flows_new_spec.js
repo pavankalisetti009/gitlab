@@ -61,6 +61,7 @@ describe('AiCatalogFlowsNew', () => {
       description,
       projectId: project.id,
       public: true,
+      release: true,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);

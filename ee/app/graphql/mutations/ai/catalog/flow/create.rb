@@ -30,6 +30,10 @@ module Mutations
             required: true,
             description: 'Whether the flow is publicly visible in the catalog.'
 
+          argument :release, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Whether to release the latest version of the flow.'
+
           argument :steps, [::Types::Ai::Catalog::FlowStepsInputType],
             required: true,
             description: 'Steps for the flow.'
