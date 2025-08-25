@@ -310,6 +310,9 @@ describe('CentralizedSecurityPolicyManagement', () => {
       await waitForPromises();
       expect(findSaveButton().props('disabled')).toBe(true);
       expect(glTooltipDirectiveMock.mock.calls[0][1].value.disabled).toBe(false);
+
+      findSaveButton().vm.$emit('click');
+      expect(showModalWindowSpy).not.toHaveBeenCalled();
     });
   });
 
