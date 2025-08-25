@@ -50,7 +50,9 @@ module EE
         amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {},
-        initialDuoFlowEnabled: project.duo_remote_flows_enabled
+        initialDuoFlowEnabled: project.duo_remote_flows_enabled,
+        experimentFeaturesEnabled: project.root_ancestor.experiment_features_enabled || false,
+        paidDuoTier: paid_duo_tier_for_project(project)
       })
     end
 
@@ -390,6 +392,19 @@ module EE
     end
 
     private
+
+    def paid_duo_tier_for_project(project)
+      namespace = project.root_ancestor
+
+      addon_names = ::GitlabSubscriptions::AddOnPurchase
+        .by_namespace(namespace)
+        .for_duo_add_ons
+        .active
+        .uniq_add_on_names
+
+      # Check if there are any duo add-ons that aren't duo_core
+      addon_names.any? { |name| name != 'duo_core' }
+    end
 
     def security_dashboard_pipeline_data(project)
       pipeline = project.latest_ingested_security_pipeline

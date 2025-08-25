@@ -23,7 +23,7 @@ RSpec.describe 'Group > Settings > GitLab Duo', :js, feature_category: :seat_cos
         expect(page).to have_selector('[data-testid="duo-configuration-settings-info-card"]')
       end
 
-      context 'when duo tier is not Duo Core' do
+      context 'when paid duo tier is available' do
         let(:add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: group) }
 
         it 'renders Duo seat utilization info card' do
@@ -32,7 +32,7 @@ RSpec.describe 'Group > Settings > GitLab Duo', :js, feature_category: :seat_cos
         end
       end
 
-      context 'when tier is Duo Core' do
+      context 'when only Duo Core is available' do
         let(:add_on) { create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group) }
 
         it 'does not render Duo seat utilization info card' do

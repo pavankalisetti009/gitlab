@@ -706,7 +706,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       { duoFeaturesEnabled: true,
         licensedAiFeaturesAvailable: false,
         duoFeaturesLocked: false,
-        initialDuoFlowEnabled: false }
+        initialDuoFlowEnabled: false,
+        experimentFeaturesEnabled: false }
     end
 
     subject(:data) { helper.gitlab_duo_settings_data(project) }
@@ -716,6 +717,16 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     it { is_expected.to include(expected_data) }
+
+    context 'when experiment features are enabled' do
+      before do
+        allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(true)
+      end
+
+      it 'includes experimentFeaturesEnabled as true' do
+        expect(data[:experimentFeaturesEnabled]).to be(true)
+      end
+    end
 
     context "if AmazonQ is connected" do
       let_it_be(:integration) { create(:amazon_q_integration, instance: false, project: project) }
@@ -997,6 +1008,87 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
             uses_namespace_domain: 'true'
           }
         )
+      end
+    end
+  end
+
+  describe '#paid_duo_tier_for_project' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: group) }
+
+    subject(:paid_tier) { helper.send(:paid_duo_tier_for_project, project) }
+
+    context 'when no add-ons are active' do
+      it 'returns false' do
+        expect(paid_tier).to be(false)
+      end
+    end
+
+    context 'when only duo_core add-on is active' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_core, :active, namespace: group)
+      end
+
+      it 'returns false' do
+        expect(paid_tier).to be(false)
+      end
+    end
+
+    context 'when paid add-ons are active' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: group)
+      end
+
+      it 'returns true' do
+        expect(paid_tier).to be(true)
+      end
+    end
+
+    context 'when multiple paid add-ons are active' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :duo_self_hosted, :active, namespace: group)
+      end
+
+      it 'returns true' do
+        expect(paid_tier).to be(true)
+      end
+    end
+
+    context 'when duo_amazon_q and duo_core are active' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_amazon_q, :active, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :duo_core, :active, namespace: group)
+      end
+
+      it 'returns true (duo_amazon_q is not duo_core)' do
+        expect(paid_tier).to be(true)
+      end
+    end
+
+    context 'when project is in a subgroup' do
+      let_it_be(:parent_group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: parent_group) }
+      let_it_be(:subgroup_project) { create(:project, namespace: subgroup) }
+
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, namespace: parent_group)
+      end
+
+      it 'checks the root ancestor namespace for add-ons' do
+        result = helper.send(:paid_duo_tier_for_project, subgroup_project)
+        expect(result).to be(true)
+      end
+    end
+
+    context 'when add-on purchase is inactive' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired, namespace: group)
+      end
+
+      it 'returns false' do
+        expect(paid_tier).to be(false)
       end
     end
   end

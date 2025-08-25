@@ -51,6 +51,7 @@ are available on GitLab Self-Managed only.
 {{< history >}}
 
 - GitLab Duo Agentic Chat added in GitLab 18.2.
+- GitLab Duo Context Exclusion added in GitLab 18.2.
 
 {{< /history >}}
 
@@ -65,6 +66,7 @@ They require a Premium or Ultimate subscription and one of the available add-ons
 | [Merge Request Summary](../project/merge_requests/duo_in_merge_requests.md#generate-a-description-by-summarizing-code-changes) | {{< icon name="dash-circle" >}} No | {{< icon name="dash-circle" >}} No | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="dash-circle" >}} No | Beta | Beta | {{< icon name="dash-circle" >}} No | Beta |
 | [GitLab Duo Agentic Chat](../gitlab_duo_chat/agentic_chat.md) | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes <sup>1</sup> | Experiment | Experiment | {{< icon name="dash-circle" >}} No | {{< icon name="dash-circle" >}} No |
 | [GitLab Duo Agent Platform](../duo_agent_platform/_index.md) | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="dash-circle" >}} No | Beta | Beta | Beta | {{< icon name="dash-circle" >}} No |
+| [GitLab Duo Context Exclusion](context_exclusion.md) | {{< icon name="dash-circle" >}} No | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="check-circle-filled" >}} Yes | {{< icon name="dash-circle" >}} No | Beta | Beta | Beta | {{< icon name="dash-circle" >}} No |
 
 **Footnotes**:
 
