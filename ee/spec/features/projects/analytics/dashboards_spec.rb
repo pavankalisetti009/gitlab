@@ -450,7 +450,7 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
             visit_project_value_streams_dashboard(project)
           end
 
-          it_behaves_like 'renders licensed project VSD for a reporter'
+          it_behaves_like 'renders licensed VSD for a reporter'
         end
       end
     end

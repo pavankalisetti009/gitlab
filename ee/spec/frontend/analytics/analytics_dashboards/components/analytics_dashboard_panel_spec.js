@@ -27,13 +27,14 @@ describe('AnalyticsDashboardPanel', () => {
   const findAlertDescriptionLink = () => wrapper.findComponent(GlLink);
   const findAlertBody = () => wrapper.findByTestId('alert-body');
   const findDashboardPanel = () => wrapper.findComponent(GlDashboardPanel);
-  const findDashboardPanelLicenseWarning = () =>
-    wrapper.findByTestId('dashboard-panel-license-warning');
+  const findDashboardPanelPermissionsWarning = () =>
+    wrapper.findByTestId('dashboard-panel-access-warning');
   const findVisualization = () => wrapper.findComponent(LineChart);
 
   const createWrapper = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AnalyticsDashboardPanel, {
       provide: {
+        hasUltimateLicense: true,
         namespaceId: '1',
         namespaceName: 'Namespace name',
         namespaceFullPath: 'namespace/full/path',
@@ -44,6 +45,9 @@ describe('AnalyticsDashboardPanel', () => {
         overviewCountsAggregationEnabled: true,
         glAbilities: {
           readDora4Analytics: true,
+        },
+        glLicensedFeatures: {
+          dora4Analytics: true,
         },
         ...provide,
       },
@@ -115,14 +119,29 @@ describe('AnalyticsDashboardPanel', () => {
     });
   });
 
-  describe('when the visualization is licensed invalid', () => {
+  describe('when the visualization is licensed', () => {
     describe('with the correct license', () => {
       it('renders the visualization', () => {
         createWrapper({
           props: { visualization: licensedVisualization },
         });
 
-        expect(findDashboardPanelLicenseWarning().exists()).toBe(false);
+        expect(findDashboardPanelPermissionsWarning().exists()).toBe(false);
+      });
+
+      it('renders insufficent permissions message without the correct abilities', () => {
+        createWrapper({
+          props: { visualization: licensedVisualization },
+          provide: {
+            glAbilities: {
+              readDora4Analytics: false,
+            },
+          },
+        });
+
+        expect(findDashboardPanelPermissionsWarning().text()).toBe(
+          'You have insufficient permissions to view this panel.',
+        );
       });
     });
 
@@ -131,8 +150,8 @@ describe('AnalyticsDashboardPanel', () => {
         createWrapper({
           props: { visualization: licensedVisualization },
           provide: {
-            glAbilities: {
-              readDora4Analytics: false,
+            glLicensedFeatures: {
+              dora4Analytics: false,
             },
           },
         });
@@ -145,7 +164,7 @@ describe('AnalyticsDashboardPanel', () => {
       });
 
       it('renders the missing license message', () => {
-        expect(findDashboardPanelLicenseWarning().text()).toBe(
+        expect(findDashboardPanelPermissionsWarning().text()).toBe(
           'This feature requires an Ultimate plan Learn more.',
         );
       });

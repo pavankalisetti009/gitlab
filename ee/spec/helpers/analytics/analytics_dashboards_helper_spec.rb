@@ -74,7 +74,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
             root_namespace_name: group.full_path,
             features: (enabled && has_permission ? [:product_analytics] : []).to_json,
             router_base: '/-/analytics/dashboards',
-
             is_instance_configured_with_self_managed_analytics_provider: 'true',
             default_use_instance_configuration: 'true',
             overview_counts_aggregation_enabled: "false",
@@ -138,7 +137,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           root_namespace_name: group.full_path,
           features: [].to_json,
           router_base: "/groups/#{sub_group.full_path}/-/analytics/dashboards",
-
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false",
@@ -219,7 +217,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           root_namespace_name: group.full_path,
           features: [].to_json,
           router_base: "/groups/#{group.full_path}/-/analytics/dashboards",
-
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false",
