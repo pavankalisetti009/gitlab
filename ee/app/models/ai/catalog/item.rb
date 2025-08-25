@@ -25,6 +25,11 @@ module Ai
       has_many :versions, class_name: 'Ai::Catalog::ItemVersion', foreign_key: :ai_catalog_item_id, inverse_of: :item
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
+      has_many(
+        :reverse_dependencies,
+        foreign_key: :dependency_id, inverse_of: :dependency, class_name: 'Ai::Catalog::ItemVersionDependency'
+      )
+
       scope :for_organization, ->(organization) { where(organization: organization) }
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :public_only, -> { where(public: true) }

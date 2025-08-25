@@ -42,7 +42,7 @@ module Ai
         end
 
         def delete_item
-          return item.soft_delete if item.consumers.any?
+          return item.soft_delete if item.consumers.any? || item.reverse_dependencies.any?
 
           item.destroy
         end
