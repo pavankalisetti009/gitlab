@@ -5,7 +5,14 @@ require 'spec_helper'
 RSpec.describe Ai::ActiveContext::Code::IncrementalIndexingService, feature_category: :global_search do
   let_it_be(:collection) { create(:ai_active_context_collection) }
   let_it_be(:project) { create(:project) }
-  let_it_be_with_reload(:repository) { create(:ai_active_context_code_repository, state: :ready, project: project) }
+  let_it_be_with_reload(:repository) do
+    create(
+      :ai_active_context_code_repository,
+      state: :ready,
+      project: project,
+      metadata: { initial_indexing_last_queued_item: 'hash0' }
+    )
+  end
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
 
@@ -41,13 +48,14 @@ RSpec.describe Ai::ActiveContext::Code::IncrementalIndexingService, feature_cate
                                                           .with(hashes: ['hash2'], routing: repository.project_id)
 
       expect(logger).to receive(:info).with(
-        build_log_payload('set_highest_enqueued_item', initial_indexing_last_queued_item: 'hash2')
+        build_log_payload('incremental_indexing_last_queued_item', incremental_indexing_last_queued_item: 'hash2')
       ).ordered
 
       execute
 
       expect(repository.state).to eq('ready')
-      expect(repository.initial_indexing_last_queued_item).to eq('hash2')
+      expect(repository.incremental_indexing_last_queued_item).to eq('hash2')
+      expect(repository.initial_indexing_last_queued_item).to eq('hash0')
     end
 
     context 'when indexing fails' do

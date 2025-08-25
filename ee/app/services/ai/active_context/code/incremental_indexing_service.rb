@@ -14,6 +14,18 @@ module Ai
 
         private
 
+        def set_highest_enqueued_item!(item_id)
+          repository.update!(
+            incremental_indexing_last_queued_item: item_id,
+            indexed_at: Time.current
+          )
+
+          log_info(
+            'incremental_indexing_last_queued_item',
+            incremental_indexing_last_queued_item: item_id
+          )
+        end
+
         def update_repository_last_error(message)
           repository.update!(last_error: message)
 

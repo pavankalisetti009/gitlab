@@ -38,15 +38,7 @@ module Ai
         end
 
         def set_highest_enqueued_item!(item_id)
-          repository.update!(
-            initial_indexing_last_queued_item: item_id,
-            indexed_at: Time.current
-          )
-
-          log_info(
-            'set_highest_enqueued_item',
-            initial_indexing_last_queued_item: item_id
-          )
+          raise NotImplementedError, 'Method must be implemented in child class.'
         end
 
         def log_info(message, extra_params = {})

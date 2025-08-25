@@ -18,6 +18,18 @@ module Ai
 
         private
 
+        def set_highest_enqueued_item!(item_id)
+          repository.update!(
+            initial_indexing_last_queued_item: item_id,
+            indexed_at: Time.current
+          )
+
+          log_info(
+            'initial_indexing_last_queued_item',
+            initial_indexing_last_queued_item: item_id
+          )
+        end
+
         def update_repository_state!(state, extra_params = {})
           repository.update!(state: state, **extra_params)
 

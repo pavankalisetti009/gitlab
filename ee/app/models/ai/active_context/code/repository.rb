@@ -44,6 +44,7 @@ module Ai
 
         jsonb_accessor :metadata,
           initial_indexing_last_queued_item: :string,
+          incremental_indexing_last_queued_item: :string,
           last_error: :string
 
         scope :for_connection_and_enabled_namespace, ->(connection, enabled_namespace) {

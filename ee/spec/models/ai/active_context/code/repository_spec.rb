@@ -34,29 +34,29 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         expect(repository).to be_valid
       end
 
-      it 'is invalid for a random hash' do
+      it 'is valid when values follow expected types' do
+        repository.metadata = {
+          initial_indexing_last_queued_item: 'item_ref_123',
+          incremental_indexing_last_queued_item: 'item_ref_456',
+          last_error: 'Something went wrong'
+        }
+
+        expect(repository).to be_valid
+      end
+
+      it 'is valid when values are nil' do
+        repository.metadata = {
+          initial_indexing_last_queued_item: nil,
+          incremental_indexing_last_queued_item: nil,
+          last_error: nil
+        }
+
+        expect(repository).to be_valid
+      end
+
+      it 'is invalid for an unexpected key' do
         repository.metadata = { key: 'value' }
         expect(repository).not_to be_valid
-      end
-
-      it 'is valid with initial_indexing_last_queued_item' do
-        repository.metadata = { initial_indexing_last_queued_item: 'item_ref_123' }
-        expect(repository).to be_valid
-      end
-
-      it 'is valid with null initial_indexing_last_queued_item' do
-        repository.metadata = { initial_indexing_last_queued_item: nil }
-        expect(repository).to be_valid
-      end
-
-      it 'is valid with last_error' do
-        repository.metadata = { last_error: 'Something went wrong' }
-        expect(repository).to be_valid
-      end
-
-      it 'is valid with null last_error' do
-        repository.metadata = { last_error: nil }
-        expect(repository).to be_valid
       end
 
       it 'is invalid with wrong type for initial_indexing_last_queued_item' do
@@ -64,8 +64,13 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
         expect(repository).not_to be_valid
       end
 
+      it 'is invalid with wrong type for incremental_indexing_last_queued_item' do
+        repository.metadata = { incremental_indexing_last_queued_item: 456 }
+        expect(repository).not_to be_valid
+      end
+
       it 'is invalid with wrong type for last_error' do
-        repository.metadata = { last_error: 123 }
+        repository.metadata = { last_error: false }
         expect(repository).not_to be_valid
       end
     end
