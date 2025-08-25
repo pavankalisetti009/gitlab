@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ApprovalRules from 'ee/merge_requests/components/reviewers/approval_rules.vue';
 import userPermissionsQuery from '~/merge_requests/components/reviewers/queries/user_permissions.query.graphql';
 
@@ -12,18 +12,20 @@ describe('Reviewer drawer approval rules component', () => {
 
   const findOptionalToggle = () => wrapper.findByTestId('optional-rules-toggle');
   const findRuleRows = () => wrapper.findAll('tbody tr');
+  const findReviewerDropdown = () => wrapper.findByTestId('reviewer-dropdown');
 
   function createComponent({
     rule = null,
     approvalsRequired = 1,
     key = 'required',
     reviewers = [],
+    fn = mountExtended,
   } = {}) {
     const apolloProvider = createMockApollo([
       [userPermissionsQuery, jest.fn().mockResolvedValue({ data: { project: null } })],
     ]);
 
-    wrapper = mountExtended(ApprovalRules, {
+    wrapper = fn(ApprovalRules, {
       apolloProvider,
       provide: {
         projectPath: 'gitlab-org/gitlab',
@@ -107,6 +109,12 @@ describe('Reviewer drawer approval rules component', () => {
     await nextTick();
 
     expect(findRuleRows()).toHaveLength(3);
+  });
+
+  it('sets the reviewer dropdown to allow multiple selection', () => {
+    createComponent({ key: 'rules', fn: shallowMountExtended });
+
+    expect(findReviewerDropdown().props('multipleSelectionEnabled')).toBe(true);
   });
 
   describe('when codeowners rule exists', () => {
