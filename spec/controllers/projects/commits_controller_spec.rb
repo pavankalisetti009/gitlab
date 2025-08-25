@@ -171,7 +171,9 @@ RSpec.describe Projects::CommitsController, feature_category: :source_code_manag
             let(:request_params) { base_request_params.merge(committed_before: '2020-01-01') }
             let(:repository_params) { base_repository_params.merge(before: 1577836800) }
 
-            it_behaves_like 'repository commits call'
+            Time.use_zone('America/Los_Angeles') do
+              it_behaves_like 'repository commits call'
+            end
           end
 
           context 'is invalid' do
@@ -194,7 +196,9 @@ RSpec.describe Projects::CommitsController, feature_category: :source_code_manag
             let(:request_params) { base_request_params.merge(committed_after: '2020-01-01') }
             let(:repository_params) { base_repository_params.merge(after: 1577836800) }
 
-            it_behaves_like 'repository commits call'
+            Time.use_zone('America/Los_Angeles') do
+              it_behaves_like 'repository commits call'
+            end
           end
 
           context 'is invalid' do
