@@ -14,6 +14,7 @@ module Admin
       to: :application_settings
 
     delegate :ai_gateway_url,
+      :duo_agent_platform_service_url,
       :amazon_q_ready?,
       :duo_core_features_enabled?,
       :duo_workflow_service_account_user,
@@ -27,6 +28,8 @@ module Admin
     def settings
       {
         ai_gateway_url: ai_gateway_url,
+        duo_agent_platform_service_url: duo_agent_platform_service_url,
+        expose_duo_agent_platform_service_url: ::Feature.enabled?(:agent_platform_model_selection, :instance),
         are_duo_core_features_enabled: duo_core_features_enabled?,
         are_experiment_settings_allowed: experiments_settings_allowed?,
         are_prompt_cache_settings_allowed: true,

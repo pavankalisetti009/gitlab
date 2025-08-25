@@ -11,6 +11,10 @@ module Mutations
           required: false,
           description: 'URL for local AI gateway server.'
 
+        argument :duo_agent_platform_service_url, String,
+          required: false,
+          description: 'URL for the local Duo Agent Platform service.'
+
         argument :duo_core_features_enabled, Boolean,
           required: false,
           validates: { allow_null: false },
@@ -45,6 +49,12 @@ module Mutations
           raise_resource_not_available_error!(:ai_gateway_url) if args.key?(:ai_gateway_url) &&
             !allowed_to_update?(:manage_self_hosted_models_settings)
 
+          if args.key?(:duo_agent_platform_service_url) &&
+              !allowed_to_update?(:manage_self_hosted_models_settings)
+
+            raise_resource_not_available_error!(:duo_agent_platform_service_url)
+          end
+
           raise_resource_not_available_error!(:duo_core_features_enabled) if args.key?(:duo_core_features_enabled) &&
             !allowed_to_update?(:manage_duo_core_settings)
         end
@@ -61,6 +71,9 @@ module Mutations
         def permitted_params(args)
           params = args.dup
           params[:ai_gateway_url] = params[:ai_gateway_url]&.chomp('/').presence if params.key?(:ai_gateway_url)
+          if params.key?(:duo_agent_platform_service_url)
+            params[:duo_agent_platform_service_url] = params[:duo_agent_platform_service_url]&.chomp('/').presence
+          end
 
           params
         end
