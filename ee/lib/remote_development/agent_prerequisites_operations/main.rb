@@ -8,7 +8,6 @@ module RemoteDevelopment
 
       # @param [Hash] context
       # @return [Hash]
-      # @raise [Gitlab::Fp::UnmatchedResultError]
       def self.main(context)
         initial_result = Gitlab::Fp::Result.ok(context)
 
