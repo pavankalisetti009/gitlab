@@ -73,9 +73,9 @@ module Gitlab
     end
 
     def self.expanded_ai_logging_on_self_managed?(name)
-      # cloud_connector_static_catalog is only available on GitLab.com (SaaS)
+      # gitlab_com_subscriptions is only available on GitLab.com (SaaS)
       # so its absence indicates a self-managed instance
-      self_managed_instance = !::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+      self_managed_instance = !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       name.to_sym == :expanded_ai_logging && self_managed_instance
     end
