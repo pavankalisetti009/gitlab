@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
-import { mockFlow } from '../mock_data';
+import { mockFlow, mockFlowVersion } from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
   let wrapper;
@@ -21,7 +21,7 @@ describe('AiCatalogFlowDetails', () => {
     createComponent();
   });
 
-  it('renders item', () => {
-    expect(wrapper.text()).toContain(mockFlow.name);
+  it('renders item steps', () => {
+    expect(wrapper.text()).toContain(mockFlowVersion.steps.nodes[0].agent.name);
   });
 });

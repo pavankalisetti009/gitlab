@@ -234,11 +234,21 @@ export const mockExecuteAgentResponse = {
 
 /* FLOWS */
 
-const mockFlowVersion = {
+export const mockFlowVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
   versionName: 'v1.0.0-draft',
   steps: {
-    nodes: [],
+    nodes: [
+      {
+        agent: {
+          id: 'gid://gitlab/Ai::Catalog::ItemVersion/100',
+          name: 'Agent',
+          __typename: 'AiCatalogAgent',
+        },
+        __typename: 'AiCatalogFlowSteps',
+      },
+    ],
+    __typename: 'AiCatalogFlowStepsConnection',
   },
   __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
