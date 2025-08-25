@@ -53,6 +53,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_created_at(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_updated_at(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_due_date(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_iids(query_hash: query_hash, options: options)
 
         if hybrid_work_item_search?
           query_hash = ::Search::Elastic::Filters.by_knn(query_hash: query_hash, options: options)

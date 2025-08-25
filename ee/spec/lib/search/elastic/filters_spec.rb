@@ -4444,4 +4444,56 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it_behaves_like 'adds filter to query_hash'
     end
   end
+
+  describe '.by_iids' do
+    subject(:by_iids) { described_class.by_iids(query_hash: query_hash, options: options) }
+
+    context 'when iids option is empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when iids option is nil' do
+      let(:options) { { iids: nil } }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:iids] is provided with single iid' do
+      let(:options) { { iids: [1] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:iids',
+            filter: {
+              terms: {
+                'iid' => [1]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+
+    context 'when options[:iids] is provided with multiple iids' do
+      let(:options) { { iids: [1, 2, 3] } }
+      let(:expected_filter) do
+        [{
+          bool: {
+            _name: 'filters:iids',
+            filter: {
+              terms: {
+                'iid' => [1, 2, 3]
+              }
+            }
+          }
+        }]
+      end
+
+      it_behaves_like 'adds filter to query_hash'
+    end
+  end
 end

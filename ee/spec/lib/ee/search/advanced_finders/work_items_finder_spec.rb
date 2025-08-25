@@ -87,6 +87,14 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
         end
       end
 
+      context 'when not supported sort value is used' do
+        let(:params) { { sort: 'not_supported' } }
+
+        it 'returns false' do
+          expect(finder.use_elasticsearch_finder?).to be_falsey
+        end
+      end
+
       context 'when `not` operator is used with supported filter' do
         let(:params) { { not: { author_username: current_user.username } } }
 
@@ -1139,6 +1147,328 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
                 work_item_closed_tomorrow
               )
             end
+          end
+        end
+      end
+
+      context 'when searching for iids' do
+        let!(:work_item1) { create(:work_item, project: project) }
+        let!(:work_item2) { create(:work_item, project: project) }
+
+        before do
+          Elastic::ProcessBookkeepingService.track!(work_item1, work_item2)
+
+          ensure_elasticsearch_index!
+        end
+
+        context 'when iids param with single iid provided' do
+          let(:params) do
+            { iids: [work_item1.iid] }
+          end
+
+          it 'returns work item with specified iid' do
+            expect(execute).to contain_exactly(work_item1)
+          end
+        end
+
+        context 'when iids param with multiple iids provided' do
+          let(:params) do
+            { iids: [work_item1.iid, work_item2.iid] }
+          end
+
+          it 'returns work items with specified iids' do
+            expect(execute).to contain_exactly(work_item1, work_item2)
+          end
+        end
+
+        context 'when iids param with non-existent iid provided' do
+          let(:params) do
+            { iids: [999999] }
+          end
+
+          it 'returns no work items' do
+            expect(execute).to be_empty
+          end
+        end
+      end
+
+      context 'when sorting work items' do
+        context 'when sorting by created_at', :freeze_time do
+          let_it_be(:work_item_created_first) { create(:work_item, project: project, created_at: 2.days.ago) }
+          let_it_be(:work_item_created_second) { create(:work_item, project: project, created_at: 1.day.ago) }
+          let_it_be(:work_item_created_third) { create(:work_item, project: project, created_at: Time.current) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_created_first,
+              work_item_created_second,
+              work_item_created_third
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with created_asc' do
+            let(:params) { { sort: 'created_asc' } }
+
+            it 'returns work items sorted by creation date ascending' do
+              expect(execute).to eq([work_item_created_first, work_item_created_second, work_item_created_third])
+            end
+          end
+
+          context 'with created_desc' do
+            let(:params) { { sort: 'created_desc' } }
+
+            it 'returns work items sorted by creation date descending' do
+              expect(execute).to eq([work_item_created_third, work_item_created_second, work_item_created_first])
+            end
+          end
+        end
+
+        context 'when sorting by updated_at', :freeze_time do
+          let_it_be(:work_item_updated_first) { create(:work_item, project: project, updated_at: 2.days.ago) }
+          let_it_be(:work_item_updated_second) { create(:work_item, project: project, updated_at: 1.day.ago) }
+          let_it_be(:work_item_updated_third) { create(:work_item, project: project, updated_at: Time.current) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_updated_first,
+              work_item_updated_second,
+              work_item_updated_third
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with updated_asc' do
+            let(:params) { { sort: 'updated_asc' } }
+
+            it 'returns work items sorted by update date ascending' do
+              expect(execute).to eq([work_item_updated_first, work_item_updated_second, work_item_updated_third])
+            end
+          end
+
+          context 'with updated_desc' do
+            let(:params) { { sort: 'updated_desc' } }
+
+            it 'returns work items sorted by update date descending' do
+              expect(execute).to eq([work_item_updated_third, work_item_updated_second, work_item_updated_first])
+            end
+          end
+        end
+
+        context 'when sorting by weight' do
+          let_it_be(:work_item_with_weight_5) { create(:work_item, project: project, weight: 5) }
+          let_it_be(:work_item_with_weight_10) { create(:work_item, project: project, weight: 10) }
+          let_it_be(:work_item_without_weight) { create(:work_item, project: project, weight: nil) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_with_weight_5,
+              work_item_with_weight_10,
+              work_item_without_weight
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with weight_asc' do
+            let(:params) { { sort: 'weight_asc' } }
+
+            it 'returns work items sorted by weight ascending (nulls last)' do
+              expect(execute).to eq([work_item_with_weight_5, work_item_with_weight_10, work_item_without_weight])
+            end
+          end
+
+          context 'with weight_desc' do
+            let(:params) { { sort: 'weight_desc' } }
+
+            it 'returns work items sorted by weight descending (nulls last)' do
+              expect(execute).to eq([work_item_with_weight_10, work_item_with_weight_5, work_item_without_weight])
+            end
+          end
+        end
+
+        context 'when sorting by health_status' do
+          let_it_be(:work_item_on_track) { create(:work_item, project: project, health_status: 'on_track') }
+          let_it_be(:work_item_needs_attention) do
+            create(:work_item, project: project, health_status: 'needs_attention')
+          end
+
+          let_it_be(:work_item_at_risk) { create(:work_item, project: project, health_status: 'at_risk') }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_on_track,
+              work_item_needs_attention,
+              work_item_at_risk
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with health_status_asc' do
+            let(:params) { { sort: 'health_status_asc' } }
+
+            it 'returns work items sorted by health status ascending' do
+              expect(execute).to eq([work_item_on_track, work_item_needs_attention, work_item_at_risk])
+            end
+          end
+
+          context 'with health_status_desc' do
+            let(:params) { { sort: 'health_status_desc' } }
+
+            it 'returns work items sorted by health status descending' do
+              expect(execute).to eq([work_item_at_risk, work_item_needs_attention, work_item_on_track])
+            end
+          end
+        end
+
+        context 'when sorting by closed_at', :freeze_time do
+          let_it_be(:work_item_closed_first) do
+            create(:work_item, project: project, state: 'closed', closed_at: 3.days.ago)
+          end
+
+          let_it_be(:work_item_closed_second) do
+            create(:work_item, project: project, state: 'closed', closed_at: 1.day.ago)
+          end
+
+          let_it_be(:work_item_open) { create(:work_item, project: project, state: 'opened') }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_closed_first,
+              work_item_closed_second,
+              work_item_open
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with closed_asc' do
+            let(:params) { { sort: 'closed_asc' } }
+
+            it 'returns work items sorted by closed date ascending (open items last)' do
+              expect(execute).to eq([work_item_closed_first, work_item_closed_second, work_item_open])
+            end
+          end
+
+          context 'with closed_desc' do
+            let(:params) { { sort: 'closed_desc' } }
+
+            it 'returns work items sorted by closed date descending (open items last)' do
+              expect(execute).to eq([work_item_closed_second, work_item_closed_first, work_item_open])
+            end
+          end
+        end
+
+        context 'when sorting by due_date', :freeze_time do
+          let_it_be(:work_item_due_yesterday) { create(:work_item, project: project, due_date: 1.day.ago) }
+          let_it_be(:work_item_due_tomorrow) { create(:work_item, project: project, due_date: 1.day.from_now) }
+          let_it_be(:work_item_due_next_week) { create(:work_item, project: project, due_date: 1.week.from_now) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_due_yesterday,
+              work_item_due_tomorrow,
+              work_item_due_next_week
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with due_asc' do
+            let(:params) { { sort: 'due_asc' } }
+
+            it 'returns work items sorted by due date ascending' do
+              expect(execute).to eq([work_item_due_yesterday, work_item_due_tomorrow, work_item_due_next_week])
+            end
+          end
+
+          context 'with due_desc' do
+            let(:params) { { sort: 'due_desc' } }
+
+            it 'returns work items sorted by due date descending' do
+              expect(execute).to eq([work_item_due_next_week, work_item_due_tomorrow, work_item_due_yesterday])
+            end
+          end
+        end
+
+        context 'when sorting by milestone_due', :freeze_time do
+          let_it_be(:milestone_due_soon) { create(:milestone, group: group, due_date: 2.days.from_now) }
+          let_it_be(:milestone_due_later) { create(:milestone, group: group, due_date: 1.week.from_now) }
+          let_it_be(:work_item_milestone_soon) { create(:work_item, project: project, milestone: milestone_due_soon) }
+          let_it_be(:work_item_milestone_later) { create(:work_item, project: project, milestone: milestone_due_later) }
+          let_it_be(:work_item_no_milestone) { create(:work_item, project: project) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_milestone_soon,
+              work_item_milestone_later,
+              work_item_no_milestone
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with milestone_due_asc' do
+            let(:params) { { sort: 'milestone_due_asc' } }
+
+            it 'returns work items sorted by milestone due date ascending' do
+              expect(execute).to eq([work_item_milestone_soon, work_item_milestone_later, work_item_no_milestone])
+            end
+          end
+
+          context 'with milestone_due_desc' do
+            let(:params) { { sort: 'milestone_due_desc' } }
+
+            it 'returns work items sorted by milestone due date descending' do
+              expect(execute).to eq([work_item_milestone_later, work_item_milestone_soon, work_item_no_milestone])
+            end
+          end
+        end
+
+        context 'when sorting by popularity' do
+          let_it_be(:work_item_popular) { create(:work_item, project: project, upvotes_count: 10) }
+          let_it_be(:work_item_less_popular) { create(:work_item, project: project, upvotes_count: 5) }
+          let_it_be(:work_item_unpopular) { create(:work_item, project: project, upvotes_count: 0) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_popular,
+              work_item_less_popular,
+              work_item_unpopular
+            )
+            ensure_elasticsearch_index!
+          end
+
+          context 'with popularity_asc' do
+            let(:params) { { sort: 'popularity_asc' } }
+
+            it 'returns work items sorted by popularity ascending' do
+              expect(execute).to eq([work_item_unpopular, work_item_less_popular, work_item_popular])
+            end
+          end
+
+          context 'with popularity_desc' do
+            let(:params) { { sort: 'popularity_desc' } }
+
+            it 'returns work items sorted by popularity descending' do
+              expect(execute).to eq([work_item_popular, work_item_less_popular, work_item_unpopular])
+            end
+          end
+        end
+
+        context 'when sort param is not provided', :freeze_time do
+          let_it_be(:work_item_created_first) { create(:work_item, project: project, created_at: 2.days.ago) }
+          let(:params) { {} }
+          let_it_be(:work_item_created_second) { create(:work_item, project: project, created_at: 1.day.ago) }
+          let_it_be(:work_item_created_third) { create(:work_item, project: project, created_at: Time.current) }
+
+          before do
+            Elastic::ProcessBookkeepingService.track!(
+              work_item_created_first,
+              work_item_created_second,
+              work_item_created_third
+            )
+            ensure_elasticsearch_index!
+          end
+
+          it 'uses default sorting (created_desc)' do
+            expect(execute).to eq([work_item_created_third, work_item_created_second, work_item_created_first])
           end
         end
       end

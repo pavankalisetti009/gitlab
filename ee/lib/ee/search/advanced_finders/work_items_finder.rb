@@ -33,6 +33,7 @@
 #     updated_before:        - Time object
 #     closed_after:          - Time object
 #     closed_before:         - Time object
+#     iids                   - Array of strings of work items' iids
 #     not                    - Hash with keys that can be negated
 #     or                     - Hash with keys that can be combined using OR logic
 #
@@ -48,11 +49,25 @@ module EE
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
           :weight, :weight_wildcard_id, :issue_types, :health_status_filter, :due_after, :due_before,
-          :created_after, :created_before, :updated_after, :updated_before, :closed_after, :closed_before
+          :created_after, :created_before, :updated_after, :updated_before, :closed_after, :closed_before, :iids
         ].freeze
         NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
           :weight_wildcard_id, :health_status_filter, :milestone_wildcard_id].freeze
         OR_FILTERS = [:assignee_usernames, :label_names].freeze
+
+        # TODO: Add title_asc and title_desc when the work items mapping
+        # is updated to include title as a keyword field. Currently, title is of type text
+        # and Elasticsearch does not support sorting on text fields.
+        SORT_KEYS = [
+          :created_asc, :created_desc,
+          :updated_asc, :updated_desc,
+          :health_status_asc, :health_status_desc,
+          :weight_asc, :weight_desc,
+          :closed_at_asc, :closed_at_desc,
+          :due_date_asc, :due_date_desc,
+          :milestone_due_asc, :milestone_due_desc,
+          :popularity_asc, :popularity_desc
+        ].freeze
 
         FILTER_NONE = 'none'
         FILTER_ANY = 'any'
@@ -118,7 +133,7 @@ module EE
 
         def base_params
           {
-            sort: 'created_desc',
+            sort: sort,
             state: params[:state],
             confidential: params[:confidential],
             work_item_type_ids: type_ids_from(params[:issue_types]),
@@ -135,8 +150,15 @@ module EE
             assignee_params,
             weight_params,
             health_status_params,
-            dates_params
+            dates_params,
+            iids_params
           ).compact
+        end
+
+        def sort
+          return 'created_desc' unless params[:sort].present?
+
+          params[:sort].to_s
         end
 
         def project_scope?
@@ -256,6 +278,14 @@ module EE
           }
         end
 
+        def iids_params
+          # NOTE: We receive iids as strings on the API level,
+          # while iid is stored as integer in ES
+          {
+            iids: params[:iids]&.map(&:to_i)
+          }
+        end
+
         def scope_param
           if params[:project_id].present?
             { project_id: params[:project_id]&.id }
@@ -363,7 +393,10 @@ module EE
         end
 
         def elasticsearch_fields_supported?
-          allowed_main_filters? && allowed_not_filters? && allowed_or_filters?
+          allowed_main_filters? &&
+            allowed_not_filters? &&
+            allowed_or_filters? &&
+            allowed_sort?
         end
 
         def allowed_main_filters?
@@ -384,6 +417,12 @@ module EE
           return false unless params[:or].is_a?(Hash)
 
           (params[:or].keys - OR_FILTERS).empty?
+        end
+
+        def allowed_sort?
+          return true unless params[:sort].present?
+
+          SORT_KEYS.include?(params[:sort].to_sym)
         end
 
         def none_assignees?
