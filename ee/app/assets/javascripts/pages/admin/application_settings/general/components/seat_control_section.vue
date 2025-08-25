@@ -1,7 +1,7 @@
 <script>
 import { GlFormGroup, GlFormRadio, GlFormRadioGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_feature_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 import BeforeSubmitUserCapOverLicensedUsersModal from 'ee_component/pages/admin/application_settings/general/components/before_submit_user_cap_over_licensed_users_modal.vue';
 import SeatControlMemberPromotionManagement from 'ee_component/pages/admin/application_settings/general/components/seat_control_member_promotion_management.vue';
