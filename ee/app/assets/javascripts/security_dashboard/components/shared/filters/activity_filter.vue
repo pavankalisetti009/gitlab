@@ -213,7 +213,7 @@ export default {
           :data-testid="`header-${group.text}`"
         >
           <div class="gl-grow">{{ group.text }}</div>
-          <gl-badge :icon="group.icon" :variant="group.variant" />
+          <gl-badge :icon="group.icon" :variant="group.variant || 'neutral'" />
         </div>
       </template>
     </gl-collapsible-listbox>

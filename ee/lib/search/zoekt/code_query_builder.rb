@@ -3,11 +3,6 @@
 module Search
   module Zoekt
     class CodeQueryBuilder < QueryBuilder
-      REPO_ENABLED = ::Featurable::ENABLED # 20
-      REPO_PRIVATE = ::Featurable::PRIVATE # 10
-      VIS_PUBLIC = ::Gitlab::VisibilityLevel::PUBLIC # 20
-      VIS_INTERNAL = ::Gitlab::VisibilityLevel::INTERNAL # 10
-
       def build
         { query: build_payload }
       end
@@ -15,10 +10,12 @@ module Search
       private
 
       def build_payload
+        auth = Search::AuthorizationContext.new(current_user)
+
         base_query = Filters.by_query_string(query)
         return build_repo_ids_payload(base_query) unless use_zoekt_traversal_id_query?
 
-        children = [base_query, Filters.or_filters(*access_branches)]
+        children = [base_query, Filters.or_filters(*access_branches(auth))]
 
         children << Filters.by_archived(false) unless filters[:include_archived] == true
         children << Filters.by_forked(false) if filters[:exclude_forks] == true
@@ -48,58 +45,8 @@ module Search
         Filters.and_filters(base_query, by_repo_ids(options[:repo_ids]))
       end
 
-      def access_branches
-        @access_branches ||= build_access_branches
-      end
-
-      def build_access_branches
-        return [admin_branch] if current_user&.can_read_all_resources?
-        return [public_branch] if current_user.blank?
-
-        private_branch_filters = []
-        if authorized_traversal_ids.present?
-          private_branch_filters.concat authorized_traversal_ids.map { |t|
-            Filters.by_traversal_ids(t)
-          }
-        end
-
-        private_branch_filters << by_repo_ids(authorized_project_ids) if authorized_project_ids.present?
-
-        return [public_branch, internal_branch] if private_branch_filters.empty?
-
-        [public_branch, internal_branch, private_branch(private_branch_filters)]
-      end
-
-      def admin_branch
-        Filters.or_filters(
-          Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
-          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
-          context: { name: 'admin_branch' }
-        )
-      end
-
-      def public_branch
-        Filters.and_filters(
-          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
-          Filters.by_meta(key: 'visibility_level', value: VIS_PUBLIC),
-          context: { name: 'public_branch' }
-        )
-      end
-
-      def internal_branch
-        Filters.and_filters(
-          Filters.by_meta(key: 'visibility_level', value: VIS_INTERNAL),
-          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
-          context: { name: 'internal_branch' }
-        )
-      end
-
-      def private_branch(filters)
-        Filters.and_filters(
-          admin_branch,
-          Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
-          context: { name: 'private_branch' }
-        )
+      def access_branches(auth)
+        @access_branches ||= AccessBranchBuilder.new(current_user, auth, options).build
       end
 
       def by_repo_ids(ids, context: nil)

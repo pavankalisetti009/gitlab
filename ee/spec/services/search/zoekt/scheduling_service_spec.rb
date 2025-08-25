@@ -632,6 +632,63 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
+  describe '#repo_to_reindex_check' do
+    let(:task) { :repo_to_reindex_check }
+    let_it_be(:node1) { create(:zoekt_node, schema_version: 2) }
+    let_it_be(:node2) { create(:zoekt_node, schema_version: 2) }
+    let_it_be(:index1) { create(:zoekt_index, node: node1) }
+    let_it_be(:index2) { create(:zoekt_index, node: node2) }
+
+    context 'when there are repositories needing reindexing on multiple nodes' do
+      before do
+        # Create repositories with mismatched schema versions on both nodes
+        create(:zoekt_repository, zoekt_index: index1, schema_version: 1, state: :ready)
+        create(:zoekt_repository, zoekt_index: index2, schema_version: 1, state: :ready)
+      end
+
+      it 'publishes separate RepoToReindexEvent for each node' do
+        expect { execute_task }
+          .to publish_event(Search::Zoekt::RepoToReindexEvent).with({ zoekt_node_id: node1.id })
+          .and publish_event(Search::Zoekt::RepoToReindexEvent).with({ zoekt_node_id: node2.id })
+      end
+    end
+
+    context 'when there are repositories needing reindexing on a single node' do
+      before do
+        create(:zoekt_repository, zoekt_index: index1, schema_version: 1, state: :ready)
+      end
+
+      it 'publishes a single RepoToReindexEvent for that node' do
+        expect { execute_task }
+          .to publish_event(Search::Zoekt::RepoToReindexEvent).with({ zoekt_node_id: node1.id })
+      end
+    end
+
+    context 'when there are no repositories needing reindexing' do
+      before do
+        # Create repositories with matching schema versions
+        create(:zoekt_repository, zoekt_index: index1, schema_version: 2, state: :ready)
+        create(:zoekt_repository, zoekt_index: index2, schema_version: 2, state: :ready)
+      end
+
+      it 'does not publish any RepoToReindexEvent' do
+        expect { execute_task }
+          .not_to publish_event(Search::Zoekt::RepoToReindexEvent)
+      end
+    end
+
+    context 'when repositories exist but none need reindexing' do
+      before do
+        allow(Search::Zoekt::Repository).to receive(:should_be_reindexed).and_return(Search::Zoekt::Repository.none)
+      end
+
+      it 'does not publish any RepoToReindexEvent' do
+        expect { execute_task }
+          .not_to publish_event(Search::Zoekt::RepoToReindexEvent)
+      end
+    end
+  end
+
   describe '#indices_to_evict_check' do
     let(:task) { :indices_to_evict_check }
     let_it_be(:another_index) { create(:zoekt_index) }

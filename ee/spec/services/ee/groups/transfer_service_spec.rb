@@ -418,18 +418,6 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
 
         transfer
       end
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policies_group_transfer_sync: false)
-        end
-
-        it 'does not synchronize security policies' do
-          expect(::Security::Policies::GroupTransferWorker).not_to receive(:perform_async)
-
-          transfer
-        end
-      end
     end
 
     context 'without licensed feature' do

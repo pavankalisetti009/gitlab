@@ -7,7 +7,7 @@
   - c.with_header do
     %h3.gl-self-center.gl-text-base.gl-inline-flex.gl-gap-2.gl-items-center.gl-m-0
       = s_('AdminArea|Messages')
-      = render Pajamas::BadgeComponent.new(@targeted_messages.count, variant: :muted)
+      = render Pajamas::BadgeComponent.new(@targeted_messages.count, variant: :neutral)
     = render Pajamas::ButtonComponent.new(href: new_admin_targeted_message_path, size: :small) do
       = s_('AdminArea|Add new message')
   - c.with_body do

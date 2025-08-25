@@ -16,6 +16,9 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
 
   before do
     allow(Search::AuthorizationContext).to receive(:new).and_return(auth)
+
+    allow(auth).to receive(:get_access_levels_for_feature).with('repository')
+        .and_return({ project: ::Gitlab::Access::GUEST, private_project: ::Gitlab::Access::REPORTER })
   end
 
   describe '#build' do
@@ -50,10 +53,11 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
 
     context 'when group search' do
       let(:extracted_result_path) { 'search_group_meta_project_id.json' }
-      let(:group) { create(:group) }
+      let_it_be(:group) { create(:group) }
 
       let(:options) do
         {
+          features: 'repository',
           current_user: current_user,
           group_id: group.id,
           search_level: :group
@@ -61,11 +65,37 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
       end
 
       before do
-        allow(auth).to receive(:get_project_ids_for_user)
-          .with(hash_including(search_level: :group, group_ids: [group.id])).and_return([1, 56, 99])
-        allow(auth).to receive(:get_traversal_ids_for_group).with(group.id).and_return('9970-')
-        allow(auth).to receive(:get_traversal_ids_for_user)
-          .with(hash_including(group_ids: [group.id])).and_return(%w[9970-457- 9970-123-])
+        guest_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [1, 56, 99])
+        allow(auth).to receive(:get_projects_for_user)
+          .with(hash_including(search_level: :group, group_ids: [group.id]))
+          .and_return(guest_projects)
+
+        allow(auth).to receive(:get_traversal_ids_for_group)
+          .with(group.id)
+          .and_return("9970-")
+
+        no_groups = class_double(ApplicationRecord, exists?: false)
+        allow(auth).to receive(:get_groups_for_user)
+          .with(a_hash_including(min_access_level: ::Gitlab::Access::GUEST,
+            group_ids: [group.id],
+            project_ids: [],
+            search_level: :group))
+          .and_return(no_groups)
+
+        reporter_groups = class_double(ApplicationRecord, exists?: true)
+        allow(auth).to receive(:get_groups_for_user)
+          .with(a_hash_including(min_access_level: ::Gitlab::Access::REPORTER,
+            group_ids: [group.id],
+            project_ids: [],
+            search_level: :group))
+          .and_return(reporter_groups)
+
+        allow(auth).to receive(:get_traversal_ids_for_groups)
+          .with(reporter_groups,
+            group_ids: [group.id],
+            project_ids: [],
+            search_level: :group)
+          .and_return(%w[9970-457- 9970-123-])
       end
 
       it 'builds the correct object' do
@@ -87,7 +117,6 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
 
     context 'when global search' do
       let(:extracted_result_path) { 'search_global_meta_project_id.json' }
-      let(:group) { create(:group) }
 
       let(:options) do
         {
@@ -98,12 +127,46 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
       end
 
       before do
-        allow(auth).to receive(:get_project_ids_for_user)
-          .with(hash_including(features: 'repository', group_ids: [], project_ids: [], search_level: :global))
-          .and_return([1, 56, 99])
-        allow(auth).to receive(:get_traversal_ids_for_group).with(group.id).and_return('9970-')
-        allow(auth).to receive(:get_traversal_ids_for_user)
-          .with(hash_including(features: 'repository', group_ids: [], project_ids: [], search_level: :global))
+        guest_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [1])
+        allow(auth).to receive(:get_projects_for_user)
+          .with(hash_including(min_access_level: ::Gitlab::Access::GUEST, group_ids: [],
+            project_ids: [], search_level: :global))
+          .and_return(guest_projects)
+
+        reporter_projects = class_double(ApplicationRecord, exists?: true, pluck_primary_key: [56, 99])
+        allow(auth).to receive(:get_projects_for_user)
+          .with(hash_including(min_access_level: ::Gitlab::Access::REPORTER, group_ids: [],
+            project_ids: [], search_level: :global))
+          .and_return(reporter_projects)
+
+        guest_groups = class_double(ApplicationRecord, exists?: true)
+        allow(auth).to receive(:get_groups_for_user)
+          .with(a_hash_including(min_access_level: ::Gitlab::Access::GUEST,
+            group_ids: [],
+            project_ids: [],
+            search_level: :global))
+          .and_return(guest_groups)
+
+        reporter_groups = class_double(ApplicationRecord, exists?: true)
+        allow(auth).to receive(:get_groups_for_user)
+          .with(a_hash_including(min_access_level: ::Gitlab::Access::REPORTER,
+            group_ids: [],
+            project_ids: [],
+            search_level: :global))
+          .and_return(reporter_groups)
+
+        allow(auth).to receive(:get_traversal_ids_for_groups)
+          .with(guest_groups,
+            group_ids: [],
+            project_ids: [],
+            search_level: :global)
+          .and_return(%w[2270-])
+
+        allow(auth).to receive(:get_traversal_ids_for_groups)
+          .with(reporter_groups,
+            group_ids: [],
+            project_ids: [],
+            search_level: :global)
           .and_return(%w[9970-457- 9970-123-])
       end
 

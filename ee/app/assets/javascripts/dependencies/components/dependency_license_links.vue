@@ -136,7 +136,7 @@ export default {
       v-gl-tooltip-directive.bottom="unidentifiedLicensesText"
       :title="unidentifiedLicensesText"
       href="#"
-      variant="muted"
+      variant="neutral"
       class="align-baseline"
       data-testid="license-badge"
     >

@@ -12,12 +12,13 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
 
     let_it_be_with_reload(:group) { create(:group) }
     let_it_be_with_reload(:project) { create(:project, :repository, namespace: group) }
-
     let(:projects) { [project] }
-
     let(:user) { create_user_from_membership(project, membership) }
 
     context 'for blobs' do
+      let(:scope) { 'blobs' }
+      let(:search) { '.gitmodules' }
+
       where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
         permission_table_for_guest_feature_access_and_non_private_project_only
       end
@@ -29,10 +30,7 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
             project.repository.index_commits_and_blobs
           end
 
-          it_behaves_like 'search respects visibility' do
-            let(:scope) { 'blobs' }
-            let(:search) { '.gitmodules' }
-          end
+          it_behaves_like 'search respects visibility'
         end
 
         context 'when using zoekt', :zoekt_settings_enabled, :zoekt_cache_disabled do
@@ -40,10 +38,7 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
             zoekt_ensure_namespace_indexed!(group)
           end
 
-          it_behaves_like 'search respects visibility', group_access: false, group_access_shared_group: false do
-            let(:scope) { 'blobs' }
-            let(:search) { '.gitmodules' }
-          end
+          it_behaves_like 'search respects visibility'
         end
       end
     end

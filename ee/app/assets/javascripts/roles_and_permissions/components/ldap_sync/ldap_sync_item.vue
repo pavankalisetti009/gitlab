@@ -63,7 +63,7 @@ export default {
         case SYNC_STATUS.FAILED:
           return { variant: 'danger', icon: 'status_failed', text: __('Failed') };
         default:
-          return { variant: 'muted', icon: 'question', text: this.roleLink.syncStatus };
+          return { variant: 'neutral', icon: 'question', text: this.roleLink.syncStatus };
       }
     },
   },

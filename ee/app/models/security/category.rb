@@ -10,12 +10,7 @@ module Security
 
     enum :editable_state, Enums::Security.editable_states
 
-    enum :template_type, {
-      business_impact: 0,
-      business_unit: 1,
-      application: 2,
-      exposure: 3
-    }
+    enum :template_type, Enums::Security.categories_template_types
 
     before_validation :strip_whitespaces
     validates :name, presence: true
@@ -27,6 +22,9 @@ module Security
     validate :attributes_limit
 
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
+    scope :by_namespace_and_template_type, ->(namespace, template_type) {
+      where(namespace_id: namespace.id, template_type: template_type)
+    }
 
     private
 

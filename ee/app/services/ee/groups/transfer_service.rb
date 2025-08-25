@@ -70,7 +70,6 @@ module EE
 
       def sync_security_policies(group, current_user)
         return unless group.licensed_feature_available?(:security_orchestration_policies)
-        return if ::Feature.disabled?(:security_policies_group_transfer_sync, group)
 
         ::Security::Policies::GroupTransferWorker.perform_async(group.id, current_user.id)
       end

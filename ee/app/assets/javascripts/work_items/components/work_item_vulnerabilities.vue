@@ -128,7 +128,7 @@ export default {
     persist-collapsed-state
   >
     <template #count>
-      <gl-badge :aria-label="countBadgeAriaLabel" variant="muted">
+      <gl-badge :aria-label="countBadgeAriaLabel" variant="neutral">
         {{ relatedVulnerabilitiesCount }}
       </gl-badge>
     </template>

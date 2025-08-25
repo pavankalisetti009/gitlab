@@ -34,7 +34,7 @@ describe('Single Metric Trend Visualization', () => {
       expect(findSingleStat().props()).toMatchObject({
         value: 0,
         title: '',
-        variant: 'muted',
+        variant: 'neutral',
         shouldAnimate: true,
         animationDecimalPlaces: 0,
         useDelimiters: true,

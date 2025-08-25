@@ -109,7 +109,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
           expect(subject).to eq(
             [
               { text: 'Admin', variant: 'success' },
-              { text: "It's you!", variant: 'muted' }
+              { text: "It's you!", variant: 'neutral' }
             ]
           )
         end
@@ -153,7 +153,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
               [
                 { text: 'Admin', variant: 'success' },
                 { text: 'Is using seat', variant: 'neutral' },
-                { text: "It's you!", variant: 'muted' }
+                { text: "It's you!", variant: 'neutral' }
               ]
             )
           end

@@ -17,6 +17,10 @@ module Projects
         [:read_dora4_analytics, :read_cycle_analytics, :read_security_resource].each do |ability|
           push_frontend_ability(ability: ability, resource: project, user: current_user)
         end
+
+        [:dora4_analytics, :security_dashboard].each do |license|
+          push_licensed_feature(license, project)
+        end
       end
 
       before_action :track_usage, only: [:index], if: :viewing_single_dashboard?

@@ -32,7 +32,7 @@ describe('Members Utils', () => {
           expect.objectContaining({
             show: expect.any(Boolean),
             text: expect.any(String),
-            variant: expect.stringMatching(/muted|neutral|info|success|danger|warning/),
+            variant: expect.stringMatching(/neutral|info|success|danger|warning/),
           }),
         );
       });
@@ -45,7 +45,7 @@ describe('Members Utils', () => {
       ${{ ...memberMock, groupManagedAccount: true }}               | ${{ show: true, text: 'Managed Account', variant: 'info' }}
       ${{ ...memberMock, canOverride: true }}                       | ${{ show: true, text: 'LDAP', variant: 'info' }}
       ${{ ...memberMock, enterpriseUserOfThisGroup: true }}         | ${{ show: true, text: 'Enterprise', variant: 'info' }}
-      ${{ ...memberMock, ...{ user: { isServiceAccount: true } } }} | ${{ show: true, text: 'Service Account', variant: 'muted' }}
+      ${{ ...memberMock, ...{ user: { isServiceAccount: true } } }} | ${{ show: true, text: 'Service Account', variant: 'neutral' }}
     `('returns expected output for "$expected.text" badge', ({ member, expected }) => {
       expect(
         generateBadges({ member, isCurrentUser: true, canManageMembers: true }),
