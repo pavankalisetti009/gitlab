@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe SentNotificationsController, feature_category: :team_planning do
+  include SentNotificationHelpers
+
   let(:user) { create(:user) }
 
   context 'Unsubscribing from an epic' do
@@ -12,12 +14,12 @@ RSpec.describe SentNotificationsController, feature_category: :team_planning do
       end
     end
 
-    let(:sent_notification) { create(:sent_notification, project: nil, noteable: epic, recipient: user) }
+    let(:sent_notification) { create_sent_notification(project: nil, noteable: epic, recipient: user) }
 
     before do
       stub_licensed_features(epics: true)
       sign_in(user)
-      get(:unsubscribe, params: { id: sent_notification.reply_key })
+      get(:unsubscribe, params: { id: sent_notification.partitioned_reply_key })
     end
 
     it 'unsubscribes the user' do
