@@ -9,7 +9,6 @@ import { getCookie } from '~/lib/utils/common_utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
 import { parseGid } from '~/graphql_shared/utils';
-import DuoChatLoggingAlert from 'ee/ai/components/duo_chat_logging_alert.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
@@ -33,7 +32,6 @@ export default {
   components: {
     AgenticDuoChat,
     GlToggle,
-    DuoChatLoggingAlert,
   },
   provide() {
     return {
@@ -57,7 +55,7 @@ export default {
       default: null,
     },
     metadata: {
-      type: Object,
+      type: String,
       required: false,
       default: null,
     },
@@ -452,11 +450,7 @@ export default {
         @thread-selected="onThreadSelected"
         @back-to-list="onBackToList"
         @delete-thread="onDeleteThread"
-      >
-        <template #subheader>
-          <duo-chat-logging-alert :metadata="metadata" />
-        </template>
-        <template #footer-controls>
+        ><template #footer-controls>
           <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
             <gl-toggle
               v-model="duoAgenticModePreference"
