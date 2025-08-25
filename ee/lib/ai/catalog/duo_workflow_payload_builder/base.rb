@@ -37,17 +37,12 @@ module Ai
         end
         strong_memoize_attr :flow_definition
 
-        def agents
-          flow_definition.agents
-        end
-        strong_memoize_attr :agents
-
-        def steps_with_agents_preloaded
-          flow_definition.steps_with_agents_preloaded
+        def steps
+          flow_definition.steps
         end
 
-        def agent_unique_identifier(agent)
-          agent.id.to_s
+        def step_unique_identifier(step)
+          step[:unique_id]
         end
       end
     end

@@ -103,13 +103,24 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
 
       include_examples 'builds valid flow configuration'
 
-      it 'builds workflow with single component and routers', :aggregate_failures do
+      it 'builds workflow with single component correctly', :aggregate_failures do
+        agent_item_1_flow_id = "#{agent_item_1.id}/0"
         result = builder.build
 
-        expect(result['components'].size).to eq(1)
-        expect(result['flow']['entry_point']).to eq(agent_item_1.id.to_s)
+        expect(result['components']).to eq([
+          {
+            'name' => agent_item_1_flow_id,
+            'type' => 'AgentComponent',
+            'prompt_id' => 'workflow_catalog',
+            'prompt_version' => '^1.0.0',
+            'inputs' => [{ 'from' => 'context:goal', 'as' => 'goal' }],
+            'toolset' => %w[gitlab_blob_search ci_linter create_epic],
+            'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
+          }
+        ])
+        expect(result['flow']['entry_point']).to eq(agent_item_1_flow_id)
         expect(result['routers']).to eq([
-          { 'from' => agent_item_1.id.to_s, 'to' => 'end' }
+          { 'from' => agent_item_1_flow_id, 'to' => 'end' }
         ])
       end
 
@@ -128,7 +139,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           it 'selects the latest flow version' do
             result = described_class.new(single_agent_flow).build
 
-            expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
+            expect(result['flow']['entry_point']).to eq("#{agent_item_2.id}/0")
           end
         end
 
@@ -136,7 +147,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           it 'selects the correct flow version' do
             result = described_class.new(single_agent_flow, '2.3').build
 
-            expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
+            expect(result['flow']['entry_point']).to eq("#{agent_item_2.id}/0")
             expect(result['components'].first['toolset']).to contain_exactly('run_git_command')
           end
         end
@@ -145,7 +156,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           it 'selects the correct flow version and child versions' do
             result = described_class.new(single_agent_flow, '2.3.0').build
 
-            expect(result['flow']['entry_point']).to eq(agent_item_2.id.to_s)
+            expect(result['flow']['entry_point']).to eq("#{agent_item_2.id}/0")
             expect(result['components'].first['toolset']).to contain_exactly(
               'ci_linter', 'create_epic', 'gitlab_blob_search'
             )
@@ -159,25 +170,47 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
 
       include_examples 'builds valid flow configuration'
 
-      it 'builds workflow with multiple components and routers', :aggregate_failures do
-        expect(result['components'].size).to eq(2)
-        expect(result['routers'].size).to eq(2)
-        expect(result['flow']['entry_point']).to eq(agent_item_1.id.to_s)
-      end
+      it 'builds workflow with multiple components correctly', :aggregate_failures do
+        agent_item_1_flow_id = "#{agent_item_1.id}/0"
+        agent_item_2_flow_id = "#{agent_item_2.id}/1"
 
-      it 'creates routers connecting agents sequentially' do
-        expect(result['routers']).to eq([
-          { 'from' => agent_item_1.id.to_s, 'to' => agent_item_2.id.to_s },
-          { 'from' => agent_item_2.id.to_s, 'to' => 'end' }
+        expect(result['components']).to eq([
+          {
+            'name' => agent_item_1_flow_id,
+            'type' => 'AgentComponent',
+            'prompt_id' => 'workflow_catalog',
+            'prompt_version' => '^1.0.0',
+            'inputs' => [{ 'from' => 'context:goal', 'as' => 'goal' }],
+            'toolset' => %w[gitlab_blob_search ci_linter create_epic],
+            'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
+          },
+          {
+            'name' => agent_item_2_flow_id,
+            'type' => 'AgentComponent',
+            'prompt_id' => 'workflow_catalog',
+            'prompt_version' => '^1.0.0',
+            'inputs' => [
+              { 'from' => 'context:goal', 'as' => 'goal' },
+              { 'from' => "context:#{agent_item_1_flow_id}.final_answer", 'as' => 'previous_step_answer' },
+              { 'from' => "conversation_history:#{agent_item_1_flow_id}", 'as' => 'previous_step_msg_history' }
+            ],
+            'toolset' => %w[run_git_command],
+            'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
+          }
         ])
+        expect(result['routers']).to eq([
+          { 'from' => agent_item_1_flow_id, 'to' => agent_item_2_flow_id },
+          { 'from' => agent_item_2_flow_id, 'to' => 'end' }
+        ])
+        expect(result['flow']['entry_point']).to eq(agent_item_1_flow_id)
       end
 
       it 'verifies all components have unique names' do
         component_names = result['components'].pluck('name')
 
         expect(component_names).to contain_exactly(
-          agent_item_1.id.to_s,
-          agent_item_2.id.to_s
+          "#{agent_item_1.id}/0",
+          "#{agent_item_2.id}/1"
         )
       end
     end

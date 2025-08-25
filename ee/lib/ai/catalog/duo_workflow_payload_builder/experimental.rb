@@ -7,7 +7,7 @@ module Ai
         FLOW_VERSION = 'experimental'
         FLOW_ENVIRONMENT = 'remote'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
-        AGENT_INPUT = 'context:goal'
+        DEFAULT_INPUTS = [{ 'from' => 'context:goal', 'as' => 'goal' }].freeze
         PROMPT_ID = 'workflow_catalog'
         PROMPT_VERSION = '^1.0.0'
 
@@ -24,27 +24,29 @@ module Ai
         end
 
         def build_components
-          steps_with_agents_preloaded.filter_map { |step| build_agent_component(step) }
+          steps.filter_map do |step|
+            build_agent_component(step)
+          end
         end
 
         def build_routers
           routers = []
 
-          agents.each_cons(2) do |current_agent, next_agent|
+          steps.each_cons(2) do |current_step, next_step|
             routers << {
-              'from' => agent_unique_identifier(current_agent),
-              'to' => agent_unique_identifier(next_agent)
+              'from' => step_unique_identifier(current_step),
+              'to' => step_unique_identifier(next_step)
             }
           end
 
           routers << {
-            'from' => agent_unique_identifier(agents.last),
+            'from' => step_unique_identifier(steps.last),
             'to' => 'end'
           }
         end
 
         def flow_configuration
-          { 'entry_point' => agent_unique_identifier(agents.first) }
+          { 'entry_point' => step_unique_identifier(steps.first) }
         end
 
         def build_agent_component(step)
@@ -53,17 +55,35 @@ module Ai
           definition = agent.definition(step[:pinned_version_prefix], pinned_version_id)
 
           {
-            'name' => agent_unique_identifier(agent),
+            'name' => step_unique_identifier(step),
             'type' => AGENT_COMPONENT_TYPE,
             'prompt_id' => PROMPT_ID,
             'prompt_version' => PROMPT_VERSION,
-            'inputs' => [AGENT_INPUT],
-            'toolset' => determine_toolset(definition),
+            'inputs' => agent_inputs(step),
+            'toolset' => agent_toolset(definition),
             'ui_log_events' => ui_log_events
           }
         end
 
-        def determine_toolset(definition)
+        def agent_inputs(step)
+          return DEFAULT_INPUTS if step[:idx] == 0
+
+          previous_step = steps[step[:idx] - 1]
+          previous_step_id = step_unique_identifier(previous_step)
+
+          DEFAULT_INPUTS + [
+            {
+              'from' => "context:#{previous_step_id}.final_answer",
+              'as' => 'previous_step_answer'
+            },
+            {
+              'from' => "conversation_history:#{previous_step_id}",
+              'as' => 'previous_step_msg_history'
+            }
+          ]
+        end
+
+        def agent_toolset(definition)
           definition.tool_names
         end
 
