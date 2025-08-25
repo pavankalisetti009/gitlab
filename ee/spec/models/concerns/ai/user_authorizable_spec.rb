@@ -347,7 +347,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         available_services: [
           { name: "duo_chat", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
           { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
-          { name: "generate_description", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
+          { name: "generate_description", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "summarize_review", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
         ]
       })
     end
@@ -385,7 +386,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         available_services: [
           { name: "amazon_q_integration", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
           { name: "glab_ask_git_command", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
-          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] }
+          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
+          { name: "summarize_review", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] }
         ]
       })
     end
@@ -417,6 +419,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       true  | :summarize_comments | 'duo_amazon_q'
       true  | :generate_commit_message | 'duo_amazon_q'
       true  | :generate_description | 'duo_amazon_q'
+      true  | :summarize_review | 'duo_amazon_q'
     end
 
     with_them do

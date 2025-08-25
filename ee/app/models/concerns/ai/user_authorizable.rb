@@ -23,7 +23,8 @@ module Ai
       :review_merge_request,
       :summarize_comments,
       :troubleshoot_job,
-      :generate_description
+      :generate_description,
+      :summarize_review
     ].freeze
 
     Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, :authorized_by_duo_core, keyword_init: true)
