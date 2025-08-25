@@ -473,8 +473,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
       'asdfg'     | false | true  | 0
       '# good'    | true  | false | 134
       '# good'    | true  | true  | 564
-      '# good'    | false | false | 134
-      '# good'    | false | true  | 564
+      '# good'    | false | false | 50
+      '# good'    | false | true  | 105
     end
 
     with_them do

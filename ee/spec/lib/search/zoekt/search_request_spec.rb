@@ -6,7 +6,16 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
   let_it_be(:node1) { create(:zoekt_node) }
   let_it_be(:node2) { create(:zoekt_node) }
   let_it_be(:user) { create(:user) }
-  let(:options) { {} }
+  let(:options) do
+    {
+      num_context_lines: 20,
+      max_file_match_window: 1000,
+      max_file_match_results: 5,
+      max_line_match_window: 500,
+      max_line_match_results: 10,
+      max_line_match_results_per_file: Search::Zoekt::MultiMatch::DEFAULT_REQUESTED_CHUNK_SIZE
+    }
+  end
 
   describe '#as_json' do
     before do
@@ -39,14 +48,6 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
       end
     end
 
-    context 'when max_line_match_results_per_file is set' do
-      let(:options) { { max_line_match_results_per_file: 123 } }
-
-      it 'returns the specified max_line_match_results_per_file' do
-        expect(json_representation[:max_line_match_results_per_file]).to eq(123)
-      end
-    end
-
     context 'when zoekt traversal id feature flag is disabled' do
       before do
         stub_feature_flags(zoekt_traversal_id_queries: false)
@@ -54,7 +55,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
 
       subject(:json_representation) do
         described_class.new(current_user: user, query: 'test',
-          targets: { node1.id => [1, 2, 3], node2.id => [4, 5, 6] }).as_json
+          targets: { node1.id => [1, 2, 3], node2.id => [4, 5, 6] }, **options).as_json
       end
 
       it 'returns a valid JSON representation of the search request' do
@@ -132,7 +133,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
 
       it 'raises an ArgumentError' do
         expect do
-          described_class.new(current_user: user, group_id: group.id, query: 'test').as_json
+          described_class.new(current_user: user, group_id: group.id, query: 'test', **options).as_json
         end.to raise_error(ArgumentError, %r{No enabled namespace found for root ancestor})
       end
     end
@@ -147,7 +148,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
 
       it 'raises an ArgumentError' do
         expect do
-          described_class.new(current_user: user, group_id: group.id, query: 'test').as_json
+          described_class.new(current_user: user, group_id: group.id, query: 'test', **options).as_json
         end.to raise_error(ArgumentError, %r{No online nodes found for namespace})
       end
     end
