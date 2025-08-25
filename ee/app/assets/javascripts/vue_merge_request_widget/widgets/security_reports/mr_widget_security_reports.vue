@@ -7,8 +7,10 @@ import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
+import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { capitalizeFirstCharacter, convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -36,7 +38,7 @@ export default {
     DynamicScroller,
     DynamicScrollerItem,
   },
-  mixins: [glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -51,6 +53,10 @@ export default {
       modalData: null,
       topLevelErrorMessage: '',
       collapsedData: {},
+      enabledScans: {
+        partial: {},
+        full: this.mr.enabledReports || {},
+      },
     };
   },
   computed: {
@@ -179,7 +185,7 @@ export default {
         [this.mr.containerScanningComparisonPathV2, 'CONTAINER_SCANNING'],
       ].filter(([endpoint, reportType]) => {
         const enabledReportsKeyName = convertToCamelCase(reportType.toLowerCase());
-        return Boolean(endpoint) && this.mr.enabledReports[enabledReportsKeyName];
+        return Boolean(endpoint) && this.enabledScans.full[enabledReportsKeyName];
       });
     },
 
@@ -191,7 +197,40 @@ export default {
     },
 
     shouldRenderMrWidget() {
+      if (this.$apollo.queries.enabledScans?.loading) {
+        return false;
+      }
+
       return !this.mr.isPipelineActive && this.endpoints.length > 0;
+    },
+  },
+  apollo: {
+    enabledScans: {
+      query: enabledScansQuery,
+      variables() {
+        return {
+          fullPath: this.mr.targetProjectFullPath,
+          pipelineIid: this.mr.pipeline?.iid,
+        };
+      },
+      update({ project }) {
+        return {
+          full: project?.pipeline?.enabledSecurityScans,
+          partial: project?.pipeline?.enabledPartialSecurityScans,
+        };
+      },
+      error() {
+        this.topLevelErrorMessage = s__(
+          'ciReport|Error while fetching enabled scans. Please try again later.',
+        );
+      },
+      skip() {
+        if (!this.glFeatures.vulnerabilityPartialScans) {
+          return true;
+        }
+
+        return !this.mr.pipeline?.iid || !this.mr.targetProjectFullPath;
+      },
     },
   },
   beforeDestroy() {

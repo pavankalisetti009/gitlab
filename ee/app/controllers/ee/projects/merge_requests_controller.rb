@@ -11,6 +11,7 @@ module EE
 
         before_action only: [:show] do
           push_frontend_feature_flag(:merge_trains_skip_train, @project)
+          push_frontend_feature_flag(:vulnerability_partial_scans, @project)
           push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @project, user: current_user)
           push_frontend_ability(ability: :measure_comment_temperature, resource: merge_request, user: current_user)
         end
