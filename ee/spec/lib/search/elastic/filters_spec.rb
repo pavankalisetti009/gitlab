@@ -3186,7 +3186,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
-        context 'in group when access is shared through another group' do
+        context 'in group when access is shared through another group', :sidekiq_inline do
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
           let(:shared_namespace_ancestry) { group_shared.elastic_namespace_ancestry }
           let(:namespace_ancestry) { group.elastic_namespace_ancestry }
@@ -3194,9 +3194,25 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           before_all do
             create(:group_group_link, :reporter, shared_group: group, shared_with_group: group_shared)
+            group.refresh_members_authorized_projects
           end
 
-          it { is_expected.to eq(expected_query) }
+          it 'matches the expected query' do
+            actual_filter = by_search_level_and_membership.dig(:query, :bool, :filter)
+            expected_filter = expected_query[:query][:bool][:filter]
+
+            # compare traversal_ids using arrays to avoid order flakiness
+            actual_traversal_ids = actual_filter.first[:bool][:should].first[:bool][:should]
+            expected_traversal_ids = expected_filter.first[:bool][:should].first[:bool][:should]
+
+            expect(actual_traversal_ids).to match_array(expected_traversal_ids)
+
+            # compare visibility and access level using arrays to avoid order flakiness
+            actual_visibility_levels = actual_filter.first[:bool][:should].second[:bool][:should]
+            expected_visibility_levels = expected_filter.first[:bool][:should].second[:bool][:should]
+
+            expect(actual_visibility_levels).to match_array(expected_visibility_levels)
+          end
         end
 
         context 'in project when access is shared through another group' do

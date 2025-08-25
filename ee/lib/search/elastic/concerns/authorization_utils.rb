@@ -4,7 +4,59 @@ module Search
   module Elastic
     module Concerns
       module AuthorizationUtils
+        include Gitlab::Utils::StrongMemoize
+        include Search::Concerns::FeatureCustomAbilityMap
+
         private
+
+        # Returns the required minimum access level for a feature for non-private and private projects.
+        # @param feature [Symbol] The feature for which to retrieve the access levels.
+        def get_feature_access_levels(feature)
+          {
+            project: ProjectFeature.required_minimum_access_level(feature),
+            private_project: ProjectFeature.required_minimum_access_level_for_private_project(feature)
+          }
+        end
+
+        # Returns the projects for a given user based on the search level and options.
+        # @param user [User] The user for whom to retrieve projects.
+        # @param options [Hash] Options for filtering projects.
+        # @option options [Symbol] :search_level The level of search (e.g., :global, :group, :project).
+        # @option options [Array<Integer>] :group_ids Optional:
+        #   An array of group IDs to filter by (for :group search_level).
+        # @option options [Array<Integer>] :project_ids Optional:
+        #   An array of project IDs to filter by (for :project search_level).
+        # @return [ActiveRecord::Relation<Project>] A relation of authorized projects.
+        def projects_for_user(user, options)
+          return Project.none unless user
+
+          search_level = options.fetch(:search_level).to_sym
+          authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+
+          case search_level
+          when :global
+            authorized_projects
+          when :group
+            namespace_ids = options[:group_ids]
+            projects = Project.in_namespace(namespace_ids)
+            if projects.present? && !projects.id_not_in(authorized_projects).exists?
+              projects
+            else
+              Project.from_union([
+                authorized_projects.in_namespace(namespace_ids),
+                authorized_projects.by_any_overlap_with_traversal_ids(namespace_ids)
+              ])
+            end
+          when :project
+            project_ids = options[:project_ids]
+            projects = Project.id_in(project_ids)
+            if projects.present? && !projects.id_not_in(authorized_projects).exists?
+              projects
+            else
+              authorized_projects.id_in(project_ids)
+            end
+          end
+        end
 
         def project_ids_for_user(user, options)
           return [] unless user
@@ -76,6 +128,7 @@ module Search
           project_ids
         end
 
+        # @deprecated - this method is kept for legacy authorization
         def ability_to_access_feature(feature)
           case feature&.to_sym
           when :repository
@@ -83,6 +136,7 @@ module Search
           end
         end
 
+        # @deprecated - this method is kept for legacy authorization
         def filter_project_ids_by_abilities(projects, user, target_abilities)
           return [] if target_abilities.empty? || user.blank?
 
@@ -93,12 +147,20 @@ module Search
           end
         end
 
+        # Returns the groups for a given user based on the minimum access level.
+        # @param user [User] The user for whom to retrieve groups.
+        # @param min_access_level [Integer] Optional: The minimum access level required for groups.
         def groups_for_user(user:, min_access_level: nil)
           strong_memoize_with(:groups_for_user, user, min_access_level) do
             ::Search::GroupsFinder.new(user: user, params: { min_access_level: min_access_level }).execute
           end
         end
 
+        # Returns the traversal IDs for a given user's authorized groups based on the search level and options.
+        # @param user [User] The user for whom to retrieve traversal IDs.
+        # @param options [Hash] Options for filtering traversal IDs.
+        # @option options [Integer] :min_access_level Optional: The minimum access level required for groups.
+        # @return [Array<Array<Integer>>] An array of arrays, where each inner array represents a traversal ID path.
         def traversal_ids_for_user(user, options)
           return [] unless user
 
@@ -111,6 +173,15 @@ module Search
           get_traversal_ids_for_search_level(authorized_groups, options)
         end
 
+        # Returns the traversal IDs for a given user based on the search level and options.
+        # @param authorized_groups [ActiveRecord::Relation<Group>] The groups authorized for the user.
+        # @param options [Hash] Options for filtering traversal IDs.
+        # @option options [Symbol] :search_level The level of search (e.g., :global, :group, :project).
+        # @option options [Array<Integer>] :group_ids Optional:
+        #   An array of group IDs to filter by (for :group search_level).
+        # @option options [Array<Integer>] :project_ids Optional:
+        #   An array of project IDs to filter by (for :project search_level).
+        # @return [Array<Array<Integer>>] An array of arrays, where each inner array represents a traversal ID path.
         def get_traversal_ids_for_search_level(authorized_groups, options)
           search_level = options.fetch(:search_level).to_sym
 
@@ -148,6 +219,10 @@ module Search
           end
         end
 
+        # Returns authorized traversal_ids for the list of projects
+        # @param authorized_groups [ActiveRecord::Relation<Group>] The groups authorized for the user.
+        # @param project_ids [Array<Integer>] An array of project IDs to filter by.
+        # @return [Array<Array<Integer>>] Uses trie node approach to return list of authorized traversal_ids
         def authorized_traversal_ids_for_projects(authorized_groups, project_ids)
           namespace_ids = Project.id_in(project_ids).select(:namespace_id)
           namespaces = Namespace.id_in(namespace_ids)
@@ -174,6 +249,8 @@ module Search
           end
         end
 
+        # @param user [User] The user for whom to retrieve authorized namespace IDs.
+        # @return [Array<Integer>] Uses trie node approach to return authorized traversal_ids
         def authorized_namespace_ids_for_project_group_ancestry(user)
           authorized_groups = ::Search::GroupsFinder.new(user: user).execute
           authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
@@ -188,6 +265,13 @@ module Search
           end
 
           not_covered_namespaces.pluck(:traversal_ids).flatten.uniq # rubocop:disable CodeReuse/ActiveRecord -- traversal_ids are needed to generate namespace_id array
+        end
+
+        def allowed_ids_by_ability(feature:, user_abilities:)
+          target_ability = FEATURE_TO_ABILITY_MAP[feature.to_sym]
+          user_abilities.filter_map do |id, abilities|
+            id if abilities.include?(target_ability)
+          end
         end
       end
     end
