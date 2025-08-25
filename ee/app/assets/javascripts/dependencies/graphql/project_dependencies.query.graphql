@@ -6,6 +6,7 @@ query getProjectDependencies(
   $before: String
   $sort: DependencySort
   $componentNames: [String!]
+  $componentVersions: [String!]
 ) {
   namespace: project(fullPath: $fullPath) {
     id
@@ -16,6 +17,7 @@ query getProjectDependencies(
       before: $before
       sort: $sort
       componentNames: $componentNames
+      componentVersions: $componentVersions
     ) {
       pageInfo {
         hasNextPage

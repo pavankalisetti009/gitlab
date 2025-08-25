@@ -147,12 +147,17 @@ const buildGraphQLPaginationVariables = ({ cursor, pageInfo = {}, pageSize = 20 
 };
 
 const buildGraphQLFilterOptions = (searchFilterParameters) => {
-  const { component_names: componentNamesFilters } = searchFilterParameters;
+  const { component_names: componentNamesFilters, component_versions: componentVersionsFilters } =
+    searchFilterParameters;
 
   const filterOptions = {};
 
   if (componentNamesFilters?.length > 0) {
     filterOptions.componentNames = componentNamesFilters;
+  }
+
+  if (componentVersionsFilters?.length > 0) {
+    filterOptions.componentVersions = componentVersionsFilters;
   }
 
   return filterOptions;
@@ -206,6 +211,7 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params 
     .query({
       query,
       variables,
+      fetchPolicy: 'network-only',
     })
     .then(({ data }) => {
       const { nodes: dependenciesData, pageInfo: responsePageInfo } = data.namespace.dependencies;
