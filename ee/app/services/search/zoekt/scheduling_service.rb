@@ -6,6 +6,8 @@ module Search
       include Gitlab::Loggable
       include Gitlab::Scheduling::TaskExecutor
 
+      NODE_PROCESSING_LIMIT = 100
+
       CONFIG = {
         force_update_overprovisioned_index: {
           if: -> { Index.overprovisioned.ready.with_latest_used_storage_bytes_updated_at.exists? },
@@ -70,8 +72,27 @@ module Search
           dispatch: { event: RepoToIndexEvent }
         },
         repo_to_reindex_check: {
-          if: -> { Repository.should_be_reindexed.exists? },
-          dispatch: { event: RepoToReindexEvent }
+          if: -> { ::Search::Zoekt::Repository.should_be_reindexed.exists? },
+          execute: -> {
+            # Identify nodes that have repositories with mismatched schema versions
+            node_ids = ::Search::Zoekt::Node.with_repositories_to_reindex
+                                            .limit(NODE_PROCESSING_LIMIT)
+                                            .pluck_primary_key
+
+            # Emit one event per node for parallel processing
+            node_ids.each do |node_id|
+              dispatch RepoToReindexEvent do
+                { zoekt_node_id: node_id }
+              end
+            end
+
+            if node_ids.any?
+              info(:emit_repo_to_reindex_events,
+                message: 'Emitted per-node reindex events',
+                node_count: node_ids.count,
+                node_ids: node_ids)
+            end
+          }
         },
         repo_to_delete_check: {
           if: -> { ::Search::Zoekt::Repository.should_be_deleted.exists? },

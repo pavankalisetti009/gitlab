@@ -6,7 +6,9 @@ module Search
       def schema
         {
           'type' => 'object',
-          'properties' => {},
+          'properties' => {
+            'zoekt_node_id' => { 'type' => %w[integer null] }
+          },
           'additionalProperties' => false
         }
       end
