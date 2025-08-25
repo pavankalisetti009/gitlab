@@ -13,7 +13,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
   let(:user) { create(:user) }
   let(:group) { create(:group, name: 'test-group', developers: user) }
-  let(:random_string) { 'abcdef' }
+  let(:random_string) { "miracle-fruit-camel-slategrey" }
   let(:project_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
@@ -130,7 +130,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   context 'when params are valid' do
     before do
       allow(project.repository).to receive_message_chain(:blob_at_branch, :data) { devfile_yaml }
-      allow(SecureRandom).to receive(:alphanumeric) { random_string }
+      allow(FFaker::Food).to receive(:fruit).and_return("Miracle Fruit")
+      allow(FFaker::AnimalUS).to receive(:common_name).and_return("Camel")
+      allow(FFaker::Color).to receive(:name).and_return("Slategrey")
     end
 
     context 'when devfile is valid' do
@@ -157,9 +159,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.desired_state_updated_at).to eq(Time.current)
         expect(workspace.actual_state).to eq(states_module::CREATION_REQUESTED)
         expect(workspace.actual_state_updated_at).to eq(Time.current)
-        expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
+        expect(workspace.name).to eq("workspace-#{random_string}")
         expect(workspace.namespace)
-          .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}")
+          .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{random_string}")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
           host: "#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}." \
@@ -188,7 +190,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
         expect(workspace.workspace_agentk_state).to be_present
         expect(workspace.workspace_agentk_state.desired_config).to be_an(Array)
-        pp workspace.workspace_agentk_state.desired_config
       end
 
       it_behaves_like 'tracks successful workspace creation event'
