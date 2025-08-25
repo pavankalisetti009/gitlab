@@ -112,6 +112,10 @@ module Search
           Process.kill('TERM', @webserver_pid)
           Process.wait(@webserver_pid)
         end
+
+        # Clean up index directory only, not the logs directory
+        FileUtils.rm_rf(INDEX_DIR)
+
         # Reset PIDs
         @indexer_pid = nil
         @webserver_pid = nil

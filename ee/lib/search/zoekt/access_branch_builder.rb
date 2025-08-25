@@ -1,0 +1,224 @@
+# frozen_string_literal: true
+
+module Search
+  module Zoekt
+    class AccessBranchBuilder
+      REPO_ENABLED = ::Featurable::ENABLED # 20
+      REPO_PRIVATE = ::Featurable::PRIVATE # 10
+      VIS_PUBLIC = ::Gitlab::VisibilityLevel::PUBLIC # 20
+      VIS_INTERNAL = ::Gitlab::VisibilityLevel::INTERNAL # 10
+
+      def initialize(current_user, auth, options)
+        @current_user = current_user
+        @options = options
+        @auth = auth
+      end
+
+      def build
+        return [admin_branch] if admin_access?
+        return [public_branch] if anonymous_user?
+
+        access_branches = base_branches
+        access_branches.concat(public_and_internal_authorized_branches)
+        access_branches.concat(private_authorized_branches)
+
+        access_branches
+      end
+
+      private
+
+      attr_reader :current_user, :options, :auth
+
+      def admin_access?
+        current_user&.can_read_all_resources?
+      end
+
+      def anonymous_user?
+        current_user.blank?
+      end
+
+      def base_branches
+        [public_branch, internal_branch]
+      end
+
+      def group_id
+        @group_id ||= options[:group_id]
+      end
+
+      def project_id
+        @project_id ||= options[:project_id]
+      end
+
+      def group_ids
+        @group_ids ||= [group_id].compact
+      end
+
+      def project_ids
+        @project_ids ||= [project_id].compact
+      end
+
+      def access_levels
+        @access_levels ||= auth.get_access_levels_for_feature(options[:features])
+      end
+
+      def public_and_internal_authorized_projects
+        @public_and_internal_authorized_projects ||= authorized_projects(access_levels[:project])
+      end
+
+      def public_and_internal_authorized_groups
+        @public_and_internal_authorized_groups ||= authorized_groups(access_levels[:project])
+      end
+
+      def public_and_internal_authorized_branches
+        filters = build_public_internal_auth_filters
+        return [] if filters.empty?
+
+        [
+          public_with_access_branch(filters),
+          internal_with_access_branch(filters)
+        ]
+      end
+
+      def build_public_internal_auth_filters
+        filters = []
+        filters.concat(group_filters_for(public_and_internal_authorized_groups))
+        filters.concat(project_filters_for(public_and_internal_authorized_projects))
+        filters
+      end
+
+      def private_authorized_branches
+        filters = build_private_auth_filters
+        return [] if filters.empty?
+
+        [private_branch(filters)]
+      end
+
+      def build_private_auth_filters
+        private_groups = authorized_groups(access_levels[:private_project])
+        private_project_ids = authorized_project_ids(access_levels[:private_project])
+
+        filters = []
+        filters.concat(group_filters_for(private_groups))
+        filters.concat(project_filters_for_ids(private_project_ids))
+        filters
+      end
+
+      def group_filters_for(groups)
+        return [] unless groups.exists?
+
+        traversal_ids = authorized_traversal_ids_for_groups(groups)
+        traversal_ids.map { |t| Filters.by_traversal_ids(t) }
+      end
+
+      def project_filters_for(projects)
+        return [] unless projects.exists?
+
+        project_filters_for_ids(projects.pluck_primary_key)
+      end
+
+      def project_filters_for_ids(project_ids)
+        return [] if project_ids.blank?
+
+        [by_repo_ids(project_ids)]
+      end
+
+      def authorized_traversal_ids_for_groups(groups)
+        auth.get_traversal_ids_for_groups(groups,
+          group_ids: group_ids,
+          project_ids: project_ids,
+          search_level: options.fetch(:search_level))
+      end
+
+      def authorized_projects(min_access_level)
+        auth.get_projects_for_user(
+          group_ids: group_ids,
+          project_ids: project_ids,
+          min_access_level: min_access_level,
+          search_level: options.fetch(:search_level)
+        )
+      end
+
+      def authorized_groups(min_access_level)
+        auth.get_groups_for_user(
+          group_ids: group_ids,
+          project_ids: project_ids,
+          min_access_level: min_access_level,
+          search_level: options.fetch(:search_level)
+        )
+      end
+
+      def authorized_project_ids(min_access_level)
+        auth.get_projects_for_user(
+          group_ids: group_ids,
+          project_ids: project_ids,
+          min_access_level: min_access_level,
+          search_level: options.fetch(:search_level)
+        ).pluck_primary_key
+      end
+
+      def admin_branch
+        Filters.or_filters(
+          *private_access_filters,
+          context: { name: 'admin_branch' }
+        )
+      end
+
+      def public_branch
+        Filters.and_filters(
+          Filters.by_meta(key: 'visibility_level', value: VIS_PUBLIC),
+          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
+          context: { name: 'public_branch' }
+        )
+      end
+
+      def public_with_access_branch(filters)
+        Filters.and_filters(
+          Filters.by_meta(key: 'visibility_level', value: VIS_PUBLIC),
+          Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
+          Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
+          context: { name: 'public_authorized_branch' }
+        )
+      end
+
+      def internal_branch
+        Filters.and_filters(
+          Filters.by_meta(key: 'visibility_level', value: VIS_INTERNAL),
+          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
+          context: { name: 'internal_branch' }
+        )
+      end
+
+      def internal_with_access_branch(filters)
+        Filters.and_filters(
+          Filters.by_meta(key: 'visibility_level', value: VIS_INTERNAL),
+          Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
+          Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
+          context: { name: 'internal_authorized_branch' }
+        )
+      end
+
+      def private_access_filters
+        [Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
+          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED)]
+      end
+
+      def private_branch(filters)
+        Filters.and_filters(
+          Filters.or_filters(*private_access_filters),
+          Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
+          context: { name: 'private_authorized_branch' }
+        )
+      end
+
+      def by_repo_ids(ids, context: nil)
+        return Filters.by_project_ids(ids, context: context) if use_meta_project_ids?
+
+        Filters.by_repo_ids(ids, context: context)
+      end
+
+      def use_meta_project_ids?
+        Feature.enabled?(:zoekt_search_meta_project_ids, current_user)
+      end
+    end
+  end
+end

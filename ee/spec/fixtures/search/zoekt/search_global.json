@@ -15,13 +15,13 @@
                   "children": [
                     {
                       "meta": {
-                        "key": "repository_access_level",
+                        "key": "visibility_level",
                         "value": "20"
                       }
                     },
                     {
                       "meta": {
-                        "key": "visibility_level",
+                        "key": "repository_access_level",
                         "value": "20"
                       }
                     }
@@ -56,6 +56,88 @@
                 "and": {
                   "children": [
                     {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "20"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "10"
+                      }
+                    },
+                    {
+                      "or": {
+                        "children": [
+                          {
+                            "meta": {
+                              "key": "traversal_ids",
+                              "value": "^2270-"
+                            }
+                          },
+                          {
+                            "repo_ids": [
+                              1
+                            ]
+                          }
+                        ]
+                      },
+                      "_context": {
+                        "name": "user_authorizations"
+                      }
+                    }
+                  ]
+                },
+                "_context": {
+                  "name": "public_authorized_branch"
+                }
+              },
+              {
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "10"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "10"
+                      }
+                    },
+                    {
+                      "or": {
+                        "children": [
+                          {
+                            "meta": {
+                              "key": "traversal_ids",
+                              "value": "^2270-"
+                            }
+                          },
+                          {
+                            "repo_ids": [
+                              1
+                            ]
+                          }
+                        ]
+                      },
+                      "_context": {
+                        "name": "user_authorizations"
+                      }
+                    }
+                  ]
+                },
+                "_context": {
+                  "name": "internal_authorized_branch"
+                }
+              },
+              {
+                "and": {
+                  "children": [
+                    {
                       "or": {
                         "children": [
                           {
@@ -71,9 +153,6 @@
                             }
                           }
                         ]
-                      },
-                      "_context": {
-                        "name": "admin_branch"
                       }
                     },
                     {
@@ -93,7 +172,6 @@
                           },
                           {
                             "repo_ids": [
-                              1,
                               56,
                               99
                             ]
@@ -107,7 +185,7 @@
                   ]
                 },
                 "_context": {
-                  "name": "private_branch"
+                  "name": "private_authorized_branch"
                 }
               }
             ]

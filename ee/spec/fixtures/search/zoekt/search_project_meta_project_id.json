@@ -15,13 +15,13 @@
                   "children": [
                     {
                       "meta": {
-                        "key": "repository_access_level",
+                        "key": "visibility_level",
                         "value": "20"
                       }
                     },
                     {
                       "meta": {
-                        "key": "visibility_level",
+                        "key": "repository_access_level",
                         "value": "20"
                       }
                     }
