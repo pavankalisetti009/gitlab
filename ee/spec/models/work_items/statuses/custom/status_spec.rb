@@ -107,6 +107,68 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
       end
     end
 
+    context 'with name character restrictions' do
+      context 'with valid names' do
+        where(:valid_name, :description) do
+          [
+            ['In Progress 123', 'has alphanumeric characters'],
+            ['In development', 'has spaces'],
+            ['Ready for Review!', 'has punctuation'],
+            ['Done ✅', 'has emojis'],
+            ["Won't do", 'has quotes in middle'],
+            ['Phase-1', 'has dashes']
+          ]
+        end
+
+        with_them do
+          it "is valid when name #{description}" do
+            custom_status.name = valid_name
+
+            expect(custom_status).to be_valid
+          end
+        end
+      end
+
+      context 'with invalid names' do
+        let_it_be(:error_message) do
+          'cannot start or end with quotes, backticks, or contain control characters'
+        end
+
+        where(:invalid_name, :description) do
+          [
+            ['"In Progress', 'starts with double quote'],
+            ['In Progress"', 'ends with double quote'],
+            ["'In Progress", 'starts with single quote'],
+            ["In Progress'", 'ends with single quote'],
+            ['`In Progress', 'starts with backtick'],
+            ['In Progress`', 'ends with backtick'],
+            ["In\nProgress", 'contains control character']
+          ]
+        end
+
+        with_them do
+          it "is invalid when name #{description}" do
+            custom_status.name = invalid_name
+
+            expect(custom_status).to be_invalid
+            expect(custom_status.errors[:name]).to include(error_message)
+          end
+        end
+      end
+
+      context 'when name has not changed' do
+        it 'allows updates to other attributes without triggering name format validation' do
+          custom_status = build(:work_item_custom_status, name: '"Invalid Name"')
+
+          allow(custom_status).to receive(:name_changed?).and_return(false)
+
+          custom_status.description = 'Valid description'
+
+          expect(custom_status).to be_valid
+        end
+      end
+    end
+
     describe 'status per namespace limit validations' do
       let_it_be(:existing_status) { create(:work_item_custom_status, namespace: group) }
 

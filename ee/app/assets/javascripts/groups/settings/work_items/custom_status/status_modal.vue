@@ -396,6 +396,7 @@ export default {
         }
 
         this.$emit('lifecycle-updated');
+        this.cancelForm();
       } catch (error) {
         Sentry.captureException(error);
         this.errorMessage = error.message || errorMessage;
@@ -475,7 +476,6 @@ export default {
         currentStatuses,
         s__('WorkItem|An error occurred while saving the status.'),
       );
-      this.cancelForm();
     },
     async removeStatus(statusId) {
       const currentStatuses = this.lifecycle.statuses

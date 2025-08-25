@@ -69,26 +69,6 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
           it_behaves_like 'returns custom status'
         end
 
-        context 'when status actually contains quotes' do
-          let_it_be(:quoted_custom_status) do
-            create(:work_item_custom_status, :to_do, name: '"quoted status"', namespace: group)
-          end
-
-          let(:params) { { 'name' => '"quoted status"' } }
-
-          it 'returns the status with quotes in the name' do
-            expect(finder).to eq(quoted_custom_status)
-          end
-
-          context 'when name has double surrounding quotes' do
-            let(:params) { { 'name' => '""quoted status""' } }
-
-            it 'returns the status with quotes in the name' do
-              expect(finder).to eq(quoted_custom_status)
-            end
-          end
-        end
-
         context 'when status contains emojis' do
           let_it_be(:custom_status_with_emoji) do
             create(:work_item_custom_status, :to_do, name: '🐞🧨', namespace: group)
