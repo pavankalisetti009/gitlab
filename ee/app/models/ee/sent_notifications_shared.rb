@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EE
-  module SentNotification # rubocop:disable Gitlab/BoundedContexts -- EE module for existing model
+  module SentNotificationsShared # rubocop:disable Gitlab/BoundedContexts -- EE module for existing model
     extend ::Gitlab::Utils::Override
 
     private
