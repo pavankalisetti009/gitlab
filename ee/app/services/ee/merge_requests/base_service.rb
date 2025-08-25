@@ -7,7 +7,7 @@ module EE
 
       private
 
-      attr_accessor :blocking_merge_requests_params, :suggested_reviewer_ids
+      attr_accessor :blocking_merge_requests_params
 
       def assign_duo_as_reviewer(merge_request)
         project = merge_request.project
@@ -26,7 +26,6 @@ module EE
       def handle_reviewers_change(merge_request, old_reviewers)
         super
         new_reviewers = merge_request.reviewers - old_reviewers
-        capture_suggested_reviewers_accepted(merge_request)
         set_requested_changes(merge_request, new_reviewers) if new_reviewers.any?
         request_duo_code_review(merge_request) if new_reviewers.any?(&:duo_code_review_bot?)
       end
@@ -53,14 +52,6 @@ module EE
           ::MergeRequests::UpdateBlocksService.extract_params!(params)
 
         super
-      end
-
-      override :filter_suggested_reviewers
-      def filter_suggested_reviewers
-        suggested_reviewer_ids_from_params = params.delete(:suggested_reviewer_ids)
-        return if suggested_reviewer_ids_from_params.blank?
-
-        self.suggested_reviewer_ids = suggested_reviewer_ids_from_params & params[:reviewer_ids]
       end
 
       def set_requested_changes(merge_request, new_reviewers)
@@ -130,13 +121,6 @@ module EE
             }
           )
         )
-      end
-
-      def capture_suggested_reviewers_accepted(merge_request)
-        return if suggested_reviewer_ids.blank?
-
-        ::MergeRequests::CaptureSuggestedReviewersAcceptedWorker
-          .perform_async(merge_request.id, suggested_reviewer_ids)
       end
 
       def audit_security_policy_branch_bypass(merge_request)

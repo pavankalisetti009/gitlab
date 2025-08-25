@@ -152,36 +152,6 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
       end
     end
 
-    describe '#trigger_suggested_reviewers_fetch' do
-      using RSpec::Parameterized::TableSyntax
-
-      where(:project_can_suggest, :merge_request_can_suggest, :triggered) do
-        true  | true  | true
-        true  | false | false
-        false | true  | false
-        false | false | false
-      end
-
-      with_them do
-        before do
-          allow(project).to receive(:can_suggest_reviewers?).and_return(project_can_suggest)
-
-          allow(merge_request).to receive(:can_suggest_reviewers?).and_return(merge_request_can_suggest)
-          allow(service).to receive(:merge_requests_for_source_branch).and_return([merge_request])
-        end
-
-        it do
-          if triggered
-            expect(::MergeRequests::FetchSuggestedReviewersWorker).to receive(:perform_async).with(merge_request.id)
-          else
-            expect(::MergeRequests::FetchSuggestedReviewersWorker).not_to receive(:perform_async).with(merge_request.id)
-          end
-
-          subject
-        end
-      end
-    end
-
     describe '#sync_any_merge_request_approval_rules' do
       let(:merge_request_1) { merge_request }
       let(:merge_request_2) { another_merge_request }

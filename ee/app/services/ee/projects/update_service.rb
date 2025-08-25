@@ -31,11 +31,8 @@ module EE
 
         return update_failed! if project.errors.any?
 
-        if params[:project_setting_attributes].present?
-          suggested_reviewers_already_enabled = project.suggested_reviewers_enabled
-          unless project.suggested_reviewers_available?
-            params[:project_setting_attributes].delete(:suggested_reviewers_enabled)
-          end
+        if params[:project_setting_attributes].present? && !project.suggested_reviewers_available?
+          params[:project_setting_attributes].delete(:suggested_reviewers_enabled)
         end
 
         prepare_analytics_dashboards_params!
@@ -56,8 +53,6 @@ module EE
           project.remove_import_data if project.previous_changes.include?('mirror') && !project.mirror?
           update_amazon_q_service_account!
           update_duo_workflow_service_account!
-
-          suggested_reviewers_already_enabled ? trigger_project_deregistration : trigger_project_registration
         end
 
         result
@@ -94,24 +89,6 @@ module EE
           params[:analytics_dashboards_pointer_attributes][:_destroy] = true
           params[:analytics_dashboards_pointer_attributes].delete(:target_project_id)
         end
-      end
-
-      def trigger_project_registration
-        return unless params[:project_setting_attributes].present? &&
-          params[:project_setting_attributes][:suggested_reviewers_enabled] == '1'
-
-        return unless can_update_suggested_reviewers_setting?
-
-        ::Projects::RegisterSuggestedReviewersProjectWorker.perform_async(project.id, current_user.id)
-      end
-
-      def trigger_project_deregistration
-        return unless params[:project_setting_attributes].present? &&
-          params[:project_setting_attributes][:suggested_reviewers_enabled] == '0'
-
-        return unless project.suggested_reviewers_available?
-
-        ::Projects::DeregisterSuggestedReviewersProjectWorker.perform_async(project.id, current_user.id)
       end
 
       def can_update_suggested_reviewers_setting?

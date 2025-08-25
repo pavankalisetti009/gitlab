@@ -2753,16 +2753,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: merge_requests_capture_suggested_reviewers_accepted
-  :worker_name: MergeRequests::CaptureSuggestedReviewersAcceptedWorker
-  :feature_category: :code_review_workflow
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: merge_requests_create_approvals_reset_note
   :worker_name: MergeRequests::CreateApprovalsResetNoteWorker
   :feature_category: :code_review_workflow
@@ -2781,16 +2771,6 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: false
-  :tags: []
-  :queue_namespace:
-- :name: merge_requests_fetch_suggested_reviewers
-  :worker_name: MergeRequests::FetchSuggestedReviewersWorker
-  :feature_category: :code_review_workflow
-  :has_external_dependencies: true
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
   :tags: []
   :queue_namespace:
 - :name: merge_requests_notify_approvers
@@ -3023,26 +3003,6 @@
   :idempotent: false
   :tags:
   - :import_shared_storage
-  :queue_namespace:
-- :name: projects_deregister_suggested_reviewers_project
-  :worker_name: Projects::DeregisterSuggestedReviewersProjectWorker
-  :feature_category: :code_review_workflow
-  :has_external_dependencies: true
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
-- :name: projects_register_suggested_reviewers_project
-  :worker_name: Projects::RegisterSuggestedReviewersProjectWorker
-  :feature_category: :code_review_workflow
-  :has_external_dependencies: true
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
   :queue_namespace:
 - :name: projects_repository_destroy
   :worker_name: Projects::RepositoryDestroyWorker

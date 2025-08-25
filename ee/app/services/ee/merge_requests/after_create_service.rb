@@ -18,7 +18,6 @@ module EE
 
         record_onboarding_progress(merge_request)
         merge_request.schedule_policy_synchronization
-        schedule_fetch_suggested_reviewers(merge_request)
         schedule_approval_notifications(merge_request)
         schedule_duo_code_review(merge_request)
         track_usage_event if merge_request.project.scan_result_policy_reads.any?
@@ -43,13 +42,6 @@ module EE
 
       def schedule_approval_notifications(merge_request)
         ::MergeRequests::NotifyApproversWorker.perform_in(APPROVERS_NOTIFICATION_DELAY, merge_request.id)
-      end
-
-      def schedule_fetch_suggested_reviewers(merge_request)
-        return unless merge_request.project.can_suggest_reviewers?
-        return unless merge_request.can_suggest_reviewers?
-
-        ::MergeRequests::FetchSuggestedReviewersWorker.perform_async(merge_request.id)
       end
 
       # NOTE: If it was requested, Duo Code Review needs to be triggered after merge_request_diff gets created.
