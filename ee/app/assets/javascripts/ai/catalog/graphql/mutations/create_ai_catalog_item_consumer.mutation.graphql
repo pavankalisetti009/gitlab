@@ -1,0 +1,16 @@
+mutation createAiCatalogItemConsumer($input: AiCatalogItemConsumerCreateInput!) {
+  aiCatalogItemConsumerCreate(input: $input) {
+    errors
+    itemConsumer {
+      id
+      group {
+        id
+        name
+      }
+      project {
+        id
+        name
+      }
+    }
+  }
+}

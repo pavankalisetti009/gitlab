@@ -1,5 +1,4 @@
 <script>
-import { GlAlert } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -7,24 +6,28 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
+import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
+import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
+import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
+import ErrorsAlert from '../components/errors_alert.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
 
 export default {
   name: 'AiCatalogFlows',
   components: {
-    GlAlert,
-    AiCatalogListHeader,
-    AiCatalogList,
     AiCatalogItemDrawer,
+    AiCatalogList,
+    AiCatalogListHeader,
+    AiCatalogItemConsumerModal,
+    ErrorsAlert,
   },
   apollo: {
     aiCatalogFlows: {
@@ -59,7 +62,7 @@ export default {
         if (this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]) {
           this.closeDrawer();
         }
-        this.errorMessage = error.message;
+        this.errorMessages = [error.message];
         Sentry.captureException(error);
       },
     },
@@ -68,7 +71,8 @@ export default {
     return {
       aiCatalogFlows: [],
       aiCatalogFlow: {},
-      errorMessage: null,
+      aiCatalogFlowToBeAdded: null,
+      errorMessages: [],
       pageInfo: {},
     };
   },
@@ -85,6 +89,11 @@ export default {
     itemTypeConfig() {
       return {
         actionItems: (itemId) => [
+          {
+            text: s__('AICatalog|Add to project or group'),
+            action: () => this.handleAiCatalogFlowToBeAdded(itemId),
+            icon: 'plus',
+          },
           {
             text: s__('AICatalog|Edit'),
             to: {
@@ -119,6 +128,24 @@ export default {
     formatId(id) {
       return getIdFromGraphQLId(id);
     },
+    handleAiCatalogFlowToBeAdded(itemId) {
+      const convertedId = convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, itemId);
+      const flow = this.aiCatalogFlows?.find((item) => item.id === convertedId);
+      if (typeof flow === 'undefined') {
+        Sentry.captureException(
+          new Error('AiCatalogFlows: Reached invalid state in Add to target action.', {
+            // eslint-disable-next-line @gitlab/require-i18n-strings
+            cause: `Couldn't find ${convertedId}.`,
+          }),
+        );
+        this.errorMessages = [s__('AICatalog|Failed to add flow to target. Flow not found.')];
+        return;
+      }
+      this.aiCatalogFlowToBeAdded = flow;
+    },
+    resetAiCatalogFlowToBeAdded() {
+      this.aiCatalogFlowToBeAdded = null;
+    },
     closeDrawer() {
       const { show, ...otherQuery } = this.$route.query;
 
@@ -138,15 +165,62 @@ export default {
         });
 
         if (!data.aiCatalogFlowDelete.success) {
-          this.errorMessage = sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
-            error: data.aiCatalogFlowDelete.errors?.[0],
-          });
+          this.errorMessages = [
+            sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
+              error: data.aiCatalogFlowDelete.errors?.[0],
+            }),
+          ];
           return;
         }
 
         this.$toast.show(s__('AICatalog|Flow deleted successfully.'));
       } catch (error) {
-        this.errorMessage = sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error });
+        this.errorMessages = [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
+    },
+    async addFlowToTarget(target) {
+      const flow = this.aiCatalogFlowToBeAdded;
+
+      const input = {
+        itemId: flow.id,
+        target,
+      };
+
+      this.resetAiCatalogFlowToBeAdded();
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: createAiCatalogItemConsumer,
+          variables: {
+            input,
+          },
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogItemConsumerCreate;
+          if (errors.length > 0) {
+            // TODO: Once we have a project/group selector, we could add the group and project name in this message.
+            this.errorMessages = [
+              sprintf(s__('AICatalog|Flow could not be added: %{flowName}'), {
+                flowName: flow.name,
+              }),
+              ...errors,
+            ];
+            return;
+          }
+
+          const name =
+            data.aiCatalogItemConsumerCreate.itemConsumer.group?.name ||
+            data.aiCatalogItemConsumerCreate.itemConsumer.project?.name ||
+            '';
+
+          this.$toast.show(sprintf(s__('AICatalog|Flow added successfully to %{name}.'), { name }));
+        }
+      } catch (error) {
+        this.errorMessages = [
+          sprintf(s__('AICatalog|The flow could not be enabled. Try again. %{error}'), { error }),
+        ];
         Sentry.captureException(error);
       }
     },
@@ -176,13 +250,7 @@ export default {
 <template>
   <div>
     <ai-catalog-list-header />
-    <gl-alert
-      v-if="errorMessage"
-      class="gl-mb-3 gl-mt-5"
-      variant="danger"
-      @dismiss="errorMessage = null"
-      >{{ errorMessage }}
-    </gl-alert>
+    <errors-alert :error-messages="errorMessages" @dismiss="errorMessages = []" />
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogFlows"
@@ -200,6 +268,12 @@ export default {
       :active-item="activeFlow"
       :edit-route="$options.editRoute"
       @close="closeDrawer"
+    />
+    <ai-catalog-item-consumer-modal
+      v-if="aiCatalogFlowToBeAdded"
+      :flow-name="aiCatalogFlowToBeAdded.name"
+      @submit="addFlowToTarget"
+      @hide="resetAiCatalogFlowToBeAdded"
     />
   </div>
 </template>

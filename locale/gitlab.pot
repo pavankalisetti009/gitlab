@@ -2443,6 +2443,12 @@ msgstr ""
 msgid "AICatalog|AI agents complete specialized tasks. They become active when included in a Flow."
 msgstr ""
 
+msgid "AICatalog|Add this flow to a project or a group"
+msgstr ""
+
+msgid "AICatalog|Add to project or group"
+msgstr ""
+
 msgid "AICatalog|Agent created successfully."
 msgstr ""
 
@@ -2530,6 +2536,9 @@ msgstr ""
 msgid "AICatalog|Edit flow"
 msgstr ""
 
+msgid "AICatalog|Failed to add flow to target. Flow not found."
+msgstr ""
+
 msgid "AICatalog|Failed to delete agent. %{error}"
 msgstr ""
 
@@ -2537,6 +2546,12 @@ msgid "AICatalog|Failed to delete flow. %{error}"
 msgstr ""
 
 msgid "AICatalog|Failed to execute agent."
+msgstr ""
+
+msgid "AICatalog|Flow added successfully to %{name}."
+msgstr ""
+
+msgid "AICatalog|Flow could not be added: %{flowName}"
 msgstr ""
 
 msgid "AICatalog|Flow created successfully."
@@ -2596,6 +2611,9 @@ msgstr ""
 msgid "AICatalog|Project is required."
 msgstr ""
 
+msgid "AICatalog|Project or Group ID"
+msgstr ""
+
 msgid "AICatalog|Provide default instructions or context that will be included with every user interaction."
 msgstr ""
 
@@ -2620,10 +2638,16 @@ msgstr ""
 msgid "AICatalog|Select a project for your AI flow to be associated with."
 msgstr ""
 
+msgid "AICatalog|Select a project or group for which you want to enable this flow."
+msgstr ""
+
 msgid "AICatalog|Select agent"
 msgstr ""
 
 msgid "AICatalog|Select tools that this agent will have access to."
+msgstr ""
+
+msgid "AICatalog|Selected flow"
 msgstr ""
 
 msgid "AICatalog|System prompt"
@@ -2645,6 +2669,9 @@ msgid "AICatalog|The agent could not be updated. Try again."
 msgstr ""
 
 msgid "AICatalog|The flow could not be added. Try again."
+msgstr ""
+
+msgid "AICatalog|The flow could not be enabled. Try again. %{error}"
 msgstr ""
 
 msgid "AICatalog|The flow could not be updated. Try again."
