@@ -87,6 +87,20 @@ RSpec.describe Security::Category, feature_category: :security_asset_inventories
         expect(described_class.by_namespace(root_level_group)).to match_array([category])
       end
     end
+
+    describe '.by_namespace_and_template_type' do
+      let(:category1) do
+        create(:security_category, namespace: root_level_group, template_type: :business_unit, name: "1")
+      end
+
+      let(:category2) do
+        create(:security_category, namespace: root_level_group, template_type: :application, name: "2")
+      end
+
+      it 'returns the correct category' do
+        expect(described_class.by_namespace_and_template_type(root_level_group, :application)).to match_array(category2)
+      end
+    end
   end
 
   context 'with loose foreign key on security_category.namespace_id' do
