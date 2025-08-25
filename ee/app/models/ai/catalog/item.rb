@@ -26,7 +26,7 @@ module Ai
       has_many :consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :ai_catalog_item_id, inverse_of: :item
 
       has_many(
-        :reverse_dependencies,
+        :dependents,
         foreign_key: :dependency_id, inverse_of: :dependency, class_name: 'Ai::Catalog::ItemVersionDependency'
       )
 
