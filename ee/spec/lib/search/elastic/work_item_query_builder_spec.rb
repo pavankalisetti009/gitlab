@@ -932,6 +932,31 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'iids' do
+      it 'does not apply iids filter by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:iids
+          ])
+      end
+
+      context 'when iids option is provided with single iid' do
+        let(:options) { base_options.merge(iids: [1]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:iids])
+        end
+      end
+
+      context 'when iids option is provided with multiple iids' do
+        let(:options) { base_options.merge(iids: [1, 2, 3]) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:iids])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'

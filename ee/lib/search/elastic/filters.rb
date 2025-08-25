@@ -88,6 +88,29 @@ module Search
           end
         end
 
+        def by_iids(query_hash:, options:)
+          iids = options[:iids]
+
+          return query_hash unless iids
+
+          context.name(:filters) do
+            add_filter(query_hash, :query, :bool, :filter) do
+              {
+                bool: {
+                  _name: context.name(:iids),
+                  filter: {
+                    terms: {
+                      'iid' => iids
+                    }
+                  }
+                }
+              }
+            end
+          end
+
+          query_hash
+        end
+
         def by_author(query_hash:, options:)
           author_username = options[:author_username]
           not_author_username = options[:not_author_username]
