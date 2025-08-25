@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
+  incident_url = 'https://gitlab.com/gitlab-org/quality/engineering-productivity/master-broken-incidents/-/issues/15782'
+
   include_context 'with work item request context EE'
 
   let(:current_user) { guest }
@@ -1123,7 +1125,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           )
         end
 
-        it 'returns authorized widget information' do
+        it 'returns authorized widget information', quarantine: incident_url do
           # Allow higher threshold due to complex query with lookahead preloading
           allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(105)
           post_graphql(query, current_user: current_user)
@@ -1179,7 +1181,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             stub_feature_flags(use_cached_rolled_up_weights: false)
           end
 
-          it 'executes limited N+1 queries', :use_sql_query_cache do
+          it 'executes limited N+1 queries', :use_sql_query_cache, quarantine: incident_url do
             # Increase threshold to accommodate additional queries from test setup
             allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(132)
             post_graphql(query, current_user: current_user) # warm-up
