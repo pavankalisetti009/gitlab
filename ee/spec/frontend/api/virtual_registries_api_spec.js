@@ -201,4 +201,46 @@ describe('VirtualRegistriesApi', () => {
       expect(axios.delete).toHaveBeenCalledWith(expectedUrl);
     });
   });
+
+  describe('testMavenUpstream', () => {
+    it('calls test endpoint with parameters', () => {
+      const requestPath = 'virtual_registries/packages/maven/upstreams/test';
+      const groupPath = 'full-path';
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/groups/${groupPath}/-/${requestPath}`;
+
+      const expectedParams = {
+        id: groupPath,
+        url: 'https://gitlab.com',
+        username: 'test-user',
+        password: 'test-password',
+      };
+      const expectedResponse = {
+        success: true,
+      };
+      mock.onPost(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      return VirtualRegistryApi.testMavenUpstream(expectedParams).then(({ data }) => {
+        expect(data).toEqual(expectedResponse);
+      });
+    });
+  });
+
+  describe('testExistingMavenUpstream', () => {
+    it('calls test endpoint of existing upstream', () => {
+      const requestPath = 'virtual_registries/packages/maven/upstreams';
+      const upstreamId = '5';
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${upstreamId}/test`;
+      const expectedParams = {
+        id: upstreamId,
+      };
+      const expectedResponse = {
+        success: true,
+      };
+      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectedResponse);
+
+      return VirtualRegistryApi.testExistingMavenUpstream(expectedParams).then(({ data }) => {
+        expect(data).toEqual(expectedResponse);
+      });
+    });
+  });
 });

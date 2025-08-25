@@ -2,6 +2,9 @@
 import { GlForm, GlFormGroup, GlFormInput, GlFormTextarea, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { isValidURL } from '~/lib/utils/url_utility';
+import TestMavenUpstreamButton from './test_maven_upstream_button.vue';
+
+const PASSWORD_PLACEHOLDER = '*****';
 
 export default {
   name: 'RegistryUpstreamForm',
@@ -11,6 +14,7 @@ export default {
     GlFormInput,
     GlFormTextarea,
     GlButton,
+    TestMavenUpstreamButton,
   },
   inject: {
     upstreamPath: {
@@ -28,14 +32,6 @@ export default {
       required: false,
       default: () => ({}),
     },
-    /**
-     * Whether the upstream can be tested
-     */
-    canTestUpstream: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   i18n: {
     nameLabel: s__('VirtualRegistry|Name'),
@@ -47,7 +43,6 @@ export default {
     cacheValidityHoursLabel: s__('VirtualRegistry|Caching period'),
     cacheValidityHoursHelpText: s__('VirtualRegistry|Time in hours'),
     createUpstreamButtonLabel: s__('VirtualRegistry|Create upstream'),
-    testUpstreamButtonLabel: s__('VirtualRegistry|Test upstream'),
     invalidUrl: s__('VirtualRegistry|Please provide a valid URL.'),
     cancelButtonLabel: __('Cancel'),
   },
@@ -56,13 +51,9 @@ export default {
    * @property {Object} form - The form data
    */
   /**
-   * @event testUpstream - Emitted when the "Test upstream" button is clicked
-   * @property {Object} form - The form data
-   */
-  /**
    * @event cancel - Emitted when the "Cancel" button is clicked
    */
-  emits: ['submit', 'testUpstream', 'cancel'],
+  emits: ['submit', 'cancel'],
   data() {
     return {
       form: {
@@ -89,11 +80,18 @@ export default {
     cacheValidityHoursInputId: 'cache-validity-hours-input',
   },
   computed: {
+    isTestUpstreamButtonDisabled() {
+      if (!this.isValidURL) return true;
+      return !this.upstream.id && this.form.username.length > 0 && this.form.password.length === 0;
+    },
     isValidURL() {
       return isValidURL(this.form.url);
     },
     isValidUrlState() {
       return this.showValidation ? this.isValidURL : true;
+    },
+    passwordPlaceholder() {
+      return this.upstream.username ? PASSWORD_PLACEHOLDER : '';
     },
     saveButtonText() {
       return this.upstream.id ? __('Save changes') : this.$options.i18n.createUpstreamButtonLabel;
@@ -105,13 +103,6 @@ export default {
 
       if (this.isValidURL) {
         this.$emit('submit', this.form);
-      }
-    },
-    testUpstream() {
-      this.showValidation = true;
-
-      if (this.isValidURL) {
-        this.$emit('testUpstream', this.form);
       }
     },
     cancel() {
@@ -167,6 +158,7 @@ export default {
         :id="$options.ids.passwordInputId"
         v-model="form.password"
         data-testid="password-input"
+        :placeholder="passwordPlaceholder"
         type="password"
       />
     </gl-form-group>
@@ -204,15 +196,13 @@ export default {
       >
         {{ $options.i18n.cancelButtonLabel }}
       </gl-button>
-      <gl-button
-        v-if="canTestUpstream"
-        data-testid="test-upstream-button"
-        variant="confirm"
-        category="tertiary"
-        @click="testUpstream"
-      >
-        {{ $options.i18n.testUpstreamButtonLabel }}
-      </gl-button>
+      <test-maven-upstream-button
+        :disabled="isTestUpstreamButtonDisabled"
+        :upstream-id="upstream.id"
+        :url="form.url"
+        :username="form.username"
+        :password="form.password"
+      />
     </div>
   </gl-form>
 </template>

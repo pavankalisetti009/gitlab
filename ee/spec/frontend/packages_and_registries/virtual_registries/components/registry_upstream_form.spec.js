@@ -1,6 +1,7 @@
 import { GlForm } from '@gitlab/ui';
-import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
+import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/test_maven_upstream_button.vue';
 
 describe('RegistryUpstreamForm', () => {
   let wrapper;
@@ -30,7 +31,7 @@ describe('RegistryUpstreamForm', () => {
   const findCacheValidityHoursInput = () => wrapper.findByTestId('cache-validity-hours-input');
   const findSubmitButton = () => wrapper.findByTestId('submit-button');
   const findCancelButton = () => wrapper.findByTestId('cancel-button');
-  const findTestUpstreamButton = () => wrapper.findByTestId('test-upstream-button');
+  const findTestUpstreamButton = () => wrapper.findComponent(TestMavenUpstreamButton);
 
   beforeEach(() => {
     createComponent();
@@ -92,6 +93,7 @@ describe('RegistryUpstreamForm', () => {
 
       it('renders Password input', () => {
         expect(findPasswordInput().props('value')).toBe('');
+        expect(findPasswordInput().props('placeholder')).toBe('*****');
       });
 
       it('renders Cache validity hours input', () => {
@@ -107,16 +109,6 @@ describe('RegistryUpstreamForm', () => {
       it('renders Cancel button', () => {
         expect(findCancelButton().text()).toBe('Cancel');
         expect(findCancelButton().props('href')).toBe('');
-      });
-
-      it('renders Test upstream button if canTestUpstream is true', () => {
-        createComponent({ props: { canTestUpstream: true } });
-        expect(findTestUpstreamButton().exists()).toBe(true);
-      });
-
-      it('does not render Test upstream button if canTestUpstream is false', () => {
-        createComponent({ props: { canTestUpstream: false } });
-        expect(findTestUpstreamButton().exists()).toBe(false);
       });
 
       it('renders `Save changes` button when upstream exists', () => {
@@ -171,37 +163,60 @@ describe('RegistryUpstreamForm', () => {
       expect(Boolean(wrapper.emitted('cancel'))).toBe(true);
       expect(wrapper.emitted('cancel')[0]).toEqual([]);
     });
+  });
 
-    it('emits testUpstream event when Test upstream button is clicked', () => {
-      createComponent({ props: { upstream, canTestUpstream: true } });
-
-      findTestUpstreamButton().vm.$emit('click');
-
-      const testEvent = wrapper.emitted('testUpstream');
-      const [eventParams] = testEvent[0];
-
-      expect(Boolean(testEvent)).toBe(true);
-      expect(eventParams).toEqual(
-        expect.objectContaining({
-          name: 'foo',
-          url: 'https://example.com',
-          description: 'bar',
-          username: 'bax',
-          cacheValidityHours: 0,
-        }),
-      );
+  describe('test upstream button', () => {
+    it('renders Test upstream button component', () => {
+      expect(findTestUpstreamButton().props()).toStrictEqual({
+        disabled: true,
+        upstreamId: null,
+        url: '',
+        username: '',
+        password: '',
+      });
     });
 
-    it('does not emit a testUpstream event when the form is not valid', () => {
-      createComponent({
-        props: { upstream: { ...upstream, url: 'ftp://hello' }, canTestUpstream: true },
+    it('enables button if valid URL is provided', async () => {
+      await findUpstreamUrlInput().vm.$emit('input', 'https://gitlab.com');
+
+      expect(findTestUpstreamButton().props('disabled')).toBe(false);
+      expect(findTestUpstreamButton().props('username')).toBe('');
+    });
+
+    it('disables button if username is provided but password is not', async () => {
+      await findUpstreamUrlInput().vm.$emit('input', 'https://gitlab.com');
+
+      expect(findTestUpstreamButton().props('disabled')).toBe(false);
+
+      await findUsernameInput().vm.$emit('input', 'username');
+
+      expect(findTestUpstreamButton().props('disabled')).toBe(true);
+    });
+
+    describe('when upstream prop is set', () => {
+      beforeEach(() => {
+        createComponent({
+          props: { upstream },
+        });
       });
 
-      findTestUpstreamButton().vm.$emit('click');
+      it('renders Test upstream button component', () => {
+        expect(findTestUpstreamButton().props()).toStrictEqual({
+          disabled: false,
+          upstreamId: upstream.id,
+          url: upstream.url,
+          username: upstream.username,
+          password: '',
+        });
+      });
+    });
 
-      const testEvent = wrapper.emitted('testUpstream');
+    it('disables test upstream button component when the form is not valid', () => {
+      createComponent({
+        props: { upstream: { ...upstream, url: 'ftp://hello' } },
+      });
 
-      expect(Boolean(testEvent)).toBe(false);
+      expect(findTestUpstreamButton().props('disabled')).toBe(true);
     });
   });
 });

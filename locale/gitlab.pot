@@ -70519,6 +70519,9 @@ msgstr ""
 msgid "VirtualRegistry|Clear cache for %{upstreamName}?"
 msgstr ""
 
+msgid "VirtualRegistry|Connection successful."
+msgstr ""
+
 msgid "VirtualRegistry|Create Maven registry"
 msgstr ""
 
@@ -70562,6 +70565,12 @@ msgid "VirtualRegistry|Failed to clear registry cache. Try again."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to clear upstream cache. Try again."
+msgstr ""
+
+msgid "VirtualRegistry|Failed to connect %{msg}"
+msgstr ""
+
+msgid "VirtualRegistry|Failed to connect."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to delete cache entry."
