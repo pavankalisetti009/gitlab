@@ -22,6 +22,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:ai_settings_attributes) do
       {
         ai_gateway_url: 'http://localhost:3000',
+        duo_agent_platform_service_url: 'http://localhost:50052',
         amazon_q_ready?: true,
         duo_core_features_enabled?: true,
         duo_workflow_service_account_user: {
@@ -107,6 +108,8 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       expect(settings).to include(
         add_duo_pro_seats_url: "#{staging_customers_url}/gitlab/subscriptions/A-S0000001/duo_pro_seats",
         ai_gateway_url: 'http://localhost:3000',
+        duo_agent_platform_service_url: 'http://localhost:50052',
+        expose_duo_agent_platform_service_url: 'true',
         amazon_q_auto_review_enabled: 'true',
         amazon_q_configuration_path: '/admin/application_settings/integrations/amazon_q/edit',
         amazon_q_ready: 'true',

@@ -10,6 +10,7 @@ import DuoExpandedLoggingForm from '../components/duo_expanded_logging_form.vue'
 import DuoChatHistoryExpirationForm from '../components/duo_chat_history_expiration.vue';
 import AiModelsForm from '../components/ai_models_form.vue';
 import AiGatewayUrlInputForm from '../components/ai_gateway_url_input_form.vue';
+import DuoAgentPlatformServiceUrlInputForm from '../components/duo_agent_platform_service_url_input_form.vue';
 import updateAiSettingsMutation from '../../graphql/update_ai_settings.mutation.graphql';
 
 export default {
@@ -17,6 +18,7 @@ export default {
   components: {
     AiCommonSettings,
     AiGatewayUrlInputForm,
+    DuoAgentPlatformServiceUrlInputForm,
     AiModelsForm,
     CodeSuggestionsConnectionForm,
     DuoExpandedLoggingForm,
@@ -34,6 +36,8 @@ export default {
     'toggleBetaModelsPath',
     'canManageSelfHostedModels',
     'aiGatewayUrl',
+    'duoAgentPlatformServiceUrl',
+    'exposeDuoAgentPlatformServiceUrl',
     'enabledExpandedLogging',
     'duoChatExpirationDays',
     'duoChatExpirationColumn',
@@ -60,6 +64,7 @@ export default {
       disabledConnection: this.disabledDirectConnectionMethod,
       aiModelsEnabled: this.betaSelfHostedModelsEnabled,
       aiGatewayUrlInput: this.aiGatewayUrl,
+      duoAgentPlatformServiceUrlInput: this.duoAgentPlatformServiceUrl,
       expandedLogging: this.enabledExpandedLogging,
       chatExpirationDays: this.duoChatExpirationDays,
       chatExpirationColumn: this.duoChatExpirationColumn,
@@ -83,6 +88,7 @@ export default {
     haveAiSettingsChanged() {
       return (
         this.aiGatewayUrlInput !== this.aiGatewayUrl ||
+        this.duoAgentPlatformServiceUrlInput !== this.duoAgentPlatformServiceUrl ||
         this.areDuoCoreFeaturesEnabled !== this.duoCoreFeaturesEnabled
       );
     },
@@ -146,6 +152,7 @@ export default {
 
       if (this.canManageSelfHostedModels) {
         input.aiGatewayUrl = this.aiGatewayUrlInput;
+        input.duoAgentPlatformServiceUrl = this.duoAgentPlatformServiceUrlInput;
       }
 
       const { data } = await this.$apollo.mutate({
@@ -169,6 +176,9 @@ export default {
     },
     onAiGatewayUrlChange(value) {
       this.aiGatewayUrlInput = value;
+    },
+    onDuoAgentPlatformServiceUrlChange(value) {
+      this.duoAgentPlatformServiceUrlInput = value;
     },
     onExpandedLoggingChange(value) {
       this.expandedLogging = value;
@@ -201,6 +211,10 @@ export default {
         <ai-models-form @change="onAiModelsFormChange" />
         <duo-expanded-logging-form @change="onExpandedLoggingChange" />
         <ai-gateway-url-input-form @change="onAiGatewayUrlChange" />
+        <duo-agent-platform-service-url-input-form
+          v-if="exposeDuoAgentPlatformServiceUrl"
+          @change="onDuoAgentPlatformServiceUrlChange"
+        />
       </template>
     </template>
   </ai-common-settings>

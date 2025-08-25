@@ -18,6 +18,8 @@ export const initAiSettings = (id, component) => {
 
   const {
     aiGatewayUrl,
+    duoAgentPlatformServiceUrl,
+    exposeDuoAgentPlatformServiceUrl,
     canManageSelfHostedModels,
     cascadingSettingsData,
     duoAvailability,
@@ -60,6 +62,8 @@ export const initAiSettings = (id, component) => {
     apolloProvider,
     provide: {
       aiGatewayUrl,
+      duoAgentPlatformServiceUrl,
+      exposeDuoAgentPlatformServiceUrl: parseBoolean(exposeDuoAgentPlatformServiceUrl),
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
       cascadingSettingsData: cascadingSettingsDataParsed,
       areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),

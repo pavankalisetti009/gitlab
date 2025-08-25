@@ -13,6 +13,8 @@ describe('DuoConfigurationSettingsInfoCard', () => {
   const createComponent = (
     {
       aiGatewayUrl = 'http://0.0.0.0:5052',
+      duoAgentPlatformServiceUrl = '',
+      exposeDuoAgentPlatformServiceUrl = false,
       canManageSelfHostedModels = false,
       duoConfigurationPath = '/gitlab_duo/configuration',
       isSaaS = false,
@@ -28,6 +30,8 @@ describe('DuoConfigurationSettingsInfoCard', () => {
     wrapper = shallowMountExtended(DuoConfigurationSettingsInfoCard, {
       provide: {
         aiGatewayUrl,
+        duoAgentPlatformServiceUrl,
+        exposeDuoAgentPlatformServiceUrl,
         canManageSelfHostedModels,
         duoConfigurationPath,
         isSaaS,
@@ -126,6 +130,77 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
             expect(findDuoConfigurationRows()).toHaveLength(5);
             expect(findAllDuoConfigurationRowTitleProps()).not.toContain('Local AI gateway URL');
+          });
+        });
+
+        describe('Local Duo Agent Platform Service URL', () => {
+          describe('when feature flag is enabled', () => {
+            describe('when URL is set', () => {
+              it('renders the Local Duo Agent Platform Service URL row', () => {
+                createComponent({
+                  isSaaS: false,
+                  canManageSelfHostedModels: true,
+                  duoAgentPlatformServiceUrl: 'http://duo-agent-platform.example.com',
+                  exposeDuoAgentPlatformServiceUrl: true,
+                });
+
+                expect(findDuoConfigurationRows()).toHaveLength(7);
+                expect(findDuoConfigurationRowTitlePropByRowIdx(6)).toBe(
+                  'Local Duo Agent Platform Service URL',
+                );
+                expect(findDuoConfigurationRows().at(6).props('configValue')).toBe(
+                  'http://duo-agent-platform.example.com',
+                );
+              });
+            });
+
+            describe('when URL is not set', () => {
+              it('does not render the Local Duo Agent Platform Service URL row', () => {
+                createComponent({
+                  isSaaS: false,
+                  canManageSelfHostedModels: true,
+                  duoAgentPlatformServiceUrl: '',
+                  exposeDuoAgentPlatformServiceUrl: true,
+                });
+
+                expect(findDuoConfigurationRows()).toHaveLength(6);
+                expect(findAllDuoConfigurationRowTitleProps()).not.toContain(
+                  'Local Duo Agent Platform Service URL',
+                );
+              });
+            });
+
+            describe('when URL is null', () => {
+              it('does not render the Local Duo Agent Platform Service URL row', () => {
+                createComponent({
+                  isSaaS: false,
+                  canManageSelfHostedModels: true,
+                  duoAgentPlatformServiceUrl: null,
+                  exposeDuoAgentPlatformServiceUrl: true,
+                });
+
+                expect(findDuoConfigurationRows()).toHaveLength(6);
+                expect(findAllDuoConfigurationRowTitleProps()).not.toContain(
+                  'Local Duo Agent Platform Service URL',
+                );
+              });
+            });
+          });
+
+          describe('when feature flag is disabled', () => {
+            it('does not render the Duo Agent Platform Service URL row', () => {
+              createComponent({
+                isSaaS: false,
+                canManageSelfHostedModels: true,
+                duoAgentPlatformServiceUrl: 'http://duo-agent-platform.example.com',
+                exposeDuoAgentPlatformServiceUrl: false,
+              });
+
+              expect(findDuoConfigurationRows()).toHaveLength(6);
+              expect(findAllDuoConfigurationRowTitleProps()).not.toContain(
+                'Local Duo Agent Platform Service URL',
+              );
+            });
           });
         });
       });

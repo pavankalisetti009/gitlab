@@ -13,12 +13,18 @@ module Types
           authorize: :read_self_hosted_models_settings,
           experiment: { milestone: '17.9' }
 
+        field :duo_agent_platform_service_url, String,
+          null: true,
+          description: 'URL for local Duo Agent Platform service.',
+          authorize: :read_self_hosted_models_settings,
+          experiment: { milestone: '18.4' }
+
         field :updated_at, Types::TimeType,
           null: false,
           description: 'Timestamp of last GitLab Duo setting update.',
           experiment: { milestone: '17.9' }
 
-        field :duo_core_features_enabled, Boolean,
+        field :duo_core_features_enabled, Boolean, # rubocop:disable GraphQL/ExtractType -- no need to extract into a separate type
           null: true, # has to allow null in case authorization fails
           method: :duo_core_features_enabled?,
           description: 'Indicates whether GitLab Duo Core features are enabled.',

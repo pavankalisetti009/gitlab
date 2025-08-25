@@ -14,7 +14,13 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   let!(:duo_settings) { create(:ai_settings, duo_core_features_enabled: false) }
 
   let(:mutation_name) { :duo_settings_update }
-  let(:mutation_params) { { ai_gateway_url: "http://new-ai-gateway-url", duo_core_features_enabled: true } }
+  let(:mutation_params) do
+    {
+      ai_gateway_url: "http://new-ai-gateway-url",
+      duo_core_features_enabled: true,
+      duo_agent_platform_service_url: "http://new-duo-agent-platform-url"
+    }
+  end
 
   let(:mutation) { graphql_mutation(mutation_name, mutation_params) }
 
@@ -43,6 +49,22 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           expect(graphql_errors).to be_present
           expect(graphql_errors.pluck('message')).to match_array(
             "You don't have permission to update the setting ai_gateway_url."
+          )
+        end
+      end
+
+      context 'when attempting to update duo_agent_platform_service_url' do
+        let(:current_user) { create(:user) }
+        let(:mutation_params) { { duo_agent_platform_service_url: "http://new-duo-agent-platform-url" } }
+
+        it_behaves_like 'performs the right authorization'
+
+        it 'returns an error about the missing permission' do
+          request
+
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.pluck('message')).to match_array(
+            "You don't have permission to update the setting duo_agent_platform_service_url."
           )
         end
       end
@@ -99,6 +121,33 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           end
         end
 
+        context 'when there is an error for duo_agent_platform_service_url' do
+          let(:mutation_params) { { duo_agent_platform_service_url: "foobar" } }
+
+          it 'returns an error' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(result['errors']).to match_array(
+              ["Duo agent platform service url Only allowed schemes are http, https"]
+            )
+
+            expect { duo_settings.reload }.not_to change { duo_settings }
+          end
+
+          it 'returns the existing ai setting values' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(result['duoSettings']).to include(
+              'aiGatewayUrl' => 'http://0.0.0.0:5052',
+              'duoCoreFeaturesEnabled' => false
+            )
+          end
+        end
+
         context 'when there is an error for duoCoreFeaturesEnabled' do
           let(:mutation_params) { { duoCoreFeaturesEnabled: nil } }
 
@@ -130,6 +179,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
           expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
             .and change { duo_settings.duo_core_features_enabled }.to(true)
+            .and change { duo_settings.duo_agent_platform_service_url }.to("http://new-duo-agent-platform-url")
         end
 
         context 'when ai_gateway_url arg is a blank string' do
@@ -159,6 +209,36 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             expect(result['errors']).to eq([])
 
             expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
+          end
+        end
+
+        context 'when duo_agent_platform_service_url arg is a blank string' do
+          let(:mutation_params) { { duo_agent_platform_service_url: "" } }
+
+          it 'coerces it to nil' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(result['duoSettings']).to include("duoAgentPlatformServiceUrl" => nil)
+            expect(result['errors']).to eq([])
+
+            expect { duo_settings.reload }.to change { duo_settings.duo_agent_platform_service_url }.to(nil)
+          end
+        end
+
+        context 'when duo_agent_platform_service_url has a trailing /' do
+          let(:mutation_params) { { duo_agent_platform_service_url: "http://new-duo-agent-platform-url/" } }
+
+          it 'remove the trailing slash before saving' do
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(result['duoSettings']).to include("duoAgentPlatformServiceUrl" => "http://new-duo-agent-platform-url")
+            expect(result['errors']).to eq([])
+
+            expect { duo_settings.reload }.to change { duo_settings.duo_agent_platform_service_url }.to("http://new-duo-agent-platform-url")
           end
         end
 

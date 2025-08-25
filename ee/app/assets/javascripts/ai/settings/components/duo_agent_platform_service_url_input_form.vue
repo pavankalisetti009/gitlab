@@ -1,0 +1,44 @@
+<script>
+import { GlFormGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
+import { s__ } from '~/locale';
+
+export default {
+  name: 'DuoAgentPlatformServiceUrlInputField',
+  components: {
+    GlFormGroup,
+    GlFormInput,
+    GlSprintf,
+  },
+  i18n: {
+    label: s__('AiPowered|Local Duo Agent Platform Service URL'),
+    description: s__(
+      'AiPowered|Enter the URL for your Duo Agent Platform service. This endpoint is used for GitLab Duo Agent Platform requests. %{br} The URL must be a complete URL, including either the "http://" or "https://" protocol. For example "http://EXAMPLE-URL".',
+    ),
+  },
+  inject: ['duoAgentPlatformServiceUrl'],
+  data() {
+    return {
+      duoAgentPlatformServiceUrlInput: this.duoAgentPlatformServiceUrl,
+    };
+  },
+  methods: {
+    onUrlValueChange(value) {
+      this.$emit('change', value);
+    },
+  },
+};
+</script>
+<template>
+  <gl-form-group :label="$options.i18n.label" label-for="duo-agent-platform-service-url">
+    <template #label-description>
+      <gl-sprintf :message="$options.i18n.description">
+        <template #br><br /></template>
+      </gl-sprintf>
+    </template>
+    <gl-form-input
+      id="duo-agent-platform-service-url"
+      v-model="duoAgentPlatformServiceUrlInput"
+      @update="onUrlValueChange"
+    />
+  </gl-form-group>
+</template>

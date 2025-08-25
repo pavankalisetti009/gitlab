@@ -10,6 +10,7 @@ export default {
   i18n: {
     aiLogsText: s__('AiPowered|AI logs'),
     aiGatewayUrlText: s__('AiPowered|Local AI gateway URL'),
+    duoAgentPlatformServiceUrlText: s__('AiPowered|Local Duo Agent Platform Service URL'),
     duoChangeConfigurationButtonText: s__('AiPowered|Change configuration'),
     experimentAndBetaFeaturesText: s__('AiPowered|Experiment and beta features'),
     betaSelfHostedModelsText: s__('AiPowered|Self-hosted beta models and features'),
@@ -29,6 +30,8 @@ export default {
   },
   inject: {
     aiGatewayUrl: { default: '' },
+    duoAgentPlatformServiceUrl: { default: '' },
+    exposeDuoAgentPlatformServiceUrl: { default: false },
     canManageSelfHostedModels: { default: false },
     duoConfigurationPath: {},
     isSaaS: {},
@@ -80,6 +83,9 @@ export default {
         this.areDuoCoreFeaturesEnabled && this.duoAvailability !== AVAILABILITY_OPTIONS.NEVER_ON
       );
     },
+    isDuoAgentPlatformEnabled() {
+      return this.exposeDuoAgentPlatformServiceUrl && this.duoAgentPlatformServiceUrl;
+    },
   },
 };
 </script>
@@ -128,6 +134,14 @@ export default {
             <duo-configuration-settings-row
               :duo-configuration-settings-row-type-title="$options.i18n.aiGatewayUrlText"
               :config-value="aiGatewayUrl"
+            />
+          </template>
+          <template v-if="isDuoAgentPlatformEnabled">
+            <duo-configuration-settings-row
+              :duo-configuration-settings-row-type-title="
+                $options.i18n.duoAgentPlatformServiceUrlText
+              "
+              :config-value="duoAgentPlatformServiceUrl"
             />
           </template>
         </template>

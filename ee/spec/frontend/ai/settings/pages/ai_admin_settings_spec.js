@@ -9,6 +9,7 @@ import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
 import AiGtewayUrlInputForm from 'ee/ai/settings/components/ai_gateway_url_input_form.vue';
+import DuoAgentPlatformServiceUrlInputForm from 'ee/ai/settings/components/duo_agent_platform_service_url_input_form.vue';
 import CodeSuggestionsConnectionForm from 'ee/ai/settings/components/code_suggestions_connection_form.vue';
 import AiModelsForm from 'ee/ai/settings/components/ai_models_form.vue';
 import AiAdminSettings from 'ee/ai/settings/pages/ai_admin_settings.vue';
@@ -28,11 +29,13 @@ let wrapper;
 let axiosMock;
 
 const aiGatewayUrl = 'http://localhost:5052';
+const duoAgentPlatformServiceUrl = 'http://localhost:50052';
 const toggleBetaModelsPath = '/admin/ai/duo_self_hosted/terms_and_condition';
 const updateAiSettingsSuccessHandler = jest.fn().mockResolvedValue({
   data: {
     duoSettings: {
       aiGatewayUrl: 'http://new-aigw-url.com',
+      duoAgentPlatformServiceUrl: 'http://new-duo-agent-platform-url.com',
       errors: [],
     },
   },
@@ -60,6 +63,8 @@ const createComponent = async ({
       enabledExpandedLogging: false,
       toggleBetaModelsPath,
       aiGatewayUrl,
+      duoAgentPlatformServiceUrl,
+      exposeDuoAgentPlatformServiceUrl: false,
       duoChatExpirationDays: 30,
       duoChatExpirationColumn: 'last_updated_at',
       duoCoreFeaturesEnabled: false,
@@ -75,6 +80,8 @@ const findCodeSuggestionsConnectionForm = () =>
   wrapper.findComponent(CodeSuggestionsConnectionForm);
 const findAiModelsForm = () => wrapper.findComponent(AiModelsForm);
 const findAiGatewayUrlInputForm = () => wrapper.findComponent(AiGtewayUrlInputForm);
+const findDuoAgentPlatformServiceUrlInputForm = () =>
+  wrapper.findComponent(DuoAgentPlatformServiceUrlInputForm);
 const findDuoExpandedLoggingForm = () => wrapper.findComponent(DuoExpandedLoggingForm);
 const findDuoChatHistoryExpirationForm = () => wrapper.findComponent(DuoChatHistoryExpirationForm);
 
@@ -128,6 +135,49 @@ describe('AiAdminSettings', () => {
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
               aiGatewayUrl: 'http://new-ai-gateway-url.com',
+              duoAgentPlatformServiceUrl: 'http://localhost:50052',
+              duoCoreFeaturesEnabled: false,
+            },
+          });
+        });
+
+        it('updates duoAgentPlatformServiceUrl when feature flag is enabled', async () => {
+          await createComponent({ provide: { exposeDuoAgentPlatformServiceUrl: true } });
+          const newDuoAgentPlatformServiceUrl = 'http://new-duo-agent-platform-url.com';
+
+          await findDuoAgentPlatformServiceUrlInputForm().vm.$emit(
+            'change',
+            newDuoAgentPlatformServiceUrl,
+          );
+
+          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+
+          expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              aiGatewayUrl: 'http://localhost:5052',
+              duoAgentPlatformServiceUrl: 'http://new-duo-agent-platform-url.com',
+              duoCoreFeaturesEnabled: false,
+            },
+          });
+        });
+
+        it('updates both aiGatewayUrl and duoAgentPlatformServiceUrl when both change', async () => {
+          await createComponent({ provide: { exposeDuoAgentPlatformServiceUrl: true } });
+          const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
+          const newDuoAgentPlatformServiceUrl = 'http://new-duo-agent-platform-url.com';
+
+          await findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
+          await findDuoAgentPlatformServiceUrlInputForm().vm.$emit(
+            'change',
+            newDuoAgentPlatformServiceUrl,
+          );
+
+          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+
+          expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              aiGatewayUrl: 'http://new-ai-gateway-url.com',
+              duoAgentPlatformServiceUrl: 'http://new-duo-agent-platform-url.com',
               duoCoreFeaturesEnabled: false,
             },
           });
@@ -139,7 +189,7 @@ describe('AiAdminSettings', () => {
           createComponent({ provide: { canManageSelfHostedModels: false } });
         });
 
-        it('does not update aiGatewayUrl', async () => {
+        it('does not update aiGatewayUrl or duoAgentPlatformServiceUrl', async () => {
           await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: true });
 
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
@@ -158,6 +208,7 @@ describe('AiAdminSettings', () => {
         expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
             aiGatewayUrl: 'http://localhost:5052',
+            duoAgentPlatformServiceUrl: 'http://localhost:50052',
             duoCoreFeaturesEnabled: true,
           },
         });
@@ -246,6 +297,22 @@ describe('AiAdminSettings', () => {
         expect(findAiGatewayUrlInputForm().exists()).toBe(true);
       });
 
+      describe('when exposeDuoAgentPlatformServiceUrl feature flag is disabled', () => {
+        it('does not render Duo Agent Platform Service URL input form', () => {
+          expect(findDuoAgentPlatformServiceUrlInputForm().exists()).toBe(false);
+        });
+      });
+
+      describe('when exposeDuoAgentPlatformServiceUrl feature flag is enabled', () => {
+        it('renders Duo Agent Platform Service URL input form', () => {
+          createComponent({
+            provide: { exposeDuoAgentPlatformServiceUrl: true },
+          });
+
+          expect(findDuoAgentPlatformServiceUrlInputForm().exists()).toBe(true);
+        });
+      });
+
       it('renders the expanded logging form', () => {
         expect(findDuoExpandedLoggingForm().exists()).toBe(true);
       });
@@ -262,6 +329,10 @@ describe('AiAdminSettings', () => {
 
       it('does not render AI gateway URL input form', () => {
         expect(findAiGatewayUrlInputForm().exists()).toBe(false);
+      });
+
+      it('does not render Duo Agent Platform Service URL input form', () => {
+        expect(findDuoAgentPlatformServiceUrlInputForm().exists()).toBe(false);
       });
 
       it('does not render the expanded logging form', () => {
@@ -305,6 +376,18 @@ describe('AiAdminSettings', () => {
 
     it('updates hasParentFormChanged when the AI gateway url value changes', async () => {
       await findAiGatewayUrlInputForm().vm.$emit('change', true);
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+    });
+  });
+
+  describe('onDuoAgentPlatformServiceUrlChange', () => {
+    beforeEach(async () => {
+      await createComponent({ provide: { exposeDuoAgentPlatformServiceUrl: true } });
+    });
+
+    it('updates hasParentFormChanged when the Duo Agent Platform Service URL value changes', async () => {
+      await findDuoAgentPlatformServiceUrlInputForm().vm.$emit('change', 'http://new-url.com');
 
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
     });

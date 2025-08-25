@@ -14,6 +14,8 @@ export function mountGitlabDuoHomeApp() {
   const {
     addDuoProSeatsUrl,
     aiGatewayUrl,
+    duoAgentPlatformServiceUrl,
+    exposeDuoAgentPlatformServiceUrl,
     duoSeatUtilizationPath,
     enabledExpandedLogging,
     isBulkAddOnAssignmentEnabled,
@@ -50,6 +52,8 @@ export function mountGitlabDuoHomeApp() {
     apolloProvider,
     provide: {
       aiGatewayUrl,
+      duoAgentPlatformServiceUrl,
+      exposeDuoAgentPlatformServiceUrl: parseBoolean(exposeDuoAgentPlatformServiceUrl),
       isSaaS: parseBoolean(isSaas),
       isAdminInstanceDuoHome: true,
       addDuoProHref: addDuoProSeatsUrl,
