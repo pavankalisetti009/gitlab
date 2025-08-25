@@ -10,6 +10,7 @@ module WorkItems
         include ::WorkItems::ConfigurableStatus
 
         MAX_STATUSES_PER_NAMESPACE = 70
+        DISALLOWED_NAME_CHARS = /\A["'`]|["'`]\z|[\x00-\x1F\x7F]/
 
         enum :category, CATEGORIES
 
@@ -42,6 +43,10 @@ module WorkItems
         # to be created at subgroup level, but unique across groups hierarchy, then this validation would need
         # to be adjusted to compute the uniqueness across hierarchy.
         validates :name, custom_uniqueness: { unique_sql: 'TRIM(BOTH FROM lower(?))', scope: :namespace_id }
+        validates :name, format: {
+          without: DISALLOWED_NAME_CHARS,
+          message: 'cannot start or end with quotes, backticks, or contain control characters'
+        }, if: :name_changed?
         validates :color, presence: true, length: { maximum: 7 }, color: true
         validates :description, length: { maximum: 128 }, allow_blank: true
         # Update doesn't change the overall status per namespace count
