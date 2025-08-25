@@ -55,5 +55,17 @@ module UsageEvents
     def upsert_options(model)
       UPSERT_OPTIONS.fetch(model)
     end
+
+    def prepare_attributes(valid_objects)
+      attributes = super
+
+      # Other models have `id` which is unique, and also they will be removed pretty soon.
+      return attributes if current_model != Ai::UsageEvent
+
+      uniq_tuple = upsert_options(Ai::UsageEvent)[:unique_by].map(&:to_s)
+
+      # Deduplicate rows with the same uniqueness tuple.
+      attributes.group_by { |attr| attr.slice(*uniq_tuple) }.values.map(&:first)
+    end
   end
 end
