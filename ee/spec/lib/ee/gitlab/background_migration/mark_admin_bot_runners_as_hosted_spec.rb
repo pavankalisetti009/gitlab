@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::MarkAdminBotRunnersAsHosted,
   feature_category: :hosted_runners do
-  let!(:admin_bot) { Users::Internal.admin_bot }
+  let!(:admin_bot) { ::Users::Internal.for_organization(::Organizations::Organization.first).admin_bot }
 
   let!(:admin_bot_runner) do
     table(:ci_runners, database: :ci, primary_key: :id)

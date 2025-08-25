@@ -6,7 +6,7 @@ RSpec.describe ComplianceManagement::PiplUserPolicy, feature_category: :complian
   let_it_be(:pipl_user) { create(:pipl_user) }
 
   let_it_be(:simple_user) { create(:user) }
-  let_it_be(:admin_user) { Users::Internal.admin_bot }
+  let_it_be(:admin_user) { create(:user, :admin_bot) }
   let(:current_user) { admin_user }
 
   subject { described_class.new(current_user, pipl_user) }

@@ -18,7 +18,7 @@ module EE
 
           each_sub_batch do |sub_batch|
             sub_batch.each do |runner|
-              next unless runner.creator_id == admin_bot.id
+              next unless ::User.admin_bot.where(id: runner.creator_id).exists?
 
               CiHostedRunner.find_or_create_by!(runner_id: runner.id)
             end
@@ -31,12 +31,6 @@ module EE
 
         class CiHostedRunner < ::Ci::ApplicationRecord
           self.table_name = :ci_hosted_runners
-        end
-
-        private
-
-        def admin_bot
-          @_admin_bot ||= ::Users::Internal.admin_bot
         end
       end
     end

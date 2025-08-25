@@ -114,7 +114,9 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
             end
 
             include_examples 'audit event logging' do
-              let_it_be(:admin) { create(:admin) }
+              let_it_be(:admin) do
+                create(:user, :admin_bot, organization: dormant_enterprise_user.organization)
+              end
 
               let(:operation) { perform_work }
 
@@ -142,7 +144,11 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
               end
 
               before do
-                allow(::Users::Internal).to receive(:admin_bot).and_return(admin)
+                # this has to be stubbed, otherwise the next_found_instance_of stub above
+                # will apply to admin_bot instead of the expected test user
+                allow_next_instance_of(::Users::Internal) do |internal|
+                  allow(internal).to receive(:admin_bot).and_return(admin)
+                end
               end
             end
           end

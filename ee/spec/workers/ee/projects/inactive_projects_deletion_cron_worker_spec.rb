@@ -8,7 +8,6 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
   describe "#perform", :clean_gitlab_redis_shared_state, :sidekiq_inline do
     subject(:worker) { described_class.new }
 
-    let_it_be(:admin_bot) { ::Users::Internal.admin_bot }
     let_it_be(:non_admin_user) { create(:user) }
     let_it_be(:group) { create(:group) }
     let_it_be(:new_blank_project) do
@@ -32,6 +31,8 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
       create_project_with_statistics(group, with_data: true, size_multiplier: 2.gigabytes)
         .tap { |project| project.update!(last_activity_at: 1.month.ago) }
     end
+
+    let_it_be(:admin_bot) { ::Users::Internal.for_organization(new_blank_project.organization).admin_bot }
 
     let_it_be(:delay) { anything }
 

@@ -15,10 +15,8 @@ module Users
     def perform
       return unless Feature.enabled?(:security_policy_bot_cleanup_cron_worker, :instance)
 
-      admin_user = Users::Internal.admin_bot
       options = { skip_authorization: true, hard_delete: false,
                   reason_for_deletion: "Security policy bot no longer associated with any project" }
-      destroy_service = Users::DestroyService.new(admin_user)
       users_to_ignore = []
 
       MAX_BATCHES.times do
@@ -27,6 +25,9 @@ module Users
         break if users.empty?
 
         users.each do |user|
+          admin_user = admin_bot_for_organization_id(user.organization_id)
+          destroy_service = Users::DestroyService.new(admin_user)
+
           with_context(user: user) do
             destroy_service.execute(user, options)
           rescue Gitlab::Access::AccessDeniedError, Users::DestroyService::DestroyError => e
@@ -35,6 +36,13 @@ module Users
           end
         end
       end
+    end
+
+    private
+
+    def admin_bot_for_organization_id(organization_id)
+      @admin_bots ||= {}
+      @admin_bots[organization_id] ||= Users::Internal.for_organization(organization_id).admin_bot
     end
   end
 end

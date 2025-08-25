@@ -57,7 +57,7 @@ module Namespaces
 
     def remove_dormant_members(namespace)
       dormant_period = namespace.namespace_settings.remove_dormant_members_period.days.ago
-      admin_bot = ::Users::Internal.admin_bot
+      admin_bot = admin_bot_for_organization_id(namespace.organization_id)
       dormant_count = 0
 
       ::GitlabSubscriptions::SeatAssignment.dormant_in_namespace(namespace, dormant_period).find_each do |assignment|
@@ -87,6 +87,11 @@ module Namespaces
         namespace_id: namespace_id,
         dormant_count: dormant_count
       )
+    end
+
+    def admin_bot_for_organization_id(organization_id)
+      @admin_bots ||= {}
+      @admin_bots[organization_id] ||= Users::Internal.for_organization(organization_id).admin_bot
     end
   end
 end

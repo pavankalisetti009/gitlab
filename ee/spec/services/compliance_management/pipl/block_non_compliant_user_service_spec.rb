@@ -94,7 +94,7 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUserService,
       end
 
       context 'when the block operation fails' do
-        let(:pipl_user) { create(:pipl_user, user: Users::Internal.admin_bot, initial_email_sent_at: 60.days.ago) }
+        let(:pipl_user) { create(:pipl_user, user: create(:user, :admin_bot), initial_email_sent_at: 60.days.ago) }
 
         it_behaves_like 'does not block the user'
         it_behaves_like 'has a validation error',
