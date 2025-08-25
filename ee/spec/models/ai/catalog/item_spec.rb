@@ -10,6 +10,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
 
     it { is_expected.to have_many(:versions) }
     it { is_expected.to have_many(:consumers) }
+    it { is_expected.to have_many(:reverse_dependencies) }
   end
 
   describe 'validations' do

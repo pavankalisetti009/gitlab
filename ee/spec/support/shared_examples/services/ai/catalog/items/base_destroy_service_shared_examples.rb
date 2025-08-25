@@ -61,11 +61,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
           expect(result.success?).to be(true)
         end
 
-        context 'when item is already being used (has consumers)' do
-          before do
-            create(:ai_catalog_item_consumer, item: item, project: project)
-          end
-
+        shared_examples 'soft deletes the item' do
           it 'soft deletes the item' do
             expect { execute_service }.to change { item.deleted_at }.from(nil)
           end
@@ -89,6 +85,22 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
 
             expect(result.success?).to be(true)
           end
+        end
+
+        context 'when item is already being used (has consumers)' do
+          before do
+            create(:ai_catalog_item_consumer, item: item, project: project)
+          end
+
+          it_behaves_like 'soft deletes the item'
+        end
+
+        context 'when item is a dependency of other items (has item_version_dependency)' do
+          before do
+            create(:ai_catalog_item_version_dependency, dependency_id: item.id)
+          end
+
+          it_behaves_like 'soft deletes the item'
         end
       end
 
