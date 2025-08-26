@@ -65147,6 +65147,9 @@ msgstr ""
 msgid "There was a problem fetching the latest minimum override role."
 msgstr ""
 
+msgid "There was a problem fetching the parent items."
+msgstr ""
+
 msgid "There was a problem fetching the pipeline summary."
 msgstr ""
 
