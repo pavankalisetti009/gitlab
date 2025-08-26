@@ -190,6 +190,52 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
 
         expect(group_count).to eq(Group.count)
       end
+
+      context 'when trial submission fails', :js do
+        let_it_be(:user) { create(:user) }
+
+        before do
+          allow_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+            allow(service).to receive(:execute)
+              .and_return(ServiceResponse.error(message: 'Trial failed'))
+          end
+        end
+
+        it 'can be retired successfully' do
+          sign_in(user)
+
+          visit new_users_sign_up_trial_welcome_path
+
+          fill_in 'first_name', with: 'John'
+          fill_in 'last_name', with: 'Doe'
+          fill_in 'company_name', with: 'My Company'
+
+          select 'United States of America', from: 'country'
+          wait_for_all_requests
+          select 'California', from: 'state'
+
+          fill_in 'group_name', with: 'My Group'
+          fill_in 'project_name', with: 'My Project'
+
+          click_button _('Continue to GitLab')
+
+          wait_for_all_requests
+
+          expect(page).to have_content("Trial registration unsuccessful")
+
+          allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).with(Group.last).and_return(true)
+
+          allow_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.success(message: 'Trial applied'))
+          end
+
+          click_button _('Resubmit request')
+
+          wait_for_all_requests
+
+          expect(page).to have_content('Get started')
+        end
+      end
     end
   end
 end

@@ -62470,6 +62470,9 @@ msgstr ""
 msgid "Status (optional)"
 msgstr ""
 
+msgid "Status alert"
+msgstr ""
+
 msgid "Status checks"
 msgstr ""
 
