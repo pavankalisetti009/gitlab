@@ -9,10 +9,13 @@ const MAVEN_UPSTREAM_CACHE_ENTRIES_PATH =
   '/api/:version/virtual_registries/packages/maven/upstreams/:id/cache_entries';
 const MAVEN_UPSTREAM_CACHE_ENTRY_PATH =
   '/api/:version/virtual_registries/packages/maven/cache_entries/:id';
+const MAVEN_UPSTREAM_TEST_PATH = `${MAVEN_UPSTREAM_PATH}/test`;
+
 const MAVEN_REGISTRY_UPSTREAM_PATH =
   '/api/:version/virtual_registries/packages/maven/registry_upstreams/:id';
 const MAVEN_UPSTREAMS_PATH =
   '/api/:version/groups/:id/-/virtual_registries/packages/maven/upstreams';
+const MAVEN_UPSTREAMS_TEST_PATH = `${MAVEN_UPSTREAMS_PATH}/test`;
 
 const buildMavenUpstreamApiUrl = (id) => buildApiUrl(MAVEN_UPSTREAM_PATH).replace(':id', id);
 
@@ -66,4 +69,20 @@ export function deleteMavenUpstreamCacheEntry({ id }) {
   const url = buildApiUrl(MAVEN_UPSTREAM_CACHE_ENTRY_PATH).replace(':id', id);
 
   return axios.delete(url);
+}
+
+export function testMavenUpstream({ id, url, username, password }) {
+  const apiUrl = buildApiUrl(MAVEN_UPSTREAMS_TEST_PATH).replace(':id', id);
+
+  return axios.post(apiUrl, {
+    url,
+    username,
+    password,
+  });
+}
+
+export function testExistingMavenUpstream({ id }) {
+  const apiUrl = buildApiUrl(MAVEN_UPSTREAM_TEST_PATH).replace(':id', id);
+
+  return axios.get(apiUrl);
 }

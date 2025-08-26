@@ -55,14 +55,6 @@ export default {
       required: false,
       default: () => [],
     },
-    /**
-     * Whether the upstream can be tested
-     */
-    canTestUpstream: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   /**
    * Emitted when an upstream is reordered
@@ -72,18 +64,13 @@ export default {
    * Emitted when a new upstream is created
    * @event upstreamCreated
    */
-  /**
-   * Emitted when an upstream is tested
-   * @event testUpstream
-   * @property {Object} upstream - The upstream object being tested
-   */
 
   /**
    * Emitted when the upstream is deleted
    * @event deleteUpstream
    * @property {string} upstreamId - The ID of the upstream to delete
    */
-  emits: ['upstreamReordered', 'upstreamCreated', 'testUpstream', 'deleteUpstream'],
+  emits: ['upstreamReordered', 'upstreamCreated', 'deleteUpstream'],
   data() {
     return {
       currentFormType: '',
@@ -260,9 +247,6 @@ export default {
     resetUpdateActionErrorMessage() {
       this.updateActionErrorMessage = '';
     },
-    testUpstream(upstreamId) {
-      this.$emit('testUpstream', upstreamId);
-    },
     showCreateForm() {
       this.currentFormType = FORM_TYPES.CREATE;
       this.$refs.registryDetailsCrud.showForm();
@@ -395,9 +379,7 @@ export default {
       <registry-upstream-form
         v-if="isCreateUpstreamForm"
         :loading="createUpstreamMutationLoading"
-        :can-test-upstream="canTestUpstream"
         @submit="createUpstream"
-        @testUpstream="testUpstream"
         @cancel="hideForm"
       />
       <div v-if="isLinkUpstreamForm">
