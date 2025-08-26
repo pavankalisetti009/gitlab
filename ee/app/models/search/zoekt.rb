@@ -106,12 +106,6 @@ module Search
         !project.repo_exists? || project.empty_repo?
       end
 
-      def should_create_indexing_task?(project)
-        return true unless missing_repo?(project)
-
-        Feature.enabled?(:zoekt_index_empty_repos, Feature.current_request)
-      end
-
       private
 
       def fetch_root_namespace_id(container)
