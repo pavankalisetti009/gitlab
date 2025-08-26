@@ -35858,30 +35858,6 @@ CREATE UNIQUE INDEX ci_job_token_scope_links_source_and_target_project_direction
 
 CREATE INDEX ci_pipeline_artifacts_on_expire_at_for_removal ON ci_pipeline_artifacts USING btree (expire_at) WHERE ((locked = 0) AND (expire_at IS NOT NULL));
 
-CREATE INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ON ONLY ci_runner_taggings USING btree (runner_id, runner_type);
-
-CREATE INDEX ci_runner_taggings_group_type_runner_id_runner_type_idx ON ci_runner_taggings_group_type USING btree (runner_id, runner_type);
-
-CREATE INDEX index_ci_runner_taggings_on_sharding_key_id ON ONLY ci_runner_taggings USING btree (sharding_key_id);
-
-CREATE INDEX ci_runner_taggings_group_type_sharding_key_id_idx ON ci_runner_taggings_group_type USING btree (sharding_key_id);
-
-CREATE UNIQUE INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ON ONLY ci_runner_taggings USING btree (tag_id, runner_id, runner_type);
-
-CREATE UNIQUE INDEX ci_runner_taggings_group_type_tag_id_runner_id_runner_type_idx ON ci_runner_taggings_group_type USING btree (tag_id, runner_id, runner_type);
-
-CREATE UNIQUE INDEX ci_runner_taggings_instance_ty_tag_id_runner_id_runner_type_idx ON ci_runner_taggings_instance_type USING btree (tag_id, runner_id, runner_type);
-
-CREATE INDEX ci_runner_taggings_instance_type_runner_id_runner_type_idx ON ci_runner_taggings_instance_type USING btree (runner_id, runner_type);
-
-CREATE INDEX ci_runner_taggings_instance_type_sharding_key_id_idx ON ci_runner_taggings_instance_type USING btree (sharding_key_id);
-
-CREATE UNIQUE INDEX ci_runner_taggings_project_typ_tag_id_runner_id_runner_type_idx ON ci_runner_taggings_project_type USING btree (tag_id, runner_id, runner_type);
-
-CREATE INDEX ci_runner_taggings_project_type_runner_id_runner_type_idx ON ci_runner_taggings_project_type USING btree (runner_id, runner_type);
-
-CREATE INDEX ci_runner_taggings_project_type_sharding_key_id_idx ON ci_runner_taggings_project_type USING btree (sharding_key_id);
-
 CREATE INDEX code_owner_approval_required ON protected_branches USING btree (project_id, code_owner_approval_required) WHERE (code_owner_approval_required = true);
 
 CREATE UNIQUE INDEX commit_user_mentions_on_commit_id_and_note_id_unique_index ON commit_user_mentions USING btree (commit_id, note_id);
@@ -36093,6 +36069,20 @@ CREATE INDEX idx_build_artifacts_size_refreshes_state_updated_at ON project_buil
 CREATE INDEX idx_catalog_resource_cpmt_last_usages_on_cpmt_project_id ON catalog_resource_component_last_usages USING btree (component_project_id);
 
 CREATE UNIQUE INDEX idx_ci_job_token_authorizations_on_accessed_and_origin_project ON ci_job_token_authorizations USING btree (accessed_project_id, origin_project_id);
+
+CREATE INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ON ONLY ci_runner_taggings USING btree (runner_id, runner_type);
+
+CREATE INDEX idx_ci_runner_taggings_group_type_on_runner_id_and_runner_type ON ci_runner_taggings_group_type USING btree (runner_id, runner_type);
+
+CREATE UNIQUE INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ON ONLY ci_runner_taggings USING btree (tag_id, runner_id, runner_type);
+
+CREATE UNIQUE INDEX idx_ci_runner_taggings_group_type_on_tag_id_runner_id_and_type ON ci_runner_taggings_group_type USING btree (tag_id, runner_id, runner_type);
+
+CREATE UNIQUE INDEX idx_ci_runner_taggings_inst_type_on_tag_id_runner_id_and_type ON ci_runner_taggings_instance_type USING btree (tag_id, runner_id, runner_type);
+
+CREATE INDEX idx_ci_runner_taggings_instance_type_on_runner_id_and_type ON ci_runner_taggings_instance_type USING btree (runner_id, runner_type);
+
+CREATE UNIQUE INDEX idx_ci_runner_taggings_proj_type_on_tag_id_runner_id_and_type ON ci_runner_taggings_project_type USING btree (tag_id, runner_id, runner_type);
 
 CREATE INDEX idx_ci_running_builds_on_runner_type_and_owner_xid_and_id ON ci_running_builds USING btree (runner_type, runner_owner_namespace_xid, runner_id);
 
@@ -36655,14 +36645,6 @@ CREATE INDEX import_export_upload_uploads_store_idx ON import_export_upload_uplo
 CREATE INDEX import_export_upload_uploads_uploaded_by_user_id_idx ON import_export_upload_uploads USING btree (uploaded_by_user_id);
 
 CREATE INDEX import_export_upload_uploads_uploader_path_idx ON import_export_upload_uploads USING btree (uploader, path);
-
-CREATE INDEX index_ci_runner_taggings_on_organization_id ON ONLY ci_runner_taggings USING btree (organization_id);
-
-CREATE INDEX index_03bce7b65b ON ci_runner_taggings_group_type USING btree (organization_id);
-
-CREATE INDEX index_8f3cd552cd ON ci_runner_taggings_instance_type USING btree (organization_id);
-
-CREATE INDEX index_934f0e59cf ON ci_runner_taggings_project_type USING btree (organization_id);
 
 CREATE INDEX index_abuse_events_on_abuse_report_id ON abuse_events USING btree (abuse_report_id);
 
@@ -37437,6 +37419,24 @@ CREATE INDEX index_ci_runner_namespaces_on_namespace_id ON ci_runner_namespaces 
 CREATE UNIQUE INDEX index_ci_runner_namespaces_on_runner_id_and_namespace_id ON ci_runner_namespaces USING btree (runner_id, namespace_id);
 
 CREATE INDEX index_ci_runner_projects_on_project_id ON ci_runner_projects USING btree (project_id);
+
+CREATE INDEX index_ci_runner_taggings_on_organization_id ON ONLY ci_runner_taggings USING btree (organization_id);
+
+CREATE INDEX index_ci_runner_taggings_group_type_on_organization_id ON ci_runner_taggings_group_type USING btree (organization_id);
+
+CREATE INDEX index_ci_runner_taggings_on_sharding_key_id ON ONLY ci_runner_taggings USING btree (sharding_key_id);
+
+CREATE INDEX index_ci_runner_taggings_group_type_on_sharding_key_id ON ci_runner_taggings_group_type USING btree (sharding_key_id);
+
+CREATE INDEX index_ci_runner_taggings_instance_type_on_organization_id ON ci_runner_taggings_instance_type USING btree (organization_id);
+
+CREATE INDEX index_ci_runner_taggings_instance_type_on_sharding_key_id ON ci_runner_taggings_instance_type USING btree (sharding_key_id);
+
+CREATE INDEX index_ci_runner_taggings_project_type_on_organization_id ON ci_runner_taggings_project_type USING btree (organization_id);
+
+CREATE INDEX index_ci_runner_taggings_project_type_on_runner_id_runner_type ON ci_runner_taggings_project_type USING btree (runner_id, runner_type);
+
+CREATE INDEX index_ci_runner_taggings_project_type_on_sharding_key_id ON ci_runner_taggings_project_type USING btree (sharding_key_id);
 
 CREATE UNIQUE INDEX index_ci_runner_versions_on_unique_status_and_version ON ci_runner_versions USING btree (status, version);
 
@@ -44406,27 +44406,9 @@ ALTER INDEX index_uploads_9ba88c4165_on_uploader_and_path ATTACH PARTITION bulk_
 
 ALTER INDEX ci_runner_taggings_pkey ATTACH PARTITION ci_runner_taggings_group_type_pkey;
 
-ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITION ci_runner_taggings_group_type_runner_id_runner_type_idx;
-
-ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION ci_runner_taggings_group_type_sharding_key_id_idx;
-
-ALTER INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ATTACH PARTITION ci_runner_taggings_group_type_tag_id_runner_id_runner_type_idx;
-
-ALTER INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ATTACH PARTITION ci_runner_taggings_instance_ty_tag_id_runner_id_runner_type_idx;
-
 ALTER INDEX ci_runner_taggings_pkey ATTACH PARTITION ci_runner_taggings_instance_type_pkey;
 
-ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITION ci_runner_taggings_instance_type_runner_id_runner_type_idx;
-
-ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION ci_runner_taggings_instance_type_sharding_key_id_idx;
-
-ALTER INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ATTACH PARTITION ci_runner_taggings_project_typ_tag_id_runner_id_runner_type_idx;
-
 ALTER INDEX ci_runner_taggings_pkey ATTACH PARTITION ci_runner_taggings_project_type_pkey;
-
-ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITION ci_runner_taggings_project_type_runner_id_runner_type_idx;
-
-ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION ci_runner_taggings_project_type_sharding_key_id_idx;
 
 ALTER INDEX index_uploads_9ba88c4165_on_model_uploader_created_at ATTACH PARTITION dependency_list_export_part_u_model_id_model_type_uploader__idx;
 
@@ -44485,6 +44467,16 @@ ALTER INDEX index_uploads_9ba88c4165_on_uploader_and_path ATTACH PARTITION desig
 ALTER INDEX ci_runner_machines_pkey ATTACH PARTITION group_type_ci_runner_machines_pkey;
 
 ALTER INDEX ci_runners_pkey ATTACH PARTITION group_type_ci_runners_pkey;
+
+ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITION idx_ci_runner_taggings_group_type_on_runner_id_and_runner_type;
+
+ALTER INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ATTACH PARTITION idx_ci_runner_taggings_group_type_on_tag_id_runner_id_and_type;
+
+ALTER INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ATTACH PARTITION idx_ci_runner_taggings_inst_type_on_tag_id_runner_id_and_type;
+
+ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITION idx_ci_runner_taggings_instance_type_on_runner_id_and_type;
+
+ALTER INDEX index_ci_runner_taggings_on_tag_id_runner_id_and_runner_type ATTACH PARTITION idx_ci_runner_taggings_proj_type_on_tag_id_runner_id_and_type;
 
 ALTER INDEX index_ci_runner_machines_on_contacted_at_desc_and_id_desc ATTACH PARTITION idx_group_type_ci_runner_machines_on_contacted_at_desc_id_desc;
 
@@ -44564,11 +44556,19 @@ ALTER INDEX index_uploads_9ba88c4165_on_uploaded_by_user_id ATTACH PARTITION imp
 
 ALTER INDEX index_uploads_9ba88c4165_on_uploader_and_path ATTACH PARTITION import_export_upload_uploads_uploader_path_idx;
 
-ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_03bce7b65b;
+ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_ci_runner_taggings_group_type_on_organization_id;
 
-ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_8f3cd552cd;
+ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION index_ci_runner_taggings_group_type_on_sharding_key_id;
 
-ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_934f0e59cf;
+ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_ci_runner_taggings_instance_type_on_organization_id;
+
+ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION index_ci_runner_taggings_instance_type_on_sharding_key_id;
+
+ALTER INDEX index_ci_runner_taggings_on_organization_id ATTACH PARTITION index_ci_runner_taggings_project_type_on_organization_id;
+
+ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITION index_ci_runner_taggings_project_type_on_runner_id_runner_type;
+
+ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION index_ci_runner_taggings_project_type_on_sharding_key_id;
 
 ALTER INDEX index_ci_runner_machines_on_created_at_and_id_desc ATTACH PARTITION index_group_type_ci_runner_machines_on_created_at_and_id_desc;
 
