@@ -83,6 +83,10 @@ module EE
         ::Ai::Setting.self_hosted?
       end
 
+      condition(:agentic_chat_on_self_hosted_duo_disabled_via_feature_setting) do
+        Ai::FeatureSetting.duo_agent_platform.disabled.exists?
+      end
+
       condition(:agentic_chat_on_self_hosted_duo_feature_flag_disabled) do
         ::Feature.disabled?(:agent_platform_model_selection, :instance)
       end
@@ -224,6 +228,10 @@ module EE
       rule do
         instance_with_self_hosted_duo &
           agentic_chat_on_self_hosted_duo_feature_flag_disabled
+      end.prevent :access_duo_agentic_chat
+
+      rule do
+        agentic_chat_on_self_hosted_duo_disabled_via_feature_setting
       end.prevent :access_duo_agentic_chat
 
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
