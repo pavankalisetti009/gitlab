@@ -12,6 +12,38 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       expect(url).to eq("cloud.gitlab.com:443")
     end
 
+    context 'with self-hosted URL' do
+      let(:self_hosted_url) { 'http://self-hosted-dap-service-url:50052' }
+
+      context 'when self-hosted URL is set' do
+        before do
+          ::Ai::Setting.instance.update!(duo_agent_platform_service_url: self_hosted_url)
+        end
+
+        it 'returns self-hosted URL' do
+          expect(url).to eq(self_hosted_url)
+        end
+
+        context 'when config url is also set' do
+          let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
+
+          before do
+            allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
+          end
+
+          it 'still returns self-hosted URL' do
+            expect(url).to eq(self_hosted_url)
+          end
+        end
+      end
+
+      context 'when self-hosted URL is not set' do
+        it 'returns cloud connector URL' do
+          expect(url).to eq("cloud.gitlab.com:443")
+        end
+      end
+    end
+
     context 'when url is set in config' do
       let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
 
@@ -134,6 +166,32 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       )
 
       expect(described_class.cloud_connector_token(user: user)).to eq(token)
+    end
+  end
+
+  describe '.self_hosted_url' do
+    subject(:self_hosted_url) { described_class.self_hosted_url }
+
+    context 'when AI setting has duo_agent_platform_service_url configured' do
+      let(:service_url) { 'http://self-hosted-dap-service-url:50052' }
+
+      before do
+        ::Ai::Setting.instance.update!(duo_agent_platform_service_url: service_url)
+      end
+
+      it 'returns the configured service URL' do
+        expect(self_hosted_url).to eq(service_url)
+      end
+    end
+
+    context 'when AI setting has empty duo_agent_platform_service_url' do
+      before do
+        ::Ai::Setting.instance.update!(duo_agent_platform_service_url: '')
+      end
+
+      it 'returns nil' do
+        expect(self_hosted_url).to be_nil
+      end
     end
   end
 

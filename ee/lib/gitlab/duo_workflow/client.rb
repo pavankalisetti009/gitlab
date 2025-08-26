@@ -4,7 +4,9 @@ module Gitlab
   module DuoWorkflow
     class Client
       def self.url(user:)
-        Gitlab.config.duo_workflow.service_url || default_service_url(user: user)
+        self_hosted_url ||
+          Gitlab.config.duo_workflow.service_url ||
+          default_service_url(user: user)
       end
 
       def self.default_service_url(user:)
@@ -18,6 +20,10 @@ module Gitlab
         # gets resolved https://gitlab.com/gitlab-org/gitlab/-/issues/509586
         # "#{::CloudConnector::Config.host}:#{::CloudConnector::Config.port}"
         "duo-workflow-svc#{subdomain}.runway.gitlab.net:#{::CloudConnector::Config.port}"
+      end
+
+      def self.self_hosted_url
+        ::Ai::Setting.instance&.duo_agent_platform_service_url.presence
       end
 
       def self.headers(user:)
