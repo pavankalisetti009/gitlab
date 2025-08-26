@@ -125,6 +125,13 @@ PATH
       oj (~> 3.16, >= 3.16.10)
 
 PATH
+  remote: gems/mail-smtp_pool
+  specs:
+    mail-smtp_pool (0.1.0)
+      connection_pool (~> 2.0)
+      mail (~> 2.8)
+
+PATH
   remote: vendor/gems/devise-pbkdf2-encryptable
   specs:
     devise-pbkdf2-encryptable (0.0.0)
@@ -148,13 +155,6 @@ PATH
     gitlab-topology-service-client (0.1)
       google-protobuf (~> 3)
       grpc
-
-PATH
-  remote: vendor/gems/mail-smtp_pool
-  specs:
-    mail-smtp_pool (0.1.0)
-      connection_pool (~> 2.0)
-      mail (~> 2.8)
 
 PATH
   remote: vendor/gems/microsoft_graph_mailer
