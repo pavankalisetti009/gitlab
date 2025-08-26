@@ -48,5 +48,5 @@ export default {
       <gl-skeleton-loader :lines="2" :width="800" :height="24" preserveAspectRatio="none" />
     </li>
   </ul>
-  <gl-loading-icon v-else size="lg" class="mt-3" />
+  <gl-loading-icon v-else size="lg" class="!gl-mt-5" />
 </template>

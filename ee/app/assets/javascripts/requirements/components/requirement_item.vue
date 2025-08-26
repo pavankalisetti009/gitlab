@@ -134,7 +134,7 @@ export default {
     </div>
     <ul
       v-if="showIssuableMetaActions"
-      class="requirement-controls gl-mt-3 gl-flex gl-list-none gl-gap-3 gl-self-start gl-pl-0 sm:gl-ml-4 sm:gl-mt-0"
+      class="requirement-controls gl-mt-3 gl-flex gl-list-none gl-gap-3 gl-self-start gl-pl-0 @sm/panel:gl-ml-4 @sm/panel:gl-mt-0"
     >
       <requirement-status-badge
         v-if="testReport"

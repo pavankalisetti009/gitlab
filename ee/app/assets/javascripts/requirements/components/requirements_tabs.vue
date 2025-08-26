@@ -79,7 +79,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mt-4 gl-flex gl-flex-col-reverse sm:gl-mt-0 sm:gl-flex-row">
+  <div class="gl-mt-4 gl-flex gl-flex-col-reverse @sm/panel:gl-mt-0 @sm/panel:gl-flex-row">
     <gl-tabs content-class="gl-p-0" class="gl-flex-1" nav-class="!gl-border-0">
       <gl-tab
         :title-link-attributes="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {
