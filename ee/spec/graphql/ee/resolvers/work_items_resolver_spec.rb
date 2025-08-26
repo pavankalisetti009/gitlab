@@ -371,6 +371,14 @@ RSpec.describe Resolvers::WorkItemsResolver do
 
           it_behaves_like 'falls back to regular finder'
         end
+
+        context 'when work_items_list_es_integration feature flag is enabled and glql_es_integration is disabled' do
+          before do
+            stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: true)
+          end
+
+          it_behaves_like 'falls back to regular finder'
+        end
       end
 
       context 'with getWorkItemsFullEE request' do
@@ -391,6 +399,14 @@ RSpec.describe Resolvers::WorkItemsResolver do
 
           it_behaves_like 'falls back to regular finder'
         end
+
+        context 'when glql_es_integration feature flag is enabled and work_items_list_es_integration is disabled' do
+          before do
+            stub_feature_flags(glql_es_integration: true, work_items_list_es_integration: false)
+          end
+
+          it_behaves_like 'falls back to regular finder'
+        end
       end
 
       context 'with getWorkItemsSlimEE request' do
@@ -407,6 +423,14 @@ RSpec.describe Resolvers::WorkItemsResolver do
         context 'when work_items_list_es_integration feature flag is disabled' do
           before do
             stub_feature_flags(glql_es_integration: false, work_items_list_es_integration: false)
+          end
+
+          it_behaves_like 'falls back to regular finder'
+        end
+
+        context 'when glql_es_integration feature flag is enabled and work_items_list_es_integration is disabled' do
+          before do
+            stub_feature_flags(glql_es_integration: true, work_items_list_es_integration: false)
           end
 
           it_behaves_like 'falls back to regular finder'
