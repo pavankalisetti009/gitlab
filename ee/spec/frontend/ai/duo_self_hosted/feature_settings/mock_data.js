@@ -31,7 +31,7 @@ export const mockSelfHostedModels = [
     id: 'gid://gitlab/Ai::SelfHostedModel/5',
     name: 'Model 5',
     model: 'claude_3',
-    modelDisplayName: 'Claude 3',
+    modelDisplayName: 'Claude',
     releaseState: 'GA',
   },
 ];

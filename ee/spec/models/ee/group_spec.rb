@@ -68,6 +68,11 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         .with_foreign_key(:namespace_id).inverse_of(:group)
     end
 
+    it do
+      is_expected.to have_many(:configured_ai_catalog_items).class_name('Ai::Catalog::ItemConsumer')
+        .inverse_of(:group)
+    end
+
     it_behaves_like 'model with wiki' do
       let(:container) { create(:group, :nested, :wiki_repo) }
       let(:container_without_wiki) { create(:group, :nested) }

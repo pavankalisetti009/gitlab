@@ -101,6 +101,7 @@ module EE
 
       has_many :analyzer_group_statuses, class_name: 'Security::AnalyzerNamespaceStatus', foreign_key: :namespace_id, inverse_of: :namespace
       has_many :ai_feature_settings, class_name: 'Ai::ModelSelection::NamespaceFeatureSetting', foreign_key: :namespace_id, inverse_of: :namespace
+      has_many :configured_ai_catalog_items, class_name: '::Ai::Catalog::ItemConsumer', inverse_of: :group
 
       delegate :repository_read_only,
         :default_compliance_framework,
