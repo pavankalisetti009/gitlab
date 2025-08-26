@@ -23,7 +23,7 @@ module EE
     private
 
     def all_security_scanners
-      ::Security::SecurityJobsFinder.allowed_job_types
+      ::Enums::Security.analyzer_types.keys
     end
   end
 end
