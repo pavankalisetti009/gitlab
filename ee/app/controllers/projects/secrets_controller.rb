@@ -18,7 +18,7 @@ module Projects
 
     def check_secrets_enabled!
       render_404 unless
-        Feature.enabled?(:ci_tanukey_ui, project) &&
+        Feature.enabled?(:secrets_manager, project) &&
           SecretsManagement::ProjectSecretsManager.find_by_project_id(@project.id)
     end
   end

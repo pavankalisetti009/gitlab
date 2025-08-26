@@ -668,17 +668,17 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         it { is_expected.to include(isSecretsManagerAvailable: false) }
       end
 
-      context 'when ci_tanukey_ui feature flag is disabled' do
+      context 'when secrets_manager feature flag is disabled' do
         before do
-          stub_feature_flags(ci_tanukey_ui: false)
+          stub_feature_flags(secrets_manager: false)
         end
 
         it { is_expected.to include(canManageSecretManager: false) }
       end
 
-      context 'when ci_tanukey_ui feature flag is enabled' do
+      context 'when secrets_manager feature flag is enabled' do
         before do
-          stub_feature_flags(ci_tanukey_ui: true)
+          stub_feature_flags(secrets_manager: true)
         end
 
         context 'when the user has admin_project_secrets_manager permission' do

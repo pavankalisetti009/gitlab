@@ -36,9 +36,9 @@ RSpec.describe Projects::SecretsController, type: :request, feature_category: :s
       sign_in(user)
     end
 
-    context 'when feature flag "ci_tanukey_ui" is enabled' do
+    context 'when feature flag "secrets_manager" is enabled' do
       before do
-        stub_feature_flags(ci_tanukey_ui: project)
+        stub_feature_flags(secrets_manager: project)
       end
 
       context 'when secrets manager is not enabled' do
@@ -50,9 +50,9 @@ RSpec.describe Projects::SecretsController, type: :request, feature_category: :s
       end
     end
 
-    context 'when feature flag "ci_tanukey_ui" is disabled' do
+    context 'when feature flag "secrets_manager" is disabled' do
       before do
-        stub_feature_flags(ci_tanukey_ui: false)
+        stub_feature_flags(secrets_manager: false)
       end
 
       it_behaves_like 'returns a "not found" response'
