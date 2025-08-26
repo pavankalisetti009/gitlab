@@ -77,11 +77,7 @@ RSpec.describe 'gitlab_subscriptions:duo:bulk_user_assignment', :silence_stdout,
       end
     end
 
-    context 'when GitLab.com' do
-      before do
-        allow(::GitlabSubscriptions::SubscriptionHelper).to receive(:gitlab_com_subscription?).and_return(true)
-      end
-
+    context 'when GitLab.com', :saas do
       context 'when namespace_id is not provided' do
         it 'raises a missing namespace ID error' do
           expect { run_rake_task(task, csv_file_path) }
@@ -136,14 +132,6 @@ RSpec.describe 'gitlab_subscriptions:duo:bulk_user_assignment', :silence_stdout,
 
           context 'with no Duo add-on purchase' do
             let(:add_on_purchase) { nil }
-
-            it_behaves_like 'missing Duo add-on purchase error'
-          end
-
-          context 'with a Self-managed Duo Enterprise add-on purchase' do
-            let!(:add_on_purchase) do
-              create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise)
-            end
 
             it_behaves_like 'missing Duo add-on purchase error'
           end

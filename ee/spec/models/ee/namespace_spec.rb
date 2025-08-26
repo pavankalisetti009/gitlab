@@ -1245,10 +1245,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     let!(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
     context 'when current gitlab instance is saas', :saas do
-      before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
-      end
-
       let_it_be(:parent) { create(:group) }
       let_it_be(:namespace) { create(:group, parent: parent) }
 

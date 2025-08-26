@@ -20,7 +20,7 @@ module GitlabSubscriptions
 
     validates :add_on, :expires_on, presence: true
     validates :add_on, :started_at, presence: true
-    validate :valid_namespace, if: :gitlab_com?
+    validate :valid_namespace, if: -> { ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) }
     validates :subscription_add_on_id, uniqueness: { scope: :namespace_id }
     validates :quantity,
       presence: true,
@@ -233,10 +233,6 @@ module GitlabSubscriptions
       @self_managed_eligible_users_relation ||= GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(
         add_on_type: add_on_name.to_sym
       ).execute
-    end
-
-    def gitlab_com?
-      ::Gitlab::CurrentSettings.should_check_namespace_plan?
     end
 
     def valid_namespace

@@ -96,37 +96,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::BulkRefreshUserAssignmentsWo
         perform_work
       end
 
-      context 'when namespace for add_on_purchase is nil' do
-        let(:blocked_user) { create(:user, :blocked) }
-
-        before do
-          add_on_purchase_stale.update!(namespace: nil)
-          add_on_purchase_stale.assigned_users.create!(user: blocked_user)
-        end
-
-        it 'successfully refreshes the assigned users for stale add_on_purchases' do
-          expect(Gitlab::AppLogger).to receive(:info).with(
-            message: 'Ineligible UserAddOnAssignments destroyed',
-            user_ids: [blocked_user.id],
-            add_on: add_on.name,
-            add_on_purchase: add_on_purchase_stale.id,
-            namespace: nil
-          ).ordered
-
-          expect(Gitlab::AppLogger).to receive(:info).with(
-            message: 'AddOnPurchase user assignments refreshed via scheduled CronJob',
-            deleted_assignments_count: 1,
-            add_on: add_on_purchase_stale.add_on.name,
-            namespace: nil
-          ).ordered
-
-          expect do
-            perform_work
-          end.to change { add_on_purchase_stale.assigned_users.count }.from(2).to(1)
-            .and change { add_on_purchase_stale.reload.last_assigned_users_refreshed_at }
-        end
-      end
-
       context 'with exclusive lease' do
         include ExclusiveLeaseHelpers
 

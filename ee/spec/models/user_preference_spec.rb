@@ -60,7 +60,7 @@ RSpec.describe UserPreference do
 
     let!(:non_eligible_user_assignments) do
       non_eligible_add_on = [
-        create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: nil),
+        create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: create(:group)),
         create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: groups.first)
       ]
 
@@ -81,7 +81,7 @@ RSpec.describe UserPreference do
 
     let!(:non_eligible_user_assignments) do
       non_eligible_add_on = [
-        create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: nil),
+        create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: create(:group)),
         create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: groups.second),
         create(:gitlab_subscription_add_on_purchase, namespace: groups.first, add_on: duo_pro_add_on)
       ]
@@ -181,21 +181,6 @@ RSpec.describe UserPreference do
 
         expect(user_preference.errors[:default_duo_add_on_assignment_id])
           .to include("No Duo seat assignments with namespace found with ID #{non_existing_record_id}")
-      end
-    end
-
-    context 'when the assigment is not associated with a namespace' do
-      let(:add_on_without_namespace) { create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: nil) }
-      let(:user_assignment_id) do
-        create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_without_namespace, user: user).id
-      end
-
-      it 'does add an errors' do
-        user_preference.default_duo_add_on_assignment_id = user_assignment_id
-        user_preference.valid?
-
-        expect(user_preference.errors[:default_duo_add_on_assignment_id])
-          .to include("No Duo seat assignments with namespace found with ID #{user_assignment_id}")
       end
     end
 
