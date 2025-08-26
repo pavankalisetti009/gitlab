@@ -344,7 +344,10 @@ module EE
         end
 
         def allowed_request_source?
-          glql_request? || work_items_list_request?
+          return true if glql_request? && ::Feature.enabled?(:glql_es_integration, current_user)
+          return true if work_items_list_request? && ::Feature.enabled?(:work_items_list_es_integration, current_user)
+
+          false
         end
 
         def glql_request?
