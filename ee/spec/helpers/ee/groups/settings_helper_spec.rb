@@ -104,6 +104,22 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
       )
     end
 
+    context 'with a group that is not a root namespace' do
+      before do
+        allow(group).to receive(:root?).and_return(false)
+        group.ai_settings = build(:namespace_ai_settings, duo_workflow_mcp_enabled: false)
+      end
+
+      it 'returns the expected data' do
+        is_expected.to include(
+          {
+            duo_workflow_available: "false",
+            duo_workflow_mcp_enabled: "false"
+          }
+        )
+      end
+    end
+
     context 'with GitLab.com' do
       before do
         stub_saas_features(gitlab_com_subscriptions: false)
