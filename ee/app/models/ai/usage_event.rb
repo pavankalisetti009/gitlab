@@ -5,6 +5,7 @@ module Ai
     include EachBatch
     include ClickHouseModel
     include PartitionedTable
+    include Analytics::HasWriteBuffer
 
     self.table_name = "ai_usage_events"
     self.clickhouse_table_name = "ai_usage_events"
@@ -13,6 +14,8 @@ module Ai
     self.primary_key = :id
 
     populate_sharding_key(:organization_id) { Gitlab::Current::Organization.new(user: user).organization&.id }
+
+    self.write_buffer_options = { class: Analytics::LegacyAiUsageDatabaseWriteBuffer }
 
     belongs_to :user
     belongs_to :organization, class_name: 'Organizations::Organization'
@@ -53,7 +56,7 @@ module Ai
     def store_to_pg
       return false unless valid?
 
-      Ai::UsageEventWriteBuffer.add(self.class.name, attributes.compact)
+      self.class.write_buffer.add(attributes.compact)
     end
 
     private

@@ -48,10 +48,6 @@ module UsageEvents
 
     private
 
-    def next_batch
-      Ai::UsageEventWriteBuffer.pop(current_model.name, BATCH_SIZE)
-    end
-
     def upsert_options(model)
       UPSERT_OPTIONS.fetch(model)
     end
