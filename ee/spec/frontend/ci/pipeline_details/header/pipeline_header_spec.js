@@ -5,7 +5,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import PipelineHeader from '~/ci/pipeline_details/header/pipeline_header.vue';
 import getPipelineDetailsQuery from '~/ci/pipeline_details/header/graphql/queries/get_pipeline_header_data.query.graphql';
-import pipelineCiStatusUpdatedSubscription from '~/graphql_shared/subscriptions/pipeline_ci_status_updated.subscription.graphql';
+import pipelineHeaderStatusUpdatedSubscription from '~/ci/pipeline_details/header/graphql/subscriptions/pipeline_header_status_updated.subscription.graphql';
 import PipelineAccountVerificationAlert from 'ee/vue_shared/components/pipeline_account_verification_alert.vue';
 import HeaderMergeTrainsLink from 'ee/ci/pipeline_details/header/components/header_merge_trains_link.vue';
 import {
@@ -32,7 +32,7 @@ describe('Pipeline header', () => {
 
   const defaultHandlers = [
     [getPipelineDetailsQuery, minutesHandler],
-    [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+    [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
   ];
 
   const defaultProvideOptions = {
@@ -92,7 +92,7 @@ describe('Pipeline header', () => {
       await createComponent({
         handlers: [
           [getPipelineDetailsQuery, successHandler],
-          [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
         ],
       });
 
@@ -105,7 +105,7 @@ describe('Pipeline header', () => {
       return createComponent({
         handlers: [
           [getPipelineDetailsQuery, runningHandler],
-          [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
         ],
       });
     });
@@ -120,7 +120,7 @@ describe('Pipeline header', () => {
       await createComponent({
         handlers: [
           [getPipelineDetailsQuery, mergeTrainHandler],
-          [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
         ],
       });
 
