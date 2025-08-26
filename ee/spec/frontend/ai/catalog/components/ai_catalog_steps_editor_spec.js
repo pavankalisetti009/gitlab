@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
+import { GlButton, GlCollapsibleListbox, GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -22,37 +22,75 @@ describe('AiCatalogStepsEditor', () => {
   ];
 
   const selectedAgent = agents[0];
-  const selectedApiAgent = {
-    id: agents[0].value,
-    name: agents[0].text,
-  };
+
+  const selectedSteps = [
+    { id: 'gid://gitlab/Ai::Catalog::Item/1', name: 'Test AI Agent 1' },
+    { id: 'gid://gitlab/Ai::Catalog::Item/3', name: 'Test AI Agent 3' },
+  ];
 
   const aiCatalogAgentsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
   const aiCatalogEmptyAgentsQueryHandler = jest
     .fn()
     .mockResolvedValue(mockCatalogEmptyItemsResponse);
 
-  const createComponent = ({ catalogItemsQueryHandler = aiCatalogAgentsQueryHandler } = {}) => {
+  const createComponent = ({
+    catalogItemsQueryHandler = aiCatalogAgentsQueryHandler,
+    steps = [],
+  } = {}) => {
     mockApollo = createMockApollo([[aiCatalogAgentsQuery, catalogItemsQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogStepsEditor, {
       apolloProvider: mockApollo,
+      propsData: {
+        steps,
+      },
     });
   };
 
-  const findNodeField = () => wrapper.findComponent(AiCatalogNodeField);
+  const findNewNodeButton = () => wrapper.findComponent(GlButton);
+  const findNodeFields = () => wrapper.findAllComponents(AiCatalogNodeField);
+  const findFirstNodeField = () => findNodeFields().at(0);
   const findModal = () => wrapper.findComponent(GlModal);
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+
+  const selectAgent = async () => {
+    findNewNodeButton().vm.$emit('click');
+    await nextTick();
+    findListbox().vm.$emit('select', selectedAgent.value);
+    await nextTick();
+    expect(findListbox().props('toggleText')).toEqual(selectedAgent.text);
+    findModal().vm.$emit('primary');
+  };
 
   beforeEach(() => {
     createComponent();
   });
 
-  describe('rendering', () => {
-    it('renders the AiCatalogNodeField component', () => {
-      expect(findNodeField().exists()).toBe(true);
+  describe('empty state', () => {
+    it('renders new node button', () => {
+      expect(findNewNodeButton().exists()).toBe(true);
+      expect(findNewNodeButton().text()).toEqual('Flow node');
+      expect(findNewNodeButton().props('icon')).toEqual('plus');
     });
 
+    it('does not render the AiCatalogNodeField component', () => {
+      expect(findNodeFields()).toHaveLength(0);
+    });
+  });
+
+  describe('with existing steps', () => {
+    beforeEach(() => {
+      createComponent({ steps: selectedSteps });
+    });
+
+    it('renders as many AiCatalogNodeField components as there are steps', () => {
+      expect(findNodeFields()).toHaveLength(2);
+      expect(findFirstNodeField().props('selected')).toMatchObject(agents[0]);
+      expect(findNodeFields().at(1).props('selected')).toMatchObject(agents[2]);
+    });
+  });
+
+  describe('modal', () => {
     it('renders the modal with correct props, not visible by default', () => {
       const modal = findModal();
       expect(modal.exists()).toBe(true);
@@ -95,11 +133,26 @@ describe('AiCatalogStepsEditor', () => {
   describe('component interactions', () => {
     it('selects agent', async () => {
       await waitForPromises();
-      findListbox().vm.$emit('select', selectedAgent.value);
+      await selectAgent();
+
+      expect(wrapper.emitted('setSteps')).toEqual([[[selectedSteps[0]]]]);
+    });
+
+    it('updates existing step agent', async () => {
+      createComponent({ steps: [{ id: agents[0].value, name: agents[0].text }] });
+      await waitForPromises();
+
+      findFirstNodeField().vm.$emit('primary');
+      await nextTick();
+      findListbox().vm.$emit('select', agents[1].value);
+      await nextTick();
+      expect(findListbox().props('toggleText')).toEqual(agents[1].text);
+      findModal().vm.$emit('primary');
       await nextTick();
 
-      expect(findNodeField().props('selected')).toMatchObject(selectedAgent);
-      expect(findListbox().props('toggleText')).toEqual(selectedAgent.text);
+      expect(wrapper.emitted('setSteps')).toEqual([
+        [[{ id: agents[1].value, name: agents[1].text }]],
+      ]);
     });
 
     it('passes correct props to GlCollapsibleListbox', async () => {
@@ -132,9 +185,18 @@ describe('AiCatalogStepsEditor', () => {
   });
 
   describe('modal behavior', () => {
-    it('opens modal when AiCatalogNodeField emits primary event', async () => {
+    it('opens modal on click new node button', async () => {
       await waitForPromises();
-      findNodeField().vm.$emit('primary');
+      findNewNodeButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findModal().props('visible')).toBe(true);
+    });
+
+    it('opens modal when AiCatalogNodeField emits primary event', async () => {
+      createComponent({ steps: selectedSteps });
+      await waitForPromises();
+      findFirstNodeField().vm.$emit('primary');
       await nextTick();
 
       expect(findModal().props('visible')).toBe(true);
@@ -145,12 +207,12 @@ describe('AiCatalogStepsEditor', () => {
       findListbox().vm.$emit('select', 'gid://gitlab/Ai::Catalog::Item/1');
       await nextTick();
 
-      expect(findNodeField().props('selected')).toMatchObject(selectedAgent);
+      expect(findListbox().props('toggleText')).toEqual(selectedAgent.text);
 
       findModal().vm.$emit('cancel');
       await nextTick();
 
-      expect(findNodeField().props('selected')).toBeNull();
+      expect(findListbox().props('toggleText')).toEqual('Select agent');
       expect(findModal().props('visible')).toBe(false);
     });
   });
@@ -158,13 +220,11 @@ describe('AiCatalogStepsEditor', () => {
   describe('v-model', () => {
     it('should set steps and update the v-model bound data', async () => {
       await waitForPromises();
-      expect(findNodeField().props('selected')).toBeNull();
+      expect(findNodeFields()).toHaveLength(0);
 
-      findListbox().vm.$emit('select', 'gid://gitlab/Ai::Catalog::Item/1');
-      await nextTick();
+      await selectAgent();
 
-      expect(wrapper.emitted('setSteps')).toEqual([[[selectedApiAgent]]]);
-      expect(findNodeField().props('selected')).toMatchObject(selectedAgent);
+      expect(wrapper.emitted('setSteps')).toEqual([[[selectedSteps[0]]]]);
     });
   });
 });

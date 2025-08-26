@@ -2550,6 +2550,9 @@ msgstr ""
 msgid "AICatalog|Flow deleted successfully."
 msgstr ""
 
+msgid "AICatalog|Flow node"
+msgstr ""
+
 msgid "AICatalog|Flow nodes"
 msgstr ""
 
