@@ -70325,6 +70325,9 @@ msgstr ""
 msgid "VirtualRegistry|Create Maven registry"
 msgstr ""
 
+msgid "VirtualRegistry|Create new upstream"
+msgstr ""
+
 msgid "VirtualRegistry|Create registry"
 msgstr ""
 
@@ -70380,6 +70383,9 @@ msgid "VirtualRegistry|Failed to update position of the upstream. Try again."
 msgstr ""
 
 msgid "VirtualRegistry|Get started with virtual registries"
+msgstr ""
+
+msgid "VirtualRegistry|Link existing upstream"
 msgstr ""
 
 msgid "VirtualRegistry|Manage packages across multiple sources and streamline development workflows. %{learn_more_link}"
