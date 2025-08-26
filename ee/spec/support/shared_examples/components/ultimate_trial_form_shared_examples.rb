@@ -25,10 +25,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::Ultimate::TrialFormComponent 
           lastName: user.last_name,
           emailDomain: user.email_domain,
           companyName: user.user_detail_organization,
-          showNameFields: false,
-          phoneNumber: nil,
-          country: '',
-          state: ''
+          showNameFields: false
         },
         submitPath: trials_path(step: 'full', glm_source: 'some-source', glm_content: 'some-content'),
         gtmSubmitEventLabel: 'saasTrialSubmit',

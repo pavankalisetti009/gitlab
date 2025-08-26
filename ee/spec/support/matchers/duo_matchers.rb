@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec::Matchers.define :render_duo_pro_trial_form do
+RSpec::Matchers.define :render_lead_form do
   match do |response|
     expect(response).to have_gitlab_http_status(:ok)
 

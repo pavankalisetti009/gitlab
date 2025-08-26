@@ -6,10 +6,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro::TrialFormComponent, :aggrega
   let(:eligible_namespaces) { Group.none }
   let(:user) { build(:user) }
   let(:form_params) do
-    ActionController::Parameters.new(
+    {
       garbage: 'garbage',
       namespace_id: 1
-    )
+    }.with_indifferent_access
   end
 
   let(:kwargs) do
@@ -26,10 +26,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro::TrialFormComponent, :aggrega
           lastName: user.last_name,
           emailDomain: user.email_domain,
           companyName: user.user_detail_organization,
-          showNameFields: false,
-          phoneNumber: nil,
-          country: '',
-          state: ''
+          showNameFields: false
         },
         submitPath: trials_duo_pro_path(step: 'full'),
         gtmSubmitEventLabel: 'saasDuoProTrialSubmit'

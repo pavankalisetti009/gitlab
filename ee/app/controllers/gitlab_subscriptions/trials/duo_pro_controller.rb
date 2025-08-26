@@ -34,6 +34,39 @@ module GitlabSubscriptions
       end
 
       def create
+        if [
+          GitlabSubscriptions::Trials::DuoProCreateService::FULL,
+          GitlabSubscriptions::Trials::DuoProCreateService::RESUBMIT_LEAD,
+          GitlabSubscriptions::Trials::DuoProCreateService::RESUBMIT_TRIAL
+        ].include?(general_params[:step])
+          new_create
+        else
+          legacy_create
+        end
+      end
+
+      private
+
+      def new_create
+        result = GitlabSubscriptions::Trials::DuoProCreateService.new(
+          step: general_params[:step], params: create_params, user: current_user
+        ).execute
+
+        if result.success?
+          # lead and trial created
+          flash[:success] = success_flash_message(result.payload[:add_on_purchase])
+
+          redirect_to group_settings_gitlab_duo_path(result.payload[:namespace])
+        elsif result.reason == GitlabSubscriptions::Trials::DuoProCreateService::NOT_FOUND
+          render_404
+        else
+          render GitlabSubscriptions::Trials::DuoPro::CreationFailureComponent.new(
+            params: form_params, result: result
+          )
+        end
+      end
+
+      def legacy_create
         @result = GitlabSubscriptions::Trials::CreateDuoProService.new(
           step: general_params[:step], lead_params: lead_params, trial_params: trial_params, user: current_user
         ).execute
@@ -68,8 +101,6 @@ module GitlabSubscriptions
         end
       end
 
-      private
-
       def lead_form_params
         params.permit(
           :first_name, :last_name, :company_name, :phone_number, :country, :state
@@ -85,10 +116,14 @@ module GitlabSubscriptions
         params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id).to_h
       end
 
+      def create_params
+        form_params.to_h.symbolize_keys
+      end
+
       def form_params
         params.permit(
-          *::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id, :first_name, :last_name, :company_name,
-          :phone_number, :country, :state
+          *::Onboarding::StatusPresenter::GLM_PARAMS,
+          :namespace_id, :first_name, :last_name, :company_name, :phone_number, :country, :state
         )
       end
 

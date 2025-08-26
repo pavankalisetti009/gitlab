@@ -63,10 +63,7 @@ RSpec.describe GitlabSubscriptions::Trials::Ultimate::TrialFormWithErrorsCompone
             lastName: '_last_name_',
             companyName: '_company_name_',
             emailDomain: user.email_domain,
-            showNameFields: false,
-            phoneNumber: nil,
-            country: '',
-            state: ''
+            showNameFields: false
           },
           namespaceData: {
             anyTrialEligibleNamespaces: false,

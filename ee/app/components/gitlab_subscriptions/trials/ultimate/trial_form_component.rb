@@ -35,10 +35,7 @@ module GitlabSubscriptions
             lastName: user.last_name,
             showNameFields: user.last_name.blank?,
             emailDomain: user.email_domain,
-            companyName: user.user_detail_organization,
-            phoneNumber: nil,
-            country: '',
-            state: ''
+            companyName: user.user_detail_organization
           }
         end
 
