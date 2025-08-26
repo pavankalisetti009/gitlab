@@ -5,7 +5,7 @@ module Geo
     extend ActiveSupport::Concern
 
     include ::Geo::VerifiableReplicator
-    include EE::GeoHelper # rubocop: disable Cop/InjectEnterpriseEditionModule
+    include EE::GeoHelper # rubocop: disable Cop/InjectEnterpriseEditionModule -- not an EE extension of this module
 
     included do
       event ::Geo::ReplicatorEvents::EVENT_CREATED
@@ -60,7 +60,7 @@ module Geo
     end
 
     # Called by Gitlab::Geo::Replicator#consume
-    def consume_event_created(**params)
+    def consume_event_created(**_params)
       return unless in_replicables_for_current_secondary?
 
       # Race condition mitigation for mutable types.

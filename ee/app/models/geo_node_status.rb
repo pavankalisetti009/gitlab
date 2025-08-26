@@ -98,7 +98,7 @@ class GeoNodeStatus < ApplicationRecord
         convert_status_value(attr_name, val)
       end
 
-      define_method("#{attr_name}=") do |val|
+      define_method(:"#{attr_name}=") do |val|
         val = convert_status_value(attr_name, val)
 
         status[attr_name] = val
@@ -146,6 +146,32 @@ class GeoNodeStatus < ApplicationRecord
     "geo-node:#{Gitlab::Geo.current_node.id}:status"
   end
 
+  def self.percentage_methods
+    @percentage_methods || []
+  end
+
+  def self.attr_in_percentage(attr_name, count, total)
+    method_name = "#{attr_name}_in_percentage"
+    @percentage_methods ||= []
+    @percentage_methods << method_name
+
+    define_method(method_name) do
+      return 0 if self[total].to_i == 0
+
+      (self[count].to_f / self[total]) * 100.0
+    end
+  end
+
+  def self.add_attr_in_percentage_for_replicable_classes
+    Gitlab::Geo::REPLICATOR_CLASSES.each do |replicator|
+      replicable = replicator.replicable_name_plural
+      attr_in_percentage "#{replicable}_synced",       "#{replicable}_synced_count",
+        "#{replicable}_registry_count"
+      attr_in_percentage "#{replicable}_verified",     "#{replicable}_verified_count",
+        "#{replicable}_registry_count"
+    end
+  end
+
   # Helps make alternative_status_store_accessor act more like regular Rails
   # attributes. Request params values are always strings, but when saved as
   # attributes of a model, they are converted to the appropriate types. We could
@@ -173,13 +199,13 @@ class GeoNodeStatus < ApplicationRecord
   # booleans if necessary.
   def coerce_status_field_values
     status_attrs = status.slice(*RESOURCE_STATUS_FIELDS)
-    self.assign_attributes(status_attrs)
+    assign_attributes(status_attrs)
   end
 
   def initialize_feature_flags
-    if Gitlab::Geo.secondary?
-      self.container_repositories_replication_enabled = Geo::ContainerRepositoryRegistry.replication_enabled?
-    end
+    return unless Gitlab::Geo.secondary?
+
+    self.container_repositories_replication_enabled = Geo::ContainerRepositoryRegistry.replication_enabled?
   end
 
   def update_cache!
@@ -244,45 +270,21 @@ class GeoNodeStatus < ApplicationRecord
     self[attr] = Time.zone.at(value)
   end
 
-  def self.percentage_methods
-    @percentage_methods || []
-  end
-
-  def self.attr_in_percentage(attr_name, count, total)
-    method_name = "#{attr_name}_in_percentage"
-    @percentage_methods ||= []
-    @percentage_methods << method_name
-
-    define_method(method_name) do
-      return 0 if self[total].to_i == 0
-
-      (self[count].to_f / self[total]) * 100.0
-    end
-  end
-
-  def self.add_attr_in_percentage_for_replicable_classes
-    Gitlab::Geo::REPLICATOR_CLASSES.each do |replicator|
-      replicable = replicator.replicable_name_plural
-      attr_in_percentage "#{replicable}_synced",       "#{replicable}_synced_count",       "#{replicable}_registry_count"
-      attr_in_percentage "#{replicable}_verified",     "#{replicable}_verified_count",     "#{replicable}_registry_count"
-    end
-  end
-
   attr_in_percentage :repositories_checked,          :repositories_checked_count,          :repositories_count
   attr_in_percentage :replication_slots_used,        :replication_slots_used_count,        :replication_slots_count
 
   add_attr_in_percentage_for_replicable_classes
 
   def synced_in_percentage_for(replicator_class)
-    public_send("#{replicator_class.replicable_name_plural}_synced_in_percentage") # rubocop:disable GitlabSecurity/PublicSend
+    public_send(:"#{replicator_class.replicable_name_plural}_synced_in_percentage") # rubocop:disable GitlabSecurity/PublicSend
   end
 
   def verified_in_percentage_for(replicator_class)
-    public_send("#{replicator_class.replicable_name_plural}_verified_in_percentage") # rubocop:disable GitlabSecurity/PublicSend
+    public_send(:"#{replicator_class.replicable_name_plural}_verified_in_percentage") # rubocop:disable GitlabSecurity/PublicSend
   end
 
   def count_for(replicator_class)
-    public_send("#{replicator_class.replicable_name_plural}_count") # rubocop:disable GitlabSecurity/PublicSend
+    public_send(:"#{replicator_class.replicable_name_plural}_count") # rubocop:disable GitlabSecurity/PublicSend
   end
 
   def storage_shards_match?
@@ -322,7 +324,7 @@ class GeoNodeStatus < ApplicationRecord
 
     self.db_replication_lag_seconds = Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds
     self.cursor_last_event_id = current_cursor_last_event_id
-    self.cursor_last_event_date = Geo::EventLog.find_by(id: self.cursor_last_event_id)&.created_at
+    self.cursor_last_event_date = Geo::EventLog.find_by(id: cursor_last_event_id)&.created_at
 
     load_secondary_ssf_replicable_data
     load_secondary_usage_data
@@ -377,7 +379,7 @@ class GeoNodeStatus < ApplicationRecord
 
     field_name = "#{replicator.replicable_name_plural}_#{metric_name}"
     value = yield
-    public_send("#{field_name}=", value) # rubocop:disable GitlabSecurity/PublicSend
+    public_send(:"#{field_name}=", value) # rubocop:disable GitlabSecurity/PublicSend
   rescue ActiveRecord::QueryCanceled => e # rubocop:disable Database/RescueQueryCanceled -- required to handle frequent query timeouts
     Gitlab::ErrorTracking.track_exception(e, extra: { metric: field_name })
   end
@@ -388,15 +390,15 @@ class GeoNodeStatus < ApplicationRecord
     time_elapsed = Time.current - started_at
     assumed_query_timeout = 10.minutes
 
-    if time_elapsed >= (timeout - assumed_query_timeout)
-      Gitlab::ErrorTracking.track_and_raise_exception(
-        Geo::Errors::StatusTimeoutError.new,
-        extra: {
-          time_elapsed: time_elapsed,
-          timeout: timeout,
-          assumed_query_timeout: assumed_query_timeout
-        }
-      )
-    end
+    return unless time_elapsed >= (timeout - assumed_query_timeout)
+
+    Gitlab::ErrorTracking.track_and_raise_exception(
+      Geo::Errors::StatusTimeoutError.new,
+      extra: {
+        time_elapsed: time_elapsed,
+        timeout: timeout,
+        assumed_query_timeout: assumed_query_timeout
+      }
+    )
   end
 end

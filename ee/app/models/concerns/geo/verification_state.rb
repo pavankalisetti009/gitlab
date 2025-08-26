@@ -44,14 +44,30 @@ module Geo
       scope :verification_succeeded, -> { available_verifiables.with_verification_state(:verification_succeeded) }
       scope :verification_failed, -> { available_verifiables.with_verification_state(:verification_failed) }
       scope :verification_disabled, -> { available_verifiables.with_verification_state(:verification_disabled) }
-      scope :verification_not_disabled, -> { available_verifiables.where.not(verification_state: verification_state_value(:verification_disabled)) }
-      scope :verification_not_pending, -> { available_verifiables.where.not(verification_state: verification_state_value(:verification_pending)) }
+      scope :verification_not_disabled, -> {
+        available_verifiables.where.not(verification_state: verification_state_value(:verification_disabled))
+      }
+      scope :verification_not_pending, -> {
+        available_verifiables.where.not(verification_state: verification_state_value(:verification_pending))
+      }
       scope :checksummed, -> { where.not(verification_checksum: nil) }
       scope :not_checksummed, -> { where(verification_checksum: nil) }
-      scope :verification_timed_out, -> { available_verifiables.where(verification_arel_table[:verification_state].eq(1)).where(verification_arel_table[:verification_started_at].lt(VERIFICATION_TIMEOUT.ago)) }
-      scope :verification_retry_due, -> { where(verification_arel_table[:verification_retry_at].eq(nil).or(verification_arel_table[:verification_retry_at].lt(Time.current))) }
-      scope :needs_verification, -> { available_verifiables.merge(with_verification_state(:verification_pending).or(with_verification_state(:verification_failed).verification_retry_due)) }
-      scope :needs_reverification, -> { verification_succeeded.where("verified_at < ?", ::Gitlab::Geo.current_node.minimum_reverification_interval.days.ago) }
+      scope :verification_timed_out, -> {
+        available_verifiables.where(verification_arel_table[:verification_state].eq(1))
+          .where(verification_arel_table[:verification_started_at].lt(VERIFICATION_TIMEOUT.ago))
+      }
+      scope :verification_retry_due, -> {
+        where(verification_arel_table[:verification_retry_at].eq(nil)
+          .or(verification_arel_table[:verification_retry_at].lt(Time.current)))
+      }
+      scope :needs_verification, -> {
+        available_verifiables.merge(with_verification_state(:verification_pending)
+          .or(with_verification_state(:verification_failed).verification_retry_due))
+      }
+      scope :needs_reverification, -> {
+        verification_succeeded
+          .where(verified_at: ...::Gitlab::Geo.current_node.minimum_reverification_interval.days.ago)
+      }
 
       private_class_method :start_verification_batch
       private_class_method :start_verification_batch_query
@@ -91,7 +107,8 @@ module Geo
       # query.
       #
       def verification_failed_batch(batch_size:)
-        relation = verification_failed.verification_retry_due.order(verification_arel_table[:verification_retry_at].asc.nulls_first).limit(batch_size)
+        relation = verification_failed.verification_retry_due
+          .order(verification_arel_table[:verification_retry_at].asc.nulls_first).limit(batch_size)
 
         ids = start_verification_batch(relation)
 
@@ -126,9 +143,9 @@ module Geo
 
         # This query performs a write, so we need to wrap it in a transaction
         # to stick to the primary database.
-        self.transaction do
-          self.connection.execute(query).to_a.map do |row|
-            row[self.verification_state_model_key.to_s]
+        transaction do
+          connection.execute(query).to_a.map do |row|
+            row[verification_state_model_key.to_s]
           end
         end
       end
@@ -146,9 +163,9 @@ module Geo
           UPDATE #{verification_state_table_name}
           SET "verification_state" = #{started_enum_value},
             "verification_started_at" = NOW()
-          WHERE #{self.verification_state_model_key} IN (#{start_verification_batch_subselect(relation).to_sql})
+          WHERE #{verification_state_model_key} IN (#{start_verification_batch_subselect(relation).to_sql})
 
-          RETURNING #{self.verification_state_model_key}
+          RETURNING #{verification_state_model_key}
         SQL
       end
 
@@ -161,7 +178,7 @@ module Geo
       # @return [String] SQL statement which selects the primary keys to update
       def start_verification_batch_subselect(relation)
         relation
-          .select(self.verification_state_model_key)
+          .select(verification_state_model_key)
           .lock('FOR UPDATE SKIP LOCKED')
       end
 
@@ -247,7 +264,7 @@ module Geo
         <<~SQL.squish
           UPDATE #{verification_state_table_name}
           SET "verification_state" = #{pending_enum_value}
-          WHERE #{self.verification_state_model_key} IN (#{relation.select(self.verification_state_model_key).to_sql})
+          WHERE #{verification_state_model_key} IN (#{relation.select(verification_state_model_key).to_sql})
         SQL
       end
 
@@ -276,7 +293,7 @@ module Geo
     # synchronous checksum calculation.
     #
     # @yieldreturn [String] calculated checksum value
-    def track_checksum_attempt!(&block)
+    def track_checksum_attempt!
       # "Geo::VerificationBatchWorker" sets the whole batch to "verification_started"
       # so this check is redundant. This check and update minimizes race conditions
       # when "verify" is called without claiming the row first, for example, when
@@ -304,16 +321,16 @@ module Geo
     #                   checksum routine was called
     def verification_succeeded_with_checksum!(checksum, calculation_started_at)
       self.verification_checksum = checksum
-      self.verification_succeeded!
+      verification_succeeded!
 
       if resource_updated_during_checksum?(calculation_started_at)
         # just let backfill pick it up
-        self.verification_pending!
+        verification_pending!
       end
 
       return unless Gitlab::Geo.primary?
 
-      self.replicator.geo_handle_after_checksum_succeeded
+      replicator.geo_handle_after_checksum_succeeded
     end
 
     # Convenience method to update failure message and transition to failed
@@ -328,7 +345,7 @@ module Geo
       self.verification_failure = message.truncate(255)
 
       self.verification_checksum = nil
-      self.verification_failed!
+      verification_failed!
     rescue StandardError => e
       log_error('Error when saving failed verification', e, { id: id })
 
@@ -349,7 +366,7 @@ module Geo
     end
 
     def resource_updated_during_checksum?(calculation_started_at)
-      self.reset.verification_started_at > calculation_started_at
+      reset.verification_started_at > calculation_started_at
     end
   end
 end

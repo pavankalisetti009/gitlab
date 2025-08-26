@@ -51,9 +51,9 @@ module Geo
 
         ::Geo::ReverificationBatchWorker.perform_with_capacity(replicable_name)
 
-        if verification_query_class.separate_verification_state_table?
-          ::Geo::VerificationStateBackfillWorker.perform_async(replicable_name)
-        end
+        return unless verification_query_class.separate_verification_state_table?
+
+        ::Geo::VerificationStateBackfillWorker.perform_async(replicable_name)
       end
 
       # Called by VerificationBatchWorker.
@@ -62,7 +62,7 @@ module Geo
       # - Verifies them
       #
       def verify_batch
-        self.replicator_batch_to_verify.each(&:verify)
+        replicator_batch_to_verify.each(&:verify)
       end
 
       # Called by VerificationBatchWorker.
@@ -92,7 +92,7 @@ module Geo
       # @return [Array<Gitlab::Geo::Replicator>] batch of replicators which need to be verified
       def replicator_batch_to_verify
         model_record_id_batch_to_verify.map do |id|
-          self.new(model_record_id: id)
+          new(model_record_id: id)
         end
       end
 
@@ -102,9 +102,7 @@ module Geo
 
         remaining_batch_size = verification_batch_size - ids.size
 
-        if remaining_batch_size > 0
-          ids += verification_failed_batch(batch_size: remaining_batch_size)
-        end
+        ids += verification_failed_batch(batch_size: remaining_batch_size) if remaining_batch_size > 0
 
         ids
       end
@@ -231,7 +229,7 @@ module Geo
       end
 
       def force_primary_checksumming_enabled?
-        Feature.enabled?(force_primary_checksumming_feature_key, type: :ops) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Verification is instance wide
+        Feature.enabled?(force_primary_checksumming_feature_key, :instance, type: :ops)
       end
 
       def force_primary_checksumming_feature_key
@@ -255,7 +253,7 @@ module Geo
     end
 
     # Called by Gitlab::Geo::Replicator#consume
-    def consume_event_checksum_succeeded(**params)
+    def consume_event_checksum_succeeded(**_params)
       return unless Gitlab::Geo.secondary?
       return unless registry.persisted?
 

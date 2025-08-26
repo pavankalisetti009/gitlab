@@ -57,14 +57,16 @@ module Gitlab
         end
 
         # Send payloads to SDS asynchronously or directly (ignores response).
-        def send_request_to_sds(payloads, exclusions: {})
+        def send_request_to_sds(payloads, exclusions: {}, extra_headers: {})
           setup_sds_client
           return if sds_client.nil?
 
           request = build_sds_request(payloads, exclusions: exclusions)
 
-          # ignore the response for now
-          _ = sds_client.run_scan(request: request, auth_token: sds_auth_token)
+          request_type = extra_headers[:'x-request-type'] || 'standard'
+          secret_detection_logger.info("Sending request to SDS with type: #{request_type}")
+
+          _ = sds_client.run_scan(request: request, auth_token: sds_auth_token, extra_headers: extra_headers)
         rescue StandardError => e
           ::Gitlab::ErrorTracking.track_exception(e)
         end

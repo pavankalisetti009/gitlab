@@ -18,7 +18,7 @@ module Geo
       scope :with_state_details, -> do
         return includes(:merge_request_diff_detail) if klass == MergeRequestDiff
 
-        state_association = self.reflect_on_all_associations(:has_one).detect do |association|
+        state_association = reflect_on_all_associations(:has_one).detect do |association|
           association.klass.include?(::Geo::VerificationStateDefinition)
         end
 
@@ -36,7 +36,7 @@ module Geo
         # a value for `verification_state_model_key` exists. So we check for that
         # before saving the `verification_state_object`
         unless verification_state_object.persisted?
-          verification_state_object[self.class.verification_state_model_key] = self.id
+          verification_state_object[self.class.verification_state_model_key] = id
         end
 
         verification_state_object.save!
@@ -67,20 +67,19 @@ module Geo
 
       def pluck_verification_details_ids_in_range(range)
         verification_state_table_class
-          .where(self.verification_state_model_key => range)
-          .pluck(self.verification_state_model_key)
+          .where(verification_state_model_key => range)
+          .pluck(verification_state_model_key)
       end
 
       def pluck_verifiable_ids_in_range(range)
-        self
-          .verifiables
-          .primary_key_in(range)
-          .pluck_primary_key
+        verifiables
+        .primary_key_in(range)
+        .pluck_primary_key
       end
 
       def create_verification_details_for(primary_keys)
         rows = primary_keys.map do |id|
-          { self.verification_state_model_key => id }
+          { verification_state_model_key => id }
         end
 
         verification_state_table_class.insert_all(rows)
@@ -88,7 +87,7 @@ module Geo
 
       def delete_verification_details_for(primary_keys)
         verification_state_table_class
-          .where(self.verification_state_model_key => primary_keys)
+          .where(verification_state_model_key => primary_keys)
           .delete_all
       end
     end

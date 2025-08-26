@@ -7,6 +7,12 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
   subject(:secrets_check) { described_class.new(changes_access) }
 
+  let(:correlation_id) { 'test-correlation-id-123' }
+
+  before do
+    allow(Labkit::Correlation::CorrelationId).to receive(:current_id).and_return(correlation_id)
+  end
+
   describe '#validate!' do
     context 'when secret_detection_enable_spp_for_public_projects is disabled' do
       before do
@@ -104,6 +110,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
         end
 
         context 'when project does not have feature license' do
+          let(:expected_extra_headers) { { 'x-correlation-id': correlation_id, 'x-request-type': 'dark-launch' } }
+
           before do
             stub_licensed_features(secret_push_protection: false)
           end
@@ -233,29 +241,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
                 allow(secret_detection_logger).to receive(:info)
                 expect { secrets_check.validate! }.not_to raise_error
-              end
-
-              context 'when secret_detection_transition_to_raw_info_gitaly_endpoint is disabled' do
-                before do
-                  stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)
-                end
-
-                it 'tracks and recovers errors when getting diff' do
-                  expect(repository).to receive(:diff_blobs).and_raise(::GRPC::InvalidArgument)
-                  expect(::Gitlab::ErrorTracking).to receive(:track_exception)
-                    .with(instance_of(::GRPC::InvalidArgument))
-                  expect(secret_detection_logger).to receive(:error)
-                    .once
-                    .with(
-                      hash_including(
-                        "message" => error_messages[:invalid_input_error],
-                        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
-                      )
-                    )
-
-                  allow(secret_detection_logger).to receive(:info)
-                  expect { secrets_check.validate! }.not_to raise_error
-                end
               end
 
               context 'when the protocol is web' do
