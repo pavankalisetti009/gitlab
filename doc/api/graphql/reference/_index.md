@@ -649,7 +649,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="queryconfiguredaicatalogitemsprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project ID to retrieve configured AI Catalog items for. |
+| <a id="queryconfiguredaicatalogitemsgroupid"></a>`groupId` | [`GroupID`](#groupid) | Group ID to retrieve configured AI Catalog items for. |
+| <a id="queryconfiguredaicatalogitemsincludeinherited"></a>`includeInherited` | [`Boolean`](#boolean) | Include configured AI Catalog items inherited from parent groups. |
+| <a id="queryconfiguredaicatalogitemsitemid"></a>`itemId` | [`AiCatalogItemID`](#aicatalogitemid) | Item ID to retrieve configured AI Catalog items for. |
+| <a id="queryconfiguredaicatalogitemsprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Project ID to retrieve configured AI Catalog items for. |
 
 ### `Query.containerRepository`
 
