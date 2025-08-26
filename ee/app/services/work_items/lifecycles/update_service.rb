@@ -5,10 +5,6 @@ module WorkItems
     class UpdateService < BaseService
       include Gitlab::InternalEventsTracking
 
-      NotAuthorizedError = ServiceResponse.error(
-        message: "You don't have permission to update a lifecycle for this namespace."
-      )
-
       InvalidLifecycleTypeError = ServiceResponse.error(
         message: 'Invalid lifecycle type. Custom lifecycle already exists.'
       )
@@ -22,13 +18,12 @@ module WorkItems
       end
 
       def execute
-        return NotAuthorizedError unless authorized?
         return InvalidLifecycleTypeError if invalid_lifecycle_type?
         return LifecycleUpdateForbiddenError if lifecycle_update_forbidden?
 
         result = custom_lifecycle_present? ? update_custom_lifecycle! : create_custom_lifecycle!
 
-        track_internal_events
+        track_internal_events_for_statuses
 
         ServiceResponse.success(payload: { lifecycle: result })
       rescue StandardError => e
@@ -39,7 +34,7 @@ module WorkItems
 
       def update_custom_lifecycle!
         ApplicationRecord.transaction do
-          apply_status_changes
+          apply_status_changes(params[:statuses])
 
           if @processed_statuses.present?
             validate_status_removal_constraints
@@ -62,12 +57,17 @@ module WorkItems
 
       def create_custom_lifecycle!
         ApplicationRecord.transaction do
-          apply_status_changes
+          apply_status_changes(params[:statuses])
 
           validate_status_removal_constraints
 
           statuses = @processed_statuses
-          default_statuses = default_statuses_for_lifecycle(statuses, params, force_resolve: true)
+          default_statuses = default_statuses_for_lifecycle(
+            statuses,
+            params,
+            fallback_lifecycle: lifecycle,
+            force_resolve: true
+          )
 
           ::WorkItems::Statuses::Custom::Lifecycle.create!(
             namespace: group,
@@ -84,38 +84,6 @@ module WorkItems
         end
       end
 
-      def track_internal_events
-        @statuses_to_create.each do |status|
-          track_internal_event('create_custom_status_in_group_settings',
-            namespace: group,
-            user: current_user,
-            additional_properties: {
-              label: status.category.to_s
-            }
-          )
-        end
-
-        @statuses_to_update.each do |status|
-          track_internal_event('update_custom_status_in_group_settings',
-            namespace: group,
-            user: current_user,
-            additional_properties: {
-              label: status.category.to_s
-            }
-          )
-        end
-
-        @statuses_to_remove.each do |status|
-          track_internal_event('delete_custom_status_in_group_settings',
-            namespace: group,
-            user: current_user,
-            additional_properties: {
-              label: status.category.to_s
-            }
-          )
-        end
-      end
-
       def lifecycle_update_forbidden?
         custom_lifecycle? && lifecycle.namespace_id != group.id
       end
@@ -127,13 +95,6 @@ module WorkItems
       def custom_lifecycle_present?
         custom_lifecycle? && group.custom_lifecycles.exists?(id: lifecycle.id) # rubocop:disable CodeReuse/ActiveRecord -- skip
       end
-
-      def lifecycle
-        id_param = params[:id]
-        global_id = GlobalID.parse(id_param)
-        global_id.model_class.find(global_id.model_id.to_i)
-      end
-      strong_memoize_attr :lifecycle
     end
   end
 end

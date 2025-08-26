@@ -3,19 +3,57 @@
 module WorkItems
   module Lifecycles
     class BaseService < ::BaseContainerService
+      FeatureNotAvailableError = ServiceResponse.error(
+        message: 'This feature is currently behind a feature flag, and it is not available.'
+      )
+
       def initialize(...)
         super
 
+        init_and_reset_status_data!
+      end
+
+      private
+
+      def init_and_reset_status_data!
         @statuses_to_create = []
         @statuses_to_update = []
         @statuses_to_remove = []
       end
 
-      private
+      def ensure_custom_lifecycle_and_status!
+        return if group.custom_lifecycles.exists?
 
-      def apply_status_changes
-        statuses_to_process = params[:statuses]
+        ::WorkItems::Statuses::SystemDefined::Lifecycle.all.each do |system_defined_lifecycle| # rubocop:disable Rails/FindEach -- hard-coded data
+          apply_status_changes(system_defined_lifecycle.statuses.map { |s| { id: s.to_gid } })
 
+          statuses = @processed_statuses
+          default_statuses = default_statuses_for_lifecycle(
+            statuses,
+            {}, # Don't pass any params, use fallback only
+            fallback_lifecycle: system_defined_lifecycle,
+            force_resolve: true
+          )
+
+          ::WorkItems::Statuses::Custom::Lifecycle.create!(
+            namespace: group,
+            name: system_defined_lifecycle.name,
+            work_item_types: system_defined_lifecycle.work_item_types,
+            statuses: statuses,
+            default_open_status: default_statuses[:default_open_status],
+            default_closed_status: default_statuses[:default_closed_status],
+            default_duplicate_status: default_statuses[:default_duplicate_status],
+            created_by: current_user
+          ).tap do
+            remove_system_defined_board_lists
+          end
+
+          track_internal_events_for_statuses
+          init_and_reset_status_data!
+        end
+      end
+
+      def apply_status_changes(statuses_to_process)
         # We need to ensure the new custom lifecycle has the correct set of statuses
         # if they weren't defined explicitly.
         if statuses_to_process.blank? && system_defined_lifecycle?
@@ -25,7 +63,8 @@ module WorkItems
         @processed_statuses = process_statuses(statuses_to_process)
         return unless statuses_to_process.present?
 
-        @statuses_to_remove = calculate_statuses_to_remove
+        # Only calculate items to remove when lifecycle already persisted
+        @statuses_to_remove = calculate_statuses_to_remove if lifecycle.present?
       end
 
       def process_statuses(statuses)
@@ -130,7 +169,8 @@ module WorkItems
       end
 
       def ensure_status_belongs_to_namespace!(status)
-        return if status.namespace_id == lifecycle.namespace_id
+        return if status.namespace_id == group.id
+        return if lifecycle.present? && status.namespace_id == lifecycle.namespace_id
 
         raise StandardError, "Status '#{status.name}' doesn't belong to this namespace."
       end
@@ -227,7 +267,7 @@ module WorkItems
         ::WorkItems::Statuses::Custom::LifecycleStatus.insert_all(lifecycle_status_data) if lifecycle_status_data.any?
       end
 
-      def default_statuses_for_lifecycle(processed_statuses, attributes, force_resolve: false)
+      def default_statuses_for_lifecycle(processed_statuses, attributes, fallback_lifecycle: nil, force_resolve: false)
         default_status_mappings = {
           default_open_status: :default_open_status_index,
           default_closed_status: :default_closed_status_index,
@@ -240,10 +280,10 @@ module WorkItems
           if index.present? && index < processed_statuses.length
             status = processed_statuses[index]
             default_attributes[status_field] = status if status
-          elsif force_resolve
+          elsif force_resolve && fallback_lifecycle.present?
             # When we create a custom lifecycle it's required to pass all default statuses
             # so we must resolve them from the system-defined lifecycle if they weren't provided.
-            system_defined_default = lifecycle.try(status_field)&.id
+            system_defined_default = fallback_lifecycle.try(status_field)&.id
             next if system_defined_default.blank?
 
             default_attributes[status_field] = processed_statuses.find do |s|
@@ -253,8 +293,36 @@ module WorkItems
         end
       end
 
-      def authorized?
-        can?(current_user, :admin_work_item_lifecycle, group)
+      def track_internal_events_for_statuses
+        @statuses_to_create.each do |status|
+          track_internal_event('create_custom_status_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
+        end
+
+        @statuses_to_update.each do |status|
+          track_internal_event('update_custom_status_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
+        end
+
+        @statuses_to_remove.each do |status|
+          track_internal_event('delete_custom_status_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: status.category.to_s
+            }
+          )
+        end
       end
 
       def system_defined_lifecycle?
@@ -264,6 +332,14 @@ module WorkItems
       def custom_lifecycle?
         lifecycle.is_a?(::WorkItems::Statuses::Custom::Lifecycle)
       end
+
+      def lifecycle
+        return unless params[:id].present?
+
+        global_id = GlobalID.parse(params[:id])
+        global_id.model_class.find(global_id.model_id.to_i)
+      end
+      strong_memoize_attr :lifecycle
     end
   end
 end
