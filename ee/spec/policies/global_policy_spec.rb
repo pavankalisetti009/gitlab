@@ -681,6 +681,40 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         it { is_expected.to policy_result }
       end
     end
+
+    context 'when agentic chat on self-hosted duo is controlled via feature setting' do
+      before do
+        # setup agentic chat on self-hosted duo to be available otherwise
+        stub_feature_flags(
+          agent_platform_model_selection: true
+        )
+        stub_feature_flags(duo_agentic_chat: true)
+        allow(current_user).to receive(:allowed_to_use?)
+          .with(:duo_chat)
+          .and_return(true)
+      end
+
+      context 'when feature setting is disabled' do
+        before do
+          create(:ai_feature_setting, :duo_agent_platform, provider: :disabled)
+        end
+
+        it { is_expected.to be_disallowed(:access_duo_agentic_chat) }
+      end
+
+      context 'when feature setting is enabled' do
+        before do
+          create(:ai_feature_setting,
+            :duo_agent_platform,
+            self_hosted_model: create(:ai_self_hosted_model,
+              model: :claude_3
+            )
+          )
+        end
+
+        it { is_expected.to be_allowed(:access_duo_agentic_chat) }
+      end
+    end
   end
 
   describe 'access_x_ray_on_instance' do
