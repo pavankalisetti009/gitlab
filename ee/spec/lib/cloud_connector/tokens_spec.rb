@@ -33,16 +33,6 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
       end
     end
 
-    shared_examples 'uses AvailableServices legacy path' do
-      it 'calls legacy service.access_token' do
-        service = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
-        allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(unit_primitive).and_return(service)
-        expect(service).to receive(:access_token).with(resource, extra_claims: extra_claims).and_return(token_string)
-
-        expect(encoded_token).to eq(token_string)
-      end
-    end
-
     shared_examples 'uses self-signed path' do
       let_it_be(:jwk) { build(:cloud_connector_keys).to_jwk }
       let_it_be(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed, :active) }
@@ -65,74 +55,14 @@ RSpec.describe CloudConnector::Tokens, feature_category: :system_access do
         stub_saas_features(cloud_connector_self_signed_tokens: true)
       end
 
-      context 'with fully rolled out unit primitive' do
-        let(:unit_primitive) { :observability_all }
+      let(:unit_primitive) { :complete_code }
 
-        it_behaves_like 'uses self-signed path'
-      end
-
-      context 'with code suggestions unit primitives' do
-        context 'with generate_code' do
-          let(:unit_primitive) { :generate_code }
-
-          it_behaves_like 'uses self-signed path'
-
-          context 'with FF disabled' do
-            before do
-              stub_feature_flags(code_suggestions_new_tokens_path: false)
-            end
-
-            it_behaves_like 'uses AvailableServices legacy path'
-          end
-        end
-
-        context 'with complete_code' do
-          let(:unit_primitive) { :complete_code }
-
-          it_behaves_like 'uses self-signed path'
-
-          context 'with FF disabled' do
-            before do
-              stub_feature_flags(code_suggestions_new_tokens_path: false)
-            end
-
-            it_behaves_like 'uses AvailableServices legacy path'
-          end
-        end
-      end
-
-      context 'with anthropic proxy unit primitives' do
-        # Refer to https://gitlab.com/gitlab-org/cloud-connector/gitlab-cloud-connector/-/blob/main/config/services/anthropic_proxy.yml?ref_type=heads
-        unit_primitives = %i[generate_commit_message generate_issue_description resolve_vulnerability
-          review_merge_request summarize_issue_discussions description_composer]
-
-        unit_primitives.each do |up|
-          context "with #{up}" do
-            let(:unit_primitive) { up }
-
-            it_behaves_like 'uses self-signed path'
-
-            context 'with FF disabled' do
-              before do
-                stub_feature_flags(anthropic_proxy_new_tokens_path: false)
-              end
-
-              it_behaves_like 'uses AvailableServices legacy path'
-            end
-          end
-        end
-      end
-
-      context 'with unknown unit primitive' do
-        let(:unit_primitive) { :not_rolled_out }
-
-        it_behaves_like 'uses AvailableServices legacy path'
-      end
+      it_behaves_like 'uses self-signed path'
 
       context 'with nil unit primitive' do
         let(:unit_primitive) { nil }
 
-        it_behaves_like 'uses AvailableServices legacy path'
+        it_behaves_like 'uses self-signed path'
       end
     end
 
