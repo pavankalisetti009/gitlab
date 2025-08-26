@@ -6,6 +6,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistriesDetailsApp from 'ee/packages_and_registries/virtual_registries/maven/registry_details_app.vue';
 import MavenRegistryDetails from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
+import MavenRegistryDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_header.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import { mavenVirtualRegistry } from '../mock_data';
@@ -40,6 +41,7 @@ describe('MavenRegistryDetailsApp', () => {
   const mockError = new Error('GraphQL error');
 
   const findMavenRegistryDetails = () => wrapper.findComponent(MavenRegistryDetails);
+  const findMavenRegistryDetailsHeader = () => wrapper.findComponent(MavenRegistryDetailsHeader);
   const findUpstreamRegistryItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
 
   const mavenRegistryUpstreamsHandler = jest.fn().mockResolvedValue(mockMavenRegistryUpstreams);
@@ -59,6 +61,14 @@ describe('MavenRegistryDetailsApp', () => {
       createComponent();
 
       expect(findMavenRegistryDetails().text()).toContain('No upstreams yet');
+    });
+  });
+
+  describe('header', () => {
+    it('renders MavenRegistryDetailsHeader component', () => {
+      createComponent();
+
+      expect(findMavenRegistryDetailsHeader().exists()).toBe(true);
     });
   });
 
