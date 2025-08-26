@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
+import { GlButton, GlCollapsibleListbox, GlModal } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { fetchPolicies } from '~/lib/graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -10,6 +10,7 @@ import AiCatalogNodeField from './ai_catalog_node_field.vue';
 export default {
   components: {
     AiCatalogNodeField,
+    GlButton,
     GlCollapsibleListbox,
     GlModal,
   },
@@ -29,6 +30,7 @@ export default {
       isAgentModalVisible: false,
       aiCatalogAgents: [],
       selectedAgent: null,
+      activeStepIndex: null,
       isAgentsLoading: true,
       searchTerm: '',
     };
@@ -69,27 +71,31 @@ export default {
       }));
     },
   },
-  mounted() {
-    if (this.formattedSteps.length > 0) {
-      [this.selectedAgent] = this.formattedSteps;
-    }
-  },
   methods: {
-    openAgentModal() {
+    openAgentModal(stepIndex) {
       this.isAgentModalVisible = true;
+      this.activeStepIndex = stepIndex;
+      this.selectedAgent = this.formattedSteps[stepIndex];
     },
     selectAgent(agentId) {
       this.selectedAgent = this.aiCatalogAgents.find((agent) => agent.value === agentId);
-      this.$emit('setSteps', [
-        {
-          id: agentId,
-          name: this.selectedAgent.text,
-        },
-      ]);
     },
     onSearch: debounce(function debouncedSearch(searchTerm) {
       this.searchTerm = searchTerm;
     }, DEFAULT_DEBOUNCE_AND_THROTTLE_MS),
+    confirmAgentModal() {
+      let updatedSteps = [];
+      const { value: id, text: name } = this.selectedAgent;
+      if (this.steps.length <= this.activeStepIndex) {
+        updatedSteps = this.steps.concat({ id, name });
+      } else {
+        updatedSteps = [...this.steps];
+        updatedSteps[this.activeStepIndex] = { id, name };
+      }
+      this.$emit('setSteps', updatedSteps);
+      this.activeStepIndex = null;
+      this.selectedAgent = null;
+    },
     cancelAgentSelection() {
       this.selectedAgent = null;
     },
@@ -100,14 +106,21 @@ export default {
 <template>
   <div>
     <ai-catalog-node-field
-      :selected="selectedAgent"
+      v-for="(step, index) in formattedSteps"
+      :key="index"
+      :selected="step"
+      class="gl-mb-3"
       aria-labelledby="flow-edit-steps"
-      @primary="openAgentModal"
+      @primary="openAgentModal(index)"
     />
+    <gl-button icon="plus" @click="openAgentModal(steps.length)">
+      {{ s__('AICatalog|Flow node') }}
+    </gl-button>
     <gl-modal
       v-model="isAgentModalVisible"
       :title="s__('AICatalog|Draft node')"
       modal-id="flow-editor-agent-select"
+      @primary="confirmAgentModal"
       @cancel="cancelAgentSelection"
     >
       <label
