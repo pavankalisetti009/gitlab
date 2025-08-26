@@ -53,13 +53,13 @@ module Geo
         self.verification_checksum_mismatched = primary_checksum
         self.checksum_mismatch = true
 
-        self.verification_failed!
+        verification_failed!
       end
 
       override :track_checksum_attempt!
       def track_checksum_attempt!(&block)
         unless ready_to_verify?
-          self.verification_disabled!
+          verification_disabled!
           return
         end
 
@@ -112,7 +112,7 @@ module Geo
     def before_pending
       super
 
-      self.verification_disabled
+      verification_disabled
     end
 
     override :after_synced
@@ -120,11 +120,11 @@ module Geo
       super
 
       unless ready_to_verify?
-        self.verification_disabled!
+        verification_disabled!
         return
       end
 
-      self.verification_pending!
+      verification_pending!
     end
 
     def ready_to_verify?
@@ -140,13 +140,13 @@ module Geo
       # ensures that resyncs due to verification failures use progressive
       # backoff behavior. One is subtracted to compensate for 1 being
       # automatically added to `retry_count` on transition to failed.
-      self.retry_count = self.verification_retry_count - 1
+      self.retry_count = verification_retry_count - 1
 
       self.last_sync_failure = "Verification failed with: #{verification_failure}".truncate(255)
 
       # This registry was successfully synced, and now it has failed
       # verification. This line makes Geo automatically resync it.
-      self.failed
+      failed
     end
   end
 end

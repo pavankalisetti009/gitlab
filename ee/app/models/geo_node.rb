@@ -57,11 +57,14 @@ class GeoNode < ApplicationRecord
   scope :ordered, -> { order(:id) }
   scope :enabled, -> { where(enabled: true) }
 
+  # rubocop:disable Gitlab/Rails/AttrEncrypted -- cop was added later than this code
+  # The cop purports to be autocorrectable, but applying it breaks CI
   attr_encrypted :secret_access_key,
     key: :db_key_base_32,
     algorithm: 'aes-256-gcm',
     mode: :per_attribute_iv,
     encode: true
+  # rubocop:enable Gitlab/Rails/AttrEncrypted
 
   strip_attributes! :name
 
@@ -210,19 +213,19 @@ class GeoNode < ApplicationRecord
   end
 
   def geo_replication_details_url
-    return unless self.secondary?
+    return unless secondary?
 
     replicator_class =
       ::Gitlab::Geo.replication_enabled_replicator_classes.first || ::Gitlab::Geo.verification_enabled_replicator_classes.first
 
     # redirect to the replicables for the first SSF data type
     Gitlab::Routing.url_helpers.site_replicables_admin_geo_node_url(
-      id: self.id, replicable_name_plural: replicator_class.replicable_name_plural, **url_helper_args
+      id: id, replicable_name_plural: replicator_class.replicable_name_plural, **url_helper_args
     )
   end
 
   def missing_oauth_application?
-    self.primary? ? false : !oauth_application.present?
+    primary? ? false : !oauth_application.present?
   end
 
   def update_clone_url!
@@ -231,10 +234,10 @@ class GeoNode < ApplicationRecord
     # Update with update_column to prevent calling callbacks as this method will
     # be called in an initializer and we don't want other callbacks
     # to mess with uninitialized dependencies.
-    if clone_url_prefix_changed?
-      Gitlab::AppLogger.info "Geo: modified clone_url_prefix to #{clone_url_prefix}"
-      update_column(:clone_url_prefix, clone_url_prefix)
-    end
+    return unless clone_url_prefix_changed?
+
+    Gitlab::AppLogger.info "Geo: modified clone_url_prefix to #{clone_url_prefix}"
+    update_column(:clone_url_prefix, clone_url_prefix)
   end
 
   def replication_slots_count
@@ -270,7 +273,7 @@ class GeoNode < ApplicationRecord
   end
 
   def ensure_access_keys!
-    return if self.access_key.present? && self.encrypted_secret_access_key.present?
+    return if access_key.present? && encrypted_secret_access_key.present?
 
     keys = Gitlab::Geo.generate_access_keys
 
@@ -287,8 +290,8 @@ class GeoNode < ApplicationRecord
   end
 
   def update_dependents_attributes
-    if self.primary?
-      self.oauth_application&.destroy
+    if primary?
+      oauth_application&.destroy
       self.oauth_application = nil
 
       update_clone_url
@@ -299,16 +302,16 @@ class GeoNode < ApplicationRecord
 
   # Prevent locking yourself out
   def require_current_node_to_be_primary
-    if name == self.class.current_node_name
-      errors.add(:base, _('Current node must be the primary node or you will be locking yourself out'))
-    end
+    return unless name == self.class.current_node_name
+
+    errors.add(:base, _('Current node must be the primary node or you will be locking yourself out'))
   end
 
   # Prevent creating a Geo Node unless Hashed Storage is enabled
   def require_hashed_storage
-    unless Gitlab::CurrentSettings.hashed_storage_enabled?
-      errors.add(:base, _('Hashed Storage must be enabled to use Geo'))
-    end
+    return if Gitlab::CurrentSettings.hashed_storage_enabled?
+
+    errors.add(:base, _('Hashed Storage must be enabled to use Geo'))
   end
 
   def update_clone_url
@@ -319,13 +322,13 @@ class GeoNode < ApplicationRecord
     return unless uri
 
     if oauth_application.nil?
-      self.build_oauth_application
-      self.oauth_application.trusted = true
-      self.oauth_application.confidential = true
+      build_oauth_application
+      oauth_application.trusted = true
+      oauth_application.confidential = true
     end
 
-    self.oauth_application.name = "Geo node: #{self.url}"
-    self.oauth_application.redirect_uri = oauth_callback_url
+    oauth_application.name = "Geo node: #{url}"
+    oauth_application.redirect_uri = oauth_callback_url
   end
 
   def expire_cache!
