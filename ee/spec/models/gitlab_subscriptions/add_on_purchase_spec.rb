@@ -34,10 +34,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
     context 'when validating namespace' do
       context 'when on .com', :saas do
-        before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
-        end
-
         using RSpec::Parameterized::TableSyntax
 
         let_it_be(:group_namespace) { create(:group) }

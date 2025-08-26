@@ -87,7 +87,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
 
         it 'returns model metadata header with JSON serialized data' do
           expect(execute).to eq({
-            'x-gitlab-self-hosted-models-metadata' => model_metadata.to_json
+            'x-gitlab-agent-platform-model-metadata' => model_metadata.to_json
           })
         end
       end
@@ -101,7 +101,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
           end
 
           expect(execute).to eq({
-            'x-gitlab-self-hosted-models-metadata' => test_data.to_json
+            'x-gitlab-agent-platform-model-metadata' => test_data.to_json
           })
         end
 
@@ -118,7 +118,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
           end
 
           expect(execute).to eq({
-            'x-gitlab-self-hosted-models-metadata' => test_data.to_json
+            'x-gitlab-agent-platform-model-metadata' => test_data.to_json
           })
         end
 
@@ -136,7 +136,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
           end
 
           expect(execute).to eq({
-            'x-gitlab-self-hosted-models-metadata' => test_data.to_json
+            'x-gitlab-agent-platform-model-metadata' => test_data.to_json
           })
         end
       end
@@ -265,9 +265,9 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
       end
 
       result = service.execute
-      expect(result.keys).to eq(['x-gitlab-self-hosted-models-metadata'])
-      expect(result['x-gitlab-self-hosted-models-metadata']).to be_a(String)
-      expect(::Gitlab::Json.parse(result['x-gitlab-self-hosted-models-metadata'])).to eq({ 'provider' => 'gitlab' })
+      expect(result.keys).to eq(['x-gitlab-agent-platform-model-metadata'])
+      expect(result['x-gitlab-agent-platform-model-metadata']).to be_a(String)
+      expect(::Gitlab::Json.parse(result['x-gitlab-agent-platform-model-metadata'])).to eq({ 'provider' => 'gitlab' })
     end
   end
 
@@ -293,10 +293,10 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
       result = service.execute
 
       expect(result).to eq({
-        'x-gitlab-self-hosted-models-metadata' => expected_metadata.to_json
+        'x-gitlab-agent-platform-model-metadata' => expected_metadata.to_json
       })
 
-      parsed_result = ::Gitlab::Json.parse(result['x-gitlab-self-hosted-models-metadata'])
+      parsed_result = ::Gitlab::Json.parse(result['x-gitlab-agent-platform-model-metadata'])
       expect(parsed_result).to eq(expected_metadata.deep_stringify_keys)
     end
   end

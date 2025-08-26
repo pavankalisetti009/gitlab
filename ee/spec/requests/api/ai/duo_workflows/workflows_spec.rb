@@ -717,10 +717,10 @@ expires_at: duo_workflow_service_token_expires_at })
           expect(headers).to include(
             'x-gitlab-oauth-token' => 'oauth_token',
             'x-gitlab-unidirectional-streaming' => 'enabled',
-            'x-gitlab-self-hosted-models-metadata' => be_a(String)
+            'x-gitlab-agent-platform-model-metadata' => be_a(String)
           )
 
-          metadata = ::Gitlab::Json.parse(headers['x-gitlab-self-hosted-models-metadata'])
+          metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
           expect(metadata).to include(
             'provider' => 'openai',
             'name' => 'claude_3',
@@ -751,7 +751,7 @@ expires_at: duo_workflow_service_token_expires_at })
               'x-gitlab-oauth-token' => 'oauth_token',
               'x-gitlab-unidirectional-streaming' => 'enabled'
             )
-            expect(headers).not_to have_key('x-gitlab-self-hosted-models-metadata')
+            expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
           end
         end
 
@@ -768,7 +768,7 @@ expires_at: duo_workflow_service_token_expires_at })
               'x-gitlab-oauth-token' => 'oauth_token',
               'x-gitlab-unidirectional-streaming' => 'enabled'
             )
-            expect(headers).not_to have_key('x-gitlab-self-hosted-models-metadata')
+            expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
           end
         end
       end
@@ -791,7 +791,7 @@ expires_at: duo_workflow_service_token_expires_at })
             'x-gitlab-oauth-token' => 'oauth_token',
             'x-gitlab-unidirectional-streaming' => 'enabled'
           )
-          expect(headers).not_to have_key('x-gitlab-self-hosted-models-metadata')
+          expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
         end
 
         it 'returns the standard websocket configuration' do

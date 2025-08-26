@@ -58,13 +58,6 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
         other_namespace_id = namespace.id + 1
         stub_const("#{described_class}::NAMESPACE_IDS", [other_namespace_id]) unless namespace_in_allowlist
 
-        case add_on_status
-        when :active
-          create(:gitlab_subscription_add_on_purchase, add_on: add_on, namespace: namespace)
-        when :trial
-          create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace)
-        end
-
         subscription_namespace = subscription_namespace_match ? namespace : create(:group)
         case subscription_status
         when :valid
@@ -86,7 +79,19 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
       end
 
       around do |example|
-        namespace.update!(parent: create(:group)) if has_parent
+        namespace_purchased = namespace
+        if has_parent
+          parent = create(:group)
+          namespace.parent = parent
+          namespace_purchased = parent
+        end
+
+        case add_on_status
+        when :active
+          create(:gitlab_subscription_add_on_purchase, add_on: add_on, namespace: namespace_purchased)
+        when :trial
+          create(:gitlab_subscription_add_on_purchase, :trial, add_on: add_on, namespace: namespace_purchased)
+        end
 
         example.run
 
