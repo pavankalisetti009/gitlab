@@ -24835,6 +24835,30 @@ CREATE SEQUENCE slack_integrations_scopes_id_seq
 
 ALTER SEQUENCE slack_integrations_scopes_id_seq OWNED BY slack_integrations_scopes.id;
 
+CREATE TABLE slsa_attestations (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    project_id bigint NOT NULL,
+    build_id bigint,
+    status smallint DEFAULT 0 NOT NULL,
+    expire_at timestamp with time zone,
+    predicate_kind smallint DEFAULT 0 NOT NULL,
+    predicate_type text NOT NULL,
+    subject_digest text NOT NULL,
+    CONSTRAINT check_dec11b603a CHECK ((char_length(subject_digest) <= 255)),
+    CONSTRAINT check_ea0d61030d CHECK ((char_length(predicate_type) <= 255))
+);
+
+CREATE SEQUENCE slsa_attestations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE slsa_attestations_id_seq OWNED BY slsa_attestations.id;
+
 CREATE TABLE smartcard_identities (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
@@ -30048,6 +30072,8 @@ ALTER TABLE ONLY slack_integrations ALTER COLUMN id SET DEFAULT nextval('slack_i
 
 ALTER TABLE ONLY slack_integrations_scopes ALTER COLUMN id SET DEFAULT nextval('slack_integrations_scopes_id_seq'::regclass);
 
+ALTER TABLE ONLY slsa_attestations ALTER COLUMN id SET DEFAULT nextval('slsa_attestations_id_seq'::regclass);
+
 ALTER TABLE ONLY smartcard_identities ALTER COLUMN id SET DEFAULT nextval('smartcard_identities_id_seq'::regclass);
 
 ALTER TABLE ONLY snippet_repository_states ALTER COLUMN id SET DEFAULT nextval('snippet_repository_states_id_seq'::regclass);
@@ -33413,6 +33439,9 @@ ALTER TABLE ONLY slack_integrations
 
 ALTER TABLE ONLY slack_integrations_scopes
     ADD CONSTRAINT slack_integrations_scopes_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY slsa_attestations
+    ADD CONSTRAINT slsa_attestations_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY smartcard_identities
     ADD CONSTRAINT smartcard_identities_pkey PRIMARY KEY (id);
@@ -40418,6 +40447,12 @@ CREATE UNIQUE INDEX index_slack_api_scopes_on_name_and_integration ON slack_inte
 CREATE INDEX index_slack_integrations_on_integration_id ON slack_integrations USING btree (integration_id);
 
 CREATE UNIQUE INDEX index_slack_integrations_on_team_id_and_alias ON slack_integrations USING btree (team_id, alias);
+
+CREATE INDEX index_slsa_attestations_on_build_id ON slsa_attestations USING btree (build_id);
+
+CREATE UNIQUE INDEX index_slsa_attestations_on_digest_project_predicate_uniq ON slsa_attestations USING btree (subject_digest, project_id, predicate_kind);
+
+CREATE INDEX index_slsa_attestations_on_project_id ON slsa_attestations USING btree (project_id);
 
 CREATE UNIQUE INDEX index_smartcard_identities_on_subject_and_issuer ON smartcard_identities USING btree (subject, issuer);
 
@@ -49213,6 +49248,9 @@ ALTER TABLE ONLY ml_experiments
 
 ALTER TABLE ONLY group_repository_storage_moves
     ADD CONSTRAINT fk_rails_982bb5daf1 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY slsa_attestations
+    ADD CONSTRAINT fk_rails_9834eb1b5e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY resource_label_events
     ADD CONSTRAINT fk_rails_9851a00031 FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
