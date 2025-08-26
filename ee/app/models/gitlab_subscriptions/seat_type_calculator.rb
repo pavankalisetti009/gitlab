@@ -36,22 +36,34 @@ module GitlabSubscriptions
       def execute(user, namespace)
         return unless gitlab_com?
 
+        user = resolve_user(user)
         tier = subscription_tier(namespace)
         access_level = find_highest_membership(user, namespace)&.access_level
+
         calculate_seat_type(user, tier, access_level)
       end
 
       def bulk_execute(users, namespace)
         return {} unless gitlab_com?
 
+        users = resolve_users(users)
         tier = subscription_tier(namespace)
         access_levels = Member.seat_assignable_highest_access_levels(users: users, namespace: namespace)
+
         users.compact.each_with_object({}) do |user, hash|
           hash[user.id] = calculate_seat_type(user, tier, access_levels[user.id])
         end
       end
 
       private
+
+      def resolve_user(user)
+        user.is_a?(User) ? user : User.find_by(id: user)
+      end
+
+      def resolve_users(users)
+        users.is_a?(ActiveRecord::Relation) ? users : User.where(id: users)
+      end
 
       def gitlab_com?
         ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
