@@ -15,7 +15,7 @@ module Gitlab
             model_metadata = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
             return unless model_metadata.present?
 
-            { 'x-gitlab-self-hosted-models-metadata' => model_metadata.to_json }
+            { 'x-gitlab-agent-platform-model-metadata' => model_metadata.to_json }
           end
 
           private
