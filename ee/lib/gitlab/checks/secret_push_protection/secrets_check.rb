@@ -23,6 +23,10 @@ module Gitlab
 
         private
 
+        def correlation_id
+          @correlation_id ||= Labkit::Correlation::CorrelationId.current_id
+        end
+
         def should_run_dark_launch?
           Feature.enabled?(:secret_detection_enable_spp_for_public_projects, project) &&
             public_project_without_spp?
@@ -45,7 +49,13 @@ module Gitlab
             payloads = payload_processor.standardize_payloads
             break unless payloads
 
-            sds_client.send_request_to_sds(payloads, exclusions: exclusions_manager.active_exclusions)
+            extra_headers = {
+              'x-correlation-id': correlation_id,
+              'x-request-type': 'dark-launch'
+            }
+            sds_client.send_request_to_sds(payloads,
+              exclusions: exclusions_manager.active_exclusions,
+              extra_headers: extra_headers)
           end
         end
 
@@ -65,7 +75,12 @@ module Gitlab
               Thread.current.abort_on_exception = false
               Thread.current.report_on_exception = false
 
-              sds_client.send_request_to_sds(payloads, exclusions: exclusions_manager.active_exclusions)
+              extra_headers = {
+                'x-correlation-id': correlation_id
+              }
+              sds_client.send_request_to_sds(payloads,
+                exclusions: exclusions_manager.active_exclusions,
+                extra_headers: extra_headers)
             end
 
             # Pass payloads to gem for scanning.

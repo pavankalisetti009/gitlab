@@ -7,6 +7,12 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
   subject(:secrets_check) { described_class.new(changes_access) }
 
+  let(:correlation_id) { 'test-correlation-id-123' }
+
+  before do
+    allow(Labkit::Correlation::CorrelationId).to receive(:current_id).and_return(correlation_id)
+  end
+
   describe '#validate!' do
     context 'when secret_detection_enable_spp_for_public_projects is disabled' do
       before do
@@ -104,6 +110,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
         end
 
         context 'when project does not have feature license' do
+          let(:expected_extra_headers) { { 'x-correlation-id': correlation_id, 'x-request-type': 'dark-launch' } }
+
           before do
             stub_licensed_features(secret_push_protection: false)
           end
