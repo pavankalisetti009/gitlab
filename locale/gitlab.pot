@@ -4425,6 +4425,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Other GitLab Duo features"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|Select a model version for full control of your configuration, or GitLab Default for GitLab to manage the selection."
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Select a self-hosted model"
 msgstr ""
 

@@ -1,5 +1,6 @@
 <script>
 import { s__ } from '~/locale';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import BaseFeatureSettingsTable from 'ee/ai/shared/feature_settings/base_feature_settings_table.vue';
 import ModelHeader from 'ee/ai/shared/feature_settings/model_header.vue';
 import {
@@ -17,6 +18,7 @@ export default {
     ModelSelector,
     ModelSelectionBatchSettingsUpdater,
     ModelHeader,
+    HelpPageLink,
   },
   props: {
     featureSettings: {
@@ -67,7 +69,23 @@ export default {
     :fields="$options.fields"
   >
     <template #head(model_name)="{ label }">
-      <model-header :label="label" />
+      <model-header :label="label">
+        <template #tooltip-text>
+          <span data-testid="model-header-tooltip">
+            {{
+              s__(
+                'AdminAIPoweredFeatures|Select a model version for full control of your configuration, or GitLab Default for GitLab to manage the selection.',
+              )
+            }}
+            <help-page-link
+              class="gl-text-blue-500"
+              href="user/gitlab_duo/model_selection"
+              target="_blank"
+              >{{ __('Learn more.') }}
+            </help-page-link>
+          </span>
+        </template>
+      </model-header>
     </template>
     <template #cell(sub_feature)="{ item }">
       {{ item.title }}
