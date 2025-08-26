@@ -80,14 +80,12 @@ module Ci
       can?(:developer_access, @subject.project)
     end
 
-<<<<<<< HEAD
     rule { public_project & project_developer }.enable :read_manual_variables
     rule { ~public_project & guest }.enable :read_manual_variables
-=======
+
     condition(:project_maintainer) do
       can?(:maintainer_access, @subject.project)
     end
->>>>>>> source-project/master
 
     # Use admin_ci_minutes for detailed quota and usage reporting
     # this is limited to total usage and total quota for a builds namespace
