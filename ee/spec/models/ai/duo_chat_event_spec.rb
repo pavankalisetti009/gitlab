@@ -53,7 +53,7 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
   describe '#store_to_pg', :freeze_time do
     context 'when the model is invalid' do
       it 'does not add anything to write buffer' do
-        expect(Ai::UsageEventWriteBuffer).not_to receive(:add)
+        expect(described_class.write_buffer).not_to receive(:add)
 
         event.store_to_pg
       end
@@ -65,8 +65,8 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
       end
 
       it 'adds model attributes to write buffer' do
-        expect(Ai::UsageEventWriteBuffer).to receive(:add)
-                                               .with('Ai::DuoChatEvent', {
+        expect(described_class.write_buffer).to receive(:add)
+                                               .with({
                                                  event: 'request_duo_chat_response',
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,

@@ -40,10 +40,10 @@ RSpec.describe ::Search::Elastic::Sorts, feature_category: :global_search do
       'issue' | nil | 'weight_desc' | { sort: { weight: { order: 'desc' } } }
       'issue' | nil | 'health_status_asc' | { sort: { health_status: { order: 'asc' } } }
       'issue' | nil | 'health_status_desc' | { sort: { health_status: { order: 'desc' } } }
-      'issue' | nil | 'closed_asc' | { sort: { closed_at: { order: 'asc' } } }
-      'issue' | nil | 'closed_desc' | { sort: { closed_at: { order: 'desc' } } }
-      'issue' | nil | 'due_asc' | { sort: { due_date: { order: 'asc' } } }
-      'issue' | nil | 'due_desc' | { sort: { due_date: { order: 'desc' } } }
+      'issue' | nil | 'closed_at_asc' | { sort: { closed_at: { order: 'asc' } } }
+      'issue' | nil | 'closed_at_desc' | { sort: { closed_at: { order: 'desc' } } }
+      'issue' | nil | 'due_date_asc' | { sort: { due_date: { order: 'asc' } } }
+      'issue' | nil | 'due_date_desc' | { sort: { due_date: { order: 'desc' } } }
       'foo' | 'popularity' | 'asc' | { sort: {} }
       'foo' | 'popularity' | 'desc' | { sort: {} }
       'foo' | nil | 'popularity_asc' | { sort: {} }

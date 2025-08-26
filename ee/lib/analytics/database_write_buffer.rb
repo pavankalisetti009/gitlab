@@ -13,12 +13,14 @@ module Analytics
       @buffer_key = buffer_key
     end
 
+    # Adds one or many hashes to the buffer
     def add(attributes)
       Gitlab::Redis::SharedState.with do |redis|
-        redis.rpush(buffer_key, attributes.to_json)
+        redis.rpush(buffer_key, Array.wrap(attributes).map(&:to_json))
       end
     end
 
+    # Pops X hashes from the buffer
     def pop(limit)
       Array.wrap(lpop_with_limit(buffer_key, limit)).map { |hash| Gitlab::Json.parse(hash) }
     end

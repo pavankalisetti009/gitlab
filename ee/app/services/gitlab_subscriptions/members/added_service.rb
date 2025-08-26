@@ -14,8 +14,7 @@ module GitlabSubscriptions
         return ServiceResponse.error(message: 'Invalid params') unless source&.root_ancestor
 
         recently_added_members_user_ids.each_slice(BATCH_SIZE) do |user_ids|
-          users = User.find(user_ids)
-          seat_types = GitlabSubscriptions::SeatTypeCalculator.bulk_execute(users, source.root_ancestor)
+          seat_types = GitlabSubscriptions::SeatTypeCalculator.bulk_execute(user_ids, source.root_ancestor)
           seat_assignments = user_ids.map { |user_id| seat_assignment(user_id, seat_types[user_id]) }
 
           GitlabSubscriptions::SeatAssignment.upsert_all(seat_assignments, unique_by: [:namespace_id, :user_id])

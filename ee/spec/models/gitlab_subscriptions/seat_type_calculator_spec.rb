@@ -168,6 +168,18 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
           expect(seat_type).to eq(:system)
         end
       end
+
+      context 'with user ID' do
+        subject(:seat_type) { described_class.execute(user.id, namespace) }
+
+        before_all do
+          create(:group_member, group: namespace, user: user)
+        end
+
+        it 'returns base seat type' do
+          expect(seat_type).to eq(:base)
+        end
+      end
     end
 
     context 'when on Self-Managed' do
@@ -203,6 +215,22 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
         it 'returns seat types for multiple users' do
           expect(seat_types).to eq({ user1.id => :free, user2.id => :base })
+        end
+
+        context 'with active record scope' do
+          subject(:seat_types) { described_class.bulk_execute(User.all, namespace) }
+
+          it 'returns seat types for multiple users' do
+            expect(seat_types).to eq({ user1.id => :free, user2.id => :base })
+          end
+        end
+
+        context 'with user IDs' do
+          subject(:seat_types) { described_class.bulk_execute([user1.id, user2.id], namespace) }
+
+          it 'returns seat types for multiple users' do
+            expect(seat_types).to eq({ user1.id => :free, user2.id => :base })
+          end
         end
       end
 

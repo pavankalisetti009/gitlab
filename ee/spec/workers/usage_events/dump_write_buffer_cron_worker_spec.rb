@@ -20,7 +20,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
 
   def add_to_buffer(attributes, model = Ai::CodeSuggestionEvent, timestamp = Time.current)
     data = { 'timestamp' => timestamp }.merge(attributes.stringify_keys)
-    Ai::UsageEventWriteBuffer.add(model.name, data)
+    model.write_buffer.add(data)
   end
 
   context 'when data is present' do
@@ -202,6 +202,25 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
     it 'inserts only 1 row' do
       expect(perform).to eq({ status: :processed, inserted_rows: 1 })
       expect(inserted_records).to match([hash_including('extras' => { 'foo' => '1' })])
+    end
+  end
+
+  context 'when processing fails with exception' do
+    before do
+      timestamp = Time.current
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      timestamp: timestamp, extras: { foo: '1' } },
+        Ai::UsageEvent)
+    end
+
+    it 'pushes back values for reprocessing and reraises' do
+      error = StandardError.new
+      allow(Ai::UsageEvent).to receive(:upsert_all).and_raise(error)
+      expect(Ai::UsageEvent.write_buffer).to receive(:add).once.and_call_original
+
+      expect { perform }.to raise_error(error)
     end
   end
 end

@@ -1341,7 +1341,7 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
           end
 
           context 'with closed_asc' do
-            let(:params) { { sort: 'closed_asc' } }
+            let(:params) { { sort: 'closed_at_asc' } }
 
             it 'returns work items sorted by closed date ascending (open items last)' do
               expect(execute).to eq([work_item_closed_first, work_item_closed_second, work_item_open])
@@ -1349,7 +1349,7 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
           end
 
           context 'with closed_desc' do
-            let(:params) { { sort: 'closed_desc' } }
+            let(:params) { { sort: 'closed_at_desc' } }
 
             it 'returns work items sorted by closed date descending (open items last)' do
               expect(execute).to eq([work_item_closed_second, work_item_closed_first, work_item_open])
@@ -1372,7 +1372,7 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
           end
 
           context 'with due_asc' do
-            let(:params) { { sort: 'due_asc' } }
+            let(:params) { { sort: 'due_date_asc' } }
 
             it 'returns work items sorted by due date ascending' do
               expect(execute).to eq([work_item_due_yesterday, work_item_due_tomorrow, work_item_due_next_week])
@@ -1380,7 +1380,7 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
           end
 
           context 'with due_desc' do
-            let(:params) { { sort: 'due_desc' } }
+            let(:params) { { sort: 'due_date_desc' } }
 
             it 'returns work items sorted by due date descending' do
               expect(execute).to eq([work_item_due_next_week, work_item_due_tomorrow, work_item_due_yesterday])

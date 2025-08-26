@@ -124,7 +124,10 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
 
     before do
       params[:use_service_account] = true
-      settings_double = instance_double(::Ai::Setting, duo_workflow_service_account_user: service_account)
+      settings_double = instance_double(::Ai::Setting,
+        duo_workflow_service_account_user: service_account,
+        duo_agent_platform_service_url: 'http://agent-platform-url:50052'
+      )
       allow(::Ai::Setting).to receive(:instance).and_return(settings_double)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
