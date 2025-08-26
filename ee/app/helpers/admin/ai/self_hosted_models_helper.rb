@@ -11,7 +11,7 @@ module Admin
         "codestral" => "Mistral Codestral",
         "codellama" => "Code Llama",
         "deepseekcoder" => "DeepSeek Coder",
-        "claude_3" => "Claude 3",
+        "claude_3" => "Claude",
         "gpt" => "GPT",
         "general" => "General"
       }.freeze

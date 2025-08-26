@@ -156,7 +156,7 @@ describe('SelfHostedModelForm', () => {
             ['Codestral', 'GA'],
             ['Mistral', 'GA'],
             ['GPT', 'GA'],
-            ['Claude 3', 'GA'],
+            ['Claude', 'GA'],
             ['CodeGemma', 'BETA'],
             ['Code-Llama', 'BETA'],
             ['Deepseek Coder', 'BETA'],

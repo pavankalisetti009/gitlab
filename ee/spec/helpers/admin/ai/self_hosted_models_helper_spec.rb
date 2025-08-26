@@ -13,7 +13,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
   describe '#model_choices_as_options' do
     it 'returns an array of hashes with model options sorted alphabetically' do
       expected_result = [
-        { modelValue: "CLAUDE_3", modelName: "Claude 3", releaseState: "GA" },
+        { modelValue: "CLAUDE_3", modelName: "Claude", releaseState: "GA" },
         { modelValue: "CODELLAMA", modelName: "Code Llama", releaseState: "BETA" },
         { modelValue: "CODEGEMMA", modelName: "CodeGemma", releaseState: "BETA" },
         { modelValue: "DEEPSEEKCODER", modelName: "DeepSeek Coder", releaseState: "BETA" },
@@ -44,7 +44,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
       allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(false)
 
       expect(helper.model_choices_as_options).to eq([
-        { modelValue: "CLAUDE_3", modelName: "Claude 3", releaseState: "GA" },
+        { modelValue: "CLAUDE_3", modelName: "Claude", releaseState: "GA" },
         { modelValue: "GPT", modelName: "GPT", releaseState: "GA" },
         { modelValue: "MISTRAL", modelName: "Mistral", releaseState: "GA" },
         { modelValue: "CODESTRAL", modelName: "Mistral Codestral", releaseState: "GA" },

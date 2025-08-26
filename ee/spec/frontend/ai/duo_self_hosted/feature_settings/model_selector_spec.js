@@ -103,7 +103,7 @@ describe('ModelSelector', () => {
       ).toEqual([
         ['Model 1 (Mistral)', 'GA'],
         ['Model 4 (GPT)', 'GA'],
-        ['Model 5 (Claude 3)', 'GA'],
+        ['Model 5 (Claude)', 'GA'],
         ['Model 2 (Code Llama)', 'BETA'],
         ['Model 3 (CodeGemma)', 'BETA'],
         ['GitLab AI vendor model'],

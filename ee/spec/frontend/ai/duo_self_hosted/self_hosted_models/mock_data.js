@@ -1,7 +1,7 @@
 import { BEDROCK_DUMMY_ENDPOINT } from 'ee/ai/duo_self_hosted/self_hosted_models/constants';
 
 export const mockListItems = [
-  { value: 'CLAUDE_3', text: 'Claude 3', releaseState: 'GA' },
+  { value: 'CLAUDE_3', text: 'Claude', releaseState: 'GA' },
   { value: 'CODELLAMA', text: 'Code Llama', releaseState: 'BETA' },
   { value: 'CODEGEMMA', text: 'CodeGemma', releaseState: 'BETA' },
   { value: 'DEEPSEEKCODER', text: 'DeepSeek Coder', releaseState: 'BETA' },
@@ -97,5 +97,5 @@ export const SELF_HOSTED_MODEL_OPTIONS = [
   { modelValue: 'DEEPSEEKCODER', modelName: 'Deepseek Coder', releaseState: 'BETA' },
   { modelValue: 'LLAMA3', modelName: 'Llama 3', releaseState: 'BETA' },
   { modelValue: 'GPT', modelName: 'GPT', releaseState: 'GA' },
-  { modelValue: 'CLAUDE_3', modelName: 'Claude 3', releaseState: 'GA' },
+  { modelValue: 'CLAUDE_3', modelName: 'Claude', releaseState: 'GA' },
 ];
