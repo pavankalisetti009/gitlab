@@ -28,6 +28,7 @@ export default () => {
     licenseRemovePath,
     subscriptionSyncPath,
     licenseUsageFilePath,
+    isAdmin,
   } = el.dataset;
   const connectivityHelpURL = helpPagePath('/administration/license.html', {
     anchor: 'cannot-activate-instance-due-to-connectivity-error',
@@ -52,6 +53,7 @@ export default () => {
         props: {
           hasActiveLicense: parseBoolean(hasActiveLicense),
           licenseUsageFilePath,
+          isAdmin: parseBoolean(isAdmin),
         },
       }),
   });

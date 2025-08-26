@@ -60,7 +60,8 @@ module EE
         license_remove_path: (current_user.can?(:destroy_licenses) ? admin_license_path : ''),
         subscription_sync_path: sync_seat_link_admin_license_path,
         congratulation_svg_path: image_path('illustrations/cloud-check-sm.svg'),
-        license_usage_file_path: admin_license_usage_export_path(format: :csv)
+        license_usage_file_path: admin_license_usage_export_path(format: :csv),
+        is_admin: current_user.can_admin_all_resources?.to_s
       }
     end
 
