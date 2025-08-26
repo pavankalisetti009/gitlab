@@ -11,6 +11,11 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
+import {
+  TIMESTAMP_TYPE_UPDATED_AT,
+  TIMESTAMP_TYPE_CREATED_AT,
+} from '~/vue_shared/components/resource_lists/constants';
+
 import ListItem from '~/vue_shared/components/resource_lists/list_item.vue';
 
 describe('AiCatalogListItem', () => {
@@ -20,6 +25,7 @@ describe('AiCatalogListItem', () => {
 
   const mockItem = {
     id: `gid://gitlab/Ai::Catalog::Item/${mockId}`,
+    createdAt: '2025-08-19T16:45:00Z',
     name: 'Test AI Agent',
     itemType: 'AGENT',
     description: 'A helpful AI assistant for testing purposes',
@@ -27,6 +33,10 @@ describe('AiCatalogListItem', () => {
     userPermissions: {
       readAiCatalogItem: true,
       adminAiCatalogItem: true,
+    },
+    latestVersion: {
+      id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+      updatedAt: '2025-08-21T14:30:00Z',
     },
   };
 
@@ -100,6 +110,8 @@ describe('AiCatalogListItem', () => {
         descriptionHtml: mockItem.description,
         fullName: mockItem.name,
         relativeWebUrl: mockUrl,
+        createdAt: mockItem.createdAt,
+        updatedAt: mockItem.latestVersion.updatedAt,
       };
 
       expect(listItem.exists()).toBe(true);
@@ -152,6 +164,19 @@ describe('AiCatalogListItem', () => {
 
         expect(icon.props('name')).toBe(VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PUBLIC_STRING]);
         expect(icon.attributes('title')).toBe(publicTooltip);
+      });
+    });
+
+    describe('when the created_at and updated_at dates are identical', () => {
+      it('passes the timestamp for the created_at date', () => {
+        createComponent({ item: { ...mockItem, createdAt: mockItem.latestVersion.updatedAt } });
+        expect(findListItem().props('timestampType')).toBe(TIMESTAMP_TYPE_CREATED_AT);
+      });
+    });
+
+    describe('when the updated_at date is after the created_at date', () => {
+      it('renders updated at when updated date is more recent than created date', () => {
+        expect(findListItem().props('timestampType')).toBe(TIMESTAMP_TYPE_UPDATED_AT);
       });
     });
   });
