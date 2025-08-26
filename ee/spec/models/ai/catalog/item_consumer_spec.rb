@@ -128,5 +128,14 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
         )
       end
     end
+
+    describe '.for_item' do
+      it 'filters records by the given item id' do
+        project = create(:project)
+        item_consumers = create_list(:ai_catalog_item_consumer, 2, project: project)
+
+        expect(described_class.for_item(item_consumers[0].ai_catalog_item_id)).to contain_exactly(item_consumers[0])
+      end
+    end
   end
 end

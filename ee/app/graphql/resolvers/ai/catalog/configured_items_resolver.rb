@@ -8,18 +8,36 @@ module Resolvers
 
         type ::Types::Ai::Catalog::ItemConsumerType.connection_type, null: false
 
+        argument :group_id,
+          ::Types::GlobalIDType[::Group],
+          prepare: ->(global_id, _ctx) { global_id&.model_id },
+          required: false,
+          description: 'Group ID to retrieve configured AI Catalog items for.'
+
+        argument :include_inherited,
+          GraphQL::Types::Boolean,
+          required: false,
+          default_value: true,
+          description: 'Include configured AI Catalog items inherited from parent groups.'
+
+        argument :item_id,
+          ::Types::GlobalIDType[::Ai::Catalog::Item],
+          prepare: ->(global_id, _ctx) { global_id&.model_id },
+          required: false,
+          description: 'Item ID to retrieve configured AI Catalog items for.'
+
         argument :project_id,
           ::Types::GlobalIDType[::Project],
-          required: true,
+          prepare: ->(global_id, _ctx) { global_id&.model_id },
+          required: false,
           description: 'Project ID to retrieve configured AI Catalog items for.'
 
-        def resolve(project_id:)
+        validates exactly_one_of: [:group_id, :project_id]
+
+        def resolve(**args)
           return none unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-          project = ::Project.find_by_id(project_id.model_id)
-          return none unless Ability.allowed?(current_user, :read_ai_catalog_item_consumer, project)
-
-          project.configured_ai_catalog_items
+          ::Ai::Catalog::ItemConsumersFinder.new(current_user, params: args).execute
         end
 
         private

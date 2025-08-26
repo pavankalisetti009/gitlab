@@ -27,6 +27,7 @@ module Ai
       belongs_to :project
 
       scope :not_for_projects, ->(project) { where.not(project: project) }
+      scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
 
       private
 
