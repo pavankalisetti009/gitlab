@@ -80,5 +80,49 @@ RSpec.describe Gitlab::Ci::Parsers::Security::DependencyScanning, feature_catego
         expect(raw_metadata["remediations"].first["diff"]).to start_with("ZGlmZiAtLWdpdCBhL3lhcm4")
       end
     end
+
+    context "when analyzer is gemnasium-python" do
+      let(:artifact) { create(:ee_ci_job_artifact, :dependency_scanning_python) }
+
+      before do
+        artifact.each_blob { |blob| described_class.parse!(blob, report) }
+      end
+
+      it "normalizes package name" do
+        occurrence = report.findings.last
+
+        expect(occurrence.location.package_name).to eq('flask')
+      end
+
+      context 'when analyzer is not gemnasium-python' do
+        let(:report_hash) { Gitlab::Json.parse(fixture_file('security_reports/master/gl-dependency-scanning-report-python.json', dir: 'ee'), symbolize_names: true) }
+
+        before do
+          report_hash[:scan][:analyzer][:id] = 'gemnasium'
+          described_class.parse!(report_hash.to_json, report)
+        end
+
+        it "does not normalize package name" do
+          occurrence = report.findings.last
+
+          expect(occurrence.location.package_name).to eq('Flask')
+        end
+      end
+
+      context 'when analyzer is nil' do
+        let(:report_hash) { Gitlab::Json.parse(fixture_file('security_reports/master/gl-dependency-scanning-report-python.json', dir: 'ee'), symbolize_names: true) }
+
+        before do
+          report_hash[:scan][:analyzer] = nil
+          described_class.parse!(report_hash.to_json, report)
+        end
+
+        it "does not normalize package name" do
+          occurrence = report.findings.last
+
+          expect(occurrence.location.package_name).to eq('Flask')
+        end
+      end
+    end
   end
 end

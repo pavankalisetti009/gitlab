@@ -289,6 +289,16 @@ FactoryBot.define do
       end
     end
 
+    trait :dependency_scanning_python do
+      file_format { :raw }
+      file_type { :dependency_scanning }
+
+      after(:build) do |artifact, _|
+        artifact.file = fixture_file_upload(
+          Rails.root.join('ee/spec/fixtures/security_reports/master/gl-dependency-scanning-report-python.json'), 'application/json')
+      end
+    end
+
     trait :corrupted_dependency_scanning_report do
       file_format { :raw }
       file_type { :dependency_scanning }
