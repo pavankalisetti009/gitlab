@@ -3,8 +3,8 @@ import { createProcessor } from 'tailwindcss/lib/cli/build/plugin.js';
 
 const ROOT_PATH = path.resolve(import.meta.dirname, '../../');
 
-export async function build({ shouldWatch = false, content = false } = {}) {
-  const buildCQs = Boolean(process.env.USE_TAILWIND_CONTAINER_QUERIES);
+export async function build({ shouldWatch = false, content = false, buildCQs = false } = {}) {
+  const configFile = buildCQs ? 'tailwind_cqs.config.js' : 'tailwind.config.js';
   const outputBundle = buildCQs ? 'tailwind_cqs.css' : 'tailwind.css';
 
   const processorOptions = {
@@ -13,7 +13,7 @@ export async function build({ shouldWatch = false, content = false } = {}) {
     '--input': path.join(ROOT_PATH, 'app/assets/stylesheets', 'tailwind.css'),
   };
 
-  const config = path.join(ROOT_PATH, 'config/tailwind.config.js');
+  const config = path.join(ROOT_PATH, 'config/', configFile);
 
   if (content) {
     console.log(`Setting content to ${content}`);
@@ -41,25 +41,26 @@ function wasScriptCalledDirectly() {
   return process.argv[1] === import.meta.filename;
 }
 
-export function viteTailwindCompilerPlugin({ shouldWatch = true }) {
+export function viteTailwindCompilerPlugin({ shouldWatch = true, buildCQs = false }) {
   return {
     name: 'gitlab-tailwind-compiler',
     async configureServer() {
-      return build({ shouldWatch });
+      return build({ shouldWatch, buildCQs });
     },
   };
 }
 
-export function webpackTailwindCompilerPlugin({ shouldWatch = true }) {
+export function webpackTailwindCompilerPlugin({ shouldWatch = true, buildCQs = false }) {
   return {
     async start() {
-      return build({ shouldWatch });
+      return build({ shouldWatch, buildCQs });
     },
   };
 }
 
 if (wasScriptCalledDirectly()) {
-  build()
+  const buildCQs = Boolean(process.env.USE_TAILWIND_CONTAINER_QUERIES);
+  build({ buildCQs })
     // eslint-disable-next-line promise/always-return
     .then(() => {
       console.log('Tailwind utils built successfully');
