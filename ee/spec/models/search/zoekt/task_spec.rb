@@ -220,20 +220,6 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         expect(delete_task_with_empty_repo.reload).to be_pending
         expect(task_with_empty_repo.zoekt_repository.reload).not_to be_ready
       end
-
-      context 'when zoekt_index_empty_repos feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_index_empty_repos: false)
-        end
-
-        it 'marks indexing tasks as done, the repository as ready, and processes delete tasks' do
-          expect do
-            described_class.each_task_for_processing(limit: 10) { |t| t }
-          end.to change { task_with_empty_repo.reload.state }.from('pending').to('done')
-          expect(delete_task_with_empty_repo.reload).to be_processing
-          expect(task_with_empty_repo.zoekt_repository.reload).to be_ready
-        end
-      end
     end
   end
 
@@ -326,16 +312,6 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
 
         it 'returns :valid' do
           expect(described_class.determine_task_state(task)).to eq(:valid)
-        end
-
-        context 'when zoekt_index_empty_repos feature flag is disabled' do
-          before do
-            stub_feature_flags(zoekt_index_empty_repos: false)
-          end
-
-          it 'returns :done' do
-            expect(described_class.determine_task_state(task)).to eq(:done)
-          end
         end
       end
 

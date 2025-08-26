@@ -102,9 +102,7 @@ module Search
       end
 
       def gitaly_payload(project)
-        if Feature.enabled?(:zoekt_index_empty_repos, Feature.current_request) && ::Search::Zoekt.missing_repo?(project)
-          return {}
-        end
+        return {} if ::Search::Zoekt.missing_repo?(project)
 
         repository_storage = project.repository_storage
         connection_info = Gitlab::GitalyClient.connection_data(repository_storage)
