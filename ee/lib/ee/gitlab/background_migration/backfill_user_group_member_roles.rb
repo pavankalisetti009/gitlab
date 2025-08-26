@@ -15,6 +15,8 @@ module EE
           end
         end
 
+        UNIQUE_BY = %i[user_id group_id].freeze
+
         class UserGroupMemberRole < ::ApplicationRecord
           self.table_name = 'user_group_member_roles'
         end
@@ -31,10 +33,17 @@ module EE
               }
             end
 
+            # members that have not accepted an invite have a nil user_id
+            filtered_members = members_with_member_role.select { |member| member[:user_id] }
+
+            # we have some duplicate records in the database because
+            # we don't have a unique index on (user, source), so let's filter them out
+            unique_members = filtered_members.uniq { |attr| attr.slice(*UNIQUE_BY) }
+
             UserGroupMemberRole.upsert_all(
-              members_with_member_role,
+              unique_members,
               returning: false,
-              unique_by: %i[user_id group_id]
+              unique_by: UNIQUE_BY
             )
           end
         end

@@ -100,6 +100,33 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillUserGroupMemberRoles, :sidek
     )
   end
 
+  let!(:invited_group_member) do
+    members.create!(
+      user_id: nil,
+      source_id: group.id,
+      member_namespace_id: group.id,
+      access_level: Gitlab::Access::GUEST,
+      type: 'GroupMember',
+      source_type: 'Namespace',
+      notification_level: 3,
+      member_role_id: member_role.id,
+      invite_token: '1234'
+    )
+  end
+
+  let!(:duplicate_group_member_with_member_role) do
+    members.build(
+      user_id: user_2.id,
+      source_id: group.id,
+      member_namespace_id: group.id,
+      access_level: Gitlab::Access::GUEST,
+      type: 'GroupMember',
+      source_type: 'Namespace',
+      notification_level: 3,
+      member_role_id: member_role.id
+    ).tap { |r| r.save!(validate: false) }
+  end
+
   let!(:project_member) do
     members.create!(
       user_id: user_3.id,
@@ -115,6 +142,10 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillUserGroupMemberRoles, :sidek
   subject(:migration) { described_class.new(**migration_args) }
 
   describe '#perform' do
+    it 'does not raise an error' do
+      expect { migration.perform }.not_to raise_error
+    end
+
     it 'creates a UserGroupMemberRole record for a user in a group' do
       expect { migration.perform }.to change { user_group_member_roles.count }.by(1)
 
@@ -222,9 +253,10 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillUserGroupMemberRoles, :sidek
       end
     end
 
-    context 'when the user is not active' do
+    context 'when the member is not active' do
       before do
         group_member_with_member_role.update!(state: 1)
+        duplicate_group_member_with_member_role.update!(state: 1)
       end
 
       it 'does not create a UserGroupMemberRole record' do
