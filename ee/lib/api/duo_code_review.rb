@@ -19,38 +19,6 @@ module API
       not_found! unless license_feature_available && global_feature_flag_enabled
     end
 
-    helpers do
-      def parse_raw_diffs(raw_diffs)
-        diffs = {}
-        current_file = nil
-        current_content = []
-
-        raw_diffs.each_line do |line|
-          if line.start_with?('diff --git ')
-            # Save the previous file's content
-            if current_file && !current_content.empty?
-              diffs[current_file] = current_content.join
-              current_content = []
-            end
-
-            # Extract the new file path
-            match = line.match(%r{diff --git a/.+ b/(.+)})
-            current_file = match[1] if match
-
-            # Start collecting content for this file
-            current_content << line
-          elsif current_file
-            # Add line to current file's content
-            current_content << line
-          end
-        end
-
-        # Add the last file's content
-        diffs[current_file] = current_content.join if current_file && !current_content.empty?
-        diffs
-      end
-    end
-
     namespace 'duo_code_review' do
       resources :evaluations do
         params do
