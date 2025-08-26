@@ -36,6 +36,12 @@ module Registrations
       elsif result.payload[:model_errors].present?
         render GitlabSubscriptions::Trials::Welcome::TrialFormComponent.new(user: current_user,
           params: resubmit_params(result))
+      else
+        render :resubmit, locals: {
+          hidden_fields: result.payload,
+          content: result.message,
+          submit_path: users_sign_up_trial_welcome_path(**glm_params)
+        }
       end
     end
 
@@ -61,6 +67,10 @@ module Registrations
       progress = params.permit(:namespace_id, :project_id, :lead_created)
       progress[:lead_created] = !!ActiveModel::Type::Boolean.new.cast(progress[:lead_created])
       progress.to_h.symbolize_keys
+    end
+
+    def glm_params
+      params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS).slice(*::Onboarding::StatusPresenter::GLM_PARAMS)
     end
   end
 end
