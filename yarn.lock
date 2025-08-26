@@ -1439,6 +1439,7 @@
   integrity sha512-/7Q5Sy9Q3pmutV/1EgURm3iDZtV0HcE4nTwFpHLCrGDdxQ3pNv6SdujzeJExnfiI5Y+1FGfOvKwOlmiVuyDtzA==
 
 "@gitlab/noop@^1.0.1", jackspeak@^3.1.2, "jackspeak@npm:@gitlab/noop@1.0.1":
+  name jackspeak
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@gitlab/noop/-/noop-1.0.1.tgz#71a831146ee02732b4a61d2d3c11204564753454"
   integrity sha512-s++4wjMYeDvBp9IO59DBrWjy8SE/gFkjTDO5ck2W0S6Vv7OlqgErwL7pHngAnrSmTJAzyUG8wHGqo0ViS4jn5Q==
@@ -1465,10 +1466,10 @@
   resolved "https://registry.yarnpkg.com/@gitlab/svgs/-/svgs-3.146.0.tgz#9d2005978252296cbff9bf47f7f2c0f29c7d35e2"
   integrity sha512-KEPhXsRQkaWjyApjk71t8aIKgMjqZ+QtgRe2H82vXsj+G17XoDDXAHl7Zw00PLf4IrJjn6ur6aS2A6CmTVHDLA==
 
-"@gitlab/ui@119.0.0":
-  version "119.0.0"
-  resolved "https://registry.yarnpkg.com/@gitlab/ui/-/ui-119.0.0.tgz#1a408a152755cb69913f976bd79686695c350fff"
-  integrity sha512-+kYby+3AaTC8UhQ5vnyNSfFilNZU7jMSuauN73mR1FMIr36tjpC1sQ1NKGS1nl+GgiNkeONe3UWsT1xjHCa7ng==
+"@gitlab/ui@119.1.0":
+  version "119.1.0"
+  resolved "https://registry.yarnpkg.com/@gitlab/ui/-/ui-119.1.0.tgz#5e1da597c2e42461cf291b222b6e88f65b988232"
+  integrity sha512-/1+ZHDKb/fYdQrUrrnvtv4ml0FpamtkqboqryuVHZVX6PYMHjHob8CzLu1AUy+TLUZE8XcJY4dUG1NrQJ1qQaw==
   dependencies:
     "@floating-ui/dom" "1.7.3"
     echarts "^5.6.0"
@@ -3201,11 +3202,6 @@
     "@swagger-api/apidom-parser-adapter-workflows-json-1" "^0.99.1"
     "@swagger-api/apidom-parser-adapter-workflows-yaml-1" "^0.99.1"
     "@swagger-api/apidom-parser-adapter-yaml-1-2" "^0.99.1"
-
-"@tailwindcss/container-queries@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tailwindcss/container-queries/-/container-queries-0.1.1.tgz#9a759ce2cb8736a4c6a0cb93aeb740573a731974"
-  integrity sha512-p18dswChx6WnTSaJCSGx6lTmrGzNNvm2FtXmiO6AuA1V4U5REyoqwmT6kgAsIMdjo07QdAfYXHJ4hnMtfHzWgA==
 
 "@tanstack/react-virtual@^3.0.0-beta.60":
   version "3.10.8"

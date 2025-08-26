@@ -5,7 +5,7 @@ exports[`Project compliance framework empty state matches the snapshot when "add
   class="gl-flex gl-flex-row"
 >
   <div
-    class="gl-hidden gl-px-4 sm:gl-block"
+    class="@sm:gl-block gl-hidden gl-px-4"
   >
     <img
       alt=""
@@ -60,7 +60,7 @@ exports[`Project compliance framework empty state matches the snapshot when "add
   class="gl-flex gl-flex-row"
 >
   <div
-    class="gl-hidden gl-px-4 sm:gl-block"
+    class="@sm:gl-block gl-hidden gl-px-4"
   >
     <img
       alt=""
