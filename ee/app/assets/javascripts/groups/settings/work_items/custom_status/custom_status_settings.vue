@@ -80,6 +80,10 @@ export default {
     closeCreateLifecycleModal() {
       this.showCreateLifecycleModal = false;
     },
+    handleLifecycleCreate(newLifecycleId) {
+      this.handleLifecycleUpdate();
+      this.openStatusModal(newLifecycleId);
+    },
   },
 };
 </script>
@@ -199,6 +203,7 @@ export default {
       :visible="showCreateLifecycleModal"
       :full-path="fullPath"
       @close="closeCreateLifecycleModal"
+      @lifecycle-created="handleLifecycleCreate"
     />
   </div>
 </template>

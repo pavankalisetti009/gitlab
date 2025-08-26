@@ -73005,6 +73005,9 @@ msgstr ""
 msgid "WorkItem|Lavender"
 msgstr ""
 
+msgid "WorkItem|Lifecycle created."
+msgstr ""
+
 msgid "WorkItem|Lifecycle name"
 msgstr ""
 
@@ -73218,6 +73221,9 @@ msgid "WorkItem|Participants"
 msgstr ""
 
 msgid "WorkItem|Pink"
+msgstr ""
+
+msgid "WorkItem|Please provide a name for the lifecycle."
 msgstr ""
 
 msgid "WorkItem|Please review the %{linkStart}contribution guidelines%{linkEnd} for this project."

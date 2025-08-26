@@ -1,14 +1,23 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlModal, GlForm, GlSearchBoxByType, GlFormRadioGroup, GlLoadingIcon } from '@gitlab/ui';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import {
+  GlModal,
+  GlForm,
+  GlSearchBoxByType,
+  GlFormRadioGroup,
+  GlLoadingIcon,
+  GlFormGroup,
+} from '@gitlab/ui';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { stubComponent } from 'helpers/stub_component';
 import CreateLifecycle from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
 import namespaceDefaultLifecycleQuery from 'ee/groups/settings/work_items/custom_status/namespace_default_lifecycle.query.graphql';
-import { mockLifecycles, mockDefaultLifecycle } from '../mock_data';
+import createLifecycleMutation from 'ee/groups/settings/work_items/custom_status/create_lifecycle.mutation.graphql';
+import { mockLifecycles, mockDefaultLifecycle, mockCreateLifecycleResponse } from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -47,13 +56,20 @@ describe('CreateLifecycle', () => {
   const defaultLifecycleQueryHandler = jest
     .fn()
     .mockResolvedValue(mockNamespaceDefaultLifecycleResponse);
+  const successUpdateLifecycleMutationHandler = jest
+    .fn()
+    .mockResolvedValue(mockCreateLifecycleResponse);
 
   const createComponent = ({
     mountFn = shallowMountExtended,
     props = {},
     namespacesHandler = namespacesQueryHandler,
+    createLifecycleHandler = successUpdateLifecycleMutationHandler,
   } = {}) => {
-    mockApollo = createMockApollo([[namespaceStatusesQuery, namespacesHandler]]);
+    mockApollo = createMockApollo([
+      [namespaceStatusesQuery, namespacesHandler],
+      [createLifecycleMutation, createLifecycleHandler],
+    ]);
 
     mockApollo.clients.defaultClient.cache.writeQuery({
       query: namespaceDefaultLifecycleQuery,
@@ -72,6 +88,15 @@ describe('CreateLifecycle', () => {
         fullPath: 'test/project',
         ...props,
       },
+      stubs: {
+        GlModal: stubComponent(GlModal, {
+          template:
+            '<div><slot name="modal-title"></slot><slot></slot><slot name="modal-footer"></slot></div>',
+        }),
+        GlFormGroup: stubComponent(GlFormGroup, {
+          props: ['state', 'invalidFeedback'],
+        }),
+      },
     });
   };
 
@@ -81,8 +106,10 @@ describe('CreateLifecycle', () => {
   const findSearchBox = () => wrapper.findComponent(GlSearchBoxByType);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
+  const findFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findLifecycleDetails = () => wrapper.findAllComponents(LifecycleDetail);
   const findDefaultLifecycleDetail = () => wrapper.findAllComponents(LifecycleDetail).at(0);
+  const findCreateLifecycleButton = () => wrapper.findByTestId('create-lifecycle');
 
   describe('when component is mounted', () => {
     beforeEach(async () => {
@@ -128,7 +155,7 @@ describe('CreateLifecycle', () => {
     });
   });
 
-  describe('Apollo queries', () => {
+  describe('Queries and mutations', () => {
     it('calls namespace lifecycles query with correct variables', async () => {
       createComponent();
       await waitForPromises();
@@ -144,6 +171,22 @@ describe('CreateLifecycle', () => {
       // Since Apollo queries have skip condition, handlers won't be called
       expect(namespacesQueryHandler).not.toHaveBeenCalled();
       expect(defaultLifecycleQueryHandler).not.toHaveBeenCalled();
+    });
+
+    it('emits `lifecycle-created` event on successful creation of a lifecycle', async () => {
+      createComponent({ mountFn: mountExtended });
+      await waitForPromises();
+
+      await findNameInput().vm.$emit('input', 'New lifecycle name');
+      await nextTick();
+
+      await findCreateLifecycleButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(successUpdateLifecycleMutationHandler).toHaveBeenCalled();
+      expect(wrapper.emitted('lifecycle-created')[0][0]).toStrictEqual(
+        mockCreateLifecycleResponse.data.lifecycleCreate.lifecycle.id,
+      );
     });
   });
 
@@ -193,6 +236,75 @@ describe('CreateLifecycle', () => {
         showUsageSection: false,
         showNotInUseSection: true,
         showRemoveLifecycleCta: false,
+      });
+    });
+  });
+
+  describe('creating lifecycle', () => {
+    describe('name validation', () => {
+      beforeEach(async () => {
+        createComponent({ mountFn: mountExtended });
+        await waitForPromises();
+      });
+
+      it('shows validation error when name is empty and form is submitted', async () => {
+        await findCreateLifecycleButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findFormGroup().props('invalidFeedback')).toBe(
+          'Please provide a name for the lifecycle.',
+        );
+        expect(findFormGroup().props('state')).toBe(false);
+
+        expect(findNameInput().props('state')).toBe(false);
+      });
+
+      it('shows validation error when name is empty and input loses focus', async () => {
+        await findNameInput().vm.$emit('focus');
+        await findNameInput().vm.$emit('blur');
+        await nextTick();
+
+        expect(findFormGroup().props('invalidFeedback')).toBe(
+          'Please provide a name for the lifecycle.',
+        );
+        expect(findFormGroup().props('state')).toBe(false);
+      });
+
+      it('does not submit form when validation fails', async () => {
+        await findCreateLifecycleButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(successUpdateLifecycleMutationHandler).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('create lifecycle', () => {
+      it('emits `lifecycle-created` event on successful creation of a lifecycle', async () => {
+        createComponent({ mountFn: mountExtended });
+        await waitForPromises();
+
+        await findNameInput().vm.$emit('input', 'New lifecycle name');
+        await nextTick();
+
+        await findCreateLifecycleButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(successUpdateLifecycleMutationHandler).toHaveBeenCalled();
+        expect(wrapper.emitted('lifecycle-created')[0][0]).toStrictEqual(
+          mockCreateLifecycleResponse.data.lifecycleCreate.lifecycle.id,
+        );
+      });
+
+      it('disables create button while submitting', async () => {
+        createComponent({ mountFn: mountExtended });
+        await waitForPromises();
+
+        await findNameInput().vm.$emit('input', 'New lifecycle name');
+        await nextTick();
+
+        await findCreateLifecycleButton().vm.$emit('click');
+
+        expect(findCreateLifecycleButton().props('disabled')).toBe(true);
       });
     });
   });

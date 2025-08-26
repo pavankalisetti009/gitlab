@@ -1,7 +1,7 @@
 #import "./work_item_lifecycle.fragment.graphql"
 
-mutation LifecycleUpdate($input: LifecycleUpdateInput!) {
-  lifecycleUpdate(input: $input) {
+mutation LifecycleCreate($input: LifecycleCreateInput!) {
+  lifecycleCreate(input: $input) {
     lifecycle {
       ...WorkItemLifecycle
     }

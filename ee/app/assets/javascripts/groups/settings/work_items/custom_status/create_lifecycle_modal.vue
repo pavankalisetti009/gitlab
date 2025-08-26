@@ -9,6 +9,7 @@ import {
   GlFormRadioGroup,
   GlFormRadio,
   GlLoadingIcon,
+  GlAlert,
 } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__ } from '~/locale';
@@ -16,6 +17,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import LifecycleDetail from './lifecycle_detail.vue';
 import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
 import namespaceDefaultLifecycleQuery from './namespace_default_lifecycle.query.graphql';
+import createLifecycleMutation from './create_lifecycle.mutation.graphql';
 
 export default {
   name: 'CreateLifecycle',
@@ -30,6 +32,7 @@ export default {
     GlFormRadioGroup,
     GlFormRadio,
     GlLoadingIcon,
+    GlAlert,
   },
   i18n: {
     createLifecycle: s__('WorkItem|Create lifecycle'),
@@ -46,7 +49,7 @@ export default {
   },
   data() {
     return {
-      errorText: '',
+      errorMessage: '',
       searchTerm: '',
       lifecycles: [],
       defaultLifecycle: {},
@@ -54,6 +57,8 @@ export default {
         name: '',
         selectedLifecycleId: 'gid://gitlab/Lifecycle/default',
       },
+      formError: '',
+      isSubmitting: false,
     };
   },
   apollo: {
@@ -119,9 +124,13 @@ export default {
         ) || {}
       );
     },
-    // eslint-disable-next-line vue/no-unused-properties
     selectedLifecycleStatuses() {
       return this.selectedLifecycle.statuses;
+    },
+    selectedLifecycleStatusesWithIds() {
+      return this.selectedLifecycleStatuses.map((status) => ({
+        id: status.id,
+      }));
     },
     showLoadingIndicator() {
       return this.fetchingDefaultLifecycle || this.fetchingLifecycles;
@@ -141,11 +150,65 @@ export default {
         name: '',
       };
       this.searchTerm = '';
-      this.errorText = '';
+      this.errorMessage = '';
+      this.formError = '';
     },
-    onSubmit() {
-      /** TODO should create a new lifecycle on submit */
-      this.closeAndResetData();
+    validate() {
+      if (!this.formData.name) {
+        this.formError = s__('WorkItem|Please provide a name for the lifecycle.');
+        return false;
+      }
+      this.formError = '';
+      return true;
+    },
+    async onSubmit() {
+      if (!this.validate()) {
+        return;
+      }
+
+      this.isSubmitting = true;
+
+      try {
+        const { defaultOpenStatus, defaultClosedStatus, defaultDuplicateStatus } =
+          this.selectedLifecycle;
+
+        const defaultOpenStatusIndex = this.selectedLifecycleStatuses.findIndex(
+          (s) => s.id === defaultOpenStatus.id,
+        );
+        const defaultClosedStatusIndex = this.selectedLifecycleStatuses.findIndex(
+          (s) => s.id === defaultClosedStatus.id,
+        );
+        const defaultDuplicateStatusIndex = this.selectedLifecycleStatuses.findIndex(
+          (s) => s.id === defaultDuplicateStatus.id,
+        );
+
+        const { data } = await this.$apollo.mutate({
+          mutation: createLifecycleMutation,
+          variables: {
+            input: {
+              namespacePath: this.fullPath,
+              name: this.formData.name,
+              statuses: this.selectedLifecycleStatusesWithIds,
+              defaultOpenStatusIndex: Math.max(0, defaultOpenStatusIndex),
+              defaultClosedStatusIndex: Math.max(0, defaultClosedStatusIndex),
+              defaultDuplicateStatusIndex: Math.max(0, defaultDuplicateStatusIndex),
+            },
+          },
+        });
+
+        if (data?.lifecycleCreate?.errors?.length) {
+          throw new Error(data.lifecycleCreate.errors.join(', '));
+        }
+
+        this.$emit('lifecycle-created', data.lifecycleCreate.lifecycle.id);
+        this.$toast.show(s__('WorkItem|Lifecycle created.'));
+        this.closeAndResetData();
+      } catch (error) {
+        Sentry.captureException(error);
+        this.errorMessage = error.message;
+      } finally {
+        this.isSubmitting = false;
+      }
     },
   },
 };
@@ -159,6 +222,15 @@ export default {
     modal-id="create-lifecycle-modal"
     @hide="closeModal"
   >
+    <gl-alert
+      v-if="errorMessage"
+      variant="danger"
+      class="gl-sticky gl-top-0 gl-my-5"
+      data-testid="error-alert"
+      @dismiss="errorMessage = ''"
+    >
+      {{ errorMessage }}
+    </gl-alert>
     <p>
       {{
         s__(
@@ -170,16 +242,18 @@ export default {
     <gl-form>
       <gl-form-group
         label="Lifecycle name"
-        invalid-feedback="Empty"
+        :invalid-feedback="formError"
         label-size="sm"
         label-for="new-lifecycle-name"
-        required
+        :state="!formError"
       >
         <gl-form-input
           id="new-lifecycle-name"
           v-model="formData.name"
           class="gl-w-34"
           data-testid="new-lifecycle-name-field"
+          :state="!formError"
+          @blur="validate"
         />
       </gl-form-group>
 
@@ -267,10 +341,16 @@ export default {
     </gl-form>
 
     <template #modal-footer>
-      <gl-button data-testid="cancel-button" @click="closeModal">{{ __('Cancel') }}</gl-button>
-      <gl-button data-testid="create-button" type="submit" variant="confirm" @click="onSubmit">{{
-        __('Create')
+      <gl-button data-testid="cancel-create-lifecycle" @click="closeModal">{{
+        __('Cancel')
       }}</gl-button>
+      <gl-button
+        data-testid="create-lifecycle"
+        variant="confirm"
+        :disabled="isSubmitting"
+        @click="onSubmit"
+        >{{ __('Create') }}</gl-button
+      >
     </template>
   </gl-modal>
 </template>
