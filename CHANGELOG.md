@@ -1703,6 +1703,15 @@ entry.
 - [Add NOT NULL on incident_management_pending_alert_escalations](https://gitlab.com/gitlab-org/gitlab/-/commit/9eb4353a140f28bb89931e52a7606657915e95b9) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/193647))
 - [Sync translations from crowdin (2025-05-28)](https://gitlab.com/gitlab-org/gitlab/-/commit/b7be101322f296e7351d9f2348e5ee32ead9228a) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/192769))
 
+## 18.1.5 (2025-08-26)
+
+### Security (4 changes)
+
+- [Adjust snippet blob query complexity to mitigate potential DoS attack](https://gitlab.com/gitlab-org/security/gitlab/-/commit/1002ddc2767f2e4734ecc3029dea74639f1863ea) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5231))
+- [Gitea import rate limiting](https://gitlab.com/gitlab-org/security/gitlab/-/commit/5e14b26cb33e61c0605f1a0ec91c3e0467533fb3) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5254))
+- [Fix tag/branch ambiguity in raw file display](https://gitlab.com/gitlab-org/security/gitlab/-/commit/ffb1039c1e06962b217b479799b6b3052a824b7b) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5239))
+- [Add authentication check for manual variables via new policy](https://gitlab.com/gitlab-org/security/gitlab/-/commit/e4fa4e405ddb8eca1cfccc9a8db355a07254f8f3) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/5195))
+
 ## 18.1.4 (2025-08-12)
 
 ### Fixed (4 changes)
