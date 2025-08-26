@@ -13,6 +13,10 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
+import {
+  TIMESTAMP_TYPE_UPDATED_AT,
+  TIMESTAMP_TYPE_CREATED_AT,
+} from '~/vue_shared/components/resource_lists/constants';
 import { AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 
 export default {
@@ -59,7 +63,13 @@ export default {
         fullName: this.item.name,
         descriptionHtml: this.item.description,
         relativeWebUrl: this.$router.resolve(this.showItemRoute).href,
+        updatedAt: this.item.latestVersion.updatedAt,
       };
+    },
+    timestampType() {
+      return this.formattedItem.updatedAt > this.formattedItem.createdAt
+        ? TIMESTAMP_TYPE_UPDATED_AT
+        : TIMESTAMP_TYPE_CREATED_AT;
     },
     visibilityLevel() {
       return this.item.public ? VISIBILITY_LEVEL_PUBLIC_STRING : VISIBILITY_LEVEL_PRIVATE_STRING;
@@ -90,7 +100,11 @@ export default {
 </script>
 
 <template>
-  <list-item :resource="formattedItem" @click-avatar="(event) => onClickAvatar(event)">
+  <list-item
+    :resource="formattedItem"
+    :timestamp-type="timestampType"
+    @click-avatar="(event) => onClickAvatar(event)"
+  >
     <template #avatar-meta>
       <gl-icon
         v-gl-tooltip
