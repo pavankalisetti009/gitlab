@@ -186,8 +186,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     let(:user) { build(:user, id: 1) }
     let(:token) { 'instance token' }
     let(:ai_feature) { :test_feature }
-    let(:service_name) { :test_service }
-    let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: service_name) }
+    let(:unit_primitive_name) { :test_feature_up }
     let(:agent) { nil }
     let(:lsp_version) { nil }
     let(:standard_context) { instance_double(::Gitlab::Tracking::StandardContext) }
@@ -226,7 +225,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
     subject(:headers) do
       described_class.headers(
-        user: user, service: service, ai_feature_name: ai_feature,
+        user: user, service: unit_primitive_name, ai_feature_name: ai_feature,
         agent: agent, lsp_version: lsp_version
       )
     end
@@ -237,9 +236,11 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       end
 
       allow(::CloudConnector::Tokens).to receive(:get)
-        .with(unit_primitive: service_name, resource: user)
+        .with(unit_primitive: unit_primitive_name, resource: user)
         .and_return(token)
-      allow(user).to receive(:allowed_to_use).with(ai_feature, service_name: service_name).and_return(auth_response)
+      allow(user).to receive(:allowed_to_use)
+        .with(ai_feature, service_name: unit_primitive_name)
+        .and_return(auth_response)
       allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
       )
@@ -314,17 +315,32 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
       it { is_expected.to match(expected_headers) }
     end
+
+    context 'when passing service object' do
+      let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: unit_primitive_name) }
+
+      it 'uses the service name as unit primitive name' do
+        expect(service).to receive(:name).and_return(unit_primitive_name)
+
+        headers = described_class.headers(
+          user: user, service: service, ai_feature_name: ai_feature,
+          agent: agent, lsp_version: lsp_version
+        )
+
+        expect(headers).to match(expected_headers)
+      end
+    end
   end
 
   describe '.public_headers' do
     let(:user) { build(:user, id: 1) }
     let(:ai_feature) { :test_feature }
-    let(:service_name) { :test_service }
+    let(:unit_primitive_name) { :test_feature_up }
     let(:enabled_feature_flags) { %w[feature_a feature_b] }
     let(:ai_headers) { { 'x-gitlab-feature-enabled-by-namespace-ids' => '' } }
 
     subject(:public_headers) do
-      described_class.public_headers(user: user, ai_feature_name: ai_feature, service_name: service_name)
+      described_class.public_headers(user: user, ai_feature_name: ai_feature, unit_primitive_name: unit_primitive_name)
     end
 
     before do
@@ -333,7 +349,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       end
 
       allow(user).to receive(:allowed_to_use)
-        .with(ai_feature, service_name: service_name)
+        .with(ai_feature, service_name: unit_primitive_name)
         .and_return(auth_response)
 
       allow(described_class).to receive(:enabled_feature_flags)

@@ -35,7 +35,7 @@ module Gitlab
       def self.cloud_connector_headers(user:)
         headers = Gitlab::AiGateway
           .public_headers(user: user, ai_feature_name: :duo_workflow,
-            service_name: :duo_workflow_execute_workflow)
+            unit_primitive_name: :duo_workflow_execute_workflow)
           .transform_keys(&:downcase)
           .merge(
             'x-gitlab-base-url' => Gitlab.config.gitlab.url,

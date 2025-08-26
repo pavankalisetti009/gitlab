@@ -50,7 +50,7 @@ module API
 
       def ai_gateway_public_headers(ai_feature_name, service_name)
         Gitlab::AiGateway.public_headers(
-          user: current_user, ai_feature_name: ai_feature_name, service_name: service_name)
+          user: current_user, ai_feature_name: ai_feature_name, unit_primitive_name: service_name)
           .merge(saas_headers)
           .merge(model_config_headers)
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
@@ -319,7 +319,7 @@ module API
           aigw_headers = Gitlab::AiGateway.public_headers(
             user: current_user,
             ai_feature_name: completion_model_details.feature_name,
-            service_name: completion_model_details.unit_primitive_name
+            unit_primitive_name: completion_model_details.unit_primitive_name
           )
 
           details = {

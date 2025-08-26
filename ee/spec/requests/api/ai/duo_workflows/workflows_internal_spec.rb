@@ -419,7 +419,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
     before do
       allow(Gitlab::AiGateway)
         .to receive(:public_headers)
-        .with(user: user, ai_feature_name: :duo_workflow, service_name: :duo_workflow_execute_workflow)
+        .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :duo_workflow_execute_workflow)
         .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
     end
 
@@ -460,7 +460,8 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
       before do
         allow(Gitlab::AiGateway).to receive(:public_headers)
-          .with(user: service_account, ai_feature_name: :duo_workflow, service_name: :duo_workflow_execute_workflow)
+          .with(user: service_account, ai_feature_name: :duo_workflow,
+            unit_primitive_name: :duo_workflow_execute_workflow)
           .and_return({})
       end
 

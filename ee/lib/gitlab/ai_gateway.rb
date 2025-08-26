@@ -81,16 +81,20 @@ module Gitlab
     end
 
     def self.headers(user:, service:, ai_feature_name: service.name, agent: nil, lsp_version: nil)
+      # Temporarily allow both UP names and service objects.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/564979
+      unit_primitive_name = service.is_a?(Symbol) ? service : service.name
+
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
-        'Authorization' => "Bearer #{cloud_connector_token(service, user)}",
+        'Authorization' => "Bearer #{cloud_connector_token(unit_primitive_name, user)}",
         'Content-Type' => 'application/json',
         'X-Gitlab-Is-Team-Member' =>
           (::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(user&.id) || false).to_s,
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency
         'X-Gitlab-Rails-Send-Start' => Time.now.to_f.to_s
-      }.merge(public_headers(user: user, ai_feature_name: ai_feature_name, service_name: service.name))
+      }.merge(public_headers(user: user, ai_feature_name: ai_feature_name, unit_primitive_name: unit_primitive_name))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
           if current_context[:x_gitlab_client_type]
@@ -117,8 +121,8 @@ module Gitlab
         end
     end
 
-    def self.public_headers(user:, ai_feature_name:, service_name:)
-      auth_response = user&.allowed_to_use(ai_feature_name, service_name: service_name)
+    def self.public_headers(user:, ai_feature_name:, unit_primitive_name:)
+      auth_response = user&.allowed_to_use(ai_feature_name, service_name: unit_primitive_name)
       enablement_type = auth_response&.enablement_type || ''
       namespace_ids = auth_response&.namespace_ids || []
 
@@ -129,11 +133,11 @@ module Gitlab
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
     end
 
-    def self.cloud_connector_token(service, user)
+    def self.cloud_connector_token(unit_primitive_name, user)
       # Until https://gitlab.com/groups/gitlab-org/-/epics/15639 is complete, we generate service
       # definitions for each UP, so passing the service name here should be safe, even if `service`
       # is not defined explicitly.
-      ::CloudConnector::Tokens.get(unit_primitive: service.name, resource: user)
+      ::CloudConnector::Tokens.get(unit_primitive: unit_primitive_name, resource: user)
     end
   end
 end
