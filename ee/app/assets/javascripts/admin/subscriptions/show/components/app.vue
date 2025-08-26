@@ -54,6 +54,10 @@ export default {
       required: false,
       default: false,
     },
+    isAdmin: {
+      type: Boolean,
+      required: true,
+    },
   },
   apollo: {
     currentSubscription: {
@@ -98,7 +102,7 @@ export default {
       return Boolean(Object.keys(this.currentSubscription).length);
     },
     canShowSubscriptionDetails() {
-      return this.hasActiveLicense || this.hasValidSubscriptionData;
+      return this.isAdmin && (this.hasActiveLicense || this.hasValidSubscriptionData);
     },
     subscriptionHistory() {
       return [...this.futureLicenseHistoryEntries, ...this.pastLicenseHistoryEntries];

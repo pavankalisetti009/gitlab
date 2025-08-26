@@ -97,6 +97,7 @@ describe('SubscriptionManagementApp', () => {
         },
         propsData: {
           licenseUsageFilePath: 'about:blank',
+          isAdmin: true,
           ...props,
         },
         stubs: {
@@ -396,6 +397,22 @@ describe('SubscriptionManagementApp', () => {
 
         it('renders the "Export license usage file" link', () => {
           expect(findExportLicenseUsageFileLink().exists()).toBe(true);
+        });
+
+        describe('when user is not an admin', () => {
+          beforeEach(async () => {
+            futureSubscriptionsResolver = jest.fn().mockResolvedValue(futureResponseEmpty);
+            createComponent({ hasActiveLicense: true, isAdmin: false }, [
+              currentSubscriptionResolver,
+              pastSubscriptionsResolver,
+              futureSubscriptionsResolver,
+            ]);
+            await waitForPromises();
+          });
+
+          it('does not render the link to export the license usage as a file', () => {
+            expect(findExportLicenseUsageFileLink().exists()).toBe(false);
+          });
         });
       });
 
