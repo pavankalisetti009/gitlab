@@ -1,0 +1,6 @@
+= render Pajamas::AlertComponent.new(title: s_('AmazonQ|GitLab Duo with Amazon Q'),
+                                     variant: variant,
+                                     alert_options: alert_options,
+                                     dismissible: true) do |c|
+  - c.with_body do
+    = message
