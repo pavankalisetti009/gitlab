@@ -333,6 +333,7 @@ module EE
         mount_mutation ::Mutations::Authz::AdminRoles::LdapSync, experiment: { milestone: '18.0' }
         mount_mutation ::Mutations::Ai::ModelSelection::Namespaces::Update, experiment: { milestone: '18.1' }
         mount_mutation ::Mutations::WorkItems::Lifecycles::Update, experiment: { milestone: '18.1' }
+        mount_mutation ::Mutations::WorkItems::Lifecycles::Create, experiment: { milestone: '18.4' }
         mount_mutation ::Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreateMutation,
           experiment: { milestone: '18.2' }
         mount_mutation ::Mutations::ComplianceManagement::Projects::ComplianceViolations::Update,
