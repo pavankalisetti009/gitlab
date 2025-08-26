@@ -38,12 +38,14 @@ module Gitlab
         end
 
         def file_count
+          return result[:FileMatchCount] if result[:FileMatchCount].present?
           return result[:FileCount] unless count_search_results?
 
           @file_count ||= result['Files']&.count.to_i
         end
 
         def match_count
+          return result[:LineMatchCount] if result[:LineMatchCount].present?
           return result[:MatchCount] unless count_search_results?
 
           @match_count ||= (result['Files']&.sum { |x| x['LineMatches']&.count }).to_i
