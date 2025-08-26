@@ -304,6 +304,29 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisio
     end
   end
 
+  context 'for duo_amazon_q_alert dismissal' do
+    it 'dismisses the banner when clicking the close button' do
+      create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_amazon_q)
+      alert_content = s_('AmazonQ|GitLab Duo with Amazon Q')
+
+      visit(admin_subscription_path)
+
+      expect(page).to have_content(alert_content)
+
+      within_testid('duo-amazon-q-alert') do
+        find('.gl-dismiss-btn').click
+
+        wait_for_all_requests
+      end
+
+      expect(page).not_to have_content(alert_content)
+
+      page.refresh
+
+      expect(page).not_to have_content(alert_content)
+    end
+  end
+
   include_examples 'manual quarterly co-term banner', path_to_visit: :admin_subscription_path
 
   private
