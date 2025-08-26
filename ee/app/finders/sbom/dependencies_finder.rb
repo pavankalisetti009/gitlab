@@ -26,7 +26,7 @@ module Sbom
       cargo
     ].freeze
 
-    # @param dependable [Organization, Group, Project, Vulnerability] the container for detected SBoM occurrences
+    # @param dependable [Group, Project, Vulnerability] the container for detected SBoM occurrences
     def initialize(dependable, current_user: nil, params: {})
       @dependable = dependable
       @current_user = current_user
@@ -114,7 +114,6 @@ module Sbom
     end
 
     def occurrences
-      return Sbom::Occurrence.unarchived if organization?
       return dependable.sbom_occurrences.for_project(dependable) if project?
       return dependable.sbom_occurrences if vulnerability?
       return dependable.sbom_occurrences if params[:project_ids].blank?
@@ -137,10 +136,6 @@ module Sbom
 
     def non_admin_user?
       current_user && !current_user.can_read_all_resources?
-    end
-
-    def organization?
-      dependable.is_a?(::Organizations::Organization)
     end
 
     def project?

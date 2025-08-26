@@ -57,8 +57,6 @@ module Dependencies
         ::Sbom::DependenciesFinder.new(exportable, params: default_filters).execute
       when ::Group
         exportable.sbom_occurrences.order_by_id
-      when ::Organizations::Organization
-        ::Sbom::Occurrence.order_by_id
       end
     end
 

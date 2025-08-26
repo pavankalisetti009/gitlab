@@ -122,44 +122,6 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     end
   end
 
-  describe 'POST /organizations/:id/dependency_list_exports' do
-    let_it_be(:organization) { create(:organization) }
-
-    context 'when admin mode is enabled', :enable_admin_mode do
-      context 'when the user is an admin' do
-        let_it_be(:current_user) { create(:user, :admin) }
-
-        before do
-          stub_licensed_features(dependency_scanning: true, security_dashboard: true)
-        end
-
-        it 'generates an export' do
-          post api("/organizations/#{organization.id}/dependency_list_exports", current_user)
-
-          expect(response).to have_gitlab_http_status(:created)
-          expect(json_response).to be_present
-          expect(json_response).to have_key('id')
-          expect(json_response).to have_key('has_finished')
-          expect(json_response).to have_key('self')
-          expect(json_response).to have_key('download')
-          expect(json_response['export_type']).to eq('csv')
-        end
-
-        context 'when the `explore_dependencies` feature flag is disabled' do
-          before do
-            stub_feature_flags(explore_dependencies: false)
-          end
-
-          it 'does not generate an export' do
-            post api("/organizations/#{organization.id}/dependency_list_exports", current_user)
-
-            expect(response).to have_gitlab_http_status(:not_found)
-          end
-        end
-      end
-    end
-  end
-
   describe 'POST /projects/:id/dependency_list_exports' do
     let(:request_path) { "/projects/#{project.id}/dependency_list_exports" }
     let(:resource) { project }

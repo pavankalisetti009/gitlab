@@ -82,11 +82,11 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
       ]
     end
 
-    context 'when the organization does not have dependencies' do
+    context 'when the exportable does not have dependencies' do
       it { is_expected.to match_array([header]) }
     end
 
-    context 'when the organization has dependencies' do
+    context 'when the exportable has dependencies' do
       let_it_be(:bundler) { create(:sbom_component, :bundler) }
       let_it_be(:bundler_v1) { create(:sbom_component_version, component: bundler, version: "1.0.0") }
 

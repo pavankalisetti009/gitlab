@@ -44,17 +44,6 @@ RSpec.describe Sbom::ExportMailer, feature_category: :dependency_management do
       end
     end
 
-    context 'when exportable is an organization' do
-      # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Need associations
-      let_it_be(:organization) { create(:organization) }
-      let_it_be(:export) { create(:dependency_list_export, organization: organization, project: nil) }
-      # rubocop:enable RSpec/FactoryBot/AvoidCreate
-
-      it 'prefixes organization name to subject' do
-        expect(email).to have_subject("#{organization.name} | #{s_('Dependencies|Dependency list export')}")
-      end
-    end
-
     context 'when exportable is a pipeline' do
       # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Need associations
       let_it_be(:pipeline) { create(:ci_pipeline, project: project) }

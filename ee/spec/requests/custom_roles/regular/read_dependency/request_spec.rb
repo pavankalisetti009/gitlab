@@ -61,23 +61,4 @@ RSpec.describe 'User with read_dependency custom role', feature_category: :syste
       end
     end
   end
-
-  describe Explore::DependenciesController do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:role) { create(:member_role, :guest, namespace: project.group, read_dependency: true) }
-
-    before do
-      stub_feature_flags(explore_dependencies: user)
-    end
-
-    describe "#index" do
-      subject { get explore_dependencies_path }
-
-      context "on a group level" do
-        let_it_be(:membership) { create(:group_member, :guest, source: project.group, member_role: role, user: user) }
-
-        include_examples 'returning response status', :ok
-      end
-    end
-  end
 end
