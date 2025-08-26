@@ -103,6 +103,21 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
       }.from([false, false]).to([true, true])
     end
 
+    context 'with minimal access role', :saas do
+      let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
+      let_it_be(:role) { create(:member_role, :minimal_access, namespace: group) }
+      let_it_be(:member) { create(:group_member, :minimal_access, member_role: role, user: user, group: group) }
+
+      it 'creates UserGroupMemberRole records for the user in the group and in the shared group' do
+        expect { execute }.to change {
+          [
+            fetch_records(user, group, role).exists?,
+            fetch_records(user, shared_group, role).exists?
+          ]
+        }.from([false, false]).to([true, true])
+      end
+    end
+
     it_behaves_like 'logs event data', upserted_count: 2, deleted_count: 0
 
     context 'with existing UserGroupMemberRole records' do

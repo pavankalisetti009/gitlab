@@ -54,6 +54,27 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
     expect(Authz::UserGroupMemberRole.count).to eq(2)
   end
 
+  context 'with minimal access role', :saas do
+    let_it_be(:shared_with_group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let_it_be(:minimal_access_role) { create(:member_role, :minimal_access) }
+    let_it_be(:member) do
+      create(:group_member, :minimal_access, member_role: minimal_access_role, user: user, group: shared_with_group)
+    end
+
+    let_it_be_with_reload(:group_group_link) do
+      create(:group_group_link, :guest, shared_group: group, shared_with_group: shared_with_group, member_role: role)
+    end
+
+    it 'creates UserGroupMemberRole records for each user in group_group_link.shared_with_group' do
+      expect { execute }.to change {
+        user.user_group_member_roles.where(group: group, shared_with_group: shared_with_group,
+          member_role: minimal_access_role).exists?
+      }.from(false).to(true)
+
+      expect(Authz::UserGroupMemberRole.count).to eq(1)
+    end
+  end
+
   it_behaves_like 'logs event data', upserted_count: 2, deleted_count: 0
 
   context 'with existing UserGroupMemberRole records' do

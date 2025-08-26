@@ -80,7 +80,6 @@ module Authz
           .and(members[:user_id].not_eq(nil))
           .and(members[:requested_at].eq(nil))
           .and(members[:state].eq(::Member::STATE_ACTIVE))
-          .and(members[:access_level].gt(Gitlab::Access::MINIMAL_ACCESS))
       end
 
       def user_group_member_roles
