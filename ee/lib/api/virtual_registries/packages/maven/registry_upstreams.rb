@@ -115,7 +115,7 @@ module API
                   destroy_conditionally!(registry_upstream) do
                     registry_upstream.transaction do
                       registry_upstream.sync_higher_positions
-                      upstream.registry_upstreams.one? ? upstream.destroy : registry_upstream.destroy
+                      registry_upstream.destroy
                     end
                   end
                 end
