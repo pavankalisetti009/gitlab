@@ -8645,6 +8645,7 @@ CREATE TABLE abuse_report_events (
     action smallint DEFAULT 1 NOT NULL,
     reason smallint,
     comment text,
+    organization_id bigint,
     CONSTRAINT check_bb4cd85618 CHECK ((char_length(comment) <= 1024))
 );
 
@@ -36675,6 +36676,8 @@ CREATE UNIQUE INDEX index_abuse_report_assignees_on_user_id_and_abuse_report_id 
 
 CREATE INDEX index_abuse_report_events_on_abuse_report_id ON abuse_report_events USING btree (abuse_report_id);
 
+CREATE INDEX index_abuse_report_events_on_organization_id ON abuse_report_events USING btree (organization_id);
+
 CREATE INDEX index_abuse_report_events_on_user_id ON abuse_report_events USING btree (user_id);
 
 CREATE INDEX index_abuse_report_label_links_on_abuse_report_label_id ON abuse_report_label_links USING btree (abuse_report_label_id);
@@ -45820,6 +45823,9 @@ ALTER TABLE ONLY analytics_devops_adoption_segments
 
 ALTER TABLE ONLY project_statistics
     ADD CONSTRAINT fk_198ad46fdc FOREIGN KEY (root_namespace_id) REFERENCES namespaces(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY abuse_report_events
+    ADD CONSTRAINT fk_1bb749b148 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY work_item_current_statuses
     ADD CONSTRAINT fk_1bb76463e0 FOREIGN KEY (custom_status_id) REFERENCES work_item_custom_statuses(id) ON DELETE SET NULL;
