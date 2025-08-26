@@ -31,7 +31,7 @@ module Gitlab
         end
 
         def service
-          ::CloudConnector::AvailableServices.find_by_name(:vertex_ai_proxy)
+          ::CloudConnector::AvailableServices.find_by_name(unit_primitive.to_sym)
         end
 
         def headers
@@ -39,7 +39,7 @@ module Gitlab
             "Accept" => "application/json",
             "Host" => model_config.host,
             'X-Gitlab-Unit-Primitive' => unit_primitive
-          }.merge(Gitlab::AiGateway.headers(user: user, service: service))
+          }.merge(Gitlab::AiGateway.headers(user: user, service: service, ai_feature_name: :vertex_ai_proxy))
         end
 
         private
