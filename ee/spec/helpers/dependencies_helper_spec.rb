@@ -83,35 +83,6 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
     end
   end
 
-  describe '#explore_dependencies_data' do
-    let_it_be(:organization) { build_stubbed(:organization) }
-    let(:page_info) do
-      {
-        type: 'cursor',
-        has_next_page: true,
-        has_previous_page: false,
-        start_cursor: nil,
-        current_cursor: 'current_cursor',
-        end_cursor: 'next_page_cursor'
-      }
-    end
-
-    subject { helper.explore_dependencies_data(organization, page_info) }
-
-    it_behaves_like 'a helper method that returns shared dependencies data'
-
-    it 'returns the expected data' do
-      is_expected.to include(
-        page_info: page_info,
-        endpoint: "/explore/dependencies.json",
-        licenses_endpoint: nil,
-        locations_endpoint: nil,
-        export_endpoint: "/api/v4/organizations/#{organization.id}/dependency_list_exports",
-        vulnerabilities_endpoint: nil
-      )
-    end
-  end
-
   describe '#dependencies_exportable_link' do
     using RSpec::Parameterized::TableSyntax
 
@@ -131,16 +102,6 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
       let(:export) { build_stubbed(:dependency_list_export, group: group, project: nil) }
 
       it { is_expected.to eq("group <a href=\"#{url_builder.group_canonical_url(group)}\">#{group.full_name}</a>") }
-    end
-
-    context 'when exportable is an organization' do
-      let(:organization) { build_stubbed(:organization) }
-      let(:export) { build_stubbed(:dependency_list_export, organization: organization, project: nil) }
-
-      it 'returns the correct link text' do
-        url = url_builder.organization_root_url(organization_path: organization.path)
-        is_expected.to eq("organization <a href=\"#{url}\">#{organization.name}</a>")
-      end
     end
 
     context 'when exportable is a pipeline' do

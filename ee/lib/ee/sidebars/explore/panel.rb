@@ -14,8 +14,6 @@ module EE
             ::Sidebars::Explore::Menus::CatalogMenu,
             ::Sidebars::Explore::Menus::AiCatalogMenu.new(context)
           )
-
-          add_menu(Sidebars::Explore::Menus::DependenciesMenu.new(context))
         end
       end
     end

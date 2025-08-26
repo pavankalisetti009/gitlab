@@ -89,47 +89,6 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
       end
     end
 
-    context 'when the exportable is an organization' do
-      let_it_be(:organization) { create(:organization) }
-      let_it_be(:project) { create(:project, organization: organization) }
-      let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, project: project) }
-      let_it_be_with_reload(:dependency_list_export) do
-        create(:dependency_list_export, project: nil, exportable: organization, export_type: :csv)
-      end
-
-      let(:timestamp) { Time.current.utc.strftime('%FT%H%M') }
-      let(:expected_filename) { "organization_#{organization.id}_dependencies_#{timestamp}.csv" }
-
-      before_all do
-        project.add_developer(dependency_list_export.author)
-      end
-
-      it { expect(execute).to be_present }
-      it { expect { execute }.to change { dependency_list_export.file.filename }.to(expected_filename) }
-
-      it 'includes a header in the export file' do
-        header = 'Name,Version,Packager,Location'
-        expect { execute }.to change { dependency_list_export.file.read }.to(include(header))
-      end
-
-      it 'includes a row for each occurrence' do
-        execute
-
-        occurrences.map do |occurrence|
-          expect(export_content).to include(CSV.generate_line([
-            occurrence.component_name,
-            occurrence.version,
-            occurrence.package_manager,
-            occurrence.send(:input_file_blob_path),
-            occurrence.licenses.pluck('spdx_identifier').join('; '),
-            occurrence.project.full_path,
-            occurrence.vulnerability_count,
-            occurrence.vulnerabilities.pluck(:id).join('; ')
-          ]))
-        end
-      end
-    end
-
     context 'when the exportable is a project' do
       let_it_be(:project) { create(:project) }
       let_it_be(:container_scanning_occurrence) { create(:sbom_occurrence, :os_occurrence, project: project) }

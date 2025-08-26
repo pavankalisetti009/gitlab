@@ -45,28 +45,19 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       end
 
       where(:args, :valid) do
-        organization = build_stubbed(:organization)
-        group = build_stubbed(:group, organization: organization)
-        project = build_stubbed(:project, organization: organization, group: group)
+        group = build_stubbed(:group)
+        project = build_stubbed(:project, group: group)
         pipeline = build_stubbed(:ci_pipeline, project: project)
 
         [
-          [{ organization: organization, group: group, project: project, pipeline: pipeline }, false],
-          [{ organization: organization, group: group, project: project, pipeline: nil }, false],
-          [{ organization: organization, group: group, project: nil, pipeline: pipeline }, false],
-          [{ organization: organization, group: group, project: nil, pipeline: nil }, false],
-          [{ organization: organization, group: nil, project: project, pipeline: pipeline }, false],
-          [{ organization: organization, group: nil, project: project, pipeline: nil }, false],
-          [{ organization: organization, group: nil, project: nil, pipeline: pipeline }, false],
-          [{ organization: organization, group: nil, project: nil, pipeline: nil }, true],
-          [{ organization: nil, group: group, project: project, pipeline: pipeline }, false],
-          [{ organization: nil, group: group, project: project, pipeline: nil }, false],
-          [{ organization: nil, group: group, project: nil, pipeline: pipeline }, false],
-          [{ organization: nil, group: group, project: nil, pipeline: nil }, true],
-          [{ organization: nil, group: nil, project: project, pipeline: pipeline }, true],
-          [{ organization: nil, group: nil, project: project, pipeline: nil }, true],
-          [{ organization: nil, group: nil, project: nil, pipeline: pipeline }, true],
-          [{ organization: nil, group: nil, project: nil, pipeline: nil }, false]
+          [{ group: group, project: project, pipeline: pipeline }, false],
+          [{ group: group, project: project, pipeline: nil }, false],
+          [{ group: group, project: nil, pipeline: pipeline }, false],
+          [{ group: group, project: nil, pipeline: nil }, true],
+          [{ group: nil, project: project, pipeline: pipeline }, true],
+          [{ group: nil, project: project, pipeline: nil }, true],
+          [{ group: nil, project: nil, pipeline: pipeline }, true],
+          [{ group: nil, project: nil, pipeline: nil }, false]
         ]
       end
 
@@ -205,7 +196,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
 
   describe '#exportable=' do
     let(:export) { build(:dependency_list_export) }
-    let(:organization) { build_stubbed(:organization) }
 
     after do
       export.project = nil
@@ -216,7 +206,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
 
     specify { expect { export.exportable = project }.to change { export.project }.to(project) }
     specify { expect { export.exportable = group }.to change { export.group }.to(group) }
-    specify { expect { export.exportable = organization }.to change { export.organization }.to(organization) }
 
     it 'sets pipelines and project when given a pipeline' do
       expect { export.exportable = pipeline }.to change { export.pipeline }.to(pipeline)
@@ -306,29 +295,21 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
     end
   end
 
-  context 'with loose foreign key on dependency_list_exports.organization_id' do
-    it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:organization) }
-      let_it_be(:model) { create(:dependency_list_export, group: nil, project: nil, author: nil, organization: parent) }
-    end
-  end
-
   describe '#uploads_sharding_key' do
-    it 'returns one of organization_id, group_id, or porject_id' do
-      parents = { organization: nil, group: nil, project: nil }
+    it 'returns one of group_id, or porject_id' do
+      parents = { group: nil, project: nil }
 
       parents.each_key do |parent_type|
         parent = build_stubbed(parent_type)
         export = build_stubbed(:dependency_list_export, **parents.merge(parent_type => parent))
 
         key_name = case parent_type
-                   when :organization then :organization_id
                    when :group then :namespace_id
                    when :project then :project_id
                    end
 
         expect(export.uploads_sharding_key).to eq(
-          { organization_id: nil, namespace_id: nil, project_id: nil }.merge(key_name => parent.id)
+          { namespace_id: nil, project_id: nil }.merge(key_name => parent.id)
         )
       end
     end

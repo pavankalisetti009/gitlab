@@ -61,29 +61,6 @@ module API
       end
     end
 
-    resource :organizations do
-      params do
-        requires :id, types: [String, Integer], desc: 'The ID of the organization'
-
-        optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
-      end
-      desc 'Generate a dependency list export on an organization-level'
-      post ':id/dependency_list_exports' do
-        not_found! unless Feature.enabled?(:explore_dependencies, current_user)
-
-        organization = find_organization!(params[:id])
-        authorize! :read_dependency, organization
-
-        params[:export_type] = :csv
-
-        result = ::Dependencies::CreateExportService
-          .new(organization, current_user, params)
-          .execute
-
-        present_created_export(result)
-      end
-    end
-
     resource :pipelines do
       params do
         requires :id, types: [String, Integer], desc: 'The ID of the pipeline'

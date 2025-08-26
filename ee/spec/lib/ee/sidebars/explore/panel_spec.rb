@@ -9,6 +9,6 @@ RSpec.describe Sidebars::Explore::Panel, feature_category: :navigation do
   let(:current_user) { build_stubbed(:user) }
 
   describe '#configure_menus' do
-    it { is_expected.to include_menu(::EE::Sidebars::Explore::Menus::DependenciesMenu) }
+    it { is_expected.to include_menu(::Sidebars::Explore::Menus::AiCatalogMenu) }
   end
 end
