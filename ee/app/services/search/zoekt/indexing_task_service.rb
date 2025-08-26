@@ -56,9 +56,8 @@ module Search
 
       def preflight_check?
         return true if task_type == :delete_repo
-        return false unless project
 
-        ::Search::Zoekt.should_create_indexing_task?(project)
+        project.present?
       end
 
       def random_force_reindexing?

@@ -78,6 +78,18 @@ RSpec.describe ::Gitlab::Search::Zoekt::Response, feature_category: :global_sear
       expect(zoekt_response.file_count).to eq(3)
     end
 
+    context 'when FileMatchCount is present' do
+      let(:parsed_response) do
+        resp = ::Gitlab::Json.parse(raw_response)
+        resp['Result']['FileMatchCount'] = 42
+        resp
+      end
+
+      it 'returns FileMatchCount' do
+        expect(zoekt_response.file_count).to eq(42)
+      end
+    end
+
     context 'when :zoekt_ast_search_payload feature flag is disabled' do
       let(:parsed_response) do
         ::Gitlab::Json.parse(raw_response).tap { |x| x['Result']['FileCount'] = 8675 }
@@ -96,6 +108,18 @@ RSpec.describe ::Gitlab::Search::Zoekt::Response, feature_category: :global_sear
   describe '#match_count' do
     it 'counts the number of line matches' do
       expect(zoekt_response.match_count).to eq(20)
+    end
+
+    context 'when LineMatchCount is present' do
+      let(:parsed_response) do
+        resp = ::Gitlab::Json.parse(raw_response)
+        resp['Result']['LineMatchCount'] = 99
+        resp
+      end
+
+      it 'returns LineMatchCount' do
+        expect(zoekt_response.match_count).to eq(99)
+      end
     end
 
     context 'when :zoekt_ast_search_payload feature flag is disabled' do

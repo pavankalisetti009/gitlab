@@ -464,32 +464,4 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       end
     end
   end
-
-  describe '.should_create_indexing_task?' do
-    subject { described_class.should_create_indexing_task?(project) }
-
-    before do
-      allow(described_class).to receive(:missing_repo?).with(project).and_return(missing_repo)
-    end
-
-    context 'when repo is not missing' do
-      let(:missing_repo) { false }
-
-      it { is_expected.to be true }
-    end
-
-    context 'when repo is missing' do
-      let(:missing_repo) { true }
-
-      it { is_expected.to be true }
-
-      context 'and zoekt_index_empty_repos feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_index_empty_repos: false)
-        end
-
-        it { is_expected.to be false }
-      end
-    end
-  end
 end
