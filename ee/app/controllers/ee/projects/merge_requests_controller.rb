@@ -97,7 +97,9 @@ module EE
       end
 
       def security_reports
-        report = ::Security::MergeRequestSecurityReportGenerationService.execute(merge_request, params[:type])
+        params[:report_type] = params[:type]
+        comparison_params = params.permit(:report_type, :scan_mode)
+        report = ::Security::MergeRequestSecurityReportGenerationService.execute(merge_request, comparison_params)
 
         reports_response(report, head_pipeline)
       rescue ::Security::MergeRequestSecurityReportGenerationService::InvalidReportTypeError

@@ -71,6 +71,14 @@ FactoryBot.define do
       end
     end
 
+    trait :sast_differential_scan do
+      status { :success }
+
+      after(:build) do |pipeline, evaluator|
+        pipeline.builds << build(:ee_ci_build, :sast_differential_scan, pipeline: pipeline, project: pipeline.project)
+      end
+    end
+
     trait :with_secret_detection_feature_branch do
       status { :success }
 

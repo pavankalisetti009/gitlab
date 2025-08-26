@@ -3,6 +3,7 @@
 module Security
   class MergeRequestSecurityReportGenerationService
     include Gitlab::Utils::StrongMemoize
+    include ReactiveCaching
 
     DEFAULT_FINDING_STATE = 'detected'
     ALLOWED_REPORT_TYPES = %w[sast secret_detection container_scanning
@@ -10,13 +11,24 @@ module Security
 
     InvalidReportTypeError = Class.new(ArgumentError)
 
-    def self.execute(merge_request, report_type)
-      new(merge_request, report_type).execute
+    self.reactive_cache_work_type = :no_dependency
+    self.reactive_cache_worker_finder = ->(id, params) { from_cache(id, params) }
+
+    def self.execute(merge_request, params)
+      new(merge_request, params).execute
     end
 
-    def initialize(merge_request, report_type)
+    def self.from_cache(merge_request_id, params)
+      merge_request = ::MergeRequest.find_by_id(merge_request_id)
+
+      return unless merge_request
+
+      new(merge_request, params)
+    end
+
+    def initialize(merge_request, params)
       @merge_request = merge_request
-      @report_type = report_type
+      @params = params.to_h.symbolize_keys
     end
 
     def execute
@@ -28,9 +40,15 @@ module Security
       report
     end
 
+    delegate :project, :id, to: :merge_request
+
     private
 
-    attr_reader :merge_request, :report_type
+    attr_reader :merge_request, :params
+
+    def report_type
+      params[:report_type]
+    end
 
     def report_available?
       report[:status] == :parsed
@@ -88,26 +106,30 @@ module Security
     strong_memoize_attr def report
       validate_report_type!
 
-      case report_type
-      when 'sast'
-        merge_request.compare_sast_reports(nil)
-      when 'secret_detection'
-        merge_request.compare_secret_detection_reports(nil)
-      when 'container_scanning'
-        merge_request.compare_container_scanning_reports(nil)
-      when 'dependency_scanning'
-        merge_request.compare_dependency_scanning_reports(nil)
-      when 'dast'
-        merge_request.compare_dast_reports(nil)
-      when 'coverage_fuzzing'
-        merge_request.compare_coverage_fuzzing_reports(nil)
-      when 'api_fuzzing'
-        merge_request.compare_api_fuzzing_reports(nil)
-      end
+      with_reactive_cache(params.stringify_keys) do |data|
+        latest = Ci::CompareSecurityReportsService.new(project, nil, params).latest?(base_pipeline, head_pipeline, data)
+        raise InvalidateReactiveCache unless latest
+
+        data
+      end || { status: :parsing }
     end
 
     def validate_report_type!
       raise InvalidReportTypeError unless ALLOWED_REPORT_TYPES.include?(report_type)
+    end
+
+    def calculate_reactive_cache(cache_params)
+      Ci::CompareSecurityReportsService
+        .new(project, nil, cache_params.symbolize_keys)
+        .execute(base_pipeline, head_pipeline)
+    end
+
+    def base_pipeline
+      merge_request.comparison_base_pipeline(Ci::CompareSecurityReportsService)
+    end
+
+    def head_pipeline
+      merge_request.diff_head_pipeline
     end
   end
 end
