@@ -1,24 +1,17 @@
 <script>
-import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { GlIcon, GlTooltip } from '@gitlab/ui';
 
 export default {
   name: 'ModelHeader',
   components: {
     GlIcon,
+    GlTooltip,
   },
-  directives: {
-    GlTooltip: GlTooltipDirective,
-  },
+
   props: {
     label: {
       type: String,
       required: true,
-    },
-  },
-  computed: {
-    tooltipText() {
-      return s__('AdminAIPoweredFeatures|Select the model for the feature');
     },
   },
 };
@@ -26,6 +19,11 @@ export default {
 <template>
   <span>
     {{ label }}
-    <gl-icon v-gl-tooltip="tooltipText" variant="info" name="information-o" />
+    <span ref="tooltipIcon">
+      <gl-icon variant="info" name="information-o" />
+    </span>
+    <gl-tooltip :target="() => $refs.tooltipIcon">
+      <slot name="tooltip-text"></slot>
+    </gl-tooltip>
   </span>
 </template>

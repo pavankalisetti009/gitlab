@@ -30,6 +30,7 @@ describe('FeatureSettingsTable', () => {
   const findModelBatchSettingsUpdaterByIdx = (idx) =>
     findTableRows().at(idx).findComponent(DuoSelfHostedBatchSettingsUpdater);
   const findBadge = () => wrapper.findComponent(GlExperimentBadge);
+  const findModelHeaderTooltip = () => wrapper.findByTestId('model-header-tooltip');
 
   it('renders the component', () => {
     createComponent();
@@ -48,7 +49,10 @@ describe('FeatureSettingsTable', () => {
 
     it('renders model header', () => {
       const modelHeaderCell = findTableHeaders().at(0).findAll('th').at(1);
-      expect(modelHeaderCell.findComponent(ModelHeader).exists()).toBe(true);
+      const modelHeader = modelHeaderCell.findComponent(ModelHeader);
+
+      expect(modelHeader.props('label')).toEqual('Model');
+      expect(findModelHeaderTooltip().text()).toMatch('Select the model for the feature');
     });
 
     it('renders the feature name', () => {

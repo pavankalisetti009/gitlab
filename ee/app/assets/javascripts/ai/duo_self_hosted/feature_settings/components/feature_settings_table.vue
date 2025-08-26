@@ -85,7 +85,13 @@ export default {
     :is-loading="isLoading"
   >
     <template #head(model_name)="{ label }">
-      <model-header :label="label" />
+      <model-header :label="label">
+        <template #tooltip-text>
+          <span data-testid="model-header-tooltip">
+            {{ s__('AdminAIPoweredFeatures|Select the model for the feature') }}
+          </span>
+        </template>
+      </model-header>
     </template>
     <template #cell(sub_feature)="{ item }">
       <gl-experiment-badge

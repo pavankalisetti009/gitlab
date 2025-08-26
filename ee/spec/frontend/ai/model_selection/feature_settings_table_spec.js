@@ -1,4 +1,5 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import ModelSelectionFeatureSettingsTable from 'ee/ai/model_selection/feature_settings_table.vue';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
 import ModelSelectionBatchSettingsUpdater from 'ee/ai/model_selection/batch_settings_updater.vue';
@@ -30,6 +31,8 @@ describe('ModelSelectionFeatureSettingsTable', () => {
   const findModelSelectorByIdx = (idx) => findTableRows().at(idx).findComponent(ModelSelector);
   const findModelBatchSettingsUpdaterByIdx = (idx) =>
     findTableRows().at(idx).findComponent(ModelSelectionBatchSettingsUpdater);
+  const findModelHeaderTooltip = () => wrapper.findByTestId('model-header-tooltip');
+  const findHelpPageLink = () => wrapper.findComponent(HelpPageLink);
 
   it('renders the component', () => {
     createComponent();
@@ -48,7 +51,14 @@ describe('ModelSelectionFeatureSettingsTable', () => {
 
     it('renders model header', () => {
       const modelHeaderCell = findTableHeaders().at(0).findAll('th').at(1);
-      expect(modelHeaderCell.findComponent(ModelHeader).exists()).toBe(true);
+      const modelHeader = modelHeaderCell.findComponent(ModelHeader);
+
+      expect(modelHeader.props('label')).toEqual('Model');
+
+      expect(findModelHeaderTooltip().text()).toContain(
+        'Select a model version for full control of your configuration, or GitLab Default for GitLab to manage the selection.',
+      );
+      expect(findHelpPageLink().attributes('href')).toBe('/help/user/gitlab_duo/model_selection');
     });
 
     it('renders the feature name', () => {
