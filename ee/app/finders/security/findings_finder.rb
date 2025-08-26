@@ -8,10 +8,11 @@
 # Arguments:
 #   pipeline - object to filter findings
 #   params:
-#     severity:    Array<String>
-#     report_type: Array<String>
-#     scope:       String
-#     limit:       Int
+#     severity:     Array<String>
+#     report_type:  Array<String>
+#     scan_mode:    String
+#     scope:        String
+#     limit:        Int
 
 module Security
   class FindingsFinder
@@ -65,6 +66,7 @@ module Security
         .then { |relation| by_scanner_external_ids(relation) }
         .then { |relation| by_state(relation) }
         .then { |relation| by_include_dismissed(relation) }
+        .then { |relation| by_scan_mode(relation) }
         .limit(limit + 1)
 
       from_sql = <<~SQL.squish
@@ -136,6 +138,34 @@ module Security
       return relation unless params[:report_type]
 
       relation.merge(::Security::Scan.by_scan_types(params[:report_type]))
+    end
+
+    def by_scan_mode(relation)
+      scan_mode = params.fetch(:scan_mode, 'all')
+
+      return relation if ::Feature.disabled?(:vulnerability_partial_scans, project) || scan_mode == 'all'
+
+      exists_clause = <<~SQL
+        EXISTS (
+          SELECT
+            1
+          FROM
+            "vulnerability_partial_scans"
+          WHERE
+            "vulnerability_partial_scans"."scan_id" = "security_scans"."id"
+        )
+      SQL
+
+      # rubocop:disable CodeReuse/ActiveRecord -- Requires lateral join with security scans
+      case scan_mode
+      when 'full'
+        relation.where.not(exists_clause)
+      when 'partial'
+        relation.where(exists_clause)
+      else
+        relation
+      end
+      # rubocop:enable CodeReuse/ActiveRecord
     end
 
     def severities

@@ -14,11 +14,15 @@ module Resolvers
         required: true,
         description: 'Filter vulnerability findings by report type.'
 
-      def resolve(report_type:)
+      argument :scan_mode, Types::Security::ScanModeEnum,
+        required: false,
+        description: 'Filter results by scan mode.'
+
+      def resolve(**params)
         # Necessary to use project as actor in FF check
         context[:project] = object.project
 
-        ::Security::MergeRequestSecurityReportGenerationService.execute(object, report_type)
+        ::Security::MergeRequestSecurityReportGenerationService.execute(object, params)
       end
     end
   end

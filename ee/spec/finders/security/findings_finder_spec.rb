@@ -49,6 +49,8 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
   context 'when the pipeline has security findings' do
     let(:findings) { service_object.execute.to_a }
+    let(:duplicate_security_finding_uuids) { [Security::Finding.second[:uuid]] }
+    let(:expected_uuids) { result_uuids - duplicate_security_finding_uuids }
 
     before_all do
       ds_content = File.read(artifact_ds.file.path)
@@ -104,11 +106,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
     describe '#findings' do
       context 'when the `security_findings` records have `overridden_uuid`s' do
         let(:security_findings) { Security::Finding.by_build_ids(build_1) }
-        let(:security_finding_uuids) { Security::Finding.pluck(:uuid) }
-        let(:nondeduplicated_security_finding_uuid) { Security::Finding.second[:uuid] }
-        let(:expected_uuids) do
-          security_finding_uuids - Array(nondeduplicated_security_finding_uuid)
-        end
+        let(:result_uuids) { Security::Finding.pluck(:uuid) }
 
         subject { findings.map(&:uuid) }
 
@@ -139,7 +137,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
         subject { findings.map(&:uuid) }
 
         context 'with the default parameters' do
-          let(:expected_uuids) { Security::Finding.pluck(:uuid) - [Security::Finding.second[:uuid]] }
+          let(:result_uuids) { Security::Finding.pluck(:uuid) }
 
           it { is_expected.to match_array(expected_uuids) }
         end
@@ -179,9 +177,8 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
         context 'when the `report_types` is provided' do
           let(:report_types) { :dependency_scanning }
-          let(:expected_uuids) do
-            Security::Finding.by_scan(Security::Scan.find_by(scan_type: 'dependency_scanning')).pluck(:uuid) -
-              [Security::Finding.second[:uuid]]
+          let(:result_uuids) do
+            Security::Finding.by_scan(Security::Scan.find_by(scan_type: 'dependency_scanning')).pluck(:uuid)
           end
 
           it { is_expected.to match_array(expected_uuids) }
@@ -189,8 +186,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
         context 'when the `scope` is provided as `all`' do
           let(:scope) { 'all' }
-
-          let(:expected_uuids) { Security::Finding.pluck(:uuid) - [Security::Finding.second[:uuid]] }
+          let(:result_uuids) { Security::Finding.pluck(:uuid) }
 
           it { is_expected.to match_array(expected_uuids) }
         end
@@ -220,9 +216,8 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
           let(:artifact) { create(:ee_ci_job_artifact, :dependency_scanning, job: retried_build) }
           let(:report) { create(:ci_reports_security_report, pipeline: pipeline, type: :dependency_scanning) }
           let(:report_types) { :dependency_scanning }
-          let(:expected_uuids) do
-            Security::Finding.by_scan(Security::Scan.find_by(scan_type: 'dependency_scanning')).pluck(:uuid) -
-              [Security::Finding.second[:uuid]]
+          let(:result_uuids) do
+            Security::Finding.by_scan(Security::Scan.find_by(scan_type: 'dependency_scanning')).pluck(:uuid)
           end
 
           before do
@@ -290,6 +285,66 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
             it { is_expected.to eq(vulnerability_finding.vulnerability) }
           end
         end
+
+        context 'when there is a partial scan' do
+          let_it_be(:sast_scan) { Security::Scan.find_by(scan_type: 'sast') }
+          let_it_be(:other_scans) { Security::Scan.id_not_in(sast_scan.id) }
+
+          before_all do
+            create(:vulnerabilities_partial_scan, scan: sast_scan)
+          end
+
+          context 'with no params' do
+            let(:params) { {} }
+            let(:result_uuids) { Security::Finding.pluck(:uuid) }
+
+            it 'returns both full and partial scan results' do
+              is_expected.to match_array(expected_uuids)
+            end
+          end
+
+          context 'when scan_mode is full' do
+            let(:params) { { scan_mode: 'full' } }
+            let(:result_uuids) { other_scans.flat_map(&:findings).pluck(:uuid) }
+
+            it 'returns only full scan results' do
+              is_expected.to match_array(expected_uuids)
+            end
+
+            context 'when feature is disabled' do
+              before do
+                stub_feature_flags(vulnerability_partial_scans: false)
+              end
+
+              let(:result_uuids) { Security::Finding.pluck(:uuid) }
+
+              it 'returns both full and partial scan results' do
+                is_expected.to match_array(expected_uuids)
+              end
+            end
+          end
+
+          context 'when scan_mode is partial' do
+            let(:params) { { scan_mode: 'partial' } }
+            let(:result_uuids) { sast_scan.findings.pluck(:uuid) }
+
+            it 'returns only partial scan results' do
+              is_expected.to match_array(expected_uuids)
+            end
+
+            context 'when feature is disabled' do
+              before do
+                stub_feature_flags(vulnerability_partial_scans: false)
+              end
+
+              let(:result_uuids) { Security::Finding.pluck(:uuid) }
+
+              it 'returns both full and partial scan results' do
+                is_expected.to match_array(expected_uuids)
+              end
+            end
+          end
+        end
       end
     end
 
@@ -330,7 +385,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
         end
 
         context 'with the default parameters' do
-          let(:expected_uuids) { Security::Finding.pluck(:uuid) - [Security::Finding.second[:uuid]] }
+          let(:result_uuids) { Security::Finding.pluck(:uuid) }
 
           it 'includes child build findings' do
             expect(finding_uuids).to match_array(expected_uuids)
