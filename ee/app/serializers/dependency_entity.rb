@@ -90,6 +90,6 @@ class DependencyEntity < Grape::Entity
   end
 
   def subject
-    request.try(:project) || request.try(:group) || request.try(:organization)
+    request.try(:project) || request.try(:group)
   end
 end

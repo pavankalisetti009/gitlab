@@ -9,7 +9,6 @@ module Dependencies
 
     mount_file_store_uploader AttachmentUploader
 
-    belongs_to :organization, class_name: 'Organizations::Organization'
     belongs_to :project
     belongs_to :group
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
@@ -68,7 +67,7 @@ module Dependencies
 
     def exportable
       # Order is important. Pipeline exports also have a project.
-      pipeline || project || group || organization
+      pipeline || project || group
     end
 
     def exportable=(value)
@@ -77,8 +76,6 @@ module Dependencies
         self.project = value
       when Group
         self.group = value
-      when Organizations::Organization
-        self.organization = value
       when Ci::Pipeline
         self.pipeline = value
         # `project_id` is used as sharding key for cells
@@ -106,7 +103,6 @@ module Dependencies
 
     def uploads_sharding_key
       {
-        organization_id: organization_id,
         namespace_id: group_id,
         project_id: project_id
       }
@@ -118,9 +114,9 @@ module Dependencies
       # When we have a pipeline, it is ok to also have a project. All pipeline exports _should_
       # have a project, but we must backfill existing records before we can validate this.
       # https://gitlab.com/gitlab-org/gitlab/-/issues/454947
-      return if pipeline.present? && project.present? && group.blank? && organization.blank?
+      return if pipeline.present? && project.present? && group.blank?
 
-      errors.add(:base, 'Only one exportable is required') unless [project, group, pipeline, organization].one?
+      errors.add(:base, 'Only one exportable is required') unless [project, group, pipeline].one?
     end
   end
 end

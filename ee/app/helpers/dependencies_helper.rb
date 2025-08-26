@@ -31,18 +31,6 @@ module DependenciesHelper
     })
   end
 
-  def explore_dependencies_data(organization, page_info)
-    shared_dependencies_data.merge({
-      has_dependencies: Sbom::Occurrence.unarchived.exists?.to_s,
-      page_info: page_info,
-      endpoint: explore_dependencies_path(format: :json),
-      licenses_endpoint: nil,
-      locations_endpoint: nil,
-      export_endpoint: expose_path(api_v4_organizations_dependency_list_exports_path(id: organization.id)),
-      vulnerabilities_endpoint: nil
-    })
-  end
-
   def dependencies_export_download_url(export)
     expose_url(api_v4_dependency_list_exports_download_path(export_id: export.id))
   end
