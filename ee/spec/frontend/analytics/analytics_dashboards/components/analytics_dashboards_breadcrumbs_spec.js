@@ -24,12 +24,24 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = (props = {}) => {
+  const mockRoute = {
+    meta: {
+      getName: jest.fn(),
+    },
+  };
+
+  const createWrapper = ({ props = {}, mocks = {} } = {}) => {
     router = createRouter(base, breadcrumbState);
 
     wrapper = shallowMount(AnalyticsDashboardsBreadcrumbs, {
       router,
       propsData: { staticBreadcrumbs: [], ...props },
+      global: {
+        mocks: {
+          $route: mockRoute,
+          ...mocks,
+        },
+      },
     });
   };
 
@@ -73,6 +85,16 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
     });
 
     it('should render the root and dashboard breadcrumbs when on a dashboard', async () => {
+      createWrapper({
+        mocks: {
+          $route: {
+            meta: {
+              getName: jest.fn().mockReturnValue('Test dashboard 1'),
+            },
+            name: 'dashboards',
+          },
+        },
+      });
       breadcrumbState.name = 'Test dashboard 1';
 
       await router.push('/test-dashboard-1');
