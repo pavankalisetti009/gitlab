@@ -159,7 +159,7 @@ module EE
           end
 
           def secrets_manager_menu_item
-            unless ::Feature.enabled?(:ci_tanukey_ui, context.project) &&
+            unless ::Feature.enabled?(:secrets_manager, context.project) &&
                 SecretsManagement::ProjectSecretsManager.find_by_project_id(context.project)
               return ::Sidebars::NilMenuItem.new(item_id: :secrets_manager)
             end

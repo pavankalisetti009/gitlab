@@ -163,7 +163,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
       end
 
       before do
-        stub_feature_flags(ci_tanukey_ui: true)
+        stub_feature_flags(secrets_manager: true)
         secrets_manager.save!
 
         visit project_path(project)

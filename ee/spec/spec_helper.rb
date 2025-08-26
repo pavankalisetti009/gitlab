@@ -77,13 +77,6 @@ RSpec.configure do |config|
 
   config.before do |example|
     if example.metadata.fetch(:stub_feature_flags, true)
-      # This feature flag toggles the UI for Secrets Manager and is disabled by default.
-      # It requires setting up openbao with gdk. Openbao integration and MVC development are still in progress.
-      # We are running a temporary experiment where the Secrets Manager UI is located in the CI/CD settings for now
-      # (which affects tests within that page) but it will eventually be moved to its own page for the MVC.
-      # See https://gitlab.com/groups/gitlab-org/-/epics/14243.
-      stub_feature_flags(ci_tanukey_ui: false)
-
       # Model/Table extraction will span multiple MRs and milestones, will remove this when we're
       # close to finished. See https://gitlab.com/groups/gitlab-org/-/epics/17390 for refactor plan.
       stub_feature_flags(extract_admin_roles_from_member_roles: false)
