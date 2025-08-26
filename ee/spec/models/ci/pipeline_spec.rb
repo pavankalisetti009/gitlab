@@ -826,18 +826,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
       context 'on pipeline skipped' do
         subject(:transition_pipeline) { pipeline.skip }
 
-        context 'when the feature flag `collect_security_policy_skipped_pipelines_audit_events` is disabled' do
-          before do
-            stub_feature_flags(collect_security_policy_skipped_pipelines_audit_events: false)
-          end
-
-          it 'does not enqueue SkipPipelinesAuditWorker' do
-            expect(Security::Policies::SkipPipelinesAuditWorker).not_to receive(:perform_async).with(pipeline.id)
-
-            transition_pipeline
-          end
-        end
-
         it 'enqueue SkipPipelinesAuditWorker' do
           expect(Security::Policies::SkipPipelinesAuditWorker).to receive(:perform_async).with(pipeline.id)
 
@@ -868,14 +856,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
             transition_pipeline
           end
-        end
-
-        context 'when the feature flag `collect_security_policy_skipped_pipelines_audit_events` is disabled' do
-          before do
-            stub_feature_flags(collect_security_policy_failed_pipelines_audit_events: false)
-          end
-
-          it_behaves_like 'does not enqueue FailedPipelinesAuditWorker'
         end
 
         context 'when the pipeline was not created by a security policy' do

@@ -108,9 +108,18 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             subscription_sync_path: sync_seat_link_admin_license_path,
             license_remove_path: admin_license_path,
             congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
-            license_usage_file_path: admin_license_usage_export_path(format: :csv)
+            license_usage_file_path: admin_license_usage_export_path(format: :csv),
+            is_admin: 'true'
           }
         )
+      end
+
+      context 'when the current user is not an admin' do
+        it 'returns false for is_admin value' do
+          allow(current_user).to receive(:can_admin_all_resources?).and_return(false)
+
+          expect(helper.cloud_license_view_data[:is_admin]).to eq('false')
+        end
       end
     end
 
@@ -127,7 +136,8 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
             subscription_sync_path: sync_seat_link_admin_license_path,
             license_remove_path: admin_license_path,
             congratulation_svg_path: helper.image_path('illustrations/cloud-check-sm.svg'),
-            license_usage_file_path: admin_license_usage_export_path(format: :csv)
+            license_usage_file_path: admin_license_usage_export_path(format: :csv),
+            is_admin: 'true'
           }
         )
       end
@@ -135,6 +145,7 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
 
     context 'when the current user cannot destroy licenses' do
       before do
+        allow(current_user).to receive(:can?).and_call_original
         allow(current_user).to receive(:can?).with(:destroy_licenses).and_return(false)
       end
 

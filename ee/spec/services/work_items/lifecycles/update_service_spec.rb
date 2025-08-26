@@ -27,24 +27,14 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
     }
   end
 
+  let(:lifecycle_name) { 'Default' }
+
   subject(:result) do
     described_class.new(container: group, current_user: user, params: params).execute
   end
 
   before do
     stub_licensed_features(work_item_status: true, board_status_lists: true)
-  end
-
-  RSpec.shared_examples 'creates custom lifecycle' do
-    it 'creates custom lifecycle' do
-      expect { result }.to change { WorkItems::Statuses::Custom::Lifecycle.count }.by(1)
-
-      expect(lifecycle).to have_attributes(
-        name: 'Default',
-        namespace: group,
-        created_by: user
-      )
-    end
   end
 
   RSpec.shared_examples 'accepts lifecycle attributes' do
@@ -64,13 +54,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
         super().merge(name: '')
       end
 
-      it_behaves_like 'returns validation error'
-    end
-  end
-
-  RSpec.shared_examples 'does not create custom lifecycle' do
-    it 'does not create custom lifecycle' do
-      expect { result }.not_to change { WorkItems::Statuses::Custom::Lifecycle.count }
+      it_behaves_like 'lifecycle service returns validation error'
     end
   end
 
@@ -100,18 +84,11 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
     end
   end
 
-  RSpec.shared_examples 'returns validation error' do
-    it 'returns validation error' do
-      expect(result).to be_error
-      expect(result.message).to eq(expected_error_message)
-    end
-  end
-
   describe '#execute' do
     let(:lifecycle) { result.payload[:lifecycle] }
 
     context 'when custom lifecycle does not exist' do
-      it_behaves_like 'creates custom lifecycle'
+      it_behaves_like 'lifecycle service creates custom lifecycle'
       it_behaves_like 'accepts lifecycle attributes'
       it_behaves_like 'sets default statuses correctly'
 
@@ -148,7 +125,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           }
         end
 
-        it_behaves_like 'creates custom lifecycle'
+        it_behaves_like 'lifecycle service creates custom lifecycle'
         it_behaves_like 'sets default statuses correctly'
 
         it 'creates custom statuses from system-defined statuses' do
@@ -290,8 +267,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             "Cannot delete status '#{system_defined_in_progress_status.name}' because it is in use"
           end
 
-          it_behaves_like 'does not create custom lifecycle'
-          it_behaves_like 'returns validation error'
+          it_behaves_like 'lifecycle service does not create custom lifecycle'
+          it_behaves_like 'lifecycle service returns validation error'
         end
 
         context 'when trying to exclude a default status' do
@@ -310,43 +287,41 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               "because it is marked as a default status"
           end
 
-          it_behaves_like 'does not create custom lifecycle'
-          it_behaves_like 'returns validation error'
+          it_behaves_like 'lifecycle service does not create custom lifecycle'
+          it_behaves_like 'lifecycle service returns validation error'
         end
       end
 
       context 'when attempting to exceed status limit' do
         let(:params) do
-          statuses_array = [
-            status_params_for(system_defined_lifecycle.default_open_status),
-            status_params_for(system_defined_in_progress_status),
-            status_params_for(system_defined_lifecycle.default_closed_status),
-            status_params_for(system_defined_wont_do_status),
-            status_params_for(system_defined_lifecycle.default_duplicate_status)
-          ]
-
-          26.times do |i|
-            statuses_array << {
-              name: "Custom To Do #{i + 1}",
-              color: '#737278',
-              description: nil,
-              category: 'to_do'
-            }
-          end
-
           {
             id: system_defined_lifecycle.to_gid,
-            statuses: statuses_array,
+            statuses: [
+              status_params_for(system_defined_lifecycle.default_open_status),
+              status_params_for(system_defined_in_progress_status),
+              status_params_for(system_defined_lifecycle.default_closed_status),
+              status_params_for(system_defined_wont_do_status),
+              status_params_for(system_defined_lifecycle.default_duplicate_status),
+              {
+                name: "Exceeding limit status",
+                color: '#737278',
+                description: nil,
+                category: 'to_do'
+              }
+            ],
             default_open_status_index: 0,
             default_closed_status_index: 2,
             default_duplicate_status_index: 4
           }
         end
 
-        it 'returns validation error' do
-          expect(result).to be_error
-          expect(result.message).to include('Lifecycle can only have a maximum of 30 statuses')
+        let(:expected_error_message) { 'Lifecycle can only have a maximum of 5 statuses' }
+
+        before do
+          stub_const("WorkItems::Statuses::Custom::Lifecycle::MAX_STATUSES_PER_LIFECYCLE", 5)
         end
+
+        it_behaves_like 'lifecycle service returns validation error'
       end
 
       context 'when only name param is provided' do
@@ -373,7 +348,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
       end
 
       context 'when system-defined lifecycle is provided' do
-        it_behaves_like 'does not create custom lifecycle'
+        it_behaves_like 'lifecycle service does not create custom lifecycle'
 
         it 'returns an error' do
           expect(result).to be_error
@@ -468,7 +443,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             end
 
             shared_examples 'returns error and does not change data' do
-              it_behaves_like 'returns validation error'
+              it_behaves_like 'lifecycle service returns validation error'
 
               it 'does not add status from other lifecycle' do
                 expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
@@ -631,7 +606,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 "Cannot delete status '#{custom_status.name}' because it is in use"
               end
 
-              it_behaves_like 'returns validation error'
+              it_behaves_like 'lifecycle service returns validation error'
             end
 
             context 'when trying to remove a default status' do
@@ -733,7 +708,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 "Cannot delete status '#{custom_status.name}' because it is in use"
               end
 
-              it_behaves_like 'returns validation error'
+              it_behaves_like 'lifecycle service returns validation error'
             end
 
             context 'when trying to remove a status in implicit use' do
@@ -748,7 +723,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 custom_lifecycle.update!(default_open_status: new_default_status)
               end
 
-              it_behaves_like 'returns validation error'
+              it_behaves_like 'lifecycle service returns validation error'
             end
 
             context 'when trying to remove a default status' do
@@ -855,20 +830,10 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             }
           end
 
-          it 'returns validation error' do
-            expect(result).to be_error
-            expect(result.message).to include('Lifecycle can only have a maximum of 30 statuses')
-          end
+          let(:expected_error_message) { 'Lifecycle can only have a maximum of 30 statuses' }
+
+          it_behaves_like 'lifecycle service returns validation error'
         end
-      end
-    end
-
-    context 'when user is not authorized' do
-      let(:user) { create(:user, guest_of: group) }
-
-      it 'returns authorization error' do
-        expect(result).to be_error
-        expect(result.message).to eq("You don't have permission to update a lifecycle for this namespace.")
       end
     end
   end

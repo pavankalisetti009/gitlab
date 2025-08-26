@@ -19,7 +19,7 @@ module GitlabSubscriptions
         delegate :sprite_icon, to: :helpers
 
         def before_render
-          content_for :body_class, 'duo-enterprise-trials gl-bg-brand-charcoal'
+          content_for :body_class, 'duo-trials gl-bg-brand-charcoal'
         end
 
         def before_form_content
@@ -44,10 +44,7 @@ module GitlabSubscriptions
             lastName: user.last_name,
             showNameFields: user.last_name.blank?,
             emailDomain: user.email_domain,
-            companyName: user.user_detail_organization,
-            phoneNumber: nil,
-            country: '',
-            state: ''
+            companyName: user.user_detail_organization
           }
         end
 
