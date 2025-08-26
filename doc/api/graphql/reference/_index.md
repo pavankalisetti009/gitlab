@@ -13726,7 +13726,7 @@ Input type: `WorkItemAddLinkedItemsInput`
 **Status**: Experiment.
 {{< /details >}}
 
-Allows move several work items.
+Moves work items between projects or groups.
 
 Input type: `WorkItemBulkMoveInput`
 
@@ -13737,7 +13737,7 @@ Input type: `WorkItemBulkMoveInput`
 | <a id="mutationworkitembulkmoveclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationworkitembulkmoveids"></a>`ids` | [`[WorkItemID!]!`](#workitemid) | Global ID array of the work items that will be moved. IDs that the user can't move will be ignored. A max of 100 can be provided. |
 | <a id="mutationworkitembulkmovesourcefullpath"></a>`sourceFullPath` | [`String!`](#string) | Full path of the source namespace. For example, `gitlab-org/gitlab-foss`. |
-| <a id="mutationworkitembulkmovetargetfullpath"></a>`targetFullPath` | [`String!`](#string) | Full path of the target namespace. For example, `gitlab-org/gitlab-foss`. Only project namespaces are supported. |
+| <a id="mutationworkitembulkmovetargetfullpath"></a>`targetFullPath` | [`String!`](#string) | Full path of the target namespace. For example, `gitlab-org/gitlab-foss`. User paths are not supported. |
 
 #### Fields
 
