@@ -7,13 +7,20 @@ import { sprintf, s__, __ } from '~/locale';
 import {
   deleteMavenRegistryCache,
   deleteMavenUpstreamCache,
+  getMavenUpstreamRegistriesList,
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
 import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_upstream.mutation.graphql';
 import { convertToMavenRegistryGraphQLId } from '../utils';
 import { captureException } from '../sentry_utils';
+import AddUpstream from './add_upstream.vue';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
 import RegistryUpstreamForm from './registry_upstream_form.vue';
+
+const FORM_TYPES = {
+  CREATE: 'create',
+  LINK: 'link',
+};
 
 export default {
   name: 'MavenRegistryDetailsApp',
@@ -21,11 +28,17 @@ export default {
     GlAlert,
     GlButton,
     GlModal,
+    AddUpstream,
     CrudComponent,
     RegistryUpstreamItem,
     RegistryUpstreamForm,
   },
   mixins: [glAbilitiesMixin()],
+  inject: {
+    groupPath: {
+      default: '',
+    },
+  },
   props: {
     /**
      * The registry object
@@ -73,9 +86,12 @@ export default {
   emits: ['upstreamReordered', 'upstreamCreated', 'testUpstream', 'deleteUpstream'],
   data() {
     return {
+      currentFormType: '',
       createUpstreamError: '',
       createUpstreamMutationLoading: false,
       registryClearCacheModalIsShown: false,
+      topLevelUpstreamsTotalCount: 0,
+      topLevelUpstreamsQueryInProgress: false,
       upstreamClearCacheModalIsShown: false,
       upstreamToBeCleared: null,
       upstreamItems: this.upstreams,
@@ -95,6 +111,15 @@ export default {
     canCreate() {
       return this.glAbilities.createVirtualRegistry;
     },
+    canLinkUpstream() {
+      return this.canEdit && this.topLevelUpstreamsTotalCount > this.upstreamsCount;
+    },
+    isCreateUpstreamForm() {
+      return this.currentFormType === FORM_TYPES.CREATE;
+    },
+    isLinkUpstreamForm() {
+      return this.currentFormType === FORM_TYPES.LINK;
+    },
     upstreamsCount() {
       return this.upstreams.length;
     },
@@ -113,6 +138,20 @@ export default {
     upstreams(val) {
       this.upstreamItems = val || [];
     },
+  },
+  async created() {
+    if (!this.canEdit) return;
+
+    try {
+      this.topLevelUpstreamsQueryInProgress = true;
+      const response = await getMavenUpstreamRegistriesList({ id: this.groupPath });
+
+      this.topLevelUpstreamsTotalCount = Number(response.headers['x-total']);
+    } catch (error) {
+      captureException({ error, component: this.$options.name });
+    } finally {
+      this.topLevelUpstreamsQueryInProgress = false;
+    }
   },
   methods: {
     async reorderUpstream(direction, upstream) {
@@ -224,8 +263,17 @@ export default {
     testUpstream(upstreamId) {
       this.$emit('testUpstream', upstreamId);
     },
+    showCreateForm() {
+      this.currentFormType = FORM_TYPES.CREATE;
+      this.$refs.registryDetailsCrud.showForm();
+    },
+    showLinkForm() {
+      this.currentFormType = FORM_TYPES.LINK;
+      this.$refs.registryDetailsCrud.showForm();
+    },
     hideForm() {
       this.$refs.registryDetailsCrud.hideForm();
+      this.currentFormType = '';
       if (this.createUpstreamError) {
         this.createUpstreamError = '';
       }
@@ -262,7 +310,7 @@ export default {
     "
     :count="upstreamsCount"
   >
-    <template #actions="{ showForm, isFormVisible }">
+    <template #actions="{ isFormVisible }">
       <gl-button
         v-if="canClearRegistryCache"
         data-testid="clear-registry-cache-button"
@@ -272,14 +320,14 @@ export default {
       >
         {{ s__('VirtualRegistry|Clear all caches') }}
       </gl-button>
-      <gl-button
+      <add-upstream
         v-if="canCreate"
+        :loading="topLevelUpstreamsQueryInProgress"
+        :can-link="canLinkUpstream"
         :disabled="isFormVisible"
-        data-testid="add-upstream-button"
-        size="small"
-        @click="showForm"
-        >{{ s__('VirtualRegistry|Add upstream') }}</gl-button
-      >
+        @create="showCreateForm"
+        @link="showLinkForm"
+      />
     </template>
     <template #default>
       <div v-if="upstreamsCount" class="gl-flex gl-flex-col gl-gap-3">
@@ -345,12 +393,16 @@ export default {
         {{ createUpstreamError }}
       </gl-alert>
       <registry-upstream-form
+        v-if="isCreateUpstreamForm"
         :loading="createUpstreamMutationLoading"
         :can-test-upstream="canTestUpstream"
         @submit="createUpstream"
         @testUpstream="testUpstream"
         @cancel="hideForm"
       />
+      <div v-if="isLinkUpstreamForm">
+        <!-- TODO -->
+      </div>
     </template>
   </crud-component>
 </template>

@@ -11,6 +11,8 @@ const MAVEN_UPSTREAM_CACHE_ENTRY_PATH =
   '/api/:version/virtual_registries/packages/maven/cache_entries/:id';
 const MAVEN_REGISTRY_UPSTREAM_PATH =
   '/api/:version/virtual_registries/packages/maven/registry_upstreams/:id';
+const MAVEN_UPSTREAMS_PATH =
+  '/api/:version/groups/:id/-/virtual_registries/packages/maven/upstreams';
 
 const buildMavenUpstreamApiUrl = (id) => buildApiUrl(MAVEN_UPSTREAM_PATH).replace(':id', id);
 
@@ -40,6 +42,12 @@ export function getMavenUpstreamCacheEntries({ id, params = {} }) {
   const url = buildApiUrl(MAVEN_UPSTREAM_CACHE_ENTRIES_PATH).replace(':id', id);
 
   return axios.get(url, { params });
+}
+
+export function getMavenUpstreamRegistriesList({ id }) {
+  const url = buildApiUrl(MAVEN_UPSTREAMS_PATH).replace(':id', id);
+
+  return axios.get(url);
 }
 
 export function deleteMavenRegistryCache({ id }) {

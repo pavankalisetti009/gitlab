@@ -2,10 +2,11 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistryDetailsApp from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/add_upstream.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -13,6 +14,7 @@ import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_r
 import {
   deleteMavenUpstreamCache,
   deleteMavenRegistryCache,
+  getMavenUpstreamRegistriesList,
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
 import { mavenVirtualRegistry } from '../mock_data';
@@ -48,6 +50,26 @@ describe('MavenRegistryDetailsApp', () => {
     cacheValidityHours: 24,
   };
 
+  const upstreamsResponse = {
+    data: [
+      {
+        id: 3,
+        name: 'test',
+        description: '',
+        group_id: 122,
+        url: 'https://gitlab.com',
+        username: '',
+        cache_validity_hours: 24,
+        metadata_cache_validity_hours: 24,
+        created_at: '2025-07-15T04:10:03.060Z',
+        updated_at: '2025-07-15T04:11:00.426Z',
+      },
+    ],
+    headers: {
+      'x-total': '1',
+    },
+  };
+
   const createUpstreamSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       mavenUpstreamCreate: {
@@ -74,7 +96,7 @@ describe('MavenRegistryDetailsApp', () => {
   const errorHandler = jest.fn().mockRejectedValue(mockGraphQLError);
   const showToastSpy = jest.fn();
 
-  const findAddUpstreamButton = () => wrapper.findByTestId('add-upstream-button');
+  const findAddUpstream = () => wrapper.findComponent(AddUpstream);
   const findClearRegistryCacheButton = () => wrapper.findByTestId('clear-registry-cache-button');
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findClearRegistryCacheModal = () => wrapper.findByTestId('clear-registry-cache-modal');
@@ -84,22 +106,19 @@ describe('MavenRegistryDetailsApp', () => {
   const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
   const findUpdateActionErrorAlert = () => wrapper.findByTestId('update-action-error-alert');
 
-  const createComponent = ({
-    mountFn = shallowMountExtended,
-    props = {},
-    provide = {},
-    handlers = [],
-    stubs = {},
-  } = {}) => {
-    wrapper = mountFn(MavenRegistryDetailsApp, {
+  const createComponent = ({ props = {}, glAbilities = {}, handlers = [], stubs = {} } = {}) => {
+    wrapper = shallowMountExtended(MavenRegistryDetailsApp, {
       apolloProvider: createMockApollo(handlers),
       propsData: {
         ...defaultProps,
         ...props,
       },
       provide: {
-        ...defaultProvide,
-        ...provide,
+        groupPath: 'full-path',
+        glAbilities: {
+          ...defaultProvide.glAbilities,
+          ...glAbilities,
+        },
       },
       stubs: {
         CrudComponent,
@@ -113,9 +132,17 @@ describe('MavenRegistryDetailsApp', () => {
     });
   };
 
+  beforeEach(() => {
+    getMavenUpstreamRegistriesList.mockResolvedValue(upstreamsResponse);
+  });
+
   describe('component rendering', () => {
     beforeEach(() => {
       createComponent();
+    });
+
+    it('calls getMavenUpstreamRegistriesList API', () => {
+      expect(getMavenUpstreamRegistriesList).toHaveBeenCalledWith({ id: 'full-path' });
     });
 
     it('renders the Crud component with correct props', () => {
@@ -126,16 +153,12 @@ describe('MavenRegistryDetailsApp', () => {
       });
     });
 
-    it('renders `Add upstream` button', () => {
-      expect(findAddUpstreamButton().exists()).toBe(true);
+    it('renders `Clear all caches` button', () => {
+      expect(findClearRegistryCacheButton().exists()).toBe(true);
     });
 
-    it('does not show `Add upstream` button when user does not have ability', () => {
-      createComponent({
-        provide: { glAbilities: { createVirtualRegistry: false } },
-      });
-
-      expect(findAddUpstreamButton().exists()).toBe(false);
+    it('renders AddUpstreamAction component with `canLink` set to false', () => {
+      expect(findAddUpstream().props('canLink')).toBe(false);
     });
 
     it('renders the upstreams and passes correct props to each', () => {
@@ -147,18 +170,12 @@ describe('MavenRegistryDetailsApp', () => {
       });
     });
 
-    it('shows create form when `Add upstream` button is clicked', async () => {
-      createComponent({
-        mountFn: mountExtended,
-        stubs: {
-          RegistryUpstreamItem: true,
-          RegistryUpstreamForm,
-        },
-      });
-      await findAddUpstreamButton().trigger('click');
+    it('shows create form when AddUpstreamAction component emits create event', async () => {
+      createComponent();
+      await findAddUpstream().vm.$emit('create');
 
       expect(findCreateUpstreamForm().exists()).toBe(true);
-      expect(findAddUpstreamButton().props('disabled')).toBe(true);
+      expect(findAddUpstream().props('disabled')).toBe(true);
     });
 
     it('hides the registry clear cache modal', () => {
@@ -170,18 +187,63 @@ describe('MavenRegistryDetailsApp', () => {
     });
   });
 
+  describe('when user does not have ability to create', () => {
+    beforeEach(() => {
+      createComponent({
+        glAbilities: { createVirtualRegistry: false },
+      });
+    });
+
+    it('does not render AddUpstreamAction component', () => {
+      expect(findAddUpstream().exists()).toBe(false);
+    });
+  });
+
+  describe('when user does not have ability to update', () => {
+    beforeEach(() => {
+      createComponent({
+        glAbilities: { updateVirtualRegistry: false },
+      });
+    });
+
+    it('does not call getMavenUpstreamRegistriesList API', () => {
+      expect(getMavenUpstreamRegistriesList).not.toHaveBeenCalled();
+    });
+
+    it('does not show `Clear all caches` button', () => {
+      expect(findClearRegistryCacheButton().exists()).toBe(false);
+    });
+
+    it('renders AddUpstreamAction component with `canLink` set to false', () => {
+      expect(findAddUpstream().props('canLink')).toBe(false);
+    });
+  });
+
+  describe('when registry has no upstreams', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          upstreams: [],
+        },
+      });
+    });
+
+    it('does not show `Clear all caches` button', () => {
+      expect(findClearRegistryCacheButton().exists()).toBe(false);
+    });
+
+    it('renders AddUpstreamAction component with `canLink` set to true', () => {
+      expect(findAddUpstream().props('canLink')).toBe(true);
+    });
+  });
+
   describe('create upstream action', () => {
     it('emits createUpstream on successful form submission', async () => {
       createComponent({
         handlers: [[createUpstreamRegistryMutation, createUpstreamSuccessHandler]],
-        mountFn: mountExtended,
-        stubs: {
-          RegistryUpstreamItem: true,
-          RegistryUpstreamForm,
-        },
       });
 
-      await findAddUpstreamButton().trigger('click');
+      await findAddUpstream().vm.$emit('create');
 
       await findCreateUpstreamForm().vm.$emit('submit', upstream);
 
@@ -204,14 +266,9 @@ describe('MavenRegistryDetailsApp', () => {
       it('renders alert with message', async () => {
         createComponent({
           handlers: [[createUpstreamRegistryMutation, createUpstreamErrorHandler]],
-          mountFn: mountExtended,
-          stubs: {
-            RegistryUpstreamItem: true,
-            RegistryUpstreamForm,
-          },
         });
 
-        await findAddUpstreamButton().trigger('click');
+        await findAddUpstream().vm.$emit('create');
 
         await findCreateUpstreamForm().vm.$emit('submit', upstream);
 
@@ -228,14 +285,9 @@ describe('MavenRegistryDetailsApp', () => {
       it('sends an error to Sentry', async () => {
         createComponent({
           handlers: [[createUpstreamRegistryMutation, errorHandler]],
-          mountFn: mountExtended,
-          stubs: {
-            RegistryUpstreamItem: true,
-            RegistryUpstreamForm,
-          },
         });
 
-        await findAddUpstreamButton().trigger('click');
+        await findAddUpstream().vm.$emit('create');
 
         await findCreateUpstreamForm().vm.$emit('submit', upstream);
 

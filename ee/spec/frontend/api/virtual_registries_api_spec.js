@@ -118,6 +118,36 @@ describe('VirtualRegistriesApi', () => {
     });
   });
 
+  describe('getMavenUpstreamRegistriesList', () => {
+    it('fetches the maven upstreams for top-level group', () => {
+      const requestPath = 'virtual_registries/packages/maven/upstreams';
+      const groupPath = 'full-path';
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/groups/${groupPath}/-/${requestPath}`;
+      const expectedParams = {
+        id: groupPath,
+      };
+      const expectResponse = [
+        {
+          id: 3,
+          name: 'test',
+          description: '',
+          group_id: 122,
+          url: 'https://gitlab.com',
+          username: '',
+          cache_validity_hours: 24,
+          metadata_cache_validity_hours: 24,
+          created_at: '2025-07-15T04:10:03.060Z',
+          updated_at: '2025-07-15T04:11:00.426Z',
+        },
+      ];
+      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectResponse);
+
+      return VirtualRegistryApi.getMavenUpstreamRegistriesList(expectedParams).then(({ data }) => {
+        expect(data).toEqual(expectResponse);
+      });
+    });
+  });
+
   describe('deleteMavenRegistryCache', () => {
     it('deletes upstream cache entry', async () => {
       const requestPath = 'virtual_registries/packages/maven/registries';
