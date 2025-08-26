@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlChart } from '@gitlab/ui/dist/charts';
+import { GlChart } from '@gitlab/ui/src/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import TotalRiskScore from 'ee/security_dashboard/components/shared/charts/total_risk_score.vue';
