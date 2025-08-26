@@ -15,6 +15,15 @@ RSpec.describe Analytics::DatabaseWriteBuffer, feature_category: :devops_reports
         expect(redis.lindex('test_model_db_write_buffer', 0)).to eq({ foo: 'bar' }.to_json)
       end
     end
+
+    it 'adds multiple attributes json to test_model_db_write_buffer redis list' do
+      buffer.add([{ foo: 'bar' }, { foo: 'baz' }])
+
+      Gitlab::Redis::SharedState.with do |redis|
+        expect(redis.lindex('test_model_db_write_buffer', 0)).to eq({ foo: 'bar' }.to_json)
+        expect(redis.lindex('test_model_db_write_buffer', 1)).to eq({ foo: 'baz' }.to_json)
+      end
+    end
   end
 
   describe '#pop', :clean_gitlab_redis_shared_state do

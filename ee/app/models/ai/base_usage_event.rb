@@ -5,6 +5,7 @@ module Ai
     extend ActiveSupport::Concern
     include ClickHouseModel
     include PartitionedTable
+    include Analytics::HasWriteBuffer
 
     class_methods do
       def related_event?(event_name)
@@ -36,6 +37,8 @@ module Ai
 
       validates :payload, json_schema: { filename: "#{model_name.singular}_payload", size_limit: 16.kilobytes },
         allow_blank: true
+
+      self.write_buffer_options = { class: Analytics::LegacyAiUsageDatabaseWriteBuffer }
     end
 
     def to_clickhouse_csv_row
@@ -58,7 +61,7 @@ module Ai
     def store_to_pg
       return false unless valid?
 
-      Ai::UsageEventWriteBuffer.add(self.class.name, attributes.compact)
+      self.class.write_buffer.add(attributes.compact)
     end
 
     private

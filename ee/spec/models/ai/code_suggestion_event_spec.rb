@@ -99,7 +99,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   describe '#store_to_pg', :freeze_time do
     context 'when the model is invalid' do
       it 'does not add anything to write buffer' do
-        expect(Ai::UsageEventWriteBuffer).not_to receive(:add)
+        expect(described_class.write_buffer).not_to receive(:add)
 
         event.store_to_pg
       end
@@ -119,8 +119,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
       end
 
       it 'adds model attributes to write buffer' do
-        expect(Ai::UsageEventWriteBuffer).to receive(:add)
-          .with('Ai::CodeSuggestionEvent', {
+        expect(described_class.write_buffer).to receive(:add)
+          .with({
             event: 'code_suggestion_shown_in_ide',
             timestamp: 1.day.ago,
             user_id: user.id,

@@ -28,7 +28,8 @@ module Analytics
     private
 
     def process_next_batch
-      valid_objects = prepare_batch_objects(next_batch)
+      batch = next_batch
+      valid_objects = prepare_batch_objects(batch)
 
       return 0 if valid_objects.empty?
 
@@ -39,6 +40,9 @@ module Analytics
 
         res ? res.rows.size : 0
       end
+    rescue StandardError => e
+      current_model.write_buffer.add(batch)
+      raise e
     end
 
     def next_batch
