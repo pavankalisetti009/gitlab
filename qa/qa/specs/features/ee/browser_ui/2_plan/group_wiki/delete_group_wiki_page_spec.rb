@@ -2,10 +2,15 @@
 
 module QA
   RSpec.describe 'Plan', feature_category: :wiki do
-    describe 'Testing group wiki' do
+    describe 'Testing group wiki', feature_flag: {
+      name: 'tailwind_container_queries'
+    } do
       let(:initial_wiki) { create(:group_wiki_page) }
 
       before do
+        # We need to keep this feature flag disabled for now until Chrome has been updated in CI,
+        # which should resolve some related failures.
+        Runtime::Feature.disable(:tailwind_container_queries)
         Flow::Login.sign_in
       end
 
