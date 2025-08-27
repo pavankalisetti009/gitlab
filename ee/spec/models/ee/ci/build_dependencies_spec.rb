@@ -102,8 +102,9 @@ RSpec.describe Ci::BuildDependencies do
 
       context 'with dependency names from environment variables' do
         before do
-          job.yaml_variables.push(key: 'DEPENDENCY_NAME', value: 'dependency', public: true)
-          job.save!
+          allow(job).to receive(:yaml_variables).and_return(
+            job.yaml_variables + [{ key: 'DEPENDENCY_NAME', value: 'dependency', public: true }]
+          )
         end
 
         let(:dependencies) do
@@ -339,9 +340,11 @@ RSpec.describe Ci::BuildDependencies do
       end
 
       before do
-        job.yaml_variables.push(key: 'UPSTREAM_PIPELINE_ID', value: upstream_pipeline.id.to_s, public: true)
-        job.yaml_variables.push(key: 'UPSTREAM_JOB', value: upstream_pipeline_dependency.name, public: true)
-        job.save!
+        allow(job).to receive(:yaml_variables).and_return(
+          job.yaml_variables +
+          [{ key: 'UPSTREAM_PIPELINE_ID', value: upstream_pipeline.id.to_s, public: true }] +
+          [{ key: 'UPSTREAM_JOB', value: upstream_pipeline_dependency.name, public: true }]
+        )
 
         other_project.add_developer(user)
       end

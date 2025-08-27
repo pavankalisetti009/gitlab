@@ -108,7 +108,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
 
       context 'when job is marked as a policy job' do
         before do
-          job.options.merge!(execution_policy_job: true)
+          allow(job).to receive(:options).and_return(job.options.merge(execution_policy_job: true))
         end
 
         it 'replaces yaml_variables to apply them with the highest precedence' do
@@ -145,7 +145,9 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
 
         context 'when job has execution_policy_variables_override option set to disallow user-defined variables' do
           before do
-            job.options.merge!(execution_policy_variables_override: { allowed: false })
+            allow(job).to receive(:options).and_return(
+              job.options.merge(execution_policy_variables_override: { allowed: false })
+            )
           end
 
           it 'returns variables without user-defined variables' do
@@ -274,7 +276,9 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
 
       context 'when job has execution_policy_variables_override option set to disallow user-defined variables' do
         before do
-          job.options.merge!(execution_policy_job: true, execution_policy_variables_override: { allowed: false })
+          allow(job).to receive(:options).and_return(
+            job.options.merge(execution_policy_job: true, execution_policy_variables_override: { allowed: false })
+          )
         end
 
         it 'returns variables without user-defined variables' do

@@ -34,7 +34,18 @@ FactoryBot.define do
     end
 
     after(:build) do |instance, evaluator|
-      instance.pipeline.stages[0].statuses[0].update!(options: { script: evaluator.job_script }) if evaluator.job_script
+      next unless evaluator.job_script
+
+      job = instance.pipeline.stages[0].statuses[0]
+      updated_options = { script: evaluator.job_script }
+
+      # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
+      job.metadata.write_attribute(:config_options, updated_options)
+      next unless job.job_definition
+
+      updated_config = job.job_definition.config.merge(options: updated_options)
+      job.job_definition.write_attribute(:config, updated_config)
     end
   end
 end

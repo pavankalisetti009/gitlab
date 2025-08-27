@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe Ci::SubscribeBridgeService, feature_category: :continuous_integration do
   let(:project) { create(:project) }
   let(:user) { create(:user) }
-  let(:bridge) { build(:ci_bridge, upstream: upstream_project) }
+  let(:bridge) { build(:ci_bridge, upstream: upstream_project, options: options) }
+  let(:options) { {} }
 
   let(:service) { described_class.new(project, user) }
 
@@ -74,10 +75,7 @@ RSpec.describe Ci::SubscribeBridgeService, feature_category: :continuous_integra
 
     context 'when the upstream project does not exist' do
       let(:upstream_project) { nil }
-
-      before do
-        bridge.options = { bridge_needs: { pipeline: 'some/project' } }
-      end
+      let(:options) { { bridge_needs: { pipeline: 'some/project' } } }
 
       it 'drops the bridge' do
         subject

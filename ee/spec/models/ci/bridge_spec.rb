@@ -35,9 +35,7 @@ RSpec.describe Ci::Bridge, feature_category: :continuous_integration do
     end
 
     context 'when bridge points towards upstream' do
-      before do
-        bridge.options = { bridge_needs: { pipeline: project.full_path } }
-      end
+      let(:options) { { bridge_needs: { pipeline: project.full_path } } }
 
       it 'subscribes to the upstream project' do
         expect(::Ci::SubscribeBridgeService).to receive_message_chain(:new, :execute)
