@@ -6,8 +6,9 @@ import {
   GlAvatar,
   GlAvatarLink,
   GlLoadingIcon,
-  GlCard,
+  GlBadge,
 } from '@gitlab/ui';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { s__, sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
@@ -23,8 +24,9 @@ export default {
     GlAvatar,
     GlAvatarLink,
     GlLoadingIcon,
-    GlCard,
     PageHeading,
+    CrudComponent,
+    GlBadge,
   },
   inject: [
     'duoWorkflowEnabled',
@@ -156,23 +158,27 @@ export default {
       </template>
     </page-heading>
 
-    <gl-card
-      header-class="gl-bg-transparent gl-border-none gl-pb-0"
-      footer-class="gl-bg-transparent gl-border-none gl-flex-end"
-      class="gl-justify-between"
+    <crud-component
+      :title="s__('AiPowered|GitLab Duo Agent Platform')"
       :class="{ 'gl-mt-5': shouldDisplayPageHeader }"
+      :description="
+        s__(
+          'AiPowered|GitLab Duo Agent Platform is an AI-native coding agent in the Visual Studio Code (VS Code) IDE.',
+        )
+      "
     >
       <template #default>
-        <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">
-          {{ s__('AiPowered|GitLab Duo Agent Platform') }}
-        </h2>
-
-        <h3 class="gl-font-lg gl-mb-3">
-          {{ duoWorkflowEnabled ? __('On') : __('Off') }}
+        <h3 class="gl-mb-3">
+          {{ __('Status:') }}
+          <gl-badge
+            :variant="duoWorkflowEnabled ? 'success' : 'neutral'"
+            class="gl-relative gl-bottom-1 gl-text-lg"
+            >{{ duoWorkflowEnabled ? __('On') : __('Off') }}</gl-badge
+          >
         </h3>
 
         <template v-if="duoWorkflowEnabled">
-          <div class="gl-border-t gl-py-3">
+          <div class="gl-py-3">
             <div class="gl-flex gl-items-center gl-gap-2" data-testid="service-account">
               <span>{{ __('Account:') }}</span>
               <gl-avatar-link
@@ -194,23 +200,8 @@ export default {
           </div>
         </template>
 
-        <template v-else>
-          <div class="gl-border-b gl-py-3">
-            <p class="gl-mb-0">
-              {{
-                s__(
-                  'AiPowered|GitLab Duo Agent Platform is an AI-native coding agent in the Visual Studio Code (VS Code) IDE.',
-                )
-              }}
-            </p>
-          </div>
-        </template>
-      </template>
-
-      <template #footer>
-        <div v-if="duoWorkflowEnabled">
+        <div v-if="duoWorkflowEnabled" class="gl-mb-6">
           <gl-button
-            variant="danger"
             data-testid="disable-workflow-button"
             :disabled="isLoading"
             @click="showDisableConfirmation"
@@ -220,7 +211,7 @@ export default {
           </gl-button>
         </div>
 
-        <div v-else>
+        <div v-else class="gl-mb-6">
           <gl-button
             variant="confirm"
             category="primary"
@@ -232,7 +223,7 @@ export default {
             {{ s__('AiPowered|Turn on GitLab Duo Agent Platform') }}
           </gl-button>
 
-          <p class="gl-mb-0 gl-mt-5">
+          <p class="gl-mb-0 gl-mt-3 gl-text-sm">
             {{
               s__(
                 'AiPowered|When you turn on GitLab Duo Agent Platform, a service account is created.',
@@ -244,7 +235,7 @@ export default {
           </p>
         </div>
       </template>
-    </gl-card>
+    </crud-component>
 
     <gl-modal
       :visible="showConfirmModal"

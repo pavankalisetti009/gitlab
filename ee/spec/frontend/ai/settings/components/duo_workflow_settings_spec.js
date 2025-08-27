@@ -1,4 +1,4 @@
-import { GlModal, GlLoadingIcon } from '@gitlab/ui';
+import { GlModal, GlLoadingIcon, GlBadge } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
@@ -30,7 +30,7 @@ describe('DuoWorkflowSettings', () => {
   const findEnableButton = () => wrapper.findByTestId('enable-workflow-button');
   const findDisableButton = () => wrapper.findByTestId('disable-workflow-button');
   const findConfirmModal = () => wrapper.findComponent(GlModal);
-  const findWorkflowStatus = () => wrapper.find('h3');
+  const findWorkflowStatusBadge = () => wrapper.findComponent(GlBadge);
   const findServiceAccount = () => wrapper.findByTestId('service-account');
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
@@ -71,7 +71,8 @@ describe('DuoWorkflowSettings', () => {
 
       expect(findEnableButton().exists()).toBe(true);
       expect(findDisableButton().exists()).toBe(false);
-      expect(findWorkflowStatus().text()).toBe('Off');
+      expect(findWorkflowStatusBadge().text()).toBe('Off');
+      expect(findWorkflowStatusBadge().props('variant')).toBe('neutral');
     });
 
     it('renders the component when workflow is enabled', () => {
@@ -85,7 +86,8 @@ describe('DuoWorkflowSettings', () => {
 
       expect(findEnableButton().exists()).toBe(false);
       expect(findDisableButton().exists()).toBe(true);
-      expect(findWorkflowStatus().text()).toContain('On');
+      expect(findWorkflowStatusBadge().text()).toBe('On');
+      expect(findWorkflowStatusBadge().props('variant')).toBe('success');
       expect(findServiceAccount().text()).toContain(SERVICE_ACCOUNT.name);
       expect(findServiceAccount().text()).toContain(SERVICE_ACCOUNT.username);
     });
