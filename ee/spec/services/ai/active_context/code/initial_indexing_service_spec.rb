@@ -42,7 +42,7 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
 
       expect(logger).to receive(:info).with(build_log_payload('code_indexing_in_progress')).ordered
       expect(logger).to receive(:info).with(
-        build_log_payload('set_highest_enqueued_item', initial_indexing_last_queued_item: 'hash2')
+        build_log_payload('initial_indexing_last_queued_item', initial_indexing_last_queued_item: 'hash2')
       ).ordered
       expect(logger).to receive(:info).with(build_log_payload('embedding_indexing_in_progress')).ordered
 

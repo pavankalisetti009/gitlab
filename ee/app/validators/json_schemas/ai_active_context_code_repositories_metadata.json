@@ -9,6 +9,13 @@
       ],
       "description": "Last item enqueued from initial indexing"
     },
+    "incremental_indexing_last_queued_item": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Last item enqueued from incremental indexing"
+    },
     "last_error": {
       "type": [
         "string",
