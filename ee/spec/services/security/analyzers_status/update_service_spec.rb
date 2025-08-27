@@ -143,15 +143,13 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
           let!(:secret_detection_build) { create(:ci_build, :secret_detection, :success, pipeline: pipeline) }
 
           let!(:kics_build) do
-            build = create(:ci_build, :success, pipeline: pipeline, name: 'kics-iac-sast')
-            setup_build_reports(build, [:sast])
-            build
+            create(:ci_build, :success, pipeline: pipeline, name: 'kics-iac-sast',
+              options: setup_build_options_for_reports([:sast]))
           end
 
           let!(:advanced_sast_build) do
-            build = create(:ci_build, :success, pipeline: pipeline, name: 'gitlab-advanced-sast')
-            setup_build_reports(build, [:sast])
-            build
+            create(:ci_build, :success, pipeline: pipeline, name: 'gitlab-advanced-sast',
+              options: setup_build_options_for_reports([:sast]))
           end
 
           it 'creates new records for analyzers in the pipeline with their aggregated types' do
@@ -285,9 +283,8 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
           let!(:sast_build_1) { create(:ci_build, :sast, :success, pipeline: pipeline) }
           let!(:sast_build_2) { create(:ci_build, :sast, :failed, pipeline: pipeline) }
           let!(:advanced_sast_build) do
-            build = create(:ci_build, :failed, pipeline: pipeline, name: 'gitlab-advanced-sast')
-            setup_build_reports(build, [:sast])
-            build
+            create(:ci_build, :failed, pipeline: pipeline, name: 'gitlab-advanced-sast',
+              options: setup_build_options_for_reports([:sast]))
           end
 
           it 'prioritize failed jobs' do
@@ -315,10 +312,9 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
 
         context 'with a build that has multiple security report types' do
           let!(:multi_report_build) do
-            build = create(:ci_build, :success, pipeline: pipeline, name: 'multi-scanner')
             # Setup multiple report types for the build
-            setup_build_reports(build, [:sast, :dast, :dependency_scanning])
-            build
+            create(:ci_build, :success, pipeline: pipeline, name: 'multi-scanner',
+              options: setup_build_options_for_reports([:sast, :dast, :dependency_scanning]))
           end
 
           it 'processes all analyzer types from the single build' do
@@ -621,8 +617,8 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
     end
   end
 
-  def setup_build_reports(build, report_types)
-    options = build.options || {}
+  def setup_build_options_for_reports(report_types)
+    options = {}
     options[:artifacts] ||= {}
     options[:artifacts][:reports] ||= {}
 
@@ -630,6 +626,6 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
       options[:artifacts][:reports][type] = {}
     end
 
-    build.update!(options: options)
+    options
   end
 end

@@ -254,9 +254,17 @@ FactoryBot.define do
       end
 
       after(:build) do |build, evaluator|
-        build.options.merge!(
+        updated_options = build.options.merge(
           execution_policy_variables_override: { allowed: false, exceptions: evaluator.variables_override_exceptions }
         )
+
+        # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
+        build.metadata.write_attribute(:config_options, updated_options)
+        next unless build.job_definition
+
+        updated_config = build.job_definition.config.merge(options: updated_options)
+        build.job_definition.write_attribute(:config, updated_config)
       end
     end
   end
