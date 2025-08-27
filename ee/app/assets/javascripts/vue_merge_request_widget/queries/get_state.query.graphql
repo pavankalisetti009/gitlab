@@ -1,26 +1,24 @@
 #import "ee/vue_merge_request_widget/queries/states/merge_train_car_index.fragment.graphql"
 #import "ee/vue_merge_request_widget/queries/states/merge_train_car_count.fragment.graphql"
 
-query getStateEE($projectPath: ID!, $iid: String!, $targetBranches: [String!]) {
+query getStateEE(
+  $projectPath: ID!
+  $iid: String!
+  $targetBranches: [String!]
+  $initialRequest: Boolean = true
+) {
   project(fullPath: $projectPath) {
     id
     archived
     onlyAllowMergeIfPipelineSucceeds
-    allowMergeOnSkippedPipeline
     ...MergeTrainCarCount
     mergeRequest(iid: $iid) {
       id
       autoMergeEnabled
-      commitCount
-      conflicts
-      detailedMergeStatus
-      diffHeadSha
-      mergeAfter
+      commitCount @include(if: $initialRequest)
+      detailedMergeStatus @include(if: $initialRequest)
       mergeError
-      mergeable
-      sourceBranchExists
       state
-      targetBranchExists
       userPermissions {
         canMerge
       }
