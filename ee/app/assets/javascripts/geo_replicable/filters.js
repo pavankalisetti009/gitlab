@@ -1,5 +1,5 @@
 import { pathSegments } from '~/lib/utils/url_utility';
-import { FILTERED_SEARCH_TOKENS, TOKEN_TYPES } from './constants';
+import { FILTERED_SEARCH_TOKENS, TOKEN_TYPES, DEFAULT_CURSOR } from './constants';
 
 export const formatListboxItems = (items) => {
   return items.map((type) => ({
@@ -86,4 +86,25 @@ export const getAvailableFilteredSearchTokens = (verificationEnabled) => {
   }
 
   return FILTERED_SEARCH_TOKENS.filter((filter) => filter.type !== TOKEN_TYPES.VERIFICATION_STATUS);
+};
+
+export const getPaginationObject = ({ before = '', after = '', first, last } = {}) => {
+  const paginationObject = {
+    ...DEFAULT_CURSOR,
+    before,
+    after,
+  };
+
+  const firstNum = parseInt(first, 10);
+  const lastNum = parseInt(last, 10);
+
+  if (firstNum > 0) {
+    paginationObject.first = firstNum;
+    paginationObject.last = null;
+  } else if (lastNum > 0) {
+    paginationObject.first = null;
+    paginationObject.last = lastNum;
+  }
+
+  return paginationObject;
 };

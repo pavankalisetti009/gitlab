@@ -6,7 +6,13 @@ import replicableTypeBulkUpdateMutation from 'ee/geo_shared/graphql/replicable_t
 import { sprintf, s__, n__ } from '~/locale';
 import { createAlert } from '~/alert';
 import toast from '~/vue_shared/plugins/global_toast';
-import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
+import {
+  visitUrl,
+  pathSegments,
+  queryToObject,
+  setUrlParams,
+  updateHistory,
+} from '~/lib/utils/url_utility';
 import {
   isValidFilter,
   getReplicationStatusFilter,
@@ -14,6 +20,7 @@ import {
   getReplicableTypeFilter,
   processFilters,
   getGraphqlFilterVariables,
+  getPaginationObject,
 } from '../filters';
 import {
   REPLICATION_STATUS_STATES_ARRAY,
@@ -22,6 +29,7 @@ import {
   BULK_ACTIONS,
   GEO_TROUBLESHOOTING_LINK,
   DEFAULT_PAGE_SIZE,
+  DEFAULT_CURSOR,
 } from '../constants';
 import buildReplicableTypeQuery from '../graphql/replicable_type_query_builder';
 import GeoReplicable from './geo_replicable.vue';
@@ -50,12 +58,7 @@ export default {
     return {
       activeFilters: [],
       replicableItems: [],
-      cursor: {
-        before: '',
-        after: '',
-        first: DEFAULT_PAGE_SIZE,
-        last: null,
-      },
+      cursor: {},
       pageInfo: {},
     };
   },
@@ -140,6 +143,7 @@ export default {
   },
   created() {
     this.getFiltersFromQuery();
+    this.getPaginationFromQuery();
   },
   methods: {
     getFiltersFromQuery() {
@@ -162,13 +166,33 @@ export default {
 
       this.activeFilters = [getReplicableTypeFilter(segments.pop()), ...filters];
     },
+    getPaginationFromQuery() {
+      const { before, after, first, last } = queryToObject(window.location.search || '');
+      this.cursor = getPaginationObject({ before, after, first, last });
+    },
     handleListboxChange(val) {
-      this.handleSearch([getReplicableTypeFilter(val), ...this.activeFilteredSearchFilters]);
+      // This updates the replicable type filter which needs to re-interpolate the GraphQL Query
+      // in graphql/replicable_type_query_builder.js so we redirect the page
+      this.activeFilters = [getReplicableTypeFilter(val), ...this.activeFilteredSearchFilters];
+      this.cursor = DEFAULT_CURSOR;
+
+      this.updateUrl({ redirect: true });
     },
     handleSearch(filters) {
-      const { query, url } = processFilters(filters);
+      this.activeFilters = [getReplicableTypeFilter(this.activeReplicableType), ...filters];
+      this.cursor = DEFAULT_CURSOR;
 
-      visitUrl(setUrlParams(query, url.href, true));
+      this.updateUrl({ redirect: false });
+    },
+    updateUrl({ redirect }) {
+      const { query, url } = processFilters(this.activeFilters);
+      const urlWithParams = setUrlParams({ ...query, ...this.cursor }, url.href, true);
+
+      if (redirect) {
+        visitUrl(urlWithParams);
+      } else {
+        updateHistory({ url: urlWithParams });
+      }
     },
     async handleSingleAction({ action, name, registryId }) {
       const actionName = action.toLowerCase();
@@ -235,6 +259,8 @@ export default {
         first: DEFAULT_PAGE_SIZE,
         last: null,
       };
+
+      this.updateUrl({ redirect: false });
     },
     handlePrevPage(item) {
       this.cursor = {
@@ -243,6 +269,8 @@ export default {
         first: null,
         last: DEFAULT_PAGE_SIZE,
       };
+
+      this.updateUrl({ redirect: false });
     },
   },
   BULK_ACTIONS,
