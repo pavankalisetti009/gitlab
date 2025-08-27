@@ -92,7 +92,7 @@ RSpec.describe 'Group-level Protected Branches', :js, feature_category: :source_
 
     it 'created successfully' do
       click_button 'Add protected branch'
-      branch_input.fill_in with: branch_name
+      branch_input.fill_in with: branch_name, fill_options: { clear: nil }
       update_protected_branch_form(real_time_request: false)
       click_on 'Protect'
 
