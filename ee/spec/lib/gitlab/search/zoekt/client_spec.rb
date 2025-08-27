@@ -346,21 +346,6 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_
       let(:make_request) { search }
       let(:expected_path) { '/webserver/api/v2/search' }
     end
-
-    context 'when zoekt_ast_search_payload feature flag is disabled' do
-      before do
-        stub_feature_flags(zoekt_ast_search_payload: false)
-      end
-
-      it_behaves_like 'an authenticated zoekt request' do
-        let(:make_request) { search }
-      end
-
-      it_behaves_like 'with relative base_url', :post do
-        let(:make_request) { search }
-        let(:expected_path) { '/webserver/api/v2/search' }
-      end
-    end
   end
 
   describe 'JWT authentication enforcement', :aggregate_failures do
