@@ -3513,25 +3513,21 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     subject(:editable) { merge_request.approval_rules_editable_by?(user) }
 
-    context 'when the user can admin resources but otherwise not allowed' do
-      let(:user) { create(:user) }
-
-      before do
-        allow(user).to receive(:can_admin_all_resources?).and_return(true)
-      end
-
-      it_behaves_like 'editable by user'
-    end
-
     context 'when user is set' do
       let(:user) { merge_request.author }
 
       context 'when project can override approvers' do
-        let(:project) { create(:project, :public, disable_overriding_approvers_per_merge_request: false) }
+        let(:project) { create(:project, :public, :merge_requests_private, disable_overriding_approvers_per_merge_request: false) }
 
         context 'when the merge request can be updated' do
           context 'when the user is the assignee or author' do
-            context 'when the user is a project member' do
+            let(:user) { create(:user) }
+
+            before do
+              merge_request.update!(author: user)
+            end
+
+            context 'when the user is a developer member' do
               before do
                 project.add_developer(user)
               end
@@ -3539,22 +3535,12 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               it_behaves_like 'editable by user'
             end
 
-            context 'when the project has public merge request access level' do
-              let(:project) { create(:project, :merge_requests_public) }
-
-              it_behaves_like 'editable by user'
-            end
-
-            context 'when user is not a project member' do
+            context 'when the user is a reporter member' do
               before do
-                merge_request.update!(author: create(:user))
+                project.add_reporter(user)
               end
 
-              context 'when the project only allows project members access' do
-                let(:project) { create(:project, :merge_requests_private) }
-
-                it_behaves_like 'not editable by user'
-              end
+              it_behaves_like 'not editable by user'
             end
           end
 
@@ -3583,6 +3569,16 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               end
 
               it_behaves_like 'not editable by user'
+            end
+
+            context 'when the user is an admin' do
+              let(:user) { create(:admin) }
+
+              before do
+                allow(user).to receive(:can_admin_all_resources?).and_return(true)
+              end
+
+              it_behaves_like 'editable by user'
             end
           end
         end
