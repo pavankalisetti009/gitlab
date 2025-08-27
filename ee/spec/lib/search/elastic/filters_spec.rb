@@ -3044,6 +3044,9 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
+  # the feature `repository` and private project and group are used in these tests
+  # to ensure coverage when features have different access requirements for private projects
+  # `repository` requires access level of GUEST for public/internal projects and REPOSITORY for private projects
   describe '.by_search_level_and_membership' do
     using RSpec::Parameterized::TableSyntax
 
@@ -3056,6 +3059,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       json = File.read(Rails.root.join(fixtures_path, fixture_file))
       # the traversal_id for the group the user has access to
       json.gsub!('__NAMESPACE_ANCESTRY__', namespace_ancestry) if defined?(namespace_ancestry)
+      # the traversal_id for the parent group the user has access to
+      json.gsub!('__NAMESPACE_ANCESTRY_PARENT__', namespace_ancestry_parent) if defined?(namespace_ancestry_parent)
       # the traversal_id for the shared group the user has access to
       json.gsub!('__SHARED_NAMESPACE_ANCESTRY__', shared_namespace_ancestry) if defined?(shared_namespace_ancestry)
       # the project for the project the user has access to
@@ -3067,9 +3072,12 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       ::Gitlab::Json.parse(json).deep_symbolize_keys
     end
 
-    let_it_be(:group) { create(:group, :private) }
+    let_it_be(:group) { create(:group, :public) }
     let_it_be(:subgroup) { create(:group, :private, parent: group) }
     let_it_be(:project) { create(:project, :private, group: subgroup) }
+
+    let_it_be(:public_group) { create(:group, :public) }
+    let_it_be(:public_project) { create(:project, :public, group: public_group) }
 
     context 'when invalid search_level is provided' do
       let(:options) do
@@ -3119,7 +3127,55 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when user has access' do
-        context 'in group' do
+        context 'in public group' do
+          context 'with reporter role' do
+            before_all do
+              public_group.add_reporter(user)
+            end
+
+            let(:namespace_ancestry) { public_group.elastic_namespace_ancestry }
+            let(:fixture_file) { 'global_search_user_access_to_group_as_reporter.json' }
+
+            it { is_expected.to eq(expected_query) }
+          end
+
+          context 'with guest role' do
+            before_all do
+              public_group.add_guest(user)
+            end
+
+            let(:namespace_ancestry) { public_group.elastic_namespace_ancestry }
+            let(:fixture_file) { 'global_search_user_access_to_public_group_as_guest.json' }
+
+            it { is_expected.to eq(expected_query) }
+          end
+        end
+
+        context 'in public project' do
+          context 'with reporter role' do
+            before_all do
+              public_project.add_reporter(user)
+            end
+
+            let(:project_id) { public_project.id.to_s }
+            let(:fixture_file) { 'global_search_user_access_to_public_project_as_reporter.json' }
+
+            it { is_expected.to eq(expected_query) }
+          end
+
+          context 'with guest role' do
+            before_all do
+              public_project.add_guest(user)
+            end
+
+            let(:project_id) { public_project.id.to_s }
+            let(:fixture_file) { 'global_search_user_access_to_public_project_as_guest.json' }
+
+            it { is_expected.to eq(expected_query) }
+          end
+        end
+
+        context 'in private group' do
           context 'with reporter role' do
             before_all do
               subgroup.add_reporter(user)
@@ -3143,7 +3199,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in project' do
+        context 'in private project' do
           context 'with reporter role' do
             before_all do
               project.add_reporter(user)
@@ -3167,7 +3223,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in group as guest with read_code custom role' do
+        context 'in private group as guest with read_code custom role' do
           before do
             stub_licensed_features(custom_roles: true)
 
@@ -3181,14 +3237,20 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
-        context 'in group when access is shared through another group', :sidekiq_inline do
+        context 'in private group when access is shared through another group', :sidekiq_inline do
+          let_it_be(:subgroup) { create(:group, :private, parent: group) }
+          let_it_be(:subproject) { create(:project, :private, namespace: subgroup) }
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
           let(:shared_namespace_ancestry) { group_shared.elastic_namespace_ancestry }
-          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+          let(:namespace_ancestry_parent) { group.elastic_namespace_ancestry }
+          let(:namespace_ancestry) { subgroup.elastic_namespace_ancestry }
           let(:fixture_file) { 'global_search_user_access_to_group_with_shared_group.json' }
 
           before_all do
-            create(:group_group_link, :reporter, shared_group: group, shared_with_group: group_shared)
+            # test access in a more complex auth structure
+            create(:group_group_link, :guest, shared_group: group, shared_with_group: group_shared)
+            create(:group_group_link, :reporter, shared_group: subgroup, shared_with_group: group_shared)
+            # ensure project authorizations are updated
             group.refresh_members_authorized_projects
           end
 
@@ -3210,14 +3272,18 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in project when access is shared through another group' do
+        context 'in private project when access is shared through another group' do
+          let_it_be(:subgroup) { create(:group, :private, parent: group) }
+          let_it_be(:subproject) { create(:project, :private, namespace: subgroup) }
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
-          let(:project_id) { project.id.to_s }
+          let(:project_id) { subproject.id.to_s }
           let(:namespace_ancestry) { group_shared.elastic_namespace_ancestry }
           let(:fixture_file) { 'global_search_user_access_to_project_with_shared_group.json' }
 
           before_all do
-            create(:project_group_link, :reporter, project: project, group: group_shared)
+            # test access in a more complex auth structure
+            create(:project_group_link, :guest, project: project, group: group_shared)
+            create(:project_group_link, :reporter, project: subproject, group: group_shared)
           end
 
           it { is_expected.to eq(expected_query) }
@@ -3261,7 +3327,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when user has access' do
-        context 'in group' do
+        context 'in private group' do
           context 'with reporter role' do
             before_all do
               subgroup.add_reporter(user)
@@ -3285,7 +3351,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in project' do
+        context 'in private project' do
           context 'with reporter role' do
             before_all do
               project.add_reporter(user)
@@ -3326,7 +3392,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in group as guest with read_code custom role' do
+        context 'in private group as guest with read_code custom role' do
           before do
             stub_licensed_features(custom_roles: true)
 
@@ -3340,7 +3406,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
-        context 'in group when access is shared through another group' do
+        context 'in private group when access is shared through another group' do
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
           let(:shared_namespace_ancestry) { group_shared.elastic_namespace_ancestry }
           let(:namespace_ancestry) { group.elastic_namespace_ancestry }
@@ -3353,7 +3419,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
-        context 'in project when access is shared through another group' do
+        context 'in private project when access is shared through another group' do
           let(:fixture_file) { 'group_search_user_access_to_project_with_shared_group.json' }
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
           let(:project_id) { project.id.to_s }
@@ -3403,7 +3469,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when user has access' do
-        context 'in group' do
+        context 'in private group' do
           context 'with reporter role' do
             before_all do
               subgroup.add_reporter(user)
@@ -3427,7 +3493,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in project' do
+        context 'in private project' do
           context 'with reporter role' do
             before_all do
               project.add_reporter(user)
@@ -3451,7 +3517,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
         end
 
-        context 'in group as guest with read_code custom role' do
+        context 'in private group as guest with read_code custom role' do
           before do
             stub_licensed_features(custom_roles: true)
 
@@ -3465,7 +3531,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
-        context 'in group when access is shared through another group' do
+        context 'in private group when access is shared through another group' do
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }
           let(:namespace_ancestry) { project.group.elastic_namespace_ancestry }
           let(:fixture_file) { 'project_search_user_access_to_group_with_shared_group.json' }
@@ -3477,7 +3543,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           it { is_expected.to eq(expected_query) }
         end
 
-        context 'in project when access is shared through another group' do
+        context 'in private project when access is shared through another group' do
           let(:fixture_file) { 'project_search_user_access_to_project_with_shared_group.json' }
 
           let_it_be(:group_shared) { create(:group, :private, reporters: user) }

@@ -7,16 +7,6 @@
             "should": [
               {
                 "bool": {
-                  "should": [
-                    {
-                      "prefix": {
-                        "traversal_ids": {
-                          "_name": "filters:permissions:global:public_and_internal_access:ancestry_filter:descendants",
-                          "value": "__NAMESPACE_ANCESTRY_PARENT__"
-                        }
-                      }
-                    }
-                  ],
                   "filter": [
                     {
                       "terms": {
@@ -26,43 +16,25 @@
                           10
                         ]
                       }
-                    }
-                  ],
-                  "minimum_should_match": 1
-                }
-              },
-              {
-                "bool": {
-                  "should": [
-                    {
-                      "prefix": {
-                        "traversal_ids": {
-                          "_name": "filters:permissions:global:private_access:ancestry_filter:descendants",
-                          "value": "__NAMESPACE_ANCESTRY__"
-                        }
-                      }
                     },
                     {
-                      "prefix": {
-                        "traversal_ids": {
-                          "_name": "filters:permissions:global:private_access:ancestry_filter:descendants",
-                          "value": "__SHARED_NAMESPACE_ANCESTRY__"
-                        }
-                      }
-                    }
-                  ],
-                  "filter": [
-                    {
                       "terms": {
-                        "_name": "filters:permissions:global:private_access:repository_access_level:enabled_or_private",
-                        "repository_access_level": [
+                        "_name": "filters:permissions:global:public_and_internal_access:project_visibility_level:public_or_internal",
+                        "visibility_level": [
                           20,
                           10
                         ]
                       }
+                    },
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:global:public_and_internal_access:project:member",
+                        "project_id": [
+                          PROJECT_ID
+                        ]
+                      }
                     }
-                  ],
-                  "minimum_should_match": 1
+                  ]
                 }
               },
               {
