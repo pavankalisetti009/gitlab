@@ -699,18 +699,17 @@ module EE
     def approval_rules_editable_by?(user)
       return unless user
 
-      user.can_admin_all_resources? ||
-        (project.can_override_approvers? &&
-         (assigned_or_authored_by_with_access?(user) ||
-          project.team.member?(user, ::Gitlab::Access::MAINTAINER)))
+      project.can_override_approvers? &&
+        (user.can_admin_all_resources? ||
+        (assigned_or_authored_by_with_access?(user) ||
+         project.team.member?(user, ::Gitlab::Access::MAINTAINER)))
     end
 
     private
 
     def assigned_or_authored_by_with_access?(user)
       assignee_or_author?(user) &&
-        (project.member?(user) ||
-         project.project_feature.merge_requests_access_level == ::Featurable::PUBLIC)
+        project.team.member?(user, ::Gitlab::Access::DEVELOPER)
     end
 
     def security_comparison?(service_class)

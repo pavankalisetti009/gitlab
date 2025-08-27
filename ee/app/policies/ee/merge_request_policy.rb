@@ -93,7 +93,11 @@ module EE
       # Note: Handled in the approval_rules_editable_by method
       rule { ~new_editing_rules & ~can_override_approvers }.prevent :update_approvers
 
-      rule { can?(:update_merge_request) }.policy do
+      rule { new_editing_rules & approval_rules_editable }.policy do
+        enable :update_approvers
+      end
+
+      rule { ~new_editing_rules & can?(:update_merge_request) }.policy do
         enable :update_approvers
       end
 

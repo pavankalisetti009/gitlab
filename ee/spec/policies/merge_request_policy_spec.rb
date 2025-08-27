@@ -55,7 +55,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
         expect(policy_for(guest)).to be_disallowed(:update_approvers)
         expect(policy_for(developer)).to be_disallowed(:update_approvers)
         expect(policy_for(maintainer)).to be_disallowed(:update_approvers)
-        expect(policy_for(admin)).to be_allowed(:update_approvers)
+        expect(policy_for(admin)).to be_disallowed(:update_approvers)
 
         expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
         expect(policy_for(fork_developer)).to be_disallowed(:update_approvers)
