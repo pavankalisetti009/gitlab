@@ -65,9 +65,15 @@ module API
                 tags %w[maven_virtual_registries]
                 hidden true
               end
+              params do
+                optional :upstream_name, type: String, desc: 'Return packages with this name'
+              end
               get do
-                present paginate(::VirtualRegistries::Packages::Maven::Upstream.for_group(group)),
-                  with: Entities::VirtualRegistries::Packages::Maven::Upstream
+                upstreams = ::VirtualRegistries::Packages::Maven::UpstreamsFinder.new(
+                  group, declared_params.slice(:upstream_name)
+                ).execute
+
+                present paginate(upstreams), with: Entities::VirtualRegistries::Packages::Maven::Upstream
               end
 
               desc 'Test connection to a maven virtual registry upstream with provided parameters' do

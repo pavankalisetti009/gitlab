@@ -30,6 +30,32 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
     context 'with valid group_id' do
       it_behaves_like 'successful response'
+
+      context 'when upstream_name is given' do
+        let_it_be(:upstream2) do
+          create(:virtual_registries_packages_maven_upstream, registries: [registry], name: 'foo-name')
+        end
+
+        let(:params) { { upstream_name: 'foo' } }
+
+        subject(:api_request) { get api(url), params: params, headers: headers }
+
+        it 'returns upstreams that have name match to the given upstream name to' do
+          api_request
+
+          expect(Gitlab::Json.parse(response.body)).to contain_exactly(upstream2.as_json)
+        end
+
+        context 'when no upstream is found' do
+          let(:params) { { upstream_name: 'bar' } }
+
+          it 'returns empty array' do
+            api_request
+
+            expect(Gitlab::Json.parse(response.body)).to be_empty
+          end
+        end
+      end
     end
 
     context 'with invalid group_id' do
