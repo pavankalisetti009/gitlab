@@ -44,32 +44,32 @@ Supported attributes:
 If successful, returns [`200 OK`](rest/troubleshooting.md#status-codes) and the following
 response attributes:
 
-| Attribute                  | Type    | Description |
-|----------------------------|---------|-------------|
-| `can_push`                 | boolean | If `true`, the authenticated user can push to this branch. |
-| `commit`                   | object  | Details about the most recent commit on the branch. |
-| `commit.author_email`      | string  | Email address of the user who authored the change. |
-| `commit.author_name`       | string  | Name of the user who authored the change. |
+| Attribute                  | Type                | Description |
+|----------------------------|---------------------|-------------|
+| `can_push`                 | boolean             | If `true`, the authenticated user can push to this branch. |
+| `commit`                   | object              | Details about the most recent commit on the branch. |
+| `commit.author_email`      | string              | Email address of the user who authored the change. |
+| `commit.author_name`       | string              | Name of the user who authored the change. |
 | `commit.authored_date`     | datetime (ISO 8601) | When the commit was authored. |
 | `commit.committed_date`    | datetime (ISO 8601) | When the commit was committed. |
-| `commit.committer_email`   | string  | Email address of the user who committed the change. |
-| `commit.committer_name`    | string  | Name of the user who committed the change. |
+| `commit.committer_email`   | string              | Email address of the user who committed the change. |
+| `commit.committer_name`    | string              | Name of the user who committed the change. |
 | `commit.created_at`        | datetime (ISO 8601) | When the commit was created. |
-| `commit.extended_trailers` | object  | Extended Git trailers parsed from the commit message. |
-| `commit.id`                | string  | Full SHA of the commit. |
-| `commit.message`           | string  | Full commit message. |
-| `commit.parent_ids`        | array   | Array of parent commit SHAs. |
-| `commit.short_id`          | string  | Abbreviated SHA of the commit. |
-| `commit.title`             | string  | Title of the commit message. |
-| `commit.trailers`          | object  | Git trailers parsed from the commit message. |
-| `commit.web_url`           | string  | URL to view the commit in the GitLab UI. |
-| `default`                  | boolean | If `true`, the branch is the default branch for the project. |
-| `developers_can_merge`     | boolean | If `true`, users with at least the Developer role can merge to this branch. |
-| `developers_can_push`      | boolean | If `true`, users with at least the Developer role can push to this branch. |
-| `merged`                   | boolean | If `true`, the branch has been merged into the default branch. |
-| `name`                     | string  | Name of the branch. |
-| `protected`                | boolean | If `true`, the branch is protected from force pushes and deletion. |
-| `web_url`                  | string  | URL to view the branch in the GitLab UI. |
+| `commit.extended_trailers` | object              | Extended Git trailers parsed from the commit message. |
+| `commit.id`                | string              | Full SHA of the commit. |
+| `commit.message`           | string              | Full commit message. |
+| `commit.parent_ids`        | array               | Array of parent commit SHAs. |
+| `commit.short_id`          | string              | Abbreviated SHA of the commit. |
+| `commit.title`             | string              | Title of the commit message. |
+| `commit.trailers`          | object              | Git trailers parsed from the commit message. |
+| `commit.web_url`           | string              | URL to view the commit in the GitLab UI. |
+| `default`                  | boolean             | If `true`, the branch is the default branch for the project. |
+| `developers_can_merge`     | boolean             | If `true`, users with at least the Developer role can merge to this branch. |
+| `developers_can_push`      | boolean             | If `true`, users with at least the Developer role can push to this branch. |
+| `merged`                   | boolean             | If `true`, the branch has been merged into the default branch. |
+| `name`                     | string              | Name of the branch. |
+| `protected`                | boolean             | If `true`, the branch is protected from force pushes and deletion. |
+| `web_url`                  | string              | URL to view the branch in the GitLab UI. |
 
 Example request:
 
@@ -236,32 +236,32 @@ Supported attributes:
 If successful, returns [`201 Created`](rest/troubleshooting.md#status-codes) and the following
 response attributes:
 
-| Attribute                | Type    | Description |
-|--------------------------|---------|-------------|
-| `can_push`               | boolean | Whether the authenticated user can push to this branch. |
-| `commit`                 | object  | Details about the latest commit on the branch. |
-| `commit.author_email`    | string  | Email address of the commit author. |
-| `commit.author_name`     | string  | Name of the commit author. |
-| `commit.authored_date`   | string  | Date and time when the commit was authored, in ISO 8601 format. |
-| `commit.committed_date`  | string  | Date and time when the commit was committed, in ISO 8601 format. |
-| `commit.committer_email` | string  | Email address of the user who committed the change. |
-| `commit.committer_name`  | string  | Name of the user who committed the change. |
-| `commit.created_at`      | string  | Date and time when the commit was created, in ISO 8601 format. |
+| Attribute                  | Type    | Description |
+|----------------------------|---------|-------------|
+| `can_push`                 | boolean | If `true`, the authenticated user can push to this branch. |
+| `commit`                   | object  | Details about the latest commit on the branch. |
+| `commit.author_email`      | string  | Email address of the commit author. |
+| `commit.author_name`       | string  | Name of the commit author. |
+| `commit.authored_date`     | string  | Date and time when the commit was authored, in ISO 8601 format. |
+| `commit.committed_date`    | string  | Date and time when the commit was committed, in ISO 8601 format. |
+| `commit.committer_email`   | string  | Email address of the user who committed the change. |
+| `commit.committer_name`    | string  | Name of the user who committed the change. |
+| `commit.created_at`        | string  | Date and time when the commit was created, in ISO 8601 format. |
 | `commit.extended_trailers` | object  | Extended Git trailers parsed from the commit message. |
-| `commit.id`              | string  | Full SHA of the commit. |
-| `commit.message`         | string  | Full commit message. |
-| `commit.parent_ids`      | array   | Array of parent commit SHAs. |
-| `commit.short_id`        | string  | Abbreviated SHA of the commit. |
-| `commit.title`           | string  | Title of the commit message. |
-| `commit.trailers`        | object  | Git trailers parsed from the commit message. |
-| `commit.web_url`         | string  | URL to view the commit in the GitLab UI. |
+| `commit.id`                | string  | Full SHA of the commit. |
+| `commit.message`           | string  | Full commit message. |
+| `commit.parent_ids`        | array   | Array of parent commit SHAs. |
+| `commit.short_id`          | string  | Abbreviated SHA of the commit. |
+| `commit.title`             | string  | Title of the commit message. |
+| `commit.trailers`          | object  | Git trailers parsed from the commit message. |
+| `commit.web_url`           | string  | URL to view the commit in the GitLab UI. |
 | `default`                  | boolean | If `true`, sets this branch is the default branch for the project. |
-| `developers_can_merge`   | boolean | Whether users with the Developer role can merge to this branch. |
-| `developers_can_push`    | boolean | Whether users with the Developer role can push to this branch. |
-| `merged`                 | boolean | Whether the branch has been merged into the default branch. |
-| `name`                   | string  | Name of the branch. |
-| `protected`              | boolean | Whether the branch is protected from force pushes and deletion. |
-| `web_url`                | string  | URL to view the branch in the GitLab UI. |
+| `developers_can_merge`     | boolean | If `true`, users with the Developer role can merge to this branch. |
+| `developers_can_push`      | boolean | If `true`, users with the Developer role can push to this branch. |
+| `merged`                   | boolean | If `true`, the branch merged into the default branch. |
+| `name`                     | string  | Name of the branch. |
+| `protected`                | boolean | If `true`, the branch is protected from force pushes and deletion. |
+| `web_url`                  | string  | URL to view the branch in the GitLab UI. |
 
 Example request:
 
