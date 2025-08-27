@@ -61,7 +61,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       before do
         allow(Gitlab::AiGateway).to receive(:public_headers)
-          .with(user: user, ai_feature_name: :duo_workflow, service_name: :duo_workflow_execute_workflow)
+          .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :duo_workflow_execute_workflow)
           .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, project).and_return(true)
@@ -111,7 +111,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     context 'when success' do
       before do
         allow(Gitlab::AiGateway).to receive(:public_headers)
-          .with(user: user, ai_feature_name: :duo_workflow, service_name: :duo_workflow_execute_workflow)
+          .with(user: user, ai_feature_name: :duo_workflow, unit_primitive_name: :duo_workflow_execute_workflow)
           .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
       end
 
@@ -695,7 +695,7 @@ expires_at: duo_workflow_service_token_expires_at })
         end
       end
 
-      context 'when agent_platform_model_selection feature flag is enabled' do
+      context 'when self_hosted_agent_platform feature flag is enabled' do
         let_it_be(:self_hosted_model) do
           create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
         end
@@ -705,7 +705,7 @@ expires_at: duo_workflow_service_token_expires_at })
         end
 
         before do
-          stub_feature_flags(agent_platform_model_selection: true)
+          stub_feature_flags(self_hosted_agent_platform: true)
         end
 
         it 'includes model metadata headers in the response' do
@@ -773,9 +773,9 @@ expires_at: duo_workflow_service_token_expires_at })
         end
       end
 
-      context 'when agent_platform_model_selection feature flag is disabled' do
+      context 'when self_hosted_agent_platform feature flag is disabled' do
         before do
-          stub_feature_flags(agent_platform_model_selection: false)
+          stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it 'does not include model metadata headers' do

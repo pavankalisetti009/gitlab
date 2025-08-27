@@ -9,9 +9,22 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
   let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
 
+  let_it_be(:service_params) do
+    {
+      agent: agent,
+      agent_version: agent_version
+    }
+  end
+
   let(:current_user) { maintainer }
 
-  let(:service) { described_class.new(agent, agent_version, current_user) }
+  let(:service) do
+    described_class.new(
+      project: project,
+      current_user: current_user,
+      params: service_params
+    )
+  end
 
   describe '#execute' do
     subject(:execute) { service.execute }
@@ -21,7 +34,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
         result = execute
 
         expect(result).to be_error
-        expect(result.message).to eq(expected_message)
+        expect(result.message).to match_array(expected_message)
       end
     end
 
@@ -46,19 +59,19 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
     context 'when user lack permission' do
       let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
 
-      it_behaves_like 'returns error response', 'You have insufficient permission to execute this agent'
+      it_behaves_like 'returns error response', 'You have insufficient permissions'
 
       context 'when current_user is nil' do
         let(:current_user) { nil }
 
-        it_behaves_like 'returns error response', 'You have insufficient permission to execute this agent'
+        it_behaves_like 'returns error response', 'You have insufficient permissions'
       end
     end
 
     context 'when wrapped_agent_response has error' do
       before do
         allow_next_instance_of(::Ai::Catalog::WrappedAgentFlowBuilder) do |builder|
-          allow(builder).to receive(:execute).and_return(ServiceResponse.error(message: 'Generated flow is invalid'))
+          allow(builder).to receive(:execute).and_return(ServiceResponse.error(message: ['Generated flow is invalid']))
         end
       end
 
@@ -66,19 +79,19 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
     end
 
     context 'when agent is nil' do
-      let(:service) { described_class.new(nil, agent_version, current_user) }
+      let(:service_params) { super().merge({ agent: nil }) }
 
       it_behaves_like 'returns error response', 'Agent is required'
     end
 
     context 'when agent item_type is flow' do
-      let(:service) { described_class.new(build(:ai_catalog_flow), agent_version, current_user) }
+      let(:service_params) { super().merge({ agent: build(:ai_catalog_flow) }) }
 
       it_behaves_like 'returns error response', 'Agent is required'
     end
 
     context 'when agent_version is nil' do
-      let(:service) { described_class.new(agent, nil, current_user) }
+      let(:service_params) { super().merge({ agent_version: nil }) }
 
       it_behaves_like 'returns error response', 'Agent version is required'
     end
@@ -86,7 +99,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
     context 'when agent_version does not belong to the agent' do
       let(:other_agent) { build(:ai_catalog_agent, organization: organization, project: project) }
       let(:other_agent_version) { other_agent.versions.last }
-      let(:service) { described_class.new(agent, other_agent_version, current_user) }
+      let(:service_params) { super().merge({ agent_version: other_agent_version }) }
 
       it_behaves_like 'returns error response', 'Agent version must belong to the agent'
     end

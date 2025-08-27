@@ -108,7 +108,7 @@ RSpec.describe 'SaaS registration from an invite', :with_current_organization, :
   end
 
   def expect_to_be_on_2fa_verification(with_invite_notification: false)
-    expect(page).to have_content('Register a one-time password')
+    expect(page).to have_content(_('Register authenticator'))
 
     return unless with_invite_notification # rubocop:disable RSpec/AvoidConditionalStatements
 

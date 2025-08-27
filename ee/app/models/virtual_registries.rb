@@ -3,6 +3,10 @@
 module VirtualRegistries
   PACKAGE_TYPES = %i[maven].freeze
 
+  def self.table_name_prefix
+    'virtual_registries_'
+  end
+
   def self.registries_count_for(group, registry_type:)
     registry_class = "::VirtualRegistries::Packages::#{registry_type.to_s.classify}::Registry".safe_constantize
     return 0 unless registry_class

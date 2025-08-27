@@ -1,5 +1,5 @@
 ---
-name: agent_platform_model_selection
+name: self_hosted_agent_platform
 feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/18583
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198260
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556185

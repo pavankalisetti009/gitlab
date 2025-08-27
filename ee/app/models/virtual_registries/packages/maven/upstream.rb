@@ -4,6 +4,8 @@ module VirtualRegistries
   module Packages
     module Maven
       class Upstream < ApplicationRecord
+        include Gitlab::SQL::Pattern
+
         TEST_PATH = 'com/company/app/maven-metadata.xml'
 
         belongs_to :group
@@ -51,6 +53,7 @@ module VirtualRegistries
 
         scope :for_group, ->(group) { where(group:) }
         scope :for_id_and_group, ->(id:, group:) { where(id:, group:) }
+        scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
 
         def url_for(path)
           full_url = File.join(url, path)

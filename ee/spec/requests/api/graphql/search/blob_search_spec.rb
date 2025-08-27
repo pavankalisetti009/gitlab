@@ -184,26 +184,6 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
         end
       end
 
-      context 'when search with AST syntax is disabled' do
-        before do
-          stub_feature_flags(zoekt_ast_search_payload: false)
-        end
-
-        it_behaves_like 'does not return archived projects'
-
-        context 'when include_archived is true' do
-          let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
-
-          it_behaves_like 'returns archived projects'
-        end
-
-        context 'when include_archived is false' do
-          let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: false } }
-
-          it_behaves_like 'does not return archived projects'
-        end
-      end
-
       it_behaves_like 'does not return archived projects'
 
       context 'when include_archived is true' do

@@ -7,7 +7,7 @@ RSpec.describe Ai::Catalog::ItemVersionDependency, feature_category: :workflow_c
 
   describe 'associations' do
     it { is_expected.to belong_to(:organization).required }
-    it { is_expected.to belong_to(:dependency).required.inverse_of(:reverse_dependencies) }
+    it { is_expected.to belong_to(:dependency).required.inverse_of(:dependents) }
     it { is_expected.to belong_to(:ai_catalog_item_version).required }
   end
 end

@@ -54,27 +54,19 @@ module Gitlab
             return Gitlab::Search::Zoekt::Response.empty
           end
 
-          if use_ast_search_payload?(current_user)
-            params = ::Search::Zoekt::Params.new(current_user, limit: num, **options)
-            payload = ::Search::Zoekt::SearchRequest.new(
-              current_user: current_user,
-              query: format_query(query, source: options[:source], search_mode: search_mode),
-              num_context_lines: CONTEXT_LINES_COUNT,
-              max_file_match_window: params.max_file_match_window,
-              max_file_match_results: params.max_file_match_results,
-              max_line_match_window: params.max_line_match_window,
-              max_line_match_results: params.max_line_match_results,
-              max_line_match_results_per_file: params.max_line_match_results_per_file,
-              search_mode: search_mode,
-              **options
-            ).as_json
-          else
-            payload = build_search_payload(query, source: options[:source], num: num, search_mode: search_mode)
-            payload[:ForwardTo] = targets.map do |node_id, project_ids|
-              target_node = node(node_id)
-              { Endpoint: target_node.search_base_url, RepoIds: project_ids }
-            end
-          end
+          params = ::Search::Zoekt::Params.new(current_user, limit: num, **options)
+          payload = ::Search::Zoekt::SearchRequest.new(
+            current_user: current_user,
+            query: format_query(query, source: options[:source], search_mode: search_mode),
+            num_context_lines: CONTEXT_LINES_COUNT,
+            max_file_match_window: params.max_file_match_window,
+            max_file_match_results: params.max_file_match_results,
+            max_line_match_window: params.max_line_match_window,
+            max_line_match_results: params.max_line_match_results,
+            max_line_match_results_per_file: params.max_line_match_results_per_file,
+            search_mode: search_mode,
+            **options
+          ).as_json
 
           proxy_node = fetch_proxy_node(**options)
           raise 'Node can not be found' unless proxy_node
@@ -218,10 +210,6 @@ module Gitlab
 
         def format_query(query, source:, search_mode:)
           ::Search::Zoekt::Query.new(query, source: source).formatted_query(search_mode)
-        end
-
-        def use_ast_search_payload?(current_user)
-          Feature.enabled?(:zoekt_ast_search_payload, current_user)
         end
 
         def search_level(options)

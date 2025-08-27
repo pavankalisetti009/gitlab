@@ -104,7 +104,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
       execute
 
       expect(::Ai::Catalog::Agents::ExecuteService)
-        .to have_received(:new).with(agent, latest_agent_version, current_user)
+        .to have_received(:new).with(
+          project: agent.project,
+          current_user: current_user,
+          params: { agent: agent, agent_version: latest_agent_version }
+        )
     end
   end
 
@@ -119,7 +123,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
     before do
       allow(::Ai::Catalog::Agents::ExecuteService).to receive(:new)
-        .with(agent, agent_version, current_user)
+        .with(
+          project: agent.project,
+          current_user: current_user,
+          params: { agent: agent, agent_version: agent_version }
+        )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)
     end
