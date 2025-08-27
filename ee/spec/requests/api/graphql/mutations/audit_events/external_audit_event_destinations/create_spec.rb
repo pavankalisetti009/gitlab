@@ -161,8 +161,8 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
             it 'returns correct errors' do
               post_graphql_mutation(mutation, current_user: owner)
 
-              expect(mutation_response['externalAuditEventDestination']).to be_nil
-              expect(mutation_response['errors']).to contain_exactly('Verification token is too short (minimum is 16 characters)')
+              expect(graphql_errors).not_to be_empty
+              expect(graphql_errors.first['message']).to match(/Verification token is too short/)
             end
 
             it_behaves_like 'a mutation that does not create a destination'
@@ -180,8 +180,8 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
             it 'returns correct errors' do
               post_graphql_mutation(mutation, current_user: owner)
 
-              expect(mutation_response['externalAuditEventDestination']).to be_nil
-              expect(mutation_response['errors']).to contain_exactly('Verification token is too long (maximum is 24 characters)')
+              expect(graphql_errors).not_to be_empty
+              expect(graphql_errors.first['message']).to match(/Verification token is too long/)
             end
 
             it_behaves_like 'a mutation that does not create a destination'
@@ -195,8 +195,8 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
         it 'returns correct errors' do
           post_graphql_mutation(mutation, current_user: owner)
 
-          expect(mutation_response['externalAuditEventDestination']).to be_nil
-          expect(mutation_response['errors']).to contain_exactly('Destination url is blocked: Only allowed schemes are http, https')
+          expect(graphql_errors).not_to be_empty
+          expect(graphql_errors.first['message']).to match(/Destination url is blocked: Only allowed schemes are http, https/)
         end
 
         it_behaves_like 'a mutation that does not create a destination'
@@ -206,6 +206,60 @@ RSpec.describe 'Create an external audit event destination', feature_category: :
         let_it_be(:group) { create(:group, :nested) }
 
         it_behaves_like 'a mutation that does not create a destination'
+      end
+
+      context 'when ActiveRecord::RecordInvalid exceptions occur' do
+        context 'when limit is exceeded' do
+          before do
+            allow_next_instance_of(AuditEvents::ExternalAuditEventDestination) do |instance|
+              allow(instance).to receive(:save!) do
+                instance.errors.add(:base, 'Maximum number of external audit event destinations (5) exceeded')
+                raise ActiveRecord::RecordInvalid, instance
+              end
+            end
+          end
+
+          it 'returns GraphQL error and does not log to Sentry' do
+            expect(Gitlab::ErrorTracking).not_to receive(:track_exception)
+
+            post_graphql_mutation(mutation, current_user: owner)
+
+            expect(graphql_errors).not_to be_empty
+            expect(graphql_errors.first['message']).to match(/Maximum number of external audit event destinations/)
+          end
+
+          it_behaves_like 'a mutation that does not create a destination'
+        end
+
+        context 'when name is too long' do
+          let(:input) do
+            {
+              groupPath: group.full_path,
+              destinationUrl: destination_url,
+              name: 'a' * 73 # Exceeds 72 character limit
+            }
+          end
+
+          before do
+            allow_next_instance_of(AuditEvents::ExternalAuditEventDestination) do |instance|
+              allow(instance).to receive(:save!) do
+                instance.errors.add(:name, 'is too long (maximum is 72 characters)')
+                raise ActiveRecord::RecordInvalid, instance
+              end
+            end
+          end
+
+          it 'returns GraphQL error and does not log to Sentry' do
+            expect(Gitlab::ErrorTracking).not_to receive(:track_exception)
+
+            post_graphql_mutation(mutation, current_user: owner)
+
+            expect(graphql_errors).not_to be_empty
+            expect(graphql_errors.first['message']).to match(/is too long/)
+          end
+
+          it_behaves_like 'a mutation that does not create a destination'
+        end
       end
     end
 
