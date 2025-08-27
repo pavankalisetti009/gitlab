@@ -65,18 +65,22 @@ module Security
           no_longer_detected_vulnerabilities = Vulnerability
             .id_in(missing_ids)
             .not_requiring_manual_resolution
-            .select(:id, :resolved_on_default_branch)
+            # rubocop:disable CodeReuse/ActiveRecord -- context-specific
+            # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Batch size of 1000
+            .pluck(:id, :resolved_on_default_branch)
+          # rubocop:enable CodeReuse/ActiveRecord
+          # rubocop:enable Database/AvoidUsingPluckWithoutLimit
 
           next if no_longer_detected_vulnerabilities.blank?
 
           mark_as_no_longer_detected(no_longer_detected_vulnerabilities)
-          auto_resolve(no_longer_detected_vulnerabilities.map(&:id))
+          auto_resolve(no_longer_detected_vulnerabilities.map(&:first))
         end
       end
 
       def mark_as_no_longer_detected(vulnerabilities)
-        no_longer_detected_vulnerability_ids = vulnerabilities.filter_map do |vulnerability|
-          vulnerability.id unless vulnerability.resolved_on_default_branch
+        no_longer_detected_vulnerability_ids = vulnerabilities.filter_map do |id, resolved_on_default_branch|
+          id unless resolved_on_default_branch
         end
 
         return if no_longer_detected_vulnerability_ids.blank?
