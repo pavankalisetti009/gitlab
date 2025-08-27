@@ -1,0 +1,16 @@
+---
+description: Policy YAML was successfully annotated with human-readable names for IDs
+internal_events: true
+action: security_policy_yaml_annotated
+identifiers:
+- project
+- namespace
+- user
+additional_properties:
+  label:
+    description: Type of operation (append, replace, remove)
+product_group: security_policies
+milestone: '18.4'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/550443
+tiers:
+- ultimate

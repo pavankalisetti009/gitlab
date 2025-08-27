@@ -273,6 +273,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
               service.execute
             end
 
+            it 'tracks internal event for successful annotation' do
+              expect { service.execute }
+              .to trigger_internal_events('security_policy_yaml_annotated')
+              .with(
+                user: current_user,
+                project: policy_configuration.security_policy_management_project,
+                namespace: policy_configuration.security_policy_management_project.namespace,
+                additional_properties: {
+                  label: operation.to_s
+                }
+              )
+            end
+
             context 'when the AnnotatePolicyYamlService fails' do
               let(:annotation_enabled) { true }
 
@@ -286,6 +299,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
                 expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).to receive(:new)
 
                 service.execute
+              end
+
+              it 'does not track internal event for annotation' do
+                expect { service.execute }.not_to trigger_internal_events('security_policy_yaml_annotated')
               end
 
               it_behaves_like 'committing the updated policy yaml without annotations'

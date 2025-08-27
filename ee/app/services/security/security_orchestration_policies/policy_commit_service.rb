@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class PolicyCommitService < ::BaseContainerService
       include Gitlab::Loggable
+      include ::Gitlab::InternalEventsTracking
 
       def execute
         @policy_configuration = container.security_orchestration_policy_configuration
@@ -112,6 +113,14 @@ module Security
             user_id: current_user.id,
             message: 'Successfully annotated policy YAML'
           )
+        )
+
+        track_internal_event('security_policy_yaml_annotated',
+          user: current_user,
+          project: policy_configuration.security_policy_management_project,
+          additional_properties: {
+            label: params[:operation].to_s
+          }
         )
       end
 
