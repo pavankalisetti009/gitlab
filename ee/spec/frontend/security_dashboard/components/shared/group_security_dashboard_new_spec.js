@@ -17,13 +17,17 @@ describe('Group Security Dashboard (new version) - Component', () => {
 
   const mockGroupFullPath = 'group/subgroup';
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({
+    props = {},
+    glFeatures = { newSecurityDashboardVulnerabilitiesPerSeverity: true },
+  } = {}) => {
     wrapper = shallowMountExtended(GroupSecurityDashboardNew, {
       propsData: {
         ...props,
       },
       provide: {
         groupFullPath: mockGroupFullPath,
+        glFeatures,
       },
     });
   };
@@ -121,6 +125,16 @@ describe('Group Security Dashboard (new version) - Component', () => {
       await nextTick();
 
       expect(getVulnerabilitiesOverTimePanel().componentProps.filters).toEqual({ projectId });
+    });
+  });
+
+  describe('with vulnerabilities per severity feature flag disabled', () => {
+    beforeEach(() => {
+      createComponent({ glFeatures: { newSecurityDashboardVulnerabilitiesPerSeverity: false } });
+    });
+
+    it.each(SEVERITY_LEVELS_KEYS)('does not render the %s severity panel', (severity) => {
+      expect(findPanelWithId(severity)).toBeUndefined();
     });
   });
 });

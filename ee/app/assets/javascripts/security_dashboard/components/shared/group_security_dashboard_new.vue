@@ -1,5 +1,6 @@
 <script>
 import { GlDashboardLayout } from '@gitlab/ui';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
@@ -7,7 +8,7 @@ import ProjectToken from 'ee/security_dashboard/components/shared/filtered_searc
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_utils';
+import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 
 const PROJECT_TOKEN_DEFINITION = {
   type: 'projectId',
@@ -32,6 +33,7 @@ export default {
     GlDashboardLayout,
     FilteredSearch,
   },
+  mixins: [glFeatureFlagMixin()],
   data() {
     return {
       filters: {},
@@ -46,7 +48,9 @@ export default {
           'SecurityReports|This dashboard provides an overview of your security vulnerabilities.',
         ),
         panels: [
-          ...generateVulnerabilitiesForSeverityPanels(this.filters),
+          ...(this.glFeatures.newSecurityDashboardVulnerabilitiesPerSeverity
+            ? generateVulnerabilitiesForSeverityPanels(this.filters)
+            : []),
           {
             id: 'vulnerabilities-over-time',
             component: markRaw(GroupVulnerabilitiesOverTimePanel),
