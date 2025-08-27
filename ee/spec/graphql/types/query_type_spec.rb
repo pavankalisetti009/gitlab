@@ -9,6 +9,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
     expected_ee_fields = [
       :add_on_purchases,
       :ai_catalog_built_in_tools,
+      :ai_catalog_configured_items,
       :ai_catalog_item,
       :ai_catalog_items,
       :ai_messages,
@@ -21,7 +22,6 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ci_dedicated_hosted_runner_filters,
       :ci_dedicated_hosted_runner_usage,
       :ci_queueing_history,
-      :configured_ai_catalog_items,
       :current_license,
       :devops_adoption_enabled_namespaces,
       :duo_workflow_events,
