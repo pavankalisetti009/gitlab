@@ -21,13 +21,15 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       with_sast_feature_branch: create(:ee_ci_pipeline, :with_sast_feature_branch, project: project),
       with_secret_detection_feature_branch: create(:ee_ci_pipeline, :with_secret_detection_feature_branch, project: project),
       with_corrupted_dependency_scanning_report: create(:ee_ci_pipeline, :with_corrupted_dependency_scanning_report, project: project),
-      with_corrupted_container_scanning_report: create(:ee_ci_pipeline, :with_corrupted_container_scanning_report, project: project)
+      with_corrupted_container_scanning_report: create(:ee_ci_pipeline, :with_corrupted_container_scanning_report, project: project),
+      sast_differential_scan: create(:ee_ci_pipeline, :sast_differential_scan, project: project)
     }
   end
 
-  let(:service) { described_class.new(project, current_user, report_type: scan_type.to_s) }
+  let(:params) { { report_type: scan_type.to_s } }
+  let(:service) { described_class.new(project, current_user, params) }
 
-  def create_scan_with_findings(scan_type, pipeline, count = 1)
+  def create_scan_with_findings(scan_type, pipeline, count = 1, partial: false)
     scan = create(
       :security_scan,
       :latest_successful,
@@ -35,6 +37,8 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       pipeline: pipeline,
       scan_type: scan_type
     )
+
+    create(:vulnerabilities_partial_scan, scan: scan) if partial
 
     create_list(
       :security_finding,
@@ -55,6 +59,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     create_scan_with_findings('container_scanning', test_pipelines[:with_container_scanning_feature_branch], 8)
     create_scan_with_findings('dast', test_pipelines[:with_dast_feature_branch], 20)
     create_scan_with_findings('sast', test_pipelines[:with_sast_feature_branch], 5)
+    create_scan_with_findings('sast', test_pipelines[:sast_differential_scan], 6, partial: true)
     create_scan_with_findings('secret_detection', test_pipelines[:with_secret_detection_feature_branch])
   end
 
@@ -303,6 +308,26 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       end
 
       it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+
+      context 'when scan_mode is partial' do
+        let(:params) { { report_type: 'sast', scan_mode: 'partial' } }
+
+        it_behaves_like 'when only the head pipeline has a report' do
+          let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
+          let(:num_findings_in_fixture) { 6 }
+        end
+
+        it_behaves_like 'when base and head pipelines have scanning reports' do
+          let_it_be(:base_pipeline) { test_pipelines[:with_sast_report] }
+          let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
+
+          # Since the sast report on the base pipeline is a full scan and not a partial,
+          # it should not be considered in the comparison. Partial scans should only run
+          # on feature branches.
+          let(:num_fixed_findings) { 0 }
+          let(:num_added_findings) { 6 }
+        end
+      end
     end
 
     context 'with secret detection' do

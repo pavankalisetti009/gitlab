@@ -96,7 +96,7 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
 
   let(:finding_reports_comparer_fields) do
     <<~QUERY
-      findingReportsComparer(reportType: SAST) {
+      findingReportsComparer(reportType: SAST, scanMode: PARTIAL) {
         status
         statusReason
         report {
@@ -193,7 +193,9 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
   subject(:result) { graphql_data_at(:project, :merge_request, :finding_reports_comparer) }
 
   before do
-    allow(::Security::MergeRequestSecurityReportGenerationService).to receive(:execute).and_return(mock_report)
+    allow(::Security::MergeRequestSecurityReportGenerationService).to receive(:execute)
+      .with(merge_request, { report_type: 'sast', scan_mode: 'partial' })
+      .and_return(mock_report)
   end
 
   context 'when the user is not authorized to read the field' do

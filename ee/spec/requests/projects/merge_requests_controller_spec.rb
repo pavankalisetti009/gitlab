@@ -138,8 +138,11 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
   describe 'security_reports' do
     let_it_be(:merge_request) { create(:merge_request, :with_head_pipeline) }
     let_it_be(:user) { create(:user) }
+    let(:params) { { type: :sast } }
 
-    subject(:request_report) { get security_reports_project_merge_request_path(project, merge_request, type: :sast, format: :json) }
+    subject(:request_report) do
+      get security_reports_project_merge_request_path(project, merge_request, params: params, format: :json)
+    end
 
     before do
       stub_licensed_features(security_dashboard: true)
@@ -194,7 +197,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
         context 'when the given type is valid' do
           before do
             allow(::Security::MergeRequestSecurityReportGenerationService)
-              .to receive(:execute).with(an_instance_of(MergeRequest), 'sast').and_return(report_payload)
+              .to receive(:execute).with(an_instance_of(MergeRequest), hash_including(report_type: 'sast')).and_return(report_payload)
           end
 
           context 'when comparison is being processed' do

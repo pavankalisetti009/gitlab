@@ -68,6 +68,7 @@ module Ci
         params: {
           report_type: [params[:report_type]],
           scope: 'all',
+          scan_mode: params[:scan_mode],
           limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
         }
       ).execute.with_api_scopes
