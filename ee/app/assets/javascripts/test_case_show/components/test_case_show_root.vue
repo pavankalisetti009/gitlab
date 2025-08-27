@@ -189,7 +189,7 @@ export default {
           :message="__('Archived (%{movedToStart}moved%{movedToEnd})')"
         >
           <template #movedTo="{ content }">
-            <gl-link :href="testCase.movedTo.webUrl" class="text-white text-underline">{{
+            <gl-link :href="testCase.movedTo.webUrl" class="text-underline !gl-text-white">{{
               content
             }}</gl-link>
           </template>
@@ -200,7 +200,7 @@ export default {
         <gl-disclosure-dropdown
           v-if="canEditTestCase"
           data-testid="actions-dropdown"
-          class="gl-ml-auto md:gl-hidden"
+          class="gl-ml-auto @md/panel:gl-hidden"
           placement="bottom-end"
           category="secondary"
           :toggle-text="__('Options')"
@@ -217,7 +217,7 @@ export default {
         <gl-button
           v-if="canEditTestCase"
           data-testid="edit-test-case"
-          class="gl-hidden md:gl-inline-flex"
+          class="gl-hidden @md/panel:gl-inline-flex"
           :loading="testCaseStateChangeInProgress"
           :title="editCaseActionAriaLabel"
           :aria-label="editCaseActionAriaLabel"
@@ -227,7 +227,7 @@ export default {
         <gl-button
           v-if="canEditTestCase"
           data-testid="archive-test-case"
-          class="gl-hidden md:gl-inline-flex"
+          class="gl-hidden @md/panel:gl-inline-flex"
           :loading="testCaseStateChangeInProgress"
           @click="handleTestCaseStateChange"
           >{{ testCaseActionTitle }}</gl-button
@@ -236,7 +236,7 @@ export default {
           data-testid="new-test-case"
           category="secondary"
           variant="confirm"
-          class="md:gl-inline-flex"
+          class="@md/panel:gl-inline-flex"
           :class="{ 'gl-hidden': canEditTestCase, 'gl-grow': !canEditTestCase }"
           :href="testCaseNewPath"
           >{{ __('New test case') }}</gl-button

@@ -72,7 +72,7 @@ export default {
       custom-class="requirement-status-tooltip"
     >
       <b>{{ testReportBadge.tooltipTitle }}</b>
-      <div class="mt-1">{{ tooltipTitle(testReport.createdAt) }}</div>
+      <div class="!gl-mt-2">{{ tooltipTitle(testReport.createdAt) }}</div>
     </gl-tooltip>
   </component>
 </template>

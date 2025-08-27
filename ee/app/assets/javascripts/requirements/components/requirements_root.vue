@@ -751,7 +751,7 @@ export default {
       :filter-by="filterBy"
       :current-page="currentPage"
       :requirements-count="requirementsCount"
-      class="pt-2"
+      class="!gl-pt-3"
     />
     <ul
       v-if="!requirementsListLoading && !requirementsListEmpty"
