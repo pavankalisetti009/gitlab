@@ -15,8 +15,6 @@ RSpec.describe Ci::Bridge, feature_category: :continuous_integration do
     { trigger: { project: project.full_path, branch: 'master' } }
   end
 
-  it_behaves_like 'has secrets', :ci_bridge
-
   it_behaves_like 'a deployable job in EE' do
     let(:job) { bridge }
   end

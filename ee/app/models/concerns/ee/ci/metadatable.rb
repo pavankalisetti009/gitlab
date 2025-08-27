@@ -5,16 +5,16 @@ module EE
     module Metadatable
       extend ActiveSupport::Concern
 
-      prepended do
-        delegate :secrets, to: :metadata, allow_nil: true
+      def secrets
+        read_metadata_attribute(nil, :secrets, :secrets, {}).deep_stringify_keys
       end
 
       def secrets?
-        !!metadata&.secrets?
+        secrets.present?
       end
 
       def secrets=(value)
-        ensure_metadata.secrets = value
+        ensure_metadata.secrets = value if can_write_metadata?
       end
     end
   end

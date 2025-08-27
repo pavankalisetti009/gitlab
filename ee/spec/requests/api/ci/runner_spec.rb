@@ -43,7 +43,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
           }
         end
 
-        let!(:ci_build) { create(:ci_build, :pending, :queued, pipeline: pipeline, secrets: secrets) }
+        let!(:ci_build) { create(:ee_ci_build, :pending, :queued, pipeline: pipeline, secrets: secrets) }
 
         context 'when secrets management feature is available' do
           before do
@@ -231,7 +231,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
 
     describe 'GET api/v4/jobs/:id/artifacts' do
       let_it_be_with_reload(:job_with_artifacts) do
-        create(:ci_build, :success, ref: ref, pipeline: pipeline, user: user, project: project)
+        create(:ee_ci_build, :success, ref: ref, pipeline: pipeline, user: user, project: project)
       end
 
       let(:job) { job_with_artifacts }
@@ -275,7 +275,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
 
       context 'with missing artifacts file', :aggregate_failures do
         let(:job_without_artifacts) do
-          create(:ci_build, :running, ref: ref, pipeline: pipeline, user: user, project: project)
+          create(:ee_ci_build, :running, ref: ref, pipeline: pipeline, user: user, project: project)
         end
 
         it 'returns not_found and does not audit artifact download' do
@@ -309,7 +309,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         end
 
         let_it_be_with_reload(:downstream_ci_build) do
-          create(:ci_build, :running, project: downstream_project, user: user, options: options)
+          create(:ee_ci_build, :running, project: downstream_project, user: user, options: options)
         end
 
         let(:token) { downstream_ci_build.token }

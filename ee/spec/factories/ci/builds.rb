@@ -1,6 +1,22 @@
 # frozen_string_literal: true
 FactoryBot.define do
   factory :ee_ci_build, class: 'Ci::Build', parent: :ci_build do
+    transient do
+      secrets { nil }
+    end
+
+    after(:build) do |build, evaluator|
+      if evaluator.secrets
+        # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
+        build.metadata.write_attribute(:secrets, evaluator.secrets)
+        next unless build.job_definition
+
+        updated_config = build.job_definition.config.merge(secrets: evaluator.secrets)
+        build.job_definition.write_attribute(:config, updated_config)
+      end
+    end
+
     trait :protected_environment_failure do
       failed
       failure_reason { Ci::Build.failure_reasons[:protected_environment_failure] }

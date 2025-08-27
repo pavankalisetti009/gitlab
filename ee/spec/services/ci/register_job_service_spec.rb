@@ -14,8 +14,12 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
   end
 
   let!(:pipeline) { create(:ci_empty_pipeline, project: project) }
-  let!(:pending_build) { create(:ci_build, :pending, :queued, pipeline: pipeline, id_tokens: id_tokens) }
   let(:id_tokens) { nil }
+  let(:secrets) { nil }
+
+  let!(:pending_build) do
+    create(:ee_ci_build, :pending, :queued, pipeline: pipeline, id_tokens: id_tokens, secrets: secrets)
+  end
 
   shared_examples 'namespace minutes quota' do
     context 'shared runners minutes limit' do
@@ -191,18 +195,16 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
       end
 
       context 'when build has secrets defined' do
-        before do
-          pending_build.update!(
-            secrets: {
-              DATABASE_PASSWORD: {
-                vault: {
-                  engine: { name: 'kv-v2', path: 'kv-v2' },
-                  path: 'production/db',
-                  field: 'password'
-                }
+        let(:secrets) do
+          {
+            DATABASE_PASSWORD: {
+              vault: {
+                engine: { name: 'kv-v2', path: 'kv-v2' },
+                path: 'production/db',
+                field: 'password'
               }
             }
-          )
+          }
         end
 
         context 'when there is Vault server provided' do
