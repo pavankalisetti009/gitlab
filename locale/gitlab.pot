@@ -44423,7 +44423,7 @@ msgstr ""
 msgid "Observability|The ID of the group for this o11y service configuration."
 msgstr ""
 
-msgid "Observability|The Name of your o11y service instance."
+msgid "Observability|The name of your o11y service instance."
 msgstr ""
 
 msgid "Observability|To widen your search, change or remove filters above"
