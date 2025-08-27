@@ -6,8 +6,9 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
   subject(:presenter) { described_class.new(ci_build) }
 
   describe '#secrets_configuration' do
-    let!(:ci_build) { create(:ci_build, secrets: secrets) }
+    let!(:ci_build) { create(:ci_build, secrets: secrets, id_tokens: id_tokens) }
     let(:jwt_token) { "TESTING" }
+    let(:id_tokens) { nil }
 
     context 'build has no secrets' do
       let(:secrets) { {} }
@@ -111,13 +112,16 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
 
         context 'when there are ID tokens available' do
+          let(:id_tokens) do
+            {
+              'VAULT_ID_TOKEN_1' => { aud: 'https://gitlab.test' },
+              'VAULT_ID_TOKEN_2' => { aud: 'https://gitlab.link' }
+            }
+          end
+
           before do
             rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
             stub_application_setting(ci_jwt_signing_key: rsa_key)
-            ci_build.id_tokens = {
-              'VAULT_ID_TOKEN_1' => { id_token: { aud: 'https://gitlab.test' } },
-              'VAULT_ID_TOKEN_2' => { id_token: { aud: 'https://gitlab.link' } }
-            }
             ci_build.runner = build_stubbed(:ci_runner)
           end
 
@@ -216,13 +220,16 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
 
         context 'when there are ID tokens available' do
+          let(:id_tokens) do
+            {
+              'VAULT_ID_TOKEN_1' => { aud: 'https://gitlab.test' },
+              'VAULT_ID_TOKEN_2' => { aud: 'https://gitlab.link' }
+            }
+          end
+
           before do
             rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
             stub_application_setting(ci_jwt_signing_key: rsa_key)
-            ci_build.id_tokens = {
-              'VAULT_ID_TOKEN_1' => { id_token: { aud: 'https://gitlab.test' } },
-              'VAULT_ID_TOKEN_2' => { id_token: { aud: 'https://gitlab.link' } }
-            }
             ci_build.runner = build_stubbed(:ci_runner)
           end
 
@@ -326,13 +333,16 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
 
         context 'when there are ID tokens available' do
+          let(:id_tokens) do
+            {
+              'VAULT_ID_TOKEN_2' => { aud: 'https://gitlab.link' },
+              'AWS_ID_TOKEN' => { aud: 'https://gitlab.test' }
+            }
+          end
+
           before do
             rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
             stub_application_setting(ci_jwt_signing_key: rsa_key)
-            ci_build.id_tokens = {
-              'VAULT_ID_TOKEN_2' => { id_token: { aud: 'https://gitlab.link' } },
-              'AWS_ID_TOKEN' => { id_token: { aud: 'https://gitlab.test' } }
-            }
             ci_build.runner = build_stubbed(:ci_runner)
           end
 
@@ -372,18 +382,16 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
 
         context 'with all AWS configuration variables present' do
+          let(:id_tokens) { { 'AWS_ID_TOKEN' => { aud: 'https://aws.example.com' } } }
+
           before do
             create(:ci_variable, project: ci_build.project, key: 'AWS_REGION', value: 'us-west-2')
             create(:ci_variable, project: ci_build.project, key: 'AWS_ROLE_ARN',
               value: 'arn:aws:iam::123456789012:role/test-role')
             create(:ci_variable, project: ci_build.project, key: 'AWS_ROLE_SESSION_NAME', value: 'gitlab-ci-session')
 
-            # Add ID token
             rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
             stub_application_setting(ci_jwt_signing_key: rsa_key)
-            ci_build.id_tokens = {
-              'AWS_ID_TOKEN' => { id_token: { aud: 'https://aws.example.com' } }
-            }
             ci_build.runner = build_stubbed(:ci_runner)
           end
 

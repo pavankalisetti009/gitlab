@@ -14,7 +14,8 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
   end
 
   let!(:pipeline) { create(:ci_empty_pipeline, project: project) }
-  let!(:pending_build) { create(:ci_build, :pending, :queued, pipeline: pipeline) }
+  let!(:pending_build) { create(:ci_build, :pending, :queued, pipeline: pipeline, id_tokens: id_tokens) }
+  let(:id_tokens) { nil }
 
   shared_examples 'namespace minutes quota' do
     context 'shared runners minutes limit' do
@@ -231,13 +232,12 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
         end
 
         context 'when build has id_tokens defined and there is secrets provider defined' do
+          let(:id_tokens) { { 'TEST_ID_TOKEN' => { aud: 'https://client.test' } } }
+
           before do
             rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
             stub_application_setting(ci_jwt_signing_key: rsa_key)
 
-            pending_build.metadata.update!(
-              id_tokens: { 'TEST_ID_TOKEN' => { aud: 'https://client.test' } }
-            )
             create(:ci_variable, project: project, key: 'VAULT_SERVER_URL', value: 'https://vault.example.com')
           end
 
