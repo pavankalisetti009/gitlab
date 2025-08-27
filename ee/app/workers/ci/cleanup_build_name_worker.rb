@@ -16,7 +16,7 @@ module Ci
     MAX_RUNTIME = 2.minutes
     BATCH_SIZE = 10_000
     SUB_BATCH_SIZE = 1_000
-    CUT_OFF_DATE = 3
+    RETENTION_PERIOD = 30.days
     SLEEP_INTERVAL = 0.1
 
     # rubocop:disable CodeReuse/ActiveRecord -- specialized delete queries not suitable on model level
@@ -46,7 +46,7 @@ module Ci
     # We use success here to utilize existing index. As this deletion only needs to be approximate
     # we can be lenient on the criteria
     def build_id_to_delete_before
-      @id ||= Ci::Build.success.created_before(CUT_OFF_DATE.months.ago).order(status: :desc, created_at: :desc)
+      @id ||= Ci::Build.success.created_before(RETENTION_PERIOD.ago).order(status: :desc, created_at: :desc)
         .limit(1).first&.id
     end
     # rubocop:enable CodeReuse/ActiveRecord

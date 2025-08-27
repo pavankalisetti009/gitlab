@@ -4,9 +4,13 @@ require 'spec_helper'
 
 RSpec.describe Ci::CleanupBuildNameWorker, feature_category: :continuous_integration do
   let_it_be(:very_old_build) { create(:ci_build, :failed, :with_build_name, created_at: 1.year.ago) }
-  let_it_be(:slightly_old_build) { create(:ci_build, :success, :with_build_name, created_at: 4.months.ago) }
-  let_it_be(:build_right_before_3_months_cut_off) do
-    create(:ci_build, :success, :with_build_name, created_at: 3.months.ago - 1.day)
+
+  let_it_be(:slightly_old_build) do
+    create(:ci_build, :success, :with_build_name, created_at: described_class::RETENTION_PERIOD.ago + 1.day)
+  end
+
+  let_it_be(:build_right_before_cut_off) do
+    create(:ci_build, :success, :with_build_name, created_at: described_class::RETENTION_PERIOD.ago - 1.day)
   end
 
   let_it_be(:new_build) { create(:ci_build, :with_build_name, created_at: 1.day.ago) }
@@ -14,7 +18,7 @@ RSpec.describe Ci::CleanupBuildNameWorker, feature_category: :continuous_integra
   describe '#perform' do
     subject(:worker) { described_class.new }
 
-    it 'deletes build name records older than 3 months' do
+    it 'deletes build name records outside retention period' do
       expect(Ci::Build.count).to eq(4)
       expect(Ci::BuildName.count).to eq(4)
 
@@ -26,7 +30,7 @@ RSpec.describe Ci::CleanupBuildNameWorker, feature_category: :continuous_integra
 
     context 'with no records found' do
       before do
-        stub_const("#{described_class}::CUT_OFF_DATE", 24)
+        stub_const("#{described_class}::RETENTION_PERIOD", 2.years)
       end
 
       it 'returns if there are no records to be deleted' do
