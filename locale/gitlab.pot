@@ -49533,6 +49533,9 @@ msgstr ""
 msgid "Profiles|SSH Key: %{title}"
 msgstr ""
 
+msgid "Profiles|Scheduled pipelines you own"
+msgstr ""
+
 msgid "Profiles|Select a service to sign in with."
 msgstr ""
 
@@ -49638,6 +49641,9 @@ msgstr ""
 msgid "Profiles|Using emoji in names seems fun, but please try to set a status message instead"
 msgstr ""
 
+msgid "Profiles|View, edit, or transfer ownership of your active scheduled pipelines."
+msgstr ""
+
 msgid "Profiles|Warning! Insecure key. %{message}"
 msgstr ""
 
@@ -49657,6 +49663,9 @@ msgid "Profiles|You can upload your avatar here"
 msgstr ""
 
 msgid "Profiles|You can upload your avatar here or change it at %{gravatar_link}"
+msgstr ""
+
+msgid "Profiles|You do not own any active scheduled pipelines."
 msgstr ""
 
 msgid "Profiles|You don't have access to delete this user."
@@ -56577,6 +56586,9 @@ msgid "Scheduled Deletion At - %{permanent_deletion_time}"
 msgstr ""
 
 msgid "Scheduled a rebase of branch %{branch}."
+msgstr ""
+
+msgid "Scheduled pipelines"
 msgstr ""
 
 msgid "Scheduled pipelines cannot run more frequently than once per %{limit} minutes. A pipeline configured to run more frequently only starts after %{limit} minutes have elapsed since the last time it ran."
