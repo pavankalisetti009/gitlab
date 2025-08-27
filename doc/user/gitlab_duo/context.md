@@ -194,7 +194,6 @@ Use the imported files in your IDE to provide context about your code project. I
 {{< history >}}
 
 - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/17124) in GitLab 18.2 [with a flag](../../administration/feature_flags/_index.md) named `use_duo_context_exclusion`. Disabled by default.
-- Feature flag `use_duo_context_exclusion` enabled by default in GitLab 18.4.
 - Changed to beta in GitLab 18.4.
 
 {{< /history >}}
