@@ -28,8 +28,6 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
     end
 
     it 'returns tools' do
-      skip if Gitlab.ee?
-
       expect(json_response['result']['tools']).to contain_exactly(
         {
           "name" => "get_pipeline_jobs",
@@ -74,6 +72,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
                 "type" => "array", "description" => "The array of user IDs to assign issue"
               }, "milestone_id" => {
                 "type" => "integer", "description" => "The ID of a milestone to assign issue"
+              }, "epic_id" => {
+                "type" => "integer", "description" => "The ID of an epic to associate the issue with"
               }, "labels" => {
                 "type" => "string", "description" => "Comma-separated list of label names"
               }, "confidential" => {
