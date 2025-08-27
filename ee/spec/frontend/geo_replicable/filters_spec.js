@@ -6,8 +6,13 @@ import {
   processFilters,
   getGraphqlFilterVariables,
   getAvailableFilteredSearchTokens,
+  getPaginationObject,
 } from 'ee/geo_replicable/filters';
-import { TOKEN_TYPES, FILTERED_SEARCH_TOKENS } from 'ee/geo_replicable/constants';
+import {
+  TOKEN_TYPES,
+  FILTERED_SEARCH_TOKENS,
+  DEFAULT_PAGE_SIZE,
+} from 'ee/geo_replicable/constants';
 import { TEST_HOST } from 'spec/test_constants';
 import { MOCK_REPLICABLE_TYPES } from './mock_data';
 
@@ -100,6 +105,24 @@ describe('GeoReplicable filters', () => {
       ${'verification is enabled'}  | ${true}             | ${FILTERED_SEARCH_TOKENS}
     `('returns correct tokens when $description', ({ verificationEnabled, expected }) => {
       expect(getAvailableFilteredSearchTokens(verificationEnabled)).toStrictEqual(expected);
+    });
+  });
+
+  describe('getPaginationObject', () => {
+    it.each`
+      description                                         | cursor                                            | expected
+      ${'no parameters provided'}                         | ${{}}                                             | ${{ before: '', after: '', first: DEFAULT_PAGE_SIZE, last: null }}
+      ${'empty parameters provided'}                      | ${{ before: '', after: '', first: '', last: '' }} | ${{ before: '', after: '', first: DEFAULT_PAGE_SIZE, last: null }}
+      ${'first parameter is provided as String'}          | ${{ first: '10' }}                                | ${{ before: '', after: '', first: 10, last: null }}
+      ${'first parameter is provided as Number'}          | ${{ first: 10 }}                                  | ${{ before: '', after: '', first: 10, last: null }}
+      ${'first parameter is provided as negative Number'} | ${{ first: -10 }}                                 | ${{ before: '', after: '', first: DEFAULT_PAGE_SIZE, last: null }}
+      ${'last parameter is provided as String'}           | ${{ last: '10' }}                                 | ${{ before: '', after: '', first: null, last: 10 }}
+      ${'last parameter is provided as Number'}           | ${{ last: 10 }}                                   | ${{ before: '', after: '', first: null, last: 10 }}
+      ${'last parameter is provided as negative Number'}  | ${{ last: -10 }}                                  | ${{ before: '', after: '', first: DEFAULT_PAGE_SIZE, last: null }}
+      ${'next page pagination object is provided'}        | ${{ after: 'cursor123', first: 10 }}              | ${{ before: '', after: 'cursor123', first: 10, last: null }}
+      ${'prev page pagination object is provided'}        | ${{ before: 'cursor123', last: 10 }}              | ${{ before: 'cursor123', after: '', first: null, last: 10 }}
+    `('returns correct pagination object when $description', ({ cursor, expected }) => {
+      expect(getPaginationObject(cursor)).toStrictEqual(expected);
     });
   });
 });

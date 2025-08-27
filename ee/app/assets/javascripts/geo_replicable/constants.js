@@ -175,3 +175,10 @@ export const BULK_ACTIONS = [
     },
   },
 ];
+
+export const DEFAULT_CURSOR = {
+  before: '',
+  after: '',
+  first: DEFAULT_PAGE_SIZE,
+  last: null,
+};
