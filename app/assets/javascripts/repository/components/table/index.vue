@@ -164,7 +164,7 @@ export default {
             />
           </template>
           <template v-if="isLoading">
-            <tr v-for="i in 5" :key="i" aria-hidden="true">
+            <tr v-for="i in 3" :key="i" aria-hidden="true" data-testid="loader">
               <td><gl-skeleton-loader :lines="1" /></td>
               <td class="gl-hidden sm:gl-block">
                 <gl-skeleton-loader :lines="1" />
