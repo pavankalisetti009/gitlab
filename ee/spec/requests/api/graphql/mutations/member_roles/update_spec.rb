@@ -88,7 +88,7 @@ RSpec.describe 'updating member role', feature_category: :system_access do
           expect(member_role.description).to eq('new description')
           expect(member_role.read_vulnerability).to be(true)
           expect(member_role.admin_vulnerability).to be(true)
-          expect(member_role.read_code).to be(false)
+          expect(member_role.read_code).to be_nil
         end
       end
 

@@ -122,7 +122,7 @@ RSpec.shared_examples 'custom role update' do
     it 'updates the provided (permitted) attributes' do
       expect { result }
         .to change { role.reload.name }.to(role_name)
-        .and change { role.reload.permissions[existing_abilities.each_key.first.to_s] }.to(false)
+        .and change { role.reload.permissions[existing_abilities.each_key.first.to_s] }.to(nil)
     end
 
     it 'does not update unpermitted attributes' do

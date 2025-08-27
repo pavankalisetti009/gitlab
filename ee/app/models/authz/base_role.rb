@@ -4,6 +4,7 @@ module Authz
   class BaseRole < ApplicationRecord
     include Authz::AdminRollable
 
+    before_validation :remove_disabled_permissions
     validate :ensure_at_least_one_permission_is_enabled
 
     self.abstract_class = true
@@ -28,6 +29,10 @@ module Authz
       self.class.all_customizable_permissions.filter do |permission|
         attributes[permission.to_s] && self.class.permission_enabled?(permission, user)
       end
+    end
+
+    def remove_disabled_permissions
+      self.permissions = permissions.select { |_, enabled| enabled }
     end
   end
 end
