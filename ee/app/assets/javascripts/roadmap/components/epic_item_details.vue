@@ -182,7 +182,7 @@ export default {
     data-testid="epic-details-cell"
   >
     <div
-      class="align-items-start gl-flex gl-p-3 gl-pl-5 xl:gl-pl-6"
+      class="gl-flex !gl-items-start gl-p-3 gl-pl-5 @xl/panel:gl-pl-6"
       :class="[epic.isChildEpic ? childMarginClassname : '']"
       data-testid="epic-container"
     >
@@ -212,7 +212,7 @@ export default {
       >
         {{ expandIconLabel }}
       </gl-tooltip>
-      <div class="flex-grow-1 mx-1 gl-w-13">
+      <div class="!gl-mx-2 gl-w-13 gl-grow">
         <a
           :href="epic.webUrl"
           :title="epic.title"
@@ -230,7 +230,7 @@ export default {
           >
             {{ epic.group.name }}
           </span>
-          <span v-if="isEpicGroupDifferent && !epic.hasParent" class="mx-1" aria-hidden="true"
+          <span v-if="isEpicGroupDifferent && !epic.hasParent" class="!gl-mx-2" aria-hidden="true"
             >&middot;</span
           >
           <span class="epic-timeframe" :title="timeframeString">{{ timeframeString }}</span>
@@ -253,11 +253,11 @@ export default {
         <div v-if="allowSubEpics">
           <div
             ref="childEpicsCount"
-            class="text-nowrap gl-mb-2 gl-flex gl-justify-end"
+            class="gl-mb-2 gl-flex gl-justify-end !gl-whitespace-nowrap"
             data-testid="child-epics-count"
           >
-            <gl-icon name="epic" class="align-text-bottom mr-1" />
-            <p class="m-0" :aria-label="childEpicsCountText">{{ childEpicsCount }}</p>
+            <gl-icon name="epic" class="!gl-mr-2 !gl-align-text-bottom" />
+            <p class="!gl-m-0" :aria-label="childEpicsCountText">{{ childEpicsCount }}</p>
           </div>
           <gl-tooltip
             ref="childEpicsCountTooltip"

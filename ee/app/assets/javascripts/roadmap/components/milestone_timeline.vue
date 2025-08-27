@@ -29,7 +29,7 @@ export default {
     <span
       v-for="timeframeItem in timeframe"
       :key="timeframeItem.id"
-      class="milestone-timeline-cell border-right border-bottom gl-relative gl-table-cell"
+      class="milestone-timeline-cell !gl-border-r !gl-border-b gl-relative gl-table-cell !gl-border-b-gray-300 !gl-border-r-gray-300"
     >
       <current-day-indicator :timeframe-item="timeframeItem" />
       <template v-if="milestonesExpanded">

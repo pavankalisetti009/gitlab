@@ -119,18 +119,18 @@ export default {
         smallClass,
       ]"
       :style="timelineBarStyles(milestone)"
-      class="milestone-item-details position-absolute gl-inline-block"
+      class="milestone-item-details !gl-absolute gl-inline-block"
       data-testid="milestone-item-wrapper"
     >
       <a :href="milestone.webPath" class="milestone-url gl-block">
         <span
           :id="`milestone-item-${milestone.id}`"
-          class="milestone-item-title str-truncated-100 position-sticky gl-font-bold"
+          class="milestone-item-title str-truncated-100 gl-sticky gl-font-bold"
           >{{ milestone.title }}</span
         >
-        <span class="timeline-bar position-relative gl-block"></span>
+        <span class="timeline-bar gl-relative gl-block"></span>
       </a>
-      <div class="milestone-start-and-end position-relative" :style="hoverStyles"></div>
+      <div class="milestone-start-and-end gl-relative" :style="hoverStyles"></div>
       <gl-popover
         :target="`milestone-item-${milestone.id}`"
         boundary="viewport"
