@@ -369,3 +369,77 @@ export const mockDefaultLifecycle = {
   ],
   __typename: 'LocalLifecycle',
 };
+
+export const mockCreateLifecycleResponse = {
+  data: {
+    lifecycleCreate: {
+      lifecycle: {
+        id: 'gid://gitlab/WorkItems::Statuses::Custom::Lifecycle/50',
+        name: 'Name 24',
+        statuses: [
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/169',
+            name: 'Triage',
+            iconName: 'status-neutral',
+            color: '#995715',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/87',
+            name: 'To do',
+            iconName: 'status-waiting',
+            color: '#737278',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/88',
+            name: 'In progress',
+            iconName: 'status-running',
+            color: '#1f75cb',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/89',
+            name: 'Done',
+            iconName: 'status-success',
+            color: '#108548',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/90',
+            name: "Won't do",
+            iconName: 'status-cancelled',
+            color: '#DD2B0E',
+            __typename: 'WorkItemStatus',
+          },
+          {
+            id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/91',
+            name: 'Duplicate',
+            iconName: 'status-cancelled',
+            color: '#DD2B0E',
+            __typename: 'WorkItemStatus',
+          },
+        ],
+        defaultOpenStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/87',
+          name: 'To do',
+          __typename: 'WorkItemStatus',
+        },
+        defaultClosedStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/89',
+          name: 'Done',
+          __typename: 'WorkItemStatus',
+        },
+        defaultDuplicateStatus: {
+          id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/91',
+          name: 'Duplicate',
+          __typename: 'WorkItemStatus',
+        },
+        workItemTypes: [],
+        __typename: 'WorkItemLifecycle',
+      },
+      errors: [],
+      __typename: 'LifecycleCreatePayload',
+    },
+  },
+};
