@@ -38,10 +38,10 @@ module API
         end
       end
 
-      def ai_gateway_headers(headers, service)
+      def ai_gateway_headers(headers, task)
         Gitlab::AiGateway.headers(
           user: current_user,
-          service: service,
+          service: task.unit_primitive_name,
           ai_feature_name: :code_suggestions,
           agent: headers["User-Agent"],
           lsp_version: headers["X-Gitlab-Language-Server-Version"]
@@ -182,8 +182,6 @@ module API
 
           unauthorized_with_origin_header! if task.feature_disabled?
 
-          service = CloudConnector::AvailableServices.find_by_name(task.unit_primitive_name)
-
           unless current_user.allowed_to_use?(:code_suggestions,
             service_name: task.unit_primitive_name,
             licensed_feature: task.licensed_feature
@@ -201,7 +199,7 @@ module API
             Gitlab::Workhorse.send_url(
               task.endpoint,
               body: body,
-              headers: ai_gateway_headers(headers, service),
+              headers: ai_gateway_headers(headers, task),
               method: "POST",
               timeouts: { read: 55 }
             )
