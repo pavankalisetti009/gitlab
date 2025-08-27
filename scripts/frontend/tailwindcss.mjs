@@ -35,7 +35,12 @@ function createUniqueProcessor(...args) {
 
 const ROOT_PATH = path.resolve(import.meta.dirname, '../../');
 
-export async function build({ shouldWatch = false, content = false, buildCQs = false } = {}) {
+export async function build({
+  shouldWatch = false,
+  content = false,
+  buildCQs = false,
+  needsUniqueProcessor = true,
+} = {}) {
   const configFile = buildCQs ? 'tailwind_cqs.config.js' : 'tailwind.config.js';
   const outputBundle = buildCQs ? 'tailwind_cqs.css' : 'tailwind.css';
 
@@ -52,7 +57,13 @@ export async function build({ shouldWatch = false, content = false, buildCQs = f
     processorOptions['--content'] = content;
   }
 
-  const processor = await createUniqueProcessor(processorOptions, config);
+  let processor;
+  if (needsUniqueProcessor) {
+    processor = await createUniqueProcessor(processorOptions, config);
+  } else {
+    const { createProcessor } = await import('tailwindcss/lib/cli/build/plugin.js');
+    processor = await createProcessor(processorOptions, config);
+  }
 
   if (shouldWatch) {
     return processor.watch();
@@ -92,7 +103,7 @@ export function webpackTailwindCompilerPlugin({ shouldWatch = true, buildCQs = f
 
 if (wasScriptCalledDirectly()) {
   const buildCQs = Boolean(process.env.USE_TAILWIND_CONTAINER_QUERIES);
-  build({ buildCQs })
+  build({ buildCQs, needsUniqueProcessor: false })
     // eslint-disable-next-line promise/always-return
     .then(() => {
       console.log('Tailwind utils built successfully');
