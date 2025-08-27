@@ -2427,6 +2427,9 @@ msgstr ""
 msgid "AICatalog|A public agent can be made private only if it is not used."
 msgstr ""
 
+msgid "AICatalog|A public flow can be made private only if it is not used."
+msgstr ""
+
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
@@ -2485,6 +2488,9 @@ msgid "AICatalog|Choose a memorable name for your AI flow."
 msgstr ""
 
 msgid "AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog."
+msgstr ""
+
+msgid "AICatalog|Choose who can view and interact with this flow after it is published to the public AI catalog."
 msgstr ""
 
 msgid "AICatalog|Connect AI agents to automate complicated tasks."
@@ -2677,6 +2683,9 @@ msgid "AICatalog|This agent can be made private if it is not used."
 msgstr ""
 
 msgid "AICatalog|This agent specializes in... It can help you with... Best suited for..."
+msgstr ""
+
+msgid "AICatalog|This flow can be made private if it is not used."
 msgstr ""
 
 msgid "AICatalog|This flow specializes in... It can help you with... Best suited for..."

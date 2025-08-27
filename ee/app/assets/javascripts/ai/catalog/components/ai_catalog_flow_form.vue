@@ -1,20 +1,16 @@
 <script>
 import { uniqueId } from 'lodash';
+import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import {
-  GlAlert,
-  GlButton,
-  GlForm,
-  GlFormFields,
-  GlFormRadio,
-  GlFormRadioGroup,
-  GlFormTextarea,
-  GlIcon,
-} from '@gitlab/ui';
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+} from '~/visibility_level/constants';
 import {
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
   VISIBILITY_LEVEL_PRIVATE,
   VISIBILITY_LEVEL_PUBLIC,
+  FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
 import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
@@ -23,6 +19,7 @@ import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
 import ErrorsAlert from './errors_alert.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
+import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
 export default {
   components: {
@@ -30,14 +27,11 @@ export default {
     AiCatalogFormButtons,
     AiCatalogStepsEditor,
     FormProjectDropdown,
-    GlAlert,
     GlButton,
     GlForm,
     GlFormFields,
-    GlFormRadio,
-    GlFormRadioGroup,
     GlFormTextarea,
-    GlIcon,
+    VisibilityLevelRadioGroup,
   },
   props: {
     mode: {
@@ -63,6 +57,7 @@ export default {
           description: '',
           steps: [],
           release: true,
+          public: false,
         };
       },
     },
@@ -143,6 +138,17 @@ export default {
             labelDescription: s__('AICatalog|Nodes run sequentially.'),
           },
         },
+        visibilityLevel: {
+          label: __('Visibility level'),
+          validators: createFieldValidators({
+            requiredLabel: s__('AICatalog|Visibility level is required.'),
+          }),
+          groupAttrs: {
+            labelDescription: s__(
+              'AICatalog|Choose who can view and interact with this flow after it is published to the public AI catalog.',
+            ),
+          },
+        },
       };
     },
   },
@@ -167,6 +173,12 @@ export default {
     },
   },
   indexRoute: AI_CATALOG_FLOWS_ROUTE,
+  visibilityLevelTexts: {
+    textPrivate: FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+    textPublic: FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+    alertTextPrivate: s__('AICatalog|This flow can be made private if it is not used.'),
+    alertTextPublic: s__('AICatalog|A public flow can be made private only if it is not used.'),
+  },
 };
 </script>
 <template>
@@ -198,43 +210,19 @@ export default {
             @update="input"
           />
         </template>
-        <template #input(visibilityLevel)="{ id, input, validation, value }">
-          <gl-form-radio-group
-            :id="id"
-            :state="validation.state"
-            :checked="value"
-            data-testid="flow-form-radio-group-visibility-level"
-            @input="input"
-          >
-            <gl-form-radio
-              v-for="level in visibilityLevels"
-              :key="level.value"
-              :value="level.value"
-              :state="validation.state"
-              :data-testid="`${level.value}-radio`"
-              class="gl-mb-3"
-            >
-              <div class="gl-flex gl-items-center gl-gap-2">
-                <gl-icon :size="16" :name="level.icon" />
-                <span class="gl-font-semibold">
-                  {{ level.label }}
-                </span>
-              </div>
-              <template #help>{{ level.text }}</template>
-            </gl-form-radio>
-          </gl-form-radio-group>
-          <gl-alert
-            v-if="visibilityLevelAlertText"
-            :dismissible="false"
-            data-testid="flow-form-visibility-level-alert"
-            class="gl-mt-3"
-            variant="info"
-          >
-            {{ visibilityLevelAlertText }}
-          </gl-alert>
-        </template>
         <template #input(steps)>
           <ai-catalog-steps-editor v-model="formValues.steps" class="gl-mb-4" />
+        </template>
+        <template #input(visibilityLevel)="{ id, input, validation, value }">
+          <visibility-level-radio-group
+            :id="id"
+            :is-edit-mode="isEditMode"
+            :initial-value="initialValues.public"
+            :validation-state="validation.state"
+            :value="value"
+            :texts="$options.visibilityLevelTexts"
+            @input="input"
+          />
         </template>
       </gl-form-fields>
       <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
