@@ -44046,6 +44046,9 @@ msgstr ""
 msgid "Observability|ClickHouse Performance"
 msgstr ""
 
+msgid "Observability|Configure your o11y service connection settings."
+msgstr ""
+
 msgid "Observability|Configure your observability service connection settings."
 msgstr ""
 
@@ -44076,7 +44079,7 @@ msgstr ""
 msgid "Observability|Email Notification"
 msgstr ""
 
-msgid "Observability|Email address for authentication with the observability service."
+msgid "Observability|Email address for authentication with the o11y service."
 msgstr ""
 
 msgid "Observability|Enable Observability"
@@ -44091,7 +44094,7 @@ msgstr ""
 msgid "Observability|Enable tracing, metrics, or logs on your project."
 msgstr ""
 
-msgid "Observability|Encryption Key"
+msgid "Observability|Encryption key"
 msgstr ""
 
 msgid "Observability|Enterprise Ready"
@@ -44110,6 +44113,9 @@ msgid "Observability|Experience the power of GitLab Observability with real-time
 msgstr ""
 
 msgid "Observability|Experimental functionality"
+msgstr ""
+
+msgid "Observability|Failed to create O11y service settings"
 msgstr ""
 
 msgid "Observability|Failed to delete observability service settings."
@@ -44136,7 +44142,13 @@ msgstr ""
 msgid "Observability|GitLab Observability is an open source, OpenTelemetry-native observability platform that unifies logs, metrics, and traces in a single application. Monitor application performance with APM dashboards, visualize distributed traces across microservices, manage centralized logs with powerful querying, and set up intelligent alerts."
 msgstr ""
 
+msgid "Observability|Group ID"
+msgstr ""
+
 msgid "Observability|Group is required"
+msgstr ""
+
+msgid "Observability|Group not found"
 msgstr ""
 
 msgid "Observability|Iframe not ready for communication"
@@ -44205,6 +44217,15 @@ msgstr ""
 msgid "Observability|O11y Service Settings"
 msgstr ""
 
+msgid "Observability|O11y service configuration"
+msgstr ""
+
+msgid "Observability|O11y service settings"
+msgstr ""
+
+msgid "Observability|O11y service settings already exist"
+msgstr ""
+
 msgid "Observability|Observability Access Requested"
 msgstr ""
 
@@ -44220,10 +44241,13 @@ msgstr ""
 msgid "Observability|Observability service settings updated successfully."
 msgstr ""
 
+msgid "Observability|Observability settings for group ID %{group_id} created successfully."
+msgstr ""
+
 msgid "Observability|OpenTelemetry Native"
 msgstr ""
 
-msgid "Observability|Password for authentication with the observability service."
+msgid "Observability|Password for authentication with the o11y service."
 msgstr ""
 
 msgid "Observability|Performance Overview"
@@ -44259,7 +44283,7 @@ msgstr ""
 msgid "Observability|See It In Action"
 msgstr ""
 
-msgid "Observability|Service Name"
+msgid "Observability|Service name"
 msgstr ""
 
 msgid "Observability|Single pane of glass for logs, metrics, and traces within GitLab"
@@ -44283,7 +44307,10 @@ msgstr ""
 msgid "Observability|Thank You for Your Request!"
 msgstr ""
 
-msgid "Observability|The Name of your observability service instance."
+msgid "Observability|The ID of the group for this o11y service configuration."
+msgstr ""
+
+msgid "Observability|The Name of your o11y service instance."
 msgstr ""
 
 msgid "Observability|To widen your search, change or remove filters above"
@@ -44304,7 +44331,7 @@ msgstr ""
 msgid "Observability|Usage by day"
 msgstr ""
 
-msgid "Observability|User Email"
+msgid "Observability|User email"
 msgstr ""
 
 msgid "Observability|User is required"
