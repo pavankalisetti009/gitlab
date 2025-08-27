@@ -1,15 +1,18 @@
 <script>
-import { GlDashboardPanel } from '@gitlab/ui';
+import { GlDashboardPanel, GlLink } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import { SEVERITY_LEVELS_KEYS, SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
+import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
 
 export default {
   name: 'VulnerabilitiesForSeverityPanel',
   components: {
     GlDashboardPanel,
     GlSingleStat,
+    GlLink,
   },
+  inject: ['securityVulnerabilitiesPath'],
   props: {
     severity: {
       type: String,
@@ -19,6 +22,11 @@ export default {
     count: {
       type: Number,
       required: true,
+    },
+    filters: {
+      type: Object,
+      required: false,
+      default: () => ({}),
     },
     error: {
       type: Boolean,
@@ -47,6 +55,14 @@ export default {
 
       return `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[this.severity]}`;
     },
+    link() {
+      return constructVulnerabilitiesReportWithFiltersPath({
+        securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
+        seriesId: this.severity.toUpperCase(),
+        filterKey: 'severity',
+        additionalFilters: this.filters,
+      });
+    },
   },
 };
 </script>
@@ -61,7 +77,10 @@ export default {
     :border-color-class="error ? 'gl-border-t-red-500' : ''"
   >
     <template #body>
-      <gl-single-stat v-if="!error" title="" :value="count" />
+      <div v-if="!error" class="-gl-mt-3">
+        <gl-single-stat title="" :value="count" />
+        <gl-link :href="link" target="_blank" class="gl-ml-2">{{ __('View') }}</gl-link>
+      </div>
       <p v-else>{{ __('Something went wrong. Please try again.') }}</p>
     </template>
   </gl-dashboard-panel>

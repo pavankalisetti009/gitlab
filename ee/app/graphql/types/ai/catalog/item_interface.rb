@@ -19,7 +19,8 @@ module Types
 
         expose_permissions ::Types::PermissionTypes::Ai::Catalog::Item
 
-        field :created_at, ::Types::TimeType, null: false, description: 'Date of creation.'
+        field :created_at, ::Types::TimeType, null: false, description: 'Timestamp of when the item was created.'
+        field :updated_at, ::Types::TimeType, null: false, description: 'Timestamp of when the item was updated.'
         field :description, GraphQL::Types::String, null: false, description: 'Description of the item.'
         field :id, GraphQL::Types::ID, null: false, description: 'ID of the item.'
         field :item_type,
