@@ -333,4 +333,126 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
       end
     end
   end
+
+  describe 'PUT /admin/data_management/:model_name/:id/checksum' do
+    let_it_be(:expected_model) { create(:snippet_repository) }
+    let_it_be(:api_path) { "/admin/data_management/snippet_repository/#{expected_model.id}/checksum" }
+    let_it_be(:node) { create(:geo_node) }
+
+    before do
+      stub_current_geo_node(node)
+      stub_primary_site
+    end
+
+    context 'with feature flag disabled' do
+      before do
+        Feature.disable(:geo_primary_verification_view)
+      end
+
+      it 'returns 404' do
+        put api(api_path, admin, admin_mode: true)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'with feature flag enabled' do
+      context 'when not on primary site' do
+        before do
+          allow(Gitlab::Geo).to receive(:primary?).and_return(false)
+        end
+
+        it 'returns 400 bad request' do
+          put api(api_path, admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq('400 Bad request - Endpoint only available on primary site.')
+        end
+      end
+
+      context 'when user is not authenticated' do
+        it 'returns 401 unauthorized' do
+          put api(api_path)
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+      end
+
+      context 'when user is not an admin' do
+        it 'returns 403 forbidden' do
+          put api(api_path, user)
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'with valid model name' do
+        context 'with valid id' do
+          it 'returns successful message' do
+            put api(api_path, admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to include('id' => expected_model.id, 'model_class' => expected_model.class.name)
+          end
+
+          context 'when model is not replicable' do
+            before do
+              allow(expected_model.class).to receive(:respond_to?).with(:replicator_class).and_return(false)
+            end
+
+            it 'returns 400 bad request' do
+              put api(api_path, admin, admin_mode: true)
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+              expect(json_response['message']).to include('is not a verifiable model')
+            end
+          end
+
+          context 'when model is not verifiable' do
+            before do
+              allow(expected_model.class.replicator_class).to receive(:verification_enabled?).and_return(false)
+            end
+
+            it 'returns 400 bad request' do
+              put api(api_path, admin, admin_mode: true)
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+              expect(json_response['message']).to include('is not a verifiable model')
+            end
+          end
+
+          context 'when verification fails' do
+            before do
+              allow_next_instance_of(expected_model.replicator.class) do |replicator|
+                allow(replicator).to receive(:verify).and_return(nil)
+              end
+            end
+
+            it 'returns 400 bad request' do
+              put api(api_path, admin, admin_mode: true)
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+              expect(json_response['message']).to include("Verifying snippet_repository/#{expected_model.id} failed")
+            end
+          end
+        end
+      end
+
+      context 'with all available replicable models' do
+        where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
+
+        with_them do
+          let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
+          let(:expected_record) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- factory
+
+          it 'handles all known replicable model names' do
+            put api("/admin/data_management/#{model_name}/#{expected_record.id}/checksum", admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to include('id' => expected_record.id, 'model_class' => expected_record.class.name)
+          end
+        end
+      end
+    end
+  end
 end
