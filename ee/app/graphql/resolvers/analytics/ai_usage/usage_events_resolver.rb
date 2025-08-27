@@ -8,11 +8,11 @@ module Resolvers
 
         argument :start_date, Types::DateType,
           required: false,
-          description: 'Date range to start from. Default is 7 days ago.'
+          description: 'Start date for the date range. Default is 7 days before the current date.'
 
         argument :end_date, Types::DateType,
           required: false,
-          description: 'Date range to end at. Default is the end of current day.'
+          description: 'End date for the date range. Default is the current day.'
 
         def ready?(**args)
           validate_params!(args)

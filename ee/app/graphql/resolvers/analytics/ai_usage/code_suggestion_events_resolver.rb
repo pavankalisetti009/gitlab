@@ -3,7 +3,7 @@
 module Resolvers
   module Analytics
     module AiUsage
-      class CodeSuggestionEventsResolver < BaseResolver
+      class CodeSuggestionEventsResolver < UsageEventsResolver
         type ::Types::Analytics::AiUsage::CodeSuggestionEventType.connection_type, null: true
 
         def ready?(**args)
@@ -12,12 +12,13 @@ module Resolvers
           raise Gitlab::Graphql::Errors::ArgumentError, 'Not available for this resource.'
         end
 
-        def resolve
-          finder =
-            ::Ai::CodeSuggestionEventsFinder
-              .new(current_user, resource: object)
+        def resolve(**args)
+          params = params_with_defaults(args)
 
-          offset_pagination(finder.execute)
+          ::Ai::CodeSuggestionEventsFinder.new(current_user,
+            namespace: namespace,
+            from: params[:start_date],
+            to: params[:end_date]).execute
         end
 
         private

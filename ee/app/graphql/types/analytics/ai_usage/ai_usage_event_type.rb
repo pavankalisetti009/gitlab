@@ -10,7 +10,7 @@ module Types
         field :id,
           GraphQL::Types::ID,
           null: false,
-          description: "ID of the code suggestion event."
+          description: "ID of the usage event."
 
         field :timestamp,
           Types::TimeType,

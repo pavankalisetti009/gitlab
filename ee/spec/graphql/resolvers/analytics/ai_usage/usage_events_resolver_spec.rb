@@ -29,12 +29,6 @@ RSpec.describe Resolvers::Analytics::AiUsage::UsageEventsResolver, feature_categ
 
   subject(:resolver) { resolve(described_class, obj: group, args: params, ctx: { current_user: user }) }
 
-  before do
-    allow(Ability).to receive(:allowed?)
-     .with(user, :read_enterprise_ai_analytics, group)
-     .and_return(true)
-  end
-
   describe '#ready', :freeze_time do
     it 'raises an error when timeframe is too large' do
       expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,

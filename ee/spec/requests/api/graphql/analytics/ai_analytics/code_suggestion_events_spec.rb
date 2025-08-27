@@ -30,33 +30,37 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
       }
     NODES
 
-    code_suggestion_fields =
-      query_graphql_field(:code_suggestion_events, {}, nodes)
+    code_suggestion_fields = query_graphql_field(:code_suggestion_events, filter_params, nodes)
 
-    query_graphql_field(:aiUsageData, filter_params, code_suggestion_fields)
+    query_graphql_field(:aiUsageData, {}, code_suggestion_fields)
   end
 
-  let(:filter_params) { {} }
-  let(:expected_filters) { {} }
+  let(:filter_params) { { startDate: 3.days.ago, endDate: 3.days.since } }
 
   let_it_be(:code_suggestion_event_1) do
-    create(:ai_code_suggestion_event, :shown, user: user_1,
-      namespace_path: group_project.reload.project_namespace.traversal_path)
+    create(:ai_usage_event, event: :code_suggestion_shown_in_ide, user: user_1,
+      namespace: group_project.reload.project_namespace)
   end
 
   let_it_be(:code_suggestion_event_2) do
-    create(:ai_code_suggestion_event, :accepted, user: user_1,
-      namespace_path: subgroup_project.reload.project_namespace.traversal_path)
+    create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_1,
+      namespace: subgroup_project.reload.project_namespace,
+      extras: { language: 'ruby', suggestion_size: 5, unique_tracking_id: 'abc' })
   end
 
   let_it_be(:code_suggestion_event_3) do
-    create(:ai_code_suggestion_event, :accepted, user: user_2,
-      namespace_path: other_group_project.reload.project_namespace.traversal_path)
+    create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_2,
+      namespace: other_group_project.reload.project_namespace)
   end
 
   let_it_be(:code_suggestion_event_4) do
-    create(:ai_code_suggestion_event, :accepted, user: user_3,
-      namespace_path: subgroup_project.reload.project_namespace.traversal_path)
+    create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_3,
+      namespace: subgroup_project.reload.project_namespace)
+  end
+
+  let_it_be(:out_of_timeframe_event) do
+    create(:ai_usage_event, event: :code_suggestion_accepted_in_ide, user: user_3,
+      namespace: subgroup_project.reload.project_namespace, timestamp: 10.days.ago)
   end
 
   before do
@@ -76,7 +80,7 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         group.add_guest(current_user)
       end
 
-      it 'renders error' do
+      it 'returns no data' do
         post_graphql(query, current_user: current_user)
 
         expect(code_suggestion_events).to be_nil
@@ -94,6 +98,14 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
         event_ids = code_suggestion_events.pluck('id')
 
         expect(event_ids).to match_array(expected_event_ids)
+      end
+
+      it 'returns expanded extras data' do
+        post_graphql(query, current_user: current_user)
+
+        event2 = code_suggestion_events.detect { |e| e['id'] == code_suggestion_event_2.to_global_id.to_s }
+
+        expect(event2).to include('language' => 'ruby', 'suggestionSize' => '5', 'uniqueTrackingId' => 'abc')
       end
     end
   end

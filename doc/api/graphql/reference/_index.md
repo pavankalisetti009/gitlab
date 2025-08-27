@@ -23435,12 +23435,6 @@ Self-hosted LLM servers.
 
 Usage data for events stored in the default PostgreSQL database. Data retained for three months. Requires a personal access token. Endpoint works only on the top-level group. Ultimate with GitLab Duo Enterprise only.
 
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="aiusagedatacodesuggestionevents"></a>`codeSuggestionEvents` | [`CodeSuggestionEventConnection`](#codesuggestioneventconnection) | Events related to code suggestions. (see [Connections](#connections)) |
-
 #### Fields with arguments
 
 ##### `AiUsageData.all`
@@ -23457,8 +23451,25 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aiusagedataallenddate"></a>`endDate` | [`Date`](#date) | Date range to end at. Default is the end of current day. |
-| <a id="aiusagedataallstartdate"></a>`startDate` | [`Date`](#date) | Date range to start from. Default is 7 days ago. |
+| <a id="aiusagedataallenddate"></a>`endDate` | [`Date`](#date) | End date for the date range. Default is the current day. |
+| <a id="aiusagedataallstartdate"></a>`startDate` | [`Date`](#date) | Start date for the date range. Default is 7 days before the current date. |
+
+##### `AiUsageData.codeSuggestionEvents`
+
+Events related to code suggestions.
+
+Returns [`CodeSuggestionEventConnection`](#codesuggestioneventconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiusagedatacodesuggestioneventsenddate"></a>`endDate` | [`Date`](#date) | End date for the date range. Default is the current day. |
+| <a id="aiusagedatacodesuggestioneventsstartdate"></a>`startDate` | [`Date`](#date) | Start date for the date range. Default is 7 days before the current date. |
 
 ### `AiUsageEvent`
 
@@ -23467,7 +23478,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="aiusageeventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
-| <a id="aiusageeventid"></a>`id` | [`ID!`](#id) | ID of the code suggestion event. |
+| <a id="aiusageeventid"></a>`id` | [`ID!`](#id) | ID of the usage event. |
 | <a id="aiusageeventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
 | <a id="aiusageeventuser"></a>`user` | [`UserCore!`](#usercore) | User associated with the event. |
 
@@ -26097,8 +26108,8 @@ Code Quality report for a pipeline.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="codesuggestioneventevent"></a>`event` | [`AiUsageCodeSuggestionEvent!`](#aiusagecodesuggestionevent) | Type of the event. |
-| <a id="codesuggestioneventid"></a>`id` | [`ID!`](#id) | ID of the code suggestion event. |
+| <a id="codesuggestioneventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
+| <a id="codesuggestioneventid"></a>`id` | [`ID!`](#id) | ID of the usage event. |
 | <a id="codesuggestioneventlanguage"></a>`language` | [`String`](#string) | Programming language in the context of the suggestion. |
 | <a id="codesuggestioneventsuggestionsize"></a>`suggestionSize` | [`String`](#string) | Size of the code suggestion measured in lines of code. |
 | <a id="codesuggestioneventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
@@ -46534,16 +46545,6 @@ GitLab release state of the model.
 | <a id="aiselfhostedmodelreleasestatebeta"></a>`BETA` | Beta status. |
 | <a id="aiselfhostedmodelreleasestateexperimental"></a>`EXPERIMENTAL` | Experimental status. |
 | <a id="aiselfhostedmodelreleasestatega"></a>`GA` | GA status. |
-
-### `AiUsageCodeSuggestionEvent`
-
-Type of code suggestion event.
-
-| Value | Description |
-| ----- | ----------- |
-| <a id="aiusagecodesuggestioneventcode_suggestion_accepted_in_ide"></a>`CODE_SUGGESTION_ACCEPTED_IN_IDE` | Code suggestion accepted. |
-| <a id="aiusagecodesuggestioneventcode_suggestion_rejected_in_ide"></a>`CODE_SUGGESTION_REJECTED_IN_IDE` | Code suggestion rejected. |
-| <a id="aiusagecodesuggestioneventcode_suggestion_shown_in_ide"></a>`CODE_SUGGESTION_SHOWN_IN_IDE` | Code suggestion shown. |
 
 ### `AiUsageEventType`
 
