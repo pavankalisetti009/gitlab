@@ -284,6 +284,17 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
 
       it { is_expected.to eq([upstream]) }
     end
+
+    describe '.search_by_name' do
+      let(:query) { 'abc' }
+      let_it_be(:name) { 'pkg-name-abc' }
+      let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, name: name) }
+      let_it_be(:other_upstream) { create(:virtual_registries_packages_maven_upstream) }
+
+      subject { described_class.search_by_name(query) }
+
+      it { is_expected.to eq([upstream]) }
+    end
   end
 
   describe 'encryption' do
