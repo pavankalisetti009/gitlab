@@ -106,12 +106,33 @@ module Security
     strong_memoize_attr def report
       validate_report_type!
 
+      return old_report if Feature.disabled?(:vulnerability_partial_scans, project)
+
       with_reactive_cache(params.stringify_keys) do |data|
         latest = Ci::CompareSecurityReportsService.new(project, nil, params).latest?(base_pipeline, head_pipeline, data)
         raise InvalidateReactiveCache unless latest
 
         data
       end || { status: :parsing }
+    end
+
+    def old_report
+      case report_type
+      when 'sast'
+        merge_request.compare_sast_reports(nil)
+      when 'secret_detection'
+        merge_request.compare_secret_detection_reports(nil)
+      when 'container_scanning'
+        merge_request.compare_container_scanning_reports(nil)
+      when 'dependency_scanning'
+        merge_request.compare_dependency_scanning_reports(nil)
+      when 'dast'
+        merge_request.compare_dast_reports(nil)
+      when 'coverage_fuzzing'
+        merge_request.compare_coverage_fuzzing_reports(nil)
+      when 'api_fuzzing'
+        merge_request.compare_api_fuzzing_reports(nil)
+      end
     end
 
     def validate_report_type!

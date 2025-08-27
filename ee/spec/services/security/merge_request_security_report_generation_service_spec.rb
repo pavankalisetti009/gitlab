@@ -107,6 +107,8 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
     end
 
     context 'when the given report type is valid' do
+      using RSpec::Parameterized::TableSyntax
+
       let_it_be(:confirmed_finding) { create(:vulnerabilities_finding, :confirmed, severity: :critical) }
       let_it_be(:dismissed_finding) { create(:vulnerabilities_finding, :dismissed, severity: :medium) }
 
@@ -114,16 +116,14 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
       let(:confirmed_uuid) { confirmed_finding.uuid }
       let(:dismissed_uuid) { dismissed_finding.uuid }
 
-      where(:report_type) do
-        %w[
-          sast
-          secret_detection
-          container_scanning
-          dependency_scanning
-          dast
-          coverage_fuzzing
-          api_fuzzing
-        ]
+      where(:report_type, :mr_report_method) do
+        'sast'                | :compare_sast_reports
+        'secret_detection'    | :compare_secret_detection_reports
+        'container_scanning'  | :compare_container_scanning_reports
+        'dependency_scanning' | :compare_dependency_scanning_reports
+        'dast'                | :compare_dast_reports
+        'coverage_fuzzing'    | :compare_coverage_fuzzing_reports
+        'api_fuzzing'         | :compare_api_fuzzing_reports
       end
 
       with_them do
@@ -223,6 +223,18 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
                   ]
                 }
               }
+            end
+
+            context 'when vulnerability_partial_scans is disabled' do
+              before do
+                stub_feature_flags(vulnerability_partial_scans: false)
+              end
+
+              it 'returns the report and does not queue ReactiveCachingWorker' do
+                expect(ReactiveCachingWorker).not_to receive(:perform_async)
+                expect(merge_request).to receive(mr_report_method).with(nil).and_return(mock_report)
+                expect(report).to eq(expected_report)
+              end
             end
 
             context 'when cached results is not latest' do
