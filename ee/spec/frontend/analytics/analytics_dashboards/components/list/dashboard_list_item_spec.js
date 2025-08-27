@@ -7,8 +7,6 @@ import {
   mockInvalidDashboardErrors,
 } from '../../mock_data';
 
-jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api');
-
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn().mockName('visitUrlMock'),

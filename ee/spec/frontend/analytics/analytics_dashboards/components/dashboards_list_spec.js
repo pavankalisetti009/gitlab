@@ -30,7 +30,7 @@ jest.mock('~/alert', () => ({
   })),
 }));
 
-jest.mock('ee/analytics/analytics_dashboards/utils');
+jest.mock('ee/analytics/analytics_dashboards/components/utils');
 
 Vue.use(VueApollo);
 

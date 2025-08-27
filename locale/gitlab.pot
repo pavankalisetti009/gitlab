@@ -7924,9 +7924,6 @@ msgstr ""
 msgid "Analytics|Configure analytics reports."
 msgstr ""
 
-msgid "Analytics|Create dashboard %{dashboardSlug}"
-msgstr ""
-
 msgid "Analytics|Created by GitLab"
 msgstr ""
 
@@ -8008,12 +8005,6 @@ msgid "Analytics|Statistics on namespace usage. Usage data is a cumulative count
 msgstr ""
 
 msgid "Analytics|Unable to update analytics settings. Please try again."
-msgstr ""
-
-msgid "Analytics|Updating dashboard %{dashboardSlug}"
-msgstr ""
-
-msgid "Analytics|Updating visualization %{visualizationName}"
 msgstr ""
 
 msgid "Analytics|Usage data is a cumulative count and is updated monthly."

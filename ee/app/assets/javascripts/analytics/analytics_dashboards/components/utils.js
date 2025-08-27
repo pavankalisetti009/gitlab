@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
+import uniqueId from 'lodash/uniqueId';
 
 export const isEmptyPanelData = (visualizationType, data) => {
   if (visualizationType === 'SingleStat') {
@@ -8,3 +9,5 @@ export const isEmptyPanelData = (visualizationType, data) => {
   }
   return isEmpty(data);
 };
+
+export const getUniquePanelId = () => uniqueId('panel-');

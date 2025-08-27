@@ -20,7 +20,6 @@ import UrlSync, {
   HISTORY_REPLACE_UPDATE_METHOD,
   URL_SET_PARAMS_STRATEGY,
 } from '~/vue_shared/components/url_sync.vue';
-import { getUniquePanelId } from '../utils';
 import {
   AI_IMPACT_DASHBOARD,
   BUILT_IN_VALUE_STREAM_DASHBOARD,
@@ -33,6 +32,7 @@ import {
   DASHBOARD_REFRESH_MESSAGE,
 } from '../constants';
 import getCustomizableDashboardQuery from '../graphql/queries/get_customizable_dashboard.query.graphql';
+import { getUniquePanelId } from './utils';
 import {
   buildDefaultDashboardFilters,
   filtersToQueryParams,
