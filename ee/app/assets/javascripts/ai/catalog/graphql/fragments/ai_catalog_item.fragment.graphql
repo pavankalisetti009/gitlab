@@ -5,10 +5,7 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   description
   name
   public
-  latestVersion {
-    id
-    updatedAt
-  }
+  updatedAt
   userPermissions {
     adminAiCatalogItem
   }

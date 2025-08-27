@@ -94,10 +94,7 @@ const mockAgentFactory = (overrides = {}) => ({
     adminAiCatalogItem: true,
   },
   __typename: TYPENAME_AI_CATALOG_ITEM,
-  latestVersion: {
-    id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-    updatedAt: '2025-08-21T14:30:00Z',
-  },
+  updatedAt: '2025-08-21T14:30:00Z',
   ...overrides,
 });
 
@@ -107,7 +104,6 @@ export const mockAgentVersion = {
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
   userPrompt: 'The user prompt',
-  updatedAt: '2025-08-21T14:30:00Z',
   tools: {
     nodes: [],
     __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,
@@ -242,7 +238,6 @@ export const mockExecuteAgentResponse = {
 export const mockFlowVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
   versionName: 'v1.0.0-draft',
-  updatedAt: '2025-08-21T14:30:00Z',
   steps: {
     nodes: [
       {
@@ -270,10 +265,7 @@ const mockFlowFactory = (overrides = {}) => ({
     adminAiCatalogItem: true,
   },
   __typename: TYPENAME_AI_CATALOG_ITEM,
-  latestVersion: {
-    id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-    updatedAt: '2025-08-21T14:30:00Z',
-  },
+  updatedAt: '2025-08-21T14:30:00Z',
   ...overrides,
 });
 

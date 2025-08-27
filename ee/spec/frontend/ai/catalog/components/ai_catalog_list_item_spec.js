@@ -30,13 +30,10 @@ describe('AiCatalogListItem', () => {
     itemType: 'AGENT',
     description: 'A helpful AI assistant for testing purposes',
     public: false,
+    updatedAt: '2025-08-21T14:30:00Z',
     userPermissions: {
       readAiCatalogItem: true,
       adminAiCatalogItem: true,
-    },
-    latestVersion: {
-      id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-      updatedAt: '2025-08-21T14:30:00Z',
     },
   };
 
@@ -111,7 +108,6 @@ describe('AiCatalogListItem', () => {
         fullName: mockItem.name,
         relativeWebUrl: mockUrl,
         createdAt: mockItem.createdAt,
-        updatedAt: mockItem.latestVersion.updatedAt,
       };
 
       expect(listItem.exists()).toBe(true);
@@ -169,7 +165,7 @@ describe('AiCatalogListItem', () => {
 
     describe('when the created_at and updated_at dates are identical', () => {
       it('passes the timestamp for the created_at date', () => {
-        createComponent({ item: { ...mockItem, createdAt: mockItem.latestVersion.updatedAt } });
+        createComponent({ item: { ...mockItem, createdAt: mockItem.updatedAt } });
         expect(findListItem().props('timestampType')).toBe(TIMESTAMP_TYPE_CREATED_AT);
       });
     });
