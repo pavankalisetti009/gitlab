@@ -21,10 +21,10 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
       helper.instance_variable_set(:@ref, sha)
     end
 
-    subject { helper.vue_tree_header_app_data(project, repository, sha, pipeline) }
+    subject { helper.vue_tree_header_app_data(project, repository, sha, pipeline, 'heads') }
 
     it 'contains workspace data' do
-      expect(helper.vue_tree_header_app_data(project, repository, sha, pipeline)).to include(
+      expect(helper.vue_tree_header_app_data(project, repository, sha, pipeline, 'heads')).to include(
         new_workspace_path: new_remote_development_workspace_path,
         organization_id: organization.id
       )
