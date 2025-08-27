@@ -6,6 +6,7 @@ import {
   BULK_ACTIONS,
   GEO_TROUBLESHOOTING_LINK,
   DEFAULT_PAGE_SIZE,
+  DEFAULT_CURSOR,
 } from 'ee/geo_replicable/constants';
 import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
@@ -22,7 +23,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { createAlert } from '~/alert';
 import toast from '~/vue_shared/plugins/global_toast';
-import { setUrlParams, visitUrl } from '~/lib/utils/url_utility';
+import { setUrlParams, visitUrl, updateHistory } from '~/lib/utils/url_utility';
 import {
   MOCK_BASIC_GRAPHQL_DATA,
   MOCK_REPLICABLE_CLASS,
@@ -46,6 +47,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   setUrlParams: jest.fn(() => MOCK_UPDATED_URL),
   visitUrl: jest.fn(),
+  updateHistory: jest.fn(),
 }));
 
 jest.mock('ee/geo_replicable/filters', () => ({
@@ -295,6 +297,23 @@ describe('GeoReplicableApp', () => {
     });
   });
 
+  describe('pagination query', () => {
+    beforeEach(() => {
+      setWindowLocation(`${MOCK_LOCATION_WITH_FILTERS}&after=cursor123&first=20`);
+
+      createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
+    });
+
+    it('properly calls Apollo with custom cursor when provided', () => {
+      expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledWith(
+        expect.objectContaining({
+          after: 'cursor123',
+          first: 20,
+        }),
+      );
+    });
+  });
+
   describe('bulk actions', () => {
     describe('with no replicable items', () => {
       beforeEach(async () => {
@@ -313,6 +332,7 @@ describe('GeoReplicableApp', () => {
         createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
 
         await waitForPromises();
+        MOCK_QUERY_HANDLER_WITH_DATA.mockClear();
       });
 
       it('renders top bar with showActions=true and correct actions', () => {
@@ -332,7 +352,7 @@ describe('GeoReplicableApp', () => {
         await waitForPromises();
 
         expect(toast).toHaveBeenCalledWith('Scheduled all Test Item for resync.');
-        expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(2);
+        expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -424,7 +444,7 @@ describe('GeoReplicableApp', () => {
       createComponent();
     });
 
-    it('preserves filters while updating the replicable type before calling processFilters and visitUrl', () => {
+    it('preserves active filters and resets cursor while updating the replicable type before calling processFilters and visitUrl', () => {
       const MOCK_NEW_REPLICABLE_TYPE = 'new_replicable_type';
 
       findGeoListTopBar().vm.$emit('listboxChange', MOCK_NEW_REPLICABLE_TYPE);
@@ -438,7 +458,7 @@ describe('GeoReplicableApp', () => {
         },
       ]);
       expect(setUrlParams).toHaveBeenCalledWith(
-        MOCK_PROCESSED_FILTERS.query,
+        { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR },
         MOCK_PROCESSED_FILTERS.url.href,
         true,
       );
@@ -447,20 +467,29 @@ describe('GeoReplicableApp', () => {
   });
 
   describe('handleSearch', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent();
+      await waitForPromises();
+
+      MOCK_QUERY_HANDLER_WITH_DATA.mockClear();
     });
 
-    it('processes filters and calls visitUrl', () => {
-      findGeoListTopBar().vm.$emit('search', MOCK_FILTERS);
+    it('updates Apollo query, processes filters, and resets cursor before calling updateHistory', async () => {
+      findGeoListTopBar().vm.$emit('search', [MOCK_VERIFICATION_STATUS_FILTER]);
+      await nextTick();
 
-      expect(processFilters).toHaveBeenCalledWith(MOCK_FILTERS);
+      expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(1);
+
+      expect(processFilters).toHaveBeenCalledWith([
+        { type: MOCK_REPLICABLE_TYPE_FILTER.type, value: MOCK_REPLICABLE_TYPE_FILTER.value },
+        MOCK_VERIFICATION_STATUS_FILTER,
+      ]);
       expect(setUrlParams).toHaveBeenCalledWith(
-        MOCK_PROCESSED_FILTERS.query,
+        { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR },
         MOCK_PROCESSED_FILTERS.url.href,
         true,
       );
-      expect(visitUrl).toHaveBeenCalledWith(MOCK_UPDATED_URL);
+      expect(updateHistory).toHaveBeenCalledWith({ url: MOCK_UPDATED_URL });
     });
   });
 
@@ -471,7 +500,7 @@ describe('GeoReplicableApp', () => {
       await waitForPromises();
     });
 
-    it('calls Apollo query with updated cursor', async () => {
+    it('updates Apollo query with updated cursor and updates the URL', async () => {
       findGeoReplicable().vm.$emit('next', 'test_item');
       await nextTick();
 
@@ -483,6 +512,8 @@ describe('GeoReplicableApp', () => {
           last: null,
         }),
       );
+
+      expect(updateHistory).toHaveBeenCalledWith({ url: MOCK_UPDATED_URL });
     });
   });
 
@@ -493,7 +524,7 @@ describe('GeoReplicableApp', () => {
       await waitForPromises();
     });
 
-    it('calls Apollo query with updated cursor', async () => {
+    it('updates Apollo query with updated cursor and updates the URL', async () => {
       findGeoReplicable().vm.$emit('prev', 'test_item');
       await nextTick();
 
@@ -505,6 +536,8 @@ describe('GeoReplicableApp', () => {
           last: DEFAULT_PAGE_SIZE,
         }),
       );
+
+      expect(updateHistory).toHaveBeenCalledWith({ url: MOCK_UPDATED_URL });
     });
   });
 
@@ -514,6 +547,7 @@ describe('GeoReplicableApp', () => {
         createComponent();
 
         await waitForPromises();
+        MOCK_QUERY_HANDLER_WITH_DATA.mockClear();
       });
 
       it('properly calls the single action mutation, toast and refetch', async () => {
@@ -532,7 +566,7 @@ describe('GeoReplicableApp', () => {
         await waitForPromises();
 
         expect(toast).toHaveBeenCalledWith('Scheduled TestRegistry/1 for resync.');
-        expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(2);
+        expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(1);
       });
     });
 
