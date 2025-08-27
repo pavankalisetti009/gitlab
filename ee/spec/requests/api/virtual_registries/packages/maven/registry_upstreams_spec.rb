@@ -158,10 +158,10 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
 
     subject(:api_request) { delete api(url), headers: headers }
 
-    shared_examples 'successful response for orphan upstream' do
+    shared_examples 'successful response' do
       it 'returns a successful response' do
-        expect { api_request }.to change { ::VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
-          .and change { ::VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
+        expect { api_request }.to change { ::VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
+          .and not_change { ::VirtualRegistries::Packages::Maven::Upstream.count }
 
         expect(response).to have_gitlab_http_status(:no_content)
       end
@@ -188,7 +188,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::RegistryUpstreams, :aggr
       end
 
       if params[:status] == :no_content
-        it_behaves_like 'successful response for orphan upstream'
+        it_behaves_like 'successful response'
       else
         it_behaves_like 'returning response status', params[:status]
       end
