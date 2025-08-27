@@ -2,23 +2,23 @@
 
 module Ai
   class UsageEventsFinder
-    include Gitlab::Utils::StrongMemoize
+    attr_reader :current_user, :namespace, :from, :to, :events, :users
 
-    attr_reader :current_user, :resource, :from, :to, :events
-
-    def initialize(current_user, resource:, from:, to:, events: nil)
+    def initialize(current_user, from:, to:, events: nil, namespace: nil, users: nil)
       @current_user = current_user
-      @resource = resource
+      @namespace = namespace
       @from = from
       @to = to
       @events = events
+      @users = users
     end
 
     def execute
-      return ::Ai::UsageEvent.none unless Ability.allowed?(current_user, :read_enterprise_ai_analytics, resource)
-
-      scope = ::Ai::UsageEvent.in_timeframe(from..to).for_namespace_hierarchy(resource)
+      scope = ::Ai::UsageEvent.in_timeframe(from..to).sort_by_timestamp_id
       scope = scope.with_events(events) if events.present?
+      scope = scope.with_users(users) if users.present?
+      # Hierarchy must be last because it applies IN optimization
+      scope = scope.for_namespace_hierarchy(namespace) if namespace
       scope
     end
   end

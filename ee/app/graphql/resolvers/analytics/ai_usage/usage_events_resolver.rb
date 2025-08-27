@@ -24,7 +24,7 @@ module Resolvers
           params = params_with_defaults(args)
 
           ::Ai::UsageEventsFinder.new(current_user,
-            resource: namespace,
+            namespace: namespace,
             from: params[:start_date],
             to: params[:end_date]).execute
         end
