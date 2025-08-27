@@ -24396,7 +24396,9 @@ CREATE TABLE security_finding_token_statuses (
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    status smallint DEFAULT 0 NOT NULL
+    status smallint DEFAULT 0 NOT NULL,
+    raw_source_code_extract text,
+    CONSTRAINT raw_source_code_extract_not_longer_than_2048 CHECK ((char_length(raw_source_code_extract) <= 2048))
 );
 
 CREATE SEQUENCE security_findings_id_seq
