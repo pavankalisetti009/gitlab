@@ -109,6 +109,7 @@ function factory({
 }
 
 const findTableRows = () => wrapper.findAllComponents(TableRow);
+const findShowMoreButton = () => wrapper.findComponent(GlButton);
 
 describe('Repository table component', () => {
   it.each`
@@ -182,14 +183,20 @@ describe('Repository table component', () => {
       expect(showMoreButton().exists()).toBe(expectButtonToExist);
     });
 
-    it('when is clicked, emits showMore event', async () => {
+    it('when is clicked, emits showMore event after a delay for better INP', async () => {
       factory({ path: '/' });
 
       showMoreButton().vm.$emit('click');
-
       await nextTick();
 
-      expect(wrapper.emitted('showMore')).toHaveLength(1);
+      expect(findShowMoreButton().props('loading')).toBe(true); // Show loader immediately
+      expect(wrapper.emitted('showMore')).toBeUndefined(); // Event should not be emitted immediately
+
+      jest.runAllTimers(); // Wait for the setTimeout to execute
+      await nextTick();
+
+      expect(wrapper.emitted('showMore')).toHaveLength(1); // Now the event should be emitted
+      expect(findShowMoreButton().props('loading')).toBe(false); // Hide loader
     });
   });
 });
