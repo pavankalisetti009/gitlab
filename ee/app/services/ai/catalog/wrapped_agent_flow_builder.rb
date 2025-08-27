@@ -28,12 +28,10 @@ module Ai
       attr_reader :agent, :agent_version, :flow
 
       def validate
-        return ServiceResponse.error(message: 'Agent is required') unless agent && agent.agent?
-        return ServiceResponse.error(message: 'Agent version is required') unless agent_version
+        return error('Agent is required') unless agent && agent.agent?
+        return error('Agent version is required') unless agent_version
 
-        unless agent_version.item == agent
-          return ServiceResponse.error(message: 'Agent version must belong to the agent')
-        end
+        return error('Agent version must belong to the agent') unless agent_version.item == agent
 
         ServiceResponse.success
       end
@@ -78,13 +76,15 @@ module Ai
       end
 
       def validate_flow
-        unless flow.valid?
-          return ServiceResponse.error(message: "Generated flow is invalid: #{flow.errors.full_messages.join(', ')}")
-        end
+        return error("Generated flow is invalid: #{flow.errors.full_messages.join(', ')}") unless flow.valid?
 
         ServiceResponse.success
       end
       strong_memoize_attr :validate_flow
+
+      def error(message)
+        ServiceResponse.error(message: Array(message))
+      end
     end
   end
 end

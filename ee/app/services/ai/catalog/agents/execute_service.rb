@@ -3,13 +3,13 @@
 module Ai
   module Catalog
     module Agents
-      class ExecuteService
+      class ExecuteService < Ai::Catalog::BaseService
         include Gitlab::Utils::StrongMemoize
 
-        def initialize(agent, agent_version, current_user)
-          @agent = agent
-          @agent_version = agent_version
-          @current_user = current_user
+        def initialize(project:, current_user:, params:)
+          @agent = params[:agent]
+          @agent_version = params[:agent_version]
+          super
         end
 
         def execute
@@ -28,23 +28,13 @@ module Ai
 
         private
 
-        attr_reader :agent, :agent_version, :current_user, :flow
-
-        def allowed?
-          Ability.allowed?(current_user, :admin_ai_catalog_item, agent)
-        end
-
-        def error_no_permissions
-          ServiceResponse.error(message: 'You have insufficient permission to execute this agent')
-        end
+        attr_reader :agent, :agent_version, :flow
 
         def validate
-          return ServiceResponse.error(message: 'Agent is required') unless agent && agent.agent?
-          return ServiceResponse.error(message: 'Agent version is required') unless agent_version
+          return error('Agent is required') unless agent && agent.agent?
+          return error('Agent version is required') unless agent_version
 
-          unless agent_version.item == agent
-            return ServiceResponse.error(message: 'Agent version must belong to the agent')
-          end
+          return error('Agent version must belong to the agent') unless agent_version.item == agent
 
           ServiceResponse.success
         end
