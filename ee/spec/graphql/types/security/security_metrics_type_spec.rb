@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Types::Security::SecurityMetricsType, feature_category: :vulnerability_management do
-  let(:expected_fields) { %i[vulnerabilities_per_severity vulnerabilities_over_time] }
+  let(:expected_fields) { %i[vulnerabilities_per_severity vulnerabilities_over_time risk_score] }
 
   subject { described_class }
 
