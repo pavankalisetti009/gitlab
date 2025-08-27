@@ -63,7 +63,7 @@ module EE
             required: false,
             description: 'Runner ID to retrieve data for.'
         end
-        field :configured_ai_catalog_items,
+        field :ai_catalog_configured_items,
           resolver: ::Resolvers::Ai::Catalog::ConfiguredItemsResolver,
           null: false,
           description: 'AI Catalog items configured for use.',

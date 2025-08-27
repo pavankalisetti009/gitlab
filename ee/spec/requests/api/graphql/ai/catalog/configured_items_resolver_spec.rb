@@ -14,11 +14,11 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
 
   let(:current_user) { developer }
   let(:project_gid) { project.to_global_id }
-  let(:nodes) { graphql_data_at(:configured_ai_catalog_items, :nodes) }
+  let(:nodes) { graphql_data_at(:ai_catalog_configured_items, :nodes) }
   let(:args) { { projectId: project_gid } }
 
   let(:query) do
-    "{ #{query_nodes('ConfiguredAiCatalogItems', of: 'AiCatalogItemConsumer', max_depth: 3, args: args)} }"
+    "{ #{query_nodes('aiCatalogConfiguredItems', of: 'AiCatalogItemConsumer', max_depth: 3, args: args)} }"
   end
 
   it 'returns configured AI catalog items' do

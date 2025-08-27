@@ -208,6 +208,30 @@ This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
 `before: String`, `after: String`, `first: Int`, and `last: Int`.
 
+### `Query.aiCatalogConfiguredItems`
+
+{{< details >}}
+**Introduced** in GitLab 18.2.
+**Status**: Experiment.
+{{< /details >}}
+
+AI Catalog items configured for use.
+
+Returns [`AiCatalogItemConsumerConnection!`](#aicatalogitemconsumerconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaicatalogconfigureditemsgroupid"></a>`groupId` | [`GroupID`](#groupid) | Group ID to retrieve configured AI Catalog items for. |
+| <a id="queryaicatalogconfigureditemsincludeinherited"></a>`includeInherited` | [`Boolean`](#boolean) | Include configured AI Catalog items inherited from parent groups. |
+| <a id="queryaicatalogconfigureditemsitemid"></a>`itemId` | [`AiCatalogItemID`](#aicatalogitemid) | Item ID to retrieve configured AI Catalog items for. |
+| <a id="queryaicatalogconfigureditemsprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Project ID to retrieve configured AI Catalog items for. |
+
 ### `Query.aiCatalogItem`
 
 {{< details >}}
@@ -629,30 +653,6 @@ Returns [`CloudConnectorStatus`](#cloudconnectorstatus).
 Get the list of all the compliance requirement controls.
 
 Returns [`ComplianceRequirementControl`](#compliancerequirementcontrol).
-
-### `Query.configuredAiCatalogItems`
-
-{{< details >}}
-**Introduced** in GitLab 18.2.
-**Status**: Experiment.
-{{< /details >}}
-
-AI Catalog items configured for use.
-
-Returns [`AiCatalogItemConsumerConnection!`](#aicatalogitemconsumerconnection).
-
-This field returns a [connection](#connections). It accepts the
-four standard [pagination arguments](#pagination-arguments):
-`before: String`, `after: String`, `first: Int`, and `last: Int`.
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="queryconfiguredaicatalogitemsgroupid"></a>`groupId` | [`GroupID`](#groupid) | Group ID to retrieve configured AI Catalog items for. |
-| <a id="queryconfiguredaicatalogitemsincludeinherited"></a>`includeInherited` | [`Boolean`](#boolean) | Include configured AI Catalog items inherited from parent groups. |
-| <a id="queryconfiguredaicatalogitemsitemid"></a>`itemId` | [`AiCatalogItemID`](#aicatalogitemid) | Item ID to retrieve configured AI Catalog items for. |
-| <a id="queryconfiguredaicatalogitemsprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Project ID to retrieve configured AI Catalog items for. |
 
 ### `Query.containerRepository`
 
