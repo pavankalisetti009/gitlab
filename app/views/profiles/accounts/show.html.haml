@@ -96,7 +96,7 @@
         #delete-account-modal{ data: delete_account_modal_data }
       - else
         - if !current_user.can_be_removed?
-          - if Feature.enabled?(:ui_for_organizations, current_user) && current_user.solo_owned_organizations.present?
+          - if ui_for_organizations_enabled? && current_user.solo_owned_organizations.present?
             %p.gl-font-bold
               = _('Organizations')
               %ul
