@@ -1,19 +1,7 @@
 <script>
 import { uniqueId } from 'lodash';
+import { GlButton, GlForm, GlFormFields, GlFormTextarea, GlTokenSelector } from '@gitlab/ui';
 import {
-  GlAlert,
-  GlButton,
-  GlForm,
-  GlFormFields,
-  GlFormTextarea,
-  GlFormRadioGroup,
-  GlFormRadio,
-  GlIcon,
-  GlTokenSelector,
-} from '@gitlab/ui';
-import {
-  VISIBILITY_LEVEL_LABELS,
-  VISIBILITY_TYPE_ICON,
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
@@ -32,21 +20,19 @@ import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_t
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import ErrorsAlert from './errors_alert.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
+import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
 export default {
   components: {
     ErrorsAlert,
     AiCatalogFormButtons,
     FormProjectDropdown,
-    GlAlert,
     GlButton,
     GlForm,
     GlFormFields,
-    GlFormRadioGroup,
-    GlFormRadio,
     GlFormTextarea,
-    GlIcon,
     GlTokenSelector,
+    VisibilityLevelRadioGroup,
   },
   apollo: {
     availableTools: {
@@ -110,40 +96,6 @@ export default {
     },
     submitButtonText() {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create agent');
-    },
-    visibilityLevels() {
-      return [
-        {
-          value: VISIBILITY_LEVEL_PRIVATE,
-          label: VISIBILITY_LEVEL_LABELS[VISIBILITY_LEVEL_PRIVATE_STRING],
-          text: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
-          icon: VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PRIVATE_STRING],
-        },
-        {
-          value: VISIBILITY_LEVEL_PUBLIC,
-          label: VISIBILITY_LEVEL_LABELS[VISIBILITY_LEVEL_PUBLIC_STRING],
-          text: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
-          icon: VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PUBLIC_STRING],
-        },
-      ];
-    },
-    visibilityLevelAlertText() {
-      if (
-        this.isEditMode &&
-        this.initialValues.public &&
-        this.formValues.visibilityLevel === VISIBILITY_LEVEL_PRIVATE
-      ) {
-        return s__('AICatalog|This agent can be made private if it is not used.');
-      }
-
-      if (
-        !this.initialValues.public &&
-        this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC
-      ) {
-        return s__('AICatalog|A public agent can be made private only if it is not used.');
-      }
-
-      return '';
     },
     fields() {
       const projectIdField = this.isEditMode
@@ -276,6 +228,12 @@ export default {
     },
   },
   indexRoute: AI_CATALOG_AGENTS_ROUTE,
+  visibilityLevelTexts: {
+    textPrivate: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+    textPublic: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+    alertTextPrivate: s__('AICatalog|This agent can be made private if it is not used.'),
+    alertTextPublic: s__('AICatalog|A public agent can be made private only if it is not used.'),
+  },
 };
 </script>
 
@@ -353,39 +311,15 @@ export default {
           />
         </template>
         <template #input(visibilityLevel)="{ id, input, validation, value }">
-          <gl-form-radio-group
+          <visibility-level-radio-group
             :id="id"
-            :state="validation.state"
-            :checked="value"
-            data-testid="agent-form-radio-group-visibility-level"
+            :is-edit-mode="isEditMode"
+            :initial-value="initialValues.public"
+            :validation-state="validation.state"
+            :value="value"
+            :texts="$options.visibilityLevelTexts"
             @input="input"
-          >
-            <gl-form-radio
-              v-for="level in visibilityLevels"
-              :key="level.value"
-              :value="level.value"
-              :state="validation.state"
-              :data-testid="`${level.value}-radio`"
-              class="gl-mb-3"
-            >
-              <div class="gl-flex gl-items-center gl-gap-2">
-                <gl-icon :size="16" :name="level.icon" />
-                <span class="gl-font-semibold">
-                  {{ level.label }}
-                </span>
-              </div>
-              <template #help>{{ level.text }}</template>
-            </gl-form-radio>
-          </gl-form-radio-group>
-          <gl-alert
-            v-if="visibilityLevelAlertText"
-            :dismissible="false"
-            data-testid="agent-form-visibility-level-alert"
-            class="gl-mt-3"
-            variant="info"
-          >
-            {{ visibilityLevelAlertText }}
-          </gl-alert>
+          />
         </template>
       </gl-form-fields>
       <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
