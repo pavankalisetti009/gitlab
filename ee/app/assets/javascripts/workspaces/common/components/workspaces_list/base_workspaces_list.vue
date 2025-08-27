@@ -58,9 +58,9 @@ export default {
         <div class="gl-flex gl-items-center">
           <h2>{{ $options.i18n.heading }}</h2>
         </div>
-        <div class="gl-flex gl-flex-col gl-items-center md:gl-flex-row">
+        <div class="gl-flex gl-flex-col gl-items-center @md/panel:gl-flex-row">
           <gl-link
-            class="workspace-list-link gl-mr-5 gl-hidden sm:gl-block"
+            class="workspace-list-link gl-mr-5 gl-hidden @sm/panel:gl-block"
             :href="$options.workspacesHelpPath"
             >{{ $options.i18n.learnMoreHelpLink }}</gl-link
           >
