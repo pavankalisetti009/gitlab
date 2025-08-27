@@ -4,6 +4,8 @@ import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue
 import AiCatalogStepsEditor from 'ee/ai/catalog/components/ai_catalog_steps_editor.vue';
 import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
+import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
+import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 
 describe('AiCatalogFlowForm', () => {
   let wrapper;
@@ -11,6 +13,7 @@ describe('AiCatalogFlowForm', () => {
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
+  const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
   const findNameField = () => wrapper.findByTestId('flow-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('flow-form-textarea-description');
   const findSubmitButton = () => wrapper.findByTestId('flow-form-submit-button');
@@ -26,7 +29,7 @@ describe('AiCatalogFlowForm', () => {
     projectId: 'gid://gitlab/Project/1000000',
     name: 'My AI Flow',
     description: 'A helpful AI assistant',
-    public: false,
+    public: true,
     steps: [],
   };
 
@@ -49,6 +52,8 @@ describe('AiCatalogFlowForm', () => {
       expect(findProjectDropdown().props('value')).toBe(initialValues.projectId);
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
+      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(initialValues.public);
+      expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
     });
 
     it('renders the form with default values when no props are provided', () => {
@@ -57,6 +62,8 @@ describe('AiCatalogFlowForm', () => {
       expect(findProjectDropdown().props('value')).toBe(null);
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
+      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
+      expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
     });
 
     it('does not render project dropdown when in edit mode', () => {

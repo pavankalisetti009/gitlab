@@ -1,16 +1,15 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-
-import { GlFormFields, GlFormRadioGroup } from '@gitlab/ui';
+import { GlFormFields } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
-
+import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
+import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import { mockToolQueryResponse, toolTitles } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -22,6 +21,7 @@ describe('AiCatalogAgentForm', () => {
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
+  const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
@@ -32,9 +32,6 @@ describe('AiCatalogAgentForm', () => {
       .map((t) => t.name)
       .join(', ');
   const findUserPromptField = () => wrapper.findByTestId('agent-form-textarea-user-prompt');
-  const findVisibilityLevel = () => wrapper.findByTestId('agent-form-radio-group-visibility-level');
-  const findVisibilityLevelAlert = () => wrapper.findByTestId('agent-form-visibility-level-alert');
-  const findFormRadioGroup = () => findVisibilityLevel().findComponent(GlFormRadioGroup);
   const findSubmitButton = () => wrapper.findByTestId('agent-form-submit-button');
 
   const defaultProps = {
@@ -79,7 +76,8 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
       expect(findUserPromptField().props('value')).toBe(initialValues.userPrompt);
-      expect(findVisibilityLevel().attributes('checked')).toBe(String(VISIBILITY_LEVEL_PUBLIC));
+      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(initialValues.public);
+      expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
     });
 
     it('renders the form with default values when no props are provided', () => {
@@ -90,7 +88,8 @@ describe('AiCatalogAgentForm', () => {
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
       expect(findUserPromptField().props('value')).toBe('');
-      expect(findVisibilityLevel().attributes('checked')).toBe(String(VISIBILITY_LEVEL_PRIVATE));
+      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
+      expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
     });
 
     it('does not render project dropdown when in edit mode', () => {
@@ -98,62 +97,6 @@ describe('AiCatalogAgentForm', () => {
 
       expect(findProjectDropdown().exists()).toBe(false);
     });
-  });
-
-  describe('Visibility Level', () => {
-    describe.each`
-      selectedVisibility | expectedAlertText
-      ${'private'}       | ${false}
-      ${'public'}        | ${'A public agent can be made private only if it is not used.'}
-    `(
-      'when creating an agent and "$selectedVisibility" visibility is selected',
-      ({ selectedVisibility, expectedAlertText }) => {
-        beforeEach(() => {
-          createWrapper();
-          const visibilityLevel =
-            selectedVisibility === 'public' ? VISIBILITY_LEVEL_PUBLIC : VISIBILITY_LEVEL_PRIVATE;
-          findFormRadioGroup().vm.$emit('input', visibilityLevel);
-        });
-
-        it(`${expectedAlertText ? 'renders' : 'does not render'} visibility alert`, () => {
-          expect(findVisibilityLevelAlert().exists()).toBe(Boolean(expectedAlertText));
-          if (expectedAlertText) {
-            expect(findVisibilityLevelAlert().text()).toBe(expectedAlertText);
-          }
-        });
-      },
-    );
-
-    describe.each`
-      initialVisibility | selectedVisibility | expectedAlertText
-      ${'private'}      | ${'private'}       | ${false}
-      ${'private'}      | ${'public'}        | ${'A public agent can be made private only if it is not used.'}
-      ${'public'}       | ${'private'}       | ${'This agent can be made private if it is not used.'}
-      ${'public'}       | ${'public'}        | ${false}
-    `(
-      'when editing a $initialVisibility agent and "$selectedVisibility" visibility is selected',
-      ({ initialVisibility, selectedVisibility, expectedAlertText }) => {
-        beforeEach(() => {
-          createWrapper({
-            mode: 'edit',
-            initialValues: {
-              ...initialValues,
-              public: initialVisibility === 'public',
-            },
-          });
-          const visibilityLevel =
-            selectedVisibility === 'public' ? VISIBILITY_LEVEL_PUBLIC : VISIBILITY_LEVEL_PRIVATE;
-          findFormRadioGroup().vm.$emit('input', visibilityLevel);
-        });
-
-        it(`${expectedAlertText ? 'renders' : 'does not render'} visibility alert`, () => {
-          expect(findVisibilityLevelAlert().exists()).toBe(Boolean(expectedAlertText));
-          if (expectedAlertText) {
-            expect(findVisibilityLevelAlert().text()).toBe(expectedAlertText);
-          }
-        });
-      },
-    );
   });
 
   describe('Tool selection', () => {
