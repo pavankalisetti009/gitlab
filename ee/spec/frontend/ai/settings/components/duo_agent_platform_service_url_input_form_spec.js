@@ -6,7 +6,7 @@ import DuoAgentPlatformServiceUrlInputForm from 'ee/ai/settings/components/duo_a
 
 let wrapper;
 
-const duoAgentPlatformServiceUrl = 'http://localhost:50052';
+const duoAgentPlatformServiceUrl = 'localhost:50052';
 const createComponent = ({ injectedProps = {} } = {}) => {
   wrapper = extendedWrapper(
     shallowMount(DuoAgentPlatformServiceUrlInputForm, {
@@ -54,7 +54,7 @@ describe('DuoAgentPlatformServiceUrlInputForm', () => {
     });
 
     it('emits a change event when updated', async () => {
-      const newDuoAgentPlatformServiceUrl = 'http://new-duo-agent-platform-url.com';
+      const newDuoAgentPlatformServiceUrl = 'new-duo-agent-platform-url:50052';
       findFormInput().vm.$emit('input', newDuoAgentPlatformServiceUrl);
 
       await nextTick();

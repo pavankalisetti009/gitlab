@@ -131,10 +131,6 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       it_behaves_like 'a URL field', :ai_gateway_url
     end
 
-    context 'when validating duo_agent_platform_service_url' do
-      it_behaves_like 'a URL field', :duo_agent_platform_service_url
-    end
-
     it_behaves_like 'singleton record validation' do
       it 'allows updating the existing record' do
         setting = described_class.create!

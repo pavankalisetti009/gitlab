@@ -12,7 +12,7 @@ export default {
   i18n: {
     label: s__('AiPowered|Local Duo Agent Platform Service URL'),
     description: s__(
-      'AiPowered|Enter the URL for your Duo Agent Platform service. This endpoint is used for GitLab Duo Agent Platform requests. %{br} The URL must be a complete URL, including either the "http://" or "https://" protocol. For example "http://EXAMPLE-URL".',
+      'AiPowered|Enter the URL for your Duo Agent Platform service. This endpoint is used for GitLab Duo Agent Platform requests. %{br} The URL must not include the "http://" or "https://" protocol. For example "example.com:50052".',
     ),
   },
   inject: ['duoAgentPlatformServiceUrl'],
