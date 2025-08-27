@@ -29,7 +29,11 @@ module Mutations
 
             authorize!(agent_version)
 
-            result = ::Ai::Catalog::Agents::ExecuteService.new(agent, agent_version, current_user).execute
+            result = ::Ai::Catalog::Agents::ExecuteService.new(
+              project: agent.project,
+              current_user: current_user,
+              params: { agent: agent, agent_version: agent_version }
+            ).execute
 
             { flow_config: result.payload[:flow_config], errors: result.errors }
           end

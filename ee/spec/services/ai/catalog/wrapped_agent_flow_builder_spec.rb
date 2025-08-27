@@ -15,7 +15,7 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
       result = builder.execute
 
       expect(result).to be_error
-      expect(result.message).to eq(expected_message)
+      expect(result.message).to match_array(expected_message)
     end
   end
 
