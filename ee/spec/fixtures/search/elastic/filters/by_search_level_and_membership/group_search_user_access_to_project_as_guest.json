@@ -23,38 +23,6 @@
             "should": [
               {
                 "bool": {
-                  "filter": [
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:group:public_and_internal_access:repository_access_level:enabled_or_private",
-                        "repository_access_level": [
-                          20,
-                          10
-                        ]
-                      }
-                    },
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:group:public_and_internal_access:project_visibility_level:public_or_internal",
-                        "visibility_level": [
-                          20,
-                          10
-                        ]
-                      }
-                    },
-                    {
-                      "terms": {
-                        "_name": "filters:permissions:group:public_and_internal_access:project:member",
-                        "project_id": [
-                          PROJECT_ID
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "bool": {
                   "should": [
                     {
                       "terms": {

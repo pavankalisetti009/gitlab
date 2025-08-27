@@ -1508,25 +1508,35 @@ module Search
           features.each do |feature|
             access_levels = get_feature_access_levels(feature)
 
-            allowed_group_ids = groups_for_user(user: user,
-              min_access_level: access_levels[:project]).pluck_primary_key
-            allowed_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+            # find private groups first so they can be removed from public_internal groups
+            # do not limit to private visibility level groups because private access allows access to all
+            # visibility levels
+            private_group_ids = groups_for_user(user: user,
+              min_access_level: access_levels[:private_project]).pluck_primary_key
+            # add in custom role groups
+            private_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+            private_groups = Group.id_in(private_group_ids)
+            private_traversal_ids = get_traversal_ids_for_search_level(private_groups, options)
 
-            private_allowed_group_ids = []
-            if access_levels[:project] != access_levels[:private_project]
-              private_allowed_group_ids.concat(groups_for_user(user: user,
-                min_access_level: access_levels[:private_project]).pluck_primary_key)
-              private_allowed_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+            # limit to public/internal visibility level groups to avoid duplicate access filters
+            public_and_internal_group_ids = groups_for_user(user: user,
+              min_access_level: access_levels[:project]).public_and_internal_only.pluck_primary_key
+            # add in custom role groups
+            public_and_internal_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+            # remove private groups, they already have access
+            public_and_internal_group_ids -= private_group_ids
+            public_and_internal_groups = Group.id_in(public_and_internal_group_ids)
+            public_and_internal_traversal_ids = get_traversal_ids_for_search_level(public_and_internal_groups, options)
+
+            add_filter(membership_filters, :should) do
+              build_public_and_internal_group_filters(traversal_ids: public_and_internal_traversal_ids,
+                feature: feature, options: options)
             end
 
-            add_feature_access_filter_for_groups(
-              membership_filters: membership_filters,
-              feature: feature,
-              allowed_group_ids: allowed_group_ids,
-              private_allowed_group_ids: private_allowed_group_ids,
-              access_levels: access_levels,
-              options: options
-            )
+            add_filter(membership_filters, :should) do
+              build_private_group_filters(traversal_ids: private_traversal_ids,
+                feature: feature, options: options)
+            end
           end
         end
 
@@ -1539,52 +1549,8 @@ module Search
           end
         end
 
-        def add_feature_access_filter_for_groups(
-          membership_filters:, feature:, allowed_group_ids:,
-          private_allowed_group_ids:, access_levels:, options:)
-          return if allowed_group_ids.blank? && private_allowed_group_ids.blank?
-
-          traversal_groups = {}
-
-          if allowed_group_ids.present?
-            groups = Group.id_in(allowed_group_ids)
-            traversal_ids = get_traversal_ids_for_search_level(groups, options)
-
-            access_contexts = build_access_contexts(access_levels)
-            consolidate_access_permissions(traversal_groups, traversal_ids, access_contexts)
-          end
-
-          if private_allowed_group_ids.present? && access_levels[:project] != access_levels[:private_project]
-            private_groups = Group.id_in(private_allowed_group_ids)
-            private_traversal_ids = get_traversal_ids_for_search_level(private_groups, options)
-
-            consolidate_access_permissions(traversal_groups, private_traversal_ids, :private)
-          end
-
-          consolidated_traversal_ids = {}
-          traversal_groups.each do |traversal_id, config|
-            key = config[:access_contexts].to_a.join('_')
-            consolidated_traversal_ids[key] ||= {
-              traversal_ids: Set.new,
-              access_contexts: config[:access_contexts]
-            }
-            consolidated_traversal_ids[key][:traversal_ids].add(traversal_id)
-          end
-
-          add_filter(membership_filters, :should) do
-            build_public_and_internal_group_filters(
-              public_and_internal_configs: consolidated_traversal_ids['public_internal'],
-              feature: feature, options: options)
-          end
-
-          add_filter(membership_filters, :should) do
-            build_private_group_filters(private_configs: consolidated_traversal_ids['public_internal_private'],
-              feature: feature, options: options)
-          end
-        end
-
-        def build_public_and_internal_group_filters(public_and_internal_configs:, feature:, options:)
-          return if public_and_internal_configs.blank?
+        def build_public_and_internal_group_filters(traversal_ids:, feature:, options:)
+          return if traversal_ids.empty?
 
           filter = Search::Elastic::BoolExpr.new
           visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
@@ -1609,7 +1575,7 @@ module Search
               }
             end
 
-            public_and_internal_configs[:traversal_ids].each do |traversal_id|
+            traversal_ids.each do |traversal_id|
               add_filter(filter, :should) do
                 {
                   prefix: {
@@ -1626,8 +1592,8 @@ module Search
           filter.to_bool_query
         end
 
-        def build_private_group_filters(private_configs:, feature:, options:)
-          return if private_configs.blank?
+        def build_private_group_filters(traversal_ids:, feature:, options:)
+          return if traversal_ids.empty?
 
           filter = Search::Elastic::BoolExpr.new
           traversal_id_field = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
@@ -1642,7 +1608,7 @@ module Search
               }
             end
 
-            private_configs[:traversal_ids].each do |traversal_id|
+            traversal_ids.each do |traversal_id|
               add_filter(filter, :should) do
                 {
                   prefix: {
@@ -1698,72 +1664,43 @@ module Search
           user_abilities = ::Authz::Project.new(user, scope: projects).permitted
 
           required_feature_access_levels = build_required_feature_access_levels(features)
-          project_ids_by_access_level = required_feature_access_levels.index_with do |level|
-            projects.where_exists(user.authorizations_for_projects(min_access_level: level)).pluck_primary_key
+
+          public_and_internal_project_ids_by_access_level = required_feature_access_levels.index_with do |level|
+            projects.public_and_internal_only
+              .where_exists(user.authorizations_for_projects(min_access_level: level)).pluck_primary_key
+          end
+
+          private_project_ids_by_access_level = required_feature_access_levels.index_with do |level|
+            projects.private_only
+              .where_exists(user.authorizations_for_projects(min_access_level: level)).pluck_primary_key
           end
 
           features.each do |feature|
             access_levels = get_feature_access_levels(feature)
 
-            allowed_project_ids = project_ids_by_access_level[access_levels[:project]]
-            allowed_project_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
+            public_and_internal_project_ids = public_and_internal_project_ids_by_access_level[access_levels[:project]]
+            public_and_internal_project_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
 
-            private_allowed_project_ids = if access_levels[:project] != access_levels[:private_project]
-                                            project_ids_by_access_level[access_levels[:private_project]] +
-                                              allowed_ids_by_ability(feature:, user_abilities:)
-                                          else
-                                            []
-                                          end
+            private_project_ids = private_project_ids_by_access_level[access_levels[:private_project]] +
+              allowed_ids_by_ability(feature:, user_abilities:)
 
-            add_feature_access_filter_for_projects(
-              membership_filters: membership_filters,
-              feature: feature,
-              allowed_project_ids: allowed_project_ids,
-              private_allowed_project_ids: private_allowed_project_ids,
-              access_levels: access_levels,
-              options: options
-            )
+            next if public_and_internal_project_ids.empty? && private_project_ids.empty?
+
+            add_filter(membership_filters, :should) do
+              build_public_and_internal_project_filters(
+                project_ids: public_and_internal_project_ids,
+                feature: feature, options: options)
+            end
+
+            add_filter(membership_filters, :should) do
+              build_private_project_filters(project_ids: private_project_ids,
+                feature: feature, options: options)
+            end
           end
         end
 
-        def add_feature_access_filter_for_projects(
-          membership_filters:, feature:, allowed_project_ids:,
-          private_allowed_project_ids:, access_levels:, options:)
-          return if allowed_project_ids.blank? && private_allowed_project_ids.blank?
-
-          project_access_groups = {}
-
-          access_contexts = build_access_contexts(access_levels)
-          consolidate_access_permissions(project_access_groups, allowed_project_ids, access_contexts)
-
-          if access_levels[:project] != access_levels[:private_project]
-            consolidate_access_permissions(project_access_groups, private_allowed_project_ids, :private)
-          end
-
-          consolidated_projects = {}
-          project_access_groups.each do |project_id, config|
-            key = config[:access_contexts].to_a.join('_')
-            consolidated_projects[key] ||= {
-              project_ids: Set.new,
-              access_contexts: config[:access_contexts]
-            }
-            consolidated_projects[key][:project_ids].add(project_id)
-          end
-
-          add_filter(membership_filters, :should) do
-            build_public_and_internal_project_filters(
-              public_and_internal_configs: consolidated_projects['public_internal'],
-              feature: feature, options: options)
-          end
-
-          add_filter(membership_filters, :should) do
-            build_private_project_filters(private_configs: consolidated_projects['public_internal_private'],
-              feature: feature, options: options)
-          end
-        end
-
-        def build_public_and_internal_project_filters(public_and_internal_configs:, feature:, options:)
-          return if public_and_internal_configs.blank?
+        def build_public_and_internal_project_filters(project_ids:, feature:, options:)
+          return if project_ids.empty?
 
           filter = Search::Elastic::BoolExpr.new
           visibility_level_field = options.fetch(:project_visibility_level_field, PROJECT_VISIBILITY_FIELD)
@@ -1792,7 +1729,7 @@ module Search
               {
                 terms: {
                   _name: context.name(:project, :member),
-                  "#{project_id_field}": public_and_internal_configs[:project_ids].to_a
+                  "#{project_id_field}": project_ids
                 }
               }
             end
@@ -1801,8 +1738,8 @@ module Search
           filter.to_bool_query
         end
 
-        def build_private_project_filters(private_configs:, feature:, options:)
-          return if private_configs.blank?
+        def build_private_project_filters(project_ids:, feature:, options:)
+          return if project_ids.empty?
 
           filter = Search::Elastic::BoolExpr.new
           project_id_field = options.fetch(:project_id_field, PROJECT_ID_FIELD)
@@ -1821,7 +1758,7 @@ module Search
               {
                 terms: {
                   _name: context.name(:project, :member),
-                  "#{project_id_field}": private_configs[:project_ids].to_a
+                  "#{project_id_field}": project_ids
                 }
               }
             end
