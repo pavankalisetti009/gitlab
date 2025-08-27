@@ -11,7 +11,7 @@ module Ai
     validates :ai_gateway_url, :duo_agent_platform_service_url, length: { maximum: 2048 }, allow_nil: true
     validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
 
-    validate :validate_ai_gateway_url, :validate_duo_agent_platform_service_url
+    validate :validate_ai_gateway_url
 
     validates :duo_core_features_enabled,
       inclusion: { in: [true, false] },
@@ -54,13 +54,6 @@ module Ai
       validate_url_attribute(
         attribute: :ai_gateway_url,
         value: ai_gateway_url
-      )
-    end
-
-    def validate_duo_agent_platform_service_url
-      validate_url_attribute(
-        attribute: :duo_agent_platform_service_url,
-        value: duo_agent_platform_service_url
       )
     end
 

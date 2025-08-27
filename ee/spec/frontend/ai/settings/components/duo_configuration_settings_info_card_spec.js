@@ -140,7 +140,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
                 createComponent({
                   isSaaS: false,
                   canManageSelfHostedModels: true,
-                  duoAgentPlatformServiceUrl: 'http://duo-agent-platform.example.com',
+                  duoAgentPlatformServiceUrl: 'duo-agent-platform:50052',
                   exposeDuoAgentPlatformServiceUrl: true,
                 });
 
@@ -149,7 +149,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
                   'Local Duo Agent Platform Service URL',
                 );
                 expect(findDuoConfigurationRows().at(6).props('configValue')).toBe(
-                  'http://duo-agent-platform.example.com',
+                  'duo-agent-platform:50052',
                 );
               });
             });
@@ -192,7 +192,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
               createComponent({
                 isSaaS: false,
                 canManageSelfHostedModels: true,
-                duoAgentPlatformServiceUrl: 'http://duo-agent-platform.example.com',
+                duoAgentPlatformServiceUrl: 'duo-agent-platform:50052',
                 exposeDuoAgentPlatformServiceUrl: false,
               });
 

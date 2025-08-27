@@ -13,7 +13,7 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
     end
 
     context 'with self-hosted URL' do
-      let(:self_hosted_url) { 'http://self-hosted-dap-service-url:50052' }
+      let(:self_hosted_url) { 'self-hosted-dap-service-url:50052' }
 
       context 'when self-hosted URL is set' do
         before do
@@ -173,7 +173,7 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
     subject(:self_hosted_url) { described_class.self_hosted_url }
 
     context 'when AI setting has duo_agent_platform_service_url configured' do
-      let(:service_url) { 'http://self-hosted-dap-service-url:50052' }
+      let(:service_url) { 'self-hosted-dap-service-url:50052' }
 
       before do
         ::Ai::Setting.instance.update!(duo_agent_platform_service_url: service_url)

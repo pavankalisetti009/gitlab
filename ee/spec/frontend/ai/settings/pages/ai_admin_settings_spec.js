@@ -29,13 +29,13 @@ let wrapper;
 let axiosMock;
 
 const aiGatewayUrl = 'http://localhost:5052';
-const duoAgentPlatformServiceUrl = 'http://localhost:50052';
+const duoAgentPlatformServiceUrl = 'localhost:50052';
 const toggleBetaModelsPath = '/admin/ai/duo_self_hosted/terms_and_condition';
 const updateAiSettingsSuccessHandler = jest.fn().mockResolvedValue({
   data: {
     duoSettings: {
       aiGatewayUrl: 'http://new-aigw-url.com',
-      duoAgentPlatformServiceUrl: 'http://new-duo-agent-platform-url.com',
+      duoAgentPlatformServiceUrl: 'new-duo-agent-platform-url:50052',
       errors: [],
     },
   },
@@ -135,7 +135,7 @@ describe('AiAdminSettings', () => {
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
               aiGatewayUrl: 'http://new-ai-gateway-url.com',
-              duoAgentPlatformServiceUrl: 'http://localhost:50052',
+              duoAgentPlatformServiceUrl: 'localhost:50052',
               duoCoreFeaturesEnabled: false,
             },
           });
@@ -143,7 +143,7 @@ describe('AiAdminSettings', () => {
 
         it('updates duoAgentPlatformServiceUrl when feature flag is enabled', async () => {
           await createComponent({ provide: { exposeDuoAgentPlatformServiceUrl: true } });
-          const newDuoAgentPlatformServiceUrl = 'http://new-duo-agent-platform-url.com';
+          const newDuoAgentPlatformServiceUrl = 'new-duo-agent-platform-url:50052';
 
           await findDuoAgentPlatformServiceUrlInputForm().vm.$emit(
             'change',
@@ -155,7 +155,7 @@ describe('AiAdminSettings', () => {
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
               aiGatewayUrl: 'http://localhost:5052',
-              duoAgentPlatformServiceUrl: 'http://new-duo-agent-platform-url.com',
+              duoAgentPlatformServiceUrl: 'new-duo-agent-platform-url:50052',
               duoCoreFeaturesEnabled: false,
             },
           });
@@ -164,7 +164,7 @@ describe('AiAdminSettings', () => {
         it('updates both aiGatewayUrl and duoAgentPlatformServiceUrl when both change', async () => {
           await createComponent({ provide: { exposeDuoAgentPlatformServiceUrl: true } });
           const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
-          const newDuoAgentPlatformServiceUrl = 'http://new-duo-agent-platform-url.com';
+          const newDuoAgentPlatformServiceUrl = 'new-duo-agent-platform-url:50052';
 
           await findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
           await findDuoAgentPlatformServiceUrlInputForm().vm.$emit(
@@ -177,7 +177,7 @@ describe('AiAdminSettings', () => {
           expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
               aiGatewayUrl: 'http://new-ai-gateway-url.com',
-              duoAgentPlatformServiceUrl: 'http://new-duo-agent-platform-url.com',
+              duoAgentPlatformServiceUrl: 'new-duo-agent-platform-url:50052',
               duoCoreFeaturesEnabled: false,
             },
           });
@@ -208,7 +208,7 @@ describe('AiAdminSettings', () => {
         expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
             aiGatewayUrl: 'http://localhost:5052',
-            duoAgentPlatformServiceUrl: 'http://localhost:50052',
+            duoAgentPlatformServiceUrl: 'localhost:50052',
             duoCoreFeaturesEnabled: true,
           },
         });
@@ -387,7 +387,7 @@ describe('AiAdminSettings', () => {
     });
 
     it('updates hasParentFormChanged when the Duo Agent Platform Service URL value changes', async () => {
-      await findDuoAgentPlatformServiceUrlInputForm().vm.$emit('change', 'http://new-url.com');
+      await findDuoAgentPlatformServiceUrlInputForm().vm.$emit('change', 'new-url:50052');
 
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
     });
