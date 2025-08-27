@@ -20,9 +20,9 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    context 'when agent_platform_model_selection feature flag is disabled' do
+    context 'when self_hosted_agent_platform feature flag is disabled' do
       before do
-        stub_feature_flags(agent_platform_model_selection: false)
+        stub_feature_flags(self_hosted_agent_platform: false)
       end
 
       it 'returns nil' do
@@ -35,9 +35,9 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
       end
     end
 
-    context 'when agent_platform_model_selection feature flag is enabled' do
+    context 'when self_hosted_agent_platform feature flag is enabled' do
       before do
-        stub_feature_flags(agent_platform_model_selection: true)
+        stub_feature_flags(self_hosted_agent_platform: true)
       end
 
       it 'creates ModelMetadata with the provided feature_setting' do
@@ -204,9 +204,9 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
   describe '#feature_flag_enabled?' do
     subject(:feature_flag_enabled) { service.send(:feature_flag_enabled?) }
 
-    context 'when agent_platform_model_selection is enabled globally' do
+    context 'when self_hosted_agent_platform is enabled globally' do
       before do
-        stub_feature_flags(agent_platform_model_selection: true)
+        stub_feature_flags(self_hosted_agent_platform: true)
       end
 
       it 'returns true' do
@@ -214,9 +214,9 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
       end
     end
 
-    context 'when agent_platform_model_selection is disabled globally' do
+    context 'when self_hosted_agent_platform is disabled globally' do
       before do
-        stub_feature_flags(agent_platform_model_selection: false)
+        stub_feature_flags(self_hosted_agent_platform: false)
       end
 
       it 'returns false' do
@@ -226,7 +226,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
 
     context 'when feature flag check raises an exception' do
       before do
-        allow(Feature).to receive(:enabled?).with(:agent_platform_model_selection)
+        allow(Feature).to receive(:enabled?).with(:self_hosted_agent_platform)
           .and_raise(StandardError, 'Feature flag error')
       end
 
@@ -238,7 +238,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
 
   describe 'return value consistency' do
     before do
-      stub_feature_flags(agent_platform_model_selection: true)
+      stub_feature_flags(self_hosted_agent_platform: true)
     end
 
     it 'returns either nil or a hash with metadata' do
@@ -273,7 +273,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
 
   describe 'integration behavior' do
     before do
-      stub_feature_flags(agent_platform_model_selection: true)
+      stub_feature_flags(self_hosted_agent_platform: true)
     end
 
     it 'flows through the complete happy path' do

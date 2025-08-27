@@ -23,7 +23,7 @@ module Gitlab
           attr_reader :feature_setting
 
           def feature_flag_enabled?
-            Feature.enabled?(:agent_platform_model_selection) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This is an instance level feature flag
+            Feature.enabled?(:self_hosted_agent_platform) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This is an instance level feature flag
           end
         end
       end
