@@ -23769,6 +23769,9 @@ msgstr ""
 msgid "Disable"
 msgstr ""
 
+msgid "Disable 2FA"
+msgstr ""
+
 msgid "Disable SSL verification for requests to GitLab Observability Backend"
 msgstr ""
 
@@ -23794,9 +23797,6 @@ msgid "Disable inviting new members to group or project by group/project owners 
 msgstr ""
 
 msgid "Disable password authentication for users with an SSO identity"
-msgstr ""
-
-msgid "Disable two-factor authentication"
 msgstr ""
 
 msgid "Disabled"
@@ -34295,6 +34295,9 @@ msgid "Incomplete"
 msgstr ""
 
 msgid "Increase"
+msgstr ""
+
+msgid "Increase your account's security by enabling two-factor authentication (2FA)."
 msgstr ""
 
 msgid "Increment suggestion line end"
@@ -52786,12 +52789,6 @@ msgid "Register"
 msgstr ""
 
 msgid "Register / Sign In"
-msgstr ""
-
-msgid "Register a WebAuthn device"
-msgstr ""
-
-msgid "Register a one-time password authenticator"
 msgstr ""
 
 msgid "Register a one-time password authenticator or a WebAuthn device first."
