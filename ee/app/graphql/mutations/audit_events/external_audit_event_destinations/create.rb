@@ -37,12 +37,13 @@ module Mutations
             verification_token: verification_token,
             name: name)
 
-          if destination.save
-            audit(destination, action: :create)
-            create_stream_destination(legacy_destination_model: destination, category: :http, is_instance: false)
-          end
+          destination.save!
+          audit(destination, action: :create)
+          create_stream_destination(legacy_destination_model: destination, category: :http, is_instance: false)
+          { external_audit_event_destination: destination, errors: [] }
 
-          { external_audit_event_destination: (destination if destination.persisted?), errors: Array(destination.errors) }
+        rescue ActiveRecord::RecordInvalid => e
+          raise Gitlab::Graphql::Errors::ArgumentError, e.message
         end
 
         private

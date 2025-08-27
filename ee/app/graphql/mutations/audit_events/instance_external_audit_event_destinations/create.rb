@@ -27,15 +27,17 @@ module Mutations
           destination = ::AuditEvents::InstanceExternalAuditEventDestination.new(destination_url: destination_url,
             name: name)
 
-          if destination.save
-            audit(destination, action: :create)
-            create_stream_destination(legacy_destination_model: destination, category: :http, is_instance: true)
-          end
+          destination.save!
+          audit(destination, action: :create)
+          create_stream_destination(legacy_destination_model: destination, category: :http, is_instance: true)
 
           {
-            instance_external_audit_event_destination: (destination if destination.persisted?),
-            errors: Array(destination.errors)
+            instance_external_audit_event_destination: destination,
+            errors: []
           }
+
+        rescue ActiveRecord::RecordInvalid => e
+          raise Gitlab::Graphql::Errors::ArgumentError, e.message
         end
       end
     end
