@@ -4,6 +4,7 @@ module EE
   module MergeRequests
     module BaseService
       extend ::Gitlab::Utils::Override
+      include ::Gitlab::InternalEventsTracking
 
       private
 
@@ -127,6 +128,12 @@ module EE
         matching_policies = merge_request.security_policies_with_branch_exceptions
 
         return if matching_policies.empty?
+
+        track_internal_event('check_merge_request_branch_exceptions_bypass', project: merge_request.project,
+          additional_properties: {
+            value: merge_request.id
+          }
+        )
 
         matching_policies.each do |policy|
           log_audit_event_for_policy_bypass(merge_request, policy)
