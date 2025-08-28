@@ -19,7 +19,7 @@ module QA
                 element 'filter-status-dropdown'
               end
 
-              view 'ee/app/assets/javascripts/security_dashboard/components/shared/filtered_search/tokens/
+              view 'ee/app/assets/javascripts/security_dashboard/components/shared/filtered_search_v2/tokens/
                     activity_token.vue' do
                 element 'activity-token'
               end

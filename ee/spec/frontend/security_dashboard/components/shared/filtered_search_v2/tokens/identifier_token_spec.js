@@ -3,10 +3,9 @@ import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import IdentifierToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/identifier_token.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
 import projectIdentifierSearch from 'ee/security_dashboard/graphql/queries/project_identifiers.query.graphql';
 import groupIdentifierSearch from 'ee/security_dashboard/graphql/queries/group_identifiers.query.graphql';
-import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { createAlert } from '~/alert';
@@ -23,7 +22,6 @@ jest.mock('~/alert');
 describe('Identifier Token component', () => {
   let wrapper;
   let router;
-  let eventSpy;
   const projectFullPath = 'test/path';
   const mockConfig = {
     multiSelect: false,
@@ -108,10 +106,6 @@ describe('Identifier Token component', () => {
     await nextTick();
     jest.advanceTimersByTime(300); // Debounce time
   };
-
-  afterEach(() => {
-    eventHub.$off('filters-changed', eventSpy);
-  });
 
   describe('default view', () => {
     beforeEach(() => {
