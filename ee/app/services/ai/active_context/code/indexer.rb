@@ -22,15 +22,14 @@ module Ai
           @active_context_repository = active_context_repository
           @project = active_context_repository.project
           @project_repository = project.repository
-
-          # get the from and to shas on initialize to ensure consistent values
-          @from_sha = active_context_repository.last_commit
-          @to_sha = project_repository.commit&.id
         end
 
         def run(&block)
           raise Error, 'Adapter not set' unless adapter
-          raise Error, 'Commit not found' unless to_sha
+
+          # determine the commit-related values at the beginning of indexing
+          # to ensure we are logging the correct values
+          determine_shas_and_force_reindex_flag
 
           log_info('Start indexer')
 
@@ -62,7 +61,44 @@ module Ai
 
         private
 
-        attr_reader :active_context_repository, :project, :project_repository, :to_sha, :from_sha
+        attr_reader :active_context_repository, :project, :project_repository, :from_sha, :to_sha, :force_reindex
+
+        def determine_shas_and_force_reindex_flag
+          @to_sha = project_repository.commit&.id
+          raise Error, "Project repository commit not found" unless @to_sha
+
+          if force_push?
+            @from_sha = ""
+            @force_reindex = true
+            return
+          end
+
+          @from_sha = last_indexed_commit
+          @force_reindex = false
+        end
+
+        def force_push?
+          if last_indexed_commit.blank? ||
+              Gitlab::Git.blank_ref?(last_indexed_commit) ||
+              last_indexed_commit == project_repository.empty_tree_id
+            return false
+          end
+
+          # force-push if the last_indexed_commit is no longer reachable in the repository
+          return true unless git_repository_contains_last_indexed_commit?
+
+          # force-push if the last_indexed_commit is NOT an ancestor of the to_sha (latest commit)
+          !project_repository.ancestor?(last_indexed_commit, to_sha)
+        end
+
+        def last_indexed_commit
+          @last_indexed_commit ||= active_context_repository.last_commit
+        end
+
+        def git_repository_contains_last_indexed_commit?
+          last_indexed_commit.present? && project_repository.commit(last_indexed_commit).present?
+        end
+        strong_memoize_attr :git_repository_contains_last_indexed_commit?
 
         def command
           [
@@ -97,9 +133,10 @@ module Ai
 
         def options
           {
+            project_id: project.id,
             from_sha: from_sha,
             to_sha: to_sha,
-            project_id: project.id,
+            force_reindex: force_reindex,
             partition_name: collection_class.partition_name,
             partition_number: collection_class.partition_number(project.id),
             gitaly_config: gitaly_config,
