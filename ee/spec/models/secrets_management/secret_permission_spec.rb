@@ -19,6 +19,101 @@ RSpec.describe SecretsManagement::SecretPermission, feature_category: :secrets_m
     allow(project).to receive(:secrets_manager).and_return(secrets_manager)
   end
 
+  describe 'normalized_expired_at' do
+    let(:permission) do
+      described_class.new(
+        project: project,
+        principal_type: 'User',
+        principal_id: user1.id,
+        resource_type: 'Project',
+        resource_id: project.id,
+        permissions: %w[create read],
+        expired_at: expired_at
+      )
+    end
+
+    context 'when expired_at is present' do
+      context 'with date-only format' do
+        let(:expired_at) { '2025-10-12' }
+
+        it 'normalize it to string' do
+          expect(permission.normalized_expired_at).to eq('2025-10-12T00:00:00Z')
+        end
+      end
+
+      context 'with full datetime format' do
+        let(:expired_at) { '2025-10-12T15:30:00+02:00' }
+
+        it 'converts to UTC ISO8601 format' do
+          expect(permission.normalized_expired_at).to eq('2025-10-12T13:30:00Z')
+        end
+      end
+    end
+
+    context 'when expired_at is blank' do
+      let(:expired_at) { '' }
+
+      it 'returns nil' do
+        expect(permission.normalized_expired_at).to be_nil
+      end
+    end
+
+    context 'when expired_at is nil' do
+      let(:expired_at) { nil }
+
+      it 'returns nil' do
+        expect(permission.normalized_expired_at).to be_nil
+      end
+    end
+  end
+
+  describe 'expired_at validation' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:permission) do
+      described_class.new(
+        project: project,
+        principal_type: 'User',
+        principal_id: user1.id,
+        resource_type: 'Project',
+        resource_id: project.id,
+        permissions: %w[create read],
+        expired_at: expired_at
+      )
+    end
+
+    where(:case_name, :expired_at_input, :valid, :error_msg) do
+      # --- valid
+      # --- 2025-08-27T15:01:04Z
+      'future ISO8601 (UTC)'        | 5.days.from_now.utc.iso8601.to_s       | true  | nil
+      # --- 2025-08-24
+      'future only date      '      | 2.days.from_now.to_date.iso8601.to_s   | true  | nil
+      'blank allowed'               | ''                                     | true  | nil
+      'nil allowed'                 | nil                                    | true  | nil
+
+      # --- invalid: past time
+      'past ISO8601 (UTC)'          | 1.day.ago.utc.iso8601.to_s             | false | 'must be in the future'
+      'date-only in the past'       | '2025-01-30'                           | false | 'must be in the future'
+
+      # --- invalid: bad formats
+      'bad month'                   | '2025-13-01T00:00:00Z'                 | false | 'must be RFC3339'
+      'nonsense'                    | 'not-a-date'                           | false | 'must be RFC3339'
+    end
+
+    with_them do
+      let(:expired_at) { expired_at_input }
+
+      it 'validates' do
+        if valid
+          expect(permission).to be_valid
+        else
+          expect(permission).to be_invalid
+          expect(permission.errors[:expired_at].join).to include(error_msg)
+        end
+      end
+    end
+  end
+
   describe 'validations' do
     subject(:permission) do
       described_class.new(

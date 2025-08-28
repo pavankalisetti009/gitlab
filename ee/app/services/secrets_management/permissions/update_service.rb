@@ -40,7 +40,7 @@ module SecretsManagement
         policy ||= AclPolicy.new(policy_name)
 
         # Add or update paths with permissions
-        update_policy_paths(policy, secret_permission.permissions)
+        update_policy_paths(policy, secret_permission.permissions, secret_permission.normalized_expired_at)
 
         # Save the policy to OpenBao
         secrets_manager_client.set_policy(policy)
@@ -56,7 +56,7 @@ module SecretsManagement
         error_response(secret_permission)
       end
 
-      def update_policy_paths(policy, permissions)
+      def update_policy_paths(policy, permissions, expired_at)
         data_path = secrets_manager.ci_full_path('*')
         metadata_path = secrets_manager.ci_metadata_full_path('*')
         detailed_metadata_path = secrets_manager.detailed_metadata_path('*')
@@ -72,6 +72,10 @@ module SecretsManagement
           policy.add_capability(metadata_path, permission, user: current_user)
         end
         policy.add_capability(detailed_metadata_path, 'list', user: current_user)
+
+        policy.paths[data_path].expired_at = expired_at
+        policy.paths[metadata_path].expired_at = expired_at
+        policy.paths[detailed_metadata_path].expired_at = expired_at
       end
 
       def error_response(secret_permission)
