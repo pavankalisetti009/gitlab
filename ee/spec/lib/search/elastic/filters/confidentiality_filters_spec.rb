@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_helpers, feature_category: :global_search do
   include_context 'with filters shared context'
   let_it_be_with_reload(:user) { create(:user) }
 
@@ -48,101 +48,149 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, feature_categ
       test_klass.by_group_level_confidentiality(query_hash: query_hash, options: options)
     end
 
-    context 'when user.can_read_all_resources? is true' do
-      before do
-        allow(user).to receive(:can_read_all_resources?).and_return(true)
+    context 'when options[:confidential] is not passed or not true/false' do
+      context 'when user.can_read_all_resources? is true' do
+        before do
+          allow(user).to receive(:can_read_all_resources?).and_return(true)
+        end
+
+        it_behaves_like 'does not modify the query_hash'
       end
 
-      it_behaves_like 'does not modify the query_hash'
+      context 'when user has the role set in option :min_access_level_confidential for group' do
+        context 'for a top level group' do
+          let(:fixture_file) { 'global_search_user_access_to_group_with_confidential_access.json' }
+
+          let_it_be(:group) { create(:group, :private, planners: user) }
+          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'for a sub group' do
+          let(:fixture_file) { 'global_search_user_access_to_group_with_confidential_access.json' }
+
+          let_it_be(:parent_group) { create(:group, :private) }
+          let_it_be(:group) { create(:group, :private, parent: parent_group, planners: user) }
+          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'for group through shared group permission' do
+          let(:fixture_file) { 'global_search_user_access_to_group_through_shared_group_with_confidential_access.json' }
+
+          let_it_be(:shared_group) { create(:group, :private, planners: user) }
+          let_it_be(:group) { create(:group) }
+          let_it_be(:group_link) do
+            create(:group_group_link, :planner, shared_group: group, shared_with_group: shared_group)
+          end
+
+          let(:shared_namespace_ancestry) { shared_group.elastic_namespace_ancestry }
+          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
+
+      context 'when current_user is nil' do
+        let(:fixture_file) { 'global_search_anonymous_user.json' }
+        let(:options) { base_options.merge(current_user: nil) }
+
+        it { is_expected.to eq(expected_query) }
+      end
+
+      context 'when current_user does not have any role which allows private group access' do
+        let(:fixture_file) { 'global_search_user_no_access.json' }
+
+        it { is_expected.to eq(expected_query) }
+
+        context 'and user is external' do
+          let(:fixture_file) { 'global_search_external_user.json' }
+
+          before do
+            allow(user).to receive(:external?).and_return(true)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
+
+      context 'when user has the role set in option :min_access_level_non_confidential for group' do
+        let(:fixture_file) { 'global_search_user_access_to_group_with_non_confidential_access.json' }
+        let_it_be(:group) { create(:group, :private, guests: user) }
+        let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+
+        it { is_expected.to eq(expected_query) }
+      end
+
+      context 'when user has GUEST permission for a project in the group hierarchy' do
+        let(:fixture_file) { 'global_search_user_access_to_project_with_non_confidential_access.json' }
+
+        let_it_be(:group) { create(:group, :private) }
+        let_it_be(:sub_group) { create(:group, :private, parent: group) }
+        let_it_be(:project) { create(:project, :private, group: sub_group, guests: user) }
+        let(:namespace_id) { group.id }
+        let(:shared_namespace_id) { sub_group.id }
+
+        it { is_expected.to eq(expected_query) }
+
+        context 'and user also has GUEST permission to the top level group' do
+          let(:fixture_file) { 'global_search_user_access_to_group_and_project_with_non_confidential_access.json' }
+          let(:namespace_ancestry) { group.elastic_namespace_ancestry }
+
+          before_all do
+            group.add_guest(user)
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
     end
 
-    context 'when user has the role set in option :min_access_level_confidential for group' do
-      context 'for a top level group' do
-        let(:fixture_file) { 'global_search_user_access_to_group_with_confidential_access.json' }
+    context 'when options[:confidential] is set' do
+      let(:options) { base_options.merge(confidential: true) }
+
+      context 'when user.can_read_all_resources? is true' do
+        let(:fixture_file) { 'global_search_admin_user_with_confidential_selected.json' }
+
+        before do
+          allow(user).to receive(:can_read_all_resources?).and_return(true)
+        end
+
+        it 'applies requested confidentiality' do
+          expect(by_group_level_confidentiality).to eq(expected_query)
+        end
+      end
+
+      context 'when current_user is nil' do
+        let(:fixture_file) { 'global_search_anonymous_user_with_confidential_selected.json' }
+        let(:user) { nil }
+
+        it 'applies permission filters on top of requested confidentiality' do
+          expect(by_group_level_confidentiality).to eq(expected_query)
+        end
+      end
+
+      context 'when current_user has no access' do
+        let(:fixture_file) { 'global_search_user_no_access_with_confidential_selected.json' }
+
+        it 'applies permission filters on top of requested confidentiality' do
+          expect(by_group_level_confidentiality).to eq(expected_query)
+        end
+      end
+
+      context 'when current_user has any level of access' do
+        let(:fixture_file) do
+          'global_search_user_access_to_group_with_confidential_access_with_confidential_selected.json'
+        end
 
         let_it_be(:group) { create(:group, :private, planners: user) }
         let(:namespace_ancestry) { group.elastic_namespace_ancestry }
 
-        it { is_expected.to eq(expected_query) }
-      end
-
-      context 'for a sub group' do
-        let(:fixture_file) { 'global_search_user_access_to_group_with_confidential_access.json' }
-
-        let_it_be(:parent_group) { create(:group, :private) }
-        let_it_be(:group) { create(:group, :private, parent: parent_group, planners: user) }
-        let(:namespace_ancestry) { group.elastic_namespace_ancestry }
-
-        it { is_expected.to eq(expected_query) }
-      end
-
-      context 'for group through shared group permission' do
-        let(:fixture_file) { 'global_search_user_access_to_group_through_shared_group_with_confidential_access.json' }
-
-        let_it_be(:shared_group) { create(:group, :private, planners: user) }
-        let_it_be(:group) { create(:group) }
-        let_it_be(:group_link) do
-          create(:group_group_link, :planner, shared_group: group, shared_with_group: shared_group)
+        it 'applies permission filters on top of requested confidentiality' do
+          expect(by_group_level_confidentiality).to eq(expected_query)
         end
-
-        let(:shared_namespace_ancestry) { shared_group.elastic_namespace_ancestry }
-        let(:namespace_ancestry) { group.elastic_namespace_ancestry }
-
-        it { is_expected.to eq(expected_query) }
-      end
-    end
-
-    context 'when current_user is nil' do
-      let(:fixture_file) { 'global_search_anonymous_user.json' }
-      let(:options) { base_options.merge(current_user: nil) }
-
-      it { is_expected.to eq(expected_query) }
-    end
-
-    context 'when current_user does not have any role which allows private group access' do
-      let(:fixture_file) { 'global_search_user_no_access.json' }
-
-      it { is_expected.to eq(expected_query) }
-
-      context 'and user is external' do
-        let(:fixture_file) { 'global_search_external_user.json' }
-
-        before do
-          allow(user).to receive(:external?).and_return(true)
-        end
-
-        it { is_expected.to eq(expected_query) }
-      end
-    end
-
-    context 'when user has the role set in option :min_access_level_non_confidential for group' do
-      let(:fixture_file) { 'global_search_user_access_to_group_with_non_confidential_access.json' }
-      let_it_be(:group) { create(:group, :private, guests: user) }
-      let(:namespace_ancestry) { group.elastic_namespace_ancestry }
-
-      it { is_expected.to eq(expected_query) }
-    end
-
-    context 'when user has GUEST permission for a project in the group hierarchy' do
-      let(:fixture_file) { 'global_search_user_access_to_project_with_non_confidential_access.json' }
-
-      let_it_be(:group) { create(:group, :private) }
-      let_it_be(:sub_group) { create(:group, :private, parent: group) }
-      let_it_be(:project) { create(:project, :private, group: sub_group, guests: user) }
-      let(:namespace_id) { group.id }
-      let(:shared_namespace_id) { sub_group.id }
-
-      it { is_expected.to eq(expected_query) }
-
-      context 'and user also has GUEST permission to the top level group' do
-        let(:fixture_file) { 'global_search_user_access_to_group_and_project_with_non_confidential_access.json' }
-        let(:namespace_ancestry) { group.elastic_namespace_ancestry }
-
-        before_all do
-          group.add_guest(user)
-        end
-
-        it { is_expected.to eq(expected_query) }
       end
     end
   end
@@ -233,6 +281,134 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, feature_categ
         let(:options) { { project_ids: [authorized_project.id, private_project.id] } }
 
         it { is_expected.to eq(expected_query) }
+      end
+    end
+  end
+
+  describe '.by_combined_confidentiality' do
+    let(:options) { { search_level: :global, current_user: user } }
+
+    subject(:by_combined_confidentiality) do
+      test_klass.by_combined_confidentiality(query_hash: query_hash, options: options)
+    end
+
+    context 'when neither use_project_authorization nor use_group_authorization is provided' do
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when use_project_authorization is true' do
+      let(:options) { super().merge(use_project_authorization: true) }
+
+      it 'calls by_project_confidentiality with use_project_authorization options' do
+        expect(test_klass).to receive(:by_project_confidentiality).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect { by_combined_confidentiality }.not_to raise_error
+      end
+
+      it 'only adds project filters' do
+        filter = by_combined_confidentiality.dig(:query, :bool, :filter)
+        expect(filter).to be_present
+
+        assert_names_in_query(filter,
+          with: %w[
+            filters:confidentiality:projects:non_confidential
+            filters:confidentiality:projects:confidential
+            filters:confidentiality:projects:confidential:as_author
+            filters:confidentiality:projects:confidential:project:membership:id
+            filters:confidentiality:projects:confidential:as_assignee
+          ],
+          without: %w[
+            filters:confidentiality:groups:non_confidential:public
+            filters:confidentiality:groups:non_confidential:internal
+          ]
+        )
+      end
+    end
+
+    context 'when use_group_authorization is true' do
+      let(:options) do
+        super().merge(use_group_authorization: true, min_access_level_non_confidential: ::Gitlab::Access::GUEST)
+      end
+
+      it 'calls by_group_level_confidentiality with use_group_authorization options' do
+        expect(test_klass).to receive(:by_group_level_confidentiality).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect { by_combined_confidentiality }.not_to raise_error
+      end
+
+      it 'removes features from group options' do
+        options_with_features = options.merge(use_group_authorization: true, features: [:issues])
+
+        expect(test_klass).to receive(:by_group_level_confidentiality).once do |args|
+          expect(args[:options]).not_to have_key(:features)
+        end
+
+        test_klass.by_combined_confidentiality(query_hash: query_hash, options: options_with_features)
+      end
+
+      it 'only adds group filters' do
+        filter = by_combined_confidentiality.dig(:query, :bool, :filter)
+        expect(filter).to be_present
+
+        assert_names_in_query(filter,
+          with: %w[
+            filters:confidentiality:groups:non_confidential:public
+            filters:confidentiality:groups:non_confidential:internal
+          ],
+          without: %w[
+            filters:confidentiality:projects:non_confidential
+            filters:confidentiality:projects:confidential
+            filters:confidentiality:projects:confidential:as_author
+            filters:confidentiality:projects:confidential:project:membership:id
+            filters:confidentiality:projects:confidential:as_assignee
+          ]
+        )
+      end
+    end
+
+    context 'when both use_project_authorization and use_group_authorization are true' do
+      let(:options) do
+        super().merge(use_project_authorization: true, use_group_authorization: true,
+          min_access_level_non_confidential: ::Gitlab::Access::GUEST)
+      end
+
+      it 'calls both underlying methods' do
+        expect(test_klass).to receive(:by_project_confidentiality).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect(test_klass).to receive(:by_group_level_confidentiality).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect { by_combined_confidentiality }.not_to raise_error
+      end
+
+      it 'creates a combined filter with should clauses' do
+        result = by_combined_confidentiality
+        filter = result.dig(:query, :bool, :filter)
+
+        expect(filter).to be_an(Array)
+        expect(filter.first).to have_key(:bool)
+        expect(filter.first[:bool]).to have_key(:should)
+        expect(filter.first[:bool][:should].length).to eq(2)
+        assert_names_in_query(filter, with: %w[
+          filters:confidentiality:projects:non_confidential
+          filters:confidentiality:projects:confidential
+          filters:confidentiality:projects:confidential:as_author
+          filters:confidentiality:projects:confidential:project:membership:id
+          filters:confidentiality:projects:confidential:as_assignee
+          filters:confidentiality:groups:non_confidential:public
+          filters:confidentiality:groups:non_confidential:internal
+        ])
       end
     end
   end

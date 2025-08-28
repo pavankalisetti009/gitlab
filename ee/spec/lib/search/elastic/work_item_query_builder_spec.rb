@@ -32,11 +32,11 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       filters:not_hidden
       filters:not_work_item_type_ids
       filters:non_archived
-      filters:non_confidential
-      filters:confidential
-      filters:confidential:as_author
-      filters:confidential:as_assignee
-      filters:confidential:project:membership:id
+      filters:confidentiality:projects:non_confidential
+      filters:confidentiality:projects:confidential
+      filters:confidentiality:projects:confidential:as_author
+      filters:confidentiality:projects:confidential:as_assignee
+      filters:confidentiality:projects:confidential:project:membership:id
     ])
   end
 
@@ -263,11 +263,11 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
       expected_filters = %w[
         filters:permissions:global:project_visibility_level:public_and_internal
-        filters:non_confidential
-        filters:confidential
-        filters:confidential:as_author
-        filters:confidential:as_assignee
-        filters:confidential:project:membership:id
+        filters:confidentiality:projects:non_confidential
+        filters:confidentiality:projects:confidential
+        filters:confidentiality:projects:confidential:as_author
+        filters:confidentiality:projects:confidential:as_assignee
+        filters:confidentiality:projects:confidential:project:membership:id
       ]
 
       knn_filter = query[:knn][:filter]

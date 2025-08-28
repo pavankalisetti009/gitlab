@@ -27,6 +27,7 @@ module Search
         {
           project_id_field: :project_id,
           project_visibility_level_field: :visibility_level,
+          namespace_visibility_level_field: :namespace_visibility_level,
           no_join_project: true,
           source_fields: ['id']
         }

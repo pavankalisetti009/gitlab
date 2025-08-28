@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::Filters, :elastic_helpers, feature_category: :global_search do
   include_context 'with filters shared context'
   let_it_be_with_reload(:user) { create(:user) }
 
@@ -4449,6 +4449,92 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       it_behaves_like 'adds filter to query_hash'
+    end
+  end
+
+  describe '.by_combined_search_level_and_membership' do
+    let_it_be(:user) { create(:user) }
+    let(:options) { { current_user: user, search_level: 'global' } }
+
+    subject(:by_combined_search_level_and_membership) do
+      described_class.by_combined_search_level_and_membership(query_hash: query_hash, options: options)
+    end
+
+    context 'when neither use_project_authorization nor use_group_authorization is provided' do
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when use_project_authorization is true' do
+      let(:options) { super().merge(use_project_authorization: true) }
+
+      it 'calls by_search_level_and_membership with use_project_authorization options' do
+        expect(described_class).to receive(:by_search_level_and_membership).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect { by_combined_search_level_and_membership }.not_to raise_error
+      end
+
+      it 'only adds project filters' do
+        result = by_combined_search_level_and_membership
+        expect(result.dig(:query, :bool, :filter)).to be_present
+        assert_names_in_query(result, with: %w[filters:permissions:global:visibility_level:public_and_internal],
+          without: %w[filters:permissions:global:namespace_visibility_level:public_and_internal])
+      end
+    end
+
+    context 'when use_group_authorization is true' do
+      let(:options) { super().merge(use_group_authorization: true) }
+
+      it 'calls by_search_level_and_group_membership with use_group_authorization options' do
+        expect(described_class).to receive(:by_search_level_and_group_membership).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect { by_combined_search_level_and_membership }.not_to raise_error
+      end
+
+      it 'only adds group filters' do
+        result = by_combined_search_level_and_membership
+        expect(result.dig(:query, :bool, :filter)).to be_present
+        assert_names_in_query(result,
+          with: %w[filters:permissions:global:namespace_visibility_level:public_and_internal],
+          without: %w[filters:permissions:global:visibility_level:public_and_internal])
+      end
+    end
+
+    context 'when both use_project_authorization and use_group_authorization are true' do
+      let(:options) { super().merge(use_project_authorization: true, use_group_authorization: true) }
+
+      it 'calls both underlying methods' do
+        expect(described_class).to receive(:by_search_level_and_membership).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect(described_class).to receive(:by_search_level_and_group_membership).once
+          .with(hash_including(query_hash: kind_of(Search::Elastic::BoolExpr),
+            options: hash_including(filter_path: [:filter])))
+          .and_call_original
+
+        expect { by_combined_search_level_and_membership }.not_to raise_error
+      end
+
+      it 'creates a combined filter with should clauses' do
+        result = by_combined_search_level_and_membership
+        filter = result.dig(:query, :bool, :filter)
+
+        expect(filter).to be_an(Array)
+        expect(filter.first).to have_key(:bool)
+        expect(filter.first[:bool]).to have_key(:should)
+        expect(filter.first[:bool][:should].length).to eq(2)
+        assert_names_in_query(filter, with: %w[
+          filters:permissions:global:visibility_level:public_and_internal
+          filters:permissions:global:namespace_visibility_level:public_and_internal
+        ])
+      end
     end
   end
 

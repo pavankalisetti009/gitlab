@@ -3,16 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_query, :sidekiq_inline, feature_category: :markdown do
-  let_it_be(:group)           { create(:group) }
-  let_it_be(:project)         { create(:project, group: group) }
-  let_it_be(:current_user)    { create(:user) }
-  let_it_be(:work_item1) do
-    create(:work_item, project: project)
-  end
-
-  let_it_be(:work_item2) do
-    create(:work_item, project: project)
-  end
+  let_it_be(:group)        { create(:group) }
+  let_it_be(:project)      { create(:project, group: group) }
+  let_it_be(:current_user) { create(:user) }
 
   let(:params)         { {} }
   let(:finder)         { described_class.new(current_user, context, resource_parent, params) }
@@ -802,10 +795,18 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
         let(:issue) { create(:work_item, :issue, project: project) }
         let(:task) { create(:work_item, :task, project: project) }
         let(:requirement) { create(:work_item, :requirement, project: project) }
+        let(:incident) { create(:work_item, :incident, project: project) }
+        let(:test_case) { create(:work_item, :test_case, project: project) }
+        let(:objective) { create(:work_item, :objective, project: project) }
+        let(:key_result) { create(:work_item, :key_result, project: project) }
+        let(:epic) { create(:work_item, :epic, namespace: group) }
+        let(:ticket) { create(:work_item, :ticket, project: project) }
 
         before do
-          Elastic::ProcessBookkeepingService.track!(issue, task, requirement)
-
+          Elastic::ProcessBookkeepingService.track!(
+            issue, task, requirement, incident, test_case,
+            objective, key_result, epic, ticket
+          )
           ensure_elasticsearch_index!
         end
 
@@ -829,29 +830,181 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
           end
         end
 
-        context 'when issue_types param with requirement type provided' do
-          let(:params) do
-            { issue_types: ['requirement'] }
-          end
-
-          it 'returns only requirement work items' do
-            expect(execute).to contain_exactly(requirement)
-          end
-        end
-
         context 'when issue_types param is not provided' do
           it 'returns all work items regardless of type' do
-            expect(execute).to contain_exactly(issue, task, requirement)
+            expect(execute).to contain_exactly(
+              issue, task, requirement, incident, test_case,
+              objective, key_result, epic, ticket
+            )
           end
         end
 
         context 'when issue_types param with all supported types provided' do
           let(:params) do
-            { issue_types: %w[issue task requirement] }
+            { issue_types: %w[issue task requirement incident test_case objective key_result epic ticket] }
           end
 
           it 'returns work items of all specified types' do
-            expect(execute).to contain_exactly(issue, task, requirement)
+            expect(execute).to contain_exactly(
+              issue, task, requirement, incident, test_case,
+              objective, key_result, epic, ticket
+            )
+          end
+        end
+
+        context 'when issue_types param with only epic provided' do
+          let(:params) do
+            { issue_types: ['epic'] }
+          end
+
+          it 'returns only epic work items' do
+            expect(execute).to contain_exactly(epic)
+          end
+        end
+
+        context 'when issue_types param with epic and issue provided' do
+          let(:params) do
+            { issue_types: %w[epic issue] }
+          end
+
+          it 'returns epic and issue work items' do
+            expect(execute).to contain_exactly(epic, issue)
+          end
+        end
+      end
+
+      context 'when filtering by issue_types with confidential items' do
+        let(:confidential_epic) { create(:work_item, :epic, namespace: group, confidential: true) }
+        let(:confidential_issue) { create(:work_item, :issue, project: project, confidential: true) }
+
+        let(:public_epic) { create(:work_item, :epic, namespace: group, confidential: false) }
+        let(:public_issue) { create(:work_item, :issue, project: project, confidential: false) }
+
+        before do
+          Elastic::ProcessBookkeepingService.track!(
+            confidential_epic, confidential_issue,
+            public_epic, public_issue
+          )
+          ensure_elasticsearch_index!
+        end
+
+        context 'when user has permissions for confidential items' do
+          before_all do
+            project.add_developer(current_user)
+          end
+
+          let(:params) do
+            { issue_types: %w[epic issue], confidential: true }
+          end
+
+          it 'returns confidential epic and issue work items' do
+            expect(execute).to contain_exactly(confidential_epic, confidential_issue)
+          end
+        end
+
+        context 'when user lacks permissions for confidential items' do
+          let_it_be(:guest_user) { create(:user) }
+          let(:finder) { described_class.new(guest_user, context, resource_parent, params) }
+          let(:params) do
+            { issue_types: %w[epic issue], confidential: true }
+          end
+
+          before_all do
+            project.add_guest(guest_user)
+          end
+
+          it 'returns empty list due to insufficient permissions' do
+            expect(execute).to be_empty
+          end
+        end
+
+        context 'when filtering for public epic and issue types' do
+          let(:params) do
+            { issue_types: %w[epic issue], confidential: false }
+          end
+
+          it 'returns only public epic and issue work items' do
+            expect(execute).to contain_exactly(public_epic, public_issue)
+          end
+        end
+      end
+
+      context 'when resource_parent is a private Group without user access' do
+        let_it_be(:private_group) { create(:group, :private) }
+        let_it_be(:private_project) { create(:project, group: private_group) }
+        let_it_be(:user_without_access) { create(:user) }
+
+        let(:resource_parent) { private_group }
+        let(:finder) { described_class.new(user_without_access, context, resource_parent, params) }
+
+        let_it_be(:epic_in_private_group) { create(:work_item, :epic, namespace: private_group) }
+        let_it_be(:issue_in_private_project) { create(:work_item, :issue, project: private_project) }
+        let_it_be(:confidential_epic) { create(:work_item, :epic, namespace: private_group, confidential: true) }
+        let_it_be(:confidential_issue) { create(:work_item, :issue, project: private_project, confidential: true) }
+
+        before do
+          Elastic::ProcessBookkeepingService.track!(
+            epic_in_private_group,
+            issue_in_private_project,
+            confidential_epic,
+            confidential_issue
+          )
+          ensure_elasticsearch_index!
+        end
+
+        context 'when filtering by issue_types' do
+          let(:params) do
+            { issue_types: %w[epic issue] }
+          end
+
+          it 'returns empty list due to no access to private group' do
+            expect(execute).to be_empty
+          end
+        end
+
+        context 'when user is added as guest to the private group' do
+          before_all do
+            private_group.add_guest(user_without_access)
+          end
+
+          let(:finder) { described_class.new(user_without_access, context, resource_parent, params) }
+
+          context 'when filtering for public items' do
+            let(:params) do
+              { issue_types: %w[epic issue], confidential: false }
+            end
+
+            it 'returns only non-confidential items' do
+              expect(execute).to contain_exactly(epic_in_private_group, issue_in_private_project)
+            end
+          end
+
+          context 'when filtering for confidential items' do
+            let(:params) do
+              { issue_types: %w[epic issue], confidential: true }
+            end
+
+            it 'returns empty list as guest cannot see confidential items' do
+              expect(execute).to be_empty
+            end
+          end
+        end
+
+        context 'when user is added as developer to the private group' do
+          before_all do
+            private_group.add_developer(user_without_access)
+          end
+
+          let(:finder) { described_class.new(user_without_access, context, resource_parent, params) }
+
+          context 'when filtering for confidential items' do
+            let(:params) do
+              { issue_types: %w[epic issue], confidential: true }
+            end
+
+            it 'returns confidential items as developer has access' do
+              expect(execute).to contain_exactly(confidential_epic, confidential_issue)
+            end
           end
         end
       end

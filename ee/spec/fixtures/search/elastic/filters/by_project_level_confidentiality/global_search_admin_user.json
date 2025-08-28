@@ -4,7 +4,10 @@
       "filter": [
         {
           "term": {
-            "confidential": true
+            "confidential": {
+              "_name": "filters:confidentiality:projects:user_filter",
+              "value": true
+            }
           }
         }
       ],

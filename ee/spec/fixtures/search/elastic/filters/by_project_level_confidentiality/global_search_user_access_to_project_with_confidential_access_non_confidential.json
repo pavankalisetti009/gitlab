@@ -8,7 +8,7 @@
               {
                 "term": {
                   "confidential": {
-                    "_name": "filters:non_confidential",
+                    "_name": "filters:confidentiality:projects:non_confidential",
                     "value": false
                   }
                 }
@@ -19,7 +19,7 @@
                     {
                       "term": {
                         "confidential": {
-                          "_name": "filters:confidential",
+                          "_name": "filters:confidentiality:projects:confidential",
                           "value": true
                         }
                       }
@@ -30,7 +30,7 @@
                           {
                             "term": {
                               "author_id": {
-                                "_name": "filters:confidential:as_author",
+                                "_name": "filters:confidentiality:projects:confidential:as_author",
                                 "value": __USER_ID__
                               }
                             }
@@ -38,14 +38,14 @@
                           {
                             "term": {
                               "assignee_id": {
-                                "_name": "filters:confidential:as_assignee",
+                                "_name": "filters:confidentiality:projects:confidential:as_assignee",
                                 "value": __USER_ID__
                               }
                             }
                           },
                           {
                             "terms": {
-                              "_name": "filters:confidential:project:membership:id",
+                              "_name": "filters:confidentiality:projects:confidential:project:membership:id",
                               "project_id": [
                                 __PROJECT_ID__
                               ]

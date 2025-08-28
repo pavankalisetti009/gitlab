@@ -92,10 +92,10 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
     it 'applies all confidential filters' do
       assert_names_in_query(subject,
         with: %w[
-          filters:non_confidential
-          filters:confidential
-          filters:confidential:as_author
-          filters:confidential:as_assignee
+          filters:confidentiality:projects:non_confidential
+          filters:confidentiality:projects:confidential
+          filters:confidentiality:projects:confidential:as_author
+          filters:confidentiality:projects:confidential:as_assignee
         ])
     end
 
@@ -104,11 +104,11 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
 
       it 'does not apply the confidential filters' do
         assert_names_in_query(subject, with: %w[
-          filters:confidential
-          filters:non_confidential
-          filters:confidential:as_author
-          filters:confidential:as_assignee
-          filters:confidential:project:membership:id
+          filters:confidentiality:projects:confidential
+          filters:confidentiality:projects:non_confidential
+          filters:confidentiality:projects:confidential:as_author
+          filters:confidentiality:projects:confidential:as_assignee
+          filters:confidentiality:projects:confidential:project:membership:id
         ])
       end
     end
@@ -119,11 +119,11 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
 
     it 'applies all confidential filters' do
       assert_names_in_query(subject, with: %w[
-        filters:non_confidential
-        filters:confidential
-        filters:confidential:as_author
-        filters:confidential:as_assignee
-        filters:confidential:project:membership:id
+        filters:confidentiality:projects:non_confidential
+        filters:confidentiality:projects:confidential
+        filters:confidentiality:projects:confidential:as_author
+        filters:confidentiality:projects:confidential:as_assignee
+        filters:confidentiality:projects:confidential:project:membership:id
       ])
     end
   end
@@ -133,12 +133,12 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
     let(:project_ids) { [private_project.id] }
 
     it 'only applies the non-confidential filter' do
-      assert_names_in_query(subject, with: %w[filters:non_confidential],
+      assert_names_in_query(subject, with: %w[filters:confidentiality:projects:non_confidential],
         without: %w[
-          filters:confidential
-          filters:confidential:as_author
-          filters:confidential:as_assignee
-          filters:confidential:project:membership:id
+          filters:confidentiality:projects:confidential
+          filters:confidentiality:projects:confidential:as_author
+          filters:confidentiality:projects:confidential:as_assignee
+          filters:confidentiality:projects:confidential:project:membership:id
         ])
     end
   end

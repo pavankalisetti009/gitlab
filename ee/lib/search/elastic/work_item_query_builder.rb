@@ -17,6 +17,8 @@ module Search
         options[:fields] = fields
         options[:related_ids] = related_ids
         options[:vectors_supported] = vectors_supported
+        options[:use_group_authorization] = use_group_authorization?
+        options[:use_project_authorization] = use_project_authorization?
 
         query_hash = if hybrid_work_item_search?
                        ::Search::Elastic::Queries.by_knn(query: query, options: options)
@@ -97,11 +99,11 @@ module Search
       end
 
       def get_authorization_filter(query_hash:, options:)
-        ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
+        ::Search::Elastic::Filters.by_combined_search_level_and_membership(query_hash:, options:)
       end
 
       def get_confidentiality_filter(query_hash:, options:)
-        ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash, options: options)
+        ::Search::Elastic::Filters.by_combined_confidentiality(query_hash:, options:)
       end
 
       # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags
@@ -130,12 +132,16 @@ module Search
         model = Search::Elastic::References::Embedding::MODEL_VERSIONS[1]
 
         {
+          use_project_authorization: true,
+          use_group_authorization: false,
           authorization_use_traversal_ids: true,
           doc_type: DOC_TYPE,
           embedding_field: embedding_field,
           features: 'issues',
           model: model,
-          project_visibility_level_field: :project_visibility_level
+          project_visibility_level_field: :project_visibility_level,
+          min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+          min_access_level_confidential: ::Gitlab::Access::PLANNER
         }
       end
 
@@ -159,6 +165,33 @@ module Search
           ::Search::Elastic::Queries.by_full_text(query: query, options: options)
         end
       end
+
+      def use_project_authorization?
+        return true unless options[:work_item_type_ids].present?
+
+        project_work_item_type_ids = options[:work_item_type_ids] - group_work_item_type_ids
+        project_work_item_type_ids.present?
+      end
+
+      def use_group_authorization?
+        return false unless options[:work_item_type_ids].present?
+
+        options[:work_item_type_ids].any? { |id| group_work_item_type_ids.include?(id) }
+      end
+
+      # the query builder is used for issues (non-epic) work items search in the UI
+      # if no `work_item_type_ids` are provided, default to all work items except epics
+      def work_item_type_ids
+        return options[:work_item_type_ids] if options[:work_item_type_ids].presence
+
+        ::WorkItems::Type.base_types.values - group_work_item_type_ids
+      end
+      strong_memoize_attr :work_item_type_ids
+
+      def group_work_item_type_ids
+        [::WorkItems::Type.default_by_type(:epic).id].freeze
+      end
+      strong_memoize_attr :group_work_item_type_ids
     end
   end
 end

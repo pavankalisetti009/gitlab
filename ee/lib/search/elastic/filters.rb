@@ -15,6 +15,34 @@ module Search
         include ::Elastic::Latest::QueryContext::Aware
         include Search::Elastic::Concerns::FilterUtils
         include Search::Elastic::Concerns::AuthorizationUtils
+        include Gitlab::Utils::StrongMemoize
+
+        def by_combined_search_level_and_membership(query_hash:, options:)
+          combined_filter = Search::Elastic::BoolExpr.new
+          options[:filter_path] = [:filter]
+
+          if options[:use_project_authorization]
+            add_filter(combined_filter, :should) do
+              project_filter = Search::Elastic::BoolExpr.new
+              by_search_level_and_membership(query_hash: project_filter, options: options)
+
+              project_filter.to_bool_query
+            end
+          end
+
+          if options[:use_group_authorization]
+            add_filter(combined_filter, :should) do
+              group_filter = Search::Elastic::BoolExpr.new
+              by_search_level_and_group_membership(query_hash: group_filter, options: options)
+
+              group_filter.to_bool_query
+            end
+          end
+
+          add_filter(query_hash, :query, :bool, :filter) do
+            combined_filter.to_bool_query
+          end
+        end
 
         def by_search_level_and_membership(query_hash:, options:)
           raise ArgumentError, 'search_level is required' unless options.key?(:search_level)
@@ -27,7 +55,9 @@ module Search
 
           query_hash = search_level_filter(query_hash: query_hash, options: options)
 
-          add_filter(query_hash, :query, :bool, :filter) do
+          filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
+
+          add_filter(query_hash, *filter_path) do
             build_membership_filter(options:).to_bool_query
           end
         end
@@ -882,7 +912,8 @@ module Search
           query_hash = search_level_filter(query_hash: query_hash, options: options)
           return query_hash if user&.can_read_all_resources?
 
-          add_filter(query_hash, :query, :bool, :filter) do
+          filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
+          add_filter(query_hash, *filter_path) do
             context.name(:filters, :permissions, search_level) do
               permissions_filters = Search::Elastic::BoolExpr.new
               add_visibility_level_filter(user: user,
@@ -1353,8 +1384,9 @@ module Search
           search_level = options[:search_level].to_sym
           namespace_ids = options[:group_ids]
           project_ids = scoped_project_ids(user, options[:project_ids])
+          filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
 
-          add_filter(query_hash, :query, :bool, :filter) do
+          add_filter(query_hash, *filter_path) do
             context.name(:filters, :level, search_level) do
               case search_level
               when :global
