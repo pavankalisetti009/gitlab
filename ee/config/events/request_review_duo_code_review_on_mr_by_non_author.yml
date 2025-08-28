@@ -9,10 +9,11 @@ identifiers:
 additional_properties:
   property:
     description: The id of the MR
-product_group: code_review
+product_group: code_creation
 product_categories:
 - code_review_workflow
 milestone: '18.1'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/190058
 tiers:
+- premium
 - ultimate
