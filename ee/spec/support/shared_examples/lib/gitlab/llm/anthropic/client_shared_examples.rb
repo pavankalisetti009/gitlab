@@ -53,12 +53,10 @@ RSpec.shared_examples 'anthropic client' do
 
   before do
     Ai::Setting.instance.update!(ai_gateway_url: ai_gateway_url)
-    service = instance_double(CloudConnector::BaseAvailableServiceData, name: service_name)
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
-                                                                        .and_return(service)
+
     allow(Gitlab::AiGateway)
       .to receive(:headers)
-      .with(user: user, service: service, ai_feature_name: :anthropic_proxy)
+      .with(user: user, service: unit_primitive, ai_feature_name: :anthropic_proxy)
       .and_return(aigw_headers)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
 

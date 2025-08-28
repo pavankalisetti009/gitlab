@@ -23,10 +23,8 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
 
   before do
     stub_ee_application_setting(vertex_ai_host: host)
-    service = instance_double(CloudConnector::BaseAvailableServiceData, name: unit_primitive.to_sym)
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: service, ai_feature_name: :vertex_ai_proxy)
+      .with(user: user, service: unit_primitive.to_sym, ai_feature_name: :vertex_ai_proxy)
       .and_return(aigw_headers)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end

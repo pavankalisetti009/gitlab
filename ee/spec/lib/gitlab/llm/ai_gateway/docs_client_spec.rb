@@ -17,7 +17,6 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
   end
 
-  let(:expected_feature_name) { :duo_chat }
   let(:expected_request_headers) { { 'header' => 'value' } }
 
   let(:default_body_params) do
@@ -46,10 +45,8 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   let(:response_headers) { { 'Content-Type' => 'application/json' } }
 
   before do
-    service = instance_double(CloudConnector::BaseAvailableServiceData)
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_feature_name).and_return(service)
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: service)
+      .with(user: user, service: :duo_chat, ai_feature_name: :duo_chat)
       .and_return(expected_request_headers)
     allow(Gitlab::AiGateway).to receive_messages(
       self_hosted_url: self_hosted_url,
@@ -86,9 +83,8 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
 
     context 'when duo chat is self-hosted' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat) }
-      let(:expected_feature_name) { :duo_chat }
 
-      it 'returns response for duo_chat service' do
+      it 'returns response for duo_chat' do
         expect(Gitlab::HTTP).to receive(:post).with(
           anything,
           hash_including(timeout: described_class::DEFAULT_TIMEOUT)
@@ -101,7 +97,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       let(:request_url) { "#{cloud_connector_url}/v1/search/gitlab-docs" }
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :vendored) }
 
-      it 'returns response for vendored duo_chat service' do
+      it 'returns response for vendored duo_chat' do
         expect(Gitlab::HTTP).to receive(:post).with(
           anything,
           hash_including(timeout: described_class::DEFAULT_TIMEOUT)
