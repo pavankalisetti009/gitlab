@@ -37605,7 +37605,7 @@ msgstr ""
 msgid "Large File Storage"
 msgstr ""
 
-msgid "Large table corruption checks skipped. Manual checking recommended."
+msgid "Large table corruption checks were skipped to avoid long-running queries. Administrators can manually check them with a higher table size limit."
 msgstr ""
 
 msgid "Last %d day"
@@ -37785,6 +37785,9 @@ msgid "Learn how to %{link_start}contribute to the built-in templates%{link_end}
 msgstr ""
 
 msgid "Learn how to %{no_packages_link_start}publish and share your packages%{no_packages_link_end} with GitLab."
+msgstr ""
+
+msgid "Learn how to run the check with higher limits"
 msgstr ""
 
 msgid "Learn more"
