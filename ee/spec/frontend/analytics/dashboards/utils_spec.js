@@ -87,6 +87,25 @@ describe('Analytics Dashboards utils', () => {
     });
   });
 
+  describe('formatMetric(*, BIGINT_COUNT)', () => {
+    it.each`
+      value      | result
+      ${0}       | ${'0'}
+      ${10}      | ${'10'}
+      ${-10}     | ${'-10'}
+      ${1}       | ${'1'}
+      ${-1}      | ${'-1'}
+      ${0.1}     | ${'-'}
+      ${-0.99}   | ${'-'}
+      ${0.099}   | ${'-'}
+      ${-0.01}   | ${'-'}
+      ${0.0099}  | ${'-'}
+      ${-0.0001} | ${'-'}
+    `('returns $result for a metric with the value $value', ({ value, result }) => {
+      expect(formatMetric(value, UNITS.BIGINT_COUNT)).toBe(result);
+    });
+  });
+
   describe('hasTrailingDecimalZero', () => {
     it.each`
       value         | result

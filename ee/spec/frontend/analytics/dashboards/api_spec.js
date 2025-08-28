@@ -234,7 +234,7 @@ describe('Analytics Dashboards api', () => {
       expect(resp).toEqual({
         pipeline_count: {
           identifier: 'pipeline_count',
-          value: '100',
+          value: 100,
         },
         pipeline_duration_median: {
           identifier: 'pipeline_duration_median',
