@@ -33,6 +33,7 @@ RSpec.describe 'getting a wiki page', feature_category: :wiki do
       expect(wiki_page_data).to include(
         'id' => global_id,
         'title' => wiki_page_meta.title,
+        'subscribed' => false,
         'userPermissions' => {
           'readWikiPage' => true,
           'createNote' => true,
@@ -53,6 +54,16 @@ RSpec.describe 'getting a wiki page', feature_category: :wiki do
       let(:current_user) { other_user }
 
       it_behaves_like 'a working graphql query that returns no data'
+    end
+
+    describe 'subscribed' do
+      let_it_be(:note) { create(:note, noteable: wiki_page_meta, author: user, namespace: group, project: nil) }
+
+      it 'returns subscription without being subscribed when is a note author' do
+        expect(wiki_page_data).to include(
+          'subscribed' => true
+        )
+      end
     end
 
     describe 'notes' do
