@@ -115,6 +115,19 @@ RSpec.describe WorkItems::Lifecycles::CreateService, feature_category: :team_pla
         .exactly(3).times
     end
 
+    it 'tracks lifecycle creation event', :clean_gitlab_redis_shared_state do
+      expect { result }
+        .to trigger_internal_events('create_custom_lifecycle')
+        .with(user: user, namespace: group)
+        .and increment_usage_metrics(
+          'redis_hll_counters.count_distinct_namespace_id_from_create_custom_lifecycle_monthly',
+          'redis_hll_counters.count_distinct_namespace_id_from_create_custom_lifecycle_weekly',
+          'counts.count_total_create_custom_lifecycle_monthly',
+          'counts.count_total_create_custom_lifecycle_weekly',
+          'counts.count_total_create_custom_lifecycle'
+        )
+    end
+
     context 'when params are missing or are invalid' do
       let(:status_validation_error) do
         <<~ERROR.squish
