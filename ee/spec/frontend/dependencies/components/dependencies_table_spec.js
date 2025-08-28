@@ -7,7 +7,7 @@ import DependencyVulnerabilities from 'ee/dependencies/components/dependency_vul
 import DependencyLocationCount from 'ee/dependencies/components/dependency_location_count.vue';
 import DependencyProjectCount from 'ee/dependencies/components/dependency_project_count.vue';
 import DependencyLocation from 'ee/dependencies/components/dependency_location.vue';
-import { DEPENDENCIES_TABLE_I18N, NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
+import { DEPENDENCIES_TABLE_I18N } from 'ee/dependencies/constants';
 import stubChildren from 'helpers/stub_children';
 import waitForPromises from 'helpers/wait_for_promises';
 import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
@@ -124,17 +124,6 @@ describe('DependenciesTable component', () => {
     }
     expect(locationCell.text()).toContain(occurrenceCount.toString());
     expect(projectCell.text()).toContain(projectCount.toString());
-  };
-
-  const expectOrganizationDependencyRow = (rowWrapper, dependency) => {
-    const [componentCell, packagerCell, locationCell] = rowWrapper.findAll('td').wrappers;
-
-    expect(normalizeWhitespace(componentCell.text())).toBe(
-      `${dependency.name} ${dependency.version}`,
-    );
-
-    expect(packagerCell.text()).toBe(dependency.packager);
-    expect(locationCell.text()).toContain(dependency.location.path);
   };
 
   describe('given the table is loading', () => {
@@ -332,38 +321,6 @@ describe('DependenciesTable component', () => {
         await waitForPromises();
         expect(loadingIcon().exists()).toBe(true);
       });
-    });
-  });
-
-  describe('with dependencies that do not have an occurrence count', () => {
-    let dependencies;
-
-    beforeEach(() => {
-      dependencies = [
-        makeDependency({
-          name: 'actioncable',
-          version: '7.0.6',
-          packager: 'bundler',
-          location: {
-            blobPath:
-              '/a-group/a-project/-/blob/f67dc4c5466304d6cbe1ecdd18196283447f1a34/Gemfile.lock',
-            path: 'Gemfile.lock',
-          },
-        }),
-      ];
-
-      createComponent({
-        propsData: {
-          dependencies,
-          isLoading: false,
-        },
-        provide: { namespaceType: NAMESPACE_ORGANIZATION },
-      });
-    });
-
-    it('renders a row for each dependency', () => {
-      const rows = findTableRows();
-      expectOrganizationDependencyRow(rows.at(0), dependencies[0]);
     });
   });
 

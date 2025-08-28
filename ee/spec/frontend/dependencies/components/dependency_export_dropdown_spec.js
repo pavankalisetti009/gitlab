@@ -1,4 +1,3 @@
-import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import createStore from 'ee/dependencies/store';
@@ -8,7 +7,6 @@ import {
   EXPORT_FORMAT_JSON_ARRAY,
   EXPORT_FORMAT_CYCLONEDX_1_6_JSON,
   NAMESPACE_GROUP,
-  NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
 } from 'ee/dependencies/constants';
 
@@ -28,7 +26,6 @@ describe('DependencyExportDropdown component', () => {
   };
 
   const findDisclosure = () => wrapper.findByTestId('export-disclosure');
-  const findButton = () => wrapper.findComponent(GlButton);
 
   const dependencyListItem = {
     testId: 'dependency-list-item',
@@ -104,25 +101,5 @@ describe('DependencyExportDropdown component', () => {
 
     itHasCorrectLoadingLogic(() => findDisclosure());
     itShowsDisclosureWithItems([jsonArrayItem, csvItem]);
-  });
-
-  describe('when container is an organization', () => {
-    beforeEach(() => {
-      factory({ props: { container: NAMESPACE_ORGANIZATION } });
-    });
-
-    itHasCorrectLoadingLogic(() => findButton());
-
-    it('shows button that dispatches CSV export', () => {
-      const button = findButton();
-
-      expect(button.exists()).toBe(true);
-
-      button.vm.$emit('click');
-
-      expect(store.dispatch).toHaveBeenCalledWith('fetchExport', {
-        export_type: EXPORT_FORMAT_CSV,
-      });
-    });
   });
 });

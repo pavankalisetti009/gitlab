@@ -9,7 +9,6 @@ import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_erro
 import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
-import { NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
 import axios from '~/lib/utils/axios_utils';
@@ -135,13 +134,6 @@ describe('DependenciesApp component', () => {
       ]);
     });
 
-    it(`always fetches dependencies via REST when the given namespace is "${NAMESPACE_ORGANIZATION}"`, () => {
-      factory({ provide: { namespaceType: NAMESPACE_ORGANIZATION } });
-
-      expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { page: 1 });
-      expect(store.dispatch).not.toHaveBeenCalledWith('fetchDependenciesViaGraphQL');
-    });
-
     describe('without export endpoint', () => {
       beforeEach(async () => {
         factory({ provide: { exportEndpoint: null } });
@@ -152,20 +144,6 @@ describe('DependenciesApp component', () => {
 
       it('removes the export button', () => {
         expect(findExportMenu().exists()).toBe(false);
-      });
-    });
-
-    describe('with namespaceType set to organization', () => {
-      beforeEach(async () => {
-        factory({
-          provide: { namespaceType: NAMESPACE_ORGANIZATION },
-        });
-        setStateLoaded();
-        await nextTick();
-      });
-
-      it('removes the actions bar', () => {
-        expect(wrapper.findComponent(DependenciesActions).exists()).toBe(false);
       });
     });
 

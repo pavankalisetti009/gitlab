@@ -2,7 +2,6 @@ import { s__ } from '~/locale';
 
 export const NAMESPACE_PROJECT = 'project';
 export const NAMESPACE_GROUP = 'group';
-export const NAMESPACE_ORGANIZATION = 'organization';
 
 export const EXPORT_FORMAT_CSV = 'csv';
 export const EXPORT_FORMAT_DEPENDENCY_LIST = 'dependency_list';
