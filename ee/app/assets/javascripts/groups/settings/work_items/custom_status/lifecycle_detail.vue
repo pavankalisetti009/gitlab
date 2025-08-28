@@ -1,6 +1,7 @@
 <script>
 import { GlIcon, GlButton, GlCollapsibleListbox } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { NAME_TO_ENUM_MAP } from '~/work_items/constants';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import LifecycleNameForm from './lifecycle_name_form.vue';
 
@@ -60,6 +61,16 @@ export default {
       return (this.lifecycle.workItemTypes || []).map(({ name }) => ({ text: name, value: name }));
     },
   },
+  methods: {
+    linkToItemType(workItemType) {
+      this.$router.push({
+        name: 'changeLifecycle',
+        params: {
+          workItemType: NAME_TO_ENUM_MAP[workItemType].toLowerCase(),
+        },
+      });
+    },
+  },
 };
 </script>
 <template>
@@ -106,12 +117,21 @@ export default {
         <span>{{ workItemType.name }}</span>
       </span>
 
+      <gl-button
+        v-if="lifecycle.workItemTypes.length === 1"
+        size="small"
+        @click="linkToItemType(lifecycle.workItemTypes[0].name)"
+        >{{ s__('WorkItem|Change lifecycle') }}</gl-button
+      >
+
       <gl-collapsible-listbox
+        v-else
         :items="items"
         :header-text="s__('WorkItem|Select type to change')"
         :toggle-text="s__('WorkItem|Change lifecycle')"
         category="secondary"
         size="small"
+        @select="linkToItemType"
       />
     </div>
 

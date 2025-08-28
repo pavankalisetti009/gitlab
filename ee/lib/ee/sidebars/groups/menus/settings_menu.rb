@@ -237,7 +237,7 @@ module EE
             ::Sidebars::MenuItem.new(
               title: _('Issues'),
               link: group_settings_issues_path(context.group),
-              active_routes: { controller: 'groups/settings/work_items' },
+              active_routes: { controller: 'groups/settings/work_items', path: ['groups/settings/work_items#index'] },
               item_id: :group_work_items_settings
             )
           end
