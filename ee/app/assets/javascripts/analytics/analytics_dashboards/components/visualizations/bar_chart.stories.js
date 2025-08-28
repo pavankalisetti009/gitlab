@@ -1,3 +1,4 @@
+import { stackedPresentationOptions } from '@gitlab/ui/src/utils/constants';
 import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import BarChart from './bar_chart.vue';
 
@@ -24,28 +25,65 @@ const WithDashboard = (args, { argTypes }) => ({
       </dashboard-layout>`,
 });
 
+const SuggestionsViewed = [
+  [1240, 'JavaScript'],
+  [980, 'Python'],
+  [760, 'Java'],
+  [650, 'TypeScript'],
+  [420, 'C++'],
+  [340, 'Go'],
+  [280, 'Rust'],
+  [220, 'Swift'],
+  [160, 'Kotlin'],
+];
+
+const SuggestionsAccepted = [
+  [875, 'JavaScript'],
+  [720, 'Python'],
+  [640, 'Java'],
+  [580, 'TypeScript'],
+  [490, 'C++'],
+  [385, 'Go'],
+  [320, 'Rust'],
+  [275, 'Swift'],
+  [195, 'Kotlin'],
+];
+
+const multiSeriesData = {
+  'Suggestions viewed': SuggestionsViewed,
+  'Suggestions accepted': SuggestionsAccepted,
+};
+
 const defaultArgs = {
   data: {
-    PromptsAcceptedByLanguage: [
-      [875, 'JavaScript'],
-      [720, 'Python'],
-      [640, 'Java'],
-      [580, 'TypeScript'],
-      [490, 'C++'],
-      [385, 'Go'],
-      [320, 'Rust'],
-      [275, 'Swift'],
-      [195, 'Kotlin'],
-    ],
+    SuggestionsViewed,
   },
   options: {
-    xAxis: { type: 'value', name: 'Accepted prompts' },
+    xAxis: { type: 'value', name: 'Suggestions' },
     yAxis: { type: 'category', name: 'Language' },
   },
 };
 
 export const Default = Template.bind({});
 Default.args = defaultArgs;
+
+export const Stacked = Template.bind({});
+Stacked.args = {
+  data: multiSeriesData,
+  options: {
+    ...defaultArgs.options,
+    presentation: stackedPresentationOptions.stacked,
+  },
+};
+
+export const Tiled = Template.bind({});
+Tiled.args = {
+  data: multiSeriesData,
+  options: {
+    ...defaultArgs.options,
+    presentation: stackedPresentationOptions.tiled,
+  },
+};
 
 export const InDashboardPanel = WithDashboard.bind({});
 InDashboardPanel.args = {

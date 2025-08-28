@@ -144,6 +144,12 @@
               }
             }
           }
+        },
+        "presentation": {
+          "enum": [
+            "stacked",
+            "tiled"
+          ]
         }
       },
       "title": "Options"

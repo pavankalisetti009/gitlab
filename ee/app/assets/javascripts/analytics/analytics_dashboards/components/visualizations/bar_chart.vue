@@ -28,6 +28,7 @@ export default {
     :x-axis-title="options.xAxis.name"
     :y-axis-title="options.yAxis.name"
     :x-axis-type="options.xAxis.type"
+    :presentation="options.presentation"
     height="auto"
     responsive
   />

@@ -25,6 +25,7 @@ describe('BarChart Visualization', () => {
         options: {
           yAxis: { name: 'User' },
           xAxis: { name: 'Stars', type: 'category' },
+          presentation: 'tiled',
         },
       },
     });
@@ -45,6 +46,7 @@ describe('BarChart Visualization', () => {
       xAxisTitle: 'Stars',
       yAxisTitle: 'User',
       height: 'auto',
+      presentation: 'tiled',
     });
 
     expect(findBarChart().attributes('responsive')).toBe('');
