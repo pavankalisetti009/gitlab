@@ -2,9 +2,10 @@
 
 module Security
   class InventoryFilter < ::SecApplicationRecord
-    self.table_name = 'security_inventory_filters'
+    include ::Namespaces::Traversal::Traversable
+    include Gitlab::SQL::Pattern
 
-    scope :by_project_id, ->(project_id) { where(project_id: project_id) }
+    self.table_name = 'security_inventory_filters'
 
     belongs_to :project
     validates :archived, allow_nil: false, inclusion: { in: [true, false] }
@@ -26,5 +27,33 @@ module Security
 
     validates :project_name, presence: true
     validates :traversal_ids, presence: true
+
+    scope :by_project_id, ->(project_id) { where(project_id: project_id) }
+    scope :order_by_project_id_asc, -> { order(project_id: :asc) }
+    scope :by_severity_count, ->(severity, operator, count) do
+      return none unless Enums::Vulnerability.severity_levels.key?(severity)
+
+      arel_column = arel_table[severity]
+      case operator.to_s
+      when 'greater_than_or_equal_to'
+        where(arel_column.gteq(count))
+      when 'less_than_or_equal_to'
+        where(arel_column.lteq(count))
+      when 'equal_to'
+        where(arel_column.eq(count))
+      else
+        none
+      end
+    end
+    scope :by_analyzer_status, ->(analyzer_type, status) do
+      analyzer_type = analyzer_type.downcase.to_sym
+      return none unless Enums::Security.extended_analyzer_types.key?(analyzer_type)
+
+      where(arel_table[analyzer_type].eq(Enums::Security.analyzer_statuses[status.to_sym]))
+    end
+
+    def self.search(query)
+      fuzzy_search(query, [:project_name], use_minimum_char_limit: true)
+    end
   end
 end

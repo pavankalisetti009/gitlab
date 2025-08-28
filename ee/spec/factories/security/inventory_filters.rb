@@ -22,5 +22,29 @@ FactoryBot.define do
       inventory_filter.archived = inventory_filter.project&.archived
       inventory_filter.traversal_ids = inventory_filter.project&.namespace&.traversal_ids
     end
+
+    trait :all_analyzers_enabled do
+      sast { :enabled }
+      secret_detection { :enabled }
+      dependency_scanning { :enabled }
+      container_scanning { :enabled }
+      dast { :enabled }
+      coverage_fuzzing { :enabled }
+      api_fuzzing { :enabled }
+    end
+
+    trait :all_analyzers_disabled do
+      sast { :disabled }
+      secret_detection { :disabled }
+      dependency_scanning { :disabled }
+      container_scanning { :disabled }
+      dast { :disabled }
+      coverage_fuzzing { :disabled }
+      api_fuzzing { :disabled }
+    end
+
+    trait :archived_project do
+      archived { true }
+    end
   end
 end

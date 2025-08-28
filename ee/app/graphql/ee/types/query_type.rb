@@ -372,6 +372,12 @@ module EE
             required: true,
             description: 'Global ID of the Maven virtual registry.'
         end
+
+        field :namespace_security_projects,
+          connection_extension: ::Gitlab::Graphql::Extensions::ExternallyPaginatedArrayExtension,
+          null: true,
+          description: 'Security-filtered projects for a namespace',
+          resolver: ::Resolvers::Security::NamespaceSecurityProjectsResolver
       end
 
       def vulnerability(id:)

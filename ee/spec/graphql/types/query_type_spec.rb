@@ -72,7 +72,8 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_model_selection_namespace_settings,
       :dependency,
       :project_compliance_violation,
-      :maven_virtual_registry
+      :maven_virtual_registry,
+      :namespace_security_projects
     ]
 
     all_expected_fields = expected_foss_fields + expected_ee_fields
