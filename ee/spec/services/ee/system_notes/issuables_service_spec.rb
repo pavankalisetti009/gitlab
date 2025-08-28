@@ -459,6 +459,25 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
     end
   end
 
+  describe 'cross_reference_exists?' do
+    let_it_be(:noteable) { create(:work_item, :epic, namespace: group) }
+    let(:service) { described_class.new(noteable: noteable, container: group, author: author) }
+
+    context 'for group work item' do
+      let_it_be(:group_work_item) { create(:work_item, :epic, namespace: group) }
+
+      it 'is true when already mentioned' do
+        service.cross_reference(group_work_item)
+
+        expect(service.cross_reference_exists?(group_work_item)).to be_truthy
+      end
+
+      it 'is false when not already mentioned' do
+        expect(service.cross_reference_exists?(group_work_item)).to be_falsey
+      end
+    end
+  end
+
   describe '#amazon_q_called' do
     subject(:system_note) { service.amazon_q_called('test') }
 
