@@ -252,8 +252,9 @@ module Security
             .delete_all
         end
 
+      rule_ids = rules.select(:id)
       project.scan_result_policy_violations.each_batch do |batch|
-        batch.where(approval_policy_rules: rules).delete_all
+        batch.where(approval_policy_rule_id: rule_ids).delete_all
       end
 
       delete_software_license_policies_for_project(project, rules)
@@ -261,8 +262,9 @@ module Security
     end
 
     def delete_software_license_policies_for_project(project, rules)
+      rule_ids = rules.select(:id)
       project.software_license_policies.each_batch do |batch|
-        batch.where(approval_policy_rules: rules).delete_all
+        batch.where(approval_policy_rule_id: rule_ids).delete_all
       end
     end
 
@@ -360,14 +362,15 @@ module Security
 
     def delete_approval_rules
       policy_configuration = security_orchestration_policy_configuration
+      rule_ids = approval_policy_rules.select(:id)
       policy_configuration.approval_project_rules.each_batch do |project_rules_batch|
-        project_rules_batch.where(approval_policy_rule_id: approval_policy_rules.select(:id)).delete_all
+        project_rules_batch.where(approval_policy_rule_id: rule_ids).delete_all
       end
 
       policy_configuration.approval_merge_request_rules.each_batch(order_hint: :updated_at) do |mr_rules_batch|
         mr_rules_batch
           .for_unmerged_merge_requests
-          .where(approval_policy_rules: approval_policy_rules.select(:id))
+          .where(approval_policy_rule_id: rule_ids)
           .delete_all
       end
     end
