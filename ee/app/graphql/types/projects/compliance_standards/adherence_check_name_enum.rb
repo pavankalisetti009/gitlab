@@ -8,7 +8,13 @@ module Types
         description 'Name of the check for the compliance standard.'
 
         ::Enums::Projects::ComplianceStandards::Adherence.check_name.each_key do |check|
-          value check.to_s.upcase, value: check.to_s, description: check.to_s.humanize
+          description = if check.to_s == 'prevent_approval_by_merge_request_author'
+                          'Prevent approval by merge request creator (author)'
+                        else
+                          check.to_s.humanize
+                        end
+
+          value check.to_s.upcase, value: check.to_s, description: description
         end
       end
     end

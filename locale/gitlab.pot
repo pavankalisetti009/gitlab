@@ -8604,7 +8604,7 @@ msgstr ""
 msgid "ApprovalSettings|Merge request approval settings have been updated."
 msgstr ""
 
-msgid "ApprovalSettings|Prevent approval by author"
+msgid "ApprovalSettings|Prevent approval by merge request creator"
 msgstr ""
 
 msgid "ApprovalSettings|Prevent approvals by users who add commits"

@@ -6,7 +6,7 @@
     = link_to _("Learn more."), help_page_path("administration/merge_requests_approvals.md"), target: '_blank', rel: 'noopener noreferrer'
   .gl-form-checkbox-group
     = f.gitlab_ui_checkbox_component :prevent_merge_requests_author_approval,
-        s_('ApprovalSettings|Prevent approval by author')
+        s_('ApprovalSettings|Prevent approval by merge request creator')
 
     = f.gitlab_ui_checkbox_component :prevent_merge_requests_committers_approval,
         s_('ApprovalSettings|Prevent approvals by users who add commits')
