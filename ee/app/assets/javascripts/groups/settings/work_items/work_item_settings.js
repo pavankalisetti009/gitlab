@@ -1,12 +1,15 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import VueRouter from 'vue-router';
 import createDefaultClient from '~/lib/graphql';
 import Translate from '~/vue_shared/translate';
 import WorkItemSettings from './work_item_settings.vue';
+import { getRoutes } from './routes';
 import namespaceDefaultLifecycleQuery from './custom_status/namespace_default_lifecycle.query.graphql';
 
 Vue.use(VueApollo);
 Vue.use(Translate);
+Vue.use(VueRouter);
 
 const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
@@ -16,7 +19,7 @@ export function initWorkItemSettingsApp() {
   const el = document.querySelector('#js-work-items-settings-form');
   if (!el) return;
 
-  const { fullPath } = el.dataset;
+  const { fullPath, basePath } = el.dataset;
 
   /** TODO remove the below code once the API is in place */
   apolloProvider.clients.defaultClient.cache.writeQuery({
@@ -108,6 +111,11 @@ export function initWorkItemSettingsApp() {
   new Vue({
     el,
     apolloProvider,
+    router: new VueRouter({
+      mode: 'history',
+      base: basePath,
+      routes: getRoutes(fullPath),
+    }),
     render(createElement) {
       return createElement(WorkItemSettings, {
         props: {

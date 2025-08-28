@@ -1,10 +1,12 @@
 - title = s_("WorkItem|Issues settings")
-- breadcrumb_title title
-- page_title title
 
-%h1.gl-heading-1.gl-mb-1.settings-title
-  = _('Issues')
-%p.gl-text-subtle
-  = s_('WorkItem|Configure work items such as epics, issues, and tasks to represent how your team works.')
+- if request.path_parameters.values.last === 'lifecycle/issue' || request.path_parameters.values.last === 'lifecycle/task'
+  - add_to_breadcrumbs title, group_settings_issues_path(@group)
+  - breadcrumb_title s_("WorkItem|Change lifecycle")
+  - page_title s_("WorkItem|Change lifecycle"), @group.name, _("Groups")
+- else
+  - title = s_("WorkItem|Issues settings")
+  - breadcrumb_title title
+  - page_title title
 
-#js-work-items-settings-form{ data: { full_path: @group.full_path } }
+#js-work-items-settings-form{ data: { full_path: @group.full_path, base_path: group_settings_issues_path(@group) } }

@@ -1,4 +1,4 @@
-import { GlIcon, GlFormRadio } from '@gitlab/ui';
+import { GlIcon, GlFormRadio, GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
@@ -35,6 +35,8 @@ describe('LifecycleDetail', () => {
     wrapper.findByTestId(`lifecycle-${lifecycleId}-usage`).findAllComponents(GlIcon);
   const findWorkItemTypeNames = () => wrapper.findAllByTestId('work-item-type-name');
   const findUsageSection = () => wrapper.findByTestId(`lifecycle-${lifecycleId}-usage`);
+  const findChangeLifecycleButton = () => findUsageSection().findComponent(GlButton);
+  const findChangeLifecycleListBox = () => findUsageSection().findComponent(GlCollapsibleListbox);
   const findLifecycleForm = () => wrapper.findComponent(LifecycleNameForm);
 
   const createWrapper = (props = {}) => {
@@ -89,6 +91,31 @@ describe('LifecycleDetail', () => {
     it('displays usage section when work item types exist', () => {
       expect(findUsageSection().exists()).toBe(true);
       expect(findUsageSection().text()).toContain('Usage:');
+    });
+
+    it('shows a list box to change lifecycle when the work item types length is more than one', () => {
+      expect(findChangeLifecycleButton().exists()).toBe(false);
+      expect(findChangeLifecycleListBox().exists()).toBe(true);
+    });
+
+    it('shows a button to change the lifecycle when the work item types length is one', () => {
+      createWrapper({
+        showUsageSection: true,
+        lifecycle: {
+          ...mockLifecycle,
+          workItemTypes: [
+            {
+              id: 'gid://gitlab/WorkItems::Type/1',
+              name: 'Issue',
+              iconName: 'issue-type-issue',
+              __typename: 'WorkItemType',
+            },
+          ],
+        },
+      });
+
+      expect(findChangeLifecycleButton().exists()).toBe(true);
+      expect(findChangeLifecycleListBox().exists()).toBe(false);
     });
   });
 
