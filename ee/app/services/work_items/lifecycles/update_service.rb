@@ -3,8 +3,6 @@
 module WorkItems
   module Lifecycles
     class UpdateService < BaseService
-      include Gitlab::InternalEventsTracking
-
       InvalidLifecycleTypeError = ServiceResponse.error(
         message: 'Invalid lifecycle type. Custom lifecycle already exists.'
       )
@@ -24,6 +22,9 @@ module WorkItems
         result = custom_lifecycle_present? ? update_custom_lifecycle! : create_custom_lifecycle!
 
         track_internal_events_for_statuses
+        # Track update lifecycle event for all actions on a lifecycle for now
+        # including status name change and statuses reordering.
+        track_update_lifecycle_event
 
         ServiceResponse.success(payload: { lifecycle: result })
       rescue StandardError => e
@@ -82,6 +83,13 @@ module WorkItems
             remove_system_defined_board_lists
           end
         end
+      end
+
+      def track_update_lifecycle_event
+        track_internal_event('update_custom_lifecycle',
+          namespace: group,
+          user: current_user
+        )
       end
 
       def lifecycle_update_forbidden?

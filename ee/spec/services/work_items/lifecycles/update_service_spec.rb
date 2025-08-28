@@ -84,6 +84,21 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
     end
   end
 
+  RSpec.shared_examples 'tracks lifecycle update event' do
+    it 'tracks lifecycle update event', :clean_gitlab_redis_shared_state do
+      expect { result }
+        .to trigger_internal_events('update_custom_lifecycle')
+        .with(user: user, namespace: group)
+        .and increment_usage_metrics(
+          'redis_hll_counters.count_distinct_namespace_id_from_update_custom_lifecycle_monthly',
+          'redis_hll_counters.count_distinct_namespace_id_from_update_custom_lifecycle_weekly',
+          'counts.count_total_update_custom_lifecycle_monthly',
+          'counts.count_total_update_custom_lifecycle_weekly',
+          'counts.count_total_update_custom_lifecycle'
+        )
+    end
+  end
+
   describe '#execute' do
     let(:lifecycle) { result.payload[:lifecycle] }
 
@@ -91,6 +106,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
       it_behaves_like 'lifecycle service creates custom lifecycle'
       it_behaves_like 'accepts lifecycle attributes'
       it_behaves_like 'sets default statuses correctly'
+      it_behaves_like 'tracks lifecycle update event'
 
       it 'creates custom statuses from system-defined statuses' do
         expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(5)
@@ -395,6 +411,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
         end
 
         it_behaves_like 'accepts lifecycle attributes'
+        it_behaves_like 'tracks lifecycle update event'
 
         context 'when statuses are added' do
           it 'adds custom statuses' do

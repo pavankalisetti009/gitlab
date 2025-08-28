@@ -15,6 +15,9 @@ module WorkItems
         result = create_custom_lifecycle!
 
         track_internal_events_for_statuses
+        # Even if we transition the system-defined lifecycle to custom lifecycle first
+        # we only count one created lifecycle because that is the action the user performed.
+        track_create_lifecycle_event
 
         ServiceResponse.success(payload: { lifecycle: result })
       rescue StandardError => e
@@ -42,6 +45,13 @@ module WorkItems
             created_by: current_user
           )
         end
+      end
+
+      def track_create_lifecycle_event
+        track_internal_event('create_custom_lifecycle',
+          namespace: group,
+          user: current_user
+        )
       end
 
       def feature_flag_enabled?

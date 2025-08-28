@@ -4,6 +4,8 @@ RSpec.shared_examples 'lifecycle service does not create custom lifecycle' do
   it 'does not create custom lifecycle' do
     expect { result }.not_to change { WorkItems::Statuses::Custom::Lifecycle.count }
   end
+
+  it { expect { result }.not_to trigger_internal_events }
 end
 
 RSpec.shared_examples 'lifecycle service returns validation error' do

@@ -3,6 +3,8 @@
 module WorkItems
   module Lifecycles
     class BaseService < ::BaseContainerService
+      include Gitlab::InternalEventsTracking
+
       FeatureNotAvailableError = ServiceResponse.error(
         message: 'This feature is currently behind a feature flag, and it is not available.'
       )
