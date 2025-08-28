@@ -94,14 +94,14 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
       let(:project) { build_stubbed(:project) }
       let(:export) { build_stubbed(:dependency_list_export, project: project) }
 
-      it { is_expected.to eq("project <a href=\"#{url_builder.project_url(project)}\">#{project.full_name}</a>") }
+      it { is_expected.to eq("<a href=\"#{url_builder.project_url(project)}\">#{project.full_name}</a>") }
     end
 
     context 'when exportable is a group' do
       let(:group) { build_stubbed(:group) }
       let(:export) { build_stubbed(:dependency_list_export, group: group, project: nil) }
 
-      it { is_expected.to eq("group <a href=\"#{url_builder.group_canonical_url(group)}\">#{group.full_name}</a>") }
+      it { is_expected.to eq("<a href=\"#{url_builder.group_canonical_url(group)}\">#{group.full_name}</a>") }
     end
 
     context 'when exportable is a pipeline' do
@@ -110,7 +110,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
 
       it 'returns correct link text' do
         url = url_builder.project_pipeline_url(pipeline.project, pipeline)
-        is_expected.to eq("pipeline <a href=\"#{url}\">##{pipeline.id}</a>")
+        is_expected.to eq("<a href=\"#{url}\">##{pipeline.id}</a>")
       end
     end
   end

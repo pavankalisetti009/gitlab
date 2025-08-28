@@ -1,6 +1,8 @@
-%p{ style: 'font-size:18px; text-align:center;  line-height:1.4;' }
-  = safe_format(s_('Dependencies|The dependency list was successfully exported for %{exportable}.'), { exportable: dependencies_exportable_link(@export) })
-  - download_link = link_to('', dependencies_export_download_url(@export))
-  - tag = tag_pair(download_link, :link_start, :link_end)
-  = safe_format(s_('Dependencies|%{link_start}Download the export%{link_end}.'), tag)
-  = s_('Dependencies|This link will expire in %{number} days.') % { number: @expiration_days }
+= render 'shared/ee/export_download_notice',
+    export_url: dependencies_export_download_url(@export),
+    exportable_link: dependencies_exportable_link(@export),
+    expiration_days: @expiration_days,
+    title_text: s_('Dependencies|The Dependency List was successfully exported from %{exportable}.'),
+    download_text: s_('Dependencies|%{link_start}Download the export%{link_end}'),
+    expiration_text: s_('Dependencies|This link will expire in %{number} days.'),
+    context_label: s_('Dependencies|Dependency List')

@@ -22233,7 +22233,7 @@ msgid_plural "Dependencies|%d vulnerabilities detected"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Dependencies|%{link_start}Download the export%{link_end}."
+msgid "Dependencies|%{link_start}Download the export%{link_end}"
 msgstr ""
 
 msgid "Dependencies|%{locationCount} location"
@@ -22258,7 +22258,10 @@ msgstr ""
 msgid "Dependencies|Component name"
 msgstr ""
 
-msgid "Dependencies|Dependency list export"
+msgid "Dependencies|Dependency List"
+msgstr ""
+
+msgid "Dependencies|Dependency List export"
 msgstr ""
 
 msgid "Dependencies|Direct dependents"
@@ -22318,7 +22321,7 @@ msgstr ""
 msgid "Dependencies|Software Bill of Materials (SBOM) based on the latest successful scan of each project."
 msgstr ""
 
-msgid "Dependencies|The dependency list was successfully exported for %{exportable}."
+msgid "Dependencies|The Dependency List was successfully exported from %{exportable}."
 msgstr ""
 
 msgid "Dependencies|The dependency list was successfully exported."
@@ -70834,7 +70837,7 @@ msgstr ""
 msgid "Vulnerabilities over time"
 msgstr ""
 
-msgid "Vulnerabilities|%{link_start}Download the export%{link_end}."
+msgid "Vulnerabilities|%{link_start}Download the export%{link_end}"
 msgstr ""
 
 msgid "Vulnerabilities|All records must be instances of Vulnerability"
@@ -70852,7 +70855,13 @@ msgstr ""
 msgid "Vulnerabilities|No valid vulnerabilities to track"
 msgstr ""
 
-msgid "Vulnerabilities|The vulnerabilities list was successfully exported for %{exportable}."
+msgid "Vulnerabilities|Security Dashboard"
+msgstr ""
+
+msgid "Vulnerabilities|Security Dashboard export"
+msgstr ""
+
+msgid "Vulnerabilities|The %{context_label} was successfully exported from %{exportable}."
 msgstr ""
 
 msgid "Vulnerabilities|The vulnerabilities list was successfully exported."
@@ -70861,7 +70870,10 @@ msgstr ""
 msgid "Vulnerabilities|This link will expire in %{number} days."
 msgstr ""
 
-msgid "Vulnerabilities|Vulnerability report export"
+msgid "Vulnerabilities|Vulnerability Report"
+msgstr ""
+
+msgid "Vulnerabilities|Vulnerability Report export"
 msgstr ""
 
 msgid "Vulnerabilities|changed vulnerability status to Needs Triage because it was redetected in pipeline %{pipeline_link}"
