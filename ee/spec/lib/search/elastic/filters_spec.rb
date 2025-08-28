@@ -3258,17 +3258,28 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             actual_filter = by_search_level_and_membership.dig(:query, :bool, :filter)
             expected_filter = expected_query[:query][:bool][:filter]
 
-            # compare traversal_ids using arrays to avoid order flakiness
-            actual_traversal_ids = actual_filter.first[:bool][:should].first[:bool][:should]
-            expected_traversal_ids = expected_filter.first[:bool][:should].first[:bool][:should]
+            actual_should_queries = actual_filter.first[:bool][:should]
+            expected_should_queries = expected_filter.first[:bool][:should]
 
-            expect(actual_traversal_ids).to match_array(expected_traversal_ids)
+            expect(actual_should_queries.length).to eq(expected_should_queries.length)
 
-            # compare visibility and access level using arrays to avoid order flakiness
-            actual_visibility_levels = actual_filter.first[:bool][:should].second[:bool][:should]
-            expected_visibility_levels = expected_filter.first[:bool][:should].second[:bool][:should]
+            # cannot use `eq` for the bool query filters that contain multiple namespaces to avoid order flakiness
+            # use match_array for the filters that are populated and eq for filters which are null
+            actual_should_queries.each_with_index do |actual_bool_query, idx|
+              expected_bool_query = expected_should_queries[idx]
 
-            expect(actual_visibility_levels).to match_array(expected_visibility_levels)
+              compare_query_bool_fields(actual_bool_query[:bool], expected_bool_query[:bool])
+            end
+          end
+
+          def compare_query_bool_fields(actual, expected)
+            expected.each_key do |key|
+              if expected[key].is_a?(Array)
+                expect(actual[key]).to match_array(expected[key])
+              else
+                expect(actual[key]).to eq(expected[key])
+              end
+            end
           end
         end
 
