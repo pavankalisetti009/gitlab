@@ -70,6 +70,16 @@ module Security
       Security::Scan.where(project_id: project_ids).distinct.pluck(:project_id)
     end
 
+    def self.results_ready?(pipeline)
+      pipeline.complete? && !processing?(pipeline)
+    end
+
+    def self.processing?(pipeline)
+      by_pipeline_ids(pipeline.self_and_project_descendants.pluck_primary_key)
+        .processing
+        .exists?
+    end
+
     # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- This is not a feature check
     def self.stale_after
       if Gitlab.com?
