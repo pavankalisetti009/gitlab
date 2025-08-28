@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require 'time'
+
 module SecretsManagement
   class AclPolicyPath
-    attr_accessor :path, :capabilities, :granted_by, :denied_parameters, :required_parameters, :allowed_parameters
+    attr_accessor :path, :capabilities, :granted_by, :denied_parameters, :required_parameters, :allowed_parameters,
+      :expired_at
 
     # Individual capabilities
     CAP_CREATE = "create"
@@ -20,6 +23,7 @@ module SecretsManagement
       ret.denied_parameters = object["denied_parameters"] if object.key?("denied_parameters")
       ret.required_parameters = Set.new(object["required_parameters"]) if object.key?("required_parameters")
       ret.granted_by = object["comment"] if object.key?("comment")
+      ret.expired_at = object["expired_at"] if object.key?("expired_at")
 
       ret
     end
@@ -40,6 +44,7 @@ module SecretsManagement
       ret = {}
       ret["capabilities"] = capabilities unless capabilities.empty?
       ret["comment"] = granted_by unless granted_by.nil?
+      ret["expiration"] = expired_at.to_s if expired_at
 
       ret["allowed_parameters"] = allowed_parameters unless allowed_parameters.empty?
       ret["denied_parameters"] = denied_parameters unless denied_parameters.empty?

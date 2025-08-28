@@ -216,23 +216,59 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
     context 'when user has proper permissions' do
       let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
       let(:user) { create(:user, developer_of: project) }
+      let(:expired_at) { nil }
 
       subject(:result) do
         service.execute(name: name, description: description, value: value, branch: branch, environment: environment)
       end
 
-      before do
+      def provision_and_update_secret_permission
         provision_project_secrets_manager(secrets_manager, user)
         update_secret_permission(
           user: user, project: project, permissions: %w[create read update], principal: {
             id: user.id, type: 'User'
-          }
+          }, expired_at: expired_at
         )
       end
 
-      it 'returns success' do
-        expect(result).to be_success
-        expect(result.payload[:project_secret]).to be_present
+      context 'when expired_at is nil' do
+        it 'returns success' do
+          permission = provision_and_update_secret_permission
+
+          expect(result).to be_success
+          expect(result.payload[:project_secret]).to be_present
+          expect(permission.expired_at).to be_nil
+        end
+      end
+
+      context 'when expired_at is in the future' do
+        let(:expired_at) { 2.days.from_now }
+
+        it 'returns success' do
+          permission = provision_and_update_secret_permission
+
+          expect(result).to be_success
+          expect(result.payload[:project_secret]).to be_present
+          expect(permission.expired_at).to eq(expired_at.to_s)
+        end
+      end
+    end
+
+    context 'when expired_at is in the past' do
+      let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
+      let(:user) { create(:user, developer_of: project) }
+      let(:expired_at) { 2.days.ago }
+
+      it 'raises an error' do
+        provision_project_secrets_manager(secrets_manager, user)
+
+        expect do
+          update_secret_permission(
+            user: user, project: project, permissions: %w[create read update], principal: {
+              id: user.id, type: 'User'
+            }, expired_at: expired_at
+          )
+        end.to raise_error(RuntimeError, /Expired at must be in the future/)
       end
     end
 

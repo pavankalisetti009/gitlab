@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'time'
+
 module SecretsManagement
   class SecretPermission
     include ActiveModel::Model
@@ -28,6 +30,7 @@ module SecretsManagement
     validates :permissions, presence: true
     validate :validate_principal_types, :validate_resource_types, :validate_permissions, :validate_role_id
     validate :valid_resource, :valid_principal
+    validate :validate_expired_at
 
     VALID_PRINCIPAL_TYPES = %w[User Role Group MemberRole].freeze
     VALID_RESOURCE_TYPES = %w[Project Group].freeze
@@ -35,6 +38,12 @@ module SecretsManagement
     VALID_ROLES = Gitlab::Access.sym_options.except(:guest, :planner).freeze
 
     delegate :secrets_manager, to: :project
+
+    def normalized_expired_at
+      return if expired_at.blank?
+
+      expired_at_to_time.to_s
+    end
 
     private
 
@@ -73,6 +82,31 @@ module SecretsManagement
       when 'Group'
         errors.add(:resource_id, "Group does not exist") if Group.find_by_id(resource_id).nil?
       end
+    end
+
+    def expired_at_to_time
+      Time.zone.parse(expired_at)&.utc&.iso8601
+    rescue ArgumentError
+      nil
+    end
+
+    def expired?
+      time = expired_at_to_time
+      time.present? && Time.current >= time
+    end
+
+    def validate_expired_at
+      return if expired_at.blank?
+
+      unless expired_at_to_time
+        errors.add(:expired_at, 'invalid time format, must be RFC3339 (e.g., 2025-09-01T00:00:00Z)')
+
+        return
+      end
+
+      return unless expired?
+
+      errors.add(:expired_at, 'must be in the future')
     end
 
     def valid_principal

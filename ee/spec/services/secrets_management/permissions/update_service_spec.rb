@@ -11,7 +11,7 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
   let(:principal_id) { user.id }
   let(:principal_type) { 'User' }
   let(:permissions) { %w[create update read] }
-  let(:expired_at) { 1.week.from_now.to_date.iso8601 }
+  let(:expired_at) { 1.week.from_now.to_date.to_s }
 
   before_all do
     project.add_owner(user)
@@ -40,6 +40,50 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
           expect(secret_permission.principal_type).to eq('User')
           expect(secret_permission.permissions).to eq(permissions)
           expect(secret_permission.expired_at).to eq(expired_at)
+        end
+      end
+
+      describe 'expiration in the policy payload' do
+        def stub_roles_and_test_requests
+          stub_role   = stub_request(:post, %r{.*/v1/sys/policies/acl/.*/users/roles/.*})
+            .to_return(status: 204, body: '', headers: { 'Content-Type' => 'application/json' })
+
+          stub_direct = stub_request(:post, %r{.*/v1/sys/policies/acl/.*/users/direct/.*})
+            .to_return(status: 204, body: '', headers: { 'Content-Type' => 'application/json' })
+
+          expect(result).to be_success
+          expect(stub_role).to   have_been_requested
+          expect(stub_direct).to have_been_requested
+        end
+
+        context 'when expired_at is present' do
+          let(:expired_at) { 7.days.from_now.to_date.to_s }
+
+          it 'sends expiration in OpenBao policy payload for all updated paths' do
+            stub_roles_and_test_requests
+
+            assert_requested(:post, %r{.*/v1/sys/policies/acl/.*/users/direct/.*}) do |req|
+              body   = Gitlab::Json.parse(req.body)
+              policy = Gitlab::Json.parse(body.fetch('policy'))
+              paths  = policy.fetch('path')
+
+              expected_exp = Time.zone.parse(expired_at).utc.beginning_of_day.iso8601
+
+              expect(paths.values).to all(include('expiration' => expected_exp))
+            end
+          end
+
+          context 'when expired_at is blank' do
+            let(:expired_at) { '' }
+
+            it 'does not include expiration in OpenBao policy payload' do
+              stub_roles_and_test_requests
+
+              assert_requested(:post, %r{.*/v1/sys/policies/acl/.*/users/direct/.*}) do |req|
+                expect(req.body).not_to include('\"expiration\"')
+              end
+            end
+          end
         end
       end
 
