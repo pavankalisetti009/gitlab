@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples Integrations::Base::AmazonQ do
-  subject(:integration) { build(:amazon_q_integration, auto_review_enabled: auto_review_enabled) }
+  subject(:integration) { create(:amazon_q_integration, auto_review_enabled: auto_review_enabled) }
 
   let_it_be(:auto_review_enabled) { true }
 
@@ -19,7 +19,7 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
         end
 
         context 'when integration is project-level' do
-          subject(:integration) { build(:amazon_q_integration, project: build(:project), instance: false) }
+          subject(:integration) { create(:amazon_q_integration, project: create(:project), instance: false) }
 
           it 'cannot be changed' do
             integration.role_arn = "changed"
@@ -29,7 +29,7 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
         end
 
         context 'when integration is group-level' do
-          subject(:integration) { build(:amazon_q_integration, group: build(:group), instance: false) }
+          subject(:integration) { create(:amazon_q_integration, group: create(:group), instance: false) }
 
           it 'cannot be changed' do
             integration.role_arn = "changed"
@@ -73,7 +73,12 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
       end
 
       it 'allows auto_review_enabled for available integrations' do
-        integration = build(:amazon_q_integration, availability: "default_on", auto_review_enabled: true)
+        integration = build(
+          :amazon_q_integration,
+          availability: "default_on",
+          auto_review_enabled: true,
+          organization: create(:organization)
+        )
 
         expect(integration).to be_valid
       end
@@ -96,7 +101,8 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
         it 'validates that merge request and pipeline events equal to auto_review_enabled' do
           integration = build(:amazon_q_integration,
             auto_review_enabled: auto_review_enabled_value,
-            merge_requests_events: merge_requests_events, pipeline_events: pipeline_events
+            merge_requests_events: merge_requests_events, pipeline_events: pipeline_events,
+            organization: create(:organization)
           )
 
           expect(integration.valid?).to eq(errors.blank?)

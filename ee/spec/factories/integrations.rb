@@ -44,5 +44,10 @@ FactoryBot.define do
     role_arn { 'q' }
     availability { 'default_on' }
     auto_review_enabled { false }
+    organization { association(:organization) }
+
+    after(:build) do |integration|
+      integration.organization = nil unless integration.instance
+    end
   end
 end
