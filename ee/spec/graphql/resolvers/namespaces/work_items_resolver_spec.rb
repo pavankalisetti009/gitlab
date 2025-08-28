@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team_planning do
+RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :portfolio_management do
   include GraphqlHelpers
 
   let_it_be(:group)        { create(:group) }
@@ -101,12 +101,26 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
         expect(resolve_items({ include_descendants: true })).to include(subgroup_work_item)
       end
 
+      it 'excludes group-level work items when exclude_group_work_items is true' do
+        expect(resolve_items({ include_descendants: true, include_ancestors: true, exclude_group_work_items: true }))
+          .not_to include(group_work_item1, group_work_item2, subgroup_work_item)
+      end
+
       context 'with project level work items' do
         let_it_be(:project) { create(:project, namespace: group) }
         let_it_be(:project_work_item) { create(:work_item, project: project) }
 
         it 'excludes work items from projects within the group when exclude_projects is true' do
           expect(resolve_items({ exclude_projects: true, include_descendants: true })).not_to include(project_work_item)
+        end
+
+        it 'excludes group-level work items when exclude_group_work_items is true' do
+          expect(resolve_items({
+            exclude_projects: false,
+            include_descendants: true,
+            include_ancestors: true,
+            exclude_group_work_items: true
+          })).to contain_exactly(project_work_item)
         end
       end
     end
