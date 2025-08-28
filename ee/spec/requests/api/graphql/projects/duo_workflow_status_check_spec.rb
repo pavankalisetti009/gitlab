@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'querying duoWorkflowStatusCheck', feature_category: :duo_workflow do
+RSpec.describe 'querying duoWorkflowStatusCheck', feature_category: :agent_foundations do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }

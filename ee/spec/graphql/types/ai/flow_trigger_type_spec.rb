@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::Ai::FlowTriggerType, feature_category: :duo_workflow do
+RSpec.describe Types::Ai::FlowTriggerType, feature_category: :agent_foundations do
   it 'has the correct name' do
     expect(described_class.graphql_name).to eq('AiFlowTriggerType')
   end

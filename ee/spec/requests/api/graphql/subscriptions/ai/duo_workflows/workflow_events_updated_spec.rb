@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature_category: :duo_workflow do
+RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature_category: :agent_foundations do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }

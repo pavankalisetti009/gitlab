@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :duo_workflow do
+RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :agent_foundations do
   include Rails.application.routes.url_helpers
 
   let_it_be(:group) { build_stubbed(:group, name: 'Test Group') }

@@ -5,7 +5,7 @@ action: start_duo_workflow_execution
 classification: duo
 identifiers:
 - user
-product_group: duo_workflow
+product_group: agent_foundations
 additional_properties:
   label:
     description: Workflow type label
