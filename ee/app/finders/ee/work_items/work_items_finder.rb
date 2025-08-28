@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Extends WorkItems::WorkItemsFinder
+# Added arguments:
+#   params:
+#     exclude_group_work_items: boolean
+
 module EE
   module WorkItems
     module WorkItemsFinder
@@ -93,12 +98,20 @@ module EE
       end
 
       def include_group_work_items?
-        params.group? && params.group.supports_group_work_items?
+        return false unless params.group?
+        return false if exclude_group_level_work_items?
+
+        params.group.supports_group_work_items?
       end
 
       def with_namespace_cte
         include_group_work_items?
       end
+
+      def exclude_group_level_work_items?
+        params.fetch(:exclude_group_work_items, false)
+      end
+      strong_memoize_attr :exclude_group_level_work_items?
     end
   end
 end
