@@ -27,3 +27,13 @@ $popover-arrow-color: #c4bae2;
     }
   }
 }
+
+.duo-chat-message pre {
+  // make sure scrims in code blocks in Duo Chat are properly positioned
+  position: initial;
+  
+  // make scrims on code blocks in Duo Chat messages conform to colors of code blocks in user theme
+  &.scrim-bottom::after, &.scrim-top::before {
+    background: linear-gradient(to bottom, #0000, var(--code-background));
+  }
+}
