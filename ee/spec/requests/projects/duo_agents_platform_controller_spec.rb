@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: :duo_workflow do
+RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: :agent_foundations do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
 

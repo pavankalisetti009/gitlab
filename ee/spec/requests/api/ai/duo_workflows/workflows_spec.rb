@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, feature_category: :duo_workflow do
+RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, feature_category: :agent_foundations do
   include HttpBasicAuthHelpers
 
   let_it_be(:group) { create(:group) }

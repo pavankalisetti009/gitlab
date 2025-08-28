@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::FlowTriggers::Delete, feature_category: :duo_workflow do
+RSpec.describe Mutations::Ai::FlowTriggers::Delete, feature_category: :agent_foundations do
   include GraphqlHelpers
 
   subject(:mutation) { described_class }

@@ -2,7 +2,7 @@
 
 module Projects
   class DuoAgentsPlatformController < Projects::ApplicationController
-    feature_category :duo_workflow
+    feature_category :agent_foundations
     before_action :check_access
 
     def show; end

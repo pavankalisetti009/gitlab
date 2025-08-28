@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::Event, type: :model, feature_category: :duo_workflow do
+RSpec.describe Ai::DuoWorkflows::Event, type: :model, feature_category: :agent_foundations do
   let(:workflow) { create(:duo_workflows_workflow) }
   let_it_be(:project) { create(:project) }
 

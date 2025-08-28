@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :duo_workflow do
+RSpec.describe Ai::DuoWorkflows::CheckpointPolicy, feature_category: :agent_foundations do
   subject(:policy) { described_class.new(current_user, checkpoint) }
 
   let_it_be(:group) { create(:group) }

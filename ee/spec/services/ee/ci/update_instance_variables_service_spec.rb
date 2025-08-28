@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::UpdateInstanceVariablesService, feature_category: :ci_variables do
+RSpec.describe Ci::UpdateInstanceVariablesService, feature_category: :pipeline_composition do
   let_it_be(:current_user) { create :user }
   let(:params) { { variables_attributes: variables_attributes } }
 

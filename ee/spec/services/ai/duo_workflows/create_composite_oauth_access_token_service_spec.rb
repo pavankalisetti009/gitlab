@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, feature_category: :duo_workflow do
+RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, feature_category: :agent_foundations do
   describe '#execute' do
     let_it_be(:organization) { create(:organization) }
     let_it_be_with_reload(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }

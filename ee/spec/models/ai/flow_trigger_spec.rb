@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FlowTrigger, feature_category: :duo_workflow do
+RSpec.describe Ai::FlowTrigger, feature_category: :agent_foundations do
   subject(:flow_trigger) { build(:ai_flow_trigger) }
 
   let_it_be(:project) { create(:project) }

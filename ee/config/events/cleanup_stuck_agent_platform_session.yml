@@ -14,9 +14,9 @@ additional_properties:
     description: workflow's new status eg. failed or paused
   value:
     description: id of the session
-product_group: duo_workflow
+product_group: agent_foundations
 product_categories:
-- duo_workflow
+- agent_foundations
 milestone: '18.3'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/199917
 tiers:

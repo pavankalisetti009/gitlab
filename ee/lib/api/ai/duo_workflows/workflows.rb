@@ -9,7 +9,7 @@ module API
 
         helpers ::API::Helpers::DuoWorkflowHelpers
 
-        feature_category :duo_workflow
+        feature_category :agent_foundations
 
         before do
           authenticate!

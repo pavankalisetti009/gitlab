@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo_workflow do
+RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :agent_foundations do
   describe '#execute' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }

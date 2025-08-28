@@ -5,7 +5,7 @@ action: retry_duo_workflow_execution
 classification: duo
 identifiers:
 - user
-product_group: duo_workflow
+product_group: agent_foundations
 additional_properties:
   label:
     description: Workflow type label
@@ -14,7 +14,7 @@ additional_properties:
   workflow_id:
     description: The ID for the workflow
 product_categories:
-- duo_workflow
+- agent_foundations
 milestone: '17.8'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/177070
 tiers:

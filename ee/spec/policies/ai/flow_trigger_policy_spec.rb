@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FlowTriggerPolicy, feature_category: :duo_workflow do
+RSpec.describe Ai::FlowTriggerPolicy, feature_category: :agent_foundations do
   let_it_be(:trigger) { create(:ai_flow_trigger) }
 
   subject(:policy) { described_class.new(nil, trigger) }

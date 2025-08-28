@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Querying Duo Workflow Events', feature_category: :duo_workflow do
+RSpec.describe 'Querying Duo Workflow Events', feature_category: :agent_foundations do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }

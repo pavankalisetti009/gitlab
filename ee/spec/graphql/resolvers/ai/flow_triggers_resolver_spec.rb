@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Ai::FlowTriggersResolver, feature_category: :duo_workflow do
+RSpec.describe Resolvers::Ai::FlowTriggersResolver, feature_category: :agent_foundations do
   include GraphqlHelpers
 
   subject(:resolver) { described_class }

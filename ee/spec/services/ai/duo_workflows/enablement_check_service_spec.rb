@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature_category: :duo_workflow do
+RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature_category: :agent_foundations do
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
 

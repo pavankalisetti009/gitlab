@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_category: :duo_workflow do
+RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_category: :agent_foundations do
   describe '#execute', :enable_admin_mode do
     let_it_be(:organization) { create(:organization) }
     let_it_be(:user) { create(:admin, organizations: [organization]) }
