@@ -157,6 +157,7 @@ export default {
       this.selectedGroup = this.groups.find((group) => group.id === groupId) || null;
     },
     showModalWindow() {
+      if (this.disableSave) return;
       this.$refs.confirmationModal.showModalWindow();
     },
   },
