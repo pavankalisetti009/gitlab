@@ -19,7 +19,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             get api("/admin/data_management/snippet_repository", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response.first).to include('id' => expected_model.id,
+            expect(json_response.first).to include('record_identifier' => expected_model.id,
               'model_class' => expected_model.class.name)
           end
 
@@ -47,15 +47,49 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
               create_list(:project, 10)
 
               get api("/admin/data_management/project?per_page=3", admin, admin_mode: true)
-              first_page_ids = json_response.pluck('id')
+              first_page_ids = json_response.pluck('record_identifier')
 
               get api("/admin/data_management/project?per_page=3&page=2", admin, admin_mode: true)
-              second_page_ids = json_response.pluck('id')
+              second_page_ids = json_response.pluck('record_identifier')
 
               # Verify ordering is maintained across pages
               expect(first_page_ids).to eq(first_page_ids.sort)
               expect(second_page_ids).to eq(second_page_ids.sort)
               expect(first_page_ids.last).to be < second_page_ids.first
+            end
+
+            context 'with composite IDs' do
+              let(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 9) }
+              let(:klass) { list.first.class }
+              let(:model_primary_key) { klass.primary_key }
+              let(:sorted_records) do
+                klass.where(model_primary_key => list.pluck(*model_primary_key)).order(*model_primary_key)
+              end
+
+              before do
+                # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
+                # This is why the url matches`project` but I force the ModelMapper to return
+                # the MavenCacheEntry double instead of the normally expected `Project`.
+                allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(klass)
+                allow(klass).to receive(:order_by_primary_key).and_return(sorted_records)
+              end
+
+              it 'paginates results' do
+                get api("/admin/data_management/project?per_page=5", admin, admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.size).to eq(5)
+                expect(response.headers['X-Next-Page']).to eq('2')
+                expect(response.headers['X-Page']).to eq('1')
+                expect(response.headers['X-Per-Page']).to eq('5')
+
+                get api("/admin/data_management/project?per_page=5&page=2", admin, admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.size).to eq(4) # Remaining 4 records
+                expect(response.headers['X-Page']).to eq('2')
+                expect(response.headers['X-Next-Page']).to be_empty
+              end
             end
           end
         end
@@ -86,11 +120,6 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             get api('/admin/data_management/', admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:not_found)
-          end
-
-          it 'raises an error for model name with spaces' do
-            expect { get api('/admin/data_management/lfs object', admin, admin_mode: true) }
-              .to raise_error(URI::InvalidURIError)
           end
         end
 
@@ -198,7 +227,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             expect(response).to have_gitlab_http_status(:ok)
 
             # Extract IDs from response and verify they're in ascending order
-            response_ids = json_response.pluck('id')
+            response_ids = json_response.pluck('record_identifier')
             expect(response_ids).to eq(response_ids.sort)
           end
         end
@@ -218,37 +247,85 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
     end
   end
 
-  describe 'GET /admin/data_management/:model_name/:id' do
+  describe 'GET /admin/data_management/:model_name/:record_identifier' do
     context 'with feature flag enabled' do
       context 'with valid model name' do
         let(:expected_model) { create(:snippet_repository) }
 
-        context 'with valid id' do
+        context 'with valid integer id' do
           it 'returns matching object data' do
             get api("/admin/data_management/snippet_repository/#{expected_model.id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to include('id' => expected_model.id, 'model_class' => expected_model.class.name)
+            expect(json_response).to include('record_identifier' => expected_model.id,
+              'model_class' => expected_model.class.name)
+          end
+        end
+
+        context 'with valid base64 id' do
+          let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+          let(:double) { class_double(model.class) }
+          let(:model_primary_key) { model.class.primary_key }
+          let(:expected_id) { model_primary_key.map { |field| model.read_attribute_before_type_cast(field).to_s } }
+          let(:base64_id) { Base64.urlsafe_encode64(expected_id.join(' ')) }
+
+          before do
+            # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
+            # This is why the url matches`project` but I force the ModelMapper to return
+            # the MavenCacheEntry double instead of the normally expected `Project`.
+            allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(double)
+            # The VirtualRegistries::Packages::Maven::Cache::Entry model is not yet added to Geo, so it doesn't
+            # include the replicator module which would give it access to the `find_by_primary_key` method.
+            # I add this module to the double returned by the ModelMapper and stub the needed methods.
+            double.send(:include, Geo::HasReplicator)
+            allow(double).to receive(:primary_key).and_return(model_primary_key)
+            allow(double).to receive(:primary_key_in)
+                               .with([expected_id])
+                               .and_return(model.class.primary_key_in([expected_id]))
+          end
+
+          it 'returns matching object data' do
+            get api("/admin/data_management/project/#{base64_id}", admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to include('record_identifier' => base64_id,
+              'model_class' => model.class.name)
           end
         end
 
         context 'with invalid id' do
-          it 'returns 404 when ID is 0' do
-            get api("/admin/data_management/snippet_repository/0", admin, admin_mode: true)
+          it 'returns 404 when ID does not exist' do
+            get api("/admin/data_management/snippet_repository/#{non_existing_record_id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:not_found)
-          end
-
-          it 'returns 400 when ID is not integer' do
-            get api("/admin/data_management/snippet_repository/random", admin, admin_mode: true)
-
-            expect(response).to have_gitlab_http_status(:bad_request)
           end
 
           it 'returns 400 when ID is alphanumeric containing valid ID' do
             get api("/admin/data_management/snippet_repository/rand#{expected_model.id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+
+        context 'with invalid base64 id' do
+          let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+          let(:base64_id) do
+            expected_id = model.class.primary_key.map { |field| model[field.to_sym].to_s }
+            Base64.urlsafe_encode64(expected_id.join('-'))
+          end
+
+          before do
+            # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
+            # This is why the url matches`project` but I force the ModelMapper to return
+            # the MavenCacheEntry double instead of the normally expected `Project`.
+            allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(model.class)
+          end
+
+          it 'returns 400 when base64 does not contain spaces' do
+            get api("/admin/data_management/project/#{base64_id}", admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response).to include('message' => '400 Bad request - Invalid composite key format')
           end
         end
       end
@@ -265,11 +342,6 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           get api('/admin/data_management//1', admin, admin_mode: true)
 
           expect(response).to have_gitlab_http_status(:bad_request)
-        end
-
-        it 'raises an error for model name with spaces' do
-          expect { get api('/admin/data_management/lfs object/1', admin, admin_mode: true) }
-            .to raise_error(URI::InvalidURIError)
         end
       end
 
@@ -292,7 +364,8 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             get api("/admin/data_management/#{model_name}/#{expected_record.id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to include('id' => expected_record.id, 'model_class' => expected_record.class.name)
+            expect(json_response).to include('record_identifier' => expected_record.id,
+              'model_class' => expected_record.class.name)
           end
         end
       end
@@ -334,7 +407,7 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
     end
   end
 
-  describe 'PUT /admin/data_management/:model_name/:id/checksum' do
+  describe 'PUT /admin/data_management/:model_name/:record_identifier/checksum' do
     let_it_be(:expected_model) { create(:snippet_repository) }
     let_it_be(:api_path) { "/admin/data_management/snippet_repository/#{expected_model.id}/checksum" }
     let_it_be(:node) { create(:geo_node) }
@@ -392,7 +465,8 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             put api(api_path, admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to include('id' => expected_model.id, 'model_class' => expected_model.class.name)
+            expect(json_response).to include('record_identifier' => expected_model.id,
+              'model_class' => expected_model.class.name)
           end
 
           context 'when model is not replicable' do
@@ -449,7 +523,8 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             put api("/admin/data_management/#{model_name}/#{expected_record.id}/checksum", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to include('id' => expected_record.id, 'model_class' => expected_record.class.name)
+            expect(json_response).to include('record_identifier' => expected_record.id,
+              'model_class' => expected_record.class.name)
           end
         end
       end

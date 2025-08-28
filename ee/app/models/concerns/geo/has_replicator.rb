@@ -25,9 +25,9 @@ module Geo
 
       # Find a record from the current model from specified primary_key value
       #
-      # @param [Integer] value
+      # @param [Integer | Array] value
       def find_by_primary_key(value)
-        find_by(primary_key => value)
+        primary_key_in([value]).take
       end
     end
 
