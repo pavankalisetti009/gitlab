@@ -52,11 +52,11 @@ export default {
    * @property {string} upstream - The upstream to clear the cache
    */
   /**
-   * Emitted when the upstream is deleted
-   * @event deleteUpstream
-   * @property {string} upstreamId - The ID of the upstream to delete
+   * Emitted when the upstream is removed
+   * @event removeUpstream
+   * @property {string} upstreamId - ID of the registry upstream association
    */
-  emits: ['reorderUpstream', 'clearCache', 'deleteUpstream'],
+  emits: ['reorderUpstream', 'clearCache', 'removeUpstream'],
   computed: {
     name() {
       return this.upstream.name;
@@ -68,7 +68,7 @@ export default {
       return this.upstream.id;
     },
     idFromGraphQL() {
-      return getIdFromGraphQLId(this.upstream.id);
+      return getIdFromGraphQLId(this.id);
     },
     cacheSize() {
       return this.upstream.cacheSize;
@@ -79,8 +79,11 @@ export default {
     canUpdate() {
       return this.glAbilities.updateVirtualRegistry;
     },
-    canDelete() {
+    canRemove() {
       return this.glAbilities.destroyVirtualRegistry;
+    },
+    removeUpstreamAriaLabel() {
+      return sprintf(s__('VirtualRegistry|Remove upstream %{name}'), { name: this.upstream.name });
     },
     artifactCount() {
       return this.upstream.artifactCount;
@@ -105,7 +108,7 @@ export default {
       return this.upstream.warning?.text || this.$options.i18n.defaultWarningText;
     },
     showButtons() {
-      return this.hasWarning || (this.canUpdate && this.editPath) || this.canDelete;
+      return this.hasWarning || (this.canUpdate && this.editPath) || this.canRemove;
     },
     cacheSizeLabel() {
       return sprintf(s__('VirtualRegistry|Cache: %{size}'), { size: this.cacheSize });
@@ -138,8 +141,9 @@ export default {
     clearCache() {
       this.$emit('clearCache', this.upstream);
     },
-    deleteUpstream() {
-      this.$emit('deleteUpstream', this.id);
+    removeUpstream() {
+      const { id } = this.upstream.registryUpstreams[0];
+      this.$emit('removeUpstream', id);
     },
   },
   i18n: {
@@ -147,7 +151,7 @@ export default {
     moveDownLabel: s__('VirtualRegistry|Move upstream down'),
     clearCacheLabel: s__('VirtualRegistry|Clear cache'),
     editUpstreamLabel: s__('VirtualRegistry|Edit upstream'),
-    deleteUpstreamLabel: s__('VirtualRegistry|Delete upstream'),
+    removeUpstreamLabel: s__('VirtualRegistry|Remove upstream'),
     defaultWarningText: s__('VirtualRegistry|There is a problem with this cached upstream'),
   },
 };
@@ -251,14 +255,14 @@ export default {
             :href="editPath"
           />
           <gl-button
-            v-if="canDelete"
-            v-gl-tooltip="$options.i18n.deleteUpstreamLabel"
-            data-testid="delete-button"
-            :aria-label="$options.i18n.deleteUpstreamLabel"
+            v-if="canRemove"
+            v-gl-tooltip="$options.i18n.removeUpstreamLabel"
+            data-testid="remove-button"
+            :aria-label="removeUpstreamAriaLabel"
             size="small"
             category="tertiary"
             icon="remove"
-            @click="deleteUpstream"
+            @click="removeUpstream"
           />
         </div>
       </template>

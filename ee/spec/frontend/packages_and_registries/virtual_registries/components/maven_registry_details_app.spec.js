@@ -15,6 +15,7 @@ import {
   deleteMavenUpstreamCache,
   deleteMavenRegistryCache,
   getMavenUpstreamRegistriesList,
+  removeMavenUpstreamRegistryAssociation,
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
 import { mavenVirtualRegistry } from '../mock_data';
@@ -317,10 +318,10 @@ describe('MavenRegistryDetailsApp', () => {
         createComponent();
       });
 
-      it('when direction is `down` calculates the right position', async () => {
+      it('when direction is `down` calculates the right position', () => {
         const upstreamItems = findUpstreamItems();
 
-        await upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
 
         expect(updateMavenRegistryUpstreamPosition).toHaveBeenCalledWith({
           id: 2,
@@ -328,10 +329,10 @@ describe('MavenRegistryDetailsApp', () => {
         });
       });
 
-      it('when direction is `up`, calculates the right position', async () => {
+      it('when direction is `up`, calculates the right position', () => {
         const upstreamItems = findUpstreamItems();
 
-        await upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
+        upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
 
         expect(updateMavenRegistryUpstreamPosition).toHaveBeenCalledWith({
           id: 3,
@@ -342,7 +343,7 @@ describe('MavenRegistryDetailsApp', () => {
       it('emits upstreamReordered when successful', async () => {
         const upstreamItems = findUpstreamItems();
 
-        await upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
+        upstreamItems.at(1).vm.$emit('reorderUpstream', 'up', upstreams[1]);
 
         await waitForPromises();
 
@@ -363,7 +364,7 @@ describe('MavenRegistryDetailsApp', () => {
 
         const upstreamItems = findUpstreamItems();
 
-        await upstreamItems.at(0).vm.$emit('reorderUpstream', 'up', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('reorderUpstream', 'up', upstreams[0]);
 
         await waitForPromises();
 
@@ -382,13 +383,65 @@ describe('MavenRegistryDetailsApp', () => {
 
         const upstreamItems = findUpstreamItems();
 
-        await upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
+        upstreamItems.at(0).vm.$emit('reorderUpstream', 'down', upstreams[0]);
 
         await waitForPromises();
 
         expect(findUpdateActionErrorAlert().text()).toBe(
           'Failed to update position of the upstream. Try again.',
         );
+        expect(showToastSpy).not.toHaveBeenCalled();
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'MavenRegistryDetailsApp',
+          error: mockError,
+        });
+      });
+    });
+  });
+
+  describe('remove upstream action', () => {
+    const registryUpstreamAssociationId = upstreams[0].registryUpstreams[0].id;
+    beforeEach(() => {
+      removeMavenUpstreamRegistryAssociation.mockReset();
+    });
+
+    describe('when API succeeds', () => {
+      beforeEach(() => {
+        removeMavenUpstreamRegistryAssociation.mockResolvedValue();
+        createComponent();
+        const upstreamItems = findUpstreamItems();
+
+        upstreamItems.at(0).vm.$emit('removeUpstream', registryUpstreamAssociationId);
+      });
+
+      it('calls the right arguments', () => {
+        expect(removeMavenUpstreamRegistryAssociation).toHaveBeenCalledWith({
+          id: 2,
+        });
+      });
+
+      it('shows success toast and emits `upstreamRemoved` event', async () => {
+        await waitForPromises();
+
+        expect(showToastSpy).toHaveBeenCalledWith('Removed upstream from virtual registry.');
+        expect(wrapper.emitted('upstreamRemoved')).toHaveLength(1);
+        expect(captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when API fails', () => {
+      it('shows toast with default message & reports error to Sentry', async () => {
+        const mockError = new Error();
+        removeMavenUpstreamRegistryAssociation.mockRejectedValue(mockError);
+        createComponent();
+
+        const upstreamItems = findUpstreamItems();
+
+        upstreamItems.at(0).vm.$emit('removeUpstream', registryUpstreamAssociationId);
+
+        await waitForPromises();
+
+        expect(findUpdateActionErrorAlert().text()).toBe('Failed to remove upstream. Try again.');
         expect(showToastSpy).not.toHaveBeenCalled();
         expect(captureException).toHaveBeenCalledWith({
           component: 'MavenRegistryDetailsApp',

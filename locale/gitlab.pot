@@ -70661,6 +70661,9 @@ msgstr ""
 msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
 msgstr ""
 
+msgid "VirtualRegistry|Failed to remove upstream. Try again."
+msgstr ""
+
 msgid "VirtualRegistry|Failed to search cache entries."
 msgstr ""
 
@@ -70728,6 +70731,15 @@ msgid "VirtualRegistry|Registry cache cleared successfully."
 msgstr ""
 
 msgid "VirtualRegistry|Registry types"
+msgstr ""
+
+msgid "VirtualRegistry|Remove upstream"
+msgstr ""
+
+msgid "VirtualRegistry|Remove upstream %{name}"
+msgstr ""
+
+msgid "VirtualRegistry|Removed upstream from virtual registry."
 msgstr ""
 
 msgid "VirtualRegistry|Something went wrong while creating the upstream. Try again."

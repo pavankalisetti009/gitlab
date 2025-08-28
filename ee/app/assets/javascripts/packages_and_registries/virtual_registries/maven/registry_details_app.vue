@@ -58,6 +58,7 @@ export default {
       :upstreams="upstreams"
       @upstreamCreated="refetchMavenVirtualRegistryQuery"
       @upstreamReordered="refetchMavenVirtualRegistryQuery"
+      @upstreamRemoved="refetchMavenVirtualRegistryQuery"
     />
   </div>
 </template>
