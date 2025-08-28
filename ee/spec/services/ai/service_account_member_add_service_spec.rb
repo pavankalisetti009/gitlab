@@ -72,4 +72,38 @@ RSpec.describe Ai::ServiceAccountMemberAddService, feature_category: :duo_workfl
       end
     end
   end
+
+  context 'when adding developer returns false' do
+    before do
+      allow(project).to receive(:add_developer).and_return(false)
+    end
+
+    it 'does not add a new membership' do
+      expect { service.execute }.not_to change { project.members.count }
+    end
+
+    it 'returns an error response' do
+      result = service.execute
+
+      expect(result).to be_error
+      expect(result.message).to eq("Failed to add service account as developer")
+    end
+  end
+
+  context 'when adding developer returns nil' do
+    before do
+      allow(project).to receive(:add_developer).and_return(nil)
+    end
+
+    it 'does not add a new membership' do
+      expect { service.execute }.not_to change { project.members.count }
+    end
+
+    it 'returns an error response' do
+      result = service.execute
+
+      expect(result).to be_error
+      expect(result.message).to eq("Failed to add service account as developer")
+    end
+  end
 end

@@ -14,9 +14,11 @@ module Ai
       return ServiceResponse.error(message: "Service account user not found") unless service_account_user
 
       result = project.add_developer(service_account_user)
-      return ServiceResponse.error(message: "Failed to add service account as developer") unless result.persisted?
-
-      ServiceResponse.success(payload: result)
+      if result && result.persisted?
+        ServiceResponse.success(payload: result)
+      else
+        ServiceResponse.error(message: "Failed to add service account as developer")
+      end
     end
 
     private
