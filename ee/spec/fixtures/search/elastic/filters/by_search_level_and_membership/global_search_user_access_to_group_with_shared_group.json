@@ -26,6 +26,15 @@
                           10
                         ]
                       }
+                    },
+                    {
+                      "terms": {
+                        "_name": "filters:permissions:global:public_and_internal_access:project_visibility_level:public_or_internal",
+                        "visibility_level": [
+                          20,
+                          10
+                        ]
+                      }
                     }
                   ],
                   "minimum_should_match": 1
