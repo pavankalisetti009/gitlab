@@ -197,7 +197,9 @@ class Projects::MergeRequests::CreationsController < Projects::MergeRequests::Ap
   end
 
   def start_covered_experience_create_mr
-    Labkit::CoveredExperience.start(:create_merge_request, user_id: current_user.id, project_id: project.id)
+    return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
+
+    Labkit::CoveredExperience.start(:create_merge_request)
   end
 end
 

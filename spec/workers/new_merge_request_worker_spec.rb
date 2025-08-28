@@ -7,10 +7,6 @@ RSpec.describe NewMergeRequestWorker, feature_category: :code_review_workflow do
   describe '#perform' do
     let(:worker) { described_class.new }
 
-    before do
-      Labkit::CoveredExperience.start(:create_merge_request)
-    end
-
     context 'when a merge request not found' do
       let(:user) { create(:user) }
 
@@ -28,10 +24,22 @@ RSpec.describe NewMergeRequestWorker, feature_category: :code_review_workflow do
       end
 
       it 'completes the covered experience' do
+        Labkit::CoveredExperience.start(:create_merge_request)
+
         expect do
           worker.perform(non_existing_record_id, user.id)
         end.to resume_covered_experience(:create_merge_request)
         .and complete_covered_experience(:create_merge_request)
+      end
+
+      context 'when covered_experience_create_merge_request feature flag is disabled' do
+        it 'does not resume covered experience' do
+          stub_feature_flags(covered_experience_create_merge_request: false)
+
+          expect do
+            worker.perform(non_existing_record_id, user.id)
+          end.not_to resume_covered_experience(:create_merge_request)
+        end
       end
     end
 
@@ -54,10 +62,20 @@ RSpec.describe NewMergeRequestWorker, feature_category: :code_review_workflow do
       end
 
       it 'completes the covered experience' do
+        Labkit::CoveredExperience.start(:create_merge_request)
+
         expect do
           worker.perform(merge_request.id, non_existing_record_id)
         end.to resume_covered_experience(:create_merge_request)
         .and complete_covered_experience(:create_merge_request)
+      end
+
+      context 'when covered_experience_create_merge_request feature flag is disabled' do
+        it 'does not resume covered experience' do
+          expect do
+            worker.perform(merge_request.id, non_existing_record_id)
+          end.not_to resume_covered_experience(:create_merge_request)
+        end
       end
     end
 
@@ -102,10 +120,20 @@ RSpec.describe NewMergeRequestWorker, feature_category: :code_review_workflow do
           end
 
           it 'completes the covered experience' do
+            Labkit::CoveredExperience.start(:create_merge_request)
+
             expect do
               worker.perform(non_existing_record_id, user.id)
             end.to resume_covered_experience(:create_merge_request)
             .and complete_covered_experience(:create_merge_request)
+          end
+
+          context 'when covered_experience_create_merge_request feature flag is disabled' do
+            it 'does not resume covered experience' do
+              expect do
+                worker.perform(non_existing_record_id, user.id)
+              end.not_to resume_covered_experience(:create_merge_request)
+            end
           end
 
           it 'creates a notification for the mentioned user' do

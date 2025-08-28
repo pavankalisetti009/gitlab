@@ -17,20 +17,31 @@ class NewMergeRequestWorker
   weight 2
 
   def perform(merge_request_id, user_id)
-    Labkit::CoveredExperience.resume(:create_merge_request) do
-      Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/337182')
+    params = { merge_request_id: merge_request_id, user_id: user_id }
+    xp = resume_covered_experience(**params)
 
-      break unless objects_found?(merge_request_id, user_id)
-      break if issuable.prepared?
+    Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/337182')
 
-      MergeRequests::AfterCreateService
-        .new(project: issuable.target_project, current_user: user)
-        .execute(issuable)
-    end
+    return unless objects_found?(merge_request_id, user_id)
+    return if issuable.prepared?
+
+    MergeRequests::AfterCreateService
+      .new(project: issuable.target_project, current_user: user)
+      .execute(issuable)
+  ensure
+    xp&.complete(**params)
   end
 
   def issuable_class
     MergeRequest
+  end
+
+  private
+
+  def resume_covered_experience(**context)
+    return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
+
+    Labkit::CoveredExperience.resume(:create_merge_request, **context)
   end
 end
 
