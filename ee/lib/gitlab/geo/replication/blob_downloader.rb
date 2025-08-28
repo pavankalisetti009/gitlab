@@ -162,14 +162,28 @@ module Gitlab
           # Make the request
           response = ::HTTP.timeout(DOWNLOAD_TIMEOUT.dup).get(url, headers: req_headers)
 
+          # ::HTTP.follow passes through all headers (including our
+          # `Authorization: Gl-Geo ...` header) when the primary uses object
+          # storage with direct download.
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/323495
+          #
+          # So we manually follow the redirect instead.
           if response.status.redirect?
-            # ::HTTP.follow passes through all headers (including our
-            # `Authorization: Gl-Geo ...` header) when the primary uses object
-            # storage with direct download.
-            # https://gitlab.com/gitlab-org/gitlab/-/issues/323495
-            #
-            # So we manually follow the redirect instead.
-            response = ::HTTP.timeout(DOWNLOAD_TIMEOUT.dup).get(response['Location'])
+            opts = {
+              features: {
+                normalize_uri: ::HTTP::Features::NormalizeUri.new(normalizer: proc { |uri|
+                  # Important: Preserve the exact string representation of the URI
+                  #            This ensures all encoded characters remain intact for
+                  #            S3 signatures while still parsing it as a valid URI
+                  #            object.
+                  #
+                  # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/456901
+                  ::HTTP::URI.parse(uri.to_s)
+                })
+              }
+            }
+
+            response = ::HTTP.timeout(DOWNLOAD_TIMEOUT.dup).get(response['Location'], opts)
           end
 
           # Check for failures
