@@ -75,7 +75,7 @@ export default {
 
     <drawer-item v-if="drawer.state" :description="$options.i18n.status">
       <template #value>
-        <gl-badge :variant="findingsStatus" class="text-capitalize">{{ drawer.state }}</gl-badge>
+        <gl-badge :variant="findingsStatus" class="!gl-capitalize">{{ drawer.state }}</gl-badge>
       </template>
     </drawer-item>
 

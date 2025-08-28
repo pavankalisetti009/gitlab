@@ -152,8 +152,8 @@ export default {
     :component="$options.componentNames.BlockingMergeRequestsBody"
     :show-report-section-status-icon="false"
     issues-ul-element-class="content-list"
-    issues-list-container-class="p-0"
-    issue-item-class="p-0"
+    issues-list-container-class="!gl-p-0"
+    issue-item-class="!gl-p-0"
   >
     <template #success>
       {{ __('All merge request dependencies have been merged') }}

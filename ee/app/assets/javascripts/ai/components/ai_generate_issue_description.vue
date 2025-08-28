@@ -200,7 +200,7 @@ export default {
       <div v-if="error" class="gl-text-danger" data-testid="convert-description-modal-error">
         {{ error }}
       </div>
-      <gl-alert variant="warning" :dismissible="false" class="mt-2">
+      <gl-alert variant="warning" :dismissible="false" class="!gl-mt-3">
         {{ $options.i18n.modalWarning }}
       </gl-alert>
     </gl-modal>

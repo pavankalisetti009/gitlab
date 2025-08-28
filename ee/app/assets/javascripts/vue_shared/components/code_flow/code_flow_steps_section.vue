@@ -201,7 +201,7 @@ export default {
               { stepNumber, nodeType, fileDescription, fileLocation: { lineStart } }, stepIndex
             ) in vulnerabilityFlow"
             :key="stepIndex"
-            class="align-content-center gl-flex gl-justify-between !gl-rounded-base gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2 !gl-text-inherit !gl-no-underline"
+            class="gl-flex !gl-content-center gl-justify-between !gl-rounded-base gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2 !gl-text-inherit !gl-no-underline"
             :class="{
               'gl-rounded-base gl-bg-blue-50': selectedStepNumber === stepNumber,
             }"
@@ -220,7 +220,7 @@ export default {
               <span v-else>{{ stepNumber }}</span>
             </gl-badge>
             <span
-              class="align-content-center gl-mr-auto gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
+              class="gl-mr-auto !gl-content-center gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
             >
               <gl-badge
                 v-if="['source', 'sink'].includes(nodeType)"
@@ -242,7 +242,7 @@ export default {
 
               {{ fileDescription }}
             </span>
-            <span class="align-content-center gl-pr-3 gl-text-subtle">{{ lineStart }}</span>
+            <span class="!gl-content-center gl-pr-3 gl-text-subtle">{{ lineStart }}</span>
           </gl-link>
         </gl-collapse>
       </div>

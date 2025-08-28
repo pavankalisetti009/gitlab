@@ -38,7 +38,7 @@ exports[`Findings Drawer Details General Rendering matches the snapshot with det
         Status
       </span>
       <span
-        class="badge badge-pill badge-warning gl-badge text-capitalize"
+        class="!gl-capitalize badge badge-pill badge-warning gl-badge"
       >
         <span
           class="gl-badge-content"
@@ -205,7 +205,7 @@ exports[`Findings Drawer Details General Rendering matches the snapshot with dis
         Status
       </span>
       <span
-        class="badge badge-pill badge-warning gl-badge text-capitalize"
+        class="!gl-capitalize badge badge-pill badge-warning gl-badge"
       >
         <span
           class="gl-badge-content"
