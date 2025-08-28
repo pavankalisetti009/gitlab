@@ -6,7 +6,9 @@ module API
       class Model < Grape::Entity
         include ::API::Helpers::RelatedResourcesHelpers
 
-        expose :id, documentation: { type: "integer", example: 123 }
+        expose :record_identifier, documentation: { type: %w[string integer], example: %w[abc123 123] } do |model|
+          model.class.primary_key.is_a?(Array) ? expose_composite_key(model) : model.id
+        end
         expose :model_class, documentation: { type: "string", example: 'Project' } do |model|
           model.class.name
         end
@@ -45,6 +47,11 @@ module API
           return false unless model.respond_to?(:replicator)
 
           model.replicator.class.verification_enabled?
+        end
+
+        def expose_composite_key(model)
+          array_of_values = model.class.primary_key.map { |field| model.read_attribute_before_type_cast(field) }
+          Base64.urlsafe_encode64(array_of_values.join(' '))
         end
       end
     end

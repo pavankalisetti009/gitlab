@@ -25,7 +25,7 @@ RSpec.describe API::Entities::Admin::Model, feature_category: :geo_replication d
           end
 
           it 'returns the expected data' do
-            expect(result[:id]).to eq(model.id)
+            expect(result[:record_identifier]).to eq(model.id)
             expect(result[:model_class]).to eq(model_classes.name)
             expect(result[:created_at]).to eq(model.respond_to?(:created_at) ? model.created_at : nil)
 
@@ -40,7 +40,7 @@ RSpec.describe API::Entities::Admin::Model, feature_category: :geo_replication d
           end
 
           it 'returns the expected data' do
-            expect(result[:id]).to eq(model.id)
+            expect(result[:record_identifier]).to eq(model.id)
             expect(result[:model_class]).to eq(model_classes.name)
             expect(result[:created_at]).to eq(model.respond_to?(:created_at) ? model.created_at : nil)
             expect(result[:checksum_information]).to be_nil
@@ -54,7 +54,7 @@ RSpec.describe API::Entities::Admin::Model, feature_category: :geo_replication d
         end
 
         it 'returns the expected data' do
-          expect(result[:id]).to eq(model.id)
+          expect(result[:record_identifier]).to eq(model.id)
           expect(result[:model_class]).to eq(model_classes.name)
           expect(result[:created_at]).to eq(model.respond_to?(:created_at) ? model.created_at : nil)
           expect(result[:checksum_information]).to be_nil
@@ -70,7 +70,25 @@ RSpec.describe API::Entities::Admin::Model, feature_category: :geo_replication d
     subject(:result) { entity.as_json }
 
     it 'returns the expected data' do
-      expect(result[:id]).to eq(model.id)
+      expect(result[:record_identifier]).to eq(model.id)
+      expect(result[:model_class]).to eq(model.class.name)
+      expect(result[:checksum_information]).to be_nil
+    end
+  end
+
+  context 'with a model which has a composite primary key' do
+    let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+    let(:entity) { described_class.new(model, request: double) }
+    let(:expected_id) do
+      Base64.urlsafe_encode64(model.class.primary_key.map do |field|
+        model.read_attribute_before_type_cast(field)
+      end.join(' '))
+    end
+
+    subject(:result) { entity.as_json }
+
+    it 'returns the expected data' do
+      expect(result[:record_identifier]).to eq(expected_id)
       expect(result[:model_class]).to eq(model.class.name)
       expect(result[:checksum_information]).to be_nil
     end

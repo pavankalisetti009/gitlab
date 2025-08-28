@@ -23,6 +23,19 @@ module API
 
           model_class.replicator_class.verification_enabled?
         end
+
+        def find_model_from_record_identifier(identifier, model_class)
+          primary_key_value = if identifier.is_a?(Integer)
+                                identifier
+                              else
+                                decoded_string = Base64.urlsafe_decode64(identifier)
+                                bad_request!('Invalid composite key format') unless decoded_string.include?(' ')
+
+                                decoded_string.split(' ')
+                              end
+
+          model_class.find_by_primary_key(primary_key_value)
+        end
       end
 
       resource :admin do
@@ -58,11 +71,13 @@ module API
               present paginate(relation.all, without_count: true), with: Entities::Admin::Model
             end
 
-            route_param :id, type: Integer, desc: 'The ID of the model being requested' do
+            route_param :record_identifier,
+              types: [Integer, String],
+              desc: 'The identifier of the model being requested' do
               # Example request:
-              #   GET /admin/data_management/:model_name/:id
+              #   GET /admin/data_management/:model_name/:record_identifier
               desc 'Get data about a specific model' do
-                summary 'Retrieve data about the requested model ID'
+                summary 'Retrieve data about the requested model record identifier'
                 detail 'This feature is experimental.'
                 success code: 200, model: Entities::Admin::Model
                 failure [
@@ -75,23 +90,25 @@ module API
               end
               params do
                 requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
-                requires :id, type: Integer
+                requires :record_identifier, types: [Integer, String]
               end
 
               get do
                 model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
                 not_found!(params[:model_name]) unless model_class
 
-                model = model_class.find_by_primary_key(params[:id])
-                not_found!(params[:id]) unless model
+                model = find_model_from_record_identifier(params[:record_identifier], model_class)
+                not_found!(params[:record_identifier]) unless model
 
                 present model, with: Entities::Admin::Model
+              rescue ArgumentError, TypeError => e
+                bad_request!(e)
               end
 
               # Example request:
-              #   PUT /admin/data_management/:model_name/:id/checksum
+              #   PUT /admin/data_management/:model_name/:record_identifier/checksum
               desc 'Recalculate the checksum of a specific model' do
-                summary 'Recalculate the checksum of a specific model'
+                summary 'Recalculate the checksum of the requested model record identifier'
                 detail 'This feature is experimental.'
                 success code: 200, model: Entities::Admin::Model
                 failure [
@@ -104,7 +121,7 @@ module API
               end
               params do
                 requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
-                requires :id, type: Integer
+                requires :record_identifier, type: Integer
               end
 
               put 'checksum' do
@@ -114,11 +131,11 @@ module API
                 not_found!(params[:model_name]) unless model_class
                 bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
 
-                model = model_class.find_by_primary_key(params[:id])
-                not_found!(params[:id]) unless model
+                model = find_model_from_record_identifier(params[:record_identifier], model_class)
+                not_found!(params[:record_identifier]) unless model
 
                 event = model.replicator.verify
-                bad_request!("Verifying #{params[:model_name]}/#{params[:id]} failed.") unless event
+                bad_request!("Verifying #{params[:model_name]}/#{params[:record_identifier]} failed.") unless event
 
                 present model, with: Entities::Admin::Model
               end
