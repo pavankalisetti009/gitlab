@@ -164,7 +164,6 @@ describe('Metric table', () => {
           ...glAbilities,
         },
         glFeatures: {
-          duoRcaUsageRate: true,
           ...glFeatures,
         },
       },
@@ -543,18 +542,6 @@ describe('Metric table', () => {
           expect(apiRequest).toHaveBeenCalled();
         });
       });
-    });
-  });
-
-  describe('`duoRcaUsageRate` feature flag is disabled', () => {
-    beforeEach(() => {
-      return createWrapper([AI_METRICS.DUO_RCA_USAGE_RATE], {
-        glFeatures: { duoRcaUsageRate: false },
-      });
-    });
-
-    it(`does not render ${AI_METRICS.DUO_RCA_USAGE_RATE}`, () => {
-      expect(findTableRow(AI_METRICS.DUO_RCA_USAGE_RATE).exists()).toBe(false);
     });
   });
 
