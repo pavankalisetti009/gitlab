@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_management do # rubocop:disable RSpec/SpecFilePathFormat -- path is correct
+RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_management do
   include RepoHelpers
 
   let(:opts) { {} }

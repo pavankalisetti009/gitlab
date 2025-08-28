@@ -238,6 +238,10 @@ module API
                 use :workflow_params
               end
               post do
+                ::Gitlab::QueryLimiting.disable!(
+                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 105
+                )
+
                 container = if params[:project_id]
                               find_project!(params[:project_id])
                             elsif params[:namespace_id]
