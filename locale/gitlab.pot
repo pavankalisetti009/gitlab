@@ -61070,6 +61070,9 @@ msgstr ""
 msgid "Show all milestones"
 msgstr ""
 
+msgid "Show all reviewers"
+msgstr ""
+
 msgid "Show all test cases."
 msgstr ""
 
