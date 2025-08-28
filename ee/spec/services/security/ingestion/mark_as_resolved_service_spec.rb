@@ -53,6 +53,43 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           expect_vulnerability_to_be_resolved(vulnerability.reload)
         end
 
+        context 'when there is a no longer detected vulnerability' do
+          let_it_be_with_reload(:no_longer_detected) do
+            create(:vulnerability, :sast,
+              project: project,
+              present_on_default_branch: true,
+              resolved_on_default_branch: false,
+              findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
+            )
+          end
+
+          before do
+            # We must first create the record with `present_on_default_branch=true` in order to ensure
+            # that postgres triggers execute and create `vulnerability_reads`.
+            no_longer_detected.update!(present_on_default_branch: false, resolved_on_default_branch: true)
+          end
+
+          it 'transitions the no longer detected vulnerability to resolved' do
+            command.execute
+
+            expect_vulnerability_to_be_resolved(vulnerability.reload)
+            expect_vulnerability_to_be_resolved(no_longer_detected.reload)
+          end
+
+          it 'does not perform redundant database writes' do
+            recording = ActiveRecord::QueryRecorder.new { command.execute }
+
+            update_query = recording.occurrences.keys.find do |query|
+              query.start_with?('UPDATE "vulnerabilities" SET "resolved_on_default_branch" = TRUE')
+            end
+
+            tracing_comment_start = update_query.index('/*')
+            query_without_comment = update_query[0..(tracing_comment_start - 2)]
+
+            expect(query_without_comment).not_to include(no_longer_detected.id.to_s)
+          end
+        end
+
         it 'does not call AutoResolveService when count of resolved vulnerabilities is over limit' do
           command.instance_variable_set(:@auto_resolved_count, described_class::AUTO_RESOLVE_LIMIT + 1)
 
