@@ -6,10 +6,11 @@ identifiers:
 - project
 - namespace
 - user
-product_group: code_review
+product_group: code_creation
 product_categories:
 - code_review_workflow
 milestone: '18.1'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/190553
 tiers:
+- premium
 - ultimate

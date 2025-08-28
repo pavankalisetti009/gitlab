@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.count_distinct_user_id_from_mention_gitlabduo_in_mr_comment
 description: Count of unique users who interact with Duo Code Review by mentioning @GitLabDuo in an MR comment
-product_group: code_review
+product_group: code_creation
 product_categories:
 - code_review_workflow
 performance_indicator_type: []
@@ -15,6 +15,7 @@ time_frame:
 data_source: internal_events
 data_category: optional
 tiers:
+- premium
 - ultimate
 events:
 - name: mention_gitlabduo_in_mr_comment
