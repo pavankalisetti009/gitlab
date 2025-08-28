@@ -6,7 +6,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   let_it_be(:user) { create(:user) }
 
   let(:unit_primitive) { :complete_code }
-  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: unit_primitive) }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:enablement_type) { 'add_on' }
   let(:ai_gateway_headers) { { 'header' => 'value' } }
@@ -27,7 +26,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   let(:code) { 200 }
 
   before do
-    allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(unit_primitive).and_return(service)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
     allow(Gitlab::AiGateway).to receive_messages(
       self_hosted_url: 'http://local-aigw:5052',
@@ -35,7 +33,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       cloud_connector_auth_url: 'https://cloud-connector.gitlab.com/auth'
     )
     allow(Gitlab::AiGateway).to receive(:headers).with(
-      user: user, service: service, ai_feature_name: expected_ai_feature
+      user: user, service: unit_primitive, ai_feature_name: expected_ai_feature
     ).and_return(ai_gateway_headers)
   end
 

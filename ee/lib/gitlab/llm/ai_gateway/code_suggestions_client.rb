@@ -110,7 +110,7 @@ module Gitlab
         attr_reader :user
 
         def ai_gateway_headers
-          Gitlab::AiGateway.headers(user: user, service: service, ai_feature_name: task.feature_name)
+          Gitlab::AiGateway.headers(user: user, service: task.unit_primitive_name, ai_feature_name: task.feature_name)
         end
 
         # We only need to look at the code completion feature setting for self-hosted models.
@@ -131,10 +131,6 @@ module Gitlab
         def success(pass_back = {})
           pass_back[:status] = :success
           pass_back
-        end
-
-        def service
-          ::CloudConnector::AvailableServices.find_by_name(task.unit_primitive_name)
         end
 
         def choice?(response)
