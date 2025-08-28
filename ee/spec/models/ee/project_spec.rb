@@ -4705,27 +4705,124 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#only_allow_merge_if_pipeline_succeeds?' do
+  shared_examples 'configuration method with security policy bypass' do |attribute, default_value|
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
     before do
-      stub_licensed_features(security_orchestration_policies: true)
-      project.update!(only_allow_merge_if_pipeline_succeeds: true)
+      stub_licensed_features(security_orchestration_policies: true, group_level_merge_checks_setting: true)
+      project.update!(attribute => default_value)
     end
 
     context 'when project is not a security policy project' do
-      it 'returns true' do
-        expect(project.only_allow_merge_if_pipeline_succeeds?).to be_truthy
+      it "returns #{default_value}" do
+        expect(project.public_send("#{attribute}?")).to eq(default_value)
+      end
+
+      context 'when group has different value' do
+        before do
+          group.namespace_settings.update!(attribute => !default_value)
+        end
+
+        it 'inherits from group when inherit_group_setting is true' do
+          expect(project.public_send("#{attribute}?", inherit_group_setting: true)).to eq(!default_value)
+        end
+
+        it 'uses project value when inherit_group_setting is false' do
+          expect(project.public_send("#{attribute}?", inherit_group_setting: false)).to eq(default_value)
+        end
       end
     end
 
     context 'when project is a security policy project' do
       before do
         create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+        project.update!(attribute => !default_value)
+        group.namespace_settings.update!(attribute => default_value)
       end
 
-      it 'returns false' do
-        expect(project.only_allow_merge_if_pipeline_succeeds?).to be_falsey
+      it "returns #{!default_value} (bypasses group inheritance)" do
+        expect(project.public_send("#{attribute}?")).to eq(!default_value)
       end
     end
+
+    context 'when security_orchestration_policies license is not available' do
+      before do
+        stub_licensed_features(security_orchestration_policies: false, group_level_merge_checks_setting: true)
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+        project.update!(attribute => !default_value)
+        group.namespace_settings.update!(attribute => default_value)
+      end
+
+      it 'returns project or group value when inherit_group_setting is true' do
+        expected_result = project.public_send(attribute) || project.public_send("#{attribute}_of_parent_group")
+
+        result = project.public_send("#{attribute}?", inherit_group_setting: true)
+        expect(result).to eq(expected_result)
+      end
+
+      it 'uses project value when inherit_group_setting is false' do
+        expect(project.public_send("#{attribute}?", inherit_group_setting: false)).to eq(!default_value)
+      end
+    end
+  end
+
+  shared_examples 'configuration locked method with security policy bypass' do |attribute|
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    before do
+      stub_licensed_features(group_level_merge_checks_setting: true)
+    end
+
+    context 'when project is not a security policy project' do
+      before do
+        group.namespace_settings.update!(attribute => true)
+      end
+
+      it 'returns group value' do
+        expect(project.public_send("#{attribute}_locked?")).to be_truthy
+      end
+    end
+
+    context 'when project is a security policy project' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+        group.namespace_settings.update!(attribute => true)
+      end
+
+      it 'returns false (bypasses group inheritance)' do
+        expect(project.public_send("#{attribute}_locked?")).to be_falsey
+      end
+    end
+
+    context 'when group_level_merge_checks_setting license is not available' do
+      before do
+        stub_licensed_features(group_level_merge_checks_setting: false)
+        group.namespace_settings.update!(attribute => true)
+      end
+
+      it 'calls super and returns result' do
+        expect { project.public_send("#{attribute}_locked?") }.not_to raise_error
+      end
+    end
+  end
+
+  describe '#only_allow_merge_if_pipeline_succeeds?' do
+    it_behaves_like 'configuration method with security policy bypass', :only_allow_merge_if_pipeline_succeeds, false
+  end
+
+  describe '#only_allow_merge_if_pipeline_succeeds_locked?' do
+    it_behaves_like 'configuration locked method with security policy bypass', :only_allow_merge_if_pipeline_succeeds
+  end
+
+  describe '#allow_merge_on_skipped_pipeline?' do
+    it_behaves_like 'configuration method with security policy bypass', :allow_merge_on_skipped_pipeline, false
+  end
+
+  describe '#allow_merge_on_skipped_pipeline_locked?' do
+    it_behaves_like 'configuration locked method with security policy bypass', :allow_merge_on_skipped_pipeline
   end
 
   describe '#okrs_mvc_feature_flag_enabled?' do
