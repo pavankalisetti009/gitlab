@@ -1,25 +1,14 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
+import { mavenVirtualRegistry } from '../mock_data';
 
 const defaultProps = {
   index: 1,
   upstreamsCount: 3,
   upstream: {
-    id: 1,
-    name: 'Upstream title',
-    description: 'Upstream description',
-    url: 'http://maven.org/test',
-    cacheValidityHours: 0,
+    ...mavenVirtualRegistry.upstreams[0],
     cacheSize: '100 MB',
-    editPath: 'http://maven.org/test/edit',
     artifactCount: 100,
-    registryUpstreams: [
-      {
-        __typename: 'MavenRegistryUpstream',
-        id: 'gid://gitlab/VirtualRegistries::Packages::Maven::RegistryUpstream/6',
-        position: 1,
-      },
-    ],
     warning: {
       text: 'Example warning text',
     },
@@ -70,7 +59,7 @@ describe('RegistryUpstreamItem', () => {
     wrapper.findByTestId('warning-badge').find('button').attributes('title');
   const findClearCacheButton = () => wrapper.findByTestId('clear-cache-button');
   const findEditButton = () => wrapper.findByTestId('edit-button');
-  const findDeleteButton = () => wrapper.findByTestId('delete-button');
+  const findRemoveButton = () => wrapper.findByTestId('remove-button');
 
   const findReorderUpButton = () => wrapper.findByTestId('reorder-up-button');
   const findReorderDownButton = () => wrapper.findByTestId('reorder-down-button');
@@ -157,7 +146,7 @@ describe('RegistryUpstreamItem', () => {
 
     it('renders the edit button if `glAbilities.updateVirtualRegistry` is true and editPath is provided', () => {
       expect(findEditButton().exists()).toBe(true);
-      expect(findEditButton().attributes('href')).toBe('path/1/edit');
+      expect(findEditButton().attributes('href')).toBe('path/2/edit');
     });
 
     it('does not render the edit button if `glAbilities.updateVirtualRegistry` is false', () => {
@@ -165,13 +154,14 @@ describe('RegistryUpstreamItem', () => {
       expect(findEditButton().exists()).toBe(false);
     });
 
-    it('renders the delete button if canDelete is true', () => {
-      expect(findDeleteButton().exists()).toBe(true);
+    it('renders the remove button if `glAbilities.destroyVirtualRegistry` is true', () => {
+      expect(findRemoveButton().props('icon')).toBe('remove');
+      expect(findRemoveButton().attributes('aria-label')).toBe('Remove upstream Maven upstream');
     });
 
-    it('does not render the delete button if canDelete is false', () => {
+    it('does not render the remove button if `glAbilities.destroyVirtualRegistry` is false', () => {
       createComponent({ provide: { glAbilities: { destroyVirtualRegistry: false } } });
-      expect(findDeleteButton().exists()).toBe(false);
+      expect(findRemoveButton().exists()).toBe(false);
     });
   });
 
@@ -198,10 +188,12 @@ describe('RegistryUpstreamItem', () => {
       expect(wrapper.emitted('clearCache')[0]).toEqual([defaultProps.upstream]);
     });
 
-    it('emits deleteUpstream when delete button is clicked', () => {
-      findDeleteButton().vm.$emit('click');
-      expect(Boolean(wrapper.emitted('deleteUpstream'))).toBe(true);
-      expect(wrapper.emitted('deleteUpstream')[0]).toEqual([defaultProps.upstream.id]);
+    it('emits removeUpstream when delete button is clicked', () => {
+      findRemoveButton().vm.$emit('click');
+      expect(Boolean(wrapper.emitted('removeUpstream'))).toBe(true);
+      expect(wrapper.emitted('removeUpstream')[0]).toEqual([
+        defaultProps.upstream.registryUpstreams[0].id,
+      ]);
     });
   });
 });

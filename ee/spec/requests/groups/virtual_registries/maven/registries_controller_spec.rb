@@ -194,6 +194,48 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
 
           it_behaves_like 'returning response status', :not_found
         end
+
+        it 'pushes createVirtualRegistry: false ability to frontend' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_ability(createVirtualRegistry: false)
+        end
+
+        it 'pushes updateVirtualRegistry: false ability to frontend' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: false)
+        end
+
+        it 'pushes destroyVirtualRegistry: false ability to frontend' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_ability(destroyVirtualRegistry: false)
+        end
+      end
+
+      context 'when user is group maintainer' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it 'pushes createVirtualRegistry: true ability to frontend' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_ability(createVirtualRegistry: true)
+        end
+
+        it 'pushes updateVirtualRegistry: true ability to frontend' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: true)
+        end
+
+        it 'pushes destroyVirtualRegistry: true ability to frontend' do
+          get_show
+
+          expect(response.body).to have_pushed_frontend_ability(destroyVirtualRegistry: true)
+        end
       end
     end
   end

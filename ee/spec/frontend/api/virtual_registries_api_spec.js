@@ -69,6 +69,24 @@ describe('VirtualRegistriesApi', () => {
     });
   });
 
+  describe('removeMavenUpstreamRegistryAssociation', () => {
+    it('Removes the association between an upstream registry and a Maven virtual registry', () => {
+      const requestPath = 'virtual_registries/packages/maven/registry_upstreams';
+      const registryUpstreamId = 1;
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/${requestPath}/${registryUpstreamId}`;
+      const expectedParams = {
+        id: registryUpstreamId,
+      };
+      mock.onDelete(expectedUrl).reply(HTTP_STATUS_OK, 200);
+
+      return VirtualRegistryApi.removeMavenUpstreamRegistryAssociation(expectedParams).then(
+        ({ data }) => {
+          expect(data).toEqual(200);
+        },
+      );
+    });
+  });
+
   describe('deleteMavenUpstream', () => {
     it('deletes the maven upstream', () => {
       const requestPath = 'virtual_registries/packages/maven/upstreams';

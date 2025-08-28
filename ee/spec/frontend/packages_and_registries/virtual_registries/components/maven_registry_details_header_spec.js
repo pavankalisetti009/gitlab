@@ -72,4 +72,20 @@ describe('MavenRegistryDetailsHeader', () => {
       expect(findEditButton().props('href')).toBe('registry_edit_path');
     });
   });
+
+  describe('when user has ability to edit but registryEditPath is empty', () => {
+    beforeEach(() => {
+      createComponent({
+        provide: {
+          glAbilities: {
+            updateVirtualRegistry: true,
+          },
+        },
+      });
+    });
+
+    it('does not render Edit button', () => {
+      expect(findEditButton().exists()).toBe(false);
+    });
+  });
 });

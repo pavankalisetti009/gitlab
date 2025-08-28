@@ -127,4 +127,17 @@ describe('MavenRegistryDetailsApp', () => {
       expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe('When an upstream has been removed', () => {
+    it('refetches upstreams query', async () => {
+      createComponent({
+        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
+      });
+
+      await waitForPromises();
+      await findMavenRegistryDetails().vm.$emit('upstreamRemoved');
+
+      expect(mavenRegistryUpstreamsHandler).toHaveBeenCalledTimes(2);
+    });
+  });
 });

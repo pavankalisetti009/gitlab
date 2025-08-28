@@ -9,6 +9,7 @@ import {
   deleteMavenUpstreamCache,
   getMavenUpstreamRegistriesList,
   updateMavenRegistryUpstreamPosition,
+  removeMavenUpstreamRegistryAssociation,
 } from 'ee/api/virtual_registries_api';
 import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_upstream.mutation.graphql';
 import { convertToMavenRegistryGraphQLId } from '../utils';
@@ -64,13 +65,11 @@ export default {
    * Emitted when a new upstream is created
    * @event upstreamCreated
    */
-
   /**
    * Emitted when the upstream is deleted
-   * @event deleteUpstream
-   * @property {string} upstreamId - The ID of the upstream to delete
+   * @event upstreamRemoved
    */
-  emits: ['upstreamReordered', 'upstreamCreated', 'deleteUpstream'],
+  emits: ['upstreamReordered', 'upstreamCreated', 'upstreamRemoved'],
   data() {
     return {
       currentFormType: '',
@@ -241,8 +240,19 @@ export default {
         this.handleError(error);
       }
     },
-    deleteUpstream(upstreamId) {
-      this.$emit('deleteUpstream', upstreamId);
+    async removeUpstream(upstreamAssociationId) {
+      const id = getIdFromGraphQLId(upstreamAssociationId);
+      this.resetUpdateActionErrorMessage();
+      try {
+        await removeMavenUpstreamRegistryAssociation({ id });
+        this.$toast.show(s__('VirtualRegistry|Removed upstream from virtual registry.'));
+        this.$emit('upstreamRemoved');
+      } catch (error) {
+        this.updateActionErrorMessage = s__(
+          'VirtualRegistry|Failed to remove upstream. Try again.',
+        );
+        this.handleError(error);
+      }
     },
     resetUpdateActionErrorMessage() {
       this.updateActionErrorMessage = '';
@@ -331,7 +341,7 @@ export default {
           :index="index"
           @reorderUpstream="reorderUpstream"
           @clearCache="showClearUpstreamCacheModal"
-          @deleteUpstream="deleteUpstream"
+          @removeUpstream="removeUpstream"
         />
         <gl-modal
           v-model="registryClearCacheModalIsShown"

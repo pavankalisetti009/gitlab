@@ -35,6 +35,12 @@ export function updateMavenRegistryUpstreamPosition({ id, position }) {
   });
 }
 
+export function removeMavenUpstreamRegistryAssociation({ id }) {
+  const url = buildApiUrl(MAVEN_REGISTRY_UPSTREAM_PATH).replace(':id', id);
+
+  return axios.delete(url);
+}
+
 export function deleteMavenUpstream({ id }) {
   const url = buildMavenUpstreamApiUrl(id);
 
