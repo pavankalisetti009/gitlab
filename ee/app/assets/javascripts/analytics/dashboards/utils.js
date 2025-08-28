@@ -1,4 +1,5 @@
 import { UNITS } from '~/analytics/shared/constants';
+import { formatBigInt } from '~/analytics/shared/utils';
 import { s__, __ } from '~/locale';
 import {
   formatDate,
@@ -86,6 +87,9 @@ export const formatMetric = (value, units) => {
       break;
     case UNITS.MINUTES:
       formatted = minutes(value, fractionDigits(value), { unitSeparator: ' ' });
+      break;
+    case UNITS.BIGINT_COUNT:
+      formatted = formatBigInt(value);
       break;
     default:
       formatted = value;

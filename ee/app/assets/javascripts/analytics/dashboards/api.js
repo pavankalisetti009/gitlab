@@ -5,10 +5,7 @@ import {
 } from '~/analytics/shared/constants';
 import { scaledValueForDisplay } from '~/analytics/shared/utils';
 import { secondsToMinutes } from '~/lib/utils/datetime/date_calculation_utility';
-import {
-  formatPipelineCount,
-  calculatePipelineCountPercentage,
-} from '~/projects/pipelines/charts/format_utils';
+import { calculatePipelineCountPercentage } from '~/projects/pipelines/charts/format_utils';
 import { TABLE_METRICS } from './constants';
 import { generateMetricTableTooltip } from './ai_impact/utils';
 
@@ -74,7 +71,7 @@ export const extractAggregatedPipelineMetricsData = (rawAggregatedPipelineMetric
   return {
     [PIPELINE_ANALYTICS_METRICS.COUNT]: {
       identifier: PIPELINE_ANALYTICS_METRICS.COUNT,
-      value: formatPipelineCount(pipelineCount),
+      value: pipelineCount,
     },
     [PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE]: {
       identifier: PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE,

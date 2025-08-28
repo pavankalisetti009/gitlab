@@ -50,7 +50,7 @@ export const TREND_STYLES = [TREND_STYLE_ASC, TREND_STYLE_DESC, TREND_STYLE_NONE
 export const PIPELINE_ANALYTICS_TABLE_METRICS = {
   [PIPELINE_ANALYTICS_METRICS.COUNT]: {
     label: s__('CICDAnalytics|Total pipeline runs'),
-    units: UNITS.COUNT,
+    units: UNITS.BIGINT_COUNT,
     trendStyle: TREND_STYLE_NONE,
   },
   [PIPELINE_ANALYTICS_METRICS.MEDIAN]: {
@@ -180,6 +180,7 @@ export const CHART_LOADING_FAILURE = s__('DORA4Metrics|Some metric charts failed
 
 export const CHART_TOOLTIP_UNITS = {
   [UNITS.COUNT]: undefined,
+  [UNITS.BIGINT_COUNT]: undefined,
   [UNITS.DAYS]: __('days'),
   [UNITS.PER_DAY]: __('/day'),
   [UNITS.PERCENT]: '%',
