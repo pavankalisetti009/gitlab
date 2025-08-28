@@ -88,18 +88,18 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_workflow do
       end
 
       expect(Note.count).to eq(1)
-      expect(::Ci::Pipeline.count).to eq(0)
+      expect(::Ci::Workloads::Workload.count).to eq(0)
 
       response = service.execute(params)
 
       expect(response).to be_success
-      expect(::Ci::Pipeline.count).to eq(1)
+      expect(::Ci::Workloads::Workload.count).to eq(1)
       expect(Note.count).to eq(2)
 
       expect(Note.last.note).to include('✅ Agent has started. You can view the progress')
 
-      pipeline_url = Gitlab::Routing.url_helpers.project_pipeline_url(project, ::Ci::Pipeline.last)
-      expect(Note.last.note).to include(pipeline_url)
+      logs_url = ::Ci::Workloads::Workload.last.logs_url
+      expect(Note.last.note).to include(logs_url)
     end
 
     context 'when resource is a MergeRequest' do
