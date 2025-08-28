@@ -23,7 +23,8 @@ module RemoteDevelopment
               workspaces_agent_config: workspace.workspaces_agent_config,
               processed_devfile_yaml: workspace.processed_devfile,
               logger: logger,
-              desired_config_array: []
+              desired_config_array: [],
+              project_path: workspace.project.path
             }
 
             initial_result = Gitlab::Fp::Result.ok(context)

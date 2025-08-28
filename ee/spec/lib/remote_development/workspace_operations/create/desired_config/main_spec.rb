@@ -16,6 +16,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
 
   let(:workspace_agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:workspaces_agent_config) { instance_double("RemoteDevelopment::WorkspacesAgentConfig") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+  let(:project) { instance_double("Project", path: "test-project") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:workspace) do
     instance_double(
       "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
@@ -24,6 +25,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
       namespace: "workspace-namespace",
       workspaces_agent_config: workspaces_agent_config,
       desired_state_running?: true,
+      project: project,
       processed_devfile: "---")
   end
 
@@ -48,6 +50,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
       workspaces_agent_id: 1,
       workspaces_agent_config: workspaces_agent_config,
       processed_devfile_yaml: parent_context[:workspace].processed_devfile,
+      project_path: parent_context[:workspace].project.path,
       logger: logger,
       desired_config_array: []
     }

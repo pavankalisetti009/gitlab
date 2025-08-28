@@ -36,6 +36,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDes
   describe "#generate_desired_config" do
     let(:logger) { instance_double(Logger) }
     let(:user) { create(:user) }
+    let_it_be(:project) { create(:project, path: "test-project") }
     let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
     let(:desired_state) { states_module::RUNNING }
     let(:actual_state) { states_module::STOPPED }
@@ -75,17 +76,44 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::OldDes
         user: user,
         desired_state: desired_state,
         actual_state: actual_state,
-        processed_devfile: processed_devfile_yaml
+        processed_devfile: processed_devfile_yaml,
+        project: project
       )
     end
 
     let(:user_defined_commands) do
       [
         {
+          id: "db-component-command-with-working-dir",
+          exec: {
+            component: "database-container",
+            commandLine: "echo 'executes postStart command in the specified workingDir'",
+            workingDir: "test-dir",
+            hotReloadCapable: false
+          }
+        },
+        {
+          id: "db-component-command-without-working-dir",
+          exec: {
+            component: "database-container",
+            commandLine: "echo 'executes postStart command in the the container's default WORKDIR'",
+            hotReloadCapable: false
+          }
+        },
+        {
+          id: "main-component-command-without-working-dir",
+          exec: {
+            component: "tooling-container",
+            commandLine: "echo 'executes postStart command in the projects/project_path directory'",
+            hotReloadCapable: false
+          }
+        },
+        {
           id: "user-defined-command",
           exec: {
             component: "tooling-container",
-            commandLine: "echo 'user-defined postStart command'",
+            commandLine: "echo 'executes postStart command in the specified workingDir'",
+            workingDir: "test-dir",
             hotReloadCapable: false
           }
         }

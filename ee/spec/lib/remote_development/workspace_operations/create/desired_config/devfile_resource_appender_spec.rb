@@ -121,7 +121,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
       max_resources_per_workspace: max_resources_per_workspace,
       shared_namespace: shared_namespace,
       env_secret_name: env_secret_name,
-      file_secret_name: file_secret_name
+      file_secret_name: file_secret_name,
+      project_path: "test-project"
     }
   end
 

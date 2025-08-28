@@ -22,7 +22,7 @@ module RemoteDevelopment
       SUPPORTED_EVENTS = %i[preStart postStart].freeze
 
       # Currently, we only support the following options for exec commands
-      SUPPORTED_EXEC_COMMAND_OPTIONS = %i[commandLine component label hotReloadCapable].freeze
+      SUPPORTED_EXEC_COMMAND_OPTIONS = %i[commandLine component label hotReloadCapable workingDir].freeze
 
       # Currently, we only support the default value `false` for the `hotReloadCapable` option
       SUPPORTED_HOT_RELOAD_VALUE = false
