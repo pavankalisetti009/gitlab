@@ -63,7 +63,6 @@ export default {
         fullName: this.item.name,
         descriptionHtml: this.item.description,
         relativeWebUrl: this.$router.resolve(this.showItemRoute).href,
-        updatedAt: this.item.latestVersion.updatedAt,
       };
     },
     timestampType() {
