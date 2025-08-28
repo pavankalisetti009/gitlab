@@ -27,8 +27,7 @@ module EE
       def basic_filters
         {
           type: params[:type],
-          fields: params[:fields],
-          source: params[:source]
+          fields: params[:fields]
         }
       end
 

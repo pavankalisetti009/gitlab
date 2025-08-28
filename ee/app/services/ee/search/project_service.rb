@@ -32,8 +32,7 @@ module EE
           repository_ref: repository_ref,
           order_by: order_by,
           sort: sort,
-          filters: filters,
-          source: params[:source]
+          filters: filters
         )
       end
 

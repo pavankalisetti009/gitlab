@@ -404,11 +404,10 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
   end
 
   describe 'issues search', :elastic_delete_by_query do
-    let(:source) { nil }
     let_it_be(:issue) { create(:issue, project: project, title: 'Hello world, here I am!') }
     let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
 
-    let(:service) { described_class.new(user, project, search: 'Goodbye', source: source).execute }
+    let(:service) { described_class.new(user, project, search: 'Goodbye').execute }
 
     before do
       Elastic::ProcessInitialBookkeepingService.track!(issue, note)
@@ -426,15 +425,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       before do
         stub_feature_flags(search_work_item_queries_notes: false)
       end
-
-      it 'does not return the issue when searching with note text' do
-        expect(issues).to be_empty
-        expect(service.issues_count).to eq 0
-      end
-    end
-
-    context 'when query source is GLQL' do
-      let(:source) { 'glql' }
 
       it 'does not return the issue when searching with note text' do
         expect(issues).to be_empty

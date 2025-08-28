@@ -57,8 +57,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
   end
 
   describe 'group search', :elastic do
-    let(:source) { nil }
-    let(:results) { described_class.new(user, search_group, search: term, source: source).execute }
+    let(:results) { described_class.new(user, search_group, search: term).execute }
 
     context 'for projects scope' do
       let_it_be(:term) { "RandomName" }
@@ -131,15 +130,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         before do
           stub_feature_flags(search_work_item_queries_notes: false)
         end
-
-        it 'does not return the issue when searching with note text' do
-          expect(issues).to be_empty
-          expect(results.issues_count).to eq 0
-        end
-      end
-
-      context 'when query source is GLQL' do
-        let(:source) { 'glql' }
 
         it 'does not return the issue when searching with note text' do
           expect(issues).to be_empty

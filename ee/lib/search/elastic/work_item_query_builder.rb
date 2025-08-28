@@ -5,7 +5,6 @@ module Search
     class WorkItemQueryBuilder < QueryBuilder
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
-      include Search::Elastic::Concerns::SourceType
 
       DOC_TYPE = 'work_item'
       # iid field can be added here as lenient option will pardon format errors, like integer out of range.
@@ -110,7 +109,6 @@ module Search
       def hybrid_work_item_search?
         return false if iid_query?
         return false if short_query?
-        return false if glql_query?(options[:source])
         return false unless Feature.enabled?(:ai_global_switch, type: :ops)
         return false unless Gitlab::Saas.feature_available?(:ai_vertex_embeddings)
 

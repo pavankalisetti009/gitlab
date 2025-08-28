@@ -392,13 +392,12 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
 
   describe 'issues with notes', :elastic_delete_by_query do
     let(:query) { 'Goodbye moon' }
-    let(:source) { nil }
     let_it_be(:limit_project_ids) { user.authorized_projects.pluck_primary_key }
     let_it_be(:issue) { create(:issue, project: project_1, title: 'Hello world, here I am!') }
     let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
 
     let(:results) do
-      described_class.new(user, query, limit_project_ids, public_and_internal_projects: true, source: source)
+      described_class.new(user, query, limit_project_ids, public_and_internal_projects: true)
     end
 
     before do
@@ -424,15 +423,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
       before do
         stub_feature_flags(search_work_item_queries_notes: false)
       end
-
-      it 'does not return the issue when searching with note text' do
-        expect(issues).to be_empty
-        expect(results.issues_count).to eq 0
-      end
-    end
-
-    context 'when query source is GLQL' do
-      let(:source) { 'glql' }
 
       it 'does not return the issue when searching with note text' do
         expect(issues).to be_empty
