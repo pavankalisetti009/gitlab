@@ -88,7 +88,8 @@ module Ai
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
           DUO_WORKFLOW_METADATA: @params[:workflow_metadata],
-          GITLAB_BASE_URL: Gitlab.config.gitlab.url
+          GITLAB_BASE_URL: Gitlab.config.gitlab.url,
+          AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s
         }
       end
 
