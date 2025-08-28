@@ -37,6 +37,7 @@ describe('LifecycleDetail', () => {
   const findUsageSection = () => wrapper.findByTestId(`lifecycle-${lifecycleId}-usage`);
   const findChangeLifecycleButton = () => findUsageSection().findComponent(GlButton);
   const findChangeLifecycleListBox = () => findUsageSection().findComponent(GlCollapsibleListbox);
+  const findNotUsageSection = () => wrapper.findByTestId(`lifecycle-${lifecycleId}-no-usage`);
   const findLifecycleForm = () => wrapper.findComponent(LifecycleNameForm);
 
   const createWrapper = (props = {}) => {
@@ -116,6 +117,23 @@ describe('LifecycleDetail', () => {
 
       expect(findChangeLifecycleButton().exists()).toBe(true);
       expect(findChangeLifecycleListBox().exists()).toBe(false);
+    });
+
+    it('displays the not usage section when `showNotInUseSection` to be true and no work item types associated to lifecycle', () => {
+      createWrapper({
+        showNotInUseSection: true,
+        lifecycle: {
+          ...mockLifecycle,
+          workItemTypes: [],
+        },
+      });
+
+      expect(findNotUsageSection().exists()).toBe(true);
+    });
+
+    it('does not display the not in use section when `showNotInUseSection` be true but has work item types associated to lifecycles', () => {
+      createWrapper({ showNotInUseSection: true });
+      expect(findNotUsageSection().exists()).toBe(false);
     });
   });
 
