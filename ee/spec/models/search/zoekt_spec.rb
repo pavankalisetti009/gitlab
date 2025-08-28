@@ -371,7 +371,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     it { is_expected.to eq('tmp/tests/gitlab-zoekt/bin/gitlab-zoekt') }
   end
 
-  describe '.traversal_id_searchable?' do
+  describe '.traversal_id_searchable_for_global_search?' do
     let(:min_version) { described_class::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH }
 
     before do
@@ -380,58 +380,68 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
     it 'returns true when minimum_schema_version is greater than or equal to required minimum' do
       allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
-      expect(described_class.traversal_id_searchable?).to be true
+      expect(described_class.traversal_id_searchable_for_global_search?).to be true
     end
 
     it 'returns false when minimum_schema_version is less than required minimum' do
       allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version - 1)
-      expect(described_class.traversal_id_searchable?).to be false
+      expect(described_class.traversal_id_searchable_for_global_search?).to be false
     end
 
     it 'caches the result' do
       allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
       expect(Rails.cache).to receive(:fetch).with('zoekt_traversal_id_searchable',
-        expires_in: 30.minutes).and_call_original
-      described_class.traversal_id_searchable?
+        expires_in: 10.minutes).and_call_original
+      described_class.traversal_id_searchable_for_global_search?
     end
   end
 
   describe '.use_traversal_id_queries?' do
+    using RSpec::Parameterized::TableSyntax
     let(:min_version) { described_class::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH }
-    let(:returned_min_version) { min_version }
-    let(:user) { build(:user) }
+    let(:insufficient_version) { min_version - 1 }
+    let(:a_user) { build(:user) }
+    let(:scope) { ::Search::Zoekt::Repository }
 
     before do
       Rails.cache.clear
-      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(returned_min_version)
+      allow(::Namespace).to receive(:find_by).with(id: group_id).and_return(group)
+      allow(::Search::Zoekt::EnabledNamespace).to receive(:for_root_namespace_id)
+        .with(group.root_ancestor.id).and_return([enabled_namespace])
+      allow(::Search::Zoekt::Repository).to receive(:for_zoekt_indices).and_return(scope)
+      allow(::Search::Zoekt::Repository).to receive(:for_project_id).with(project_id).and_return(scope)
+
+      allow(scope).to receive(:minimum_schema_version).and_return(returned_min_version)
+      stub_feature_flags(zoekt_traversal_id_queries: feature_enabled)
     end
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(zoekt_traversal_id_queries: false)
-      end
-
-      it 'returns false regardless of schema version' do
-        expect(described_class.use_traversal_id_queries?(user)).to be false
-      end
+    subject(:use_traversal_id_queries) do
+      described_class.use_traversal_id_queries?(user, project_id: project_id, group_id: group_id)
     end
 
-    context 'when feature flag is enabled' do
-      before do
-        stub_feature_flags(zoekt_traversal_id_queries: true)
-      end
+    where(:user, :feature_enabled, :project_id, :group_id, :returned_min_version, :expected_result) do
+      # Feature disabled cases (should always be false)
+      ref(:a_user)         | false  | 8675  | 309   | ref(:min_version)           | false
+      ref(:a_user)         | false  | 8675  | 309   | ref(:insufficient_version)  | false
+      ref(:a_user)         | false  | 8675  | nil   | ref(:min_version)           | false
+      ref(:a_user)         | false  | nil   | 309   | ref(:min_version)           | false
 
-      it 'returns true if minimum_schema_version is sufficient' do
-        expect(described_class.use_traversal_id_queries?(user)).to be true
-      end
+      # Feature enabled cases
+      # Project search
+      ref(:a_user)         | true   | 8675  | nil   | ref(:min_version)           | true
+      ref(:a_user)         | true   | 8675  | nil   | ref(:insufficient_version)  | false
 
-      context 'when minimum schema version is insufficient' do
-        let(:returned_min_version) { min_version - 1 }
+      # Group search
+      ref(:a_user)         | true   | nil   | 309   | ref(:min_version)           | true
+      ref(:a_user)         | true   | nil   | 309   | ref(:insufficient_version)  | false
 
-        it 'returns false' do
-          expect(described_class.use_traversal_id_queries?(user)).to be false
-        end
-      end
+      # Global search
+      ref(:a_user)         | true   | nil   | nil   | ref(:min_version)           | true
+      ref(:a_user)         | true   | nil   | nil   | ref(:insufficient_version)  | false
+    end
+
+    with_them do
+      it { is_expected.to eq(expected_result) }
     end
   end
 
