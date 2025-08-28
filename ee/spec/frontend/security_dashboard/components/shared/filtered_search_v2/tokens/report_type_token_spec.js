@@ -2,7 +2,7 @@ import { GlFilteredSearchToken } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
-import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { ALL_ID as ALL_REPORT_TYPES_ID } from 'ee/security_dashboard/components/shared/filters/constants';

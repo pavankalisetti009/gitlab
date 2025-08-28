@@ -1,7 +1,7 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import ReachabilityToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/reachability_token.vue';
-import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
