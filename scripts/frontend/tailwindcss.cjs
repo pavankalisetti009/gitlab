@@ -1,4 +1,6 @@
-import path from 'node:path';
+const path = require('node:path');
+
+const createProcessorModulePath = 'tailwindcss/lib/cli/build/plugin.js';
 
 /**
  * Create a unique/isolated Tailwind processor.
@@ -27,15 +29,14 @@ import path from 'node:path';
  * [4]: https://gitlab.com/groups/gitlab-org/-/epics/18787
  */
 function createUniqueProcessor(...args) {
-  const importPath = 'tailwindcss/lib/cli/build/plugin.js';
-  delete require.cache[require.resolve(importPath)];
+  delete require.cache[require.resolve(createProcessorModulePath)];
   // eslint-disable-next-line import/no-dynamic-require, global-require
-  return require(importPath).createProcessor(...args);
+  return require(createProcessorModulePath).createProcessor(...args);
 }
 
-const ROOT_PATH = path.resolve(import.meta.dirname, '../../');
+const ROOT_PATH = path.resolve(__dirname, '../../');
 
-export async function build({
+async function build({
   shouldWatch = false,
   content = false,
   buildCQs = false,
@@ -61,8 +62,8 @@ export async function build({
   if (needsUniqueProcessor) {
     processor = await createUniqueProcessor(processorOptions, config);
   } else {
-    const { createProcessor } = await import('tailwindcss/lib/cli/build/plugin.js');
-    processor = await createProcessor(processorOptions, config);
+    // eslint-disable-next-line import/no-dynamic-require, global-require
+    processor = await require(createProcessorModulePath).createProcessor(processorOptions, config);
   }
 
   if (shouldWatch) {
@@ -81,10 +82,10 @@ export async function build({
 }
 
 function wasScriptCalledDirectly() {
-  return process.argv[1] === import.meta.filename;
+  return require.main === module;
 }
 
-export function viteTailwindCompilerPlugin({ shouldWatch = true, buildCQs = false }) {
+function viteTailwindCompilerPlugin({ shouldWatch = true, buildCQs = false }) {
   return {
     name: 'gitlab-tailwind-compiler',
     async configureServer() {
@@ -93,7 +94,7 @@ export function viteTailwindCompilerPlugin({ shouldWatch = true, buildCQs = fals
   };
 }
 
-export function webpackTailwindCompilerPlugin({ shouldWatch = true, buildCQs = false }) {
+function webpackTailwindCompilerPlugin({ shouldWatch = true, buildCQs = false }) {
   return {
     async start() {
       return build({ shouldWatch, buildCQs });
@@ -114,3 +115,9 @@ if (wasScriptCalledDirectly()) {
       process.exitCode = 1;
     });
 }
+
+Object.assign(module.exports, {
+  build,
+  viteTailwindCompilerPlugin,
+  webpackTailwindCompilerPlugin,
+});
