@@ -103,6 +103,7 @@ module EE
         mount_mutation ::Mutations::Security::Finding::CreateVulnerability, experiment: { milestone: '17.5' }
         mount_mutation ::Mutations::Security::Finding::Dismiss
         mount_mutation ::Mutations::Security::Finding::RefreshFindingTokenStatus
+        mount_mutation ::Mutations::Security::Finding::RefreshSecurityFindingTokenStatus
         mount_mutation ::Mutations::Security::Finding::RevertToDetected
         mount_mutation ::Mutations::Security::Finding::SeverityOverride
         mount_mutation ::Mutations::Vulnerabilities::Archival::Archive, experiment: { milestone: '17.10' }
@@ -118,6 +119,7 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssue, experiment: { milestone: '17.9' }
+        mount_mutation ::Mutations::Vulnerabilities::RefreshVulnerabilityFindingTokenStatus
         mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences,
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
         mount_mutation ::Mutations::Boards::EpicBoards::Create,
