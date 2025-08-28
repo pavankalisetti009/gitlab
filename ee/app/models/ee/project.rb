@@ -628,6 +628,12 @@ module EE
 
         assoc.loaded? ? assoc.target.any? : assoc.scope.exists?
       end
+
+      def bypass_security_policy_project_parent?(attribute)
+        [:only_allow_merge_if_pipeline_succeeds, :allow_merge_on_skipped_pipeline].include?(attribute) &&
+          licensed_feature_available?(:security_orchestration_policies) &&
+          has_linked_configurations?
+      end
     end
 
     def self.cascading_with_parent_namespace(attribute)
@@ -636,10 +642,8 @@ module EE
       end
 
       define_method("#{attribute}?") do |inherit_group_setting: false|
-        if attribute == :only_allow_merge_if_pipeline_succeeds &&
-            licensed_feature_available?(:security_orchestration_policies) &&
-            has_linked_configurations?
-          return false
+        if bypass_security_policy_project_parent?(attribute)
+          return self.public_send(attribute)
         end
 
         return super() unless licensed_feature_available?(:group_level_merge_checks_setting)
@@ -655,6 +659,7 @@ module EE
 
       define_method("#{attribute}_locked?") do
         return super() unless licensed_feature_available?(:group_level_merge_checks_setting)
+        return false if bypass_security_policy_project_parent?(attribute)
 
         public_send("#{attribute}_of_parent_group")
       end
