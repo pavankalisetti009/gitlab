@@ -49,7 +49,7 @@ export const APPROVAL_SETTINGS_I18N = {
 };
 
 export const PROJECT_APPROVAL_SETTINGS_LABELS_I18N = {
-  authorApprovalLabel: s__('ApprovalSettings|Prevent approval by author'),
+  authorApprovalLabel: s__('ApprovalSettings|Prevent approval by merge request creator'),
   preventMrApprovalRuleEditLabel: s__(
     'ApprovalSettings|Prevent editing approval rules in merge requests',
   ),

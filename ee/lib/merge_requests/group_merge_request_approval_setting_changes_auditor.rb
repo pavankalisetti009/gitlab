@@ -50,7 +50,7 @@ module MergeRequests
       else
         # we are comparing with false here because on UI we show negative statements.
         # where as in tables in store opposite named columns.
-        # for example `allow_author_approval` column is shown as Prevent approval by author.
+        # for example `allow_author_approval` column is shown as Prevent approval by merge request creator.
         @params[column] == false
       end
     end
