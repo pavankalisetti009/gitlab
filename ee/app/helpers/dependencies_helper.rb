@@ -49,13 +49,7 @@ module DependenciesHelper
 
     url = Gitlab::UrlBuilder.build(exportable)
 
-    link = link_to(link_text, url)
-
-    exportable_type = exportable.class.name.demodulize.underscore
-
-    # rubocop:disable Rails/OutputSafety -- url helper output is safe
-    "#{exportable_type} #{link}".html_safe
-    # rubocop:enable Rails/OutputSafety
+    link_to(link_text, url)
   end
 
   private

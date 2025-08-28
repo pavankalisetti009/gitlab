@@ -14,8 +14,8 @@ RSpec.describe Sbom::ExportMailer, feature_category: :dependency_management do
     subject(:email) { described_class.completion_email(export) }
 
     it 'creates an email notifying of export completion', :aggregate_failures do
-      expect(email).to have_subject("#{export.exportable.name} | #{s_('Dependencies|Dependency list export')}")
-      expect(email).to have_body_text('The dependency list was successfully exported for')
+      expect(email).to have_subject("#{export.exportable.name} | #{s_('Dependencies|Dependency List export')}")
+      expect(email).to have_body_text('The Dependency List was successfully exported from')
       expect(email).to have_body_text(export.project.full_name)
       expect(email).to have_body_text("/#{export.project.full_path}")
       expect(email).to have_body_text(%r{api/v4/dependency_list_exports/\d+/download})
@@ -29,7 +29,7 @@ RSpec.describe Sbom::ExportMailer, feature_category: :dependency_management do
       # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
       it 'prefixes project name to subject' do
-        expect(email).to have_subject("#{project.name} | #{s_('Dependencies|Dependency list export')}")
+        expect(email).to have_subject("#{project.name} | #{s_('Dependencies|Dependency List export')}")
       end
     end
 
@@ -40,7 +40,7 @@ RSpec.describe Sbom::ExportMailer, feature_category: :dependency_management do
       # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
       it 'prefixes group name to subject' do
-        expect(email).to have_subject("#{group.name} | #{s_('Dependencies|Dependency list export')}")
+        expect(email).to have_subject("#{group.name} | #{s_('Dependencies|Dependency List export')}")
       end
     end
 
@@ -51,7 +51,7 @@ RSpec.describe Sbom::ExportMailer, feature_category: :dependency_management do
       # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
       it 'prefixes project name to subject' do
-        expect(email).to have_subject("#{project.name} | #{s_('Dependencies|Dependency list export')}")
+        expect(email).to have_subject("#{project.name} | #{s_('Dependencies|Dependency List export')}")
       end
     end
   end
