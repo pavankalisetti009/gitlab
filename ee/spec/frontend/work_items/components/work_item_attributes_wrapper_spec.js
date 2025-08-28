@@ -96,7 +96,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
         hasSubepicsFeature,
         hasIssuableHealthStatusFeature: true,
         hasStatusFeature,
-        hasWorkItemStatusFeature: hasStatusFeature,
         issuesSettings: '/groups/test-project-path/-/settings/issues',
         newTrialPath: 'https://gitlab.com/-/trials/new?glm_content=epics&glm_source=gitlab.com',
         glFeatures: featureFlags,
