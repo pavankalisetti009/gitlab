@@ -56,14 +56,17 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
   describe '#run' do
     context 'when adapter is available' do
       let(:expected_to_commit) { project.repository.commit.id }
+      let(:expected_from_sha) { Gitlab::Git::SHA1_BLANK_SHA }
+      let(:expected_force_reindex) { false }
 
-      context 'when command is executed' do
+      describe 'command execution' do
         let(:env_vars) { { "GITLAB_INDEXER_MODE" => "chunk" } }
         let(:expected_options) do
           {
-            from_sha: Gitlab::Git::SHA1_BLANK_SHA,
-            to_sha: expected_to_commit,
             project_id: project.id,
+            from_sha: expected_from_sha,
+            to_sha: expected_to_commit,
+            force_reindex: expected_force_reindex,
             partition_name: collection.name,
             partition_number: collection.partition_for(project.id),
             gitaly_config: {
@@ -158,6 +161,84 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
                 .and_return(0)
 
               run
+            end
+          end
+        end
+
+        describe 'update scenarios' do
+          shared_examples 'normal indexing update' do
+            let(:expected_from_sha) { repository_last_commit }
+            let(:expected_to_sha) { git_repository.commit.id }
+            let(:expected_force_reindex) { false }
+
+            it 'calls the indexer with the correct command' do
+              expect(Gitlab::Popen).to receive(:popen_with_streaming)
+                .with(expected_command, nil, env_vars)
+                .and_return(0)
+
+              run
+            end
+          end
+
+          shared_examples 'forced reindexing' do
+            let(:expected_from_sha) { "" }
+            let(:expected_to_sha) { git_repository.commit.id }
+            let(:expected_force_reindex) { true }
+
+            it 'calls the indexer with the correct command' do
+              expect(Gitlab::Popen).to receive(:popen_with_streaming)
+                .with(expected_command, nil, env_vars)
+                .and_return(0)
+
+              run
+            end
+          end
+
+          before do
+            # `repository` refers to the Ai::ActiveContext::Code::Repository record
+            # set the Ai::ActiveContext::Code::Repository#last_commit a commit not in the git repository
+            # in this example, we are using a commit from GitLab AIGW
+            repository.update!(last_commit: repository_last_commit)
+          end
+
+          let(:git_repository) { project.repository }
+
+          context 'when the git repository no longer contains the last indexed commit' do
+            let(:repository_last_commit) do
+              # set the Ai::ActiveContext::Code::Repository#last_commit a commit not in the git repository
+              # in this example, we are using a commit from GitLab AIGW
+              "3b13b8d3573f096ade95789818d37c80bdbbcdcf"
+            end
+
+            it_behaves_like 'forced reindexing'
+          end
+
+          context 'when the last indexed commit was the empty tree id' do
+            let(:repository_last_commit) { git_repository.empty_tree_id }
+
+            it_behaves_like 'normal indexing update'
+          end
+
+          context 'when the git repository still contains the last indexed commit' do
+            let(:repository_last_commit) do
+              # get the git repository's 10th latest commit
+              git_repository.commits('master', limit: 10).last.id
+            end
+
+            context 'when the last indexed commit is an ancestor of the latest commit' do
+              it_behaves_like 'normal indexing update'
+            end
+
+            context 'when last_indexed_commit is not an ancestor of the latest commit' do
+              before do
+                allow_next_instance_of(Repository) do |git_repo_instance|
+                  allow(git_repo_instance).to receive(:ancestor?).with(
+                    repository_last_commit, git_repository.commit.id
+                  ).and_return(false)
+                end
+              end
+
+              it_behaves_like 'forced reindexing'
             end
           end
         end
