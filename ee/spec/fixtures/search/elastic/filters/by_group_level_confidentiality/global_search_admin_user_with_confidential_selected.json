@@ -5,8 +5,8 @@
         {
           "term": {
             "confidential": {
-              "_name": "filters:confidentiality:projects:non_confidential",
-              "value": false
+              "_name": "filters:confidentiality:groups:user_filter",
+              "value": true
             }
           }
         }

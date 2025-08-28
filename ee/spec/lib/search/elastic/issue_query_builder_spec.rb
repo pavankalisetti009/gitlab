@@ -26,11 +26,11 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
       issue:multi_match_phrase:search_terms
       filters:not_hidden
       filters:non_archived
-      filters:non_confidential
-      filters:confidential
-      filters:confidential:as_author
-      filters:confidential:as_assignee
-      filters:confidential:project:membership:id
+      filters:confidentiality:projects:non_confidential
+      filters:confidentiality:projects:confidential
+      filters:confidentiality:projects:confidential:as_author
+      filters:confidentiality:projects:confidential:as_assignee
+      filters:confidentiality:projects:confidential:project:membership:id
     ])
   end
 

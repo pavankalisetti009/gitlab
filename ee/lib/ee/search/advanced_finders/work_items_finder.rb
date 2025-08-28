@@ -303,9 +303,13 @@ module EE
         end
 
         def type_ids_from(type_names)
-          return unless type_names.present?
+          return all_work_item_type_ids unless type_names.present?
 
           Array(type_names).filter_map { |type| ::WorkItems::Type::BASE_TYPES.dig(type.to_sym, :id) }
+        end
+
+        def all_work_item_type_ids
+          ::WorkItems::Type::BASE_TYPES.values.filter_map { |v| v[:id] }
         end
 
         def upcoming_milestone?
