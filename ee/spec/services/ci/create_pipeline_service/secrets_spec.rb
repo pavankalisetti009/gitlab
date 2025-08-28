@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::CreatePipelineService, feature_category: :secrets_management do # rubocop:disable RSpec/SpecFilePathFormat -- create_pipeline_service is split into components
+RSpec.describe Ci::CreatePipelineService, feature_category: :secrets_management do
   let(:downstream_project) { create(:project, path: 'project', namespace: create(:namespace, path: 'some')) }
 
   let_it_be(:project) { create(:project, :repository) }
