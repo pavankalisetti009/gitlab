@@ -25,6 +25,7 @@ module Security
     scope :by_namespace_and_template_type, ->(namespace, template_type) {
       where(namespace_id: namespace.id, template_type: template_type)
     }
+    scope :preload_attributes, -> { preload(:security_attributes) }
 
     private
 

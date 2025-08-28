@@ -15,8 +15,9 @@ module Types
         null: false,
         description: 'Editable state of the security category.'
       field :id, Types::GlobalIDType[::Security::Category],
-        null: false,
-        description: 'Global ID of the security category.'
+        null: true,
+        description: 'Global ID of the security category.',
+        resolver_method: :resolve_id
       field :multiple_selection, GraphQL::Types::Boolean,
         null: false,
         description: 'Whether multiple attributes can be selected.'
@@ -29,6 +30,10 @@ module Types
       field :template_type, Types::Security::CategoryTemplateTypeEnum,
         null: true,
         description: 'Template type for predefined categories.'
+
+      def resolve_id
+        object.persisted? ? object.to_global_id : nil
+      end
     end
   end
 end
