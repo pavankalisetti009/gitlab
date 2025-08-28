@@ -37,11 +37,25 @@ RSpec.shared_examples 'audits security policy branch bypass' do
       )
       expect(event.entity).to eq(security_policy.security_policy_management_project)
     end
+
+    it 'tracks internal event', :clean_gitlab_redis_shared_state do
+      expect { execute }
+        .to trigger_internal_events('check_merge_request_branch_exceptions_bypass')
+        .with(project: merge_request.project, additional_properties: { value: merge_request.id })
+        .and increment_usage_metrics(
+          "redis_hll_counters." \
+            "count_distinct_value_from_check_merge_request_branch_exceptions_bypass_monthly"
+        )
+    end
   end
 
   context 'when security policy does not exist with branch bypass' do
     it 'does not create an audit event' do
       expect { execute }.not_to change { AuditEvent.count }
+    end
+
+    it 'does not track internal event for branch exceptions bypass' do
+      expect { execute }.not_to trigger_internal_events('check_merge_request_branch_exceptions_bypass')
     end
   end
 end
