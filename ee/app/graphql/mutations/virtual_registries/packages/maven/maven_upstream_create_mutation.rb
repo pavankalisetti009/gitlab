@@ -26,8 +26,15 @@ module Mutations
             description: 'URL of the upstream registry.'
 
           argument :cache_validity_hours, GraphQL::Types::Int,
-            required: true,
+            required: false,
+            default_value: 24,
             description: 'Cache validity period. Defaults to 24 hours.'
+
+          argument :metadata_cache_validity_hours, GraphQL::Types::Int,
+            required: false,
+            default_value: 24,
+            experiment: { milestone: '18.4' },
+            description: 'Metadata cache validity period. Defaults to 24 hours.'
 
           argument :username, GraphQL::Types::String,
             required: false,
