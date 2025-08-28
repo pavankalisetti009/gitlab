@@ -1,10 +1,5 @@
 <script>
-import {
-  GlButton,
-  GlDisclosureDropdown,
-  GlDisclosureDropdownItem,
-  GlTooltipDirective,
-} from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlTooltipDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
@@ -14,7 +9,6 @@ import {
   EXPORT_FORMAT_JSON_ARRAY,
   EXPORT_FORMAT_CYCLONEDX_1_6_JSON,
   NAMESPACE_GROUP,
-  NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
 } from '../constants';
 
@@ -39,7 +33,7 @@ const exportFormats = [
     type: EXPORT_FORMAT_CSV,
     buttonText: s__('Dependencies|Export as CSV'),
     testid: 'csv-item',
-    available: availableForContainers([NAMESPACE_PROJECT, NAMESPACE_GROUP, NAMESPACE_ORGANIZATION]),
+    available: availableForContainers([NAMESPACE_PROJECT, NAMESPACE_GROUP]),
   },
   {
     type: EXPORT_FORMAT_CYCLONEDX_1_6_JSON,
@@ -52,7 +46,6 @@ const exportFormats = [
 export default {
   name: 'DependencyExportDropdown',
   components: {
-    GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
   },
@@ -72,12 +65,6 @@ export default {
     availableFormats() {
       return exportFormats.filter((format) => format.available(this));
     },
-    multipleFormats() {
-      return this.availableFormats.length > 1;
-    },
-    singleFormat() {
-      return this.availableFormats[0];
-    },
     exportButtonIcon() {
       return this.fetchingInProgress ? '' : 'export';
     },
@@ -94,7 +81,6 @@ export default {
 
 <template>
   <gl-disclosure-dropdown
-    v-if="multipleFormats"
     :icon="exportButtonIcon"
     :loading="fetchingInProgress"
     :toggle-text="__('Export')"
@@ -111,16 +97,4 @@ export default {
       </template>
     </gl-disclosure-dropdown-item>
   </gl-disclosure-dropdown>
-
-  <gl-button
-    v-else
-    v-gl-tooltip.hover
-    :title="singleFormat.buttonText"
-    class="gl-mt-3 md:gl-mt-0"
-    :icon="exportButtonIcon"
-    :loading="fetchingInProgress"
-    @click="createExport(singleFormat.type)"
-  >
-    {{ __('Export') }}
-  </gl-button>
 </template>

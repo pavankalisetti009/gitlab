@@ -6,7 +6,7 @@ import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
+import { NAMESPACE_PROJECT } from '../constants';
 import { SORT_FIELD_SEVERITY } from '../store/constants';
 import DependenciesActions from './dependencies_actions.vue';
 import SbomReportsErrorsAlert from './sbom_reports_errors_alert.vue';
@@ -50,10 +50,6 @@ export default {
   computed: {
     ...mapState(['pageInfo', 'initialized']),
     shouldFetchDependenciesViaGraphQL() {
-      if (this.isOrganizationNamespace) {
-        return false;
-      }
-
       return this.glFeatures.projectDependenciesGraphql || this.glFeatures.groupDependenciesGraphql;
     },
     showSbomReportsErrors() {
@@ -61,9 +57,6 @@ export default {
     },
     isProjectNamespace() {
       return this.namespaceType === NAMESPACE_PROJECT;
-    },
-    isOrganizationNamespace() {
-      return this.namespaceType === NAMESPACE_ORGANIZATION;
     },
     message() {
       return this.isProjectNamespace
@@ -176,7 +169,7 @@ export default {
       <dependency-export-dropdown v-if="exportEndpoint" :container="namespaceType" />
     </header>
 
-    <dependencies-actions v-if="!isOrganizationNamespace" class="gl-mt-3" />
+    <dependencies-actions class="gl-mt-3" />
 
     <article>
       <paginated-dependencies-table />
