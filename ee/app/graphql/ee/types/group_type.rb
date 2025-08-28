@@ -378,6 +378,12 @@ module EE
           description: 'Status for all analyzers in the group.',
           resolver: ::Resolvers::Security::AnalyzerGroupStatusResolver
 
+        field :security_categories, [::Types::Security::CategoryType],
+          null: true,
+          description: 'Security categories for the group.',
+          authorize: :admin_security_attributes,
+          resolver: ::Resolvers::Security::CategoryResolver
+
         field :compliance_requirement_control_coverage,
           ::Types::ComplianceManagement::ComplianceFramework::RequirementControlCoverageType,
           null: true,
