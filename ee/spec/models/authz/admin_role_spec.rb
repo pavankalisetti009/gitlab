@@ -19,23 +19,14 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
     it { is_expected.to validate_uniqueness_of(:name) }
 
     context 'for json schema' do
-      Gitlab::CustomRoles::Definition.admin.each_key do |permission|
-        context "for #{permission}" do
-          it { is_expected.to allow_value({ permission => true }).for(:permissions) }
-          it { is_expected.to allow_value({ permission => false }).for(:permissions) }
-          it { is_expected.not_to allow_value({ permission => "true" }).for(:permissions) }
-          it { is_expected.not_to allow_value({ permission => 1 }).for(:permissions) }
-          it { is_expected.not_to allow_value({ permission => "false" }).for(:permissions) }
-          it { is_expected.not_to allow_value({ permission => 0 }).for(:permissions) }
-        end
-      end
+      let(:permissions) { { read_admin_users: true } }
 
-      context 'when trying to store a member_role permission key' do
-        Gitlab::CustomRoles::Definition.standard.each_key do |permission|
-          context "for #{permission}" do
-            it { is_expected.not_to allow_value({ permission => true }).for(:permissions) }
-          end
-        end
+      it { is_expected.to allow_value(permissions).for(:permissions) }
+
+      context 'when trying to store an unsupported value' do
+        let(:permissions) { { read_admin_users: 'some_value' } }
+
+        it { is_expected.not_to allow_value(permissions).for(:permissions) }
       end
     end
 
@@ -52,6 +43,36 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
           expect(admin_role.errors[:base].first)
             .to include(s_('MemberRole|Cannot create a member role with no enabled permissions'))
         end
+      end
+    end
+
+    context 'for permissions' do
+      it 'removes disabled permissions' do
+        admin_role = build(:admin_role)
+        admin_role.permissions["nonexistent"] = false
+
+        expect { admin_role.validate }.to change { admin_role.permissions }.from(
+          { 'read_admin_users' => true, 'nonexistent' => false }
+        ).to({ 'read_admin_users' => true })
+      end
+
+      it 'returns an error for member role permissions' do
+        admin_role = build(:admin_role)
+        admin_role.permissions["read_code"] = true
+
+        admin_role.validate
+        expect(admin_role.errors.first.message).to eq('Unknown permission: read_code')
+      end
+
+      it 'returns an error for each unknown permission' do
+        admin_role = build(:admin_role)
+        admin_role.permissions["unknown1"] = true
+        admin_role.permissions["unknown2"] = true
+
+        admin_role.validate
+        expect(admin_role.errors.messages[:base]).to match_array(
+          ['Unknown permission: unknown1', 'Unknown permission: unknown2']
+        )
       end
     end
   end

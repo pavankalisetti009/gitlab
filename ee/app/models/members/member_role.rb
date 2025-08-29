@@ -152,7 +152,7 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
   end
 
   def admin_related_role?
-    enabled_admin_permissions.present?
+    enabled_admin_permissions.present? && base_access_level.nil?
   end
 
   def namespace_required?

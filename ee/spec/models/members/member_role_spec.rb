@@ -30,25 +30,25 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         .in_array(::Gitlab::Access.options_for_custom_roles.values.freeze)
     end
 
-    describe 'name uniqueness validation' do
+    context 'for name uniqueness' do
       let_it_be(:group) { create(:group) }
       let_it_be(:existing_member_role) { create(:member_role, name: 'foo', namespace: group) }
 
       context 'when creating a new record' do
-        it 'is invalid when name already exists for a namespace' do
+        it 'is invalid when the name already exists in the namespace' do
           member_role = build(:member_role, name: 'foo', namespace: group)
 
           expect(member_role).not_to be_valid
           expect(member_role.errors[:name]).to include('has already been taken')
         end
 
-        it 'is valid when name exists for another namespace' do
+        it 'is valid when the name exists in a different namespace' do
           member_role = build(:member_role, name: 'foo', namespace: create(:namespace))
 
           expect(member_role).to be_valid
         end
 
-        it 'is invalid creating a duplicate name for instance' do
+        it 'is invalid when creating a duplicate name at the instance level' do
           create(:member_role, :instance, name: 'foo')
           member_role = build(:member_role, :instance, name: 'foo')
 
@@ -72,7 +72,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
 
       context 'when updating an old record' do
-        it 'is invalid when name already exists for a namespace' do
+        it 'is invalid when the name already exists in the namespace' do
           member_role = create(:member_role, name: 'foo 2', namespace: group)
           member_role.name = 'foo'
 
@@ -81,7 +81,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
     end
 
-    describe 'namespace validation' do
+    context 'for namespace presence' do
       context 'when running on Gitlab.com', :saas do
         context 'with a regular role' do
           it { is_expected.to validate_presence_of(:namespace) }
@@ -111,16 +111,29 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
     end
 
+    context 'for permissions' do
+      it 'removes disabled permissions' do
+        member_role = build(:member_role, :guest, :read_code)
+        member_role.permissions["nonexistent"] = false
+
+        expect { member_role.validate }.to change { member_role.permissions }.from(
+          { 'read_code' => true, 'nonexistent' => false }
+        ).to({ 'read_code' => true })
+      end
+
+      it 'returns an error for admin permissions' do
+        member_role = build(:member_role, :guest, :read_code)
+        member_role.permissions["read_admin_users"] = true
+
+        member_role.validate
+        expect(member_role.errors.first.message).to eq('Unknown permission: read_admin_users')
+      end
+    end
+
     context 'for json schema' do
       let(:permissions) { { read_code: true } }
 
       it { is_expected.to allow_value(permissions).for(:permissions) }
-
-      context 'when trying to store an unsupported key' do
-        let(:permissions) { { unsupported_key: true } }
-
-        it { is_expected.not_to allow_value(permissions).for(:permissions) }
-      end
 
       context 'when trying to store an unsupported value' do
         let(:permissions) { { read_code: 'some_value' } }
@@ -503,17 +516,6 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     end
   end
 
-  describe 'before_validation' do
-    it 'removes disabled permissions' do
-      member_role = build(:member_role, :guest, :read_code)
-      member_role.permissions["nonexistent"] = false
-
-      expect { member_role.validate }.to change { member_role.permissions }.from(
-        { 'read_code' => true, 'nonexistent' => false }
-      ).to({ 'read_code' => true })
-    end
-  end
-
   describe 'before_save' do
     describe '#set_occupies_seat' do
       it 'sets to false when skip_seat_consumption for custom ability is true' do
@@ -654,6 +656,14 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         end
 
         it { is_expected.to be true }
+      end
+
+      context 'when member role has a base access level' do
+        before do
+          member_role.base_access_level = 30
+        end
+
+        it { is_expected.to be false }
       end
     end
 
