@@ -226,6 +226,7 @@ export const branchProtectionsMockResponse = {
             matchingBranchesCount,
             branchProtection: {
               __typename: 'BranchProtection',
+              isGroupLevel: false,
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
               mergeAccessLevels: {
@@ -254,6 +255,7 @@ export const branchProtectionsMockResponse = {
             matchingBranchesCount,
             branchProtection: {
               __typename: 'BranchProtection',
+              isGroupLevel: false,
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
               mergeAccessLevels: {
@@ -296,6 +298,7 @@ export const branchProtectionsNoPushAccessMockResponse = {
             matchingBranchesCount,
             branchProtection: {
               __typename: 'BranchProtection',
+              isGroupLevel: false,
               allowForcePush: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
@@ -305,14 +308,14 @@ export const branchProtectionsNoPushAccessMockResponse = {
                 __typename: 'PushAccessLevelConnection',
                 edges: [],
               },
-              approvalRules: {
-                __typename: 'ApprovalProjectRuleConnection',
-                nodes: [],
-              },
-              externalStatusChecks: {
-                __typename: 'ExternalStatusCheckConnection',
-                nodes: [],
-              },
+            },
+            approvalRules: {
+              __typename: 'ApprovalProjectRuleConnection',
+              nodes: [],
+            },
+            externalStatusChecks: {
+              __typename: 'ExternalStatusCheckConnection',
+              nodes: [],
             },
           },
         ],
@@ -423,6 +426,7 @@ export const editBranchRuleMockResponse = {
         matchingBranchesCount,
         branchProtection: {
           __typename: 'BranchProtection',
+          isGroupLevel: false,
           allowForcePush: true,
           codeOwnerApprovalRequired: true,
           mergeAccessLevels: mergeAccessLevelsEditResponse,

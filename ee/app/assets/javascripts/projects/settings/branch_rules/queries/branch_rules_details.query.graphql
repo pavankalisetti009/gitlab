@@ -11,6 +11,7 @@ query getBranchRulesDetailsEE($projectPath: ID!, $buildMissing: Boolean = false)
         name
         id
         branchProtection {
+          isGroupLevel
           allowForcePush
           codeOwnerApprovalRequired
           mergeAccessLevels {

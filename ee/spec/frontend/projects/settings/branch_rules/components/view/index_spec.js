@@ -109,6 +109,7 @@ describe('View branch rules in enterprise edition', () => {
 
   afterEach(() => axiosMock.restore());
 
+  const findDeleteRuleButton = () => wrapper.findByTestId('delete-rule-button');
   const findAllowedToMerge = () => wrapper.findByTestId('allowed-to-merge-content');
   const findAllowedToPush = () => wrapper.findByTestId('allowed-to-push-content');
   const findStatusChecks = () => wrapper.findByTestId('status-checks-content');
@@ -117,6 +118,7 @@ describe('View branch rules in enterprise edition', () => {
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findStatusChecksCrud = () => wrapper.findByTestId('status-checks');
   const findStatusChecksTitle = () => wrapper.findByTestId('crud-title');
+  const findAllowForcePushToggle = () => wrapper.findByTestId('force-push-content');
   const findCodeOwnersToggle = () => wrapper.findByTestId('code-owners-content');
   const findStatusChecksDrawer = () => wrapper.findByTestId('status-checks-drawer');
   const findSquashSettingContent = () => wrapper.findByTestId('squash-setting-content');
@@ -280,6 +282,46 @@ describe('View branch rules in enterprise edition', () => {
         headerLinkTitle: 'Manage in status checks',
         statusChecks: statusChecksRulesMock,
       });
+    });
+  });
+
+  describe('when isGroupLevel is true', () => {
+    beforeEach(async () => {
+      const mockResponse = {
+        ...branchProtectionsMockResponse,
+        data: {
+          ...branchProtectionsMockResponse.data,
+          project: {
+            ...branchProtectionsMockResponse.data.project,
+            branchRules: {
+              ...branchProtectionsMockResponse.data.project.branchRules,
+              nodes: branchProtectionsMockResponse.data.project.branchRules.nodes.map((node) => ({
+                ...node,
+                branchProtection: {
+                  ...node.branchProtection,
+                  isGroupLevel: true,
+                },
+              })),
+            },
+          },
+        },
+      };
+
+      await createComponent({ editBranchRules: true }, { showCodeOwners: true }, mockResponse);
+    });
+
+    it('does not render delete rule button', () => {
+      expect(findDeleteRuleButton().exists()).toBe(false);
+    });
+
+    it('passes isGroupLevel prop to protection components', () => {
+      expect(findAllowedToMerge().props('isGroupLevel')).toBe(true);
+      expect(findAllowedToPush().props('isGroupLevel')).toBe(true);
+      expect(findAllowForcePushToggle().props('isGroupLevel')).toBe(true);
+    });
+
+    it('passes isGroupLevel prop to code owners protection toggle component', () => {
+      expect(findCodeOwnersToggle().props('isGroupLevel')).toBe(true);
     });
   });
 });
