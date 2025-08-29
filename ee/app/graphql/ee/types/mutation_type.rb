@@ -201,6 +201,7 @@ module EE
         mount_mutation ::Mutations::Ci::Runners::ExportUsage
         mount_mutation ::Mutations::RemoteDevelopment::WorkspaceOperations::Create
         mount_mutation ::Mutations::RemoteDevelopment::WorkspaceOperations::Update
+        mount_mutation ::Mutations::RemoteDevelopment::DevfileOperations::Validate, experiment: { milestone: '18.4' }
         mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create
         mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete
         mount_mutation ::Mutations::RemoteDevelopment::OrganizationClusterAgentMappingOperations::Create, experiment: {

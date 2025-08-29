@@ -6232,6 +6232,30 @@ Input type: `DestroySnippetInput`
 | <a id="mutationdestroysnippeterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationdestroysnippetsnippet"></a>`snippet` | [`Snippet`](#snippet) | Snippet after mutation. |
 
+### `Mutation.devfileValidate`
+
+{{< details >}}
+**Introduced** in GitLab 18.4.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `DevfileValidateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationdevfilevalidateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdevfilevalidatedevfileyaml"></a>`devfileYaml` | [`String!`](#string) | Input devfile. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationdevfilevalidateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationdevfilevalidateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationdevfilevalidatevalid"></a>`valid` | [`Boolean`](#boolean) | Status whether devfile is valid or not. |
+
 ### `Mutation.disableDevopsAdoptionNamespace`
 
 **Status**: Beta.
