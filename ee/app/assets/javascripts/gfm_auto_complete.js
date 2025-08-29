@@ -26,6 +26,7 @@ export {
 } from '~/gfm_auto_complete';
 
 const EPICS_ALIAS = 'epics';
+const EPICS_ALTERNATIVE_ALIAS = 'epicsalternative';
 const ITERATIONS_ALIAS = 'iterations';
 const VULNERABILITIES_ALIAS = 'vulnerabilities';
 const STATUSES_ALIAS = 'statuses';
@@ -78,6 +79,13 @@ const getQSubCommands = ($input) => {
   return Q_ISSUE_SUB_COMMANDS;
 };
 
+GfmAutoComplete.Epics = {
+  alternativeReferenceInsertTemplateFunction(value) {
+    // eslint-disable-next-line no-template-curly-in-string
+    return value.reference || '&${id}';
+  },
+};
+
 GfmAutoComplete.Iterations = {
   templateFunction({ id, title }) {
     return `<li><small>*iteration:${id}</small> ${escape(title)}</li>`;
@@ -95,6 +103,10 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
   setupAtWho($input) {
     if (this.enableMap.epics) {
       this.setupAutoCompleteEpics($input, this.getDefaultCallbacks());
+    }
+
+    if (this.enableMap.epicsAlternative) {
+      this.setupAutoCompleteEpicsAlternative($input, this.getDefaultCallbacks());
     }
 
     if (this.enableMap.iterations) {
@@ -154,6 +166,43 @@ class GfmAutoCompleteEE extends GfmAutoComplete {
       },
     });
     showAndHideHelper($input, EPICS_ALIAS);
+  };
+
+  // eslint-disable-next-line class-methods-use-this
+  setupAutoCompleteEpicsAlternative = ($input, defaultCallbacks) => {
+    $input.atwho({
+      at: '[epic:',
+      alias: EPICS_ALTERNATIVE_ALIAS,
+      delay: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      searchKey: 'search',
+      displayTpl(value) {
+        let tmpl = GfmAutoComplete.Loading.template;
+        if (value.title != null) {
+          tmpl = GfmAutoComplete.Issues.templateFunction(value);
+        }
+        return tmpl;
+      },
+      data: GfmAutoComplete.defaultLoadingData,
+      insertTpl: GfmAutoComplete.Epics.alternativeReferenceInsertTemplateFunction,
+      skipSpecialCharacterTest: true,
+      callbacks: {
+        ...defaultCallbacks,
+        beforeSave(epics) {
+          return $.map(epics, (e) => {
+            if (e.title == null) {
+              return e;
+            }
+            return {
+              id: e.iid,
+              reference: e.reference,
+              title: e.title,
+              search: `${e.iid} ${e.title}`,
+            };
+          });
+        },
+      },
+    });
+    showAndHideHelper($input, EPICS_ALTERNATIVE_ALIAS);
   };
 
   // eslint-disable-next-line class-methods-use-this

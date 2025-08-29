@@ -8,7 +8,7 @@ import { TEST_HOST } from 'helpers/test_constants';
 import GfmAutoComplete from '~/gfm_auto_complete';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import waitForPromises from 'helpers/wait_for_promises';
-import { iterationsMock } from 'ee_jest/gfm_auto_complete/mock_data';
+import { mockIterations, mockEpics } from 'ee_jest/gfm_auto_complete/mock_data';
 import { ISSUABLE_EPIC } from '~/work_items/constants';
 import { availableStatuses } from '~/graphql_shared/issuable_client';
 import AjaxCache from '~/lib/utils/ajax_cache';
@@ -62,19 +62,21 @@ const mockSpriteIcons = '/icons.svg';
 
 describe('GfmAutoCompleteEE', () => {
   const dataSources = {
+    epics: `${TEST_HOST}/autocomplete_sources/epics`,
+    epicsAlternative: `${TEST_HOST}/autocomplete_sources/epics`,
     labels: `${TEST_HOST}/autocomplete_sources/labels`,
     iterations: `${TEST_HOST}/autocomplete_sources/iterations`,
   };
 
-  let instance;
+  let autocomplete;
   let $textarea;
 
-  const triggerDropdown = (text) => {
-    $textarea
+  const triggerDropdown = (textarea, text) => {
+    textarea
       .trigger('focus')
       .val($textarea.val() + text)
       .caret('pos', -1);
-    $textarea.trigger('keyup');
+    textarea.trigger('keyup');
 
     jest.runOnlyPendingTimers();
   };
@@ -100,15 +102,15 @@ describe('GfmAutoCompleteEE', () => {
 
     $textarea = null;
 
-    instance?.destroy();
-    instance = null;
+    autocomplete?.destroy();
+    autocomplete = null;
   });
 
   it('should have enableMap', () => {
-    instance = new GfmAutoCompleteEE(dataSources);
-    instance.setup($('<input type="text" />'));
+    autocomplete = new GfmAutoCompleteEE(dataSources);
+    autocomplete.setup($('<input type="text" />'));
 
-    expect(instance.enableMap).not.toBeNull();
+    expect(autocomplete.enableMap).not.toBeNull();
   });
 
   describe('Issues.templateFunction', () => {
@@ -140,21 +142,49 @@ describe('GfmAutoCompleteEE', () => {
     });
   });
 
+  describe('Epics', () => {
+    const { id, title } = mockEpics[0];
+    const expectedDropdownItems = [`&${id} ${title}`];
+
+    beforeEach(() => {
+      setHTMLFixture('<textarea></textarea>');
+      $textarea = $('textarea');
+      autocomplete = new GfmAutoCompleteEE(dataSources);
+      autocomplete.setup($textarea, { epics: true, epicsAlternative: true });
+      autocomplete.cachedData['&'] = [...mockEpics];
+      autocomplete.cachedData['[epic:'] = [...mockEpics];
+    });
+
+    it('& shows epics', () => {
+      triggerDropdown($textarea, '&');
+      const epics = getDropdownItems('at-view-epics');
+      expect(epics).toHaveLength(mockEpics.length);
+      expect(epics.map((x) => x.textContent.trim())).toEqual(expectedDropdownItems);
+    });
+
+    it('[epic: shows epics', () => {
+      triggerDropdown($textarea, '[epic:');
+      const epics = getDropdownItems('at-view-epicsalternative');
+      expect(epics).toHaveLength(mockEpics.length);
+      expect(epics.map((x) => x.textContent.trim())).toEqual(expectedDropdownItems);
+    });
+  });
+
   describe('Iterations', () => {
     beforeEach(() => {
       setHTMLFixture('<textarea></textarea>');
       $textarea = $('textarea');
-      instance = new GfmAutoCompleteEE(dataSources);
-      instance.setup($textarea, { iterations: true });
+      autocomplete = new GfmAutoCompleteEE(dataSources);
+      autocomplete.setup($textarea, { iterations: true });
     });
 
     it("should list iterations when '/iteration *iteration:' is typed", () => {
-      instance.cachedData['*iteration:'] = [...iterationsMock];
+      autocomplete.cachedData['*iteration:'] = [...mockIterations];
 
-      const { id, title } = iterationsMock[0];
+      const { id, title } = mockIterations[0];
       const expectedDropdownItems = [`*iteration:${id} ${title}`];
 
-      triggerDropdown('/iteration *iteration:');
+      triggerDropdown($textarea, '/iteration *iteration:');
 
       expect(getDropdownItems('at-view-iterations').map((x) => x.textContent.trim())).toEqual(
         expectedDropdownItems,
@@ -232,19 +262,19 @@ describe('GfmAutoCompleteEE', () => {
           setHTMLFixture(
             `<textarea data-supports-quick-actions="true" ${textareaAttributes}></textarea>`,
           );
-          instance = new GfmAutoCompleteEE({
+          autocomplete = new GfmAutoCompleteEE({
             commands: `${TEST_HOST}/autocomplete_sources/commands`,
           });
           $textarea = $('textarea');
-          instance.setup($textarea, {});
+          autocomplete.setup($textarea, {});
         });
 
         it('renders expected sub commands', async () => {
-          triggerDropdown('/');
+          triggerDropdown($textarea, '/');
 
           await waitForPromises();
 
-          triggerDropdown('q ');
+          triggerDropdown($textarea, 'q ');
 
           expect(getDropdownSubcommands('at-view-q')).toEqual(expectation);
         });
@@ -274,8 +304,8 @@ describe('GfmAutoCompleteEE', () => {
         </section>
       `);
       $textarea = $('textarea');
-      instance = new GfmAutoCompleteEE(dataSources);
-      instance.setup($textarea, { statuses: true });
+      autocomplete = new GfmAutoCompleteEE(dataSources);
+      autocomplete.setup($textarea, { statuses: true });
     });
 
     afterEach(() => {
@@ -285,7 +315,7 @@ describe('GfmAutoCompleteEE', () => {
     it('should list all statuses when `/status "` is typed', () => {
       const expectedDropdownItems = ['To do', 'In progress', 'Done', "Won't do"];
 
-      triggerDropdown('/status "');
+      triggerDropdown($textarea, '/status "');
 
       expect(availableStatuses).toHaveBeenCalled();
       expect(getDropdownItems('at-view-statuses').map((x) => x.textContent.trim())).toEqual(
@@ -296,7 +326,7 @@ describe('GfmAutoCompleteEE', () => {
     it('should list only matching statuses when `/status "do` is typed', () => {
       const expectedDropdownItems = ['To do', "Won't do", 'Done'];
 
-      triggerDropdown('/status "do');
+      triggerDropdown($textarea, '/status "do');
 
       expect(availableStatuses).toHaveBeenCalled();
       expect(getDropdownItems('at-view-statuses').map((x) => x.textContent.trim())).toEqual(
