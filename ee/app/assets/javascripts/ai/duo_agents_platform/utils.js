@@ -1,5 +1,6 @@
 import { s__ } from '~/locale';
 import { humanize } from '~/lib/utils/text_utility';
+import { AGENT_PLATFORM_STATUS_ICON } from './constants';
 
 export const formatAgentDefinition = (agentDefinition) => {
   return humanize(agentDefinition || s__('DuoAgentsPlatform|Agent session'));
@@ -11,6 +12,10 @@ export const formatAgentFlowName = (agentDefinition, id) => {
 
 export const formatAgentStatus = (status) => {
   return status ? humanize(status.toLowerCase()) : s__('DuoAgentsPlatform|Unknown');
+};
+
+export const getAgentStatusIcon = (status) => {
+  return AGENT_PLATFORM_STATUS_ICON[status] || AGENT_PLATFORM_STATUS_ICON.CREATED;
 };
 
 export const getNamespaceDatasetProperties = (dataset, properties) => {

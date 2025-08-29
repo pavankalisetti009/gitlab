@@ -24426,9 +24426,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Get issue"
 msgstr ""
 
-msgid "DuoAgentsPlatform|ID"
-msgstr ""
-
 msgid "DuoAgentsPlatform|List comments"
 msgstr ""
 
@@ -24439,9 +24436,6 @@ msgid "DuoAgentsPlatform|List files"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Manage automated flows within your project."
-msgstr ""
-
-msgid "DuoAgentsPlatform|Name"
 msgstr ""
 
 msgid "DuoAgentsPlatform|New"
@@ -24516,9 +24510,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Start an agent session"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Status"
-msgstr ""
-
 msgid "DuoAgentsPlatform|The flow trigger could not be created. Try again."
 msgstr ""
 
@@ -24526,9 +24517,6 @@ msgid "DuoAgentsPlatform|The flow trigger could not be updated. Try again."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Unknown"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Updated"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Write file"
