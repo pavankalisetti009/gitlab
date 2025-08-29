@@ -20,7 +20,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
     allow(auth).to receive(:get_access_levels_for_feature).with('repository')
         .and_return({ project: ::Gitlab::Access::GUEST, private_project: ::Gitlab::Access::REPORTER })
 
-    allow(::Search::Zoekt).to receive(:use_traversal_id_queries?).and_return(true)
+    stub_zoekt_features(traversal_id_search: true)
   end
 
   describe '#build' do

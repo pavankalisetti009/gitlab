@@ -144,11 +144,11 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
         end
 
         context 'when a node id is not specified' do
-          context 'and traversal ids feature flag is disabled' do
+          context 'and traversal ids feature is unavailable' do
             let(:limit_projects) { ::Project.id_in([project_1.id]) }
 
             before do
-              stub_feature_flags(zoekt_traversal_id_queries: false)
+              stub_zoekt_features(traversal_id_search: false)
             end
 
             it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do

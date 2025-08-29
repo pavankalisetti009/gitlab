@@ -49,7 +49,10 @@ module Gitlab
             return Gitlab::Search::Zoekt::Response.empty
           end
 
-          if !::Search::Zoekt.use_traversal_id_queries?(current_user) && targets.blank?
+          project_id = options[:project_id]
+          group_id = options[:group_id]
+
+          if !use_traversal_id_query?(current_user, project_id: project_id, group_id: group_id) && targets.blank?
             log_debug('No targets provided, returning empty response') if debug?
             return Gitlab::Search::Zoekt::Response.empty
           end
@@ -220,6 +223,12 @@ module Gitlab
                             else
                               :global
                             end
+        end
+
+        def use_traversal_id_query?(current_user, project_id:, group_id:)
+          ::Search::Zoekt.feature_available?(
+            :traversal_id_search, current_user, project_id: project_id, group_id: group_id
+          )
         end
       end
     end

@@ -371,80 +371,6 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     it { is_expected.to eq('tmp/tests/gitlab-zoekt/bin/gitlab-zoekt') }
   end
 
-  describe '.traversal_id_searchable_for_global_search?' do
-    let(:min_version) { described_class::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH }
-
-    before do
-      Rails.cache.clear
-    end
-
-    it 'returns true when minimum_schema_version is greater than or equal to required minimum' do
-      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
-      expect(described_class.traversal_id_searchable_for_global_search?).to be true
-    end
-
-    it 'returns false when minimum_schema_version is less than required minimum' do
-      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version - 1)
-      expect(described_class.traversal_id_searchable_for_global_search?).to be false
-    end
-
-    it 'caches the result' do
-      allow(::Search::Zoekt::Repository).to receive(:minimum_schema_version).and_return(min_version)
-      expect(Rails.cache).to receive(:fetch).with('zoekt_traversal_id_searchable',
-        expires_in: 10.minutes).and_call_original
-      described_class.traversal_id_searchable_for_global_search?
-    end
-  end
-
-  describe '.use_traversal_id_queries?' do
-    using RSpec::Parameterized::TableSyntax
-    let(:min_version) { described_class::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH }
-    let(:insufficient_version) { min_version - 1 }
-    let(:a_user) { build(:user) }
-    let(:scope) { ::Search::Zoekt::Repository }
-
-    before do
-      Rails.cache.clear
-      allow(::Namespace).to receive(:find_by).with(id: group_id).and_return(group)
-      allow(::Search::Zoekt::EnabledNamespace).to receive(:for_root_namespace_id)
-        .with(group.root_ancestor.id).and_return([enabled_namespace])
-      allow(::Search::Zoekt::Repository).to receive(:for_zoekt_indices).and_return(scope)
-      allow(::Search::Zoekt::Repository).to receive(:for_project_id).with(project_id).and_return(scope)
-
-      allow(scope).to receive(:minimum_schema_version).and_return(returned_min_version)
-      stub_feature_flags(zoekt_traversal_id_queries: feature_enabled)
-    end
-
-    subject(:use_traversal_id_queries) do
-      described_class.use_traversal_id_queries?(user, project_id: project_id, group_id: group_id)
-    end
-
-    where(:user, :feature_enabled, :project_id, :group_id, :returned_min_version, :expected_result) do
-      # Feature disabled cases (should always be false)
-      ref(:a_user)         | false  | 8675  | 309   | ref(:min_version)           | false
-      ref(:a_user)         | false  | 8675  | 309   | ref(:insufficient_version)  | false
-      ref(:a_user)         | false  | 8675  | nil   | ref(:min_version)           | false
-      ref(:a_user)         | false  | nil   | 309   | ref(:min_version)           | false
-
-      # Feature enabled cases
-      # Project search
-      ref(:a_user)         | true   | 8675  | nil   | ref(:min_version)           | true
-      ref(:a_user)         | true   | 8675  | nil   | ref(:insufficient_version)  | false
-
-      # Group search
-      ref(:a_user)         | true   | nil   | 309   | ref(:min_version)           | true
-      ref(:a_user)         | true   | nil   | 309   | ref(:insufficient_version)  | false
-
-      # Global search
-      ref(:a_user)         | true   | nil   | nil   | ref(:min_version)           | true
-      ref(:a_user)         | true   | nil   | nil   | ref(:insufficient_version)  | false
-    end
-
-    with_them do
-      it { is_expected.to eq(expected_result) }
-    end
-  end
-
   describe '.missing_repo?' do
     let(:repo_exists) { true }
     let(:empty_repo) { false }
@@ -471,6 +397,35 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
       context 'and is not empty' do
         it { is_expected.to be false }
+      end
+    end
+  end
+
+  describe '.feature_available?' do
+    context 'when feature class does not exist' do
+      it 'raises an error' do
+        expect { ::Search::Zoekt.feature_available?(:non_existent_feature) }
+          .to raise_error(Search::Zoekt::MissingFeatureError, "Zoekt feature 'non_existent_feature' does not exist")
+      end
+    end
+
+    context 'when feature class exists' do
+      it 'passes the arguments to the feature class and returns result' do
+        user = build(:user)
+        project_id = 1
+        group_id = 2
+
+        expect(::Search::Zoekt::Features::BaseFeature).to receive(:available?).with(user, project_id: project_id,
+          group_id: nil).and_return(true)
+        expect(::Search::Zoekt.feature_available?(:base_feature, user, project_id: project_id)).to be true
+
+        expect(::Search::Zoekt::Features::BaseFeature).to receive(:available?).with(user, project_id: nil,
+          group_id: group_id).and_return(false)
+        expect(::Search::Zoekt.feature_available?(:base_feature, user, group_id: group_id)).to be false
+
+        expect(::Search::Zoekt::Features::BaseFeature).to receive(:available?).with(user, project_id: nil,
+          group_id: nil).and_return(:stubbed_value)
+        expect(::Search::Zoekt.feature_available?(:base_feature, user)).to eq(:stubbed_value)
       end
     end
   end

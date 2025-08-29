@@ -145,6 +145,7 @@ module Search
     config.before(:each, :zoekt_settings_enabled) do
       stub_licensed_features(zoekt_code_search: true)
       stub_ee_application_setting(zoekt_indexing_enabled: true, zoekt_search_enabled: true)
+      stub_zoekt_features(traversal_id_search: true)
     end
 
     config.before(:each, :zoekt_cache_disabled) do

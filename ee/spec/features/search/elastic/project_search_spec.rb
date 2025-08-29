@@ -143,7 +143,7 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
     end
   end
 
-  describe 'renders error when zoekt search fails' do
+  describe 'renders error when zoekt search fails', :zoekt_settings_enabled do
     let(:query) { 'test' }
     let(:search_service) do
       instance_double(Search::ProjectService,
