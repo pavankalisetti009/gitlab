@@ -281,6 +281,13 @@ export const autocompleteDataSources = ({
           isGroup,
           workItemTypeId,
         }),
+        epicsAlternative: autocompleteSourcesPath({
+          autocompleteType: 'epics',
+          fullPath,
+          iid,
+          isGroup,
+          workItemTypeId,
+        }),
       }
     : {};
 

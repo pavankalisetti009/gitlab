@@ -41,7 +41,15 @@ export const eventlistenersMockDefaultMap = [
   },
 ];
 
-export const iterationsMock = [
+export const mockEpics = [
+  {
+    id: 1,
+    title: 'First epic',
+    reference: '&1',
+  },
+];
+
+export const mockIterations = [
   {
     id: 1,
     title: 'Foobar iteration',

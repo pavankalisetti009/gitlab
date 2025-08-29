@@ -77,22 +77,28 @@ module EE
     def autocomplete_data_sources(object, noteable_type)
       return {} unless object && noteable_type
 
-      enabled_for_vulnerabilities = object.feature_available?(:security_dashboard)
+      object.is_a?(Group) ? group_autocomplete_data_sources(object).merge(super) : project_autocomplete_data_sources(object).merge(super)
+    end
 
-      if object.is_a?(Group)
-        {
-          epics: epics_group_autocomplete_sources_path(object),
-          iterations: object.feature_available?(:iterations) ? iterations_group_autocomplete_sources_path(object) : nil,
-          vulnerabilities: enabled_for_vulnerabilities ? vulnerabilities_group_autocomplete_sources_path(object) : nil,
-          wikis: object.feature_available?(:wiki, current_user) ? wikis_group_autocomplete_sources_path(object) : nil
-        }.compact.merge(super)
-      else
-        {
-          epics: object.group&.feature_available?(:epics) ? epics_project_autocomplete_sources_path(object) : nil,
-          iterations: object.group&.feature_available?(:iterations) ? iterations_project_autocomplete_sources_path(object) : nil,
-          vulnerabilities: enabled_for_vulnerabilities ? vulnerabilities_project_autocomplete_sources_path(object) : nil
-        }.compact.merge(super)
-      end
+    def group_autocomplete_data_sources(object)
+      enabled_for_vulnerabilities = object.feature_available?(:security_dashboard)
+      {
+        epics: epics_group_autocomplete_sources_path(object),
+        epicsAlternative: epics_group_autocomplete_sources_path(object),
+        iterations: object.feature_available?(:iterations) ? iterations_group_autocomplete_sources_path(object) : nil,
+        vulnerabilities: enabled_for_vulnerabilities ? vulnerabilities_group_autocomplete_sources_path(object) : nil,
+        wikis: object.feature_available?(:wiki, current_user) ? wikis_group_autocomplete_sources_path(object) : nil
+      }.compact
+    end
+
+    def project_autocomplete_data_sources(object)
+      enabled_for_vulnerabilities = object.feature_available?(:security_dashboard)
+      {
+        epics: object.group&.feature_available?(:epics) ? epics_project_autocomplete_sources_path(object) : nil,
+        epicsAlternative: object.group&.feature_available?(:epics),
+        iterations: object.group&.feature_available?(:iterations) ? iterations_project_autocomplete_sources_path(object) : nil,
+        vulnerabilities: enabled_for_vulnerabilities ? vulnerabilities_project_autocomplete_sources_path(object) : nil
+      }.compact
     end
 
     override :show_last_push_widget?

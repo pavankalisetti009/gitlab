@@ -19,62 +19,59 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     reference_filter(reference, context)
   end
 
-  context 'internal reference' do
-    let(:reference) { "&#{epic.iid}" }
-    let(:epic_url) { urls.group_epic_url(group, epic) }
-
+  shared_examples 'a internal reference' do
     it 'links to a valid reference' do
-      expect(doc.css('a').first.attr('href')).to eq(urls.group_epic_url(group, epic))
+      expect(doc(reference).css('a').first.attr('href')).to eq(urls.group_epic_url(group, epic))
     end
 
     it 'links with adjacent text' do
-      expect(doc.text).to eq("Check #{reference}")
+      expect(doc(reference).text).to eq(written_reference)
     end
 
     it 'includes a title attribute' do
-      expect(doc.css('a').first.attr('title')).to eq(epic.title)
+      expect(doc(reference).css('a').first.attr('title')).to eq(epic.title)
     end
 
     it 'escapes the title attribute' do
       epic.update_attribute(:title, %("></a>whatever<a title="))
 
-      expect(doc.text).to eq("Check #{reference}")
+      expect(doc(reference).text).to eq(written_reference)
     end
 
     it 'includes default classes' do
-      expect(doc.css('a').first.attr('class')).to eq('gfm gfm-epic')
+      expect(doc(reference).css('a').first.attr('class')).to eq('gfm gfm-epic')
     end
 
     it 'includes a data-group attribute' do
-      link = doc.css('a').first
+      link = doc(reference).css('a').first
 
       expect(link).to have_attribute('data-group')
       expect(link.attr('data-group')).to eq(group.id.to_s)
     end
 
     it 'includes a data-group-path attribute' do
-      link = doc.css('a').first
+      link = doc(reference).css('a').first
 
       expect(link).to have_attribute('data-group-path')
       expect(link.attr('data-group-path')).to eq(epic.group.full_path)
     end
 
     it 'includes a data-iid attribute' do
-      link = doc.css('a').first
+      link = doc(reference).css('a').first
 
       expect(link).to have_attribute('data-iid')
       expect(link.attr('data-iid')).to eq(epic.iid.to_s)
     end
 
     it 'includes a data-epic attribute' do
-      link = doc.css('a').first
+      link = doc(reference).css('a').first
 
       expect(link).to have_attribute('data-epic')
       expect(link.attr('data-epic')).to eq(epic.id.to_s)
     end
 
     it 'includes a data-original attribute' do
-      link = doc.css('a').first
+      link = doc(reference).css('a').first
 
       expect(link).to have_attribute('data-original')
       expect(link.attr('data-original')).to eq(CGI.escapeHTML(reference))
@@ -95,6 +92,12 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
       expect(link.attr('data-reference-format')).to eq('+')
       expect(link.attr('href')).to eq(epic_url)
     end
+  end
+
+  context 'internal reference with &number reference syntax' do
+    let(:reference) { "&#{epic.iid}" }
+    let(:written_reference) { "&#{epic.iid}" }
+    let(:epic_url) { urls.group_epic_url(group, epic) }
 
     it 'ignores invalid epic IIDs' do
       text = "Check &#{non_existing_record_iid}"
@@ -114,6 +117,8 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
 
       expect(link).to eq(href)
     end
+
+    it_behaves_like 'a internal reference'
   end
 
   context 'internal escaped reference' do
@@ -138,13 +143,21 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     end
   end
 
-  context 'cross-reference' do
+  context 'internal reference with [epic:number] reference syntax' do
+    let(:reference) { "[epic:#{epic.iid}]" }
+    let(:written_reference) { "&#{epic.iid}" }
+    let(:epic_url) { urls.group_epic_url(group, epic) }
+
+    it_behaves_like 'a internal reference'
+  end
+
+  shared_examples 'a cross-reference' do
     before do
       epic.update_attribute(:group_id, another_group.id)
     end
 
     it 'ignores a shorthand reference from another group' do
-      text = "Check &#{epic.iid}"
+      text = "Check #{reference}"
 
       expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
     end
@@ -162,28 +175,23 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     end
   end
 
-  context 'escaped cross-reference' do
-    before do
-      epic.update_attribute(:group_id, another_group.id)
-    end
+  context 'cross-reference path&number' do
+    let(:reference) { "&#{epic.iid}" }
 
-    it 'ignores a shorthand reference from another group' do
-      text = "Check &amp;#{epic.iid}"
+    it_behaves_like 'a cross-reference'
+  end
 
-      expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
-    end
+  context 'cross-reference [epic:path/number]' do
+    let(:reference) { "[epic:#{epic.iid}]" }
+    let(:full_ref_text) { "Check [epic:#{epic.group.full_path}/#{epic.iid}]" }
 
-    it 'links to a valid reference for full reference' do
-      expect(doc(full_ref_text).css('a').first.attr('href')).to eq(urls.group_epic_url(another_group, epic))
-    end
+    it_behaves_like 'a cross-reference'
+  end
 
-    it 'link has valid text' do
-      expect(doc(full_ref_text).css('a').first.text).to eq("#{epic.group.full_path}&#{epic.iid}")
-    end
+  context 'escaped cross-reference path&amp;number' do
+    let(:reference) { "&amp;#{epic.iid}" }
 
-    it 'includes default classes' do
-      expect(doc(full_ref_text).css('a').first.attr('class')).to eq('gfm gfm-epic')
-    end
+    it_behaves_like 'a cross-reference'
   end
 
   context 'subgroup cross-reference' do

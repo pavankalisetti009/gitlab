@@ -283,9 +283,9 @@ module EE
             (?<group>#{::Gitlab::PathRegex::FULL_NAMESPACE_FORMAT_REGEX})
           }xo
           %r{
-            (#{group_regexp})?
-            (?:#{combined_prefix})#{::Gitlab::Regex.epic}
-          }x
+            ((#{group_regexp})?(?:#{combined_prefix})#{::Gitlab::Regex.epic}) |
+          (#{Regexp.escape(alternative_reference_prefix)}(#{group_regexp}/)?#{::Gitlab::Regex.epic(reference_postfix)})
+        }x
         end
       end
 
