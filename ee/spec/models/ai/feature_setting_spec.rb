@@ -496,6 +496,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       expect(described_class.unit_primitive_to_feature_name_map).to eq(
         {
           "duo_workflow_execute_workflow" => "duo_agent_platform",
+          "duo_agent_platform" => "duo_agent_platform",
           "complete_code" => "code_completions",
           "code_suggestions" => "code_completions",
           "generate_code" => "code_generations",
