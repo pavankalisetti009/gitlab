@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlEmptyState, GlSkeletonLoader } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import AgentActivityLogs from 'ee/ai/duo_agents_platform/pages/show/components/agent_activity_logs.vue';
 import ActivityLogs from 'ee/ai/duo_agents_platform/components/common/activity_logs.vue';
@@ -13,6 +13,8 @@ describe('AgentActivityLogs', () => {
   const findActivityLogs = () => wrapper.findComponent(ActivityLogs);
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findLogLevelLabel = () => wrapper.find('label[for="log-level"]');
+  const findSkeletonLoader = () => wrapper.findAllComponents(GlSkeletonLoader);
+  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
 
   const createWrapper = (props = {}) => {
     return shallowMount(AgentActivityLogs, {
@@ -31,11 +33,19 @@ describe('AgentActivityLogs', () => {
       });
 
       it('renders the fetching logs message', () => {
-        expect(wrapper.text()).toContain('Fetching logs...');
+        expect(findSkeletonLoader().exists()).toBe(true);
       });
 
-      it('does not render Detail level selector', () => {
-        expect(findCollapsibleListbox().exists()).toBe(false);
+      it('render Detail level selector', () => {
+        expect(findCollapsibleListbox().exists()).toBe(true);
+      });
+
+      it('does not render the empty state', () => {
+        expect(findEmptyState().exists()).toBe(false);
+      });
+
+      it('does not render the activity logs', () => {
+        expect(findActivityLogs().exists()).toBe(false);
       });
     });
 
@@ -45,16 +55,20 @@ describe('AgentActivityLogs', () => {
           wrapper = createWrapper({ agentFlowCheckpoint: '' });
         });
 
-        it('displays fallback message when no events', () => {
-          expect(wrapper.text()).toContain('No logs available yet.');
+        it('displays the empty state', () => {
+          expect(findEmptyState().exists()).toBe(true);
         });
 
         it('does not render ActivityLogs component', () => {
           expect(findActivityLogs().exists()).toBe(false);
         });
 
-        it('does not render Detail level selector', () => {
-          expect(findCollapsibleListbox().exists()).toBe(false);
+        it('render Detail level selector', () => {
+          expect(findCollapsibleListbox().exists()).toBe(true);
+        });
+
+        it('does not renders the loading state', () => {
+          expect(findSkeletonLoader().exists()).toBe(false);
         });
       });
 
@@ -185,12 +199,16 @@ describe('AgentActivityLogs', () => {
       });
     });
 
-    it('displays fallback message when parsing fails', () => {
-      expect(wrapper.text()).toContain('No logs available yet.');
+    it('displays fallback message', () => {
+      expect(findEmptyState().exists()).toBe(true);
     });
 
-    it('does not render Detail level selector when parsing fails', () => {
-      expect(findCollapsibleListbox().exists()).toBe(false);
+    it('render Detail level selector', () => {
+      expect(findCollapsibleListbox().exists()).toBe(true);
+    });
+
+    it('does not render the acvtivity logs', () => {
+      expect(findActivityLogs().exists()).toBe(false);
     });
   });
 });

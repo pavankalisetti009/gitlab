@@ -1,5 +1,6 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlEmptyState, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import emptyJobPendingSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-job-pending-md.svg?url';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getMessageData } from '../../../utils';
@@ -9,6 +10,9 @@ export default {
   components: {
     ActivityLogs,
     GlCollapsibleListbox,
+    GlEmptyState,
+    GlSkeletonLoader,
+    GlSprintf,
   },
   props: {
     isLoading: {
@@ -48,12 +52,13 @@ export default {
       if (this.selectedFilter === 'important') {
         return this.logs.filter((item, index) => {
           // Always include the first item (start message)
+          // https://gitlab.com/gitlab-org/gitlab/-/issues/562418
           if (index === 0) {
             return true;
           }
 
           const messageData = getMessageData(item);
-          return messageData && messageData.level && messageData.level !== 0;
+          return messageData && messageData.level && messageData.level > 0;
         });
       }
       return this.logs;
@@ -68,6 +73,7 @@ export default {
       this.selectedFilter = value;
     },
   },
+  emptyJobPendingSvg,
   filterOptions: [
     {
       value: 'verbose',
@@ -82,28 +88,47 @@ export default {
 </script>
 <template>
   <div class="gl-h-full">
-    <template v-if="isLoading">{{ s__('DuoAgentsPlatform|Fetching logs...') }}</template>
-    <template v-else-if="!hasLogs">{{ s__('DuoAgentsPlatform|No logs available yet.') }}</template>
-    <template v-else>
-      <div
-        class="gl-border-b gl-sticky gl-left-0 gl-top-0 gl-z-2 gl-flex gl-w-full gl-items-center gl-justify-end gl-bg-gray-10 gl-pr-3"
-      >
-        <label class="gl-m-0 gl-mr-4 gl-p-5" for="log-level">{{
-          s__('DuoAgentsPlatform|Detail level')
-        }}</label>
-        <gl-collapsible-listbox
-          id="log-level"
-          v-model="selectedFilter"
-          :items="$options.filterOptions"
-          :toggle-text="selectedFilterText"
-          @select="onFilterChange"
-        />
+    <div
+      class="gl-border-b gl-sticky gl-left-0 gl-top-0 gl-z-2 gl-flex gl-w-full gl-items-center gl-justify-end gl-bg-gray-10 gl-pr-3"
+    >
+      <label class="gl-m-0 gl-mr-4 gl-p-5" for="log-level">{{
+        s__('DuoAgentsPlatform|Detail level')
+      }}</label>
+      <gl-collapsible-listbox
+        id="log-level"
+        v-model="selectedFilter"
+        :items="$options.filterOptions"
+        :toggle-text="selectedFilterText"
+        @select="onFilterChange"
+      />
+    </div>
+    <div class="gl-relative gl-flex gl-flex-col gl-pt-6">
+      <div class="gl-overflow-auto-y gl-h-[calc(100vh-22rem)]">
+        <template v-if="isLoading">
+          <gl-skeleton-loader class="gl-ml-4" />
+          <gl-skeleton-loader class="gl-ml-4 gl-mt-4" />
+        </template>
+        <gl-empty-state
+          v-else-if="!hasLogs"
+          :title="s__('DuoAgentsPlatform|This session has no activity')"
+          :svg-path="$options.emptyJobPendingSvg"
+        >
+          <template #description>
+            <gl-sprintf
+              :message="
+                s__(
+                  'DuoAgentsPlatform|To learn more about this session, view the %{boldStart}Details%{boldEnd} tab.',
+                )
+              "
+            >
+              <template #bold="{ content }">
+                <strong>{{ content }}</strong>
+              </template>
+            </gl-sprintf>
+          </template>
+        </gl-empty-state>
+        <activity-logs v-else :items="filteredLogs" />
       </div>
-      <div class="gl-relative gl-flex gl-flex-col">
-        <div class="gl-overflow-auto-y gl-h-[calc(100vh-21rem)] gl-pt-10">
-          <activity-logs :items="filteredLogs" />
-        </div>
-      </div>
-    </template>
+    </div>
   </div>
 </template>
