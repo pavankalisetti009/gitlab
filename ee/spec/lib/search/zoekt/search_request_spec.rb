@@ -20,6 +20,7 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
   describe '#as_json' do
     before do
       allow(Search::Zoekt::Node).to receive(:online).and_return(Search::Zoekt::Node.id_in([node1.id, node2.id]))
+      stub_zoekt_features(traversal_id_search: true)
     end
 
     subject(:json_representation) do
@@ -48,9 +49,9 @@ RSpec.describe Search::Zoekt::SearchRequest, feature_category: :global_search do
       end
     end
 
-    context 'when zoekt traversal id feature flag is disabled' do
+    context 'when zoekt traversal id feature is unavailable' do
       before do
-        stub_feature_flags(zoekt_traversal_id_queries: false)
+        stub_zoekt_features(traversal_id_search: false)
       end
 
       subject(:json_representation) do

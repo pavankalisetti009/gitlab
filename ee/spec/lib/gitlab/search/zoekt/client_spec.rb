@@ -323,9 +323,9 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_
       end
     end
 
-    context 'when zoekt traversal ID queries are disabled' do
+    context 'when zoekt traversal ID search is unavailable' do
       before do
-        allow(::Search::Zoekt).to receive(:use_traversal_id_queries?).and_return(false)
+        stub_zoekt_features(traversal_id_search: false)
       end
 
       context 'and no targets are provided' do

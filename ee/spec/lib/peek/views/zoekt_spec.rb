@@ -5,11 +5,10 @@ require 'spec_helper'
 # We don't want to interact with Zoekt in GitLab FOSS so we test
 # this in ee/ only. The code exists in FOSS and won't do anything.
 
-RSpec.describe Peek::Views::Zoekt, :zoekt, :request_store, feature_category: :global_search do
+RSpec.describe Peek::Views::Zoekt, :zoekt_settings_enabled, :request_store, feature_category: :global_search do
   before do
     ::Gitlab::Instrumentation::Zoekt.detail_store # Create store in redis
     allow(::Gitlab::PerformanceBar).to receive(:enabled_for_request?).and_return(true)
-    allow(::Search::Zoekt).to receive(:traversal_id_searchable?).and_return(true)
   end
 
   describe '#results' do

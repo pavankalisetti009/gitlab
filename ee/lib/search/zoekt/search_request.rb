@@ -91,7 +91,9 @@ module Search
       end
 
       def use_traversal_id_queries?
-        ::Search::Zoekt.use_traversal_id_queries?(current_user)
+        ::Search::Zoekt.feature_available?(
+          :traversal_id_search, current_user, group_id: options[:group_id], project_id: options[:project_id]
+        )
       end
 
       attr_reader :query, :current_user, :options
