@@ -6,18 +6,14 @@ RSpec.describe Ci::AuthJobFinder, feature_category: :continuous_integration do
   describe '#execute!', :request_store do
     subject(:execute) { described_class.new(token: token).execute! }
 
+    let_it_be(:scoped_user) { create(:user) }
+    let_it_be(:user, reload: true) { create(:user, :service_account, composite_identity_enforced: true) }
+    let_it_be(:job, refind: true) { create(:ci_build, status: :running, user: user) }
+
     context 'when job has a `scoped_user_id` tracked' do
       let(:token) { job.token }
-      let(:scoped_user) { create(:user) }
 
-      before do
-        allow(job).to receive(:options).and_return(job.options.merge(scoped_user_id: scoped_user.id))
-      end
-
-      context 'when job user supports composite identity' do
-        let_it_be(:user, reload: true) { create(:user, :service_account, composite_identity_enforced: true) }
-        let_it_be(:job, refind: true) { create(:ci_build, status: :running, user: user) }
-
+      shared_examples 'job user that supports composite identity' do
         it 'links the scoped user as composite identity' do
           expect(job.scoped_user).to eq(scoped_user)
 
@@ -25,6 +21,31 @@ RSpec.describe Ci::AuthJobFinder, feature_category: :continuous_integration do
 
           expect(::Gitlab::Auth::Identity.new(job.user)).to be_linked
         end
+      end
+
+      context 'when the scoped_user_id is stored in the metadata attributes' do
+        before do
+          allow(job).to receive(:options).and_return(job.options.merge(scoped_user_id: scoped_user.id))
+        end
+
+        it_behaves_like 'job user that supports composite identity'
+      end
+
+      context 'when the scoped_user_id is stored in the builds table' do
+        before do
+          job.update!(scoped_user_id: scoped_user.id)
+        end
+
+        it_behaves_like 'job user that supports composite identity'
+      end
+
+      context 'when the scoped_user_id is stored in both locations' do
+        before do
+          allow(job).to receive(:options).and_return(job.options.merge(scoped_user_id: non_existing_record_id))
+          job.update!(scoped_user_id: scoped_user.id)
+        end
+
+        it_behaves_like 'job user that supports composite identity'
       end
     end
   end

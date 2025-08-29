@@ -32,6 +32,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Seed::Build, feature_category: :pipeline_co
       context 'when pipeline user supports composite identity' do
         it 'does not propagate composite identity if composite user is not linked' do
           expect(seed_attributes[:options].key?(:scoped_user_id)).to be(false)
+          expect(seed_attributes.key?(:scoped_user_id)).to be(false)
         end
 
         context 'when composite identity is linked' do
@@ -41,8 +42,19 @@ RSpec.describe Gitlab::Ci::Pipeline::Seed::Build, feature_category: :pipeline_co
             ::Gitlab::Auth::Identity.fabricate(user).link!(scoped_user)
           end
 
-          it 'propagates the composite identity as `scoped_user_id` in the options' do
-            expect(seed_attributes[:options][:scoped_user_id]).to be(scoped_user.id)
+          it 'propagates the composite identity as `scoped_user_id`' do
+            expect(seed_attributes[:scoped_user_id]).to be(scoped_user.id)
+          end
+
+          context 'with the feature flag disabled' do
+            before do
+              stub_feature_flags(stop_writing_builds_metadata: false)
+            end
+
+            it 'propagates the composite identity as `scoped_user_id` in the options and attributes' do
+              expect(seed_attributes[:options][:scoped_user_id]).to be(scoped_user.id)
+              expect(seed_attributes[:scoped_user_id]).to be(scoped_user.id)
+            end
           end
         end
       end
