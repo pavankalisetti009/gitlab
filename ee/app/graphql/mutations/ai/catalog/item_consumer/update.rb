@@ -16,14 +16,6 @@ module Mutations
             required: true,
             description: 'Global ID of the catalog item consumer to update.'
 
-          argument :enabled, GraphQL::Types::Boolean,
-            required: false,
-            description: 'Whether the flow is enabled in the group or project.'
-
-          argument :locked, GraphQL::Types::Boolean,
-            required: false,
-            description: 'Whether the configuration is locked.'
-
           argument :pinned_version_prefix, GraphQL::Types::String,
             required: false,
             description: 'Major version, minor version, or patch to pin the item to.'
@@ -33,7 +25,7 @@ module Mutations
           def resolve(args)
             item_consumer = authorized_find!(id: args[:id])
 
-            params = args.slice(:enabled, :locked, :pinned_version_prefix)
+            params = args.slice(:pinned_version_prefix)
 
             result = ::Ai::Catalog::ItemConsumers::UpdateService.new(
               item_consumer,

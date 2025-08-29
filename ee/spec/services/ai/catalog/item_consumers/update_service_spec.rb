@@ -14,7 +14,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
     let_it_be(:group) { create(:group, developers: developer, maintainers: maintainer) }
     let_it_be(:project) { create(:project, group: group) }
 
-    let(:params) { { enabled: false, locked: false, pinned_version_prefix: '1.1' } }
+    let(:params) { { pinned_version_prefix: '1.1' } }
 
     subject(:response) { described_class.new(item_consumer, user, params).execute }
 
@@ -40,9 +40,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
         end
 
         it 'updates the item consumer' do
-          expect { response }.to change { item_consumer.enabled }.from(true).to(false)
-            .and change { item_consumer.locked }.from(true).to(false)
-            .and change { item_consumer.pinned_version_prefix }.from(nil).to('1.1')
+          expect { response }.to change { item_consumer.reload.pinned_version_prefix }.from(nil).to('1.1')
         end
 
         it 'tracks internal event on successful update' do
@@ -51,8 +49,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::UpdateService, feature_category: :wor
             project: item_consumer.project,
             namespace: item_consumer.group,
             additional_properties: {
-              label: 'false',
-              property: 'false'
+              label: 'true',
+              property: 'true'
             }
           ).and increment_usage_metrics('counts.count_total_update_ai_catalog_item_consumer')
         end

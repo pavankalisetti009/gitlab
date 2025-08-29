@@ -17,7 +17,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :wo
     subject(:response) { described_class.new(item_consumer, current_user).execute }
 
     context 'with a project level item consumer' do
-      let_it_be_with_reload(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+      let_it_be_with_refind(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
 
       context 'when user does not have permission' do
         let(:current_user) { developer }

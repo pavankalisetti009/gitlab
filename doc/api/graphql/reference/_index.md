@@ -2552,9 +2552,7 @@ Input type: `AiCatalogItemConsumerCreateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogitemconsumercreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationaicatalogitemconsumercreateenabled"></a>`enabled` | [`Boolean`](#boolean) | Whether to enable the item. |
 | <a id="mutationaicatalogitemconsumercreateitemid"></a>`itemId` | [`AiCatalogItemID!`](#aicatalogitemid) | Item to configure. |
-| <a id="mutationaicatalogitemconsumercreatelocked"></a>`locked` | [`Boolean`](#boolean) | Whether to lock the item configuration (groups only). |
 | <a id="mutationaicatalogitemconsumercreatepinnedversionprefix"></a>`pinnedVersionPrefix` | [`String`](#string) | Major version, minor version, or patch to pin the item to. |
 | <a id="mutationaicatalogitemconsumercreatetarget"></a>`target` | [`ItemConsumerTargetInput!`](#itemconsumertargetinput) | Target in which the catalog item is configured. |
 
@@ -2604,9 +2602,7 @@ Input type: `AiCatalogItemConsumerUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogitemconsumerupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationaicatalogitemconsumerupdateenabled"></a>`enabled` | [`Boolean`](#boolean) | Whether the flow is enabled in the group or project. |
 | <a id="mutationaicatalogitemconsumerupdateid"></a>`id` | [`AiCatalogItemConsumerID!`](#aicatalogitemconsumerid) | Global ID of the catalog item consumer to update. |
-| <a id="mutationaicatalogitemconsumerupdatelocked"></a>`locked` | [`Boolean`](#boolean) | Whether the configuration is locked. |
 | <a id="mutationaicatalogitemconsumerupdatepinnedversionprefix"></a>`pinnedVersionPrefix` | [`String`](#string) | Major version, minor version, or patch to pin the item to. |
 
 #### Fields
@@ -22892,11 +22888,9 @@ An AI catalog item configuration.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="aicatalogitemconsumerenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether the catalog item is enabled or not. |
 | <a id="aicatalogitemconsumergroup"></a>`group` | [`Group`](#group) | Group in which the catalog item is configured. |
 | <a id="aicatalogitemconsumerid"></a>`id` | [`ID!`](#id) | ID of the configuration item. |
 | <a id="aicatalogitemconsumeritem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Configuration catalog item. |
-| <a id="aicatalogitemconsumerlocked"></a>`locked` | [`Boolean!`](#boolean) | Indicates whether the catalog item configuration is locked or can be overridden. |
 | <a id="aicatalogitemconsumerorganization"></a>`organization` | [`Organization`](#organization) | Organization in which the catalog item is configured. |
 | <a id="aicatalogitemconsumerpinnedversionprefix"></a>`pinnedVersionPrefix` | [`String`](#string) | Major version, minor version, or patch item is pinned to. |
 | <a id="aicatalogitemconsumerproject"></a>`project` | [`Project`](#project) | Project in which the catalog item is configured. |

@@ -18,7 +18,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let(:params) do
     {
       target: target,
-      item_id: item.to_global_id
+      item_id: item.to_global_id,
+      pinned_version_prefix: '1.1'
     }
   end
 
@@ -75,8 +76,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
         'item' => a_hash_including('id' => item.to_global_id.to_s),
         'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
-        'enabled' => true,
-        'locked' => true
+        'pinnedVersionPrefix' => '1.1'
       )
     end
   end
@@ -95,9 +95,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
     expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
       'item' => a_hash_including('id' => item.to_global_id.to_s),
       'project' => a_hash_including('id' => consumer_project.to_global_id.to_s),
-      'enabled' => true,
-      'locked' => true,
-      'pinnedVersionPrefix' => nil
+      'pinnedVersionPrefix' => '1.1'
     )
   end
 
@@ -106,8 +104,6 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       {
         item_id: item.to_global_id,
         target: { group_id: consumer_group.to_global_id },
-        enabled: false,
-        locked: false,
         pinned_version_prefix: '1.0'
       }
     end
@@ -118,8 +114,6 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       expect(graphql_data_at(:ai_catalog_item_consumer_create, :item_consumer)).to match a_hash_including(
         'item' => a_hash_including('id' => item.to_global_id.to_s),
         'group' => a_hash_including('id' => consumer_group.to_global_id.to_s),
-        'enabled' => false,
-        'locked' => false,
         'pinnedVersionPrefix' => '1.0'
       )
     end
