@@ -36,6 +36,7 @@ export default {
   provide() {
     return {
       renderGFM,
+      avatarUrl: window.gon?.current_user_avatar_url,
     };
   },
   props: {
