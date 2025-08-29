@@ -1,4 +1,5 @@
 <script>
+import { debounce } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { DuoChat } from '@gitlab/duo-ui';
@@ -179,6 +180,7 @@ export default {
       cancelledRequestIds: [],
       completedRequestId: null,
       aiSlashCommands: [],
+      top: 0,
       width: 400,
       height: window.innerHeight,
       minWidth: 400,
@@ -274,20 +276,25 @@ export default {
       this.updateDimensions();
     },
     updateDimensions(width, height) {
+      const y = this.$refs.duoChat?.$el?.getBoundingClientRect().y || this.top;
+
       this.maxWidth = window.innerWidth - WIDTH_OFFSET;
       this.maxHeight = window.innerHeight;
 
       this.width = Math.min(width || this.width, this.maxWidth);
       this.height = Math.min(height || this.height, this.maxHeight);
-      this.top = window.innerHeight - this.height;
+      if (y <= 0 && !height) {
+        this.height = this.maxHeight;
+      }
+      this.top = Math.max(window.innerHeight - this.height, 0);
       this.left = window.innerWidth - this.width;
     },
     onChatResize(e) {
       this.updateDimensions(e.width, e.height);
     },
-    onWindowResize() {
+    onWindowResize: debounce(function resize() {
       this.updateDimensions();
-    },
+    }, 50),
     shouldStartNewChat(question) {
       return [GENIE_CHAT_NEW_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE, GENIE_CHAT_RESET_MESSAGE].includes(
         question,
@@ -506,6 +513,7 @@ export default {
 
       <duo-chat
         id="duo-chat"
+        ref="duoChat"
         :thread-list="aiConversationThreads"
         :multi-threaded-view="multithreadedView"
         :active-thread-id="activeThread"
