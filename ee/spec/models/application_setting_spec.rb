@@ -160,7 +160,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_rollout_retry_interval: Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL,
         zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
         zoekt_search_enabled: false,
-        enforce_pipl_compliance: true
+        enforce_pipl_compliance: false
       )
     end
   end

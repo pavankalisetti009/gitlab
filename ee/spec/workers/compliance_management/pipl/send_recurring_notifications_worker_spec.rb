@@ -15,6 +15,10 @@ RSpec.describe ComplianceManagement::Pipl::SendRecurringNotificationsWorker, :sa
   describe '.perform', :freeze_time do
     let_it_be(:current_time) { Time.current }
 
+    before do
+      stub_ee_application_setting(enforce_pipl_compliance: true)
+    end
+
     context 'when there are matching records' do
       before_all do
         pipl_user_from(30, current_time)

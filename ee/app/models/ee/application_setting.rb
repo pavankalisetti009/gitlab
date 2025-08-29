@@ -136,7 +136,7 @@ module EE
       validates :observability_settings, json_schema: { filename: "application_setting_observability_settings" }
 
       jsonb_accessor :security_and_compliance_settings,
-        enforce_pipl_compliance: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }]
+        enforce_pipl_compliance: [::Gitlab::Database::Type::JsonbBoolean.new, { default: false }]
 
       validates :security_and_compliance_settings,
         json_schema: { filename: "security_and_compliance_settings", detail_errors: true }
