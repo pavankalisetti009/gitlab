@@ -21,8 +21,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
   end
 
   describe '#execute' do
-    let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
-    let_it_be(:workload) { create(:ci_workload, project: project, pipeline: pipeline) }
+    let_it_be(:workload) { create(:ci_workload, project: project) }
 
     let(:mock_response) { ServiceResponse.success(payload: workload) }
 
@@ -49,7 +48,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
 
         created_note = Note.last
         expect(created_note.note).to include('✅ Agent has started. You can view the progress')
-        expect(created_note.note).to include("pipelines/#{pipeline.id}")
+        expect(created_note.note).to include(workload.logs_url)
         expect(created_note.note).to include('target="_blank" rel="noopener noreferrer"')
       end
     end
