@@ -10,6 +10,7 @@ RSpec.describe Types::Ai::Catalog::VersionInterface, feature_category: :workflow
   it 'has the expected fields' do
     expected_fields = %w[
       created_at
+      human_version_name
       id
       released_at
       released

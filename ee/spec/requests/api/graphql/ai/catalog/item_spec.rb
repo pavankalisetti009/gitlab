@@ -21,6 +21,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
         createdAt
         releasedAt
         released
+        humanVersionName
         versionName
         ... on AiCatalogFlowVersion {
           steps {
@@ -94,7 +95,8 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
                 'updatedAt' => latest_version.updated_at.iso8601,
                 'releasedAt' => latest_version.release_date&.iso8601,
                 'released' => latest_version.released?,
-                'versionName' => latest_version.human_version,
+                'versionName' => latest_version.version,
+                'humanVersionName' => latest_version.human_version,
                 'createdAt' => latest_version.created_at.iso8601
               )
             )

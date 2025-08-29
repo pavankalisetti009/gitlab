@@ -23,7 +23,9 @@ module Types
           description: 'Timestamp of when the item version was released.'
         field :released, GraphQL::Types::Boolean, null: false, method: :released?,
           description: 'Indicates the item version is released.'
-        field :version_name, GraphQL::Types::String, null: true, method: :human_version,
+        field :human_version_name, GraphQL::Types::String, null: true, method: :human_version,
+          description: 'Human-friendly name of the item version. In the form v1.0.0-draft.'
+        field :version_name, GraphQL::Types::String, null: true, method: :version,
           description: 'Version name of the item version.'
 
         orphan_types ::Types::Ai::Catalog::AgentVersionType
