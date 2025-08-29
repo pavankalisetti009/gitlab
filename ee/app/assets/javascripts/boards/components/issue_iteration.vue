@@ -29,7 +29,7 @@ export default {
     wrapper-component="button"
     wrapper-component-class="board-card-info gl-text-sm gl-text-subtle !gl-cursor-help gl-bg-transparent gl-border-0 gl-p-0 focus-visible:gl-focus-inset"
     icon-name="iteration"
-    icon-class="board-card-info-icon flex-shrink-0 gl-mr-2"
+    icon-class="board-card-info-icon gl-shrink-0 gl-mr-2"
     :title="iterationPeriod"
     title-component-class="board-card-info gl-mr-3"
     tooltip-placement="top"
