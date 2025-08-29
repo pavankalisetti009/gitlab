@@ -42,6 +42,7 @@ describe('PremiumPlanSection', () => {
     expect(link.exists()).toBe(true);
     expect(link.props('href')).toBe('/groups/test-group/-/billings');
     expect(link.attributes('data-track-action')).toBe('click_link_compare_plans');
+    expect(link.attributes('data-track-experiment')).toBe('user_billing_pricing_information');
     expect(link.attributes('data-track-property')).toBe('123');
   });
 
