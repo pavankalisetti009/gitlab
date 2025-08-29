@@ -138,6 +138,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           'delete_pipelines_in_seconds' => 'ci_',
           'job_token_scope_enabled' => 'ci_outbound_',
           'display_pipeline_variables' => 'ci_',
+          'resource_group_default_process_mode' => '',
           # EE only
           'auto_rollback_enabled' => '',
           'merge_pipelines_enabled' => '',

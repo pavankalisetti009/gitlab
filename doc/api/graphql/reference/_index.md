@@ -9990,6 +9990,7 @@ Input type: `ProjectCiCdSettingsUpdateInput`
 | <a id="mutationprojectcicdsettingsupdatemergetrainsskiptrainallowed"></a>`mergeTrainsSkipTrainAllowed` | [`Boolean`](#boolean) | Indicates whether an option is allowed to merge without refreshing the merge train. Ignored unless the `merge_trains_skip_train` feature flag is also enabled. |
 | <a id="mutationprojectcicdsettingsupdatepipelinevariablesminimumoverriderole"></a>`pipelineVariablesMinimumOverrideRole` | [`String`](#string) | Minimum role required to set variables when creating a pipeline or running a job. |
 | <a id="mutationprojectcicdsettingsupdatepushrepositoryforjobtokenallowed"></a>`pushRepositoryForJobTokenAllowed` | [`Boolean`](#boolean) | Indicates the ability to push to the original project repository using a job token. |
+| <a id="mutationprojectcicdsettingsupdateresourcegroupdefaultprocessmode"></a>`resourceGroupDefaultProcessMode` | [`ResourceGroupsProcessMode`](#resourcegroupsprocessmode) | Default process mode for resource groups in the project. |
 
 #### Fields
 
@@ -40382,6 +40383,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectcicdsettingpipelinevariablesminimumoverriderole"></a>`pipelineVariablesMinimumOverrideRole` | [`String!`](#string) | Minimum role required to set variables when creating a pipeline or running a job. |
 | <a id="projectcicdsettingproject"></a>`project` | [`Project`](#project) | Project the CI/CD settings belong to. |
 | <a id="projectcicdsettingpushrepositoryforjobtokenallowed"></a>`pushRepositoryForJobTokenAllowed` | [`Boolean`](#boolean) | Indicates the ability to push to the original project repository using a job token. |
+| <a id="projectcicdsettingresourcegroupdefaultprocessmode"></a>`resourceGroupDefaultProcessMode` | [`ResourceGroupsProcessMode`](#resourcegroupsprocessmode) | Default process mode for resource groups. |
 
 ### `ProjectComplianceControlStatusType`
 
@@ -48869,6 +48871,17 @@ Status of a requirement based on last test report.
 | <a id="requirementstatusfilterfailed"></a>`FAILED` | Failed test report. |
 | <a id="requirementstatusfiltermissing"></a>`MISSING` | Requirements without any test report. |
 | <a id="requirementstatusfilterpassed"></a>`PASSED` | Passed test report. |
+
+### `ResourceGroupsProcessMode`
+
+Process mode for resource groups.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="resourcegroupsprocessmodenewest_first"></a>`NEWEST_FIRST` | Newest first. |
+| <a id="resourcegroupsprocessmodenewest_ready_first"></a>`NEWEST_READY_FIRST` | Newest ready first. |
+| <a id="resourcegroupsprocessmodeoldest_first"></a>`OLDEST_FIRST` | Oldest first. |
+| <a id="resourcegroupsprocessmodeunordered"></a>`UNORDERED` | Unordered. |
 
 ### `ReviewerWildcardId`
 

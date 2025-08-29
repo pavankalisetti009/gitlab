@@ -22360,7 +22360,8 @@ CREATE TABLE project_ci_cd_settings (
     id_token_sub_claim_components character varying[] DEFAULT '{project_path,ref_type,ref}'::character varying[] NOT NULL,
     delete_pipelines_in_seconds integer,
     allow_composite_identities_to_run_pipelines boolean DEFAULT false NOT NULL,
-    display_pipeline_variables boolean DEFAULT false NOT NULL
+    display_pipeline_variables boolean DEFAULT false NOT NULL,
+    resource_group_default_process_mode smallint DEFAULT 0 NOT NULL
 );
 
 CREATE SEQUENCE project_ci_cd_settings_id_seq
