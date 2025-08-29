@@ -51,10 +51,7 @@ module EE
 
     def by_code_embeddings_indexed(items)
       # return original projects relation if `with_code_embeddings_indexed` is false or FF is disabled
-      if ::Feature.disabled?(:allow_with_code_embeddings_indexed_projects_filter, current_user) ||
-          !::Gitlab::Utils.to_boolean(params[:with_code_embeddings_indexed])
-        return items
-      end
+      return items if !::Gitlab::Utils.to_boolean(params[:with_code_embeddings_indexed]) || code_embeddings_disabled?
 
       # return empty project relation if `project_ids_relation` is invalid
       # project ids is required because active_context_code_repositories is a partitioned table
@@ -64,6 +61,11 @@ module EE
       return items.none if project_ids_relation.blank? || !project_ids_relation.is_a?(Array)
 
       items.with_ready_active_context_code_repository_project_ids project_ids_relation
+    end
+
+    def code_embeddings_disabled?
+      !current_user.is_a?(User) || ::Feature.disabled?(:allow_with_code_embeddings_indexed_projects_filter,
+        current_user)
     end
 
     def by_hidden(items)
