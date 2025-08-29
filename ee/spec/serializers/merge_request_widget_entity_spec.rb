@@ -170,10 +170,22 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
       entity_json[:license_scanning]
     end
 
+    let(:license_scanning_full_report_path) do
+      license_scanning_json[:full_report_path]
+    end
+
     context 'when feature is licensed' do
       before do
         stub_licensed_features(license_scanning: true)
         stub_merge_request_pipelines
+      end
+
+      context "when a head_pipeline is nil" do
+        it "does not include full report path" do
+          allow(merge_request).to receive_messages(head_pipeline: nil)
+
+          expect(license_scanning_json).not_to include(:full_report_path)
+        end
       end
 
       context 'when report artifact is defined' do
@@ -191,13 +203,13 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
         end
 
         it 'the full report leads to the project path' do
-          expect(license_scanning_json[:full_report_path]).to include(project.full_path)
+          expect(license_scanning_full_report_path).to include(project.full_path)
         end
 
         context "when a report artifact is produced from a forked project" do
           let(:source_project) { fork_project(project, user, repository: true) }
 
-          let(:fork_merge_request) do
+          let(:merge_request) do
             create(
               :merge_request,
               source_project: source_project,
@@ -207,20 +219,39 @@ RSpec.describe MergeRequestWidgetEntity, feature_category: :code_review_workflow
 
           let(:fork_pipeline) { create(:ci_empty_pipeline, project: source_project) }
 
-          let(:subject_json) do
-            described_class.new(
-              fork_merge_request,
-              current_user: user,
-              request: request
-            ).as_json
+          it "is included" do
+            expect(entity_json).to include(:license_scanning)
           end
 
-          specify { expect(subject_json).to include(:license_scanning) }
-
           it 'the full report leads to the fork project' do
-            allow(fork_merge_request).to receive_messages(head_pipeline: fork_pipeline)
+            allow(merge_request).to receive_messages(head_pipeline: fork_pipeline)
 
-            expect(subject_json[:license_scanning][:full_report_path]).to include(source_project.full_path)
+            expect(license_scanning_full_report_path).to include(source_project.full_path)
+          end
+
+          context "when a head pipeline runs on the target project" do
+            let(:head_pipeline) { create(:ci_empty_pipeline, project:) }
+
+            before do
+              merge_request.update!(head_pipeline:)
+            end
+
+            it "the full report leads to the target project" do
+              expect(license_scanning_full_report_path).to include(project.full_path)
+            end
+
+            context "when the forked project was deleted" do
+              before do
+                # In production, Projects::DestroyService cleans up pipelines as well.
+                # Here we simulate that state manually to keep the test lightweight.
+                source_project.delete
+                source_project.ci_pipelines.delete_all
+              end
+
+              it "the full report leads to the target project" do
+                expect(license_scanning_full_report_path).to include(project.full_path)
+              end
+            end
           end
         end
       end
