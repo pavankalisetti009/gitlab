@@ -503,6 +503,17 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     end
   end
 
+  describe 'before_validation' do
+    it 'removes disabled permissions' do
+      member_role = build(:member_role, :guest, :read_code)
+      member_role.permissions["nonexistent"] = false
+
+      expect { member_role.validate }.to change { member_role.permissions }.from(
+        { 'read_code' => true, 'nonexistent' => false }
+      ).to({ 'read_code' => true })
+    end
+  end
+
   describe 'before_save' do
     describe '#set_occupies_seat' do
       it 'sets to false when skip_seat_consumption for custom ability is true' do

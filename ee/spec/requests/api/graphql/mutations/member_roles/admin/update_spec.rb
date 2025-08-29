@@ -73,7 +73,7 @@ RSpec.describe 'updating admin member role', :enable_admin_mode, feature_categor
         expect(member_role.description).to eq('new description')
         expect(member_role.read_admin_monitoring).to be(true)
         expect(member_role.read_admin_cicd).to be(true)
-        expect(member_role.read_admin_users).to be(false)
+        expect(member_role.read_admin_users).to be_nil
       end
     end
 

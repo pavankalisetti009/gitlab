@@ -21,7 +21,12 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
     context 'for json schema' do
       Gitlab::CustomRoles::Definition.admin.each_key do |permission|
         context "for #{permission}" do
-          it_behaves_like 'validates jsonb boolean field', permission, :permissions
+          it { is_expected.to allow_value({ permission => true }).for(:permissions) }
+          it { is_expected.to allow_value({ permission => false }).for(:permissions) }
+          it { is_expected.not_to allow_value({ permission => "true" }).for(:permissions) }
+          it { is_expected.not_to allow_value({ permission => 1 }).for(:permissions) }
+          it { is_expected.not_to allow_value({ permission => "false" }).for(:permissions) }
+          it { is_expected.not_to allow_value({ permission => 0 }).for(:permissions) }
         end
       end
 
