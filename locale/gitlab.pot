@@ -13957,6 +13957,9 @@ msgstr ""
 msgid "Close milestone"
 msgstr ""
 
+msgid "Close panel"
+msgstr ""
+
 msgid "Close sidebar widget"
 msgstr ""
 
