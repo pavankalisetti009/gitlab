@@ -279,10 +279,6 @@ module EE
       end
     end
 
-    def duo_chat
-      CloudConnector::AvailableServices.find_by_name(:duo_chat)
-    end
-
     # Check whether a user is allowed to use Duo Chat powered by self-hosted models
     def duo_chat_self_hosted?
       ::Ai::FeatureSetting.find_by_feature(:duo_chat)&.self_hosted?
