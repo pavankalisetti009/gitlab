@@ -1,13 +1,11 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-import { GlAlert } from '@gitlab/ui';
-
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
@@ -62,7 +60,7 @@ describe('AiCatalogAgents', () => {
     });
   };
 
-  const findGlAlert = () => wrapper.findComponent(GlAlert);
+  const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
 
@@ -212,7 +210,7 @@ describe('AiCatalogAgents', () => {
       });
 
       it('displays error message', () => {
-        expect(findGlAlert().text()).toBe('Agent not found');
+        expect(findErrorsAlert().props('errors')).toStrictEqual(['Agent not found']);
       });
 
       it('logs error to Sentry', () => {
@@ -256,9 +254,9 @@ describe('AiCatalogAgents', () => {
         deleteAgent();
 
         await waitForPromises();
-        expect(findGlAlert().text()).toBe(
+        expect(findErrorsAlert().props('errors')).toStrictEqual([
           'Failed to delete agent. You do not have permission to delete this AI agent.',
-        );
+        ]);
       });
     });
 
@@ -269,7 +267,9 @@ describe('AiCatalogAgents', () => {
         deleteAgent();
 
         await waitForPromises();
-        expect(findGlAlert().text()).toBe('Failed to delete agent. Error: Request failed');
+        expect(findErrorsAlert().props('errors')).toStrictEqual([
+          'Failed to delete agent. Error: Request failed',
+        ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });

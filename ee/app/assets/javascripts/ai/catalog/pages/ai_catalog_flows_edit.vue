@@ -20,7 +20,7 @@ export default {
   },
   data() {
     return {
-      errorMessages: [],
+      errors: [],
       isSubmitting: false,
     };
   },
@@ -67,7 +67,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogFlowUpdate;
           if (errors.length > 0) {
-            this.errorMessages = errors;
+            this.errors = errors;
             return;
           }
 
@@ -78,14 +78,14 @@ export default {
           });
         }
       } catch (error) {
-        this.errorMessages = [s__('AICatalog|The flow could not be updated. Try again.')];
+        this.errors = [s__('AICatalog|The flow could not be updated. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;
       }
     },
     resetErrorMessages() {
-      this.errorMessages = [];
+      this.errors = [];
     },
   },
 };
@@ -104,7 +104,7 @@ export default {
       mode="edit"
       :initial-values="initialValues"
       :is-loading="isSubmitting"
-      :error-messages="errorMessages"
+      :errors="errors"
       @dismiss-errors="resetErrorMessages"
       @submit="handleSubmit"
     />

@@ -20,7 +20,7 @@ export default {
   },
   data() {
     return {
-      errorMessages: [],
+      errors: [],
       isSubmitting: false,
     };
   },
@@ -61,7 +61,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogAgentUpdate;
           if (errors.length > 0) {
-            this.errorMessages = errors;
+            this.errors = errors;
             return;
           }
 
@@ -72,14 +72,14 @@ export default {
           });
         }
       } catch (error) {
-        this.errorMessages = [s__('AICatalog|The agent could not be updated. Try again.')];
+        this.errors = [s__('AICatalog|The agent could not be updated. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;
       }
     },
     resetErrorMessages() {
-      this.errorMessages = [];
+      this.errors = [];
     },
   },
 };
@@ -96,7 +96,7 @@ export default {
     </page-heading>
     <ai-catalog-agent-form
       mode="edit"
-      :error-messages="errorMessages"
+      :errors="errors"
       :initial-values="initialValues"
       :is-loading="isSubmitting"
       @dismiss-errors="resetErrorMessages"

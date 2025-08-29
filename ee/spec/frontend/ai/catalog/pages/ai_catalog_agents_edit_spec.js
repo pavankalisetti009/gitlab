@@ -126,9 +126,7 @@ describe('AiCatalogAgentsEdit', () => {
       });
 
       it('sets error messages and captures exception', () => {
-        expect(findForm().props('errorMessages')).toEqual([
-          'The agent could not be updated. Try again.',
-        ]);
+        expect(findForm().props('errors')).toEqual(['The agent could not be updated. Try again.']);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
       });
@@ -136,7 +134,7 @@ describe('AiCatalogAgentsEdit', () => {
       it('allows user to dismiss errors', async () => {
         await findForm().vm.$emit('dismiss-errors');
 
-        expect(findForm().props('errorMessages')).toEqual([]);
+        expect(findForm().props('errors')).toEqual([]);
       });
     });
 
@@ -148,7 +146,7 @@ describe('AiCatalogAgentsEdit', () => {
       });
 
       it('shows an alert', () => {
-        expect(findForm().props('errorMessages')).toEqual([
+        expect(findForm().props('errors')).toEqual([
           mockUpdateAiCatalogAgentErrorMutation.data.aiCatalogAgentUpdate.errors[0],
         ]);
         expect(findForm().props('isLoading')).toBe(false);

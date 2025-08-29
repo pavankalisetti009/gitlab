@@ -93,9 +93,7 @@ describe('AiCatalogAgentsNew', () => {
       });
 
       it('sets error messages and captures exception', () => {
-        expect(findForm().props('errorMessages')).toEqual([
-          'The agent could not be added. Try again.',
-        ]);
+        expect(findForm().props('errors')).toEqual(['The agent could not be added. Try again.']);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
       });
@@ -103,7 +101,7 @@ describe('AiCatalogAgentsNew', () => {
       it('allows user to dismiss errors', async () => {
         await findForm().vm.$emit('dismiss-errors');
 
-        expect(findForm().props('errorMessages')).toEqual([]);
+        expect(findForm().props('errors')).toEqual([]);
       });
     });
 
@@ -115,7 +113,7 @@ describe('AiCatalogAgentsNew', () => {
       });
 
       it('shows an alert', () => {
-        expect(findForm().props('errorMessages')).toEqual([
+        expect(findForm().props('errors')).toEqual([
           mockCreateAiCatalogAgentErrorMutation.data.aiCatalogAgentCreate.errors[0],
         ]);
         expect(findForm().props('isLoading')).toBe(false);

@@ -1,12 +1,12 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { GlFormFields } from '@gitlab/ui';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_built_in_tools.query.graphql';
-import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
@@ -37,7 +37,7 @@ describe('AiCatalogAgentForm', () => {
   const defaultProps = {
     mode: 'create',
     isLoading: false,
-    errorMessages: [],
+    errors: [],
   };
 
   const initialValues = {
@@ -167,11 +167,11 @@ describe('AiCatalogAgentForm', () => {
     const mockErrorMessage = 'The agent could not be created';
 
     beforeEach(() => {
-      createWrapper({ errorMessages: [mockErrorMessage] });
+      createWrapper({ errors: [mockErrorMessage] });
     });
 
     it('passes error alert', () => {
-      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage]);
+      expect(findErrorAlert().props('errors')).toEqual([mockErrorMessage]);
     });
 
     it('renders errors with form errors', async () => {
@@ -179,7 +179,7 @@ describe('AiCatalogAgentForm', () => {
 
       await findProjectDropdown().vm.$emit('error', formError);
 
-      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage, formError]);
+      expect(findErrorAlert().props('errors')).toEqual([mockErrorMessage, formError]);
     });
 
     it('emits dismiss-errors event', () => {

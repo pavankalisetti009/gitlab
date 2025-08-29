@@ -2,10 +2,10 @@ import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
@@ -211,7 +211,7 @@ describe('AiCatalogFlows', () => {
       });
 
       it('displays error message', () => {
-        expect(findErrorsAlert().props('errorMessages')).toEqual(['Flow not found']);
+        expect(findErrorsAlert().props('errors')).toEqual(['Flow not found']);
       });
 
       it('logs error to Sentry', () => {
@@ -255,7 +255,7 @@ describe('AiCatalogFlows', () => {
         deleteFlow();
 
         await waitForPromises();
-        expect(findErrorsAlert().props('errorMessages')).toEqual([
+        expect(findErrorsAlert().props('errors')).toEqual([
           'Failed to delete flow. You do not have permission to delete this AI flow.',
         ]);
       });
@@ -268,7 +268,7 @@ describe('AiCatalogFlows', () => {
         deleteFlow();
 
         await waitForPromises();
-        expect(findErrorsAlert().props('errorMessages')).toEqual([
+        expect(findErrorsAlert().props('errors')).toEqual([
           'Failed to delete flow. Error: Request failed',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
@@ -379,7 +379,7 @@ describe('AiCatalogFlows', () => {
             createConsumer();
             await waitForPromises();
 
-            expect(findErrorsAlert().props('errorMessages')).toEqual([
+            expect(findErrorsAlert().props('errors')).toEqual([
               `Flow could not be added: ${mockFlow.name}`,
               'Item already configured.',
             ]);
@@ -393,7 +393,7 @@ describe('AiCatalogFlows', () => {
             createConsumer();
             await waitForPromises();
 
-            expect(findErrorsAlert().props('errorMessages')).toEqual([
+            expect(findErrorsAlert().props('errors')).toEqual([
               'The flow could not be enabled. Try again. Error: Request failed',
             ]);
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));

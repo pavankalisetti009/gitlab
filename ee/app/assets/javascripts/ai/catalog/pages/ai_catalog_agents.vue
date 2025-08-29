@@ -1,5 +1,4 @@
 <script>
-import { GlAlert } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
@@ -8,6 +7,7 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
@@ -25,10 +25,10 @@ import {
 export default {
   name: 'AiCatalogAgents',
   components: {
-    GlAlert,
     AiCatalogListHeader,
     AiCatalogList,
     AiCatalogItemDrawer,
+    ErrorsAlert,
   },
   apollo: {
     aiCatalogAgents: {
@@ -63,7 +63,7 @@ export default {
         if (this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM]) {
           this.closeDrawer();
         }
-        this.errorMessage = error.message;
+        this.errors = [error.message];
         Sentry.captureException(error);
       },
     },
@@ -72,7 +72,7 @@ export default {
     return {
       aiCatalogAgents: [],
       aiCatalogAgent: {},
-      errorMessage: null,
+      errors: [],
       pageInfo: {},
     };
   },
@@ -148,15 +148,17 @@ export default {
         });
 
         if (!data.aiCatalogAgentDelete.success) {
-          this.errorMessage = sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
-            error: data.aiCatalogAgentDelete.errors?.[0],
-          });
+          this.errors = [
+            sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
+              error: data.aiCatalogAgentDelete.errors?.[0],
+            }),
+          ];
           return;
         }
 
         this.$toast.show(s__('AICatalog|Agent deleted successfully.'));
       } catch (error) {
-        this.errorMessage = sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error });
+        this.errors = [sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error })];
         Sentry.captureException(error);
       }
     },
@@ -186,13 +188,7 @@ export default {
 <template>
   <div>
     <ai-catalog-list-header />
-    <gl-alert
-      v-if="errorMessage"
-      class="gl-mb-3 gl-mt-5"
-      variant="danger"
-      @dismiss="errorMessage = null"
-      >{{ errorMessage }}
-    </gl-alert>
+    <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogAgents"
