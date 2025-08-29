@@ -5,6 +5,7 @@ mutation editBrachRuleEE($input: BranchRuleUpdateInput!) {
       id
       name
       branchProtection {
+        isGroupLevel
         allowForcePush
         codeOwnerApprovalRequired
         mergeAccessLevels {
