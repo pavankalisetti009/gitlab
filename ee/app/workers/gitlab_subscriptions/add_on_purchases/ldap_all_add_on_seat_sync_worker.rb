@@ -18,9 +18,18 @@ module GitlabSubscriptions
         return unless Gitlab::Auth::Ldap::Config.enabled?
         return unless add_on_purchase.present?
 
+        providers_with_duo_groups = Gitlab::Auth::Ldap::Config.providers.filter_map do |provider|
+          config = Gitlab::Auth::Ldap::Config.new(provider)
+          provider if config.duo_add_on_groups.present?
+        end
+
+        return if providers_with_duo_groups.empty?
+
         logger.info('Started LDAP Duo seat sync')
 
-        duo_member_dns = fetch_duo_member_dns_from_ldap
+        duo_member_dns = fetch_duo_member_dns_from_ldap(providers_with_duo_groups)
+
+        return if duo_member_dns.empty?
 
         User.ldap.each_batch(of: 100) do |users_batch|
           users_to_assign = []
@@ -56,16 +65,12 @@ module GitlabSubscriptions
 
       private
 
-      def fetch_duo_member_dns_from_ldap
+      def fetch_duo_member_dns_from_ldap(providers_with_duo_groups)
         member_dns = Set.new
-        providers = Gitlab::Auth::Ldap::Config.providers
 
-        return member_dns if providers.empty?
-
-        providers.each do |provider|
+        providers_with_duo_groups.each do |provider|
           ::EE::Gitlab::Auth::Ldap::Sync::Proxy.open(provider) do |proxy|
             duo_add_on_groups = proxy.adapter.config.duo_add_on_groups
-            next if duo_add_on_groups.blank?
 
             duo_add_on_groups.each do |group_cn|
               group_member_dns = proxy.dns_for_group_cn(group_cn)

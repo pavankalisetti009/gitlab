@@ -61,6 +61,32 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::LdapAllAddOnSeatSyncWorker, 
         stub_ldap_config(duo_add_on_groups: [group_cn])
       end
 
+      context 'when duo_add_on_groups is not configured' do
+        before do
+          stub_ldap_config(duo_add_on_groups: [])
+        end
+
+        it 'does not process any users' do
+          expect(GitlabSubscriptions::Duo::BulkAssignService).not_to receive(:new)
+          expect(GitlabSubscriptions::Duo::BulkUnassignService).not_to receive(:new)
+
+          worker.perform
+        end
+      end
+
+      context 'when duo_add_on_groups is nil' do
+        before do
+          stub_ldap_config(duo_add_on_groups: nil)
+        end
+
+        it 'does not process any users' do
+          expect(GitlabSubscriptions::Duo::BulkAssignService).not_to receive(:new)
+          expect(GitlabSubscriptions::Duo::BulkUnassignService).not_to receive(:new)
+
+          worker.perform
+        end
+      end
+
       context 'when processing users for assignment and removal' do
         it 'processes users and calls bulk services for assignment and removal' do
           expect(GitlabSubscriptions::Duo::BulkAssignService).to receive(:new)
@@ -91,17 +117,18 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::LdapAllAddOnSeatSyncWorker, 
       end
 
       context 'with multiple LDAP providers' do
-        let(:multi_provider_dns) do
-          Set.new([
-            'uid=user1,ou=people,dc=provider1,dc=com',
-            'uid=user2,ou=people,dc=provider2,dc=com'
-          ])
-        end
-
-        let(:user1) { create(:omniauth_user, :ldap, extern_uid: 'uid=user1,ou=people,dc=provider1,dc=com') }
-        let(:user2) { create(:omniauth_user, :ldap, extern_uid: 'uid=user2,ou=people,dc=provider2,dc=com') }
         let(:provider2) { 'ldapsecond' }
         let(:providers) { [provider, provider2] }
+
+        let(:user1) do
+          create(:omniauth_user, :ldap, provider: provider,
+            extern_uid: 'uid=user1,ou=people,dc=provider1,dc=com')
+        end
+
+        let(:user2) do
+          create(:omniauth_user, :ldap, provider: provider2,
+            extern_uid: 'uid=user2,ou=people,dc=provider2,dc=com')
+        end
 
         before do
           allow(Gitlab::Auth::Ldap::Config).to receive_messages(
@@ -130,6 +157,35 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::LdapAllAddOnSeatSyncWorker, 
             .with(add_on_purchase: add_on_purchase, user_ids: [user3.id])
             .and_return(bulk_unassign_service)
           expect(bulk_unassign_service).to receive(:execute)
+
+          worker.perform
+        end
+
+        context 'when no providers have duo_add_on_groups configured' do
+          before do
+            stub_ldap_config(duo_add_on_groups: [], provider: provider)
+            stub_ldap_config(duo_add_on_groups: nil, provider: provider2)
+          end
+
+          it 'does not process any users' do
+            expect(::EE::Gitlab::Auth::Ldap::Sync::Proxy).not_to receive(:open)
+            expect(GitlabSubscriptions::Duo::BulkAssignService).not_to receive(:new)
+            expect(GitlabSubscriptions::Duo::BulkUnassignService).not_to receive(:new)
+
+            worker.perform
+          end
+        end
+      end
+
+      context 'when LDAP groups exist but return no members' do
+        before do
+          fake_proxy = fake_ldap_sync_proxy(provider)
+          allow(fake_proxy).to receive(:dns_for_group_cn).with(group_cn).and_return([])
+        end
+
+        it 'does not process any users when no members found' do
+          expect(GitlabSubscriptions::Duo::BulkAssignService).not_to receive(:new)
+          expect(GitlabSubscriptions::Duo::BulkUnassignService).not_to receive(:new)
 
           worker.perform
         end
