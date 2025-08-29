@@ -26,7 +26,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
     end
 
     context 'when last name is blank' do
-      it 'fills out form, including last name, submits and lands on the duo page' do
+      it 'fills out form, submits and lands on the duo page' do
         user.update!(name: 'Bob')
 
         sign_in(user)
