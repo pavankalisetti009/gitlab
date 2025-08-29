@@ -236,6 +236,4 @@ duo_agent_platform:
   compatible_llms:
     - claude_3
   unit_primitives:
-    - agent_action
-    - agent_context
-    - agent_workflow
+    - duo_workflow_execute_workflow

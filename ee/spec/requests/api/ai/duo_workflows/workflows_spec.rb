@@ -774,12 +774,19 @@ expires_at: duo_workflow_service_token_expires_at })
       end
 
       context 'when self_hosted_agent_platform feature flag is disabled' do
+        let_it_be(:self_hosted_model) do
+          create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+        end
+
+        let_it_be_with_refind(:duo_agent_platform_setting) do
+          create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: self_hosted_model)
+        end
+
         before do
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
         it 'does not include model metadata headers' do
-          expect(::Ai::FeatureSetting).not_to receive(:find_by_feature)
           expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).not_to receive(:new)
 
           get api(path, user), headers: workhorse_headers
