@@ -59727,6 +59727,9 @@ msgstr ""
 msgid "SecurityReports|Results show vulnerability findings from the latest successful %{helpPageLinkStart}pipeline%{helpPageLinkEnd}."
 msgstr ""
 
+msgid "SecurityReports|Risk score"
+msgstr ""
+
 msgid "SecurityReports|Scan details"
 msgstr ""
 

@@ -7,6 +7,7 @@ import FilteredSearch from 'ee/security_dashboard/components/shared/security_das
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
+import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 
@@ -51,6 +52,23 @@ export default {
           ...(this.glFeatures.newSecurityDashboardVulnerabilitiesPerSeverity
             ? generateVulnerabilitiesForSeverityPanels(this.filters)
             : []),
+          ...(this.glFeatures.newSecurityDashboardTotalRiskScore
+            ? [
+                {
+                  id: 'risk-score',
+                  component: markRaw(GroupRiskScorePanel),
+                  componentProps: {
+                    filters: this.filters,
+                  },
+                  gridAttributes: {
+                    width: 5,
+                    height: 4,
+                    yPos: 0,
+                    xPos: 0,
+                  },
+                },
+              ]
+            : []),
           {
             id: 'vulnerabilities-over-time',
             component: markRaw(GroupVulnerabilitiesOverTimePanel),
@@ -58,10 +76,10 @@ export default {
               filters: this.filters,
             },
             gridAttributes: {
-              width: 6,
+              width: 7,
               height: 4,
               yPos: 0,
-              xPos: 0,
+              xPos: 5,
             },
           },
         ],
