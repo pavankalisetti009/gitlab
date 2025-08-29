@@ -2347,6 +2347,9 @@ msgstr ""
 msgid "AI Agent was successfully deleted"
 msgstr ""
 
+msgid "AI Chat Panel"
+msgstr ""
+
 msgid "AI Gateway"
 msgstr ""
 
@@ -15404,6 +15407,9 @@ msgid "Collapse"
 msgstr ""
 
 msgid "Collapse %{section} merge requests"
+msgstr ""
+
+msgid "Collapse GitLab Duo Chat"
 msgstr ""
 
 msgid "Collapse all files"
