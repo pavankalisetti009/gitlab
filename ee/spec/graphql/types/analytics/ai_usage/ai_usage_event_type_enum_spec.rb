@@ -15,7 +15,33 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category
       'REQUEST_DUO_CHAT_RESPONSE' => have_attributes(value: 'request_duo_chat_response'),
       'TROUBLESHOOT_JOB' => have_attributes(value: 'troubleshoot_job'),
       'START_AGENT_PLATFORM_SESSION' => have_attributes(value: 'start_agent_platform_session'),
-      'CREATE_AGENT_PLATFORM_SESSION' => have_attributes(value: 'create_agent_platform_session')
+      'CREATE_AGENT_PLATFORM_SESSION' => have_attributes(value: 'create_agent_platform_session'),
+      'ENCOUNTER_DUO_CODE_REVIEW_ERROR_DURING_REVIEW' => have_attributes(
+        value: 'encounter_duo_code_review_error_during_review'
+      ),
+      'FIND_NO_ISSUES_DUO_CODE_REVIEW_AFTER_REVIEW' => have_attributes(
+        value: 'find_no_issues_duo_code_review_after_review'),
+      'FIND_NOTHING_TO_REVIEW_DUO_CODE_REVIEW_ON_MR' => have_attributes(
+        value: 'find_nothing_to_review_duo_code_review_on_mr'
+      ),
+      'POST_COMMENT_DUO_CODE_REVIEW_ON_DIFF' => have_attributes(
+        value: 'post_comment_duo_code_review_on_diff'
+      ),
+      'REACT_THUMBS_UP_ON_DUO_CODE_REVIEW_COMMENT' => have_attributes(
+        value: 'react_thumbs_up_on_duo_code_review_comment'
+      ),
+      'REACT_THUMBS_DOWN_ON_DUO_CODE_REVIEW_COMMENT' => have_attributes(
+        value: 'react_thumbs_down_on_duo_code_review_comment'
+      ),
+      'REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_AUTHOR' => have_attributes(
+        value: 'request_review_duo_code_review_on_mr_by_author'
+      ),
+      'REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_NON_AUTHOR' => have_attributes(
+        value: 'request_review_duo_code_review_on_mr_by_non_author'
+      ),
+      'EXCLUDED_FILES_FROM_DUO_CODE_REVIEW' => have_attributes(
+        value: 'excluded_files_from_duo_code_review'
+      )
     )
   end
 end

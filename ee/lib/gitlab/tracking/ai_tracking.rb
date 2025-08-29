@@ -33,6 +33,18 @@ module Gitlab
 
         events(create_agent_platform_session: 8)
         events(start_agent_platform_session: 9)
+
+        events(
+          encounter_duo_code_review_error_during_review: 10,
+          find_no_issues_duo_code_review_after_review: 11,
+          find_nothing_to_review_duo_code_review_on_mr: 12,
+          post_comment_duo_code_review_on_diff: 13,
+          react_thumbs_up_on_duo_code_review_comment: 14,
+          react_thumbs_down_on_duo_code_review_comment: 15,
+          request_review_duo_code_review_on_mr_by_author: 16,
+          request_review_duo_code_review_on_mr_by_non_author: 17,
+          excluded_files_from_duo_code_review: 18
+        )
       end
 
       class << self
