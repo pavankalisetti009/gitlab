@@ -118,7 +118,16 @@ describe('SidebarStatus component', () => {
 
       const dropdownItems = findDropdownItems();
       expect(findSidebarDropdownWidget().props('loading')).toBe(false);
-      expect(findSidebarDropdownWidget().props('items')).toHaveLength(allowedStatus.length);
+      expect(findSidebarDropdownWidget().props('items')).toEqual([
+        expect.objectContaining({ name: 'To do' }),
+        expect.objectContaining({ name: 'In progress' }),
+        expect.objectContaining({ name: 'In dev' }),
+        expect.objectContaining({ name: 'In review' }),
+        expect.objectContaining({ name: 'Done' }),
+        expect.objectContaining({ name: 'Complete' }),
+        expect.objectContaining({ name: "Won't do" }),
+        expect.objectContaining({ name: 'Duplicate' }),
+      ]);
       expect(dropdownItems).toHaveLength(allowedStatus.length);
 
       const dropdownItemIcon = dropdownItems.at(0).findComponent(GlIcon);

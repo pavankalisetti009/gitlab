@@ -16,7 +16,8 @@ import {
 import VueDraggable from 'vuedraggable';
 import { s__, __, sprintf } from '~/locale';
 import { validateHexColor } from '~/lib/utils/color_utils';
-import { STATE_OPEN, STATE_CLOSED } from '~/work_items/constants';
+import { STATUS_CATEGORIES, STATUS_CATEGORIES_MAP } from 'ee/work_items/constants';
+import { STATE_CLOSED } from '~/work_items/constants';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
@@ -24,64 +25,7 @@ import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
 import namespaceMetadataQuery from './namespace_metadata.query.graphql';
 
-const STATUS_CATEGORIES = {
-  TRIAGE: 'TRIAGE',
-  TO_DO: 'TO_DO',
-  IN_PROGRESS: 'IN_PROGRESS',
-  DONE: 'DONE',
-  CANCELED: 'CANCELED',
-};
-
-const CATEGORY_MAP = {
-  [STATUS_CATEGORIES.TRIAGE]: {
-    icon: 'status-neutral',
-    color: '#995715',
-    label: s__('WorkItem|Triage'),
-    defaultState: 'open',
-    workItemState: STATE_OPEN,
-    description: s__(
-      'WorkItem|Use for items that are still in a proposal or ideation phase, not yet accepted or planned for work.',
-    ),
-  },
-  [STATUS_CATEGORIES.TO_DO]: {
-    icon: 'status-waiting',
-    color: '#737278',
-    label: s__('WorkItem|To do'),
-    defaultState: 'open',
-    workItemState: STATE_OPEN,
-    description: s__('WorkItem|Use for planned work that is not actively being worked on.'),
-  },
-  [STATUS_CATEGORIES.IN_PROGRESS]: {
-    icon: 'status-running',
-    color: '#1f75cb',
-    label: s__('WorkItem|In progress'),
-    defaultState: 'open',
-    workItemState: STATE_OPEN,
-    description: s__('WorkItem|Use for items that are actively being worked on.'),
-  },
-  [STATUS_CATEGORIES.DONE]: {
-    icon: 'status-success',
-    color: '#108548',
-    label: s__('WorkItem|Done'),
-    defaultState: 'closed',
-    workItemState: STATE_CLOSED,
-    description: s__(
-      'WorkItem|Use for items that have been completed. Applying a done status will close the item.',
-    ),
-  },
-  [STATUS_CATEGORIES.CANCELED]: {
-    icon: 'status-cancelled',
-    color: '#dd2b0e',
-    label: s__('WorkItem|Canceled'),
-    defaultState: 'duplicate',
-    workItemState: STATE_CLOSED,
-    description: s__(
-      'WorkItem|Use for items that are no longer relevant and will not be completed. Applying a canceled status will close the item.',
-    ),
-  },
-};
-
-const CATEGORY_ORDER = Object.keys(CATEGORY_MAP);
+const CATEGORY_ORDER = Object.keys(STATUS_CATEGORIES_MAP);
 
 const STATUS_MAX_LIMIT = 30;
 
@@ -197,21 +141,22 @@ export default {
     },
     getCategoryFromIconName(iconName) {
       return (
-        Object.keys(CATEGORY_MAP).find((category) => CATEGORY_MAP[category].icon === iconName) ||
-        STATUS_CATEGORIES.TO_DO
+        Object.keys(STATUS_CATEGORIES_MAP).find(
+          (category) => STATUS_CATEGORIES_MAP[category].icon === iconName,
+        ) || STATUS_CATEGORIES.TO_DO
       );
     },
     getCategoryLabel(category) {
-      return CATEGORY_MAP[category].label || category;
+      return STATUS_CATEGORIES_MAP[category].label || category;
     },
     getCategoryDescription(category) {
-      return CATEGORY_MAP[category].description || '';
+      return STATUS_CATEGORIES_MAP[category].description || '';
     },
     getCategoryDefaultState(category) {
-      return CATEGORY_MAP[category].defaultState || '';
+      return STATUS_CATEGORIES_MAP[category].defaultState || '';
     },
     getCategoryWorkItemState(category) {
-      return CATEGORY_MAP[category].workItemState || '';
+      return STATUS_CATEGORIES_MAP[category].workItemState || '';
     },
     showWorkItemStateBadge(category) {
       return this.getCategoryWorkItemState(category) === STATE_CLOSED;
@@ -293,7 +238,7 @@ export default {
     },
     resetForm() {
       const color = this.addingToCategory
-        ? this.$options.CATEGORY_MAP[this.addingToCategory].color
+        ? this.$options.STATUS_CATEGORIES_MAP[this.addingToCategory].color
         : '';
 
       this.formData = {
@@ -375,7 +320,9 @@ export default {
                   __typename: 'WorkItemStatus',
                   id: status.id || null,
                   name: status.name,
-                  iconName: status.category ? CATEGORY_MAP[status.category].icon : 'status-waiting',
+                  iconName: status.category
+                    ? STATUS_CATEGORIES_MAP[status.category].icon
+                    : 'status-waiting',
                   color: status.color,
                   description: status.description,
                 })),
@@ -533,7 +480,7 @@ export default {
     },
   },
   CATEGORY_ORDER,
-  CATEGORY_MAP,
+  STATUS_CATEGORIES_MAP,
   sprintf,
   confirmRemoveStatus: {
     text: s__('WorkItem|Remove'),
@@ -718,7 +665,7 @@ export default {
 
                 <status-form
                   v-else
-                  :category-icon="$options.CATEGORY_MAP[category].icon"
+                  :category-icon="$options.STATUS_CATEGORIES_MAP[category].icon"
                   :form-data="formData"
                   :form-errors="formErrors"
                   is-editing
@@ -743,7 +690,7 @@ export default {
 
           <status-form
             v-if="addingToCategory === category"
-            :category-icon="$options.CATEGORY_MAP[category].icon"
+            :category-icon="$options.STATUS_CATEGORIES_MAP[category].icon"
             :form-data="formData"
             :form-errors="formErrors"
             @update="formData = $event"

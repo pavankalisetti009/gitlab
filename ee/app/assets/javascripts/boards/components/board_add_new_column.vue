@@ -1,6 +1,6 @@
 <script>
 import produce from 'immer';
-import { debounce, unionBy } from 'lodash';
+import { debounce } from 'lodash';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import {
   GlAvatar,
@@ -19,7 +19,6 @@ import { ListType, createListMutations, listsQuery, BoardType } from 'ee_else_ce
 import { isScopedLabel } from '~/lib/utils/common_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { __, s__ } from '~/locale';
-import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import {
   groupOptionsByIterationCadences,
   groupByIterationCadences,
@@ -34,6 +33,7 @@ import { setError } from '~/boards/graphql/cache_updates';
 import { getListByTypeId } from '~/boards/boards_util';
 import usersAutocompleteQuery from '~/graphql_shared/queries/users_autocomplete.query.graphql';
 import searchIterationQuery from 'ee/issues/list/queries/search_iterations.query.graphql';
+import { getStatuses } from 'ee/work_items/utils';
 
 export const listTypeInfo = {
   [ListType.label]: {
@@ -233,16 +233,7 @@ export default {
         };
       },
       update(data) {
-        const allowedStatus = [];
-        data.workspace?.workItemTypes?.nodes?.forEach((type) => {
-          const statusWidget = type.widgetDefinitions.find(
-            (widget) => widget.type === WIDGET_TYPE_STATUS,
-          );
-          if (statusWidget) {
-            allowedStatus.push(...statusWidget.allowedStatuses);
-          }
-        });
-        return unionBy(allowedStatus, 'id');
+        return getStatuses(data.workspace?.workItemTypes?.nodes);
       },
       skip() {
         return this.columnType !== ListType.status;

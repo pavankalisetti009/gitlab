@@ -127,5 +127,15 @@ describe('WorkItemStatusToken', () => {
     const baseTokenProps = findBaseToken().props();
     expect(baseTokenProps.active).toBe(false);
     expect(baseTokenProps.config).toEqual(mockStatusToken);
+    expect(baseTokenProps.suggestions).toEqual([
+      expect.objectContaining({ name: 'To do' }),
+      expect.objectContaining({ name: 'In progress' }),
+      expect.objectContaining({ name: 'In dev' }),
+      expect.objectContaining({ name: 'In review' }),
+      expect.objectContaining({ name: 'Done' }),
+      expect.objectContaining({ name: 'Complete' }),
+      expect.objectContaining({ name: "Won't do" }),
+      expect.objectContaining({ name: 'Duplicate' }),
+    ]);
   });
 });
