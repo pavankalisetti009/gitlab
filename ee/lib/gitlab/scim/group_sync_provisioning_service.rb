@@ -3,10 +3,6 @@
 module Gitlab
   module Scim
     class GroupSyncProvisioningService < BaseProvisioningService
-      def initialize(parsed_hash)
-        @parsed_hash = parsed_hash
-      end
-
       def execute
         return error_response(errors: ["Missing params: #{missing_params}"]) unless missing_params.empty?
         return error_response(errors: ["Invalid UUID for scim_group_uid"]) unless valid_scim_group_uid?

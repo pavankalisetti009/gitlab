@@ -69,7 +69,7 @@ module Gitlab
         def group_user_params
           user_params.tap do |hash|
             hash[:saml_provider_id] = @group.saml_provider.id
-            hash[:group_id] = @group&.id
+            hash[:group_id] = @group.id
             hash[:provider] = ::Users::BuildService::GROUP_SCIM_PROVIDER
             hash[:organization_id] = @group.organization_id
           end

@@ -20,7 +20,7 @@ module API
         end
 
         def total_results
-          object[:total_results] || resources.count
+          object[:total_results] || resources.size
         end
 
         def items_per_page
