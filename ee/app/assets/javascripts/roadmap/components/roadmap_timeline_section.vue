@@ -82,7 +82,7 @@ export default {
     setRightSpacing() {
       // To support browsers other than chromium, we need to add 16 or 24px to
       // the actual width of the timeline section isntead of using utility
-      // classes like "gl-mr-5 xl:gl-mr-6". This will set the specing to 16px
+      // classes like "gl-mr-5 @xl/panel:gl-mr-6". This will set the specing to 16px
       // when the viewport is smaller than our xl breakpoint, and 24px if it's
       // xl or larger.
       const width = window.innerWidth;
@@ -100,7 +100,7 @@ export default {
   <div
     :class="scrolledHeaderClass"
     :style="sectionContainerStyles"
-    class="roadmap-timeline-section clearfix"
+    class="roadmap-timeline-section gl-clearfix"
   >
     <span class="timeline-header-blank"></span>
     <component

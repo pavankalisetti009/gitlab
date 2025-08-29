@@ -75,7 +75,7 @@ export default {
     <span
       v-if="hasToday"
       :style="indicatorStyle"
-      class="current-day-indicator-header preset-months position-absolute"
+      class="current-day-indicator-header preset-months !gl-absolute"
     ></span>
   </div>
 </template>

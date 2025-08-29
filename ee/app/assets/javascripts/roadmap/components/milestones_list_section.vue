@@ -115,11 +115,11 @@ export default {
 <template>
   <div
     :style="sectionContainerStyles"
-    class="milestones-list-section clearfix gl-table"
+    class="milestones-list-section gl-table gl-clearfix"
     data-testid="milestones-list-wrapper"
   >
     <div
-      class="milestones-list-title border-bottom position-sticky gl-table-cell gl-pl-5 gl-pr-3 gl-pt-2 gl-align-top xl:gl-pl-6"
+      class="milestones-list-title !gl-border-b gl-sticky gl-table-cell !gl-border-b-gray-300 gl-pl-5 gl-pr-3 gl-pt-2 gl-align-top @xl/panel:gl-pl-6"
     >
       <div class="gl-flex gl-items-center">
         <span

@@ -196,7 +196,7 @@ export default {
       <div
         ref="emptyRowContainer"
         :style="emptyRowContainerStyles"
-        class="epics-list-item epics-list-item-empty clearfix"
+        class="epics-list-item epics-list-item-empty gl-clearfix"
       >
         <span class="epic-details-cell"></span>
         <span

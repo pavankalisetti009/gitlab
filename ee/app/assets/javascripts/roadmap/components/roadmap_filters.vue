@@ -131,7 +131,7 @@ export default {
 <template>
   <div class="epics-filters epics-roadmap-filters epics-roadmap-filters-gl-ui gl-relative">
     <div
-      class="epics-details-filters filtered-search-block row-content-block second-block gl-flex gl-flex-col gl-px-5 gl-py-3 sm:gl-flex-row sm:gl-gap-3 xl:gl-px-6"
+      class="epics-details-filters filtered-search-block row-content-block second-block gl-flex gl-flex-col gl-px-5 gl-py-3 @sm/panel:gl-flex-row @sm/panel:gl-gap-3 @xl/panel:gl-px-6"
       :class="{ 'gl-justify-end': viewOnly }"
     >
       <filtered-search-bar
@@ -150,7 +150,7 @@ export default {
       />
       <gl-button
         icon="settings"
-        class="gl-mt-3 !gl-shadow-inner-1-gray-400 sm:gl-mt-0"
+        class="gl-mt-3 !gl-shadow-inner-1-gray-400 @sm/panel:gl-mt-0"
         :aria-label="$options.i18n.settings"
         data-testid="settings-button"
         @click="$emit('toggleSettings', $event)"
