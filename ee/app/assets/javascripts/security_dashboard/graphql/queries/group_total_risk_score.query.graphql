@@ -1,0 +1,10 @@
+query groupTotalRiskScore($fullPath: ID!, $projectId: [ID!]) {
+  group(fullPath: $fullPath) {
+    id
+    securityMetrics(projectId: $projectId) {
+      riskScore {
+        score
+      }
+    }
+  }
+}

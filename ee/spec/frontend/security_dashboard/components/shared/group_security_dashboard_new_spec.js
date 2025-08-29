@@ -9,6 +9,7 @@ import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/g
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
+import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 
 jest.mock('~/alert');
 
@@ -19,7 +20,10 @@ describe('Group Security Dashboard (new version) - Component', () => {
 
   const createComponent = ({
     props = {},
-    glFeatures = { newSecurityDashboardVulnerabilitiesPerSeverity: true },
+    glFeatures = {
+      newSecurityDashboardVulnerabilitiesPerSeverity: true,
+      newSecurityDashboardTotalRiskScore: true,
+    },
   } = {}) => {
     wrapper = shallowMountExtended(GroupSecurityDashboardNew, {
       propsData: {
@@ -37,6 +41,7 @@ describe('Group Security Dashboard (new version) - Component', () => {
   const getDashboardConfig = () => findDashboardLayout().props('config');
   const findPanelWithId = (panelId) => getDashboardConfig().panels.find(({ id }) => id === panelId);
   const getVulnerabilitiesOverTimePanel = () => findPanelWithId('vulnerabilities-over-time');
+  const getRiskScorePanel = () => findPanelWithId('risk-score');
 
   beforeEach(() => {
     createComponent();
@@ -56,20 +61,33 @@ describe('Group Security Dashboard (new version) - Component', () => {
       );
     });
 
-    it('renders the vulnerabilities over time panel with the correct configuration', () => {
-      const vulnerabilitiesOverTimePanel = getVulnerabilitiesOverTimePanel();
+    it.each(SEVERITY_LEVELS_KEYS)('renders the %s severity panel', (severity) => {
+      expect(findPanelWithId(severity)).not.toBe(undefined);
+    });
 
-      expect(vulnerabilitiesOverTimePanel.component).toBe(GroupVulnerabilitiesOverTimePanel);
-      expect(vulnerabilitiesOverTimePanel.gridAttributes).toEqual({
-        width: 6,
+    it('renders the risk score panel with the correct configuration', () => {
+      const riskScorePanel = getRiskScorePanel();
+
+      expect(riskScorePanel.component).toBe(GroupRiskScorePanel);
+      expect(riskScorePanel.componentProps.filters).toEqual({});
+      expect(riskScorePanel.gridAttributes).toEqual({
+        width: 5,
         height: 4,
         yPos: 0,
         xPos: 0,
       });
     });
 
-    it.each(SEVERITY_LEVELS_KEYS)('renders the %s severity panel', (severity) => {
-      expect(findPanelWithId(severity)).not.toBe(undefined);
+    it('renders the vulnerabilities over time panel with the correct configuration', () => {
+      const vulnerabilitiesOverTimePanel = getVulnerabilitiesOverTimePanel();
+
+      expect(vulnerabilitiesOverTimePanel.component).toBe(GroupVulnerabilitiesOverTimePanel);
+      expect(vulnerabilitiesOverTimePanel.gridAttributes).toEqual({
+        width: 7,
+        height: 4,
+        xPos: 5,
+        yPos: 0,
+      });
     });
   });
 
@@ -135,6 +153,16 @@ describe('Group Security Dashboard (new version) - Component', () => {
 
     it.each(SEVERITY_LEVELS_KEYS)('does not render the %s severity panel', (severity) => {
       expect(findPanelWithId(severity)).toBeUndefined();
+    });
+  });
+
+  describe('with total risk score feature flag disabled', () => {
+    beforeEach(() => {
+      createComponent({ glFeatures: { newSecurityDashboardTotalRiskScore: false } });
+    });
+
+    it('does not render the risk score panel', () => {
+      expect(findPanelWithId('risk-score')).toBeUndefined();
     });
   });
 });
