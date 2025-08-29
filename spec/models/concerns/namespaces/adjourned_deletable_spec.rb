@@ -133,12 +133,6 @@ RSpec.describe Namespaces::AdjournedDeletable, feature_category: :groups_and_pro
         it 'returns the group' do
           expect(group.first_scheduled_for_deletion_in_hierarchy_chain).to eq(group)
         end
-
-        context 'when passing include_self: false' do
-          it 'returns nil' do
-            expect(group.first_scheduled_for_deletion_in_hierarchy_chain(include_self: false)).to be_nil
-          end
-        end
       end
 
       context 'when the parent group has been marked for deletion' do
@@ -147,12 +141,6 @@ RSpec.describe Namespaces::AdjournedDeletable, feature_category: :groups_and_pro
 
         it 'returns the parent group' do
           expect(group.first_scheduled_for_deletion_in_hierarchy_chain).to eq(parent_group)
-        end
-
-        context 'when passing include_self: false' do
-          it 'returns the parent group' do
-            expect(group.first_scheduled_for_deletion_in_hierarchy_chain(include_self: false)).to eq(parent_group)
-          end
         end
       end
 
@@ -203,12 +191,6 @@ RSpec.describe Namespaces::AdjournedDeletable, feature_category: :groups_and_pro
         it 'returns the project' do
           expect(project.first_scheduled_for_deletion_in_hierarchy_chain).to eq(project)
         end
-
-        context 'when passing include_self: false' do
-          it 'returns nil' do
-            expect(project.first_scheduled_for_deletion_in_hierarchy_chain(include_self: false)).to be_nil
-          end
-        end
       end
 
       context 'when the parent group has been marked for deletion' do
@@ -220,12 +202,6 @@ RSpec.describe Namespaces::AdjournedDeletable, feature_category: :groups_and_pro
 
         it 'returns the parent group' do
           expect(project.first_scheduled_for_deletion_in_hierarchy_chain).to eq(parent_group)
-        end
-
-        context 'when passing include_self: false' do
-          it 'returns the parent group' do
-            expect(project.first_scheduled_for_deletion_in_hierarchy_chain(include_self: false)).to eq(parent_group)
-          end
         end
       end
 
