@@ -290,6 +290,7 @@ RSpec.describe '1_settings', feature_category: :shared do
     after do
       Settings.duo_workflow = {}
       stub_env("CLOUD_CONNECTOR_BASE_URL", default_base_url)
+      stub_env("DUO_WORKFLOW_EXECUTOR_VERSION", nil)
       load_settings
     end
 
@@ -320,6 +321,119 @@ RSpec.describe '1_settings', feature_category: :shared do
 
       expect(Settings.duo_workflow.executor_binary_url).to eq("https://gitlab.com/api/v4/projects/58711783/packages/generic/duo-workflow-executor/#{version}/duo-workflow-executor.tar.gz")
       expect(Settings.duo_workflow.executor_version).to eq(version)
+    end
+  end
+
+  describe '`secure` attribute for Duo Workflow' do
+    context 'secure setting' do
+      before do
+        Settings.duo_workflow = {}
+      end
+
+      after do
+        Settings.duo_workflow = {}
+        stub_env("DUO_WORKFLOW_EXECUTOR_VERSION", nil)
+        load_settings
+      end
+
+      context 'when DUO_AGENT_PLATFORM_SERVICE_SECURE is not set' do
+        before do
+          stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", nil)
+          load_settings
+        end
+
+        it 'defaults to true' do
+          expect(Settings.duo_workflow.secure).to eq(true)
+        end
+      end
+
+      context 'when DUO_AGENT_PLATFORM_SERVICE_SECURE is set to true' do
+        before do
+          stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "true")
+          load_settings
+        end
+
+        it 'uses the environment value' do
+          expect(Settings.duo_workflow.secure).to eq(true)
+        end
+      end
+
+      context 'when DUO_AGENT_PLATFORM_SERVICE_SECURE is set to false' do
+        before do
+          stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "false")
+          load_settings
+        end
+
+        it 'uses the environment value' do
+          expect(Settings.duo_workflow.secure).to eq(false)
+        end
+      end
+
+      context 'when DUO_AGENT_PLATFORM_SERVICE_SECURE is set to a truthy string' do
+        before do
+          stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "1")
+          load_settings
+        end
+
+        it 'converts to boolean true' do
+          expect(Settings.duo_workflow.secure).to eq(true)
+        end
+      end
+
+      context 'when DUO_AGENT_PLATFORM_SERVICE_SECURE is set to a falsy string' do
+        before do
+          stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "0")
+          load_settings
+        end
+
+        it 'converts to boolean false' do
+          expect(Settings.duo_workflow.secure).to eq(false)
+        end
+      end
+
+      context 'when secure is already set via config' do
+        context 'and config secure is true' do
+          let(:config) { { secure: true } }
+
+          before do
+            Settings.duo_workflow = config
+            stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "false")
+            load_settings
+          end
+
+          it 'preserves the config value and ignores environment variable' do
+            expect(Settings.duo_workflow.secure).to eq(true)
+          end
+        end
+
+        context 'and config secure is false' do
+          let(:config) { { secure: false } }
+
+          before do
+            Settings.duo_workflow = config
+            stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "true")
+            load_settings
+          end
+
+          it 'preserves the config value and ignores environment variable' do
+            expect(Settings.duo_workflow.secure).to eq(false)
+          end
+        end
+
+        context 'and config secure is nil' do
+          let(:config) { { secure: nil } }
+
+          before do
+            Settings.duo_workflow = config
+            stub_env("DUO_AGENT_PLATFORM_SERVICE_SECURE", "true")
+            load_settings
+          end
+
+          it 'preserves the config value and ignores environment variable' do
+            expect(Settings.duo_workflow.secure).to be_nil
+          end
+        end
+      end
     end
   end
 end
