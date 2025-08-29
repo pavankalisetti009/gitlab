@@ -276,6 +276,11 @@ msgid_plural "%d days"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d draft hidden"
+msgid_plural "%d drafts hidden"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d environment found"
 msgid_plural "%d environments found"
 msgstr[0] ""
@@ -61280,6 +61285,9 @@ msgstr ""
 msgid "Show wikis in global search results"
 msgstr ""
 
+msgid "Show your drafts"
+msgstr ""
+
 msgid "Showing %d project."
 msgid_plural "Showing %d projects."
 msgstr[0] ""
@@ -65434,6 +65442,9 @@ msgid "There was an error summarizing your pending comments."
 msgstr ""
 
 msgid "There was an error updating your display preferences."
+msgstr ""
+
+msgid "There was an error updating your show drafts preference."
 msgstr ""
 
 msgid "There was an error when reseting email token."
