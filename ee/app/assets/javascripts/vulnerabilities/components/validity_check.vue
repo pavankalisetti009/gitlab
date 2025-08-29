@@ -26,7 +26,13 @@ export default {
     },
     vulnerabilityId: {
       type: Number,
-      required: true,
+      required: false,
+      default: null,
+    },
+    securityFindingUuid: {
+      type: String,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -43,6 +49,26 @@ export default {
     tokenValidityStatus() {
       return this.latestStatus || this.findingTokenStatus?.status || 'unknown';
     },
+    isVulnerabilityDetailsPage() {
+      return Boolean(this.vulnerabilityId);
+    },
+    mutation() {
+      if (this.isVulnerabilityDetailsPage) {
+        return refreshFindingTokenStatusMutation;
+      }
+
+      // Replace with actual GraphQL mutation in %18.5
+      // https://gitlab.com/gitlab-org/gitlab/-/issues/556929
+      return null;
+    },
+    mutationVariables() {
+      if (this.isVulnerabilityDetailsPage) {
+        return {
+          vulnerabilityId: convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerabilityId),
+        };
+      }
+      return { securityFindingUuid: this.securityFindingUuid };
+    },
   },
   methods: {
     async refreshValidityCheck() {
@@ -50,10 +76,8 @@ export default {
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: refreshFindingTokenStatusMutation,
-          variables: {
-            vulnerabilityId: convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerabilityId),
-          },
+          mutation: this.mutation,
+          variables: this.mutationVariables,
         });
 
         const { errors, findingTokenStatus } = data?.refreshFindingTokenStatus || {};
@@ -100,6 +124,7 @@ export default {
       </span>
       <gl-button
         id="vulnerability-validity-check-button"
+        :disabled="!mutation"
         :loading="isLoading"
         category="tertiary"
         size="small"
