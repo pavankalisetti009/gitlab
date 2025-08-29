@@ -17,7 +17,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
   describe '#standardize_payloads' do
     context 'with a valid diff blob' do
       it 'returns a single GRPC payload built from the diff blob' do
-        expect(project.repository).to receive(:diff_blobs_with_raw_info) do |raw_info, _options|
+        expect(project.repository).to receive(:diff_blobs_with_raw_info)
+          .and_wrap_original do |method, raw_info, **kwargs|
           expect(raw_info).to be_an(Array)
           expect(raw_info.size).to eq(1)
 
@@ -31,7 +32,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
           expect(changed_path.new_blob_id).to eq("da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda")
           expect(changed_path.old_path).to eq("")
           expect(changed_path.score).to eq(0)
-        end.and_call_original
+          method.call(raw_info, **kwargs)
+        end
 
         expected_diff_filters = [
           :DIFF_STATUS_ADDED,
@@ -64,7 +66,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
 
       context 'with a valid diff blob' do
         it 'returns a single GRPC payload built from the diff blob' do
-          expect(project.repository).to receive(:diff_blobs) do |blob_pairs, _options|
+          expect(project.repository).to receive(:diff_blobs).and_wrap_original do |method, blob_pairs, **kwargs|
             expect(blob_pairs).to be_an(Array)
             expect(blob_pairs.size).to eq(1)
 
@@ -72,7 +74,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
             expect(blob_pair).to be_a(Gitaly::DiffBlobsRequest::BlobPair)
             expect(blob_pair.left_blob).to eq("0000000000000000000000000000000000000000")
             expect(blob_pair.right_blob).to eq("da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda")
-          end.and_call_original
+            method.call(blob_pairs, **kwargs)
+          end
 
           payloads = payload_processor.standardize_payloads
           expect(payloads).to be_an(Array)
