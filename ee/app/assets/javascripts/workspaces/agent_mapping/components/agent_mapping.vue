@@ -80,7 +80,7 @@ export default {
             <template #title>
               <span>{{ s__('Workspaces|Allowed agents') }}</span>
               <gl-badge class="gl-tab-counter-badge">{{ allowedAgents.length }}</gl-badge>
-              <span class="sr-only">{{ __('agents') }}</span>
+              <span class="gl-sr-only">{{ __('agents') }}</span>
             </template>
             <agents-table
               v-if="!queryErrored"
@@ -95,7 +95,7 @@ export default {
             <template #title>
               <span>{{ s__('Workspaces|All agents') }}</span>
               <gl-badge class="gl-tab-counter-badge">{{ agents.length }}</gl-badge>
-              <span class="sr-only">{{ __('agents') }}</span>
+              <span class="gl-sr-only">{{ __('agents') }}</span>
             </template>
             <agents-table
               v-if="!queryErrored"
