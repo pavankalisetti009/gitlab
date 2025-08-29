@@ -13,11 +13,11 @@ import {
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
-import ErrorsAlert from './errors_alert.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
@@ -43,7 +43,7 @@ export default {
       type: Boolean,
       required: true,
     },
-    errorMessages: {
+    errors: {
       type: Array,
       required: true,
     },
@@ -81,8 +81,8 @@ export default {
     isEditMode() {
       return this.mode === 'edit';
     },
-    allErrorMessages() {
-      return [...this.errorMessages, ...this.formErrors];
+    allErrors() {
+      return [...this.errors, ...this.formErrors];
     },
     submitButtonText() {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create flow');
@@ -183,7 +183,7 @@ export default {
 </script>
 <template>
   <div>
-    <errors-alert :error-messages="allErrorMessages" @dismiss="dismissErrors" />
+    <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
     <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
       <gl-form-fields
         v-model="formValues"

@@ -1,8 +1,8 @@
 import { GlFormFields } from '@gitlab/ui';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import AiCatalogStepsEditor from 'ee/ai/catalog/components/ai_catalog_steps_editor.vue';
-import ErrorsAlert from 'ee/ai/catalog/components/errors_alert.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
@@ -22,7 +22,7 @@ describe('AiCatalogFlowForm', () => {
   const defaultProps = {
     mode: 'create',
     isLoading: false,
-    errorMessages: [],
+    errors: [],
   };
 
   const initialValues = {
@@ -120,14 +120,14 @@ describe('AiCatalogFlowForm', () => {
   });
 
   describe('with error messages', () => {
-    const mockErrorMessage = 'The flow could not be created';
+    const mockError = 'The flow could not be created';
 
     beforeEach(() => {
-      createWrapper({ errorMessages: [mockErrorMessage] });
+      createWrapper({ errors: [mockError] });
     });
 
     it('passes error alert', () => {
-      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage]);
+      expect(findErrorAlert().props('errors')).toEqual([mockError]);
     });
 
     it('renders errors with form errors', async () => {
@@ -135,7 +135,7 @@ describe('AiCatalogFlowForm', () => {
 
       await findProjectDropdown().vm.$emit('error', formError);
 
-      expect(findErrorAlert().props('errorMessages')).toEqual([mockErrorMessage, formError]);
+      expect(findErrorAlert().props('errors')).toEqual([mockError, formError]);
     });
 
     it('emits dismiss-errors event', () => {

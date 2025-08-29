@@ -9,6 +9,7 @@ import {
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
@@ -17,7 +18,6 @@ import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
-import ErrorsAlert from '../components/errors_alert.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
 
 export default {
@@ -62,7 +62,7 @@ export default {
         if (this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]) {
           this.closeDrawer();
         }
-        this.errorMessages = [error.message];
+        this.errors = [error.message];
         Sentry.captureException(error);
       },
     },
@@ -72,7 +72,7 @@ export default {
       aiCatalogFlows: [],
       aiCatalogFlow: {},
       aiCatalogFlowToBeAdded: null,
-      errorMessages: [],
+      errors: [],
       pageInfo: {},
     };
   },
@@ -138,7 +138,7 @@ export default {
             cause: `Couldn't find ${convertedId}.`,
           }),
         );
-        this.errorMessages = [s__('AICatalog|Failed to add flow to target. Flow not found.')];
+        this.errors = [s__('AICatalog|Failed to add flow to target. Flow not found.')];
         return;
       }
       this.aiCatalogFlowToBeAdded = flow;
@@ -165,7 +165,7 @@ export default {
         });
 
         if (!data.aiCatalogFlowDelete.success) {
-          this.errorMessages = [
+          this.errors = [
             sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
               error: data.aiCatalogFlowDelete.errors?.[0],
             }),
@@ -175,7 +175,7 @@ export default {
 
         this.$toast.show(s__('AICatalog|Flow deleted successfully.'));
       } catch (error) {
-        this.errorMessages = [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })];
+        this.errors = [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })];
         Sentry.captureException(error);
       }
     },
@@ -201,7 +201,7 @@ export default {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
             // TODO: Once we have a project/group selector, we could add the group and project name in this message.
-            this.errorMessages = [
+            this.errors = [
               sprintf(s__('AICatalog|Flow could not be added: %{flowName}'), {
                 flowName: flow.name,
               }),
@@ -218,7 +218,7 @@ export default {
           this.$toast.show(sprintf(s__('AICatalog|Flow added successfully to %{name}.'), { name }));
         }
       } catch (error) {
-        this.errorMessages = [
+        this.errors = [
           sprintf(s__('AICatalog|The flow could not be enabled. Try again. %{error}'), { error }),
         ];
         Sentry.captureException(error);
@@ -250,7 +250,7 @@ export default {
 <template>
   <div>
     <ai-catalog-list-header />
-    <errors-alert :error-messages="errorMessages" @dismiss="errorMessages = []" />
+    <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogFlows"
