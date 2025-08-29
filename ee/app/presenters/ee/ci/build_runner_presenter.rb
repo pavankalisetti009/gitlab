@@ -11,26 +11,7 @@ module EE
           secret['azure_key_vault']['server'] = azure_key_vault_server(secret) if secret['azure_key_vault']
           secret['gcp_secret_manager']['server'] = gcp_secret_manager_server(secret) if secret['gcp_secret_manager']
           secret['aws_secrets_manager']['server'] = aws_secrets_manager_server(secret) if secret['aws_secrets_manager']
-
-          # For compatibility with the existing Vault integration in Runner,
-          # template gitlab_secrets_manager data into the vault field.
-          if secret.has_key?('gitlab_secrets_manager')
-            # GitLab Secrets Manager and Vault integrations have different
-            # structure; remove the old secret but save its data for later.
-            gtsm_secret = secret.delete('gitlab_secrets_manager')
-
-            psm = SecretsManagement::ProjectSecretsManager.find_by_project_id(project.id)
-
-            # Compute full path to secret in OpenBao for Vault runner
-            # compatibility.
-            secret['vault'] = {}
-            secret['vault']['path'] = psm.ci_data_path(gtsm_secret['name'])
-            secret['vault']['engine'] = { name: "kv-v2", path: psm.ci_secrets_mount_path }
-            secret['vault']['field'] = "value"
-
-            # Tell Runner about our server information.
-            secret['vault']['server'] = gitlab_secrets_manager_server(psm)
-          end
+          secret['gitlab_secrets_manager'] = gitlab_secrets_manager_payload(secret) if secret['gitlab_secrets_manager']
 
           secret
         end
@@ -73,17 +54,25 @@ module EE
         }
       end
 
-      def gitlab_secrets_manager_server(psm)
+      def gitlab_secrets_manager_server(project_secrets_manager)
         @gitlab_secrets_manager_server ||= {
           'url' => SecretsManagement::ProjectSecretsManager.server_url,
-          'auth' => {
-            'name' => psm.ci_auth_type,
-            'path' => psm.ci_auth_mount,
-            'data' => {
-              'jwt' => psm.ci_jwt(self),
-              'role' => psm.ci_auth_role
-            }.compact
-          }
+          'inline_auth' => {
+            'jwt' => project_secrets_manager.ci_jwt(self),
+            'role' => project_secrets_manager.ci_auth_role,
+            'auth_mount' => project_secrets_manager.ci_auth_mount
+          }.compact
+        }
+      end
+
+      def gitlab_secrets_manager_payload(secret)
+        secret_name = secret['gitlab_secrets_manager']['name']
+        project_secrets_manager = SecretsManagement::ProjectSecretsManager.find_by_project_id(project.id)
+        {
+          'engine' => { 'name' => "kv-v2", 'path' => project_secrets_manager.ci_secrets_mount_path },
+          'path' => project_secrets_manager.ci_data_path(secret_name),
+          'field' => "value",
+          'server' => gitlab_secrets_manager_server(project_secrets_manager)
         }
       end
 

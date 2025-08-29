@@ -33,6 +33,16 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
           }
         end
 
+        let(:native_secrets) do
+          {
+            SERVER_PASSWORD: {
+              gitlab_secrets_manager: {
+                name: 'my_test_secret'
+              }
+            }
+          }
+        end
+
         let!(:ci_build) { create(:ci_build, :pending, :queued, pipeline: pipeline, secrets: secrets) }
 
         context 'when secrets management feature is available' do
@@ -53,39 +63,78 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
             end
 
             context 'when runner supports secrets' do
-              before do
-                create(:ci_variable, project: project, key: 'VAULT_SERVER_URL', value: 'https://vault.example.com')
-                create(:ci_variable, project: project, key: 'VAULT_AUTH_ROLE', value: 'production')
+              context 'Vault Secrets' do
+                before do
+                  create(:ci_variable, project: project, key: 'VAULT_SERVER_URL', value: 'https://vault.example.com')
+                  create(:ci_variable, project: project, key: 'VAULT_AUTH_ROLE', value: 'production')
+                end
+
+                it 'returns secrets configuration' do
+                  request_job_with_secrets_supported
+
+                  expect(response).to have_gitlab_http_status(:created)
+                  expect(json_response['secrets']).to eq(
+                    {
+                      'DATABASE_PASSWORD' => {
+                        'vault' => {
+                          'server' => {
+                            'url' => 'https://vault.example.com',
+                            'namespace' => nil,
+                            'auth' => {
+                              'name' => 'jwt',
+                              'path' => 'jwt',
+                              'data' => {
+                                'jwt' => '${CI_JOB_JWT}',
+                                'role' => 'production'
+                              }
+                            }
+                          },
+                          'engine' => { 'name' => 'kv-v2', 'path' => 'kv-v2' },
+                          'path' => 'production/db',
+                          'field' => 'password'
+                        },
+                        'file' => true
+                      }
+                    }
+                  )
+                end
               end
 
-              it 'returns secrets configuration' do
-                request_job_with_secrets_supported
+              context 'GitLab Secrets Manager secrets' do
+                let(:secrets) { native_secrets }
+                let!(:project_secrets_manager) { create(:project_secrets_manager, project: project, status: 1) }
 
-                expect(response).to have_gitlab_http_status(:created)
-                expect(json_response['secrets']).to eq(
-                  {
-                    'DATABASE_PASSWORD' => {
-                      'vault' => {
-                        'server' => {
-                          'url' => 'https://vault.example.com',
-                          'namespace' => nil,
-                          'auth' => {
-                            'name' => 'jwt',
-                            'path' => 'jwt',
-                            'data' => {
-                              'jwt' => '${CI_JOB_JWT}',
-                              'role' => 'production'
+                before do
+                  allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return('jwt_token') # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
+                end
+
+                it 'returns secrets configuration' do
+                  request_job_with_secrets_supported
+
+                  expect(response).to have_gitlab_http_status(:created)
+                  expect(json_response['secrets']).to eq(
+                    {
+                      "SERVER_PASSWORD" => {
+                        "gitlab_secrets_manager" => {
+                          "engine" => {
+                            "name" => "kv-v2",
+                            "path" => project_secrets_manager.ci_secrets_mount_path
+                          },
+                          "path" => "explicit/my_test_secret",
+                          "field" => 'value',
+                          "server" => {
+                            "url" => "http://localhost:8200",
+                            "inline_auth" => {
+                              "jwt" => 'jwt_token',
+                              "role" => project_secrets_manager.ci_auth_role,
+                              "auth_mount" => project_secrets_manager.ci_auth_mount
                             }
                           }
-                        },
-                        'engine' => { 'name' => 'kv-v2', 'path' => 'kv-v2' },
-                        'path' => 'production/db',
-                        'field' => 'password'
-                      },
-                      'file' => true
+                        }
+                      }
                     }
-                  }
-                )
+                  )
+                end
               end
             end
           end

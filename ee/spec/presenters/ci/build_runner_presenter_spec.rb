@@ -493,40 +493,38 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           }
         end
 
+        let(:gitlab_secrets_manager_payload) do
+          presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'gitlab_secrets_manager')
+        end
+
+        let(:gitlab_secrets_manager_server) do
+          gitlab_secrets_manager_payload['server']
+        end
+
+        let(:project_secrets_manager) do
+          SecretsManagement::ProjectSecretsManager.find_by(project: ci_build.project)
+        end
+
         before do
           create(:project_secrets_manager, project: ci_build.project)
+          allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
         end
 
-        context 'JWT token' do
-          before do
-            allow_any_instance_of(SecretsManagement::ProjectSecretsManager).to receive(:ci_jwt).and_return(jwt_token) # rubocop:disable RSpec/AnyInstanceOf -- It's not the next instance
-          end
-
-          let(:gitlab_secrets_manager_server) do
-            presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server')
-          end
-
-          it 'uses the specified token variable' do
-            expect(gitlab_secrets_manager_server.fetch('auth')['data']['jwt']).to eq(jwt_token)
-          end
+        it 'sets the correct values for inline_auth keys' do
+          expect(gitlab_secrets_manager_server.fetch('inline_auth')['jwt']).to eq(jwt_token)
+          expect(gitlab_secrets_manager_server.fetch('inline_auth')['role']).to eq("project_#{ci_build.project.id}")
+          expect(gitlab_secrets_manager_server.fetch('inline_auth')['auth_mount']).to eq(project_secrets_manager.ci_auth_mount)
         end
 
-        context 'JWT auth method and path' do
-          before do
-            rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
-            stub_application_setting(ci_jwt_signing_key: rsa_key)
-          end
+        it 'sets the correct value for the server URL' do
+          expect(gitlab_secrets_manager_server.fetch('url')).to eq(SecretsManagement::ProjectSecretsManager.server_url)
+        end
 
-          let(:gitlab_secrets_manager_server) do
-            presenter.secrets_configuration.dig('DATABASE_PASSWORD', 'vault', 'server')
-          end
-
-          it 'uses the specified token variable' do
-            expect(gitlab_secrets_manager_server.fetch('auth')['name']).to eq("jwt")
-            expect(gitlab_secrets_manager_server.fetch('auth')['path']).to eq("#{ci_build.project.namespace.type.downcase}_#{ci_build.project.namespace.id}/pipeline_jwt")
-            expect(gitlab_secrets_manager_server.fetch('auth')['data']['role']).to eq("project_#{ci_build.project.id}")
-            expect(gitlab_secrets_manager_server.fetch('auth')['data']['jwt']).not_to be_empty
-          end
+        it 'sets the correct value for other fields in the payload' do
+          expect(gitlab_secrets_manager_payload.fetch('path')).to eq(project_secrets_manager.ci_data_path('password'))
+          expect(gitlab_secrets_manager_payload.fetch('field')).to eq('value')
+          expect(gitlab_secrets_manager_payload.fetch('engine')['name']).to eq('kv-v2')
+          expect(gitlab_secrets_manager_payload.fetch('engine')['path']).to eq(project_secrets_manager.ci_secrets_mount_path)
         end
       end
     end
