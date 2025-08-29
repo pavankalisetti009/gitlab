@@ -1,5 +1,6 @@
 fragment FlowFragment on DuoWorkflow {
   id
+  status
   humanStatus
   updatedAt
   workflowDefinition

@@ -3,6 +3,7 @@ export const mockAgentFlowEdges = [
     node: {
       __typename: 'DuoWorkflow',
       id: 'gid://gitlab/DuoWorkflow::Workflow/1',
+      status: 'FINISHED',
       humanStatus: 'completed',
       updatedAt: '2024-01-01T00:00:00Z',
       workflowDefinition: 'software_development',
@@ -12,6 +13,7 @@ export const mockAgentFlowEdges = [
     node: {
       __typename: 'DuoWorkflow',
       id: 'gid://gitlab/DuoWorkflow::Workflow/2',
+      status: 'RUNNING',
       humanStatus: 'running',
       updatedAt: '2024-01-02T00:00:00Z',
       workflowDefinition: 'convert_to_ci',
@@ -56,6 +58,7 @@ export const mockGetAgentFlowResponse = {
             __typename: 'DuoWorkflow',
             id: 'gid://gitlab/DuoWorkflow::Workflow/1',
             createdAt: '2023-01-01T00:00:00Z',
+            status: 'RUNNING',
             updatedAt: '2024-01-01T00:00:00Z',
             latestCheckpoint: { checkpoint: mockAgentFlowCheckpoint },
             lastExecutorLogsUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
