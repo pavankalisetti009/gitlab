@@ -1,6 +1,7 @@
 import { GlTab } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
+import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 
 describe('UsageBillingApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -15,6 +16,10 @@ describe('UsageBillingApp', () => {
   describe('rendering elements', () => {
     beforeEach(() => {
       createComponent();
+    });
+
+    it('renders purchase-commitment-card', () => {
+      expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(true);
     });
 
     it('renders the correct tabs', () => {
