@@ -19,7 +19,7 @@ module QA
                 element 'filter-status-dropdown'
               end
 
-              view 'ee/app/assets/javascripts/security_dashboard/components/shared/filtered_search_v2/tokens/
+              view 'ee/app/assets/javascripts/security_dashboard/components/shared/filtered_search/tokens/
                     activity_token.vue' do
                 element 'activity-token'
               end
@@ -60,7 +60,7 @@ module QA
             click_element('filtered-search-term')
 
             # This is a temporary workaround until we fully enable the functionality
-            # behind the vulnerability_report_filtered_search_v2 feature flag.
+            # behind the vulnerability_report_filtered_search feature flag.
             token_name = 'Tool' if token_name == 'Report type' && !page.has_button?('Report type', wait: 1)
 
             click_button(token_name)
@@ -78,7 +78,7 @@ module QA
             token = find(:css, '[data-testid="filtered-search-token"]', text: token_name)
             token.find('button[aria-label="Remove"]').click
             # This is a workaround for the case where the token is not found,
-            # which can happen when the vulnerability_report_filtered_search_v2 feature flag is not enabled.
+            # which can happen when the vulnerability_report_filtered_search feature flag is not enabled.
           rescue Capybara::ElementNotFound
             within_element("#{token_name.downcase}-token") do
               click_element("close-icon")
