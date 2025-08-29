@@ -189,6 +189,12 @@ module EE
           experiment: { milestone: '18.1' },
           resolver: ::Resolvers::WorkItems::StatusesResolver
 
+        field :lifecycle_templates, [::Types::WorkItems::LifecycleType],
+          null: true,
+          description: 'Lifecycle templates available to the namespace.',
+          experiment: { milestone: '18.4' },
+          authorize: :read_work_item_lifecycle
+
         field :plan,
           ::Types::Namespaces::PlanType,
           null: true,
@@ -207,6 +213,10 @@ module EE
 
         def storage_size_limit
           object.root_ancestor.actual_plan.actual_limits.storage_size_limit.megabytes
+        end
+
+        def lifecycle_templates
+          ::WorkItems::Statuses::SystemDefined::Templates::Lifecycle.in_namespace(object)
         end
       end
     end

@@ -28,6 +28,7 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
       subscription_history
       custom_fields
       statuses
+      lifecycle_templates
       plan
     ]
 
