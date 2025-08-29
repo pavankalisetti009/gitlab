@@ -100,7 +100,7 @@ const mockAgentFactory = (overrides = {}) => ({
 
 export const mockAgentVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-  versionName: 'v1.0.0-draft',
+  humanVersionName: 'v1.0.0-draft',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
   userPrompt: 'The user prompt',
@@ -237,7 +237,7 @@ export const mockExecuteAgentResponse = {
 
 export const mockFlowVersion = {
   id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
-  versionName: 'v1.0.0-draft',
+  humanVersionName: 'v1.0.0-draft',
   steps: {
     nodes: [
       {
