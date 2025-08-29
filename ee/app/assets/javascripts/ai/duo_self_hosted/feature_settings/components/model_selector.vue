@@ -6,7 +6,7 @@ import { RELEASE_STATES } from '../../constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import { PROVIDERS } from '../constants';
+import { PROVIDERS, DUO_AGENT_PLATFORM_FEATURE } from '../constants';
 
 export default {
   name: 'ModelSelector',
@@ -43,6 +43,14 @@ export default {
 
       return this.listItems.find((item) => item.value === selected);
     },
+    showVendoredModel() {
+      const { feature = '' } = this.aiFeatureSetting;
+      const isDuoAgentPlatform = feature === DUO_AGENT_PLATFORM_FEATURE;
+
+      if (isDuoAgentPlatform) return false;
+
+      return this.showVendoredModelOption;
+    },
     listItems() {
       const validModels = this.aiFeatureSetting.validModels?.nodes || [];
       const gaModels = validModels.filter(({ releaseState }) => releaseState === RELEASE_STATES.GA);
@@ -69,7 +77,7 @@ export default {
         text: s__('AdminAIPoweredFeatures|GitLab AI vendor model'),
       };
 
-      const otherOptions = this.showVendoredModelOption
+      const otherOptions = this.showVendoredModel
         ? [vendoredOption, disabledOption]
         : [disabledOption];
 

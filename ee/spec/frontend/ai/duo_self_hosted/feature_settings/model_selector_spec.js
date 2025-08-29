@@ -12,7 +12,11 @@ import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/g
 import { PROVIDERS } from 'ee/ai/duo_self_hosted/feature_settings/constants';
 import { createAlert } from '~/alert';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
+import {
+  mockSelfHostedModels,
+  mockAiFeatureSettings,
+  mockDuoAgentPlatformFeatureSettings,
+} from './mock_data';
 
 Vue.use(VueApollo);
 Vue.use(GlToast);
@@ -82,6 +86,10 @@ describe('ModelSelector', () => {
 
   const findModelSelector = () => wrapper.findComponent(ModelSelector);
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
+  const findVendoredModelOption = () => {
+    const modelOptions = findModelSelectDropdown().props('items');
+    return modelOptions.find((option) => option.value === PROVIDERS.VENDORED);
+  };
 
   it('renders the component', () => {
     createComponent();
@@ -119,9 +127,22 @@ describe('ModelSelector', () => {
           },
         });
 
-        const modelOptions = findModelSelectDropdown().props('items');
-        const vendoredOption = modelOptions.find((option) => option.value === PROVIDERS.VENDORED);
-        expect(vendoredOption).toBeUndefined();
+        expect(findVendoredModelOption()).toBeUndefined();
+      });
+    });
+
+    describe('when feature is Duo Agent Platform', () => {
+      it('does not include vendored option in options list', () => {
+        createComponent({
+          injectedProps: {
+            showVendoredModelOption: true,
+          },
+          props: {
+            aiFeatureSetting: mockDuoAgentPlatformFeatureSettings[0],
+          },
+        });
+
+        expect(findVendoredModelOption()).toBeUndefined();
       });
     });
   });
