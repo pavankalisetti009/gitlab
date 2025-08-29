@@ -155,18 +155,6 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
           end
         end
       end
-
-      context 'when name has not changed' do
-        it 'allows updates to other attributes without triggering name format validation' do
-          custom_status = build(:work_item_custom_status, name: '"Invalid Name"')
-
-          allow(custom_status).to receive(:name_changed?).and_return(false)
-
-          custom_status.description = 'Valid description'
-
-          expect(custom_status).to be_valid
-        end
-      end
     end
 
     describe 'status per namespace limit validations' do

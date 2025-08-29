@@ -46,7 +46,7 @@ module WorkItems
         validates :name, format: {
           without: DISALLOWED_NAME_CHARS,
           message: 'cannot start or end with quotes, backticks, or contain control characters'
-        }, if: :name_changed?
+        }
         validates :color, presence: true, length: { maximum: 7 }, color: true
         validates :description, length: { maximum: 128 }, allow_blank: true
         # Update doesn't change the overall status per namespace count
