@@ -8,8 +8,8 @@ import {
 } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
-import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue';
-import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
+import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import { DASHBOARD_TYPE_GROUP } from 'ee/security_dashboard/constants';
 import getProjects from 'ee/security_dashboard/graphql/queries/group_projects.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -39,7 +39,7 @@ const TEST_PROJECTS = [
 
 const TEST_GROUP = 'secure';
 
-describe('ee/security_dashboard/components/shared/filtered_search_v2/tokens/project_token.vue', () => {
+describe('ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue', () => {
   let wrapper;
   let handlerMocks;
 

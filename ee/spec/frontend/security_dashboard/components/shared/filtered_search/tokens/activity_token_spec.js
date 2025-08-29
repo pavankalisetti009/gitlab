@@ -3,8 +3,8 @@ import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
 import ActivityToken, {
   GROUPS,
-} from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/activity_token.vue';
-import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
+} from 'ee/security_dashboard/components/shared/filtered_search/tokens/activity_token.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 

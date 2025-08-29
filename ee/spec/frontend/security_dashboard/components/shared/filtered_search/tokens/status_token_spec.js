@@ -1,8 +1,8 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import StatusToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/status_token.vue';
+import StatusToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/status_token.vue';
 import { GROUPS } from 'ee/security_dashboard/components/shared/filters/status_filter.vue';
-import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
+import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 

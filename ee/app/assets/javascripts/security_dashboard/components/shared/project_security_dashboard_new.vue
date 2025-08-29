@@ -3,7 +3,7 @@ import { GlDashboardLayout } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
-import { REPORT_TYPE_VENDOR_TOKEN_DEFINITION } from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/constants';
+import { REPORT_TYPE_VENDOR_TOKEN_DEFINITION } from 'ee/security_dashboard/components/shared/filtered_search/tokens/constants';
 import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
 
 export default {
