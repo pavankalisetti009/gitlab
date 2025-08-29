@@ -137,5 +137,18 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
         expect(described_class.for_item(item_consumers[0].ai_catalog_item_id)).to contain_exactly(item_consumers[0])
       end
     end
+
+    describe '.with_item_type' do
+      it 'only includes items with the matching type' do
+        project = create(:project)
+        flow = create(:ai_catalog_flow)
+        agent = create(:ai_catalog_agent)
+        flow_consumer = create(:ai_catalog_item_consumer, project: project, item: flow)
+        agent_consumer = create(:ai_catalog_item_consumer, project: project, item: agent)
+
+        expect(described_class.with_item_type(:flow)).to contain_exactly(flow_consumer)
+        expect(described_class.with_item_type(:agent)).to contain_exactly(agent_consumer)
+      end
+    end
   end
 end

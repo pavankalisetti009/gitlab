@@ -230,6 +230,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryaicatalogconfigureditemsgroupid"></a>`groupId` | [`GroupID`](#groupid) | Group ID to retrieve configured AI Catalog items for. |
 | <a id="queryaicatalogconfigureditemsincludeinherited"></a>`includeInherited` | [`Boolean`](#boolean) | Include configured AI Catalog items inherited from parent groups. |
 | <a id="queryaicatalogconfigureditemsitemid"></a>`itemId` | [`AiCatalogItemID`](#aicatalogitemid) | Item ID to retrieve configured AI Catalog items for. |
+| <a id="queryaicatalogconfigureditemsitemtype"></a>`itemType` | [`AiCatalogItemType`](#aicatalogitemtype) | Type of items to retrieve. |
 | <a id="queryaicatalogconfigureditemsprojectid"></a>`projectId` | [`ProjectID`](#projectid) | Project ID to retrieve configured AI Catalog items for. |
 
 ### `Query.aiCatalogItem`

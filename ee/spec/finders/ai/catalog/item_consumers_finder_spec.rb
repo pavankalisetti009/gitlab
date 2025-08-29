@@ -29,6 +29,14 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       it { is_expected.to contain_exactly(project_consumers[0]) }
     end
 
+    context 'when item_type is provided' do
+      let(:flow) { create(:ai_catalog_flow) }
+      let(:flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow) }
+      let(:params) { super().merge(item_type: :flow) }
+
+      it { is_expected.to contain_exactly(flow_consumer) }
+    end
+
     context 'when include_inherited is true' do
       let(:include_inherited) { true }
 
