@@ -24,6 +24,20 @@ module Types
         declare_event('troubleshoot_job', "Troubleshoot job feature was used.")
         declare_event('create_agent_platform_session', "Agent platform session was created.")
         declare_event('start_agent_platform_session', "Agent platform session was started.")
+        declare_event('encounter_duo_code_review_error_during_review', "Duo Code Review encountered an error.")
+        declare_event('find_no_issues_duo_code_review_after_review',
+          "Duo Code Review found no issues after review.")
+        declare_event('find_nothing_to_review_duo_code_review_on_mr',
+          "Duo Code Review found nothing to review on MR.")
+        declare_event('post_comment_duo_code_review_on_diff', "Duo Code Review posted a diff comment.")
+        declare_event('react_thumbs_up_on_duo_code_review_comment',
+          "User gave thumbs-up reaction to Duo Code Review comment.")
+        declare_event('react_thumbs_down_on_duo_code_review_comment',
+          "User gave thumbs-down reaction to Duo Code Review comment.")
+        declare_event('request_review_duo_code_review_on_mr_by_author', "MR author requested Duo Code Review.")
+        declare_event('request_review_duo_code_review_on_mr_by_non_author',
+          "Non-author requested Duo Code Review on MR.")
+        declare_event('excluded_files_from_duo_code_review', "Files were excluded from Duo Code Review.")
       end
     end
   end

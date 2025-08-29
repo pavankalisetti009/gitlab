@@ -245,5 +245,39 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
       it_behaves_like 'standard ai usage event tracking'
     end
+
+    %w[
+      encounter_duo_code_review_error_during_review
+      find_no_issues_duo_code_review_after_review
+      find_nothing_to_review_duo_code_review_on_mr
+      post_comment_duo_code_review_on_diff
+      react_thumbs_up_on_duo_code_review_comment
+      react_thumbs_down_on_duo_code_review_comment
+      request_review_duo_code_review_on_mr_by_author
+      request_review_duo_code_review_on_mr_by_non_author
+      excluded_files_from_duo_code_review
+    ].each do |e|
+      context "for `#{e}` event" do
+        let(:event_name) { e }
+
+        let(:expected_pg_attributes) do
+          {
+            user_id: current_user.id,
+            event: event_name,
+            extras: {}
+          }
+        end
+
+        let(:expected_ch_attributes) do
+          {
+            user_id: current_user.id,
+            event: Ai::UsageEvent.events[event_name],
+            extras: {}.to_json
+          }
+        end
+
+        it_behaves_like 'standard ai usage event tracking'
+      end
+    end
   end
 end
