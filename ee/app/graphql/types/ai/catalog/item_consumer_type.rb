@@ -10,9 +10,6 @@ module Types
 
         connection_type_class ::Types::CountableConnectionType
 
-        field :enabled, GraphQL::Types::Boolean,
-          null: false,
-          description: 'Indicates whether the catalog item is enabled or not.'
         field :group, ::Types::GroupType,
           null: true,
           description: 'Group in which the catalog item is configured.'
@@ -22,9 +19,6 @@ module Types
         field :item, ::Types::Ai::Catalog::ItemInterface,
           null: true,
           description: 'Configuration catalog item.'
-        field :locked, GraphQL::Types::Boolean,
-          null: false,
-          description: 'Indicates whether the catalog item configuration is locked or can be overridden.'
         field :organization, ::Types::Organizations::OrganizationType,
           null: true,
           description: 'Organization in which the catalog item is configured.'

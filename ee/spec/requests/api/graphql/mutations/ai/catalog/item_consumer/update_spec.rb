@@ -16,8 +16,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
       errors
       itemConsumer {
         id
-        enabled
-        locked
+        pinnedVersionPrefix
       }
       MUTATION
     end
@@ -27,8 +26,6 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
   let(:params) do
     {
       id: item_consumer.to_global_id,
-      enabled: false,
-      locked: false,
       pinned_version_prefix: '1.0'
     }
   end
@@ -80,7 +77,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
     it 'returns the service error message and item consumer with original attributes' do
       execute
 
-      expect(graphql_dig_at(mutation_response, :item_consumer, :enabled)).to be(true)
+      expect(graphql_dig_at(mutation_response, :item_consumer, :pinned_version_prefix)).to be_nil
       expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly("Update failed")
     end
   end
@@ -89,14 +86,10 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Update, feature_category: :
     it 'updates the item consumer and returns a success response' do
       execute
 
-      expect(item_consumer.reload).to have_attributes(
-        enabled: false,
-        locked: false,
-        pinned_version_prefix: '1.0'
-      )
+      expect(item_consumer.reload.pinned_version_prefix).to eq('1.0')
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
       expect(graphql_dig_at(mutation_response, :item_consumer)).to match(
-        a_graphql_entity_for(item_consumer, :enabled, :locked)
+        a_graphql_entity_for(item_consumer, :pinned_version_prefix)
       )
     end
   end

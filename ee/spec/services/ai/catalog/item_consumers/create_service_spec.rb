@@ -12,13 +12,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   let_it_be(:item) { create(:ai_catalog_flow, project: item_project) }
 
   let(:container) { consumer_project }
-  let(:params) do
-    {
-      item: item,
-      enabled: true,
-      locked: true
-    }
-  end
+  let(:params) { { item: item } }
 
   subject(:execute) { described_class.new(container: container, current_user: user, params: params).execute }
 

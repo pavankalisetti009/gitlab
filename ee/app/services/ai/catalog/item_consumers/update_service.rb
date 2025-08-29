@@ -9,7 +9,7 @@ module Ai
         def initialize(item_consumer, current_user, params)
           @current_user = current_user
           @item_consumer = item_consumer
-          @params = params.slice(:enabled, :locked, :pinned_version_prefix)
+          @params = params.slice(:pinned_version_prefix)
         end
 
         def execute

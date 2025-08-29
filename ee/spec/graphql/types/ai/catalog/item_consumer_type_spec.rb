@@ -9,11 +9,9 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
 
   it 'has the expected fields' do
     expected_fields = %w[
-      enabled
       group
       id
       item
-      locked
       organization
       pinned_version_prefix
       project

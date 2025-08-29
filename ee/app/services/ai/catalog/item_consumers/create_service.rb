@@ -10,6 +10,9 @@ module Ai
           return error_no_permissions unless allowed?
 
           params.merge!(project: project, group: group)
+          # The enabled setting is not currently used, so always set new records as enabled.
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/553912#note_2706802395
+          params[:enabled] = true
           item_consumer = ::Ai::Catalog::ItemConsumer.new(params)
 
           if item_consumer.save

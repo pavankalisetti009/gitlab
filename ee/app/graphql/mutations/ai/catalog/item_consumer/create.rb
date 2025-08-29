@@ -17,14 +17,6 @@ module Mutations
             loads: ::Types::Ai::Catalog::ItemInterface,
             description: 'Item to configure.'
 
-          argument :enabled, GraphQL::Types::Boolean,
-            required: false,
-            description: 'Whether to enable the item.'
-
-          argument :locked, GraphQL::Types::Boolean,
-            required: false,
-            description: 'Whether to lock the item configuration (groups only).'
-
           argument :pinned_version_prefix, GraphQL::Types::String,
             required: false,
             description: 'Major version, minor version, or patch to pin the item to.'
@@ -60,8 +52,6 @@ module Mutations
 
           def service_args(item, args)
             args[:item] = item
-            args[:enabled] = true if args[:enabled].nil?
-            args[:locked] = true if args[:locked].nil?
             args
           end
         end
