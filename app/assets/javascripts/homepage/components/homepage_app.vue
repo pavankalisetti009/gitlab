@@ -1,6 +1,7 @@
 <script>
 import { GlLink } from '@gitlab/ui';
 import GreetingHeader from './greeting_header.vue';
+import HomepagePreferencesBanner from './homepage_preferences_banner.vue';
 import MergeRequestsWidget from './merge_requests_widget.vue';
 import WorkItemsWidget from './work_items_widget.vue';
 import ActivityWidget from './activity_widget.vue';
@@ -11,6 +12,7 @@ export default {
   components: {
     GlLink,
     GreetingHeader,
+    HomepagePreferencesBanner,
     MergeRequestsWidget,
     WorkItemsWidget,
     ActivityWidget,
@@ -45,6 +47,7 @@ export default {
 <template>
   <div>
     <greeting-header />
+    <homepage-preferences-banner />
     <div class="gl-grid gl-grid-cols-1 gl-gap-6 @md/panel:gl-grid-cols-3">
       <div class="gl-flex gl-flex-col gl-gap-6 @md/panel:gl-col-span-2">
         <div class="gl-grid gl-grid-cols-1 gl-gap-5 @lg/panel:gl-grid-cols-2">
