@@ -9,3 +9,9 @@ initEETrialBanner();
 initTanukiBotChatDrawer();
 initDuoAgenticChat();
 initSamlReloadModal();
+if (gon.features?.paneledView) {
+  (async () => {
+    const { initDuoPanel } = await import('ee/ai/init_duo_panel');
+    initDuoPanel();
+  })();
+}

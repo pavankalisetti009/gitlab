@@ -1,0 +1,16 @@
+.ai-panel-header {
+  z-index: $top-bar-z-index;
+  position: sticky !important;
+  top: 0;
+  border-bottom: 1px solid var(--super-sidebar-bg);
+  @apply gl-py-3 gl-pl-5 gl-pr-3;
+}
+
+.ai-nav-icon-active,
+.ai-nav-icon:hover,
+.ai-nav-icon:focus,
+.ai-nav-icon:active {
+  background-color: var(--super-sidebar-nav-item-current-bg) !important;
+  color: var(--super-sidebar-accent-color-fg) !important;
+  box-shadow: none !important;
+}
