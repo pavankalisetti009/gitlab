@@ -132,7 +132,8 @@ module Resolvers
     def preloads
       base_associations = {
         has_remediations: { findings: :remediations },
-        merge_request: :merge_requests,
+        merge_request: :merge_request_links,
+        merge_requests: :merge_request_links,
         state_comment: :state_transitions,
         state_transitions: :state_transitions,
         false_positive: { findings: :vulnerability_flags },
