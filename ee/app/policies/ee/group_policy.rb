@@ -465,11 +465,8 @@ module EE
 
       rule { (reporter | admin) & cycle_analytics_available }.policy do
         enable :admin_value_stream
-        enable :create_group_stage
-        enable :delete_group_stage
         enable :read_cycle_analytics
         enable :read_group_stage
-        enable :update_group_stage
         enable :view_type_of_work_charts
       end
 
@@ -1071,6 +1068,43 @@ module EE
       end
 
       rule { can?(:admin_group) & group_model_selection_enabled }.enable :admin_group_model_selection
+
+      rule { archived? & archive_group_enabled }.policy do
+        prevent :admin_custom_field
+        prevent :admin_epic
+        prevent :admin_epic_board
+        prevent :admin_epic_board_list
+        prevent :admin_iteration
+        prevent :admin_iteration_cadence
+        prevent :admin_member_role
+        prevent :admin_value_stream
+        prevent :admin_vulnerability
+        prevent :admin_web_hook
+        prevent :admin_wiki
+        prevent :bulk_admin_epic
+        prevent :create_epic
+        prevent :create_iteration
+        prevent :create_iteration_cadence
+        prevent :create_saved_replies
+        prevent :create_service_account
+        prevent :create_vulnerability_export
+        prevent :create_wiki
+        prevent :rollover_issues
+        prevent :set_epic_created_at
+        prevent :set_epic_updated_at
+        prevent :update_approval_rule
+        prevent :update_epic
+        prevent :update_runner
+        prevent :update_saved_replies
+        prevent :update_security_orchestration_policy_project
+        prevent :update_wiki
+      end
+
+      rule { archived? & archive_group_enabled & ~group_deleted? }.policy do
+        prevent :destroy_epic
+        prevent :destroy_saved_replies
+        prevent :destroy_wiki
+      end
     end
 
     override :lookup_access_level!
