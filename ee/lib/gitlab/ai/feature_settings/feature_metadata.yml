@@ -237,3 +237,4 @@ duo_agent_platform:
     - claude_3
   unit_primitives:
     - duo_workflow_execute_workflow
+    - duo_agent_platform
