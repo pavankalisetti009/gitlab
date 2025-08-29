@@ -65784,6 +65784,9 @@ msgstr ""
 msgid "This issue is in a child epic of the filtered epic"
 msgstr ""
 
+msgid "This item belongs to a descendant of the filtered parent."
+msgstr ""
+
 msgid "This item is disabled"
 msgstr ""
 

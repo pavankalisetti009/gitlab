@@ -28,13 +28,6 @@ query getWorkItemsFullEE(
   $updatedBefore: Time
   $crmOrganizationId: String
   $crmContactId: String
-  $in: [IssuableSearchableField!]
-  $not: NegatedWorkItemFilterInput
-  $or: UnionedWorkItemFilterInput
-  $afterCursor: String
-  $beforeCursor: String
-  $firstPageSize: Int
-  $lastPageSize: Int
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
   $weight: String
   $weightWildcardId: WeightWildcardId
@@ -45,6 +38,14 @@ query getWorkItemsFullEE(
   $iterationId: [ID]
   $iterationWildcardId: IterationWildcardId
   $iterationCadenceId: [IterationsCadenceID!]
+  $hierarchyFilters: HierarchyFilterInput
+  $in: [IssuableSearchableField!]
+  $not: NegatedWorkItemFilterInput
+  $or: UnionedWorkItemFilterInput
+  $afterCursor: String
+  $beforeCursor: String
+  $firstPageSize: Int
+  $lastPageSize: Int
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -75,13 +76,6 @@ query getWorkItemsFullEE(
       updatedBefore: $updatedBefore
       crmOrganizationId: $crmOrganizationId
       crmContactId: $crmContactId
-      in: $in
-      not: $not
-      or: $or
-      after: $afterCursor
-      before: $beforeCursor
-      first: $firstPageSize
-      last: $lastPageSize
       customField: $customField
       weight: $weight
       weightWildcardId: $weightWildcardId
@@ -92,6 +86,14 @@ query getWorkItemsFullEE(
       iterationId: $iterationId
       iterationWildcardId: $iterationWildcardId
       iterationCadenceId: $iterationCadenceId
+      hierarchyFilters: $hierarchyFilters
+      in: $in
+      not: $not
+      or: $or
+      after: $afterCursor
+      before: $beforeCursor
+      first: $firstPageSize
+      last: $lastPageSize
     ) {
       pageInfo {
         ...PageInfo
@@ -134,7 +136,7 @@ query getWorkItemsFullEE(
             LINKED_ITEMS
             ITERATION
             DEVELOPMENT
-            STATUS
+            HIERARCHY
           ]
         ) {
           type

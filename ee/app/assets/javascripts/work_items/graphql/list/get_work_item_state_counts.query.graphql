@@ -27,9 +27,6 @@ query EEgetWorkItemStateCounts(
   $crmOrganizationId: String
   $crmContactId: String
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
-  $in: [IssuableSearchableField!]
-  $not: NegatedWorkItemFilterInput
-  $or: UnionedWorkItemFilterInput
   $weight: String
   $weightWildcardId: WeightWildcardId
   $healthStatusFilter: HealthStatusFilter
@@ -39,6 +36,10 @@ query EEgetWorkItemStateCounts(
   $iterationId: [ID]
   $iterationWildcardId: IterationWildcardId
   $iterationCadenceId: [IterationsCadenceID!]
+  $hierarchyFilters: HierarchyFilterInput
+  $in: [IssuableSearchableField!]
+  $not: NegatedWorkItemFilterInput
+  $or: UnionedWorkItemFilterInput
 ) {
   group(fullPath: $fullPath) @include(if: $isGroup) {
     id
@@ -69,14 +70,15 @@ query EEgetWorkItemStateCounts(
       crmOrganizationId: $crmOrganizationId
       crmContactId: $crmContactId
       customField: $customField
-      in: $in
-      not: $not
-      or: $or
       healthStatusFilter: $healthStatusFilter
       status: $status
       iterationId: $iterationId
       iterationWildcardId: $iterationWildcardId
       iterationCadenceId: $iterationCadenceId
+      hierarchyFilters: $hierarchyFilters
+      in: $in
+      not: $not
+      or: $or
     ) {
       all
       closed
@@ -109,9 +111,6 @@ query EEgetWorkItemStateCounts(
       updatedBefore: $updatedBefore
       crmOrganizationId: $crmOrganizationId
       crmContactId: $crmContactId
-      in: $in
-      not: $not
-      or: $or
       weight: $weight
       weightWildcardId: $weightWildcardId
       healthStatusFilter: $healthStatusFilter
@@ -121,6 +120,10 @@ query EEgetWorkItemStateCounts(
       iterationId: $iterationId
       iterationWildcardId: $iterationWildcardId
       iterationCadenceId: $iterationCadenceId
+      hierarchyFilters: $hierarchyFilters
+      in: $in
+      not: $not
+      or: $or
     ) {
       all
       closed

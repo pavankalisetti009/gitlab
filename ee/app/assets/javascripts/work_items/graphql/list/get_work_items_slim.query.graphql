@@ -29,13 +29,6 @@ query getWorkItemsSlimEE(
   $updatedBefore: Time
   $crmOrganizationId: String
   $crmContactId: String
-  $in: [IssuableSearchableField!]
-  $not: NegatedWorkItemFilterInput
-  $or: UnionedWorkItemFilterInput
-  $afterCursor: String
-  $beforeCursor: String
-  $firstPageSize: Int
-  $lastPageSize: Int
   $customField: [WorkItemWidgetCustomFieldFilterInputType!]
   $weight: String
   $weightWildcardId: WeightWildcardId
@@ -46,6 +39,14 @@ query getWorkItemsSlimEE(
   $iterationId: [ID]
   $iterationWildcardId: IterationWildcardId
   $iterationCadenceId: [IterationsCadenceID!]
+  $hierarchyFilters: HierarchyFilterInput
+  $in: [IssuableSearchableField!]
+  $not: NegatedWorkItemFilterInput
+  $or: UnionedWorkItemFilterInput
+  $afterCursor: String
+  $beforeCursor: String
+  $firstPageSize: Int
+  $lastPageSize: Int
 ) {
   namespace(fullPath: $fullPath) {
     id
@@ -76,13 +77,6 @@ query getWorkItemsSlimEE(
       updatedBefore: $updatedBefore
       crmOrganizationId: $crmOrganizationId
       crmContactId: $crmContactId
-      in: $in
-      not: $not
-      or: $or
-      after: $afterCursor
-      before: $beforeCursor
-      first: $firstPageSize
-      last: $lastPageSize
       customField: $customField
       weight: $weight
       weightWildcardId: $weightWildcardId
@@ -93,6 +87,14 @@ query getWorkItemsSlimEE(
       iterationId: $iterationId
       iterationWildcardId: $iterationWildcardId
       iterationCadenceId: $iterationCadenceId
+      hierarchyFilters: $hierarchyFilters
+      in: $in
+      not: $not
+      or: $or
+      after: $afterCursor
+      before: $beforeCursor
+      first: $firstPageSize
+      last: $lastPageSize
     ) {
       pageInfo {
         ...PageInfo
