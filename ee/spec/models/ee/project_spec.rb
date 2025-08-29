@@ -4260,6 +4260,16 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           )
         end
 
+        context 'when organization_policy_setting is not available' do
+          before do
+            allow(Security::PolicySetting).to receive(:for_organization).and_return(nil)
+          end
+
+          it 'does not raise NoMethodError' do
+            expect { configurations }.not_to raise_error
+          end
+        end
+
         context 'with a designated CSP group' do
           include_context 'with csp group configuration'
 
