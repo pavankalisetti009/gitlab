@@ -32871,7 +32871,16 @@ msgstr ""
 msgid "HomepageActivityWidget|Your activity feed is not available. Please refresh the page to try again."
 msgstr ""
 
+msgid "Homepage|Go to preferences"
+msgstr ""
+
 msgid "Homepage|Start creating merge requests, pushing code, commenting in issues, and doing other work to view a feed of your activity here."
+msgstr ""
+
+msgid "Homepage|We're introducing a new way for you to get an overview of your work, so you can plan what to work on next. The homepage is now the default for everyone. If you prefer to change your default homepage, you can update your user preferences."
+msgstr ""
+
+msgid "Homepage|Welcome to the new homepage"
 msgstr ""
 
 msgid "Hook execution failed. %{error}"
