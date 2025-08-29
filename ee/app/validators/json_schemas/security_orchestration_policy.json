@@ -1100,6 +1100,15 @@
               }
             }
           },
+          "enforcement_type": {
+            "description": "Defines how this policy should be enforced. 'enforce' (default) blocks merge requests when violations are detected. 'warn' allows merge requests to proceed but shows warnings.",
+            "type": "string",
+            "enum": [
+              "warn",
+              "enforce"
+            ],
+            "default": "enforce"
+          },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
           },

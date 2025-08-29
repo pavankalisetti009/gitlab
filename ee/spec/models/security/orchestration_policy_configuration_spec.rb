@@ -4614,7 +4614,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         'approval_policy_content.json',
         %w[properties approval_policy items properties],
         %w[properties],
-        %w[fallback_behavior policy_tuning actions approval_settings]
+        %w[actions approval_settings fallback_behavior policy_tuning bypass_settings enforcement_type]
     end
 
     describe 'approval_policy_rule_content.json' do

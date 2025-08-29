@@ -9,8 +9,10 @@ module Security
     self.table_name = 'security_policies'
     self.inheritance_column = :_type_disabled
 
+    DEFAULT_ENFORCEMENT_TYPE = 'enforce'
+
     POLICY_CONTENT_FIELDS = {
-      approval_policy: %i[actions approval_settings fallback_behavior policy_tuning bypass_settings],
+      approval_policy: %i[actions approval_settings fallback_behavior policy_tuning bypass_settings enforcement_type],
       scan_execution_policy: %i[actions skip_ci],
       pipeline_execution_policy: %i[content pipeline_config_strategy suffix skip_ci variables_override],
       vulnerability_management_policy: %i[actions],
@@ -301,7 +303,13 @@ module Security
     end
     strong_memoize_attr :policy_content
 
+    def enforcement_type
+      defined_enforcement_type || DEFAULT_ENFORCEMENT_TYPE
+    end
+
     def warn_mode?
+      return defined_enforcement_type == 'warn' if defined_enforcement_type.present?
+
       actions = content&.dig('actions')
       return false unless actions
 
@@ -342,6 +350,11 @@ module Security
 
       content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
     end
+
+    def defined_enforcement_type
+      content&.dig('enforcement_type')
+    end
+    strong_memoize_attr :defined_enforcement_type
 
     def link_policy_rules_project!(project, policy_rules = approval_policy_rules.undeleted)
       return if !type_approval_policy? || policy_rules.empty?
