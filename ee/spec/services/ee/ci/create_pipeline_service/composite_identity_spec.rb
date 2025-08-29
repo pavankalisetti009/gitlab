@@ -43,10 +43,29 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
         expect(pipeline.builds).to be_present
 
         options = pipeline.statuses.map(&:options)
+        expect(pipeline.statuses.map(&:scoped_user_id)).to match_array([scoped_user.id, scoped_user.id])
         expect(options).to match_array([
-          { script: ['echo'], job_timeout: 1.hour.to_i, scoped_user_id: scoped_user.id },
-          { trigger: { project: 'test-project' }, scoped_user_id: scoped_user.id }
+          { script: ['echo'], job_timeout: 1.hour.to_i },
+          { trigger: { project: 'test-project' } }
         ])
+      end
+
+      context 'with the feature flag disabled' do
+        before do
+          stub_feature_flags(stop_writing_builds_metadata: false)
+        end
+
+        it 'propagates the scoped user into each job without overriding `options`' do
+          expect(pipeline).to be_created_successfully
+          expect(pipeline.builds).to be_present
+
+          options = pipeline.statuses.map(&:options)
+          expect(pipeline.statuses.map(&:scoped_user_id)).to match_array([scoped_user.id, scoped_user.id])
+          expect(options).to match_array([
+            { script: ['echo'], job_timeout: 1.hour.to_i, scoped_user_id: scoped_user.id },
+            { trigger: { project: 'test-project' }, scoped_user_id: scoped_user.id }
+          ])
+        end
       end
     end
   end
