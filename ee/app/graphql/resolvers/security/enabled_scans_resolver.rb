@@ -17,10 +17,7 @@ module Resolvers
       private
 
       def ready
-        !::Security::Scan
-          .by_pipeline_ids(pipeline_ids)
-          .processing
-          .exists?
+        ::Security::Scan.results_ready?(object)
       end
 
       def scans_in_pipeline

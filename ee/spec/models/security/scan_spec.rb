@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::Scan, feature_category: :vulnerability_management do
+  let_it_be(:project) { create(:project) }
+
   it_behaves_like 'cleanup by a loose foreign key' do
     let!(:model) { create(:security_scan) }
     let(:parent) { model.build }
@@ -284,6 +286,72 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
     subject { described_class.projects_with_scans([project_1.id, project_2.id]) }
 
     it { is_expected.to match_array(expected_scans) }
+  end
+
+  describe '.results_ready?' do
+    let(:pipeline) { create(:ci_pipeline, status: status, project: project) }
+
+    subject(:results_ready?) { described_class.results_ready?(pipeline) }
+
+    context 'when pipeline is complete' do
+      where(:status) { Ci::Pipeline::COMPLETED_STATUSES }
+
+      with_them do
+        it 'returns true if there are no scans processing' do
+          allow(described_class).to receive(:processing?).and_return(false)
+
+          expect(results_ready?).to eq(true)
+        end
+
+        it 'returns false if there are scans processing' do
+          allow(described_class).to receive(:processing?).and_return(true)
+
+          expect(results_ready?).to eq(false)
+        end
+      end
+    end
+
+    context 'when pipeline is not complete' do
+      where(:status) { Ci::Pipeline::AVAILABLE_STATUSES - Ci::Pipeline::COMPLETED_STATUSES }
+
+      before do
+        allow(described_class).to receive(:processing?).and_return(false)
+      end
+
+      with_them do
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
+  describe '.processing?' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be_with_reload(:pipeline) { create(:ci_pipeline, project: project) }
+    let!(:scan) { create(:security_scan, status: status, pipeline: pipeline, project: project) }
+
+    subject(:processing?) { described_class.processing?(pipeline) }
+
+    where(:status, :expected) do
+      'created'            | true
+      'preparing'          | true
+      'succeeded'          | false
+      'job_failed'         | false
+      'report_error'       | false
+      'preparation_failed' | false
+      'purged'             | false
+    end
+
+    with_them do
+      it { is_expected.to eq(expected) }
+
+      context 'when scan is in a child pipeline' do
+        let_it_be(:parent) { create(:ci_pipeline, project: project) }
+        let_it_be(:pipeline) { create(:ci_pipeline, child_of: parent, project: project) }
+
+        it { is_expected.to eq(expected) }
+      end
+    end
   end
 
   describe '.without_errors' do

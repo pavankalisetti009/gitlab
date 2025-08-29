@@ -7,7 +7,7 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
-  let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+  let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
 
   let(:variables) { { fullPath: project.full_path, pipelineIid: pipeline.iid } }
   let(:enabled_scans) { graphql_data.dig('project', 'pipeline', 'enabledSecurityScans') }
@@ -129,6 +129,17 @@ RSpec.describe 'Querying enabled scans for a pipeline', feature_category: :vulne
           'sast' => true,
           'secretDetection' => false
         })
+      end
+
+      context 'when pipeline is running' do
+        let_it_be(:pipeline) { create(:ci_pipeline, :running, project: project) }
+
+        it 'indicates results are not ready' do
+          send_request
+
+          expect(enabled_scans).to include('ready' => false)
+          expect(enabled_partial_scans).to include('ready' => false)
+        end
       end
 
       context 'when scan processing is not done yet' do
