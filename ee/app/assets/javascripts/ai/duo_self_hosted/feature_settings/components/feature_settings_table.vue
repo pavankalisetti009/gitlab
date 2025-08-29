@@ -21,11 +21,6 @@ export default {
     ModelSelector,
     ModelHeader,
   },
-  i18n: {
-    errorMessage: s__(
-      'AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again.',
-    ),
-  },
   props: {
     featureSettings: {
       type: Array,
