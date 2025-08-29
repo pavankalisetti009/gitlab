@@ -5142,4 +5142,47 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
     end
   end
+
+  it_behaves_like 'group archiving abilities' do
+    let(:archived_abilities) do
+      %i[
+        admin_custom_field
+        admin_epic
+        admin_epic_board
+        admin_epic_board_list
+        admin_iteration
+        admin_iteration_cadence
+        admin_member_role
+        admin_value_stream
+        admin_vulnerability
+        admin_web_hook
+        admin_wiki
+        bulk_admin_epic
+        create_epic
+        create_iteration
+        create_iteration_cadence
+        create_saved_replies
+        create_service_account
+        create_vulnerability_export
+        create_wiki
+        rollover_issues
+        set_epic_created_at
+        set_epic_updated_at
+        update_approval_rule
+        update_epic
+        update_runner
+        update_saved_replies
+        update_security_orchestration_policy_project
+        update_wiki
+      ]
+    end
+
+    let(:destroy_abilities) do
+      %i[
+        destroy_epic
+        destroy_saved_replies
+        destroy_wiki
+      ]
+    end
+  end
 end
