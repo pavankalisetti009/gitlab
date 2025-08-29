@@ -11,7 +11,7 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_repositories, :zoekt_tasks], 10.minutes
 
-      BATCH_SIZE = 1_000
+      LIMIT = 1_000
 
       def handle_event(event)
         return false unless ::Search::Zoekt.licensed_and_indexing_enabled?
@@ -23,11 +23,17 @@ module Search
         return false if node.blank?
 
         scope = node.zoekt_repositories.should_be_reindexed
-        return false if scope.with_pending_or_processing_tasks.exists?
+        reindexing_repository_ids = scope.with_pending_or_processing_tasks.pluck_primary_key
+        remaining_limit = LIMIT - reindexing_repository_ids.count
 
-        scope.limit(BATCH_SIZE).create_bulk_tasks
+        return false if remaining_limit <= 0
 
-        repositories_reindexed_count = scope.limit(BATCH_SIZE).count
+        # Skip repositories that already have pending or processing tasks
+        final_scope = scope.id_not_in(reindexing_repository_ids).limit(remaining_limit)
+
+        final_scope.create_bulk_tasks
+
+        repositories_reindexed_count = final_scope.count
         log_extra_metadata_on_done(:repositories_reindexed_count, repositories_reindexed_count)
       end
     end

@@ -46,7 +46,7 @@ RSpec.describe Search::Zoekt::RepoToReindexEventWorker, feature_category: :globa
 
           # Create repositories with different schema version than the node
           create_list(:zoekt_repository, batch_size, zoekt_index: test_index, schema_version: 1, state: :ready)
-          stub_const("#{described_class}::BATCH_SIZE", batch_size)
+          stub_const("#{described_class}::LIMIT", batch_size)
 
           expect(Gitlab::EventStore).not_to receive(:publish)
 
@@ -62,7 +62,7 @@ RSpec.describe Search::Zoekt::RepoToReindexEventWorker, feature_category: :globa
         let(:test_event) { Search::Zoekt::RepoToReindexEvent.new(data: { zoekt_node_id: test_node.id }) }
 
         before do
-          stub_const("#{described_class}::BATCH_SIZE", 2)
+          stub_const("#{described_class}::LIMIT", 2)
           # Create 5 repositories with different schema version than the node
           create_list(:zoekt_repository, 5, zoekt_index: test_index, schema_version: 1, state: :ready)
         end
@@ -76,21 +76,44 @@ RSpec.describe Search::Zoekt::RepoToReindexEventWorker, feature_category: :globa
       end
 
       context 'when repositories have pending or processing tasks' do
-        before do
-          node = create(:zoekt_node, schema_version: 2)
-          index = create(:zoekt_index, node: node)
-          repository = create(:zoekt_repository, zoekt_index: index, schema_version: 1, state: :ready)
+        let_it_be(:test_node) { create(:zoekt_node, schema_version: 2) }
+        let_it_be(:test_index) { create(:zoekt_index, node: test_node) }
+        let(:test_event) { Search::Zoekt::RepoToReindexEvent.new(data: { zoekt_node_id: test_node.id }) }
 
-          # Create a pending task for the repository
-          create(:zoekt_task, zoekt_repository: repository, state: :pending)
+        before do
+          stub_const("#{described_class}::LIMIT", 3)
         end
 
-        it 'does not process due to existing pending/processing tasks' do
-          expect(Search::Zoekt::Repository).not_to receive(:create_bulk_tasks)
+        context 'when some repositories have pending tasks and others do not' do
+          before do
+            # Create repository with pending task (should be skipped)
+            repository_with_task = create(:zoekt_repository, zoekt_index: test_index, schema_version: 1, state: :ready)
+            create(:zoekt_task, zoekt_repository: repository_with_task, state: :pending)
 
-          expect do
-            consume_event(subscriber: described_class, event: event)
-          end.not_to change { Search::Zoekt::Task.count }
+            # Create repositories without tasks (should be processed)
+            create_list(:zoekt_repository, 2, zoekt_index: test_index, schema_version: 1, state: :ready)
+          end
+
+          it 'creates tasks only for repositories without pending tasks, respecting available slots' do
+            expect do
+              consume_event(subscriber: described_class, event: test_event)
+            end.to change { Search::Zoekt::Task.count }.by(2) # 3 total slots - 1 existing task = 2 new tasks
+          end
+        end
+
+        context 'when all available slots are filled with existing tasks' do
+          before do
+            repositories = create_list(:zoekt_repository, 3, zoekt_index: test_index, schema_version: 1, state: :ready)
+            repositories.each do |repo|
+              create(:zoekt_task, zoekt_repository: repo, state: :pending)
+            end
+          end
+
+          it 'does not create any new tasks when all slots are filled' do
+            expect do
+              consume_event(subscriber: described_class, event: test_event)
+            end.not_to change { Search::Zoekt::Task.count }
+          end
         end
       end
 
@@ -120,7 +143,7 @@ RSpec.describe Search::Zoekt::RepoToReindexEventWorker, feature_category: :globa
         before do
           # Create repositories that need reindexing but have no pending/processing tasks
           create_list(:zoekt_repository, 2, zoekt_index: test_index, schema_version: 1, state: :ready)
-          stub_const("#{described_class}::BATCH_SIZE", 5)
+          stub_const("#{described_class}::LIMIT", 5)
         end
 
         it 'processes tasks without re-emitting event' do
@@ -154,7 +177,7 @@ RSpec.describe Search::Zoekt::RepoToReindexEventWorker, feature_category: :globa
         let_it_be(:other_index) { create(:zoekt_index, node: other_node) }
 
         before do
-          stub_const("#{described_class}::BATCH_SIZE", 5)
+          stub_const("#{described_class}::LIMIT", 5)
         end
 
         context 'when processing repositories for a specific node' do
@@ -177,17 +200,23 @@ RSpec.describe Search::Zoekt::RepoToReindexEventWorker, feature_category: :globa
 
         context 'when specified node has repositories with pending tasks' do
           before do
+            # Create repository with pending task (should be skipped)
             repository = create(:zoekt_repository, zoekt_index: index, schema_version: 1, state: :ready)
             create(:zoekt_task, zoekt_repository: repository, state: :pending)
+
+            # Create additional repository without task (should be processed)
+            create(:zoekt_repository, zoekt_index: index, schema_version: 1, state: :ready)
 
             # Create repositories on other node that could be processed
             create_list(:zoekt_repository, 2, zoekt_index: other_index, schema_version: 1, state: :ready)
           end
 
-          it 'does not process any repositories for the specified node' do
+          it 'processes available repositories for the specified node, respecting available slots' do
             expect do
               consume_event(subscriber: described_class, event: node_scoped_event)
-            end.not_to change { Search::Zoekt::Task.count }
+            end.to change {
+                     Search::Zoekt::Task.count
+                   }.by(1) # 5 total slots - 1 existing task = 4 available, but only 1 repo without task
           end
         end
 
