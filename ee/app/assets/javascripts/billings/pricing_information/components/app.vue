@@ -1,7 +1,6 @@
 <script>
 import { GlButton, GlLink, GlFormSelect, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import Tracking from '~/tracking';
 import FreePlanSection from './free_plan_section.vue';
 import PremiumPlanSection from './premium_plan_section.vue';
 import TrialPlanSection from './trial_plan_section.vue';
@@ -18,8 +17,6 @@ export default {
     TrialPlanSection,
     GlSprintf,
   },
-
-  mixins: [Tracking.mixin({ experiment: 'user_billing_pricing_information' })],
 
   props: {
     groups: {
@@ -81,6 +78,7 @@ export default {
             <gl-link
               :href="dashboardGroupsHref"
               data-track-action="click_link_navigate_to_group"
+              data-track-experiment="user_billing_pricing_information"
               :data-track-property="groupIds"
               >{{ content }}</gl-link
             >
@@ -101,6 +99,7 @@ export default {
         data-testid="group-select"
         autocomplete="off"
         data-track-action="click_dropdown_group_selection"
+        data-track-experiment="user_billing_pricing_information"
         :data-track-property="groupIds"
       />
     </div>
@@ -121,6 +120,7 @@ export default {
           category="secondary"
           data-testid="manage-billing-button"
           data-track-action="click_button_manage_billing"
+          data-track-experiment="user_billing_pricing_information"
           :data-track-property="selectedGroupId"
           :href="selectedGroup.group_billings_href"
         >
@@ -131,6 +131,7 @@ export default {
           variant="confirm"
           data-testid="upgrade-to-premium-button"
           data-track-action="click_button_upgrade_to_premium"
+          data-track-experiment="user_billing_pricing_information"
           :data-track-property="selectedGroupId"
           :href="selectedGroup.upgrade_to_premium_href"
         >

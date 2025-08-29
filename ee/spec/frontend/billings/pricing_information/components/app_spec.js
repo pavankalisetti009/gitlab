@@ -144,9 +144,15 @@ describe('PricingInformationApp', () => {
 
       expect(manageButton.attributes('data-track-action')).toBe('click_button_manage_billing');
       expect(manageButton.attributes('data-track-property')).toBe('1');
+      expect(manageButton.attributes('data-track-experiment')).toBe(
+        'user_billing_pricing_information',
+      );
 
       expect(upgradeButton.attributes('data-track-action')).toBe('click_button_upgrade_to_premium');
       expect(upgradeButton.attributes('data-track-property')).toBe('1');
+      expect(upgradeButton.attributes('data-track-experiment')).toBe(
+        'user_billing_pricing_information',
+      );
     });
   });
 
@@ -199,6 +205,9 @@ describe('PricingInformationApp', () => {
 
       expect(groupSelect.attributes('data-track-action')).toBe('click_dropdown_group_selection');
       expect(groupSelect.attributes('data-track-property')).toBe('[1,2]');
+      expect(groupSelect.attributes('data-track-experiment')).toBe(
+        'user_billing_pricing_information',
+      );
     });
   });
 });

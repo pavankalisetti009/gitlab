@@ -2,7 +2,13 @@
 - add_page_specific_style 'page_bundles/billings'
 - @force_desktop_expanded_sidebar = true
 
-%div{ data: { track_action: 'render', track_property: current_user.free_or_trial_owned_group_ids } }
+%div{
+  data: {
+    track_action: 'render',
+    track_property: current_user.free_or_trial_owned_group_ids,
+    track_experiment: 'user_billing_pricing_information'
+  }
+}
 - experiment(:user_billing_pricing_information, actor: current_user) do |e|
   - e.control do
     - namespace = current_user.namespace
