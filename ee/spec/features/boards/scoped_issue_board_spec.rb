@@ -36,7 +36,7 @@ RSpec.describe 'Scoped issue boards', :js, feature_category: :portfolio_manageme
     before do
       group.add_maintainer(user)
 
-      login_as(user)
+      sign_in(user)
 
       # ensure there is enough vertical space for create/edit board modal
       resize_window(1920, 1080)
@@ -503,7 +503,7 @@ RSpec.describe 'Scoped issue boards', :js, feature_category: :portfolio_manageme
       stub_licensed_features(scoped_issue_board: false)
 
       project.add_maintainer(user)
-      login_as(user)
+      sign_in(user)
 
       visit project_boards_path(project)
       wait_for_requests
@@ -628,10 +628,11 @@ RSpec.describe 'Scoped issue boards', :js, feature_category: :portfolio_manageme
     wait_for_requests
   end
 
-  # Click on modal to make sure the dropdown is closed (e.g. label scenario)
+  #
+  # Click on modal title to make sure the dropdown is closed (e.g. label scenario)
   #
   def click_on_board_modal
-    find('.board-config-modal .modal-content').click
+    find('.board-config-modal .modal-title').click
   end
 
   def set_filter(type, filter_value)

@@ -23,7 +23,8 @@ RSpec.describe 'User creates a merge request with blocking MRs', :js, feature_ca
 
       visit(project_new_merge_request_path(project, merge_request: mr_params))
 
-      fill_in 'Merge request dependencies', with: other_mr.to_reference(full: true)
+      # use `clear: nil` to prevent unintentional tokens in the field
+      fill_in 'Merge request dependencies', with: other_mr.to_reference(full: true), fill_options: { clear: nil }
       click_button 'Create merge request'
 
       expect(page).to have_content('Depends on 1 merge request')
