@@ -1,8 +1,9 @@
 fragment WorkItemStatusFragment on WorkItemStatus {
   id
-  name
+  category
+  color
   description
   iconName
-  color
+  name
   position
 }

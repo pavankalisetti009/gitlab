@@ -1,13 +1,12 @@
 <script>
 import { GlFilteredSearchSuggestion, GlIcon } from '@gitlab/ui';
-import { unionBy } from 'lodash';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { s__, sprintf } from '~/locale';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
-import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
 import { TOKEN_TITLE_STATUS } from '~/vue_shared/components/filtered_search_bar/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import { getStatuses } from 'ee/work_items/utils';
 
 export default {
   components: {
@@ -58,20 +57,7 @@ export default {
           },
         })
         .then(({ data }) => {
-          let allowedStatus = [];
-          data?.workspace?.workItemTypes?.nodes.forEach((type) => {
-            const statusWidget = type.widgetDefinitions.find(
-              (widget) => widget.type === WIDGET_TYPE_STATUS,
-            );
-            if (statusWidget) {
-              /** union by unique ids, since all supported work item types may have the same system
-               * defined or custom statuses
-               */
-              allowedStatus = unionBy(statusWidget.allowedStatuses, allowedStatus, 'id');
-            }
-          });
-
-          this.options = allowedStatus.map((status) => ({
+          this.options = getStatuses(data?.workspace?.workItemTypes?.nodes).map((status) => ({
             ...status,
             value: getIdFromGraphQLId(status.id),
           }));

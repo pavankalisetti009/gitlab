@@ -104,6 +104,7 @@ describe('EE IssuesListApp component', () => {
     id: 'gid://gitlab/Epic/1',
   };
   defaultQueryResponse.data.project.issues.nodes[0].status = {
+    category: 'canceled',
     color: '#DD2B0E',
     iconName: 'status-cancelled',
     id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/4',

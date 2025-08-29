@@ -180,7 +180,7 @@ describe('WorkItemStatus component', () => {
       await createComponentAndShowDropdown();
 
       await waitForPromises();
-      findSidebarDropdownWidget().vm.$emit('searchStarted', 'in progress');
+      findSidebarDropdownWidget().vm.$emit('searchStarted', 'to do');
       await nextTick();
 
       expect(findSidebarDropdownWidget().props('listItems')).toHaveLength(1);
@@ -190,7 +190,7 @@ describe('WorkItemStatus component', () => {
       await createComponentAndShowDropdown();
 
       await waitForPromises();
-      findSidebarDropdownWidget().vm.$emit('searchStarted', 'in progress');
+      findSidebarDropdownWidget().vm.$emit('searchStarted', 'to do');
       await nextTick();
 
       expect(findSidebarDropdownWidget().props('listItems')).toHaveLength(1);

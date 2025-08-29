@@ -1,12 +1,11 @@
 <script>
 import { GlCollapsibleListbox, GlIcon } from '@gitlab/ui';
-import { unionBy } from 'lodash';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
+import { __, s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
-import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
-import { __, s__ } from '~/locale';
+import { getStatuses } from 'ee/work_items/utils';
 
 export default {
   components: {
@@ -52,24 +51,11 @@ export default {
   },
   computed: {
     listItems() {
-      let allowedStatus = [];
-      this.workItemTypes?.forEach((type) => {
-        const statusWidget = type.widgetDefinitions.find(
-          (widget) => widget.type === WIDGET_TYPE_STATUS,
-        );
-        if (statusWidget) {
-          /** union by unique ids, since all supported work item types may have the same system
-           * defined or custom statuses
-           */
-          allowedStatus = unionBy(statusWidget.allowedStatuses, allowedStatus, 'id');
-        }
-      });
+      let statuses = getStatuses(this.workItemTypes);
       if (this.searchTerm) {
-        allowedStatus = fuzzaldrinPlus.filter(allowedStatus, this.searchTerm, {
-          key: ['name'],
-        });
+        statuses = fuzzaldrinPlus.filter(statuses, this.searchTerm, { key: ['name'] });
       }
-      return allowedStatus.map((status) => ({
+      return statuses.map((status) => ({
         ...status,
         value: status.id,
         text: status.name,
