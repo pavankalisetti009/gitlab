@@ -3,6 +3,15 @@
   "description": "Policy content for approval_policy type",
   "type": "object",
   "properties": {
+    "enforcement_type": {
+      "description": "Defines how this policy should be enforced. 'enforce' (default) blocks merge requests when violations are detected. 'warn' allows merge requests to proceed but shows warnings.",
+      "type": "string",
+      "enum": [
+        "warn",
+        "enforce"
+      ],
+      "default": "enforce"
+    },
     "fallback_behavior": {
       "type": "object",
       "properties": {

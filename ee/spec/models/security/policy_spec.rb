@@ -999,6 +999,28 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#enforcement_type' do
+    let(:policy) { build(:security_policy, content: content) }
+
+    subject(:enforcement_type) { policy.enforcement_type }
+
+    context 'when enforcement_type is defined in the policy content' do
+      let(:content) { { enforcement_type: 'warn' } }
+
+      it 'returns the defined enforcement type' do
+        expect(enforcement_type).to eq('warn')
+      end
+    end
+
+    context 'when enforcement_type is not defined in the policy content' do
+      let(:content) { { actions: [] } }
+
+      it 'returns the default enforcement type' do
+        expect(enforcement_type).to eq(described_class::DEFAULT_ENFORCEMENT_TYPE)
+      end
+    end
+  end
+
   describe '#warn_mode?' do
     subject(:warn_mode) { policy.warn_mode? }
 
@@ -1008,53 +1030,42 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       it { is_expected.to be false }
     end
 
-    context 'when actions are not present' do
-      let(:policy) { build(:security_policy, content: {}) }
+    context 'when enforcement_type is present' do
+      let(:policy) { build(:security_policy, content: { enforcement_type: enforcement_type }) }
 
-      it { is_expected.to be false }
+      context 'when enforcement_type is warn' do
+        let(:enforcement_type) { 'warn' }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when enforcement_type is enforce' do
+        let(:enforcement_type) { 'enforce' }
+
+        it { is_expected.to be false }
+      end
     end
 
-    context 'when actions are present' do
-      context 'with no require_approval actions' do
-        let(:policy) { build(:security_policy, content: { actions: [{ type: 'other_action' }] }) }
+    context 'when enforcement_type is not present' do
+      context 'when actions are not present' do
+        let(:policy) { build(:security_policy, content: {}) }
 
         it { is_expected.to be false }
       end
 
-      context 'with require_approval actions' do
-        context 'when all require_approval actions have approvals_required set to 0' do
-          let(:policy) do
-            build(:security_policy, content: {
-              actions: [
-                { type: 'require_approval', approvals_required: 0 },
-                { type: 'require_approval', approvals_required: 0 }
-              ]
-            })
-          end
-
-          it { is_expected.to be true }
-        end
-
-        context 'when at least one require_approval action has approvals_required greater than 0' do
-          let(:policy) do
-            build(:security_policy, content: {
-              actions: [
-                { type: 'require_approval', approvals_required: 0 },
-                { type: 'require_approval', approvals_required: 1 }
-              ]
-            })
-          end
+      context 'when actions are present' do
+        context 'with no require_approval actions' do
+          let(:policy) { build(:security_policy, content: { actions: [{ type: 'other_action' }] }) }
 
           it { is_expected.to be false }
         end
 
-        context 'when mixed with other action types' do
+        context 'with require_approval actions' do
           context 'when all require_approval actions have approvals_required set to 0' do
             let(:policy) do
               build(:security_policy, content: {
                 actions: [
                   { type: 'require_approval', approvals_required: 0 },
-                  { type: 'other_action' },
                   { type: 'require_approval', approvals_required: 0 }
                 ]
               })
@@ -1068,7 +1079,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
               build(:security_policy, content: {
                 actions: [
                   { type: 'require_approval', approvals_required: 0 },
-                  { type: 'other_action' },
                   { type: 'require_approval', approvals_required: 1 }
                 ]
               })
@@ -1076,19 +1086,49 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
             it { is_expected.to be false }
           end
-        end
 
-        context 'when only other action types are present' do
-          let(:policy) do
-            build(:security_policy, content: {
-              actions: [
-                { type: 'other_action' },
-                { type: 'another_action' }
-              ]
-            })
+          context 'when mixed with other action types' do
+            context 'when all require_approval actions have approvals_required set to 0' do
+              let(:policy) do
+                build(:security_policy, content: {
+                  actions: [
+                    { type: 'require_approval', approvals_required: 0 },
+                    { type: 'other_action' },
+                    { type: 'require_approval', approvals_required: 0 }
+                  ]
+                })
+              end
+
+              it { is_expected.to be true }
+            end
+
+            context 'when at least one require_approval action has approvals_required greater than 0' do
+              let(:policy) do
+                build(:security_policy, content: {
+                  actions: [
+                    { type: 'require_approval', approvals_required: 0 },
+                    { type: 'other_action' },
+                    { type: 'require_approval', approvals_required: 1 }
+                  ]
+                })
+              end
+
+              it { is_expected.to be false }
+            end
           end
 
-          it { is_expected.to be false }
+          context 'when only other action types are present' do
+            let(:policy) do
+              build(:security_policy, content: {
+                actions: [
+                  { type: 'other_action' },
+                  { type: 'another_action' }
+                ]
+              })
+            end
+
+            it { is_expected.to be false }
+          end
         end
       end
     end
