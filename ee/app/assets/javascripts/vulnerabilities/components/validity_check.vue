@@ -90,7 +90,7 @@ export default {
 <template>
   <span>
     <token-validity-badge :status="tokenValidityStatus" />
-    <div v-if="glFeatures.validityRefresh" class="gl-mt-4 gl-text-sm">
+    <div v-if="glFeatures.secretDetectionValidityChecksRefreshToken" class="gl-mt-4 gl-text-sm">
       <span class="gl-ml-2 gl-mr-2" data-testid="validity-last-checked">
         {{ s__('VulnerabilityManagement|Last checked:') }}
         <span class="gl-inline-block gl-min-w-[5.2rem]">

@@ -48,7 +48,10 @@ const errorResponse = {
 describe('ValidityCheck', () => {
   let wrapper;
 
-  const createWrapper = (props = {}, { apolloProvider, validityRefresh = true } = {}) => {
+  const createWrapper = (
+    props = {},
+    { apolloProvider, secretDetectionValidityChecksRefreshToken = true } = {},
+  ) => {
     wrapper = shallowMountExtended(ValidityCheck, {
       apolloProvider,
       propsData: {
@@ -57,7 +60,7 @@ describe('ValidityCheck', () => {
       },
       provide: {
         glFeatures: {
-          validityRefresh,
+          secretDetectionValidityChecksRefreshToken,
         },
       },
     });
@@ -250,9 +253,9 @@ describe('ValidityCheck', () => {
     });
   });
 
-  describe('when validityRefresh feature flag is disabled', () => {
+  describe('when secretDetectionValidityChecksRefreshToken feature flag is disabled', () => {
     beforeEach(() => {
-      createWrapper({}, { validityRefresh: false });
+      createWrapper({}, { secretDetectionValidityChecksRefreshToken: false });
     });
 
     it('does not render validity refresh UI', () => {
