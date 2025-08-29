@@ -93,9 +93,9 @@ export default {
           <strong class="gl-mb-1 gl-text-strong">{{ title(item, index) }}</strong>
           <span class="gl-text-subtle">{{ timeAgo(item) }}</span>
         </div>
-        <div class="gl-flex-1 gl-py-2">
+        <p class="gl-m-0 gl-flex-1 gl-py-2">
           {{ item.content }}
-        </div>
+        </p>
       </div>
     </li>
   </ul>
