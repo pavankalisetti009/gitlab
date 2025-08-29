@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'new tables missing sharding_key', feature_category: :organization do
   include ShardingKeySpecHelpers
 
-  let(:allowed_sharding_key_referenced_tables) { %w[projects namespaces organizations] }
+  let(:allowed_sharding_key_referenced_tables) { %w[projects namespaces organizations users] }
   let(:allowed_to_be_missing_foreign_key) do
     [
       'ci_job_artifact_states.job_artifact_id'
