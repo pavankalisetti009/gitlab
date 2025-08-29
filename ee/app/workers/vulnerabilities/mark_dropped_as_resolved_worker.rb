@@ -14,7 +14,11 @@ module Vulnerabilities
 
     loggable_arguments 1
 
-    def perform(_, dropped_identifier_ids)
+    def perform(project_id, dropped_identifier_ids)
+      project = Project.find_by_id(project_id)
+      return unless project
+
+      bot_user = Users::Internal.for_organization(project.organization).security_bot
       resolvable_vulnerabilities(dropped_identifier_ids) do |vulnerabilities|
         next unless vulnerabilities.present?
 
@@ -24,11 +28,11 @@ module Vulnerabilities
 
         current_time = Time.zone.now
 
-        state_transitions = build_state_transitions(vulnerabilities, current_time)
+        state_transitions = build_state_transitions(vulnerabilities, current_time, bot_user)
 
         ::Vulnerability.transaction do
           vulnerabilities.update_all(
-            resolved_by_id: Users::Internal.security_bot.id,
+            resolved_by_id: bot_user.id,
             resolved_at: current_time,
             updated_at: current_time,
             state: :resolved)
@@ -40,7 +44,7 @@ module Vulnerabilities
 
         ::Vulnerabilities::BulkEsOperationService.new(vulnerability_relation).execute(&:itself)
 
-        create_system_notes(vulnerability_relation)
+        create_system_notes(vulnerability_relation, bot_user)
       end
     end
 
@@ -69,32 +73,32 @@ module Vulnerabilities
       # rubocop:enable CodeReuse/ActiveRecord
     end
 
-    def build_state_transitions(vulnerabilities, current_time)
+    def build_state_transitions(vulnerabilities, current_time, bot_user)
       vulnerabilities.find_each.map do |vulnerability|
-        build_state_transition_for(vulnerability, current_time)
+        build_state_transition_for(vulnerability, current_time, bot_user)
       end
     end
 
-    def create_system_notes(vulnerabilities)
+    def create_system_notes(vulnerabilities, bot_user)
       vulnerabilities.find_each do |vulnerability|
-        create_system_note(vulnerability)
+        create_system_note(vulnerability, bot_user)
       end
     end
 
-    def create_system_note(vulnerability)
+    def create_system_note(vulnerability, bot_user)
       SystemNoteService.change_vulnerability_state(
         vulnerability,
-        Users::Internal.security_bot,
+        bot_user,
         resolution_comment
       )
     end
 
-    def build_state_transition_for(vulnerability, current_time)
+    def build_state_transition_for(vulnerability, current_time, bot_user)
       ::Vulnerabilities::StateTransition.new(
         vulnerability: vulnerability,
         from_state: vulnerability.state,
         to_state: :resolved,
-        author_id: Users::Internal.security_bot.id,
+        author_id: bot_user.id,
         comment: resolution_comment,
         created_at: current_time,
         updated_at: current_time

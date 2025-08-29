@@ -2304,7 +2304,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'with another comment from the security bot' do
       before do
-        create(:note, project: merge_request.project, noteable: merge_request, author: Users::Internal.security_bot,
+        create(:note, project: merge_request.project, noteable: merge_request, author: Users::Internal.for_organization(merge_request.project.organization).security_bot,
           note: 'Other note')
       end
 
