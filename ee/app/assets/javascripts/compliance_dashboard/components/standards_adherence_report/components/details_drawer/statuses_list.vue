@@ -1,5 +1,6 @@
 <script>
 import { GlBadge, GlButton, GlIcon, GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
+import { s__ } from '~/locale';
 import complianceRequirementsControls from '../../graphql/queries/compliance_requirements_controls.query.graphql';
 import DrawerAccordion from '../../../shared/drawer_accordion.vue';
 import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
@@ -20,6 +21,11 @@ export default {
     controlStatuses: {
       type: Array,
       required: true,
+    },
+    project: {
+      type: Object,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -68,9 +74,17 @@ export default {
 
       return statusesInfo[status.name] || DEFAULT_VALUE;
     },
+    getProjectSettingsUrl(controlStatus) {
+      const statusInfo = this.getStatusInfo(controlStatus.complianceRequirementsControl);
+      if (!statusInfo.projectSettingsPath || !this.project?.webUrl) {
+        return null;
+      }
+      return `${this.project.webUrl}${statusInfo.projectSettingsPath}`;
+    },
   },
   i18n: {
     EXTERNAL_CONTROL_LABEL,
+    projectSettingsButton: s__('ComplianceStandardsAdherence|Go to project settings'),
   },
 };
 </script>
@@ -144,16 +158,34 @@ export default {
             }}</gl-badge>
           </h5>
           <p :key="`description-${index}`">{{ fix.description }}</p>
-          <gl-button
-            :key="`button-${index}`"
-            category="secondary"
-            variant="confirm"
-            size="small"
-            :href="fix.link"
-            target="_blank"
-          >
-            {{ fix.linkTitle }}
-          </gl-button>
+          <div class="gl-display-flex gl-flex-wrap gl-gap-3">
+            <gl-button
+              :key="`button-${index}`"
+              category="secondary"
+              variant="confirm"
+              size="small"
+              :href="fix.link"
+              target="_blank"
+              icon="external-link"
+              class="gl-flex-shrink-0"
+              data-testid="documentation-button"
+            >
+              {{ fix.linkTitle }}
+            </gl-button>
+            <gl-button
+              v-if="getStatusInfo(controlStatus.complianceRequirementsControl).projectSettingsPath"
+              :key="`settings-button-${index}`"
+              category="secondary"
+              variant="default"
+              size="small"
+              :href="getProjectSettingsUrl(controlStatus)"
+              icon="settings"
+              class="gl-flex-shrink-0"
+              data-testid="settings-button"
+            >
+              {{ $options.i18n.projectSettingsButton }}
+            </gl-button>
+          </div>
         </div>
       </template>
     </template>

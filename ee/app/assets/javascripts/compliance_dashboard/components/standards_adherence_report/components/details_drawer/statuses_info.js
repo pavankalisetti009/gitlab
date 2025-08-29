@@ -25,6 +25,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures that merge requests require at least one approval before merging.',
     ),
+    projectSettingsPath: '/-/settings/merge_requests',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Configure approval requirements'),
@@ -42,6 +43,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures that merge requests require at least two approvals before merging.',
     ),
+    projectSettingsPath: '/-/settings/merge_requests',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Configure approval requirements'),
@@ -59,6 +61,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures that the author of a merge request cannot approve their own changes.',
     ),
+    projectSettingsPath: '/-/settings/merge_requests',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Prevent author approvals'),
@@ -76,6 +79,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Prevents users who have committed to a merge request from approving it.',
     ),
+    projectSettingsPath: '/-/settings/merge_requests',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Prevent committer approvals'),
@@ -93,6 +97,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures projects are not set to internal visibility.',
     ),
+    projectSettingsPath: '/-/edit',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Update project visibility'),
@@ -110,6 +115,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures the default branch has protection rules enabled.',
     ),
+    projectSettingsPath: '/-/settings/repository',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Set up branch protection'),
@@ -297,6 +303,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures code changes require approval from code owners.',
     ),
+    projectSettingsPath: '/-/settings/repository',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Set up code owners'),
@@ -314,6 +321,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures approvals are reset when new commits are pushed to the merge request.',
     ),
+    projectSettingsPath: '/-/settings/merge_requests',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Enable reset approvals on push'),
@@ -401,6 +409,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Restricts who can push to or merge into protected branches.',
     ),
+    projectSettingsPath: '/-/settings/repository',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Configure access restrictions'),
@@ -416,6 +425,7 @@ export const statusesInfo = {
   force_push_disabled: {
     title: s__('ComplianceStandardsAdherence|Force push disabled'),
     description: s__('ComplianceStandardsAdherence|Prevents force pushing to repositories.'),
+    projectSettingsPath: '/-/settings/repository',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Disable force pushing'),
@@ -467,6 +477,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures issue tracking functionality is enabled for the project.',
     ),
+    projectSettingsPath: '/-/edit',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Enable issue tracking'),
@@ -767,6 +778,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures push protection is enabled for sensitive files.',
     ),
+    projectSettingsPath: '/-/settings/repository',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Enable push protection'),
@@ -937,6 +949,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|User-defined CI/CD variables restricted to maintainers.',
     ),
+    projectSettingsPath: '/-/settings/ci_cd',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Restrict variable creation'),
@@ -971,6 +984,7 @@ export const statusesInfo = {
     description: s__(
       'ComplianceStandardsAdherence|Ensures CI/CD job token scope restrictions are enabled.',
     ),
+    projectSettingsPath: '/-/settings/ci_cd',
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Configure job token scope'),
@@ -996,6 +1010,7 @@ export const statusesInfo = {
         ),
         linkTitle: __('Protected branches'),
         ultimate: false,
+        link: helpPagePath('user/project/repository/branches/protected.md'),
       },
     ],
   },

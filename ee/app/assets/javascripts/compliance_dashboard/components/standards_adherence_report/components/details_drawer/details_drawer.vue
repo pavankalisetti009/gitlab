@@ -81,7 +81,7 @@ export default {
           </span>
         </div>
       </div>
-      <statuses-list :control-statuses="relevantStatuses" />
+      <statuses-list :control-statuses="relevantStatuses" :project="status.project" />
     </template>
   </gl-drawer>
 </template>

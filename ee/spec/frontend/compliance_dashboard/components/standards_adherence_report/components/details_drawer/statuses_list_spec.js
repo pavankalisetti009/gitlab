@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlBadge, GlLoadingIcon } from '@gitlab/ui';
+import { GlButton, GlBadge, GlLoadingIcon } from '@gitlab/ui';
 import StatusesList from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/statuses_list.vue';
 import DrawerAccordion from 'ee/compliance_dashboard/components/shared/drawer_accordion.vue';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -23,6 +23,19 @@ jest.mock(
             linkTitle: 'Fix 1 link',
             link: 'https://example.com/fix1',
             ultimate: true,
+          },
+        ],
+      },
+      'control-with-settings': {
+        description: 'Control with project settings',
+        projectSettingsPath: '/-/settings/merge_requests',
+        fixes: [
+          {
+            title: 'Configure settings',
+            description: 'Configure in project settings',
+            linkTitle: 'Documentation',
+            link: 'https://example.com/docs',
+            ultimate: false,
           },
         ],
       },
@@ -71,7 +84,13 @@ describe('StatusesList', () => {
     { id: 'control-1', name: 'Control One' },
     { id: 'control-2', name: 'Control Two' },
     { id: 'control-3', name: 'Control Three' },
+    { id: 'control-with-settings', name: 'Control With Settings' },
   ];
+
+  const mockProject = {
+    webUrl: 'https://gitlab.example.com/group/project',
+    name: 'Test Project',
+  };
 
   const createMockRequirementsControlsResponse = () => ({
     data: {
@@ -89,6 +108,7 @@ describe('StatusesList', () => {
   const findFixSection = () => wrapper.findAll('h4').filter((w) => w.text() === 'How to fix');
   const findBadges = () => wrapper.findAllComponents(GlBadge);
   const findTitles = () => wrapper.findAll('h4');
+  const findAllButtons = () => wrapper.findAllComponents(GlButton);
 
   function createComponent(props = {}) {
     mockRequirementsControlsQuery = jest
@@ -102,6 +122,7 @@ describe('StatusesList', () => {
     wrapper = mount(StatusesList, {
       propsData: {
         controlStatuses: controlStatusesMock,
+        project: mockProject,
         ...props,
       },
       apolloProvider,
@@ -186,6 +207,148 @@ describe('StatusesList', () => {
       const badges = findBadges();
       expect(badges).toHaveLength(1);
       expect(badges.at(0).text()).toBe('Ultimate');
+    });
+  });
+
+  describe('project settings button functionality', () => {
+    describe('single button rendering (no project settings path)', () => {
+      beforeEach(async () => {
+        const controlWithoutSettings = {
+          status: 'FAIL',
+          complianceRequirementsControl: {
+            name: 'test-control',
+            controlType: 'internal',
+          },
+        };
+
+        createComponent({
+          controlStatuses: [controlWithoutSettings],
+        });
+
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('renders only documentation button when no project settings path is available', () => {
+        const buttons = findAllButtons();
+        const documentationButtons = buttons.filter((button) =>
+          button.text().includes('Fix 1 link'),
+        );
+        const settingsButtons = buttons.filter((button) =>
+          button.text().includes('Go to project settings'),
+        );
+
+        expect(documentationButtons).toHaveLength(1);
+        expect(settingsButtons).toHaveLength(0);
+      });
+    });
+
+    describe('dual button rendering (with project settings path)', () => {
+      beforeEach(async () => {
+        const controlWithSettings = {
+          status: 'FAIL',
+          complianceRequirementsControl: {
+            name: 'control-with-settings',
+            controlType: 'internal',
+          },
+        };
+
+        createComponent({
+          controlStatuses: [controlWithSettings],
+        });
+
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('renders both documentation and settings buttons when project settings path is available', () => {
+        const buttons = findAllButtons();
+        const documentationButtons = buttons.filter((button) =>
+          button.text().includes('Documentation'),
+        );
+        const settingsButtons = buttons.filter((button) =>
+          button.text().includes('Go to project settings'),
+        );
+
+        expect(documentationButtons).toHaveLength(1);
+        expect(settingsButtons).toHaveLength(1);
+      });
+
+      it('renders settings button with correct attributes', () => {
+        const buttons = findAllButtons();
+        const settingsButtons = buttons.filter((button) =>
+          button.text().includes('Go to project settings'),
+        );
+
+        expect(settingsButtons).toHaveLength(1);
+        const settingsButton = settingsButtons.at(0);
+        expect(settingsButton.props('category')).toBe('secondary');
+        expect(settingsButton.props('variant')).toBe('default');
+        expect(settingsButton.props('size')).toBe('small');
+        expect(settingsButton.props('icon')).toBe('settings');
+      });
+
+      it('constructs correct project settings URL', () => {
+        const buttons = findAllButtons();
+        const settingsButtons = buttons.filter((button) =>
+          button.text().includes('Go to project settings'),
+        );
+
+        expect(settingsButtons).toHaveLength(1);
+        const settingsButton = settingsButtons.at(0);
+        expect(settingsButton.props('href')).toBe(
+          'https://gitlab.example.com/group/project/-/settings/merge_requests',
+        );
+      });
+    });
+
+    describe('getProjectSettingsUrl method', () => {
+      let component;
+
+      beforeEach(async () => {
+        component = createComponent();
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('returns null when project is not provided', async () => {
+        const controlStatus = {
+          complianceRequirementsControl: {
+            name: 'control-with-settings',
+            controlType: 'internal',
+          },
+        };
+
+        component.setProps({ project: null });
+        await nextTick();
+
+        const result = component.vm.getProjectSettingsUrl(controlStatus);
+        expect(result).toBeNull();
+      });
+
+      it('returns null when projectSettingsPath is not available', () => {
+        const controlStatus = {
+          complianceRequirementsControl: {
+            name: 'test-control', // This control doesn't have projectSettingsPath
+            controlType: 'internal',
+          },
+        };
+
+        const result = component.vm.getProjectSettingsUrl(controlStatus);
+        expect(result).toBeNull();
+      });
+
+      it('constructs URL correctly when both project and projectSettingsPath are available', () => {
+        const controlStatus = {
+          complianceRequirementsControl: {
+            name: 'control-with-settings',
+            controlType: 'internal',
+          },
+        };
+
+        const result = component.vm.getProjectSettingsUrl(controlStatus);
+        expect(result).toBe('https://gitlab.example.com/group/project/-/settings/merge_requests');
+      });
     });
   });
 });
