@@ -43,13 +43,13 @@ export default {
       key: 'assignees',
       label: __('Assignees'),
       class: '!gl-bg-transparent',
-      thClass: 'gl-w-1/4 xl:gl-w-1/5',
+      thClass: 'gl-w-1/4 @xl/panel:gl-w-1/5',
     },
     {
       key: 'status',
       label: __('Status'),
       class: '!gl-bg-transparent gl-truncate',
-      thClass: 'gl-w-1/8 sm:gl-w-1/6 xl:gl-w-1/8',
+      thClass: 'gl-w-1/8 @sm/panel:gl-w-1/6 @xl/panel:gl-w-1/8',
     },
   ],
   components: {
@@ -322,7 +322,7 @@ export default {
       </template>
 
       <template #cell(assignees)="{ item: { assignees } }">
-        <div class="gl-flex gl-flex-col gl-items-end gl-gap-3 sm:gl-items-start">
+        <div class="gl-flex gl-flex-col gl-items-end gl-gap-3 @sm/panel:gl-items-start">
           <div
             v-for="assignee in assignees"
             :key="assignee.username"
