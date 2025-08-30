@@ -14,7 +14,7 @@ module AntiAbuse
     attr_reader :user, :reporter, :abuse_report
 
     def perform(abuse_report_id)
-      @abuse_report = AbuseReport.find_by_id(abuse_report_id)
+      @abuse_report = ::AbuseReport.find_by_id(abuse_report_id)
       return unless abuse_report&.category == 'spam'
 
       @reporter = abuse_report.reporter
