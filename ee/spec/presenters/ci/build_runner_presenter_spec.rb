@@ -6,7 +6,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
   subject(:presenter) { described_class.new(ci_build) }
 
   describe '#secrets_configuration' do
-    let!(:ci_build) { create(:ci_build, secrets: secrets, id_tokens: id_tokens) }
+    let!(:ci_build) { create(:ee_ci_build, secrets: secrets, id_tokens: id_tokens) }
     let(:jwt_token) { "TESTING" }
     let(:id_tokens) { nil }
 

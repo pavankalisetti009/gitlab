@@ -147,7 +147,7 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
 
       build = Ci::Build.find(pipeline.builds.first.id)
 
-      expect(build.metadata.secrets).to eq({
+      expect(build.secrets).to eq({
         'DATABASE_PASSWORD' => {
           'vault' => {
             'engine' => { 'name' => 'kv-v2', 'path' => 'kv-v2' },

@@ -20,7 +20,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   end
 
   let(:stage) { create(:ci_stage) }
-  let(:job) { create(:ci_build, pipeline: pipeline) }
+  let(:job) { create(:ee_ci_build, pipeline: pipeline) }
   let(:artifact) { create(:ee_ci_job_artifact, :sast, job: job, project: job.project) }
   let_it_be(:valid_secrets) do
     {
@@ -37,8 +37,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   before do
     stub_feature_flags(ci_validate_config_options: false)
   end
-
-  it_behaves_like 'has secrets', :ci_build
 
   it_behaves_like 'a deployable job in EE' do
     let(:job) { job }
@@ -123,7 +121,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   end
 
   describe 'updates compute minutes', feature_category: :hosted_runners do
-    let(:job) { create(:ci_build, :running, pipeline: pipeline) }
+    let(:job) { create(:ee_ci_build, :running, pipeline: pipeline) }
 
     context 'when cancelling supported' do
       %w[success drop cancel].each do |event|
@@ -210,7 +208,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
         context 'when there is a dast_site_profile associated with the job' do
           let(:pipeline) { create(:ci_pipeline, project: project) }
-          let(:job) { create(:ci_build, :running, pipeline: pipeline, dast_site_profile: dast_site_profile, user: user, options: options) }
+          let(:job) { create(:ee_ci_build, :running, pipeline: pipeline, dast_site_profile: dast_site_profile, user: user, options: options) }
 
           it_behaves_like 'it includes variables' do
             let(:expected_variables) { dast_site_profile.ci_variables }
@@ -225,7 +223,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
         context 'when there is a dast_scanner_profile associated with the job' do
           let(:pipeline) { create(:ci_pipeline, project: project, user: user) }
-          let(:job) { create(:ci_build, :running, pipeline: pipeline, dast_scanner_profile: dast_scanner_profile, options: options) }
+          let(:job) { create(:ee_ci_build, :running, pipeline: pipeline, dast_scanner_profile: dast_scanner_profile, options: options) }
 
           it_behaves_like 'it includes variables' do
             let(:expected_variables) { dast_scanner_profile.ci_variables }
@@ -234,7 +232,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
         context 'when there are profiles associated with the job' do
           let(:pipeline) { create(:ci_pipeline, project: project) }
-          let(:job) { create(:ci_build, :running, pipeline: pipeline, dast_site_profile: dast_site_profile, dast_scanner_profile: dast_scanner_profile, user: user, options: options) }
+          let(:job) { create(:ee_ci_build, :running, pipeline: pipeline, dast_site_profile: dast_site_profile, dast_scanner_profile: dast_scanner_profile, user: user, options: options) }
 
           context 'when dast_configuration is absent from the options' do
             let(:options) { {} }
@@ -334,10 +332,10 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       end
 
       it "includes CI_PAGES_* variables" do
-        build1 = create(:ci_build, pipeline: pipeline, options: { pages: {} })
-        build2 = create(:ci_build, pipeline: pipeline, options: { pages: { path_prefix: 'foo' } })
-        build3 = create(:ci_build, pipeline: pipeline, options: { pages: { path_prefix: nil } })
-        build4 = create(:ci_build, pipeline: pipeline, options: { pages: { path_prefix: '$CI_COMMIT_BRANCH' } })
+        build1 = create(:ee_ci_build, pipeline: pipeline, options: { pages: {} })
+        build2 = create(:ee_ci_build, pipeline: pipeline, options: { pages: { path_prefix: 'foo' } })
+        build3 = create(:ee_ci_build, pipeline: pipeline, options: { pages: { path_prefix: nil } })
+        build4 = create(:ee_ci_build, pipeline: pipeline, options: { pages: { path_prefix: '$CI_COMMIT_BRANCH' } })
 
         project_namespace, _, project_path = project.full_path.downcase.partition('/')
         ci_pages_hostname = "#{project_namespace}.example.com"
@@ -386,13 +384,13 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
     context 'when build publishes artifacts reports' do
       context 'when build has multiple security report artifact' do
-        let(:job) { create(:ci_build, :sast, pipeline: pipeline) }
+        let(:job) { create(:ee_ci_build, :sast, pipeline: pipeline) }
 
         it { is_expected.to be true }
       end
 
       context 'when build has no security report artifacts' do
-        let(:job) { create(:ci_build, :coverage_report_cobertura, pipeline: pipeline) }
+        let(:job) { create(:ee_ci_build, :coverage_report_cobertura, pipeline: pipeline) }
 
         it { is_expected.to be false }
       end
@@ -718,7 +716,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     subject { build.retryable? }
 
     let(:pipeline) { merge_request.all_pipelines.last }
-    let!(:build) { create(:ci_build, :canceled, pipeline: pipeline) }
+    let!(:build) { create(:ee_ci_build, :canceled, pipeline: pipeline) }
 
     context 'with pipeline for merged results' do
       let(:merge_request) { create(:merge_request, :with_merge_request_pipeline) }
@@ -729,8 +727,8 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
   describe ".license_scan" do
     it 'returns only license artifacts' do
-      create(:ci_build, job_artifacts: [create(:ci_job_artifact, :zip)])
-      build_with_license_scan = create(:ci_build, job_artifacts: [create(:ci_job_artifact, file_type: :license_scanning, file_format: :raw)])
+      create(:ee_ci_build, job_artifacts: [create(:ci_job_artifact, :zip)])
+      build_with_license_scan = create(:ee_ci_build, job_artifacts: [create(:ci_job_artifact, file_type: :license_scanning, file_format: :raw)])
 
       expect(described_class.license_scan).to contain_exactly(build_with_license_scan)
     end
@@ -738,8 +736,8 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
   describe ".sbom_generation" do
     it 'returns only cyclonedx sbom artifacts' do
-      create(:ci_build, job_artifacts: [create(:ci_job_artifact, :zip)])
-      build_with_cyclonedx_sbom = create(:ci_build, job_artifacts: [create(:ee_ci_job_artifact, :cyclonedx)])
+      create(:ee_ci_build, job_artifacts: [create(:ci_job_artifact, :zip)])
+      build_with_cyclonedx_sbom = create(:ee_ci_build, job_artifacts: [create(:ee_ci_job_artifact, :cyclonedx)])
 
       expect(described_class.sbom_generation).to contain_exactly(build_with_cyclonedx_sbom)
     end
@@ -756,8 +754,8 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
     let_it_be(:instance_runner) { create(:ci_runner, :instance) }
     let_it_be(:job_args) { { runner: instance_runner, failure_reason: :runner_system_failure } }
-    let_it_be(:job1) { create(:ci_build, :failed, finished_at: 1.minute.ago, **job_args) }
-    let_it_be(:job2) { create(:ci_build, :failed, finished_at: 2.minutes.ago, **job_args) }
+    let_it_be(:job1) { create(:ee_ci_build, :failed, finished_at: 1.minute.ago, **job_args) }
+    let_it_be(:job2) { create(:ee_ci_build, :failed, finished_at: 2.minutes.ago, **job_args) }
 
     context 'with failure_reason set to :runner_system_failure' do
       let(:failure_reason) { :runner_system_failure }
@@ -815,7 +813,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   end
 
   describe '#runner_required_feature_names' do
-    let(:build) { create(:ci_build, secrets: secrets) }
+    let(:build) { create(:ee_ci_build, secrets: secrets) }
 
     subject { build.runner_required_feature_names }
 
@@ -962,7 +960,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:gitlab_secrets_manager]).each do |provider|
         context "when using #{provider}" do
           let(:valid_secret) { valid_secret_configs.fetch(provider) }
-          let(:ci_build) { build(:ci_build, secrets: valid_secret, ci_stage: stage) }
+          let(:ci_build) { build(:ee_ci_build, secrets: valid_secret, ci_stage: stage) }
 
           it_behaves_like 'not tracking usage for provider', provider: provider
         end
@@ -980,13 +978,13 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
             let(:valid_secret) { valid_secret_configs.fetch(provider) }
 
             context 'on create' do
-              let(:ci_build) { build(:ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
+              let(:ci_build) { build(:ee_ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
 
               it_behaves_like 'tracking usage for provider', provider: provider
             end
 
             context 'on update' do
-              let(:ci_build) { create(:ci_build, secrets: valid_secret, user: user) }
+              let(:ci_build) { create(:ee_ci_build, secrets: valid_secret, user: user) }
 
               before do
                 ci_build.success
@@ -1000,7 +998,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         context 'when using multiple providers' do
           let(:valid_secret) { valid_secret_configs.values.inject(:merge) }
 
-          let(:ci_build) { build(:ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
+          let(:ci_build) { build(:ee_ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
           let(:supported_providers_with_tracking) { Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:gitlab_secrets_manager] }
 
           it 'tracks RedisHLL event with user_id on all providers' do
@@ -1052,7 +1050,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
             }
           end
 
-          let(:ci_build) { build(:ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
+          let(:ci_build) { build(:ee_ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
 
           it 'tracks a single RedisHLL event with user_id on the provider' do
             expect(::Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
@@ -1084,7 +1082,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     end
 
     context 'when there are no secrets defined' do
-      let(:ci_build) { build(:ci_build, user: user, ci_stage: stage) }
+      let(:ci_build) { build(:ee_ci_build, user: user, ci_stage: stage) }
 
       context 'on create' do
         Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.each do |provider|
@@ -1116,7 +1114,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
     let(:identity) { 'google_cloud' }
     let(:build) do
-      create(:ci_build, pipeline: pipeline, user: user, options: { identity: identity })
+      create(:ee_ci_build, pipeline: pipeline, user: user, options: { identity: identity })
     end
 
     subject(:variables) { build.variables }
@@ -1264,7 +1262,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   end
 
   describe "license management metrics for after_commit callbacks" do
-    subject(:create_ci_build) { create(:ci_build, project: project, name: name) }
+    subject(:create_ci_build) { create(:ee_ci_build, project: project, name: name) }
 
     let(:metrics) do
       [
@@ -1294,7 +1292,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   end
 
   describe 'JobSecurityScanCompletedEvent publishing' do
-    let(:build) { create(:ci_build, :running, pipeline: pipeline) }
+    let(:build) { create(:ee_ci_build, :running, pipeline: pipeline) }
 
     context 'when build is a security job' do
       before do

@@ -5,7 +5,8 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
   let_it_be(:user) { create(:user) }
 
   let(:pipeline) { create(:ci_pipeline, project: project) }
-  let(:build) { create(:ci_build, :success, pipeline: pipeline) }
+  let(:build) { create(:ee_ci_build, :success, pipeline: pipeline, secrets: secrets) }
+  let(:secrets) { nil }
 
   subject(:service) { described_class.new(project, user) }
 
@@ -58,10 +59,6 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
               }
             }
           }
-        end
-
-        before do
-          build.update!(secrets: secrets)
         end
 
         it 'clones secrets' do
