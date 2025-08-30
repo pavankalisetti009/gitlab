@@ -13,18 +13,35 @@ module Ai
       end
 
       def execute(params)
+        # Create Duo Workflow Header
+        wf_create_result = ::Ai::DuoWorkflows::CreateWorkflowService.new(
+          container: project,
+          current_user: current_user,
+          params: {
+            workflow_definition: "Trigger - #{flow_trigger.description}",
+            status: :running,
+            goal: params[:input],
+            environment: :web
+          }
+        ).execute
+
+        return ServiceResponse.error(message: wf_create_result[:message]) if wf_create_result.error?
+
+        workflow = wf_create_result[:workflow]
+        params[:flow_id] = workflow.id
+
         note_service = ::Ai::FlowTriggers::CreateNoteService.new(
           project: project, resource: resource, author: flow_trigger.user, discussion: params[:discussion]
         )
 
         note_service.execute(params) do |updated_params|
-          run_workload(updated_params)
+          run_workload(updated_params, workflow)
         end
       end
 
       private
 
-      def run_workload(params)
+      def run_workload(params, workflow)
         flow_definition = fetch_flow_definition
         return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
 
@@ -34,7 +51,7 @@ module Ai
           d.variables = build_variables(params)
         end
 
-        ::Ci::Workloads::RunWorkloadService.new(
+        result = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
           current_user: flow_trigger.user,
           source: :duo_workflow,
@@ -42,6 +59,16 @@ module Ai
           ci_variables_included: flow_definition['variables'] || [],
           **branch_args
         ).execute
+
+        status_event = result.success? ? "start" : "drop"
+
+        ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
+          workflow: workflow, status_event: status_event, current_user: current_user
+        ).execute
+
+        workflow.workflows_workloads.create(project_id: project.id, workload_id: result.payload.id)
+
+        result
       end
 
       def fetch_flow_definition
@@ -65,7 +92,8 @@ module Ai
           AI_FLOW_CONTEXT: serialized_resource,
           AI_FLOW_INPUT: params[:input],
           AI_FLOW_EVENT: params[:event].to_s,
-          AI_FLOW_DISCUSSION_ID: params[:discussion_id]
+          AI_FLOW_DISCUSSION_ID: params[:discussion_id],
+          AI_FLOW_ID: params[:flow_id]
         }
       end
 
