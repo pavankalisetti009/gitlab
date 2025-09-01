@@ -58,7 +58,7 @@ module API
           # delete_deprovision handles the response and returns either
           # no_content! or a detailed error message.
           def delete_deprovision(identity)
-            service = ::EE::Gitlab::Scim::Group::DeprovisioningService.new(identity).execute
+            service = ::Gitlab::Scim::Group::DeprovisioningService.new(identity).execute
 
             if service.success?
               no_content!
@@ -76,7 +76,7 @@ module API
           # The method that calls patch_deprovision, update_scim_user, expects a
           # truthy/falsey value, and then continues to handle the request.
           def patch_deprovision(identity)
-            service = ::EE::Gitlab::Scim::Group::DeprovisioningService.new(identity).execute
+            service = ::Gitlab::Scim::Group::DeprovisioningService.new(identity).execute
 
             if service.success?
               true
@@ -92,7 +92,7 @@ module API
           end
 
           def reprovision(identity)
-            ::EE::Gitlab::Scim::Group::ReprovisioningService.new(identity).execute
+            ::Gitlab::Scim::Group::ReprovisioningService.new(identity).execute
 
             true
           rescue StandardError => e
@@ -149,7 +149,7 @@ module API
           post do
             group = find_and_authenticate_group!(params[:group])
             parser = ::Gitlab::Scim::ParamsParser.new(params)
-            result = ::EE::Gitlab::Scim::Group::ProvisioningService.new(parser.post_params, group).execute
+            result = ::Gitlab::Scim::Group::ProvisioningService.new(parser.post_params, group).execute
 
             case result.status
             when :success

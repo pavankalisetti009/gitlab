@@ -456,7 +456,7 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
 
         it 'does not call reprovision service when identity is already active' do
-          expect(::EE::Gitlab::Scim::Group::ReprovisioningService).not_to receive(:new)
+          expect(::Gitlab::Scim::Group::ReprovisioningService).not_to receive(:new)
 
           api_request
         end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::Gitlab::Scim::Group::ProvisioningService, :saas,
+RSpec.describe ::Gitlab::Scim::Group::ProvisioningService, :saas,
   feature_category: :system_access do
   describe '#execute' do
     let(:group) { create(:group) }
