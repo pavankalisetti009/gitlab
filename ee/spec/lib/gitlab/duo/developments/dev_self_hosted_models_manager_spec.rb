@@ -57,22 +57,43 @@ RSpec.describe Gitlab::Duo::Developments::DevSelfHostedModelsManager, feature_ca
 
     it 'lists the models' do
       message = <<~MSG
-      The following models are available
-      Claude Sonnet 3.7 [Bedrock]
-      Claude Haiku 3.5 [Bedrock]
-      Claude Sonnet 4 [Bedrock]
-      Llama 3.3 70b [Bedrock]
-      Llama 3.1 8b [Bedrock]
-      Llama 3.1 70b [Bedrock]
-      Mistral Small [FireworksAI]
-      Mixtral 8x22b [FireworksAI]
-      Codestral 22b v0.1 [FireworksAI]
-      Llama 3.1 8b [FireworksAI]
-      Llama 3.1 70b [FireworksAI]
-      Llama 3.3 70b [FireworksAI]
+        The following models are available
+        Claude Sonnet 3.7 [Bedrock]
+        Claude Haiku 3.5 [Bedrock]
+        Claude Sonnet 4 [Bedrock]
+        Llama 3.3 70b [Bedrock]
+        Llama 3.1 8b [Bedrock]
+        Llama 3.1 70b [Bedrock]
+        Mistral Small [FireworksAI]
+        Mixtral 8x22b [FireworksAI]
+        Codestral 22b v0.1 [FireworksAI]
+        Llama 3.1 8b [FireworksAI]
+        Llama 3.1 70b [FireworksAI]
+        Llama 3.3 70b [FireworksAI]
       MSG
 
       expect { list_models }.to output(message).to_stdout
+    end
+  end
+
+  describe '.clean_up_duo_self_hosted' do
+    let_it_be(:user) { create(:user, id: 1) }
+    let_it_be(:models) { described_class.seed_models }
+    let_it_be(:ai_feature_setting) do
+      create(
+        :ai_feature_setting,
+        feature: :code_completions,
+        self_hosted_model: ::Ai::SelfHostedModel.first
+      )
+    end
+
+    subject(:clean_up) { described_class.clean_up_duo_self_hosted }
+
+    it 'removes all models and settings' do
+      clean_up
+
+      expect(::Ai::SelfHostedModel.count).to be(0)
+      expect(::Ai::FeatureSetting.count).to be(0)
     end
   end
 end

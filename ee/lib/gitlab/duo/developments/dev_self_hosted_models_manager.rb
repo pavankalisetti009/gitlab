@@ -108,6 +108,13 @@ module Gitlab
             puts model.name
           end
         end
+
+        def self.clean_up_duo_self_hosted
+          ::Ai::FeatureSetting.delete_all
+          ::Ai::SelfHostedModel.delete_all
+
+          puts "Self-hosted models and settings cleaned up"
+        end
       end
     end
   end
