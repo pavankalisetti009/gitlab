@@ -10,8 +10,9 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
 
   let(:ai_settings) { ::Ai::Setting.instance }
   let(:aigw_headers) { { "header" => "value" } }
+  let(:expected_unit_primitive) { :amazon_q_integration }
   let(:expected_headers) do
-    aigw_headers.merge({ 'X-Gitlab-Unit-Primitive' => 'amazon_q_integration' })
+    aigw_headers.merge({ 'X-Gitlab-Unit-Primitive' => expected_unit_primitive.to_s })
   end
 
   let(:response) { 'response' }
@@ -24,11 +25,8 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
     allow(Doorkeeper::OAuth::Helpers::UniqueToken).to receive(:generate).and_return('1234')
 
-    service = instance_double(CloudConnector::BaseAvailableServiceData)
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name)
-      .with(:amazon_q_integration).and_return(service)
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: service)
+      .with(user: user, service: expected_unit_primitive)
       .and_return(aigw_headers)
   end
 
