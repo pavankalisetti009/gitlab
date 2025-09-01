@@ -62,7 +62,11 @@ module SystemCheck
       end
 
       def migrations
-        database_connection.migration_context.migrations
+        if ::Gitlab.next_rails?
+          database_connection.pool.migration_context.migrations
+        else
+          database_connection.migration_context.migrations
+        end
       end
 
       def schema_migration

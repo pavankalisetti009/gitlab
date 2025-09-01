@@ -37,7 +37,13 @@ db_namespace = namespace :db do
         original_db_config = ActiveRecord::Base.connection_db_config
         db_config = ActiveRecord::Base.configurations.configs_for(env_name: ActiveRecord::Tasks::DatabaseTasks.env, name: name)
         ActiveRecord::Base.establish_connection(db_config) # rubocop: disable Database/EstablishConnection
-        puts "Current version: #{ActiveRecord::Base.connection.migration_context.current_version}"
+
+        if ::Gitlab.next_rails?
+          puts "Current version: #{ActiveRecord::Base.connection_pool.migration_context.current_version}"
+        else
+          puts "Current version: #{ActiveRecord::Base.connection.migration_context.current_version}"
+        end
+
       ensure
         ActiveRecord::Base.establish_connection(original_db_config) if original_db_config # rubocop: disable Database/EstablishConnection
       end
