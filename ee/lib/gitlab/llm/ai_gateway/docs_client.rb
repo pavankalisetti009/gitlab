@@ -35,7 +35,7 @@ module Gitlab
 
           response = Gitlab::HTTP.post(
             "#{base_url}/v1/search/gitlab-docs",
-            headers: Gitlab::AiGateway.headers(user: user, service: service),
+            headers: Gitlab::AiGateway.headers(user: user, service: :duo_chat, ai_feature_name: :duo_chat),
             body: request_body(query: query).to_json,
             timeout: timeout,
             allow_local_requests: true
@@ -57,11 +57,6 @@ module Gitlab
         def feature_setting
           ::Ai::FeatureSetting.find_by_feature(:duo_chat)
         end
-
-        def service
-          ::CloudConnector::AvailableServices.find_by_name(:duo_chat)
-        end
-        strong_memoize_attr :service
 
         def request_body(query:)
           {
