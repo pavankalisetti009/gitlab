@@ -992,4 +992,33 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
     end
   end
+
+  describe 'manage third party agents access' do
+    using RSpec::Parameterized::TableSyntax
+
+    describe ':duo_generate_direct_access_token permission' do
+      where(:feature_flag, :direct_access_setting_disabled, :user_allowed, :check_policy) do
+        true  | false | true  | be_allowed(:duo_generate_direct_access_token)
+        true  | false | false | be_disallowed(:duo_generate_direct_access_token)
+        true  | true  | true  | be_disallowed(:duo_generate_direct_access_token)
+        true  | true  | false | be_disallowed(:duo_generate_direct_access_token)
+        false | false | true  | be_disallowed(:duo_generate_direct_access_token)
+        false | false | false | be_disallowed(:duo_generate_direct_access_token)
+        false | true  | true  | be_disallowed(:duo_generate_direct_access_token)
+        false | true  | false | be_disallowed(:duo_generate_direct_access_token)
+      end
+
+      with_them do
+        before do
+          stub_feature_flags(agent_platform_claude_code: feature_flag)
+          stub_application_setting(disabled_direct_code_suggestions: direct_access_setting_disabled)
+          allow(current_user).to receive(:allowed_to_use?).with(
+            :duo_agent_platform, service_name: :ai_gateway_model_provider_proxy
+          ).and_return(user_allowed)
+        end
+
+        it { is_expected.to check_policy }
+      end
+    end
+  end
 end
