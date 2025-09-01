@@ -12,21 +12,24 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
   describe '#configure_menu_items' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers, :configure_result,
-      :expected_items) do
-      true  | true  | false | true  | [:agents_runs]
-      true  | true  | true  | true  | [:agents_runs, :ai_flow_triggers]
-      true  | false | false | false | []
-      true  | false | true  | true  | [:ai_flow_triggers]
-      false | true  | false | false | []
-      false | true  | true  | true  | [:ai_flow_triggers]
-      false | false | false | false | []
-      false | false | true  | true  | [:ai_flow_triggers]
+    where(:duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers, :ai_catalog,
+      :configure_result, :expected_items) do
+      true  | true  | false | false | true  | [:agents_runs]
+      true  | true  | true  | false | true  | [:agents_runs, :ai_flow_triggers]
+      true  | true  | true  | true  | true  | [:agents_runs, :ai_flow_triggers, :ai_flows]
+      true  | false | false | false | false | []
+      true  | false | true  | true  | true  | [:ai_flow_triggers, :ai_flows]
+      false | true  | false | true  | true | [:ai_flows]
+      false | true  | false | false | false | []
+      false | true  | true  | false | true  | [:ai_flow_triggers]
+      false | false | false | false | false | []
+      false | false | true  | false | true  | [:ai_flow_triggers]
     end
 
     with_them do
       before do
         stub_feature_flags(duo_workflow_in_ci: duo_workflow_in_ci_ff)
+        stub_feature_flags(global_ai_catalog: ai_catalog)
         project.project_setting.update!(duo_remote_flows_enabled: duo_remote_flows_enabled)
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(can_manage_ai_flow_triggers)
       end
@@ -106,6 +109,30 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
 
     it 'has correct item id' do
       expect(flow_triggers_menu_item.item_id).to eq(:ai_flow_triggers)
+    end
+  end
+
+  describe 'flows menu item' do
+    before do
+      menu.configure_menu_items
+    end
+
+    let(:flows_menu_item) { menu.renderable_items.find { |item| item.item_id == :ai_flows } }
+
+    it 'has correct title' do
+      expect(flows_menu_item.title).to eq('Flows')
+    end
+
+    it 'has correct link' do
+      expect(flows_menu_item.link).to eq("/#{project.full_path}/-/automate/flows")
+    end
+
+    it 'has correct active routes' do
+      expect(flows_menu_item.active_routes).to eq({ controller: :duo_agents_platform })
+    end
+
+    it 'has correct item id' do
+      expect(flows_menu_item.item_id).to eq(:ai_flows)
     end
   end
 end

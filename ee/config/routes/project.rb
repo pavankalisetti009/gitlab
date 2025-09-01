@@ -34,6 +34,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           # https://gitlab.com/gitlab-org/gitlab/-/blob/e9b59c5de32c6ce4e14665681afbf95cf001c044/ee/app/assets/javascripts/ai/components/duo_workflow_action.vue#L76.
           get 'agent-sessions', to: 'duo_agents_platform#show', as: :automate_agent_sessions, format: false
           get 'flow-triggers', to: 'duo_agents_platform#show', as: :automate_flow_triggers, format: false
+          get 'flows', to: 'duo_agents_platform#show', as: :automate_flows, format: false
         end
 
         namespace :quality do

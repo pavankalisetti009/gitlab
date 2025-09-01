@@ -1,5 +1,7 @@
 const TYPENAME_AI_CATALOG_ITEM = 'AiCatalogItem';
 const TYPENAME_AI_CATALOG_ITEM_CONNECTION = 'AiCatalogItemConnection';
+const TYPENAME_AI_CATALOG_ITEM_CONSUMER = 'AiCatalogItemConsumer';
+const TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION = 'AiCatalogItemConsumerConnection';
 const TYPENAME_AI_CATALOG_AGENT_CREATE = 'AiCatalogAgentCreatePayload';
 const TYPENAME_AI_CATALOG_AGENT_UPDATE = 'AiCatalogAgentUpdatePayload';
 const TYPENAME_AI_CATALOG_AGENT_DELETE = 'AiCatalogAgentDeletePayload';
@@ -368,6 +370,23 @@ export const mockCatalogFlowDeleteErrorResponse = {
       errors: ['You do not have permission to delete this AI flow.'],
       success: false,
       __typename: TYPENAME_AI_CATALOG_FLOW_DELETE,
+    },
+  },
+};
+
+export const mockConfiguredFlowsResponse = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [
+        {
+          id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+          pinnedVersionPrefix: '0.0.1',
+          item: mockBaseFlow,
+          __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
+        },
+      ],
+      pageInfo: mockPageInfo,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION,
     },
   },
 };

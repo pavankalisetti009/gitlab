@@ -100,6 +100,32 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       end
     end
 
+    context 'when vueroute is flows' do
+      context 'when global_ai_catalog feature is enabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: true)
+        end
+
+        it 'returns successfully' do
+          get project_automate_flows_path(project)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when global_ai_catalog feature is disabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: false)
+        end
+
+        it 'returns 404' do
+          get project_automate_flows_path(project)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
     context 'when flow-triggers are requested' do
       context 'when user is not signed in' do
         before do

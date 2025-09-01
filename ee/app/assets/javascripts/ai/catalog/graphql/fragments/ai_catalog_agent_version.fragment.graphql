@@ -1,4 +1,4 @@
-#import "../fragments/ai_catalog_item_version.fragment.graphql"
+#import "./ai_catalog_item_version.fragment.graphql"
 
 fragment BaseAiCatalogAgentVersion on AiCatalogAgentVersion {
   ...BaseAiCatalogItemVersion
