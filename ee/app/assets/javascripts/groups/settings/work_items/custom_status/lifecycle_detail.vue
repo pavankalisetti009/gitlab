@@ -22,7 +22,7 @@ export default {
       type: String,
       required: true,
     },
-    isDefaultLifecycle: {
+    isLifecycleTemplate: {
       type: Boolean,
       required: false,
       default: false,
@@ -61,7 +61,10 @@ export default {
       return (this.lifecycle.workItemTypes || []).map(({ name }) => ({ text: name, value: name }));
     },
     isLifecycleAssociatedWithWorkItemTypes() {
-      return this.lifecycle.workItemTypes.length > 0;
+      return this.lifecycle?.workItemTypes?.length > 0;
+    },
+    isUsageSectionVisible() {
+      return this.isLifecycleAssociatedWithWorkItemTypes && this.showUsageSection;
     },
   },
   methods: {
@@ -90,7 +93,7 @@ export default {
       <lifecycle-name-form
         v-else
         :lifecycle="lifecycle"
-        :is-default-lifecycle="isDefaultLifecycle"
+        :is-lifecycle-template="isLifecycleTemplate"
         :full-path="fullPath"
         :card-hover="cardHover"
       />
@@ -105,7 +108,7 @@ export default {
     </div>
 
     <div
-      v-if="lifecycle.workItemTypes.length && showUsageSection"
+      v-if="isUsageSectionVisible"
       :data-testid="`lifecycle-${lifecycleId}-usage`"
       class="-gl-mx-4 gl-flex gl-flex-wrap gl-items-center gl-gap-3 gl-rounded-bl-lg gl-rounded-br-lg gl-border-t-1 gl-border-gray-400 gl-bg-strong gl-px-4 gl-py-2"
     >

@@ -306,70 +306,6 @@ export const mockLifecycles = [
   },
 ];
 
-export const mockDefaultLifecycle = {
-  id: 'gid://gitlab/Lifecycle/default',
-  name: 'Default',
-  defaultOpenStatus: {
-    id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/87',
-    name: 'To do',
-    __typename: 'LocalWorkItemStatus',
-  },
-  defaultClosedStatus: {
-    id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/89',
-    name: 'Done',
-    __typename: 'LocalWorkItemStatus',
-  },
-  defaultDuplicateStatus: {
-    id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/91',
-    name: 'Duplicate',
-    __typename: 'LocalWorkItemStatus',
-  },
-  workItemTypes: [],
-  statuses: [
-    {
-      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/87',
-      name: 'To do',
-      iconName: 'status-waiting',
-      color: '#737278',
-      description: null,
-      __typename: 'LocalWorkItemStatus',
-    },
-    {
-      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/88',
-      name: 'In progress',
-      iconName: 'status-running',
-      color: '#1f75cb',
-      description: null,
-      __typename: 'LocalWorkItemStatus',
-    },
-    {
-      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/89',
-      name: 'Done',
-      iconName: 'status-success',
-      color: '#108548',
-      description: null,
-      __typename: 'LocalWorkItemStatus',
-    },
-    {
-      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/90',
-      name: "Won't do",
-      iconName: 'status-cancelled',
-      color: '#DD2B0E',
-      description: null,
-      __typename: 'LocalWorkItemStatus',
-    },
-    {
-      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/91',
-      name: 'Duplicate',
-      iconName: 'status-cancelled',
-      color: '#DD2B0E',
-      description: null,
-      __typename: 'LocalWorkItemStatus',
-    },
-  ],
-  __typename: 'LocalLifecycle',
-};
-
 export const mockCreateLifecycleResponse = {
   data: {
     lifecycleCreate: {
@@ -442,4 +378,87 @@ export const mockCreateLifecycleResponse = {
       __typename: 'LifecycleCreatePayload',
     },
   },
+};
+
+export const mockDefaultLifecycleTemplateReponse = {
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Group/24',
+      lifecycleTemplates: [
+        {
+          id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Lifecycle/Default',
+          name: 'Default',
+          workItemTypes: [],
+          defaultOpenStatus: {
+            id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/To+do',
+            name: 'To do',
+            __typename: 'WorkItemStatus',
+          },
+          defaultClosedStatus: {
+            id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/Done',
+            name: 'Done',
+            __typename: 'WorkItemStatus',
+          },
+          defaultDuplicateStatus: {
+            id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/Duplicate',
+            name: 'Duplicate',
+            __typename: 'WorkItemStatus',
+          },
+          statuses: [
+            {
+              id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/To+do',
+              name: 'To do',
+              iconName: 'status-waiting',
+              color: '#737278',
+              category: 'to_do',
+              description: null,
+              __typename: 'WorkItemStatus',
+            },
+            {
+              id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/In+progress',
+              name: 'In progress',
+              iconName: 'status-running',
+              color: '#1f75cb',
+              category: 'in_progress',
+              description: null,
+              __typename: 'WorkItemStatus',
+            },
+            {
+              id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/Done',
+              name: 'Done',
+              iconName: 'status-success',
+              color: '#108548',
+              category: 'done',
+              description: null,
+              __typename: 'WorkItemStatus',
+            },
+            {
+              id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/Won%27t+do',
+              name: "Won't do",
+              iconName: 'status-cancelled',
+              color: '#DD2B0E',
+              category: 'canceled',
+              description: null,
+              __typename: 'WorkItemStatus',
+            },
+            {
+              id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Templates::Status/Duplicate',
+              name: 'Duplicate',
+              iconName: 'status-cancelled',
+              color: '#DD2B0E',
+              category: 'canceled',
+              description: null,
+              __typename: 'WorkItemStatus',
+            },
+          ],
+          __typename: 'WorkItemLifecycle',
+        },
+      ],
+      __typename: 'Namespace',
+    },
+  },
+};
+
+export const mockDefaultLifecycle = {
+  ...mockDefaultLifecycleTemplateReponse.data.namespace.lifecycleTemplates[0],
 };

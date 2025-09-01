@@ -25,7 +25,7 @@ export default {
       required: false,
       default: false,
     },
-    isDefaultLifecycle: {
+    isLifecycleTemplate: {
       type: Boolean,
       required: false,
       default: false,
@@ -151,7 +151,7 @@ export default {
   </div>
   <div v-else class="gl-flex gl-min-h-7 gl-items-center">
     <span :data-testid="`name-${lifecycleId}`" class="gl-font-bold gl-text-strong">{{
-      isDefaultLifecycle ? s__('WorkItem|Default statuses') : lifecycle.name
+      isLifecycleTemplate ? s__('WorkItem|Default statuses') : lifecycle.name
     }}</span>
 
     <gl-button
