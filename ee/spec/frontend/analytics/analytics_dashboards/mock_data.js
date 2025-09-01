@@ -21,7 +21,7 @@ import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_t
 import { FILTERED_SEARCH_MAX_LABELS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { VISUALIZATION_SLUG_DORA_PERFORMERS_SCORE } from 'ee/analytics/analytics_dashboards/constants';
-import { getUniquePanelId } from 'ee/analytics/analytics_dashboards/utils';
+import { getUniquePanelId } from 'ee/analytics/analytics_dashboards/components/utils';
 import BranchToken from '~/vue_shared/components/filtered_search_bar/tokens/branch_token.vue';
 
 export const TEST_TRACKING_KEY = 'gid://gitlab/Project/2';

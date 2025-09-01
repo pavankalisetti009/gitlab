@@ -1,9 +1,9 @@
 <script>
 import { GlIcon, GlLink } from '@gitlab/ui';
 
-export const PIPELINE_STATUS_SUCCESS = 'SUCCESS';
-export const PIPELINE_STATUS_PENDING = 'PENDING';
-export const PIPELINE_STATUS_FAILED = 'FAILED';
+const PIPELINE_STATUS_SUCCESS = 'SUCCESS';
+const PIPELINE_STATUS_PENDING = 'PENDING';
+const PIPELINE_STATUS_FAILED = 'FAILED';
 
 export default {
   name: 'MergeRequestLink',
