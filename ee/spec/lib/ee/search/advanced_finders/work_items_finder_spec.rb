@@ -144,6 +144,14 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
         end
       end
 
+      context 'when exclude_group_work_items is used' do
+        let(:params) { { exclude_group_work_items: true } }
+
+        it 'returns true' do
+          expect(finder.use_elasticsearch_finder?).to be_truthy
+        end
+      end
+
       context 'when url param is missing (since we do not want to force using this param)' do
         let(:url_query) { '' }
 

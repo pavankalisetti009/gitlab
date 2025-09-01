@@ -44,7 +44,16 @@ module EE
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
-        CONTROL_KEYS = [:sort, :include_ancestors, :include_descendants, :exclude_projects].freeze
+        # These control keys (excluding sort) are used to control whether to search across the entire
+        # group hierarchy or exclude specific projects in the PostgreSQL flow.
+        # This is done for performance optimizations.
+        # Elasticsearch searches through the group hierarchy by default and does so efficiently,
+        # so these flags are currently ignored when searching via ES.
+        # If needed in the future, we'll need to implement support for these control flags.
+        #
+        CONTROL_KEYS = [
+          :sort, :include_ancestors, :include_descendants, :exclude_projects, :exclude_group_work_items
+        ].freeze
         ALLOWED_ES_FILTERS = [
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
