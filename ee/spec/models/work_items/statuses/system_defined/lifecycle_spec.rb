@@ -148,4 +148,19 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
       end
     end
   end
+
+  describe '#status_counts' do
+    it 'returns status counts with nil values' do
+      status_counts = lifecycle.status_counts
+
+      expect(status_counts.size).to eq(5)
+
+      status_counts.each do |status_count|
+        expect(status_count[:status]).to be_a(WorkItems::Statuses::SystemDefined::Status)
+        expect(status_count[:count]).to be_nil
+      end
+
+      expect(status_counts.map { |sc| sc[:status].id }).to contain_exactly(1, 2, 3, 4, 5)
+    end
+  end
 end

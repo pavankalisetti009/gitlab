@@ -36,6 +36,10 @@ module Types
         experiment: { milestone: '18.1' },
         description: 'All available statuses of the lifecycle.',
         method: :ordered_statuses
+
+      field :status_counts, [Types::WorkItems::StatusCountType],
+        experiment: { milestone: '18.4' },
+        description: 'Work item counts by status for the lifecycle.'
     end
     # rubocop:enable Graphql/AuthorizeTypes, GraphQL/ExtractType
   end
