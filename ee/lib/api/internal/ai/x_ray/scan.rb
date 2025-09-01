@@ -27,15 +27,13 @@ module API
               ::GitlabSubscriptions::AddOnPurchase.exists_for_unit_primitive?(:complete_code, current_namespace)
             end
 
-            def code_suggestions_data
-              CloudConnector::AvailableServices.find_by_name(:code_suggestions)
-            end
-
-            def model_gateway_headers(headers, code_suggestions_data)
-              Gitlab::AiGateway.headers(user: current_job.user, service: code_suggestions_data,
-                agent: headers["User-Agent"])
-                .merge(saas_headers)
-                .transform_values { |v| Array(v) }
+            def model_gateway_headers(headers)
+              Gitlab::AiGateway.headers(
+                user: current_job.user,
+                service: :code_suggestions,
+                ai_feature_name: :code_suggestions,
+                agent: headers["User-Agent"]
+              ).merge(saas_headers).transform_values { |v| Array(v) }
             end
 
             def saas_headers
@@ -69,7 +67,7 @@ module API
                   Gitlab::Workhorse.send_url(
                     File.join(::Gitlab::AiGateway.url, 'v1', 'x-ray', 'libraries'),
                     body: params.except(:token, :id).to_json,
-                    headers: model_gateway_headers(headers, code_suggestions_data),
+                    headers: model_gateway_headers(headers),
                     method: "POST"
                   )
 
