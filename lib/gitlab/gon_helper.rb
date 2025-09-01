@@ -108,6 +108,9 @@ module Gitlab
       push_frontend_feature_flag(:global_topbar, current_user)
       push_frontend_feature_flag(:paneled_view, current_user)
       push_frontend_feature_flag(:disallow_immediate_deletion, current_user)
+
+      # Expose the Project Studio user preference as if it were a feature flag
+      push_to_gon_attributes(:features, :project_studio_enabled, Users::ProjectStudio.new(current_user).enabled?)
     end
 
     # Exposes the state of a feature flag to the frontend code.
