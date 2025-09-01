@@ -60,6 +60,9 @@ export default {
     items() {
       return (this.lifecycle.workItemTypes || []).map(({ name }) => ({ text: name, value: name }));
     },
+    isLifecycleAssociatedWithWorkItemTypes() {
+      return this.lifecycle.workItemTypes.length > 0;
+    },
   },
   methods: {
     linkToItemType(workItemType) {
@@ -136,7 +139,8 @@ export default {
     </div>
 
     <div
-      v-else-if="showNotInUseSection"
+      v-else-if="showNotInUseSection && !isLifecycleAssociatedWithWorkItemTypes"
+      :data-testid="`lifecycle-${lifecycleId}-no-usage`"
       class="gl-border-warning-400 -gl-mx-4 gl-flex gl-items-center gl-gap-3 gl-rounded-bl-lg gl-rounded-br-lg gl-border-t-1 gl-bg-feedback-warning gl-px-4 gl-py-2"
       :class="{
         'gl-py-3': !showRemoveLifecycleCta,
