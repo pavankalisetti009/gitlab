@@ -44,6 +44,30 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     )
   end
 
+  before do
+    # Enable necessary feature flags and settings
+    stub_feature_flags(ci_validate_config_options: false)
+    stub_feature_flags(duo_workflow: true, duo_workflow_in_ci: true)
+
+    # Enable duo features on project
+    project.project_setting.update!(
+      duo_features_enabled: true,
+      duo_remote_flows_enabled: true
+    )
+
+    # Setup LLM stage check
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+    allow(::Ability).to receive(:allowed?).and_return(true)
+    allow(current_user).to receive(:allowed_to_use?).and_return(true)
+
+    # Setup chat authorizer
+    authorizer_double = instance_double(::Gitlab::Llm::Utils::Authorizer::Response)
+    allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer)
+      .to receive(:resource)
+      .and_return(authorizer_double)
+    allow(authorizer_double).to receive(:allowed?).and_return(true)
+  end
+
   describe '#execute' do
     before_all do
       project.repository.create_file(
@@ -54,18 +78,36 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
         branch_name: project.default_branch_or_main)
     end
 
-    before do
-      stub_feature_flags(ci_validate_config_options: false)
-      authorizer_double = instance_double(::Gitlab::Llm::Utils::Authorizer::Response)
-      allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer)
-        .to receive(:resource)
-        .and_return(authorizer_double)
-      allow(authorizer_double).to receive(:allowed?).and_return(true)
+    it 'creates duo workflow with correct parameters' do
+      expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(workflow.workflow_definition).to eq("Trigger - #{flow_trigger.description}")
+      expect(workflow.goal).to eq('test input') # Changed from discussion to input
+      expect(workflow.environment).to eq('web')
+      expect(workflow.project).to eq(project)
+      expect(workflow.user).to eq(current_user)
+    end
+
+    it 'creates workflow_workload association' do
+      expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::WorkflowsWorkload.count }.by(1)
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      workload = ::Ci::Workloads::Workload.last
+
+      association = ::Ai::DuoWorkflows::WorkflowsWorkload.last
+      expect(association.workflow).to eq(workflow)
+      expect(association.project_id).to eq(project.id)
+      expect(association.workload_id).to eq(workload.id)
     end
 
     it 'executes the workload service and creates a workload' do
-      workload = service.execute(params).payload
+      expect { service.execute(params) }.to change { ::Ci::Workloads::Workload.count }.by(1)
 
+      response = service.execute(params)
+      expect(response).to be_success
+
+      workload = response.payload
       expect(workload).to be_persisted
       expect(workload.variable_inclusions.map(&:variable_name)).to eq(%w[API_KEY DATABASE_URL])
     end
@@ -81,12 +123,19 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
         expect(variables[:AI_FLOW_INPUT]).to eq('test input')
         expect(variables[:AI_FLOW_EVENT]).to eq('mention')
         expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+        expect(variables[:AI_FLOW_ID]).to eq(::Ai::DuoWorkflows::Workflow.last.id)
+
         expect(kwargs[:ci_variables_included]).to eq(%w[API_KEY DATABASE_URL])
         expect(kwargs[:source]).to eq(:duo_workflow)
 
         original_method.call(**kwargs)
       end
 
+      response = service.execute(params)
+      expect(response).to be_success
+    end
+
+    it 'creates appropriate notes' do
       expect(Note.count).to eq(1)
       expect(::Ci::Workloads::Workload.count).to eq(0)
 
@@ -100,6 +149,52 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
 
       logs_url = ::Ci::Workloads::Workload.last.logs_url
       expect(Note.last.note).to include(logs_url)
+    end
+
+    it 'updates workflow status to running initially and then to start on success' do
+      response = service.execute(params)
+      expect(response).to be_success
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(workflow.status_name).to eq(:running)
+    end
+
+    context 'when workload execution fails' do
+      before do
+        allow_next_instance_of(::Ci::Workloads::RunWorkloadService) do |instance|
+          error = ServiceResponse.error(
+            message: 'Workload failed', payload: instance_double(::Ci::Workloads::Workload, id: 999)
+          )
+
+          allow(instance).to receive(:execute).and_return(error)
+        end
+      end
+
+      it 'still creates workflow and handles the failure' do
+        expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
+
+        # The service should still attempt to update workflow status even on failure
+        workflow = ::Ai::DuoWorkflows::Workflow.last
+        expect(workflow).to be_present
+      end
+    end
+
+    context 'when workflow creation fails' do
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflows::CreateWorkflowService) do |instance|
+          error_response = ServiceResponse.error(message: 'Workflow creation failed')
+          allow(error_response).to receive(:error?).and_return(true)
+          allow(instance).to receive(:execute).and_return(error_response)
+        end
+      end
+
+      it 'returns error response without creating workload' do
+        expect { service.execute(params) }.not_to change { ::Ci::Workloads::Workload.count }
+
+        response = service.execute(params)
+        expect(response).to be_error
+        expect(response.message).to eq('Workflow creation failed')
+      end
     end
 
     context 'when resource is a MergeRequest' do
@@ -147,11 +242,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     context 'when flow definition file does not exist' do
       let_it_be_with_refind(:project) { create(:project, :repository) }
 
-      it 'returns nil without calling workload service' do
-        expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
+      it 'returns error without calling workload service' do
+        expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
 
         response = service.execute(params)
-
         expect(response).to be_error
         expect(response.message).to eq('invalid or missing flow definition')
       end
@@ -177,10 +271,12 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
         it 'returns nil without calling workload service' do
           expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
 
-          response = service.execute(params)
+          expect do
+            response = service.execute(params)
 
-          expect(response).to be_error
-          expect(response.message).to eq('invalid or missing flow definition')
+            expect(response).to be_error
+            expect(response.message).to eq('invalid or missing flow definition')
+          end.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
         end
       end
     end
