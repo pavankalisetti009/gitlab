@@ -29,6 +29,63 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         stub_licensed_features(issue_weights: true, epics: true, security_dashboard: true, issuable_default_templates: true)
       end
 
+      describe '#index' do
+        context 'when work_item_planning_view is disabled' do
+          before do
+            stub_feature_flags(work_item_planning_view: false)
+          end
+
+          context 'with epic params' do
+            let_it_be(:group) { create(:group) }
+            let_it_be(:project_with_group_parent) { create(:project, group: group) }
+            let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
+
+            before do
+              sign_in user
+              project_with_group_parent.add_developer(user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- Does not work in before_all
+            end
+
+            context 'when work_items_project_issues_list is enabled' do
+              before do
+                stub_feature_flags(work_items_project_issues_list: true)
+              end
+
+              it 'rewrites the epic_id param' do
+                get :index, params: { namespace_id: project_with_group_parent.namespace, project_id: project_with_group_parent, epic_id: epic.id }
+                expect(response).to redirect_to project_issues_path(project_with_group_parent, params: { parent_id: epic.work_item.id })
+
+                get :index, params: { namespace_id: project_with_group_parent.namespace, project_id: project_with_group_parent, epic_id: 'NONE' }
+                expect(response).to redirect_to project_issues_path(project_with_group_parent, params: { parent_id: 'NONE' })
+              end
+
+              it 'rewrites the not epic_id param' do
+                get :index, params: { namespace_id: project_with_group_parent.namespace, project_id: project_with_group_parent, not: { epic_id: epic.id } }
+                expect(response).to redirect_to project_issues_path(project_with_group_parent, params: { not: { parent_id: epic.work_item.id } })
+              end
+
+              it 'rewrites the epic_wildcard_id param' do
+                get :index, params: { namespace_id: project_with_group_parent.namespace, project_id: project_with_group_parent, epic_wildcard_id: 'ANY' }
+                expect(response).to redirect_to project_issues_path(project_with_group_parent, params: { parent_wildcard_id: 'ANY' })
+              end
+            end
+
+            context 'when work_items_project_issues_list is disabled' do
+              let_it_be(:epic_params) { { epic_id: epic.id, epic_wildcard_id: 'ANY', not: { epic_id: epic.id } } }
+
+              before do
+                stub_feature_flags(work_items_project_issues_list: false)
+              end
+
+              it 'does not rewrite the epic_id params' do
+                get :index, params: { namespace_id: project_with_group_parent.namespace, project_id: project_with_group_parent, **epic_params }
+
+                expect(response).to have_gitlab_http_status(:ok)
+              end
+            end
+          end
+        end
+      end
+
       context 'when user can generate description' do
         before do
           allow(controller).to receive(:push_licensed_feature)

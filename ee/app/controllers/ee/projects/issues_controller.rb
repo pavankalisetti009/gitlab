@@ -94,6 +94,50 @@ module EE
         options
       end
 
+      override :redirect_if_epic_params
+      def redirect_if_epic_params
+        # To handle legacy urls with epic filters, translate these to the parent filter equivalents and redirect
+        return unless project&.work_items_project_issues_list_feature_flag_enabled? && has_epic_filter?
+
+        redirect_to project_issues_path(project, params: convert_epic_params)
+      end
+
+      def convert_epic_params
+        rewritten_params = params.to_unsafe_h.except(:controller, :action, :namespace_id, :project_id)
+
+        # Translate epic_wildcard_id -> parent_wildcard_id
+        rewritten_params[:parent_wildcard_id] = rewritten_params.delete(:epic_wildcard_id) if params[:epic_wildcard_id]
+
+        # Translate not: epic_id -> not: parent_id
+        if params.dig(:not, :epic_id)
+          work_item_id = work_item_id_from_epic_id(params[:not][:epic_id])
+          rewritten_params[:not][:parent_id] = work_item_id if work_item_id
+          rewritten_params[:not].delete(:epic_id)
+        end
+
+        # Translate epic_id -> parent_id
+        if params[:epic_id]
+          if params[:epic_id].to_s.downcase.in?([::IssuableFinder::Params::FILTER_NONE,
+            ::IssuableFinder::Params::FILTER_ANY])
+            rewritten_params[:parent_id] = rewritten_params.delete(:epic_id)
+          else
+            work_item_id = work_item_id_from_epic_id(params[:epic_id])
+            rewritten_params[:parent_id] = work_item_id if work_item_id
+            rewritten_params.delete(:epic_id)
+          end
+        end
+
+        rewritten_params
+      end
+
+      def has_epic_filter?
+        params[:epic_id] || params[:epic_wildcard_id] || params.dig(:not, :epic_id)
+      end
+
+      def work_item_id_from_epic_id(epic_id)
+        ::Epic.find_by_id(epic_id&.to_i)&.issue_id
+      end
+
       def disable_query_limiting_ee
         ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/438295', new_threshold: 220)
       end
