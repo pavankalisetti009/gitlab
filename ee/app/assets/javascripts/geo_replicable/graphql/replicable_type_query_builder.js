@@ -2,11 +2,11 @@ import { gql } from '@apollo/client/core';
 import PageInfo from '~/graphql_shared/fragments/page_info.fragment.graphql';
 
 // Query.geoNode to be renamed to Query.geoSite => https://gitlab.com/gitlab-org/gitlab/-/issues/396739
-export default (graphQlFieldName, verificationEnabled) => {
+export default ({ graphqlFieldName, graphqlRegistryIdType, verificationEnabled }) => {
   return gql`
-    query($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum, $verificationState: VerificationStateEnum) {
+    query($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum, $verificationState: VerificationStateEnum, $ids: [${graphqlRegistryIdType}!]) {
       geoNode {
-        ${graphQlFieldName}(first: $first, last: $last, before: $before, after: $after, replicationState: $replicationState, verificationState: $verificationState) {
+        ${graphqlFieldName}(first: $first, last: $last, before: $before, after: $after, replicationState: $replicationState, verificationState: $verificationState, ids: $ids) {
           pageInfo {
             ...PageInfo
           }

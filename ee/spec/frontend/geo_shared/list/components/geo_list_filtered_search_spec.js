@@ -9,6 +9,7 @@ describe('GeoListFilteredSearch', () => {
 
   const defaultProps = {
     activeFilters: [MOCK_FILTER_A],
+    filteredSearchOptionLabel: 'Test Label',
   };
 
   const defaultProvide = {
@@ -44,6 +45,10 @@ describe('GeoListFilteredSearch', () => {
       expect(findGlFilteredSearch().props('availableTokens')).toStrictEqual(
         MOCK_FILTERED_SEARCH_TOKENS,
       );
+    });
+
+    it('renders with the provided search option label', () => {
+      expect(findGlFilteredSearch().props('searchTextOptionLabel')).toBe('Test Label');
     });
   });
 

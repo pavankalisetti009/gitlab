@@ -27,6 +27,11 @@ export default {
       required: false,
       default: () => [],
     },
+    filteredSearchOptionLabel: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -77,6 +82,7 @@ export default {
       <div class="flex-grow-1 gl-flex">
         <geo-list-filtered-search
           :active-filters="activeFilteredSearchFilters"
+          :filtered-search-option-label="filteredSearchOptionLabel"
           @search="handleSearch"
         />
       </div>

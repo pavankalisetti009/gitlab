@@ -65,13 +65,20 @@ export default {
   apollo: {
     replicableItems: {
       query() {
-        return buildReplicableTypeQuery(
-          this.replicableClass.graphqlFieldName,
-          this.replicableClass.verificationEnabled,
-        );
+        return buildReplicableTypeQuery({
+          graphqlFieldName: this.replicableClass.graphqlFieldName,
+          graphqlRegistryIdType: this.replicableClass.graphqlRegistryIdType,
+          verificationEnabled: this.replicableClass.verificationEnabled,
+        });
       },
       variables() {
-        return { ...this.cursor, ...getGraphqlFilterVariables(this.activeFilteredSearchFilters) };
+        return {
+          ...this.cursor,
+          ...getGraphqlFilterVariables({
+            filters: this.activeFilteredSearchFilters,
+            graphqlRegistryClass: this.replicableClass.graphqlRegistryClass,
+          }),
+        };
       },
       result({ data }) {
         const pageInfo = data?.geoNode?.[this.replicableClass.graphqlFieldName]?.pageInfo || {};
@@ -150,8 +157,15 @@ export default {
       const filters = [];
       const url = new URL(window.location.href);
       const segments = pathSegments(url);
-      const { replication_status: replicationStatus, verification_status: verificationStatus } =
-        queryToObject(window.location.search || '');
+      const {
+        ids,
+        replication_status: replicationStatus,
+        verification_status: verificationStatus,
+      } = queryToObject(window.location.search || '');
+
+      if (ids) {
+        filters.push(ids);
+      }
 
       if (isValidFilter(replicationStatus, REPLICATION_STATUS_STATES_ARRAY)) {
         filters.push(getReplicationStatusFilter(replicationStatus));
@@ -292,6 +306,7 @@ export default {
       :listbox-header-text="s__('Geo|Select replicable type')"
       :active-listbox-item="activeReplicableType"
       :active-filtered-search-filters="activeFilteredSearchFilters"
+      :filtered-search-option-label="__('Search by ID')"
       :show-actions="hasReplicableItems"
       :bulk-actions="$options.BULK_ACTIONS"
       @listboxChange="handleListboxChange"

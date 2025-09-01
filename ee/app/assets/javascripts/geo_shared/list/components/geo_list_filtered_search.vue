@@ -21,6 +21,11 @@ export default {
       required: false,
       default: () => [],
     },
+    filteredSearchOptionLabel: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   methods: {
     handleSubmit(val) {
@@ -34,6 +39,7 @@ export default {
   <gl-filtered-search
     :value="activeFilters"
     :available-tokens="filteredSearchTokens"
+    :search-text-option-label="filteredSearchOptionLabel"
     terms-as-tokens
     :placeholder="$options.i18n.searchPlaceholder"
     @submit="handleSubmit"
