@@ -82,7 +82,7 @@ module Gitlab
 
           response = Gitlab::HTTP.post(
             "#{base_url}#{CHAT_V2_ENDPOINT}",
-            headers: Gitlab::AiGateway.headers(user: user, service: service),
+            headers: Gitlab::AiGateway.headers(user: user, service: :duo_chat, ai_feature_name: :chat),
             body: params.to_json,
             timeout: DEFAULT_TIMEOUT,
             allow_local_requests: true,
@@ -132,11 +132,6 @@ module Gitlab
         def base_url
           feature_setting&.base_url || Gitlab::AiGateway.url
         end
-
-        def service
-          ::CloudConnector::AvailableServices.find_by_name(:duo_chat)
-        end
-        strong_memoize_attr :service
       end
     end
   end
