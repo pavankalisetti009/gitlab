@@ -109,7 +109,8 @@ RSpec.describe 'Issue board filters', :js, feature_category: :team_planning do
       expect_board_list_to_not_contain(issue_2)
     end
 
-    it 'loads only issues with a health status that are not on track', :aggregate_failures do
+    it 'loads only issues with a health status that are not on track', :aggregate_failures,
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/564350' do
       expect_board_list_issue_count(3)
 
       select_tokens('Health', '!=', 'On track', 'Health', '=', 'Any', submit: true)
