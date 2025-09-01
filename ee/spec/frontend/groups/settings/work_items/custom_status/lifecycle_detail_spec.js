@@ -73,7 +73,7 @@ describe('LifecycleDetail', () => {
     });
 
     it('renders lifecycle form with correct props when not a default cycle', () => {
-      expect(findLifecycleForm().props('isDefaultLifecycle')).toBe(false);
+      expect(findLifecycleForm().props('isLifecycleTemplate')).toBe(false);
     });
 
     it('displays work item types with icons and names', () => {
@@ -137,13 +137,13 @@ describe('LifecycleDetail', () => {
     });
   });
 
-  describe('when isDefaultLifecycle is true', () => {
+  describe('when `isLifecycleTemplate` is true', () => {
     beforeEach(() => {
-      createWrapper({ isDefaultLifecycle: true });
+      createWrapper({ isLifecycleTemplate: true });
     });
 
     it('renders lifecycle form with correct props when default lifecycle', () => {
-      expect(findLifecycleForm().props('isDefaultLifecycle')).toBe(true);
+      expect(findLifecycleForm().props('isLifecycleTemplate')).toBe(true);
     });
   });
 

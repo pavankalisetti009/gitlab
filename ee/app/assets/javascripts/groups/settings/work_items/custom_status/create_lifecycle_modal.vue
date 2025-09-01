@@ -16,7 +16,7 @@ import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import LifecycleDetail from './lifecycle_detail.vue';
 import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
-import namespaceDefaultLifecycleQuery from './namespace_default_lifecycle.query.graphql';
+import namespaceDefaultLifecycleTemplatesQuery from './namespace_default_lifecycle_template.query.graphql';
 import createLifecycleMutation from './create_lifecycle.mutation.graphql';
 
 export default {
@@ -52,10 +52,10 @@ export default {
       errorMessage: '',
       searchTerm: '',
       lifecycles: [],
-      defaultLifecycle: {},
+      lifecycleTemplate: {},
       formData: {
         name: '',
-        selectedLifecycleId: 'gid://gitlab/Lifecycle/default',
+        selectedLifecycleId: null,
       },
       formError: '',
       isSubmitting: false,
@@ -80,15 +80,19 @@ export default {
         Sentry.captureException(error);
       },
     },
-    defaultLifecycle: {
-      query: namespaceDefaultLifecycleQuery,
+    lifecycleTemplate: {
+      query: namespaceDefaultLifecycleTemplatesQuery,
       variables() {
         return {
           fullPath: this.fullPath,
         };
       },
       update(data) {
-        return data.namespaceDefaultLifecycle?.lifecycle || {};
+        const template = data.namespace?.lifecycleTemplates[0] || {};
+        if (template.id && !this.formData.selectedLifecycleId) {
+          this.formData.selectedLifecycleId = template.id;
+        }
+        return template;
       },
       skip() {
         return !this.visible;
@@ -103,8 +107,8 @@ export default {
     fetchingLifecycles() {
       return this.$apollo.queries.lifecycles.loading;
     },
-    fetchingDefaultLifecycle() {
-      return this.$apollo.queries.defaultLifecycle.loading;
+    fetchingLifecycleTemplate() {
+      return this.$apollo.queries.lifecycleTemplate.loading;
     },
     filteredLifecycles() {
       if (this.searchTerm) {
@@ -115,7 +119,7 @@ export default {
       return this.lifecycles;
     },
     allLifecycles() {
-      return [this.defaultLifecycle, ...this.lifecycles];
+      return [this.lifecycleTemplate, ...this.lifecycles];
     },
     selectedLifecycle() {
       return (
@@ -132,8 +136,18 @@ export default {
         id: status.id,
       }));
     },
+    selectedLifecycleStatusNames() {
+      return this.selectedLifecycleStatuses.map((status) => ({
+        name: status?.name,
+        category: status?.category.toUpperCase(),
+        color: status?.color,
+      }));
+    },
     showLoadingIndicator() {
-      return this.fetchingDefaultLifecycle || this.fetchingLifecycles;
+      return this.fetchingLifecycleTemplate || this.fetchingLifecycles;
+    },
+    isLifecycleTemplateSelected() {
+      return this.formData.selectedLifecycleId === this.lifecycleTemplate.id;
     },
   },
   methods: {
@@ -146,7 +160,7 @@ export default {
     },
     resetFormData() {
       this.formData = {
-        selectedLifecycleId: 'gid://gitlab/Lifecycle/default',
+        selectedLifecycleId: this.lifecycleTemplate.id,
         name: '',
       };
       this.searchTerm = '';
@@ -188,7 +202,9 @@ export default {
             input: {
               namespacePath: this.fullPath,
               name: this.formData.name,
-              statuses: this.selectedLifecycleStatusesWithIds,
+              statuses: this.isLifecycleTemplateSelected
+                ? this.selectedLifecycleStatusNames
+                : this.selectedLifecycleStatusesWithIds,
               defaultOpenStatusIndex: Math.max(0, defaultOpenStatusIndex),
               defaultClosedStatusIndex: Math.max(0, defaultClosedStatusIndex),
               defaultDuplicateStatusIndex: Math.max(0, defaultDuplicateStatusIndex),
@@ -277,18 +293,18 @@ export default {
 
           <div class="gl-border gl-rounded-lg gl-border-strong gl-bg-strong gl-p-4">
             <lifecycle-detail
-              :lifecycle="defaultLifecycle"
+              :lifecycle="lifecycleTemplate"
               :full-path="fullPath"
               :class="{
-                'gl-border-blue-500': formData.selectedLifecycleId === defaultLifecycle.id,
+                'gl-border-blue-500': isLifecycleTemplateSelected,
               }"
               :show-usage-section="false"
               :show-not-in-use-section="false"
-              is-default-lifecycle
+              is-lifecycle-template
               show-radio-selection
             >
               <template #radio-selection>
-                <gl-form-radio :key="defaultLifecycle.id" :value="defaultLifecycle.id">
+                <gl-form-radio :key="lifecycleTemplate.id" :value="lifecycleTemplate.id">
                   <span class="gl-font-bold">{{ s__('WorkItem|Default statuses') }}</span>
                 </gl-form-radio>
               </template>

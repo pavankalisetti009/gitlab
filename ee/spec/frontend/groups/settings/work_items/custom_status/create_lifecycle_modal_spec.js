@@ -15,9 +15,14 @@ import { stubComponent } from 'helpers/stub_component';
 import CreateLifecycle from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
-import namespaceDefaultLifecycleQuery from 'ee/groups/settings/work_items/custom_status/namespace_default_lifecycle.query.graphql';
+import namespaceDefaultLifecycleTemplatesQuery from 'ee/groups/settings/work_items/custom_status/namespace_default_lifecycle_template.query.graphql';
 import createLifecycleMutation from 'ee/groups/settings/work_items/custom_status/create_lifecycle.mutation.graphql';
-import { mockLifecycles, mockDefaultLifecycle, mockCreateLifecycleResponse } from '../mock_data';
+import {
+  mockLifecycles,
+  mockDefaultLifecycle,
+  mockCreateLifecycleResponse,
+  mockDefaultLifecycleTemplateReponse,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -38,24 +43,14 @@ const mockNamespaceStatusesResponse = {
   },
 };
 
-const mockNamespaceDefaultLifecycleResponse = {
-  data: {
-    namespaceDefaultLifecycle: {
-      __typename: 'LocalNamespace',
-      id: 'gid://gitlab/Namespace/default',
-      lifecycle: mockDefaultLifecycle,
-    },
-  },
-};
-
 describe('CreateLifecycle', () => {
   let wrapper;
   let mockApollo;
 
   const namespacesQueryHandler = jest.fn().mockResolvedValue(mockNamespaceStatusesResponse);
-  const defaultLifecycleQueryHandler = jest
+  const defaultLifecycleTemplateQueryHandler = jest
     .fn()
-    .mockResolvedValue(mockNamespaceDefaultLifecycleResponse);
+    .mockResolvedValue(mockDefaultLifecycleTemplateReponse);
   const successUpdateLifecycleMutationHandler = jest
     .fn()
     .mockResolvedValue(mockCreateLifecycleResponse);
@@ -68,18 +63,9 @@ describe('CreateLifecycle', () => {
   } = {}) => {
     mockApollo = createMockApollo([
       [namespaceStatusesQuery, namespacesHandler],
+      [namespaceDefaultLifecycleTemplatesQuery, defaultLifecycleTemplateQueryHandler],
       [createLifecycleMutation, createLifecycleHandler],
     ]);
-
-    mockApollo.clients.defaultClient.cache.writeQuery({
-      query: namespaceDefaultLifecycleQuery,
-      variables: {
-        fullPath: 'test/project',
-      },
-      data: {
-        ...mockNamespaceDefaultLifecycleResponse.data,
-      },
-    });
 
     wrapper = mountFn(CreateLifecycle, {
       apolloProvider: mockApollo,
@@ -170,7 +156,7 @@ describe('CreateLifecycle', () => {
 
       // Since Apollo queries have skip condition, handlers won't be called
       expect(namespacesQueryHandler).not.toHaveBeenCalled();
-      expect(defaultLifecycleQueryHandler).not.toHaveBeenCalled();
+      expect(defaultLifecycleTemplateQueryHandler).not.toHaveBeenCalled();
     });
 
     it('emits `lifecycle-created` event on successful creation of a lifecycle', async () => {
@@ -202,7 +188,7 @@ describe('CreateLifecycle', () => {
       expect(defaultDetail.exists()).toBe(true);
       expect(defaultDetail.props()).toMatchObject({
         lifecycle: mockDefaultLifecycle,
-        isDefaultLifecycle: true,
+        isLifecycleTemplate: true,
         showRadioSelection: true,
       });
     });
@@ -237,6 +223,16 @@ describe('CreateLifecycle', () => {
         showNotInUseSection: true,
         showRemoveLifecycleCta: false,
       });
+    });
+
+    it('is able to select any other existing lifecycle other than default lifecycle and apply border', async () => {
+      findRadioGroup().vm.$emit('input', mockLifecycles[0].id);
+
+      await nextTick();
+
+      const firstExistingLifecycle = findLifecycleDetails().at(1);
+
+      expect(firstExistingLifecycle.classes()).toContain('gl-border-blue-500');
     });
   });
 

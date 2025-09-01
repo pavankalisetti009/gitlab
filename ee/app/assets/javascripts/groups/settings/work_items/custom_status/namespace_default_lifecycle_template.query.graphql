@@ -1,9 +1,14 @@
-query namespaceDefaultLifecycle($fullPath: ID!) {
-  namespaceDefaultLifecycle(fullPath: $fullPath) @client {
+query namespaceDefaultLifecycleTemplate($fullPath: ID!) {
+  namespace(fullPath: $fullPath) {
     id
-    lifecycle {
+    lifecycleTemplates {
       id
       name
+      workItemTypes {
+        id
+        name
+        iconName
+      }
       defaultOpenStatus {
         id
         name
@@ -16,16 +21,12 @@ query namespaceDefaultLifecycle($fullPath: ID!) {
         id
         name
       }
-      workItemTypes {
-        id
-        name
-        iconName
-      }
       statuses {
         id
         name
         iconName
         color
+        category
         description
       }
     }
