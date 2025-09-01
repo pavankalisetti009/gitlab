@@ -15,7 +15,9 @@ module Gitlab
           code_suggestion_accepted_in_ide: 3,
           code_suggestion_rejected_in_ide: 4
         ) do |context|
-          context.slice(*%w[unique_tracking_id suggestion_size language branch_name])
+          context.slice(*%w[unique_tracking_id suggestion_size language branch_name
+            ide_name ide_vendor ide_version
+            extension_name extension_version language_server_version])
         end
 
         deprecated_events(code_suggestion_direct_access_token_refresh: 5) # old data

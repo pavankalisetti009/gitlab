@@ -117,7 +117,13 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
             unique_tracking_id: "AB1",
             suggestion_size: 10,
             language: 'cobol',
-            branch_name: 'main'
+            branch_name: 'main',
+            ide_name: 'VSCode',
+            ide_vendor: 'Microsoft',
+            ide_version: '2',
+            extension_name: 'cobol-vscode',
+            extension_version: '1',
+            language_server_version: '3.11'
           }
         end
 
