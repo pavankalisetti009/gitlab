@@ -14,8 +14,6 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category
       'CODE_SUGGESTION_SHOWN_IN_IDE' => have_attributes(value: 'code_suggestion_shown_in_ide'),
       'REQUEST_DUO_CHAT_RESPONSE' => have_attributes(value: 'request_duo_chat_response'),
       'TROUBLESHOOT_JOB' => have_attributes(value: 'troubleshoot_job'),
-      'START_AGENT_PLATFORM_SESSION' => have_attributes(value: 'start_agent_platform_session'),
-      'CREATE_AGENT_PLATFORM_SESSION' => have_attributes(value: 'create_agent_platform_session'),
       'ENCOUNTER_DUO_CODE_REVIEW_ERROR_DURING_REVIEW' => have_attributes(
         value: 'encounter_duo_code_review_error_during_review'
       ),
@@ -41,7 +39,9 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category
       ),
       'EXCLUDED_FILES_FROM_DUO_CODE_REVIEW' => have_attributes(
         value: 'excluded_files_from_duo_code_review'
-      )
+      ),
+      'AGENT_PLATFORM_SESSION_CREATED' => have_attributes(value: 'agent_platform_session_created'),
+      'AGENT_PLATFORM_SESSION_STARTED' => have_attributes(value: 'agent_platform_session_started')
     )
   end
 end

@@ -46123,12 +46123,13 @@ Type of AI usage event.
 
 | Value | Description |
 | ----- | ----------- |
+| <a id="aiusageeventtypeagent_platform_session_created"></a>`AGENT_PLATFORM_SESSION_CREATED` | Agent platform session was created. |
+| <a id="aiusageeventtypeagent_platform_session_started"></a>`AGENT_PLATFORM_SESSION_STARTED` | Agent platform session was started. |
 | <a id="aiusageeventtypecode_suggestions_requested"></a>`CODE_SUGGESTIONS_REQUESTED` | Code Suggestion was requested. Old data only. |
 | <a id="aiusageeventtypecode_suggestion_accepted_in_ide"></a>`CODE_SUGGESTION_ACCEPTED_IN_IDE` | Code Suggestion was accepted in IDE. |
 | <a id="aiusageeventtypecode_suggestion_direct_access_token_refresh"></a>`CODE_SUGGESTION_DIRECT_ACCESS_TOKEN_REFRESH` | Code Suggestion token was refreshed. Old data only. |
 | <a id="aiusageeventtypecode_suggestion_rejected_in_ide"></a>`CODE_SUGGESTION_REJECTED_IN_IDE` | Code Suggestion was rejected in IDE. |
 | <a id="aiusageeventtypecode_suggestion_shown_in_ide"></a>`CODE_SUGGESTION_SHOWN_IN_IDE` | Code Suggestion was shown in IDE. |
-| <a id="aiusageeventtypecreate_agent_platform_session"></a>`CREATE_AGENT_PLATFORM_SESSION` | Agent platform session was created. |
 | <a id="aiusageeventtypeencounter_duo_code_review_error_during_review"></a>`ENCOUNTER_DUO_CODE_REVIEW_ERROR_DURING_REVIEW` | Duo Code Review encountered an error. |
 | <a id="aiusageeventtypeexcluded_files_from_duo_code_review"></a>`EXCLUDED_FILES_FROM_DUO_CODE_REVIEW` | Files were excluded from Duo Code Review. |
 | <a id="aiusageeventtypefind_nothing_to_review_duo_code_review_on_mr"></a>`FIND_NOTHING_TO_REVIEW_DUO_CODE_REVIEW_ON_MR` | Duo Code Review found nothing to review on MR. |
@@ -46139,7 +46140,6 @@ Type of AI usage event.
 | <a id="aiusageeventtyperequest_duo_chat_response"></a>`REQUEST_DUO_CHAT_RESPONSE` | Duo Chat response was requested. |
 | <a id="aiusageeventtyperequest_review_duo_code_review_on_mr_by_author"></a>`REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_AUTHOR` | MR author requested Duo Code Review. |
 | <a id="aiusageeventtyperequest_review_duo_code_review_on_mr_by_non_author"></a>`REQUEST_REVIEW_DUO_CODE_REVIEW_ON_MR_BY_NON_AUTHOR` | Non-author requested Duo Code Review on MR. |
-| <a id="aiusageeventtypestart_agent_platform_session"></a>`START_AGENT_PLATFORM_SESSION` | Agent platform session was started. |
 | <a id="aiusageeventtypetroubleshoot_job"></a>`TROUBLESHOOT_JOB` | Troubleshoot job feature was used. |
 
 ### `AlertManagementAlertSort`
