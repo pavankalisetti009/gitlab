@@ -1355,47 +1355,55 @@ To create a code block:
 
 For example:
 
-- ````markdown
-  ```python
-  def function():
-      #indenting works just fine in the fenced code block
-      s = "Python code"
-      print s
-  ```
-  ````
+````markdown
+Python code block:
 
-- ```markdown
-      Using 4 spaces
-      is like using
-      3-backtick fences.
-  ```
+```python
+def function():
+    #indenting works just fine in the fenced code block
+    s = "Python code"
+    print s
+```
 
-- ```markdown
-  ~~~javascript
-  var s = "JavaScript syntax highlighting";
-  alert(s);
-  ~~~
-  ```
+Markdown code block using 4 spaces:
+
+    Using 4 spaces
+    is like using
+    3-backtick fences.
+
+JavaScript code block using tildes:
+
+~~~javascript
+var s = "JavaScript syntax highlighting";
+alert(s);
+~~~
+````
 
 The three previous examples render as:
 
-- > ```python
-  > def function():
-  >     #indenting works just fine in the fenced code block
-  >     s = "Python code"
-  >     print s
-  > ```
-
-- > ```plaintext
-  > Using 4 spaces
-  > is like using
-  > 3-backtick fences.
-  > ```
-
-- > ```javascript
-  > var s = "JavaScript syntax highlighting";
-  > alert(s);
-  > ```
+> Python code block:
+>
+> ```python
+> def function():
+>     #indenting works just fine in the fenced code block
+>     s = "Python code"
+>     print s
+> ```
+>
+> Markdown code block using 4 spaces:
+>
+> ```plaintext
+> Using 4 spaces
+> is like using
+> 3-backtick fences.
+> ```
+>
+> JavaScript code block using tildes:
+>
+> ```javascript
+> var s = "JavaScript syntax highlighting";
+> alert(s);
+> ```
 
 ### Syntax highlighting
 
@@ -1627,7 +1635,7 @@ For more information, see [issue 359077](https://gitlab.com/gitlab-org/gitlab/-/
 {{< /alert >}}
 
 ```markdown
-This sentence introduces my wiki page.
+This is an intro sentence to my wiki page.
 
 [[_TOC_]]
 
@@ -1716,7 +1724,7 @@ You should consider the following ramifications:
 
 The alerts render as:
 
-![How Markdown alerts are rendered in GitLab](img/markdown_alerts_v17_10.png)
+![How Markdown alerts are rendered in GitLab](img/markdown_alerts_v18_3.png)
 
 ## Colors
 
