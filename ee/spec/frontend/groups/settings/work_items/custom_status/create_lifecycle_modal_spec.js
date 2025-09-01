@@ -17,6 +17,7 @@ import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecyc
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
 import namespaceDefaultLifecycleTemplatesQuery from 'ee/groups/settings/work_items/custom_status/namespace_default_lifecycle_template.query.graphql';
 import createLifecycleMutation from 'ee/groups/settings/work_items/custom_status/create_lifecycle.mutation.graphql';
+import ScrollScrim from '~/super_sidebar/components/scroll_scrim.vue';
 import {
   mockLifecycles,
   mockDefaultLifecycle,
@@ -233,6 +234,10 @@ describe('CreateLifecycle', () => {
       const firstExistingLifecycle = findLifecycleDetails().at(1);
 
       expect(firstExistingLifecycle.classes()).toContain('gl-border-blue-500');
+    });
+
+    it('has scroll scrim wrapper', () => {
+      expect(wrapper.findComponent(ScrollScrim).findComponent(LifecycleDetail).exists()).toBe(true);
     });
   });
 

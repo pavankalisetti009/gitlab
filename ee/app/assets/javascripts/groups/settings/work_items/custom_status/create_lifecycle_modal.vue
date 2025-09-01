@@ -14,6 +14,7 @@ import {
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import ScrollScrim from '~/super_sidebar/components/scroll_scrim.vue';
 import LifecycleDetail from './lifecycle_detail.vue';
 import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
 import namespaceDefaultLifecycleTemplatesQuery from './namespace_default_lifecycle_template.query.graphql';
@@ -33,6 +34,7 @@ export default {
     GlFormRadio,
     GlLoadingIcon,
     GlAlert,
+    ScrollScrim,
   },
   i18n: {
     createLifecycle: s__('WorkItem|Create lifecycle'),
@@ -324,29 +326,30 @@ export default {
                 :placeholder="s__('WorkItem|Search lifecycles')"
               />
             </div>
-            <div
-              v-if="filteredLifecycles.length"
-              class="gl-flex gl-max-h-31 gl-flex-col gl-gap-4 gl-overflow-y-auto"
-            >
-              <lifecycle-detail
-                v-for="lifecycle in filteredLifecycles"
-                :key="lifecycle.id"
-                :full-path="fullPath"
-                :class="{
-                  'gl-border-blue-500': formData.selectedLifecycleId === lifecycle.id,
-                }"
-                :lifecycle="lifecycle"
-                show-radio-selection
-                show-not-in-use-section
-                :show-usage-section="false"
-                :show-remove-lifecycle-cta="false"
-              >
-                <template #radio-selection>
-                  <gl-form-radio :key="lifecycle.id" :value="lifecycle.id">
-                    <span class="gl-font-bold">{{ lifecycle.name }}</span>
-                  </gl-form-radio>
-                </template>
-              </lifecycle-detail>
+            <div v-if="filteredLifecycles.length" class="gl-flex gl-max-h-31 gl-overflow-y-auto">
+              <scroll-scrim>
+                <div class="gl-flex gl-flex-col gl-gap-4">
+                  <lifecycle-detail
+                    v-for="lifecycle in filteredLifecycles"
+                    :key="lifecycle.id"
+                    :full-path="fullPath"
+                    :class="{
+                      'gl-border-blue-500': formData.selectedLifecycleId === lifecycle.id,
+                    }"
+                    :lifecycle="lifecycle"
+                    show-radio-selection
+                    show-not-in-use-section
+                    :show-usage-section="false"
+                    :show-remove-lifecycle-cta="false"
+                  >
+                    <template #radio-selection>
+                      <gl-form-radio :key="lifecycle.id" :value="lifecycle.id">
+                        <span class="gl-font-bold">{{ lifecycle.name }}</span>
+                      </gl-form-radio>
+                    </template>
+                  </lifecycle-detail>
+                </div>
+              </scroll-scrim>
             </div>
             <div v-else class="gl-my-7 gl-text-center gl-text-subtle">
               {{ s__('WorkItem|No matching lifecycles.') }}
