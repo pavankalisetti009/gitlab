@@ -1,24 +1,21 @@
 <script>
-import { GlBadge, GlButton, GlIcon, GlLink, GlPopover } from '@gitlab/ui';
-import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { historyPushState } from '~/lib/utils/common_utils';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
-import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
-import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
-import { capitalizeFirstCharacter, convertToCamelCase } from '~/lib/utils/text_utility';
+import { convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
-import { DynamicScroller, DynamicScrollerItem } from 'vendor/vue-virtual-scroller';
 import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
 import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';
-import { i18n, popovers, reportTypes } from './i18n';
+import ReportDetails from './mr_widget_security_report_details.vue';
+import { i18n, reportTypes } from './i18n';
+import { highlightsFromReport } from './utils';
 
 export default {
   name: 'WidgetSecurityReports',
@@ -26,19 +23,12 @@ export default {
     VulnerabilityFindingModal: () =>
       import('ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue'),
     MrWidget,
-    MrWidgetRow,
+    ReportDetails,
     SummaryText,
     SummaryHighlights,
     SecurityTrainingPromoWidget,
-    GlBadge,
-    GlButton,
-    GlIcon,
-    GlLink,
-    GlPopover,
-    DynamicScroller,
-    DynamicScrollerItem,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
+  mixins: [glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -64,52 +54,6 @@ export default {
       return this.endpoints
         .map(([, reportType]) => this.collapsedData[reportType])
         .filter((r) => r);
-    },
-
-    helpPopovers() {
-      return {
-        SAST: {
-          options: { title: popovers.SAST_TITLE },
-          content: { text: popovers.SAST_TEXT, learnMorePath: this.mr.sastHelp },
-        },
-        DAST: {
-          options: { title: popovers.DAST_TITLE },
-          content: { text: popovers.DAST_TEXT, learnMorePath: this.mr.dastHelp },
-        },
-        SECRET_DETECTION: {
-          options: { title: popovers.SECRET_DETECTION_TITLE },
-          content: {
-            text: popovers.SECRET_DETECTION_TEXT,
-            learnMorePath: this.mr.secretDetectionHelp,
-          },
-        },
-        CONTAINER_SCANNING: {
-          options: { title: popovers.CONTAINER_SCANNING_TITLE },
-          content: {
-            text: popovers.CONTAINER_SCANNING_TEXT,
-            learnMorePath: this.mr.containerScanningHelp,
-          },
-        },
-        DEPENDENCY_SCANNING: {
-          options: { title: popovers.DEPENDENCY_SCANNING_TITLE },
-          content: {
-            text: popovers.DEPENDENCY_SCANNING_TEXT,
-            learnMorePath: this.mr.dependencyScanningHelp,
-          },
-        },
-        API_FUZZING: {
-          options: { title: popovers.API_FUZZING_TITLE },
-          content: {
-            learnMorePath: this.mr.apiFuzzingHelp,
-          },
-        },
-        COVERAGE_FUZZING: {
-          options: { title: popovers.COVERAGE_FUZZING_TITLE },
-          content: {
-            learnMorePath: this.mr.coverageFuzzingHelp,
-          },
-        },
-      };
     },
 
     isCollapsible() {
@@ -139,7 +83,7 @@ export default {
       //  { scanner: "DAST", added: [{ id: 15, severity: 'high' }] },
       //  ...
       // ]
-      this.reports.forEach((report) => this.highlightsFromReport(report, highlights));
+      this.reports.forEach((report) => highlightsFromReport(report, highlights));
 
       return highlights;
     },
@@ -371,41 +315,6 @@ export default {
       });
     },
 
-    highlightsFromReport(report, highlights = { [HIGH]: 0, [CRITICAL]: 0, other: 0 }) {
-      // The data we receive from the API is something like:
-      // [
-      //  { scanner: "SAST", added: [{ id: 15, severity: 'critical' }] },
-      //  { scanner: "DAST", added: [{ id: 15, severity: 'high' }] },
-      //  ...
-      // ]
-      return report.added.reduce((acc, vuln) => {
-        if (vuln.severity === HIGH) {
-          acc[HIGH] += 1;
-        } else if (vuln.severity === CRITICAL) {
-          acc[CRITICAL] += 1;
-        } else {
-          acc.other += 1;
-        }
-        return acc;
-      }, highlights);
-    },
-
-    statusIconNameReportType(report) {
-      if (report.numberOfNewFindings > 0 || report.error) {
-        return EXTENSION_ICONS.warning;
-      }
-
-      return EXTENSION_ICONS.success;
-    },
-
-    statusIconNameVulnerability(vuln) {
-      return EXTENSION_ICONS[`severity${capitalizeFirstCharacter(vuln.severity)}`];
-    },
-
-    isDismissed(vuln) {
-      return vuln.state === 'dismissed';
-    },
-
     setModalData(finding) {
       this.modalData = {
         error: null,
@@ -417,16 +326,7 @@ export default {
     clearModalData() {
       this.modalData = null;
     },
-
-    isAiResolvable(vuln) {
-      return vuln.ai_resolution_enabled && this.glAbilities.resolveVulnerabilityWithAi;
-    },
-
-    getAiResolvableBadgeId(uuid) {
-      return `ai-resolvable-badge-${uuid}`;
-    },
   },
-  SEVERITY_LEVELS,
   widgetHelpPopover: {
     options: { title: i18n.helpPopoverTitle },
     content: {
@@ -435,14 +335,6 @@ export default {
         anchor: 'merge-request-security-widget',
       }),
     },
-  },
-  aiResolutionHelpPopOver: {
-    text: s__(
-      'ciReport|GitLab Duo Vulnerability Resolution, an AI feature, can suggest a possible fix.',
-    ),
-    learnMorePath: helpPagePath('user/application_security/vulnerabilities/_index', {
-      anchor: 'vulnerability-resolution-in-a-merge-request',
-    }),
   },
   testId: {
     SAST: 'sast-scan-report',
@@ -501,106 +393,14 @@ export default {
         @resolveWithAiSuccess="handleResolveWithAiSuccess"
       />
       <security-training-promo-widget :security-configuration-path="mr.securityConfigurationPath" />
-      <mr-widget-row
+      <report-details
         v-for="report in reports"
         :key="report.reportType"
         :widget-name="$options.name"
-        :level="2"
-        :status-icon-name="statusIconNameReportType(report)"
-        :help-popover="helpPopovers[report.reportType]"
-        :data-testid="`report-${report.reportType}`"
-      >
-        <template #header>
-          <div>
-            <summary-text
-              :total-new-vulnerabilities="report.numberOfNewFindings"
-              :is-loading="false"
-              :error="report.error"
-              :scanner="report.reportTypeDescription"
-              :data-testid="`${report.testId}`"
-              show-at-least-hint
-            />
-            <summary-highlights
-              v-if="report.numberOfNewFindings > 0"
-              :highlights="highlightsFromReport(report)"
-            />
-          </div>
-        </template>
-        <template #body>
-          <div
-            v-if="report.numberOfNewFindings || report.numberOfFixedFindings"
-            class="gl-mt-2 gl-w-full"
-          >
-            <dynamic-scroller
-              :items="report.findings"
-              :min-item-size="32"
-              :style="{ maxHeight: '170px' }"
-              data-testid="dynamic-content-scroller"
-              key-field="uuid"
-              class="gl-pr-5"
-            >
-              <template #default="{ item: vuln, active, index }">
-                <dynamic-scroller-item :item="vuln" :active="active">
-                  <strong
-                    v-if="report.numberOfNewFindings > 0 && index === 0"
-                    data-testid="new-findings-title"
-                    class="gl-mt-2 gl-block"
-                    >{{ $options.i18n.new }}</strong
-                  >
-                  <strong
-                    v-if="report.numberOfFixedFindings > 0 && report.numberOfNewFindings === index"
-                    data-testid="fixed-findings-title"
-                    class="gl-mt-2 gl-block"
-                    >{{ $options.i18n.fixed }}</strong
-                  >
-                  <mr-widget-row
-                    :key="vuln.uuid"
-                    :level="3"
-                    :widget-name="$options.name"
-                    :status-icon-name="statusIconNameVulnerability(vuln)"
-                    class="gl-mt-2"
-                  >
-                    <template #body>
-                      {{ $options.SEVERITY_LEVELS[vuln.severity] }}
-                      <gl-button
-                        variant="link"
-                        class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
-                        @click="setModalData(vuln)"
-                        >{{ vuln.name }}
-                      </gl-button>
-                      <gl-badge v-if="isDismissed(vuln)" class="gl-ml-3"
-                        >{{ $options.i18n.dismissed }}
-                      </gl-badge>
-                      <template v-if="isAiResolvable(vuln)">
-                        <gl-badge
-                          :id="getAiResolvableBadgeId(vuln.uuid)"
-                          variant="info"
-                          class="gl-ml-3"
-                          data-testid="ai-resolvable-badge"
-                        >
-                          <gl-icon :size="12" name="tanuki-ai" />
-                        </gl-badge>
-                        <gl-popover
-                          trigger="hover focus"
-                          placement="top"
-                          boundary="viewport"
-                          :target="getAiResolvableBadgeId(vuln.uuid)"
-                          :data-testid="`ai-resolvable-badge-popover-${vuln.uuid}`"
-                        >
-                          {{ $options.aiResolutionHelpPopOver.text }}
-                          <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath"
-                            >{{ __('Learn more') }}
-                          </gl-link>
-                        </gl-popover>
-                      </template>
-                    </template>
-                  </mr-widget-row>
-                </dynamic-scroller-item>
-              </template>
-            </dynamic-scroller>
-          </div>
-        </template>
-      </mr-widget-row>
+        :report="report"
+        :mr="mr"
+        @modal-data="setModalData"
+      />
     </template>
   </mr-widget>
 </template>
