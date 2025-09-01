@@ -18,6 +18,7 @@ export default {
   },
   data() {
     return {
+      hasLoadedOnce: false,
       mavenVirtualRegistry: {},
       mavenVirtualRegistryID: convertToMavenRegistryGraphQLId(this.registry.id),
     };
@@ -33,12 +34,18 @@ export default {
       update(data) {
         return data.mavenVirtualRegistry || {};
       },
+      result() {
+        this.hasLoadedOnce = true;
+      },
       error(error) {
         captureException({ error, component: this.$options.name });
       },
     },
   },
   computed: {
+    isFirstTimeLoading() {
+      return this.$apollo.queries.mavenVirtualRegistry.loading && !this.hasLoadedOnce;
+    },
     upstreams() {
       return this.mavenVirtualRegistry?.upstreams ?? [];
     },
@@ -54,6 +61,7 @@ export default {
   <div>
     <maven-registry-details-header />
     <maven-registry-details
+      :loading="isFirstTimeLoading"
       :registry-id="registry.id"
       :upstreams="upstreams"
       @upstreamCreated="refetchMavenVirtualRegistryQuery"
