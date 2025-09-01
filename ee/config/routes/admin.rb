@@ -51,6 +51,10 @@ namespace :admin do
     resources :configuration, only: [:index]
     resources :self_hosted, only: [:index]
 
+    scope :usage do
+      get '/', action: :index, controller: 'usage', as: :usage
+    end
+
     get 'self_hosted(/*vueroute)', to: 'self_hosted#index'
   end
   get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')

@@ -44,6 +44,7 @@ module GitlabSubscriptions
       zoekt_code_search
       disable_private_profiles
       observability_alerts
+      usage_billing
     ].freeze
 
     STARTER_FEATURES = %i[
@@ -77,6 +78,7 @@ module GitlabSubscriptions
       wip_limits
       zoekt_code_search
       seat_control
+      usage_billing
     ].freeze
 
     PREMIUM_FEATURES = %i[

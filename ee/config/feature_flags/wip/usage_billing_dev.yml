@@ -1,0 +1,10 @@
+---
+name: usage_billing_dev
+description:
+feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/17641
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203257
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/566581
+milestone: '18.4'
+group: group::utilization
+type: wip
+default_enabled: false

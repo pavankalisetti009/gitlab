@@ -56,6 +56,12 @@ RSpec.describe 'EE-specific admin routing' do
     end
   end
 
+  describe Admin::GitlabDuo::UsageController, 'routing', feature_category: :consumables_cost_management do
+    it 'routes / to #index' do
+      expect(get('/admin/gitlab_duo/usage')).to route_to('admin/gitlab_duo/usage#index')
+    end
+  end
+
   describe Admin::Geo::SettingsController, 'routing' do
     it 'routes / to #show' do
       expect(get('/admin/geo/settings')).to route_to('admin/geo/settings#show')
