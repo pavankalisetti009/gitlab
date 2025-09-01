@@ -57,6 +57,11 @@ module EE
           def sort_options
             [*super, 'weight']
           end
+
+          override :create_issue_mcp_params
+          def create_issue_mcp_params
+            [*super, :epic_id]
+          end
         end
       end
     end
