@@ -72,6 +72,16 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     end
   end
 
+  describe '.with_users' do
+    let_it_be(:event1) { create(:ai_usage_event, user: user) }
+    let_it_be(:event2) { create(:ai_usage_event, user: user) }
+    let_it_be(:event3) { create(:ai_usage_event) }
+
+    it 'returns events matching provided users' do
+      expect(described_class.with_users(user)).to match_array([event1, event2])
+    end
+  end
+
   describe '.for_namespace_hierarchy' do
     let_it_be(:group) { create(:group) }
     let_it_be(:subgroup) { create(:group, parent: group) }
@@ -82,11 +92,16 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     let_it_be(:project_event) { create(:ai_usage_event, user: user, namespace: project.project_namespace) }
     let_it_be(:unrelated_event) { create(:ai_usage_event, user: user) }
 
-    it 'returns all events matched to namespace subtree' do
-      expect(described_class.for_namespace_hierarchy(group)).to match_array([group_event, subgroup_event,
-        project_event])
-      expect(described_class.for_namespace_hierarchy(subgroup)).to match_array([subgroup_event, project_event])
-      expect(described_class.for_namespace_hierarchy(project.project_namespace)).to match_array([project_event])
+    it 'returns all events matched to namespace subtree ordered by timestamp desc' do
+      expect(described_class.for_namespace_hierarchy(group)).to match([project_event, subgroup_event,
+        group_event])
+      expect(described_class.for_namespace_hierarchy(subgroup)).to match([project_event, subgroup_event])
+      expect(described_class.for_namespace_hierarchy(project.project_namespace)).to match([project_event])
+    end
+
+    it 'respects ordering if set' do
+      expect(described_class.order(timestamp: :asc, id: :asc).for_namespace_hierarchy(group))
+        .to match([group_event, subgroup_event, project_event])
     end
   end
 

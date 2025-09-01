@@ -36,8 +36,9 @@ module Ai
 
     scope :in_timeframe, ->(range) { where(timestamp: range) }
     scope :with_events, ->(event_names) { where(event: event_names) }
+    scope :with_users, ->(users) { where(user: users) }
     scope :for_namespace_hierarchy, ->(namespace) do
-      base_usage_events = sort_by_timestamp_id
+      base_usage_events = order_values.any? ? self : sort_by_timestamp_id
       related_namespaces = namespace.self_and_descendant_ids(skope: Namespace)
       namespace_mapping_scope = ->(namespace_ids) do
         ::Ai::UsageEvent.where(arel_table[:namespace_id].eq(namespace_ids))
