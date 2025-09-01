@@ -2,10 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupWikiRepository, :geo do
+RSpec.describe GroupWikiRepository, feature_category: :wiki do
   describe 'associations' do
     it { is_expected.to belong_to(:shard) }
     it { is_expected.to belong_to(:group) }
+  end
+
+  context 'with loose foreign key on group_wiki_repositories.group_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:group) }
+      let_it_be(:model) { create(:group_wiki_repository, group: parent) }
+    end
   end
 
   describe 'validations' do
@@ -22,12 +29,14 @@ RSpec.describe GroupWikiRepository, :geo do
   end
 
   describe 'Geo replication', feature_category: :geo_replication do
-    include EE::GeoHelpers
-
-    let(:node) { create(:geo_node, :secondary) }
-
-    before do
-      stub_current_geo_node(node)
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:group_wiki_repository_state)
+          .class_name('Geo::GroupWikiRepositoryState')
+          .inverse_of(:group_wiki_repository)
+          .autosave(false)
+      end
     end
 
     include_examples 'a verifiable model for verification state' do
@@ -37,108 +46,50 @@ RSpec.describe GroupWikiRepository, :geo do
       let(:unverifiable_model_record) { nil }
     end
 
-    context 'with root group and subgroup wikis' do
-      let_it_be_with_refind(:root_group) { create(:group) }
-      let_it_be_with_refind(:subgroup) { create(:group, parent: root_group) }
-      let_it_be_with_refind(:root_group_wiki_repository) { create(:group_wiki_repository, group: root_group) }
-      let_it_be_with_refind(:subgroup_wiki_repository) { create(:group_wiki_repository, group: subgroup) }
-      let_it_be_with_refind(:broken_wiki_repository) { create(:group_wiki_repository, shard_name: 'broken') }
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
 
-      describe '#in_replicables_for_current_secondary?' do
-        it 'all returns true if all are replicated' do
-          [
-            root_group_wiki_repository,
-            subgroup_wiki_repository,
-            broken_wiki_repository
-          ].each do |repository|
-            expect(repository.in_replicables_for_current_secondary?).to be true
-          end
-        end
+      # Wiki for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) do
+        create(:group_wiki_repository, group: group_1)
+      end
 
-        context 'with selective sync by namespace' do
-          before do
-            node.update!(selective_sync_type: 'namespaces', namespaces: [root_group])
-          end
+      # Wiki for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) do
+        create(:group_wiki_repository, group: nested_group_1)
+      end
 
-          it 'returns true for groups' do
-            expect(root_group_wiki_repository.in_replicables_for_current_secondary?).to be true
-          end
+      # Wiki in a shard name that doesn't actually exist
+      let_it_be(:last_replicable_and_not_in_selective_sync) do
+        create(:group_wiki_repository, group: group_2, shard_name: 'broken')
+      end
 
-          it 'returns true for subgroups' do
-            expect(subgroup_wiki_repository.in_replicables_for_current_secondary?).to be true
-          end
-        end
+      let_it_be_with_refind(:secondary) { create(:geo_node, :secondary) }
 
-        context 'with selective sync by shard' do
-          before do
-            node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
-          end
-
-          it 'returns true for groups in the shard' do
-            expect(root_group_wiki_repository.in_replicables_for_current_secondary?).to be true
-            expect(subgroup_wiki_repository.in_replicables_for_current_secondary?).to be true
-            expect(broken_wiki_repository.in_replicables_for_current_secondary?).to be false
-          end
-        end
+      before do
+        stub_current_geo_node(secondary)
       end
 
       describe '.replicables_for_current_secondary' do
-        it 'returns all group wiki repositories without selective sync' do
-          expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
-            [
-              root_group_wiki_repository,
-              subgroup_wiki_repository,
-              broken_wiki_repository
-            ])
-        end
+        include_examples 'Geo framework selective sync scenarios', :replicables_for_current_secondary
+      end
 
-        context 'with selective sync by namespace' do
-          it 'returns group wiki repositories that belong to the namespaces and descendants' do
-            node.update!(selective_sync_type: 'namespaces', namespaces: [root_group])
-
-            expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
-              [
-                root_group_wiki_repository,
-                subgroup_wiki_repository
-              ])
-          end
-
-          it 'returns group wiki repositories that belong to the namespace' do
-            node.update!(selective_sync_type: 'namespaces', namespaces: [subgroup])
-
-            expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
-              [
-                subgroup_wiki_repository
-              ])
-          end
-        end
-
-        context 'with selective sync by shard' do
-          it 'returns group wiki repositories that belong to the shards' do
-            node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
-
-            expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
-              [
-                root_group_wiki_repository,
-                subgroup_wiki_repository
-              ])
-          end
-        end
+      describe '.selective_sync_scope' do
+        include_examples 'Geo framework selective sync scenarios', :selective_sync_scope
 
         it 'raises if an unrecognised selective sync type is used' do
-          node.update_attribute(:selective_sync_type, 'unknown')
+          secondary.update_attribute(:selective_sync_type, 'unknown')
 
-          expect { described_class.replicables_for_current_secondary(1..described_class.last.id) }
+          expect { described_class.selective_sync_scope(secondary) }
             .to raise_error(Geo::Errors::UnknownSelectiveSyncType)
         end
       end
-    end
-  end
 
-  context 'with loose foreign key on group_wiki_repositories.group_id' do
-    it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:group) }
-      let_it_be(:model) { create(:group_wiki_repository, group: parent) }
+      describe '.verifiables' do
+        include_examples 'Geo framework selective sync scenarios', :verifiables
+      end
     end
   end
 end

@@ -5355,9 +5355,13 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let_it_be(:group_1) { create(:group, organization: create(:organization)) }
       let_it_be(:group_2) { create(:group, organization: create(:organization)) }
       let_it_be(:nested_group_1) { create(:group, parent: group_1) }
-      let_it_be(:replicable_1) { create(:project, group: group_1) }
-      let_it_be(:replicable_2) { create(:project, group: nested_group_1) }
-      let_it_be(:replicable_3) { create(:project, :broken_storage, group: group_2) }
+
+      # Project for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) { create(:project, group: group_1) }
+      # Project for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) { create(:project, group: nested_group_1) }
+      # Project in a shard name that doesn't actually exist
+      let_it_be(:last_replicable_and_not_in_selective_sync) { create(:project, :broken_storage, group: group_2) }
 
       let_it_be_with_refind(:secondary) { create(:geo_node, :secondary) }
 

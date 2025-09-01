@@ -1,8 +1,18 @@
 # frozen_string_literal: true
 
+# Resusable examples for Geo SSF selective_sync_scope:
+#
+# - first_replicable_and_in_selective_sync: is the first replicable, there must be none with a lower ID. It is included
+#                                           in selective sync by namespace, shards, or organizations.
+# - second_replicable_and_in_selective_sync: has a greater ID than replicable_1. It is included in selective sync by
+#                                            namespace, shards, or organizations.
+# - last_replicable_and_not_in_selective_sync: is the last replicable, there must be none with a higher ID. It is not
+#                                              included in any kind of selective sync.
+#
 RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
-  let(:start_id) { described_class.minimum(:id) }
-  let(:end_id) { described_class.maximum(:id) }
+  let(:primary_key) { described_class.primary_key }
+  let(:start_id) { described_class.minimum(primary_key) }
+  let(:end_id) { described_class.maximum(primary_key) }
 
   context 'with selective sync by namespace' do
     before do
@@ -14,8 +24,8 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_1,
-          replicable_2
+          first_replicable_and_in_selective_sync,
+          second_replicable_and_in_selective_sync
         ])
     end
 
@@ -24,7 +34,7 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_2
+          second_replicable_and_in_selective_sync
         ])
     end
   end
@@ -39,8 +49,8 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_1,
-          replicable_2
+          first_replicable_and_in_selective_sync,
+          second_replicable_and_in_selective_sync
         ])
     end
 
@@ -49,7 +59,7 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_2
+          second_replicable_and_in_selective_sync
         ])
     end
   end
@@ -64,8 +74,8 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_1,
-          replicable_2
+          first_replicable_and_in_selective_sync,
+          second_replicable_and_in_selective_sync
         ])
     end
 
@@ -74,7 +84,7 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_2
+          second_replicable_and_in_selective_sync
         ])
     end
   end
@@ -85,9 +95,9 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
 
       expect(replicables)
         .to match_array([
-          replicable_1,
-          replicable_2,
-          replicable_3
+          first_replicable_and_in_selective_sync,
+          second_replicable_and_in_selective_sync,
+          last_replicable_and_not_in_selective_sync
         ])
     end
   end
