@@ -3,6 +3,7 @@ import { uniqueId } from 'lodash';
 import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { MAX_LENGTH_PROMPT } from 'ee/ai/catalog/constants';
+import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
@@ -11,6 +12,7 @@ export default {
   name: 'AiCatalogAgentRunForm',
   components: {
     AiCatalogFormButtons,
+    ClipboardButton,
     GlButton,
     GlForm,
     GlFormFields,
@@ -47,16 +49,10 @@ export default {
   },
   fields: {
     userPrompt: {
-      label: s__('AICatalog|User Prompt'),
       validators: createFieldValidators({
         requiredLabel: s__('AICatalog|User Prompt is required.'),
         maxLength: MAX_LENGTH_PROMPT,
       }),
-      groupAttrs: {
-        labelDescription: s__(
-          'AICatalog|Provide instructions or context that will be included for this run.',
-        ),
-      },
     },
   },
   indexRoute: AI_CATALOG_AGENTS_ROUTE,
@@ -66,6 +62,22 @@ export default {
 <template>
   <gl-form :id="formId" @submit.prevent="onSubmit">
     <gl-form-fields v-model="formValues" :form-id="formId" :fields="$options.fields">
+      <template #group(userPrompt)-label>
+        {{ s__('AICatalog|User prompt') }}
+        <div class="label-description">
+          <div class="gl-flex gl-justify-between gl-gap-1">
+            {{
+              s__('AICatalog|Provide instructions or context that will be included for this run.')
+            }}
+            <clipboard-button
+              :text="formValues.userPrompt"
+              :title="s__('AICatalog|Copy user prompt')"
+              category="secondary"
+              size="small"
+            />
+          </div>
+        </div>
+      </template>
       <template #input(userPrompt)="{ id, input, value, blur, validation }">
         <gl-form-textarea
           :id="id"

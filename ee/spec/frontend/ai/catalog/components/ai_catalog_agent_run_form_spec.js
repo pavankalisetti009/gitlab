@@ -1,6 +1,7 @@
 import { GlForm, GlFormFields } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogAgentRunForm from 'ee/ai/catalog/components/ai_catalog_agent_run_form.vue';
+import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { mockAgent } from '../mock_data';
 
 describe('AiCatalogAgentRunForm', () => {
@@ -13,18 +14,17 @@ describe('AiCatalogAgentRunForm', () => {
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
+  const findClipboardButton = () => wrapper.findComponent(ClipboardButton);
   const findUserPromptField = () => wrapper.findByTestId('agent-run-form-user-prompt');
   const findSubmitButton = () => wrapper.findByTestId('agent-run-form-submit-button');
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props = {}, stubs = { GlFormFields } } = {}) => {
     wrapper = shallowMountExtended(AiCatalogAgentRunForm, {
       propsData: {
         ...defaultProps,
         ...props,
       },
-      stubs: {
-        GlFormFields,
-      },
+      stubs,
     });
   };
 
@@ -42,6 +42,11 @@ describe('AiCatalogAgentRunForm', () => {
       userPrompt: expect.any(Object),
     });
     expect(findFormFields().props('values').userPrompt).toBe(mockAgent.latestVersion.userPrompt);
+  });
+
+  it('renders clipboard button with correct values', () => {
+    createComponent({ stubs: {} });
+    expect(findClipboardButton().props('text')).toBe(mockAgent.latestVersion.userPrompt);
   });
 
   describe('form submission', () => {
