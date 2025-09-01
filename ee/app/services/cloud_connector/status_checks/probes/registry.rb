@@ -54,11 +54,17 @@ module CloudConnector
         end
 
         def self_hosted_only_probes
-          [
+          probes = [
             ::CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe.new,
             ::CloudConnector::StatusChecks::Probes::HostProbe.new(::Gitlab::AiGateway.self_hosted_url),
             ::CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe.new(@user)
           ]
+
+          if Gitlab::DuoWorkflow::Client.self_hosted_url.present?
+            probes << ::CloudConnector::StatusChecks::Probes::SelfHosted::DuoAgentPlatformProbe.new(@user)
+          end
+
+          probes
         end
 
         def at_least_one_vendored_feature?

@@ -32,7 +32,7 @@ export const DUO_HEALTH_CHECK_CATEGORIES = [
     ),
   },
   {
-    values: ['host_probe'],
+    values: ['host_probe', 'duo_agent_platform_probe'],
     title: __('Network'),
     description: s__(
       'CodeSuggestions|Outbound and inbound connections from clients to the GitLab instance must be allowed.',

@@ -120,5 +120,20 @@ RSpec.describe CloudConnector::StatusChecks::Probes::Registry, feature_category:
         end
       end
     end
+
+    context 'when Duo Agent Platform URL is set up' do
+      before do
+        Ai::Setting.instance.update!(duo_agent_platform_service_url: 'localhost:50052')
+      end
+
+      it 'returns self-hosted probes combined with default probes including DuoAgentPlatformProbe' do
+        probes = registry.self_hosted_probes
+
+        expect(probes).to match(
+          self_hosted_only_probe_types +
+          [an_instance_of(CloudConnector::StatusChecks::Probes::SelfHosted::DuoAgentPlatformProbe)]
+        )
+      end
+    end
   end
 end
