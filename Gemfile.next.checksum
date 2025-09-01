@@ -410,7 +410,7 @@
 {"name":"mize","version":"0.6.1","platform":"ruby","checksum":"4031558979ff5426fda24c75a149b4e4c0faf4cacf2fae8938f83866ab94b780"},
 {"name":"msgpack","version":"1.5.4","platform":"java","checksum":"05b3bd16a65dddc64c878634b7ecb9cd613569ca3dd6e480d7295626a0a3f562"},
 {"name":"msgpack","version":"1.5.4","platform":"ruby","checksum":"a53db320fba40f58c07c5b66ed9fd4d73cbe8eba4cb28fe9e3218444341a4e09"},
-{"name":"multi_json","version":"1.14.1","platform":"ruby","checksum":"d971296c0eacea289d31e4a7ab7ac5eda97262c62bbc8c110de4f5e36425c577"},
+{"name":"multi_json","version":"1.17.0","platform":"ruby","checksum":"76581f6c96aebf2e85f8a8b9854829e0988f335e8671cd1a56a1036eb75e4a1b"},
 {"name":"multi_xml","version":"0.6.0","platform":"ruby","checksum":"d24393cf958adb226db884b976b007914a89c53ad88718e25679d7008823ad52"},
 {"name":"multipart-post","version":"2.2.3","platform":"ruby","checksum":"462979de2971b8df33c2ee797fd497731617241f9dcd93960cc3caccb2dd13d8"},
 {"name":"murmurhash3","version":"0.1.7","platform":"ruby","checksum":"370a2ce2e9ab0711e51554e530b5f63956927a6554a296855f42a1a4a5ed0936"},
