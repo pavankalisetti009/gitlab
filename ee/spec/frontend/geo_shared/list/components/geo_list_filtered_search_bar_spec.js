@@ -12,6 +12,7 @@ describe('GeoListFilteredSearchBar', () => {
     listboxHeaderText: 'Select item',
     activeListboxItem: MOCK_LISTBOX_ITEMS[0].value,
     activeFilteredSearchFilters: [MOCK_FILTER_A],
+    filteredSearchOptionLabel: 'Test Label',
   };
 
   const defaultProvide = {
@@ -73,6 +74,10 @@ describe('GeoListFilteredSearchBar', () => {
 
     it('renders with the correct active filters', () => {
       expect(findFilteredSearch().props('activeFilters')).toStrictEqual([MOCK_FILTER_A]);
+    });
+
+    it('renders with the correct filtered search option label', () => {
+      expect(findFilteredSearch().props('filteredSearchOptionLabel')).toBe('Test Label');
     });
 
     it('on search event emits search to the parent with the passed arguments', async () => {

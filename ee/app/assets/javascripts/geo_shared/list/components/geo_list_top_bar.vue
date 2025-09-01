@@ -45,6 +45,11 @@ export default {
       required: false,
       default: () => [],
     },
+    filteredSearchOptionLabel: {
+      type: String,
+      required: false,
+      default: '',
+    },
     showActions: {
       type: Boolean,
       required: false,
@@ -93,6 +98,7 @@ export default {
       :listbox-header-text="listboxHeaderText"
       :active-listbox-item="activeListboxItem"
       :active-filtered-search-filters="activeFilteredSearchFilters"
+      :filtered-search-option-label="filteredSearchOptionLabel"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
     />

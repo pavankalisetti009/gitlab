@@ -40,8 +40,9 @@ const MOCK_UPDATED_URL = 'mock-url/params?foo=bar';
 const MOCK_BASE_LOCATION = `${TEST_HOST}/admin/geo/sites/2/replication/${MOCK_REPLICABLE_TYPE_FILTER.value}`;
 const MOCK_REPLICATION_STATUS_QUERY = `${MOCK_REPLICATION_STATUS_FILTER.type}=${MOCK_REPLICATION_STATUS_FILTER.value.data}`;
 const MOCK_VERIFICATION_STATUS_QUERY = `${MOCK_VERIFICATION_STATUS_FILTER.type}=${MOCK_VERIFICATION_STATUS_FILTER.value.data}`;
+const MOCK_IDS_QUERY = `ids=${MOCK_BASIC_GRAPHQL_DATA[0].id}`;
 
-const MOCK_LOCATION_WITH_FILTERS = `${MOCK_BASE_LOCATION}?${MOCK_REPLICATION_STATUS_QUERY}&${MOCK_VERIFICATION_STATUS_QUERY}`;
+const MOCK_LOCATION_WITH_FILTERS = `${MOCK_BASE_LOCATION}?${MOCK_REPLICATION_STATUS_QUERY}&${MOCK_VERIFICATION_STATUS_QUERY}&${MOCK_IDS_QUERY}`;
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -78,10 +79,11 @@ describe('GeoReplicableApp', () => {
     hasFilters: false,
   };
 
-  const query = buildReplicableTypeQuery(
-    defaultProvide.replicableClass.graphqlFieldName,
-    defaultProvide.replicableClass.verificationEnabled,
-  );
+  const query = buildReplicableTypeQuery({
+    graphqlFieldName: defaultProvide.replicableClass.graphqlFieldName,
+    graphqlRegistryIdType: defaultProvide.replicableClass.graphqlRegistryIdType,
+    verificationEnabled: defaultProvide.replicableClass.verificationEnabled,
+  });
 
   const MOCK_QUERY_HANDLER_WITH_DATA = jest.fn().mockResolvedValue({
     data: {
@@ -270,6 +272,7 @@ describe('GeoReplicableApp', () => {
             MOCK_REPLICABLE_TYPE_FILTER.value,
           );
           expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([
+            MOCK_BASIC_GRAPHQL_DATA[0].id,
             MOCK_REPLICATION_STATUS_FILTER,
             MOCK_VERIFICATION_STATUS_FILTER,
           ]);
@@ -290,6 +293,7 @@ describe('GeoReplicableApp', () => {
             MOCK_REPLICABLE_TYPE_FILTER.value,
           );
           expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toStrictEqual([
+            MOCK_BASIC_GRAPHQL_DATA[0].id,
             MOCK_REPLICATION_STATUS_FILTER,
           ]);
         });
@@ -451,6 +455,7 @@ describe('GeoReplicableApp', () => {
 
       expect(processFilters).toHaveBeenCalledWith([
         { type: MOCK_REPLICABLE_TYPE_FILTER.type, value: MOCK_NEW_REPLICABLE_TYPE },
+        MOCK_BASIC_GRAPHQL_DATA[0].id,
         { type: MOCK_REPLICATION_STATUS_FILTER.type, value: MOCK_REPLICATION_STATUS_FILTER.value },
         {
           type: MOCK_VERIFICATION_STATUS_FILTER.type,

@@ -18,6 +18,7 @@ describe('GeoListTopBar', () => {
     bulkActions: MOCK_BULK_ACTIONS,
     pageHeadingTitle: 'Test Title',
     pageHeadingDescription: 'Test Description',
+    filteredSearchOptionLabel: 'Test Label',
   };
 
   const createComponent = ({ props } = {}) => {
@@ -48,6 +49,7 @@ describe('GeoListTopBar', () => {
         listboxHeaderText: 'Select item',
         activeListboxItem: MOCK_LISTBOX_ITEMS[0].value,
         activeFilteredSearchFilters: [MOCK_FILTER_A],
+        filteredSearchOptionLabel: 'Test Label',
       });
     });
 

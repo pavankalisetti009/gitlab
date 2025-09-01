@@ -1,4 +1,5 @@
 import { pathSegments } from '~/lib/utils/url_utility';
+import { isGid, convertToGraphQLId } from '~/graphql_shared/utils';
 import { FILTERED_SEARCH_TOKENS, TOKEN_TYPES, DEFAULT_CURSOR } from './constants';
 
 export const formatListboxItems = (items) => {
@@ -49,6 +50,11 @@ export const processFilters = (filters) => {
       url.pathname = segments.join('/');
     }
 
+    // ids is stored as " " separated String in filtered search
+    if (typeof filter === 'string') {
+      query[TOKEN_TYPES.IDS] = filter;
+    }
+
     if (filter.type === TOKEN_TYPES.REPLICATION_STATUS) {
       query[TOKEN_TYPES.REPLICATION_STATUS] = filter.value.data;
     }
@@ -61,11 +67,37 @@ export const processFilters = (filters) => {
   return { query, url };
 };
 
-export const getGraphqlFilterVariables = (filters) => {
+export const formatGraphqlIds = ({ ids, graphqlRegistryClass }) => {
+  if (!ids) {
+    return null;
+  }
+
+  try {
+    return ids.split(' ').map((id) => {
+      if (isGid(id)) {
+        return id;
+      }
+
+      const sanitizedId = id.replace(`${graphqlRegistryClass}/`, '');
+      return convertToGraphQLId(graphqlRegistryClass, sanitizedId);
+    });
+  } catch {
+    return null;
+  }
+};
+
+export const getGraphqlFilterVariables = ({ filters, graphqlRegistryClass }) => {
   const variables = {
     replicationState: null,
     verificationState: null,
+    ids: null,
   };
+
+  // ids is stored as " " separated String in filtered search
+  variables.ids = formatGraphqlIds({
+    ids: filters.find((filter) => typeof filter === 'string'),
+    graphqlRegistryClass,
+  });
 
   variables.replicationState =
     filters

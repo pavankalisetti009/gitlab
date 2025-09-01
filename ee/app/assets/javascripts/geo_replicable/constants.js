@@ -125,6 +125,7 @@ export const VERIFICATION_STATUS_STATES_ARRAY = Object.values(VERIFICATION_STATU
 
 export const TOKEN_TYPES = {
   REPLICABLE_TYPE: 'replicable_type',
+  IDS: 'ids',
   REPLICATION_STATUS: 'replication_status',
   VERIFICATION_STATUS: 'verification_status',
 };
