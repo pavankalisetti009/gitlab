@@ -15,6 +15,7 @@ import createUpstreamRegistryMutation from '../graphql/mutations/create_maven_up
 import { convertToMavenRegistryGraphQLId } from '../utils';
 import { captureException } from '../sentry_utils';
 import AddUpstream from './add_upstream.vue';
+import LinkUpstreamForm from './link_upstream_form.vue';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
 import RegistryUpstreamForm from './registry_upstream_form.vue';
 
@@ -31,6 +32,7 @@ export default {
     GlModal,
     AddUpstream,
     CrudComponent,
+    LinkUpstreamForm,
     RegistryUpstreamItem,
     RegistryUpstreamForm,
   },
@@ -41,6 +43,11 @@ export default {
     },
   },
   props: {
+    loading: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
     /**
      * The registry object
      */
@@ -76,6 +83,7 @@ export default {
       createUpstreamError: '',
       createUpstreamMutationLoading: false,
       registryClearCacheModalIsShown: false,
+      topLevelUpstreams: [],
       topLevelUpstreamsTotalCount: 0,
       topLevelUpstreamsQueryInProgress: false,
       upstreamClearCacheModalIsShown: false,
@@ -109,8 +117,36 @@ export default {
     upstreamsCount() {
       return this.upstreams.length;
     },
+    upstreamItemIdsMap() {
+      return this.upstreamItems.reduce(
+        (map, { registryUpstreams: [{ id }] }) => ({
+          ...map,
+          [getIdFromGraphQLId(id)]: true,
+        }),
+        {},
+      );
+    },
+    linkableUpstreamsDropdownOptions() {
+      return (
+        this.topLevelUpstreams
+          // filter out upstreams that are already linked to this virtual registry
+          .filter((upstream) => {
+            return !this.upstreamItemIdsMap[upstream.id];
+          })
+          .map((upstream) => {
+            return {
+              value: upstream.id,
+              text: upstream.name,
+              secondaryText: upstream.description,
+            };
+          })
+      );
+    },
     mavenVirtualRegistryID() {
       return convertToMavenRegistryGraphQLId(this.registryId);
+    },
+    queriesInProgress() {
+      return this.topLevelUpstreamsQueryInProgress || this.loading;
     },
     clearUpstreamCacheModalTitle() {
       if (!this.upstreamClearCacheModalIsShown) return '';
@@ -130,11 +166,12 @@ export default {
 
     try {
       this.topLevelUpstreamsQueryInProgress = true;
-      const response = await getMavenUpstreamRegistriesList({ id: this.groupPath });
+      const { headers, data } = await getMavenUpstreamRegistriesList({ id: this.groupPath });
 
-      this.topLevelUpstreamsTotalCount = Number(response.headers['x-total']);
+      this.topLevelUpstreamsTotalCount = Number(headers['x-total']) || 0;
+      this.topLevelUpstreams = data;
     } catch (error) {
-      captureException({ error, component: this.$options.name });
+      this.handleError(error);
     } finally {
       this.topLevelUpstreamsQueryInProgress = false;
     }
@@ -296,6 +333,7 @@ export default {
   <crud-component
     ref="registryDetailsCrud"
     :title="s__('VirtualRegistry|Upstreams')"
+    :is-loading="loading"
     icon="infrastructure-registry"
     :description="
       s__(
@@ -316,7 +354,7 @@ export default {
       </gl-button>
       <add-upstream
         v-if="canCreate"
-        :loading="topLevelUpstreamsQueryInProgress"
+        :loading="queriesInProgress"
         :can-link="canLinkUpstream"
         :disabled="isFormVisible"
         @create="showCreateForm"
@@ -392,9 +430,11 @@ export default {
         @submit="createUpstream"
         @cancel="hideForm"
       />
-      <div v-if="isLinkUpstreamForm">
-        <!-- TODO -->
-      </div>
+      <link-upstream-form
+        v-if="isLinkUpstreamForm"
+        :upstream-options="linkableUpstreamsDropdownOptions"
+        @cancel="hideForm"
+      />
     </template>
   </crud-component>
 </template>

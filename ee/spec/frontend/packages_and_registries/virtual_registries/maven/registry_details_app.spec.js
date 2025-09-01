@@ -57,10 +57,22 @@ describe('MavenRegistryDetailsApp', () => {
   };
 
   describe('loading state', () => {
-    it('displays a loading state', () => {
+    it('sets loading prop on initial load', () => {
       createComponent();
 
-      expect(findMavenRegistryDetails().text()).toContain('No upstreams yet');
+      expect(findMavenRegistryDetails().props('loading')).toBe(true);
+    });
+
+    it('does not set loading prop on subsequent loads', async () => {
+      createComponent({
+        handlers: [[getMavenVirtualRegistryUpstreamsQuery, mavenRegistryUpstreamsHandler]],
+      });
+
+      await waitForPromises();
+
+      await findMavenRegistryDetails().vm.$emit('upstreamCreated');
+
+      expect(findMavenRegistryDetails().props('loading')).toBe(false);
     });
   });
 
@@ -82,7 +94,7 @@ describe('MavenRegistryDetailsApp', () => {
 
       await waitForPromises();
 
-      expect(findMavenRegistryDetails().exists()).toBe(true);
+      expect(findMavenRegistryDetails().props('loading')).toBe(false);
       expect(findUpstreamRegistryItems()).toHaveLength(upstreamsLength);
     });
   });

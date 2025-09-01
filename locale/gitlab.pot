@@ -70659,6 +70659,11 @@ msgid_plural "VirtualRegistry|%{count} artifacts"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "VirtualRegistry|%{hours} hour"
+msgid_plural "VirtualRegistry|%{hours} hours"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "VirtualRegistry|%{hours} hour cache"
 msgid_plural "VirtualRegistry|%{hours} hours cache"
 msgstr[0] ""
@@ -70721,6 +70726,9 @@ msgstr ""
 msgid "VirtualRegistry|Delete upstream"
 msgstr ""
 
+msgid "VirtualRegistry|Description"
+msgstr ""
+
 msgid "VirtualRegistry|Description (optional)"
 msgstr ""
 
@@ -70752,6 +70760,9 @@ msgid "VirtualRegistry|Failed to fetch cache entries."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
+msgstr ""
+
+msgid "VirtualRegistry|Failed to fetch upstream summary."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to remove upstream. Try again."
@@ -70796,6 +70807,9 @@ msgstr ""
 msgid "VirtualRegistry|Maven virtual registry was updated"
 msgstr ""
 
+msgid "VirtualRegistry|Metadata caching period"
+msgstr ""
+
 msgid "VirtualRegistry|Move upstream down"
 msgstr ""
 
@@ -70835,6 +70849,9 @@ msgstr ""
 msgid "VirtualRegistry|Removed upstream from virtual registry."
 msgstr ""
 
+msgid "VirtualRegistry|Select an upstream"
+msgstr ""
+
 msgid "VirtualRegistry|Something went wrong while creating the upstream. Try again."
 msgstr ""
 
@@ -70856,6 +70873,12 @@ msgstr ""
 msgid "VirtualRegistry|Time in hours"
 msgstr ""
 
+msgid "VirtualRegistry|To view summary, select an upstream."
+msgstr ""
+
+msgid "VirtualRegistry|URL"
+msgstr ""
+
 msgid "VirtualRegistry|Updated %{date}"
 msgstr ""
 
@@ -70866,6 +70889,9 @@ msgid "VirtualRegistry|Upstream cache cleared successfully."
 msgstr ""
 
 msgid "VirtualRegistry|Upstream created successfully."
+msgstr ""
+
+msgid "VirtualRegistry|Upstream summary"
 msgstr ""
 
 msgid "VirtualRegistry|Upstreams"

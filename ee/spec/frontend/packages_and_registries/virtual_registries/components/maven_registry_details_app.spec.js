@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistryDetailsApp from 'ee/packages_and_registries/virtual_registries/components/maven_registry_details_app.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import AddUpstream from 'ee/packages_and_registries/virtual_registries/components/add_upstream.vue';
+import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/link_upstream_form.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -56,7 +57,7 @@ describe('MavenRegistryDetailsApp', () => {
       {
         id: 3,
         name: 'test',
-        description: '',
+        description: 'test description',
         group_id: 122,
         url: 'https://gitlab.com',
         username: '',
@@ -103,6 +104,7 @@ describe('MavenRegistryDetailsApp', () => {
   const findClearRegistryCacheModal = () => wrapper.findByTestId('clear-registry-cache-modal');
   const findClearUpstreamCacheModal = () => wrapper.findByTestId('clear-upstream-cache-modal');
   const findCreateUpstreamForm = () => wrapper.findComponent(RegistryUpstreamForm);
+  const findLinkUpstreamForm = () => wrapper.findComponent(LinkUpstreamForm);
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
   const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
   const findUpdateActionErrorAlert = () => wrapper.findByTestId('update-action-error-alert');
@@ -137,6 +139,13 @@ describe('MavenRegistryDetailsApp', () => {
     getMavenUpstreamRegistriesList.mockResolvedValue(upstreamsResponse);
   });
 
+  it('sets components to loading', () => {
+    createComponent({ props: { loading: true } });
+
+    expect(findCrudComponent().props('isLoading')).toBe(true);
+    expect(findAddUpstream().props('loading')).toBe(true);
+  });
+
   describe('component rendering', () => {
     beforeEach(() => {
       createComponent();
@@ -151,6 +160,7 @@ describe('MavenRegistryDetailsApp', () => {
         title: 'Upstreams',
         icon: 'infrastructure-registry',
         count: defaultProps.upstreams.length,
+        isLoading: false,
       });
     });
 
@@ -171,12 +181,23 @@ describe('MavenRegistryDetailsApp', () => {
       });
     });
 
-    it('shows create form when AddUpstreamAction component emits create event', async () => {
-      createComponent();
-      await findAddUpstream().vm.$emit('create');
+    describe('when AddUpstreamAction component emits create event', () => {
+      beforeEach(() => {
+        findAddUpstream().vm.$emit('create');
+      });
 
-      expect(findCreateUpstreamForm().exists()).toBe(true);
-      expect(findAddUpstream().props('disabled')).toBe(true);
+      it('shows create upstream form', () => {
+        expect(findCreateUpstreamForm().exists()).toBe(true);
+        expect(findLinkUpstreamForm().exists()).toBe(false);
+        expect(findAddUpstream().props('disabled')).toBe(true);
+      });
+
+      it('hides create form when form emits cancel event', async () => {
+        await findCreateUpstreamForm().vm.$emit('cancel');
+
+        expect(findCreateUpstreamForm().exists()).toBe(false);
+        expect(findAddUpstream().props('disabled')).toBe(false);
+      });
     });
 
     it('hides the registry clear cache modal', () => {
@@ -220,7 +241,7 @@ describe('MavenRegistryDetailsApp', () => {
     });
   });
 
-  describe('when registry has no upstreams', () => {
+  describe('when there are group level upstreams & registry has no upstreams', () => {
     beforeEach(() => {
       createComponent({
         props: {
@@ -235,6 +256,31 @@ describe('MavenRegistryDetailsApp', () => {
 
     it('renders AddUpstreamAction component with `canLink` set to true', () => {
       expect(findAddUpstream().props('canLink')).toBe(true);
+    });
+
+    describe('when AddUpstreamAction component emits link event', () => {
+      beforeEach(() => {
+        findAddUpstream().vm.$emit('link');
+      });
+
+      it('shows link form', () => {
+        expect(findLinkUpstreamForm().props('upstreamOptions')).toStrictEqual([
+          {
+            value: 3,
+            text: 'test',
+            secondaryText: 'test description',
+          },
+        ]);
+        expect(findCreateUpstreamForm().exists()).toBe(false);
+        expect(findAddUpstream().props('disabled')).toBe(true);
+      });
+
+      it('hides create form when form emits cancel event', async () => {
+        await findLinkUpstreamForm().vm.$emit('cancel');
+
+        expect(findLinkUpstreamForm().exists()).toBe(false);
+        expect(findAddUpstream().props('disabled')).toBe(false);
+      });
     });
   });
 
