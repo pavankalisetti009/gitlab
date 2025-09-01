@@ -38,7 +38,6 @@ export default {
       icon="comment"
       category="tertiary"
       data-testid="ai-chat-toggle"
-      triggers="hover"
       :title="$options.i18n.duoChatLabel"
       :aria-label="$options.i18n.duoChatLabel"
       :aria-expanded="isExpanded"
