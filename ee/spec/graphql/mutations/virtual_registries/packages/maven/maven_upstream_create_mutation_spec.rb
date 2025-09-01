@@ -14,6 +14,7 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
       group_id: group.id,
       name: 'Maven Central',
       cache_validity_hours: 24,
+      metadata_cache_validity_hours: 48,
       url: 'https://repo.maven.apache.org/maven2'
     }
   end
@@ -24,7 +25,8 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
         model_name: 'VirtualRegistries::Packages::Maven::Registry'),
       name: 'Maven Central',
       url: 'https://repo.maven.apache.org/maven2',
-      cache_validity_hours: 24
+      cache_validity_hours: 24,
+      metadata_cache_validity_hours: 48
     }
   end
 

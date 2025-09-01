@@ -24,6 +24,10 @@ module EE
               description: 'Time before the cache expires for the upstream registry.',
               experiment: { milestone: '18.1' }
 
+            field :metadata_cache_validity_hours, GraphQL::Types::Int, null: false,
+              description: 'Time before the cache expires for Maven metadata.',
+              experiment: { milestone: '18.4' }
+
             field :username, GraphQL::Types::String, null: true,
               description: 'Username to sign in to the upstream registry.',
               experiment: { milestone: '18.1' }
