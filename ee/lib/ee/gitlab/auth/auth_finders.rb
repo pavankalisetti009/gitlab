@@ -7,6 +7,10 @@ module EE
         extend ActiveSupport::Concern
         extend ::Gitlab::Utils::Override
 
+        prepended do
+          include ::Gitlab::Auth::RemoteDevelopment::AuthFinders
+        end
+
         def find_user_from_geo_token
           return unless geo_api_request?
 

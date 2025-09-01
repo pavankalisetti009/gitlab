@@ -177,7 +177,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   # @return [void]
   def do_get_internal_agents_agentw_server_config
-    # Perform an internal agents agentw server_config GET which will cause a workspaces oauth application to be created
+    # Perform an /internal/agents/agentw/server_config GET which will cause a workspaces oauth application to be created
 
     params = {} # No params currently for this endpoint
 
@@ -206,6 +206,35 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
           workspaces_oauth_application.redirect_uri.gsub("/#{generator_module::OAUTH_REDIRECT_URI_PATH_SEGMENT}", ""),
         oauth_client_id: workspaces_oauth_application.uid,
         oauth_redirect_url: workspaces_oauth_application.redirect_uri
+      }
+    )
+
+    nil
+  end
+
+  # @return [void]
+  def do_get_internal_agents_agentw_agent_info(workspace:)
+    # Perform an /internal/agents/agentw/agent_info GET which will authenticate with the workspace_token
+    # and return the workspace's id.
+
+    workspace_token_string = workspace.workspace_token.token
+    expect(workspace_token_string).to match(/#{::RemoteDevelopment::WorkspaceToken::TOKEN_PREFIX}.+/o)
+
+    params = {} # No params currently for this endpoint
+
+    headers = {
+      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => kas_jwt_token,
+      Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => workspace_token_string
+    }
+    agent_info_url = api("/internal/agents/agentw/agent_info")
+
+    get agent_info_url, params: params, headers: headers, as: :json
+
+    expect(response).to have_gitlab_http_status(:ok)
+
+    expect(json_response.symbolize_keys).to eq(
+      {
+        workspace_id: workspace.id
       }
     )
 
@@ -488,10 +517,10 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     end
 
     it "successfully exercises the full lifecycle of a workspace", :unlimited_max_formatted_output_length do # rubocop:disable RSpec/NoExpectationExample -- the expectations are in the called methods
-      # CREATE the OAuth app and GET THE agentw server config VIA REST API
+      # KAS INTERNAL REQUEST: CREATE THE WORKSPACES OAUTH APP AND GET THE AGENTW SERVER CONFIG VIA REST API
       do_get_internal_agents_agentw_server_config
 
-      # CREATE THE Namespace Mapping VIA GRAPHQL API
+      # CREATE THE NamespaceClusterAgentMapping VIA GRAPHQL API
       do_create_namespace_mapping
 
       # CREATE THE WorkspacesAgentConfig VIA REST and GRAPHQL APIs
@@ -509,6 +538,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
           image_pull_secrets: image_pull_secrets,
           user_defined_commands: user_defined_commands
         )
+
+      # AGENTW INTERNAL REQUEST: GET THE AGENTW AGENT INFO VIA REST API
+      do_get_internal_agents_agentw_agent_info(workspace: workspace)
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK SENDING NEW WORKSPACE
       simulate_first_poll(
