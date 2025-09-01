@@ -132,7 +132,8 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
       end
 
       it 'bypass confirmation and returns success', :aggregate_failures do
-        expect(Import::ReassignPlaceholderUserRecordsWorker).to receive(:perform_async).with(import_source_user.id)
+        expect(Import::ReassignPlaceholderUserRecordsWorker).to receive(:perform_async).with(import_source_user.id,
+          'confirmation_skipped' => true)
 
         result = service.execute
 
