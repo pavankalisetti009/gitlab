@@ -1,0 +1,10 @@
+---
+name: agent_platform_claude_code
+description: Enable generating direct access token to access AIGW model provider proxy
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/563278
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/202453
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/563856
+milestone: '18.4'
+group: group::ai framework
+type: beta
+default_enabled: false

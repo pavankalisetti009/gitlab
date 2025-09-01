@@ -277,6 +277,22 @@ module EE
       rule { admin & duo_core_features_available }.policy do
         enable :manage_duo_core_settings
       end
+
+      condition(:third_party_agents_enabled) do
+        ::Feature.enabled?(:agent_platform_claude_code, @user)
+      end
+
+      condition(:direct_access_enabled) do
+        !::Gitlab::CurrentSettings.disabled_direct_code_suggestions
+      end
+
+      condition(:allowed_to_use_model_proxy, scope: :user) do
+        @user.allowed_to_use?(:duo_agent_platform, service_name: :ai_gateway_model_provider_proxy)
+      end
+
+      rule { third_party_agents_enabled & direct_access_enabled & allowed_to_use_model_proxy }.policy do
+        enable :duo_generate_direct_access_token
+      end
     end
 
     def duo_chat
