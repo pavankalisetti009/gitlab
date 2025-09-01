@@ -177,4 +177,14 @@ RSpec.describe 'Group routing', "routing" do
       end
     end
   end
+
+  describe Groups::Settings::GitlabDuo::UsageController, 'routing', feature_category: :consumables_cost_management do
+    it 'routes / to #index' do
+      expect(get('/groups/gitlabhq/-/settings/gitlab_duo/usage')).to route_to(
+        controller: 'groups/settings/gitlab_duo/usage',
+        action: 'index',
+        group_id: 'gitlabhq'
+      )
+    end
+  end
 end
