@@ -43,7 +43,7 @@ export default {
   },
   computed: {
     canAdmin() {
-      return this.item.userPermissions.adminAiCatalogItem;
+      return this.item?.userPermissions?.adminAiCatalogItem;
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
@@ -77,7 +77,7 @@ export default {
       return VISIBILITY_TYPE_ICON[this.visibilityLevel];
     },
     visibilityTooltip() {
-      return this.itemTypeConfig.visibilityTooltip[this.visibilityLevel];
+      return this.itemTypeConfig.visibilityTooltip?.[this.visibilityLevel];
     },
   },
   methods: {
@@ -106,6 +106,7 @@ export default {
   >
     <template #avatar-meta>
       <gl-icon
+        v-if="visibilityTooltip"
         v-gl-tooltip
         :name="visibilityIconName"
         :title="visibilityTooltip"

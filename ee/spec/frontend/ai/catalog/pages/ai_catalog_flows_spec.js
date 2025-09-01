@@ -75,57 +75,38 @@ describe('AiCatalogFlows', () => {
     findAiCatalogList().props('itemTypeConfig').actionItems(getIdFromGraphQLId(mockFlows[0].id))[0];
 
   describe('component rendering', () => {
-    beforeEach(async () => {
-      await createComponent();
+    beforeEach(() => {
+      createComponent();
     });
 
     it('renders AiCatalogListHeader component', () => {
       expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
-    it('renders AiCatalogList component', () => {
-      const catalogList = findAiCatalogList();
-
-      expect(catalogList.exists()).toBe(true);
-    });
-
-    it('passes correct props to AiCatalogList', () => {
-      const catalogList = findAiCatalogList();
-
-      expect(catalogList.props('items')).toEqual(mockFlows);
-      expect(catalogList.props('isLoading')).toBe(false);
-    });
-  });
-
-  describe('when loading', () => {
-    it('passes loading state with boolean true to AiCatalogList', () => {
-      createComponent();
+    it('passes correct props to AiCatalogList', async () => {
       const catalogList = findAiCatalogList();
 
       expect(catalogList.props('isLoading')).toBe(true);
+
+      await waitForPromises();
+
+      expect(catalogList.props('items')).toEqual(mockFlows);
+      expect(catalogList.props('isLoading')).toBe(false);
     });
   });
 
-  describe('with flow data', () => {
-    beforeEach(async () => {
-      await createComponent();
+  describe('Apollo queries', () => {
+    beforeEach(() => {
+      createComponent();
     });
 
     it('fetches list data', () => {
-      expect(mockCatalogItemsQueryHandler).toHaveBeenCalled();
-    });
-
-    it('passes flow data to AiCatalogList', () => {
-      const catalogList = findAiCatalogList();
-
-      expect(catalogList.props('items')).toEqual(mockFlows);
-      expect(catalogList.props('items')).toHaveLength(3);
-    });
-
-    it('passes isLoading as false when not loading', () => {
-      const catalogList = findAiCatalogList();
-
-      expect(catalogList.props('isLoading')).toBe(false);
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+      });
     });
   });
 

@@ -1,0 +1,25 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+#import "../fragments/ai_catalog_item_consumer.fragment.graphql"
+
+query aiCatalogConfiguredItems(
+  $projectId: ProjectID!
+  $before: String
+  $after: String
+  $first: Int
+  $last: Int
+) {
+  aiCatalogConfiguredItems(
+    projectId: $projectId
+    before: $before
+    after: $after
+    first: $first
+    last: $last
+  ) {
+    nodes {
+      ...BaseAiCatalogItemConsumer
+    }
+    pageInfo {
+      ...PageInfo
+    }
+  }
+}

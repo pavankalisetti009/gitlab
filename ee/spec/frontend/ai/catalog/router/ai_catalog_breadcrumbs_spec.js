@@ -29,7 +29,7 @@ describe('AiCatalogBreadcrumbs', () => {
       mocks: {
         $route: {
           name: AI_CATALOG_INDEX_ROUTE,
-          path: '/agent-sessions',
+          path: '/ai-catalog',
           ...routeOptions,
         },
       },

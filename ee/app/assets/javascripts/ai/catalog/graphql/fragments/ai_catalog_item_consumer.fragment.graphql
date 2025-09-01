@@ -1,0 +1,9 @@
+#import "./ai_catalog_item.fragment.graphql"
+
+fragment BaseAiCatalogItemConsumer on AiCatalogItemConsumer {
+  id
+  pinnedVersionPrefix
+  item {
+    ...BaseAiCatalogItem
+  }
+}
