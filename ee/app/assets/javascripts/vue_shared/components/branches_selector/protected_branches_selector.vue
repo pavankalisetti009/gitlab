@@ -1,9 +1,9 @@
 <script>
 import {
   GlCollapsibleListbox,
-  GlDropdownDivider,
-  GlDropdownItem,
   GlTooltipDirective,
+  GlListboxItem,
+  GlDropdownDivider,
 } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import Api from 'ee/api';
@@ -19,8 +19,8 @@ const createBranchObject = (value) => ({
 export default {
   components: {
     GlCollapsibleListbox,
+    GlListboxItem,
     GlDropdownDivider,
-    GlDropdownItem,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -255,26 +255,26 @@ export default {
     </template>
     <template #footer>
       <gl-dropdown-divider v-if="allowAllBranchesOption || allowAllProtectedBranchesOption" />
-      <gl-dropdown-item
+      <gl-listbox-item
         v-if="allowAllBranchesOption"
         data-testid="all-branches-option"
+        is-check-centered
+        :is-selected="isSelected($options.ALL_BRANCHES.name)"
         class="gl-list-none"
-        :is-check-item="true"
-        :is-checked="isSelected($options.ALL_BRANCHES.name)"
-        @click="handleFooterClick($options.ALL_BRANCHES.name)"
+        @select="handleFooterClick($options.ALL_BRANCHES.name)"
       >
         {{ $options.ALL_BRANCHES.name }}
-      </gl-dropdown-item>
-      <gl-dropdown-item
+      </gl-listbox-item>
+      <gl-listbox-item
         v-if="allowAllProtectedBranchesOption"
         data-testid="all-protected-branches-option"
-        class="gl-list-none"
-        :is-check-item="true"
-        :is-checked="isSelected($options.ALL_PROTECTED_BRANCHES.name)"
-        @click="handleFooterClick($options.ALL_PROTECTED_BRANCHES.name)"
+        is-check-centered
+        :is-selected="isSelected($options.ALL_PROTECTED_BRANCHES.name)"
+        class="pb-1 gl-list-none"
+        @select="handleFooterClick($options.ALL_PROTECTED_BRANCHES.name)"
       >
-        {{ $options.ALL_PROTECTED_BRANCHES.name }}
-      </gl-dropdown-item>
+        {{ $options.ALL_BRANCHES.name }}
+      </gl-listbox-item>
     </template>
   </gl-collapsible-listbox>
 </template>

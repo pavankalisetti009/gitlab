@@ -180,7 +180,7 @@ describe('Protected Branches Selector', () => {
           },
         },
       );
-      await findFn().vm.$emit('click');
+      await findFn().vm.$emit('select');
       expect(closeMock).toHaveBeenCalled();
     });
   });
@@ -251,7 +251,7 @@ describe('Protected Branches Selector', () => {
     it('emits "null" if it is already selected', async () => {
       createComponent();
       await waitForPromises();
-      await findAllBranchesOption().vm.$emit('click');
+      await findAllBranchesOption().vm.$emit('select');
 
       expect(wrapper.emitted('input')[1]).toStrictEqual([null]);
     });
@@ -259,7 +259,7 @@ describe('Protected Branches Selector', () => {
     it('emits the correct branch when the footer is clicked for single branches', async () => {
       createComponent({ allowAllProtectedBranchesOption: true });
       await waitForPromises();
-      await findAllProtectedBranchesOption().vm.$emit('click');
+      await findAllProtectedBranchesOption().vm.$emit('select');
 
       expect(wrapper.emitted('input')[1]).toStrictEqual(
         addValueToBranches([ALL_PROTECTED_BRANCHES]),
@@ -269,7 +269,7 @@ describe('Protected Branches Selector', () => {
     it('emits the correct branch when the footer is clicked for multiple branches', async () => {
       createComponent({ allowAllProtectedBranchesOption: true, multiple: true });
       await waitForPromises();
-      await findAllProtectedBranchesOption().vm.$emit('click');
+      await findAllProtectedBranchesOption().vm.$emit('select');
 
       expect(wrapper.emitted('input')).toStrictEqual([
         [addValueToBranches([ALL_PROTECTED_BRANCHES])],
