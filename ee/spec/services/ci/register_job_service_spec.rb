@@ -256,16 +256,32 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
           it_behaves_like 'it injects to JWT an expiry time eq', 3699
 
           it 'computes the JWT tokens ONLY after the runner is assigned and build timeout metadata is set' do
-            stubbed_build_metadata = instance_double(Ci::BuildMetadata)
-
             allow_next_found_instance_of(Ci::Build) do |pending_build|
               expect(pending_build).to receive(:run!).ordered.and_call_original
-              expect(pending_build).to receive(:ensure_metadata).ordered.and_return(stubbed_build_metadata)
-              expect(stubbed_build_metadata).to receive(:update_timeout_state).ordered
+              expect(pending_build).to receive(:update_timeout_state).ordered
               expect(pending_build).to receive(:job_jwt_variables).ordered.and_call_original
             end
 
             service.execute(params).build
+          end
+
+          context 'when FF `ci_use_new_job_update_timeout_state` is disabled' do
+            before do
+              stub_feature_flags(ci_use_new_job_update_timeout_state: false)
+            end
+
+            it 'computes the JWT tokens ONLY after the runner is assigned and build timeout metadata is set' do
+              stubbed_build_metadata = instance_double(Ci::BuildMetadata)
+
+              allow_next_found_instance_of(Ci::Build) do |pending_build|
+                expect(pending_build).to receive(:run!).ordered.and_call_original
+                expect(pending_build).to receive(:ensure_metadata).ordered.and_return(stubbed_build_metadata)
+                expect(stubbed_build_metadata).to receive(:update_timeout_state).ordered
+                expect(pending_build).to receive(:job_jwt_variables).ordered.and_call_original
+              end
+
+              service.execute(params).build
+            end
           end
         end
       end
