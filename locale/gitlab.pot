@@ -38820,9 +38820,6 @@ msgstr ""
 msgid "Manage group labels"
 msgstr ""
 
-msgid "Manage labels"
-msgstr ""
-
 msgid "Manage members"
 msgstr ""
 
