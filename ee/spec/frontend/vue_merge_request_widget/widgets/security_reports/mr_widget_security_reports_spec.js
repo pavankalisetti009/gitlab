@@ -8,6 +8,7 @@ import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import { TEST_HOST } from 'helpers/test_constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import MRSecurityWidget from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_reports.vue';
+import ReportDetails from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_report_details.vue';
 import VulnerabilityFindingModal from 'ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
@@ -15,7 +16,6 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import { historyPushState } from '~/lib/utils/common_utils';
 import api from '~/api';
 import Widget from '~/vue_merge_request_widget/components/widget/widget.vue';
-import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
 import axios from '~/lib/utils/axios_utils';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import {
@@ -140,7 +140,6 @@ describe('MR Widget Security Reports', () => {
         },
       },
       stubs: {
-        MrWidgetRow,
         VulnerabilityFindingModal: stubComponent(VulnerabilityFindingModal),
       },
       ...options,
@@ -173,13 +172,12 @@ describe('MR Widget Security Reports', () => {
   };
 
   const findWidget = () => wrapper.findComponent(Widget);
-  const findWidgetRow = (reportType) => wrapper.findByTestId(`report-${reportType}`);
+  const findWidgetRow = () => wrapper.findComponent(ReportDetails);
   const findSummaryText = () => wrapper.findComponent(SummaryText);
   const findReportSummaryText = (at) => wrapper.findAllComponents(SummaryText).at(at);
   const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
   const findDismissedBadge = () => wrapper.findComponent(GlBadge);
   const findStandaloneModal = () => wrapper.findByTestId('vulnerability-finding-modal');
-  const findDynamicScroller = () => wrapper.findByTestId('dynamic-content-scroller');
 
   beforeEach(() => {
     jest.spyOn(api, 'trackRedisCounterEvent').mockImplementation(() => {});
@@ -387,98 +385,6 @@ describe('MR Widget Security Reports', () => {
       ]);
     });
 
-    it('should display the dismissed badge', async () => {
-      await createComponentAndExpandWidget({ mockDataFn: mockWithData });
-      expect(findDismissedBadge().text()).toBe('Dismissed');
-    });
-
-    describe('resolve with AI badge', () => {
-      const findingUuid = '1';
-      const getResolvableFinding = (aiResolutionEnabled = false) =>
-        mockWithData({
-          findings: {
-            sast: {
-              added: [
-                {
-                  uuid: findingUuid,
-                  severity: 'critical',
-                  name: 'Password leak',
-                  state: 'dismissed',
-                  ai_resolution_enabled: aiResolutionEnabled,
-                },
-              ],
-            },
-          },
-        });
-
-      const findAiResolvableBadge = () => wrapper.findByTestId('ai-resolvable-badge');
-      const findAiResolvableBadgePopover = () =>
-        wrapper.findByTestId(`ai-resolvable-badge-popover-${findingUuid}`);
-
-      describe.each`
-        resolveVulnerabilityWithAi | aiResolutionEnabled
-        ${false}                   | ${true}
-        ${true}                    | ${false}
-      `(
-        'with "resolveVulnerabilityWithAi" ability set to "$resolveVulnerabilityWithAi" and the vulnerability has "ai_resolution_enabled" set to: "$aiResolutionEnabled"',
-        ({ resolveVulnerabilityWithAi, aiResolutionEnabled }) => {
-          beforeEach(() =>
-            createComponentAndExpandWidget({
-              mockDataFn: () => getResolvableFinding(aiResolutionEnabled),
-              provide: {
-                glAbilities: {
-                  resolveVulnerabilityWithAi,
-                },
-              },
-            }),
-          );
-
-          it('should not show the AI-Badge', () => {
-            expect(findAiResolvableBadge().exists()).toBe(false);
-          });
-
-          it('should not show the AI-Badge popover', () => {
-            expect(findAiResolvableBadgePopover().exists()).toBe(false);
-          });
-        },
-      );
-
-      describe('with "resolveVulnerabilityWithAi" ability set to "true" and the vulnerability has "ai_resolution_enabled" set to: "true"', () => {
-        beforeEach(() =>
-          createComponentAndExpandWidget({
-            mockDataFn: () => getResolvableFinding(true),
-            provide: {
-              glAbilities: {
-                resolveVulnerabilityWithAi: true,
-              },
-            },
-          }),
-        );
-
-        it('should show the AI-Badge', () => {
-          expect(findAiResolvableBadge().exists()).toBe(true);
-        });
-
-        it('should add the correct id-attribute to the AI-Badge', () => {
-          expect(findAiResolvableBadge().attributes('id')).toBe(
-            `ai-resolvable-badge-${findingUuid}`,
-          );
-        });
-
-        it('should show a popover for the AI-Badge', () => {
-          expect(findAiResolvableBadgePopover().exists()).toBe(true);
-        });
-
-        it('should pass the correct props to the AI-Badge popover', () => {
-          expect(wrapper.findByTestId('ai-resolvable-badge-popover-1').props()).toMatchObject({
-            target: `ai-resolvable-badge-${findingUuid}`,
-            // the popover and target are within a dynamic scroller, so this needs to be set to make it work correctly
-            boundary: 'viewport',
-          });
-        });
-      });
-    });
-
     it('should mount the widget component', async () => {
       await createComponentWithData();
 
@@ -511,81 +417,6 @@ describe('MR Widget Security Reports', () => {
       expect(findWidget().props('isCollapsible')).toBe(false);
       await waitForPromises();
       expect(findWidget().props('isCollapsible')).toBe(true);
-    });
-
-    it('displays detailed data when expanded', async () => {
-      await createComponentAndExpandWidget({ mockDataFn: mockWithData });
-
-      expect(wrapper.findByText(/Weak password/).exists()).toBe(true);
-      expect(wrapper.findByText(/Password leak/).exists()).toBe(true);
-      expect(wrapper.findByTestId('sast-scan-report').text()).toBe(
-        'SAST detected 2 new potential vulnerabilities',
-      );
-    });
-
-    it('contains new and fixed findings in the dynamic scroller', async () => {
-      await createComponentAndExpandWidget({ mockDataFn: mockWithData });
-
-      expect(findDynamicScroller().props('items')).toEqual([
-        // New findings
-        {
-          uuid: '1',
-          severity: 'critical',
-          name: 'Password leak',
-          state: 'dismissed',
-        },
-        { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-        // Fixed findings
-        { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-        { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-      ]);
-
-      expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
-      expect(wrapper.findByTestId('fixed-findings-title').text()).toBe('Fixed');
-    });
-
-    it('contains only fixed findings in the dynamic scroller', async () => {
-      await createComponentAndExpandWidget({
-        mockDataFn: mockWithData,
-        mockDataProps: {
-          findings: {
-            sast: {
-              fixed: [
-                { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-                { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-              ],
-            },
-            dast: {},
-          },
-        },
-      });
-
-      expect(findDynamicScroller().props('items')).toEqual([
-        { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-        { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-      ]);
-
-      expect(wrapper.findByTestId('new-findings-title').exists()).toBe(false);
-      expect(wrapper.findByTestId('fixed-findings-title').text()).toBe('Fixed');
-    });
-
-    it('contains only added findings in the dynamic scroller', async () => {
-      await createComponentAndExpandWidget({
-        mockDataFn: mockWithData,
-        mockDataProps: {
-          findings: {
-            sast: {},
-          },
-        },
-      });
-
-      expect(findDynamicScroller().props('items')).toEqual([
-        { uuid: '5', severity: 'low', name: 'SQL Injection' },
-        { uuid: '3', severity: 'unknown', name: 'Weak password' },
-      ]);
-
-      expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
-      expect(wrapper.findByTestId('fixed-findings-title').exists()).toBe(false);
     });
 
     it('tells summary-text to display a ui hint when there are 25 findings in a single report', async () => {
@@ -675,12 +506,6 @@ describe('MR Widget Security Reports', () => {
       });
     };
 
-    it('displays an error message for the individual level report', async () => {
-      await createComponentAndExpandWidget({ mockDataFn: mockWithData });
-
-      expect(wrapper.findByText('SAST: Loading resulted in an error').exists()).toBe(true);
-    });
-
     it('displays a top level error message when there is a bad request', async () => {
       mockWithData({ errorCode: HTTP_STATUS_BAD_REQUEST });
       createComponent({ mountFn: mountExtended });
@@ -697,58 +522,39 @@ describe('MR Widget Security Reports', () => {
     });
   });
 
-  describe('help popovers', () => {
-    const mockWithData = () => {
-      Object.keys(reportEndpoints).forEach((key, i) => {
-        mockAxios.onGet(reportEndpoints[key]).replyOnce(HTTP_STATUS_OK, {
-          added: [{ uuid: i, severity: 'critical', name: 'Password leak' }],
-        });
-      });
+  describe('modal', () => {
+    let mockedFindings = [];
+
+    beforeEach(() => {
+      mockedFindings = [];
+    });
+
+    const mockFinding = (props) => {
+      const finding = {
+        uuid: '1',
+        severity: 'critical',
+        name: 'Password leak',
+        found_by_pipeline: {
+          iid: 1,
+        },
+        project: {
+          id: 278964,
+          name: 'GitLab',
+          full_path: '/gitlab-org/gitlab',
+          full_name: 'GitLab.org / GitLab',
+        },
+        ...props,
+      };
+
+      mockedFindings.push(finding);
+
+      return finding;
     };
 
-    it.each`
-      reportType               | reportTitle                                      | helpPath
-      ${'SAST'}                | ${'Static Application Security Testing (SAST)'}  | ${sastHelp}
-      ${'DAST'}                | ${'Dynamic Application Security Testing (DAST)'} | ${dastHelp}
-      ${'DEPENDENCY_SCANNING'} | ${'Dependency scanning'}                         | ${dependencyScanningHelp}
-      ${'COVERAGE_FUZZING'}    | ${'Coverage fuzzing'}                            | ${coverageFuzzingHelp}
-      ${'API_FUZZING'}         | ${'API fuzzing'}                                 | ${apiFuzzingHelp}
-      ${'SECRET_DETECTION'}    | ${'Secret detection'}                            | ${secretDetectionHelp}
-      ${'CONTAINER_SCANNING'}  | ${'Container scanning'}                          | ${containerScanningHelp}
-    `(
-      'shows the correct help popover for $reportType',
-      async ({ reportType, reportTitle, helpPath }) => {
-        await createComponentAndExpandWidget({ mockDataFn: mockWithData });
-
-        expect(findWidgetRow(reportType).props('helpPopover')).toMatchObject({
-          options: { title: reportTitle },
-          content: { learnMorePath: helpPath },
-        });
-      },
-    );
-  });
-
-  describe('modal', () => {
     const mockWithData = (props) => {
       Object.keys(reportEndpoints).forEach((key, i) => {
         mockAxios.onGet(reportEndpoints[key]).replyOnce(HTTP_STATUS_OK, {
-          added: [
-            {
-              uuid: i.toString(),
-              severity: 'critical',
-              name: 'Password leak',
-              found_by_pipeline: {
-                iid: 1,
-              },
-              project: {
-                id: 278964,
-                name: 'GitLab',
-                full_path: '/gitlab-org/gitlab',
-                full_name: 'GitLab.org / GitLab',
-              },
-              ...props,
-            },
-          ],
+          added: [mockFinding({ uuid: i.toString(), ...props })],
         });
       });
     };
@@ -767,28 +573,14 @@ describe('MR Widget Security Reports', () => {
       });
 
       // Click on the vulnerability name
-      wrapper.findAllByText('Password leak').at(0).trigger('click');
+      findWidgetRow().vm.$emit('modal-data', mockedFindings[0]);
+
+      await nextTick();
     };
 
     const mockWithDataOneFinding = (state = 'dismissed') => {
       mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
-        added: [
-          {
-            uuid: '1',
-            severity: 'critical',
-            name: 'Password leak',
-            state,
-            found_by_pipeline: {
-              iid: 1,
-            },
-            project: {
-              id: 278964,
-              name: 'GitLab',
-              full_path: '/gitlab-org/gitlab',
-              full_name: 'GitLab.org / GitLab',
-            },
-          },
-        ],
+        added: [mockFinding({ state })],
         fixed: [],
       });
 
@@ -923,7 +715,7 @@ describe('MR Widget Security Reports', () => {
       findStandaloneModal().vm.$emit('dismissed');
       await nextTick();
 
-      expect(findDismissedBadge().exists()).toBe(true);
+      expect(mockedFindings[0].state).toBe('dismissed');
     });
 
     it('does not render the dismissed badge when `detected` is emitted', async () => {
@@ -934,7 +726,7 @@ describe('MR Widget Security Reports', () => {
       findStandaloneModal().vm.$emit('detected');
       await nextTick();
 
-      expect(findDismissedBadge().exists()).toBe(false);
+      expect(mockedFindings[0].state).toBe('detected');
     });
   });
 });
