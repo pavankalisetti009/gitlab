@@ -17,6 +17,11 @@ namespace :gitlab do
       Gitlab::Duo::Developments::DevSelfHostedModelsManager.seed_models
     end
 
+    desc 'GitLab | Duo | Cleans up seeded self-hosted models and configurations'
+    task clean_up_duo_self_hosted: :gitlab_environment do
+      Gitlab::Duo::Developments::DevSelfHostedModelsManager.clean_up_duo_self_hosted
+    end
+
     desc 'GitLab | Duo | List self-hosted models'
     task list_self_hosted_models: :gitlab_environment do
       Gitlab::Duo::Developments::DevSelfHostedModelsManager.list_models
