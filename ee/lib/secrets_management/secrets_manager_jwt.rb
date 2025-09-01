@@ -29,7 +29,7 @@ module SecretsManagement
     end
 
     def project_claims
-      ::JSONWebToken::ProjectTokenClaims
+      ::JSONWebToken::UserProjectTokenClaims
         .new(project: project, user: current_user)
         .generate
     end

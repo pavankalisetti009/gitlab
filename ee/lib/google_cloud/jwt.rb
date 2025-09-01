@@ -36,7 +36,7 @@ module GoogleCloud
     end
 
     def project_claims
-      ::JSONWebToken::ProjectTokenClaims
+      ::JSONWebToken::UserProjectTokenClaims
        .new(project: project, user: user)
        .generate
     end
