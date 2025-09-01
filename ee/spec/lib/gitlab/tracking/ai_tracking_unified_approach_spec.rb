@@ -208,48 +208,41 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       it_behaves_like 'standard ai usage event tracking'
     end
 
-    context 'for `create_agent_platform_session` event' do
-      let(:event_name) { 'create_agent_platform_session' }
+    %w[agent_platform_session_created agent_platform_session_started].each do |e|
+      context "for `#{e}` event" do
+        let(:event_name) { e }
+        let(:event_context) do
+          { project: project, user: current_user, value: 1, label: "software_development", property: "ide" }
+        end
 
-      let(:expected_pg_attributes) do
-        {
-          user_id: current_user.id,
-          event: event_name,
-          extras: {}
-        }
+        let(:expected_pg_attributes) do
+          {
+            user_id: current_user.id,
+            event: event_name,
+            extras: {
+              project_id: project.id,
+              environment: "ide",
+              flow_type: "software_development",
+              session_id: 1
+            }
+          }
+        end
+
+        let(:expected_ch_attributes) do
+          {
+            user_id: current_user.id,
+            event: Ai::UsageEvent.events[event_name],
+            extras: {
+              project_id: project.id,
+              session_id: 1,
+              flow_type: "software_development",
+              environment: "ide"
+            }.to_json
+          }
+        end
+
+        it_behaves_like 'standard ai usage event tracking'
       end
-
-      let(:expected_ch_attributes) do
-        {
-          user_id: current_user.id,
-          event: Ai::UsageEvent.events[event_name],
-          extras: {}.to_json
-        }
-      end
-
-      it_behaves_like 'standard ai usage event tracking'
-    end
-
-    context 'for `start_agent_platform_session` event' do
-      let(:event_name) { 'start_agent_platform_session' }
-
-      let(:expected_pg_attributes) do
-        {
-          user_id: current_user.id,
-          event: event_name,
-          extras: {}
-        }
-      end
-
-      let(:expected_ch_attributes) do
-        {
-          user_id: current_user.id,
-          event: Ai::UsageEvent.events[event_name],
-          extras: {}.to_json
-        }
-      end
-
-      it_behaves_like 'standard ai usage event tracking'
     end
 
     %w[

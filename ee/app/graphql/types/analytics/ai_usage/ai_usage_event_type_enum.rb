@@ -22,8 +22,8 @@ module Types
         declare_event('code_suggestion_direct_access_token_refresh', "Code Suggestion token was refreshed.")
         declare_event('request_duo_chat_response', "Duo Chat response was requested.")
         declare_event('troubleshoot_job', "Troubleshoot job feature was used.")
-        declare_event('create_agent_platform_session', "Agent platform session was created.")
-        declare_event('start_agent_platform_session', "Agent platform session was started.")
+        declare_event('agent_platform_session_created', "Agent platform session was created.")
+        declare_event('agent_platform_session_started', "Agent platform session was started.")
         declare_event('encounter_duo_code_review_error_during_review', "Duo Code Review encountered an error.")
         declare_event('find_no_issues_duo_code_review_after_review',
           "Duo Code Review found no issues after review.")

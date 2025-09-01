@@ -29,7 +29,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :age
     end
 
     it 'sends session create event' do
-      expect { execute }.to trigger_internal_events("create_agent_platform_session")
+      expect { execute }.to trigger_internal_events("agent_platform_session_created")
                               .with(category: "Ai::DuoWorkflows::CreateWorkflowService",
                                 user: user,
                                 project: project,

@@ -37,7 +37,7 @@ module Ai
 
         if @status_event == "start"
           track_internal_event(
-            "start_agent_platform_session",
+            "agent_platform_session_started",
             user: @workflow.user,
             project: @workflow.project,
             additional_properties: {

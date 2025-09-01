@@ -25,7 +25,7 @@ module Ai
         return error(workflow.errors.full_messages, :bad_request) unless workflow.save
 
         track_internal_event(
-          "create_agent_platform_session",
+          "agent_platform_session_created",
           user: workflow.user,
           project: workflow.project,
           additional_properties: {

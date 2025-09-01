@@ -1,8 +1,8 @@
 ---
-description: Tracks duo agent platform session start
+description: Tracks duo agent platform session creation
 internal_events: true
 status: active
-action: start_agent_platform_session
+action: agent_platform_session_created
 identifiers:
 - project
 - namespace

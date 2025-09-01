@@ -33,8 +33,14 @@ module Gitlab
           }
         end
 
-        events(create_agent_platform_session: 8)
-        events(start_agent_platform_session: 9)
+        events(agent_platform_session_created: 8, agent_platform_session_started: 9) do |context|
+          {
+            project_id: context['project']&.id,
+            session_id: context['value'],
+            flow_type: context['label'],
+            environment: context['property']
+          }
+        end
 
         events(
           encounter_duo_code_review_error_during_review: 10,

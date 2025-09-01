@@ -151,7 +151,7 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
 
             expect(result[:status]).to eq(:success)
             expect(result[:message]).to eq("Workflow status updated")
-          end.to trigger_internal_events("start_agent_platform_session")
+          end.to trigger_internal_events("agent_platform_session_started")
                              .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
                                user: workflow.user,
                                project: workflow.project,
