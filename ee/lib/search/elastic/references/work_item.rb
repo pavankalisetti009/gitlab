@@ -198,14 +198,10 @@ module Search
         end
 
         def build_milestone_data(target)
-          milestone_data = {}
-
-          if ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_milestone_data)
-            milestone_data.merge!({
-              milestone_title: target.milestone&.title,
-              milestone_id: target.milestone_id
-            })
-          end
+          milestone_data = {
+            milestone_title: target.milestone&.title,
+            milestone_id: target.milestone_id
+          }
 
           if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
             milestone_data['milestone_start_date'] = target.milestone&.start_date

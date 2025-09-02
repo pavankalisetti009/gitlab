@@ -100,28 +100,28 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         )
       end
 
-      context 'with running migrations' do
-        context 'when add_work_item_milestone_data migration has finished' do
-          context 'when add_extra_fields_to_work_items migration has finished' do
-            it 'serializes work_item as a hash' do
-              expect(indexed_json).to match(expected_hash)
-            end
-          end
+      it 'serializes work_item as a hash' do
+        expect(indexed_json).to match(expected_hash)
+      end
+
+      context 'when add_extra_fields_to_work_items migration is not finished' do
+        before do
+          set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
         end
 
-        context 'when add_work_item_milestone_data migration has NOT finished' do
-          before do
-            set_elasticsearch_migration_to(:add_work_item_milestone_data, including: false)
-          end
+        it 'does not contain the gated fields' do
+          expect(indexed_json.keys).not_to include('milestone_start_date', 'milestone_due_date', 'closed_at',
+            'weight', 'health_status', 'label_names')
+        end
+      end
 
-          context 'when add_extra_fields_to_work_items migration has NOT finished' do
-            it 'serializes work_item as a hash without all new fields' do
-              expect(indexed_json).to match(expected_hash.except(
-                :milestone_id, :milestone_title, :milestone_due_date, :milestone_start_date,
-                :closed_at, :weight, :health_status, :label_names, :milestone_state
-              ))
-            end
-          end
+      context 'when index_work_items_milestone_state migration is not finished' do
+        before do
+          set_elasticsearch_migration_to(:index_work_items_milestone_state, including: false)
+        end
+
+        it 'does not contain the milestone_state field' do
+          expect(indexed_json.keys).not_to include('milestone_state')
         end
       end
     end
@@ -140,6 +140,27 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
+      end
+
+      context 'when add_extra_fields_to_work_items migration is not finished' do
+        before do
+          set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
+        end
+
+        it 'does not contain the gated fields' do
+          expect(indexed_json.keys).not_to include('milestone_start_date', 'milestone_due_date', 'closed_at',
+            'weight', 'health_status', 'label_names')
+        end
+      end
+
+      context 'when index_work_items_milestone_state migration is not finished' do
+        before do
+          set_elasticsearch_migration_to(:index_work_items_milestone_state, including: false)
+        end
+
+        it 'does not contain the milestone_state field' do
+          expect(indexed_json.keys).not_to include('milestone_state')
+        end
       end
     end
   end
