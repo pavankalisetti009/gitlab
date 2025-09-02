@@ -6,8 +6,6 @@ module Gitlab
       module StageEvents
         # Represents an event that is related to label creation or removal, this model requires a label provided by the user
         class LabelBasedStageEvent < StageEvent
-          include ActiveRecord::ConnectionAdapters::Quoting
-
           def label
             params.fetch(:label)
           end
@@ -97,7 +95,7 @@ module Gitlab
 
           # The same join expression could be used multiple times in the same query, to avoid conflicts, we're adding random hex string as suffix.
           def join_expression_name
-            @join_expression_name ||= quote_table_name("#{self.class.to_s.demodulize.underscore}_#{SecureRandom.hex(5)}")
+            @join_expression_name ||= Gitlab::Database.quote_table_name("#{self.class.to_s.demodulize.underscore}_#{SecureRandom.hex(5)}")
           end
 
           def order_expression(order)
