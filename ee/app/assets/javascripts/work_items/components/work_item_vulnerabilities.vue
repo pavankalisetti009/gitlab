@@ -139,7 +139,7 @@ export default {
       </li>
     </ul>
 
-    <div v-if="hasNextPage" class="border-top !gl-px-2 gl-pb-2 gl-pt-2">
+    <div v-if="hasNextPage" class="!gl-border-t !gl-border-t-gray-300 !gl-px-2 gl-pb-2 gl-pt-2">
       <work-item-children-load-more
         :fetch-next-page-in-progress="fetchNextPageInProgress"
         data-testid="work-item-vulnerabilities-load-more"

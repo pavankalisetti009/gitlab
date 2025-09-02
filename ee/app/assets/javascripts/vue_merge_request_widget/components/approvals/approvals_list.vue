@@ -157,8 +157,8 @@ export default {
 
 <template>
   <table class="table gl-border-t gl-m-0 gl-border-t-section gl-bg-subtle">
-    <thead class="thead-white text-nowrap">
-      <tr class="gl-hidden gl-text-sm md:gl-table-row">
+    <thead class="thead-white !gl-whitespace-nowrap">
+      <tr class="gl-hidden gl-text-sm @md/panel:gl-table-row">
         <th class="!gl-bg-default"></th>
         <th class="gl-w-full !gl-bg-default !gl-pl-0">{{ s__('MRApprovals|Approvers') }}</th>
         <th class="gl-w-full !gl-bg-default"></th>
@@ -167,7 +167,7 @@ export default {
         <th class="gl-w-full !gl-bg-default">{{ s__('MRApprovals|Approved by') }}</th>
       </tr>
     </thead>
-    <tbody v-if="$apollo.queries.mergeRequest.loading || !mergeRequest" class="border-top-0">
+    <tbody v-if="$apollo.queries.mergeRequest.loading || !mergeRequest" class="!gl-border-t-0">
       <tr>
         <td></td>
         <td class="!gl-pl-0">
@@ -202,7 +202,7 @@ export default {
       </tr>
     </tbody>
     <template v-else>
-      <tbody v-for="{ id, title, rules } in sections" :key="id" class="border-top-0">
+      <tbody v-for="{ id, title, rules } in sections" :key="id" class="!gl-border-t-0">
         <tr v-if="title" class="js-section-title gl-bg-default">
           <td class="w-0"></td>
           <td colspan="99" class="!gl-pl-0 gl-text-sm gl-text-subtle">
@@ -214,7 +214,7 @@ export default {
             <approved-icon class="gl-pl-2" :is-approved="rule.approved" />
           </td>
           <td :colspan="numberOfColumns(rule)" class="!gl-pl-0">
-            <div class="js-name gl-hidden gl-items-center md:gl-flex">
+            <div class="js-name gl-hidden gl-items-center @md/panel:gl-flex">
               <empty-rule-approvers
                 v-if="rule.type.toLowerCase() === $options.ruleTypeAnyApprover"
                 :eligible-approvers-docs-path="eligibleApproversDocsPath"
@@ -242,7 +242,7 @@ export default {
                 :code-coverage-check-help-page-path="codeCoverageCheckHelpPagePath"
               />
             </div>
-            <div class="flex-column js-summary gl-flex md:gl-hidden">
+            <div class="js-summary gl-flex !gl-flex-col @md/panel:gl-hidden">
               <empty-rule-approvers
                 v-if="rule.type.toLowerCase() === $options.ruleTypeAnyApprover"
                 :eligible-approvers-docs-path="eligibleApproversDocsPath"
@@ -271,7 +271,7 @@ export default {
           </td>
           <td
             v-if="rule.type.toLowerCase() !== $options.ruleTypeAnyApprover"
-            class="js-approvers gl-hidden gl-min-w-20 md:gl-table-cell"
+            class="js-approvers gl-hidden gl-min-w-20 @md/panel:gl-table-cell"
           >
             <user-avatar-list
               :items="rule.eligibleApprovers"
@@ -280,10 +280,10 @@ export default {
               class="gl-flex gl-flex-wrap gl-gap-y-2"
             />
           </td>
-          <td class="w-0 js-pending gl-hidden gl-whitespace-nowrap md:gl-table-cell">
+          <td class="w-0 js-pending gl-hidden gl-whitespace-nowrap @md/panel:gl-table-cell">
             <number-of-approvals :rule="rule" />
           </td>
-          <td class="js-commented-by gl-hidden md:gl-table-cell">
+          <td class="js-commented-by gl-hidden @md/panel:gl-table-cell">
             <user-avatar-list
               :items="rule.commentedBy.nodes"
               :img-size="24"
@@ -291,7 +291,7 @@ export default {
               class="gl-flex gl-flex-wrap gl-gap-y-2"
             />
           </td>
-          <td class="js-approved-by gl-hidden md:gl-table-cell">
+          <td class="js-approved-by gl-hidden @md/panel:gl-table-cell">
             <user-avatar-list
               :items="rule.approvedBy.nodes"
               :img-size="24"

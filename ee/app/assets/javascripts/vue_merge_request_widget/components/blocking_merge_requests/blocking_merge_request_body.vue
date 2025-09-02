@@ -33,7 +33,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="issue.hiddenCount" class="p-3 gl-flex gl-items-center">
+  <div v-if="issue.hiddenCount" class="gl-flex gl-items-center !gl-p-5">
     <gl-icon class="gl-mr-3" name="eye-slash" />
     {{ hiddenBlockingMRsText }}
   </div>

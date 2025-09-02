@@ -81,7 +81,7 @@ export default {
 <template>
   <div
     v-if="hasSeverityBadge"
-    class="severity-badge gl-whitespace-nowrap gl-text-default sm:gl-text-left"
+    class="severity-badge gl-whitespace-nowrap gl-text-default @sm/panel:gl-text-left"
   >
     <span :class="className"
       ><gl-icon v-gl-tooltip="tooltipTitle" :name="iconName" :size="12" class="gl-mr-3" /></span
