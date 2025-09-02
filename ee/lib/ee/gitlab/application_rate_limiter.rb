@@ -36,6 +36,8 @@ module EE
               interval: 1.day
             },
             container_scanning_for_registry_scans: { threshold: 50, interval: 1.day },
+            dependency_scanning_sbom_scan_api_upload: { threshold: 50, interval: 1.hour },
+            dependency_scanning_sbom_scan_api_download: { threshold: 150, interval: 1.hour },
             virtual_registries_endpoints_api_limit: { threshold: -> {
               application_settings.virtual_registries_endpoints_api_limit
             }, interval: 15.seconds }
