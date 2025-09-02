@@ -5026,6 +5026,25 @@ CREATE TABLE merge_request_commits_metadata (
 )
 PARTITION BY RANGE (project_id);
 
+CREATE TABLE merge_requests_merge_data (
+    merge_request_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    merge_user_id bigint,
+    merge_params text,
+    merge_error text,
+    merge_jid text,
+    merge_commit_sha bytea,
+    merged_commit_sha bytea,
+    merge_ref_sha bytea,
+    squash_commit_sha bytea,
+    in_progress_merge_commit_sha bytea,
+    merge_status smallint DEFAULT 0 NOT NULL,
+    auto_merge_enabled boolean DEFAULT false NOT NULL,
+    squash boolean DEFAULT false NOT NULL,
+    CONSTRAINT check_d25e93fc19 CHECK ((char_length(merge_jid) <= 255))
+)
+PARTITION BY RANGE (merge_request_id);
+
 CREATE TABLE p_ai_active_context_code_enabled_namespaces (
     id bigint NOT NULL,
     namespace_id bigint NOT NULL,
@@ -32648,6 +32667,9 @@ ALTER TABLE ONLY merge_requests_closing_issues
 ALTER TABLE ONLY merge_requests_compliance_violations
     ADD CONSTRAINT merge_requests_compliance_violations_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY merge_requests_merge_data
+    ADD CONSTRAINT merge_requests_merge_data_pkey PRIMARY KEY (merge_request_id);
+
 ALTER TABLE ONLY merge_requests
     ADD CONSTRAINT merge_requests_pkey PRIMARY KEY (id);
 
@@ -39086,6 +39108,10 @@ CREATE INDEX index_merge_requests_compliance_violations_on_violating_user_id ON 
 CREATE UNIQUE INDEX index_merge_requests_compliance_violations_unique_columns ON merge_requests_compliance_violations USING btree (merge_request_id, violating_user_id, reason);
 
 CREATE INDEX index_merge_requests_for_latest_diffs_with_state_merged ON merge_requests USING btree (latest_merge_request_diff_id, target_project_id) WHERE (state_id = 3);
+
+CREATE INDEX index_merge_requests_merge_data_on_merge_user_id ON ONLY merge_requests_merge_data USING btree (merge_user_id);
+
+CREATE INDEX index_merge_requests_merge_data_on_project_id ON ONLY merge_requests_merge_data USING btree (project_id);
 
 CREATE INDEX index_merge_requests_on_assignee_id ON merge_requests USING btree (assignee_id);
 
@@ -48540,6 +48566,9 @@ ALTER TABLE ONLY packages_terraform_module_metadata
 ALTER TABLE ONLY container_registry_protection_tag_rules
     ADD CONSTRAINT fk_rails_343879fca2 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE merge_requests_merge_data
+    ADD CONSTRAINT fk_rails_34941e4a91 FOREIGN KEY (merge_user_id) REFERENCES users(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY group_features
     ADD CONSTRAINT fk_rails_356514082b FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
@@ -48747,6 +48776,9 @@ ALTER TABLE ONLY aws_roles
 ALTER TABLE ONLY packages_debian_publications
     ADD CONSTRAINT fk_rails_4fc8ebd03e FOREIGN KEY (distribution_id) REFERENCES packages_debian_project_distributions(id) ON DELETE CASCADE;
 
+ALTER TABLE merge_requests_merge_data
+    ADD CONSTRAINT fk_rails_4fd2676ef4 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY merge_request_diff_files
     ADD CONSTRAINT fk_rails_501aa0a391 FOREIGN KEY (merge_request_diff_id) REFERENCES merge_request_diffs(id) ON DELETE CASCADE;
 
@@ -48824,6 +48856,9 @@ ALTER TABLE ONLY packages_debian_project_architectures
 
 ALTER TABLE ONLY virtual_registries_container_registry_upstreams
     ADD CONSTRAINT fk_rails_583c557285 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE merge_requests_merge_data
+    ADD CONSTRAINT fk_rails_593f9b7924 FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY analytics_cycle_analytics_group_stages
     ADD CONSTRAINT fk_rails_5a22f40223 FOREIGN KEY (start_event_label_id) REFERENCES labels(id) ON DELETE CASCADE;
