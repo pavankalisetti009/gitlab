@@ -41,6 +41,25 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
           it_behaves_like 'search respects visibility'
         end
       end
+
+      describe 'custom roles' do
+        context 'when using advanced search', :elastic_delete_by_query do
+          before do
+            stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+            project.repository.index_commits_and_blobs
+          end
+
+          it_behaves_like 'supports custom role access :read_code access'
+        end
+
+        context 'when using zoekt', :zoekt_settings_enabled, :zoekt_cache_disabled do
+          before do
+            zoekt_ensure_namespace_indexed!(group)
+          end
+
+          it_behaves_like 'supports custom role access :read_code access'
+        end
+      end
     end
   end
 end

@@ -69,6 +69,22 @@ module Search
         @public_and_internal_authorized_groups ||= authorized_groups(access_levels[:project])
       end
 
+      def private_groups
+        @private_groups ||= authorized_groups(access_levels[:private_project])
+      end
+
+      def private_project_ids
+        @private_project_ids ||= authorized_project_ids(access_levels[:private_project])
+      end
+
+      def custom_role_groups
+        @custom_role_groups ||= auth.get_groups_with_custom_roles(public_and_internal_authorized_groups)
+      end
+
+      def custom_role_projects
+        @custom_role_projects ||= auth.get_projects_with_custom_roles(public_and_internal_authorized_projects)
+      end
+
       def public_and_internal_authorized_branches
         filters = build_public_internal_auth_filters
         return [] if filters.empty?
@@ -80,10 +96,10 @@ module Search
       end
 
       def build_public_internal_auth_filters
-        filters = []
-        filters.concat(group_filters_for(public_and_internal_authorized_groups))
-        filters.concat(project_filters_for(public_and_internal_authorized_projects))
-        filters
+        [].tap do |filters|
+          filters.concat(group_filters_for(public_and_internal_authorized_groups))
+          filters.concat(project_filters_for(public_and_internal_authorized_projects))
+        end
       end
 
       def private_authorized_branches
@@ -94,13 +110,12 @@ module Search
       end
 
       def build_private_auth_filters
-        private_groups = authorized_groups(access_levels[:private_project])
-        private_project_ids = authorized_project_ids(access_levels[:private_project])
-
-        filters = []
-        filters.concat(group_filters_for(private_groups))
-        filters.concat(project_filters_for_ids(private_project_ids))
-        filters
+        [].tap do |filters|
+          filters.concat(group_filters_for(private_groups))
+          filters.concat(group_filters_for(custom_role_groups))
+          filters.concat(project_filters_for_ids(private_project_ids))
+          filters.concat(project_filters_for(custom_role_projects))
+        end
       end
 
       def group_filters_for(groups)
@@ -148,12 +163,7 @@ module Search
       end
 
       def authorized_project_ids(min_access_level)
-        auth.get_projects_for_user(
-          group_ids: group_ids,
-          project_ids: project_ids,
-          min_access_level: min_access_level,
-          search_level: options.fetch(:search_level)
-        ).pluck_primary_key
+        authorized_projects(min_access_level).pluck_primary_key
       end
 
       def admin_branch

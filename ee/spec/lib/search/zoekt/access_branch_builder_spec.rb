@@ -20,9 +20,11 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
     allow(auth).to receive(:get_access_levels_for_feature).with('repository')
       .and_return({ project: ::Gitlab::Access::GUEST, private_project: ::Gitlab::Access::REPORTER })
     allow(auth).to receive_messages(
-      get_projects_for_user: class_double(ApplicationRecord, exists?: false, pluck_primary_key: []),
-      get_groups_for_user: class_double(ApplicationRecord, exists?: false),
-      get_traversal_ids_for_groups: []
+      get_projects_for_user: Project.none,
+      get_groups_for_user: Group.none,
+      get_traversal_ids_for_groups: [],
+      get_groups_with_custom_roles: Group.none,
+      get_projects_with_custom_roles: Project.none
     )
   end
 
@@ -70,8 +72,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
         it 'returns all branch types' do
           result = builder.build
-
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
+
           expect(branch_contexts).to contain_exactly(
             'public_branch',
             'internal_branch',
@@ -103,6 +105,27 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
             'public_authorized_branch',
             'internal_authorized_branch'
           )
+        end
+
+        context 'and has access with a custom role' do
+          before do
+            allow(auth).to receive(:get_projects_with_custom_roles)
+              .with(guest_projects)
+              .and_return(guest_projects)
+          end
+
+          it 'returns public and internal auth branch types' do
+            result = builder.build
+
+            branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
+            expect(branch_contexts).to contain_exactly(
+              'public_branch',
+              'internal_branch',
+              'public_authorized_branch',
+              'internal_authorized_branch',
+              'private_authorized_branch'
+            )
+          end
         end
       end
 
@@ -192,6 +215,27 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
             'public_authorized_branch',
             'internal_authorized_branch'
           )
+        end
+
+        context 'and has access with a custom role' do
+          before do
+            allow(auth).to receive(:get_groups_with_custom_roles)
+              .with(guest_groups)
+              .and_return(guest_groups)
+          end
+
+          it 'returns public and internal auth branch types' do
+            result = builder.build
+
+            branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
+            expect(branch_contexts).to contain_exactly(
+              'public_branch',
+              'internal_branch',
+              'public_authorized_branch',
+              'internal_authorized_branch',
+              'private_authorized_branch'
+            )
+          end
         end
       end
 

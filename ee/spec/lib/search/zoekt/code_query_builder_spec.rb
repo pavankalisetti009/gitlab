@@ -98,6 +98,15 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
             project_ids: [],
             search_level: :group)
           .and_return(%w[9970-457- 9970-123-])
+
+        no_projects = class_double(ApplicationRecord, exists?: false)
+        allow(auth).to receive(:get_projects_with_custom_roles)
+          .with(guest_projects)
+          .and_return(no_projects)
+
+        allow(auth).to receive(:get_groups_with_custom_roles)
+          .with(no_groups)
+          .and_return(no_groups)
       end
 
       it 'builds the correct object' do
@@ -170,6 +179,16 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
             project_ids: [],
             search_level: :global)
           .and_return(%w[9970-457- 9970-123-])
+
+        no_projects = class_double(ApplicationRecord, exists?: false)
+        allow(auth).to receive(:get_projects_with_custom_roles)
+          .with(guest_projects)
+          .and_return(no_projects)
+
+        no_groups = class_double(ApplicationRecord, exists?: false)
+        allow(auth).to receive(:get_groups_with_custom_roles)
+          .with(guest_groups)
+          .and_return(no_groups)
       end
 
       it 'builds the correct object' do
