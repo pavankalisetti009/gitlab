@@ -32,7 +32,7 @@ module Preloaders
 
       log_statistics(group_ids)
 
-      get_results(union_query).tap do |existing_query_results|
+      get_results(query).tap do |existing_query_results|
         track_diff(existing_query_results)
       end
     end
@@ -110,6 +110,14 @@ module Preloaders
       union_queries.push(group_member)
 
       union_queries.join(" UNION ALL ")
+    end
+
+    def query
+      if ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
+        user_group_member_roles_query
+      else
+        union_query
+      end
     end
 
     def user_group_member_roles_query

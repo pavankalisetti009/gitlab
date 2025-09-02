@@ -33,7 +33,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
         before do
           stub_licensed_features(custom_roles: false)
 
-          group_member.update!(member_role: member_role)
+          assign_member_role(group_member, member_role)
         end
 
         it 'returns group id with empty array' do
@@ -51,8 +51,8 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
 
         context 'when group members are assigned a custom role' do
           before do
-            sub_group_1_member.update!(member_role: member_role)
-            sub_group_2_member.update!(member_role: member_role_2)
+            assign_member_role(sub_group_1_member, member_role)
+            assign_member_role(sub_group_2_member, member_role_2)
           end
 
           context 'when ability is enabled' do
@@ -147,8 +147,8 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
           let_it_be(:expected) { (expected_abilities + expected_abilities_2).uniq }
 
           before do
-            sub_group_1_member.update!(member_role: member_role)
-            group_member.update!(member_role: member_role_2)
+            assign_member_role(sub_group_1_member, member_role)
+            assign_member_role(group_member, member_role_2)
           end
 
           it 'returns abilities assigned to the custom role inside both group and subgroup' do
@@ -165,7 +165,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
         context 'when user has custom role that enables custom permission outside of group hierarchy' do
           let_it_be(:sub_group_3) { create(:group, :private, parent: group) }
           let_it_be_with_reload(:sub_group_3_member) do
-            create(:group_member, :guest, user: user, source: sub_group_3, member_role: member_role)
+            create_group_member(user: user, source: sub_group_3, member_role: member_role)
           end
 
           it 'ignores custom role outside of group hierarchy' do
@@ -203,6 +203,32 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
 
     context 'when an array of group IDs is passed instead of objects' do
       let(:groups_list) { [sub_group_1.id, sub_group_2.id] }
+
+      it_behaves_like 'returns expected member role abilities for the user'
+    end
+  end
+
+  context 'when use_user_group_member_roles feature flag is enabled' do
+    before do
+      stub_feature_flags(use_user_group_member_roles: true)
+    end
+
+    MemberRole.all_customizable_group_permissions.each do |ability|
+      it_behaves_like 'custom roles', ability
+    end
+
+    context 'when group has a group link assigned to a custom role' do
+      let_it_be(:source) { sub_group_1 }
+
+      include_context 'with multiple users in a group with custom roles'
+
+      it_behaves_like 'returns expected member role abilities'
+    end
+
+    context 'when multiple groups are invited with custom roles' do
+      let_it_be(:source) { sub_group_1 }
+
+      include_context 'with a user in multiple groups with custom role'
 
       it_behaves_like 'returns expected member role abilities for the user'
     end
