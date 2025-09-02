@@ -1,0 +1,10 @@
+---
+name: group_page_plan_indicator
+description: displays current group plan on group home page
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/557312
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/202341
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/563210
+milestone: '18.4'
+group: group::acquisition
+type: beta
+default_enabled: false

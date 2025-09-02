@@ -35,15 +35,20 @@ describe('GroupActivity component', () => {
   let wrapper;
   let mock;
 
-  const createComponent = () => {
+  const createComponent = (provide = {}) => {
     wrapper = extendedWrapper(
       mount(GroupActivityCard, {
         provide: {
+          currentUserIsOwner: true,
+          showPlanIndicator: true,
+          groupBillingsPath: `/groups/${TEST_GROUP_ID}/-/billings`,
+          groupSubscriptionPlanName: 'Ultimate',
           groupFullPath: TEST_GROUP_ID,
           groupName: TEST_GROUP_NAME,
           mergeRequestsMetricLink: TEST_MERGE_REQUESTS_METRIC_LINK,
           issuesMetricLink: TEST_ISSUES_METRIC_LINK,
           newMembersMetricLink: TEST_NEW_MEMBERS_METRIC_LINK,
+          ...provide,
         },
       }),
     );
@@ -64,8 +69,10 @@ describe('GroupActivity component', () => {
   });
 
   const findAllSkeletonLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
-  const findAllSingleStatAnchors = () => wrapper.findAllByTestId('single-stat-link');
+  const findAllActivityMetricAnchors = () => wrapper.findAllByTestId('single-stat-link');
   const findAllSingleStats = () => wrapper.findAllComponents(GlSingleStat);
+  const findSubscriptionStatLink = () => wrapper.findByTestId('subscription-stat-link');
+  const findSubscriptionStatInfo = () => wrapper.findByTestId('subscription-stat-info');
 
   it('fetches the metrics and updates isLoading properly', async () => {
     createComponent();
@@ -94,26 +101,50 @@ describe('GroupActivity component', () => {
     expect(findAllSkeletonLoaders()).toHaveLength(0);
   });
 
-  describe('metrics', () => {
-    describe.each`
-      index | value | title                       | link
-      ${0}  | ${10} | ${'Merge requests created'} | ${TEST_MERGE_REQUESTS_METRIC_LINK}
-      ${1}  | ${20} | ${'Issues created'}         | ${TEST_ISSUES_METRIC_LINK}
-      ${2}  | ${30} | ${'Members added'}          | ${TEST_NEW_MEMBERS_METRIC_LINK}
-    `('for metric $title', ({ index, value, title, link }) => {
-      beforeEach(() => {
-        createComponent();
-      });
+  describe('activity metrics', () => {
+    const metricData = [
+      {
+        statIndex: 2,
+        anchorIndex: 0,
+        value: 10,
+        title: 'Merge requests created',
+        link: TEST_MERGE_REQUESTS_METRIC_LINK,
+      },
+      {
+        statIndex: 3,
+        anchorIndex: 1,
+        value: 20,
+        title: 'Issues created',
+        link: TEST_ISSUES_METRIC_LINK,
+      },
+      {
+        statIndex: 4,
+        anchorIndex: 2,
+        value: 30,
+        title: 'Members added',
+        link: TEST_NEW_MEMBERS_METRIC_LINK,
+      },
+    ];
 
-      it('renders a GlSingleStat', () => {
-        const singleStat = findAllSingleStats().at(index);
-        expect(singleStat.props('value')).toBe(`${value}`);
+    beforeEach(() => {
+      createComponent();
+    });
+
+    describe.each`
+      title                       | statIndex | index
+      ${'Merge requests created'} | ${2}      | ${0}
+      ${'Issues created'}         | ${3}      | ${1}
+      ${'Members added'}          | ${4}      | ${2}
+    `(`for metric $title`, ({ title, statIndex, index }) => {
+      it('renders a GlSingleStat with correct props', () => {
+        const singleStat = findAllSingleStats().at(statIndex);
+        expect(singleStat.props('value')).toBe(String(metricData[index].value));
         expect(singleStat.props('title')).toBe(title);
       });
 
-      it('redirects to the link on click', () => {
-        const anchor = findAllSingleStatAnchors().at(index);
-        expect(anchor.attributes('href')).toBe(link);
+      it('has the correct link', () => {
+        const anchor = findAllActivityMetricAnchors().at(index);
+        expect(anchor.attributes('href')).toBe(metricData[index].link);
       });
     });
   });
@@ -133,14 +164,53 @@ describe('GroupActivity component', () => {
 
     it.each`
       index | value     | title
-      ${0}  | ${'999+'} | ${'Merge requests created'}
-      ${1}  | ${999}    | ${'Issues created'}
-      ${2}  | ${998}    | ${'Members added'}
+      ${2}  | ${'999+'} | ${'Merge requests created'}
+      ${3}  | ${999}    | ${'Issues created'}
+      ${4}  | ${998}    | ${'Members added'}
     `('renders a GlSingleStat for "$title"', ({ index, value, title }) => {
       const singleStat = findAllSingleStats().at(index);
 
       expect(singleStat.props('value')).toBe(`${value}`);
       expect(singleStat.props('title')).toBe(title);
+    });
+  });
+
+  describe('with the group plan indicator`', () => {
+    describe('when current user is an owner', () => {
+      it('shows the group plan indicator as a link', () => {
+        createComponent();
+
+        const link = findSubscriptionStatLink();
+
+        expect(link.exists()).toBe(true);
+        expect(link.text()).toContain('Subscription');
+        expect(link.text()).toContain('Ultimate');
+
+        expect(link.attributes('href')).toBe(`/groups/${TEST_GROUP_ID}/-/billings`);
+      });
+    });
+
+    describe('when current user is not an owner', () => {
+      it('shows the group plan indicator', () => {
+        createComponent({ currentUserIsOwner: false });
+
+        const info = findSubscriptionStatInfo();
+
+        expect(info.exists()).toBe(true);
+        expect(info.text()).toContain('Subscription');
+        expect(info.text()).toContain('Ultimate');
+
+        expect(info.attributes('href')).toBeUndefined();
+      });
+    });
+
+    describe('when showPlanIndicator is false', () => {
+      it('does not show the group plan indicator', () => {
+        createComponent({ showPlanIndicator: false });
+
+        expect(findSubscriptionStatLink().exists()).toBe(false);
+        expect(findSubscriptionStatInfo().exists()).toBe(false);
+      });
     });
   });
 });

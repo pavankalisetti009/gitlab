@@ -31499,6 +31499,9 @@ msgstr ""
 msgid "GroupActivityMetrics|Recent activity"
 msgstr ""
 
+msgid "GroupActivityMetrics|Subscription"
+msgstr ""
+
 msgid "GroupImport|Failed to import group: %{error}"
 msgstr ""
 
