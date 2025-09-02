@@ -29123,7 +29123,13 @@ msgstr ""
 msgid "Geo|Last event ID processed"
 msgstr ""
 
+msgid "Geo|Last synced at"
+msgstr ""
+
 msgid "Geo|Last synced: %{timeAgo}"
+msgstr ""
+
+msgid "Geo|Last verified at"
 msgstr ""
 
 msgid "Geo|Last verified: %{timeAgo}"
@@ -29241,6 +29247,9 @@ msgid "Geo|Queued"
 msgstr ""
 
 msgid "Geo|Re-verification interval"
+msgstr ""
+
+msgid "Geo|Registry ID"
 msgstr ""
 
 msgid "Geo|Registry ID: %{id}"

@@ -108,3 +108,19 @@ export const MOCK_ERRORS = [
     message: 'There was another error',
   },
 ];
+
+export const MOCK_SORT = {
+  value: 'sort_value',
+  direction: 'asc',
+};
+
+export const MOCK_SORT_OPTIONS = [
+  {
+    text: 'Sort value',
+    value: 'sort_value',
+  },
+  {
+    text: 'Another sort value',
+    value: 'another_sort_value',
+  },
+];

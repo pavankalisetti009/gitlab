@@ -1,6 +1,7 @@
 import { GlFilteredSearchToken } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { SORT_DIRECTION } from 'ee/geo_shared/constants';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 
 export const FILTER_STATES = {
@@ -183,3 +184,25 @@ export const DEFAULT_CURSOR = {
   first: DEFAULT_PAGE_SIZE,
   last: null,
 };
+
+export const SORT_OPTIONS = {
+  ID: {
+    text: s__('Geo|Registry ID'),
+    value: 'id',
+  },
+  LAST_SYNCED_AT: {
+    text: s__('Geo|Last synced at'),
+    value: 'last_synced_at',
+  },
+  LAST_VERIFIED_AT: {
+    text: s__('Geo|Last verified at'),
+    value: 'verified_at',
+  },
+};
+
+export const DEFAULT_SORT = {
+  value: SORT_OPTIONS.ID.value,
+  direction: SORT_DIRECTION.ASC,
+};
+
+export const SORT_OPTIONS_ARRAY = Object.values(SORT_OPTIONS);

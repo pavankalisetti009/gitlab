@@ -4,9 +4,9 @@ import PageInfo from '~/graphql_shared/fragments/page_info.fragment.graphql';
 // Query.geoNode to be renamed to Query.geoSite => https://gitlab.com/gitlab-org/gitlab/-/issues/396739
 export default ({ graphqlFieldName, graphqlRegistryIdType, verificationEnabled }) => {
   return gql`
-    query($first: Int, $last: Int, $before: String!, $after: String!, $replicationState: ReplicationStateEnum, $verificationState: VerificationStateEnum, $ids: [${graphqlRegistryIdType}!]) {
+    query($first: Int, $last: Int, $before: String!, $after: String!, $sort: GeoRegistrySort $replicationState: ReplicationStateEnum, $verificationState: VerificationStateEnum, $ids: [${graphqlRegistryIdType}!]) {
       geoNode {
-        ${graphqlFieldName}(first: $first, last: $last, before: $before, after: $after, replicationState: $replicationState, verificationState: $verificationState, ids: $ids) {
+        ${graphqlFieldName}(first: $first, last: $last, before: $before, after: $after, sort: $sort replicationState: $replicationState, verificationState: $verificationState, ids: $ids) {
           pageInfo {
             ...PageInfo
           }

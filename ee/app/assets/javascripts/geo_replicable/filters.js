@@ -1,6 +1,14 @@
 import { pathSegments } from '~/lib/utils/url_utility';
 import { isGid, convertToGraphQLId } from '~/graphql_shared/utils';
-import { FILTERED_SEARCH_TOKENS, TOKEN_TYPES, DEFAULT_CURSOR } from './constants';
+import { SORT_DIRECTION } from 'ee/geo_shared/constants';
+import {
+  FILTERED_SEARCH_TOKENS,
+  TOKEN_TYPES,
+  DEFAULT_CURSOR,
+  SORT_OPTIONS,
+  SORT_OPTIONS_ARRAY,
+  DEFAULT_SORT,
+} from './constants';
 
 export const formatListboxItems = (items) => {
   return items.map((type) => ({
@@ -112,12 +120,28 @@ export const getGraphqlFilterVariables = ({ filters, graphqlRegistryClass }) => 
   return variables;
 };
 
+export const getSortVariableString = ({ value, direction }) => {
+  return direction === SORT_DIRECTION.ASC
+    ? `${value}_${SORT_DIRECTION.ASC}`
+    : `${value}_${SORT_DIRECTION.DESC}`;
+};
+
 export const getAvailableFilteredSearchTokens = (verificationEnabled) => {
   if (verificationEnabled) {
     return FILTERED_SEARCH_TOKENS;
   }
 
   return FILTERED_SEARCH_TOKENS.filter((filter) => filter.type !== TOKEN_TYPES.VERIFICATION_STATUS);
+};
+
+export const getAvailableSortOptions = (verificationEnabled) => {
+  if (verificationEnabled) {
+    return SORT_OPTIONS_ARRAY;
+  }
+
+  return SORT_OPTIONS_ARRAY.filter(
+    (option) => option.value !== SORT_OPTIONS.LAST_VERIFIED_AT.value,
+  );
 };
 
 export const getPaginationObject = ({ before = '', after = '', first, last } = {}) => {
@@ -139,4 +163,11 @@ export const getPaginationObject = ({ before = '', after = '', first, last } = {
   }
 
   return paginationObject;
+};
+
+export const getSortObject = (sort) => {
+  const [, value, direction] =
+    sort?.match(`^(.*)_(${SORT_DIRECTION.ASC}|${SORT_DIRECTION.DESC})$`) || [];
+
+  return isValidFilter(value, SORT_OPTIONS_ARRAY) ? { value, direction } : DEFAULT_SORT;
 };

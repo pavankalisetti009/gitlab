@@ -1,3 +1,4 @@
+import { SORT_DIRECTION } from 'ee/geo_shared/constants';
 import {
   formatListboxItems,
   getReplicableTypeFilter,
@@ -6,13 +7,19 @@ import {
   processFilters,
   formatGraphqlIds,
   getGraphqlFilterVariables,
+  getSortVariableString,
   getAvailableFilteredSearchTokens,
+  getAvailableSortOptions,
   getPaginationObject,
+  getSortObject,
 } from 'ee/geo_replicable/filters';
 import {
   TOKEN_TYPES,
   FILTERED_SEARCH_TOKENS,
   DEFAULT_PAGE_SIZE,
+  SORT_OPTIONS_ARRAY,
+  SORT_OPTIONS,
+  DEFAULT_SORT,
 } from 'ee/geo_replicable/constants';
 import { TEST_HOST } from 'spec/test_constants';
 import { MOCK_REPLICABLE_TYPES, MOCK_GRAPHQL_REGISTRY_CLASS } from './mock_data';
@@ -125,6 +132,21 @@ describe('GeoReplicable filters', () => {
     });
   });
 
+  describe('getSortVariableString', () => {
+    it.each`
+      description                           | sortObject                                                                        | expected
+      ${'default sort'}                     | ${{ value: DEFAULT_SORT.value, direction: DEFAULT_SORT.direction }}               | ${'id_asc'}
+      ${'ID sort ascending'}                | ${{ value: SORT_OPTIONS.ID.value, direction: SORT_DIRECTION.ASC }}                | ${'id_asc'}
+      ${'ID sort descending'}               | ${{ value: SORT_OPTIONS.ID.value, direction: SORT_DIRECTION.DESC }}               | ${'id_desc'}
+      ${'last synced at sort ascending'}    | ${{ value: SORT_OPTIONS.LAST_SYNCED_AT.value, direction: SORT_DIRECTION.ASC }}    | ${'last_synced_at_asc'}
+      ${'last synced at sort descending'}   | ${{ value: SORT_OPTIONS.LAST_SYNCED_AT.value, direction: SORT_DIRECTION.DESC }}   | ${'last_synced_at_desc'}
+      ${'last verified at sort ascending'}  | ${{ value: SORT_OPTIONS.LAST_VERIFIED_AT.value, direction: SORT_DIRECTION.ASC }}  | ${'verified_at_asc'}
+      ${'last verified at sort descending'} | ${{ value: SORT_OPTIONS.LAST_VERIFIED_AT.value, direction: SORT_DIRECTION.DESC }} | ${'verified_at_desc'}
+    `('returns "$expected" when $description', ({ sortObject, expected }) => {
+      expect(getSortVariableString(sortObject)).toBe(expected);
+    });
+  });
+
   describe('getAvailableFilteredSearchTokens', () => {
     it.each`
       description                   | verificationEnabled | expected
@@ -132,6 +154,16 @@ describe('GeoReplicable filters', () => {
       ${'verification is enabled'}  | ${true}             | ${FILTERED_SEARCH_TOKENS}
     `('returns correct tokens when $description', ({ verificationEnabled, expected }) => {
       expect(getAvailableFilteredSearchTokens(verificationEnabled)).toStrictEqual(expected);
+    });
+  });
+
+  describe('getAvailableSortOptions', () => {
+    it.each`
+      description                   | verificationEnabled | expected
+      ${'verification is disabled'} | ${false}            | ${SORT_OPTIONS_ARRAY.filter((option) => option.value !== SORT_OPTIONS.LAST_VERIFIED_AT.value)}
+      ${'verification is enabled'}  | ${true}             | ${SORT_OPTIONS_ARRAY}
+    `('returns correct sort options when $description', ({ verificationEnabled, expected }) => {
+      expect(getAvailableSortOptions(verificationEnabled)).toStrictEqual(expected);
     });
   });
 
@@ -150,6 +182,25 @@ describe('GeoReplicable filters', () => {
       ${'prev page pagination object is provided'}        | ${{ before: 'cursor123', last: 10 }}              | ${{ before: 'cursor123', after: '', first: null, last: 10 }}
     `('returns correct pagination object when $description', ({ cursor, expected }) => {
       expect(getPaginationObject(cursor)).toStrictEqual(expected);
+    });
+  });
+
+  describe('getSortObject', () => {
+    it.each`
+      description                                 | sortString                                                         | expected
+      ${'empty string'}                           | ${''}                                                              | ${DEFAULT_SORT}
+      ${'null value'}                             | ${null}                                                            | ${DEFAULT_SORT}
+      ${'undefined value'}                        | ${undefined}                                                       | ${DEFAULT_SORT}
+      ${'invalid sort option'}                    | ${'invalid_asc'}                                                   | ${DEFAULT_SORT}
+      ${'invalid direction'}                      | ${'id_invalid'}                                                    | ${DEFAULT_SORT}
+      ${'valid ID sort ascending'}                | ${`${SORT_OPTIONS.ID.value}_${SORT_DIRECTION.ASC}`}                | ${{ value: SORT_OPTIONS.ID.value, direction: SORT_DIRECTION.ASC }}
+      ${'valid ID sort descending'}               | ${`${SORT_OPTIONS.ID.value}_${SORT_DIRECTION.DESC}`}               | ${{ value: SORT_OPTIONS.ID.value, direction: SORT_DIRECTION.DESC }}
+      ${'valid last synced at sort ascending'}    | ${`${SORT_OPTIONS.LAST_SYNCED_AT.value}_${SORT_DIRECTION.ASC}`}    | ${{ value: SORT_OPTIONS.LAST_SYNCED_AT.value, direction: SORT_DIRECTION.ASC }}
+      ${'valid last synced at sort descending'}   | ${`${SORT_OPTIONS.LAST_SYNCED_AT.value}_${SORT_DIRECTION.DESC}`}   | ${{ value: SORT_OPTIONS.LAST_SYNCED_AT.value, direction: SORT_DIRECTION.DESC }}
+      ${'valid last verified at sort ascending'}  | ${`${SORT_OPTIONS.LAST_VERIFIED_AT.value}_${SORT_DIRECTION.ASC}`}  | ${{ value: SORT_OPTIONS.LAST_VERIFIED_AT.value, direction: SORT_DIRECTION.ASC }}
+      ${'valid last verified at sort descending'} | ${`${SORT_OPTIONS.LAST_VERIFIED_AT.value}_${SORT_DIRECTION.DESC}`} | ${{ value: SORT_OPTIONS.LAST_VERIFIED_AT.value, direction: SORT_DIRECTION.DESC }}
+    `('returns $expected when $description', ({ sortString, expected }) => {
+      expect(getSortObject(sortString)).toStrictEqual(expected);
     });
   });
 });

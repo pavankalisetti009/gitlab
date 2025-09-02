@@ -1,9 +1,16 @@
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlSorting } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListFilteredSearchBar from 'ee/geo_shared/list/components/geo_list_filtered_search_bar.vue';
 import GeoListFilteredSearch from 'ee/geo_shared/list/components/geo_list_filtered_search.vue';
-import { MOCK_LISTBOX_ITEMS, MOCK_FILTER_A, MOCK_FILTER_B } from '../mock_data';
+import { SORT_DIRECTION } from 'ee/geo_shared/constants';
+import {
+  MOCK_LISTBOX_ITEMS,
+  MOCK_FILTER_A,
+  MOCK_FILTER_B,
+  MOCK_SORT,
+  MOCK_SORT_OPTIONS,
+} from '../mock_data';
 
 describe('GeoListFilteredSearchBar', () => {
   let wrapper;
@@ -13,10 +20,12 @@ describe('GeoListFilteredSearchBar', () => {
     activeListboxItem: MOCK_LISTBOX_ITEMS[0].value,
     activeFilteredSearchFilters: [MOCK_FILTER_A],
     filteredSearchOptionLabel: 'Test Label',
+    activeSort: MOCK_SORT,
   };
 
   const defaultProvide = {
     listboxItems: MOCK_LISTBOX_ITEMS,
+    sortOptions: MOCK_SORT_OPTIONS,
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -35,6 +44,7 @@ describe('GeoListFilteredSearchBar', () => {
 
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findFilteredSearch = () => wrapper.findComponent(GeoListFilteredSearch);
+  const findGlSorting = () => wrapper.findComponent(GlSorting);
 
   describe('Collapsible Listbox', () => {
     beforeEach(() => {
@@ -85,6 +95,51 @@ describe('GeoListFilteredSearchBar', () => {
       await nextTick();
 
       expect(wrapper.emitted('search')).toStrictEqual([[[MOCK_FILTER_B]]]);
+    });
+  });
+
+  describe('Sorting', () => {
+    it.each`
+      direction              | expectedIsAscending
+      ${SORT_DIRECTION.DESC} | ${false}
+      ${SORT_DIRECTION.ASC}  | ${true}
+    `(
+      'renders with the correct props when provided sort is $direction',
+      ({ direction, expectedIsAscending }) => {
+        createComponent({
+          props: { activeSort: { value: MOCK_SORT.value, direction } },
+        });
+
+        expect(findGlSorting().props()).toStrictEqual(
+          expect.objectContaining({
+            sortBy: MOCK_SORT.value,
+            isAscending: expectedIsAscending,
+            sortOptions: MOCK_SORT_OPTIONS,
+          }),
+        );
+      },
+    );
+
+    describe('events', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('handleSortChange passes the correct data through the sort event', async () => {
+        findGlSorting().vm.$emit('sortByChange', 'new_value');
+        await nextTick();
+
+        expect(wrapper.emitted('sort')).toStrictEqual([[{ value: 'new_value', direction: 'asc' }]]);
+      });
+
+      it('handleSortDirectionChange passes the correct data through the sort event', async () => {
+        findGlSorting().vm.$emit('sortDirectionChange', false);
+        await nextTick();
+
+        expect(wrapper.emitted('sort')).toStrictEqual([
+          [{ value: MOCK_SORT.value, direction: 'desc' }],
+        ]);
+      });
     });
   });
 });

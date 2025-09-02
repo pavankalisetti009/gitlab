@@ -20,7 +20,9 @@ import {
   getReplicableTypeFilter,
   processFilters,
   getGraphqlFilterVariables,
+  getSortVariableString,
   getPaginationObject,
+  getSortObject,
 } from '../filters';
 import {
   REPLICATION_STATUS_STATES_ARRAY,
@@ -30,6 +32,7 @@ import {
   GEO_TROUBLESHOOTING_LINK,
   DEFAULT_PAGE_SIZE,
   DEFAULT_CURSOR,
+  DEFAULT_SORT,
 } from '../constants';
 import buildReplicableTypeQuery from '../graphql/replicable_type_query_builder';
 import GeoReplicable from './geo_replicable.vue';
@@ -60,6 +63,7 @@ export default {
       replicableItems: [],
       cursor: {},
       pageInfo: {},
+      activeSort: DEFAULT_SORT,
     };
   },
   apollo: {
@@ -73,6 +77,7 @@ export default {
       },
       variables() {
         return {
+          sort: getSortVariableString(this.activeSort).toUpperCase(),
           ...this.cursor,
           ...getGraphqlFilterVariables({
             filters: this.activeFilteredSearchFilters,
@@ -151,6 +156,7 @@ export default {
   created() {
     this.getFiltersFromQuery();
     this.getPaginationFromQuery();
+    this.getSortFromQuery();
   },
   methods: {
     getFiltersFromQuery() {
@@ -184,6 +190,13 @@ export default {
       const { before, after, first, last } = queryToObject(window.location.search || '');
       this.cursor = getPaginationObject({ before, after, first, last });
     },
+    getSortFromQuery() {
+      const { sort } = queryToObject(window.location.search || '');
+
+      if (sort) {
+        this.activeSort = getSortObject(sort);
+      }
+    },
     handleListboxChange(val) {
       // This updates the replicable type filter which needs to re-interpolate the GraphQL Query
       // in graphql/replicable_type_query_builder.js so we redirect the page
@@ -200,7 +213,11 @@ export default {
     },
     updateUrl({ redirect }) {
       const { query, url } = processFilters(this.activeFilters);
-      const urlWithParams = setUrlParams({ ...query, ...this.cursor }, url.href, true);
+      const urlWithParams = setUrlParams(
+        { ...query, ...this.cursor, sort: getSortVariableString(this.activeSort) },
+        url.href,
+        true,
+      );
 
       if (redirect) {
         visitUrl(urlWithParams);
@@ -286,6 +303,12 @@ export default {
 
       this.updateUrl({ redirect: false });
     },
+    handleSort({ value, direction }) {
+      this.activeSort = { value, direction };
+      this.cursor = DEFAULT_CURSOR;
+
+      this.updateUrl({ redirect: false });
+    },
   },
   BULK_ACTIONS,
 };
@@ -307,10 +330,12 @@ export default {
       :active-listbox-item="activeReplicableType"
       :active-filtered-search-filters="activeFilteredSearchFilters"
       :filtered-search-option-label="__('Search by ID')"
+      :active-sort="activeSort"
       :show-actions="hasReplicableItems"
       :bulk-actions="$options.BULK_ACTIONS"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
+      @sort="handleSort"
       @bulkAction="handleBulkAction"
     />
 
