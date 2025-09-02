@@ -148,7 +148,7 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
 
           before do
             project_member.update!(member_role: member_role)
-            group_member.update!(member_role: member_role_2)
+            assign_member_role(group_member, member_role_2)
           end
 
           it 'returns abilities assigned to the custom role inside both project and group' do
@@ -164,8 +164,8 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
 
           before do
             project_member.update!(member_role: member_role)
-            group_member.update!(member_role: read_code_member_role)
-            sub_group_member.update!(member_role: read_vulnerability_member_role)
+            assign_member_role(group_member, read_code_member_role)
+            assign_member_role(sub_group_member, read_vulnerability_member_role)
           end
 
           it 'returns abilities assigned to the custom role inside group, sub_group and project' do
@@ -182,7 +182,7 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
         context 'when user has custom role that enables custom permission outside of project hierarchy' do
           let_it_be(:sub_group_2) { create(:group, :private, parent: group) }
           let_it_be_with_reload(:sub_group_2_member) do
-            create(:group_member, :guest, user: user, source: sub_group_2, member_role: member_role)
+            create_group_member(:guest, user: user, source: sub_group_2, member_role: member_role)
           end
 
           it 'ignores custom role outside of project hierarchy' do
@@ -220,6 +220,32 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
 
     context 'when an array of project IDs is passed instead of objects' do
       let(:projects_list) { [project.id, project_2.id] }
+
+      it_behaves_like 'returns expected member role abilities for the user'
+    end
+  end
+
+  context 'when use_user_group_member_roles feature flag is enabled' do
+    before do
+      stub_feature_flags(use_user_group_member_roles: true)
+    end
+
+    MemberRole.all_customizable_project_permissions.each do |ability|
+      it_behaves_like 'custom roles', ability
+    end
+
+    context "when project's parent group invites a group with a custom role" do
+      let(:source) { project }
+
+      include_context 'with multiple users in a group with custom roles'
+
+      it_behaves_like 'returns expected member role abilities'
+    end
+
+    context "when project's parent group invites multiple groups with a custom role" do
+      let(:source) { project }
+
+      include_context 'with a user in multiple groups with custom role'
 
       it_behaves_like 'returns expected member role abilities for the user'
     end

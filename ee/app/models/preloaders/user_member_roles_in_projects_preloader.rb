@@ -46,7 +46,7 @@ module Preloaders
       SELECT project_ids.project_id, custom_permissions.permissions
         FROM (#{value_list.to_sql}) AS project_ids (project_id, namespace_ids),
         LATERAL (
-          #{union_query}
+          #{query}
         ) AS custom_permissions
       SQL
 
@@ -105,6 +105,48 @@ module Preloaders
       end
 
       union_queries.push(project_member, namespace_member)
+
+      union_queries.join(" UNION ALL ")
+    end
+
+    def query
+      if ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
+        user_group_member_roles_query
+      else
+        union_query
+      end
+    end
+
+    def user_group_member_roles_query
+      union_queries = []
+
+      project_member = Member.select('member_roles.permissions')
+        .with_user(user)
+        .joins(:member_role)
+        .where(source_type: 'Project')
+        .where('members.source_id = project_ids.project_id')
+        .to_sql
+
+      union_queries.push(project_member)
+
+      # This is similar to the query in UserMemberRolesInGroupsPreloader except
+      # for the project_ids.namespace_ids. Ideally, we'll extract both to a
+      # shared module so there is a SSOT for the query.
+      group_permissions_query = ::Authz::UserGroupMemberRole.joins(:member_role)
+        .where('user_group_member_roles.group_id IN (SELECT UNNEST(project_ids.namespace_ids) as ids)')
+        .where(user: user)
+
+      # Exclude permissions granted through group sharing
+      #
+      # Remove this condition when assign_custom_roles_to_group_links_saas and
+      # assign_custom_roles_to_group_links_sm feature flags are removed
+      unless custom_role_for_group_link_enabled?
+        group_permissions_query = group_permissions_query.where(shared_with_group: nil)
+      end
+
+      union_queries.push(
+        group_permissions_query.select('member_roles.permissions').to_sql
+      )
 
       union_queries.join(" UNION ALL ")
     end
