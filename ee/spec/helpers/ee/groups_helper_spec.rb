@@ -68,6 +68,33 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
+  describe '#show_plan_indicator?' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(
+      :gitlab_com_subscriptions, :feature_flag_enabled, :root_group, :free_or_no_subscription, :trial, :expected_result
+    ) do
+      true  | true  | true  | true  | false | true
+      false | true  | true  | true  | false | false
+      true  | false | true  | true  | false | false
+      true  | true  | false | true  | false | false
+      true  | true  | true  | false | false | false
+    end
+
+    with_them do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions)
+        stub_feature_flags(group_page_plan_indicator: feature_flag_enabled)
+        allow(group)
+          .to receive_messages(root?: root_group, has_free_or_no_subscription?: free_or_no_subscription, trial?: trial)
+      end
+
+      subject { helper.show_plan_indicator?(group) }
+
+      it { is_expected.to eq(expected_result) }
+    end
+  end
+
   describe '#show_discover_group_security?' do
     using RSpec::Parameterized::TableSyntax
 

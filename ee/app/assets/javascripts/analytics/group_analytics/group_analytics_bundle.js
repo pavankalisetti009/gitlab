@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import GroupActivityCard from './components/group_activity_card.vue';
 
 export default () => {
@@ -7,6 +8,10 @@ export default () => {
   if (!container) return;
 
   const {
+    currentUserIsOwner,
+    showPlanIndicator,
+    groupBillingsPath,
+    groupSubscriptionPlanName,
     groupFullPath,
     groupName,
     mergeRequestsMetricLink,
@@ -18,6 +23,10 @@ export default () => {
   new Vue({
     el: container,
     provide: {
+      currentUserIsOwner: parseBoolean(currentUserIsOwner),
+      showPlanIndicator: parseBoolean(showPlanIndicator),
+      groupBillingsPath,
+      groupSubscriptionPlanName,
       groupFullPath,
       groupName,
       mergeRequestsMetricLink,

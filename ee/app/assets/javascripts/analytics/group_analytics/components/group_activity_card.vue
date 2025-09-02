@@ -1,5 +1,5 @@
 <script>
-import { GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
+import { GlSkeletonLoader, GlTooltipDirective, GlLink } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import Api from 'ee/api';
 import { createAlert } from '~/alert';
@@ -16,12 +16,17 @@ export default {
   components: {
     GlSkeletonLoader,
     GlSingleStat,
+    GlLink,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [Tracking.mixin()],
   inject: [
+    'currentUserIsOwner',
+    'showPlanIndicator',
+    'groupBillingsPath',
+    'groupSubscriptionPlanName',
     'groupFullPath',
     'groupName',
     'mergeRequestsMetricLink',
@@ -109,8 +114,33 @@ export default {
 <template>
   <div class="gl-mb-4 gl-mt-6 gl-flex gl-flex-col gl-items-start md:gl-flex-row">
     <div class="gl-flex gl-shrink-0 gl-flex-col gl-pr-9">
-      <span class="gl-text-subtle">{{ s__('GroupActivityMetrics|Recent activity') }}</span>
-      <span class="gl-font-bold gl-text-strong">{{ $options.activityTimeSpan }}</span>
+      <gl-single-stat
+        :value="$options.activityTimeSpan"
+        :title="s__('GroupActivityMetrics|Recent activity')"
+        :should-animate="true"
+      />
+    </div>
+    <div v-if="showPlanIndicator" class="gl-flex gl-shrink-0 gl-flex-col gl-pr-9">
+      <gl-link
+        v-if="currentUserIsOwner"
+        :href="groupBillingsPath"
+        data-testid="subscription-stat-link"
+        class="!gl-no-underline hover:gl-bg-strong"
+      >
+        <gl-single-stat
+          :value="groupSubscriptionPlanName"
+          :title="s__('GroupActivityMetrics|Subscription')"
+          meta-icon="chevron-right"
+          :should-animate="true"
+        />
+      </gl-link>
+      <gl-single-stat
+        v-else
+        data-testid="subscription-stat-info"
+        :value="groupSubscriptionPlanName"
+        :title="s__('GroupActivityMetrics|Subscription')"
+        :should-animate="true"
+      />
     </div>
     <div
       v-for="{ key, value, label, link, trackingLabel } in metricsArray"
