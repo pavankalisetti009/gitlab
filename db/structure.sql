@@ -27674,6 +27674,29 @@ CREATE SEQUENCE work_item_custom_lifecycles_id_seq
 
 ALTER SEQUENCE work_item_custom_lifecycles_id_seq OWNED BY work_item_custom_lifecycles.id;
 
+CREATE TABLE work_item_custom_status_mappings (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    old_status_id bigint NOT NULL,
+    new_status_id bigint NOT NULL,
+    work_item_type_id bigint NOT NULL,
+    valid_from timestamp with time zone,
+    valid_until timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT check_34fa9b844a CHECK (((valid_from IS NULL) OR (valid_until IS NULL) OR (valid_from < valid_until))),
+    CONSTRAINT check_a1a8681f3e CHECK ((old_status_id <> new_status_id))
+);
+
+CREATE SEQUENCE work_item_custom_status_mappings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE work_item_custom_status_mappings_id_seq OWNED BY work_item_custom_status_mappings.id;
+
 CREATE TABLE work_item_custom_statuses (
     id bigint NOT NULL,
     namespace_id bigint NOT NULL,
@@ -30380,6 +30403,8 @@ ALTER TABLE ONLY work_item_current_statuses ALTER COLUMN id SET DEFAULT nextval(
 ALTER TABLE ONLY work_item_custom_lifecycle_statuses ALTER COLUMN id SET DEFAULT nextval('work_item_custom_lifecycle_statuses_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_custom_lifecycles ALTER COLUMN id SET DEFAULT nextval('work_item_custom_lifecycles_id_seq'::regclass);
+
+ALTER TABLE ONLY work_item_custom_status_mappings ALTER COLUMN id SET DEFAULT nextval('work_item_custom_status_mappings_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_custom_statuses ALTER COLUMN id SET DEFAULT nextval('work_item_custom_statuses_id_seq'::regclass);
 
@@ -33944,6 +33969,9 @@ ALTER TABLE ONLY work_item_custom_lifecycle_statuses
 ALTER TABLE ONLY work_item_custom_lifecycles
     ADD CONSTRAINT work_item_custom_lifecycles_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY work_item_custom_status_mappings
+    ADD CONSTRAINT work_item_custom_status_mappings_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY work_item_custom_statuses
     ADD CONSTRAINT work_item_custom_statuses_pkey PRIMARY KEY (id);
 
@@ -36743,6 +36771,8 @@ CREATE UNIQUE INDEX idx_wi_number_values_on_work_item_id_custom_field_id ON work
 CREATE INDEX idx_wi_select_field_values_on_custom_field_select_option_id ON work_item_select_field_values USING btree (custom_field_select_option_id);
 
 CREATE UNIQUE INDEX idx_wi_select_values_on_wi_custom_field_id_select_option_id ON work_item_select_field_values USING btree (work_item_id, custom_field_id, custom_field_select_option_id);
+
+CREATE UNIQUE INDEX idx_wi_status_mappings_unique_combo ON work_item_custom_status_mappings USING btree (namespace_id, new_status_id, work_item_type_id, old_status_id);
 
 CREATE UNIQUE INDEX idx_wi_text_values_on_work_item_id_custom_field_id ON work_item_text_field_values USING btree (work_item_id, custom_field_id);
 
@@ -41371,6 +41401,12 @@ CREATE INDEX index_work_item_custom_lifecycles_on_created_by_id ON work_item_cus
 CREATE UNIQUE INDEX index_work_item_custom_lifecycles_on_namespace_id_and_name ON work_item_custom_lifecycles USING btree (namespace_id, name);
 
 CREATE INDEX index_work_item_custom_lifecycles_on_updated_by_id ON work_item_custom_lifecycles USING btree (updated_by_id);
+
+CREATE INDEX index_work_item_custom_status_mappings_on_new_status_id ON work_item_custom_status_mappings USING btree (new_status_id);
+
+CREATE INDEX index_work_item_custom_status_mappings_on_old_status_id ON work_item_custom_status_mappings USING btree (old_status_id);
+
+CREATE INDEX index_work_item_custom_status_mappings_on_work_item_type_id ON work_item_custom_status_mappings USING btree (work_item_type_id);
 
 CREATE INDEX index_work_item_custom_statuses_on_created_by_id ON work_item_custom_statuses USING btree (created_by_id);
 
@@ -50225,6 +50261,18 @@ ALTER TABLE ONLY timelogs
 
 ALTER TABLE ONLY timelogs
     ADD CONSTRAINT fk_timelogs_note_id FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY work_item_custom_status_mappings
+    ADD CONSTRAINT fk_wi_status_mappings_namespace_id FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY work_item_custom_status_mappings
+    ADD CONSTRAINT fk_wi_status_mappings_new_status_id FOREIGN KEY (new_status_id) REFERENCES work_item_custom_statuses(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY work_item_custom_status_mappings
+    ADD CONSTRAINT fk_wi_status_mappings_old_status_id FOREIGN KEY (old_status_id) REFERENCES work_item_custom_statuses(id) ON DELETE RESTRICT;
+
+ALTER TABLE ONLY work_item_custom_status_mappings
+    ADD CONSTRAINT fk_wi_status_mappings_work_item_type_id FOREIGN KEY (work_item_type_id) REFERENCES work_item_types(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY work_item_colors
     ADD CONSTRAINT fk_work_item_colors_on_namespace_id FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
