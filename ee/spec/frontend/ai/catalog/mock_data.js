@@ -396,6 +396,21 @@ export const mockConfiguredFlowsResponse = {
   },
 };
 
+export const mockConfiguredFlowsEmptyResponse = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [],
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION,
+    },
+  },
+};
+
 export const mockAiCatalogItemConsumerCreateSuccessGroupResponse = {
   data: {
     aiCatalogItemConsumerCreate: {

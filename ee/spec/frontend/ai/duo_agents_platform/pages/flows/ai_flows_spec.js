@@ -9,6 +9,7 @@ import AiFlows from 'ee/ai/duo_agents_platform/pages/flows/ai_flows.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
@@ -17,6 +18,7 @@ import {
   mockBaseFlow,
   mockBaseItemConsumer,
   mockConfiguredFlowsResponse,
+  mockConfiguredFlowsEmptyResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
@@ -54,6 +56,7 @@ describe('AiFlows', () => {
       apolloProvider: mockApollo,
       provide: {
         projectId: mockProjectId,
+        exploreAiCatalogPath: '/explore/ai-catalog',
       },
       mocks: {
         $router: mockRouter,
@@ -65,6 +68,7 @@ describe('AiFlows', () => {
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
+  const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
 
   beforeEach(() => {
     createComponent();
@@ -88,6 +92,21 @@ describe('AiFlows', () => {
 
       expect(catalogList.props('items')).toEqual([expectedItem]);
       expect(catalogList.props('isLoading')).toBe(false);
+    });
+
+    describe('when there are no flows', () => {
+      beforeEach(async () => {
+        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredFlowsEmptyResponse);
+
+        await waitForPromises();
+      });
+
+      it('renders empty state with correct props', () => {
+        expect(findEmptyState().props()).toMatchObject({
+          title: 'Use AI Flows in your project.',
+          description: 'Automate tasks and processes using AI Flows.',
+        });
+      });
     });
   });
 

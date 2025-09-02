@@ -10,6 +10,7 @@ module EE
           project_id: project.id,
           project_path: project.full_path,
           empty_state_illustration_path: image_path('illustrations/empty-state/empty-pipeline-md.svg'),
+          explore_ai_catalog_path: explore_ai_catalog_path,
           flow_triggers_event_type_options: ai_flow_triggers_event_type_options
         }
       end

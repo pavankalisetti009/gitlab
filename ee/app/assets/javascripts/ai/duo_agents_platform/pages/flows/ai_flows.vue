@@ -1,4 +1,6 @@
 <script>
+import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
+import { GlButton } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -6,6 +8,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
@@ -16,18 +19,28 @@ import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
   AI_CATALOG_FLOWS_EDIT_ROUTE,
+  AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 
 export default {
   name: 'AiFlows',
   components: {
+    GlButton,
     PageHeading,
+    ResourceListsEmptyState,
     ErrorsAlert,
     AiCatalogList,
     AiCatalogItemDrawer,
   },
-  inject: ['projectId'],
+  inject: {
+    projectId: {
+      default: null,
+    },
+    exploreAiCatalogPath: {
+      default: '',
+    },
+  },
   apollo: {
     aiFlows: {
       query: aiCatalogConfiguredItemsQuery,
@@ -78,6 +91,9 @@ export default {
   computed: {
     isLoading() {
       return this.$apollo.queries.aiFlows.loading;
+    },
+    exploreHref() {
+      return `${this.exploreAiCatalogPath}${AI_CATALOG_FLOWS_ROUTE}`;
     },
     isItemDetailsLoading() {
       return this.$apollo.queries.aiCatalogFlow.loading;
@@ -183,6 +199,7 @@ export default {
     },
   },
   editRoute: AI_CATALOG_FLOWS_EDIT_ROUTE,
+  EMPTY_SVG_URL,
 };
 </script>
 
@@ -201,7 +218,21 @@ export default {
       :page-info="pageInfo"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
-    />
+    >
+      <template #empty-state>
+        <resource-lists-empty-state
+          :title="s__('AICatalog|Use AI Flows in your project.')"
+          :description="s__('AICatalog|Automate tasks and processes using AI Flows.')"
+          :svg-path="$options.EMPTY_SVG_URL"
+        >
+          <template #actions>
+            <gl-button variant="confirm" :href="exploreHref">
+              {{ s__('AICatalog|Explore AI Catalog flows') }}
+            </gl-button>
+          </template>
+        </resource-lists-empty-state>
+      </template>
+    </ai-catalog-list>
     <ai-catalog-item-drawer
       :is-open="isItemSelected"
       :is-item-details-loading="isItemDetailsLoading"
