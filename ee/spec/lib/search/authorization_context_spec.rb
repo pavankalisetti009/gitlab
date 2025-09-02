@@ -41,4 +41,84 @@ RSpec.describe Search::AuthorizationContext, feature_category: :global_search do
       expect(context.get_projects_for_user(options)).to eq(stubbed_value)
     end
   end
+
+  describe '#get_groups_with_custom_roles' do
+    let(:authorized_groups) { [1, 2, 3] }
+    let(:user_abilities) { { 1 => ['read_repository'], 2 => ['read_repository'], 3 => [] } }
+    let(:allowed_ids) { [1, 2] }
+    let(:group_relation) { instance_double(ActiveRecord::Relation) }
+    let(:authz_group) { instance_double(::Authz::Group, permitted: user_abilities) }
+
+    before do
+      allow(::Authz::Group).to receive(:new).with(current_user, scope: authorized_groups)
+        .and_return(authz_group)
+      allow(context).to receive(:allowed_ids_by_ability)
+        .with(feature: 'repository', user_abilities: user_abilities)
+        .and_return(allowed_ids)
+      allow(Group).to receive(:id_in).with(allowed_ids).and_return(group_relation)
+    end
+
+    it 'returns empty relation if authorized_groups is empty' do
+      expect(context.get_groups_with_custom_roles([])).to be_empty
+    end
+
+    it 'returns groups filtered by custom role permissions for repository feature' do
+      expect(context.get_groups_with_custom_roles(authorized_groups)).to eq(group_relation)
+    end
+
+    it 'calls Authz::Group with current_user and authorized_groups scope' do
+      expect(::Authz::Group).to receive(:new).with(current_user, scope: authorized_groups)
+        .and_return(authz_group)
+
+      context.get_groups_with_custom_roles(authorized_groups)
+    end
+
+    it 'filters groups by repository feature abilities' do
+      expect(context).to receive(:allowed_ids_by_ability)
+        .with(feature: 'repository', user_abilities: user_abilities)
+        .and_return(allowed_ids)
+
+      context.get_groups_with_custom_roles(authorized_groups)
+    end
+  end
+
+  describe '#get_projects_with_custom_roles' do
+    let(:authorized_projects) { [1, 2, 3] }
+    let(:user_abilities) { { 1 => ['read_repository'], 2 => ['read_repository'], 3 => [] } }
+    let(:allowed_ids) { [1, 2] }
+    let(:project_relation) { instance_double(ActiveRecord::Relation) }
+    let(:authz_project) { instance_double(::Authz::Project, permitted: user_abilities) }
+
+    before do
+      allow(::Authz::Project).to receive(:new).with(current_user, scope: authorized_projects)
+        .and_return(authz_project)
+      allow(context).to receive(:allowed_ids_by_ability)
+        .with(feature: 'repository', user_abilities: user_abilities)
+        .and_return(allowed_ids)
+      allow(Project).to receive(:id_in).with(allowed_ids).and_return(project_relation)
+    end
+
+    it 'returns empty relation if authorized_groups is empty' do
+      expect(context.get_projects_with_custom_roles([])).to be_empty
+    end
+
+    it 'returns projects filtered by custom role permissions for repository feature' do
+      expect(context.get_projects_with_custom_roles(authorized_projects)).to eq(project_relation)
+    end
+
+    it 'calls Authz::Project with current_user and authorized_projects scope' do
+      expect(::Authz::Project).to receive(:new).with(current_user, scope: authorized_projects)
+        .and_return(authz_project)
+
+      context.get_projects_with_custom_roles(authorized_projects)
+    end
+
+    it 'filters projects by repository feature abilities' do
+      expect(context).to receive(:allowed_ids_by_ability)
+        .with(feature: 'repository', user_abilities: user_abilities)
+        .and_return(allowed_ids)
+
+      context.get_projects_with_custom_roles(authorized_projects)
+    end
+  end
 end

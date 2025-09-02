@@ -13,6 +13,7 @@
 # requires the following to be defined in test context
 #  - `user` - user built with access to the projects
 #  - `user_in_group` - user built with access to the groups
+#  - `group` - group to check access through
 #  - `projects` - list of projects to update `feature_access_level`
 #  - `project_level` - project visibility level
 #  - `admin_mode` - whether admin mode is enabled
@@ -75,6 +76,8 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true,
       )
     end
 
+    zoekt_ensure_namespace_indexed!(shared_with_group) if ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
+
     enable_admin_mode!(user_in_shared_group) if admin_mode
 
     expect_search_results(user_in_shared_group, scope, expected_count: expected_count) do |u|
@@ -99,6 +102,8 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true,
         shared_with_group: shared_with_group
       )
     end
+
+    zoekt_ensure_namespace_indexed!(shared_with_group) if ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
 
     enable_admin_mode!(user_in_shared_group) if admin_mode
 
@@ -127,6 +132,77 @@ RSpec.shared_examples 'search respects visibility' do |group_access: true,
         feature_access_level,
         visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s)
       )
+    end
+  end
+end
+
+# check access for search visibility using a custom role with GUEST access and read_code ability
+# requires the following to be defined in test context
+#  - `group` - the group to check access through
+#  - `project` - the project to test access through
+#  - `search_level` - used for Search::GroupService
+#  - `search` - the search term
+#  - `scope` - the scope of the search results
+RSpec.shared_examples 'supports custom role access :read_code access' do
+  let(:user_with_role) { create(:user) }
+  let_it_be(:read_code_role) { create(:member_role, :guest, :read_code, namespace: group) }
+
+  before do
+    stub_licensed_features(custom_roles: true)
+
+    # project must be private to test out authorization, private groups require reporter level to view code
+    project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+
+    ensure_elasticsearch_index! if ::Gitlab::CurrentSettings.elasticsearch_indexing?
+    zoekt_ensure_project_indexed!(project) if ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
+  end
+
+  context 'with access at group level' do
+    it 'respects visibility', :sidekiq_inline do
+      expect_search_results(user_with_role, scope, expected_count: 0) do |u|
+        if described_class.eql?(Search::GlobalService)
+          described_class.new(u, search: search, scope: scope).execute
+        else
+          described_class.new(u, search_level, search: search, scope: scope).execute
+        end
+      end
+
+      # user role must be guest to test out custom role granting access to private project
+      create(:group_member, :guest, member_role: read_code_role, user: user_with_role, source: group)
+
+      # ensure project authorizations are updated
+      group.refresh_members_authorized_projects
+
+      expect_search_results(user_with_role, scope, expected_count: 1) do |u|
+        if described_class.eql?(Search::GlobalService)
+          described_class.new(u, search: search, scope: scope).execute
+        else
+          described_class.new(u, search_level, search: search, scope: scope).execute
+        end
+      end
+    end
+  end
+
+  context 'when access at project level' do
+    it 'respects visibility', :sidekiq_inline do
+      expect_search_results(user_with_role, scope, expected_count: 0) do |u|
+        if described_class.eql?(Search::GlobalService)
+          described_class.new(u, search: search, scope: scope).execute
+        else
+          described_class.new(u, search_level, search: search, scope: scope).execute
+        end
+      end
+
+      # user role must be guest to test out custom role granting access to private project
+      create(:project_member, :guest, project: project, user: user_with_role, member_role: read_code_role)
+
+      expect_search_results(user_with_role, scope, expected_count: 1) do |u|
+        if described_class.eql?(Search::GlobalService)
+          described_class.new(u, search: search, scope: scope).execute
+        else
+          described_class.new(u, search_level, search: search, scope: scope).execute
+        end
+      end
     end
   end
 end

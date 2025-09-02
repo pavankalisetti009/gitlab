@@ -16,6 +16,22 @@ module Search
       ::Group.find(group_id).elastic_namespace_ancestry
     end
 
+    def get_groups_with_custom_roles(authorized_groups)
+      return Group.none if authorized_groups.empty?
+
+      user_abilities = ::Authz::Group.new(current_user, scope: authorized_groups).permitted
+
+      Group.id_in(allowed_ids_by_ability(feature: 'repository', user_abilities: user_abilities))
+    end
+
+    def get_projects_with_custom_roles(authorized_projects)
+      return Project.none if authorized_projects.empty?
+
+      user_abilities = ::Authz::Project.new(current_user, scope: authorized_projects).permitted
+
+      Project.id_in(allowed_ids_by_ability(feature: 'repository', user_abilities: user_abilities))
+    end
+
     # Supported options:
     # search_level
     # group_ids
