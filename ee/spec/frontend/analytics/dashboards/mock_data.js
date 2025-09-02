@@ -592,7 +592,6 @@ export const mockContributorCountResponseData = {
 };
 
 export const mockAggregatedPipelineMetricsResponseData = {
-  label: null,
   pipelineCount: 100,
   pipelineSuccessCount: 50,
   pipelineFailedCount: 25,

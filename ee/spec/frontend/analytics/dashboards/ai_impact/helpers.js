@@ -190,7 +190,6 @@ export const mockAggregatedPipelineMetricsResponse = (values = []) =>
             id: 'fake-pipeline-metrics',
             pipelineAnalytics: {
               aggregate: {
-                label: null,
                 pipelineCount,
                 pipelineSuccessCount,
                 pipelineFailedCount,
