@@ -30,9 +30,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
   shared_examples "success" do
     it 'creates a workload to execute workflow with the correct definition' do
       shadowed_project = project
-      expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |project:, **_kwargs|
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+        project = kwargs[:project]
         expect(project).to eq(shadowed_project)
-      end.and_call_original
+        method.call(**kwargs)
+      end
 
       expect(execute).to be_success
 
@@ -203,9 +205,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
         let(:image) { nil }
 
         it 'uses the configured image from .gitlab/duo/agent-config.yml' do
-          expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(Ci::Workloads::RunWorkloadService)
+            .to receive(:new).and_wrap_original do |method, **kwargs|
+            workload_definition = kwargs[:workload_definition]
             expect(workload_definition.image).to eq(custom_image)
-          end.and_call_original
+            method.call(**kwargs)
+          end
 
           expect(execute).to be_success
         end
@@ -215,9 +220,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
         let(:image) { 'workflow-specific-image:latest' }
 
         it 'prefers the workflow image over the configured image' do
-          expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(Ci::Workloads::RunWorkloadService)
+            .to receive(:new).and_wrap_original do |method, **kwargs|
+            workload_definition = kwargs[:workload_definition]
             expect(workload_definition.image).to eq(image)
-          end.and_call_original
+            method.call(**kwargs)
+          end
 
           expect(execute).to be_success
         end
@@ -232,9 +240,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       let(:image) { nil }
 
       it 'falls back to the default IMAGE constant' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
           expect(workload_definition.image).to eq(described_class::IMAGE)
-        end.and_call_original
+          method.call(**kwargs)
+        end
 
         expect(execute).to be_success
       end
@@ -258,9 +269,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       let(:image) { workflow_image }
 
       it 'uses the workflow image' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
           expect(workload_definition.image).to eq(workflow_image)
-        end.and_call_original
+          method.call(**kwargs)
+        end
 
         expect(execute).to be_success
       end
@@ -270,9 +284,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       let(:image) { nil }
 
       it 'uses the config image' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
           expect(workload_definition.image).to eq(config_image)
-        end.and_call_original
+          method.call(**kwargs)
+        end
 
         expect(execute).to be_success
       end
@@ -286,9 +303,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       end
 
       it 'uses the default IMAGE constant' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
           expect(workload_definition.image).to eq(described_class::IMAGE)
-        end.and_call_original
+          method.call(**kwargs)
+        end
 
         expect(execute).to be_success
       end
