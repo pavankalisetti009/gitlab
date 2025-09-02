@@ -42180,6 +42180,9 @@ msgstr ""
 msgid "Navigation|Deploy"
 msgstr ""
 
+msgid "Navigation|Expand sidebar"
+msgstr ""
+
 msgid "Navigation|Explore"
 msgstr ""
 
@@ -42250,6 +42253,9 @@ msgid "Navigation|Repository settings"
 msgstr ""
 
 msgid "Navigation|Secure"
+msgstr ""
+
+msgid "Navigation|Shrink sidebar"
 msgstr ""
 
 msgid "Navigation|Unpin %{title}"
