@@ -1,57 +1,67 @@
 <script>
 import { GlTooltip, GlDisclosureDropdown, GlBadge } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
+import Tracking from '~/tracking';
 import { __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import GlqlPopover from './glql_popover.vue';
+import { updateText } from '~/lib/utils/text_markdown';
+import { DEFAULT_GLQL_VIEW_CONTENT } from '~/content_editor/extensions/code_block_highlight';
+import {
+  DEFAULT_MERMAID_CONTENT,
+  DEFAULT_PLANTUML_CONTENT,
+} from '~/content_editor/extensions/diagram';
+import { TOOLBAR_CONTROL_TRACKING_ACTION, MARKDOWN_EDITOR_TRACKING_LABEL } from './tracking';
 
 export default {
   components: {
     GlDisclosureDropdown,
     GlTooltip,
     GlBadge,
-    GlqlPopover,
   },
-  inject: ['tiptapEditor', 'contentEditor'],
+  /* eslint-disable @gitlab/require-i18n-strings */
   data() {
     return {
-      glqlPopoverVisible: true,
       toggleId: uniqueId('dropdown-toggle-btn-'),
       items: [
         {
           text: __('Alert'),
-          action: () => this.execute('insertAlert', 'alert'),
+          action: () => this.insertMarkdown('> [!NOTE]\n> {text}', 'alert'),
         },
         {
           text: __('Code block'),
-          action: () => this.insert('codeBlock'),
+          action: () => this.insertMarkdown('```\n{text}\n```', 'codeBlock'),
         },
         {
           text: __('Collapsible section'),
-          action: () => this.insertList('details', 'detailsContent'),
+          action: () =>
+            this.insertMarkdown(
+              '<details>\n<summary>Click to expand</summary>\n\n{text}\n\n</details>',
+              'details',
+            ),
         },
         {
           text: __('Bullet list'),
-          action: () => this.insertList('bulletList', 'listItem'),
+          action: () => this.insertMarkdown('- {text}', 'bulletList'),
           wrapperClass: 'sm:!gl-hidden',
         },
         {
           text: __('Ordered list'),
-          action: () => this.insertList('orderedList', 'listItem'),
+          action: () => this.insertMarkdown('1. {text}', 'orderedList'),
           wrapperClass: 'sm:!gl-hidden',
         },
         {
           text: __('Task list'),
-          action: () => this.insertList('taskList', 'taskItem'),
+          action: () => this.insertMarkdown('- [ ] {text}', 'taskList'),
           wrapperClass: 'sm:!gl-hidden',
         },
         {
           text: __('Horizontal rule'),
-          action: () => this.execute('setHorizontalRule', 'horizontalRule'),
+          action: () => this.insertMarkdown('\n---\n', 'horizontalRule'),
         },
         {
           text: __('Embedded view'),
-          action: () => this.execute('insertGLQLView', 'glqlView'),
+          action: () =>
+            this.insertMarkdown(`\`\`\`glql\n${DEFAULT_GLQL_VIEW_CONTENT}\n\`\`\``, 'glqlView'),
           badge: {
             text: __('New'),
             variant: 'info',
@@ -62,60 +72,46 @@ export default {
         },
         {
           text: __('Mermaid diagram'),
-          action: () => this.execute('insertMermaid', 'diagram'),
+          action: () =>
+            this.insertMarkdown(`\`\`\`mermaid\n${DEFAULT_MERMAID_CONTENT}\n\`\`\``, 'diagram'),
         },
         {
           text: __('PlantUML diagram'),
-          action: () => this.execute('insertPlantUML', 'diagram'),
+          action: () =>
+            this.insertMarkdown(`\`\`\`plantuml\n${DEFAULT_PLANTUML_CONTENT}\n\`\`\``, 'diagram'),
         },
-        ...(this.contentEditor.drawioEnabled
-          ? [
-              {
-                text: __('Create or edit diagram'),
-                action: () => this.execute('createOrEditDiagram', 'drawioDiagram'),
-              },
-            ]
-          : []),
         {
           text: __('Table of contents'),
-          action: () => this.execute('insertTableOfContents', 'tableOfContents'),
+          action: () => this.insertMarkdown('[[_TOC_]]', 'tableOfContents'),
         },
       ],
     };
   },
   methods: {
-    insert(contentType, ...args) {
-      this.tiptapEditor
-        .chain()
-        .focus()
-        .setNode(contentType, ...args)
-        .run();
-
-      this.$emit('execute', { contentType });
+    getCurrentTextArea() {
+      return this.$el.closest('.md-area')?.querySelector('textarea');
     },
+    insertMarkdown(markdownText, trackingProperty) {
+      const textArea = this.getCurrentTextArea();
+      if (!textArea) return;
 
-    insertList(listType, listItemType) {
-      if (!this.tiptapEditor.isActive(listType))
-        this.tiptapEditor.chain().focus().toggleList(listType, listItemType).run();
+      updateText({
+        textArea,
+        tag: markdownText,
+        cursorOffset: 0,
+        wrap: false,
+      });
 
-      this.$emit('execute', { contentType: listType });
-    },
-
-    execute(command, contentType, ...args) {
-      this.tiptapEditor
-        .chain()
-        .focus()
-        [command](...args)
-        .run();
-
-      this.$emit('execute', { contentType });
+      Tracking.event(undefined, TOOLBAR_CONTROL_TRACKING_ACTION, {
+        label: MARKDOWN_EDITOR_TRACKING_LABEL,
+        property: trackingProperty,
+      });
     },
   },
 };
 </script>
 <template>
   <div class="gl-inline-flex gl-align-middle">
-    <glql-popover v-model="glqlPopoverVisible" target="toolbar-more-dropdown" />
     <gl-disclosure-dropdown
       id="toolbar-more-dropdown"
       :items="items"
@@ -126,7 +122,6 @@ export default {
       :toggle-text="__('More options')"
       text-sr-only
       right
-      @click="glqlPopoverVisible = false"
     >
       <template #list-item="{ item }">
         <span class="gl-flex gl-items-center gl-justify-between">
