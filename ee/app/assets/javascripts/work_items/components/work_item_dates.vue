@@ -4,7 +4,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { findStartAndDueDateWidget, newWorkItemId } from '~/work_items/utils';
 import { s__, sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import { formatDate, newDate, toISODateFormat } from '~/lib/utils/datetime_utility';
+import { localeDateFormat, newDate, toISODateFormat } from '~/lib/utils/datetime_utility';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   NAME_TO_TEXT_LOWERCASE_MAP,
@@ -99,11 +99,13 @@ export default {
     },
     startDateValue() {
       return this.startDate
-        ? formatDate(this.startDate, 'mmm d, yyyy', true)
+        ? localeDateFormat.asDate.format(newDate(this.startDate))
         : s__('WorkItem|None');
     },
     dueDateValue() {
-      return this.dueDate ? formatDate(this.dueDate, 'mmm d, yyyy', true) : s__('WorkItem|None');
+      return this.dueDate
+        ? localeDateFormat.asDate.format(newDate(this.dueDate))
+        : s__('WorkItem|None');
     },
     optimisticResponse() {
       const workItemDatesWidget = findStartAndDueDateWidget(this.workItem);
