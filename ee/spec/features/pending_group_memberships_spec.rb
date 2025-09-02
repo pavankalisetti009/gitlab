@@ -38,6 +38,10 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
       create(:project, :private, namespace: group)
       create(:group_member, :awaiting, :developer, source: group, user: developer)
 
+      # Disable feature flag while it is a WIP.
+      # Feature specs for enabled feature flag will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/519658
+      stub_feature_flags(groups_overview_shared_vue_components: false)
+
       visit group_path(group)
 
       expect(page).to have_content "Group ID: #{group.id}"
