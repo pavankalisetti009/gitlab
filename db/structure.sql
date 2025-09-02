@@ -22764,15 +22764,6 @@ CREATE TABLE project_incident_management_settings (
     CONSTRAINT pagerduty_token_length_constraint CHECK ((octet_length(encrypted_pagerduty_token) <= 255))
 );
 
-CREATE SEQUENCE project_incident_management_settings_project_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE project_incident_management_settings_project_id_seq OWNED BY project_incident_management_settings.project_id;
-
 CREATE TABLE project_metrics_settings (
     project_id bigint NOT NULL,
     external_dashboard_url character varying,
@@ -26363,15 +26354,6 @@ CREATE TABLE user_statuses (
     availability smallint DEFAULT 0 NOT NULL,
     clear_status_at timestamp with time zone
 );
-
-CREATE SEQUENCE user_statuses_user_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE user_statuses_user_id_seq OWNED BY user_statuses.user_id;
 
 CREATE TABLE user_synced_attributes_metadata (
     id bigint NOT NULL,
@@ -30003,8 +29985,6 @@ ALTER TABLE ONLY project_group_links ALTER COLUMN id SET DEFAULT nextval('projec
 
 ALTER TABLE ONLY project_import_data ALTER COLUMN id SET DEFAULT nextval('project_import_data_id_seq'::regclass);
 
-ALTER TABLE ONLY project_incident_management_settings ALTER COLUMN project_id SET DEFAULT nextval('project_incident_management_settings_project_id_seq'::regclass);
-
 ALTER TABLE ONLY project_mirror_data ALTER COLUMN id SET DEFAULT nextval('project_mirror_data_id_seq'::regclass);
 
 ALTER TABLE ONLY project_relation_export_uploads ALTER COLUMN id SET DEFAULT nextval('project_relation_export_uploads_id_seq'::regclass);
@@ -30294,8 +30274,6 @@ ALTER TABLE ONLY user_permission_export_uploads ALTER COLUMN id SET DEFAULT next
 ALTER TABLE ONLY user_preferences ALTER COLUMN id SET DEFAULT nextval('user_preferences_id_seq'::regclass);
 
 ALTER TABLE ONLY user_project_callouts ALTER COLUMN id SET DEFAULT nextval('user_project_callouts_id_seq'::regclass);
-
-ALTER TABLE ONLY user_statuses ALTER COLUMN user_id SET DEFAULT nextval('user_statuses_user_id_seq'::regclass);
 
 ALTER TABLE ONLY user_synced_attributes_metadata ALTER COLUMN id SET DEFAULT nextval('user_synced_attributes_metadata_id_seq'::regclass);
 
