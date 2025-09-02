@@ -20,10 +20,7 @@ module WorkItems
     ].freeze
 
     def create_epic_for!(work_item)
-      epic = Epic.create!(create_params(work_item))
-
-      work_item.relative_position = epic.id
-      work_item.save!(touch: false)
+      Epic.create!(create_params(work_item))
     rescue StandardError => error
       handle_error!(:create, error, work_item)
     end

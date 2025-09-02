@@ -358,29 +358,6 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
       end
     end
 
-    context 'when creating the work item fails' do
-      before do
-        allow_next_instance_of(WorkItem) do |work_item|
-          allow(work_item).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new)
-        end
-      end
-
-      it 'does not update the epic or work item' do
-        expect(Gitlab::EpicWorkItemSync::Logger).to receive(:error)
-          .with({
-            message: "Not able to create epic",
-            error_message: "Record invalid",
-            group_id: group.id,
-            work_item_id: an_instance_of(Integer)
-          })
-
-        expect { service_result }
-          .to not_change { Epic.count }
-          .and not_change { WorkItem.count }
-          .and raise_error(ActiveRecord::RecordInvalid)
-      end
-    end
-
     context 'when creating the epic fails' do
       it 'does not create an epic or work item' do
         allow(Epic).to receive(:create!).and_raise(ActiveRecord::RecordInvalid.new)
