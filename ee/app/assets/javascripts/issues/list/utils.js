@@ -38,9 +38,10 @@ export const getDefaultWorkItemTypes = ({
   hasEpicsFeature,
   hasOkrsFeature,
   hasQualityManagementFeature,
+  isGroupIssuesList = false,
 }) => {
   const types = getDefaultWorkItemTypesCE();
-  if (hasEpicsFeature) {
+  if (hasEpicsFeature && !isGroupIssuesList) {
     types.push(WORK_ITEM_TYPE_ENUM_EPIC);
   }
   if (hasOkrsFeature) {
@@ -56,9 +57,10 @@ export const getTypeTokenOptions = ({
   hasEpicsFeature,
   hasOkrsFeature,
   hasQualityManagementFeature,
+  isGroupIssuesList = false,
 }) => {
   const options = getTypeTokenOptionsCE();
-  if (hasEpicsFeature) {
+  if (hasEpicsFeature && !isGroupIssuesList) {
     options.push({
       icon: 'epic',
       title: __('Epic'),

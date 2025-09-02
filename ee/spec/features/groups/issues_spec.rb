@@ -6,6 +6,10 @@ RSpec.describe 'Group issues page', feature_category: :team_planning do
   let(:group) { create(:group) }
   let(:project) { create(:project, :public, group: group) }
 
+  before do
+    stub_feature_flags(work_items_group_issues_list: false)
+  end
+
   context 'bulk editing', :js do
     let(:user_in_group) { create(:group_member, :maintainer, user: create(:user), group: group).user }
     let!(:milestone) { create(:milestone, group: group) }
