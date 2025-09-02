@@ -543,4 +543,27 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
       end
     end
   end
+
+  describe 'POST /ai/duo_workflows/revoke_token' do
+    let(:path) { "/ai/duo_workflows/revoke_token" }
+
+    it 'returns error when service response is error' do
+      allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
+        allow(service).to receive(:execute).and_return(ServiceResponse.error(reason: :bad_request,
+          message: 'Cannot revoke token'))
+      end
+
+      post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
+      expect(response).to have_gitlab_http_status(:bad_request)
+    end
+
+    it 'returns success when service response is success' do
+      allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
+        allow(service).to receive(:execute).and_return(ServiceResponse.success(message: 'Token revoked'))
+      end
+
+      post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
+      expect(response).to have_gitlab_http_status(:success)
+    end
+  end
 end
