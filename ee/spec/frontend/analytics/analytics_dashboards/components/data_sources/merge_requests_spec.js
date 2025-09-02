@@ -138,17 +138,7 @@ describe('Merge requests data source', () => {
     });
 
     it('returns data and pagination information', () => {
-      expect(res).toMatchObject({
-        list: throughputTableData,
-        pageInfo: {
-          ...mockPageInfo,
-          currentPage: 1,
-          firstPageSize: 20,
-          lastPageSize: null,
-          nextPageCursor: '',
-          prevPageCursor: '',
-        },
-      });
+      expect(res).toMatchSnapshot();
     });
   });
 

@@ -13,7 +13,7 @@ export default {
   },
   props: {
     iid: {
-      type: Number,
+      type: String,
       required: true,
     },
     title: {
