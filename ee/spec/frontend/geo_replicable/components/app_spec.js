@@ -7,6 +7,7 @@ import {
   GEO_TROUBLESHOOTING_LINK,
   DEFAULT_PAGE_SIZE,
   DEFAULT_CURSOR,
+  SORT_OPTIONS,
 } from 'ee/geo_replicable/constants';
 import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
@@ -318,6 +319,24 @@ describe('GeoReplicableApp', () => {
     });
   });
 
+  describe('sort query', () => {
+    beforeEach(() => {
+      setWindowLocation(
+        `${MOCK_LOCATION_WITH_FILTERS}&sort=${SORT_OPTIONS.LAST_SYNCED_AT.value}_desc`,
+      );
+
+      createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
+    });
+
+    it('properly calls Apollo with custom sort when provided', () => {
+      expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sort: `${SORT_OPTIONS.LAST_SYNCED_AT.value}_desc`.toUpperCase(),
+        }),
+      );
+    });
+  });
+
   describe('bulk actions', () => {
     describe('with no replicable items', () => {
       beforeEach(async () => {
@@ -463,7 +482,7 @@ describe('GeoReplicableApp', () => {
         },
       ]);
       expect(setUrlParams).toHaveBeenCalledWith(
-        { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR },
+        { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR, sort: 'id_asc' },
         MOCK_PROCESSED_FILTERS.url.href,
         true,
       );
@@ -490,7 +509,7 @@ describe('GeoReplicableApp', () => {
         MOCK_VERIFICATION_STATUS_FILTER,
       ]);
       expect(setUrlParams).toHaveBeenCalledWith(
-        { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR },
+        { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR, sort: 'id_asc' },
         MOCK_PROCESSED_FILTERS.url.href,
         true,
       );
@@ -539,6 +558,34 @@ describe('GeoReplicableApp', () => {
           after: '',
           first: null,
           last: DEFAULT_PAGE_SIZE,
+        }),
+      );
+
+      expect(updateHistory).toHaveBeenCalledWith({ url: MOCK_UPDATED_URL });
+    });
+  });
+
+  describe('handleSort', () => {
+    beforeEach(async () => {
+      createComponent({ handler: MOCK_QUERY_HANDLER_WITH_DATA });
+
+      await waitForPromises();
+    });
+
+    it('updates Apollo query with updated sort, resets cursor, and updates the URL', async () => {
+      findGeoListTopBar().vm.$emit('sort', {
+        value: SORT_OPTIONS.LAST_SYNCED_AT.value,
+        direction: 'desc',
+      });
+      await nextTick();
+
+      expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledWith(
+        expect.objectContaining({
+          before: '',
+          after: '',
+          first: DEFAULT_PAGE_SIZE,
+          last: null,
+          sort: `${SORT_OPTIONS.LAST_SYNCED_AT.value}_desc`.toUpperCase(),
         }),
       );
 

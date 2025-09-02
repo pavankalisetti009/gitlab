@@ -5,7 +5,7 @@ import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoListFilteredSearchBar from 'ee/geo_shared/list/components/geo_list_filtered_search_bar.vue';
 import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { MOCK_LISTBOX_ITEMS, MOCK_FILTER_A, MOCK_BULK_ACTIONS } from '../mock_data';
+import { MOCK_LISTBOX_ITEMS, MOCK_FILTER_A, MOCK_BULK_ACTIONS, MOCK_SORT } from '../mock_data';
 
 describe('GeoListTopBar', () => {
   let wrapper;
@@ -14,6 +14,7 @@ describe('GeoListTopBar', () => {
     listboxHeaderText: 'Select item',
     activeListboxItem: MOCK_LISTBOX_ITEMS[0].value,
     activeFilteredSearchFilters: [MOCK_FILTER_A],
+    activeSort: MOCK_SORT,
     showActions: true,
     bulkActions: MOCK_BULK_ACTIONS,
     pageHeadingTitle: 'Test Title',
@@ -50,6 +51,7 @@ describe('GeoListTopBar', () => {
         activeListboxItem: MOCK_LISTBOX_ITEMS[0].value,
         activeFilteredSearchFilters: [MOCK_FILTER_A],
         filteredSearchOptionLabel: 'Test Label',
+        activeSort: MOCK_SORT,
       });
     });
 
@@ -65,6 +67,13 @@ describe('GeoListTopBar', () => {
       await nextTick();
 
       expect(wrapper.emitted('search')).toStrictEqual([['test-search']]);
+    });
+
+    it('handleSort properly passes along the event', async () => {
+      findFilteredSearch().vm.$emit('sort', { value: 'test_sort', direction: 'asc' });
+      await nextTick();
+
+      expect(wrapper.emitted('sort')).toStrictEqual([[{ value: 'test_sort', direction: 'asc' }]]);
     });
   });
 

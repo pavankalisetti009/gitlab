@@ -60,6 +60,10 @@ export default {
       required: false,
       default: () => [],
     },
+    activeSort: {
+      type: Object,
+      required: true,
+    },
   },
   methods: {
     handleListboxChange(val) {
@@ -67,6 +71,9 @@ export default {
     },
     handleSearch(val) {
       this.$emit('search', val);
+    },
+    handleSort(sort) {
+      this.$emit('sort', sort);
     },
     handleBulkAction(action) {
       this.$emit('bulkAction', action);
@@ -99,8 +106,10 @@ export default {
       :active-listbox-item="activeListboxItem"
       :active-filtered-search-filters="activeFilteredSearchFilters"
       :filtered-search-option-label="filteredSearchOptionLabel"
+      :active-sort="activeSort"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
+      @sort="handleSort"
     />
   </div>
 </template>

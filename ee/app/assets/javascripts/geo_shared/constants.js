@@ -74,3 +74,8 @@ export const VERIFICATION_STATUS_LABELS = {
   DISABLED: s__('Geo|Verification disabled'),
   UNKNOWN: s__('Geo|Verification unknown'),
 };
+
+export const SORT_DIRECTION = {
+  ASC: 'asc',
+  DESC: 'desc',
+};

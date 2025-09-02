@@ -1,15 +1,20 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlSorting } from '@gitlab/ui';
+import { SORT_DIRECTION } from 'ee/geo_shared/constants';
 import GeoListFilteredSearch from './geo_list_filtered_search.vue';
 
 export default {
   components: {
     GlCollapsibleListbox,
+    GlSorting,
     GeoListFilteredSearch,
   },
   inject: {
     listboxItems: {
       type: Array,
+      default: [],
+    },
+    sortOptions: {
       default: [],
     },
   },
@@ -31,6 +36,12 @@ export default {
       type: String,
       required: false,
       default: '',
+    },
+    activeSort: {
+      type: Object,
+      required: true,
+      validator: (item) =>
+        ['value', 'direction'].every((key) => Object.prototype.hasOwnProperty.call(item, key)),
     },
   },
   data() {
@@ -54,6 +65,9 @@ export default {
         this.$emit('listboxChange', val);
       },
     },
+    sortIsAscending() {
+      return this.activeSort.direction === SORT_DIRECTION.ASC;
+    },
   },
   methods: {
     handleListboxSearch(search) {
@@ -61,6 +75,13 @@ export default {
     },
     handleSearch(val) {
       this.$emit('search', val);
+    },
+    handleSortChange(value) {
+      this.$emit('sort', { value, direction: this.activeSort.direction });
+    },
+    handleSortDirectionChange(ascending) {
+      const direction = ascending ? SORT_DIRECTION.ASC : SORT_DIRECTION.DESC;
+      this.$emit('sort', { value: this.activeSort.value, direction });
     },
   },
 };
@@ -79,11 +100,19 @@ export default {
         class="gl-mb-4 sm:gl-mb-0"
         @search="handleListboxSearch"
       />
-      <div class="flex-grow-1 gl-flex">
+      <div class="flex-grow-1 gl-flex gl-grow gl-flex-col sm:gl-flex-row sm:gl-gap-3">
         <geo-list-filtered-search
           :active-filters="activeFilteredSearchFilters"
           :filtered-search-option-label="filteredSearchOptionLabel"
           @search="handleSearch"
+        />
+        <gl-sorting
+          class="gl-max-w-max"
+          :sort-by="activeSort.value"
+          :is-ascending="sortIsAscending"
+          :sort-options="sortOptions"
+          @sortDirectionChange="handleSortDirectionChange"
+          @sortByChange="handleSortChange"
         />
       </div>
     </div>
