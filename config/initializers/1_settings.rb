@@ -1155,6 +1155,7 @@ Settings.cell.topology_service_client['certificate_file'] ||= nil
 Settings.cell.topology_service_client['private_key_file'] ||= nil
 Settings.cell.topology_service_client['tls'] ||= {}
 Settings.cell.topology_service_client['tls']['enabled'] = true if Settings.cell.topology_service_client['tls']['enabled'].nil?
+Settings.cell.topology_service_client['metadata'] ||= {}
 
 #
 # GitLab KAS
