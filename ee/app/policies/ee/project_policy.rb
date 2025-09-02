@@ -958,6 +958,9 @@ module EE
           prevent :"update_#{feature}"
           prevent :"admin_#{feature}"
         end
+
+        prevent(*::ProjectPolicy::UPDATE_JOB_PERMISSIONS)
+        prevent(*::ProjectPolicy::CLEANUP_JOB_PERMISSIONS)
       end
 
       rule { auditor | can?(:developer_access) }.enable :add_project_to_instance_security_dashboard
