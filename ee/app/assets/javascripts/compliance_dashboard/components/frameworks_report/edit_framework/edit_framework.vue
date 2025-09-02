@@ -257,7 +257,7 @@ export default {
       const errors = data?.createComplianceFramework?.errors;
 
       if (errors && errors.length) {
-        throw new Error(errors[0]);
+        throw errors;
       }
 
       this.trackEvent('create_compliance_framework', {
@@ -279,7 +279,7 @@ export default {
       const errors = data?.updateComplianceFramework?.errors;
 
       if (errors && errors.length) {
-        throw new Error(errors[0]);
+        throw errors;
       }
     },
     async onSubmit() {
@@ -305,8 +305,17 @@ export default {
           await this.updateFramework(params);
           this.interjectModal();
         }
-      } catch (error) {
-        this.setError(error, SAVE_ERROR);
+      } catch (errors) {
+        if (Array.isArray(errors)) {
+          const errorMessage = sprintf(
+            __('Unable to save this compliance framework. %{errors}. Please try again'),
+            { errors: errors.join('. ') },
+            false,
+          );
+          this.setError(errors[0], errorMessage);
+        } else {
+          this.setError(errors, SAVE_ERROR);
+        }
       } finally {
         this.isSaving = false;
       }

@@ -68171,6 +68171,9 @@ msgstr ""
 msgid "Unable to save iteration. Please try again"
 msgstr ""
 
+msgid "Unable to save this compliance framework. %{errors}. Please try again"
+msgstr ""
+
 msgid "Unable to save your changes. Please try again."
 msgstr ""
 
