@@ -51,6 +51,26 @@ module API
 
         namespace :ai do
           namespace :duo_workflows do
+            desc 'Revoke ai_workflows token' do
+              success code: 200
+              failure [
+                { code: 401, message: 'Unauthorized' },
+                { code: 403, message: 'Forbidden' },
+                { code: 422, message: 'Unprocessable Entity' }
+              ]
+            end
+            params do
+              requires :token, type: String, desc: 'The access token to revoke'
+            end
+            post :revoke_token do
+              service = ::Ai::DuoWorkflows::RevokeTokenService.new(
+                token: params[:token],
+                current_user: current_user
+              )
+
+              render_response(service.execute)
+            end
+
             namespace :workflows do
               namespace '/:id' do
                 params do
