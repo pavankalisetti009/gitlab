@@ -32,7 +32,7 @@ module Mutations
             result = ::Ai::Catalog::Agents::ExecuteService.new(
               project: agent.project,
               current_user: current_user,
-              params: { agent: agent, agent_version: agent_version }
+              params: { agent: agent, agent_version: agent_version, execute_workflow: true }
             ).execute
 
             { flow_config: result.payload[:flow_config], errors: result.errors }
