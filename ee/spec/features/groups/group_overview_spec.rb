@@ -19,6 +19,12 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
   end
 
   context 'when the default value of "Group information content" preference is used' do
+    before do
+      # Disable feature flag while it is a WIP.
+      # Feature specs for enabled feature flag will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/519658
+      stub_feature_flags(groups_overview_shared_vue_components: false)
+    end
+
     it 'displays the Details view' do
       visit_page
 
