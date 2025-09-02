@@ -5,12 +5,11 @@ require 'spec_helper'
 RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feature_category: :workflow_catalog do
   include GraphqlHelpers
 
-  let_it_be(:maintainer) { create(:user) }
-  let_it_be(:project) { create(:project, maintainers: maintainer) }
+  let_it_be(:current_user) { create(:user) }
+  let_it_be(:project) { create(:project, :repository, maintainers: current_user) }
   let_it_be_with_reload(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be_with_reload(:agent_version) { agent.versions.last }
 
-  let(:current_user) { maintainer }
   let(:mutation) do
     graphql_mutation(:ai_catalog_agent_execute, params) do
       <<~FIELDS
@@ -20,11 +19,49 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     end
   end
 
+  let(:json_config) do
+    {
+      'version' => 'experimental',
+      'environment' => 'remote',
+      'components' => be_an(Array),
+      'routers' => be_an(Array),
+      'flow' => be_a(Hash)
+    }
+  end
+
   let(:params) do
     {
       agent_id: agent.to_global_id,
       agent_version_id: agent_version.to_global_id
     }
+  end
+
+  let(:oauth_token) do
+    { oauth_access_token: instance_double(Doorkeeper::AccessToken, plaintext_token: 'token-12345') }
+  end
+
+  let(:workflow_service_token) do
+    { token: 'workflow_token', expires_at: 1.hour.from_now }
+  end
+
+  before do
+    stub_feature_flags(ci_validate_config_options: false)
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+    allow(Ability).to receive(:allowed?).and_call_original
+    allow(Ability).to receive(:allowed?).with(current_user, :duo_workflow, project).and_return(true)
+    allow(Ability).to receive(:allowed?).with(current_user, :execute_duo_workflow_in_ci, anything).and_return(true)
+
+    project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+
+    allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+      allow(service).to receive_messages(
+        generate_oauth_token_with_composite_identity_support:
+          ServiceResponse.success(payload: oauth_token),
+        generate_workflow_token:
+          ServiceResponse.success(payload: workflow_service_token),
+        use_service_account?: false
+      )
+    end
   end
 
   subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
@@ -37,6 +74,10 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
       execute
     end
+
+    it_behaves_like 'prevents CI pipeline creation for Duo Workflow' do
+      subject { execute }
+    end
   end
 
   shared_examples 'successful execution' do
@@ -45,15 +86,13 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
       expect(graphql_data_at(:ai_catalog_agent_execute, :errors)).to be_empty
 
-      flow_config = graphql_data_at(:ai_catalog_agent_execute, :flow_config)
+      flow_config = graphql_data_at(:ai_catalog_agent_execute, :flowConfig)
       parsed_yaml = YAML.safe_load(flow_config)
-      expect(parsed_yaml).to include(
-        'version' => 'experimental',
-        'environment' => 'remote',
-        'components' => be_an(Array),
-        'routers' => be_an(Array),
-        'flow' => be_a(Hash)
-      )
+      expect(parsed_yaml).to include(json_config)
+    end
+
+    it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
+      subject { execute }
     end
   end
 
@@ -107,7 +146,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .to have_received(:new).with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: latest_agent_version }
+          params: { agent: agent, agent_version: latest_agent_version, execute_workflow: true }
         )
     end
   end
@@ -126,7 +165,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: agent_version }
+          params: { agent: agent, agent_version: agent_version, execute_workflow: true }
         )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)
