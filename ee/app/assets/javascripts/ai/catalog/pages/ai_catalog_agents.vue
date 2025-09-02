@@ -137,7 +137,9 @@ export default {
         query: otherQuery,
       });
     },
-    async deleteAgent(id) {
+    async deleteAgent(item) {
+      const { id } = item;
+
       try {
         const { data } = await this.$apollo.mutate({
           mutation: deleteAiCatalogAgentMutation,

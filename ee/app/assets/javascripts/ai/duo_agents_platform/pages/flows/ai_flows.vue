@@ -1,5 +1,5 @@
 <script>
-import { s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -10,6 +10,7 @@ import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
+import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import { PAGE_SIZE } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
@@ -85,7 +86,13 @@ export default {
       return Boolean(this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]);
     },
     items() {
-      return this.aiFlows.map((flow) => flow.item);
+      return this.aiFlows.map((flow) => {
+        const { item, ...itemConsumerData } = flow;
+        return {
+          ...item,
+          itemConsumer: itemConsumerData,
+        };
+      });
     },
     itemTypeConfig() {
       return {
@@ -99,6 +106,9 @@ export default {
             icon: 'pencil',
           },
         ],
+        deleteActionItem: {
+          text: __('Remove'),
+        },
       };
     },
     activeFlow() {
@@ -126,8 +136,32 @@ export default {
         query: otherQuery,
       });
     },
-    async deleteFlow() {
-      // TODO: Add delete flow function
+    async deleteFlow(item) {
+      const { id } = item.itemConsumer;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteAiCatalogItemConsumer,
+          variables: {
+            id,
+          },
+          refetchQueries: [aiCatalogConfiguredItemsQuery],
+        });
+
+        if (!data.aiCatalogItemConsumerDelete.success) {
+          this.errors = [
+            sprintf(s__('AICatalog|Failed to remove flow. %{error}'), {
+              error: data.aiCatalogItemConsumerDelete.errors?.[0],
+            }),
+          ];
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Flow removed successfully from this project.'));
+      } catch (error) {
+        this.errors = [sprintf(s__('AICatalog|Failed to remove flow. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
     },
     handleNextPage() {
       this.$apollo.queries.aiFlows.refetch({
@@ -161,8 +195,8 @@ export default {
       :is-loading="isLoading"
       :items="items"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="s__('AICatalog|Delete flow (Coming soon)')"
-      :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
+      :delete-confirm-title="s__('AICatalog|Remove flow from this project')"
+      :delete-confirm-message="s__('AICatalog|Are you sure you want to remove flow %{name}?')"
       :delete-fn="deleteFlow"
       :page-info="pageInfo"
       @next-page="handleNextPage"

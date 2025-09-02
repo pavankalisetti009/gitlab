@@ -130,7 +130,7 @@ describe('AiCatalogList', () => {
     it('calls delete function on confirm', () => {
       findConfirmModal().props('actionFn')();
 
-      expect(mockDeleteFn).toHaveBeenCalledWith(mockItems[1].id);
+      expect(mockDeleteFn).toHaveBeenCalledWith(mockItems[1]);
     });
   });
 

@@ -202,7 +202,7 @@ describe('AiCatalogFlows', () => {
   });
 
   describe('on deleting a flow', () => {
-    const deleteFlow = (index = 0) => findAiCatalogList().props('deleteFn')(mockFlows[index].id);
+    const deleteFlow = (index = 0) => findAiCatalogList().props('deleteFn')(mockFlows[index]);
 
     beforeEach(() => {
       createComponent();

@@ -125,6 +125,20 @@ describe('AiCatalogListItem', () => {
       expect(items.at(2).attributes('variant')).toBe('danger');
     });
 
+    it('renders delete action text when passed', () => {
+      createComponent({
+        itemTypeConfig: {
+          ...defaultItemTypeConfig,
+          deleteActionItem: {
+            text: 'Remove',
+          },
+        },
+      });
+      const items = findDisclosureDropdownItems();
+
+      expect(items.at(2).text()).toBe('Remove');
+    });
+
     describe('when the user does not have permission to admin the item', () => {
       beforeEach(() => {
         createComponent({

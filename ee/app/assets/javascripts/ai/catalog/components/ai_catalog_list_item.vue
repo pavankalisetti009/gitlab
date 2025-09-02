@@ -6,6 +6,7 @@ import {
   GlIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import { __ } from '~/locale';
 import ListItem from '~/vue_shared/components/resource_lists/list_item.vue';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
@@ -43,7 +44,7 @@ export default {
   },
   computed: {
     canAdmin() {
-      return this.item?.userPermissions?.adminAiCatalogItem;
+      return this.item.userPermissions?.adminAiCatalogItem;
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
@@ -64,6 +65,9 @@ export default {
         descriptionHtml: this.item.description,
         relativeWebUrl: this.$router.resolve(this.showItemRoute).href,
       };
+    },
+    deleteActionText() {
+      return this.itemTypeConfig.deleteActionItem?.text || __('Delete');
     },
     timestampType() {
       return this.formattedItem.updatedAt > this.formattedItem.createdAt
@@ -146,7 +150,7 @@ export default {
             <template #list-item>
               <span>
                 <gl-icon name="remove" class="gl-mr-2" variant="current" aria-hidden="true" />
-                {{ __('Delete') }}
+                {{ deleteActionText }}
               </span>
             </template>
           </gl-disclosure-dropdown-item>
