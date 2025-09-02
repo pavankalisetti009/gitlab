@@ -74,6 +74,8 @@ module Ai
         {
           DUO_WORKFLOW_BASE_PATH: './',
           DUO_WORKFLOW_DEFINITION: @params[:workflow_definition],
+          DUO_WORKFLOW_FLOW_CONFIG: serialized_duo_flow_config,
+          DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION: @params[:flow_config_schema_version],
           DUO_WORKFLOW_GOAL: @params[:goal],
           DUO_WORKFLOW_WORKFLOW_ID: String(@params[:workflow_id]),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
@@ -98,6 +100,8 @@ module Ai
           %(echo $DUO_WORKFLOW_DEFINITION),
           %(echo $DUO_WORKFLOW_GOAL),
           %(git checkout $CI_WORKLOAD_REF),
+          %(echo $DUO_WORKFLOW_FLOW_CONFIG),
+          %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo Starting Workflow #{String(@params[:workflow_id])}),
           %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
           %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
@@ -121,6 +125,12 @@ module Ai
       def link_composite_identity
         identity = ::Gitlab::Auth::Identity.fabricate(duo_workflow_service_account)
         identity.link!(@current_user) if identity&.composite?
+      end
+
+      def serialized_duo_flow_config
+        return unless @params[:flow_config].present? && @params[:flow_config].is_a?(Hash)
+
+        ::Gitlab::Json.dump(@params[:flow_config])
       end
     end
   end
