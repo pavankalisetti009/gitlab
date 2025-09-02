@@ -65,7 +65,7 @@ end
 
 RSpec.shared_context 'with the model selections fetch definition service as side-effect' do
   let(:base_url) { 'http://0.0.0.0:5052' }
-  let(:code_suggestions_service) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name) }
+  let(:unit_primitive_name) { :code_suggestions }
   let(:fetch_service_endpoint_url) { "#{base_url}/v1/models%2Fdefinitions" }
 
   before do
@@ -73,10 +73,9 @@ RSpec.shared_context 'with the model selections fetch definition service as side
       allow(side_effect).to receive(:model_selection_enabled?).and_return(true)
     end
 
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                    .with(:code_suggestions).and_return(code_suggestions_service)
     allow(::Gitlab::AiGateway).to receive(:url).and_return(base_url)
-    allow(::Gitlab::AiGateway).to receive(:headers).with(user: user, service: code_suggestions_service)
+    allow(::Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: unit_primitive_name, ai_feature_name: unit_primitive_name)
   end
 end
 
