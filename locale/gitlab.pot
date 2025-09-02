@@ -2488,6 +2488,9 @@ msgstr ""
 msgid "AICatalog|Are you sure you want to remove flow %{name}?"
 msgstr ""
 
+msgid "AICatalog|Automate tasks and processes using AI Flows."
+msgstr ""
+
 msgid "AICatalog|Briefly describe what this agent is designed to do and its key capabilities."
 msgstr ""
 
@@ -2546,6 +2549,9 @@ msgid "AICatalog|Edit agent"
 msgstr ""
 
 msgid "AICatalog|Edit flow"
+msgstr ""
+
+msgid "AICatalog|Explore AI Catalog flows"
 msgstr ""
 
 msgid "AICatalog|Failed to add flow to target. Flow not found."
@@ -2717,6 +2723,9 @@ msgid "AICatalog|This flow specializes in... It can help you with... Best suited
 msgstr ""
 
 msgid "AICatalog|Tools"
+msgstr ""
+
+msgid "AICatalog|Use AI Flows in your project."
 msgstr ""
 
 msgid "AICatalog|User Prompt"

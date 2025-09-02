@@ -16,7 +16,7 @@ describe('AiCatalogList', () => {
   const mockDeleteMessage = 'Are you sure you want to delete item %{name}?';
   const mockDeleteFn = jest.fn();
 
-  const createComponent = (props = {}) => {
+  const createComponent = ({ props = {}, slots = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogList, {
       propsData: {
         items: mockItems,
@@ -28,6 +28,7 @@ describe('AiCatalogList', () => {
         deleteFn: mockDeleteFn,
         ...props,
       },
+      slots,
       stubs: {
         GlSprintf,
       },
@@ -73,7 +74,9 @@ describe('AiCatalogList', () => {
 
     describe('when loading data', () => {
       beforeEach(() => {
-        createComponent({ isLoading: true });
+        createComponent({
+          props: { isLoading: true },
+        });
       });
 
       it('renders loading state component', () => {
@@ -93,7 +96,9 @@ describe('AiCatalogList', () => {
 
     describe('when data is loaded and there are no items', () => {
       beforeEach(() => {
-        createComponent({ items: [] });
+        createComponent({
+          props: { items: [] },
+        });
       });
 
       it('does not render the loading state component', () => {
@@ -106,8 +111,23 @@ describe('AiCatalogList', () => {
         expect(listItems).toHaveLength(0);
       });
 
-      it('renders empty state', () => {
-        expect(findEmptyState().exists()).toBe(true);
+      it('renders default empty state with correct props', () => {
+        expect(findEmptyState().props()).toMatchObject({
+          title: 'Get started with the AI Catalog',
+          description: 'Build AI agents and flows to automate repetitive tasks and processes.',
+        });
+      });
+
+      it('renders custom empty state', () => {
+        createComponent({
+          props: { items: [] },
+          slots: {
+            'empty-state': '<div data-testid="custom-empty-state">Custom empty state</div>',
+          },
+        });
+
+        expect(wrapper.findByTestId('custom-empty-state').exists()).toBe(true);
+        expect(findEmptyState().exists()).toBe(false);
       });
     });
   });
