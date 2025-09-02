@@ -45,7 +45,7 @@ export default {
       <ul data-testid="workspaces-list" class="gl-list-none gl-p-0">
         <li v-for="item in workspaces" :key="item.id" class="gl-border-b gl-px-3 gl-py-4">
           <div
-            class="gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-3 sm:gl-flex-row sm:gl-items-center"
+            class="gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-3 @sm/panel:gl-flex-row @sm/panel:gl-items-center"
             :data-testid="item.name"
           >
             <div class="gl-flex gl-flex-col gl-gap-3">
@@ -69,9 +69,9 @@ export default {
                 />
               </div>
             </div>
-            <div class="gl-flex gl-w-full gl-gap-3 sm:gl-w-auto">
+            <div class="gl-flex gl-w-full gl-gap-3 @sm/panel:gl-w-auto">
               <open-workspace-button
-                class="gl-w-full sm:gl-w-auto"
+                class="gl-w-full @sm/panel:gl-w-auto"
                 :workspace-display-state="getWorkspaceDisplayState(item)"
                 :workspace-url="item.url"
               />

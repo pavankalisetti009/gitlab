@@ -377,7 +377,7 @@ export default {
           </gl-form-group>
           <workspace-variables
             v-model="workspaceVariables"
-            class="mb-3"
+            class="!gl-mb-5"
             :show-validations="showWorkspaceVariableValidations"
             @addVariable="showWorkspaceVariableValidations = false"
           />

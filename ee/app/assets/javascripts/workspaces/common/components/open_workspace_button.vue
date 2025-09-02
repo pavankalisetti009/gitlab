@@ -43,7 +43,7 @@ export default {
     <gl-button
       v-if="displayOpenWorkspaceButton"
       :href="workspaceUrl"
-      class="gl-w-full sm:gl-w-auto"
+      class="gl-w-full @sm/panel:gl-w-auto"
       data-testid="workspace-open-button"
       target="_blank"
       @click="trackEvent($options.CLICK_OPEN_WORKSPACE_BUTTON_EVENT_NAME)"
