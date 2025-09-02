@@ -18,6 +18,7 @@ import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
+import AiCatalogFormSidePanel from './ai_catalog_form_side_panel.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
@@ -26,6 +27,7 @@ export default {
     ErrorsAlert,
     AiCatalogFormButtons,
     AiCatalogStepsEditor,
+    AiCatalogFormSidePanel,
     FormProjectDropdown,
     GlButton,
     GlForm,
@@ -72,6 +74,8 @@ export default {
           : VISIBILITY_LEVEL_PRIVATE,
       },
       formErrors: [],
+      isAgentPanelVisible: false,
+      activeStepIndex: null,
     };
   },
   computed: {
@@ -132,12 +136,6 @@ export default {
             ),
           },
         },
-        steps: {
-          label: s__('AICatalog|Flow nodes'),
-          groupAttrs: {
-            labelDescription: s__('AICatalog|Nodes run sequentially.'),
-          },
-        },
         visibilityLevel: {
           label: __('Visibility level'),
           validators: createFieldValidators({
@@ -147,6 +145,12 @@ export default {
             labelDescription: s__(
               'AICatalog|Choose who can view and interact with this flow after it is published to the public AI catalog.',
             ),
+          },
+        },
+        steps: {
+          label: s__('AICatalog|Flow nodes'),
+          groupAttrs: {
+            labelDescription: s__('AICatalog|Nodes run sequentially.'),
           },
         },
       };
@@ -171,6 +175,14 @@ export default {
       this.formErrors = [];
       this.$emit('dismiss-errors');
     },
+    openAgentPanel(stepIndex) {
+      this.isAgentPanelVisible = true;
+      this.activeStepIndex = stepIndex;
+    },
+    onCloseAgentPanel() {
+      this.isAgentPanelVisible = false;
+      this.activeStepIndex = null;
+    },
   },
   indexRoute: AI_CATALOG_FLOWS_ROUTE,
   visibilityLevelTexts: {
@@ -184,59 +196,72 @@ export default {
 <template>
   <div>
     <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
-    <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
-      <gl-form-fields
-        v-model="formValues"
-        :form-id="formId"
-        :fields="fields"
-        @submit="handleSubmit"
-      >
-        <template #input(projectId)="{ id }">
-          <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
-        </template>
-        <template #input(description)="{ id, input, value, blur, validation }">
-          <gl-form-textarea
-            :id="id"
-            :no-resize="false"
-            :placeholder="
-              s__(
-                'AICatalog|This flow specializes in... It can help you with... Best suited for...',
-              )
-            "
-            :state="validation.state"
-            :value="value"
-            data-testid="flow-form-textarea-description"
-            @blur="blur"
-            @update="input"
-          />
-        </template>
-        <template #input(steps)>
-          <ai-catalog-steps-editor v-model="formValues.steps" class="gl-mb-4" />
-        </template>
-        <template #input(visibilityLevel)="{ id, input, validation, value }">
-          <visibility-level-radio-group
-            :id="id"
-            :is-edit-mode="isEditMode"
-            :initial-value="initialValues.public"
-            :validation-state="validation.state"
-            :value="value"
-            :texts="$options.visibilityLevelTexts"
-            @input="input"
-          />
-        </template>
-      </gl-form-fields>
-      <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
-        <gl-button
-          class="js-no-auto-disable gl-w-full sm:gl-w-auto"
-          type="submit"
-          variant="confirm"
-          category="primary"
-          data-testid="flow-form-submit-button"
-          :loading="isLoading"
+    <div class="gl-flex gl-items-stretch gl-gap-8">
+      <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
+        <gl-form-fields
+          v-model="formValues"
+          :form-id="formId"
+          :fields="fields"
+          @submit="handleSubmit"
         >
-          {{ submitButtonText }}
-        </gl-button>
-      </ai-catalog-form-buttons>
-    </gl-form>
+          <template #input(projectId)="{ id }">
+            <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
+          </template>
+          <template #input(description)="{ id, input, value, blur, validation }">
+            <gl-form-textarea
+              :id="id"
+              :no-resize="false"
+              :placeholder="
+                s__(
+                  'AICatalog|This flow specializes in... It can help you with... Best suited for...',
+                )
+              "
+              :state="validation.state"
+              :value="value"
+              data-testid="flow-form-textarea-description"
+              @blur="blur"
+              @update="input"
+            />
+          </template>
+          <template #input(visibilityLevel)="{ id, input, validation, value }">
+            <visibility-level-radio-group
+              :id="id"
+              :is-edit-mode="isEditMode"
+              :initial-value="initialValues.public"
+              :validation-state="validation.state"
+              :value="value"
+              :texts="$options.visibilityLevelTexts"
+              @input="input"
+            />
+          </template>
+          <template #input(steps)>
+            <ai-catalog-steps-editor
+              :steps="formValues.steps"
+              class="gl-mb-4"
+              @openAgentPanel="openAgentPanel"
+            />
+          </template>
+        </gl-form-fields>
+        <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
+          <gl-button
+            class="js-no-auto-disable gl-w-full sm:gl-w-auto"
+            type="submit"
+            variant="confirm"
+            category="primary"
+            data-testid="flow-form-submit-button"
+            :loading="isLoading"
+          >
+            {{ submitButtonText }}
+          </gl-button>
+        </ai-catalog-form-buttons>
+      </gl-form>
+      <ai-catalog-form-side-panel
+        v-show="isAgentPanelVisible"
+        v-model="formValues.steps"
+        class="gl-grow"
+        :active-step-index="activeStepIndex"
+        @close="onCloseAgentPanel"
+      />
+    </div>
   </div>
 </template>
