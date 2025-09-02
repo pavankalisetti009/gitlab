@@ -178,6 +178,12 @@ module API
         ::MergeRequests::MergeabilityCheckBatchService.new(merge_requests, current_user).execute
       end
 
+      def start_covered_experience_create_mr
+        return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
+
+        Labkit::CoveredExperience.start(:create_merge_request, user_id: current_user.id, project_id: user_project.id)
+      end
+
       params :merge_requests_params do
         use :merge_requests_base_params
         use :optional_merge_requests_search_params
@@ -354,6 +360,8 @@ module API
         Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/20770')
 
         authorize! :create_merge_request_from, user_project
+
+        start_covered_experience_create_mr
 
         mr_params = declared_params(include_missing: false)
         mr_params[:force_remove_source_branch] = mr_params.delete(:remove_source_branch)
