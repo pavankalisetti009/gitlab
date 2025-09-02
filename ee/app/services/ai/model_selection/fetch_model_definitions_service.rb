@@ -56,7 +56,9 @@ module Ai
       def call_endpoint
         Gitlab::HTTP.get(
           endpoint,
-          headers: Gitlab::AiGateway.headers(user: user, service: service),
+          headers: Gitlab::AiGateway.headers(
+            user: user, service: :code_suggestions, ai_feature_name: :code_suggestions
+          ),
           timeout: DEFAULT_TIMEOUT,
           allow_local_requests: true
         )
@@ -78,10 +80,6 @@ module Ai
         endpoint_route = 'models%2Fdefinitions'
 
         "#{base_url}/v1/#{endpoint_route}"
-      end
-
-      def service
-        ::CloudConnector::AvailableServices.find_by_name(:code_suggestions)
       end
     end
   end

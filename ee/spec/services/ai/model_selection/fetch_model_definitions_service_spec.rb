@@ -8,7 +8,7 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   let(:cache_key) { described_class::RESPONSE_CACHE_NAME }
   let(:base_url) { 'http://0.0.0.0:5052' }
   let(:endpoint_url) { "#{base_url}/v1/models%2Fdefinitions" }
-  let(:code_suggestions_service) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name) }
+  let(:unit_primitive) { :code_suggestions }
   let(:model_definitions) do
     {
       'models' => [
@@ -32,10 +32,9 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   subject(:service) { initialized_class.execute }
 
   before do
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                    .with(:code_suggestions).and_return(code_suggestions_service)
     allow(::Gitlab::AiGateway).to receive(:url).and_return(base_url)
-    allow(::Gitlab::AiGateway).to receive(:headers).with(user: user, service: code_suggestions_service)
+    allow(::Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: unit_primitive, ai_feature_name: unit_primitive)
   end
 
   describe '#model_selection_enabled?' do
@@ -154,12 +153,6 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   describe '#endpoint' do
     it 'returns the correct endpoint URL' do
       expect(initialized_class.send(:endpoint)).to eq(endpoint_url)
-    end
-  end
-
-  describe '#service' do
-    it 'returns the code suggestions service' do
-      expect(initialized_class.send(:service)).to eq(code_suggestions_service)
     end
   end
 end
