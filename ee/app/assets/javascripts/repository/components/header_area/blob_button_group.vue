@@ -1,7 +1,7 @@
 <script>
 import CeBlobButtonGroup from '~/repository/components/header_area/blob_button_group.vue';
 import { DEFAULT_BLOB_INFO } from '~/repository/constants';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import LockFileDropdownItem from 'ee_component/repository/components/header_area/lock_file_dropdown_item.vue';
 
 export default {
@@ -10,7 +10,7 @@ export default {
     CeBlobButtonGroup,
     LockFileDropdownItem,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   inject: {
     blobInfo: {
       default: () => DEFAULT_BLOB_INFO.repository.blobs.nodes[0],
@@ -50,7 +50,7 @@ export default {
 
 <template>
   <ce-blob-button-group v-bind="$props" @showForkSuggestion="onShowForkSuggestion">
-    <template v-if="glFeatures.fileLocks" #lock-file-item>
+    <template v-if="glLicensedFeatures.fileLocks" #lock-file-item>
       <lock-file-dropdown-item
         :name="blobInfo.name"
         :path="blobInfo.path"

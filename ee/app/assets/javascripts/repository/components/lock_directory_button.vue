@@ -5,6 +5,7 @@ import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { logError } from '~/lib/logger';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
 import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
@@ -34,7 +35,7 @@ export default {
   directives: {
     GlModalDirective,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glFeatureFlagMixin(), glLicensedFeaturesMixin()],
   props: {
     projectPath: {
       type: String,
@@ -99,7 +100,7 @@ export default {
   },
   computed: {
     showLockButton() {
-      return Boolean(this.glFeatures.fileLocks && this.user?.id);
+      return Boolean(this.glLicensedFeatures.fileLocks && this.user?.id);
     },
     isLoading() {
       return this.$apollo?.queries.projectInfo.loading;
