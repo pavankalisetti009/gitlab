@@ -1423,10 +1423,6 @@ module EE
       use_elasticsearch? && repository_exists? && !empty_repo?
     end
 
-    def resource_parent
-      self
-    end
-
     def merge_train_for(target_branch)
       return unless merge_trains_enabled?
 

@@ -5098,12 +5098,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#resource_parent' do
-    it 'returns self' do
-      expect(project.resource_parent).to eq(project)
-    end
-  end
-
   describe '#github_external_pull_request_pipelines_available?' do
     let_it_be(:project) { create(:project, :mirror) }
 
