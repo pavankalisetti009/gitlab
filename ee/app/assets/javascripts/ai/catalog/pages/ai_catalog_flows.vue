@@ -154,7 +154,9 @@ export default {
         query: otherQuery,
       });
     },
-    async deleteFlow(id) {
+    async deleteFlow(item) {
+      const { id } = item;
+
       try {
         const { data } = await this.$apollo.mutate({
           mutation: deleteAiCatalogFlowMutation,

@@ -53,7 +53,7 @@ export default {
   },
   methods: {
     async deleteItem() {
-      await this.deleteFn(this.itemToDelete.id);
+      await this.deleteFn(this.itemToDelete);
 
       this.itemToDelete = null;
     },

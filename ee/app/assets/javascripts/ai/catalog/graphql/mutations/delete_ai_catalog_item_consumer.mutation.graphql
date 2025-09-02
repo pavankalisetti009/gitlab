@@ -1,0 +1,6 @@
+mutation deleteAiCatalogItemConsumer($id: AiCatalogItemConsumerID!) {
+  aiCatalogItemConsumerDelete(input: { id: $id }) {
+    errors
+    success
+  }
+}

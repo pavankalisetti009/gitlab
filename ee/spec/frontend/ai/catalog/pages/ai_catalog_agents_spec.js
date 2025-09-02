@@ -220,7 +220,7 @@ describe('AiCatalogAgents', () => {
   });
 
   describe('on deleting an agent', () => {
-    const deleteAgent = (index = 0) => findAiCatalogList().props('deleteFn')(mockAgents[index].id);
+    const deleteAgent = (index = 0) => findAiCatalogList().props('deleteFn')(mockAgents[index]);
 
     beforeEach(() => {
       createComponent();
