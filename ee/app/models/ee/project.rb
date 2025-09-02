@@ -982,6 +982,7 @@ module EE
 
       super
     end
+    alias_method :fallback_approvals_required, :approvals_before_merge
 
     def applicable_approval_rules_for_user(user, target_branch = nil)
       visible_approval_rules(target_branch: target_branch).select do |rule|

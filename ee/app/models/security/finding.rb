@@ -254,6 +254,7 @@ module Security
     ensure
       @symbolized_finding_data = nil
     end
+    alias_method :raw_metadata=, :finding_data=
 
     # Defines methods for the keys exist in `finding_data` to support the same
     # interface with `Vulnerabilities::Finding` model as these methods are used
