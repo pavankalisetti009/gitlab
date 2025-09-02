@@ -43,7 +43,8 @@ jest.mock('~/lib/utils/url_utility', () => ({
     .mockReturnValue('/project/Project/-/settings/repository/branch_rules?branch=main'),
   setUrlFragment: jest.fn(),
   visitUrl: jest.fn().mockName('visitUrlMock'),
-  getBaseURL: jest.fn(() => 'http://127.0.0.0:3000'),
+  getBaseURL: jest.fn().mockReturnValue('http://127.0.0.0:3000'),
+  relativePathToAbsolute: jest.fn().mockImplementation((path) => path),
 }));
 
 describe('EE Create work item component', () => {

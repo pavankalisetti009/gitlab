@@ -15439,6 +15439,9 @@ msgstr ""
 msgid "Collapse sidebar"
 msgstr ""
 
+msgid "Collapsible section"
+msgstr ""
+
 msgid "Collation mismatches"
 msgstr ""
 
@@ -23408,9 +23411,6 @@ msgid "Details"
 msgstr ""
 
 msgid "Details (default)"
-msgstr ""
-
-msgid "Details block"
 msgstr ""
 
 msgid "Details of violation-%{violationId}"
@@ -38992,9 +38992,6 @@ msgid "MarkdownEditor|Add strikethrough text (%{modifierKey}⇧X)"
 msgstr ""
 
 msgid "MarkdownEditor|Add strikethrough text (%{modifier_key}⇧X)"
-msgstr ""
-
-msgid "MarkdownEditor|Click to expand"
 msgstr ""
 
 msgid "MarkdownEditor|Close find and replace bar"

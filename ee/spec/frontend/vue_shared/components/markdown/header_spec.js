@@ -6,6 +6,7 @@ import { MergeRequestGeneratedContent } from '~/merge_requests/generated_content
 import HeaderComponent from '~/vue_shared/components/markdown/header.vue';
 import AiActionsDropdown from 'ee/ai/components/ai_actions_dropdown.vue';
 import SummarizeCodeChanges from 'ee/merge_requests/components/summarize_code_changes.vue';
+import ToolbarMoreDropdown from '~/vue_shared/components/markdown/toolbar_more_dropdown.vue';
 
 jest.mock('~/merge_requests/generated_content');
 
@@ -111,6 +112,30 @@ _This description was generated for revision ${sha} using AI_`;
         });
 
         expect(wrapper.findComponent(SummarizeCodeChanges).exists()).toBe(exists);
+      },
+    );
+  });
+
+  describe('toolbar more dropdown', () => {
+    it.each`
+      previewMarkdown | exists
+      ${true}         | ${false}
+      ${false}        | ${true}
+    `(
+      'ToolbarMoreDropdown exists returns $exists when previewMarkdown is $previewMarkdown',
+      ({ previewMarkdown, exists }) => {
+        createWrapper({
+          props: {
+            previewMarkdown,
+          },
+          provide: {
+            projectId: 1,
+            sourceBranch: 'branch',
+            targetBranch: 'target',
+          },
+        });
+
+        expect(wrapper.findComponent(ToolbarMoreDropdown).exists()).toBe(exists);
       },
     );
   });
