@@ -31,7 +31,7 @@ const TableTemplate = (args, { argTypes }) => ({
 
 export const Default = Template.bind({});
 Default.args = {
-  iid: 111111,
+  iid: '111111',
   title: 'Merge request title',
   webUrl: 'https://gitlab.com',
   pipelineStatus: {
@@ -49,14 +49,14 @@ InTable.args = {
     nodes: [
       {
         mergeRequestLink: {
-          iid: 123123,
+          iid: '123123',
           title: 'Merge request #1',
           webUrl: 'https://gitlab.com',
         },
       },
       {
         mergeRequestLink: {
-          iid: 456456,
+          iid: '456456',
           title: 'Merge request #2',
           webUrl: 'https://gitlab.com',
           pipelineStatus: {
@@ -70,7 +70,7 @@ InTable.args = {
       },
       {
         mergeRequestLink: {
-          iid: 789789,
+          iid: '789789',
           title: 'Merge request #3',
           webUrl: 'https://gitlab.com',
           pipelineStatus: {

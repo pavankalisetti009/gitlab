@@ -1,8 +1,30 @@
 ---
 version: 1
-type: MergeRequestsThroughputTable
+type: DataTable
 data:
   type: merge_requests
   query:
     dateRange: 365d
-options: {}
+options:
+  fields:
+    - key: link
+      label: Merge Request
+      component: MergeRequestLink
+    - key: dateMerged
+      label: Date Merged
+      component: FormatTime
+    - key: timeToMerge
+      label: Time to merge
+      component: FormatTimeRange
+    - key: milestone
+      label: Milestone
+    - key: commitCount
+      label: Commits
+    - key: pipelinesCount
+      label: Pipelines
+    - key: diffStatsSummary
+      label: Line changes
+      component: DiffLineChanges
+    - key: assignees
+      label: Assignees
+      component: AssigneeAvatars

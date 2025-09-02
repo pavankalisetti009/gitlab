@@ -6,7 +6,7 @@ describe('MergeRequestLink', () => {
   let wrapper;
 
   const defaultProps = {
-    iid: 111111,
+    iid: '111111',
     title: 'Merge request title',
     webUrl: 'https://gitlab.com',
     labelsCount: 10,

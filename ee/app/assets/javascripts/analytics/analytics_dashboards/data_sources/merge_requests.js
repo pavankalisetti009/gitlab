@@ -9,6 +9,53 @@ import { defaultClient } from '../graphql/client';
 
 const QUERY_RESULT_KEY = 'mergeRequests';
 
+const formatNodes = (list) => {
+  return list.map(
+    ({
+      iid,
+      title,
+      webUrl,
+      createdAt,
+      mergedAt,
+      diffStatsSummary,
+      pipelines,
+      milestone,
+      labels,
+      approvedBy,
+      assignees = [],
+      commitCount = 0,
+      userNotesCount = 0,
+    }) => {
+      const pipelinesCount = pipelines?.nodes?.length || 0;
+      const firstPipeline = pipelinesCount ? pipelines.nodes[0] : undefined;
+
+      const link = {
+        iid,
+        title,
+        webUrl,
+        labelsCount: labels?.count,
+        userNotesCount,
+        approvalCount: approvedBy?.nodes?.length,
+        pipelineStatus: firstPipeline?.detailedStatus,
+      };
+
+      return {
+        link,
+        assignees,
+        commitCount,
+        dateMerged: { timestamp: mergedAt },
+        timeToMerge: {
+          startTimestamp: createdAt,
+          endTimestamp: mergedAt,
+        },
+        diffStatsSummary,
+        pipelinesCount,
+        milestone: milestone?.title,
+      };
+    },
+  );
+};
+
 const fetchMergeRequests = async ({
   namespace,
   startDate,
@@ -53,7 +100,7 @@ const fetchMergeRequests = async ({
       }
 
       return {
-        list: nodes || [],
+        nodes: formatNodes(nodes),
         pageInfo: {
           ...pagination,
           ...pageInfo,

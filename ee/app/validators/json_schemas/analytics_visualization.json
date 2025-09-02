@@ -139,7 +139,12 @@
                 "enum": [
                   "AssigneeAvatars",
                   "DiffLineChanges",
-                  "MergeRequestLink"
+                  "FormatTime",
+                  "FormatTimeRange",
+                  "MergeRequestLink",
+                  "ChangePercentageIndicator",
+                  "MetricLabel",
+                  "TrendLine"
                 ]
               }
             }

@@ -73,10 +73,6 @@ export default {
       ),
     NamespaceMetadata: () =>
       import('ee/analytics/analytics_dashboards/components/visualizations/namespace_metadata.vue'),
-    MergeRequestsThroughputTable: () =>
-      import(
-        'ee/analytics/analytics_dashboards/components/visualizations/merge_requests/throughput_table.vue'
-      ),
   },
   mixins: [glAbilitiesMixin(), glLicensedFeaturesMixin()],
   inject: [
