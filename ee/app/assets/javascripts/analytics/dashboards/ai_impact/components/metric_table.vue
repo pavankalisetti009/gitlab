@@ -9,12 +9,11 @@ import {
   GlLink,
 } from '@gitlab/ui';
 import { toYmd, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
-import { AI_METRICS, UNITS } from '~/analytics/shared/constants';
+import { UNITS } from '~/analytics/shared/constants';
 import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { dasherize } from '~/lib/utils/text_utility';
 import { formatNumber } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
@@ -81,7 +80,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
+  mixins: [glAbilitiesMixin()],
   props: {
     namespace: {
       type: String,
@@ -132,18 +131,11 @@ export default {
         },
       ].filter(({ metrics }) => !this.areAllMetricsSkipped(metrics));
     },
-    duoRcaUsageRateEnabled() {
-      return this.glFeatures?.duoRcaUsageRate;
-    },
     restrictedMetrics() {
       return getRestrictedTableMetrics(this.excludeMetrics, this.glAbilities);
     },
     skippedMetrics() {
-      return uniq([
-        ...(!this.duoRcaUsageRateEnabled ? [AI_METRICS.DUO_RCA_USAGE_RATE] : []),
-        ...this.restrictedMetrics,
-        ...this.excludeMetrics,
-      ]);
+      return uniq([...this.restrictedMetrics, ...this.excludeMetrics]);
     },
   },
   async mounted() {
