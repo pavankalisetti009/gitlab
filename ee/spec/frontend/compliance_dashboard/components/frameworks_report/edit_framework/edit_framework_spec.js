@@ -5,6 +5,7 @@ import { GlAlert, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import getComplianceFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/get_compliance_framework.query.graphql';
 import * as Utils from 'ee/groups/settings/compliance_frameworks/utils';
+import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
 import EditFramework from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/edit_framework.vue';
 import BasicInformationSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/basic_information_section.vue';
 import PoliciesSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/policies_section.vue';
@@ -1211,6 +1212,7 @@ describe('Edit Framework Form', () => {
             resolveDeleteFrameworkMutation = resolve;
           }),
       );
+
       beforeEach(async () => {
         wrapper = createComponent(shallowMountExtended, {
           requestHandlers: [
@@ -1247,6 +1249,166 @@ describe('Edit Framework Form', () => {
         await waitForPromises();
 
         expect(findError().text()).toBe(errorMessage);
+        expect(Sentry.captureException).toHaveBeenCalledWith(new Error(errorMessage));
+      });
+    });
+
+    describe('Error handling for framework mutations', () => {
+      describe('when creating a framework fails', () => {
+        it('displays all error messages from the API', async () => {
+          const errors = ['Name has already been taken', 'Description is too long'];
+          const createFrameworkMutationMock = jest.fn().mockResolvedValue({
+            data: {
+              createComplianceFramework: {
+                __typename: 'CreateComplianceFrameworkPayload',
+                framework: null,
+                errors,
+                clientMutationId: null,
+              },
+            },
+          });
+
+          wrapper = createComponent(mountExtended, {
+            requestHandlers: [[createComplianceFrameworkMutation, createFrameworkMutationMock]],
+            routeParams: {},
+          });
+
+          await waitForPromises();
+          await fillAndSubmitForm();
+          await waitForPromises();
+
+          expect(findError().text()).toBe(
+            'Unable to save this compliance framework. Name has already been taken. Description is too long. Please try again',
+          );
+          expect(Sentry.captureException).toHaveBeenCalledWith(errors[0]);
+        });
+
+        it('handles single error message from the API', async () => {
+          const errors = ['Framework limit exceeded'];
+          const createFrameworkMutationMock = jest.fn().mockResolvedValue({
+            data: {
+              createComplianceFramework: {
+                framework: null,
+                errors,
+              },
+            },
+          });
+
+          wrapper = createComponent(mountExtended, {
+            requestHandlers: [[createComplianceFrameworkMutation, createFrameworkMutationMock]],
+            routeParams: {},
+          });
+
+          await waitForPromises();
+          await fillAndSubmitForm();
+          await waitForPromises();
+
+          expect(findError().text()).toBe(
+            'Unable to save this compliance framework. Framework limit exceeded. Please try again',
+          );
+        });
+
+        it('falls back to default error message for non-array errors', async () => {
+          const createFrameworkMutationMock = jest
+            .fn()
+            .mockRejectedValue(new Error('Network error'));
+
+          wrapper = createComponent(mountExtended, {
+            requestHandlers: [[createComplianceFrameworkMutation, createFrameworkMutationMock]],
+            routeParams: {},
+          });
+
+          await waitForPromises();
+          await fillAndSubmitForm();
+          await waitForPromises();
+
+          expect(findError().text()).toBe(SAVE_ERROR);
+        });
+      });
+
+      describe('when updating a framework fails', () => {
+        it('displays all error messages from the API', async () => {
+          const errors = ['Name has already been taken', 'Invalid pipeline configuration'];
+          const updateFrameworkMutationMock = jest.fn().mockResolvedValue({
+            data: {
+              updateComplianceFramework: {
+                __typename: 'UpdateComplianceFrameworkPayload',
+                complianceFramework: null,
+                errors,
+                clientMutationId: null,
+              },
+            },
+          });
+
+          wrapper = createComponent(mountExtended, {
+            requestHandlers: [
+              [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+              [updateComplianceFrameworkMutation, updateFrameworkMutationMock],
+            ],
+            routeParams: { id: '1' },
+          });
+
+          await waitForPromises();
+          await fillAndSubmitForm();
+          await waitForPromises();
+
+          expect(findError().text()).toBe(
+            'Unable to save this compliance framework. Name has already been taken. Invalid pipeline configuration. Please try again',
+          );
+          expect(Sentry.captureException).toHaveBeenCalledWith(errors[0]);
+        });
+      });
+
+      describe('error message formatting', () => {
+        it('properly joins multiple errors with period and space', async () => {
+          const errors = ['Error one', 'Error two', 'Error three'];
+          const createFrameworkMutationMock = jest.fn().mockResolvedValue({
+            data: {
+              createComplianceFramework: {
+                framework: null,
+                errors,
+              },
+            },
+          });
+
+          wrapper = createComponent(mountExtended, {
+            requestHandlers: [[createComplianceFrameworkMutation, createFrameworkMutationMock]],
+            routeParams: {},
+          });
+
+          await waitForPromises();
+          await fillAndSubmitForm();
+          await waitForPromises();
+
+          expect(findError().text()).toBe(
+            'Unable to save this compliance framework. Error one. Error two. Error three. Please try again',
+          );
+        });
+
+        it('handles errors with trailing periods correctly', async () => {
+          const errors = ['Error with period.', 'Another error'];
+          const createFrameworkMutationMock = jest.fn().mockResolvedValue({
+            data: {
+              createComplianceFramework: {
+                framework: null,
+                errors,
+              },
+            },
+          });
+
+          wrapper = createComponent(mountExtended, {
+            requestHandlers: [[createComplianceFrameworkMutation, createFrameworkMutationMock]],
+            routeParams: {},
+          });
+
+          await waitForPromises();
+          await fillAndSubmitForm();
+          await waitForPromises();
+
+          expect(findError().text()).toBe(
+            'Unable to save this compliance framework. Error with period.. Another error. Please try again',
+          );
+        });
       });
     });
   });
