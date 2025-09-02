@@ -1,8 +1,8 @@
 import VueApollo from 'vue-apollo';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -129,8 +129,9 @@ describe('AiCatalogAgents', () => {
   });
 
   describe('when linking directly to an agent via URL', () => {
-    describe('when agent exists', () => {
+    describe('when agent exists in the list', () => {
       let resolveDetails;
+
       beforeEach(async () => {
         // keep state as loading until we manually resolve
         mockAgentQueryHandler.mockReturnValue(
@@ -138,18 +139,20 @@ describe('AiCatalogAgents', () => {
             resolveDetails = resolve;
           }),
         );
-        await createComponent({ $route: { query: { show: '1' } } });
-        await nextTick();
+        await createComponent({
+          $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } },
+        });
+        await waitForPromises();
       });
 
       it('fetches agent details with correct GraphQL ID', () => {
         expect(mockAgentQueryHandler).toHaveBeenCalledTimes(1);
         expect(mockAgentQueryHandler).toHaveBeenCalledWith({
-          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, '1'),
+          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, getIdFromGraphQLId(mockAgents[0].id)),
         });
       });
 
-      it('opens the drawer immediately', () => {
+      it('opens the drawer immediately when agent is in list', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
       });
 
@@ -157,16 +160,9 @@ describe('AiCatalogAgents', () => {
         expect(findAiCatalogItemDrawer().props('isItemDetailsLoading')).toBe(true);
       });
 
-      it('provides fallback data while agent is loading', () => {
+      it('provides agent from list while details are loading', () => {
         const activeItem = findAiCatalogItemDrawer().props('activeItem');
-        expect(activeItem).toBeDefined();
-
-        const isActiveItemLoadedFromList = activeItem.id;
-        if (isActiveItemLoadedFromList) {
-          expect(activeItem).toEqual(mockAgents[0]);
-        } else {
-          expect(activeItem).toEqual({ iid: '1' });
-        }
+        expect(activeItem).toEqual(mockAgents[0]);
       });
 
       it('displays fetched agent details after loading completes', async () => {
@@ -195,11 +191,77 @@ describe('AiCatalogAgents', () => {
       });
     });
 
-    describe('when agent fetch fails', () => {
+    describe('when agent is not in list and needs to be fetched', () => {
+      beforeEach(() => {
+        // Mock a list without the requested agent
+        mockCatalogItemsQueryHandler.mockResolvedValue({
+          data: {
+            aiCatalogItems: {
+              nodes: mockAgents.slice(1),
+              pageInfo: mockPageInfo,
+            },
+          },
+        });
+
+        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse);
+
+        createComponent({
+          $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } },
+        });
+      });
+
+      it('does not open drawer while loading', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      });
+
+      it('opens drawer after agent details load', async () => {
+        await waitForPromises();
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
+      });
+    });
+
+    describe('when user has no permission to view agent', () => {
       beforeEach(async () => {
-        mockAgentQueryHandler.mockRejectedValue(new Error('Agent not found'));
+        // Mock response with null agent (no permissions)
+        mockAgentQueryHandler.mockResolvedValue({
+          data: {
+            aiCatalogItem: null,
+          },
+        });
+
+        await createComponent({ $route: { query: { show: 'unauthorized-id' } } });
+        await waitForPromises();
+      });
+
+      it('does not open the drawer', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      });
+
+      it('closes the drawer automatically', () => {
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          path: undefined,
+          query: {},
+        });
+      });
+
+      it('displays permission error message', () => {
+        expect(findErrorsAlert().props('errors')).toStrictEqual(['Agent not found.']);
+      });
+
+      it('does not log to Sentry for permission issues', () => {
+        expect(Sentry.captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when agent fetch fails with error', () => {
+      beforeEach(async () => {
+        mockAgentQueryHandler.mockRejectedValue(new Error('Network error'));
         await createComponent({ $route: { query: { show: 'invalid-id' } } });
         await waitForPromises();
+      });
+
+      it('does not open the drawer', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
       });
 
       it('closes the drawer automatically', () => {
@@ -210,7 +272,7 @@ describe('AiCatalogAgents', () => {
       });
 
       it('displays error message', () => {
-        expect(findErrorsAlert().props('errors')).toStrictEqual(['Agent not found']);
+        expect(findErrorsAlert().props('errors')).toStrictEqual(['Network error']);
       });
 
       it('logs error to Sentry', () => {

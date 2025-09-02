@@ -7,7 +7,6 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
-import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
@@ -19,6 +18,7 @@ import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
+import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from '../constants';
 
 export default {
   name: 'AiCatalogFlows',
@@ -49,17 +49,23 @@ export default {
     aiCatalogFlow: {
       query: aiCatalogFlowQuery,
       skip() {
-        return !this.isItemSelected;
+        return !this.hasQueryParam;
       },
       variables() {
-        const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
-        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, iid) };
+        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.showQueryParam) };
       },
       update(data) {
-        return data?.aiCatalogItem || {};
+        return data?.aiCatalogItem || null;
+      },
+      result({ data }) {
+        if (typeof data === 'undefined') return;
+
+        if (data.aiCatalogItem === null && this.hasQueryParam) {
+          this.handleNotFound();
+        }
       },
       error(error) {
-        if (this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]) {
+        if (this.showQueryParam) {
           this.closeDrawer();
         }
         this.errors = [error.message];
@@ -70,7 +76,7 @@ export default {
   data() {
     return {
       aiCatalogFlows: [],
-      aiCatalogFlow: {},
+      aiCatalogFlow: null,
       aiCatalogFlowToBeAdded: null,
       errors: [],
       pageInfo: {},
@@ -83,8 +89,41 @@ export default {
     isItemDetailsLoading() {
       return this.$apollo.queries.aiCatalogFlow.loading;
     },
-    isItemSelected() {
-      return Boolean(this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]);
+    showQueryParam() {
+      return this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
+    },
+    hasQueryParam() {
+      return Boolean(this.showQueryParam);
+    },
+    flowFromList() {
+      if (!this.hasQueryParam) return null;
+
+      return this.aiCatalogFlows.find(
+        (n) => getIdFromGraphQLId(n.id).toString() === String(this.showQueryParam),
+      );
+    },
+    isDrawerOpen() {
+      if (!this.hasQueryParam) return false;
+
+      // If we have the flow in the list, show drawer immediately
+      if (this.flowFromList) return true;
+
+      // If query is still loading, don't show drawer yet.
+      // It might be that the flow does not exist,
+      // or the user has no permission to view it.
+      if (this.isItemDetailsLoading) return false;
+
+      return Boolean(this.aiCatalogFlow);
+    },
+    activeFlow() {
+      // Prefer the fully loaded flow from the query
+      if (this.aiCatalogFlow) return this.aiCatalogFlow;
+
+      // Fall back to flow from list if available
+      if (this.flowFromList) return this.flowFromList;
+
+      // Return minimal object with IID for loading state
+      return this.hasQueryParam ? { iid: this.showQueryParam } : null;
     },
     itemTypeConfig() {
       return {
@@ -111,23 +150,9 @@ export default {
         },
       };
     },
-    activeFlow() {
-      if (!this.isItemDetailsLoading) return this.aiCatalogFlow;
-
-      // Returns the fully-loaded flow if available from aiCatalogFlows
-      const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
-      if (!iid) return {};
-
-      const fromList = this.aiCatalogFlows.find(
-        (n) => this.formatId(n.id).toString() === String(iid),
-      );
-      return fromList || { iid };
-    },
   },
+
   methods: {
-    formatId(id) {
-      return getIdFromGraphQLId(id);
-    },
     handleAiCatalogFlowToBeAdded(itemId) {
       const convertedId = convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, itemId);
       const flow = this.aiCatalogFlows?.find((item) => item.id === convertedId);
@@ -154,9 +179,12 @@ export default {
         query: otherQuery,
       });
     },
+    handleNotFound() {
+      this.errors = [s__('AICatalog|Flow not found.')];
+      this.closeDrawer();
+    },
     async deleteFlow(item) {
       const { id } = item;
-
       try {
         const { data } = await this.$apollo.mutate({
           mutation: deleteAiCatalogFlowMutation,
@@ -265,7 +293,7 @@ export default {
       @prev-page="handlePrevPage"
     />
     <ai-catalog-item-drawer
-      :is-open="isItemSelected"
+      :is-open="isDrawerOpen"
       :is-item-details-loading="isItemDetailsLoading"
       :active-item="activeFlow"
       :edit-route="$options.editRoute"
