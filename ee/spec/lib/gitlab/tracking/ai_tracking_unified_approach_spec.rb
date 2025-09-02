@@ -26,7 +26,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
     end
 
     describe 'guessing namespace ID' do
-      let(:event_context) { { user: current_user } }
       let(:event_name) { 'request_duo_chat_response' }
       let(:expected_event_hash) do
         { user: current_user, event: event_name, extras: {} }
@@ -111,7 +110,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
     %w[code_suggestion_shown_in_ide code_suggestion_accepted_in_ide code_suggestion_rejected_in_ide].each do |e|
       context "for `#{e}` event" do
         let(:event_name) { e }
-        let(:event_context) { extras.merge(user: current_user) }
+        let(:event_context) { super().merge(extras) }
         let(:extras) do
           {
             unique_tracking_id: "AB1",
@@ -175,19 +174,23 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       let_it_be(:pipeline) { create(:ci_pipeline, project: project, merge_request: merge_request) }
       let(:job) { create(:ci_build, pipeline: pipeline, project: project, user_id: current_user.id) }
 
-      let(:event_context) { { job: job, user: current_user } }
+      let(:event_context) { super().merge({ job: job }) }
+
+      let(:extras) do
+        {
+          job_id: job.id,
+          project_id: project.id,
+          pipeline_id: pipeline.id,
+          merge_request_id: merge_request.id
+        }
+      end
 
       let(:expected_pg_attributes) do
         {
           user_id: current_user.id,
           event: event_name,
           namespace_id: project.project_namespace_id,
-          extras: {
-            job_id: job.id,
-            project_id: project.id,
-            pipeline_id: pipeline.id,
-            merge_request_id: merge_request.id
-          }
+          extras: extras
         }
       end
 
@@ -196,12 +199,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
           user_id: current_user.id,
           event: Ai::UsageEvent.events[event_name],
           namespace_path: project.project_namespace.reload.traversal_path,
-          extras: {
-            job_id: job.id,
-            project_id: project.id,
-            pipeline_id: pipeline.id,
-            merge_request_id: merge_request.id
-          }.to_json
+          extras: extras.to_json
         }
       end
 
@@ -212,13 +210,14 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       context "for `#{e}` event" do
         let(:event_name) { e }
         let(:event_context) do
-          { project: project, user: current_user, value: 1, label: "software_development", property: "ide" }
+          super().merge({ project: project, value: 1, label: "software_development", property: "ide" })
         end
 
         let(:expected_pg_attributes) do
           {
             user_id: current_user.id,
             event: event_name,
+            namespace_id: project.project_namespace_id,
             extras: {
               project_id: project.id,
               environment: "ide",
@@ -232,6 +231,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
           {
             user_id: current_user.id,
             event: Ai::UsageEvent.events[event_name],
+            namespace_path: project.project_namespace.reload.traversal_path,
             extras: {
               project_id: project.id,
               session_id: 1,
@@ -258,11 +258,13 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
     ].each do |e|
       context "for `#{e}` event" do
         let(:event_name) { e }
+        let(:event_context) { super().merge({ project: project }) }
 
         let(:expected_pg_attributes) do
           {
             user_id: current_user.id,
             event: event_name,
+            namespace_id: project.project_namespace_id,
             extras: {}
           }
         end
@@ -271,6 +273,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
           {
             user_id: current_user.id,
             event: Ai::UsageEvent.events[event_name],
+            namespace_path: project.project_namespace.reload.traversal_path,
             extras: {}.to_json
           }
         end
