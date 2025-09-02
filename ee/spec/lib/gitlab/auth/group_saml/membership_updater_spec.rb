@@ -68,23 +68,62 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipUpdater, feature_category: :sy
       expect(group.members.pluck(:access_level)).to eq([Gitlab::Access::MAINTAINER])
     end
 
-    context "for allowed_email_domain restrictions" do
-      before do
-        stub_licensed_features(group_allowed_email_domains: true)
+    context 'when audit events triggered' do
+      let!(:expected_audit_context) do
+        {
+          name: 'group_saml_member_added',
+          author: user,
+          scope: group,
+          target: user,
+          message: 'Added as SAML group member',
+          additional_details: {
+            add: 'user_access',
+            as: 'Developer',
+            custom_message: "User #{user.name} added to group #{group.name} through SAML authentication"
+          }
+        }
       end
 
-      it "does not log an audit event when domain restrictions are in place" do
-        create :allowed_email_domain, group: group, domain: 'somethingveryrandom.com'
+      it 'sends the audit streaming event' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(expected_audit_context)
 
-        expect { subject }.not_to change { AuditEvent.by_entity('Group', group).count }
+        update_membership
       end
 
-      it "logs an audit event if the member's email is accepted" do
-        expect do
-          subject
-        end.to change { AuditEvent.by_entity('Group', group).count }.by(1)
+      it 'does not send audit event when member is not persisted' do
+        allow(group).to receive(:add_member).and_return(nil)
 
-        expect(AuditEvent.last.details).to include(add: 'user_access', target_details: user.name, as: 'Developer')
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+        update_membership
+      end
+
+      it 'does not send audit event when user is already a member' do
+        group.add_guest(user)
+
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+        update_membership
+      end
+
+      context "for allowed_email_domain restrictions" do
+        before do
+          stub_licensed_features(group_allowed_email_domains: true)
+        end
+
+        it "does not log an audit event when domain restrictions are in place" do
+          create :allowed_email_domain, group: group, domain: 'somethingveryrandom.com'
+
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+          update_membership
+        end
+
+        it "logs an audit event if the member's email is accepted" do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(expected_audit_context)
+
+          update_membership
+        end
       end
     end
 

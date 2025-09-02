@@ -90,11 +90,20 @@ module Gitlab
         end
 
         def log_audit_event(member:)
-          ::AuditEventService.new(
-            user,
-            member.source,
-            action: :create
-          ).for_member(member).security_event
+          audit_context = {
+            name: 'group_saml_member_added',
+            author: user,
+            scope: group,
+            target: user,
+            message: "Added as SAML group member",
+            additional_details: {
+              add: 'user_access',
+              as: member.human_access,
+              custom_message: "User #{user.name} added to group #{group.name} through SAML authentication"
+            }
+          }
+
+          ::Gitlab::Audit::Auditor.audit(audit_context)
         end
 
         def microsoft_group_sync_available?

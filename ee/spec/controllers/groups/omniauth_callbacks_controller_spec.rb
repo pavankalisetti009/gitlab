@@ -194,6 +194,17 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
           }
         ).and_call_original
 
+        unless group.member?(user)
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'group_saml_member_added',
+              message: 'Added as SAML group member',
+              target: user,
+              scope: group
+            )
+          ).and_call_original
+        end
+
         expect { post provider, params: { group_id: group } }.to change { AuthenticationEvent.count }.by(1)
       end
 
@@ -368,11 +379,20 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
         end
 
         it 'logs group audit event for being added to the group' do
-          audit_event_service = instance_double(AuditEventService)
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'authenticated_with_group_saml'
+            )
+          ).ordered.and_call_original
 
-          expect(AuditEventService).to receive(:new).ordered.with(user, group, action: :create)
-            .and_return(audit_event_service)
-          expect(audit_event_service).to receive_message_chain(:for_member, :security_event)
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'group_saml_member_added',
+              message: 'Added as SAML group member',
+              target: user,
+              scope: group
+            )
+          ).ordered.and_call_original
 
           post provider, params: { group_id: group }
         end
