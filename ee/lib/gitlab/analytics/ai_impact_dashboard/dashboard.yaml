@@ -50,3 +50,11 @@ panels:
       width: 12
       height: 4
     options: {}
+  - title: 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
+    visualization: pipeline_metrics_table
+    gridAttributes:
+      yPos: 9
+      xPos: 0
+      width: 12
+      height: 3
+    options: {}
