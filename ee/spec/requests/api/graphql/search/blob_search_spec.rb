@@ -45,7 +45,8 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
           post_graphql(query, current_user: current_user)
         end
 
-        it 'raises exception with message Search is only allowed in project default branch when error is true' do
+        it 'raises exception with message Search is only allowed in project default branch when error is true',
+          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/565119' do
           if error
             expect_graphql_errors_to_include(/Search is only allowed in project default branch/)
           else
