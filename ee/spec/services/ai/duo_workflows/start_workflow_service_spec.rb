@@ -56,6 +56,76 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
     end
   end
 
+  shared_examples 'successful flow config' do
+    let(:flow_config) do
+      { 'version' => 'experimental', 'environment' => 'remote' }
+    end
+
+    let(:schema_version) { 'experimental' }
+
+    context 'when flow_config is provided' do
+      let(:params) do
+        super().merge(
+          flow_config: flow_config,
+          flow_config_schema_version: schema_version
+        )
+      end
+
+      it 'sets DUO_WORKFLOW_FLOW_CONFIG as JSON string and DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_FLOW_CONFIG]).to eq(::Gitlab::Json.dump(flow_config))
+          expect(variables[:DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION]).to eq(schema_version)
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when flow_config is not provided' do
+      it 'sets DUO_WORKFLOW_FLOW_CONFIG as empty string and DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION as nil' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_FLOW_CONFIG]).to be_nil
+          expect(variables[:DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION]).to be_nil
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when flow_config is not in Hash format' do
+      let(:params) do
+        super().merge(
+          flow_config: "flow_config",
+          flow_config_schema_version: schema_version
+        )
+      end
+
+      it 'sets DUO_WORKFLOW_FLOW_CONFIG as nil' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_FLOW_CONFIG]).to be_nil
+
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
   subject(:execute) { described_class.new(workflow: workflow, params: params).execute }
 
   context 'with workflow enablement checks' do
@@ -70,6 +140,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       true  | true  | true  | true  | ref(:reporter)   | 'failure'
       true  | true  | false | true  | ref(:developer)  | 'failure'
       true  | true  | false | false | ref(:developer)  | 'failure'
+      true  | true  | true  | true  | ref(:maintainer) | 'successful flow config'
     end
 
     with_them do
