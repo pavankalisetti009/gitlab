@@ -159,7 +159,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
-      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
+      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
       { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: token_file_path }
     ]
@@ -265,11 +265,15 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
-  # @param [String] random_string
+  # @param [Array<String>] random_string_array
   # @param [User] user
   # @return [RemoteDevelopment::Workspace]
-  def do_create_workspace(random_string:, user:)
-    allow(SecureRandom).to receive(:alphanumeric) { random_string }
+  def do_create_workspace(random_string_array:, user:)
+    allow(FFaker::Food).to receive(:fruit).and_return(random_string_array[0])
+    allow(FFaker::AnimalUS).to receive(:common_name).and_return(random_string_array[1])
+    allow(FFaker::Color).to receive(:name).and_return(random_string_array[2])
+
+    random_string = random_string_array.join("-").parameterize.downcase
 
     # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
     cluster_agent_gid = "gid://gitlab/Clusters::Agent/#{agent.id}"
@@ -291,9 +295,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(workspace.agent).to eq(agent)
     # noinspection RubyResolve
     expect(workspace.desired_state_updated_at).to eq(Time.current)
-    expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
+    expect(workspace.name).to eq("workspace-#{random_string}")
     namespace_prefix = create_constants_module::NAMESPACE_PREFIX
-    expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
+    expect(workspace.namespace).to eq("#{namespace_prefix}-#{random_string}")
     expect(workspace.url).to eq(URI::HTTPS.build({
       host: "#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}.#{dns_zone}",
       path: "/",
@@ -455,7 +459,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       do_create_workspaces_agent_config
 
       # CREATE WORKSPACE VIA GRAPHQL API
-      workspace = do_create_workspace(random_string: "abcdef", user: user)
+      workspace = do_create_workspace(random_string_array: %w[Date Butterfly Darkturquoise], user: user)
 
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply_yaml_stream(
@@ -595,7 +599,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       do_create_org_mapping
 
       # CREATE A NEW WORKSPACE WITH THE ORGANIZATION MAPPING WITH MINIMUM USER PRIVILEGES
-      do_create_workspace(random_string: "ghijkl", user: organization_user)
+      do_create_workspace(random_string_array: ["Peach", "Blue Whale", "Red"], user: organization_user)
     end
   end
 
