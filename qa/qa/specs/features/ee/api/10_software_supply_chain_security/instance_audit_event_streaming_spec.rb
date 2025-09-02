@@ -29,6 +29,7 @@ module QA
         stream_destination.add_headers(headers)
         stream_destination.add_filters(event_types)
         Runtime::Feature.disable(:disable_audit_event_streaming)
+        Runtime::Feature.enable(:audit_events_fix_streaming_filters)
 
         mock_service.wait_for_streaming_to_start(event_type: 'remove_ssh_key', entity_type: 'User') do
           Resource::SSHKey.fabricate_via_api!.remove_via_api!

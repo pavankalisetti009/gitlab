@@ -74,6 +74,13 @@ module AuditEvents
           .merge(STREAMING_TOKEN_HEADER_KEY => secret_token)
       end
 
+      def allowed_to_stream?(event_type, audit_event)
+        return true unless Feature.enabled?(:audit_events_fix_streaming_filters, :instance)
+
+        event_type_allowed_to_stream?(event_type) &&
+          namespace_allowed_to_stream?(audit_event)
+      end
+
       private
 
       def config_is_properly_formatted
@@ -143,6 +150,37 @@ module AuditEvents
         return unless config.is_a?(Hash)
 
         config.delete('headers') if config['headers'] == {}
+      end
+
+      def event_type_allowed_to_stream?(audit_event_type)
+        return true unless audit_event_type.present?
+        return true unless event_type_filters.exists?
+
+        event_type_filters.audit_event_type_in(audit_event_type).exists?
+      end
+
+      def namespace_allowed_to_stream?(audit_event)
+        return true unless namespace_filters.exists?
+
+        namespace = audit_event.streamable_namespace if audit_event.respond_to?(:streamable_namespace)
+        return true if namespace.nil?
+
+        # For ProjectNamespace audit events - exact match only
+        if namespace.is_a?(::Namespaces::ProjectNamespace)
+          return namespace_filters.any? { |filter| filter.namespace_id == namespace.id }
+        end
+
+        ancestor_ids = namespace.self_and_ancestor_ids
+
+        namespace_filters.any? do |filter|
+          if filter.namespace.is_a?(::Namespaces::ProjectNamespace)
+            # Project filter matches exact namespace
+            namespace.id == filter.namespace_id
+          else
+            # Group filter matches if it's an ancestor
+            ancestor_ids.include?(filter.namespace_id)
+          end
+        end
       end
     end
   end

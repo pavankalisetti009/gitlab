@@ -30,6 +30,20 @@ module EE
         nil
       end
       strong_memoize_attr :root_group_entity
+
+      def streamable_namespace
+        return unless target_type && target_id
+
+        case target_type
+        when 'Project'
+          ::Project.find_by(id: target_id)&.then(&:project_namespace)
+        when 'Group'
+          ::Group.find_by(id: target_id)
+        when 'Namespaces::ProjectNamespace'
+          ::Namespaces::ProjectNamespace.find_by(id: target_id)
+        end
+      end
+      strong_memoize_attr :streamable_namespace
     end
   end
 end

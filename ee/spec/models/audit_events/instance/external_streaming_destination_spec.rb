@@ -50,7 +50,7 @@ RSpec.describe AuditEvents::Instance::ExternalStreamingDestination, feature_cate
     subject { build(:audit_events_instance_external_streaming_destination) }
   end
 
-  it_behaves_like 'includes ExternallyStreamable concern' do
+  it_behaves_like 'includes ExternallyStreamable concern', :audit_events_instance_external_streaming_destination do
     subject { build(:audit_events_instance_external_streaming_destination) }
 
     let(:model_factory_name) { :audit_events_instance_external_streaming_destination }

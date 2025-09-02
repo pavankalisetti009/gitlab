@@ -3,25 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe ::AuditEvents::GroupAuditEvent, type: :model, feature_category: :audit_events do
-  describe '#entity' do
-    let_it_be(:group_audit_event_1) { create(:audit_events_group_audit_event) }
+  let_it_be(:group_audit_event_1) { create(:audit_events_group_audit_event) }
 
+  describe '#entity' do
     it 'returns group' do
       expect(group_audit_event_1.entity).to eq(group_audit_event_1.group)
     end
   end
 
   describe '#entity_type' do
-    let_it_be(:group_audit_event_1) { create(:audit_events_group_audit_event) }
-
     it 'returns group' do
       expect(group_audit_event_1.entity_type).to eq("Group")
     end
   end
 
   describe '#present' do
-    let_it_be(:group_audit_event_1) { create(:audit_events_group_audit_event) }
-
     it 'returns a presenter' do
       expect(group_audit_event_1.present).to be_an_instance_of(AuditEventPresenter)
     end
@@ -52,6 +48,12 @@ RSpec.describe ::AuditEvents::GroupAuditEvent, type: :model, feature_category: :
     it "return root_group and set root_group_entity_id" do
       expect(event.root_group_entity).to eq(root_group)
       expect(event.root_group_entity_id).to eq(root_group.id)
+    end
+  end
+
+  describe 'streamable_namespace' do
+    it 'returns group' do
+      expect(group_audit_event_1.streamable_namespace).to eq(group_audit_event_1.group)
     end
   end
 

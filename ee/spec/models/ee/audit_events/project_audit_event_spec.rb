@@ -3,27 +3,23 @@
 require 'spec_helper'
 
 RSpec.describe ::AuditEvents::ProjectAuditEvent, type: :model, feature_category: :audit_events do
-  describe '#entity' do
-    let_it_be(:project_audit_event_1) { create(:audit_events_project_audit_event) }
+  let_it_be(:project_audit_event) { create(:audit_events_project_audit_event) }
 
+  describe '#entity' do
     it 'returns project' do
-      expect(project_audit_event_1.entity).to eq(project_audit_event_1.project)
+      expect(project_audit_event.entity).to eq(project_audit_event.project)
     end
   end
 
   describe '#entity_type' do
-    let_it_be(:project_audit_event_1) { create(:audit_events_project_audit_event) }
-
     it 'returns project' do
-      expect(project_audit_event_1.entity_type).to eq("Project")
+      expect(project_audit_event.entity_type).to eq("Project")
     end
   end
 
   describe '#present' do
-    let_it_be(:project_audit_event_1) { create(:audit_events_project_audit_event) }
-
     it 'returns a presenter' do
-      expect(project_audit_event_1.present).to be_an_instance_of(AuditEventPresenter)
+      expect(project_audit_event.present).to be_an_instance_of(AuditEventPresenter)
     end
   end
 
@@ -52,6 +48,12 @@ RSpec.describe ::AuditEvents::ProjectAuditEvent, type: :model, feature_category:
     it "return root_group and set root_group_entity_id" do
       expect(event.root_group_entity).to eq(root_group)
       expect(event.root_group_entity_id).to eq(root_group.id)
+    end
+  end
+
+  describe 'streamable_namespace' do
+    it 'returns project namespace' do
+      expect(project_audit_event.streamable_namespace).to eq(project_audit_event.project.project_namespace)
     end
   end
 

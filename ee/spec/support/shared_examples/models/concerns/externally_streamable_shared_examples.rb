@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'includes ExternallyStreamable concern' do
+RSpec.shared_examples 'includes ExternallyStreamable concern' do |destination_factory|
   describe 'validations' do
     it { is_expected.to validate_presence_of(:config) }
     it { is_expected.to validate_presence_of(:category) }
@@ -564,6 +564,246 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
         expect(reloaded.config).to be_a(Hash)
         expect(reloaded.config).to include('url' => 'https://example.com')
         expect(reloaded.config['url']).to eq('https://example.com')
+      end
+    end
+  end
+
+  describe '#allowed_to_stream?' do
+    using RSpec::Parameterized::TableSyntax
+
+    # rubocop:disable Rails/SaveBang -- Need to create
+    let_it_be(:destination_without_filters) { create(destination_factory) }
+    let_it_be(:destination_with_filters) { create(destination_factory) }
+    # rubocop:enable Rails/SaveBang
+
+    let_it_be(:legacy_user_event) { create(:user_audit_event) }
+    let_it_be(:legacy_project_event) { create(:project_audit_event) }
+    let_it_be(:legacy_group_event) { create(:group_audit_event) }
+
+    let_it_be(:new_user_event) { create(:audit_events_user_audit_event) }
+    let_it_be(:new_project_event) { create(:audit_events_project_audit_event) }
+    let_it_be(:new_group_event) { create(:audit_events_group_audit_event) }
+
+    before_all do
+      filter_factory = case destination_factory
+                       when :audit_events_group_external_streaming_destination
+                         :audit_events_group_event_type_filters
+                       when :audit_events_instance_external_streaming_destination
+                         :audit_events_instance_event_type_filters
+                       end
+
+      create(filter_factory,
+        external_streaming_destination: destination_with_filters,
+        audit_event_type: 'event_type_filters_created')
+
+      create(filter_factory,
+        external_streaming_destination: destination_with_filters,
+        audit_event_type: 'event_type_filters_deleted')
+    end
+
+    where(:destination, :event_type, :audit_event, :expected_result) do
+      # Destination without filters - always allows streaming
+      ref(:destination_without_filters) | 'any_event' | ref(:legacy_user_event) | true
+      ref(:destination_without_filters) | 'event_type_filters_created'  | ref(:legacy_project_event) | true
+      ref(:destination_without_filters) | nil                           | ref(:legacy_group_event)   | true
+      ref(:destination_without_filters) | 'any_event' | ref(:new_user_event) | true
+      ref(:destination_without_filters) | 'event_type_filters_created'  | ref(:new_project_event)    | true
+      ref(:destination_without_filters) | nil                           | ref(:new_group_event)      | true
+      ref(:destination_without_filters) | 'any_event' | nil | true
+
+      # Destination with filters - matching event types
+      ref(:destination_with_filters)    | 'event_type_filters_created'  | ref(:legacy_user_event)    | true
+      ref(:destination_with_filters)    | 'event_type_filters_deleted'  | ref(:legacy_project_event) | true
+      ref(:destination_with_filters)    | 'event_type_filters_created'  | ref(:new_user_event)       | true
+      ref(:destination_with_filters)    | 'event_type_filters_deleted'  | ref(:new_group_event)      | true
+      ref(:destination_with_filters)    | 'event_type_filters_created'  | nil                        | true
+
+      # Destination with filters - non-matching event types
+      ref(:destination_with_filters)    | 'non_matching_event'          | ref(:legacy_user_event)    | false
+      ref(:destination_with_filters)    | 'other_event_type'            | ref(:legacy_project_event) | false
+      ref(:destination_with_filters)    | 'non_matching_event'          | ref(:new_user_event)       | false
+      ref(:destination_with_filters)    | 'other_event_type'            | ref(:new_group_event)      | false
+
+      # Destination with filters - nil event type
+      ref(:destination_with_filters)    | nil                           | ref(:legacy_user_event)    | true
+      ref(:destination_with_filters)    | nil                           | ref(:new_project_event)    | true
+    end
+
+    with_them do
+      it 'returns expected streaming permission' do
+        expect(destination.allowed_to_stream?(event_type, audit_event)).to eq(expected_result)
+      end
+    end
+    context 'with namespace filters' do
+      let(:namespace_filter_factory) do
+        case destination_factory
+        when :audit_events_group_external_streaming_destination
+          :audit_events_streaming_group_namespace_filters
+        when :audit_events_instance_external_streaming_destination
+          :audit_events_streaming_instance_namespace_filters
+        end
+      end
+
+      let(:destination_with_namespace_filters) { create(destination_factory) } # rubocop:disable Rails/SaveBang -- Need save
+
+      let(:root_group) do
+        case destination_factory
+        when :audit_events_group_external_streaming_destination
+          destination_with_namespace_filters.group
+        else
+          create(:group)
+        end
+      end
+
+      let_it_be(:unrelated_group) { create(:group) }
+      let(:child_group) { create(:group, parent: root_group) }
+      let(:grandchild_group) { create(:group, parent: child_group) }
+
+      let_it_be(:base_audit_event) { create(:audit_event) }
+
+      def stub_streamable_namespace(audit_event, namespace)
+        allow(audit_event).to receive(:streamable_namespace).and_return(namespace)
+      end
+
+      context 'when audit event does not respond to streamable_namespace' do
+        before do
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: child_group)
+
+          allow(base_audit_event).to receive(:respond_to?).with(:streamable_namespace).and_return(false)
+        end
+
+        it 'allows streaming' do
+          expect(destination_with_namespace_filters.allowed_to_stream?('any_event', base_audit_event)).to be true
+        end
+      end
+
+      context 'when audit event streamable_namespace is nil' do
+        before do
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: child_group)
+
+          stub_streamable_namespace(base_audit_event, nil)
+        end
+
+        it 'allows streaming' do
+          expect(destination_with_namespace_filters.allowed_to_stream?('any_event', base_audit_event)).to be true
+        end
+      end
+
+      context 'with group namespace filters' do
+        before do
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: root_group)
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: child_group)
+        end
+
+        where(:namespace, :expected) do
+          ref(:root_group) | true
+          ref(:grandchild_group) | true
+          ref(:unrelated_group) | false
+        end
+
+        with_them do
+          it "returns #{params[:expected]} for namespace streaming check" do
+            stub_streamable_namespace(base_audit_event, namespace)
+            expect(destination_with_namespace_filters.allowed_to_stream?('any_event', base_audit_event)).to eq(expected)
+          end
+        end
+      end
+
+      context 'with project namespace filters' do
+        let(:project_in_root) { create(:project, namespace: root_group) }
+        let(:project_in_child) { create(:project, namespace: child_group) }
+        let(:project_namespace_filter) { project_in_root.project_namespace }
+
+        before do
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: project_namespace_filter)
+        end
+
+        where(:namespace_key, :expected) do
+          :project_namespace_filter | true
+          :project_child_namespace | false
+          :root_group                   | false
+          :child_group                  | false
+        end
+
+        with_them do
+          let(:namespace) do
+            case namespace_key
+            when :project_namespace_filter then project_namespace_filter
+            when :project_child_namespace then project_in_child.project_namespace
+            when :root_group then root_group
+            when :child_group then child_group
+            end
+          end
+
+          it "returns #{params[:expected]} for project namespace filter" do
+            stub_streamable_namespace(base_audit_event, namespace)
+            expect(destination_with_namespace_filters.allowed_to_stream?('any_event', base_audit_event)).to eq(expected)
+          end
+        end
+      end
+
+      context 'with mixed group and project namespace filters' do
+        let(:project_in_child) { create(:project, namespace: child_group) }
+
+        before do
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: root_group)
+          create(namespace_filter_factory,
+            external_streaming_destination: destination_with_namespace_filters,
+            namespace: project_in_child.project_namespace)
+        end
+
+        where(:namespace_key, :expected) do
+          :child_group           | true
+          :project_namespace     | true
+          :unrelated_group       | false
+        end
+
+        with_them do
+          let(:namespace) do
+            case namespace_key
+            when :child_group then child_group
+            when :project_namespace then project_in_child.project_namespace
+            when :unrelated_group then unrelated_group
+            end
+          end
+
+          it "returns #{params[:expected]} for mixed filters" do
+            stub_streamable_namespace(base_audit_event, namespace)
+            expect(destination_with_namespace_filters.allowed_to_stream?('any_event', base_audit_event)).to eq(expected)
+          end
+        end
+      end
+    end
+
+    context 'with instance audit events' do
+      let(:legacy_instance_event) { create(:instance_audit_event) }
+      let(:new_instance_event) { create(:audit_events_instance_audit_event) }
+
+      where(:destination, :event_type, :audit_event, :expected_result) do
+        ref(:destination_without_filters) | 'any_event' | ref(:legacy_instance_event) | true
+        ref(:destination_without_filters) | nil                          | ref(:new_instance_event)    | true
+        ref(:destination_with_filters)    | 'event_type_filters_created' | ref(:legacy_instance_event) | true
+        ref(:destination_with_filters)    | 'event_type_filters_created' | ref(:new_instance_event)    | true
+        ref(:destination_with_filters)    | 'non_matching_event'         | ref(:legacy_instance_event) | false
+        ref(:destination_with_filters)    | 'non_matching_event'         | ref(:new_instance_event)    | false
+      end
+
+      with_them do
+        it 'returns expected streaming permission for instance events' do
+          expect(destination.allowed_to_stream?(event_type, audit_event)).to eq(expected_result)
+        end
       end
     end
   end

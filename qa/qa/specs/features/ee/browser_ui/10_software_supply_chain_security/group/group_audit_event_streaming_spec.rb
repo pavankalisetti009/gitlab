@@ -25,6 +25,7 @@ module QA
 
       before do
         Runtime::Feature.disable(:disable_audit_event_streaming)
+        Runtime::Feature.enable(:audit_events_fix_streaming_filters)
       end
 
       context 'with no destination' do
