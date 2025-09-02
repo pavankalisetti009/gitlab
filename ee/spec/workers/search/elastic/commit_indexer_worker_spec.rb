@@ -242,7 +242,7 @@ RSpec.describe Search::Elastic::CommitIndexerWorker, feature_category: :global_s
   it 'registers worker to limit concurrency' do
     stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
 
-    max_jobs = ::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap.limit_for(worker: described_class)
+    max_jobs = described_class.get_concurrency_limit
     expect(max_jobs).to eq(35)
   end
 end

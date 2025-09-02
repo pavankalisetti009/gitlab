@@ -35,8 +35,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
       context 'when there are no jobs in the queue' do
         before do
-          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-            .and_return(10)
+          allow(worker_with_concurrency_limit).to receive(:get_concurrency_limit).and_return(10)
           allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
             .and_return(0)
         end
@@ -50,8 +49,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
       context 'when worker is not enabled to use concurrency limit middleware' do
         before do
-          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-            .and_return(0)
+          allow(worker_with_concurrency_limit).to receive(:get_concurrency_limit).and_return(0)
           allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
             .and_return(0)
         end
@@ -69,10 +67,8 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
       context 'when there are no jobs in the queue' do
         before do
-          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-            .and_return(10)
-          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
-            .and_return(0)
+          allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive_messages(
+            current_limit: 10, queue_size: 0)
         end
 
         it 'does nothing' do
@@ -108,27 +104,55 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
         it 'resumes processing' do
           stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
           expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-          .to receive(:resume_processing!)
-          .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
+            .to receive(:resume_processing!)
+                  .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
 
           perform
         end
 
-        it 'resumes processing if there are other jobs' do
-          stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
-          expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
-          .to receive(:resume_processing!)
-          .with(worker_with_concurrency_limit.name, limit: 60 - concurrent_workers)
+        context 'when concurrency_limit_current_limit_from_redis FF is disabled' do
+          before do
+            stub_feature_flags(concurrency_limit_current_limit_from_redis: false)
+          end
 
-          perform
+          it 'resumes processing' do
+            stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
+            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+              .to receive(:resume_processing!)
+                    .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
+
+            perform
+          end
+
+          it 'resumes processing if there are other jobs' do
+            stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
+            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+              .to receive(:resume_processing!)
+                    .with(worker_with_concurrency_limit.name, limit: 60 - concurrent_workers)
+
+            perform
+          end
+        end
+
+        context 'when current_limit is present in Redis' do
+          before do
+            Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService
+              .set_current_limit!(worker_with_concurrency_limit.name, limit: 10)
+          end
+
+          it 'resumes processing based on limit in Redis' do
+            expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
+              .to receive(:resume_processing!)
+                    .with(worker_with_concurrency_limit.name, limit: 10 - concurrent_workers)
+
+            perform
+          end
         end
 
         context 'when limit is negative' do
           before do
-            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
-            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-              .with(worker: worker_with_concurrency_limit)
-              .and_return(-1)
+            allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:current_limit)
+                                                                                             .and_return(-1)
           end
 
           it 'does not schedule any workers' do
@@ -142,10 +166,8 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
         context 'when limit is not set' do
           before do
-            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
-            allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for)
-              .with(worker: worker_with_concurrency_limit)
-              .and_return(0)
+            allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:current_limit)
+                                                                                             .and_return(0)
           end
 
           it 'resumes processing using the BATCH_SIZE' do
