@@ -3019,7 +3019,7 @@ CREATE FUNCTION trigger_8ac78f164b2d() RETURNS trigger
     AS $$
 BEGIN
 IF NEW."namespace_id" IS NULL THEN
-  SELECT "namespace_id"
+  SELECT "project_namespace_id"
   INTO NEW."namespace_id"
   FROM "projects"
   WHERE "projects"."id" = NEW."project_id";
@@ -3163,7 +3163,7 @@ CREATE FUNCTION trigger_8fbb044c64ad() RETURNS trigger
     AS $$
 BEGIN
 IF NEW."namespace_id" IS NULL THEN
-  SELECT "namespace_id"
+  SELECT "project_namespace_id"
   INTO NEW."namespace_id"
   FROM "projects"
   WHERE "projects"."id" = NEW."project_id";
