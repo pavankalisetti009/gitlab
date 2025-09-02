@@ -33,22 +33,22 @@ module GitlabSubscriptions
     }.freeze
 
     class << self
-      def execute(user, namespace)
+      def execute(user, root_namespace)
         return unless gitlab_com?
 
         user = resolve_user(user)
-        tier = subscription_tier(namespace)
-        access_level = find_highest_membership(user, namespace)&.access_level
+        tier = subscription_tier(root_namespace)
+        access_level = find_highest_membership(user, root_namespace)&.access_level
 
         calculate_seat_type(user, tier, access_level)
       end
 
-      def bulk_execute(users, namespace)
+      def bulk_execute(users, root_namespace)
         return {} unless gitlab_com?
 
         users = resolve_users(users)
-        tier = subscription_tier(namespace)
-        access_levels = Member.seat_assignable_highest_access_levels(users: users, namespace: namespace)
+        tier = subscription_tier(root_namespace)
+        access_levels = Member.seat_assignable_highest_access_levels(users: users, namespace: root_namespace)
 
         users.compact.each_with_object({}) do |user, hash|
           hash[user.id] = calculate_seat_type(user, tier, access_levels[user.id])
@@ -69,8 +69,8 @@ module GitlabSubscriptions
         ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       end
 
-      def find_highest_membership(user, namespace)
-        Member.seat_assignable(users: user, namespace: namespace).order_access_level_desc.first
+      def find_highest_membership(user, root_namespace)
+        Member.seat_assignable(users: user, namespace: root_namespace).order_access_level_desc.first
       end
 
       def calculate_seat_type(user, tier, access_level)
@@ -81,10 +81,10 @@ module GitlabSubscriptions
         SEAT_TYPE_MAPPINGS.dig(tier, access_level)
       end
 
-      def subscription_tier(namespace)
-        return FREE_TIER if namespace.free_plan?
+      def subscription_tier(root_namespace)
+        return FREE_TIER if root_namespace.free_plan?
 
-        namespace.exclude_guests? ? ULTIMATE_TIER : PREMIUM_TIER
+        root_namespace.exclude_guests? ? ULTIMATE_TIER : PREMIUM_TIER
       end
     end
   end

@@ -8,19 +8,19 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
   describe '#execute' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:namespace) { create(:group) }
+    let_it_be(:root_namespace) { create(:group) }
 
-    subject(:seat_type) { described_class.execute(user, namespace) }
+    subject(:seat_type) { described_class.execute(user, root_namespace) }
 
     context 'when on saas', :saas do
       context 'with a namespace on a free plan' do
         before do
-          create(:gitlab_subscription, :free, namespace: namespace)
+          create(:gitlab_subscription, :free, namespace: root_namespace)
         end
 
         context 'when an active user has a group membership' do
           before do
-            create(:group_member, group: namespace, user: user, access_level: highest_access_level)
+            create(:group_member, group: root_namespace, user: user, access_level: highest_access_level)
           end
 
           where(:highest_access_level, :expected_seat_type) do
@@ -40,10 +40,10 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
 
         context 'when a user has subgroup memberships' do
-          let(:subgroup) { create(:group, parent: namespace) }
+          let(:subgroup) { create(:group, parent: root_namespace) }
 
           before do
-            create(:group_member, group: namespace, user: user, access_level: ::Gitlab::Access::GUEST)
+            create(:group_member, group: root_namespace, user: user, access_level: ::Gitlab::Access::GUEST)
             create(:group_member, group: subgroup, user: user, access_level: ::Gitlab::Access::MAINTAINER)
           end
 
@@ -55,12 +55,12 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
       context 'with a namespace on a premium plan' do
         before do
-          create(:gitlab_subscription, :premium, namespace: namespace)
+          create(:gitlab_subscription, :premium, namespace: root_namespace)
         end
 
         context 'when an active user has a group membership' do
           before do
-            create(:group_member, group: namespace, user: user, access_level: highest_access_level)
+            create(:group_member, group: root_namespace, user: user, access_level: highest_access_level)
           end
 
           where(:highest_access_level, :expected_seat_type) do
@@ -80,10 +80,10 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
 
         context 'when a user has subgroup memberships' do
-          let(:subgroup) { create(:group, parent: namespace) }
+          let(:subgroup) { create(:group, parent: root_namespace) }
 
           before do
-            create(:group_member, :minimal_access, group: namespace, user: user)
+            create(:group_member, :minimal_access, group: root_namespace, user: user)
             create(:group_member, group: subgroup, user: user, access_level: ::Gitlab::Access::MAINTAINER)
           end
 
@@ -96,7 +96,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
           let(:user) { create(:user) }
 
           before do
-            create(:group_member, :minimal_access, group: namespace, user: user)
+            create(:group_member, :minimal_access, group: root_namespace, user: user)
           end
 
           it 'returns free seat type' do
@@ -107,12 +107,12 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
       context 'with a namespace on an ultimate plan' do
         before_all do
-          create(:gitlab_subscription, :ultimate, namespace: namespace)
+          create(:gitlab_subscription, :ultimate, namespace: root_namespace)
         end
 
         context 'when an active user has a group membership' do
           before do
-            create(:group_member, group: namespace, user: user, access_level: highest_access_level)
+            create(:group_member, group: root_namespace, user: user, access_level: highest_access_level)
           end
 
           where(:highest_access_level, :expected_seat_type) do
@@ -132,10 +132,10 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
 
         context 'when a user has subgroup memberships' do
-          let(:subgroup) { create(:group, parent: namespace) }
+          let(:subgroup) { create(:group, parent: root_namespace) }
 
           before do
-            create(:group_member, group: namespace, user: user, access_level: ::Gitlab::Access::GUEST)
+            create(:group_member, group: root_namespace, user: user, access_level: ::Gitlab::Access::GUEST)
             create(:group_member, group: subgroup, user: user, access_level: ::Gitlab::Access::MAINTAINER)
           end
 
@@ -148,7 +148,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
           let(:user) { create(:user) }
 
           before do
-            create(:group_member, :minimal_access, group: namespace, user: user)
+            create(:group_member, :minimal_access, group: root_namespace, user: user)
           end
 
           it 'returns free seat type' do
@@ -161,7 +161,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         let_it_be(:user) { create(:user, :bot) }
 
         before_all do
-          create(:group_member, group: namespace, user: user)
+          create(:group_member, group: root_namespace, user: user)
         end
 
         it 'returns system seat type' do
@@ -170,10 +170,10 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
 
       context 'with user ID' do
-        subject(:seat_type) { described_class.execute(user.id, namespace) }
+        subject(:seat_type) { described_class.execute(user.id, root_namespace) }
 
         before_all do
-          create(:group_member, group: namespace, user: user)
+          create(:group_member, group: root_namespace, user: user)
         end
 
         it 'returns base seat type' do
@@ -192,9 +192,9 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
   describe '#bulk_execute' do
     let_it_be(:user1) { create(:user) }
     let_it_be(:user2) { create(:user) }
-    let_it_be(:namespace) { create(:group) }
+    let_it_be(:root_namespace) { create(:group) }
 
-    subject(:seat_types) { described_class.bulk_execute([user1, user2], namespace) }
+    subject(:seat_types) { described_class.bulk_execute([user1, user2], root_namespace) }
 
     context 'when on Self-Managed' do
       it 'returns an empty hash' do
@@ -204,13 +204,13 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
     context 'when on saas', :saas do
       before do
-        create(:gitlab_subscription, :ultimate, namespace: namespace)
+        create(:gitlab_subscription, :ultimate, namespace: root_namespace)
       end
 
       context 'with memberships' do
         before_all do
-          namespace.add_guest(user1)
-          namespace.add_developer(user2)
+          root_namespace.add_guest(user1)
+          root_namespace.add_developer(user2)
         end
 
         it 'returns seat types for multiple users' do
@@ -218,7 +218,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
 
         context 'with active record scope' do
-          subject(:seat_types) { described_class.bulk_execute(User.all, namespace) }
+          subject(:seat_types) { described_class.bulk_execute(User.all, root_namespace) }
 
           it 'returns seat types for multiple users' do
             expect(seat_types).to eq({ user1.id => :free, user2.id => :base })
@@ -226,7 +226,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
         end
 
         context 'with user IDs' do
-          subject(:seat_types) { described_class.bulk_execute([user1.id, user2.id], namespace) }
+          subject(:seat_types) { described_class.bulk_execute([user1.id, user2.id], root_namespace) }
 
           it 'returns seat types for multiple users' do
             expect(seat_types).to eq({ user1.id => :free, user2.id => :base })
@@ -235,10 +235,10 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
 
       context 'with memberships in other groups' do
-        subject(:seat_types) { described_class.bulk_execute([user1], namespace) }
+        subject(:seat_types) { described_class.bulk_execute([user1], root_namespace) }
 
         before_all do
-          namespace.add_guest(user1)
+          root_namespace.add_guest(user1)
 
           group = create(:group)
           group.add_maintainer(user1)
@@ -256,7 +256,7 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
       end
 
       context 'with array with mixed values' do
-        subject(:seat_types) { described_class.bulk_execute([user1, nil, user2], namespace) }
+        subject(:seat_types) { described_class.bulk_execute([user1, nil, user2], root_namespace) }
 
         it 'filters out nil values' do
           expect(seat_types).to eq({ user1.id => nil, user2.id => nil })
