@@ -5,6 +5,7 @@ import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { findStatusWidget } from '~/work_items/utils';
+import { TYPENAME_ISSUE, TYPENAME_TASK } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import {
   WORK_ITEM_TYPE_NAME_EPIC,
@@ -101,9 +102,15 @@ export default {
             CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
             CUSTOM_FIELDS_TYPE_MULTI_SELECT,
           ].includes(field.fieldType);
-          const fieldAllowedOnWorkItem = field.workItemTypes.some(
+
+          let fieldAllowedOnWorkItem = field.workItemTypes.some(
             (type) => type.name === this.workItemType,
           );
+          if (!this.isEpicsList) {
+            fieldAllowedOnWorkItem = field.workItemTypes.some(
+              (type) => type.name === TYPENAME_ISSUE || type.name === TYPENAME_TASK,
+            );
+          }
 
           return fieldTypeAllowed && fieldAllowedOnWorkItem;
         });

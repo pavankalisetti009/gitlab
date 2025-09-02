@@ -12,6 +12,7 @@ import {
   CREATION_CONTEXT_LIST_ROUTE,
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
+  WORK_ITEM_TYPE_NAME_TASK,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
 } from '~/work_items/constants';
@@ -60,7 +61,9 @@ describeSkipVue3(skipReason, () => {
 
   Vue.use(VueApollo);
 
-  const customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse);
+  const baseCustomFieldsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockNamespaceCustomFieldsResponse);
   const iterationsQueryHandler = jest.fn().mockResolvedValue(mockIterationsResponse);
 
   const findCreateWorkItemModal = () => wrapper.findComponent(CreateWorkItemModal);
@@ -83,6 +86,7 @@ describeSkipVue3(skipReason, () => {
     workItemType = WORK_ITEM_TYPE_NAME_EPIC,
     props = {},
     hasStatusFeature = true,
+    customFieldsQueryHandler = baseCustomFieldsQueryHandler,
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
       apolloProvider: createMockApollo([
@@ -209,16 +213,39 @@ describeSkipVue3(skipReason, () => {
 
     describe('custom fields', () => {
       const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
-      const allowedFields = mockCustomFields.filter(
+      const epicListAllowedFields = mockCustomFields.filter(
         (field) =>
           [CUSTOM_FIELDS_TYPE_SINGLE_SELECT, CUSTOM_FIELDS_TYPE_MULTI_SELECT].includes(
             field.fieldType,
           ) && field.workItemTypes.some((type) => type.name === WORK_ITEM_TYPE_NAME_EPIC),
       );
+      const issueListAllowedFields = mockCustomFields.filter(
+        (field) =>
+          [CUSTOM_FIELDS_TYPE_SINGLE_SELECT, CUSTOM_FIELDS_TYPE_MULTI_SELECT].includes(
+            field.fieldType,
+          ) &&
+          field.workItemTypes.some(
+            (type) =>
+              type.name === WORK_ITEM_TYPE_NAME_ISSUE || type.name === WORK_ITEM_TYPE_NAME_TASK,
+          ),
+      );
       const findCustomFieldTokens = () =>
         findWorkItemsListApp()
           .props('eeSearchTokens')
           .filter((token) => token.type.startsWith(TOKEN_TYPE_CUSTOM_FIELD));
+
+      const getExpectedTokens = (fields) => {
+        return fields.map((field) => ({
+          type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
+          title: field.name,
+          icon: 'multiple-choice',
+          field,
+          fullPath: 'gitlab-org',
+          token: expect.any(Function),
+          operators: OPERATORS_IS,
+          unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+        }));
+      };
 
       it('excludes custom field tokens when feature is disabled', async () => {
         mountComponent({ hasCustomFieldsFeature: false });
@@ -227,7 +254,7 @@ describeSkipVue3(skipReason, () => {
         const customFieldTokens = findCustomFieldTokens();
 
         expect(customFieldTokens).toHaveLength(0);
-        expect(customFieldsQueryHandler).not.toHaveBeenCalled(); // Verify query was skipped
+        expect(baseCustomFieldsQueryHandler).not.toHaveBeenCalled(); // Verify query was skipped
       });
 
       it('includes custom field tokens when feature is enabled', async () => {
@@ -243,7 +270,7 @@ describeSkipVue3(skipReason, () => {
         mountComponent();
         await waitForPromises();
 
-        expect(customFieldsQueryHandler).toHaveBeenCalledWith({
+        expect(baseCustomFieldsQueryHandler).toHaveBeenCalledWith({
           fullPath: 'gitlab-org',
           active: true,
         });
@@ -253,20 +280,30 @@ describeSkipVue3(skipReason, () => {
         mountComponent();
         await waitForPromises();
 
-        const expectedTokens = allowedFields.map((field) => ({
-          type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
-          title: field.name,
-          icon: 'multiple-choice',
-          field,
-          fullPath: 'gitlab-org',
-          token: expect.any(Function),
-          operators: OPERATORS_IS,
-          unique: field.fieldType !== CUSTOM_FIELDS_TYPE_MULTI_SELECT,
-        }));
-
         expect(findWorkItemsListApp().props('eeSearchTokens')).toHaveLength(2);
-        expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(expectedTokens[0]);
-        expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(expectedTokens[1]);
+        expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(
+          getExpectedTokens(epicListAllowedFields)[0],
+        );
+        expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(
+          getExpectedTokens(epicListAllowedFields)[1],
+        );
+      });
+
+      it('does not have epics custom fields token on issues list', async () => {
+        mountComponent({ workItemType: null, hasStatusFeature: false });
+        await waitForPromises();
+
+        expect(findWorkItemsListApp().props('eeSearchTokens')).toHaveLength(3);
+
+        expect(findWorkItemsListApp().props('eeSearchTokens')[0]).toMatchObject(
+          getExpectedTokens(issueListAllowedFields)[0],
+        );
+        expect(findWorkItemsListApp().props('eeSearchTokens')[1]).toMatchObject(
+          getExpectedTokens(issueListAllowedFields)[1],
+        );
+        expect(findWorkItemsListApp().props('eeSearchTokens')[2]).toMatchObject(
+          getExpectedTokens(issueListAllowedFields)[2],
+        );
       });
     });
 
