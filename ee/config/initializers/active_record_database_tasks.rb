@@ -6,9 +6,7 @@ module ActiveRecord
       def migrate_status
         # rubocop:disable Database/MultipleDatabases -- From Rails base code which doesn't follow our style guide
         # rubocop:disable Rails/Output -- From Rails base code which doesn't follow our style guide
-        unless ActiveRecord::Base.connection.schema_migration.table_exists?
-          Kernel.abort "Schema migrations table does not exist yet."
-        end
+        Kernel.abort "Schema migrations table does not exist yet." unless connection_pool.schema_migration.table_exists?
 
         puts "\ndatabase: #{ActiveRecord::Base.connection_db_config.database}\n\n"
         puts "#{'Status'.center(8)}  #{'Migration ID'.ljust(14)}  #{'Type'.ljust(7)}  #{'Milestone'.ljust(11)}  Name"
@@ -18,16 +16,12 @@ module ActiveRecord
         end
         puts
         # rubocop:enable Rails/Output
-        # rubocop:enable Database/MultipleDatabases
       end
 
       def status_with_milestones
-        # rubocop:disable Database/MultipleDatabases -- From Rails base code which doesn't follow our style guide
-        conn = ActiveRecord::Base.connection
+        versions = connection_pool.schema_migration.versions.map(&:to_i)
 
-        versions = conn.schema_migration.versions.map(&:to_i)
-
-        conn.migration_context.migrations.sort_by(&:version).map do |m|
+        connection_pool.migration_context.migrations.sort_by(&:version).map do |m|
           [
             (versions.include?(m.version.to_i) ? 'up' : 'down'),
             m.version.to_s,
@@ -36,8 +30,12 @@ module ActiveRecord
             m.name
           ]
         end
-        # rubocop:enable Database/MultipleDatabases
       end
+
+      def connection_pool
+        ::Gitlab.next_rails? ? ActiveRecord::Base.connection_pool : ActiveRecord::Base.connection
+      end
+      # rubocop:enable Database/MultipleDatabases
     end
   end
 end
