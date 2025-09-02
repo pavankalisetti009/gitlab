@@ -79,8 +79,7 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
                       file_location: {
                         type: 'file-location',
                         file_name: 'path/to/file/utils.py',
-                        line_start: 5,
-                        line_end: 5
+                        line_start: 5
                       }
                     }
                   ]
@@ -277,7 +276,7 @@ RSpec.describe 'Query.project.mergeRequest.findingReportsComparer', feature_cate
                           fileLocation: {
                             fileName: 'path/to/file/utils.py',
                             lineStart: 5,
-                            lineEnd: 5
+                            lineEnd: nil
                           }
                         }
                       ]

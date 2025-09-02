@@ -537,7 +537,6 @@ FactoryBot.define do
                 {
                   file_location: {
                     file_name: "app/utils.py",
-                    line_end: 5,
                     line_start: 5,
                     type: "file-location"
                   },
