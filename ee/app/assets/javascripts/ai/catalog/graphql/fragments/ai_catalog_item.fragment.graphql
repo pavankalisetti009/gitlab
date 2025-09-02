@@ -6,6 +6,10 @@ fragment BaseAiCatalogItem on AiCatalogItem {
   name
   public
   updatedAt
+  latestVersion {
+    id
+    updatedAt
+  }
   userPermissions {
     adminAiCatalogItem
   }
