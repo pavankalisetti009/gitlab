@@ -2513,6 +2513,9 @@ msgstr ""
 msgid "AICatalog|Copy flow config"
 msgstr ""
 
+msgid "AICatalog|Copy user prompt"
+msgstr ""
+
 msgid "AICatalog|Create agent"
 msgstr ""
 
@@ -2721,9 +2724,6 @@ msgid "AICatalog|Tools"
 msgstr ""
 
 msgid "AICatalog|Use AI Flows in your project."
-msgstr ""
-
-msgid "AICatalog|User Prompt"
 msgstr ""
 
 msgid "AICatalog|User Prompt is required."
