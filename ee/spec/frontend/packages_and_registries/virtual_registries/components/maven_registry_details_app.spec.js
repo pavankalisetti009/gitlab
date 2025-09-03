@@ -13,6 +13,7 @@ import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import {
+  associateMavenUpstreamWithVirtualRegistry,
   deleteMavenUpstreamCache,
   deleteMavenRegistryCache,
   getMavenUpstreamRegistriesList,
@@ -284,6 +285,50 @@ describe('MavenRegistryDetailsApp', () => {
     });
   });
 
+  describe('when there are group level upstreams & registry has upstreams', () => {
+    beforeEach(() => {
+      const { name, description, url, username, cacheValidityHours, metadataCacheValidityHours } =
+        upstreams[0];
+      getMavenUpstreamRegistriesList.mockResolvedValue({
+        data: [
+          {
+            ...upstreamsResponse.data[0],
+          },
+          {
+            id: 2,
+            name,
+            description,
+            group_id: 122,
+            url,
+            username,
+            cache_validity_hours: cacheValidityHours,
+            metadata_cache_validity_hours: metadataCacheValidityHours,
+            created_at: '2025-07-15T04:10:03.060Z',
+            updated_at: '2025-07-15T04:11:00.426Z',
+          },
+        ],
+        headers: {
+          'x-total': '2',
+        },
+      });
+      createComponent({
+        upstreams: [upstreams[0]],
+      });
+    });
+
+    it('when link form is shown, sets the upstream options correctly', async () => {
+      await findAddUpstream().vm.$emit('link');
+
+      expect(findLinkUpstreamForm().props('upstreamOptions')).toStrictEqual([
+        {
+          value: 3,
+          text: 'test',
+          secondaryText: 'test description',
+        },
+      ]);
+    });
+  });
+
   describe('create upstream action', () => {
     it('emits createUpstream on successful form submission', async () => {
       createComponent({
@@ -348,6 +393,61 @@ describe('MavenRegistryDetailsApp', () => {
         expect(captureException).toHaveBeenCalledWith({
           component: 'MavenRegistryDetailsApp',
           error: mockGraphQLError,
+        });
+      });
+    });
+  });
+
+  describe('link upstream action', () => {
+    const upstreamId = upstreamsResponse.data[0].id;
+    beforeEach(() => {
+      associateMavenUpstreamWithVirtualRegistry.mockReset();
+    });
+
+    describe('when API succeeds', () => {
+      beforeEach(async () => {
+        associateMavenUpstreamWithVirtualRegistry.mockResolvedValue();
+        createComponent();
+        await findAddUpstream().vm.$emit('link');
+        findLinkUpstreamForm().vm.$emit('submit', upstreamId);
+      });
+
+      it('calls the right arguments', () => {
+        expect(associateMavenUpstreamWithVirtualRegistry).toHaveBeenCalledWith({
+          registryId: 1,
+          upstreamId: 3,
+        });
+      });
+
+      it('shows success toast and emits `upstreamLinked` event', async () => {
+        await waitForPromises();
+
+        expect(showToastSpy).toHaveBeenCalledWith(
+          'Upstream added to virtual registry successfully.',
+        );
+        expect(wrapper.emitted('upstreamLinked')).toHaveLength(1);
+        expect(captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when API fails', () => {
+      it('shows toast with default message & reports error to Sentry', async () => {
+        const mockError = new Error();
+        associateMavenUpstreamWithVirtualRegistry.mockRejectedValue(mockError);
+        createComponent();
+        await findAddUpstream().vm.$emit('link');
+
+        findLinkUpstreamForm().vm.$emit('submit', upstreamId);
+
+        await waitForPromises();
+
+        expect(findCreateUpstreamErrorAlert().text()).toBe(
+          'Something went wrong while adding the upstream to virtual registry. Try again.',
+        );
+        expect(showToastSpy).not.toHaveBeenCalled();
+        expect(captureException).toHaveBeenCalledWith({
+          component: 'MavenRegistryDetailsApp',
+          error: mockError,
         });
       });
     });

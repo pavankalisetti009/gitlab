@@ -96,14 +96,15 @@ export default {
 <template>
   <gl-form v-if="hasOptions" @submit.prevent="submit">
     <gl-form-group
-      id="upstream-select"
+      id="upstream-select-group"
       :label="s__('VirtualRegistry|Select an upstream')"
+      label-for="upstream-select"
       class="md:gl-w-3/10"
     >
       <gl-collapsible-listbox
         v-model="selectedUpstream"
         block
-        toggle-aria-labelled-by="upstream-select"
+        toggle-id="upstream-select"
         :items="upstreamOptions"
         @select="fetchUpstreamDetails"
       >

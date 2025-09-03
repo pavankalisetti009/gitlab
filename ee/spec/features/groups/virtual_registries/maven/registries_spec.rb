@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry do
   include Spec::Support::Helpers::ModalHelpers
+  include ListboxHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
@@ -309,22 +310,34 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
             edit_group_virtual_registries_maven_registry_path(group, registry))
         end
 
-        it 'can create maven upstream registry' do
-          visit url
+        describe 'create maven upstream registry form' do
+          before do
+            visit url
+            click_button 'Add upstream'
+          end
 
-          click_button 'Add upstream'
+          it_behaves_like 'page is accessible'
 
-          fill_in 'Name', with: 'test upstream'
-          fill_in 'Upstream URL', with: 'https://gitlab.com'
+          it 'can create maven upstream registry' do
+            fill_in 'Name', with: 'test upstream'
+            fill_in 'Upstream URL', with: 'https://gitlab.com'
 
-          click_button 'Create upstream'
+            click_button 'Create upstream'
 
-          expect(page).to have_link('test upstream')
+            expect(page).to have_link('test upstream')
+          end
         end
       end
 
       context 'with existing upstream registry', :aggregate_failures, :js do
         let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
+        let_it_be(:registry1) do
+          create(:virtual_registries_packages_maven_registry, group: group, name: 'test registry')
+        end
+
+        let_it_be(:upstream1) do
+          create(:virtual_registries_packages_maven_upstream, registries: [registry1], name: 'test upstream')
+        end
 
         it_behaves_like 'page is accessible'
 
@@ -345,6 +358,26 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
           click_button 'Remove upstream'
 
           expect(page).to have_text('No upstreams yet')
+        end
+
+        describe 'link maven upstream registry form' do
+          before do
+            visit url
+            click_button 'Add upstream'
+          end
+
+          it_behaves_like 'page is accessible'
+
+          it 'can link maven upstream registry' do
+            click_button 'Link existing upstream'
+
+            select_from_listbox 'test upstream', from: 'Select an upstream'
+
+            click_button 'Add upstream'
+
+            expect(page).to have_link('test upstream',
+              href: group_virtual_registries_maven_upstream_path(group, upstream1))
+          end
         end
       end
     end

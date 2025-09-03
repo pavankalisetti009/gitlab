@@ -24,7 +24,6 @@ mutation mavenUpstreamCreate(
       url
       description
       username
-      password
       cacheValidityHours
     }
     errors

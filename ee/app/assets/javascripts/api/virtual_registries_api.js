@@ -10,9 +10,9 @@ const MAVEN_UPSTREAM_CACHE_ENTRIES_PATH =
 const MAVEN_UPSTREAM_CACHE_ENTRY_PATH =
   '/api/:version/virtual_registries/packages/maven/cache_entries/:id';
 const MAVEN_UPSTREAM_TEST_PATH = `${MAVEN_UPSTREAM_PATH}/test`;
-
-const MAVEN_REGISTRY_UPSTREAM_PATH =
-  '/api/:version/virtual_registries/packages/maven/registry_upstreams/:id';
+const MAVEN_REGISTRY_UPSTREAMS_PATH =
+  '/api/:version/virtual_registries/packages/maven/registry_upstreams';
+const MAVEN_REGISTRY_UPSTREAM_PATH = `${MAVEN_REGISTRY_UPSTREAMS_PATH}/:id`;
 const MAVEN_UPSTREAMS_PATH =
   '/api/:version/groups/:id/-/virtual_registries/packages/maven/upstreams';
 const MAVEN_UPSTREAMS_TEST_PATH = `${MAVEN_UPSTREAMS_PATH}/test`;
@@ -32,6 +32,15 @@ export function updateMavenRegistryUpstreamPosition({ id, position }) {
 
   return axios.patch(url, {
     position,
+  });
+}
+
+export function associateMavenUpstreamWithVirtualRegistry({ registryId, upstreamId }) {
+  const url = buildApiUrl(MAVEN_REGISTRY_UPSTREAMS_PATH);
+
+  return axios.post(url, {
+    registry_id: registryId,
+    upstream_id: upstreamId,
   });
 }
 

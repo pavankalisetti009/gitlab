@@ -5,6 +5,7 @@ import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sprintf, s__, __ } from '~/locale';
 import {
+  associateMavenUpstreamWithVirtualRegistry,
   deleteMavenRegistryCache,
   deleteMavenUpstreamCache,
   getMavenUpstreamRegistriesList,
@@ -76,12 +77,13 @@ export default {
    * Emitted when the upstream is deleted
    * @event upstreamRemoved
    */
-  emits: ['upstreamReordered', 'upstreamCreated', 'upstreamRemoved'],
+  emits: ['upstreamReordered', 'upstreamCreated', 'upstreamRemoved', 'upstreamLinked'],
   data() {
     return {
       currentFormType: '',
       createUpstreamError: '',
       createUpstreamMutationLoading: false,
+      linkUpstreamInProgress: false,
       registryClearCacheModalIsShown: false,
       topLevelUpstreams: [],
       topLevelUpstreamsTotalCount: 0,
@@ -119,7 +121,7 @@ export default {
     },
     upstreamItemIdsMap() {
       return this.upstreamItems.reduce(
-        (map, { registryUpstreams: [{ id }] }) => ({
+        (map, { id }) => ({
           ...map,
           [getIdFromGraphQLId(id)]: true,
         }),
@@ -235,6 +237,29 @@ export default {
     emitUpstreamCreated() {
       this.$emit('upstreamCreated');
       this.hideForm();
+    },
+    emitUpstreamLinked() {
+      this.$emit('upstreamLinked');
+      this.hideForm();
+    },
+    async linkUpstream(upstreamId) {
+      this.createUpstreamError = '';
+      try {
+        this.linkUpstreamInProgress = true;
+        await associateMavenUpstreamWithVirtualRegistry({
+          registryId: this.registryId,
+          upstreamId,
+        });
+        this.emitUpstreamLinked();
+        this.$toast.show(s__('VirtualRegistry|Upstream added to virtual registry successfully.'));
+      } catch (error) {
+        this.createUpstreamError = s__(
+          'VirtualRegistry|Something went wrong while adding the upstream to virtual registry. Try again.',
+        );
+        this.handleError(error);
+      } finally {
+        this.linkUpstreamInProgress = false;
+      }
     },
     showClearRegistryCacheModal() {
       this.registryClearCacheModalIsShown = true;
@@ -432,7 +457,9 @@ export default {
       />
       <link-upstream-form
         v-if="isLinkUpstreamForm"
+        :loading="linkUpstreamInProgress"
         :upstream-options="linkableUpstreamsDropdownOptions"
+        @submit="linkUpstream"
         @cancel="hideForm"
       />
     </template>

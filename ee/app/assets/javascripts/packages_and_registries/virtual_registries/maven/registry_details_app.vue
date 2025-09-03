@@ -65,6 +65,7 @@ export default {
       :registry-id="registry.id"
       :upstreams="upstreams"
       @upstreamCreated="refetchMavenVirtualRegistryQuery"
+      @upstreamLinked="refetchMavenVirtualRegistryQuery"
       @upstreamReordered="refetchMavenVirtualRegistryQuery"
       @upstreamRemoved="refetchMavenVirtualRegistryQuery"
     />
