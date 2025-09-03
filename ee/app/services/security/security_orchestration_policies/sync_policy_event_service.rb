@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class SyncPolicyEventService < BaseProjectPolicyService
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
+
       def initialize(project:, security_policy:, event:)
         super(project: project, security_policy: security_policy)
         @event = event
@@ -19,6 +21,8 @@ module Security
         when Security::PolicyResyncEvent
           resync_policy
         end
+
+        finish_project_policy_sync(project.id)
       end
 
       private

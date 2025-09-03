@@ -32,6 +32,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
   end
 
   describe '#execute' do
+    describe 'policy sync state tracking' do
+      include_context 'with policy sync state'
+
+      before do
+        state.append_projects([project.id])
+      end
+
+      specify do
+        expect { service.execute }.to change { state.pending_projects }
+                                .from(contain_exactly(project.id.to_s)).to(be_empty)
+      end
+    end
+
     context 'when policy_changes is empty' do
       context 'when policy is disabled' do
         before do

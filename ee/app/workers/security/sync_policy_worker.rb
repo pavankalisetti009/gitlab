@@ -3,6 +3,7 @@
 module Security
   class SyncPolicyWorker
     include Gitlab::EventStore::Subscriber
+    include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
     data_consistency :sticky
 
@@ -66,7 +67,14 @@ module Security
                          { project: policy.security_orchestration_policy_configuration.project }
                        end
 
+      config_context[::Security::SecurityOrchestrationPolicies::PolicySyncState::POLICY_SYNC_CONTEXT_KEY] =
+        policy.security_orchestration_policy_configuration_id
+
+      clear_policy_sync_state(policy.security_orchestration_policy_configuration_id)
+
       policy.security_orchestration_policy_configuration.all_project_ids do |project_ids|
+        append_projects_to_sync(policy.security_orchestration_policy_configuration_id, project_ids)
+
         ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
           project_ids,
           arguments_proc: ->(project_id) do

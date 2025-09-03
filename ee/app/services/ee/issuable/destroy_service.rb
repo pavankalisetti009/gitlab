@@ -4,6 +4,7 @@ module EE
   module Issuable
     module DestroyService
       extend ::Gitlab::Utils::Override
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
       private
 
@@ -20,7 +21,7 @@ module EE
       def after_destroy(issuable)
         log_audit_event(issuable)
         track_usage_ping_epic_destroyed(issuable) if issuable.is_a?(Epic)
-
+        update_policy_sync_state(issuable)
         super
       end
 
@@ -51,6 +52,12 @@ module EE
 
           ::Gitlab::Audit::Auditor.audit(audit_context)
         end
+      end
+
+      def update_policy_sync_state(issuable)
+        return unless issuable.is_a?(MergeRequest)
+
+        finish_merge_request_worker_policy_sync(issuable.id)
       end
     end
   end

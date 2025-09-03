@@ -4,6 +4,7 @@ module Security
   module ScanResultPolicies
     class SyncAnyMergeRequestApprovalRulesWorker
       include ApplicationWorker
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
       idempotent!
       data_consistency :always
@@ -18,6 +19,8 @@ module Security
         return unless merge_request
 
         Security::ScanResultPolicies::SyncAnyMergeRequestRulesService.new(merge_request).execute
+
+        finish_merge_request_worker_policy_sync(merge_request_id)
       end
     end
   end

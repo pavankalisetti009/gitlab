@@ -9,9 +9,10 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
   let(:project_id) { project.id }
   let(:security_policy_id) { security_policy.id }
   let(:policy_changes) { { 'some_key' => 'some_value' } }
+  let(:worker) { described_class.new }
 
   describe '#perform' do
-    subject(:perform) { described_class.new.perform(project_id, security_policy_id, policy_changes, params) }
+    subject(:perform) { worker.perform(project_id, security_policy_id, policy_changes, params) }
 
     let(:params) { {} }
 
@@ -157,6 +158,47 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
         expect(Security::SecurityOrchestrationPolicies::SyncProjectService).not_to receive(:new)
 
         perform
+      end
+    end
+
+    describe 'policy sync state tracking' do
+      include_context 'with policy sync state'
+
+      before do
+        state.append_projects([project_id])
+      end
+
+      context 'on success' do
+        it 'removes pending project' do
+          expect { perform }.to change { state.pending_projects }
+                                  .from(contain_exactly(project_id.to_s)).to(be_empty)
+        end
+
+        it 'does not mark project as failed' do
+          expect { perform }.not_to change { state.failed_projects }.from(be_empty)
+        end
+      end
+
+      context 'on failure' do
+        before do
+          allow(worker).to receive(:handle_change).and_raise(RuntimeError)
+        end
+
+        it 'removes pending project' do
+          expect do
+            expect { perform }.to raise_error(RuntimeError)
+          end.to change { state.pending_projects }
+                 .from(contain_exactly(project_id.to_s))
+                 .to(be_empty)
+        end
+
+        it 'marks project as failed' do
+          expect do
+            expect { perform }.to raise_error(RuntimeError)
+          end.to change { state.failed_projects }
+                 .from(be_empty)
+                 .to(contain_exactly(project_id.to_s))
+        end
       end
     end
   end

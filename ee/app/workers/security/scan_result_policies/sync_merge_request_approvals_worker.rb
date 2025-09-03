@@ -4,6 +4,7 @@ module Security
   module ScanResultPolicies
     class SyncMergeRequestApprovalsWorker
       include ApplicationWorker
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
       idempotent!
       deduplicate :until_executed, if_deduplicated: :reschedule_once
@@ -21,6 +22,8 @@ module Security
         return unless merge_request
 
         UpdateApprovalsService.new(merge_request: merge_request, pipeline: pipeline).execute
+
+        finish_merge_request_worker_policy_sync(merge_request_id)
       end
     end
   end

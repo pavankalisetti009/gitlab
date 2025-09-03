@@ -4,6 +4,7 @@ module Security
   class PersistSecurityPoliciesWorker
     include ApplicationWorker
     include ::Gitlab::InternalEventsTracking
+    include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
     data_consistency :sticky
     idempotent!
@@ -12,6 +13,8 @@ module Security
 
     def perform(configuration_id, params = {})
       configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id) || return
+
+      clear_policy_sync_state(configuration_id)
 
       configuration.invalidate_policy_yaml_cache
 

@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class SyncProjectService < BaseProjectPolicyService
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
+
       def initialize(security_policy:, project:, policy_changes:)
         super(security_policy: security_policy, project: project)
         @policy_changes = policy_changes
@@ -16,6 +18,8 @@ module Security
           # Policy has just been created, link it.
           link_policy
         end
+
+        finish_project_policy_sync(project.id)
       end
 
       private

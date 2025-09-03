@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
+RSpec.describe Issuable::DestroyService, :clean_gitlab_redis_shared_state, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
 
   subject(:service) { described_class.new(container: nil, current_user: user) }
@@ -347,6 +347,31 @@ RSpec.describe Issuable::DestroyService, feature_category: :team_planning do
           end
 
           service.execute(issuable)
+        end
+      end
+
+      describe 'policy sync state tracking' do
+        include_context 'with policy sync state'
+
+        context 'when destroying a merge request' do
+          let(:merge_request) { create(:merge_request) }
+
+          before do
+            state.start_merge_request(merge_request.id)
+          end
+
+          specify do
+            expect { service.execute(merge_request) }.to change { state.pending_merge_requests }
+                                                       .from(contain_exactly(merge_request.id.to_s)).to(be_empty)
+          end
+        end
+
+        context 'when destroying a non-merge request' do
+          let(:issue) { create(:issue) }
+
+          specify do
+            expect { service.execute(issue) }.not_to change { state.pending_merge_requests }
+          end
         end
       end
     end
