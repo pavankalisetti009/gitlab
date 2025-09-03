@@ -68710,7 +68710,19 @@ msgstr ""
 msgid "Usage trends"
 msgstr ""
 
+msgid "UsageBilling|Current month usage"
+msgstr ""
+
+msgid "UsageBilling|Purchase a monthly commitment"
+msgstr ""
+
 msgid "UsageBilling|Usage Billing"
+msgstr ""
+
+msgid "UsageBilling|Usage by user"
+msgstr ""
+
+msgid "UsageBilling|Usage trends"
 msgstr ""
 
 msgid "UsageQuotas|(of %{totalStorageSize})"
