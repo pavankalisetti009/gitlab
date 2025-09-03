@@ -117,8 +117,11 @@ module Gitlab
             data[key] = '[Invalid]'
           end
 
-          override :service_name
-          def service_name
+          override :unit_primitive_name
+          def unit_primitive_name
+            # The permissions to use "categorize question" are not different from the ones for duo_chat,
+            # so we decided not to use the more specific Unit Primitive here
+            # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203115#note_2725395334
             :duo_chat
           end
         end

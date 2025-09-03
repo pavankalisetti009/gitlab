@@ -25,7 +25,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
       it 'executes a completion request and calls the response chains' do
         expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
           user,
-          service_name: :generate_commit_message,
+          unit_primitive_name: :generate_commit_message,
           tracking_context: tracking_context
         )
         expect(ai_client).to receive(:complete_prompt).with(

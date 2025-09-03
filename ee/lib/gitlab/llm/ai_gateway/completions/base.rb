@@ -47,7 +47,7 @@ module Gitlab
             { 'detail' => DEFAULT_ERROR }
           end
 
-          def service_name
+          def unit_primitive_name
             prompt_message.ai_action.to_sym
           end
 

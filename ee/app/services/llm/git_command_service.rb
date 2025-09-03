@@ -23,7 +23,7 @@ module Llm
       '1.0.0'
     end
 
-    alias_method :service_name, :ai_action
+    alias_method :unit_primitive_name, :ai_action
     alias_method :prompt_name, :ai_action
 
     def inputs

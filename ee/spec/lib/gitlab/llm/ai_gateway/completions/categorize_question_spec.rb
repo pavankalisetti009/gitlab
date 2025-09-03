@@ -43,7 +43,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
   def expect_client
     expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
       user,
-      service_name: :duo_chat,
+      unit_primitive_name: :duo_chat,
       tracking_context: tracking_context
     ).and_return(ai_client)
     expect(ai_client).to receive(:complete_prompt).with(

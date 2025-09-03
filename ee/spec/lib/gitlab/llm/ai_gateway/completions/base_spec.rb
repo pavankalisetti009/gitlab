@@ -41,7 +41,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
   describe '#execute' do
     before do
       allow(Gitlab::Llm::AiGateway::Client).to receive(:new)
-        .with(user, service_name: ai_action.to_sym, tracking_context: tracking_context).and_return(client)
+        .with(user, unit_primitive_name: ai_action.to_sym, tracking_context: tracking_context).and_return(client)
     end
 
     let(:result) { { status: :success } }
@@ -163,10 +163,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       end
 
       context 'when feature setting is set to self hosted' do
-        let(:ai_action) { :duo_chat_explain_code }
+        let(:ai_action) { :explain_code }
 
         let!(:feature_setting) do
-          create(:ai_feature_setting, feature: ai_action)
+          create(:ai_feature_setting, feature: :duo_chat_explain_code)
         end
 
         it 'includes model_metadata in the request body, ignores the version' do
@@ -199,10 +199,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       end
 
       context 'when feature setting is set to vendored' do
-        let(:ai_action) { :duo_chat_fix_code }
+        let(:ai_action) { :fix_code }
 
         let!(:feature_setting) do
-          create(:ai_feature_setting, feature: ai_action, provider: :vendored)
+          create(:ai_feature_setting, feature: :duo_chat_fix_code, provider: :vendored)
         end
 
         it 'uses the version ignores the version' do

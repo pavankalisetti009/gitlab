@@ -9,8 +9,8 @@ module Gitlab
 
         private
 
-        override :service_name
-        def service_name
+        override :unit_primitive_name
+        def unit_primitive_name
           :review_merge_request
         end
 

@@ -17,7 +17,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it 'creates ai gateway client with different service name' do
         expect(::Gitlab::Llm::AiGateway::Client).to receive(:new).with(
           user,
-          service_name: :alternative,
+          unit_primitive_name: :alternative,
           tracking_context: tracking_context
         )
 
@@ -31,7 +31,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it 'creates ai gateway client with duo_chat service name' do
         expect(::Gitlab::Llm::AiGateway::Client).to receive(:new).with(
           user,
-          service_name: :duo_chat,
+          unit_primitive_name: :duo_chat,
           tracking_context: tracking_context
         )
 
