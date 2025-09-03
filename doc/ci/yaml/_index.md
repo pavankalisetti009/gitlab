@@ -4017,7 +4017,7 @@ Leading and trailing hyphens or periods are not permitted.
 create-pages:
   stage: deploy
   script:
-    - echo "Pages accessible through ${CI_PAGES_URL}/${CI_COMMIT_BRANCH}"
+    - echo "Pages accessible through ${CI_PAGES_URL}"
   pages:  # specifies that this is a Pages job and publishes the default public directory
     path_prefix: "$CI_COMMIT_BRANCH"
 ```
