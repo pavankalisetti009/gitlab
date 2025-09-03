@@ -25,14 +25,12 @@ module Ai
         ServiceResponse.error(message: ['You have insufficient permissions'], payload: payload)
       end
 
-      def track_ai_item_events(event_type, item_type)
+      def track_ai_item_events(event_type, additional_properties = {})
         track_internal_event(
           event_type,
           user: current_user,
           project: project,
-          additional_properties: {
-            label: item_type
-          }
+          additional_properties: additional_properties
         )
       end
     end

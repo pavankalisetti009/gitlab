@@ -25,7 +25,16 @@ module Ai
 
           return ServiceResponse.success(payload: { flow_config: flow_config.to_yaml }) unless execute_workflow
 
-          execute_workflow_service(flow_config)
+          execution_result = execute_workflow_service(flow_config)
+
+          if execution_result.success?
+            track_ai_item_events(
+              'trigger_ai_catalog_item',
+              { label: agent.item_type, property: "manual", value: agent.id }
+            )
+          end
+
+          execution_result
         end
 
         private
