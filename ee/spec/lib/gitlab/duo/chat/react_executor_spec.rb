@@ -93,6 +93,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       allow(Gitlab::AiGateway).to receive(:headers).and_return({})
       stub_feature_flags(ai_model_switching: true)
       allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(root_namespace)
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     def expect_sli_error(failed)
@@ -558,6 +559,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
       before do
         stub_feature_flags(ai_model_switching: false)
+        stub_saas_features(gitlab_com_subscriptions: false)
       end
 
       it 'sends the self-hosted model metadata' do
@@ -584,8 +586,10 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
       before do
         stub_feature_flags(ai_model_switching: false)
+        stub_saas_features(gitlab_com_subscriptions: false)
       end
 
+      # This test is failing because instance_level has not been implemented yet, now it's returning nil for now
       it 'sends the vendored model metadata' do
         params = step_params
         params[:model_metadata] = {
@@ -687,6 +691,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
           before do
             self_hosted_model = create(:ai_self_hosted_model, api_token: 'test_token')
             create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat)
+            stub_saas_features(gitlab_com_subscriptions: false)
           end
 
           it 'sends the self-hosted model metadata' do
@@ -713,7 +718,9 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
           let(:duo_default_required) { false }
 
           before do
-            allow(agent).to receive(:default_duo_namespace_required?).and_return(duo_default_required)
+            expect_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+              allow(service).to receive(:default_duo_namespace_required?).and_return(duo_default_required)
+            end
           end
 
           context 'when a duo default namespace is required' do
@@ -723,7 +730,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
               expect_sli_error(true)
               expect(answer.is_final?).to be_truthy
               expect(answer.content).to eq("I'm sorry, you have not selected a default GitLab Duo namespace. " \
-                "Please select a default GitLab Duo namespace in your user preferences.")
+                "Please select a default GitLab namespace for Duo in Preferences &gt Behaviour in GitLab.")
               expect(answer.error_code).to eq("G3002")
             end
           end
