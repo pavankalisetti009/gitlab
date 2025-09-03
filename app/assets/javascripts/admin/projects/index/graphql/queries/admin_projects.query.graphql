@@ -1,8 +1,10 @@
+#import "~/graphql_shared/fragments/ci_icon.fragment.graphql"
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "~/graphql_shared/fragments/project.fragment.graphql"
+#import "~/graphql_shared/fragments/project_interface.fragment.graphql"
 #import "~/admin/projects/index/graphql/fragments/admin_project.fragment.graphql"
 
-query getAdminProjects(
+query getAdminProjectsNew(
   $active: Boolean
   $first: Int
   $last: Int
@@ -15,7 +17,7 @@ query getAdminProjects(
   $programmingLanguageName: String
   $namespacePath: ID
 ) {
-  projects(
+  projects: adminProjects(
     active: $active
     first: $first
     last: $last
@@ -30,8 +32,11 @@ query getAdminProjects(
   ) {
     count
     nodes {
-      ...Project
+      ...ProjectInterface
       ...AdminProject
+      ... on Project {
+        ...Project
+      }
     }
     pageInfo {
       ...PageInfo
