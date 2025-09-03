@@ -88,7 +88,7 @@ module EE
               yield
             end
           ensure
-            ApplicationRecord.clear_active_connections!
+            ApplicationRecord.connection_handler.clear_active_connections!
           end
         end
       end
