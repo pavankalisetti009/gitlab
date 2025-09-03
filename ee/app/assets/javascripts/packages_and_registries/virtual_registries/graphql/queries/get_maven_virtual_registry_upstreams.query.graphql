@@ -7,7 +7,6 @@ query getVirtualRegistryUpstreams($id: VirtualRegistriesPackagesMavenRegistryID!
       name
       description
       username
-      password
       url
       registryUpstreams {
         id
