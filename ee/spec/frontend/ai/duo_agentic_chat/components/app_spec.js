@@ -21,10 +21,13 @@ import {
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
+  DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
+  DUO_WORKFLOW_STATUS_RUNNING,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
+import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { getCookie } from '~/lib/utils/common_utils';
 
 const mockSocketManager = {
@@ -62,7 +65,7 @@ jest.mock('ee/ai/duo_agentic_chat/utils/workflow_utils', () => ({
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
 const MOCK_NAMESPACE_ID = 'gid://gitlab/Group/456';
 const MOCK_RESOURCE_ID = 'gid://gitlab/Resource/789';
-const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflow/456';
+const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflows::Workflow/456';
 const MOCK_USER_MESSAGE = {
   content: 'How can I optimize my CI pipeline?',
   role: 'user',
@@ -148,6 +151,11 @@ jest.mock('~/lib/utils/common_utils', () => ({
   getCookie: jest.fn(),
 }));
 
+jest.mock('~/lib/utils/local_storage', () => ({
+  getStorageValue: jest.fn(),
+  saveStorageValue: jest.fn(),
+}));
+
 jest.mock('ee/ai/utils', () => {
   const actualUtils = jest.requireActual('ee/ai/utils');
 
@@ -225,6 +233,11 @@ describe('Duo Agentic Chat', () => {
     MOCK_UTILS_SETUP();
   });
 
+  beforeEach(() => {
+    // In the default state, there isn't activeThread registered in local storage
+    getStorageValue.mockReturnValue({ exists: false, value: null });
+  });
+
   afterEach(() => {
     duoChatGlobalState.isAgenticChatShown = false;
   });
@@ -252,7 +265,7 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().props('activeThreadId')).toBe('');
         expect(findDuoChat().props('threadList')).toEqual([
           {
-            id: 'gid://gitlab/Ai::DuoWorkflow/456',
+            id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
             lastUpdatedAt: '2024-01-01T00:00:00Z',
             title: 'Test workflow goal',
           },
@@ -878,6 +891,26 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
+  describe('workflowId watcher', () => {
+    beforeEach(async () => {
+      createComponent();
+      duoChatGlobalState.isAgenticChatShown = true;
+
+      await waitForPromises();
+    });
+
+    it('stores workflowId and active thread when workflowId changes', async () => {
+      await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+
+      await nextTick();
+
+      expect(saveStorageValue).toHaveBeenCalledWith(DUO_CURRENT_WORKFLOW_STORAGE_KEY, {
+        workflowId: '456',
+        activeThread: MOCK_WORKFLOW_ID,
+      });
+    });
+  });
+
   describe('Error conditions', () => {
     const errorText = 'Failed to fetch resources';
 
@@ -967,29 +1000,84 @@ describe('Duo Agentic Chat', () => {
 
   describe('Global state watchers', () => {
     describe('duoChatGlobalState.isAgenticChatShown', () => {
-      it('creates a new chat when Duo Chat is closed', async () => {
-        duoChatGlobalState.isAgenticChatShown = true;
-        createComponent();
-        wrapper.vm.workflowId = '456';
+      describe('when there is an workflowId registered in localStorage', () => {
+        beforeEach(() => {
+          getStorageValue.mockReset();
+          getStorageValue.mockReturnValueOnce({
+            exists: true,
+            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
+          });
+          duoChatGlobalState.isAgenticChatShown = false;
 
-        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+          createComponent();
+        });
 
-        duoChatGlobalState.isAgenticChatShown = false;
-        await nextTick();
+        it('loads workflow message thread', async () => {
+          expect(findDuoChat().exists()).toBe(false);
 
-        expect(onNewChatSpy).toHaveBeenCalled();
+          duoChatGlobalState.isAgenticChatShown = true;
+          await waitForPromises();
+
+          expect(findDuoChat().props().messages).toHaveLength(1);
+        });
+
+        describe(`when workflow status is "${DUO_WORKFLOW_STATUS_RUNNING}"`, () => {
+          beforeEach(async () => {
+            const mockParsedData = {
+              workflowStatus: DUO_WORKFLOW_STATUS_RUNNING,
+              checkpoint: { channel_values: { ui_chat_log: [] } },
+            };
+
+            WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
+
+            duoChatGlobalState.isAgenticChatShown = true;
+            await waitForPromises();
+          });
+
+          it('starts the workflow', () => {
+            expect(mockSocketManager.connect).toHaveBeenCalled();
+          });
+        });
+
+        describe(`when workflow status is not "${DUO_WORKFLOW_STATUS_RUNNING}"`, () => {
+          beforeEach(async () => {
+            const mockParsedData = {
+              workflowStatus: DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
+              checkpoint: { channel_values: { ui_chat_log: [] } },
+            };
+
+            WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
+
+            duoChatGlobalState.isAgenticChatShown = true;
+            await waitForPromises();
+          });
+
+          it('starts the workflow', () => {
+            expect(mockSocketManager.connect).not.toHaveBeenCalled();
+          });
+        });
       });
 
-      it('does not create a new chat when Duo Chat is opened', async () => {
-        duoChatGlobalState.isAgenticChatShown = false;
-        createComponent();
+      describe('when there is no activeThread registered in localStorage', () => {
+        beforeEach(() => {
+          getStorageValue.mockReset();
+          getStorageValue.mockReturnValueOnce({
+            exists: false,
+            value: null,
+          });
+          duoChatGlobalState.isAgenticChatShown = false;
 
-        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+          createComponent();
+        });
 
-        duoChatGlobalState.isAgenticChatShown = true;
-        await nextTick();
+        it('does not load messages for active thread', async () => {
+          expect(findDuoChat().exists()).toBe(false);
 
-        expect(onNewChatSpy).not.toHaveBeenCalled();
+          duoChatGlobalState.isAgenticChatShown = true;
+          await waitForPromises();
+
+          expect(findDuoChat().props().messages).toHaveLength(0);
+        });
       });
     });
   });
