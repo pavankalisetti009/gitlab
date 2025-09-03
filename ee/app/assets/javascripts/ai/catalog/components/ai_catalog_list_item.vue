@@ -106,6 +106,7 @@ export default {
   <list-item
     :resource="formattedItem"
     :timestamp-type="timestampType"
+    data-testid="ai-catalog-item"
     @click-avatar="(event) => onClickAvatar(event)"
   >
     <template #avatar-meta>
