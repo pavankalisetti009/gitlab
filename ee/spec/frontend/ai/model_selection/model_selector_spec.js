@@ -2,12 +2,19 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 import { createAlert } from '~/alert';
+import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import ModelSelector from 'ee/ai/model_selection/model_selector.vue';
+import GitlabDefaultModelModal from 'ee/ai/model_selection/gitlab_default_model_modal.vue';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import updateAiNamespaceFeatureSettingsMutation from 'ee/ai/model_selection/graphql/update_ai_namespace_feature_settings.mutation.graphql';
 import getAiNamespaceFeatureSettingsQuery from 'ee/ai/model_selection/graphql/get_ai_namepace_feature_settings.query.graphql';
+import {
+  GITLAB_DEFAULT_MODEL,
+  SUPPRESS_DEFAULT_MODEL_MODAL_KEY,
+} from 'ee/ai/model_selection/constants';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 
 import { mockDuoChatFeatureSettings } from './mock_data';
@@ -22,6 +29,7 @@ describe('ModelSelector', () => {
   const aiFeatureSetting = mockDuoChatFeatureSettings[0];
   const groupId = 'gid://gitlab/Group/1';
   const mockToastShow = jest.fn();
+  const mockShowModal = jest.fn();
 
   const updateAiNamespaceFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
@@ -59,6 +67,13 @@ describe('ModelSelector', () => {
         provide: {
           groupId,
         },
+        stubs: {
+          GitlabDefaultModelModal: stubComponent(GitlabDefaultModelModal, {
+            methods: {
+              showModal: mockShowModal,
+            },
+          }),
+        },
         mocks: {
           $toast: {
             show: mockToastShow,
@@ -70,11 +85,13 @@ describe('ModelSelector', () => {
 
   const findModelSelector = () => wrapper.findComponent(ModelSelector);
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
+  const findDefaultModelModal = () => wrapper.findComponent(GitlabDefaultModelModal);
 
   it('renders the component', () => {
     createComponent();
 
     expect(findModelSelector().exists()).toBe(true);
+    expect(findDefaultModelModal().exists()).toBe(true);
   });
 
   describe('loading state', () => {
@@ -101,12 +118,62 @@ describe('ModelSelector', () => {
         { value: 'claude_sonnet_3_7_20250219', text: 'Claude Sonnet 3.7 - Anthropic' },
         { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5 - Anthropic' },
         { value: 'claude_3_haiku_20240307', text: 'Claude Haiku 3 - Anthropic' },
-        { value: '', text: 'GitLab Default (Claude Sonnet 3.7 - Anthropic)' },
+        {
+          value: GITLAB_DEFAULT_MODEL,
+          text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
+        },
       ]);
     });
   });
 
-  describe('updating the feature setting', () => {
+  describe('onSelect', () => {
+    useLocalStorageSpy();
+
+    beforeEach(() => {
+      createComponent();
+    });
+
+    describe('when the GitLab default model is selected', () => {
+      describe('when the modal has not been suppressed', () => {
+        it('shows the modal and does not trigger `onUpdate`', async () => {
+          const onUpdateSpy = jest.spyOn(wrapper.vm, 'onUpdate');
+
+          await findModelSelectDropdown().vm.$emit('select', GITLAB_DEFAULT_MODEL);
+
+          expect(mockShowModal).toHaveBeenCalled();
+          expect(onUpdateSpy).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when the modal has been suppressed', () => {
+        beforeEach(() => {
+          localStorage.setItem(SUPPRESS_DEFAULT_MODEL_MODAL_KEY, 'true');
+        });
+
+        it('does not show the modal and triggers `onUpdate`', async () => {
+          const onUpdateSpy = jest.spyOn(wrapper.vm, 'onUpdate');
+
+          await findModelSelectDropdown().vm.$emit('select', GITLAB_DEFAULT_MODEL);
+
+          expect(mockShowModal).not.toHaveBeenCalled();
+          expect(onUpdateSpy).toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('when any other model is selected', () => {
+      it('does not show the modal and triggers `onUpdate`', async () => {
+        const onUpdateSpy = jest.spyOn(wrapper.vm, 'onUpdate');
+
+        await findModelSelectDropdown().vm.$emit('select', 'claude_3_5_sonnet_20240620');
+
+        expect(mockShowModal).not.toHaveBeenCalled();
+        expect(onUpdateSpy).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('onUpdate', () => {
     beforeEach(() => {
       createComponent();
     });
@@ -140,7 +207,7 @@ describe('ModelSelector', () => {
 
         expect(modelSelectionDropdown.props('selectedOption')).toStrictEqual({
           value: '',
-          text: 'GitLab Default (Claude Sonnet 3.7 - Anthropic)',
+          text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
         });
 
         modelSelectionDropdown.vm.$emit('select', mockSelectedModelId);
@@ -199,7 +266,7 @@ describe('ModelSelector', () => {
 
         expect(modelSelectionDropdown.props('selectedOption')).toStrictEqual({
           value: '',
-          text: 'GitLab Default (Claude Sonnet 3.7 - Anthropic)',
+          text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
         });
       });
 

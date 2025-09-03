@@ -2,6 +2,7 @@
 import { GlBadge, GlButton, GlCollapsibleListbox, GlExperimentBadge, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
+import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { RELEASE_STATES } from './constants';
 
 export default {
@@ -42,7 +43,7 @@ export default {
   SELF_HOSTED_ROUTE_NAMES,
   computed: {
     selected() {
-      return this.selectedOption?.value || '';
+      return this.selectedOption?.value || GITLAB_DEFAULT_MODEL;
     },
     dropdownToggleText() {
       return this.selectedOption?.text || this.placeholderDropdownText;

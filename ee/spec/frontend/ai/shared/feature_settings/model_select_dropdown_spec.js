@@ -4,6 +4,7 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
+import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { mockListItems as mockSelfHostedModelsItems } from '../../duo_self_hosted/self_hosted_models/mock_data';
 import { mockListItems as mockModelSelectionItems } from '../../model_selection/mock_data';
 
@@ -152,12 +153,15 @@ describe('ModelSelectDropdown', () => {
 
       const defaultModel = findDropdownListItems().at(3);
 
-      expect(defaultModel.text()).toMatch('GitLab Default (Claude Sonnet 3.7 - Anthropic)');
+      expect(defaultModel.text()).toMatch('GitLab default model (Claude Sonnet 3.7 - Anthropic)');
       expect(findDefaultModelDropdownBadge().exists()).toBe(true);
     });
 
     it('displays the default model badge when option is selected', () => {
-      const defaultModel = { value: '', text: 'GitLab Default (Claude Sonnet 3.7 - Anthropic)' };
+      const defaultModel = {
+        value: GITLAB_DEFAULT_MODEL,
+        text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
+      };
 
       createComponent({
         props: {

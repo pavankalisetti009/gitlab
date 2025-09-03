@@ -1,13 +1,16 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import GitlabDefaultModelModal from 'ee/ai/model_selection/gitlab_default_model_modal.vue';
 import ModelSelectDropdown from '../shared/feature_settings/model_select_dropdown.vue';
 import updateAiNamespaceFeatureSettingsMutation from './graphql/update_ai_namespace_feature_settings.mutation.graphql';
 import getAiNamespaceFeatureSettingsQuery from './graphql/get_ai_namepace_feature_settings.query.graphql';
+import { GITLAB_DEFAULT_MODEL, SUPPRESS_DEFAULT_MODEL_MODAL_KEY } from './constants';
 
 export default {
   name: 'ModelSelector',
   components: {
+    GitlabDefaultModelModal,
     ModelSelectDropdown,
   },
   inject: ['groupId'],
@@ -28,14 +31,14 @@ export default {
   },
   computed: {
     selectedModel() {
-      return this.aiFeatureSetting.selectedModel?.ref || '';
+      return this.aiFeatureSetting.selectedModel?.ref || GITLAB_DEFAULT_MODEL;
     },
     defaultModelOption() {
-      const text = sprintf(s__('AdminAIPoweredFeatures|GitLab Default %{defaultModel}'), {
+      const text = sprintf(s__('AdminAIPoweredFeatures|GitLab default model %{defaultModel}'), {
         defaultModel: `(${this.aiFeatureSetting.defaultModel?.name})` || '',
       });
 
-      return { value: '', text };
+      return { value: GITLAB_DEFAULT_MODEL, text };
     },
     listItems() {
       const modelOptions = this.aiFeatureSetting.selectableModels.map(({ ref, name }) => ({
@@ -50,7 +53,20 @@ export default {
     },
   },
   methods: {
-    async onSelect(option) {
+    checkShowModal() {
+      return localStorage.getItem(SUPPRESS_DEFAULT_MODEL_MODAL_KEY) !== 'true';
+    },
+    onSelect(option) {
+      const showModal = this.checkShowModal();
+
+      if (option === GITLAB_DEFAULT_MODEL && showModal) {
+        this.$refs.defaultModelModal.showModal();
+        return;
+      }
+
+      this.onUpdate(option);
+    },
+    async onUpdate(option) {
       this.isSaving = true;
 
       try {
@@ -105,10 +121,13 @@ export default {
 };
 </script>
 <template>
-  <model-select-dropdown
-    :selected-option="selectedOption"
-    :items="listItems"
-    :is-loading="isSaving || batchUpdateIsSaving"
-    @select="onSelect"
-  />
+  <div>
+    <gitlab-default-model-modal ref="defaultModelModal" @confirm-submit="onUpdate" />
+    <model-select-dropdown
+      :selected-option="selectedOption"
+      :items="listItems"
+      :is-loading="isSaving || batchUpdateIsSaving"
+      @select="onSelect"
+    />
+  </div>
 </template>
