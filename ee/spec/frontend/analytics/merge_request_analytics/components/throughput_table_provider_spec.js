@@ -270,7 +270,13 @@ describe('ThroughputTableProvider', () => {
         describe('approval details', () => {
           const iconName = 'approval';
 
-          it('does not display by default', () => {
+          it('does not display when there are no approvals', async () => {
+            await createComponentWithAdditionalData({
+              approvedBy: {
+                nodes: [],
+              },
+            });
+
             const approved = findColSubItem(TEST_IDS.MERGE_REQUEST_DETAILS, TEST_IDS.APPROVED);
 
             expect(approved.exists()).toBe(false);
@@ -295,20 +301,7 @@ describe('ThroughputTableProvider', () => {
             expect(icon.props('name')).toBe(iconName);
           });
 
-          it('displays the plural when there are multiple approvals', async () => {
-            await createComponentWithAdditionalData({
-              approvedBy: {
-                nodes: [
-                  {
-                    id: 1,
-                  },
-                  {
-                    id: 2,
-                  },
-                ],
-              },
-            });
-
+          it('displays the plural when there are multiple approvals', () => {
             const approved = findColSubItem(TEST_IDS.MERGE_REQUEST_DETAILS, TEST_IDS.APPROVED);
             const icon = approved.findComponent(GlIcon);
 
@@ -327,18 +320,16 @@ describe('ThroughputTableProvider', () => {
         expect(findCol(TEST_IDS.TIME_TO_MERGE).text()).toBe('4 minutes');
       });
 
-      it('does not display a milestone if not present', () => {
+      it('does not display a milestone if not present', async () => {
+        await createComponentWithAdditionalData({
+          milestone: null,
+        });
+
         expect(findCol(TEST_IDS.MILESTONE).exists()).toBe(false);
       });
 
-      it('displays the correct milestone when available', async () => {
-        const title = 'v1.0';
-
-        await createComponentWithAdditionalData({
-          milestone: { id: '1', title },
-        });
-
-        expect(findCol(TEST_IDS.MILESTONE).text()).toBe(title);
+      it('displays the correct milestone when available', () => {
+        expect(findCol(TEST_IDS.MILESTONE).text()).toBe('133.7');
       });
 
       it('displays the correct commit count', () => {
@@ -346,7 +337,7 @@ describe('ThroughputTableProvider', () => {
       });
 
       it('displays the correct pipeline count', () => {
-        expect(findCol(TEST_IDS.PIPELINES).text()).toBe('0');
+        expect(findCol(TEST_IDS.PIPELINES).text()).toBe('1');
       });
 
       it('displays the correctly formatted line changes', () => {

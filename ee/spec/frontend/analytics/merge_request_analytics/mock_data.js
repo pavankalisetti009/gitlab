@@ -144,7 +144,10 @@ export const throughputTableData = [
     createdAt: '2020-08-06T16:53:50Z',
     mergedAt: '2020-08-06T16:57:53Z',
     webUrl: 'http://127.0.0.1:3001/gitlab-org/gitlab-shell/-/merge_requests/11',
-    milestone: null,
+    milestone: {
+      id: '1',
+      title: '133.7',
+    },
     assignees: {
       nodes: [
         {
@@ -161,12 +164,22 @@ export const throughputTableData = [
       count: 0,
     },
     pipelines: {
-      nodes: [],
+      nodes: [
+        {
+          id: '1',
+          detailedStatus: {
+            id: '1',
+            label: 'success',
+            name: 'SUCCESS',
+            icon: 'status_success',
+          },
+        },
+      ],
     },
     commitCount: 1,
     userNotesCount: 0,
     approvedBy: {
-      nodes: [],
+      nodes: [{ id: '1' }, { id: '2' }],
     },
   },
 ];
