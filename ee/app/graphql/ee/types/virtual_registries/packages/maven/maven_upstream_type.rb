@@ -44,6 +44,12 @@ module EE
               description: 'Description of the upstream registry.',
               experiment: { milestone: '18.1' }
 
+            field :registries,
+              EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
+              null: false,
+              description: 'Represents the virtual registries which use the upstream.',
+              experiment: { milestone: '18.4' }
+
             field :registry_upstreams,
               [EE::Types::VirtualRegistries::Packages::Maven::MavenRegistryUpstreamType],
               null: false,
