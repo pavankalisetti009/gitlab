@@ -14,6 +14,12 @@ module Resolvers
 
         apply_lookahead(result)
       end
+
+      def preloads
+        {
+          has_dependency_paths: :sbom_graph_paths_as_descendant
+        }
+      end
     end
   end
 end
