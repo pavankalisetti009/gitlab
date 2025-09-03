@@ -22,6 +22,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
     )
   end
 
+  shared_examples 'tracks policy sync state' do
+    include_context 'with policy sync state'
+
+    before do
+      state.append_projects([project.id])
+    end
+
+    specify do
+      expect { execute }.to change { state.pending_projects }
+                                 .from(contain_exactly(project.id.to_s)).to(be_empty)
+    end
+  end
+
   subject(:execute) { service.execute }
 
   describe '#execute' do
@@ -56,6 +69,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
       context 'when framework is added' do
         let(:event_type) { Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:added] }
 
+        it_behaves_like 'tracks policy sync state'
+
         it 'links policy to project' do
           expect { execute }.to change { Security::PolicyProjectLink.count }.by(1)
 
@@ -73,6 +88,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
 
       context 'when framework is removed' do
         let(:event_type) { Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:removed] }
+
+        it_behaves_like 'tracks policy sync state'
 
         context 'when policy is linked to the project' do
           before do
@@ -141,6 +158,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
 
             expect(sync_service).to have_received(:update_rules).with([rules.first])
           end
+
+          it_behaves_like 'tracks policy sync state'
         end
       end
 
@@ -165,6 +184,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
 
             expect(sync_service).to have_received(:update_rules).with(rules)
           end
+
+          it_behaves_like 'tracks policy sync state'
         end
       end
     end
@@ -197,6 +218,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
 
         expect(sync_service).to have_received(:update_rules).with(undeleted_rules)
       end
+
+      it_behaves_like 'tracks policy sync state'
     end
 
     context 'when event is PolicyResyncEvent' do
@@ -205,6 +228,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
       let!(:policy_project_link) do
         create(:security_policy_project_link, project: project, security_policy: security_policy)
       end
+
+      it_behaves_like 'tracks policy sync state'
 
       context 'when policy is linked to the project' do
         it 'unlinks and then links the policy to the project' do

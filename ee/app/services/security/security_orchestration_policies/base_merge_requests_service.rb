@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class BaseMergeRequestsService
       include Gitlab::Loggable
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
       HISTOGRAM = :gitlab_security_policies_sync_opened_merge_requests_duration_seconds
 
@@ -23,7 +24,13 @@ module Security
 
       attr_reader :project
 
+      def sync_policy_specific_approval_rules(_merge_request); end
+
       def sync_merge_request(merge_request)
+        start_merge_request_policy_sync(merge_request.id)
+
+        sync_policy_specific_approval_rules(merge_request)
+
         sync_any_merge_request_approval_rules(merge_request)
         sync_preexisting_state_approval_rules(merge_request)
         notify_for_policy_violations(merge_request)
@@ -40,16 +47,19 @@ module Security
       def sync_any_merge_request_approval_rules(merge_request)
         return if merge_request.project.scan_result_policy_reads.targeting_commits.none?
 
+        start_merge_request_worker_policy_sync(merge_request.id)
         ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)
       end
 
       def sync_preexisting_state_approval_rules(merge_request)
         return unless merge_request.approval_rules.by_report_types([:scan_finding, :license_scanning]).any?
 
+        start_merge_request_worker_policy_sync(merge_request.id)
         ::Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker.perform_async(merge_request.id)
       end
 
       def notify_for_policy_violations(merge_request)
+        start_merge_request_worker_policy_sync(merge_request.id)
         ::Security::UnenforceablePolicyRulesNotificationWorker.perform_async(
           merge_request.id,
           { 'force_without_approval_rules' => true }

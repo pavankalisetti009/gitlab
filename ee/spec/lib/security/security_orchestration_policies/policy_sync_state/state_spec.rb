@@ -94,6 +94,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       state.finish_project(other_project_id)
     end
 
+    context 'when project has failed before' do
+      before do
+        state.fail_project(project_id)
+      end
+
+      it 'removes the project from failed set' do
+        expect { state.finish_project(1) }.to change {
+          state.failed_projects
+        }.from(contain_exactly(project_id.to_s)).to(be_empty)
+      end
+    end
+
     context 'with feature disabled' do
       before do
         stub_feature_flags(security_policy_sync_propagation_tracking: false)
@@ -486,6 +498,58 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
         0,  # merge request progress: still 0%
         10  # merge requests total
       )
+    end
+
+    context 'when sync is not in progress' do
+      before do
+        state.clear
+      end
+
+      it 'does not trigger subscription' do
+        expect(state).not_to receive(:trigger_subscription)
+
+        state.append_projects([1])
+      end
+    end
+
+    context 'when feature is disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+        state.clear_memoization(:feature_disabled)
+      end
+
+      it 'does not trigger subscription' do
+        expect(state).not_to receive(:trigger_subscription)
+
+        state.append_projects([1])
+      end
+    end
+
+    context 'when only projects are pending' do
+      before do
+        state.clear
+        state.append_projects([1, 2, 3])
+      end
+
+      it 'triggers subscription when finishing a project' do
+        expect(state).to receive(:trigger_subscription).exactly(:once).and_call_original
+
+        state.finish_project(1)
+      end
+    end
+
+    context 'when only merge requests are pending' do
+      before do
+        state.clear
+        state.start_merge_request(1)
+        state.start_merge_request_worker(1)
+      end
+
+      it 'triggers subscription when finishing a merge request worker' do
+        expect(state).to receive(:trigger_subscription).exactly(:once).and_call_original
+
+        state.finish_merge_request_worker(1)
+      end
     end
   end
 end

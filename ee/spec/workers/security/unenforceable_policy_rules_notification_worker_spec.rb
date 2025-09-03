@@ -17,6 +17,18 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationWorker, feature_cat
     stub_licensed_features(security_orchestration_policies: feature_licensed)
   end
 
+  shared_examples 'tracks policy sync state' do
+    include_context 'with policy sync state'
+
+    before do
+      state.start_merge_request_worker(merge_request.id)
+    end
+
+    specify do
+      expect { run_worker }.to change { state.total_merge_request_workers_count(merge_request.id) }.from(1).to(0)
+    end
+  end
+
   describe '#perform' do
     subject(:run_worker) { described_class.new.perform(merge_request_id, params) }
 
@@ -39,6 +51,8 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationWorker, feature_cat
         run_worker
       end
 
+      it_behaves_like 'tracks policy sync state'
+
       context 'when force_without_approval_rules param is provided' do
         let(:params) { { 'force_without_approval_rules' => true } }
 
@@ -49,6 +63,8 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationWorker, feature_cat
 
           run_worker
         end
+
+        it_behaves_like 'tracks policy sync state'
       end
     end
 

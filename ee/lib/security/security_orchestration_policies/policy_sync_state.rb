@@ -42,6 +42,7 @@ module Security
 
           with_redis do |redis|
             redis.srem(projects_sync_key, project_id.to_s)
+            redis.srem(failed_projects_sync_key, project_id.to_s)
           end
 
           trigger_subscription
@@ -228,6 +229,8 @@ module Security
                 redis.get(total_merge_requests_key).to_i
               ]
             end
+
+          return unless sync_in_progress?
 
           GraphqlTriggers.security_policies_sync_updated(
             policy_configuration,

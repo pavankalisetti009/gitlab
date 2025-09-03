@@ -156,5 +156,29 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
         end
       end
     end
+
+    describe 'policy sync state tracking' do
+      include_context 'with policy sync state'
+
+      let(:project_id) { non_existing_record_id }
+      let(:merge_request_id) { non_existing_record_id }
+
+      subject(:perform) { described_class.new.perform(policy_configuration.id) }
+
+      before do
+        state.append_projects([project_id])
+        state.start_merge_request(merge_request_id)
+      end
+
+      it 'resets pending projects' do
+        expect { perform }.to change { state.pending_projects }
+                                .from(contain_exactly(project_id.to_s)).to(be_empty)
+      end
+
+      it 'resets pending project merge requests' do
+        expect { perform }.to change { state.pending_merge_requests }
+                                .from(contain_exactly(merge_request_id.to_s)).to(be_empty)
+      end
+    end
   end
 end

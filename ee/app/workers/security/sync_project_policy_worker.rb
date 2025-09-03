@@ -4,6 +4,7 @@ module Security
   class SyncProjectPolicyWorker
     include ApplicationWorker
     prepend ::Geo::SkipSecondary
+    include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
     data_consistency :sticky
     idempotent!
@@ -30,15 +31,51 @@ module Security
     end
 
     def perform(project_id, security_policy_id, policy_changes = {}, params = {})
-      project = Project.find_by_id(project_id)
-      security_policy = Security::Policy.find_by_id(security_policy_id)
+      policy_sync_config_id = Gitlab::ApplicationContext.current_context_attribute(
+        Security::SecurityOrchestrationPolicies::PolicySyncState::POLICY_SYNC_CONTEXT_KEY
+      )&.to_i
 
-      return unless project && security_policy
+      begin
+        project = Project.find_by_id(project_id)
+        security_policy = Security::Policy.find_by_id(security_policy_id)
 
+        return unless project && security_policy
+
+        handle_change(project, security_policy, policy_changes, params)
+      rescue StandardError => e
+        track_failure(project.id, policy_sync_config_id) if policy_sync_config_id
+
+        raise e
+      else
+        track_success(project.id, policy_sync_config_id) if policy_sync_config_id
+      end
+    end
+
+    def handle_change(project, security_policy, policy_changes, params)
       if params['event'].present?
         handle_event(project, security_policy, params['event'])
       else
         handle_policy_changes(project, security_policy, policy_changes)
+      end
+    end
+
+    def track_failure(project_id, policy_sync_config_id)
+      within_policy_configuration_context(policy_sync_config_id) do
+        fail_project_policy_sync(project_id)
+      end
+    end
+
+    def track_success(project_id, policy_sync_config_id)
+      within_policy_configuration_context(policy_sync_config_id) do
+        finish_project_policy_sync(project_id)
+      end
+    end
+
+    def within_policy_configuration_context(policy_sync_config_id)
+      with_context(
+        Security::SecurityOrchestrationPolicies::PolicySyncState::POLICY_SYNC_CONTEXT_KEY => policy_sync_config_id
+      ) do
+        yield
       end
     end
 

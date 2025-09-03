@@ -162,5 +162,13 @@ RSpec.describe Security::ScanResultPolicies::SyncFindingsToApprovalRulesService,
         it_behaves_like 'updates approvals'
       end
     end
+
+    describe 'policy sync state tracking' do
+      include_context 'with policy sync state'
+
+      specify do
+        expect { execute }.to change { state.total_merge_request_workers_count(merge_request.id) }.from(nil).to(1)
+      end
+    end
   end
 end

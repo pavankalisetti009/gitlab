@@ -57,6 +57,28 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     end
   end
 
+  shared_examples 'clears policy sync state' do
+    let(:project_id) { non_existing_record_id }
+    let(:merge_request_id) { non_existing_record_id }
+
+    subject(:state) { Security::SecurityOrchestrationPolicies::PolicySyncState::State.new(policy_configuration.id) }
+
+    before do
+      state.append_projects([project_id])
+      state.start_merge_request(merge_request_id)
+    end
+
+    specify do
+      expect { handle_event }.to change { state.pending_projects }
+                                   .from(include(project_id.to_s)).to(exclude(project_id.to_s))
+    end
+
+    specify do
+      expect { handle_event }.to change { state.pending_merge_requests }
+                                   .from(include(merge_request_id.to_s)).to(be_empty)
+    end
+  end
+
   context 'when event is Security::PolicyDeletedEvent' do
     let(:policy_deleted_event) do
       Security::PolicyDeletedEvent.new(data: { security_policy_id: policy.id })
@@ -77,6 +99,8 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     let(:policy_created_event) { Security::PolicyCreatedEvent.new(data: { security_policy_id: policy.id }) }
 
     subject(:handle_event) { described_class.new.handle_event(policy_created_event) }
+
+    it_behaves_like 'clears policy sync state'
 
     it_behaves_like 'subscribes to event' do
       let(:event) { policy_created_event }
@@ -154,6 +178,8 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     let(:policy_updated_event) { Security::PolicyUpdatedEvent.new(data: event_payload) }
 
     subject(:handle_event) { described_class.new.handle_event(policy_updated_event) }
+
+    it_behaves_like 'clears policy sync state'
 
     it_behaves_like 'subscribes to event' do
       let(:event) { policy_updated_event }
@@ -314,6 +340,8 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     let(:policy_resync_event) { Security::PolicyResyncEvent.new(data: { security_policy_id: policy.id }) }
 
     subject(:handle_event) { described_class.new.handle_event(policy_resync_event) }
+
+    it_behaves_like 'clears policy sync state'
 
     it 'calls Security::SyncProjectPolicyWorker with event payload' do
       expect(::Security::SyncProjectPolicyWorker)

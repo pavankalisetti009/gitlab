@@ -18,5 +18,17 @@ RSpec.describe Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker, fe
 
       perform
     end
+
+    describe 'policy sync state tracking' do
+      include_context 'with policy sync state'
+
+      before do
+        state.start_merge_request_worker(merge_request.id)
+      end
+
+      specify do
+        expect { perform }.to change { state.total_merge_request_workers_count(merge_request.id) }.from(1).to(0)
+      end
+    end
   end
 end

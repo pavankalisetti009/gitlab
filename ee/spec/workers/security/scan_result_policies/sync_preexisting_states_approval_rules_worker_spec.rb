@@ -24,6 +24,18 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesW
       run_worker
     end
 
+    describe 'policy sync state tracking' do
+      include_context 'with policy sync state'
+
+      before do
+        state.start_merge_request_worker(merge_request_id)
+      end
+
+      specify do
+        expect { run_worker }.to change { state.total_merge_request_workers_count(merge_request_id) }.from(1).to(0)
+      end
+    end
+
     context 'when merge_request does not exist' do
       let(:merge_request_id) { non_existing_record_id }
 

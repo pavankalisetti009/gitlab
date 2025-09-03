@@ -3,6 +3,8 @@
 module Security
   module ScanResultPolicies
     class SyncFindingsToApprovalRulesService
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
+
       def initialize(pipeline)
         @project = pipeline.project
         @pipeline = if pipeline.child?
@@ -40,6 +42,7 @@ module Security
         merge_requests_targeting_pipeline_ref.each do |merge_request|
           head_pipeline = merge_request.diff_head_pipeline || next
 
+          start_merge_request_worker_policy_sync(merge_request.id)
           Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(
             head_pipeline.id,
             merge_request.id)
@@ -51,6 +54,7 @@ module Security
       end
 
       def update_approvals(merge_request)
+        start_merge_request_worker_policy_sync(merge_request.id)
         Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(pipeline.id, merge_request.id)
       end
 

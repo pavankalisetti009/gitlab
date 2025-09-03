@@ -4,6 +4,7 @@ module Security
   module ScanResultPolicies
     class SyncPreexistingStatesApprovalRulesWorker
       include ApplicationWorker
+      include ::Security::SecurityOrchestrationPolicies::PolicySyncState::Callbacks
 
       idempotent!
       data_consistency :always
@@ -17,6 +18,8 @@ module Security
 
         Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesService.new(merge_request).execute
         Security::ScanResultPolicies::UpdateLicenseApprovalsService.new(merge_request, nil, true).execute
+
+        finish_merge_request_worker_policy_sync(merge_request_id)
       end
     end
   end
