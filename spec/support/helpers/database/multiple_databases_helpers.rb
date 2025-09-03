@@ -48,17 +48,6 @@ module Database
       skip "Skipping because some of the extra databases #{databases} are setup"
     end
 
-    def skip_if_database_specific_tasks_not_available(*databases)
-      active_databases = Gitlab::Database.database_base_models.filter_map do |name, model|
-        config_hash = model.connection_db_config.configuration_hash
-        name.to_sym unless config_hash[:database_tasks] == false
-      end
-
-      return if databases.all? { |db| active_databases.include?(db) }
-
-      skip "Skipping because database-specific rake tasks not available for #{databases}"
-    end
-
     def reconfigure_db_connection(name: nil, config_hash: {}, model: ActiveRecord::Base, config_model: nil)
       db_config = (config_model || model).connection_db_config
 
