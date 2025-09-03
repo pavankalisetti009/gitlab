@@ -45,9 +45,9 @@ export default {
 
 <template>
   <div class="gl-flex gl-items-center">
-    <gl-button 
-      v-if="isLoggedIn && buttonProps.route" 
-      :to="{ name: buttonProps.route }" 
+    <gl-button
+      v-if="isLoggedIn && buttonProps.route"
+      :to="{ name: buttonProps.route }"
       variant="confirm"
     >
       {{ buttonProps.label }}

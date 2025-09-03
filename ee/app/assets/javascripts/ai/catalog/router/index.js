@@ -28,12 +28,11 @@ import {
 
 Vue.use(VueRouter);
 
-const requireAuth = (to, from, next) => {
+const requireAuth = (_, __, next) => {
   if (isLoggedIn()) {
     next();
   } else {
-    // Redirect to the main agents page if not authenticated
-    next({ name: AI_CATALOG_AGENTS_ROUTE });
+    next({ name: AI_CATALOG_INDEX_ROUTE });
   }
 };
 
@@ -103,6 +102,7 @@ export const createRouter = (base) => {
                 name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
                 path: 'duplicate',
                 component: AiCatalogAgentsDuplicate,
+                beforeEnter: requireAuth,
                 meta: {
                   text: s__('AICatalog|Duplicate agent'),
                 },
