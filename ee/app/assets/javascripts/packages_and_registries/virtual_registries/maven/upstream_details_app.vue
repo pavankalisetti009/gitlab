@@ -1,5 +1,5 @@
 <script>
-import { GlFilteredSearch, GlLoadingIcon, GlPagination } from '@gitlab/ui';
+import { GlFilteredSearch, GlPagination } from '@gitlab/ui';
 import {
   getMavenUpstreamCacheEntries,
   deleteMavenUpstreamCacheEntry,
@@ -19,7 +19,6 @@ export default {
   components: {
     CacheEntriesTable,
     GlFilteredSearch,
-    GlLoadingIcon,
     GlPagination,
     UpstreamDetailsHeader,
   },
@@ -31,7 +30,9 @@ export default {
   data() {
     return {
       cacheEntries: [],
-      loading: true,
+      cacheEntriesCount: 0,
+      cacheEntriesCountLoading: false,
+      cacheEntriesLoading: false,
       urlParams: {},
       page: INITIAL_PAGE,
     };
@@ -45,25 +46,25 @@ export default {
         },
       ];
     },
-    cacheEntriesCount() {
-      return this.upstream.cacheEntriesCount;
-    },
     showPagination() {
       return this.cacheEntriesCount > this.$options.perPage;
     },
   },
-  mounted() {
+  created() {
     const queryStringObject = queryToObject(window.location.search);
 
     // Extract both search and page from URL
     this.urlParams = queryStringObject.search ? { search: queryStringObject.search } : {};
     this.page = parseInt(queryStringObject.page, 10) || INITIAL_PAGE;
 
-    this.fetchCacheEntries(this.page);
+    this.fetchCacheEntries(this.page, { isInitialLoad: true });
   },
   methods: {
-    async fetchCacheEntries(page) {
-      this.loading = true;
+    async fetchCacheEntries(page, { isInitialLoad = false } = {}) {
+      if (isInitialLoad) {
+        this.cacheEntriesCountLoading = true;
+      }
+      this.cacheEntriesLoading = true;
 
       try {
         const response = await getMavenUpstreamCacheEntries({
@@ -71,7 +72,7 @@ export default {
           params: { ...this.urlParams, page, per_page: PAGE_SIZE },
         });
 
-        this.cacheEntries = response.data;
+        this.setCacheEntries(response);
 
         this.updateUrl();
       } catch (error) {
@@ -81,17 +82,21 @@ export default {
           captureError: true,
         });
       } finally {
-        this.loading = false;
+        if (isInitialLoad) {
+          this.cacheEntriesCountLoading = false;
+        }
+        this.cacheEntriesLoading = false;
       }
     },
     async handleDeleteCacheEntry({ id }) {
-      this.loading = true;
+      this.cacheEntriesCountLoading = true;
+      this.cacheEntriesLoading = true;
 
       try {
         await deleteMavenUpstreamCacheEntry({
           id,
         });
-        this.fetchCacheEntries(this.page);
+        await this.fetchCacheEntries(this.page);
       } catch (error) {
         createAlert({
           message: s__('VirtualRegistry|Failed to delete cache entry.'),
@@ -99,11 +104,13 @@ export default {
           captureError: true,
         });
       } finally {
-        this.loading = false;
+        this.cacheEntriesCountLoading = false;
+        this.cacheEntriesLoading = false;
       }
     },
     async searchCacheEntries(filters) {
-      this.loading = true;
+      this.cacheEntriesCountLoading = true;
+      this.cacheEntriesLoading = true;
       this.page = INITIAL_PAGE;
 
       try {
@@ -116,7 +123,7 @@ export default {
           params: { search: searchTerm, page: INITIAL_PAGE, per_page: PAGE_SIZE },
         });
 
-        this.cacheEntries = response.data;
+        this.setCacheEntries(response);
 
         this.updateUrl();
       } catch (error) {
@@ -126,8 +133,13 @@ export default {
           captureError: true,
         });
       } finally {
-        this.loading = false;
+        this.cacheEntriesCountLoading = false;
+        this.cacheEntriesLoading = false;
       }
+    },
+    setCacheEntries({ headers, data }) {
+      this.cacheEntries = data;
+      this.cacheEntriesCount = Number(headers['x-total']);
     },
     handlePageChange(page) {
       this.page = page;
@@ -154,10 +166,12 @@ export default {
 </script>
 
 <template>
-  <gl-loading-icon v-if="loading" size="lg" class="gl-mt-5" />
-
-  <div v-else>
-    <upstream-details-header :upstream="upstream" />
+  <div>
+    <upstream-details-header
+      :upstream="upstream"
+      :loading="cacheEntriesCountLoading"
+      :cache-entries-count="cacheEntriesCount"
+    />
 
     <div class="row-content-block gl-flex gl-flex-col gl-gap-3 md:gl-flex-row">
       <gl-filtered-search
@@ -170,7 +184,11 @@ export default {
       />
     </div>
 
-    <cache-entries-table :cache-entries="cacheEntries" @delete="handleDeleteCacheEntry" />
+    <cache-entries-table
+      :cache-entries="cacheEntries"
+      :loading="cacheEntriesLoading"
+      @delete="handleDeleteCacheEntry"
+    />
 
     <gl-pagination
       v-if="showPagination"

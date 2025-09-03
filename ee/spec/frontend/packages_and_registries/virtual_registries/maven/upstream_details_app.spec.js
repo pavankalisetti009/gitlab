@@ -1,5 +1,4 @@
-import { GlFilteredSearch, GlLoadingIcon, GlPagination } from '@gitlab/ui';
-import { nextTick } from 'vue';
+import { GlFilteredSearch, GlPagination } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
@@ -12,7 +11,7 @@ import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/com
 import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
-import { mockCacheEntries, mockUpstreamPagination } from '../mock_data';
+import { mockCacheEntries, mockUpstreamPagination, mockUpstream } from '../mock_data';
 
 jest.mock('~/alert');
 jest.mock('ee/api/virtual_registries_api', () => ({
@@ -24,16 +23,16 @@ describe('UpstreamDetailsApp', () => {
   let wrapper;
 
   const defaultProvide = {
-    upstream: {
-      id: 5,
-      name: 'Test Maven Upstream',
-      url: 'https://maven.example.com',
-      description: 'This is a test maven upstream',
-      cacheEntriesCount: 2,
-    },
+    upstream: mockUpstream,
   };
 
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const generateResponse = ({ totalCount = 1 } = {}) => {
+    return {
+      data: mockCacheEntries,
+      headers: { 'x-total': String(totalCount) },
+    };
+  };
+
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findTable = () => wrapper.findComponent(CacheEntriesTable);
   const findHeader = () => wrapper.findComponent(UpstreamDetailsHeader);
@@ -53,35 +52,32 @@ describe('UpstreamDetailsApp', () => {
     deleteMavenUpstreamCacheEntry.mockReset();
   });
 
-  describe('loading', () => {
-    it('renders loading icon', () => {
+  describe('initial loading', () => {
+    it('passes loading state to header and table', () => {
       createComponent();
 
-      expect(findLoadingIcon().exists()).toBe(true);
+      expect(findHeader().props('loading')).toBe(true);
+      expect(findTable().props('loading')).toBe(true);
     });
   });
 
   describe('component rendering', () => {
     beforeEach(async () => {
-      getMavenUpstreamCacheEntries.mockResolvedValue({ data: mockCacheEntries });
+      getMavenUpstreamCacheEntries.mockResolvedValue(generateResponse());
 
       createComponent();
 
       await waitForPromises();
     });
 
-    it('does not render loading icon', () => {
-      expect(findLoadingIcon().exists()).toBe(false);
+    it('passes loading state as false after data loads', () => {
+      expect(findHeader().props('loading')).toBe(false);
+      expect(findTable().props('loading')).toBe(false);
     });
 
-    it('renders details header', () => {
-      expect(findHeader().props('upstream')).toEqual({
-        id: 5,
-        name: 'Test Maven Upstream',
-        url: 'https://maven.example.com',
-        description: 'This is a test maven upstream',
-        cacheEntriesCount: 2,
-      });
+    it('renders details header with cache entries count', () => {
+      expect(findHeader().props('upstream')).toEqual(mockUpstream);
+      expect(findHeader().props('cacheEntriesCount')).toBe(1);
     });
 
     it('renders cache entries table', () => {
@@ -110,7 +106,7 @@ describe('UpstreamDetailsApp', () => {
 
   describe('filtered search', () => {
     beforeEach(async () => {
-      getMavenUpstreamCacheEntries.mockResolvedValue({ data: mockCacheEntries });
+      getMavenUpstreamCacheEntries.mockResolvedValue(generateResponse());
 
       createComponent();
 
@@ -123,16 +119,16 @@ describe('UpstreamDetailsApp', () => {
 
     it('searches for artifact relative path', async () => {
       jest.spyOn(urlUtils, 'updateHistory');
+      getMavenUpstreamCacheEntries.mockResolvedValue(generateResponse());
 
-      findFilteredSearch().vm.$emit('submit', ['foo']);
+      await findFilteredSearch().vm.$emit('submit', ['foo']);
 
-      await nextTick();
-
-      expect(findLoadingIcon().exists()).toBe(true);
+      expect(findHeader().props('loading')).toBe(true);
+      expect(findTable().props('loading')).toBe(true);
 
       await waitForPromises();
 
-      expect(findLoadingIcon().exists()).toBe(false);
+      expect(findTable().props('loading')).toBe(false);
       expect(getMavenUpstreamCacheEntries).toHaveBeenCalledWith({
         id: 5,
         params: { search: 'foo', page: 1, per_page: 20 },
@@ -145,7 +141,7 @@ describe('UpstreamDetailsApp', () => {
 
   describe('pagination', () => {
     beforeEach(async () => {
-      getMavenUpstreamCacheEntries.mockResolvedValue({ data: mockCacheEntries });
+      getMavenUpstreamCacheEntries.mockResolvedValue(generateResponse({ totalCount: 22 }));
 
       createComponent({ upstream: mockUpstreamPagination });
 
@@ -160,7 +156,10 @@ describe('UpstreamDetailsApp', () => {
     it('paginates for page based data', async () => {
       jest.spyOn(urlUtils, 'updateHistory');
 
-      findPagination().vm.$emit('input', 2);
+      await findPagination().vm.$emit('input', 2);
+
+      expect(findHeader().props('loading')).toBe(false);
+      expect(findTable().props('loading')).toBe(true);
 
       await waitForPromises();
 
@@ -176,13 +175,16 @@ describe('UpstreamDetailsApp', () => {
 
   describe('actions', () => {
     it('deletes upstream artifact', async () => {
-      getMavenUpstreamCacheEntries.mockResolvedValue({ data: mockCacheEntries });
+      getMavenUpstreamCacheEntries.mockResolvedValue(generateResponse());
 
       createComponent();
 
       await waitForPromises();
 
-      findTable().vm.$emit('delete', { id: 5 });
+      await findTable().vm.$emit('delete', { id: 5 });
+
+      expect(findHeader().props('loading')).toBe(true);
+      expect(findTable().props('loading')).toBe(true);
 
       expect(deleteMavenUpstreamCacheEntry).toHaveBeenCalledWith({ id: 5 });
     });

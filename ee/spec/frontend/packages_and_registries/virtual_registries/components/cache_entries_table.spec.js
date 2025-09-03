@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlBadge, GlButton, GlModal, GlTableLite } from '@gitlab/ui';
+import { GlBadge, GlButton, GlLoadingIcon, GlModal, GlTable } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/cache_entries_table.vue';
@@ -12,7 +12,8 @@ describe('CacheEntriesTable', () => {
     cacheEntries: mockCacheEntries,
   };
 
-  const findTable = () => wrapper.findComponent(GlTableLite);
+  const findTable = () => wrapper.findComponent(GlTable);
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findDeleteButton = () => wrapper.findComponent(GlButton);
   const findModal = () => wrapper.findComponent(GlModal);
   const findBadge = () => wrapper.findComponent(GlBadge);
@@ -59,6 +60,26 @@ describe('CacheEntriesTable', () => {
 
     it('displays artifact size', () => {
       expect(findSize().text()).toBe('15 B');
+    });
+  });
+
+  describe('loading state', () => {
+    beforeEach(() => {
+      createComponent({ loading: true });
+    });
+
+    it('displays loading icon', () => {
+      expect(findLoadingIcon().exists()).toBe(true);
+    });
+  });
+
+  describe('empty state', () => {
+    beforeEach(() => {
+      createComponent({ cacheEntries: [] });
+    });
+
+    it('shows empty state message', () => {
+      expect(wrapper.text()).toContain('No artifacts to display.');
     });
   });
 

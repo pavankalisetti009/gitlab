@@ -3,9 +3,10 @@ import {
   GlBadge,
   GlButton,
   GlIcon,
+  GlLoadingIcon,
   GlModal,
   GlSprintf,
-  GlTableLite,
+  GlTable,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { __ } from '~/locale';
@@ -19,9 +20,10 @@ export default {
     GlBadge,
     GlButton,
     GlIcon,
+    GlLoadingIcon,
     GlModal,
     GlSprintf,
-    GlTableLite,
+    GlTable,
     TimeAgoTooltip,
   },
   directives: {
@@ -32,6 +34,11 @@ export default {
     cacheEntries: {
       type: Array,
       required: true,
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {
@@ -93,12 +100,24 @@ export default {
 
 <template>
   <div>
-    <gl-table-lite
+    <gl-table
       :fields="$options.fields"
       :items="cacheEntries"
       stacked="sm"
       :tbody-tr-attr="{ 'data-testid': 'cache-entry-row' }"
+      :busy="loading"
+      show-empty
     >
+      <template #table-busy>
+        <gl-loading-icon size="lg" class="gl-mt-5" />
+      </template>
+
+      <template #empty>
+        <p class="gl-mb-0 gl-text-center gl-text-subtle">
+          {{ s__('VirtualRegistry|No artifacts to display.') }}
+        </p>
+      </template>
+
       <template #cell(relative_path)="{ item }">
         <div class="gl-mb-3">
           <gl-icon name="doc-text" />
@@ -135,7 +154,7 @@ export default {
           </div>
         </div>
       </template>
-    </gl-table-lite>
+    </gl-table>
     <gl-modal
       v-model="showDeleteModal"
       modal-id="delete-cache-entry-modal"

@@ -1,6 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import { n__ } from '~/locale';
+import { n__, s__ } from '~/locale';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
@@ -23,13 +23,30 @@ export default {
       type: Object,
       required: true,
     },
+    loading: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    cacheEntriesCount: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   computed: {
     canEdit() {
       return this.glAbilities.updateVirtualRegistry && this.editUpstreamPath;
     },
     artifactsCountText() {
-      return n__('%d Artifact', '%d Artifacts', this.upstream.cacheEntriesCount || 0);
+      if (this.loading) {
+        return s__('VirtualRegistry|-- artifacts');
+      }
+      return n__(
+        'VirtualRegistry|%d artifact',
+        'VirtualRegistry|%d artifacts',
+        this.cacheEntriesCount,
+      );
     },
   },
 };
@@ -46,7 +63,7 @@ export default {
       <metadata-item icon="infrastructure-registry" :text="s__('VirtualRegistry|Maven')" />
     </template>
     <template #metadata-count>
-      <metadata-item icon="doc-text" :text="artifactsCountText" />
+      <metadata-item data-testid="artifacts-count" icon="doc-text" :text="artifactsCountText" />
     </template>
     <template #metadata-url>
       <metadata-item icon="earth" :text="upstream.url" size="xl" />

@@ -151,8 +151,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
         'id' => maven_upstream.id,
         'name' => maven_upstream.name,
         'url' => maven_upstream.url,
-        'description' => maven_upstream.description,
-        'cacheEntriesCount' => 0
+        'description' => maven_upstream.description
       }
     end
 
