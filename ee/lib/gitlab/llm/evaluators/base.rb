@@ -20,8 +20,8 @@ module Gitlab
 
         attr_reader :user, :tracking_context, :options
 
-        # @return [Symbol] Must be overridden by subclasses to specify the service name.
-        def service_name
+        # @return [Symbol] Must be overridden by subclasses to specify the UP name.
+        def unit_primitive_name
           raise NotImplementedError
         end
 

@@ -19,7 +19,7 @@ RSpec.describe Gitlab::Llm::Evaluators::Base, feature_category: :ai_evaluation d
     it 'expects subclasses to implement abstract methods' do
       aggregate_failures do
         expect { instance.execute }.to raise_error(NotImplementedError)
-        expect { instance.send(:service_name) }.to raise_error(NotImplementedError)
+        expect { instance.send(:unit_primitive_name) }.to raise_error(NotImplementedError)
         expect { instance.send(:model_metadata) }.to raise_error(NotImplementedError)
         expect { instance.send(:prompt_name) }.to raise_error(NotImplementedError)
         expect { instance.send(:prompt_version) }.to raise_error(NotImplementedError)
@@ -33,7 +33,7 @@ RSpec.describe Gitlab::Llm::Evaluators::Base, feature_category: :ai_evaluation d
 
     let(:base_evaluator) do
       Class.new(Gitlab::Llm::Evaluators::Base) do
-        def service_name
+        def unit_primitive_name
           :base_spec
         end
 

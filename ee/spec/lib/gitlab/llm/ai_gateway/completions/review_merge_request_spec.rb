@@ -138,7 +138,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
 
       allow_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
-        service_name: :review_merge_request,
+        unit_primitive_name: :review_merge_request,
         tracking_context: tracking_context
       ) do |client|
         allow(client)
@@ -163,7 +163,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
     shared_examples_for 'review merge request with prompt version' do
       it 'sends AIGW request with correct model metadata' do
         expect_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
-          service_name: :review_merge_request,
+          unit_primitive_name: :review_merge_request,
           tracking_context: tracking_context
         ) do |client|
           allow(client)
@@ -227,7 +227,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
 
         allow_next_instance_of(Gitlab::Llm::AiGateway::Client, user,
-          service_name: :review_merge_request,
+          unit_primitive_name: :review_merge_request,
           tracking_context: tracking_context
         ) do |client|
           allow(client)
@@ -965,7 +965,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           allow_next_instance_of(
             Gitlab::Llm::AiGateway::Client,
             user,
-            service_name: :review_merge_request,
+            unit_primitive_name: :review_merge_request,
             tracking_context: tracking_context
           ) do |client|
             expect(client)
@@ -983,7 +983,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
             allow_next_instance_of(
               Gitlab::Llm::AiGateway::Client,
               user,
-              service_name: :review_merge_request,
+              unit_primitive_name: :review_merge_request,
               tracking_context: tracking_context
             ) do |client2|
               expect(client2)

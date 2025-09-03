@@ -52,7 +52,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
       private
 
-      def service_name
+      def unit_primitive_name
         'duo_chat'
       end
 
@@ -475,7 +475,7 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
       end
     end
 
-    [:service_name, :prompt_name, :inputs].each do |method|
+    [:unit_primitive_name, :prompt_name, :inputs].each do |method|
       it "raises NotImplementedError when #{method} is not implemented" do
         expect { incomplete_class.new(user, tracking_context).execute }.to raise_error(NotImplementedError)
       end
@@ -490,8 +490,8 @@ RSpec.describe Gitlab::Llm::Concerns::AiGatewayClientConcern, feature_category: 
 
           private
 
-          def service_name
-            'test_service'
+          def unit_primitive_name
+            'test_up'
           end
 
           def prompt_name

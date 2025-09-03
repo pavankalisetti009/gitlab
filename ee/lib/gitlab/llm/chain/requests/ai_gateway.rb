@@ -27,7 +27,7 @@ module Gitlab
             @user = user
             @tracking_context = tracking_context
             @root_namespace = root_namespace
-            @ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name,
+            @ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, unit_primitive_name: service_name,
               tracking_context: tracking_context)
           end
 

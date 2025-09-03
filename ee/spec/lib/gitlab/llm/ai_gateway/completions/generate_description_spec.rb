@@ -31,7 +31,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateDescription, feature
     it 'executes a completion request and calls the response chains' do
       expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
         user,
-        service_name: :generate_description,
+        unit_primitive_name: :generate_description,
         tracking_context: tracking_context
       )
       expect(ai_client).to receive(:complete_prompt).with(
@@ -53,7 +53,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateDescription, feature
       it 'returns an error' do
         expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
           user,
-          service_name: :generate_description,
+          unit_primitive_name: :generate_description,
           tracking_context: tracking_context
         )
         expect(ai_client).to receive(:complete_prompt).with(

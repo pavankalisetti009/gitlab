@@ -13,9 +13,9 @@ module Gitlab
 
         ConnectionError = Class.new(StandardError)
 
-        def initialize(user, service_name:, tracking_context: {})
+        def initialize(user, unit_primitive_name:, tracking_context: {})
           @user = user
-          @service = ::CloudConnector::AvailableServices.find_by_name(service_name)
+          @unit_primitive_name = unit_primitive_name
           @tracking_context = tracking_context
         end
 
@@ -87,7 +87,7 @@ module Gitlab
 
         private
 
-        attr_reader :user, :service, :access_token, :tracking_context
+        attr_reader :user, :unit_primitive_name, :access_token, :tracking_context
 
         def perform_completion_request(url:, body:, timeout:, stream:)
           log_conditional_info(user,
@@ -101,7 +101,9 @@ module Gitlab
 
           Gitlab::HTTP.post(
             url,
-            headers: Gitlab::AiGateway.headers(user: user, service: service),
+            headers: Gitlab::AiGateway.headers(
+              user: user, service: unit_primitive_name, ai_feature_name: unit_primitive_name
+            ),
             body: body.to_json,
             timeout: timeout,
             allow_local_requests: true,

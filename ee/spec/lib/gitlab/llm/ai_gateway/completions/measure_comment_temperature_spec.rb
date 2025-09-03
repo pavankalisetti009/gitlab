@@ -20,7 +20,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature, f
     it 'executes a completion request and calls the response chains' do
       expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
         user,
-        service_name: :measure_comment_temperature,
+        unit_primitive_name: :measure_comment_temperature,
         tracking_context: { action: :measure_comment_temperature, request_id: uuid }
       ).and_return(ai_client)
       expect(ai_client).to receive(:complete_prompt).with(
@@ -42,7 +42,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature, f
       it 'returns an error' do
         expect(Gitlab::Llm::AiGateway::Client).to receive(:new).with(
           user,
-          service_name: :measure_comment_temperature,
+          unit_primitive_name: :measure_comment_temperature,
           tracking_context: { action: :measure_comment_temperature, request_id: uuid }
         ).and_return(ai_client)
         expect(ai_client).to receive(:complete_prompt).with(

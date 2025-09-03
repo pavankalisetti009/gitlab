@@ -12,8 +12,6 @@ RSpec.describe Llm::GitCommandService, feature_category: :code_review_workflow d
       create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
     end
 
-    let_it_be(:cloud_connector_keys) { create(:cloud_connector_keys) }
-
     let_it_be(:seat_assignment) do
       create(
         :gitlab_subscription_user_add_on_assignment,
@@ -55,7 +53,7 @@ RSpec.describe Llm::GitCommandService, feature_category: :code_review_workflow d
       allow_next_instance_of(
         ::Gitlab::Llm::AiGateway::Client,
         current_user,
-        service_name: :glab_ask_git_command,
+        unit_primitive_name: :glab_ask_git_command,
         tracking_context: {}
       ) do |client|
         allow(client).to receive(:complete_prompt).and_return(response)

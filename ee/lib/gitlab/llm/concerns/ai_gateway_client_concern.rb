@@ -25,7 +25,7 @@ module Gitlab
         def perform_ai_gateway_request!(user:, tracking_context: {})
           client = ::Gitlab::Llm::AiGateway::Client.new(
             user,
-            service_name: service_name,
+            unit_primitive_name: unit_primitive_name,
             tracking_context: tracking_context
           )
 
@@ -51,7 +51,7 @@ module Gitlab
 
           model_family = model_metadata&.dig(:name)
           ::Gitlab::Llm::PromptVersions.version_for_prompt(
-            service_name,
+            prompt_name,
             model_family
           )
         end
@@ -68,12 +68,14 @@ module Gitlab
         def namespace_feature_setting
           return unless root_namespace
 
-          ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace, service_name)
+          ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(
+            root_namespace, unit_primitive_name
+          )
         end
         strong_memoize_attr(:namespace_feature_setting)
 
         def feature_setting
-          ::Ai::FeatureSetting.find_by_feature(service_name)
+          ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)
         end
         strong_memoize_attr(:feature_setting)
 
@@ -83,7 +85,7 @@ module Gitlab
         strong_memoize_attr(:model_metadata)
 
         # Must be overridden by subclasses to specify the service name.
-        def service_name
+        def unit_primitive_name
           raise NotImplementedError
         end
 
