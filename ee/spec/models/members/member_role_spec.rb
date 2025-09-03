@@ -413,9 +413,15 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           remove_code: { description: 'Test second permission' }
         )
 
-        expect(described_class.elevating.to_sql)
-          .to include("member_roles.permissions @> ('{\"see_code\":true}')::jsonb " \
-                      "OR member_roles.permissions @> ('{\"remove_code\":true}')::jsonb")
+        expected_sql = if Gitlab.next_rails?
+                         "(member_roles.permissions @> ('{\"see_code\":true}')::jsonb) " \
+                         "OR (member_roles.permissions @> ('{\"remove_code\":true}')::jsonb)"
+                       else
+                         "member_roles.permissions @> ('{\"see_code\":true}')::jsonb " \
+                         "OR member_roles.permissions @> ('{\"remove_code\":true}')::jsonb"
+                       end
+
+        expect(described_class.elevating.to_sql).to include(expected_sql)
       end
 
       it 'returns nothing when there are no elevating permissions' do
