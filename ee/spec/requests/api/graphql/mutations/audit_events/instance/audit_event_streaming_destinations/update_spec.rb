@@ -65,6 +65,151 @@ RSpec.describe 'Update instance level external audit event destination', feature
         allow(Gitlab::Audit::Auditor).to receive(:audit)
       end
 
+      context 'when updating active status with limits' do
+        let(:plan_limit) { 3 }
+
+        before do
+          AuditEvents::Instance::ExternalStreamingDestination
+            .where.not(id: destination.id)
+            .delete_all
+
+          plan = Plan.default
+          plan.actual_limits.update!(external_audit_event_destinations: plan_limit)
+        end
+
+        context 'when activating would exceed the limit' do
+          before do
+            destinations_data = Array.new(plan_limit) do |i|
+              {
+                name: "Test Destination #{i}",
+                category: 0,
+                config: { url: "https://example#{i}.com" }.to_json,
+                encrypted_secret_token: SecureRandom.hex(32),
+                encrypted_secret_token_iv: SecureRandom.hex(8),
+                active: true,
+                created_at: Time.current,
+                updated_at: Time.current
+              }
+            end
+
+            AuditEvents::Instance::ExternalStreamingDestination.insert_all!(destinations_data)
+          end
+
+          it 'returns an error' do
+            input[:active] = true
+
+            mutate
+
+            expect(mutation_response['errors']).to include(
+              "Cannot activate: Maximum number of external audit event destinations (#{plan_limit}) exceeded"
+            )
+            expect(mutation_response['externalAuditEventDestination']).to be_nil
+            expect(destination.reload.active).to be false
+          end
+
+          it 'allows updating other fields without changing active status' do
+            input.delete(:active)
+
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            destination.reload
+            expect(destination.config).to eq(updated_config)
+            expect(destination.name).to eq(updated_destination_name)
+            expect(destination.active).to be false
+          end
+        end
+
+        context 'when activating within the limit' do
+          before do
+            destinations_data = Array.new((plan_limit - 1)) do |i|
+              {
+                name: "Test Destination #{i}",
+                category: 0,
+                config: { url: "https://example#{i}.com" }.to_json,
+                encrypted_secret_token: SecureRandom.hex(32),
+                encrypted_secret_token_iv: SecureRandom.hex(8),
+                active: true,
+                created_at: Time.current,
+                updated_at: Time.current
+              }
+            end
+
+            AuditEvents::Instance::ExternalStreamingDestination.insert_all!(destinations_data)
+          end
+
+          it 'allows activation' do
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            expect(destination.reload.active).to be true
+          end
+        end
+
+        context 'when deactivating' do
+          before do
+            destinations_data = Array.new((plan_limit - 1)) do |i|
+              {
+                name: "Test Destination #{i}",
+                category: 0,
+                config: { url: "https://example#{i}.com" }.to_json,
+                encrypted_secret_token: SecureRandom.hex(32),
+                encrypted_secret_token_iv: SecureRandom.hex(8),
+                active: true,
+                created_at: Time.current,
+                updated_at: Time.current
+              }
+            end
+
+            AuditEvents::Instance::ExternalStreamingDestination.insert_all!(destinations_data)
+
+            destination.update_column(:active, true)
+          end
+
+          it 'always allows deactivation' do
+            input[:active] = false
+
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            expect(destination.reload.active).to be false
+          end
+        end
+
+        context 'when destination is already active' do
+          before do
+            destinations_data = Array.new((plan_limit - 1)) do |i|
+              {
+                name: "Test Destination #{i}",
+                category: 0,
+                config: { url: "https://example#{i}.com" }.to_json,
+                encrypted_secret_token: SecureRandom.hex(32),
+                encrypted_secret_token_iv: SecureRandom.hex(8),
+                active: true,
+                created_at: Time.current,
+                updated_at: Time.current
+              }
+            end
+
+            AuditEvents::Instance::ExternalStreamingDestination.insert_all!(destinations_data)
+
+            destination.update_column(:active, true)
+          end
+
+          it 'allows updating an already active destination' do
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            expect(destination.reload.active).to be true
+            expect(destination.config).to eq(updated_config)
+          end
+        end
+      end
+
       it 'updates the destination' do
         mutate
 

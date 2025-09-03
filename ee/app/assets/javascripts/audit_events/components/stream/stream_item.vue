@@ -154,8 +154,14 @@ export default {
     },
     handleToggleError(error, newActiveState) {
       Sentry.captureException(error);
+
+      const { message = '' } = error || {};
+      const hasSpecificMessage = /(Cannot activate|Maximum number)/.test(message);
+
       createAlert({
-        message: __('Failed to update destination status. Please try again.'),
+        message: hasSpecificMessage
+          ? message
+          : __('Failed to update destination status. Please try again.'),
         captureError: true,
         error,
       });

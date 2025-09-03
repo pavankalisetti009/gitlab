@@ -237,8 +237,31 @@ describe('StreamItem', () => {
       it('does not apply opacity class when destination is active', () => {
         expect(findToggleButton().classes()).not.toContain('gl-opacity-60');
       });
-    });
 
+      it.each`
+        error                                                    | expectedResult
+        ${new Error('Cannot activate destination due to limit')} | ${'Cannot activate destination due to limit'}
+        ${new Error('Maximum number of destinations reached')}   | ${'Maximum number of destinations reached'}
+        ${new Error('Some other error')}                         | ${'Failed to update destination status. Please try again.'}
+      `(
+        'shows specific error messages for activation limits: $expectedResult',
+        async ({ error, expectedResult }) => {
+          createComponent();
+
+          mutationHandlers.externalDestinationUpdate.mockRejectedValue(error);
+
+          await findToggle().vm.$emit('change', true);
+          await waitForPromises();
+
+          expect(Sentry.captureException).toHaveBeenCalledWith(error);
+          expect(createAlert).toHaveBeenCalledWith({
+            message: expectedResult,
+            captureError: true,
+            error,
+          });
+        },
+      );
+    });
     describe('deleting', () => {
       const id = 1;
 
