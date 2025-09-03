@@ -90,7 +90,7 @@ export default {
       return {
         actionItems: (itemId) => [
           {
-            text: s__('AICatalog|Add to project or group'),
+            text: s__('AICatalog|Add to project'),
             action: () => this.handleAiCatalogFlowToBeAdded(itemId),
             icon: 'plus',
           },
