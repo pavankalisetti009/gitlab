@@ -654,15 +654,24 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       where(:instance_with_self_hosted_duo,
         :agentic_duo_chat_feature_flag_disabled_on_the_instance,
         :duo_agentic_chat_is_available_otherwise,
+        :duo_agent_platform_feature_setting_set_to_self_hosted,
         :policy_result) do
-        true  | false | true  | be_allowed(policy)
-        false | true  | true  | be_allowed(policy)
-        false | false | true  | be_allowed(policy)
-        true  | true  | true  | be_disallowed(policy)
-        true  | true  | false | be_disallowed(policy)
-        true  | false | false | be_disallowed(policy)
-        false | true  | false | be_disallowed(policy)
-        false | false | false | be_disallowed(policy)
+        true  | true  | true  | true  | be_disallowed(policy)
+        true  | true  | true  | false | be_disallowed(policy)
+        true  | true  | false | true  | be_disallowed(policy)
+        true  | true  | false | false | be_disallowed(policy)
+        true  | false | true  | true  | be_allowed(policy)
+        true  | false | true  | false | be_disallowed(policy)
+        true  | false | false | true  | be_disallowed(policy)
+        true  | false | false | false | be_disallowed(policy)
+        false | true  | true  | true  | be_allowed(policy)
+        false | true  | true  | false | be_allowed(policy)
+        false | true  | false | true  | be_disallowed(policy)
+        false | true  | false | false | be_disallowed(policy)
+        false | false | true  | true  | be_allowed(policy)
+        false | false | true  | false | be_allowed(policy)
+        false | false | false | true  | be_disallowed(policy)
+        false | false | false | false | be_disallowed(policy)
       end
 
       with_them do
@@ -676,43 +685,18 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
           allow(current_user).to receive(:allowed_to_use?)
             .with(:duo_chat)
             .and_return(duo_agentic_chat_is_available_otherwise)
+
+          if duo_agent_platform_feature_setting_set_to_self_hosted
+            create(:ai_feature_setting,
+              :duo_agent_platform,
+              self_hosted_model: create(:ai_self_hosted_model,
+                model: :claude_3
+              )
+            )
+          end
         end
 
         it { is_expected.to policy_result }
-      end
-    end
-
-    context 'when agentic chat on self-hosted duo is controlled via feature setting' do
-      before do
-        # setup agentic chat on self-hosted duo to be available otherwise
-        stub_feature_flags(
-          agent_platform_model_selection: true
-        )
-        stub_feature_flags(duo_agentic_chat: true)
-        allow(current_user).to receive(:allowed_to_use?)
-          .with(:duo_chat)
-          .and_return(true)
-      end
-
-      context 'when feature setting is disabled' do
-        before do
-          create(:ai_feature_setting, :duo_agent_platform, provider: :disabled)
-        end
-
-        it { is_expected.to be_disallowed(:access_duo_agentic_chat) }
-      end
-
-      context 'when feature setting is enabled' do
-        before do
-          create(:ai_feature_setting,
-            :duo_agent_platform,
-            self_hosted_model: create(:ai_self_hosted_model,
-              model: :claude_3
-            )
-          )
-        end
-
-        it { is_expected.to be_allowed(:access_duo_agentic_chat) }
       end
     end
   end
