@@ -17,6 +17,7 @@ import {
 } from '~/vue_shared/components/resource_lists/constants';
 
 import ListItem from '~/vue_shared/components/resource_lists/list_item.vue';
+import { mockBaseLatestVersion } from '../mock_data';
 
 describe('AiCatalogListItem', () => {
   let wrapper;
@@ -30,7 +31,8 @@ describe('AiCatalogListItem', () => {
     itemType: 'AGENT',
     description: 'A helpful AI assistant for testing purposes',
     public: false,
-    updatedAt: '2025-08-21T14:30:00Z',
+    updatedAt: '2025-08-19T16:45:00Z',
+    latestVersion: { ...mockBaseLatestVersion, updatedAt: '2025-08-19T16:45:00Z' },
     userPermissions: {
       readAiCatalogItem: true,
       adminAiCatalogItem: true,
@@ -107,7 +109,6 @@ describe('AiCatalogListItem', () => {
         descriptionHtml: mockItem.description,
         fullName: mockItem.name,
         relativeWebUrl: mockUrl,
-        createdAt: mockItem.createdAt,
       };
 
       expect(listItem.exists()).toBe(true);
@@ -177,17 +178,35 @@ describe('AiCatalogListItem', () => {
       });
     });
 
-    describe('when the created_at and updated_at dates are identical', () => {
-      it('passes the timestamp for the created_at date', () => {
-        createComponent({ item: { ...mockItem, createdAt: mockItem.updatedAt } });
-        expect(findListItem().props('timestampType')).toBe(TIMESTAMP_TYPE_CREATED_AT);
-      });
-    });
+    describe('timestamp handling', () => {
+      it.each`
+        createdAt                 | updatedAt                 | latestVersionUpdatedAt    | expectedTimestampType        | expectedUpdatedAt
+        ${'2022-01-01T00:00:00Z'} | ${'2022-01-01T00:00:00Z'} | ${'2022-01-01T00:00:00Z'} | ${TIMESTAMP_TYPE_CREATED_AT} | ${'2022-01-01T00:00:00Z'}
+        ${'2022-01-01T00:00:00Z'} | ${'2024-01-01T00:00:00Z'} | ${'2023-01-01T00:00:00Z'} | ${TIMESTAMP_TYPE_UPDATED_AT} | ${'2024-01-01T00:00:00Z'}
+        ${'2022-01-01T00:00:00Z'} | ${'2023-01-01T00:00:00Z'} | ${'2025-01-01T00:00:00Z'} | ${TIMESTAMP_TYPE_UPDATED_AT} | ${'2025-01-01T00:00:00Z'}
+      `(
+        'passes correct timestamp type and date when createdAt=$createdAt, updatedAt=$updatedAt, latestVersionUpdatedAt=$latestVersionUpdatedAt',
+        ({
+          createdAt,
+          updatedAt,
+          latestVersionUpdatedAt,
+          expectedTimestampType,
+          expectedUpdatedAt,
+        }) => {
+          createComponent({
+            item: {
+              ...mockItem,
+              createdAt,
+              updatedAt,
+              latestVersion: { ...mockBaseLatestVersion, updatedAt: latestVersionUpdatedAt },
+            },
+          });
 
-    describe('when the updated_at date is after the created_at date', () => {
-      it('renders updated at when updated date is more recent than created date', () => {
-        expect(findListItem().props('timestampType')).toBe(TIMESTAMP_TYPE_UPDATED_AT);
-      });
+          const listItem = findListItem();
+          expect(listItem.props('timestampType')).toBe(expectedTimestampType);
+          expect(listItem.props('resource').updatedAt).toBe(expectedUpdatedAt);
+        },
+      );
     });
   });
 

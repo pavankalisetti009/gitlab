@@ -56,6 +56,11 @@ export default {
       };
     },
     formattedItem() {
+      const updatedAt =
+        this.item.latestVersion.updatedAt > this.item.updatedAt
+          ? this.item.latestVersion.updatedAt
+          : this.item.updatedAt;
+
       return {
         ...this.item,
         id: this.formattedItemId,
@@ -64,6 +69,7 @@ export default {
         fullName: this.item.name,
         descriptionHtml: this.item.description,
         relativeWebUrl: this.$router.resolve(this.showItemRoute).href,
+        updatedAt,
       };
     },
     deleteActionText() {

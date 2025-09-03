@@ -15,6 +15,11 @@ const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_PROJECT = 'Project';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 
+export const mockBaseLatestVersion = {
+  id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+  updatedAt: '2025-08-21T14:30:00Z',
+};
+
 const mockProject = {
   id: 'gid://gitlab/Project/1',
   __typename: TYPENAME_PROJECT,
@@ -93,16 +98,17 @@ const mockAgentFactory = (overrides = {}) => ({
   description: 'A helpful AI assistant for testing purposes',
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
+  updatedAt: '2024-08-21T14:30:00Z',
+  latestVersion: mockBaseLatestVersion,
   userPermissions: {
     adminAiCatalogItem: true,
   },
   __typename: TYPENAME_AI_CATALOG_ITEM,
-  updatedAt: '2025-08-21T14:30:00Z',
   ...overrides,
 });
 
 export const mockAgentVersion = {
-  id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+  ...mockBaseLatestVersion,
   humanVersionName: 'v1.0.0-draft',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
@@ -239,7 +245,7 @@ export const mockExecuteAgentResponse = {
 /* FLOWS */
 
 export const mockFlowVersion = {
-  id: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+  ...mockBaseLatestVersion,
   humanVersionName: 'v1.0.0-draft',
   steps: {
     nodes: [
@@ -264,11 +270,12 @@ const mockFlowFactory = (overrides = {}) => ({
   description: 'A helpful AI flow for testing purposes',
   createdAt: '2024-01-15T10:30:00Z',
   public: true,
+  updatedAt: '2024-08-21T14:30:00Z',
+  latestVersion: mockBaseLatestVersion,
   userPermissions: {
     adminAiCatalogItem: true,
   },
   __typename: TYPENAME_AI_CATALOG_ITEM,
-  updatedAt: '2025-08-21T14:30:00Z',
   ...overrides,
 });
 
