@@ -2,18 +2,18 @@
 
 # Constants for the default values
 DEFAULT_TOTAL_COUNT = 50
-DEFAULT_PROJECT_PATH = 'gitlab-org/gitlab-test'
+DEFAULT_PROJECT_PATH = 'gitlab-duo/test'
 DEFAULT_CURRENT_USER_COUNT_LIMIT = 24
 DEFAULT_ENVIRONMENT_TYPE = 'web'
 
 namespace :gitlab do
   namespace :duo_workflow do
     desc "GitLab | Duo Workflows | Populate fake workflow data"
-    # Example usage: bundle exec rake "gitlab:duo_workflow:populate[50,20,user@example.com,gitlab-org/gitlab-test]"
+    # Example usage: bundle exec rake "gitlab:duo_workflow:populate[50,20,1,gitlab-duo/test]"
     # total_count: Total workflows to create (default: 50)
     # current_user_count: Workflows for target user (default: min(total_count, 24))
-    # user_id: User ID or email (default: first available user)
-    # project_path: Project path like 'gitlab-org/gitlab' (default: gitlab-org/gitlab-test)
+    # user_id: User ID (default: first available user)
+    # project_path: Project path like 'gitlab-org/gitlab' (default: gitlab-duo/test)
     # environment_type: Environment type like 'web' (default: 'web')
     # Note: This task cannot be run in production.
     # Note: this current_user_count cannot be greater than total_count
@@ -200,7 +200,7 @@ namespace :gitlab do
           exit 1
         end
       else
-        # Default to gitlab-org/gitlab-test
+        # Default to gitlab-duo/test
         default_path = DEFAULT_PROJECT_PATH
         target_project = Project.find_by_full_path(default_path)
 
@@ -298,6 +298,8 @@ namespace :gitlab do
 
       workflows_created = 0
       checkpoints_created = 0
+      pipelines_created = 0
+      workloads_created = 0
       errors = []
 
       total_count.times do |i|
@@ -326,19 +328,49 @@ namespace :gitlab do
         goal = "#{sample_goals.sample} (Workflow ##{i + 1})"
         workflow_status = statuses.sample
 
-        workflow = Ai::DuoWorkflows::Workflow.create!(
-          user_id: user_id,
-          project_id: target_project.id,
-          goal: goal,
-          status: workflow_status,
-          workflow_definition: workflow_definitions.sample,
-          agent_privileges: agent_privileges,
-          pre_approved_agent_privileges: pre_approved_privileges,
-          allow_agent_to_request_user: [true, false].sample,
-          environment: environment_type
-        )
+        workflow = Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification
+          .allow_cross_database_modification_within_transaction(
+            url: 'gitlab-issue'
+          ) do
+            workflow = Ai::DuoWorkflows::Workflow.create!(
+              user_id: user_id,
+              project_id: target_project.id,
+              goal: goal,
+              status: workflow_status,
+              workflow_definition: workflow_definitions.sample,
+              agent_privileges: agent_privileges,
+              pre_approved_agent_privileges: pre_approved_privileges,
+              allow_agent_to_request_user: [true, false].sample,
+              environment: environment_type
+            )
+
+            # Create a fake pipeline and workload for the workflow to provide lastExecutorLogsUrl
+            pipeline = Ci::Pipeline.create!(
+              project: target_project,
+              user: User.find(user_id),
+              ref: target_project.default_branch || 'main',
+              sha: target_project.repository.commit&.sha || 'fake_sha',
+              status: 'success',
+              source: 'web'
+            )
+
+            workload = Ci::Workloads::Workload.create!(
+              project: target_project,
+              pipeline: pipeline
+            )
+
+            Ai::DuoWorkflows::WorkflowsWorkload.create!(
+              workflow: workflow,
+              workload: workload,
+              project: target_project
+            )
+
+            workflow
+          end
 
         workflows_created += 1
+        pipelines_created += 1
+        workloads_created += 1
 
         # Create workflow checkpoints based on workflow status
         # Map workflow status to checkpoint configurations
@@ -392,6 +424,8 @@ namespace :gitlab do
 
       puts "\n\nSuccessfully created #{workflows_created} Ai::DuoWorkflows::Workflow entities!"
       puts "Successfully created #{checkpoints_created} Ai::DuoWorkflows::Checkpoint entities!"
+      puts "Successfully created #{pipelines_created} Ci::Pipeline entities!"
+      puts "Successfully created #{workloads_created} Ci::Workloads::Workload entities!"
       puts "#{current_user_count} workflows assigned to target user (#{target_user.username})"
       puts "#{workflows_created - current_user_count} workflows assigned to other users"
       puts "Total workflows in database: #{Ai::DuoWorkflows::Workflow.count}"
