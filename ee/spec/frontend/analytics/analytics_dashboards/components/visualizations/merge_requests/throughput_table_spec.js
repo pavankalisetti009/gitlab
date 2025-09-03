@@ -98,17 +98,13 @@ describe('ThroughputTable Visualization', () => {
     });
 
     it('does not display a milestone if not present', () => {
+      createComponentWithAdditionalData({ milestone: undefined });
+
       expect(findCol(TEST_IDS.MILESTONE).exists()).toBe(false);
     });
 
     it('displays the correct milestone when available', () => {
-      const title = 'v1.0';
-
-      createComponentWithAdditionalData({
-        milestone: { id: '1', title },
-      });
-
-      expect(findCol(TEST_IDS.MILESTONE).text()).toBe(title);
+      expect(findCol(TEST_IDS.MILESTONE).text()).toBe('133.7');
     });
 
     it('displays the correct commit count', () => {
@@ -116,7 +112,7 @@ describe('ThroughputTable Visualization', () => {
     });
 
     it('displays the correct pipeline count', () => {
-      expect(findCol(TEST_IDS.PIPELINES).text()).toBe('0');
+      expect(findCol(TEST_IDS.PIPELINES).text()).toBe('1');
     });
 
     it('displays the correctly formatted line changes', () => {
@@ -210,7 +206,13 @@ describe('ThroughputTable Visualization', () => {
     describe('approval details', () => {
       const iconName = 'approval';
 
-      it('does not display by default', () => {
+      it('does not display when there are no approvals', () => {
+        createComponentWithAdditionalData({
+          approvedBy: {
+            nodes: [],
+          },
+        });
+
         const approved = findColSubItem(TEST_IDS.MERGE_REQUEST_DETAILS, TEST_IDS.APPROVED);
 
         expect(approved.exists()).toBe(false);
