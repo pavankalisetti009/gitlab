@@ -13,6 +13,7 @@ import VulnerabilityFindingModal from 'ee/security_dashboard/components/pipeline
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import SmartInterval from '~/smart_interval';
 import { historyPushState } from '~/lib/utils/common_utils';
 import api from '~/api';
 import Widget from '~/vue_merge_request_widget/components/widget/widget.vue';
@@ -33,6 +34,7 @@ jest.mock('~/lib/utils/common_utils', () => ({
   ...jest.requireActual('~/lib/utils/common_utils'),
   historyPushState: jest.fn(),
 }));
+jest.mock('~/smart_interval');
 
 describe('MR Widget Security Reports', () => {
   let wrapper;
@@ -60,42 +62,45 @@ describe('MR Widget Security Reports', () => {
     containerScanningComparisonPathV2: '/my/container-scanning/endpoint',
   };
 
-  const defaultMockApollo = createMockApollo([
-    [
-      enabledScansQuery,
-      jest.fn().mockResolvedValue({
-        data: {
-          project: {
-            id: 2,
-            pipeline: {
-              id: 11,
-              enabledSecurityScans: {
-                sast: true,
-                dast: false,
-                dependencyScanning: false,
-                containerScanning: false,
-                coverageFuzzing: false,
-                apiFuzzing: false,
-                secretDetection: false,
-                clusterImageScanning: false,
-                __typename: 'EnabledSecurityScans',
-              },
-              enabledPartialSecurityScans: {
-                sast: false,
-                dast: false,
-                dependencyScanning: false,
-                containerScanning: false,
-                coverageFuzzing: false,
-                apiFuzzing: false,
-                secretDetection: false,
-                clusterImageScanning: false,
-                __typename: 'EnabledSecurityScans',
-              },
-            },
+  const enabledScansQueryResult = (overrides = { full: {}, partial: {} }) => ({
+    data: {
+      project: {
+        id: 2,
+        pipeline: {
+          id: 11,
+          enabledSecurityScans: {
+            ready: true,
+            sast: true,
+            dast: false,
+            dependencyScanning: false,
+            containerScanning: false,
+            coverageFuzzing: false,
+            apiFuzzing: false,
+            secretDetection: false,
+            clusterImageScanning: false,
+            __typename: 'EnabledSecurityScans',
+            ...overrides?.full,
+          },
+          enabledPartialSecurityScans: {
+            ready: true,
+            sast: false,
+            dast: false,
+            dependencyScanning: false,
+            containerScanning: false,
+            coverageFuzzing: false,
+            apiFuzzing: false,
+            secretDetection: false,
+            clusterImageScanning: false,
+            __typename: 'EnabledSecurityScans',
+            ...overrides?.partial,
           },
         },
-      }),
-    ],
+      },
+    },
+  });
+
+  const defaultMockApollo = createMockApollo([
+    [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
   ]);
 
   const createComponent = ({
@@ -209,21 +214,25 @@ describe('MR Widget Security Reports', () => {
   });
 
   describe('with vulnerabilityPartialScans feature flag turned on', () => {
-    beforeEach(() => {
+    it('should not mount the widget component until loading is complete', async () => {
       createComponent({
         provide: { glFeatures: { vulnerabilityPartialScans: true } },
         mountFn: mountExtended,
         mockApolloProvider: defaultMockApollo,
       });
-    });
 
-    it('should not mount the widget component until loading is complete', async () => {
       expect(findWidget().exists()).toBe(false);
       await waitForPromises();
       expect(findWidget().exists()).toBe(true);
     });
 
     it('should make fetch only enabled full scans', async () => {
+      createComponent({
+        provide: { glFeatures: { vulnerabilityPartialScans: true } },
+        mountFn: mountExtended,
+        mockApolloProvider: defaultMockApollo,
+      });
+
       mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
         added: [
           {
@@ -243,6 +252,52 @@ describe('MR Widget Security Reports', () => {
       await waitForPromises();
 
       expect(mockAxios.history.get).toHaveLength(1);
+    });
+
+    it('should refetch the query if scan is not ready', async () => {
+      // For some reason if this is not present, tests break
+      mockAxios = new MockAdapter(axios);
+
+      createComponent({
+        provide: { glFeatures: { vulnerabilityPartialScans: true } },
+        mountFn: mountExtended,
+        apolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest
+              .fn()
+              .mockResolvedValueOnce(enabledScansQueryResult({ full: { ready: false } }))
+              .mockResolvedValueOnce(enabledScansQueryResult()), // Second call is when all is ready
+          ],
+        ]),
+      });
+
+      await waitForPromises();
+
+      expect(SmartInterval).toHaveBeenCalledWith(
+        expect.objectContaining({
+          callback: expect.any(Function),
+          incrementByFactorOf: 1,
+          startingInterval: 3000,
+          immediateExecution: true,
+        }),
+      );
+
+      // Widget should not be visible
+      expect(findWidget().exists()).toBe(false);
+
+      const spy = jest.spyOn(wrapper.vm.pollingInterval, 'destroy');
+
+      mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
+        added: [],
+        fixed: [],
+      });
+
+      wrapper.vm.$apollo.queries.enabledScans.refetch();
+
+      await waitForPromises();
+
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('when the query fails', async () => {
