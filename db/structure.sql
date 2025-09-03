@@ -21541,6 +21541,7 @@ CREATE TABLE personal_access_tokens (
     description text,
     group_id bigint,
     user_type smallint,
+    granular boolean DEFAULT false NOT NULL,
     CONSTRAINT check_6d2ddc9355 CHECK ((char_length(description) <= 255))
 );
 
