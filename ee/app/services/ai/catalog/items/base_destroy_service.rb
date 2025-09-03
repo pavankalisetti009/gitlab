@@ -14,7 +14,7 @@ module Ai
           return error_no_item unless valid?
 
           if delete_item
-            track_ai_item_events('delete_ai_catalog_item', item.item_type)
+            track_ai_item_events('delete_ai_catalog_item', { label: item.item_type })
             return success
           end
 

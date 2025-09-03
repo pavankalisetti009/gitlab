@@ -23,7 +23,7 @@ module Ai
 
           # Changes to the latest version record are also saved
           if agent.save
-            track_ai_item_events('update_ai_catalog_item', agent.item_type)
+            track_ai_item_events('update_ai_catalog_item', { label: agent.item_type })
             return ServiceResponse.success(payload: payload)
           end
 

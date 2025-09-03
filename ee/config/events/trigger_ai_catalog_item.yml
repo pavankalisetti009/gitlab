@@ -1,0 +1,23 @@
+---
+description: An AI catalog item (agent or flow) is executed.
+internal_events: true
+status: active
+action: trigger_ai_catalog_item
+identifiers:
+- project
+- user
+additional_properties:
+  label:
+    description: Type of AI catalog item
+  property:
+    description: Indicates whether execution is manual or automatic.
+  value:
+    description: ID of the AI catalog item
+product_group: workflow_catalog
+product_categories:
+- workflow_catalog
+milestone: '18.4'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203415
+tiers:
+- premium
+- ultimate

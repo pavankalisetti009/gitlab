@@ -153,6 +153,25 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
         expect(result[:workload_id]).to eq(Ci::Workloads::Workload.last.id)
       end
 
+      it 'triggers trigger_ai_catalog_item', :clean_gitlab_redis_shared_state do
+        expect { execute }
+          .to trigger_internal_events('trigger_ai_catalog_item')
+          .with(
+            user: current_user,
+            project: project,
+            additional_properties: {
+              label: agent.item_type,
+              property: "manual",
+              value: agent.id
+            }
+          )
+          .and increment_usage_metrics(
+            'counts.count_total_trigger_ai_catalog_item_weekly',
+            'counts.count_total_trigger_ai_catalog_item_monthly',
+            'counts.count_total_trigger_ai_catalog_item'
+          )
+      end
+
       it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
         subject { execute }
       end

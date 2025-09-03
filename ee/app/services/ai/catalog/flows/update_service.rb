@@ -23,7 +23,7 @@ module Ai
           prepare_version_to_update
 
           if flow.save
-            track_ai_item_events('update_ai_catalog_item', flow.item_type)
+            track_ai_item_events('update_ai_catalog_item', { label: flow.item_type })
             return ServiceResponse.success(payload: payload)
           end
 

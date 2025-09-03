@@ -29,7 +29,7 @@ module Ai
           item.build_new_version(version_params)
 
           if item.save
-            track_ai_item_events('create_ai_catalog_item', item.item_type)
+            track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
             return ServiceResponse.success(payload: { item: item })
           end
 
