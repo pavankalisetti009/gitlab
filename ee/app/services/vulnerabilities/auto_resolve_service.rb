@@ -5,8 +5,8 @@ module Vulnerabilities
     include Gitlab::Utils::StrongMemoize
     include Gitlab::InternalEventsTracking
 
-    def initialize(project, vulnerability_ids, budget)
-      @project = project
+    def initialize(pipeline, vulnerability_ids, budget)
+      @pipeline = pipeline
       @vulnerability_ids = vulnerability_ids
       @budget = budget
     end
@@ -30,7 +30,9 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :vulnerability_ids, :budget
+    attr_reader :pipeline, :vulnerability_ids, :budget
+
+    delegate :project, to: :pipeline
 
     def vulnerability_reads
       Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).with_states(auto_resolve_states)
@@ -56,6 +58,7 @@ module Vulnerabilities
         .vulnerability_management_policies
         .auto_resolve_policies_with_rules
     end
+    strong_memoize_attr :policies
 
     def rules
       policies
@@ -162,8 +165,21 @@ module Vulnerabilities
 
     def comment(vulnerability)
       rule = rules_by_vulnerability[vulnerability]
-      format(_("Auto-resolved by the vulnerability management policy named '%{policy_name}'"),
-        policy_name: rule.security_policy.name)
+      format(
+        _("Auto-resolved by the vulnerability management policy named '%{policy_name}' " \
+          "as the vulnerability was no longer detected in pipeline %{pipeline_link}."),
+        policy_name: rule.security_policy.name,
+        pipeline_link: pipeline_link
+      )
+    end
+
+    def pipeline_link
+      "[#{pipeline.id}](#{pipeline_url})"
+    end
+    strong_memoize_attr :pipeline_link
+
+    def pipeline_url
+      Gitlab::UrlBuilder.build(pipeline)
     end
 
     def user
