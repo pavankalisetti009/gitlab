@@ -11,7 +11,6 @@ import {
   WIDGET_TYPE_STATUS,
 } from '~/work_items/constants';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
-
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import groupWorkspacePermissionsQuery from '~/work_items/graphql/group_workspace_permissions.query.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -284,7 +283,7 @@ export default {
       </div>
     </template>
     <template #readonly>
-      <work-item-status-badge v-if="hasStatus" :item="localStatus" />
+      <work-item-status-badge v-if="hasStatus" :item="localStatus" class="gl-mt-2" />
     </template>
     <template #footer>
       <gl-button
