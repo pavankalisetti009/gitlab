@@ -17,6 +17,7 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver, feature_category: :import
     let_it_be(:epic_push_event) { create(:event, :pushed, target: epic, group: group, author: user) }
     let_it_be(:milestone) { create(:milestone, group: group) }
     let_it_be(:board) { create(:board, group: group, assignee: user, labels: [label1]) }
+    let_it_be(:epic_board) { create(:epic_board, group: group) }
     let_it_be(:note1) { create(:note, namespace_id: epic.group_id, project_id: nil, noteable: epic) }
     let_it_be(:note2) { create(:note, namespace_id: epic.group_id, project_id: nil, noteable: epic.work_item) }
     let_it_be(:note_event) { create(:event, :created, target: note1, author: user) }
@@ -185,6 +186,29 @@ RSpec.describe Gitlab::ImportExport::Group::TreeSaver, feature_category: :import
 
         expect(milestone_list['milestone_id']).to eq(milestone.id)
         expect(assignee_list['user_id']).to eq(user.id)
+      end
+    end
+
+    context 'epic_boards relation' do
+      before do
+        create(:epic_list, epic_board: epic_board, label_id: label1.id, position: 0)
+        create(:epic_list, epic_board: epic_board, label_id: label2.id, position: 1)
+
+        expect_successful_save(group_tree_saver)
+      end
+
+      it 'saves top level boards' do
+        expect(read_association(group, 'epic_boards').size).to eq(1)
+      end
+
+      it 'saves epic_board epic_lists', :aggregate_failures do
+        lists = read_association(group, 'epic_boards').first['epic_lists']
+
+        expect(lists.size).to eq(2)
+
+        expect(lists.first['list_type']).to eq('label')
+        expect(lists.first['label']['id']).to eq(label1.id)
+        expect(lists.last['label']['id']).to eq(label2.id)
       end
     end
 

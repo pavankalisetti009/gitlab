@@ -24,6 +24,11 @@ module EE
               pipeline: ::BulkImports::Groups::Pipelines::EpicsPipeline,
               stage: 2
             },
+            epic_boards: {
+              pipeline: ::BulkImports::Groups::Pipelines::EpicBoardsPipeline,
+              minimum_source_version: '18.4.0',
+              stage: 2
+            },
             wiki: {
               pipeline: ::BulkImports::Common::Pipelines::WikiPipeline,
               stage: 2

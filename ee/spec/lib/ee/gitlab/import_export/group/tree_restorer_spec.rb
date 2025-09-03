@@ -90,6 +90,14 @@ RSpec.describe Gitlab::ImportExport::Group::TreeRestorer, feature_category: :imp
       end
     end
 
+    context 'epic board' do
+      it 'has epic board lists' do
+        epic_lists = group.epic_boards.find_by(name: 'first epic board').epic_lists
+
+        expect(epic_lists.map(&:list_type)).to contain_exactly('backlog', 'label', 'closed')
+      end
+    end
+
     context 'boards' do
       it 'has user generated milestones' do
         board = group.boards.find_by(name: 'second board')
