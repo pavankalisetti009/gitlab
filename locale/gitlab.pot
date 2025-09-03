@@ -61703,6 +61703,9 @@ msgstr ""
 msgid "Show open epics"
 msgstr ""
 
+msgid "Show or hide draft merge requests in your merge requests list."
+msgstr ""
+
 msgid "Show or hide sidebar"
 msgstr ""
 
@@ -67772,6 +67775,9 @@ msgid "Toggle commit description"
 msgstr ""
 
 msgid "Toggle commit list"
+msgstr ""
+
+msgid "Toggle drafts visibility"
 msgstr ""
 
 msgid "Toggle emoji reaction"
