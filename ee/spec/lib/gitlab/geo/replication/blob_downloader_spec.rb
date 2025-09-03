@@ -267,6 +267,30 @@ RSpec.describe Gitlab::Geo::Replication::BlobDownloader, feature_category: :geo_
               expect(WebMock).to have_requested(:get, remote_url)
             end
           end
+
+          context 'when the primary site redirects to a S3 presigned URLs containing special characters' do
+            let(:remote_url) { 'https://s3.amazonaws.com/bucket/file%2Bwith+plus.txt?X-Amz-Signature=abc123' }
+            let(:content) { 'foo' }
+
+            before do
+              allow(replicator).to receive(:primary_checksum).and_return("03")
+
+              stub_request(:get, downloader.resource_url)
+                .to_return(status: 302, headers: { 'Location' => remote_url })
+
+              stub_request(:get, remote_url)
+                .to_return(status: 200, body: content)
+            end
+
+            it 'preserves special characters in URLs during redirect' do
+              result = downloader.execute
+
+              expect_blob_downloader_result(result,
+                success: true, bytes_downloaded: content.bytesize, primary_missing_file: false)
+
+              expect(WebMock).to have_requested(:get, remote_url)
+            end
+          end
         end
       end
     end
