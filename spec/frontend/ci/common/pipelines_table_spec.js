@@ -12,7 +12,7 @@ import PipelineOperations from '~/ci/pipelines_page/components/pipeline_operatio
 import PipelineTriggerer from '~/ci/pipelines_page/components/pipeline_triggerer.vue';
 import PipelineUrl from '~/ci/pipelines_page/components/pipeline_url.vue';
 import PipelinesTable from '~/ci/common/pipelines_table.vue';
-import PipelinesTimeago from '~/ci/pipelines_page/components/time_ago.vue';
+import PipelinesTimeago from '~/ci/pipelines_page/components/pipelines_timeago.vue';
 import {
   PIPELINE_ID_KEY,
   BUTTON_TOOLTIP_RETRY,
