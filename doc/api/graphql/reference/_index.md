@@ -41808,9 +41808,9 @@ Risk score information for a specific project.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="riskscorebyprojectproject"></a>`project` {{< icon name="warning-solid" >}} | [`Project!`](#project) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk score belongs to the project. |
-| <a id="riskscorebyprojectrating"></a>`rating` {{< icon name="warning-solid" >}} | [`RiskRating!`](#riskrating) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk rating for the project. |
-| <a id="riskscorebyprojectscore"></a>`score` {{< icon name="warning-solid" >}} | [`Float!`](#float) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk score for the project. |
+| <a id="riskscorebyprojectproject"></a>`project` {{< icon name="warning-solid" >}} | [`Project`](#project) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk score belongs to the project. |
+| <a id="riskscorebyprojectrating"></a>`rating` {{< icon name="warning-solid" >}} | [`RiskRating`](#riskrating) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk rating for the project. |
+| <a id="riskscorebyprojectscore"></a>`score` {{< icon name="warning-solid" >}} | [`Float`](#float) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk score for the project. |
 
 ### `RootStorageStatistics`
 

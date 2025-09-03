@@ -7,17 +7,17 @@ module Types
       description 'Risk score information for a specific project.'
 
       field :project, Types::ProjectType,
-        null: false,
+        null: true,
         experiment: { milestone: '18.4' },
         description: 'Risk score belongs to the project.'
 
       field :score, GraphQL::Types::Float,
-        null: false,
+        null: true,
         experiment: { milestone: '18.4' },
         description: 'Risk score for the project.'
 
       field :rating, Types::Security::RiskRatingEnum,
-        null: false,
+        null: true,
         experiment: { milestone: '18.4' },
         description: 'Risk rating for the project.'
     end
