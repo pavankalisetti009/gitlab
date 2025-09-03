@@ -11,7 +11,7 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
     let!(:user) { create(:user) }
     let!(:project) { create(:project) }
     let!(:gitlab_test_project) do
-      create(:project, path: 'gitlab-test', namespace: create(:group, path: 'gitlab-org'))
+      create(:project, path: 'test', namespace: create(:group, path: 'gitlab-duo'))
     end
 
     it 'creates the specified number of workflows' do
@@ -56,7 +56,7 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
 
       workflows = Ai::DuoWorkflows::Workflow.all
       expect(workflows.count).to eq(3)
-      expect(workflows.all? { |w| w.project_id == gitlab_test_project.id }).to be true
+      expect(workflows.pluck(:project_id)).to eq([gitlab_test_project.id] * 3)
     end
 
     it 'assigns workflows to specified project by path' do
@@ -64,7 +64,7 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
 
       workflows = Ai::DuoWorkflows::Workflow.all
       expect(workflows.count).to eq(3)
-      expect(workflows.all? { |w| w.project_id == project.id }).to be true
+      expect(workflows.pluck(:project_id)).to eq([project.id] * 3)
     end
 
     it 'creates workflows with valid attributes' do
@@ -242,7 +242,7 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
 
         workflows = Ai::DuoWorkflows::Workflow.all
         expect(workflows.count).to eq(3)
-        expect(workflows.all? { |w| w.project_id == Project.first.id }).to be true
+        expect(workflows.pluck(:project_id)).to eq([Project.first.id] * 3)
       end
     end
 
