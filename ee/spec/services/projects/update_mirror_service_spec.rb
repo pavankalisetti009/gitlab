@@ -8,7 +8,9 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
     create(:project, :repository, :mirror, import_url: Project::UNKNOWN_IMPORT_URL, only_mirror_protected_branches: false)
   end
 
-  subject(:service) { described_class.new(project, project.first_owner) }
+  let(:current_user) { project.first_owner }
+
+  subject(:service) { described_class.new(project, current_user) }
 
   before do
     allow(project).to receive(:lfs_enabled?).and_return(lfs_enabled)
@@ -421,7 +423,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
 
       context 'when repository changes' do
         before do
-          stub_fetch_mirror(project, repo_changed: true)
+          stub_fetch_mirror(project, repo_changed: true, tags_changed: false)
         end
 
         context 'when LFS is disabled in the project' do
@@ -446,6 +448,47 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
             expect(Gitlab::Metrics::Lfs).to receive_message_chain(:update_objects_error_rate, :increment).with(error: false, labels: {})
 
             service.execute
+          end
+
+          context 'when mirror only protected branches option is set' do
+            let(:protected_branch_name) { "protected-branch" }
+            let(:protected_branch_sha) { 'protected_sha_123' }
+            let(:protected_branch_commit) { RepoHelpers.sample_commit }
+
+            let(:unprotected_branch_name) { "unprotected-branch" }
+            let(:unprotected_branch_sha) { 'unprotected_sha_456' }
+            let(:unprotected_branch_commit) { RepoHelpers.another_sample_commit }
+
+            let(:remote_protected_branch) do
+              Gitlab::Git::Branch.new(project.repository, protected_branch_name, protected_branch_sha, protected_branch_commit)
+            end
+
+            let(:remote_unprotected_branch) do
+              Gitlab::Git::Branch.new(project.repository, unprotected_branch_name, unprotected_branch_sha, unprotected_branch_commit)
+            end
+
+            let(:remote_branches) { [remote_protected_branch, remote_unprotected_branch] }
+
+            before do
+              project.update!(only_mirror_protected_branches: true)
+
+              allow(project.repository).to receive_messages(
+                remote_branches: remote_branches
+              )
+            end
+
+            it 'only processes LFS objects from protected branches' do
+              create(:protected_branch, project: project, name: protected_branch_name)
+              project.reload
+
+              expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(
+                project,
+                current_user,
+                { updated_revisions: ["refs/remotes/upstream/#{protected_branch_name}"] }
+              ).and_call_original
+
+              service.execute
+            end
           end
 
           context 'when LFS import fails' do
@@ -484,6 +527,126 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
               expect(Gitlab::Metrics::Lfs).to receive_message_chain(:update_objects_error_rate, :increment).with(error: true, labels: {})
 
               subject.execute
+            end
+          end
+
+          context 'LFS selective revision processing' do
+            context 'initial mirroring (empty repository)' do
+              let_it_be(:empty_project) { create(:project_empty_repo, :mirror, import_url: Project::UNKNOWN_IMPORT_URL) }
+              let(:empty_project_current_user) { empty_project.first_owner }
+              let(:empty_service) { described_class.new(empty_project, empty_project_current_user) }
+
+              before do
+                allow(empty_project).to receive(:lfs_enabled?).and_return(true)
+                allow(empty_project).to receive(:fetch_mirror) do
+                  Gitaly::FetchRemoteResponse.new(tags_changed: false, repo_changed: true)
+                end
+              end
+
+              it 'passes ["--all"] to LfsImportService for initial mirroring' do
+                expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(
+                  empty_project,
+                  empty_project_current_user,
+                  { updated_revisions: ['--all'] }
+                ).and_call_original
+
+                empty_service.execute
+              end
+            end
+
+            context 'when no branches changed' do
+              before do
+                allow(project.repository).to receive(:remote_branches).and_return(project.repository.branches)
+              end
+
+              it 'does not call LfsImportService' do
+                expect(Projects::LfsPointers::LfsImportService).not_to receive(:new)
+
+                service.execute
+              end
+            end
+
+            context 'when branches with changes' do
+              let(:old_commit_sha) { '48f365f4fef7f4f2eabac6a57e655396f527a1e1' }
+              let(:new_commit_sha) { '4c44e9f2a8b0f8c6cf90ec33034ce04c4a5a11c4' }
+              let(:old_commit) { RepoHelpers.sample_commit }
+              let(:new_commit) { RepoHelpers.another_sample_commit }
+
+              let(:local_main_branch) { Gitlab::Git::Branch.new(project.repository, 'main', old_commit_sha, old_commit) }
+              let(:remote_main_branch) { Gitlab::Git::Branch.new(project.repository, 'main', new_commit_sha, new_commit) }
+
+              let(:remote_branches) { [remote_main_branch] }
+
+              before do
+                allow(project.repository).to receive_messages(
+                  branches: [local_main_branch],
+                  remote_branches: remote_branches,
+                  upstream_branches: remote_branches,
+                  ff_merge: true
+                )
+              end
+
+              context 'when existing branches are updated' do
+                it 'passes commit SHA ranges to LfsImportService for updated branches' do
+                  expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(
+                    project,
+                    current_user,
+                    { updated_revisions: ["#{old_commit_sha}..#{new_commit_sha}"] }
+                  ).and_call_original
+
+                  service.execute
+                end
+              end
+
+              context 'when mixing updated and new branches' do
+                let(:feature_commit_sha) { '0a358369b3d68f5d4e7cf2507d515364f8a1c4ec' }
+                let(:feature_commit) { RepoHelpers.sample_big_commit }
+                let(:remote_feature_branch) { Gitlab::Git::Branch.new(project.repository, 'feature', feature_commit_sha, feature_commit) }
+                let(:remote_branches) { [remote_main_branch, remote_feature_branch] }
+
+                it 'passes SHA ranges for updated branches and full refs for new branches' do
+                  expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(
+                    project,
+                    current_user,
+                    { updated_revisions: [
+                      "#{old_commit_sha}..#{new_commit_sha}",
+                      "refs/remotes/upstream/feature"
+                    ] }
+                  ).and_call_original
+
+                  service.execute
+                end
+
+                context 'with threshold' do
+                  before do
+                    stub_const('Projects::UpdateMirrorService::MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS', 1)
+                  end
+
+                  context 'when the changes are over threshold' do
+                    it 'passes --all to LfsImportService' do
+                      expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(
+                        project,
+                        current_user,
+                        { updated_revisions: ['--all'] }
+                      ).and_call_original
+
+                      service.execute
+                    end
+                  end
+                end
+              end
+            end
+          end
+
+          context 'with mirroring_lfs_optimization feature flag disabled' do
+            before do
+              stub_feature_flags(mirroring_lfs_optimization: false)
+            end
+
+            it 'uses original LFS import behavior without updated_revisions parameter' do
+              expect(Projects::LfsPointers::LfsImportService).to receive(:new).with(project).and_call_original
+
+              service.execute
             end
           end
         end

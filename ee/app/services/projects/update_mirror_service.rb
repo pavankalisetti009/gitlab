@@ -7,6 +7,8 @@ module Projects
     Error = Class.new(StandardError)
     UpdateError = Class.new(Error)
 
+    MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS = 100
+
     def execute
       return error("The import URL is invalid.") if import_url_invalid?
 
@@ -49,6 +51,75 @@ module Projects
     end
 
     private
+
+    def update_lfs_objects
+      return unless project.lfs_enabled?
+
+      if Feature.enabled?(:mirroring_lfs_optimization, project)
+        @local_branches = get_local_branches
+        updated_revisions = get_updated_revisions
+        return if updated_revisions.nil?
+
+        result = Projects::LfsPointers::LfsImportService.new(project, current_user, { updated_revisions: updated_revisions }).execute
+      else
+        result = Projects::LfsPointers::LfsImportService.new(project).execute
+      end
+
+      if result[:status] == :error
+        Gitlab::Metrics::Lfs.update_objects_error_rate.increment(error: true, labels: {})
+        log_error(result[:message])
+        # Uncomment once https://gitlab.com/gitlab-org/gitlab-foss/issues/61834 is closed
+        # raise UpdateError, result[:message]
+      else
+        Gitlab::Metrics::Lfs.update_objects_error_rate.increment(error: false, labels: {})
+      end
+    end
+
+    def get_updated_revisions
+      return ['--all'] if @local_branches.empty?
+
+      changed_revisions = calculate_changed_revisions
+      return if changed_revisions.empty?
+
+      if changed_revisions.size > MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS
+        return ['--all']
+      end
+
+      changed_revisions
+    end
+
+    def calculate_changed_revisions
+      get_remote_branches.filter_map do |name, remote_sha|
+        next if skip_branch?(name)
+
+        local_sha = @local_branches[name]
+
+        if local_sha.nil?
+          "refs/remotes/upstream/#{name}"
+        elsif local_sha != remote_sha
+          "#{local_sha}..#{remote_sha}"
+        else
+          nil
+        end
+      end
+    end
+
+    def map_branches_to_targets(branch_collection)
+      branches = {}
+      branch_collection.each do |branch|
+        branches[branch.name.to_s] = branch.target
+      end
+      branches
+    end
+
+    def get_remote_branches
+      # Not calling upstream_branches to avoid memoization overhead
+      map_branches_to_targets(project.repository.remote_branches(::Repository::MIRROR_REMOTE))
+    end
+
+    def get_local_branches
+      map_branches_to_targets(project.repository.branches)
+    end
 
     def import_url_invalid?
       project.import_url && Gitlab::HTTP_V2::UrlBlocker.blocked_url?(
@@ -155,21 +226,6 @@ module Projects
 
     def tag_reference(tag)
       "#{Gitlab::Git::TAG_REF_PREFIX}#{tag.name}"
-    end
-
-    def update_lfs_objects
-      return unless project.lfs_enabled?
-
-      result = Projects::LfsPointers::LfsImportService.new(project).execute
-
-      if result[:status] == :error
-        Gitlab::Metrics::Lfs.update_objects_error_rate.increment(error: true, labels: {})
-        log_error(result[:message])
-        # Uncomment once https://gitlab.com/gitlab-org/gitlab-foss/issues/61834 is closed
-        # raise UpdateError, result[:message]
-      else
-        Gitlab::Metrics::Lfs.update_objects_error_rate.increment(error: false, labels: {})
-      end
     end
 
     def handle_diverged_branch(upstream, local, branch_name, errors)
