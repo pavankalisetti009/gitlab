@@ -13997,6 +13997,7 @@ CREATE TABLE compliance_requirements_controls (
     encrypted_secret_token_iv bytea,
     external_url text,
     external_control_name text,
+    ping_enabled boolean DEFAULT true NOT NULL,
     CONSTRAINT check_110c87ed8d CHECK ((char_length(expression) <= 255)),
     CONSTRAINT check_5020dd6745 CHECK ((char_length(external_url) <= 1024)),
     CONSTRAINT check_e3c26a3c02 CHECK ((char_length(external_control_name) <= 255))
