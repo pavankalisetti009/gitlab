@@ -15,6 +15,7 @@ describe('UpstreamDetailsHeader', () => {
   const findEditButton = () => wrapper.findComponent(GlButton);
   const findTitleArea = () => wrapper.findComponent(TitleArea);
   const findAllMetadataItems = () => wrapper.findAllComponents(MetadataItem);
+  const findArtifactsCountMetadataItem = () => wrapper.findByTestId('artifacts-count');
   const findDescription = () => wrapper.findByTestId('description');
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -69,6 +70,35 @@ describe('UpstreamDetailsHeader', () => {
     it('renders Edit button', () => {
       expect(findEditButton().text()).toBe('Edit');
       expect(findEditButton().props('href')).toBe('upstream_path');
+    });
+  });
+
+  describe('loading state', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          loading: true,
+          cacheEntriesCount: 5,
+        },
+      });
+    });
+
+    it('shows loading text for artifacts count', () => {
+      expect(findArtifactsCountMetadataItem().props('text')).toBe('-- artifacts');
+    });
+  });
+
+  describe('with cache entries count', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          cacheEntriesCount: 5,
+        },
+      });
+    });
+
+    it('displays correct artifacts count text', () => {
+      expect(findArtifactsCountMetadataItem().props('text')).toBe('5 artifacts');
     });
   });
 });

@@ -96,11 +96,6 @@ msgid_plural "%d Approvals"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d Artifact"
-msgid_plural "%d Artifacts"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d Module"
 msgid_plural "%d Modules"
 msgstr[0] ""
@@ -70708,6 +70703,11 @@ msgstr ""
 msgid "VirtualRegistries|Virtual Registries"
 msgstr ""
 
+msgid "VirtualRegistry|%d artifact"
+msgid_plural "VirtualRegistry|%d artifacts"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "VirtualRegistry|%{count} artifact"
 msgid_plural "VirtualRegistry|%{count} artifacts"
 msgstr[0] ""
@@ -70722,6 +70722,9 @@ msgid "VirtualRegistry|%{hours} hour cache"
 msgid_plural "VirtualRegistry|%{hours} hours cache"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "VirtualRegistry|-- artifacts"
+msgstr ""
 
 msgid "VirtualRegistry|Add upstream"
 msgstr ""
@@ -70874,6 +70877,9 @@ msgid "VirtualRegistry|Name"
 msgstr ""
 
 msgid "VirtualRegistry|New maven virtual registry"
+msgstr ""
+
+msgid "VirtualRegistry|No artifacts to display."
 msgstr ""
 
 msgid "VirtualRegistry|No upstreams yet"

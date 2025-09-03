@@ -62,8 +62,7 @@ module VirtualRegistryHelper
         id: upstream.id,
         name: upstream.name,
         url: upstream.url,
-        description: upstream.description,
-        cacheEntriesCount: upstream.cache_entries.size
+        description: upstream.description
       },
       editUpstreamPath: edit_group_virtual_registries_maven_upstream_path(upstream.group, upstream)
     }.to_json
