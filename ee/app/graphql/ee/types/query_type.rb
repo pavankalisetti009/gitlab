@@ -378,6 +378,17 @@ module EE
           null: true,
           description: 'Security-filtered projects for a namespace',
           resolver: ::Resolvers::Security::NamespaceSecurityProjectsResolver
+
+        field :maven_upstream_registry, EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType,
+          null: true,
+          description: 'Find a Maven upstream registry. ' \
+            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
+          experiment: { milestone: '18.4' } do
+          argument :id,
+            type: ::Types::GlobalIDType[::VirtualRegistries::Packages::Maven::Upstream],
+            required: true,
+            description: 'Global ID of the Maven upstream registry.'
+        end
       end
 
       def vulnerability(id:)
@@ -434,11 +445,11 @@ module EE
       end
 
       def maven_virtual_registry(id:)
-        return unless ::Gitlab.config.dependency_proxy.enabled
+        find_maven_registry_by_id(id)
+      end
 
-        ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry|
-          registry if maven_virtual_registry_available?(registry)
-        end
+      def maven_upstream_registry(id:)
+        find_maven_registry_by_id(id)
       end
 
       private
@@ -456,11 +467,19 @@ module EE
         namespace
       end
 
-      def maven_virtual_registry_available?(registry)
-        return false unless registry&.group
+      def find_maven_registry_by_id(id)
+        return unless ::Gitlab.config.dependency_proxy.enabled
 
-        ::Feature.enabled?(:maven_virtual_registry, registry.group) &&
-          registry.group.licensed_feature_available?(:packages_virtual_registry)
+        ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry_object|
+          registry_object if maven_registry_available?(registry_object)
+        end
+      end
+
+      def maven_registry_available?(registry_object)
+        return false unless registry_object&.group
+
+        ::Feature.enabled?(:maven_virtual_registry, registry_object.group) &&
+          registry_object.group.licensed_feature_available?(:packages_virtual_registry)
       end
     end
   end
