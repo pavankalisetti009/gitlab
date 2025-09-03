@@ -13,6 +13,7 @@ RSpec.describe BulkImports::Groups::Stage, feature_category: :importers do
         minimum_source_version: '15.4.0'
       },
       { stage: 2, pipeline: BulkImports::Groups::Pipelines::EpicsPipeline },
+      { stage: 2, pipeline: BulkImports::Groups::Pipelines::EpicBoardsPipeline, minimum_source_version: '18.4.0' },
       { stage: 2, pipeline: BulkImports::Common::Pipelines::WikiPipeline }
     ]
   end
