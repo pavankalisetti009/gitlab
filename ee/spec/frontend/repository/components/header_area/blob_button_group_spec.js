@@ -30,7 +30,7 @@ describe('EE blob button group', () => {
         selectedBranch: 'root-main-patch-07420',
         originalBranch: 'master',
         blobInfo: blobControlsDataMock.repository.blobs.nodes[0],
-        glFeatures: { fileLocks: true },
+        glLicensedFeatures: { fileLocks: true },
       },
       stubs: {
         CeBlobButtonGroup,

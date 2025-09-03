@@ -59,7 +59,7 @@ describe('LockDirectoryButton', () => {
     wrapper = shallowMount(LockDirectoryButton, {
       apolloProvider: fakeApollo,
       provide: {
-        glFeatures: {
+        glLicensedFeatures: {
           fileLocks,
         },
       },
