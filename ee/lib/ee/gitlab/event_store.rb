@@ -328,12 +328,6 @@ module EE
         end
 
         def subscribe_to_analytics_events(store)
-          store.subscribe ::Analytics::DuoChatEventsBackfillWorker,
-            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
-
-          store.subscribe ::Analytics::CodeSuggestionsEventsBackfillWorker,
-            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
-
           store.subscribe ::Analytics::AiUsageEventsBackfillWorker,
             to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
         end
