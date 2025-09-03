@@ -19,7 +19,7 @@ RSpec.describe TestHooks::ProjectService, feature_category: :code_testing do
       let(:trigger) { 'vulnerability_events' }
       let(:trigger_key) { :vulnerability_hooks }
 
-      context 'when there is no Vulnerabilty data' do
+      context 'when there is no Vulnerability data' do
         it 'returns an error' do
           error_result = { status: :error, message: 'Ensure the project has vulnerabilities.' }
 
@@ -27,8 +27,8 @@ RSpec.describe TestHooks::ProjectService, feature_category: :code_testing do
         end
       end
 
-      context 'when there is Vulnerabilty data' do
-        it 'builds and returns serialized Vulnerabilty data' do
+      context 'when there is Vulnerability data' do
+        it 'builds and returns serialized Vulnerability data' do
           freeze_time do
             vulnerability = create(:vulnerability, project: project)
 
@@ -57,7 +57,10 @@ RSpec.describe TestHooks::ProjectService, feature_category: :code_testing do
                 dismissed_by_id: nil,
                 resolved_on_default_branch: false,
                 created_at: vulnerability.created_at,
-                updated_at: vulnerability.updated_at
+                updated_at: vulnerability.updated_at,
+                resolved_at: nil,
+                resolved_by_id: nil,
+                auto_resolved: false
               }
             }
 
