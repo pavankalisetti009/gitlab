@@ -270,20 +270,6 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
     end
   end
 
-  describe 'with enabled duo banner' do
-    it 'renders the partial' do
-      render
-
-      expect(rendered).to render_template(
-        partial: 'admin/enable_duo_banner_sm',
-        locals: {
-          title: s_('AiPowered|AI-native features now available in IDEs'),
-          callouts_feature_name: 'enable_duo_banner_admin_dashboard'
-        }
-      )
-    end
-  end
-
   context 'for duo_amazon_q_alert' do
     before do
       allow(view).to receive(:current_user).and_return(build_stubbed(:user))
