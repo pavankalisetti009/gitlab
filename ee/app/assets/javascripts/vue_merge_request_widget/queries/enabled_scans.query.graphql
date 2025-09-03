@@ -4,6 +4,7 @@ query enabledScans($fullPath: ID!, $pipelineIid: ID!) {
     pipeline(iid: $pipelineIid) {
       id
       enabledSecurityScans {
+        ready
         apiFuzzing
         clusterImageScanning
         containerScanning
@@ -14,6 +15,7 @@ query enabledScans($fullPath: ID!, $pipelineIid: ID!) {
         secretDetection
       }
       enabledPartialSecurityScans {
+        ready
         apiFuzzing
         clusterImageScanning
         containerScanning

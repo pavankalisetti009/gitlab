@@ -10,12 +10,15 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
 import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';
 import ReportDetails from './mr_widget_security_report_details.vue';
 import { i18n, reportTypes } from './i18n';
 import { highlightsFromReport } from './utils';
+
+const POLL_INTERVAL = 3000;
 
 export default {
   name: 'WidgetSecurityReports',
@@ -158,9 +161,28 @@ export default {
         };
       },
       update({ project }) {
+        const scans = project?.pipeline || {};
+
+        // We need to check only one of these because they make the same query in the backend
+        const isReady = scans.enabledSecurityScans?.ready === true;
+
+        if (!isReady) {
+          if (!this.pollingInterval) {
+            this.initPolling();
+          }
+
+          // This will prevent the widget from loading until results are ready
+          return { full: {}, partial: {} };
+        }
+
+        if (isReady && this.pollingInterval) {
+          this.pollingInterval.destroy();
+          this.pollingInterval = undefined;
+        }
+
         return {
-          full: project?.pipeline?.enabledSecurityScans,
-          partial: project?.pipeline?.enabledPartialSecurityScans,
+          full: scans.enabledSecurityScans,
+          partial: scans.enabledPartialSecurityScans,
         };
       },
       error() {
@@ -173,14 +195,30 @@ export default {
           return true;
         }
 
-        return !this.mr.pipeline?.iid || !this.mr.targetProjectFullPath;
+        return (
+          !this.mr.pipeline?.iid ||
+          !this.mr.targetProjectFullPath ||
+          Boolean(this.mr.pipeline.active)
+        );
       },
     },
   },
   beforeDestroy() {
     this.cleanUpResolveWithAiHandlers();
+
+    if (this.pollingInterval) {
+      this.pollingInterval.destroy();
+    }
   },
   methods: {
+    initPolling() {
+      this.pollingInterval = new SmartInterval({
+        callback: () => this.$apollo.queries.enabledScans.refetch(),
+        startingInterval: POLL_INTERVAL,
+        incrementByFactorOf: 1,
+        immediateExecution: true,
+      });
+    },
     handleResolveWithAiSuccess(commentUrl) {
       // the note's id is the hash of the url and also the DOM id which we want to scroll to
       const [, commentNoteId] = commentUrl.split('#');
