@@ -94,6 +94,7 @@ module Vulnerabilities
 
         Vulnerability.current_transaction.after_commit do
           Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_update).execute(&:itself)
+          trigger_webhook_events(vulnerabilities_to_update)
         end
       end
 
@@ -183,6 +184,16 @@ module Vulnerabilities
     # created records will have the same timestamps.
     def now
       @now ||= Time.current.utc
+    end
+
+    def trigger_webhook_events(vulnerabilities_to_update)
+      return unless project.has_active_hooks?(:vulnerability_hooks)
+
+      vulnerabilities = vulnerabilities_to_update.with_projects_and_routes
+                                                 .with_issue_links_and_issues
+                                                 .with_findings_and_identifiers
+
+      vulnerabilities.each(&:trigger_webhook_event)
     end
 
     def error_response(reason:, exception: nil)

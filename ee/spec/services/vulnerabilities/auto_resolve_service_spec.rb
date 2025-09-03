@@ -112,6 +112,20 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       expect(result.payload[:count]).to eq(1)
     end
 
+    context 'when project has active hooks' do
+      before do
+        allow(project).to receive(:has_active_hooks?).with(:vulnerability_hooks).and_return(true)
+      end
+
+      it 'triggers webhook events for resolved vulnerabilities' do
+        expect_next_found_instance_of(Vulnerability) do |vulnerability|
+          expect(vulnerability).to receive(:trigger_webhook_event)
+        end
+
+        service.execute
+      end
+    end
+
     context 'when project does not have a security_policy_bot' do
       before_all do
         project.security_policy_bots.delete_all
