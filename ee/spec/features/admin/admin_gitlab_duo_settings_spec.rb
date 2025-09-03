@@ -77,16 +77,4 @@ RSpec.describe 'Admin GitLab Duo home page', feature_category: :ai_abstraction_l
       end
     end
   end
-
-  describe 'enable duo banner', :js, time_travel_to: '2025-05-15' do
-    before do
-      create(:license, plan: License::ULTIMATE_PLAN)
-      sign_in(admin)
-      enable_admin_mode!(admin)
-
-      visit admin_gitlab_duo_path
-    end
-
-    it_behaves_like 'admin interacts with enable duo banner sm'
-  end
 end

@@ -88,15 +88,6 @@ module EE
         !gitlab_com_subscription? && !has_active_license? && super
       end
 
-      def show_enable_duo_banner_sm?(callouts_feature_name)
-        !::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
-          current_user.can_admin_all_resources? &&
-          License.duo_core_features_available? &&
-          ::Ai::Setting.instance.duo_core_features_enabled.nil? &&
-          !::Ai::AmazonQ.enabled? &&
-          !user_dismissed?(callouts_feature_name)
-      end
-
       def show_explore_duo_core_banner?(merge_request)
         merge_request.assignees.include?(current_user) &&
           current_user.allowed_to_use(:duo_chat).authorized_by_duo_core &&
