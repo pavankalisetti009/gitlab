@@ -21,6 +21,16 @@ module Sbom
 
     has_many :vulnerabilities, through: :occurrences_vulnerabilities
 
+    has_many :sbom_graph_paths_as_descendant,
+      foreign_key: :descendant_id,
+      class_name: 'Sbom::GraphPath',
+      inverse_of: :descendant
+
+    has_many :sbom_graph_paths_as_ancestor,
+      foreign_key: :ancestor_id,
+      class_name: 'Sbom::GraphPath',
+      inverse_of: :ancestor
+
     enum :highest_severity, ::Enums::Vulnerability.severity_levels
     enum :reachability, ::Enums::Sbom.reachability_types, suffix: true
 
@@ -267,7 +277,7 @@ module Sbom
       if attributes.key?('has_dependency_paths')
         attributes['has_dependency_paths']
       else
-        Sbom::GraphPath.exists?(descendant_id: id)
+        sbom_graph_paths_as_descendant.any?
       end
     end
     strong_memoize_attr :has_dependency_paths?

@@ -27750,6 +27750,7 @@ A software dependency used by a project.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="dependencycomponentversion"></a>`componentVersion` | [`ComponentVersion`](#componentversion) | Version of the dependency. |
+| <a id="dependencyhasdependencypaths"></a>`hasDependencyPaths` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.4. **Status**: Experiment. Indicates whether the dependency has any dependency paths. |
 | <a id="dependencyid"></a>`id` | [`GlobalID!`](#globalid) | ID of the dependency. |
 | <a id="dependencylicenses"></a>`licenses` | [`[License!]`](#license) | Licenses associated to the dependency. |
 | <a id="dependencylocation"></a>`location` | [`Location`](#location) | Information about where the dependency is located. |

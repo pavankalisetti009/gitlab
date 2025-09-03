@@ -9,4 +9,5 @@ RSpec.describe Types::Sbom::DependencyType, feature_category: :dependency_manage
 
   it { expect(described_class).to require_graphql_authorizations(:read_dependency) }
   it { expect(described_class.graphql_name).to eq('Dependency') }
+  it { expect(described_class).to have_graphql_field(:has_dependency_paths) }
 end

@@ -154,6 +154,38 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
     end
   end
 
+  describe "hasDependencyPaths field" do
+    let_it_be(:fields) do
+      <<~FIELDS
+        hasDependencyPaths
+      FIELDS
+    end
+
+    it 'avoids N+1 database queries' do
+      parent = occurrences.first
+
+      # create 1 occurrence and 1 graph path
+      occ = create(:sbom_occurrence, project: project)
+      create(:sbom_graph_path, descendant: occ, ancestor: parent, project: project)
+
+      # capture control query count the current set of occurrences
+      post_graphql(query, current_user: current_user, variables: variables)
+      control_count = ActiveRecord::QueryRecorder.new do
+        post_graphql(query, current_user: current_user, variables: variables)
+      end.count
+
+      # create multiple occurrences
+      occurrence_list = create_list(:sbom_occurrence, 5, project: project)
+      occurrence_list.each do |occ|
+        create(:sbom_graph_path, descendant: occ, ancestor: parent, project: project)
+      end
+
+      expect do
+        post_graphql(query, current_user: current_user, variables: variables)
+      end.not_to exceed_query_limit(control_count)
+    end
+  end
+
   it_behaves_like 'when dependencies graphql query filtered by component name'
   it_behaves_like 'when dependencies graphql query filtered by source type'
   it_behaves_like 'when dependencies graphql query sorted by severity'
