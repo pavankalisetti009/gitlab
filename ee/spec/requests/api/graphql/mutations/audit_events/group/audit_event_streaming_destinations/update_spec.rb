@@ -67,6 +67,101 @@ RSpec.describe 'Update group level external audit event streaming destination', 
         allow(Gitlab::Audit::Auditor).to receive(:audit)
       end
 
+      context 'when updating active status with limits' do
+        let(:plan_limit) { 3 }
+
+        before do
+          plan = Plan.default
+          plan.actual_limits.update!(external_audit_event_destinations: plan_limit)
+        end
+
+        context 'when activating would exceed the limit' do
+          before do
+            create_list(:audit_events_group_external_streaming_destination, plan_limit,
+              group: group, active: true)
+
+            destination.update!(active: false)
+          end
+
+          it 'returns an error' do
+            input[:active] = true
+
+            mutate
+
+            expect(mutation_response['errors']).to include(
+              "Cannot activate: Maximum number of external audit event destinations (#{plan_limit}) exceeded"
+            )
+            expect(mutation_response['externalAuditEventDestination']).to be_nil
+            expect(destination.reload.active).to be false
+          end
+
+          it 'allows updating other fields without changing active status' do
+            input.delete(:active)
+
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            destination.reload
+            expect(destination.config).to eq(updated_config)
+            expect(destination.name).to eq(updated_destination_name)
+            expect(destination.active).to be false
+          end
+        end
+
+        context 'when activating within the limit' do
+          before do
+            create_list(:audit_events_group_external_streaming_destination, plan_limit - 1,
+              group: group, active: true)
+
+            destination.update!(active: false)
+          end
+
+          it 'allows activation' do
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            expect(destination.reload.active).to be true
+          end
+        end
+
+        context 'when deactivating' do
+          before do
+            create_list(:audit_events_group_external_streaming_destination, plan_limit,
+              group: group, active: true)
+            destination.update!(active: true)
+          end
+
+          it 'always allows deactivation' do
+            input[:active] = false
+
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            expect(destination.reload.active).to be false
+          end
+        end
+
+        context 'when destination is already active' do
+          before do
+            create_list(:audit_events_group_external_streaming_destination, plan_limit - 1,
+              group: group, active: true)
+            destination.update!(active: true)
+          end
+
+          it 'allows updating an already active destination' do
+            mutate
+
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['externalAuditEventDestination']).to be_present
+            expect(destination.reload.active).to be true
+            expect(destination.config).to eq(updated_config)
+          end
+        end
+      end
+
       it 'updates the destination' do
         mutate
 

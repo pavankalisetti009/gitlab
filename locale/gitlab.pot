@@ -12645,6 +12645,9 @@ msgstr ""
 msgid "Cancelling Preview"
 msgstr ""
 
+msgid "Cannot activate: Maximum number of %{name} (%{count}) exceeded"
+msgstr ""
+
 msgid "Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again"
 msgstr ""
 

@@ -9,6 +9,7 @@ module Mutations
 
           include ::AuditEvents::Changes
           include ::AuditEvents::StreamDestinationSyncHelper
+          include ::AuditEvents::ActivationLimitGuard
 
           UPDATE_EVENT_NAME = 'updated_group_audit_event_streaming_destination'
           AUDIT_EVENT_COLUMNS = [:config, :name, :category, :secret_token, :active].freeze
@@ -43,6 +44,9 @@ module Mutations
 
           def resolve(id:, config: nil, name: nil, category: nil, secret_token: nil, active: nil)
             destination = authorized_find!(id: id)
+
+            activation_error = validate_activation_limit_for_update(destination, active)
+            return { external_audit_event_destination: nil, errors: [activation_error] } if activation_error
 
             destination_attributes = build_attributes(config, name, category, secret_token, active)
 
