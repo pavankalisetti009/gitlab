@@ -70,8 +70,6 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
     subject(:perform) { worker.perform(framework.id, [project.id, project2.id]) }
 
     before do
-      stub_feature_flags(evaluate_compliance_controls: true)
-
       allow(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
         .to receive(:new)
               .with(control, project, approval_settings_project1)
@@ -111,18 +109,6 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
     it 'has the `until_executed` deduplicate strategy' do
       expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
-    end
-
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(evaluate_compliance_controls: false)
-      end
-
-      it 'returns early without processing' do
-        expect(ComplianceManagement::Framework).not_to receive(:find_by_id)
-
-        perform
-      end
     end
 
     context 'when framework is not assigned to project anymore' do
