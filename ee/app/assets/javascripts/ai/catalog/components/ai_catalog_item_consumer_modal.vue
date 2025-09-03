@@ -81,7 +81,7 @@ export default {
   <gl-modal
     v-model="isOpen"
     modal-id="add-flow-to-target"
-    :title="s__('AICatalog|Add this flow to a project or a group')"
+    :title="s__('AICatalog|Add this flow to a project')"
     :action-primary="$options.modal.actionPrimary"
     :action-secondary="$options.modal.actionSecondary"
     @primary.prevent
@@ -96,11 +96,11 @@ export default {
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
       <gl-form-group
-        :label="s__('AICatalog|Project or Group ID')"
+        :label="s__('AICatalog|Project ID')"
         :label-description="
-          s__('AICatalog|Select a project or group for which you want to enable this flow.')
+          s__('AICatalog|Select a project for which you want to enable this flow.')
         "
-        description="For testing use either 'gid://gitlab/Project/1000000' or 'gid://gitlab/Group/1000000'"
+        description="For testing use 'gid://gitlab/Project/1000000'"
         label-for="target-id"
       >
         <gl-form-input id="target-id" v-model="targetId" required />
