@@ -17332,6 +17332,26 @@ CREATE SEQUENCE instance_integrations_id_seq
 
 ALTER SEQUENCE instance_integrations_id_seq OWNED BY instance_integrations.id;
 
+CREATE TABLE instance_model_selection_feature_settings (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    feature smallint NOT NULL,
+    offered_model_ref text,
+    offered_model_name text,
+    CONSTRAINT check_2d921a9d8a CHECK ((char_length(offered_model_ref) <= 255)),
+    CONSTRAINT check_6159907afe CHECK ((char_length(offered_model_name) <= 255))
+);
+
+CREATE SEQUENCE instance_model_selection_feature_settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE instance_model_selection_feature_settings_id_seq OWNED BY instance_model_selection_feature_settings.id;
+
 CREATE TABLE instance_type_ci_runner_machines (
     id bigint NOT NULL,
     runner_id bigint NOT NULL,
@@ -29617,6 +29637,8 @@ ALTER TABLE ONLY instance_audit_events_streaming_headers ALTER COLUMN id SET DEF
 
 ALTER TABLE ONLY instance_integrations ALTER COLUMN id SET DEFAULT nextval('instance_integrations_id_seq'::regclass);
 
+ALTER TABLE ONLY instance_model_selection_feature_settings ALTER COLUMN id SET DEFAULT nextval('instance_model_selection_feature_settings_id_seq'::regclass);
+
 ALTER TABLE ONLY integrations ALTER COLUMN id SET DEFAULT nextval('integrations_id_seq'::regclass);
 
 ALTER TABLE ONLY internal_ids ALTER COLUMN id SET DEFAULT nextval('internal_ids_id_seq'::regclass);
@@ -32456,6 +32478,9 @@ ALTER TABLE ONLY instance_audit_events_streaming_headers
 
 ALTER TABLE ONLY instance_integrations
     ADD CONSTRAINT instance_integrations_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY instance_model_selection_feature_settings
+    ADD CONSTRAINT instance_model_selection_feature_settings_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY instance_type_ci_runner_machines
     ADD CONSTRAINT instance_type_ci_runner_machines_pkey PRIMARY KEY (id, runner_type);
@@ -38609,6 +38634,8 @@ CREATE INDEX index_insights_on_project_id ON insights USING btree (project_id);
 CREATE INDEX index_inst_type_ci_runner_machines_on_contacted_at_desc_id_desc ON instance_type_ci_runner_machines USING btree (contacted_at DESC, id DESC);
 
 CREATE UNIQUE INDEX index_inst_type_ci_runner_machines_on_runner_id_type_system_xid ON instance_type_ci_runner_machines USING btree (runner_id, runner_type, system_xid);
+
+CREATE UNIQUE INDEX index_instance_model_selection_feature_settings_on_feature ON instance_model_selection_feature_settings USING btree (feature);
 
 CREATE INDEX index_instance_type_ci_runner_machines_on_executor_type ON instance_type_ci_runner_machines USING btree (executor_type);
 
