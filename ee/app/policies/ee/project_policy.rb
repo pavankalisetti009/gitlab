@@ -361,6 +361,10 @@ module EE
 
       rule { custom_role_enables_read_runners }.enable :read_runners
 
+      rule { admin_custom_role_enables_read_admin_projects }.policy do
+        enable :read_project_metadata
+      end
+
       rule { admin_custom_role_enables_read_admin_cicd }.policy do
         enable :read_project_metadata
       end
