@@ -159,7 +159,7 @@ module Gitlab
               error: error,
               context: context,
               content: _("I'm sorry, you have not selected a default GitLab Duo namespace. " \
-                "Please select a default GitLab Duo namespace in your user preferences."),
+                "Please select a default GitLab namespace for Duo in Preferences &gt Behaviour in GitLab."),
               source: "chat_v2",
               error_code: "G3002"
             )
@@ -353,41 +353,17 @@ module Gitlab
         strong_memoize_attr :current_blob
 
         def chat_feature_setting
-          return if ::Ai::AmazonQ.connected?
+          service_result = ::Ai::FeatureSettingSelectionService.new(
+            current_user,
+            :duo_chat,
+            context.ai_request&.root_namespace
+          ).execute
 
-          model_selection_namespace_setting || self_hosted_feature_setting
+          raise DefaultNamespaceNotFound if service_result.error?
+
+          service_result.payload
         end
         strong_memoize_attr :chat_feature_setting
-
-        def model_selection_namespace_setting
-          namespace = model_selection_namespace
-
-          return if namespace.nil?
-
-          ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(namespace, :duo_chat)
-        end
-        strong_memoize_attr :model_selection_namespace_setting
-
-        def model_selection_namespace
-          context_namespace = context.ai_request&.root_namespace
-
-          return context_namespace if context_namespace
-
-          # When there is no root_namespace given we need to prioritize SHM feature settings
-          # Therefore this method and #model_selection_namespace_setting needs to return nil.
-          # No need to return the default namespace in those cases.
-          return if self_hosted_feature_setting
-
-          return get_default_duo_namespace if get_default_duo_namespace
-
-          raise DefaultNamespaceNotFound if default_duo_namespace_required?
-        end
-        strong_memoize_attr :model_selection_namespace
-
-        def self_hosted_feature_setting
-          ::Ai::FeatureSetting.find_by_feature(:duo_chat)
-        end
-        strong_memoize_attr :self_hosted_feature_setting
 
         def current_user
           context.current_user
