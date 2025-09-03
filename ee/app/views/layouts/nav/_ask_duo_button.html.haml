@@ -22,7 +22,7 @@
       category: :secondary,
       icon: 'duo-chat-off',
       size: 'medium',
-      button_options: { class: 'disabled-button-1 js-tanuki-bot-chat-toggle gl-hidden md:gl-inline', data: { chat_disabled_reason: chat_disabled_reason }, aria: { label: label, disabled: "true" }, disabled: true }) do
+      button_options: { class: 'disabled-button-1 js-tanuki-bot-chat-toggle gl-hidden @md/panel:gl-inline', data: { chat_disabled_reason: chat_disabled_reason }, aria: { label: label, disabled: "true" }, disabled: true }) do
       = label
 
   %span.has-tooltip{ title: tooltip_text, data: { container: 'body' } }
@@ -30,7 +30,7 @@
       category: :secondary,
       icon: 'duo-chat-off',
       size: 'medium',
-      button_options: { class: 'disabled-button-2 js-tanuki-bot-chat-toggle md:gl-hidden', data: { chat_disabled_reason: chat_disabled_reason }, aria: { label: label, disabled: "true" }, disabled: true })
+      button_options: { class: 'disabled-button-2 js-tanuki-bot-chat-toggle @md/panel:gl-hidden', data: { chat_disabled_reason: chat_disabled_reason }, aria: { label: label, disabled: "true" }, disabled: true })
 
 - else
   - experiment(:hotspot_duo_chat_during_trial, actor: current_user) do |e|
@@ -41,15 +41,15 @@
 
   - duo_button_description = _('Open GitLab Duo Chat')
   - duo_button_shortcut = 'd'
-  - duo_button_title = "#{duo_button_description} <kbd class='flat ml-1' aria-hidden=true>#{duo_button_shortcut}</kbd>"
+  - duo_button_title = "#{duo_button_description} <kbd class='flat !gl-ml-2' aria-hidden=true>#{duo_button_shortcut}</kbd>"
   = render Pajamas::ButtonComponent.new(variant: :default,
     category: :secondary,
     icon: 'duo-chat',
     size: 'medium',
-    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle gl-hidden md:gl-inline', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title}) do
+    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle gl-hidden @md/panel:gl-inline', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title}) do
     = amazon_q_enabled ? duo_with_amazon_q_label : label
   = render Pajamas::ButtonComponent.new(variant: :default,
     category: :secondary,
     icon: 'duo-chat',
     size: 'medium',
-    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle md:gl-hidden', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title})
+    button_options: { class: 'has-tooltip enabled-button js-tanuki-bot-chat-toggle @md/panel:gl-hidden', aria: { keyshortcuts: duo_button_shortcut, label: amazon_q_enabled ? duo_with_amazon_q_label : label }, data: { html: 'true' }, title: duo_button_title})
