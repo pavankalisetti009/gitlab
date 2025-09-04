@@ -688,10 +688,6 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
     let(:protocol) { 'ssh' }
     let(:unprotected_branch) { 'unprotected_branch' }
 
-    before do
-      merge_into_protected_branch
-    end
-
     let(:start_sha) { '6f6d7e7ed97bb5f0054f2b1df789b39ca89b6ff9' }
     let(:end_sha)   { '570e7b2abdd848b95f2f578043fc23bd6f6fd24d' }
 
@@ -706,6 +702,10 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
         push_new_tag: "#{Gitlab::Git::SHA1_BLANK_SHA} #{end_sha} refs/tags/v7.8.9",
         push_all: ["#{start_sha} #{end_sha} refs/heads/master", "#{start_sha} #{end_sha} refs/heads/feature"],
         merge_into_protected_branch: "0b4bc9a #{merge_into_protected_branch} refs/heads/feature" }
+    end
+
+    before do
+      merge_into_protected_branch
     end
 
     def merge_into_protected_branch

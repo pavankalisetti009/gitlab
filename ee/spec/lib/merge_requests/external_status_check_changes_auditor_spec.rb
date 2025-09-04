@@ -28,7 +28,7 @@ RSpec.describe MergeRequests::ExternalStatusCheckChangesAuditor, feature_categor
         destination_url: 'http://example.com')
     end
 
-    let(:subject) { described_class.new(user, project.external_status_checks) }
+    subject { described_class.new(user, project.external_status_checks) }
 
     context 'when audit change happens' do
       it 'creates an event when the name changes' do
