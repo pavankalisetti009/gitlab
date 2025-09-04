@@ -112,7 +112,7 @@ export default {
     <gl-loading-icon v-if="isLoading" size="md" />
     <gl-table v-else :fields="fields" :items="agentsWithStatusLabels" show-empty stacked="sm">
       <template #empty>
-        <div v-safe-html="emptyStateMessage" class="text-center"></div>
+        <div v-safe-html="emptyStateMessage" class="!gl-text-center"></div>
       </template>
       <template #cell(name)="{ item }">
         <span id="agent-name" data-testid="agent-name">{{ item.name }}</span>
