@@ -20,6 +20,10 @@ module Mutations
           required: false,
           description: 'Global ID of the self-hosted model providing the AI setting.'
 
+        argument :offered_model_ref, GraphQL::Types::String,
+          required: false,
+          description: 'Identifier of the selected model for the feature.'
+
         def resolve(**args)
           check_feature_access!
 
@@ -28,9 +32,12 @@ module Mutations
           upsert_args = args.dup
           upsert_args.delete(:features)
 
-          results = args[:features].map do |feature|
-            upsert_feature_setting(upsert_args.merge(feature: feature))
+          self_hosted_model_gid = upsert_args[:ai_self_hosted_model_id]
+          if self_hosted_model_gid
+            upsert_args[:ai_self_hosted_model_id] = GitlabSchema.parse_gid(self_hosted_model_gid)&.model_id
           end
+
+          results = args[:features].map { |feature| update_model_selection(feature, upsert_args) }
 
           errors = results.select(&:error?).flat_map(&:errors)
           feature_settings = results.reject(&:error?).flat_map(&:payload)
@@ -46,22 +53,10 @@ module Mutations
 
         private
 
-        def upsert_feature_setting(args)
-          feature_setting = find_or_initialize_object(feature: args[:feature])
-
-          self_hosted_model_gid = args[:ai_self_hosted_model_id]
-          if self_hosted_model_gid.present?
-            args[:ai_self_hosted_model_id] =
-              GitlabSchema.parse_gid(self_hosted_model_gid)&.model_id
-          end
-
-          ::Ai::FeatureSettings::UpdateService.new(
-            feature_setting, current_user, args
+        def update_model_selection(feature, args)
+          ::Ai::ModelSelection::UpdateSelfManagedModelSelectionService.new(
+            current_user, args.merge(feature: feature)
           ).execute
-        end
-
-        def find_or_initialize_object(feature:)
-          ::Ai::FeatureSetting.find_or_initialize_by_feature(feature)
         end
       end
     end
