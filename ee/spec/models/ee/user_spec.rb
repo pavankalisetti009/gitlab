@@ -2464,17 +2464,6 @@ RSpec.describe User, feature_category: :system_access do
 
     let(:user) { create(:user, namespace: create(:user_namespace)) }
 
-    describe '#zoekt_indexed_namespaces' do
-      it 'returns zoekt indexed namespaces for user' do
-        indexed_parent_namespace.add_maintainer(user)
-        expect(user.zoekt_indexed_namespaces).to match_array([zoekt_enabled_namespace])
-      end
-
-      it 'returns empty array if there are user is not have access of reporter or above' do
-        expect(user.zoekt_indexed_namespaces).to be_empty
-      end
-    end
-
     describe '#has_exact_code_search?' do
       it 'returns true if zoekt search is enabled in application settings' do
         stub_ee_application_setting(zoekt_search_enabled: true)
