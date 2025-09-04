@@ -18,6 +18,7 @@ module RemoteDevelopment
           initial_result
             .map(SettingsInitializer.method(:init))
             .and_then(CurrentSettingsReader.method(:read))
+            .and_then(GitlabConfigReader.method(:read))
             # NOTE: EnvVarOverrideProcessor is kept as last settings processing step, so it can always be used
             #       to easily overrideany settings for local or temporary testing, but still before all validators.
             .and_then(Gitlab::Fp::Settings::EnvVarOverrideProcessor.method(:process))
@@ -34,6 +35,8 @@ module RemoteDevelopment
         in { err: SettingsEnvironmentVariableOverrideFailed => message }
           generate_error_response_from_message(message: message, reason: :internal_server_error)
         in { err: SettingsCurrentSettingsReadFailed => message }
+          generate_error_response_from_message(message: message, reason: :internal_server_error)
+        in { err: SettingsGitlabConfigReadFailed => message }
           generate_error_response_from_message(message: message, reason: :internal_server_error)
         in { err: SettingsFullReconciliationIntervalSecondsValidationFailed => message }
           generate_error_response_from_message(message: message, reason: :internal_server_error)

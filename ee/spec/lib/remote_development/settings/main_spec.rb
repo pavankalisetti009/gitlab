@@ -10,6 +10,7 @@ RSpec.describe RemoteDevelopment::Settings::Main, feature_category: :workspaces 
     [
       [RemoteDevelopment::Settings::SettingsInitializer, :map],
       [RemoteDevelopment::Settings::CurrentSettingsReader, :and_then],
+      [RemoteDevelopment::Settings::GitlabConfigReader, :and_then],
       [Gitlab::Fp::Settings::EnvVarOverrideProcessor, :and_then],
       [RemoteDevelopment::Settings::ReconciliationIntervalSecondsValidator, :and_then],
       [RemoteDevelopment::Settings::NetworkPolicyEgressValidator, :and_then]
@@ -67,6 +68,18 @@ RSpec.describe RemoteDevelopment::Settings::Main, feature_category: :workspaces 
           {
             status: :error,
             message: lazy { "Settings current settings read failed: #{error_details}" },
+            reason: :internal_server_error
+          },
+        ],
+        [
+          "when GitlabConfigReader returns SettingsGitlabConfigReadFailed",
+          {
+            step_class: RemoteDevelopment::Settings::GitlabConfigReader,
+            returned_message: lazy { RemoteDevelopment::Settings::Messages::SettingsGitlabConfigReadFailed.new(err_message_content) }
+          },
+          {
+            status: :error,
+            message: lazy { "Settings gitlab config read failed: #{error_details}" },
             reason: :internal_server_error
           },
         ],

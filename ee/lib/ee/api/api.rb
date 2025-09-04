@@ -38,6 +38,7 @@ module EE
         mount ::API::License
         mount ::API::ProjectMirror
         mount ::API::ProjectPushRule
+        mount ::API::RemoteDevelopment::API
         mount ::API::GroupPushRule
         mount ::API::MergeTrains
         mount ::API::MemberRoles

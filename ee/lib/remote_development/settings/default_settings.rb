@@ -25,6 +25,7 @@ module RemoteDevelopment
           default_resources_per_workspace_container: [{}, Hash],
           default_runtime_class: ["", String],
           full_reconciliation_interval_seconds: [3600, Integer],
+          gitlab_kas_external_url: ["", String],
           gitlab_workspaces_proxy_namespace: ["gitlab-workspaces", String],
           image_pull_secrets: [[], Array],
           labels: [{}, Hash],

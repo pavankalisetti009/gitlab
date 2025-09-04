@@ -140,7 +140,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   # @param [String] random_string
-  # @param [User] user
+  # @param [User, QA::Resource::User] user
   # @return [Array]
   def expected_internal_variables(random_string:, user:)
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
@@ -166,6 +166,52 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     # rubocop:enable Layout/LineLength
   end
 
+  # @return [String]
+  def kas_jwt_token
+    JWT.encode(
+      { "iss" => Gitlab::Kas::JWT_ISSUER, 'aud' => Gitlab::Kas::JWT_AUDIENCE },
+      Gitlab::Kas.secret,
+      "HS256"
+    )
+  end
+
+  # @return [void]
+  def do_get_internal_agents_agentw_server_config
+    # Perform an internal agents agentw server_config GET which will cause a workspaces oauth application to be created
+
+    params = {} # No params currently for this endpoint
+
+    agent_token_headers = {
+      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => kas_jwt_token
+    }
+    server_config_url = api("/internal/agents/agentw/server_config")
+
+    allow_next_instance_of(Grape::Request) do |request|
+      allow(request).to receive(:remote_ip).and_return("1.1.1.1")
+    end
+
+    get server_config_url, params: params, headers: agent_token_headers, as: :json
+
+    expect(response).to have_gitlab_http_status(:ok)
+
+    expect(::Gitlab::CurrentSettings.current_application_settings.workspaces_oauth_application).not_to be_nil
+
+    workspaces_oauth_application =
+      ::Gitlab::CurrentSettings.current_application_settings.workspaces_oauth_application || raise
+
+    generator_module = RemoteDevelopment::WorkspacesServerOperations::ServerConfig::OauthApplicationAttributesGenerator
+    expect(json_response.symbolize_keys).to eq(
+      {
+        api_external_url:
+          workspaces_oauth_application.redirect_uri.gsub("/#{generator_module::OAUTH_REDIRECT_URI_PATH_SEGMENT}", ""),
+        oauth_client_id: workspaces_oauth_application.uid,
+        oauth_redirect_url: workspaces_oauth_application.redirect_uri
+      }
+    )
+
+    nil
+  end
+
   # @return [void]
   def do_create_workspaces_agent_config
     # Perform an agent update post which will cause a workspaces_agent_config record to be created
@@ -176,14 +222,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       agent_config: agent_config_file_hash
     }
 
-    jwt_token = JWT.encode(
-      { "iss" => Gitlab::Kas::JWT_ISSUER, 'aud' => Gitlab::Kas::JWT_AUDIENCE },
-      Gitlab::Kas.secret,
-      "HS256"
-    )
     agent_token_headers = {
       Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => agent_token.token,
-      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => jwt_token
+      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => kas_jwt_token
     }
     agent_configuration_url = api("/internal/kubernetes/agent_configuration", personal_access_token: agent_token)
 
@@ -193,7 +234,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     # it only returns 204 No Content.
     expect(response).to have_gitlab_http_status(:no_content)
 
-    workspaces_agent_config = RemoteDevelopment::WorkspacesAgentConfig.find_by_cluster_agent_id(agent.id)
+    workspaces_agent_config = RemoteDevelopment::WorkspacesAgentConfig.find_by_cluster_agent_id!(agent.id)
 
     # Get the agent config via the GraphQL API to verify it was created correctly
     get_graphql(namespace_agents_config_query, current_user: agent_admin_user)
@@ -266,7 +307,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
   # @param [Array<String>] random_string_array
-  # @param [User] user
+  # @param [User, QA::Resource::User] user
   # @return [RemoteDevelopment::Workspace]
   def do_create_workspace(random_string_array:, user:)
     allow(FFaker::Food).to receive(:fruit).and_return(random_string_array[0])
@@ -285,7 +326,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     )
 
     workspace_gid = create_mutation_response.fetch("workspace").fetch("id")
-    workspace_id = GitlabSchema.parse_gid(workspace_gid, expected_type: ::RemoteDevelopment::Workspace).model_id
+    workspace_id = GitlabSchema.parse_gid(workspace_gid, expected_type: ::RemoteDevelopment::Workspace)&.model_id
     workspace = ::RemoteDevelopment::Workspace.find(workspace_id)
 
     # NOTE: Where possible, avoid explicit assertions here and replace them with assertions on the
@@ -408,7 +449,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   # @param [Symbol] name
   # @param [Hash] input
-  # @param [User] user
+  # @param [User, QA::Resource::User] user
   # @return [Hash]
   def do_graphql_mutation_post(name:, input:, user:)
     mutation = graphql_mutation(name, input)
@@ -425,14 +466,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   def do_reconcile_post(params:, agent_token:)
     # Custom logic to perform the reconcile post for a _REQUEST_ spec
 
-    jwt_token = JWT.encode(
-      { "iss" => Gitlab::Kas::JWT_ISSUER, 'aud' => Gitlab::Kas::JWT_AUDIENCE },
-      Gitlab::Kas.secret,
-      "HS256"
-    )
     agent_token_headers = {
       Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER => agent_token.token,
-      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => jwt_token
+      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => kas_jwt_token
     }
     reconcile_url = api("/internal/kubernetes/modules/remote_development/reconcile", personal_access_token: agent_token)
 
@@ -452,10 +488,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     end
 
     it "successfully exercises the full lifecycle of a workspace", :unlimited_max_formatted_output_length do # rubocop:disable RSpec/NoExpectationExample -- the expectations are in the called methods
-      # CREATE THE MAPPING VIA GRAPHQL API, SO WE HAVE PROPER AUTHORIZATION
+      # CREATE the OAuth app and GET THE agentw server config VIA REST API
+      do_get_internal_agents_agentw_server_config
+
+      # CREATE THE Namespace Mapping VIA GRAPHQL API
       do_create_namespace_mapping
 
-      # CREATE THE WorkspacesAgentConfig VIA GRAPHQL API
+      # CREATE THE WorkspacesAgentConfig VIA REST and GRAPHQL APIs
       do_create_workspaces_agent_config
 
       # CREATE WORKSPACE VIA GRAPHQL API

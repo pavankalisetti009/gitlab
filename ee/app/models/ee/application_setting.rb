@@ -20,6 +20,7 @@ module EE
       ERROR_NO_SEATS_AVAILABLE = 'NO_SEATS_AVAILABLE'
 
       belongs_to :file_template_project, class_name: "Project"
+      belongs_to :workspaces_oauth_application, class_name: 'Doorkeeper::Application', optional: true
 
       jsonb_accessor :search,
         global_search_code_enabled: [:boolean, { default: true }],

@@ -75,5 +75,8 @@ module RemoteDevelopment
 
     # Devfile domain events
     DevfileValidateSuccessful = Class.new(Gitlab::Fp::Message)
+
+    # Workspaces Server Operations domain events
+    WorkspacesServerConfigSuccessful = Class.new(Gitlab::Fp::Message)
   end
 end
