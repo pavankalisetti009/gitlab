@@ -46204,7 +46204,7 @@ ALTER TABLE ONLY members
     ADD CONSTRAINT fk_2f85abf8f1 FOREIGN KEY (member_namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY push_event_payloads
-    ADD CONSTRAINT fk_2f8fdf5cac FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE NOT VALID;
+    ADD CONSTRAINT fk_2f8fdf5cac FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY group_group_links
     ADD CONSTRAINT fk_2fbc7071a3 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE SET NULL;
