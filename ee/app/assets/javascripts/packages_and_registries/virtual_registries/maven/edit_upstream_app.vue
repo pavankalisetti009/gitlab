@@ -6,6 +6,7 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { updateMavenUpstream, deleteMavenUpstream } from 'ee/api/virtual_registries_api';
 import RegistryUpstreamForm from '../components/registry_upstream_form.vue';
+import { captureException } from '../sentry_utils';
 
 export default {
   name: 'MavenEditUpstreamApp',
@@ -51,8 +52,13 @@ export default {
             message: s__('VirtualRegistry|Maven upstream has been updated.'),
           },
         ]);
-      } catch (e) {
-        this.alertMessage = this.parseError(e);
+      } catch (error) {
+        if (error.response?.status === 400 && typeof error.response?.data?.message === 'object') {
+          const message = Object.entries(error.response.data.message)[0].join(' ');
+          this.alertMessage = message;
+        } else {
+          this.alertMessage = this.parseError(error);
+        }
       } finally {
         this.loading = false;
       }
@@ -70,14 +76,15 @@ export default {
             message: s__('VirtualRegistry|Maven upstream has been deleted.'),
           },
         ]);
-      } catch (e) {
-        this.alertMessage = this.parseError(e);
+      } catch (error) {
+        this.alertMessage = this.parseError(error);
       } finally {
         this.loading = false;
       }
     },
-    parseError(e) {
-      return e.response?.data?.error || e.message;
+    parseError(error) {
+      captureException({ component: this.$options.name, error });
+      return error.response?.data?.error || error.message;
     },
   },
   modal: {

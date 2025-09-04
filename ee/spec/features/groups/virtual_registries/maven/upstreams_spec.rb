@@ -114,9 +114,10 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
           visit url
 
           fill_in 'Name', with: 'test maven registry' * 20
+          fill_in 'Username (optional)', with: ''
           click_button 'Save changes'
 
-          expect(page).to have_content('Request failed with status code 400')
+          expect(page).to have_content('name is too long (maximum is 255 characters)')
         end
 
         it 'allows deletion' do

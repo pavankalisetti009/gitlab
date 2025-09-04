@@ -135,7 +135,7 @@ export default {
           </div>
           <div class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 md:gl-flex-row md:gl-gap-5">
             <span :class="$options.rowClass">
-              {{ s__('VirtualRegistry|Caching period') }}
+              {{ s__('VirtualRegistry|Artifact caching period') }}
             </span>
             <span>
               {{ getCacheValidityHoursLabel(selectedUpstreamDetails.cache_validity_hours) }}

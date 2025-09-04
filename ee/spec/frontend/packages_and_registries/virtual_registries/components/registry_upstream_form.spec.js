@@ -13,6 +13,7 @@ describe('RegistryUpstreamForm', () => {
     description: 'bar',
     username: 'bax',
     cacheValidityHours: 0,
+    metadataCacheValidityHours: 0,
   };
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -29,6 +30,8 @@ describe('RegistryUpstreamForm', () => {
   const findUsernameInput = () => wrapper.findByTestId('username-input');
   const findPasswordInput = () => wrapper.findByTestId('password-input');
   const findCacheValidityHoursInput = () => wrapper.findByTestId('cache-validity-hours-input');
+  const findMetadataCacheValidityHoursInput = () =>
+    wrapper.findByTestId('metadata-cache-validity-hours-input');
   const findSubmitButton = () => wrapper.findByTestId('submit-button');
   const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findTestUpstreamButton = () => wrapper.findComponent(TestMavenUpstreamButton);
@@ -63,8 +66,12 @@ describe('RegistryUpstreamForm', () => {
         expect(findPasswordInput().exists()).toBe(true);
       });
 
-      it('renders Cache validity hours input', () => {
+      it('renders Artifact cache validity hours input', () => {
         expect(findCacheValidityHoursInput().props('value')).toBe(24);
+      });
+
+      it('renders Metadata cache validity hours input', () => {
+        expect(findMetadataCacheValidityHoursInput().props('value')).toBe(24);
       });
     });
 
@@ -96,8 +103,12 @@ describe('RegistryUpstreamForm', () => {
         expect(findPasswordInput().props('placeholder')).toBe('*****');
       });
 
-      it('renders Cache validity hours input', () => {
+      it('renders Artifact cache validity hours input', () => {
         expect(findCacheValidityHoursInput().props('value')).toBe(0);
+      });
+
+      it('renders Metadata cache validity hours input', () => {
+        expect(findMetadataCacheValidityHoursInput().props('value')).toBe(0);
       });
     });
 
@@ -144,6 +155,7 @@ describe('RegistryUpstreamForm', () => {
           description: 'bar',
           username: 'bax',
           cacheValidityHours: 0,
+          metadataCacheValidityHours: 0,
         }),
       );
     });

@@ -100,7 +100,7 @@ describe('LinkUpstreamForm', () => {
         expect(wrapper.text()).toContain(mockUpstream.url);
         expect(wrapper.text()).toContain('Description');
         expect(wrapper.text()).toContain(mockUpstream.description);
-        expect(wrapper.text()).toContain('Caching period');
+        expect(wrapper.text()).toContain('Artifact caching period');
         expect(wrapper.text()).toContain('24 hours');
         expect(wrapper.text()).toContain('Metadata caching period');
         expect(wrapper.text()).toContain('48 hours');

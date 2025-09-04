@@ -76,6 +76,9 @@ export default {
     cacheValidityHours() {
       return this.upstream.cacheValidityHours;
     },
+    metadataCacheValidityHours() {
+      return this.upstream.metadataCacheValidityHours;
+    },
     canUpdate() {
       return this.glAbilities.updateVirtualRegistry;
     },
@@ -116,11 +119,21 @@ export default {
     cacheValidityHoursLabel() {
       return sprintf(
         n__(
-          'VirtualRegistry|%{hours} hour cache',
-          'VirtualRegistry|%{hours} hours cache',
+          'VirtualRegistry|Artifact cache: %{hours} hour',
+          'VirtualRegistry|Artifact cache: %{hours} hours',
           this.cacheValidityHours,
         ),
         { hours: this.cacheValidityHours },
+      );
+    },
+    metadataCacheValidityHoursLabel() {
+      return sprintf(
+        n__(
+          'VirtualRegistry|Metadata cache: %{hours} hour',
+          'VirtualRegistry|Metadata cache: %{hours} hours',
+          this.metadataCacheValidityHours,
+        ),
+        { hours: this.metadataCacheValidityHours },
       );
     },
     artifactCountLabel() {
@@ -214,6 +227,10 @@ export default {
           <div v-if="cacheSize">&middot;</div>
           <div data-testid="cache-validity-hours">
             {{ cacheValidityHoursLabel }}
+          </div>
+          <div>&middot;</div>
+          <div data-testid="metadata-cache-validity-hours">
+            {{ metadataCacheValidityHoursLabel }}
           </div>
           <div v-if="artifactCount">&middot;</div>
           <div v-if="artifactCount" data-testid="artifact-count">

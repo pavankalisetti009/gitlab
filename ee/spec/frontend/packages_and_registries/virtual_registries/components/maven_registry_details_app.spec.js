@@ -51,6 +51,7 @@ describe('MavenRegistryDetailsApp', () => {
     username: '',
     password: '',
     cacheValidityHours: 24,
+    metadataCacheValidityHours: 24,
   };
 
   const upstreamsResponse = {

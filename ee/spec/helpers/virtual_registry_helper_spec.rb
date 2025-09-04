@@ -122,7 +122,8 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
         'username' => maven_upstream.username,
         'url' => maven_upstream.url,
         'description' => maven_upstream.description,
-        'cacheValidityHours' => maven_upstream.cache_validity_hours
+        'cacheValidityHours' => maven_upstream.cache_validity_hours,
+        'metadataCacheValidityHours' => maven_upstream.metadata_cache_validity_hours
       }
     end
 
