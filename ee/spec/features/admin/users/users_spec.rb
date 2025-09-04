@@ -266,8 +266,8 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
       let_it_be(:minimal_access) { create(:group_member, :minimal_access, user: minimal_user, group: group) }
 
       it 'lists minimal access groups' do
-        within(:css, '.gl-mb-3 + .gl-card') do
-          expect(page).to have_content('Groups')
+        within('#groups') do
+          expect(page).to have_content('Groups 1')
           expect(page).to have_content 'Minimal Access'
           expect(page).to have_link group.name, href: admin_group_path(group)
         end
