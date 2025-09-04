@@ -24,22 +24,18 @@ module Namespaces
           # see issue with ViewComponent overriding Kernel version
           # https://github.com/github/view_component/issues/156#issuecomment-737469885
           title: Kernel.format(
-            _("Your top-level group %{namespace_name} has reached the %{free_limit} user limit"),
+            s_(
+              "EnforcementAtLimitAlert|Your top-level group %{namespace_name} has reached the %{free_limit}-user limit"
+            ),
             free_limit: free_user_limit,
             namespace_name: namespace.name
           ).html_safe,
           body: Kernel.format(
-            n_("To invite more users, you can reduce the number of users in your " \
-               "top-level group to %{free_limit} user or less. You can also upgrade to " \
-               "a paid tier which do not have user limits. If you need additional " \
-               "time, you can start a free %{duration}-day trial which includes unlimited users.", \
-              "To invite more users, you can reduce the number of users in your " \
-              "top-level group to %{free_limit} users or less. You can also upgrade to " \
+            s_("EnforcementAtLimitAlert|To invite more users, you can reduce the number of users in your " \
+              "top-level group to %{pluralized_limit} or less. You can also upgrade to " \
               "a paid tier which do not have user limits. If you need additional " \
-              "time, you can start a free %{duration}-day trial which includes unlimited users.",
-              free_user_limit
-            ),
-            free_limit: free_user_limit,
+              "time, you can start a free %{duration}-day trial which includes unlimited users."),
+            pluralized_limit: n_('%d user', '%d users', free_user_limit) % free_user_limit,
             link_end: link_end,
             duration: trial_duration
           ).html_safe,

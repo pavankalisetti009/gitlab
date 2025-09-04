@@ -11,7 +11,7 @@ RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :saas,
   let(:owner_access?) { true }
   let(:title) do
     "Your top-level group #{namespace.name} has reached the " \
-      "#{::Namespaces::FreeUserCap.dashboard_limit} user limit"
+      "#{::Namespaces::FreeUserCap.dashboard_limit}-user limit"
   end
 
   subject(:component) do
@@ -49,6 +49,32 @@ RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :saas,
                        "[data-dismiss-endpoint='#{group_callouts_path}']" \
                        "[data-feature-id='#{described_class::ENFORCEMENT_AT_LIMIT_ALERT}']" \
                        "[data-group-id='#{namespace.id}']")
+      end
+
+      context 'with singular user limit' do
+        before do
+          allow(::Namespaces::FreeUserCap).to receive(:dashboard_limit).and_return(1)
+        end
+
+        it 'displays singular form in title and body' do
+          render_inline(component)
+
+          expect(page).to have_content("has reached the 1-user limit")
+          expect(page).to have_content("reduce the number of users in your top-level group to 1 user or less")
+        end
+      end
+
+      context 'with plural user limit' do
+        before do
+          allow(::Namespaces::FreeUserCap).to receive(:dashboard_limit).and_return(5)
+        end
+
+        it 'displays plural form' do
+          render_inline(component)
+
+          expect(page).to have_content("has reached the 5-user limit")
+          expect(page).to have_content("reduce the number of users in your top-level group to 5 users or less")
+        end
       end
 
       it 'renders all the expected tracking items' do
