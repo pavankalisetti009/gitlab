@@ -357,8 +357,8 @@ The default prefix for personal access tokens is `glpat-` but administrators can
 By default, client-side secret detection, secret push protection, and pipeline secret detection do
 not detect tokens that have a custom prefix. This might result in an increase in false negatives.
 However, you can
-[customize the analyzer ruleset](../../user/application_security/secret_detection/pipeline/configure.md#customize-analyzer-rulesets)
-to detect these tokens by using pipeline secret detection.
+[customize pipeline secret detection](../../user/application_security/secret_detection/pipeline/configure.md#customize-analyzer-rulesets)
+to detect these tokens.
 
 {{< /alert >}}
 
@@ -403,8 +403,8 @@ using a custom prefix include:
 By default, client-side secret detection, secret push protection, and pipeline secret detection do
 not detect tokens that have a custom prefix. This might result in an increase in false negatives.
 However, you can
-[customize the analyzer ruleset](../../user/application_security/secret_detection/pipeline/configure.md#customize-analyzer-rulesets)
-to detect these tokens by using pipeline secret detection.
+[customize pipeline secret detection](../../user/application_security/secret_detection/pipeline/configure.md#customize-analyzer-rulesets)
+to detect these tokens.
 
 {{< /alert >}}
 
