@@ -4,6 +4,8 @@ import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_che
 import { sprintf, s__, __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { buildApiUrl } from '~/api/api_utils';
 
 const FLOW_WEB_ENVIRONMENT = 'web';
 
@@ -23,11 +25,6 @@ export default {
   props: {
     projectPath: {
       type: String,
-      required: false,
-      default: null,
-    },
-    projectId: {
-      type: Number,
       required: true,
     },
     title: {
@@ -52,10 +49,6 @@ export default {
       type: Array,
       required: false,
       default: () => [1, 2],
-    },
-    duoWorkflowInvokePath: {
-      type: String,
-      required: true,
     },
     promptValidatorRegex: {
       type: RegExp,
@@ -82,11 +75,22 @@ export default {
   data() {
     return {
       isStartingFlow: false,
-      isDuoActionEnabled: false,
+      duoWorkflowData: null,
     };
   },
+  computed: {
+    duoWorkflowInvokePath() {
+      return buildApiUrl(`/api/:version/ai/duo_workflows/workflows`);
+    },
+    isDuoActionEnabled() {
+      return this.duoWorkflowData?.isDuoActionEnabled && this.duoWorkflowData?.projectId;
+    },
+    projectId() {
+      return this.duoWorkflowData?.projectId || null;
+    },
+  },
   apollo: {
-    isDuoActionEnabled: {
+    duoWorkflowData: {
       query: getDuoWorkflowStatusCheck,
       variables() {
         return {
@@ -97,7 +101,13 @@ export default {
         return !this.projectPath;
       },
       update(data) {
-        return Boolean(data.project?.duoWorkflowStatusCheck?.enabled);
+        if (data.project) {
+          return {
+            isDuoActionEnabled: Boolean(data.project?.duoWorkflowStatusCheck?.enabled),
+            projectId: getIdFromGraphQLId(data.project.id),
+          };
+        }
+        return null;
       },
       error(error) {
         createAlert({

@@ -11,12 +11,7 @@ export default {
     PageHeading,
     RunAgentFlowForm,
   },
-  inject: ['projectId', 'projectPath', 'duoAgentsInvokePath'],
-  computed: {
-    castProjectId() {
-      return Number(this.projectId);
-    },
-  },
+  inject: ['projectPath'],
   methods: {
     handleAgentFlowStarted(data) {
       this.$router.push({ name: AGENTS_PLATFORM_SHOW_ROUTE, params: { id: data.id } });
@@ -44,8 +39,6 @@ export default {
     <div class="gl-mt-6">
       <run-agent-flow-form
         :default-agent-flow-type="$options.defaultAgentFlowType"
-        :duo-agents-invoke-path="duoAgentsInvokePath"
-        :project-id="castProjectId"
         :project-path="projectPath"
         :flows="$options.flows"
         @agent-flow-started="handleAgentFlowStarted"

@@ -17,14 +17,6 @@ export default {
       type: String,
       required: true,
     },
-    duoAgentsInvokePath: {
-      type: String,
-      required: true,
-    },
-    projectId: {
-      type: Number,
-      required: true,
-    },
     projectPath: {
       type: String,
       required: true,
@@ -101,12 +93,10 @@ export default {
 
     <duo-workflow-action
       :agent-privileges="selectedAgentFlowItem.agentPrivileges"
-      :project-id="projectId"
       :project-path="projectPath"
       :title="s__('DuoAgentsPlatform|Start agent session')"
       :goal="prompt"
       :workflow-definition="selectedAgentFlowItem.value"
-      :duo-workflow-invoke-path="duoAgentsInvokePath"
       :disabled="isStartButtonDisabled"
       :prompt-validator-regex="selectedAgentFlowItem.promptValidatorRegex"
       @agent-flow-started="handleAgentFlowStarted"

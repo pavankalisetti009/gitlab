@@ -10,8 +10,6 @@ import workItemUpdatedSubscription from '~/work_items/graphql/work_item_updated.
 import workspacePermissionsQuery from '~/work_items/graphql/workspace_permissions.query.graphql';
 import getAllowedWorkItemChildTypes from '~/work_items/graphql/work_item_allowed_children.query.graphql';
 import DuoWorkflowAction from 'ee_component/ai/components/duo_workflow_action.vue';
-import { buildApiUrl } from '~/api/api_utils';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import {
   workItemByIidResponseFactory,
@@ -20,8 +18,6 @@ import {
 } from 'ee_else_ce_jest/work_items/mock_data';
 
 jest.mock('~/lib/utils/common_utils');
-jest.mock('~/api/api_utils');
-jest.mock('~/graphql_shared/utils');
 
 describe('EE WorkItemDetail component', () => {
   let wrapper;
@@ -83,8 +79,6 @@ describe('EE WorkItemDetail component', () => {
 
   beforeEach(() => {
     isLoggedIn.mockReturnValue(true);
-    getIdFromGraphQLId.mockReturnValue(123);
-    buildApiUrl.mockReturnValue('/api/v4/ai/duo_workflows/workflows');
   });
 
   const findVulnerabilitiesWidget = () =>
@@ -135,25 +129,13 @@ describe('EE WorkItemDetail component', () => {
         const { workItem } = workItemByIidQueryResponse.data.workspace;
 
         expect(duoWorkflowAction.props()).toMatchObject({
-          projectId: 123,
           title: 'Generate MR with Duo',
           hoverMessage: 'Generate merge request with Duo',
           goal: workItem.webUrl,
           workflowDefinition: 'issue_to_merge_request',
           agentPrivileges: [1, 2, 3, 4, 5],
-          duoWorkflowInvokePath: '/api/v4/ai/duo_workflows/workflows',
           size: 'medium',
         });
-      });
-
-      it('calls getIdFromGraphQLId with the project ID', () => {
-        expect(getIdFromGraphQLId).toHaveBeenCalledWith(
-          workItemByIidQueryResponse.data.workspace.workItem.project.id,
-        );
-      });
-
-      it('calls buildApiUrl with the correct path', () => {
-        expect(buildApiUrl).toHaveBeenCalledWith('/api/:version/ai/duo_workflows/workflows');
       });
     });
 

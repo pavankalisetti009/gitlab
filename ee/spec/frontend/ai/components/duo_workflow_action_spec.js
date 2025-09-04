@@ -17,20 +17,18 @@ Vue.use(VueApollo);
 describe('DuoWorkflowAction component', () => {
   let wrapper;
 
-  const projectId = 123;
-  const duoWorkflowInvokePath = `/api/v4/projects/${projectId}/duo_workflows`;
+  const projectId = 1;
+  const duoWorkflowInvokePath = `/api/v4/ai/duo_workflows/workflows`;
   const currentRef = 'feature-branch';
   const sourceBranch = 'source-branch';
 
   const defaultProps = {
-    projectId,
     projectPath: 'group/project',
     title: 'Convert to GitLab CI/CD',
     hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
     goal: 'Jenkinsfile',
     workflowDefinition: 'convert_to_gitlab_ci',
     agentPrivileges: [1, 2, 5],
-    duoWorkflowInvokePath,
   };
 
   let mockGetHealthCheckHandler;
@@ -78,6 +76,9 @@ describe('DuoWorkflowAction component', () => {
 
   beforeEach(() => {
     jest.spyOn(axios, 'post');
+    window.gon = {
+      api_version: 'v4',
+    };
     axios.post.mockResolvedValue({ data: mockCreateFlowResponse });
     mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckEnabled);
   });
@@ -113,9 +114,9 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    describe('when there is no projectPath prop', () => {
+    describe('when projectPath is empty', () => {
       beforeEach(async () => {
-        await createComponent({ projectPath: null });
+        await createComponent({ projectPath: '' });
       });
 
       it('does not render button', () => {
@@ -124,6 +125,26 @@ describe('DuoWorkflowAction component', () => {
 
       it('does not call health checks query', () => {
         expect(mockGetHealthCheckHandler).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when duoWorkflowStatusCheck is enabled but projectId is missing', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest.fn().mockResolvedValue({
+          data: {
+            project: {
+              id: null,
+              duoWorkflowStatusCheck: {
+                enabled: true,
+              },
+            },
+          },
+        });
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
       });
     });
   });
