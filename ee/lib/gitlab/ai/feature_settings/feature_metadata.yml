@@ -218,7 +218,7 @@ glab_ask_git_command:
     - glab_ask_git_command
 review_merge_request:
   title: Code Review
-  release_state: BETA
+  release_state: GA
   main_feature: GitLab Duo for merge requests
   compatible_llms:
     - claude_3

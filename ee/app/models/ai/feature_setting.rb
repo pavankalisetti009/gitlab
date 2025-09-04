@@ -14,7 +14,8 @@ module Ai
       duo_chat_explain_code: 3,
       duo_chat_write_tests: 4,
       duo_chat_refactor_code: 5,
-      duo_chat_fix_code: 6
+      duo_chat_fix_code: 6,
+      review_merge_request: 15
     }.freeze
 
     FLAGGED_FEATURES = {
@@ -26,7 +27,6 @@ module Ai
       summarize_review: 12,
       glab_ask_git_command: 13,
       duo_chat_summarize_comments: 14,
-      review_merge_request: 15,
       duo_agent_platform: 16
     }.freeze
 
