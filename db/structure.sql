@@ -15358,31 +15358,6 @@ CREATE SEQUENCE duo_workflows_checkpoint_writes_id_seq
 
 ALTER SEQUENCE duo_workflows_checkpoint_writes_id_seq OWNED BY duo_workflows_checkpoint_writes.id;
 
-CREATE TABLE duo_workflows_checkpoints (
-    id bigint NOT NULL,
-    workflow_id bigint NOT NULL,
-    project_id bigint,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    thread_ts text NOT NULL,
-    parent_ts text,
-    checkpoint jsonb NOT NULL,
-    metadata jsonb NOT NULL,
-    namespace_id bigint,
-    CONSTRAINT check_3dcc551d16 CHECK ((char_length(parent_ts) <= 255)),
-    CONSTRAINT check_4b59da71b6 CHECK ((num_nonnulls(namespace_id, project_id) = 1)),
-    CONSTRAINT check_5d3139b983 CHECK ((char_length(thread_ts) <= 255))
-);
-
-CREATE SEQUENCE duo_workflows_checkpoints_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE duo_workflows_checkpoints_id_seq OWNED BY duo_workflows_checkpoints.id;
-
 CREATE TABLE duo_workflows_events (
     id bigint NOT NULL,
     workflow_id bigint NOT NULL,
@@ -29473,8 +29448,6 @@ ALTER TABLE ONLY draft_notes ALTER COLUMN id SET DEFAULT nextval('draft_notes_id
 
 ALTER TABLE ONLY duo_workflows_checkpoint_writes ALTER COLUMN id SET DEFAULT nextval('duo_workflows_checkpoint_writes_id_seq'::regclass);
 
-ALTER TABLE ONLY duo_workflows_checkpoints ALTER COLUMN id SET DEFAULT nextval('duo_workflows_checkpoints_id_seq'::regclass);
-
 ALTER TABLE ONLY duo_workflows_events ALTER COLUMN id SET DEFAULT nextval('duo_workflows_events_id_seq'::regclass);
 
 ALTER TABLE ONLY duo_workflows_workflows ALTER COLUMN id SET DEFAULT nextval('duo_workflows_workflows_id_seq'::regclass);
@@ -32193,9 +32166,6 @@ ALTER TABLE ONLY draft_notes
 
 ALTER TABLE ONLY duo_workflows_checkpoint_writes
     ADD CONSTRAINT duo_workflows_checkpoint_writes_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY duo_workflows_checkpoints
-    ADD CONSTRAINT duo_workflows_checkpoints_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY duo_workflows_events
     ADD CONSTRAINT duo_workflows_events_pkey PRIMARY KEY (id);
@@ -38103,17 +38073,11 @@ CREATE INDEX index_duo_workflows_checkpoint_writes_on_project_id ON duo_workflow
 
 CREATE INDEX index_duo_workflows_checkpoint_writes_thread_ts ON duo_workflows_checkpoint_writes USING btree (workflow_id, thread_ts);
 
-CREATE INDEX index_duo_workflows_checkpoints_on_namespace_id ON duo_workflows_checkpoints USING btree (namespace_id);
-
-CREATE INDEX index_duo_workflows_checkpoints_on_project_id ON duo_workflows_checkpoints USING btree (project_id);
-
 CREATE INDEX index_duo_workflows_events_on_namespace_id ON duo_workflows_events USING btree (namespace_id);
 
 CREATE INDEX index_duo_workflows_events_on_project_id ON duo_workflows_events USING btree (project_id);
 
 CREATE INDEX index_duo_workflows_events_on_workflow_id ON duo_workflows_events USING btree (workflow_id);
-
-CREATE UNIQUE INDEX index_duo_workflows_workflow_checkpoints_unique_thread ON duo_workflows_checkpoints USING btree (workflow_id, thread_ts);
 
 CREATE INDEX index_duo_workflows_workflows_on_namespace_id ON duo_workflows_workflows USING btree (namespace_id);
 
@@ -46865,9 +46829,6 @@ ALTER TABLE ONLY scan_result_policy_violations
 ALTER TABLE ONLY approval_project_rules
     ADD CONSTRAINT fk_773289d10b FOREIGN KEY (approval_policy_rule_id) REFERENCES approval_policy_rules(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY duo_workflows_checkpoints
-    ADD CONSTRAINT fk_779e1a4594 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY agent_user_access_project_authorizations
     ADD CONSTRAINT fk_78034b05d8 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -47419,9 +47380,6 @@ ALTER TABLE ONLY issue_tracker_data
 
 ALTER TABLE ONLY issues
     ADD CONSTRAINT fk_b37be69be6 FOREIGN KEY (work_item_type_id) REFERENCES work_item_types(id);
-
-ALTER TABLE ONLY duo_workflows_checkpoints
-    ADD CONSTRAINT fk_b3d9cea509 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_conan_package_revisions
     ADD CONSTRAINT fk_b482b1a2f8 FOREIGN KEY (package_reference_id) REFERENCES packages_conan_package_references(id) ON DELETE CASCADE;
@@ -49660,9 +49618,6 @@ ALTER TABLE ONLY incident_management_escalation_rules
 
 ALTER TABLE p_ai_active_context_code_repositories
     ADD CONSTRAINT fk_rails_b3d72d06cf FOREIGN KEY (connection_id) REFERENCES ai_active_context_connections(id) ON DELETE SET NULL;
-
-ALTER TABLE ONLY duo_workflows_checkpoints
-    ADD CONSTRAINT fk_rails_b4c109b1a4 FOREIGN KEY (workflow_id) REFERENCES duo_workflows_workflows(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_debian_project_component_files
     ADD CONSTRAINT fk_rails_b543a9622b FOREIGN KEY (architecture_id) REFERENCES packages_debian_project_architectures(id) ON DELETE RESTRICT;
