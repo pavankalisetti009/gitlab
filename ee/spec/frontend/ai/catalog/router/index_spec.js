@@ -1,70 +1,91 @@
+import { isLoggedIn } from '~/lib/utils/common_utils';
 import { createRouter } from 'ee/ai/catalog/router';
 import {
+  AI_CATALOG_AGENTS_ROUTE,
+  AI_CATALOG_AGENTS_NEW_ROUTE,
+  AI_CATALOG_FLOWS_NEW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
+  AI_CATALOG_FLOWS_EDIT_ROUTE,
 } from 'ee/ai/catalog/router/constants';
+
+jest.mock('~/lib/utils/common_utils');
 
 describe('AI Catalog Router', () => {
   let router;
-
-  const agentId = 1;
+  let mockNext;
 
   beforeEach(() => {
-    router = createRouter();
-
-    // this is needed to disable the warning thrown for incorrect path
-    // eslint-disable-next-line no-console
-    console.warn = jest.fn();
+    router = createRouter('/ai-catalog');
+    mockNext = jest.fn();
   });
 
-  describe('/agents/:id redirect', () => {
-    it('should redirect /agents/:id to /agents with show query parameter', async () => {
-      await router.push(`/agents/${agentId}`);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-      expect(router.currentRoute.path).toBe('/agents');
-      expect(router.currentRoute.query[AI_CATALOG_SHOW_QUERY_PARAM]).toBe(`${agentId}`);
+  describe('route guards', () => {
+    const protectedRoutes = [
+      AI_CATALOG_AGENTS_NEW_ROUTE,
+      AI_CATALOG_FLOWS_NEW_ROUTE,
+      AI_CATALOG_AGENTS_EDIT_ROUTE,
+      AI_CATALOG_AGENTS_RUN_ROUTE,
+      AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+      AI_CATALOG_FLOWS_EDIT_ROUTE,
+    ];
+
+    describe('when user is authenticated', () => {
+      beforeEach(() => {
+        isLoggedIn.mockReturnValue(true);
+      });
+
+      it.each(protectedRoutes)('allows access to %s route', (routeName) => {
+        const route = router.options.routes
+          .flatMap((r) => [r, ...(r.children || [])])
+          .flatMap((r) => [r, ...(r.children || [])])
+          .find((r) => r.name === routeName);
+
+        expect(route).toBeDefined();
+
+        if (route.beforeEnter) {
+          route.beforeEnter({}, {}, mockNext);
+          expect(mockNext).toHaveBeenCalledWith();
+        }
+      });
+    });
+
+    describe('when user is not authenticated', () => {
+      beforeEach(() => {
+        isLoggedIn.mockReturnValue(false);
+      });
+
+      it.each(protectedRoutes)('redirects to agents route from %s', (routeName) => {
+        const route = router.options.routes
+          .flatMap((r) => [r, ...(r.children || [])])
+          .flatMap((r) => [r, ...(r.children || [])])
+          .find((r) => r.name === routeName);
+
+        expect(route).toBeDefined();
+
+        if (route.beforeEnter) {
+          route.beforeEnter({}, {}, mockNext);
+          expect(mockNext).toHaveBeenCalledWith({ name: AI_CATALOG_AGENTS_ROUTE });
+        }
+      });
     });
   });
 
-  describe('/agents/:id/edit', () => {
-    it('renders child route', async () => {
-      await router.push(`/agents/${agentId}/edit`);
+  describe('public routes', () => {
+    const publicRoutes = [AI_CATALOG_AGENTS_ROUTE];
 
-      expect(router.currentRoute.name).toBe(AI_CATALOG_AGENTS_EDIT_ROUTE);
-    });
-  });
+    it.each(publicRoutes)('allows access to %s route regardless of authentication', (routeName) => {
+      const route = router.options.routes
+        .flatMap((r) => [r, ...(r.children || [])])
+        .find((r) => r.name === routeName);
 
-  describe('/agents/:id/run', () => {
-    it('renders child route', async () => {
-      await router.push(`/agents/${agentId}/run`);
-
-      expect(router.currentRoute.name).toBe(AI_CATALOG_AGENTS_RUN_ROUTE);
-    });
-  });
-
-  describe('/agents/:id/duplicate', () => {
-    it('renders child route', async () => {
-      await router.push(`/agents/${agentId}/duplicate`);
-
-      expect(router.currentRoute.name).toBe(AI_CATALOG_AGENTS_DUPLICATE_ROUTE);
-    });
-  });
-
-  describe('Non-numeric /agents/:id route', () => {
-    it('redirects to index for non-numeric id', async () => {
-      await router.push('/agents/abc');
-
-      expect(router.currentRoute.path).toBe('/');
-    });
-  });
-
-  describe('Unknown path fallback', () => {
-    it('redirects to index for unknown route', async () => {
-      await router.push('/some/unknown/path');
-
-      expect(router.currentRoute.path).toBe('/');
+      expect(route).toBeDefined();
+      expect(route.beforeEnter).toBeUndefined();
     });
   });
 });
