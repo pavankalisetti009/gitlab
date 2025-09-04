@@ -49216,9 +49216,6 @@ msgstr ""
 msgid "ProductAnalytics|GitLab-managed provider"
 msgstr ""
 
-msgid "ProductAnalytics|Help us improve Product Analytics Dashboards by sharing your experience."
-msgstr ""
-
 msgid "ProductAnalytics|I agree to event collection and processing in this region."
 msgstr ""
 
@@ -49256,9 +49253,6 @@ msgid "ProductAnalytics|Set up Product Analytics to track how your product is pe
 msgstr ""
 
 msgid "ProductAnalytics|Snowplow configurator connection string"
-msgstr ""
-
-msgid "ProductAnalytics|Tell us what you think!"
 msgstr ""
 
 msgid "ProductAnalytics|The Product Analytics Beta on GitLab.com is offered only in the Google Cloud Platform zone %{zone}."

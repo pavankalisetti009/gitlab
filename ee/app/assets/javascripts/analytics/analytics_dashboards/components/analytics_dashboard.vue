@@ -12,9 +12,7 @@ import { createAlert, VARIANT_WARNING, VARIANT_DANGER } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
-import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
-import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import UrlSync, {
   HISTORY_REPLACE_UPDATE_METHOD,
@@ -48,7 +46,6 @@ export default {
     ProjectsFilter: () => import('./filters/projects_filter.vue'),
     FilteredSearchFilter: () => import('./filters/filtered_search_filter.vue'),
     AnalyticsDashboardPanel,
-    ProductAnalyticsFeedbackBanner,
     ValueStreamFeedbackBanner,
     GlEmptyState,
     GlSkeletonLoader,
@@ -98,12 +95,6 @@ export default {
     showValueStreamFeedbackBanner() {
       return [BUILT_IN_VALUE_STREAM_DASHBOARD, CUSTOM_VALUE_STREAM_DASHBOARD].includes(
         this.dashboard?.slug,
-      );
-    },
-    showProductAnalyticsFeedbackBanner() {
-      return (
-        !this.dashboard?.userDefined &&
-        BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS.includes(this.dashboard?.slug)
       );
     },
     showFilters() {
@@ -376,7 +367,6 @@ export default {
         </ul>
       </gl-alert>
       <value-stream-feedback-banner v-if="showValueStreamFeedbackBanner" />
-      <product-analytics-feedback-banner v-if="showProductAnalyticsFeedbackBanner" />
 
       <gl-dashboard-layout :config="dashboard">
         <template v-if="statusBadgeType" #title>

@@ -203,10 +203,3 @@ export const BACKGROUND_AGGREGATION_DOCS_LINK = helpPagePath(
   'user/analytics/value_streams_dashboard.html',
   { anchor: 'enable-or-disable-overview-background-aggregation' },
 );
-
-export const BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS = ['behavior', 'audience'];
-
-export const PRODUCT_ANALYTICS_DASHBOARD_FEEDBACK_CALLOUT_ID =
-  'product_analytics_dashboard_feedback';
-export const PRODUCT_ANALYTICS_DASHBOARD_SURVEY_LINK =
-  'https://gitlab.fra1.qualtrics.com/jfe/form/SV_4G9Mp4aDd1o8kpo';

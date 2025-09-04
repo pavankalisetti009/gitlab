@@ -14,7 +14,6 @@ import waitForPromises from 'helpers/wait_for_promises';
 import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
 import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/analytics_dashboard.vue';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
-import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import {
@@ -88,8 +87,6 @@ describe('AnalyticsDashboard', () => {
     findAllPanels().wrappers.find((w) => w.props('title') === title);
   const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findProductAnalyticsFeedbackBanner = () =>
-    wrapper.findComponent(ProductAnalyticsFeedbackBanner);
   const findValueStreamFeedbackBanner = () => wrapper.findComponent(ValueStreamFeedbackBanner);
   const findInvalidDashboardAlert = () =>
     wrapper.findByTestId('analytics-dashboard-invalid-config-alert');
@@ -378,7 +375,6 @@ describe('AnalyticsDashboard', () => {
     it('does not render the dashboard, loader or feedback banners', () => {
       expect(findDashboard().exists()).toBe(false);
       expect(findLoader().exists()).toBe(false);
-      expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
       expect(findValueStreamFeedbackBanner().exists()).toBe(false);
       expect(breadcrumbState.updateName).toHaveBeenCalledWith('');
     });
@@ -516,29 +512,6 @@ describe('AnalyticsDashboard', () => {
 
       expect(trackEventSpy).toHaveBeenCalledTimes(2);
     });
-  });
-
-  describe('with a built-in product analytics dashboards dashboard', () => {
-    it.each`
-      slug          | userDefined | showsBanner
-      ${'audience'} | ${false}    | ${true}
-      ${'behavior'} | ${false}    | ${true}
-      ${'vsd'}      | ${false}    | ${false}
-      ${'audience'} | ${true}     | ${false}
-    `(
-      'when the dashboard slug is "$slug" and userDefined is $userDefined then the banner is $showsBanner',
-      async ({ slug, userDefined, showsBanner }) => {
-        setupDashboard(
-          createDashboardGraphqlSuccessResponse(
-            getGraphQLDashboardWithPanels({ slug, userDefined }),
-          ),
-        );
-
-        await waitForPromises();
-
-        expect(findProductAnalyticsFeedbackBanner().exists()).toBe(showsBanner);
-      },
-    );
   });
 
   describe('status badge', () => {
@@ -877,10 +850,6 @@ describe('AnalyticsDashboard', () => {
       expect(findValueStreamFeedbackBanner().exists()).toBe(false);
     });
 
-    it('does not render the product analytics feedback banner', () => {
-      expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
-    });
-
     it('renders a custom description with links', () => {
       const description = findCustomDescription();
       expect(description.text()).toContain('Understand your audience');
@@ -936,10 +905,6 @@ describe('AnalyticsDashboard', () => {
 
     it('renders the value stream feedback banner', () => {
       expect(findValueStreamFeedbackBanner().exists()).toBe(true);
-    });
-
-    it('does not render the product analytics feedback banner', () => {
-      expect(findProductAnalyticsFeedbackBanner().exists()).toBe(false);
     });
 
     it('renders a custom description with links', () => {
