@@ -1,0 +1,10 @@
+---
+name: ai_duo_agent_fix_pipeline_button
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/562189
+introduced_by_url:
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/567988
+milestone: '18.4'
+group: group::agent foundations
+type: beta
+default_enabled: false

@@ -15,6 +15,7 @@ module EE
           push_frontend_feature_flag(:security_policy_approval_warn_mode, @project)
           push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @project, user: current_user)
           push_frontend_ability(ability: :measure_comment_temperature, resource: merge_request, user: current_user)
+          push_frontend_feature_flag(:ai_duo_agent_fix_pipeline_button, project)
         end
 
         before_action do
