@@ -30,8 +30,44 @@ FactoryBot.define do
       used_bytes { 90_000_000 }
     end
 
+    trait :for_search do
+      services { [::Search::Zoekt::Node::SERVICES[:zoekt]] }
+    end
+
     trait :knowledge_graph do
       services { [::Search::Zoekt::Node::SERVICES[:knowledge_graph]] }
+    end
+
+    # Watermark level traits based on storage usage
+    # These create nodes that fall into specific watermark categories
+    trait :watermark_critical do
+      total_bytes { 1_000_000_000 } # 1GB
+      used_bytes { (total_bytes * (::Search::Zoekt::Node::WATERMARK_LIMIT_CRITICAL + 0.01)).to_i }
+    end
+
+    trait :watermark_high do
+      total_bytes { 1_000_000_000 } # 1GB
+      # High but not critical (between high and critical thresholds)
+      used_bytes do
+        high_limit = ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH
+        critical_limit = ::Search::Zoekt::Node::WATERMARK_LIMIT_CRITICAL
+        (total_bytes * ((high_limit + critical_limit) / 2)).to_i
+      end
+    end
+
+    trait :watermark_low do
+      total_bytes { 1_000_000_000 } # 1GB
+      # Low but not high (between low and high thresholds)
+      used_bytes do
+        low_limit = ::Search::Zoekt::Node::WATERMARK_LIMIT_LOW
+        high_limit = ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH
+        (total_bytes * ((low_limit + high_limit) / 2)).to_i
+      end
+    end
+
+    trait :watermark_normal do
+      total_bytes { 1_000_000_000 } # 1GB
+      used_bytes { (total_bytes * (::Search::Zoekt::Node::WATERMARK_LIMIT_LOW - 0.01)).to_i }
     end
   end
 end

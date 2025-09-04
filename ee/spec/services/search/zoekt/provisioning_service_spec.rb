@@ -261,7 +261,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
 
       it 'is atomic, per namespace', :freeze_time do
         result = provisioning_result
-        expect(result[:errors]).to include(a_hash_including(message: /Couldn't find Search::Zoekt::Node with/))
+        expect(result[:errors]).to include(a_hash_including(message: 'node_not_found'))
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
         expect(enabled_namespace.replicas).to be_empty
         expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)

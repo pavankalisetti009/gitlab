@@ -6,7 +6,6 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
   let(:logger) { instance_double(Logger) }
   let(:service) { described_class.new(logger: logger) }
   let(:zoekt_client) { instance_double(Gitlab::Search::Zoekt::Client) }
-  let(:online_nodes) { instance_double(ActiveRecord::Relation) }
   let_it_be(:project) { create(:project) }
 
   before do
@@ -19,8 +18,6 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
     context 'when JWT token generation fails' do
       before do
         allow(Search::Zoekt::JwtAuth).to receive(:authorization_header).and_return(nil)
-        allow(Search::Zoekt::Node).to receive_messages(online: online_nodes)
-        allow(online_nodes).to receive_messages(to_a: [])
       end
 
       it 'returns unhealthy status with JWT error' do
@@ -40,8 +37,6 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
     context 'when JWT token generation raises exception' do
       before do
         allow(Search::Zoekt::JwtAuth).to receive(:authorization_header).and_raise(StandardError, 'JWT error')
-        allow(Search::Zoekt::Node).to receive_messages(online: online_nodes)
-        allow(online_nodes).to receive_messages(to_a: [])
       end
 
       it 'returns unhealthy status with JWT configuration error' do
@@ -59,18 +54,13 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
     end
 
     context 'when JWT token generation succeeds' do
-      let(:node1) { instance_double(Search::Zoekt::Node, id: 1, metadata: { 'name' => 'node1' }) }
-      let(:node2) { instance_double(Search::Zoekt::Node, id: 2, metadata: { 'name' => 'node2' }) }
-
       before do
         allow(Search::Zoekt::JwtAuth).to receive(:authorization_header).and_return('valid-token')
-        allow(Search::Zoekt::Node).to receive_messages(online: online_nodes)
       end
 
       context 'when no online nodes exist' do
-        before do
-          allow(online_nodes).to receive_messages(to_a: [])
-        end
+        let_it_be(:offline_node1) { create(:zoekt_node, :for_search, :offline) }
+        let_it_be(:offline_node2) { create(:zoekt_node, :for_search, :offline) }
 
         it 'returns healthy status with successful JWT' do
           result = service.execute
@@ -87,8 +77,10 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
       end
 
       context 'when all nodes are reachable' do
+        let_it_be(:node1) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node1' }) }
+        let_it_be(:node2) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node2' }) }
+
         before do
-          allow(online_nodes).to receive_messages(to_a: [node1, node2])
           allow(zoekt_client).to receive(:search).and_return(true)
         end
 
@@ -102,8 +94,8 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
 
         it 'logs successful connectivity' do
           expect(logger).to receive(:info).with(include('✓ JWT token generation successful'))
-          expect(logger).to receive(:info).with(include('✓ Node 1 (node1)'))
-          expect(logger).to receive(:info).with(include('✓ Node 2 (node2)'))
+          expect(logger).to receive(:info).with(include("✓ Node #{node1.id} (node1) -"))
+          expect(logger).to receive(:info).with(include("✓ Node #{node2.id} (node2) -"))
           expect(logger).to receive(:info).with(include('✓ All 2 online nodes reachable'))
 
           service.execute
@@ -114,7 +106,7 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
             described_class::HEALTH_CHECK_QUERY,
             num: 1,
             project_ids: [project.id],
-            node_id: 1,
+            node_id: node1.id,
             search_mode: :exact,
             source: 'health_check'
           )
@@ -122,7 +114,7 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
             described_class::HEALTH_CHECK_QUERY,
             num: 1,
             project_ids: [project.id],
-            node_id: 2,
+            node_id: node2.id,
             search_mode: :exact,
             source: 'health_check'
           )
@@ -132,13 +124,15 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
       end
 
       context 'when some nodes have connection errors' do
+        let_it_be(:node1) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node1' }) }
+        let_it_be(:node2) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node2' }) }
+
         before do
-          allow(online_nodes).to receive_messages(to_a: [node1, node2])
           allow(zoekt_client).to receive(:search).with(
-            anything, hash_including(node_id: 1)
+            anything, hash_including(node_id: node1.id)
           ).and_return(true)
           allow(zoekt_client).to receive(:search).with(
-            anything, hash_including(node_id: 2)
+            anything, hash_including(node_id: node2.id)
           ).and_raise(Search::Zoekt::Errors::ClientConnectionError)
         end
 
@@ -146,12 +140,12 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
           result = service.execute
 
           expect(result[:status]).to eq(:degraded)
-          expect(result[:warnings]).to include('Check network connectivity and node status for node 2')
+          expect(result[:warnings]).to include("Check network connectivity and node status for node #{node2.id}")
         end
 
         it 'logs partial connectivity' do
-          expect(logger).to receive(:info).with(include('✓ Node 1 (node1)'))
-          expect(logger).to receive(:info).with(include('⚠ Node 2 (node2) - connection failed'))
+          expect(logger).to receive(:info).with(include("✓ Node #{node1.id} (node1)"))
+          expect(logger).to receive(:info).with(include("⚠ Node #{node2.id} (node2) - connection failed"))
           expect(logger).to receive(:info).with(include('⚠ 1/2 nodes reachable'))
 
           service.execute
@@ -159,8 +153,10 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
       end
 
       context 'when all nodes are unreachable' do
+        let_it_be(:node1) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node1' }) }
+        let_it_be(:node2) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node2' }) }
+
         before do
-          allow(online_nodes).to receive_messages(to_a: [node1, node2])
           allow(zoekt_client).to receive(:search).and_raise(Search::Zoekt::Errors::ClientConnectionError)
         end
 
@@ -172,8 +168,8 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
         end
 
         it 'logs no connectivity' do
-          expect(logger).to receive(:info).with(include('⚠ Node 1 (node1) - connection failed'))
-          expect(logger).to receive(:info).with(include('⚠ Node 2 (node2) - connection failed'))
+          expect(logger).to receive(:info).with(include("⚠ Node #{node1.id} (node1) - connection failed"))
+          expect(logger).to receive(:info).with(include("⚠ Node #{node2.id} (node2) - connection failed"))
           expect(logger).to receive(:info).with(include('✗ No nodes reachable'))
 
           service.execute
@@ -181,8 +177,9 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
       end
 
       context 'when nodes have other errors' do
+        let_it_be(:node1) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node1' }) }
+
         before do
-          allow(online_nodes).to receive_messages(to_a: [node1])
           allow(zoekt_client).to receive(:search).and_raise(ArgumentError, 'Invalid params')
         end
 
@@ -194,15 +191,16 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
         end
 
         it 'logs connection failure' do
-          expect(logger).to receive(:info).with(include('✗ Node 1 (node1) - ArgumentError: Invalid params'))
+          expect(logger).to receive(:info).with(include("✗ Node #{node1.id} (node1) - ArgumentError: Invalid params"))
 
           service.execute
         end
       end
 
       context 'when node connectivity raises unexpected exception' do
+        let_it_be(:node1) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node1' }) }
+
         before do
-          allow(online_nodes).to receive_messages(to_a: [node1])
           allow(zoekt_client).to receive(:search).and_raise(StandardError, 'Unexpected error')
         end
 
@@ -214,31 +212,31 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
         end
 
         it 'logs detailed error information' do
-          expect(logger).to receive(:info).with(include('✗ Node 1 (node1) - StandardError: Unexpected error'))
+          expect(logger).to receive(:info).with(include("✗ Node #{node1.id} (node1) - StandardError: Unexpected error"))
 
           service.execute
         end
       end
 
       context 'when node has no name in metadata' do
-        let(:unnamed_node) { instance_double(Search::Zoekt::Node, id: 3, metadata: {}) }
+        let_it_be(:unnamed_node) { create(:zoekt_node, :for_search, metadata: {}) }
 
         before do
-          allow(online_nodes).to receive_messages(to_a: [unnamed_node])
           allow(zoekt_client).to receive(:search).and_return(true)
         end
 
         it 'handles unnamed nodes correctly' do
-          expect(logger).to receive(:info).with(include('✓ Node 3 (unnamed)'))
+          expect(logger).to receive(:info).with(include("✓ Node #{unnamed_node.id} (unnamed)"))
 
           service.execute
         end
       end
 
       context 'when no project exists' do
+        let_it_be(:node1) { create(:zoekt_node, :for_search, metadata: { 'name' => 'node1' }) }
+
         before do
           allow(Project).to receive(:first).and_return(nil)
-          allow(online_nodes).to receive_messages(to_a: [node1])
           allow(zoekt_client).to receive(:search).and_return(true)
         end
 
@@ -247,7 +245,7 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
             described_class::HEALTH_CHECK_QUERY,
             num: 1,
             project_ids: [1],
-            node_id: 1,
+            node_id: node1.id,
             search_mode: :exact,
             source: 'health_check'
           )
@@ -261,8 +259,6 @@ RSpec.describe ::Search::Zoekt::HealthCheck::ConnectivityService, :silence_stdou
   describe '.execute' do
     it 'creates instance and calls execute' do
       allow(Search::Zoekt::JwtAuth).to receive(:authorization_header).and_return('jwt-token')
-      allow(Search::Zoekt::Node).to receive_messages(online: online_nodes)
-      allow(online_nodes).to receive_messages(to_a: [])
 
       expect(described_class).to receive(:new).with(logger: logger).and_call_original
 

@@ -16,7 +16,7 @@ module Search
       def handle_event(event)
         return false unless Search::Zoekt::Node.marking_lost_enabled?
 
-        node = Node.find_by_id(event.data[:zoekt_node_id])
+        node = Node.for_search.find_by_id(event.data[:zoekt_node_id])
         return unless node
         return unless node.lost?
 

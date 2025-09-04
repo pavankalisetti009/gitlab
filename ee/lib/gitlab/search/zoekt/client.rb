@@ -96,7 +96,7 @@ module Gitlab
 
             node(node_id)
           else # Otherwise pick a random online node
-            ::Search::Zoekt::Node.online.sample
+            ::Search::Zoekt::Node.for_search.online.sample
           end
         end
 

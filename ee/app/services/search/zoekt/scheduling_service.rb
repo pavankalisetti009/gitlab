@@ -180,7 +180,7 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
 
         execute_every 5.minutes do
-          nodes = ::Search::Zoekt::Node.online.find_each.to_a
+          nodes = ::Search::Zoekt::Node.for_search.online.find_each.to_a
           over_watermark_nodes = nodes.select(&:watermark_exceeded_high?)
 
           break if over_watermark_nodes.empty?
@@ -252,7 +252,7 @@ module Search
       end
 
       def initial_indexing
-        nodes_to_process = Search::Zoekt::Node.online.with_pending_indices
+        nodes_to_process = Search::Zoekt::Node.for_search.online.with_pending_indices
 
         nodes_to_process.find_each do |node|
           node.indices.pending.ordered.limit(INITIAL_INDEXING_LIMIT).each do |index|

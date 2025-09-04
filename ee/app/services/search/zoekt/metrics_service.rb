@@ -32,7 +32,7 @@ module Search
       attr_reader :metric
 
       def node_metrics
-        ::Search::Zoekt::Node.online.find_each do |node|
+        ::Search::Zoekt::Node.for_search.online.find_each do |node|
           task_count_processing_queue = node.tasks.processing_queue.count
           log_data = build_structured_payload(
             meta: node.metadata_json,
