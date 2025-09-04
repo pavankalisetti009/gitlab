@@ -21,15 +21,14 @@ module EE
         rule { reporter_has_access_to_protected_environment }.policy do
           enable :jailbreak
           enable :cancel_build
-          enable(*::ProjectPolicy::UPDATE_JOB_PERMISSIONS)
+          enable(*all_job_update_abilities)
         end
 
         # Authorizing the user to access to protected entities.
         # There is a "jailbreak" mode to exceptionally bypass the authorization,
         # however, you should NEVER allow it, rather suspect it's a wrong feature/product design.
         rule { ~can?(:jailbreak) & protected_environment }.policy do
-          prevent(*::ProjectPolicy::UPDATE_JOB_PERMISSIONS)
-          prevent(*::ProjectPolicy::CLEANUP_JOB_PERMISSIONS)
+          prevent(*all_job_write_abilities)
         end
       end
     end
