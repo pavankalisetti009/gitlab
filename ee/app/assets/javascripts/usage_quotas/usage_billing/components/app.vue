@@ -1,6 +1,7 @@
 <script>
 import { GlCard, GlTabs, GlTab } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -9,6 +10,7 @@ export default {
     GlTabs,
     GlTab,
     PageHeading,
+    PurchaseCommitmentCard,
   },
 };
 </script>
@@ -27,11 +29,7 @@ export default {
         </h2>
       </gl-card>
 
-      <gl-card class="gl-flex-1 gl-bg-transparent">
-        <h2 class="gl-font-heading gl-heading-scale-400 gl-mb-3">
-          {{ s__('UsageBilling|Purchase a monthly commitment') }}
-        </h2>
-      </gl-card>
+      <purchase-commitment-card />
     </section>
     <gl-tabs class="gl-mt-5">
       <gl-tab :title="s__('UsageBilling|Usage trends')">

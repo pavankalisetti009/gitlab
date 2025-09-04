@@ -6,6 +6,9 @@ export default {
 };
 
 const Template = (args, { argTypes }) => ({
+  provide: {
+    purchaseCommitmentUrl: '/url-to-purchase-monthly/commitment',
+  },
   props: Object.keys(argTypes),
   components: { UsageBillingApp },
   template: '<usage-billing-app v-bind="$props" />',

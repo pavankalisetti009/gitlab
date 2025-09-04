@@ -68795,6 +68795,9 @@ msgstr ""
 msgid "UsageBilling|Current month usage"
 msgstr ""
 
+msgid "UsageBilling|Increase monthly commitment"
+msgstr ""
+
 msgid "UsageBilling|Purchase a monthly commitment"
 msgstr ""
 
@@ -68805,6 +68808,9 @@ msgid "UsageBilling|Usage by user"
 msgstr ""
 
 msgid "UsageBilling|Usage trends"
+msgstr ""
+
+msgid "UsageBilling|You can increase your commitment amount to extend your monthly allocation of tokens."
 msgstr ""
 
 msgid "UsageQuotas|(of %{totalStorageSize})"
