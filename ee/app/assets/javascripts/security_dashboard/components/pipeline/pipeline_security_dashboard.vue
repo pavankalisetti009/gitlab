@@ -28,6 +28,7 @@ export default {
   provide() {
     return {
       dismissalDescriptions: this.dismissalDescriptions,
+      validityChecksEnabled: this.validityChecksEnabled,
     };
   },
   inject: ['pipeline', 'projectFullPath'],
@@ -40,6 +41,10 @@ export default {
     sbomReportsErrors: {
       type: Array,
       required: true,
+    },
+    validityChecksEnabled: {
+      type: Boolean,
+      required: false,
     },
   },
   data() {
