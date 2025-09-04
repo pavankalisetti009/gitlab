@@ -73,6 +73,7 @@ export const mockProjectSecretsData = [
       branch: 'main',
       description: 'This is the first secret',
       environment: '*',
+      metadataVersion: 1,
       name: 'SECRET_1',
       project: {
         id: 'gid://gitlab/Project/19',
@@ -88,6 +89,7 @@ export const mockProjectSecretsData = [
       branch: 'main',
       description: 'This is the second secret',
       environment: '*',
+      metadataVersion: 1,
       name: 'SECRET_2',
       project: {
         id: 'gid://gitlab/Project/19',
@@ -103,6 +105,7 @@ export const mockProjectSecretsData = [
       branch: 'main',
       description: 'This is the third secret',
       environment: '*',
+      metadataVersion: 1,
       name: 'SECRET_3',
       project: {
         id: 'gid://gitlab/Project/19',
@@ -118,6 +121,7 @@ export const mockProjectSecretsData = [
       branch: 'main',
       description: 'This is the fourth secret',
       environment: '*',
+      metadataVersion: 1,
       name: 'SECRET_4',
       project: {
         id: 'gid://gitlab/Project/19',
@@ -133,6 +137,7 @@ export const mockProjectSecretsData = [
       branch: 'main',
       description: 'This is the fifth secret',
       environment: '*',
+      metadataVersion: 1,
       name: 'SECRET_5',
       project: {
         id: 'gid://gitlab/Project/19',
@@ -152,6 +157,7 @@ export const mockSecret = ({ customSecret } = {}) => ({
   branch: 'main',
   description: 'This is a secret',
   environment: 'staging',
+  metadataVersion: 1,
   name: 'APP_PWD',
   ...customSecret,
 });
