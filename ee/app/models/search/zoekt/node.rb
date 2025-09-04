@@ -101,6 +101,7 @@ module Search
         with_reserved_bytes.where("#{UNCLAIMED_STORAGE_BYTES_FORMULA} < 0")
       end
       scope :with_service, ->(service) { where("? = ANY(services)", SERVICES.fetch(service)) }
+      scope :for_search, -> { with_service(:zoekt) }
 
       scope :available_for_knowledge_graph_namespace, ->(namespace) do
         with_service(:knowledge_graph).where.not(id: namespace.replicas.select(:zoekt_node_id))

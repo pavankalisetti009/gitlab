@@ -31,6 +31,10 @@ module Search
 
       attr_reader :logger, :entries, :options
 
+      def search_nodes
+        ::Search::Zoekt::Node.for_search
+      end
+
       def display_feature_flags_sections
         log_header("Feature Flags (Non-Default Values)")
         log_custom_feature_flags
@@ -122,7 +126,7 @@ module Search
         log_header("Nodes")
         log_node_counts
         log_last_seen
-        log('Max schema_version', value: Search::Zoekt::Node.maximum(:schema_version))
+        log('Max schema_version', value: search_nodes.maximum(:schema_version))
         log_indexed_data
         log_node_watermark_levels
         display_entries
@@ -136,15 +140,15 @@ module Search
       end
 
       def log_node_counts
-        total_count = Search::Zoekt::Node.count
-        online_count = Search::Zoekt::Node.online.count
+        total_count = search_nodes.count
+        online_count = search_nodes.online.count
         offline_count = total_count - online_count
         log("Node count",
           value: "#{total_count} (online: #{Rainbow(online_count).green}, offline: #{Rainbow(offline_count).red})")
       end
 
       def log_node_watermark_levels
-        nodes = Search::Zoekt::Node.online.to_a
+        nodes = search_nodes.online.to_a
 
         watermark_counts = Hash.new(0)
 
@@ -177,7 +181,7 @@ module Search
         log_header("Node Details")
 
         # rubocop: disable CodeReuse/ActiveRecord -- temporary exemption in this rake task
-        nodes = Search::Zoekt::Node.order(:id).to_a
+        nodes = search_nodes.order(:id).to_a
         # rubocop: enable CodeReuse/ActiveRecord
         return if nodes.empty?
 
@@ -232,11 +236,11 @@ module Search
       # rubocop: enable Metrics/AbcSize
 
       def log_indexed_data
-        usable_bytes = Search::Zoekt::Node.sum(:usable_storage_bytes)
-        indexed_bytes = Search::Zoekt::Node.sum(:indexed_bytes)
+        usable_bytes = search_nodes.sum(:usable_storage_bytes)
+        indexed_bytes = search_nodes.sum(:indexed_bytes)
         reserved_bytes = Search::Zoekt::Index.sum(:reserved_storage_bytes)
-        used_bytes = Search::Zoekt::Node.sum(:used_bytes)
-        total_bytes = Search::Zoekt::Node.sum(:total_bytes)
+        used_bytes = search_nodes.sum(:used_bytes)
+        total_bytes = search_nodes.sum(:total_bytes)
 
         # Calculate percentages with proper handling for zero values
         reserved_percentage = usable_bytes == 0 ? 0 : (reserved_bytes.to_f / usable_bytes * 100).round(2)
@@ -252,7 +256,7 @@ module Search
       end
 
       def log_last_seen
-        log("Last seen at", value: Search::Zoekt::Node.maximum(:last_seen_at))
+        log("Last seen at", value: search_nodes.maximum(:last_seen_at))
       end
 
       def log_enabled_namespaces

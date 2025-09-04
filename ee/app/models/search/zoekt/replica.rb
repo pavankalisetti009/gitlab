@@ -45,7 +45,7 @@ module Search
       def self.search_enabled?(namespace_id)
         joins(:zoekt_enabled_namespace, indices: :node)
           .where(zoekt_enabled_namespace: { search: true })
-          .merge(Search::Zoekt::Node.online)
+          .merge(Search::Zoekt::Node.for_search.online)
           .for_namespace(namespace_id)
           .ready
           .exists?

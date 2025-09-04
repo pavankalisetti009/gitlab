@@ -19,7 +19,7 @@ module Search
         node_id = event.data[:zoekt_node_id]
         return false if node_id.blank?
 
-        node = Search::Zoekt::Node.find_by_id(node_id)
+        node = Search::Zoekt::Node.for_search.find_by_id(node_id)
         return false if node.blank?
 
         scope = node.zoekt_repositories.should_be_reindexed

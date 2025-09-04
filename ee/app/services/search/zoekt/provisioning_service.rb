@@ -70,7 +70,13 @@ module Search
 
       def process_indices!(replica, indices_plan)
         zoekt_indices = indices_plan.map do |index_plan|
-          node = Node.find(index_plan[:node_id])
+          node = Node.for_search.find_by_id(index_plan[:node_id])
+          unless node
+            raise NodeStorageError, {
+              message: 'node_not_found', namespace_id: replica.namespace_id, node_id: index_plan[:node_id]
+            }.to_json
+          end
+
           required_storage_bytes = index_plan[:required_storage_bytes]
           if required_storage_bytes > node.unclaimed_storage_bytes
             raise NodeStorageError, {

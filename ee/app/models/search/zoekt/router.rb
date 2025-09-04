@@ -23,10 +23,10 @@ module Search
       end
 
       def self.fetch_nodes_for_indexing(project_id, root_namespace_id:, node_ids: [])
-        return Node.where(id: node_ids) unless node_ids.compact.empty?
+        return Node.for_search.where(id: node_ids) unless node_ids.compact.empty?
 
         index_ids = fetch_indices_for_indexing(project_id, root_namespace_id: root_namespace_id).select(:id)
-        Node.joins(:indices).where(indices: { id: index_ids })
+        Node.for_search.joins(:indices).where(indices: { id: index_ids })
       end
     end
   end

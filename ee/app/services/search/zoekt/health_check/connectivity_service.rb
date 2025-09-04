@@ -46,7 +46,7 @@ module Search
         end
 
         def check_node_connectivity
-          online_nodes = Search::Zoekt::Node.online.to_a
+          online_nodes = Search::Zoekt::Node.for_search.online.to_a
           return if online_nodes.empty?
 
           successful_connections = 0

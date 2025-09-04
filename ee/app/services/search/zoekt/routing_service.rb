@@ -49,7 +49,7 @@ module Search
           .joins(zoekt_repositories: { zoekt_index: [{ replica: :zoekt_enabled_namespace }, :node] })
           .merge(EnabledNamespace.search_enabled)
           .merge(Replica.ready)
-          .merge(Node.online)
+          .merge(Node.for_search.online)
       end
       # rubocop:enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
     end

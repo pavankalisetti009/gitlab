@@ -66,7 +66,7 @@ module Search
 
       def nodes
         @nodes ||= if search_level == :global
-                     ::Search::Zoekt::Node.online
+                     ::Search::Zoekt::Node.for_search.online
                    else
                      enabled_namespace = root_ancestor&.zoekt_enabled_namespace
 

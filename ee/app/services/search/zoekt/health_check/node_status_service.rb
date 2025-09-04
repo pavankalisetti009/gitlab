@@ -33,8 +33,8 @@ module Search
         private
 
         def check_nodes_online
-          total_count = Search::Zoekt::Node.count
-          online_count = Search::Zoekt::Node.online.count
+          total_count = Search::Zoekt::Node.for_search.count
+          online_count = Search::Zoekt::Node.for_search.online.count
 
           if total_count == 0
             add_error("Configure and deploy Zoekt nodes to enable exact code search")
@@ -55,7 +55,7 @@ module Search
         end
 
         def check_offline_nodes
-          offline_nodes = Search::Zoekt::Node.offline
+          offline_nodes = Search::Zoekt::Node.for_search.offline
           return if offline_nodes.empty?
 
           longest_offline = offline_nodes.minimum(:last_seen_at)
@@ -68,7 +68,7 @@ module Search
         end
 
         def check_storage_utilization
-          online_nodes = Search::Zoekt::Node.online
+          online_nodes = Search::Zoekt::Node.for_search.online
           return if online_nodes.empty?
 
           critical_nodes = online_nodes.select(&:watermark_exceeded_critical?)
