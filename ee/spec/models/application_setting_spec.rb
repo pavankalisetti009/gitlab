@@ -167,6 +167,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe 'associations' do
     it { is_expected.to belong_to(:file_template_project).class_name('Project') }
+    it { is_expected.to belong_to(:workspaces_oauth_application).class_name('Doorkeeper::Application') }
   end
 
   describe 'validations' do

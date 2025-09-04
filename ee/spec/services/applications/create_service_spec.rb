@@ -8,16 +8,17 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
 
   let_it_be(:user) { create(:user) }
 
+  let(:request) { test_request }
   let(:group) { create(:group) }
   let(:params) { attributes_for(:application, scopes: %w[read_user]) }
 
-  subject(:service) { described_class.new(user, test_request, params) }
+  subject(:service) { described_class.new(user, request, params) }
 
   describe '#audit_oauth_application_creation' do
     where(:case_name, :owner, :entity_type) do
-      'instance application' | nil         | 'User'
-      'group application'    | ref(:group) | 'Group'
-      'user application'     | ref(:user)  | 'User'
+      'instance application' | nil | 'User'
+      'group application' | ref(:group) | 'Group'
+      'user application' | ref(:user) | 'User'
     end
 
     with_them do
@@ -38,7 +39,7 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
             application_id: anything,
             scopes: %w[read_user]
           ),
-          ip_address: test_request.remote_ip
+          ip_address: request.remote_ip
         )
 
         service.execute
@@ -67,12 +68,58 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
     end
   end
 
+  context 'when executed from an internal api call' do
+    before do
+      stub_licensed_features(extended_audit_events: true)
+    end
+
+    context 'when request is nil' do
+      let(:request) { nil }
+
+      it 'creates the app and does not fail' do
+        expect { service.execute }.to change { Authn::OauthApplication.count }.by(1)
+      end
+
+      it 'skips audit event' do
+        expect { service.execute }.not_to change { AuditEvent.count }
+      end
+    end
+
+    context 'when request does not respond to #remote_ip' do
+      before do
+        allow(request).to receive(:respond_to?).and_call_original
+        allow(request).to receive(:respond_to?).with(:remote_ip).and_return(false)
+      end
+
+      it 'creates the app and does not fail' do
+        expect { service.execute }.to change { Authn::OauthApplication.count }.by(1)
+      end
+
+      it 'skips audit event' do
+        expect { service.execute }.not_to change { AuditEvent.count }
+      end
+    end
+
+    context 'when application owner and user are both nil' do
+      let(:user) { nil }
+      let(:params) { attributes_for(:application, :without_owner, scopes: %w[read_user]) }
+
+      it 'creates the app and does not fail' do
+        expect { service.execute }.to change { Authn::OauthApplication.count }.by(1)
+      end
+
+      it 'skips audit event' do
+        expect { service.execute }.not_to change { AuditEvent.count }
+      end
+    end
+  end
+
   context 'for ROPC' do
     where(:saas_feature_available, :feature_enabled, :ropc_enabled) do
       false | false | true
-      false | true  | true
-      true  | false | true
-      true  | true  | false
+      false | true | true
+      true | false | true
+      true | true | false
     end
 
     with_them do

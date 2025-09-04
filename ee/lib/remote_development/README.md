@@ -1209,9 +1209,9 @@ order of the steps in the
 
 1. First, the default value is used, via the first `SettingsInitializer` step in the ROP chain.
 1. Next, the default values may be overridden by any of the next steps in the ROP chain. For example: 
-    1. `CurrentSettingsReader`
-    1. `GitlabSettingsReader` (not yet implemented)
-    1. `CascadingSettingsReader` (not yet implemented)
+    1. `CurrentSettingsReader` - reads relevant values from `Gitlab::CurrentSettings`, AKA the `application_settings` table in the DB.
+    1. `GitlabConfigReader` - reads relevant values from `Gitlab.config`, AKA [the`gitlab.yml` file](https://docs.gitlab.com/omnibus/settings/gitlab.yml/).
+    1. `CascadingSettingsReader` - not yet implemented.
 1. Next, the `Gitlab::Fp::Settings::EnvVarOverrideProcessor` allows ENV values to be used if
    they are defined (i.e. not `nil`). The `EnvVarOverrideProcessor` is intentionally placed as
    the last step and highest precedence (but before any validation steps), so it can always

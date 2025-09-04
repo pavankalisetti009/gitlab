@@ -13,6 +13,7 @@ module RemoteDevelopment
       SettingsCurrentSettingsReadFailed = Class.new(Gitlab::Fp::Message)
       SettingsEnvironmentVariableOverrideFailed = Class.new(Gitlab::Fp::Message)
       SettingsFullReconciliationIntervalSecondsValidationFailed = Class.new(Gitlab::Fp::Message)
+      SettingsGitlabConfigReadFailed = Class.new(Gitlab::Fp::Message)
       SettingsPartialReconciliationIntervalSecondsValidationFailed = Class.new(Gitlab::Fp::Message)
       SettingsNetworkPolicyEgressValidationFailed = Class.new(Gitlab::Fp::Message)
       #---------------------------------------------------------
