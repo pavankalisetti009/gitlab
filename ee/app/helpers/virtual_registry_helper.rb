@@ -77,7 +77,8 @@ module VirtualRegistryHelper
       url: maven_upstream.url,
       description: maven_upstream.description,
       username: maven_upstream.username,
-      cacheValidityHours: maven_upstream.cache_validity_hours
+      cacheValidityHours: maven_upstream.cache_validity_hours,
+      metadataCacheValidityHours: maven_upstream.metadata_cache_validity_hours
     }
   end
 

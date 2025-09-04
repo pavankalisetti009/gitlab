@@ -4,6 +4,7 @@ import { __, s__ } from '~/locale';
 import { isValidURL } from '~/lib/utils/url_utility';
 import TestMavenUpstreamButton from './test_maven_upstream_button.vue';
 
+const DEFAULT_CACHE_VALIDITY_HOURS = 24;
 const PASSWORD_PLACEHOLDER = '*****';
 
 export default {
@@ -40,9 +41,10 @@ export default {
     usernameLabel: s__('VirtualRegistry|Username (optional)'),
     passwordLabel: s__('VirtualRegistry|Password (optional)'),
     passwordPlaceholder: s__('VirtualRegistry|Enter password'),
-    cacheValidityHoursLabel: s__('VirtualRegistry|Caching period'),
+    cacheValidityHoursLabel: s__('VirtualRegistry|Artifact caching period'),
     cacheValidityHoursHelpText: s__('VirtualRegistry|Time in hours'),
     createUpstreamButtonLabel: s__('VirtualRegistry|Create upstream'),
+    metadataCacheValidityHoursLabel: s__('VirtualRegistry|Metadata caching period'),
     invalidUrl: s__('VirtualRegistry|Please provide a valid URL.'),
     cancelButtonLabel: __('Cancel'),
   },
@@ -62,11 +64,15 @@ export default {
         description: this.upstream.description ? this.upstream.description : '',
         username: this.upstream.username ? this.upstream.username : '',
         password: '',
-        // `0` is a valid value for cacheValidityHours
+        // `0` is a valid value for cache validity hour fields
         cacheValidityHours:
           typeof this.upstream.cacheValidityHours === 'number'
             ? this.upstream.cacheValidityHours
-            : 24,
+            : DEFAULT_CACHE_VALIDITY_HOURS,
+        metadataCacheValidityHours:
+          typeof this.upstream.metadataCacheValidityHours === 'number'
+            ? this.upstream.metadataCacheValidityHours
+            : DEFAULT_CACHE_VALIDITY_HOURS,
       },
       showValidation: false,
     };
@@ -78,6 +84,7 @@ export default {
     usernameInputId: 'username-input',
     passwordInputId: 'password-input',
     cacheValidityHoursInputId: 'cache-validity-hours-input',
+    metadataCacheValidityHoursInputId: 'metadata-cache-validity-hours-input',
   },
   computed: {
     isTestUpstreamButtonDisabled() {
@@ -171,6 +178,21 @@ export default {
         :id="$options.ids.cacheValidityHoursInputId"
         v-model="form.cacheValidityHours"
         data-testid="cache-validity-hours-input"
+        class="gl-max-w-15"
+        type="number"
+        number
+        :min="0"
+      />
+    </gl-form-group>
+    <gl-form-group
+      :label="$options.i18n.metadataCacheValidityHoursLabel"
+      :label-for="$options.ids.metadataCacheValidityHoursInputId"
+      :label-description="$options.i18n.cacheValidityHoursHelpText"
+    >
+      <gl-form-input
+        :id="$options.ids.metadataCacheValidityHoursInputId"
+        v-model="form.metadataCacheValidityHours"
+        data-testid="metadata-cache-validity-hours-input"
         class="gl-max-w-15"
         type="number"
         number

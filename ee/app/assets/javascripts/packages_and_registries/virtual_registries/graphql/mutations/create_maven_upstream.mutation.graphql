@@ -5,7 +5,8 @@ mutation mavenUpstreamCreate(
   $description: String
   $username: String
   $password: String
-  $cacheValidityHours: Int!
+  $cacheValidityHours: Int
+  $metadataCacheValidityHours: Int
 ) {
   mavenUpstreamCreate(
     input: {
@@ -16,6 +17,7 @@ mutation mavenUpstreamCreate(
       username: $username
       password: $password
       cacheValidityHours: $cacheValidityHours
+      metadataCacheValidityHours: $metadataCacheValidityHours
     }
   ) {
     upstream {
@@ -25,6 +27,7 @@ mutation mavenUpstreamCreate(
       description
       username
       cacheValidityHours
+      metadataCacheValidityHours
     }
     errors
   }

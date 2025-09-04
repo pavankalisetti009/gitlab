@@ -70748,11 +70748,6 @@ msgid_plural "VirtualRegistry|%{hours} hours"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "VirtualRegistry|%{hours} hour cache"
-msgid_plural "VirtualRegistry|%{hours} hours cache"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "VirtualRegistry|-- artifacts"
 msgstr ""
 
@@ -70765,10 +70760,15 @@ msgstr ""
 msgid "VirtualRegistry|Are you sure you want to delete %{strongOpen}%{name}%{strongClose}?"
 msgstr ""
 
-msgid "VirtualRegistry|Cache: %{size}"
+msgid "VirtualRegistry|Artifact cache: %{hours} hour"
+msgid_plural "VirtualRegistry|Artifact cache: %{hours} hours"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "VirtualRegistry|Artifact caching period"
 msgstr ""
 
-msgid "VirtualRegistry|Caching period"
+msgid "VirtualRegistry|Cache: %{size}"
 msgstr ""
 
 msgid "VirtualRegistry|Clear all caches"
@@ -70893,6 +70893,11 @@ msgstr ""
 
 msgid "VirtualRegistry|Maven virtual registry was updated"
 msgstr ""
+
+msgid "VirtualRegistry|Metadata cache: %{hours} hour"
+msgid_plural "VirtualRegistry|Metadata cache: %{hours} hours"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "VirtualRegistry|Metadata caching period"
 msgstr ""

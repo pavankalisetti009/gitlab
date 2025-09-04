@@ -53,6 +53,8 @@ describe('RegistryUpstreamItem', () => {
   const findUpstreamUrl = () => wrapper.findByTestId('upstream-url');
   const findCacheSize = () => wrapper.findByTestId('cache-size');
   const findCacheValidityHours = () => wrapper.findByTestId('cache-validity-hours');
+  const findMetadataCacheValidityHours = () =>
+    wrapper.findByTestId('metadata-cache-validity-hours');
   const findArtifactCount = () => wrapper.findByTestId('artifact-count');
   const findWarningBadge = () => wrapper.findByTestId('warning-badge');
   const findWarningText = () =>
@@ -106,10 +108,12 @@ describe('RegistryUpstreamItem', () => {
       expect(findCacheSize().text()).toContain(defaultProps.upstream.cacheSize);
     });
 
-    it('renders the cache validity hours', () => {
-      expect(findCacheValidityHours().text()).toContain(
-        defaultProps.upstream.cacheValidityHours.toLocaleString(),
-      );
+    it('renders artifact cache validity hours', () => {
+      expect(findCacheValidityHours().text()).toBe('Artifact cache: 24 hours');
+    });
+
+    it('renders metadata cache validity hours', () => {
+      expect(findMetadataCacheValidityHours().text()).toBe('Metadata cache: 48 hours');
     });
 
     it('renders the artifact count', () => {

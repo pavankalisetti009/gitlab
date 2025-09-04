@@ -6,6 +6,9 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { updateMavenUpstream, deleteMavenUpstream } from 'ee/api/virtual_registries_api';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
 import MavenEditUpstreamApp from 'ee/packages_and_registries/virtual_registries/maven/edit_upstream_app.vue';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+
+jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -35,6 +38,8 @@ describe('MavenEditUpstreamApp', () => {
       destroyVirtualRegistry: true,
     },
   };
+
+  const mockError = new Error('API error');
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findAlert = () => wrapper.findComponent(GlAlert);
@@ -72,7 +77,7 @@ describe('MavenEditUpstreamApp', () => {
   });
 
   describe('updating registry', () => {
-    it('calls deleteUpstream API with correct ID', async () => {
+    it('calls updateUpstream API with correct ID', async () => {
       createComponent();
 
       const formData = {
@@ -81,6 +86,7 @@ describe('MavenEditUpstreamApp', () => {
         description: 'description',
         username: null,
         cacheValidityHours: 24,
+        metadataCacheValidityHours: 48,
       };
 
       findForm().vm.$emit('submit', formData);
@@ -91,8 +97,13 @@ describe('MavenEditUpstreamApp', () => {
       expect(visitUrlWithAlerts).toHaveBeenCalled();
     });
 
-    it('shows error alert on failure', async () => {
-      updateMavenUpstream.mockRejectedValue(new Error('API error'));
+    it('show parses error message on failure', async () => {
+      updateMavenUpstream.mockRejectedValue({
+        response: {
+          status: 400,
+          data: { message: { group: ['already has an upstream with the same credentials'] } },
+        },
+      });
 
       createComponent();
 
@@ -102,8 +113,26 @@ describe('MavenEditUpstreamApp', () => {
 
       await waitForPromises();
 
-      expect(findAlert().exists()).toBe(true);
+      expect(findAlert().text()).toBe('group already has an upstream with the same credentials');
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it('shows error alert on failure', async () => {
+      updateMavenUpstream.mockRejectedValue(mockError);
+
+      createComponent();
+
+      expect(findAlert().exists()).toBe(false);
+
+      findForm().vm.$emit('submit');
+
+      await waitForPromises();
+
       expect(findAlert().text()).toBe('API error');
+      expect(captureException).toHaveBeenCalledWith({
+        component: 'MavenEditUpstreamApp',
+        error: mockError,
+      });
     });
   });
 
@@ -144,7 +173,7 @@ describe('MavenEditUpstreamApp', () => {
     });
 
     it('shows error alert on failure', async () => {
-      deleteMavenUpstream.mockRejectedValue(new Error('API error'));
+      deleteMavenUpstream.mockRejectedValue(mockError);
 
       createComponent();
 
@@ -154,8 +183,11 @@ describe('MavenEditUpstreamApp', () => {
 
       await waitForPromises();
 
-      expect(findAlert().exists()).toBe(true);
       expect(findAlert().text()).toBe('API error');
+      expect(captureException).toHaveBeenCalledWith({
+        component: 'MavenEditUpstreamApp',
+        error: mockError,
+      });
     });
   });
 });
