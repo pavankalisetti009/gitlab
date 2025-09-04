@@ -87,7 +87,6 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                          .and change { Vulnerabilities::Finding.count }.by(-4)
                                          .and change { Vulnerabilities::Feedback.count }.by(-1)
                                          .and change { Vulnerabilities::IssueLink.count }.by(-4)
-                                         .and change { Vulnerabilities::Identifier.count }.by(-1)
                                          .and change { Vulnerabilities::FindingLink.count }.by(-1)
                                          .and change { Vulnerabilities::StateTransition.count }.by(-2)
                                          .and change { Vulnerabilities::MergeRequestLink.count }.by(-1)

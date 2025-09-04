@@ -3,7 +3,7 @@
 module Vulnerabilities
   module Archival
     class ArchiveService
-      BATCH_SIZE = 100
+      BATCH_SIZE = 50
 
       def self.execute(...)
         new(...).execute

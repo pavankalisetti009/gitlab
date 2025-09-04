@@ -19,6 +19,8 @@ RSpec.describe 'inclusion of tables with gitlab_sec schema', feature_category: :
 
   it 'ensures models inheriting from `SecApplicationRecord` belong to `gitlab_sec` schema' do
     SecApplicationRecord.descendants.each do |klass|
+      next if klass.abstract_class?
+
       dictionary_entry = db_dictionary_entries.find_by_table_name(klass.table_name)
       expect(dictionary_entry.gitlab_schema).to eq('gitlab_sec'), error_message(klass.table_name)
     end

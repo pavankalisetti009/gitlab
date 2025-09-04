@@ -43,7 +43,8 @@ module Vulnerabilities
         Vulnerabilities::Removal::RemoveFromProjectService::BatchRemoval.new(
           project,
           vulnerabilities,
-          update_counts: true
+          update_counts: true,
+          backup: vulnerability_archive.date
         ).execute
       end
 

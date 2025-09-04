@@ -28,10 +28,11 @@ module Vulnerabilities
           Tasks::DeleteVulnerabilityUserMentions
         ].freeze
 
-        def initialize(project, batch, update_counts:)
+        def initialize(project, batch, update_counts:, backup: nil)
           @project = project
           @batch = batch
           @update_counts = update_counts
+          @backup = backup
         end
 
         def execute
@@ -45,8 +46,18 @@ module Vulnerabilities
             delete_resources_by_findings
             delete_resources_by_vulnerabilities
 
+            # When we delete `vulnerabilities` first, the foreign key nullifies the `finding#vulnerability_id` column
+            # which later causes exception while creating the backup records for the findings.
+            # When we delete the `findings` first, the other foreign key cascades the delete to vulnerability records
+            # which later results in no backups for the vulnerability records because the delete query doesn't delete
+            # anything, therefore, returns no rows.
+            #
+            # In this line, we load finding data into memory before firing any delete query so that the returned rows
+            # can later be used while creating the backup records.
+            finding_rows = get_finding_rows if backup
+
             delete_vulnerabilities
-            delete_findings
+            delete_findings(finding_rows)
 
             update_project_vulnerabilities_count if update_counts
 
@@ -60,22 +71,48 @@ module Vulnerabilities
 
         private
 
-        attr_reader :project, :batch, :update_counts
+        attr_reader :project, :batch, :update_counts, :backup
+
+        delegate :connection, :sanitize_sql_array, to: Vulnerability, private: true
 
         def delete_resources_by_findings
-          TASKS_SCOPED_TO_FINDINGS.each { |task| task.new(finding_ids).execute }
+          TASKS_SCOPED_TO_FINDINGS.each { |task| task.new(finding_ids, backup).execute }
         end
 
         def delete_resources_by_vulnerabilities
-          TASKS_SCOPED_TO_VULNERABILITIES.each { |task| task.new(vulnerability_ids).execute }
+          TASKS_SCOPED_TO_VULNERABILITIES.each { |task| task.new(vulnerability_ids, backup).execute }
         end
 
         def delete_vulnerabilities
-          Vulnerability.id_in(vulnerability_ids).delete_all
+          deleted_rows = Vulnerability.id_in(vulnerability_ids).delete_all_returning
+
+          return unless backup
+
+          Vulnerabilities::Removal::BackupService.execute(
+            Vulnerabilities::Backups::Vulnerability,
+            backup,
+            deleted_rows
+          )
         end
 
-        def delete_findings
+        def delete_findings(finding_rows)
           Vulnerabilities::Finding.id_in(finding_ids).delete_all
+
+          return unless backup
+
+          Vulnerabilities::Removal::BackupService.execute(
+            Vulnerabilities::Backups::Finding,
+            backup,
+            finding_rows
+          )
+        end
+
+        def get_finding_rows
+          connection.execute(select_findings_query).to_a
+        end
+
+        def select_findings_query
+          sanitize_sql_array(["SELECT * FROM vulnerability_occurrences WHERE id IN (?)", finding_ids])
         end
 
         def update_project_vulnerabilities_count
