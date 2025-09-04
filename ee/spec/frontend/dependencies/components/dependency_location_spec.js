@@ -1,5 +1,5 @@
 import { GlLink, GlIcon, GlIntersperse, GlPopover, GlButton } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyLocation from 'ee/dependencies/components/dependency_location.vue';
 import DirectDescendantViewer from 'ee/dependencies/components/direct_descendant_viewer.vue';
 import { DEPENDENCIES_TABLE_I18N } from 'ee/dependencies/constants';
@@ -10,12 +10,12 @@ describe('Dependency Location component', () => {
   let wrapper;
 
   const createComponent = ({ propsData, ...options } = {}) => {
-    wrapper = shallowMount(DependencyLocation, {
+    wrapper = shallowMountExtended(DependencyLocation, {
       propsData: {
         hasDependencyPaths: false,
         ...propsData,
       },
-      stubs: { GlLink, DirectDescendantViewer, GlIntersperse },
+      stubs: { GlLink, GlIntersperse },
       provide: {
         glFeatures: {
           dependencyPaths: true,
@@ -26,10 +26,12 @@ describe('Dependency Location component', () => {
   };
 
   const findIcon = () => wrapper.findComponent(GlIcon);
-  const findPath = () => wrapper.find('[data-testid="dependency-path"]');
+  const findPath = () => wrapper.findByTestId('dependency-path');
   const findPathLink = () => wrapper.findComponent(GlLink);
   const findPopover = () => wrapper.findComponent(GlPopover);
   const findButton = () => wrapper.findComponent(GlButton);
+  const findDirectDescendantViewer = () => wrapper.findComponent(DirectDescendantViewer);
+  const findPopoverDirectDescendantViewer = () => wrapper.findByTestId('popover-body');
 
   it.each`
     name                      | location                    | path
@@ -161,10 +163,10 @@ describe('Dependency Location component', () => {
 
     describe('direct descendant', () => {
       it.each`
-        name            | location         | path
-        ${'short path'} | ${mockShortPath} | ${'package.json / swell 1.2 / emmajsq 10.11'}
-        ${'long path'}  | ${mockLongPath}  | ${'package.json / swell 1.2 / emmajsq 10.11 / 3 more'}
-      `('shows dependency path for $name', ({ location, path }) => {
+        name            | location
+        ${'short path'} | ${mockShortPath}
+        ${'long path'}  | ${mockLongPath}
+      `('passes dependency ancestors as props correctly for $name', ({ location }) => {
         createComponent({
           propsData: {
             location,
@@ -176,7 +178,10 @@ describe('Dependency Location component', () => {
           },
         });
 
-        expect(trimText(wrapper.text())).toContain(path);
+        expect(findDirectDescendantViewer().props('dependencies')).toEqual([
+          location.ancestors[0],
+          location.ancestors[1],
+        ]);
       });
 
       describe('with no ancestors', () => {
@@ -200,8 +205,7 @@ describe('Dependency Location component', () => {
         });
 
         it('should not render dependency path', () => {
-          const pathViewer = wrapper.findComponent(DirectDescendantViewer);
-          expect(pathViewer.exists()).toBe(false);
+          expect(findDirectDescendantViewer().exists()).toBe(false);
         });
 
         it('should not render the popover', () => {
@@ -227,13 +231,13 @@ describe('Dependency Location component', () => {
           });
         });
 
-        it('should render the popover', () => {
+        it('renders the popover', () => {
           expect(findPopover().exists()).toBe(true);
         });
 
-        it('should have the complete path', () => {
-          expect(trimText(findPopover().text())).toBe(
-            'swell 1.2 / emmajsq 10.11 / zeb 12.1 / post 2.5 / core 1.0',
+        it('passes the dependency ancestors as props for the body', () => {
+          expect(findPopoverDirectDescendantViewer().props('dependencies')).toEqual(
+            mockLongPath.ancestors,
           );
         });
       });
