@@ -10,7 +10,7 @@ additional_properties:
   label:
     description: Type of AI catalog item
   property:
-    description: Indicates whether execution is manual or automatic.
+    description: Indicates the trigger type of the execution.
   value:
     description: ID of the AI catalog item
 product_group: workflow_catalog
