@@ -33,7 +33,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       cloud_connector_auth_url: 'https://cloud-connector.gitlab.com/auth'
     )
     allow(Gitlab::AiGateway).to receive(:headers).with(
-      user: user, service: unit_primitive, ai_feature_name: expected_ai_feature
+      user: user, unit_primitive_name: unit_primitive, ai_feature_name: expected_ai_feature
     ).and_return(ai_gateway_headers)
   end
 

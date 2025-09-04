@@ -57,7 +57,7 @@ module Ai
         Gitlab::HTTP.get(
           endpoint,
           headers: Gitlab::AiGateway.headers(
-            user: user, service: :code_suggestions, ai_feature_name: :code_suggestions
+            user: user, unit_primitive_name: :code_suggestions, ai_feature_name: :code_suggestions
           ),
           timeout: DEFAULT_TIMEOUT,
           allow_local_requests: true

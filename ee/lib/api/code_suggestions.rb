@@ -41,7 +41,7 @@ module API
       def ai_gateway_headers(headers, task)
         Gitlab::AiGateway.headers(
           user: current_user,
-          service: task.unit_primitive_name,
+          unit_primitive_name: task.unit_primitive_name,
           ai_feature_name: :code_suggestions,
           agent: headers["User-Agent"],
           lsp_version: headers["X-Gitlab-Language-Server-Version"]

@@ -110,7 +110,11 @@ module Gitlab
         attr_reader :user
 
         def ai_gateway_headers
-          Gitlab::AiGateway.headers(user: user, service: task.unit_primitive_name, ai_feature_name: task.feature_name)
+          Gitlab::AiGateway.headers(
+            user: user,
+            unit_primitive_name: task.unit_primitive_name,
+            ai_feature_name: task.feature_name
+          )
         end
 
         # We only need to look at the code completion feature setting for self-hosted models.

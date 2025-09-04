@@ -82,7 +82,7 @@ module Gitlab
 
           response = Gitlab::HTTP.post(
             "#{base_url}#{CHAT_V2_ENDPOINT}",
-            headers: Gitlab::AiGateway.headers(user: user, service: :duo_chat, ai_feature_name: :chat),
+            headers: Gitlab::AiGateway.headers(user: user, unit_primitive_name: :duo_chat, ai_feature_name: :chat),
             body: params.to_json,
             timeout: DEFAULT_TIMEOUT,
             allow_local_requests: true,

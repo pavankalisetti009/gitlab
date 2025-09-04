@@ -34,7 +34,7 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   before do
     allow(::Gitlab::AiGateway).to receive(:url).and_return(base_url)
     allow(::Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: unit_primitive, ai_feature_name: unit_primitive)
+      .with(user: user, unit_primitive_name: unit_primitive, ai_feature_name: unit_primitive)
   end
 
   describe '#model_selection_enabled?' do

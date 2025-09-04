@@ -104,7 +104,8 @@ module Gitlab
           {
             "Accept" => "application/json",
             'X-Gitlab-Unit-Primitive' => 'amazon_q_integration'
-          }.merge(Gitlab::AiGateway.headers(user: user, service: :amazon_q_integration))
+          }.merge(Gitlab::AiGateway.headers(
+            user: user, unit_primitive_name: :amazon_q_integration))
         end
 
         def with_response_logger
