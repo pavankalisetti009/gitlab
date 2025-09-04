@@ -18531,7 +18531,7 @@ CREATE TABLE merge_request_diff_commit_users (
     id bigint NOT NULL,
     name text,
     email text,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     CONSTRAINT check_147358fc42 CHECK ((char_length(name) <= 512)),
     CONSTRAINT check_f5fa206cf7 CHECK ((char_length(email) <= 512)),
     CONSTRAINT merge_request_diff_commit_users_name_or_email_existence CHECK (((COALESCE(name, ''::text) <> ''::text) OR (COALESCE(email, ''::text) <> ''::text)))
@@ -39052,8 +39052,6 @@ CREATE UNIQUE INDEX index_merge_request_commits_metadata_on_project_id_and_sha O
 CREATE INDEX index_merge_request_context_commit_diff_files_on_project_id ON merge_request_context_commit_diff_files USING btree (project_id);
 
 CREATE INDEX index_merge_request_context_commits_on_project_id ON merge_request_context_commits USING btree (project_id);
-
-CREATE UNIQUE INDEX index_merge_request_diff_commit_users_on_name_and_email ON merge_request_diff_commit_users USING btree (name, email);
 
 CREATE UNIQUE INDEX index_merge_request_diff_commit_users_on_org_id_name_email ON merge_request_diff_commit_users USING btree (organization_id, name, email);
 
