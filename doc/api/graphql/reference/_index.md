@@ -45139,6 +45139,15 @@ Returns [`[WorkItemWidget!]`](#workitemwidget).
 | <a id="workitemclosingmergerequestid"></a>`id` | [`MergeRequestsClosingIssuesID!`](#mergerequestsclosingissuesid) | Global ID of the closing merge request association. |
 | <a id="workitemclosingmergerequestmergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Related merge request. |
 
+### `WorkItemDateFieldValue`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemdatefieldvaluecustomfield"></a>`customField` | [`CustomField!`](#customfield) | Custom field associated with the custom field value. |
+| <a id="workitemdatefieldvaluevalue"></a>`value` | [`Date`](#date) | Date value of the custom field. |
+
 ### `WorkItemDescriptionTemplate`
 
 #### Fields
@@ -53225,6 +53234,7 @@ Implementations:
 
 Implementations:
 
+- [`WorkItemDateFieldValue`](#workitemdatefieldvalue)
 - [`WorkItemNumberFieldValue`](#workitemnumberfieldvalue)
 - [`WorkItemSelectFieldValue`](#workitemselectfieldvalue)
 - [`WorkItemTextFieldValue`](#workitemtextfieldvalue)
@@ -54492,6 +54502,7 @@ Input type for filtering projects by vulnerability count and severity.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetcustomfieldvalueinputtypecustomfieldid"></a>`customFieldId` | [`IssuablesCustomFieldID!`](#issuablescustomfieldid) | Global ID of the custom field. |
+| <a id="workitemwidgetcustomfieldvalueinputtypedatevalue"></a>`dateValue` | [`Date`](#date) | Value for custom fields with date type. |
 | <a id="workitemwidgetcustomfieldvalueinputtypenumbervalue"></a>`numberValue` | [`Float`](#float) | Value for custom fields with number type. |
 | <a id="workitemwidgetcustomfieldvalueinputtypeselectedoptionids"></a>`selectedOptionIds` | [`[IssuablesCustomFieldSelectOptionID!]`](#issuablescustomfieldselectoptionid) | Global IDs of the selected options for custom fields with select type. |
 | <a id="workitemwidgetcustomfieldvalueinputtypetextvalue"></a>`textValue` | [`String`](#string) | Value for custom fields with text type. |

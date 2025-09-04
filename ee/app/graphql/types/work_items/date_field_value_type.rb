@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+module Types
+  module WorkItems
+    class DateFieldValueType < Types::BaseObject # rubocop:disable Graphql/AuthorizeTypes -- already authorized in parent entity
+      graphql_name 'WorkItemDateFieldValue'
+
+      implements Types::WorkItems::CustomFieldValueInterface
+
+      field :value, ::Types::DateType, null: true, description: 'Date value of the custom field.'
+    end
+  end
+end

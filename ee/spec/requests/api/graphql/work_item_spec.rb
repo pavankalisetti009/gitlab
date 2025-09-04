@@ -1788,6 +1788,9 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   ... on WorkItemNumberFieldValue {
                     value
                   }
+                  ... on WorkItemDateFieldValue {
+                    value
+                  }
                   ... on WorkItemSelectFieldValue {
                     selectedOptions {
                       id
@@ -1836,6 +1839,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   {
                     'customField' => { 'id' => number_field.to_gid.to_s },
                     'value' => 10
+                  },
+                  {
+                    'customField' => { 'id' => date_field.to_gid.to_s },
+                    'value' => nil
                   },
                   {
                     'customField' => { 'id' => text_field.to_gid.to_s },

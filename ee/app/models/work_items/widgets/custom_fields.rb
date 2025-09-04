@@ -10,11 +10,8 @@ module WorkItems
         field_values = fetch_field_values(active_fields)
 
         active_fields.map do |field|
-          value = if field.field_type_text? || field.field_type_number?
-                    field_values[field.id]
-                  elsif field.field_type_select?
-                    field_values[field.id]&.sort_by(&:position)
-                  end
+          value = field_values[field.id]
+          value = value&.sort_by(&:position) if field.field_type_select?
 
           {
             custom_field: field,
@@ -48,6 +45,8 @@ module WorkItems
             TextFieldValue
           elsif field.field_type_number?
             NumberFieldValue
+          elsif field.field_type_date?
+            DateFieldValue
           elsif field.field_type_select?
             SelectFieldValue.includes(:custom_field_select_option)
           end

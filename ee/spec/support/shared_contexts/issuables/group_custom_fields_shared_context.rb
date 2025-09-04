@@ -16,6 +16,11 @@ RSpec.shared_context 'with group configured with custom fields' do
       work_item_types: [issue_type])
   end
 
+  let_it_be(:date_field) do
+    create(:custom_field, field_type: 'date', namespace: group, name: 'Custom Date',
+      work_item_types: [issue_type])
+  end
+
   let_it_be(:select_field) do
     create(
       :custom_field,

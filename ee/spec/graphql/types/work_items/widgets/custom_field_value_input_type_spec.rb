@@ -7,7 +7,7 @@ RSpec.describe ::Types::WorkItems::Widgets::CustomFieldValueInputType, feature_c
 
   it 'has correct arguments' do
     expect(described_class.arguments.keys).to contain_exactly(
-      'customFieldId', 'selectedOptionIds', 'numberValue', 'textValue'
+      'customFieldId', 'selectedOptionIds', 'numberValue', 'textValue', 'dateValue'
     )
   end
 end

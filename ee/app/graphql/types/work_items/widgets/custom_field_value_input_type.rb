@@ -24,7 +24,11 @@ module Types
           required: false,
           description: 'Value for custom fields with text type.'
 
-        validates mutually_exclusive: [:selected_option_ids, :number_value, :text_value]
+        argument :date_value, ::Types::DateType,
+          required: false,
+          description: 'Value for custom fields with date type.'
+
+        validates mutually_exclusive: [:selected_option_ids, :number_value, :text_value, :date_value]
       end
     end
   end

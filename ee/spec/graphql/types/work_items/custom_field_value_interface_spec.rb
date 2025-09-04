@@ -13,6 +13,7 @@ RSpec.describe ::Types::WorkItems::CustomFieldValueInterface, feature_category: 
     where(:custom_field_type, :resolved_type) do
       :text          | ::Types::WorkItems::TextFieldValueType
       :number        | ::Types::WorkItems::NumberFieldValueType
+      :date          | ::Types::WorkItems::DateFieldValueType
       :single_select | ::Types::WorkItems::SelectFieldValueType
       :multi_select  | ::Types::WorkItems::SelectFieldValueType
     end
