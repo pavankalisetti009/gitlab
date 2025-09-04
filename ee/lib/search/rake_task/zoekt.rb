@@ -18,6 +18,15 @@ module Search
           end
         end
 
+        def health(name:, watch_interval: nil)
+          interval = watch_interval.to_f
+          options = interval > 0 ? { watch_mode: true, watch_interval: interval.to_i } : {}
+
+          run_with_interval(name:, watch_interval:) do
+            task_executor_service(options: options).execute(:health)
+          end
+        end
+
         private
 
         def task_executor_service(options: {})
