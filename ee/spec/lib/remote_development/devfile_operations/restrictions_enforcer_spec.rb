@@ -12,7 +12,8 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
   end
 
   let(:input_devfile) { read_devfile(input_devfile_name) }
-  let(:context) { { devfile: input_devfile } }
+  let(:input_devfile_key) { :processed_devfile }
+  let(:context) { { "#{input_devfile_key}": input_devfile } }
 
   subject(:result) do
     described_class.enforce(context)
@@ -73,58 +74,60 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
       using RSpec::Parameterized::TableSyntax
 
       # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
-      where(:input_devfile_name, :error_str) do
-        "example.invalid-attributes-override-command-with-command-args-present-devfile.yaml.erb" | "Properties 'command', 'args' for component 'tooling-container' can only be specified when the 'overrideCommand' attribute is set to false"
-        "example.invalid-attributes-override-command-with-non-boolean-value-devfile.yaml.erb" | "Property 'overrideCommand' of component 'tooling-container' must be a boolean (true or false)"
-        "example.invalid-attributes-tools-injector-absent-devfile.yaml.erb" | "No component has '#{main_component_indicator_attribute}' attribute"
-        "example.invalid-attributes-tools-injector-multiple-devfile.yaml.erb" | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute"
-        "example.invalid-component-missing-name.yaml.erb" | "A component must have a 'name'"
-        "example.invalid-command-missing-component-devfile.yaml.erb" | "'exec' command 'missing-component-command' must specify a 'component'"
-        "example.invalid-components-attributes-container-overrides-devfile.yaml.erb" | "Attribute 'container-overrides' is not yet supported"
-        "example.invalid-components-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported"
-        "example.invalid-components-entry-empty-devfile.yaml.erb" | "No components present in devfile"
-        "example.invalid-components-entry-missing-devfile.yaml.erb" | "No components present in devfile"
-        "example.invalid-invalid-schema-version-devfile.yaml.erb" | "Invalid 'schemaVersion' 'example'"
-        "example.invalid-no-elements-devfile.yaml.erb" | "No components present in devfile"
-        "example.invalid-no-elements-flattened-devfile.yaml.erb" | "No components present in devfile"
-        "example.invalid-restricted-prefix-command-apply-component-name-devfile.yaml.erb" | "Component name 'gl-example' for command id 'example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-command-exec-component-name-devfile.yaml.erb" | "Component name 'gl-example' for command id 'example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-command-name-devfile.yaml.erb" | "Command id 'gl-example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-component-container-endpoint-name-devfile.yaml.erb" | "Endpoint name 'gl-example' of component 'example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-component-name-devfile.yaml.erb" | "Component name 'gl-example' must not start with 'gl-'"
-        "example.invalid-component-name-field-type-devfile.yaml.erb" | "'Component name' must be a String"
-        "example.invalid-variables-field-type-devfile.yaml.erb" | "'Variables' must be a Hash"
-        "example.invalid-events-field-type-devfile.yaml.erb" | "'Events' must be a Hash"
-        "example.invalid-endpoints-field-type-devfile.yaml.erb" | "'Endpoints' must be an Array"
-        "example.invalid-commands-field-type-devfile.yaml.erb" | "'Commands' must be an Array"
-        "example.invalid-command-field-type-devfile.yaml.erb" | "'command' must be a Hash"
-        "example.invalid-container-field-type-devfile.yaml.erb" | "'container' in component 'gl-example' must be a Hash"
-        "example.invalid-component-field-type-devfile.yaml.erb" | "Each element in 'components' must be a Hash"
-        "example.invalid-components-field-type-devfile.yaml.erb" | "'Components' must be an Array"
-        "example.invalid-schema-version-field-type-devfile.yaml.erb" | "'schemaVersion' must be a String"
-        "example.invalid-root-attributes-field-type-devfile.yaml.erb" | "'Attributes' must be a Hash"
-        "example.invalid-component-attributes-field-type-devfile.yaml.erb" | "'attributes' for component 'gl-example' must be a Hash"
-        "example.invalid-restricted-prefix-event-type-prestart-name-devfile.yaml.erb" | "Event 'gl-example' of type 'preStart' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-variable-name-devfile.yaml.erb" | "Variable name 'gl-example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-command-apply-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-command-exec-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'"
-        "example.invalid-restricted-prefix-variable-name-with-underscore-devfile.yaml.erb" | "Variable name 'gl_example' must not start with 'gl_'"
-        "example.invalid-root-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported"
-        "example.invalid-unsupported-command-exec-hot-reload-capable-option-devfile.yaml.erb" | "Property 'hotReloadCapable' for exec command 'unsupported-hot-reload-option' must be false when specified"
-        "example.invalid-unsupported-command-exec-options-devfile.yaml.erb" | "Unsupported options 'unsupportedOption' for exec command 'unsupported-options'. Only 'commandLine, component, label, hotReloadCapable' are supported."
-        "example.invalid-unsupported-command-type-devfile.yaml.erb" | "Command 'composite-command' must have one of the supported command types: exec, apply"
-        "example.invalid-unsupported-command-type-poststart-event-devfile.yaml.erb" | "PostStart event references command 'apply-command' which is not an exec command. Only exec commands are supported in postStart events"
-        "example.invalid-poststart-event-nonexistent-command-devfile.yaml.erb" | "PostStart event references command 'nonexistent-command' which has no command definition."
-        "example.invalid-unsupported-component-container-dedicated-pod-devfile.yaml.erb" | "Property 'dedicatedPod' of component 'example' is not yet supported"
-        "example.invalid-unsupported-component-type-image-devfile.yaml.erb" | "Component type 'image' is not yet supported"
-        "example.invalid-unsupported-component-type-kubernetes-devfile.yaml.erb" | "Component type 'kubernetes' is not yet supported"
-        "example.invalid-unsupported-component-type-openshift-devfile.yaml.erb" | "Component type 'openshift' is not yet supported"
-        "example.invalid-unsupported-event-type-poststop-devfile.yaml.erb" | "Event type 'postStop' is not yet supported"
-        "example.invalid-unsupported-event-type-prestop-devfile.yaml.erb" | "Event type 'preStop' is not yet supported"
-        "example.invalid-unsupported-parent-inheritance-devfile.yaml.erb" | "Inheriting from 'parent' is not yet supported"
-        "example.invalid-unsupported-projects-devfile.yaml.erb" | "'projects' is not yet supported"
-        "example.invalid-unsupported-schema-version-devfile.yaml.erb" | "'schemaVersion' '2.0.0' is not supported, it must be '2.2.0'"
-        "example.invalid-unsupported-starter-projects-devfile.yaml.erb" | "'starterProjects' is not yet supported"
+      where(:input_devfile_name, :error_str, :input_devfile_key) do
+        "example.invalid-attributes-override-command-with-command-args-present-devfile.yaml.erb" | "Properties 'command', 'args' for component 'tooling-container' can only be specified when the 'overrideCommand' attribute is set to false" | :processed_devfile
+        "example.invalid-attributes-override-command-with-non-boolean-value-devfile.yaml.erb" | "Property 'overrideCommand' of component 'tooling-container' must be a boolean (true or false)" | :processed_devfile
+        "example.invalid-attributes-tools-injector-absent-devfile.yaml.erb" | "No component has '#{main_component_indicator_attribute}' attribute" | :processed_devfile
+        "example.invalid-attributes-tools-injector-multiple-devfile.yaml.erb" | "Multiple components '[\"tooling-container\", \"tooling-container-2\"]' have '#{main_component_indicator_attribute}' attribute" | :processed_devfile
+        "example.invalid-component-missing-name.yaml.erb" | "A component must have a 'name'" | :processed_devfile
+        "example.invalid-command-missing-component-devfile.yaml.erb" | "'exec' command 'missing-component-command' must specify a 'component'" | :processed_devfile
+        "example.invalid-components-attributes-container-overrides-devfile.yaml.erb" | "Attribute 'container-overrides' is not yet supported" | :processed_devfile
+        "example.invalid-components-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported" | :processed_devfile
+        "example.invalid-components-entry-empty-devfile.yaml.erb" | "No components present in devfile" | :processed_devfile
+        "example.invalid-components-entry-missing-devfile.yaml.erb" | "No components present in devfile" | :processed_devfile
+        "example.invalid-invalid-schema-version-devfile.yaml.erb" | "Invalid 'schemaVersion' 'example'" | :processed_devfile
+        "example.invalid-no-elements-devfile.yaml.erb" | "No components present in devfile" | :processed_devfile
+        "example.invalid-no-elements-flattened-devfile.yaml.erb" | "No components present in devfile" | :processed_devfile
+        "example.invalid-restricted-prefix-command-apply-component-name-devfile.yaml.erb" | "Component name 'gl-example' for command id 'example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-command-exec-component-name-devfile.yaml.erb" | "Component name 'gl-example' for command id 'example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-command-name-devfile.yaml.erb" | "Command id 'gl-example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-component-container-endpoint-name-devfile.yaml.erb" | "Endpoint name 'gl-example' of component 'example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-component-name-devfile.yaml.erb" | "Component name 'gl-example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-component-name-field-type-devfile.yaml.erb" | "'Component name' must be a String" | :processed_devfile
+        "example.invalid-variables-field-type-devfile.yaml.erb" | "'Variables' must be a Hash" | :processed_devfile
+        "example.invalid-events-field-type-devfile.yaml.erb" | "'Events' must be a Hash" | :processed_devfile
+        "example.invalid-endpoints-field-type-devfile.yaml.erb" | "'Endpoints' must be an Array" | :processed_devfile
+        "example.invalid-commands-field-type-devfile.yaml.erb" | "'Commands' must be an Array" | :processed_devfile
+        "example.invalid-command-field-type-devfile.yaml.erb" | "'command' must be a Hash" | :processed_devfile
+        "example.invalid-container-field-type-devfile.yaml.erb" | "'container' in component 'gl-example' must be a Hash" | :processed_devfile
+        "example.invalid-component-field-type-devfile.yaml.erb" | "Each element in 'components' must be a Hash" | :processed_devfile
+        "example.invalid-components-field-type-devfile.yaml.erb" | "'Components' must be an Array" | :processed_devfile
+        "example.invalid-schema-version-field-type-devfile.yaml.erb" | "'schemaVersion' must be a String" | :processed_devfile
+        "example.invalid-root-attributes-field-type-devfile.yaml.erb" | "'Attributes' must be a Hash" | :processed_devfile
+        "example.invalid-component-attributes-field-type-devfile.yaml.erb" | "'attributes' for component 'gl-example' must be a Hash" | :processed_devfile
+        "example.invalid-restricted-prefix-event-type-prestart-name-devfile.yaml.erb" | "Event 'gl-example' of type 'preStart' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-variable-name-devfile.yaml.erb" | "Variable name 'gl-example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-command-apply-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-command-exec-label-devfile.yaml.erb" | "Label 'gl-example' for command id 'example' must not start with 'gl-'" | :processed_devfile
+        "example.invalid-restricted-prefix-variable-name-with-underscore-devfile.yaml.erb" | "Variable name 'gl_example' must not start with 'gl_'" | :processed_devfile
+        "example.invalid-root-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-command-exec-hot-reload-capable-option-devfile.yaml.erb" | "Property 'hotReloadCapable' for exec command 'unsupported-hot-reload-option' must be false when specified" | :processed_devfile
+        "example.invalid-unsupported-command-exec-options-devfile.yaml.erb" | "Unsupported options 'unsupportedOption' for exec command 'unsupported-options'. Only 'commandLine, component, label, hotReloadCapable' are supported." | :processed_devfile
+        "example.invalid-unsupported-command-type-devfile.yaml.erb" | "Command 'composite-command' must have one of the supported command types: exec, apply" | :processed_devfile
+        "example.invalid-unsupported-command-type-poststart-event-devfile.yaml.erb" | "PostStart event references command 'apply-command' which is not an exec command. Only exec commands are supported in postStart events" | :processed_devfile
+        "example.invalid-poststart-event-nonexistent-command-devfile.yaml.erb" | "PostStart event references command 'nonexistent-command' which has no command definition." | :processed_devfile
+        "example.invalid-unsupported-component-container-dedicated-pod-devfile.yaml.erb" | "Property 'dedicatedPod' of component 'example' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-component-type-image-devfile.yaml.erb" | "Component type 'image' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-component-type-kubernetes-devfile.yaml.erb" | "Component type 'kubernetes' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-component-type-openshift-devfile.yaml.erb" | "Component type 'openshift' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-event-type-poststop-devfile.yaml.erb" | "Event type 'postStop' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-event-type-prestop-devfile.yaml.erb" | "Event type 'preStop' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-parent-inheritance-devfile.yaml.erb" | "Inheriting from 'parent' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-projects-devfile.yaml.erb" | "'projects' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-schema-version-devfile.yaml.erb" | "'schemaVersion' '2.0.0' is not supported, it must be '2.2.0'" | :processed_devfile
+        "example.invalid-unsupported-starter-projects-devfile.yaml.erb" | "'starterProjects' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-component-container-source-mapping-devfile.yaml.erb" | "Property 'sourceMapping' of component 'example' is not yet supported" | :processed_devfile
+        "example.invalid-unsupported-component-container-mount-sources-devfile.yaml.erb" | "Property 'mountSources' of component 'example' is not yet supported" | :devfile
       end
       # rubocop:enable Layout/LineLength
 
