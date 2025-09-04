@@ -67,7 +67,10 @@ module SecretsManagement
       rescue SecretsManagerClient::ApiError => e
         raise e unless e.message.include?('metadata check-and-set parameter does not match the current version')
 
-        project_secret.errors.add(:base, e.message)
+        project_secret.errors.add(
+          :base,
+          "This secret has been modified recently. Please refresh the page and try again."
+        )
         error_response(project_secret)
       end
 

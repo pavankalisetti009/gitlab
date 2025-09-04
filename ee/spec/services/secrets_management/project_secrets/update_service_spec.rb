@@ -362,7 +362,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
         it 'returns an error' do
           expect(result).not_to be_success
-          expect(result.message).to eq('metadata check-and-set parameter does not match the current version')
+          expect(result.message).to eq("This secret has been modified recently. " \
+            "Please refresh the page and try again.")
 
           # Verify value was not updated
           expect_kv_secret_to_have_value(

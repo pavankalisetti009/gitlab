@@ -379,6 +379,7 @@ describe('SecretForm component', () => {
             description: 'This is a secret',
             environment: 'production',
             name: 'PROD_PWD',
+            metadataVersion: 1,
           },
         },
       });
@@ -501,6 +502,7 @@ describe('SecretForm component', () => {
           branch: 'edit-branch',
           description: 'This is an edited secret',
           environment: 'edit-env',
+          metadataVersion: 1,
           expiration: undefined,
           name: 'PROD_PWD',
           projectPath: 'path/to/project',
