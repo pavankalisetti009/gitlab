@@ -3,6 +3,8 @@ module Vulnerabilities
   class MergeRequestLink < ::SecApplicationRecord
     include EachBatch
 
+    MAX_MERGE_REQUEST_LINKS_PER_VULNERABILITY = 100
+
     self.table_name = 'vulnerability_merge_request_links'
 
     belongs_to :vulnerability
@@ -22,5 +24,13 @@ module Vulnerabilities
     scope :with_vulnerability_findings, -> { includes(vulnerability: [:findings]) }
     scope :with_merge_request, -> { preload(:merge_request) }
     scope :by_vulnerability, ->(values) { where(vulnerability_id: values) }
+
+    def self.count_for_vulnerability(vulnerability)
+      where(vulnerability: vulnerability).count
+    end
+
+    def self.limit_exceeded_for_vulnerability?(vulnerability)
+      count_for_vulnerability(vulnerability) >= MAX_MERGE_REQUEST_LINKS_PER_VULNERABILITY
+    end
   end
 end
