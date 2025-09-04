@@ -272,6 +272,12 @@ describe('Duo Agentic Chat', () => {
         ]);
       });
 
+      it('passes sessionId to AgenticDuoChat component', async () => {
+        await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+
+        expect(findDuoChat().props('sessionId')).toBe('456');
+      });
+
       it('calls the user workflows GraphQL query when component loads', () => {
         expect(userWorkflowsQueryHandlerMock).toHaveBeenCalledWith({
           type: 'chat',
