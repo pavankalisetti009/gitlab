@@ -213,6 +213,24 @@ describe('ValidityCheck', () => {
     });
   });
 
+  describe('mutation selection', () => {
+    it('calls the correct mutation when vulnerabilityId is provided (vulnerability details page)', async () => {
+      const mutationHandler = jest.fn().mockResolvedValue(successResponse);
+      const apolloProvider = createMockApollo([
+        [refreshFindingTokenStatusMutation, mutationHandler],
+      ]);
+      const vulnerabilityId = 123;
+
+      createWrapper({ vulnerabilityId }, { apolloProvider });
+
+      await findRetryButton().vm.$emit('click');
+
+      expect(mutationHandler).toHaveBeenCalledWith({
+        vulnerabilityId: `gid://gitlab/Vulnerability/${vulnerabilityId}`,
+      });
+    });
+  });
+
   describe('TokenValidityBadge', () => {
     it('renders with the correct prop', () => {
       createWrapper();
