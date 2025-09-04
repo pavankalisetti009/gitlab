@@ -697,6 +697,9 @@ msgstr ""
 msgid "%{codeStart}$%{codeEnd} will be treated as the start of a reference to another variable."
 msgstr ""
 
+msgid "%{commitMessage}, by %{authorName}. Opens in a new window."
+msgstr ""
+
 msgid "%{commit_author_link} authored %{commit_authored_timeago}"
 msgstr ""
 
@@ -9528,9 +9531,6 @@ msgid "Authored %{timeago}"
 msgstr ""
 
 msgid "Authored %{timeago} by %{author}"
-msgstr ""
-
-msgid "Authored by %{authorName}"
 msgstr ""
 
 msgid "Authorization code:"
