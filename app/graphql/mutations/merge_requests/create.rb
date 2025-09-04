@@ -50,6 +50,8 @@ module Mutations
         project = authorized_find!(project_path)
         params = parse_arguments(attributes)
 
+        start_covered_experience_create_mr(project_id: project.id, **params)
+
         merge_request = ::MergeRequests::CreateService.new(
           project: project,
           current_user: current_user,
@@ -70,6 +72,12 @@ module Mutations
         args[:force_remove_source_branch] = args.delete(:remove_source_branch) if args.key?(:remove_source_branch)
 
         args.compact
+      end
+
+      def start_covered_experience_create_mr(**args)
+        return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
+
+        Labkit::CoveredExperience.start(:create_merge_request, **args)
       end
     end
   end
