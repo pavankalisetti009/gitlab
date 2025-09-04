@@ -51,6 +51,23 @@ RSpec.describe 'profiles/billings/index.html.haml', :saas, feature_category: :su
   end
 
   context 'with user_billing_pricing_information experiment', :experiment do
+    context 'with tracking' do
+      let(:experiment) { instance_double(ApplicationExperiment) }
+
+      before do
+        allow(view)
+          .to receive(:experiment)
+          .with(:user_billing_pricing_information, actor: user)
+          .and_return(experiment)
+      end
+
+      it 'creates assignment event' do
+        expect(experiment).to receive(:track).with(:assignment, namespace: namespace)
+
+        render
+      end
+    end
+
     it 'renders control variant' do
       stub_experiments(user_billing_pricing_information: :control)
 
