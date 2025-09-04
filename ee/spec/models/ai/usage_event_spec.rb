@@ -147,7 +147,7 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
       it 'adds model attributes to write buffer' do
         expect(described_class.write_buffer).to receive(:add)
                                                .with({
-                                                 event: 'troubleshoot_job',
+                                                 event: described_class.events['troubleshoot_job'],
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,
                                                  organization_id: user.organization.id,

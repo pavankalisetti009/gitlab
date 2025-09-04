@@ -54,7 +54,13 @@ module Analytics
     end
 
     def prepare_batch_objects(batch)
-      batch.map { |attrs| current_model.new(attrs.slice(*current_model.attribute_names)) }.select(&:valid?)
+      batch.map do |attrs|
+        current_model.new(compatible_attributes(attrs.slice(*current_model.attribute_names)))
+      end.select(&:valid?)
+    end
+
+    def compatible_attributes(buffered_attributes)
+      buffered_attributes
     end
   end
 end

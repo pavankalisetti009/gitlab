@@ -223,4 +223,44 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
       expect { perform }.to raise_error(error)
     end
   end
+
+  context 'when data contains old event names' do
+    it 'updates event name for `start_agent_platform_session`' do
+      add_to_buffer({ user_id: 1,
+                      event: 'start_agent_platform_session',
+                      organization_id: organization.id },
+        Ai::UsageEvent)
+
+      expect(perform).to eq({ status: :processed, inserted_rows: 1 })
+      expect(inserted_records).to match([hash_including('event' => 'agent_platform_session_started')])
+    end
+
+    it 'updates event name for `create_agent_platform_session`' do
+      add_to_buffer({ user_id: 1,
+                      event: 'create_agent_platform_session',
+                      organization_id: organization.id },
+        Ai::UsageEvent)
+
+      expect(perform).to eq({ status: :processed, inserted_rows: 1 })
+      expect(inserted_records).to match([hash_including('event' => 'agent_platform_session_created')])
+    end
+  end
+
+  context 'when data contains data before typecast and after typecast' do
+    it 'saves both events properly' do
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id },
+        Ai::UsageEvent)
+      add_to_buffer({ user_id: 2,
+                      event: Ai::UsageEvent.events['request_duo_chat_response'],
+                      organization_id: organization.id },
+        Ai::UsageEvent)
+
+      expect(perform).to eq({ status: :processed, inserted_rows: 2 })
+      expect(inserted_records)
+        .to match([hash_including('event' => 'request_duo_chat_response'),
+          hash_including('event' => 'request_duo_chat_response')])
+    end
+  end
 end
