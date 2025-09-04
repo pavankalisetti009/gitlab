@@ -10,6 +10,7 @@ module Ai
           @agent = params[:agent]
           @agent_version = params[:agent_version]
           @execute_workflow = params[:execute_workflow]
+          @user_prompt = params[:user_prompt]
           super
         end
 
@@ -39,7 +40,7 @@ module Ai
 
         private
 
-        attr_reader :agent, :agent_version, :flow, :execute_workflow
+        attr_reader :agent, :agent_version, :flow, :execute_workflow, :user_prompt
 
         def validate
           return error('Agent is required') unless agent && agent.agent?
@@ -66,7 +67,7 @@ module Ai
           params = {
             json_config: flow_config,
             container: agent.project,
-            goal: agent_version.def_user_prompt
+            goal: agent_goal
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute
@@ -78,6 +79,10 @@ module Ai
             flow.latest_version
           )
           payload_builder.build
+        end
+
+        def agent_goal
+          user_prompt || agent_version.def_user_prompt
         end
       end
     end
