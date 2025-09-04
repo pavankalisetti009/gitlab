@@ -15,6 +15,9 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
       <<~FIELDS
         errors
         flowConfig
+        workflow {
+          id
+        }
       FIELDS
     end
   end
@@ -50,6 +53,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     allow(Ability).to receive(:allowed?).and_call_original
     allow(Ability).to receive(:allowed?).with(current_user, :duo_workflow, project).and_return(true)
     allow(Ability).to receive(:allowed?).with(current_user, :execute_duo_workflow_in_ci, anything).and_return(true)
+    allow(Ability).to receive(:allowed?).with(current_user, :read_duo_workflow, anything).and_return(true)
 
     project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
 
@@ -84,11 +88,14 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     it 'returns valid flow config with expected structure' do
       execute
 
-      expect(graphql_data_at(:ai_catalog_agent_execute, :errors)).to be_empty
-
       flow_config = graphql_data_at(:ai_catalog_agent_execute, :flowConfig)
       parsed_yaml = YAML.safe_load(flow_config)
+
+      workflow = graphql_data_at(:ai_catalog_agent_execute, :workflow)
+
+      expect(graphql_data_at(:ai_catalog_agent_execute, :errors)).to be_empty
       expect(parsed_yaml).to include(json_config)
+      expect(workflow).to be_present
     end
 
     it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
@@ -146,13 +153,52 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .to have_received(:new).with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: latest_agent_version, execute_workflow: true }
+          params: { agent: agent, agent_version: latest_agent_version, execute_workflow: true, user_prompt: nil }
         )
     end
   end
 
   context 'when both agent_id and agent_version_id are valid' do
     it_behaves_like 'successful execution'
+  end
+
+  context 'when user_prompt is provided' do
+    let(:custom_user_prompt) { 'Custom user prompt for testing' }
+    let(:params) do
+      {
+        agent_id: agent.to_global_id,
+        agent_version_id: agent_version.to_global_id,
+        user_prompt: custom_user_prompt
+      }
+    end
+
+    it_behaves_like 'successful execution'
+
+    it 'passes the custom user_prompt as goal to ExecuteWorkflowService' do
+      allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
+
+      execute
+
+      expect(::Ai::Catalog::ExecuteWorkflowService)
+        .to have_received(:new).with(
+          current_user,
+          hash_including(goal: custom_user_prompt)
+        )
+    end
+  end
+
+  context 'when user_prompt is not provided' do
+    it 'passes the agent version user_prompt as goal to ExecuteWorkflowService' do
+      allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
+
+      execute
+
+      expect(::Ai::Catalog::ExecuteWorkflowService)
+        .to have_received(:new).with(
+          current_user,
+          hash_including(goal: agent_version.def_user_prompt)
+        )
+    end
   end
 
   context 'when execute service fails' do
@@ -165,7 +211,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: agent_version, execute_workflow: true }
+          params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: nil }
         )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)
@@ -176,6 +222,33 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
       expect(graphql_data_at(:ai_catalog_agent_execute, :errors)).to contain_exactly(error_message)
       expect(graphql_data_at(:ai_catalog_agent_execute, :flow_config)).to be_nil
+      expect(graphql_data_at(:ai_catalog_agent_execute, :workflow)).to be_nil
+    end
+  end
+
+  context 'when workflow is not created' do
+    let(:mock_service) { instance_double(::Ai::Catalog::Agents::ExecuteService) }
+    let(:service_result) do
+      ServiceResponse.success(payload: { flow_config: 'test_config', workflow: nil })
+    end
+
+    before do
+      allow(::Ai::Catalog::Agents::ExecuteService).to receive(:new)
+        .with(
+          project: agent.project,
+          current_user: current_user,
+          params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: nil }
+        )
+        .and_return(mock_service)
+      allow(mock_service).to receive(:execute).and_return(service_result)
+    end
+
+    it 'returns nil workflow when workflow is not created' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_agent_execute, :errors)).to be_empty
+      expect(graphql_data_at(:ai_catalog_agent_execute, :flow_config)).to eq('test_config')
+      expect(graphql_data_at(:ai_catalog_agent_execute, :workflow)).to be_nil
     end
   end
 
@@ -197,6 +270,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         expect(graphql_data_at(:ai_catalog_agent_execute,
           :errors)).to contain_exactly('Agent is required')
         expect(graphql_data_at(:ai_catalog_agent_execute, :flow_config)).to be_nil
+        expect(graphql_data_at(:ai_catalog_agent_execute, :workflow)).to be_nil
       end
     end
 
@@ -214,6 +288,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         expect(graphql_data_at(:ai_catalog_agent_execute,
           :errors)).to contain_exactly('Agent version must belong to the agent')
         expect(graphql_data_at(:ai_catalog_agent_execute, :flow_config)).to be_nil
+        expect(graphql_data_at(:ai_catalog_agent_execute, :workflow)).to be_nil
       end
     end
 
@@ -234,6 +309,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         expect(graphql_data_at(:ai_catalog_agent_execute,
           :errors)).to contain_exactly('Agent version must belong to the agent')
         expect(graphql_data_at(:ai_catalog_agent_execute, :flow_config)).to be_nil
+        expect(graphql_data_at(:ai_catalog_agent_execute, :workflow)).to be_nil
       end
     end
   end
