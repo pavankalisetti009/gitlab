@@ -16,6 +16,8 @@ module Types
           Types::WorkItems::TextFieldValueType
         elsif object[:custom_field].field_type_number?
           Types::WorkItems::NumberFieldValueType
+        elsif object[:custom_field].field_type_date?
+          Types::WorkItems::DateFieldValueType
         elsif object[:custom_field].field_type_select?
           Types::WorkItems::SelectFieldValueType
         end
@@ -24,7 +26,8 @@ module Types
       orphan_types(
         Types::WorkItems::TextFieldValueType,
         Types::WorkItems::NumberFieldValueType,
-        Types::WorkItems::SelectFieldValueType
+        Types::WorkItems::SelectFieldValueType,
+        Types::WorkItems::DateFieldValueType
       )
     end
   end

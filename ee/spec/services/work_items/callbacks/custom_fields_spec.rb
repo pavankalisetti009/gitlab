@@ -11,11 +11,13 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
   let_it_be(:current_user) { create(:user, reporter_of: group) }
 
   let(:callback) { described_class.new(issuable: work_item, current_user: current_user, params: params) }
+  let(:date) { generate(:sequential_date).to_date }
 
   let(:params) do
     [
       { custom_field_id: text_field.id, text_value: 'some text' },
       { custom_field_id: number_field.id, number_value: 100 },
+      { custom_field_id: date_field.id, date_value: date },
       { custom_field_id: select_field.id, selected_option_ids: [select_option_1.id] },
       { custom_field_id: multi_select_field.id, selected_option_ids: [
         multi_select_option_1.id, multi_select_option_2.id
@@ -36,7 +38,8 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
           { custom_field_id: select_field.id },
           { custom_field_id: multi_select_field.id },
           { custom_field_id: text_field.id },
-          { custom_field_id: number_field.id }
+          { custom_field_id: number_field.id },
+          { custom_field_id: date_field.id }
         ]
       end
 
@@ -54,6 +57,7 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
 
       expect(custom_field_values_for(text_field).first.value).to eq('some text')
       expect(custom_field_values_for(number_field).first.value).to eq(100)
+      expect(custom_field_values_for(date_field).first.value).to eq(date)
       expect(custom_field_values_for(select_field).first.custom_field_select_option_id).to eq(select_option_1.id)
       expect(custom_field_values_for(multi_select_field)).to contain_exactly(
         have_attributes(custom_field_select_option_id: multi_select_option_1.id),
@@ -92,6 +96,7 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
       before do
         create(:work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'some text')
         create(:work_item_number_field_value, work_item: work_item, custom_field: number_field, value: 100)
+        create(:work_item_date_field_value, work_item: work_item, custom_field: date_field, value: date)
         create(:work_item_select_field_value, work_item: work_item, custom_field: select_field,
           custom_field_select_option: select_option_1)
         create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
@@ -103,6 +108,7 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
       it "does not update the custom field value" do
         expect(::WorkItems::NumberFieldValue).not_to receive(:update_work_item_field!)
         expect(::WorkItems::TextFieldValue).not_to receive(:update_work_item_field!)
+        expect(::WorkItems::DateFieldValue).not_to receive(:update_work_item_field!)
         expect(::WorkItems::SelectFieldValue).not_to receive(:update_work_item_field!)
 
         after_save_callback
@@ -112,9 +118,10 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
         expect { after_save_callback }.not_to change { Note.count }
       end
 
-      it "does not callsthe create system note method" do
+      it "does not call the create system note method" do
         expect(callback).not_to receive(:create_number_field_system_note)
         expect(callback).not_to receive(:create_text_field_system_note)
+        expect(callback).not_to receive(:create_date_field_system_note)
         expect(callback).not_to receive(:create_select_field_type_system_note)
         expect(callback).not_to receive(:create_select_field_type_system_note)
 
@@ -125,12 +132,13 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
     context "for system notes" do
       context "when we change the value" do
         it "creates system notes for each param" do
-          expect { after_save_callback }.to change { Note.count }.from(0).to(4)
+          expect { after_save_callback }.to change { Note.count }.from(0).to(5)
         end
 
         it "calls the create note method with correct params" do
           expect(callback).to receive(:create_text_field_system_note).with(text_field, 'some text', nil)
           expect(callback).to receive(:create_number_field_system_note).with(number_field, 100, nil)
+          expect(callback).to receive(:create_date_field_system_note).with(date_field, date, nil)
           expect(callback).to receive(:create_select_field_system_note).with(select_field,
             [select_option_1.value], [])
           expect(callback).to receive(:create_select_field_system_note).with(multi_select_field,
@@ -146,6 +154,7 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
           [
             { custom_field_id: text_field.id, text_value: nil },
             { custom_field_id: number_field.id, number_value: nil },
+            { custom_field_id: date_field.id, date_value: nil },
             { custom_field_id: select_field.id, selected_option_ids: [] },
             { custom_field_id: multi_select_field.id, selected_option_ids: [] }
           ]
@@ -154,6 +163,7 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
         before do
           create(:work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'existing text')
           create(:work_item_number_field_value, work_item: work_item, custom_field: number_field, value: 50)
+          create(:work_item_date_field_value, work_item: work_item, custom_field: date_field, value: date)
           create(:work_item_select_field_value, work_item: work_item, custom_field: select_field,
             custom_field_select_option: select_option_1)
           create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
@@ -163,12 +173,13 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
         end
 
         it "creates system notes for each param" do
-          expect { after_save_callback }.to change { Note.count }.from(0).to(4)
+          expect { after_save_callback }.to change { Note.count }.from(0).to(5)
         end
 
         it "calls the create system note method with correct params" do
           expect(callback).to receive(:create_text_field_system_note).with(text_field, nil, 'existing text')
           expect(callback).to receive(:create_number_field_system_note).with(number_field, nil, 50)
+          expect(callback).to receive(:create_date_field_system_note).with(date_field, nil, date)
           expect(callback).to receive(:create_select_field_system_note).with(select_field,
             [], [select_option_1.value])
           expect(callback).to receive(:create_select_field_system_note).with(multi_select_field,
@@ -188,6 +199,7 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
 
         expect(custom_field_values_for(text_field)).to be_empty
         expect(custom_field_values_for(number_field)).to be_empty
+        expect(custom_field_values_for(date_field)).to be_empty
         expect(custom_field_values_for(select_field)).to be_empty
         expect(custom_field_values_for(multi_select_field)).to be_empty
       end
@@ -274,6 +286,21 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
       end
     end
 
+    describe '#create_date_field_system_note' do
+      let(:other_date) { generate(:sequential_date).to_date }
+
+      subject(:create_date_field_system_note) do
+        callback.send(:create_date_field_system_note, date_field, date, other_date)
+      end
+
+      it 'calls SystemNoteService with correct parameters' do
+        expect(issuables_service).to receive(:change_custom_field_date_type_note)
+          .with(date_field, value: date, previous_value: other_date)
+
+        create_date_field_system_note
+      end
+    end
+
     describe '#create_select_field_system_note' do
       subject(:create_select_field_system_note) do
         callback.send(:create_select_field_system_note, multi_select_field, ['Option 1', 'Option 2'], ['Option 3'])
@@ -300,6 +327,8 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
                     WorkItems::NumberFieldValue
                   elsif custom_field.field_type_select?
                     WorkItems::SelectFieldValue
+                  elsif custom_field.field_type_date?
+                    WorkItems::DateFieldValue
                   end
 
     value_class.where(work_item: work_item, custom_field: custom_field)

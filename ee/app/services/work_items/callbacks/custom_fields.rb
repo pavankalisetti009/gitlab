@@ -42,6 +42,8 @@ module WorkItems
           update_text_field_value(custom_field, field_params[:text_value])
         elsif custom_field.field_type_number?
           update_number_field_value(custom_field, field_params[:number_value])
+        elsif custom_field.field_type_date?
+          update_date_field_value(custom_field, field_params[:date_value])
         elsif custom_field.field_type_select?
           update_select_field_value(custom_field, Array(field_params[:selected_option_ids]).map(&:to_i))
         else
@@ -75,6 +77,17 @@ module WorkItems
         create_number_field_system_note(custom_field, number_value, previous_value)
       end
 
+      def update_date_field_value(custom_field, date_value)
+        previous_value = ::WorkItems::DateFieldValue.for_field_and_work_item(custom_field.id,
+          work_item.id)&.first&.value
+
+        return if date_value == previous_value
+
+        ::WorkItems::DateFieldValue.update_work_item_field!(work_item, custom_field, date_value)
+
+        create_date_field_system_note(custom_field, date_value, previous_value)
+      end
+
       def update_select_field_value(custom_field, selected_option_ids)
         previous_value_ids = ::WorkItems::SelectFieldValue.for_field_and_work_item(custom_field.id,
           work_item.id).pluck(:custom_field_select_option_id) # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- we limit the number of options
@@ -101,6 +114,11 @@ module WorkItems
 
       def create_number_field_system_note(custom_field, value, previous_value)
         issuables_service.change_custom_field_number_type_note(custom_field, previous_value: previous_value,
+          value: value)
+      end
+
+      def create_date_field_system_note(custom_field, value, previous_value)
+        issuables_service.change_custom_field_date_type_note(custom_field, previous_value: previous_value,
           value: value)
       end
 

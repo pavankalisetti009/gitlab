@@ -946,6 +946,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
     let_it_be(:project) { create(:project, group: group, developers: [developer]) }
 
     let(:mutation) { graphql_mutation(:workItemCreate, input, 'workItem { id }') }
+    let(:date) { generate(:sequential_date).to_date }
 
     let(:input) do
       {
@@ -954,6 +955,8 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         'title' => 'New work item',
         'customFieldsWidget' => [
           { 'customFieldId' => global_id_of(number_field), 'numberValue' => 100 },
+          { 'customFieldId' => global_id_of(text_field), 'textValue' => 'TEST' },
+          { 'customFieldId' => global_id_of(date_field), 'dateValue' => date.to_s },
           { 'customFieldId' => global_id_of(multi_select_field), 'selectedOptionIds' => [
             global_id_of(multi_select_option_1), global_id_of(multi_select_option_3)
           ] }
@@ -965,7 +968,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       stub_licensed_features(custom_fields: true)
     end
 
-    it 'creates the work item with custom field values' do
+    it 'creates the work item with custom field values', :aggregate_failures do
       post_graphql_mutation(mutation, current_user: developer)
 
       expect(response).to have_gitlab_http_status(:success)
@@ -974,6 +977,12 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
       expect(WorkItems::NumberFieldValue.last).to have_attributes(
         work_item_id: work_item_id, custom_field_id: number_field.id, value: 100
+      )
+      expect(WorkItems::TextFieldValue.last).to have_attributes(
+        work_item_id: work_item_id, custom_field_id: text_field.id, value: 'TEST'
+      )
+      expect(WorkItems::DateFieldValue.last).to have_attributes(
+        work_item_id: work_item_id, custom_field_id: date_field.id, value: date
       )
       expect(WorkItems::SelectFieldValue.last(2)).to contain_exactly(
         have_attributes({

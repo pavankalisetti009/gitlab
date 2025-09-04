@@ -71,6 +71,25 @@ module EE
         create_note(NoteSummary.new(noteable, project, author, body, action: "custom_field"))
       end
 
+      # Called when a custom field of type date of a WorkItem is changed
+      #
+      # Example Note text:
+      #
+      #   "changed custom_field_name to August 10, 2025"
+      #
+      #   "removed custom_field_name: August 10, 2025"
+      #
+      # Returns the created Note object
+      def change_custom_field_date_type_note(custom_field, previous_value: nil, value: nil)
+        body = if value.nil? && previous_value.present?
+                 custom_field_note(custom_field.name, previous_value.to_fs(:long), :removed)
+               else
+                 custom_field_note(custom_field.name, value.to_fs(:long), :change)
+               end
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: "custom_field"))
+      end
+
       # Called when a custom field of type select of a WorkItem is changed
       #
       # Example Note text:

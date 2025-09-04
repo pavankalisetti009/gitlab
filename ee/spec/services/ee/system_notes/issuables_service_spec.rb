@@ -218,6 +218,43 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
     end
   end
 
+  describe "#change_custom_field_date_type_note" do
+    let(:custom_field) { build(:custom_field, field_type: :date) }
+    let(:previous_value) { generate(:sequential_date) }
+    let(:value) { generate(:sequential_date) }
+
+    subject { service.change_custom_field_date_type_note(custom_field, previous_value: previous_value, value: value) }
+
+    it_behaves_like 'a system note', skip_persistence_check: true do
+      let(:action) { "custom_field" }
+    end
+
+    context "when the value is changed" do
+      it 'sets the note text' do
+        note_text = "<p>changed #{custom_field.name} to <code class=\"idiff\">#{value.to_fs(:long)}</code></p>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when the value is set" do
+      let(:previous_value) { nil }
+
+      it 'sets the note text' do
+        note_text = "<p>changed #{custom_field.name} to <code class=\"idiff\">#{value.to_fs(:long)}</code></p>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when a value is removed" do
+      let(:value) { nil }
+
+      it 'sets the note text' do
+        note_text = "<p>removed #{custom_field.name}: <code class=\"idiff\">#{previous_value.to_fs(:long)}</code></p>"
+        expect(subject.note).to eq note_text
+      end
+    end
+  end
+
   describe '#change_progress_note' do
     let_it_be(:noteable) { create(:work_item, :objective, project: project) }
     let_it_be(:progress) { create(:progress, work_item: noteable) }

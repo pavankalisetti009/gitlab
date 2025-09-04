@@ -61,6 +61,7 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
             'customFieldValues' => [
               { 'customField' => { 'id' => select_field.to_gid.to_s } },
               { 'customField' => { 'id' => number_field.to_gid.to_s } },
+              { 'customField' => { 'id' => date_field.to_gid.to_s } },
               { 'customField' => { 'id' => text_field.to_gid.to_s } },
               { 'customField' => { 'id' => multi_select_field.to_gid.to_s } }
             ]

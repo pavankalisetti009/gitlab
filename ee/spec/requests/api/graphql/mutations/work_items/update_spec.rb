@@ -1218,11 +1218,14 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
     let_it_be(:project) { create(:project, group: group, reporters: [reporter]) }
     let_it_be(:work_item) { create(:work_item, work_item_type: issue_type, project: project) }
 
+    let(:old_date) { generate(:sequential_date).to_date }
+    let(:new_date) { generate(:sequential_date).to_date }
     let(:fields) { 'workItem { id }' }
     let(:input) do
       {
         'customFieldsWidget' => [
           { 'customFieldId' => global_id_of(text_field), 'textValue' => 'some text' },
+          { 'customFieldId' => global_id_of(date_field), 'dateValue' => new_date.to_s },
           { 'customFieldId' => global_id_of(select_field), 'selectedOptionIds' => [
             global_id_of(select_option_1)
           ] }
@@ -1238,12 +1241,16 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       existing_text_value = create(
         :work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'old text'
       )
+      existing_date_value = create(
+        :work_item_date_field_value, work_item: work_item, custom_field: date_field, value: old_date
+      )
 
       post_graphql_mutation(mutation, current_user: reporter)
 
       expect(response).to have_gitlab_http_status(:success)
 
       expect(existing_text_value.reload.value).to eq('some text')
+      expect(existing_date_value.reload.value).to eq(new_date)
       expect(WorkItems::SelectFieldValue.last).to have_attributes(
         work_item_id: work_item.id,
         custom_field_id: select_field.id,
