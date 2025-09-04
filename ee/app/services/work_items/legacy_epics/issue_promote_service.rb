@@ -3,6 +3,8 @@
 module WorkItems
   module LegacyEpics
     class IssuePromoteService < ::WorkItems::DataSync::BaseService
+      PromoteError = Class.new(StandardError)
+
       def initialize(container:, current_user:, params: {}) # rubocop:disable Lint/UnusedMethodArgument -- only here to keep compatability with the old class signature
         @container = container
         @current_user = current_user
@@ -10,19 +12,13 @@ module WorkItems
 
       def execute(issue, epic_group = nil)
         @target_namespace = epic_group || issue.project.group
+        @work_item = ::WorkItem.find(issue.id)
 
-        if Feature.enabled?(:use_data_sync_for_issue_promotion, @target_namespace)
-          @work_item = ::WorkItem.find(issue.id)
+        result = super()
 
-          result = super()
+        raise PromoteError, result.message if result.error?
 
-          raise ::Epics::IssuePromoteService::PromoteError, result.message if result.error?
-
-          result.payload[:work_item].sync_object
-        else
-          ::Epics::IssuePromoteService.new(container: container, current_user: current_user, params: {}).execute(issue,
-            epic_group)
-        end
+        result.payload[:work_item].sync_object
       end
 
       class << self

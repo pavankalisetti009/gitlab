@@ -109,7 +109,8 @@ RSpec.shared_examples 'work item supports promotion via quick actions' do
 
         before do
           allow_next_instance_of(::WorkItems::LegacyEpics::IssuePromoteService) do |instance|
-            allow(instance).to receive(:execute).and_raise(Epics::IssuePromoteService::PromoteError, error_message)
+            allow(instance).to receive(:execute).and_raise(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError,
+              error_message)
           end
         end
 

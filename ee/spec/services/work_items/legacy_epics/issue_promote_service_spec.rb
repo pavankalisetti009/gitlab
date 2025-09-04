@@ -32,40 +32,12 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
   subject(:service) { described_class.new(container: issue.project, current_user: current_user) }
 
   describe '#execute' do
-    context 'when use_data_sync_for_issue_promotion is disabled' do
-      before do
-        stub_feature_flags(use_data_sync_for_issue_promotion: false)
-        stub_licensed_features(epics: true, subepics: true)
-      end
-
-      it 'calls old service' do
-        expect_next_instance_of(::Epics::IssuePromoteService, container: issue.project, current_user: user,
-          params: {}) do |instance|
-          expect(instance).to receive(:execute)
-        end
-
-        service.execute(issue)
-      end
-
-      it 'successfully promotes the issue to an epic' do
-        promoted_epic = service.execute(issue)
-
-        expect(issue.reload.promoted_to_epic_id).to eq(promoted_epic.id)
-        expect(promoted_epic.title).to eq(issue.title)
-        expect(promoted_epic.description).to eq(issue.description)
-        expect(promoted_epic.author).to eq(user)
-        expect(promoted_epic.group).to eq(group)
-        expect(promoted_epic.parent).to be_nil
-        expect(promoted_epic).to be_present
-      end
-    end
-
     context 'when epics are not enabled' do
       it 'raises a permission error' do
         group.add_developer(user)
 
         expect { service.execute(issue) }
-          .to raise_error(Epics::IssuePromoteService::PromoteError, /permissions/)
+          .to raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /permissions/)
       end
     end
 
@@ -79,7 +51,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
 
         it 'raises a permission error' do
           expect { service.execute(issue) }
-            .to raise_error(Epics::IssuePromoteService::PromoteError, /permissions/)
+            .to raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /permissions/)
         end
       end
 
@@ -91,7 +63,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
             other_issue = create(:issue, project: create(:project))
 
             expect { service.execute(other_issue) }
-              .to raise_error(Epics::IssuePromoteService::PromoteError, /group/)
+              .to raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /group/)
           end
         end
 
@@ -120,22 +92,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
             service.execute(issue)
           end
 
-          it 'behaves the same like the old service and syncs work item and epic correctly' do
-            # the old service updates the description separately, so we can't compare the lock_version
-            non_comparable_keys = %w[id iid created_at updated_at issue_id lock_version]
-
-            new_service_epic_attributes = epic.attributes.except(*non_comparable_keys)
-
-            issue.update!(promoted_to_epic_id: nil)
-
-            old_service_epic_attributes = ::Epics::IssuePromoteService
-              .new(container: issue.project, current_user: current_user)
-              .execute(issue).attributes.except(*non_comparable_keys)
-
-            diff = new_service_epic_attributes
-              .select { |k, v| old_service_epic_attributes[k] != v }
-
-            expect(diff).to be_empty
+          it 'syncs work item and epic correctly' do
             expect(Gitlab::EpicWorkItemSync::Diff.new(epic, epic.work_item).attributes).to be_empty
           end
 
@@ -268,7 +225,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
             expect { service.execute(issue) }
               .to not_change { Epic.count }
               .and not_change { WorkItem.count }
-              .and raise_error(::Epics::IssuePromoteService::PromoteError, /reached maximum depth/)
+              .and raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /reached maximum depth/)
           end
         end
 
@@ -351,7 +308,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
 
             it 'does not promote to epic and raises error' do
               expect { service.execute(issue, new_group) }
-                .to raise_error(Epics::IssuePromoteService::PromoteError, /not supported/)
+                .to raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /not supported/)
 
               expect(issue.reload.state).to eq("opened")
               expect(issue.promoted_to_epic_id).to be_nil
@@ -365,7 +322,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
             issue.update!(promoted_to_epic_id: epic.id)
 
             expect { service.execute(issue) }
-              .to raise_error(Epics::IssuePromoteService::PromoteError, /already promoted/)
+              .to raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /already promoted/)
           end
         end
 
@@ -392,7 +349,7 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
 
             it 'raises error' do
               expect { service.execute(issue) }
-                .to raise_error(Epics::IssuePromoteService::PromoteError, /is not supported/)
+                .to raise_error(::WorkItems::LegacyEpics::IssuePromoteService::PromoteError, /is not supported/)
             end
           end
 
