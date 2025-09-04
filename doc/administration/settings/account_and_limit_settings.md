@@ -387,9 +387,10 @@ You can set a custom prefix that is prepended to all tokens generated on your in
 
 Custom token prefixes apply only to the following tokens:
 
-- [Feed tokens](../../security/tokens/_index.md#feed-token)
+- [Cluster agent tokens](../../security/tokens/_index.md#gitlab-cluster-agent-tokens)
 - [Deploy tokens](../../user/project/deploy_tokens/_index.md)
 - [Feature flags client tokens](../../operations/feature_flags.md#get-access-credentials)
+- [Feed tokens](../../security/tokens/_index.md#feed-token)
 - [Incoming email tokens](../../security/tokens/_index.md#incoming-email-token)
 - [OAuth application secrets](../../integration/oauth_provider.md)
 - [Pipeline trigger tokens](../../ci/triggers/_index.md#create-a-pipeline-trigger-token)
