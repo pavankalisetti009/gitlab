@@ -67,6 +67,7 @@ module Search
         end
       }
       scope :online, -> { where(last_seen_at: ONLINE_DURATION_THRESHOLD.ago..) }
+      scope :offline, -> { where(last_seen_at: ...ONLINE_DURATION_THRESHOLD.ago) }
       scope :searchable, -> { online }
       scope :searchable_for_project, ->(project) do
         searchable.joins(:zoekt_repositories)

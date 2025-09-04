@@ -5,6 +5,7 @@ module Search
     class RakeTaskExecutorService
       TASKS = %i[
         info
+        health
       ].freeze
 
       def initialize(logger:, options:)
@@ -25,6 +26,10 @@ module Search
 
       def info
         InfoService.execute(logger: logger, options: options)
+      end
+
+      def health
+        HealthService.execute(logger: logger, options: options)
       end
     end
   end

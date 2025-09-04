@@ -11,6 +11,14 @@ namespace :gitlab do
       )
     end
 
+    desc 'GitLab | Zoekt | Run health checks for Exact Code Search integration'
+    task :health, [:watch_interval] => :environment do |t, args|
+      Search::RakeTask::Zoekt.health(
+        name: t.name,
+        watch_interval: args[:watch_interval]
+      )
+    end
+
     desc "GitLab | Zoekt Indexer | Install or upgrade gitlab-zoekt"
     task :install, [:dir, :repo] => :gitlab_environment do |_, args|
       unless args.dir.present?

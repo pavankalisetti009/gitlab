@@ -21,6 +21,51 @@ RSpec.describe 'gitlab:zoekt namespace rake tasks', :silence_stdout, feature_cat
     include_examples 'rake task executor task', :info
   end
 
+  describe 'gitlab:zoekt:health' do
+    before do
+      # Stub internal methods to prevent actual system behavior in tests
+      allow(Search::RakeTask::Zoekt).to receive(:clear_screen)
+      allow(Search::RakeTask::Zoekt).to receive(:sleep)
+      # Mock the loop to prevent infinite loops in watch mode tests
+      allow(Search::RakeTask::Zoekt).to receive(:loop) do |&block|
+        block.call
+        raise Interrupt
+      end
+    end
+
+    it 'calls task executor without watch mode when no interval is provided' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: an_instance_of(Logger), options: {})
+        .and_return(instance_double(Search::Zoekt::RakeTaskExecutorService, execute: nil))
+
+      run_rake_task('gitlab:zoekt:health')
+    end
+
+    it 'calls task executor with watch_mode when interval is provided' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: an_instance_of(Logger), options: { watch_mode: true, watch_interval: 10 })
+        .and_return(instance_double(Search::Zoekt::RakeTaskExecutorService, execute: nil))
+
+      run_rake_task('gitlab:zoekt:health', '10')
+    end
+
+    it 'handles zero interval as no watch mode' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: an_instance_of(Logger), options: {})
+        .and_return(instance_double(Search::Zoekt::RakeTaskExecutorService, execute: nil))
+
+      run_rake_task('gitlab:zoekt:health', '0')
+    end
+
+    it 'handles negative interval as no watch mode' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: an_instance_of(Logger), options: {})
+        .and_return(instance_double(Search::Zoekt::RakeTaskExecutorService, execute: nil))
+
+      run_rake_task('gitlab:zoekt:health', '-5')
+    end
+  end
+
   describe 'gitlab:zoekt:install' do
     context 'when no arguments are provided' do
       it 'raises error' do
