@@ -39177,6 +39177,9 @@ msgstr ""
 msgid "Max size of this project's repository. %{repository_size_limit_link}."
 msgstr ""
 
+msgid "Maximize Duo Panel"
+msgstr ""
+
 msgid "Maximum 20 characters"
 msgstr ""
 
@@ -40895,6 +40898,9 @@ msgid "Min Value"
 msgstr ""
 
 msgid "Minimal Access"
+msgstr ""
+
+msgid "Minimize Duo Panel"
 msgstr ""
 
 msgid "Minimum GitLab Language Server client version"

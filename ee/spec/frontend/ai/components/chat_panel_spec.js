@@ -26,13 +26,15 @@ describe('ChatPanel', () => {
 
   const findPanelTitle = () => wrapper.findByTestId('chat-panel-title');
   const findCollapseButton = () => wrapper.findByTestId('chat-panel-collapse-button');
+  const findMaximizeButton = () => wrapper.findByTestId('chat-panel-maximize-button');
 
   beforeEach(() => {
     createComponent();
   });
 
-  it('renders the title', () => {
+  it('renders the title and maximize button', () => {
     expect(findPanelTitle().text()).toBe(defaultTitle);
+    expect(findMaximizeButton().exists()).toBe(true);
   });
 
   it('collapses the panel when the collapse button is clicked', async () => {
