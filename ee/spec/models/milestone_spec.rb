@@ -55,8 +55,7 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
         expect(described_class.elastic_index_dependants).to contain_exactly(
           {
             association_name: :issues,
-            on_change: :title,
-            depends_on_finished_migration: :add_work_item_milestone_data
+            on_change: :title
           },
           {
             association_name: :issues,
@@ -100,15 +99,6 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
           allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(true)
         end
 
-        context 'when add_work_item_milestone_data migration finished' do
-          before do
-            set_elasticsearch_migration_to(:add_work_item_milestone_data, including: true)
-          end
-
-          include_examples 'tracks ES changes', :title, 'new title'
-          include_examples 'does not track ES changes', :description, 'new description'
-        end
-
         context 'when add_extra_fields_to_work_items migration finished' do
           before do
             set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
@@ -137,14 +127,6 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
         include_examples 'does not track ES changes', :start_date, Date.tomorrow
         include_examples 'does not track ES changes', :due_date, 1.week.from_now
         include_examples 'does not track ES changes', :state, 'closed'
-      end
-
-      context 'when add_work_item_milestone_data migration has not finished' do
-        before do
-          set_elasticsearch_migration_to(:add_work_item_milestone_data, including: false)
-        end
-
-        include_examples 'does not track ES changes', :title, 'new title'
       end
 
       context 'when add_extra_fields_to_work_items migration has not finished' do

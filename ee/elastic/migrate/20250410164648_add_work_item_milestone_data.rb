@@ -22,3 +22,5 @@ class AddWorkItemMilestoneData < Elastic::Migration
     }
   end
 end
+
+AddWorkItemMilestoneData.prepend ::Search::Elastic::MigrationObsolete

@@ -10,9 +10,7 @@ module EE
 
       has_many :boards
 
-      elastic_index_dependant_association :issues,
-        on_change: :title,
-        depends_on_finished_migration: :add_work_item_milestone_data
+      elastic_index_dependant_association :issues, on_change: :title
 
       elastic_index_dependant_association :issues,
         on_change: [:due_date, :start_date],
