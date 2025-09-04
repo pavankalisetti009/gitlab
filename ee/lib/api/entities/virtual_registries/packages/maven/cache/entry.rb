@@ -21,7 +21,9 @@ module API
                 :upstream_etag,
                 :content_type,
                 :created_at,
-                :updated_at
+                :updated_at,
+                :downloads_count,
+                :downloaded_at
             end
           end
         end

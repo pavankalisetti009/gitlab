@@ -23,7 +23,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
     subject(:api_request) { get api(url), headers: headers }
 
     shared_examples 'successful response' do
-      it 'returns a successful response' do
+      it 'returns a successful response', :freeze_time do
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
@@ -31,7 +31,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
           cache_entry
             .as_json
             .merge('id' => Base64.urlsafe_encode64("#{upstream.id} #{cache_entry.relative_path}"))
-            .except('object_storage_key', 'file', 'file_store', 'status', 'downloads_count', 'downloaded_at')
+            .except('object_storage_key', 'file', 'file_store', 'status')
         )
       end
     end
