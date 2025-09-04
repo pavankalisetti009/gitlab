@@ -135,6 +135,25 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
           run_worker
         end
 
+        context 'when the feature flag `collect_scheduled_security_policy_not_enforced_audit_events` is disabled' do
+          before do
+            stub_feature_flags(collect_scheduled_security_policy_not_enforced_audit_events: false)
+          end
+
+          it 'does not calls ScheduledScansNotEnforcedAuditWorker' do
+            expect(::Security::Policies::ScheduledScansNotEnforcedAuditWorker).not_to receive(:perform_async)
+
+            run_worker
+          end
+        end
+
+        it 'calls ScheduledScansNotEnforcedAuditWorker' do
+          expect(::Security::Policies::ScheduledScansNotEnforcedAuditWorker).to receive(:perform_async).with(project_id,
+            current_user_id, schedule_id, branch)
+
+          run_worker
+        end
+
         context 'when the schedule defines the time_window' do
           before do
             allow_next_found_instance_of(Security::OrchestrationPolicyRuleSchedule) do |instance|

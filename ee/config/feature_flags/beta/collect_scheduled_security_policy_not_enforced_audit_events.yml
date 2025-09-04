@@ -1,0 +1,10 @@
+---
+name: collect_scheduled_security_policy_not_enforced_audit_events
+description: Collects audit events for scheduled security policies that could not be enforced
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/561047
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201822
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/562207
+milestone: '18.4'
+group: group::security policies
+type: beta
+default_enabled: false
