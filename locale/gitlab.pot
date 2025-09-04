@@ -42593,6 +42593,9 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
+msgid "Next card"
+msgstr ""
+
 msgid "Next commit"
 msgstr ""
 
@@ -49040,6 +49043,9 @@ msgid "Preview size limit exceeded, changes collapsed."
 msgstr ""
 
 msgid "Preview suppressed by a .gitattributes entry or the file's encoding is unsupported."
+msgstr ""
+
+msgid "Previous card"
 msgstr ""
 
 msgid "Previous commit"
