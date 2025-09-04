@@ -294,4 +294,16 @@ describe('Pipeline Security Dashboard component', () => {
       expect(componentWrapper.props('errors')).toEqual(sbomErrors);
     });
   });
+
+  describe('validity check', () => {
+    it('accepts validityChecksEnabled prop', () => {
+      factory({
+        propsData: {
+          validityChecksEnabled: true,
+        },
+      });
+
+      expect(wrapper.props('validityChecksEnabled')).toBe(true);
+    });
+  });
 });

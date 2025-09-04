@@ -21,7 +21,8 @@ module EE
           security_policies_path: security_policies_path(project),
           vulnerability_report_data: vulnerability_report_data(project, pipeline, user).to_json,
           dismissal_descriptions: dismissal_descriptions.to_json,
-          sbom_reports_errors: sbom_reports_errors(pipeline).to_json
+          sbom_reports_errors: sbom_reports_errors(pipeline).to_json,
+          validity_checks_enabled: project.security_setting.validity_checks_enabled.to_json
         )
       end
 

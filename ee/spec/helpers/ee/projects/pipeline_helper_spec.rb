@@ -39,7 +39,8 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         pipeline_project_path: project.full_path,
         security_policies_path: kind_of(String),
         total_job_count: pipeline.total_size,
-        sbom_reports_errors: '[]'
+        sbom_reports_errors: '[]',
+        validity_checks_enabled: project.security_setting.validity_checks_enabled.to_json
       })
       expect(Gitlab::Json.parse(pipeline_tabs_data[:vulnerability_report_data])).to include({
         "empty_state_svg_path" => match_asset_path("illustrations/user-not-logged-in.svg"),

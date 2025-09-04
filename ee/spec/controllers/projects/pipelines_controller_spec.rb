@@ -30,6 +30,15 @@ RSpec.describe Projects::PipelinesController do
         request
       end
 
+      it 'pushes validity_checks_security_finding_status feature flag to the frontend' do
+        allow(controller).to receive(:push_frontend_feature_flag).and_call_original
+
+        request
+
+        expect(Gon.features).to include('validityChecksSecurityFindingStatus')
+        expect(controller).to have_received(:push_frontend_feature_flag).with(:validity_checks_security_finding_status, project)
+      end
+
       context 'when pipeline_security_ai_vr feature flag is disabled' do
         before do
           stub_feature_flags(pipeline_security_ai_vr: false)
