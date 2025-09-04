@@ -1,6 +1,5 @@
 <script>
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
 import VulnerabilitySeverities from './project_security_status_chart.vue';
 import VulnerabilitiesOverTimeChart from './vulnerabilities_over_time_chart.vue';
@@ -12,7 +11,6 @@ export default {
     PageHeading,
     PdfExportButton,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['groupFullPath'],
   props: {
     historyQuery: {
@@ -37,7 +35,7 @@ export default {
   },
   computed: {
     showExportButton() {
-      return this.showExport && this.glFeatures.vulnerabilitiesPdfExport;
+      return this.showExport;
     },
   },
   methods: {

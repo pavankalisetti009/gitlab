@@ -17,11 +17,7 @@ describe('Security Dashboard Layout component', () => {
   const findVulnerabilitySeverities = () => wrapper.findComponent(VulnerabilitySeverities);
   const findExportButton = () => wrapper.findComponent(PdfExportButton);
 
-  const createWrapper = ({
-    vulnerabilitiesPdfExport = true,
-    showExport = false,
-    stubs = {},
-  } = {}) => {
+  const createWrapper = ({ showExport = false, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(SecurityDashboard, {
       propsData: { historyQuery, gradesQuery, showExport },
       stubs: {
@@ -30,9 +26,6 @@ describe('Security Dashboard Layout component', () => {
       },
       provide: {
         groupFullPath,
-        glFeatures: {
-          vulnerabilitiesPdfExport,
-        },
       },
     });
   };
@@ -72,13 +65,6 @@ describe('Security Dashboard Layout component', () => {
       const result = getReportDataFn();
 
       expect(result.full_path).toBe(groupFullPath);
-    });
-  });
-
-  describe('when vulnerabilitiesPdfExport is false', () => {
-    it('does not show the export button', () => {
-      createWrapper({ vulnerabilitiesPdfExport: false, showExport: true });
-      expect(findExportButton().exists()).toBe(false);
     });
   });
 });

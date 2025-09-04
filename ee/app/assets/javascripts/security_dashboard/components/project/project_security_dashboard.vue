@@ -15,7 +15,6 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
 import PdfExportButton from 'ee/security_dashboard/components/shared/pdf_export_button.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 const CHART_DEFAULT_DAYS = 30;
 const MAX_DAYS = 100;
@@ -39,7 +38,6 @@ export default {
     PageHeading,
     PdfExportButton,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     projectFullPath: {
       type: String,
@@ -226,10 +224,7 @@ export default {
         </gl-sprintf>
       </template>
       <template #actions>
-        <pdf-export-button
-          v-if="glFeatures.vulnerabilitiesPdfExport"
-          :get-report-data="getReportData"
-        />
+        <pdf-export-button :get-report-data="getReportData" />
       </template>
     </page-heading>
 
