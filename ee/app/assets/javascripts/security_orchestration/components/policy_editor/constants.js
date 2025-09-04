@@ -64,7 +64,7 @@ export const DELETE_MODAL_CONFIG = {
 
 export const MATCH_ON_INCLUSION_LICENSE = 'match_on_inclusion_license';
 
-export const DEFAULT_MR_TITLE = s__('SecurityOrchestration|Update scan policies');
+export const DEFAULT_MR_TITLE = s__('SecurityOrchestration|Update security policies');
 
 export const POLICY_RUN_TIME_MESSAGE = s__(
   'SecurityOrchestration|Policy changes may take some time to be applied.',
