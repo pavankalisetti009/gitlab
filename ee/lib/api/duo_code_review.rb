@@ -42,8 +42,10 @@ module API
             options: declared_params
           ).execute
 
-          review_response = { review: evaluation_response }
+          review_match = evaluation_response.match(%r{^<review>(.+)</review>$}m)
+          review_content = review_match ? review_match[0] : evaluation_response
 
+          review_response = { review: review_content }
           present review_response, with: Grape::Presenters::Presenter
         end
       end

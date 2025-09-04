@@ -229,5 +229,61 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         expect(response).to have_gitlab_http_status(:created)
       end
     end
+
+    context 'when extracting review from response' do
+      let(:evaluation_response_with_steps) do
+        <<~RESPONSE
+        <step1>
+        Understanding the context: This MR implements an order orchestration service
+        </step1>
+
+        <step2>
+        Analyzing the diff thoroughly: The code adds a complete OrderOrchestrator struct
+        </step2>
+
+        <review>
+        <comment file="internal/services/order_orchestrator.go" old_line="" new_line="26">
+        The HTTP client lacks timeout configuration
+        </comment>
+        </review>
+        RESPONSE
+      end
+
+      it 'extracts only the review section from the response' do
+        evaluator_double = instance_double(Gitlab::Llm::Evaluators::ReviewMergeRequest)
+        allow(Gitlab::Llm::Evaluators::ReviewMergeRequest).to receive(:new).and_return(evaluator_double)
+        allow(evaluator_double).to receive(:execute).and_return(evaluation_response_with_steps)
+
+        post api('/duo_code_review/evaluations', current_user), headers: headers, params: body
+
+        expect(response).to have_gitlab_http_status(:created)
+
+        response_body = ::Gitlab::Json.parse(response.body)
+        extracted_review =
+          <<~REVIEW.strip
+          <review>
+          <comment file="internal/services/order_orchestrator.go" old_line="" new_line="26">
+          The HTTP client lacks timeout configuration
+          </comment>
+          </review>
+          REVIEW
+
+        expect(response_body['review']).to eq(extracted_review)
+        expect(response_body['review']).not_to include('<step')
+      end
+    end
+
+    context 'when response has no review tags' do
+      it 'returns the original response' do
+        evaluator_double = instance_double(Gitlab::Llm::Evaluators::ReviewMergeRequest)
+        allow(Gitlab::Llm::Evaluators::ReviewMergeRequest).to receive(:new).and_return(evaluator_double)
+        allow(evaluator_double).to receive(:execute).and_return('Response without review tags')
+
+        post api('/duo_code_review/evaluations', current_user), headers: headers, params: body
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(::Gitlab::Json.parse(response.body)['review']).to eq('Response without review tags')
+      end
+    end
   end
 end
