@@ -16,8 +16,6 @@ module ComplianceManagement
     PROJECT_BATCH_SIZE = 100
 
     def perform
-      return unless Feature.enabled?(:evaluate_compliance_controls, :instance)
-
       active_control_frameworks.each_batch(of: FRAMEWORK_BATCH_SIZE) do |batch|
         batch.each do |framework|
           enqueue_framework_evaluation(framework)

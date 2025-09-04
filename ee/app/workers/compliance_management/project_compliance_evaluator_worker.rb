@@ -19,8 +19,6 @@ module ComplianceManagement
     end
 
     def perform(framework_id, project_ids)
-      return unless Feature.enabled?(:evaluate_compliance_controls, :instance)
-
       framework = ::ComplianceManagement::Framework.find_by_id(framework_id)
       return unless framework
 
