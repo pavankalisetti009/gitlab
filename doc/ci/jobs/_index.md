@@ -275,7 +275,7 @@ The source attribute can have the following values:
 - `external`: Job initiated by an event in an external repository integrated with GitLab. This does not include pull request events.
 - `external_pull_request_event`: Job initiated by a pull request event in an external repository.
 - `merge_request_event`: Job initiated by a merge request event.
-- `ondemand_dast_scan`:Job initiated by an on-demand DAST scan.
+- `ondemand_dast_scan`: Job initiated by an on-demand DAST scan.
 - `ondemand_dast_validation`: Job initiated by an on-demand DAST validation.
 - `parent_pipeline`: Job initiated by a parent pipeline
 - `pipeline`: Job initiated by a user manually running a pipeline.
