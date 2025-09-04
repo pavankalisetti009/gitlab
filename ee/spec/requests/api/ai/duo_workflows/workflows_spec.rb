@@ -408,6 +408,54 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         it_behaves_like 'starts duo workflow execution in CI'
       end
 
+      context 'when valid additional_context is provided' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'valid additional context',
+            additional_context: [
+              {
+                Category: "agent_user_environment",
+                Content: "some content",
+                Metadata: "{}"
+              }
+            ]
+          }
+        end
+
+        it 'passes additional_context to StartWorkflowService' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
+            workflow: anything,
+            params: hash_including(:additional_context)
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when invalid additional_context is provided' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'valid additional context',
+            additional_context: "agent_user_environment"
+          }
+        end
+
+        it 'passes additional_context to StartWorkflowService' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response).to eq({
+            "error" => "additional_context is invalid, additional_context does not have a valid value"
+          })
+        end
+      end
+
       context 'when source_branch is provided' do
         let(:params) do
           {

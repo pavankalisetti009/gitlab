@@ -72,6 +72,7 @@ module Ai
 
       def variables
         {
+          DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT: serialized_flow_additional_context,
           DUO_WORKFLOW_BASE_PATH: './',
           DUO_WORKFLOW_DEFINITION: @params[:workflow_definition],
           DUO_WORKFLOW_FLOW_CONFIG: serialized_duo_flow_config,
@@ -102,6 +103,7 @@ module Ai
           %(git checkout $CI_WORKLOAD_REF),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
+          %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
           %(echo Starting Workflow #{String(@params[:workflow_id])}),
           %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
           %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
@@ -131,6 +133,12 @@ module Ai
         return unless @params[:flow_config].present? && @params[:flow_config].is_a?(Hash)
 
         ::Gitlab::Json.dump(@params[:flow_config])
+      end
+
+      def serialized_flow_additional_context
+        return "[]" unless @params[:additional_context].present?
+
+        ::Gitlab::Json.dump(@params[:additional_context])
       end
     end
   end
