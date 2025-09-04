@@ -161,6 +161,9 @@ export default {
     statusBadgeType() {
       return this.dashboard?.status || null;
     },
+    hasStatusBadge() {
+      return Boolean(!this.dashboard.userDefined && this.statusBadgeType);
+    },
   },
   watch: {
     dashboard({ title: label, userDefined } = {}) {
@@ -369,9 +372,9 @@ export default {
       <value-stream-feedback-banner v-if="showValueStreamFeedbackBanner" />
 
       <gl-dashboard-layout :config="dashboard">
-        <template v-if="statusBadgeType" #title>
+        <template v-if="hasStatusBadge" #title>
           <h2 data-testid="custom-title" class="gl-my-0">{{ dashboard.title }}</h2>
-          <gl-experiment-badge v-if="statusBadgeType" class="gl-ml-3" :type="statusBadgeType" />
+          <gl-experiment-badge class="gl-ml-3" :type="statusBadgeType" />
         </template>
 
         <!-- TODO: Remove this link in https://gitlab.com/gitlab-org/gitlab/-/issues/465569 -->

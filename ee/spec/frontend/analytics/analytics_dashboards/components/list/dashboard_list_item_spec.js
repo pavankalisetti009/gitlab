@@ -13,20 +13,25 @@ jest.mock('~/lib/utils/url_utility', () => ({
 }));
 
 const { nodes } = TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE.data.project.customizableDashboards;
+
 const USER_DEFINED_DASHBOARD = nodes.find((dashboard) => dashboard.userDefined);
 const BUILT_IN_DASHBOARD = nodes.find((dashboard) => !dashboard.userDefined);
+
 const REDIRECTED_DASHBOARD = {
   title: 'title',
   description: 'description',
   slug: '/slug',
   redirect: true,
 };
+
 const BETA_DASHBOARD = {
   title: 'title',
   description: 'description',
   slug: '/slug',
   status: 'beta',
+  userDefined: false, // Built-in dashboard
 };
+
 const INVALID_DASHBOARD = {
   title: 'title',
   description: 'description',
@@ -130,7 +135,7 @@ describe('DashboardsListItem', () => {
     });
   });
 
-  describe('with a beta dashboard', () => {
+  describe('with a beta built-in dashboard', () => {
     beforeEach(() => {
       createWrapper({ dashboard: BETA_DASHBOARD });
     });
@@ -140,13 +145,35 @@ describe('DashboardsListItem', () => {
     });
   });
 
-  describe('with an experiment dashboard', () => {
+  describe('with a beta custom dashboard', () => {
+    beforeEach(() => {
+      createWrapper({ dashboard: { ...BETA_DASHBOARD, userDefined: true } });
+    });
+
+    it('does not render the `Beta` badge for custom dashboards', () => {
+      expect(findStatusBadge().exists()).toBe(false);
+    });
+  });
+
+  describe('with an experiment built-in dashboard', () => {
     beforeEach(() => {
       createWrapper({ dashboard: { ...BETA_DASHBOARD, status: 'experiment' } });
     });
 
     it('renders the `Experiment` badge', () => {
       expect(findStatusBadge().props('type')).toBe('experiment');
+    });
+  });
+
+  describe('with an experiment custom dashboard', () => {
+    beforeEach(() => {
+      createWrapper({
+        dashboard: { ...BETA_DASHBOARD, userDefined: true, status: 'experiment' },
+      });
+    });
+
+    it('does not render the `Experiment` badge for custom dashboards', () => {
+      expect(findStatusBadge().exists()).toBe(false);
     });
   });
 
