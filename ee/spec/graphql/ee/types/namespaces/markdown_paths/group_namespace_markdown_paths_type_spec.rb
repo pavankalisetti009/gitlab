@@ -106,7 +106,7 @@ RSpec.describe Types::Namespaces::MarkdownPaths::GroupNamespaceMarkdownPathsType
             # CE paths
             members: "/groups/#{group.full_path}/-/autocomplete_sources/members?type=WorkItem",
             issues: "/groups/#{group.full_path}/-/autocomplete_sources/issues?type=WorkItem",
-            merge_requests: "/groups/#{group.full_path}/-/autocomplete_sources/merge_requests?type=WorkItem",
+            mergeRequests: "/groups/#{group.full_path}/-/autocomplete_sources/merge_requests?type=WorkItem",
             labels: "/groups/#{group.full_path}/-/autocomplete_sources/labels?type=WorkItem",
             milestones: "/groups/#{group.full_path}/-/autocomplete_sources/milestones?type=WorkItem",
             commands: "/groups/#{group.full_path}/-/autocomplete_sources/commands?type=WorkItem",

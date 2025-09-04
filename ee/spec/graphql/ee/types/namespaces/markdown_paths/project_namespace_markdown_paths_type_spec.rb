@@ -110,7 +110,7 @@ RSpec.describe Types::Namespaces::MarkdownPaths::ProjectNamespaceMarkdownPathsTy
             # CE paths
             members: "/#{project.full_path}/-/autocomplete_sources/members?type=WorkItem",
             issues: "/#{project.full_path}/-/autocomplete_sources/issues?type=WorkItem",
-            merge_requests: "/#{project.full_path}/-/autocomplete_sources/merge_requests?type=WorkItem",
+            mergeRequests: "/#{project.full_path}/-/autocomplete_sources/merge_requests?type=WorkItem",
             labels: "/#{project.full_path}/-/autocomplete_sources/labels?type=WorkItem",
             milestones: "/#{project.full_path}/-/autocomplete_sources/milestones?type=WorkItem",
             commands: "/#{project.full_path}/-/autocomplete_sources/commands?type=WorkItem",
