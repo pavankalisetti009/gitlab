@@ -58489,6 +58489,9 @@ msgstr ""
 msgid "SecurityOrchestration|For large groups, there may be a significant delay in applying policy changes to pre-existing merge requests. Policy changes typically apply almost immediately for newly created merge requests."
 msgstr ""
 
+msgid "SecurityOrchestration|Gather violation data and developer feedback"
+msgstr ""
+
 msgid "SecurityOrchestration|Group ID: %{id}"
 msgstr ""
 
@@ -58565,6 +58568,9 @@ msgid "SecurityOrchestration|List branches in the format %{boldStart}branch-name
 msgstr ""
 
 msgid "SecurityOrchestration|Logic error"
+msgstr ""
+
+msgid "SecurityOrchestration|Make informed decisions before full enforcement"
 msgstr ""
 
 msgid "SecurityOrchestration|Manual pipeline run"
@@ -58664,6 +58670,9 @@ msgid "SecurityOrchestration|Non-existing tags have been detected in the policy 
 msgstr ""
 
 msgid "SecurityOrchestration|Not enabled"
+msgstr ""
+
+msgid "SecurityOrchestration|Now when you create/edit policies, %{strongStart}Warn Mode%{strongEnd} lets you evaluate policy impact without blocking development teams, reducing friction during policy rollouts:"
 msgstr ""
 
 msgid "SecurityOrchestration|On conflict"
@@ -71917,6 +71926,9 @@ msgid "We're sorry, your trial could not be created because our system did not r
 msgstr ""
 
 msgid "We're sorry, your trial could not be created. Please resubmit below to complete your registration."
+msgstr ""
+
+msgid "We've added something new!"
 msgstr ""
 
 msgid "We've detected some unusual activity"

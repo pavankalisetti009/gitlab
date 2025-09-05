@@ -3,13 +3,15 @@ import { GlAlert, GlBadge, GlButton, GlIcon, GlSprintf } from '@gitlab/ui';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import CspBanner from './banners/csp_banner.vue';
-import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
-import ExceedingActionsBanner from './banners/exceeding_actions_banner.vue';
 import DeprecatedCustomScanBanner from './banners/deprecated_custom_scan_banner.vue';
+import ExceedingActionsBanner from './banners/exceeding_actions_banner.vue';
 import ExceedingScheduledRulesBanner from './banners/exceeding_scheduled_rules_banner.vue';
+import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
+import WarnModeBanner from './banners/warn_mode_banner.vue';
 import ProjectModal from './project_modal.vue';
 
 export default {
@@ -27,7 +29,9 @@ export default {
     InvalidPoliciesBanner,
     PageHeading,
     ProjectModal,
+    WarnModeBanner,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
     'designatedAsCsp',
@@ -73,6 +77,9 @@ export default {
     },
     securityPolicyProjectPath() {
       return joinPaths(gon.relative_url_root || '/', this.assignedPolicyProject?.fullPath);
+    },
+    showWarnModeBanner() {
+      return this.glFeatures.securityPolicyApprovalWarnMode;
     },
     subtitle() {
       if (this.namespaceType === NAMESPACE_TYPES.PROJECT) {
@@ -195,6 +202,8 @@ export default {
     <csp-banner v-if="designatedAsCsp" class="gl-mb-6 gl-mt-3" />
 
     <deprecated-custom-scan-banner v-if="hasDeprecatedCustomScanPolicies" class="gl-mb-6 gl-mt-3" />
+
+    <warn-mode-banner v-if="showWarnModeBanner" class="gl-mb-6 gl-mt-3" />
 
     <invalid-policies-banner v-if="hasInvalidPolicies" />
 
