@@ -44,9 +44,10 @@ export default {
 <template>
   <aside
     v-if="isExpanded"
+    id="ai-panel-portal"
     :aria-label="__('AI Chat Panel')"
     :aria-hidden="!isExpanded"
-    class="!gl-left-auto gl-h-full gl-w-[400px] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default"
+    class="ai-panel !gl-left-auto gl-h-full gl-w-[400px] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">

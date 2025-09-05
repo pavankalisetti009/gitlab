@@ -1,0 +1,7 @@
+.ai-panel-header {
+  z-index: $top-bar-z-index;
+  position: sticky !important;
+  top: 0;
+  border-bottom: 1px solid var(--theme-border-color);
+  @apply gl-py-3 gl-pl-5 gl-pr-3;
+}
