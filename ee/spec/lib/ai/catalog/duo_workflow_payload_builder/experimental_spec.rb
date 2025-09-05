@@ -12,7 +12,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   let_it_be(:agent_definition) do
     {
       'system_prompt' => 'Talk like a pirate!',
-      'user_prompt' => "What is a leap year?",
+      'user_prompt' => 'What is a leap year?',
       'tools' => tool_ids
     }
   end
@@ -26,7 +26,11 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   end
 
   let_it_be(:agent2_v2) do
-    definition = agent_definition.merge('tools' => [3]) # 3 => 'run_git_command'
+    definition = {
+      'system_prompt' => 'Adopt the persona of a sharp comedian',
+      'user_prompt' => 'Tell me a clever and funny joke',
+      'tools' => [3] # 3 => 'run_git_command'
+    }
     create(:ai_catalog_agent_version, item: agent_item_2, definition: definition, version: '1.2.0')
   end
 
@@ -57,6 +61,10 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       expect(described_class::FLOW_VERSION).to eq('experimental')
       expect(described_class::FLOW_ENVIRONMENT).to eq('remote')
       expect(described_class::AGENT_COMPONENT_TYPE).to eq('AgentComponent')
+      expect(described_class::LLM_CONFIG_FILE).to eq('claude_4_0')
+      expect(described_class::MAX_TOKEN_SIZE).to eq(8_192)
+      expect(described_class::DUO_FLOW_TIMEOUT).to eq(30)
+      expect(described_class::PLACEHOLDER_VALUE).to eq('history')
     end
   end
 
@@ -111,17 +119,35 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           {
             'name' => agent_item_1_flow_id,
             'type' => 'AgentComponent',
-            'prompt_id' => 'workflow_catalog',
-            'prompt_version' => '^1.0.0',
+            'prompt_id' => "#{agent_item_1_flow_id}_prompt",
             'inputs' => [{ 'from' => 'context:goal', 'as' => 'goal' }],
             'toolset' => %w[gitlab_blob_search ci_linter create_epic],
             'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
+          }
+        ])
+        expect(result['prompts']).to eq([
+          {
+            'prompt_id' => "#{agent_item_1_flow_id}_prompt",
+            'model' => {
+              'config_file' => described_class::LLM_CONFIG_FILE,
+              'params' => {
+                'max_tokens' => described_class::MAX_TOKEN_SIZE
+              }
+            },
+            'prompt_template' => {
+              'system' => agent1_v1.def_system_prompt,
+              'user' => agent1_v1.def_user_prompt,
+              'placeholder' => described_class::PLACEHOLDER_VALUE
+            }
           }
         ])
         expect(result['flow']['entry_point']).to eq(agent_item_1_flow_id)
         expect(result['routers']).to eq([
           { 'from' => agent_item_1_flow_id, 'to' => 'end' }
         ])
+        expect(result['params']).to eq({
+          'timeout' => described_class::DUO_FLOW_TIMEOUT
+        })
       end
 
       describe 'version handling' do
@@ -178,8 +204,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           {
             'name' => agent_item_1_flow_id,
             'type' => 'AgentComponent',
-            'prompt_id' => 'workflow_catalog',
-            'prompt_version' => '^1.0.0',
+            'prompt_id' => "#{agent_item_1_flow_id}_prompt",
             'inputs' => [{ 'from' => 'context:goal', 'as' => 'goal' }],
             'toolset' => %w[gitlab_blob_search ci_linter create_epic],
             'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
@@ -187,8 +212,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           {
             'name' => agent_item_2_flow_id,
             'type' => 'AgentComponent',
-            'prompt_id' => 'workflow_catalog',
-            'prompt_version' => '^1.0.0',
+            'prompt_id' => "#{agent_item_2_flow_id}_prompt",
             'inputs' => [
               { 'from' => 'context:goal', 'as' => 'goal' },
               { 'from' => "context:#{agent_item_1_flow_id}.final_answer", 'as' => 'previous_step_answer' },
@@ -198,11 +222,44 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
             'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
           }
         ])
+        expect(result['prompts']).to eq([
+          {
+            'prompt_id' => "#{agent_item_1_flow_id}_prompt",
+            'model' => {
+              'config_file' => described_class::LLM_CONFIG_FILE,
+              'params' => {
+                'max_tokens' => described_class::MAX_TOKEN_SIZE
+              }
+            },
+            'prompt_template' => {
+              'system' => agent1_v1.def_system_prompt,
+              'user' => agent1_v1.def_user_prompt,
+              'placeholder' => described_class::PLACEHOLDER_VALUE
+            }
+          },
+          {
+            'prompt_id' => "#{agent_item_2_flow_id}_prompt",
+            'model' => {
+              'config_file' => described_class::LLM_CONFIG_FILE,
+              'params' => {
+                'max_tokens' => described_class::MAX_TOKEN_SIZE
+              }
+            },
+            'prompt_template' => {
+              'system' => agent2_v2.def_system_prompt,
+              'user' => agent2_v2.def_user_prompt,
+              'placeholder' => described_class::PLACEHOLDER_VALUE
+            }
+          }
+        ])
         expect(result['routers']).to eq([
           { 'from' => agent_item_1_flow_id, 'to' => agent_item_2_flow_id },
           { 'from' => agent_item_2_flow_id, 'to' => 'end' }
         ])
         expect(result['flow']['entry_point']).to eq(agent_item_1_flow_id)
+        expect(result['params']).to eq({
+          'timeout' => described_class::DUO_FLOW_TIMEOUT
+        })
       end
 
       it 'verifies all components have unique names' do

@@ -7,7 +7,9 @@ RSpec.shared_examples 'builds valid flow configuration' do
       'environment' => 'remote',
       'components' => be_an(Array),
       'routers' => be_an(Array),
-      'flow' => be_a(Hash)
+      'flow' => be_a(Hash),
+      'prompts' => be_an(Array),
+      'params' => be_a(Hash)
     )
   end
 
@@ -15,11 +17,38 @@ RSpec.shared_examples 'builds valid flow configuration' do
     expect(result['components']).to all(include(
       'name' => be_a(String),
       'type' => 'AgentComponent',
-      'prompt_id' => 'workflow_catalog',
-      'prompt_version' => '^1.0.0',
+      'prompt_id' => match(/.*_prompt$/),
       'inputs' => be_an(Array),
       'toolset' => be_an(Array)
     ))
+  end
+
+  it 'builds prompts with correct structure' do
+    expect(result['prompts']).to all(include(
+      'prompt_id' => match(/.*_prompt$/),
+      'model' => include(
+        'config_file' => be_a(String),
+        'params' => include('max_tokens' => be_an(Integer))
+      ),
+      'prompt_template' => include(
+        'system' => be_a(String),
+        'user' => be_a(String),
+        'placeholder' => be_a(String)
+      )
+    ))
+  end
+
+  it 'ensures components and prompts have matching prompt_ids' do
+    component_prompt_ids = result['components'].pluck('prompt_id')
+    prompt_ids = result['prompts'].pluck('prompt_id')
+
+    expect(component_prompt_ids).to match_array(prompt_ids)
+  end
+
+  it 'includes timeout parameter in params section' do
+    expect(result['params']).to include(
+      'timeout' => be_an(Integer)
+    )
   end
 end
 

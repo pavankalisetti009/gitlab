@@ -8,8 +8,10 @@ module Ai
         FLOW_ENVIRONMENT = 'remote'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
         DEFAULT_INPUTS = [{ 'from' => 'context:goal', 'as' => 'goal' }].freeze
-        PROMPT_ID = 'workflow_catalog'
-        PROMPT_VERSION = '^1.0.0'
+        LLM_CONFIG_FILE = 'claude_4_0'
+        MAX_TOKEN_SIZE = 8_192
+        DUO_FLOW_TIMEOUT = 30
+        PLACEHOLDER_VALUE = 'history'
 
         private
 
@@ -19,7 +21,9 @@ module Ai
             'environment' => FLOW_ENVIRONMENT,
             'components' => build_components,
             'routers' => build_routers,
-            'flow' => flow_configuration
+            'flow' => flow_configuration,
+            'prompts' => build_prompt_components,
+            'params' => { 'timeout' => DUO_FLOW_TIMEOUT }
           }
         end
 
@@ -45,20 +49,23 @@ module Ai
           }
         end
 
+        def build_prompt_components
+          steps.filter_map do |step|
+            prompt_component(step)
+          end
+        end
+
         def flow_configuration
           { 'entry_point' => step_unique_identifier(steps.first) }
         end
 
         def build_agent_component(step)
-          agent = step[:agent]
-          pinned_version_id = pinned_to_specific_version? ? step[:current_version_id] : nil
-          definition = agent.definition(step[:pinned_version_prefix], pinned_version_id)
+          definition = step[:definition]
 
           {
             'name' => step_unique_identifier(step),
             'type' => AGENT_COMPONENT_TYPE,
-            'prompt_id' => PROMPT_ID,
-            'prompt_version' => PROMPT_VERSION,
+            'prompt_id' => step_prompt_id(step),
             'inputs' => agent_inputs(step),
             'toolset' => agent_toolset(definition),
             'ui_log_events' => ui_log_events
@@ -81,6 +88,25 @@ module Ai
               'as' => 'previous_step_msg_history'
             }
           ]
+        end
+
+        def prompt_component(step)
+          definition = step[:definition]
+
+          {
+            'prompt_id' => step_prompt_id(step),
+            'model' => {
+              'config_file' => LLM_CONFIG_FILE,
+              'params' => {
+                'max_tokens' => MAX_TOKEN_SIZE
+              }
+            },
+            'prompt_template' => {
+              'system' => definition.system_prompt,
+              'user' => definition.user_prompt,
+              'placeholder' => PLACEHOLDER_VALUE
+            }
+          }
         end
 
         def agent_toolset(definition)

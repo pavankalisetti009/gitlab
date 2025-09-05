@@ -7,6 +7,14 @@ module Ai
         Ai::Catalog::BuiltInTool.where(id: tool_ids).map(&:name)
       end
 
+      def system_prompt
+        version.def_system_prompt
+      end
+
+      def user_prompt
+        version.def_user_prompt
+      end
+
       private
 
       def tool_ids
