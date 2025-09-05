@@ -80,7 +80,6 @@ describe('WorkItemStatus component', () => {
     mutationHandler = successUpdateWorkItemMutationHandler,
     workItemId = 'gid://gitlab/WorkItem/1',
     hasStatusFeature = true,
-    hasWorkItemStatusFeature = true,
     workspacePermissionsResponse = mockGroupPermissionsQueryResponse(),
   } = {}) => {
     const workItemResponse = workItemByIidResponseFactory({
@@ -107,7 +106,6 @@ describe('WorkItemStatus component', () => {
       },
       provide: {
         hasStatusFeature,
-        hasWorkItemStatusFeature,
         issuesSettings: '/groups/test-project-path/-/settings/issues',
       },
     });
@@ -155,7 +153,6 @@ describe('WorkItemStatus component', () => {
   it('does not render the dropdown when the license is not available', async () => {
     createComponent({
       hasStatusFeature: false,
-      hasWorkItemStatusFeature: false,
     });
     await waitForPromises();
 
