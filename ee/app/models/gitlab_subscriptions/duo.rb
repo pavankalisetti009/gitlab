@@ -2,6 +2,30 @@
 
 module GitlabSubscriptions
   module Duo
+    def self.self_managed_agent_fully_enabled?
+      ::Gitlab::CurrentSettings.duo_default_on? &&
+        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
+        ::Ai::Setting.instance.duo_core_features_enabled?
+    end
+
+    def self.self_managed_enabled_without_beta_features?
+      ::Gitlab::CurrentSettings.duo_default_on? &&
+        !::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
+        ::Ai::Setting.instance.duo_core_features_enabled?
+    end
+
+    def self.self_managed_only_duo_default_off?
+      ::Gitlab::CurrentSettings.duo_default_off? &&
+        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
+        ::Ai::Setting.instance.duo_core_features_enabled?
+    end
+
+    def self.self_managed_enabled_without_core?
+      ::Gitlab::CurrentSettings.duo_default_on? &&
+        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
+        !::Ai::Setting.instance.duo_core_features_enabled?
+    end
+
     def self.todo_message
       s_('Todos|You now have access to AI-native features. Learn how to set up Code Suggestions and Chat in your IDE')
     end

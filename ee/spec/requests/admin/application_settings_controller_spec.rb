@@ -5,11 +5,118 @@ require 'spec_helper'
 RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature_category: :shared do
   include StubENV
 
-  let(:admin) { create(:admin) }
+  let_it_be(:admin) { create(:admin) }
 
   before do
-    sign_in(admin)
     stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
+  end
+
+  describe 'PUT enable_duo_agent_platform', :aggregate_failures, feature_category: :activation do
+    let(:params) do
+      {
+        duo_availability: 'default_on', instance_level_ai_beta_features_enabled: true, duo_core_features_enabled: true
+      }
+    end
+
+    before_all do
+      create(:application_setting, duo_availability: 'default_off')
+      create(:ai_settings, duo_core_features_enabled: false)
+    end
+
+    subject(:update_request) { put update_duo_agent_platform_admin_application_settings_path(params) }
+
+    context 'when user is admin' do
+      before do
+        sign_in(admin)
+      end
+
+      it 'returns ok status' do
+        update_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'enables duo agent platform and feature preview' do
+        expect(ApplicationSetting.current).not_to be_instance_level_ai_beta_features_enabled
+        expect(ApplicationSetting.current.duo_availability).to eq(:default_off)
+        expect(::Ai::Setting.instance).not_to be_duo_core_features_enabled
+
+        update_request
+
+        expect(ApplicationSetting.current).to be_instance_level_ai_beta_features_enabled
+        expect(ApplicationSetting.current.duo_availability).to eq(:default_on)
+        expect(::Ai::Setting.instance).to be_duo_core_features_enabled
+      end
+
+      context 'when only enabling platform' do
+        let(:params) { super().except(:instance_level_ai_beta_features_enabled) }
+
+        it 'enables duo agent platform and feature preview' do
+          expect(ApplicationSetting.current).not_to be_instance_level_ai_beta_features_enabled
+          expect(ApplicationSetting.current.duo_availability).to eq(:default_off)
+          expect(::Ai::Setting.instance).not_to be_duo_core_features_enabled
+
+          update_request
+
+          expect(ApplicationSetting.current).not_to be_instance_level_ai_beta_features_enabled
+          expect(ApplicationSetting.current.duo_availability).to eq(:default_on)
+          expect(::Ai::Setting.instance).to be_duo_core_features_enabled
+        end
+      end
+
+      context 'when service execution fails' do
+        before do
+          allow_next_instance_of(::Ai::Agents::UpdatePlatformService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.error(message: 'Something went wrong')
+            )
+          end
+        end
+
+        it 'returns unprocessable entity status' do
+          update_request
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        end
+
+        it 'returns error message in response body' do
+          update_request
+
+          expect(response.parsed_body).to eq({ 'message' => 'Something went wrong' })
+        end
+      end
+    end
+
+    context 'when user is not admin' do
+      let_it_be(:user) { create(:user) }
+
+      before do
+        sign_in(user)
+      end
+
+      it 'returns unprocessable entity status' do
+        update_request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      it 'does not enable duo agent platform' do
+        update_request
+
+        expect(ApplicationSetting.current).not_to be_instance_level_ai_beta_features_enabled
+        expect(ApplicationSetting.current.duo_availability).to eq(:default_off)
+        expect(::Ai::Setting.instance).not_to be_duo_core_features_enabled
+      end
+    end
+
+    context 'when user is not signed in' do
+      it 'redirects to sign in page' do
+        update_request
+
+        expect(response).to have_gitlab_http_status(:found)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
   end
 
   describe 'PUT update_microsoft_application', feature_category: :system_access do
@@ -23,6 +130,7 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
 
     before do
       allow(::Gitlab::Auth::Saml::Config).to receive(:microsoft_group_sync_enabled?).and_return(true)
+      sign_in(admin)
     end
 
     it 'raises an error when parameters are missing' do
@@ -53,6 +161,10 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
   end
 
   describe 'GET #general', feature_category: :user_management do
+    before do
+      sign_in(admin)
+    end
+
     context 'when microsoft_group_sync_enabled? is true' do
       before do
         allow(::Gitlab::Auth::Saml::Config).to receive(:microsoft_group_sync_enabled?).and_return(true)

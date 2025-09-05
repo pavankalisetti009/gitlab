@@ -638,6 +638,33 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#duo_default_on?' do
+      it 'returns true when duo_availability is "default_on"' do
+        setting.duo_availability = "default_on"
+
+        expect(setting.duo_default_on?).to be true
+      end
+
+      it 'returns false when not set to "default_on"' do
+        setting.duo_availability = "default_off"
+
+        expect(setting.duo_default_on?).to be false
+      end
+    end
+
+    describe '#duo_default_off?' do
+      it 'returns true when duo_availability is "default_off"' do
+        setting.duo_availability = "default_off"
+
+        expect(setting.duo_default_off?).to be true
+      end
+
+      it 'returns false when not set to "default_off"' do
+        setting.duo_availability = "default_on"
+        expect(setting.duo_default_off?).to be false
+      end
+    end
+
     describe '#enabled_expanded_logging' do
       it "updates ::Ai::Settings.instance.enabled_instance_verbose_ai_logs" do
         ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
