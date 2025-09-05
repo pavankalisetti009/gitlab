@@ -111,7 +111,7 @@ describe('AiCatalogFlows', () => {
   });
 
   describe('when linking directly to a flow via URL', () => {
-    describe('when flow exists', () => {
+    describe('when flow exists in the list', () => {
       let resolveDetails;
 
       beforeEach(async () => {
@@ -122,7 +122,7 @@ describe('AiCatalogFlows', () => {
           }),
         );
         createComponent({ $route: { query: { show: getIdFromGraphQLId(mockFlows[0].id) } } });
-        await nextTick();
+        await waitForPromises();
       });
 
       it('fetches flow details with correct GraphQL ID', () => {
@@ -132,7 +132,7 @@ describe('AiCatalogFlows', () => {
         });
       });
 
-      it('opens the drawer immediately', () => {
+      it('opens the drawer immediately when flow is in list', () => {
         expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
       });
 
@@ -140,10 +140,8 @@ describe('AiCatalogFlows', () => {
         expect(findAiCatalogItemDrawer().props('isItemDetailsLoading')).toBe(true);
       });
 
-      it('provides fallback data while flow is loading', () => {
+      it('provides flow from list while details are loading', () => {
         const activeItem = findAiCatalogItemDrawer().props('activeItem');
-        expect(activeItem).toBeDefined();
-
         expect(activeItem).toEqual(mockFlows[0]);
       });
 
@@ -177,11 +175,75 @@ describe('AiCatalogFlows', () => {
       });
     });
 
-    describe('when flow fetch fails', () => {
+    describe('when flow is not in list and needs to be fetched', () => {
+      beforeEach(() => {
+        // Mock a list without the requested flow
+        mockCatalogItemsQueryHandler.mockResolvedValue({
+          data: {
+            aiCatalogItems: {
+              nodes: mockFlows.slice(1),
+              pageInfo: mockPageInfo,
+            },
+          },
+        });
+
+        mockFlowQueryHandler.mockResolvedValue(mockAiCatalogFlowResponse);
+
+        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockFlows[0].id) } } });
+      });
+
+      it('does not open drawer while loading', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      });
+
+      it('opens drawer after flow details load', async () => {
+        await waitForPromises();
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
+      });
+    });
+
+    describe('when user has no permission to view flow', () => {
       beforeEach(async () => {
-        mockFlowQueryHandler.mockRejectedValue(new Error('Flow not found'));
+        // Mock response with null flow (no permissions)
+        mockFlowQueryHandler.mockResolvedValue({
+          data: {
+            aiCatalogItem: null,
+          },
+        });
+
+        createComponent({ $route: { query: { show: 'unauthorized-id' } } });
+        await waitForPromises();
+      });
+
+      it('does not open the drawer', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
+      });
+
+      it('closes the drawer automatically', () => {
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          path: undefined,
+          query: {},
+        });
+      });
+
+      it('displays permission error message', () => {
+        expect(findErrorsAlert().props('errors')).toEqual(['Flow not found.']);
+      });
+
+      it('does not log to Sentry for permission issues', () => {
+        expect(Sentry.captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when flow fetch fails with error', () => {
+      beforeEach(async () => {
+        mockFlowQueryHandler.mockRejectedValue(new Error('Network error'));
         createComponent({ $route: { query: { show: 'invalid-id' } } });
         await waitForPromises();
+      });
+
+      it('does not open the drawer', () => {
+        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
       });
 
       it('closes the drawer automatically', () => {
@@ -192,7 +254,7 @@ describe('AiCatalogFlows', () => {
       });
 
       it('displays error message', () => {
-        expect(findErrorsAlert().props('errors')).toEqual(['Flow not found']);
+        expect(findErrorsAlert().props('errors')).toEqual(['Network error']);
       });
 
       it('logs error to Sentry', () => {
@@ -298,6 +360,7 @@ describe('AiCatalogFlows', () => {
     }
 
     beforeEach(async () => {
+      mockCatalogItemsQueryHandler.mockResolvedValue(mockCatalogFlowsResponse);
       createComponent();
       await waitForPromises();
     });

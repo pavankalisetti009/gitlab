@@ -8,7 +8,6 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
@@ -21,6 +20,7 @@ import {
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from '../router/constants';
+import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from '../constants';
 
 export default {
   name: 'AiCatalogAgents',
@@ -50,17 +50,23 @@ export default {
     aiCatalogAgent: {
       query: aiCatalogAgentQuery,
       skip() {
-        return !this.isItemSelected;
+        return !this.hasQueryParam;
       },
       variables() {
-        const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
-        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, iid) };
+        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.showQueryParam) };
       },
       update(data) {
-        return data?.aiCatalogItem || {};
+        return data?.aiCatalogItem || null;
+      },
+      result({ data }) {
+        if (typeof data === 'undefined') return;
+
+        if (data.aiCatalogItem === null && this.hasQueryParam) {
+          this.handleNotFound();
+        }
       },
       error(error) {
-        if (this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM]) {
+        if (this.showQueryParam) {
           this.closeDrawer();
         }
         this.errors = [error.message];
@@ -71,7 +77,7 @@ export default {
   data() {
     return {
       aiCatalogAgents: [],
-      aiCatalogAgent: {},
+      aiCatalogAgent: null,
       errors: [],
       pageInfo: {},
     };
@@ -83,8 +89,41 @@ export default {
     isItemDetailsLoading() {
       return this.$apollo.queries.aiCatalogAgent.loading;
     },
-    isItemSelected() {
-      return Boolean(this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM]);
+    showQueryParam() {
+      return this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
+    },
+    hasQueryParam() {
+      return Boolean(this.showQueryParam);
+    },
+    agentFromList() {
+      if (!this.hasQueryParam) return null;
+
+      return this.aiCatalogAgents.find(
+        (n) => getIdFromGraphQLId(n.id).toString() === String(this.showQueryParam),
+      );
+    },
+    isDrawerOpen() {
+      if (!this.hasQueryParam) return false;
+
+      // If we have the agent in the list, show drawer immediately
+      if (this.agentFromList) return true;
+
+      // If query is still loading, don't show drawer yet.
+      // It might be that the agent does not exist,
+      // or the user has no permission to view it.
+      if (this.isItemDetailsLoading) return false;
+
+      return Boolean(this.aiCatalogAgent);
+    },
+    activeAgent() {
+      // Prefer the fully loaded agent from the query
+      if (this.aiCatalogAgent) return this.aiCatalogAgent;
+
+      // Fall back to agent from list if available
+      if (this.agentFromList) return this.agentFromList;
+
+      // Return minimal object with IID for loading state
+      return this.hasQueryParam ? { iid: this.showQueryParam } : null;
     },
     itemTypeConfig() {
       return {
@@ -114,21 +153,8 @@ export default {
         },
       };
     },
-    activeAgent() {
-      if (!this.isItemDetailsLoading) return this.aiCatalogAgent;
-
-      // Returns the fully-loaded agent if available from aiCatalogAgents
-      const iid = this.$route.query?.[AI_CATALOG_SHOW_QUERY_PARAM];
-      const fromList = this.aiCatalogAgents.find(
-        (n) => this.formatId(n.id).toString() === String(iid),
-      );
-      return fromList || { iid };
-    },
   },
   methods: {
-    formatId(id) {
-      return getIdFromGraphQLId(id);
-    },
     closeDrawer() {
       const { show, ...otherQuery } = this.$route.query;
 
@@ -136,6 +162,10 @@ export default {
         path: this.$route.path,
         query: otherQuery,
       });
+    },
+    handleNotFound() {
+      this.errors = [s__('AICatalog|Agent not found.')];
+      this.closeDrawer();
     },
     async deleteAgent(item) {
       const { id } = item;
@@ -203,7 +233,7 @@ export default {
       @prev-page="handlePrevPage"
     />
     <ai-catalog-item-drawer
-      :is-open="isItemSelected"
+      :is-open="isDrawerOpen"
       :is-item-details-loading="isItemDetailsLoading"
       :active-item="activeAgent"
       :edit-route="$options.editRoute"
