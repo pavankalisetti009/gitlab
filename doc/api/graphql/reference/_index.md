@@ -46773,6 +46773,7 @@ CI_JOB_TOKEN policy.
 | <a id="cijobtokenscopepoliciesread_repositories"></a>`READ_REPOSITORIES` | Read Repositories. |
 | <a id="cijobtokenscopepoliciesread_secure_files"></a>`READ_SECURE_FILES` | Read Secure Files. |
 | <a id="cijobtokenscopepoliciesread_terraform_state"></a>`READ_TERRAFORM_STATE` | Read Terraform State. |
+| <a id="cijobtokenscopepoliciesread_work_items"></a>`READ_WORK_ITEMS` | Read Work Items. |
 
 ### `CiPipelineCreationStatus`
 
