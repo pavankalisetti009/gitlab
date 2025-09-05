@@ -36,6 +36,61 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       expect(item_consumer).to validate_uniqueness_of(:item).scoped_to(:project_id).with_message('already configured')
     end
 
+    describe '#validate_item_privacy_allowed' do
+      let_it_be(:root_group) { create(:group) }
+      let_it_be(:group) { create(:group, parent: root_group) }
+      let_it_be(:project) { create(:project, group: group) }
+
+      context 'when item consumer belongs to project' do
+        subject(:item_consumer) { build(:ai_catalog_item_consumer, project: project, item: item) }
+
+        context 'when item is public' do
+          let(:item) { create(:ai_catalog_flow, public: true, project: project) }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'when item is private, and belongs to same project as item consumer project' do
+          let(:item) { create(:ai_catalog_flow, public: false, project: project) }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'when item is private, and belongs a different project to item consumer' do
+          let(:item) { create(:ai_catalog_flow, public: false, project: create(:project)) }
+
+          it 'is invalid' do
+            is_expected.not_to be_valid
+            expect(item_consumer.errors[:item]).to include('is private to another project')
+          end
+
+          context 'when item consumer is not changing its item attribute' do
+            before do
+              item_consumer.save!(validate: false)
+            end
+
+            it { is_expected.to be_valid }
+          end
+        end
+      end
+
+      context 'when item consumer belongs to group' do
+        subject(:item_consumer) { build(:ai_catalog_item_consumer, group: root_group, item: item) }
+
+        context 'when item is public' do
+          let(:item) { create(:ai_catalog_flow, public: true, project: project) }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'when item is private' do
+          let(:item) { create(:ai_catalog_flow, public: false, project: project) }
+
+          it { is_expected.not_to be_valid }
+        end
+      end
+    end
+
     describe 'item and item_consumer organization checks' do
       let_it_be(:default_organization) { create(:organization) }
       let_it_be(:different_organization) { create(:organization) }

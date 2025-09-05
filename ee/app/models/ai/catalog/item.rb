@@ -66,6 +66,10 @@ module Ai
         deleted_at.present?
       end
 
+      def private?
+        !public?
+      end
+
       def soft_delete
         update(deleted_at: Time.zone.now)
       end

@@ -10,7 +10,8 @@ module Ai
       validates :pinned_version_prefix, length: { maximum: 50 }
 
       validate :validate_exactly_one_sharding_key_present
-      validate :organization_match
+      validate :validate_organization_match
+      validate :validate_item_privacy_allowed, if: :item_changed?
 
       validates :item, uniqueness: { scope: :organization_id, message: 'already configured' },
         if: -> { organization.present? }
@@ -36,16 +37,23 @@ module Ai
         organization_id || group&.organization_id || project&.organization_id
       end
 
-      def organization_match
+      def validate_organization_match
         return if ai_catalog_item_id.nil? || item.organization_id == organization_id_from_sharding_key
 
-        errors.add(:item, _("organization must match the item consumer's organization"))
+        errors.add(:item, s_("AICatalog|organization must match the item consumer's organization"))
       end
 
       def validate_exactly_one_sharding_key_present
         return if [organization, group, project].compact.one?
 
-        errors.add(:base, 'The item consumer must belong to only one organization, group, or project')
+        errors.add(:base, s_('AICatalog|The item consumer must belong to only one organization, group, or project'))
+      end
+
+      def validate_item_privacy_allowed
+        return if item.public? || item.project.nil?
+        return if project && item.project == project
+
+        errors.add(:item, s_('AICatalog|is private to another project'))
       end
     end
   end

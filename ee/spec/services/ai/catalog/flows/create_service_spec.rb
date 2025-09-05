@@ -124,11 +124,16 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
     end
 
     context 'when user does not have access to read one of the agents' do
-      let!(:params) do
-        super().merge(steps: [{ agent: create(:ai_catalog_agent, public: false) }])
-      end
+      let_it_be(:agent) { create(:ai_catalog_agent, public: false) }
 
       it_behaves_like 'an error response', 'You have insufficient permissions'
+    end
+
+    context 'when user has access to read one of the agents, but it is private to another project' do
+      let_it_be(:other_project) { create(:project, maintainers: maintainer) }
+      let_it_be(:agent) { create(:ai_catalog_agent, public: false, project: other_project) }
+
+      it_behaves_like 'an error response', 'Step 1: Agent is private to another project'
     end
 
     context 'when flow exceeds maximum steps' do

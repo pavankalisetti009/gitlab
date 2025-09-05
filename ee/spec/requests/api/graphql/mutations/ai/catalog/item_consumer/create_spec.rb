@@ -10,7 +10,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
-  let_it_be(:item) { create(:ai_catalog_flow, project: item_project) }
+  let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
 
   let(:current_user) { user }
   let(:mutation) { graphql_mutation(:ai_catalog_item_consumer_create, params) }
@@ -45,6 +45,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   end
 
   context 'when user is not authorized to read the catalog item' do
+    let_it_be(:item) { create(:ai_catalog_flow, public: false, project: item_project) }
+
     let(:current_user) do
       create(:user).tap do |user|
         consumer_project.add_maintainer(user)
@@ -68,7 +70,7 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
   end
 
   context 'when the item is an agent' do
-    let(:item) { create(:ai_catalog_agent, project: item_project) }
+    let(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
 
     it 'creates a catalog item consumer with expected data' do
       execute
