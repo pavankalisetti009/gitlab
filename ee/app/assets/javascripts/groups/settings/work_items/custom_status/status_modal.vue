@@ -20,10 +20,13 @@ import { STATUS_CATEGORIES, STATUS_CATEGORIES_MAP } from 'ee/work_items/constant
 import { STATE_CLOSED } from '~/work_items/constants';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import { updateNamespaceStatuses } from './utils';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
 import namespaceMetadataQuery from './namespace_metadata.query.graphql';
+import namespaceStatusesQuery from './namespace_statuses.query.graphql';
 
 const CATEGORY_ORDER = Object.keys(STATUS_CATEGORIES_MAP);
 
@@ -50,6 +53,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     visible: {
       type: Boolean,
@@ -83,6 +87,7 @@ export default {
         color: null,
       },
       namespaceMetadata: null,
+      statuses: [],
     };
   },
   apollo: {
@@ -98,6 +103,26 @@ export default {
       },
       error(error) {
         this.errorText = s__('WorkItem|Failed to fetch namespace metadata.');
+        this.errorDetail = error.message;
+        Sentry.captureException(error);
+      },
+    },
+    statuses: {
+      query: namespaceStatusesQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.namespace?.statuses?.nodes || [];
+      },
+      skip() {
+        // do not call the query if mvc2 is disabled since autosuggest only works when FF is on
+        return !this.glFeatures.workItemStatusMvc2;
+      },
+      error(error) {
+        this.errorText = s__('WorkItem|Failed to load statuses.');
         this.errorDetail = error.message;
         Sentry.captureException(error);
       },
@@ -133,6 +158,23 @@ export default {
     },
     groupWorkItemsPathWithStatusFilter() {
       return `${this.groupWorkItemsPath}?status=${this.removingStatusName}`;
+    },
+    filteredStatusesFromCurrentLifecycle() {
+      const currentLifecycleStatusNames = this.lifecycle.statuses.map((status) => status.name);
+      const availableStatuses = this.statuses.filter(
+        (status) => !currentLifecycleStatusNames.includes(status.name),
+      );
+
+      if (this.addingToCategory) {
+        const sameCategoryStatuses = availableStatuses.filter(
+          (status) => this.getCategoryFromIconName(status.iconName) === this.addingToCategory,
+        );
+        const otherStatuses = availableStatuses.filter(
+          (status) => this.getCategoryFromIconName(status.iconName) !== this.addingToCategory,
+        );
+        return [...sameCategoryStatuses, ...otherStatuses];
+      }
+      return availableStatuses;
     },
   },
   methods: {
@@ -311,6 +353,14 @@ export default {
               defaultDuplicateStatusIndex: Math.max(0, defaultDuplicateStatusIndex),
             },
           },
+          update: (store) => {
+            updateNamespaceStatuses({
+              store,
+              query: namespaceStatusesQuery,
+              variables: { fullPath: this.fullPath },
+              statuses,
+            });
+          },
           optimisticResponse: {
             lifecycleUpdate: {
               lifecycle: {
@@ -431,6 +481,8 @@ export default {
           id: status.id,
           name: status.name,
           color: status.color,
+          category: this.getCategoryFromStatus(status.id),
+          description: status.description,
         }));
 
       await this.updateLifecycle(
@@ -665,11 +717,15 @@ export default {
 
                 <status-form
                   v-else
+                  :key="status.name"
                   :category-icon="$options.STATUS_CATEGORIES_MAP[category].icon"
+                  :category-name="category"
                   :form-data="formData"
                   :form-errors="formErrors"
+                  :statuses="filteredStatusesFromCurrentLifecycle"
                   is-editing
                   @update="formData = $event"
+                  @update-error="formErrors.name = $event"
                   @validate="validateForm"
                   @save="saveStatus"
                   @cancel="cancelForm"
@@ -691,9 +747,12 @@ export default {
           <status-form
             v-if="addingToCategory === category"
             :category-icon="$options.STATUS_CATEGORIES_MAP[category].icon"
+            :category-name="category"
             :form-data="formData"
             :form-errors="formErrors"
+            :statuses="filteredStatusesFromCurrentLifecycle"
             @update="formData = $event"
+            @update-error="formErrors.name = $event"
             @save="saveStatus"
             @cancel="cancelForm"
           />

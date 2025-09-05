@@ -6,9 +6,12 @@ import {
   GlFormInput,
   GlIcon,
   GlTooltipDirective,
+  GlFormCombobox,
 } from '@gitlab/ui';
-import { __ } from '~/locale';
-import { validateHexColor } from '~/lib/utils/color_utils';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { s__, __ } from '~/locale';
+import { validateHexColor, getAdaptiveStatusColor } from '~/lib/utils/color_utils';
+import { STATUS_CATEGORIES_MAP } from 'ee/work_items/constants';
 
 export default {
   SUGGESTED_COLORS: gon.suggested_label_colors,
@@ -18,11 +21,17 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlIcon,
+    GlFormCombobox,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
+    categoryName: {
+      type: String,
+      required: true,
+    },
     categoryIcon: {
       type: String,
       required: true,
@@ -34,6 +43,11 @@ export default {
     formErrors: {
       type: Object,
       required: true,
+    },
+    statuses: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
     isEditing: {
       type: Boolean,
@@ -55,6 +69,9 @@ export default {
     },
     saveButtonTestId() {
       return this.isEditing ? 'update-status' : 'save-status';
+    },
+    workItemStatusMvc2Enabled() {
+      return this.glFeatures.workItemStatusMvc2;
     },
   },
   mounted() {
@@ -100,6 +117,34 @@ export default {
         this.updateFormData('color', this.colorBeforeDropdownOpen);
       }
       this.$refs.title?.$el?.focus();
+    },
+    handleFormInput(value) {
+      this.updateFormData('name', value);
+    },
+    async onStatusSelected(item) {
+      this.$emit('update', item);
+      await this.$nextTick();
+      this.handleSave();
+    },
+    validateLengthAndUpdateName(value) {
+      if (value.length > 32) {
+        this.$emit(
+          'updateError',
+          s__('WorkItem|Status name is too long. Use maximum 32 characters.'),
+        );
+        return;
+      }
+      this.$emit('updateError', '');
+      this.updateFormData('name', value);
+    },
+    colorStyle(color) {
+      return color ? { color: getAdaptiveStatusColor(color) } : {};
+    },
+    getCategoryLabel(category) {
+      return `'${STATUS_CATEGORIES_MAP[category.toUpperCase()]?.label || category}'`;
+    },
+    showCategoryLabel(itemCategory) {
+      return itemCategory.toUpperCase() !== this.categoryName;
     },
   },
 };
@@ -183,7 +228,40 @@ export default {
             :invalid-feedback="formErrors.name"
             :state="getFormState(formErrors.name)"
           >
+            <gl-form-combobox
+              v-if="workItemStatusMvc2Enabled"
+              ref="title"
+              autofocus
+              class="-gl-mt-3"
+              label-text=""
+              :value="formData.name"
+              :placeholder="s__('WorkItemStatus|Name')"
+              :token-list="statuses"
+              match-value-to-attr="name"
+              data-testid="status-combobox-input"
+              @input="validateLengthAndUpdateName"
+              @value-selected="onStatusSelected"
+            >
+              <template #result="{ item }">
+                <div class="gl-flex gl-gap-3" data-testid="status-list-item">
+                  <gl-icon
+                    :name="item.iconName"
+                    :size="12"
+                    class="gl-mt-1 gl-shrink-0"
+                    :style="colorStyle(item.color)"
+                  />
+
+                  <div>
+                    <div>{{ item.name }}</div>
+                    <div v-if="showCategoryLabel(item.category)" class="gl-text-subtle">
+                      {{ s__('WorkItem|Add to') }} {{ getCategoryLabel(item.category) }}
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </gl-form-combobox>
             <gl-form-input
+              v-else
               id="status-name"
               ref="title"
               :placeholder="s__('WorkItemStatus|Name')"
@@ -195,7 +273,7 @@ export default {
               autocomplete="off"
               data-testid="status-name-input"
               class="gl-flex-grow-1"
-              @input="updateFormData('name', $event)"
+              @input="handleFormInput"
               @keyup.enter="handleSave"
             />
           </gl-form-group>
