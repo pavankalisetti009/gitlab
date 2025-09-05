@@ -2,6 +2,7 @@
 import { GlCollapsibleListbox, GlFormTextarea, GlFormGroup } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import DuoWorkflowAction from '../../../components/duo_workflow_action.vue';
+import AiLegalDisclaimer from './ai_legal_disclaimer.vue';
 
 export default {
   components: {
@@ -9,6 +10,7 @@ export default {
     GlFormTextarea,
     GlFormGroup,
     DuoWorkflowAction,
+    AiLegalDisclaimer,
   },
   props: {
     defaultAgentFlowType: {
@@ -110,5 +112,7 @@ export default {
       @agent-flow-started="handleAgentFlowStarted"
       @prompt-validation-error="handleValidationError"
     />
+
+    <ai-legal-disclaimer />
   </div>
 </template>

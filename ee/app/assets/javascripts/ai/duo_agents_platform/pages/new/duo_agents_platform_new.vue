@@ -1,5 +1,6 @@
 <script>
 import { s__ } from '~/locale';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { AGENTFLOW_TYPE_JENKINS_TO_CI } from '../../constants';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
 import RunAgentFlowForm from '../../components/common/run_agent_flow_form.vue';
@@ -7,6 +8,7 @@ import RunAgentFlowForm from '../../components/common/run_agent_flow_form.vue';
 export default {
   name: 'DuoAgentPlatformNew',
   components: {
+    PageHeading,
     RunAgentFlowForm,
   },
   inject: ['projectId', 'projectPath', 'duoAgentsInvokePath'],
@@ -37,10 +39,8 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-my-10">
-    <h1 class="gl-heading-1 gl-mb-0">
-      {{ s__('DuoAgentsPlatform|Start an agent session') }}
-    </h1>
+  <div>
+    <page-heading :heading="s__('DuoAgentsPlatform|Start an agent session')" />
     <div class="gl-mt-6">
       <run-agent-flow-form
         :default-agent-flow-type="$options.defaultAgentFlowType"

@@ -24498,6 +24498,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Get issue"
 msgstr ""
 
+msgid "DuoAgentsPlatform|GitLab Duo can autonomously change code. Responses and changes can be inaccurate. Review carefully."
+msgstr ""
+
 msgid "DuoAgentsPlatform|List comments"
 msgstr ""
 

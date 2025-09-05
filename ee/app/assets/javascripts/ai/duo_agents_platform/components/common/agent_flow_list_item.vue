@@ -21,7 +21,6 @@ export default {
   computed: {
     linkHoverStyles() {
       return [
-        'hover:gl-rounded-lg',
         'hover:gl-bg-[--gl-action-neutral-background-color-hover]',
         'hover:gl-no-underline',
         'focus:gl-no-underline',

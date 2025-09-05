@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DuoAgentsPlatformNew from 'ee/ai/duo_agents_platform/pages/new/duo_agents_platform_new.vue';
 import RunAgentFlowForm from 'ee/ai/duo_agents_platform/components/common/run_agent_flow_form.vue';
 import { AGENTFLOW_TYPE_JENKINS_TO_CI } from 'ee/ai/duo_agents_platform/constants';
@@ -32,9 +33,15 @@ describe('DuoAgentsPlatformNew', () => {
   };
 
   const findRunAgentFlowForm = () => wrapper.findComponent(RunAgentFlowForm);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   beforeEach(() => {
     createWrapper();
+  });
+
+  it('renders the page heading', () => {
+    expect(findPageHeading().exists()).toBe(true);
+    expect(findPageHeading().props('heading')).toBe('Start an agent session');
   });
 
   it('passes the right props to the RunAgentFlowForm component', () => {

@@ -1,4 +1,5 @@
 <script>
+import { GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { fetchPolicies } from '~/lib/graphql';
@@ -17,6 +18,7 @@ export default {
     ConfirmActionModal,
     FlowTriggersCta,
     FlowTriggersTable,
+    GlExperimentBadge,
     PageHeading,
     ResourceListsEmptyState,
     ResourceListsLoadingStateList,
@@ -83,7 +85,13 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('DuoAgentsPlatform|Flow triggers')">
+    <page-heading>
+      <template #heading>
+        <div class="gl-flex">
+          <span>{{ s__('DuoAgentsPlatform|Flow triggers') }}</span>
+          <gl-experiment-badge type="beta" class="gl-self-center" />
+        </div>
+      </template>
       <template #description>
         {{ s__('DuoAgentsPlatform|Manage automated flows within your project.') }}
       </template>
