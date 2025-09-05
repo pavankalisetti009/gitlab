@@ -22,7 +22,7 @@ export const AGENT_VISIBILITY_LEVEL_DESCRIPTIONS = {
     'AICatalog|Anyone can view and use the agent without authorization. Only maintainers and owners of this project can edit or delete the agent.',
   ),
   [VISIBILITY_LEVEL_PRIVATE_STRING]: s__(
-    'AICatalog|Only developers, maintainers and owners of this project can view and use the agent. Only maintainers and owners of this project can edit or delete the agent.',
+    'AICatalog|Only this project can use the agent. Only developers, maintainers and owners of this project can view the agent. Only maintainers and owners of this project can edit or delete the agent.',
   ),
 };
 export const FLOW_VISIBILITY_LEVEL_DESCRIPTIONS = {
@@ -30,6 +30,6 @@ export const FLOW_VISIBILITY_LEVEL_DESCRIPTIONS = {
     'AICatalog|Anyone can view and use the flow without authorization. Only maintainers and owners of this project can edit or delete the flow.',
   ),
   [VISIBILITY_LEVEL_PRIVATE_STRING]: s__(
-    'AICatalog|Only developers, maintainers and owners of this project can view and use the flow. Only maintainers and owners of this project can edit or delete the flow.',
+    'AICatalog|Only this project can use the flow. Only developers, maintainers and owners of this project can view the flow. Only maintainers and owners of this project can edit or delete the flow.',
   ),
 };

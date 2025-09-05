@@ -223,6 +223,19 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         it_behaves_like 'an error response', "Name can't be blank"
       end
 
+      context 'when user does not have access to read one of the agents' do
+        let_it_be(:agent) { create(:ai_catalog_agent, public: false) }
+
+        it_behaves_like 'an error response', 'You have insufficient permissions'
+      end
+
+      context 'when user has access to read one of the agents, but it is private to another project' do
+        let_it_be(:other_project) { create(:project, maintainers: user) }
+        let_it_be(:agent) { create(:ai_catalog_agent, public: false, project: other_project) }
+
+        it_behaves_like 'an error response', 'Step 1: Agent is private to another project'
+      end
+
       context 'when flow is not a flow' do
         before do
           allow(flow).to receive(:flow?).and_return(false)

@@ -9,7 +9,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
 
   let_it_be(:item_project) { create(:project, developers: user) }
-  let_it_be(:item) { create(:ai_catalog_flow, project: item_project) }
+  let_it_be(:item) { create(:ai_catalog_flow, public: true, project: item_project) }
 
   let(:container) { consumer_project }
   let(:params) { { item: item } }
@@ -117,6 +117,8 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   end
 
   context 'when user is not authorized to read the catalog item' do
+    let_it_be(:item) { create(:ai_catalog_flow, public: false, project: item_project) }
+
     let(:user) do
       create(:user).tap do |user|
         consumer_project.add_maintainer(user)
@@ -128,7 +130,7 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   end
 
   context 'when the item is an agent' do
-    let(:item) { create(:ai_catalog_agent, project: item_project) }
+    let(:item) { create(:ai_catalog_agent, public: true, project: item_project) }
 
     it 'creates a catalog item consumer with expected data' do
       execute
@@ -141,6 +143,34 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
         locked: true
       )
     end
+  end
+
+  context 'when the item can be seen by user but is is private to another project' do
+    let(:item) { create(:ai_catalog_flow, public: false, project: item_project) }
+
+    it_behaves_like 'a failure', 'Item is private to another project'
+  end
+
+  context 'when the item is private to the project' do
+    let(:item) { create(:ai_catalog_flow, public: false, project: consumer_project) }
+
+    it 'creates a catalog item consumer with expected data' do
+      execute
+
+      expect(Ai::Catalog::ItemConsumer.last).to have_attributes(
+        project: consumer_project,
+        group: nil,
+        item: item,
+        enabled: true,
+        locked: true
+      )
+    end
+  end
+
+  context 'when the item is private to another project, and the user does not have permission to see the item' do
+    let(:item) { create(:ai_catalog_flow, public: false) }
+
+    it_behaves_like 'a failure', 'Item does not exist, or you have insufficient permissions'
   end
 
   context 'when save fails' do

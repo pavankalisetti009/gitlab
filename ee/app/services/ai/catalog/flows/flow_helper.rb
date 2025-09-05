@@ -20,6 +20,10 @@ module Ai
             pinned_version_prefix = step[:pinned_version_prefix]
             next steps_validation_errors << "Step #{index + 1}: Invalid agent" unless agent.agent?
 
+            if agent.private? && agent.project != project
+              next steps_validation_errors << "Step #{index + 1}: Agent is private to another project"
+            end
+
             current_version = agent.resolve_version(pinned_version_prefix)
             if current_version.nil?
               version_info = pinned_version_prefix ? " with prefix #{pinned_version_prefix}" : ''

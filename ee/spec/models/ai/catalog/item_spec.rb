@@ -240,6 +240,26 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     end
   end
 
+  describe '#private?' do
+    let(:item) { build_stubbed(:ai_catalog_item, public: is_public) }
+
+    context 'when item is private' do
+      let(:is_public) { false }
+
+      it 'returns true' do
+        expect(item).to be_private
+      end
+    end
+
+    context 'when item is public' do
+      let(:is_public) { true }
+
+      it 'returns false' do
+        expect(item).not_to be_private
+      end
+    end
+  end
+
   describe '#soft_delete' do
     it 'updates deleted_at attribute' do
       item = create(:ai_catalog_item)
