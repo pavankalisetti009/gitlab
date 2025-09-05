@@ -8,7 +8,12 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
   let(:allowed_sharding_key_referenced_tables) { %w[projects namespaces organizations users] }
   let(:allowed_to_be_missing_foreign_key) do
     [
-      'ci_job_artifact_states.job_artifact_id'
+      'ci_job_artifact_states.job_artifact_id',
+
+      # below table will get a foreign key after its partitioning backfill
+      # finishes, before the application begins using it.
+      #
+      'merge_request_diff_files_99208b8fac.merge_request_diff_id'
     ]
   end
 
