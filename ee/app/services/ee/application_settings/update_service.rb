@@ -134,7 +134,7 @@ module EE
           elasticsearch_helper.create_migrations_index
           ::Elastic::DataMigrationService.mark_all_as_completed!
         end
-      rescue Faraday::Error => e
+      rescue Faraday::Error, Elasticsearch::Transport::Transport::Error => e
         log_error(e)
       end
 
