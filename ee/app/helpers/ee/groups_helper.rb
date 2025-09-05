@@ -25,7 +25,7 @@ module EE
       ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
         ::Feature.enabled?(:group_page_plan_indicator, group) &&
         group.root? &&
-        (group.has_free_or_no_subscription? || group.trial?)
+        group.trial?
     end
 
     def show_discover_group_security?(group)
