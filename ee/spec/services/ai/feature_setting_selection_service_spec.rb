@@ -112,32 +112,101 @@ RSpec.describe Ai::FeatureSettingSelectionService, feature_category: :"self-host
     end
 
     context 'when running on self-hosted instance' do
-      context 'when self-hosted feature setting exists' do
-        let_it_be(:ai_feature_setting) do
-          create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat)
+      context 'when instance_level_model_selection feature flag is disabled' do
+        before do
+          stub_feature_flags(instance_level_model_selection: false)
         end
 
-        it 'returns success with self-hosted feature setting' do
-          expect(response).to be_success
-          expect(response.payload).to eq(ai_feature_setting)
+        context 'when self-hosted feature setting exists' do
+          let_it_be(:ai_feature_setting) do
+            create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat)
+          end
+
+          it 'returns success with self-hosted feature setting' do
+            expect(response).to be_success
+            expect(response.payload).to eq(ai_feature_setting)
+          end
+        end
+
+        context 'when self-hosted feature setting exists and is vendored' do
+          let_it_be(:vendored_feature_setting) do
+            create(:ai_feature_setting, feature: :duo_chat, provider: :vendored)
+          end
+
+          it 'returns success with vendored feature setting' do
+            expect(response).to be_success
+            expect(response.payload).to eq(vendored_feature_setting)
+          end
+        end
+
+        context 'when self-hosted feature setting does not exist' do
+          it 'returns success with nil payload' do
+            expect(response).to be_success
+            expect(response.payload).to be_nil
+          end
         end
       end
 
-      context 'when self-hosted feature setting exists and is vendored' do
-        let_it_be(:vendored_feature_setting) do
-          create(:ai_feature_setting, feature: :duo_chat, provider: :vendored)
+      context 'when instance_level_model_selection feature flag is enabled' do
+        before do
+          stub_feature_flags(instance_level_model_selection: true)
         end
 
-        it 'returns success with vendored feature setting' do
-          expect(response).to be_success
-          expect(response.payload).to eq(vendored_feature_setting)
-        end
-      end
+        context 'when self-hosted feature setting exists and is not vendored' do
+          let_it_be(:ai_feature_setting) do
+            create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat)
+          end
 
-      context 'when self-hosted feature setting does not exist' do
-        it 'returns success with self-hosted feature setting' do
-          expect(response).to be_success
-          expect(response.payload).to be_nil
+          it 'returns success with self-hosted feature setting' do
+            expect(response).to be_success
+            expect(response.payload).to eq(ai_feature_setting)
+          end
+        end
+
+        context 'when self-hosted feature setting exists and is vendored' do
+          let_it_be(:vendored_feature_setting) do
+            create(:ai_feature_setting, feature: :duo_chat, provider: :vendored)
+          end
+
+          it 'returns success with instance level setting' do
+            expect(response).to be_success
+            expect(response.payload).to be_a(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
+            expect(response.payload.feature).to eq(feature.to_s)
+          end
+        end
+
+        context 'when self-hosted feature setting does not exist' do
+          it 'returns success with instance level setting' do
+            expect(response).to be_success
+            expect(response.payload).to be_a(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
+            expect(response.payload.feature).to eq(feature.to_s)
+          end
+        end
+
+        context 'when instance level setting already exists' do
+          let_it_be(:instance_setting) do
+            create(:instance_model_selection_feature_setting, feature: :duo_chat)
+          end
+
+          it 'returns the existing instance level setting' do
+            expect(response).to be_success
+            expect(response.payload).to eq(instance_setting)
+          end
+        end
+
+        context 'when both self-hosted and instance settings exist' do
+          let_it_be(:ai_feature_setting) do
+            create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat)
+          end
+
+          let_it_be(:instance_setting) do
+            create(:instance_model_selection_feature_setting, feature: :duo_chat)
+          end
+
+          it 'prioritizes self-hosted feature setting over instance setting' do
+            expect(response).to be_success
+            expect(response.payload).to eq(ai_feature_setting)
+          end
         end
       end
     end

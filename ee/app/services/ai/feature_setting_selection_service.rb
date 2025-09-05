@@ -24,8 +24,14 @@ module Ai
         # First check if a self-hosted model is defined for the feature
         feature_setting = self_hosted_feature_setting
 
-        # Return the self-hosted feature setting for now, so it's a pure refactor
-        ServiceResponse.success(payload: feature_setting)
+        if ::Feature.enabled?(:instance_level_model_selection, :instance)
+          return ServiceResponse.success(payload: feature_setting) if feature_setting && !feature_setting.vendored?
+
+          # Instance level is fetched either when we don't have a feature_setting, or when it is set to vendored
+          ServiceResponse.success(payload: instance_level_setting)
+        else
+          ServiceResponse.success(payload: feature_setting)
+        end
       end
     end
 
@@ -44,8 +50,7 @@ module Ai
     end
 
     def instance_level_setting
-      # TODO: this will change
-      nil
+      ::Ai::ModelSelection::InstanceModelSelectionFeatureSetting.find_or_initialize_by_feature(@feature)
     end
 
     def self_hosted_feature_setting
