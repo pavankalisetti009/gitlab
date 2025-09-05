@@ -11,7 +11,12 @@ import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/lifecycle_update.mutation.graphql';
 import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/namespace_metadata.query.graphql';
-import { mockNamespaceMetadata, deleteStatusErrorResponse } from '../mock_data';
+import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_statuses.query.graphql';
+import {
+  mockNamespaceMetadata,
+  deleteStatusErrorResponse,
+  mockStatusesResponse,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -131,6 +136,7 @@ describe('StatusLifecycleModal', () => {
 
   const updateLifecycleHandler = jest.fn().mockResolvedValue(mockUpdateResponse);
   const metadataQueryHandler = jest.fn().mockResolvedValue(mockNamespaceMetadata);
+  const statusesQueryHandler = jest.fn().mockResolvedValue(mockStatusesResponse);
 
   const addStatus = async (save = true) => {
     const addButton = findCategorySection('triage').find('[data-testid="add-status-button"]');
@@ -170,10 +176,12 @@ describe('StatusLifecycleModal', () => {
     props = {},
     lifecycle = mockLifecycle,
     updateHandler = updateLifecycleHandler,
+    workItemStatusMvc2Enabled = true,
   } = {}) => {
     mockApollo = createMockApollo([
       [lifecycleUpdateMutation, updateHandler],
       [namespaceMetadataQuery, metadataQueryHandler],
+      [namespaceStatusesQuery, statusesQueryHandler],
     ]);
 
     wrapper = shallowMountExtended(StatusLifecycleModal, {
@@ -183,6 +191,11 @@ describe('StatusLifecycleModal', () => {
         lifecycle,
         fullPath: 'group/project',
         ...props,
+      },
+      provide: {
+        glFeatures: {
+          workItemStatusMvc2: workItemStatusMvc2Enabled,
+        },
       },
       stubs: {
         GlModal,
@@ -264,6 +277,23 @@ describe('StatusLifecycleModal', () => {
     });
   });
 
+  describe('statuses of the namespace', () => {
+    it('fetches statuses of the namespace on load', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(statusesQueryHandler).toHaveBeenCalled();
+    });
+
+    it('does not fetch the statuses of the namespace when the MVC2 FF is off', async () => {
+      createComponent({ workItemStatusMvc2Enabled: false });
+
+      await waitForPromises();
+
+      expect(statusesQueryHandler).not.toHaveBeenCalled();
+    });
+  });
+
   describe('modal visibility', () => {
     it('emits close event when modal is hidden', () => {
       createComponent();
@@ -293,6 +323,24 @@ describe('StatusLifecycleModal', () => {
 
       expect(findStatusForm().exists()).toBe(true);
       expect(findStatusForm().props('isEditing')).toBe(false);
+    });
+
+    it('passes the `statuses` to the statusform excluding the current lifecycle', async () => {
+      const addButton = findCategorySection('triage').find('[data-testid="add-status-button"]');
+
+      addButton.vm.$emit('click');
+      await nextTick();
+
+      const statusPropNames = findStatusForm()
+        .props('statuses')
+        .map((item) => item.name);
+      const currentLifecycleStatusNames = mockLifecycle.statuses.map((item) => item.name);
+
+      const overlappingStatusNames = statusPropNames.filter((name) =>
+        currentLifecycleStatusNames.includes(name),
+      );
+
+      expect(overlappingStatusNames).toEqual([]);
     });
 
     it('pre-fills color based on category when adding status', async () => {

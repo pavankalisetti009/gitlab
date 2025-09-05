@@ -73005,6 +73005,9 @@ msgstr ""
 msgid "WorkItem|Add status"
 msgstr ""
 
+msgid "WorkItem|Add to"
+msgstr ""
+
 msgid "WorkItem|Add up to 10 items at a time."
 msgstr ""
 
@@ -73339,6 +73342,9 @@ msgid "WorkItem|Failed to load custom fields."
 msgstr ""
 
 msgid "WorkItem|Failed to load default lifecycle"
+msgstr ""
+
+msgid "WorkItem|Failed to load lifecycles."
 msgstr ""
 
 msgid "WorkItem|Failed to load statuses."
@@ -73886,6 +73892,9 @@ msgid "WorkItem|Start from a default configuration"
 msgstr ""
 
 msgid "WorkItem|Starting statuses"
+msgstr ""
+
+msgid "WorkItem|Status name is too long. Use maximum 32 characters."
 msgstr ""
 
 msgid "WorkItem|Statuses"

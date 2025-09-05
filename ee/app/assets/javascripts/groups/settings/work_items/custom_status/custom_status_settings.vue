@@ -8,7 +8,7 @@ import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_statu
 import StatusModal from './status_modal.vue';
 import CreateLifecycleModal from './create_lifecycle_modal.vue';
 import LifecycleDetail from './lifecycle_detail.vue';
-import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
+import namespaceLifecyclesQuery from './namespace_lifecycles.query.graphql';
 
 export default {
   components: {
@@ -39,7 +39,7 @@ export default {
   },
   apollo: {
     lifecycles: {
-      query: namespaceStatusesQuery,
+      query: namespaceLifecyclesQuery,
       variables() {
         return {
           fullPath: this.fullPath,
@@ -49,7 +49,7 @@ export default {
         return data.namespace?.lifecycles?.nodes || [];
       },
       error(error) {
-        this.errorText = s__('WorkItem|Failed to load statuses.');
+        this.errorText = s__('WorkItem|Failed to load lifecycles.');
         this.errorDetail = error.message;
         Sentry.captureException(error);
       },

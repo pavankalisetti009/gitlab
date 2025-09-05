@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlDisclosureDropdown, GlIcon } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlIcon, GlFormCombobox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import InlineStatusForm from 'ee/groups/settings/work_items/custom_status/status_form.vue';
 
@@ -8,6 +8,7 @@ describe('StatusForm', () => {
 
   const defaultProps = {
     categoryIcon: 'status-neutral',
+    categoryName: 'TRIAGE',
     formData: {
       name: 'Test Status',
       color: '#ff0000',
@@ -27,8 +28,9 @@ describe('StatusForm', () => {
   const findUpdateButton = () => wrapper.findByTestId('update-status');
   const findCancelButton = () => wrapper.findByTestId('cancel-status');
   const findCategoryIcon = () => wrapper.findComponent(GlIcon);
+  const findAutoSuggestionsBox = () => wrapper.findComponent(GlFormCombobox);
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, workItemStatusMvc2Enabled = false) => {
     // Mock gon for suggested colors
     global.gon = {
       suggested_label_colors: {
@@ -42,6 +44,11 @@ describe('StatusForm', () => {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      provide: {
+        glFeatures: {
+          workItemStatusMvc2: workItemStatusMvc2Enabled,
+        },
       },
     });
   };
@@ -91,13 +98,32 @@ describe('StatusForm', () => {
       createComponent();
     });
 
-    it('emits update when name input changes', () => {
-      findNameInput().vm.$emit('input', 'New Name');
+    describe('status name interactions', () => {
+      describe('when the FF `work_item_status_mvc2` FF is enabled', () => {
+        beforeEach(() => {
+          createComponent(defaultProps, true);
+        });
 
-      expect(wrapper.emitted('update')).toHaveLength(1);
-      expect(wrapper.emitted('update')[0][0]).toEqual({
-        ...defaultProps.formData,
-        name: 'New Name',
+        it('shows the combobox instead of form input', () => {
+          expect(findNameInput().exists()).toBe(false);
+          expect(findAutoSuggestionsBox().exists()).toBe(true);
+        });
+
+        it('passes `name` as the matching value attribute in the token list', () => {
+          expect(findAutoSuggestionsBox().props('matchValueToAttr')).toBe('name');
+        });
+      });
+
+      describe('when the FF `work_item_status_mvc2` FF is disabled', () => {
+        it('emits update when name input changes', () => {
+          findNameInput().vm.$emit('input', 'New Name');
+
+          expect(wrapper.emitted('update')).toHaveLength(1);
+          expect(wrapper.emitted('update')[0][0]).toEqual({
+            ...defaultProps.formData,
+            name: 'New Name',
+          });
+        });
       });
     });
 

@@ -169,7 +169,7 @@ describe('CustomStatusSettings', () => {
       expect(findAlert().exists()).toBe(true);
       expect(findAlert().props('variant')).toBe('danger');
       expect(findAlert().props('dismissible')).toBe(true);
-      expect(findAlert().text()).toContain('Failed to load statuses.');
+      expect(findAlert().text()).toContain('Failed to load lifecycles.');
       expect(findAlert().find('details').text()).toContain(error.message);
     });
 
