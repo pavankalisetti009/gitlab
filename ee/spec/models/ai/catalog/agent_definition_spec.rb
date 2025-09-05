@@ -36,4 +36,16 @@ RSpec.describe Ai::Catalog::AgentDefinition, feature_category: :workflow_catalog
       end
     end
   end
+
+  describe '#system_prompt' do
+    it 'returns the system prompt from the version' do
+      expect(agent_definition.system_prompt).to eq(agent_version.def_system_prompt)
+    end
+  end
+
+  describe '#user_prompt' do
+    it 'returns the user prompt from the version' do
+      expect(agent_definition.user_prompt).to eq(agent_version.def_user_prompt)
+    end
+  end
 end

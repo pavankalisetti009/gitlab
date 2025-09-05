@@ -38,11 +38,23 @@ module Ai
         strong_memoize_attr :flow_definition
 
         def steps
-          flow_definition.steps
+          @steps ||= flow_definition.steps.map do |step|
+            step.merge(definition: agent_definition_for_step(step))
+          end
+        end
+
+        def agent_definition_for_step(step)
+          agent = step[:agent]
+          pinned_version_id = pinned_to_specific_version? ? step[:current_version_id] : nil
+          agent.definition(step[:pinned_version_prefix], pinned_version_id)
         end
 
         def step_unique_identifier(step)
           step[:unique_id]
+        end
+
+        def step_prompt_id(step)
+          "#{step_unique_identifier(step)}_prompt"
         end
       end
     end
