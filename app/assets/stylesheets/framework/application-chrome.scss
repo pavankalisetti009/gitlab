@@ -200,6 +200,11 @@
       .container-fluid {
         @apply gl-px-4 gl-pb-3;
       }
+
+      // Hide alert wrapper if it's empty
+      > .alert-wrapper:not(:has(*)) {
+        @apply gl-hidden;
+      }
     }
   }
 
