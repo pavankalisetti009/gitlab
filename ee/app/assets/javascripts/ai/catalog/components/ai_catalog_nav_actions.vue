@@ -16,9 +16,6 @@ export default {
     GlButton,
   },
   computed: {
-    isLoggedIn() {
-      return isLoggedIn();
-    },
     buttonProps() {
       switch (this.$route.name) {
         case AI_CATALOG_INDEX_ROUTE:
@@ -40,13 +37,14 @@ export default {
       }
     },
   },
+  isLoggedIn,
 };
 </script>
 
 <template>
   <div class="gl-flex gl-items-center">
     <gl-button
-      v-if="isLoggedIn && buttonProps.route"
+      v-if="$options.isLoggedIn() && buttonProps.route"
       :to="{ name: buttonProps.route }"
       variant="confirm"
     >
