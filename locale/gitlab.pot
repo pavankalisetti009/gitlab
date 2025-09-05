@@ -46968,6 +46968,9 @@ msgstr ""
 msgid "Personal homepage"
 msgstr ""
 
+msgid "Personal homepage (default)"
+msgstr ""
+
 msgid "Personal namespaces"
 msgstr ""
 
@@ -75396,6 +75399,9 @@ msgid "Your Chain of Custody CSV export for the group %{group_link} has been add
 msgstr ""
 
 msgid "Your Chain of Custody CSV export for the group %{group_name} has been added to this email as an attachment."
+msgstr ""
+
+msgid "Your Contributed Projects"
 msgstr ""
 
 msgid "Your Contributed Projects (default)"
