@@ -4,7 +4,7 @@
 #ci-cd-project-pane.tab-pane
   = gitlab_ui_form_for @project, html: { class: 'new_project' } do |f|
     .project-import.row
-      .col-lg-12
+      .gl-col-lg-12
         %h4
           = _('Run CI/CD pipelines for external repositories')
         %p
@@ -13,7 +13,7 @@
           - more_info_link = link_to _('More info'), help_page_path('user/project/integrations/github.md')
           = _('If using GitHub, you’ll see pipeline statuses on GitHub for your commits and pull requests. %{more_info_link}').html_safe % { more_info_link: more_info_link }
 
-        .form-group.import-btn-container.gl-mt-5.clearfix
+        .form-group.import-btn-container.gl-mt-5.gl-clearfix
           = f.label :visibility_level, class: 'label-bold' do
             = s_('ImportButtons|Connect repositories from')
           .import-buttons
@@ -25,7 +25,7 @@
               - if git_import_enabled?
                 = render Pajamas::ButtonComponent.new(icon: 'link', button_options: { class: 'js-toggle-button js-import-git-toggle-button', data: { toggle_open_class: 'active', track_label: "#{track_label}", track_property: 'repo_url', track_action: "click_button", track_value: "" } }) do
                   = _('Repository by URL')
-      .col-lg-12
+      .gl-col-lg-12
         .js-toggle-content.toggle-import-form
           %hr
             = render "shared/import_form", f: f, ci_cd_only: true

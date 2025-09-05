@@ -257,7 +257,9 @@ export default {
     ref="buttonWrapper"
     class="btn-group"
     :class="
-      glFeatures.repositoryFileTreeBrowser ? 'gl-w-full md:gl-w-auto' : 'gl-w-full sm:gl-w-auto'
+      glFeatures.repositoryFileTreeBrowser
+        ? 'gl-w-full @md/panel:gl-w-auto'
+        : 'gl-w-full @sm/panel:gl-w-auto'
     "
   >
     <gl-tooltip v-if="tooltipText" :target="() => $refs.buttonWrapper">

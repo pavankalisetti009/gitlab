@@ -9,7 +9,7 @@ exports[`Status Page settings form default state should match the default snapsh
     class="gl-flex gl-gap-x-3 gl-items-start gl-justify-between"
   >
     <div
-      class="-gl-mr-3 gl-px-2 gl-py-0 gl-shrink-0 sm:gl-mr-0 sm:gl-p-2"
+      class="-gl-mr-3 @sm/panel:gl-mr-0 @sm/panel:gl-p-2 gl-px-2 gl-py-0 gl-shrink-0"
     >
       <gl-button-stub
         aria-controls="reference-0"
@@ -68,7 +68,7 @@ exports[`Status Page settings form default state should match the default snapsh
     tag="div"
   >
     <div
-      class="gl-pl-7 gl-pt-5 sm:gl-pl-8"
+      class="@sm/panel:gl-pl-8 gl-pl-7 gl-pt-5"
     >
       <p>
         <gl-sprintf-stub
