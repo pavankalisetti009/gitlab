@@ -122,7 +122,7 @@ export default {
         <gl-link ref="moreLink" class="gl-whitespace-nowrap">{{ nMoreMessage }}</gl-link>
 
         <gl-popover :target="target" placement="top" :title="s__('Dependencies|Direct dependents')">
-          <direct-descendant-viewer :dependencies="ancestors" />
+          <direct-descendant-viewer :dependencies="ancestors" data-testid="popover-body" />
         </gl-popover>
       </span>
     </gl-intersperse>
