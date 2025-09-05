@@ -190,6 +190,7 @@ module EE
 
       has_many :security_scans, class_name: 'Security::Scan', inverse_of: :project
       has_many :security_trainings, class_name: 'Security::Training', inverse_of: :project
+      has_many :security_project_tracked_contexts, class_name: 'Security::ProjectTrackedContext', inverse_of: :project
 
       has_many :dependency_list_exports, class_name: 'Dependencies::DependencyListExport', inverse_of: :project
 
