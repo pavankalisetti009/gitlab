@@ -34,31 +34,20 @@ export default {
   methods: {
     handleSubmit() {
       // TODO: This is a tmp solution until we're using
-      // a group and project dropdown select instead of an
+      // a project dropdown select instead of an
       // input field.
       const isProjectSelected = this.targetId.toLowerCase().includes('project');
-      const isGroupSelected = this.targetId.toLowerCase().includes('group');
 
-      if ((isProjectSelected && isGroupSelected) || (!isProjectSelected && !isGroupSelected)) {
+      if (!isProjectSelected) {
         // eslint-disable-next-line
         console.error(
           // eslint-disable-next-line
-          'Invalid State. Target ID must contain either "project" or "group", but not both.',
+          'Invalid State. Target ID must contain "project"',
         );
         return;
       }
 
-      const target = {};
-
-      if (isGroupSelected) {
-        target.groupId = this.targetId;
-      }
-
-      if (isProjectSelected) {
-        target.projectId = this.targetId;
-      }
-
-      this.$emit('submit', target);
+      this.$emit('submit', { projectId: this.targetId });
     },
   },
   modal: {

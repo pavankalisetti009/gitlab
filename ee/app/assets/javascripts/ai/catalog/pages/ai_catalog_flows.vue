@@ -202,7 +202,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            // TODO: Once we have a project/group selector, we could add the group and project name in this message.
+            // TODO: Once we have a project selector, we could add the project name in this message.
             this.errors = [
               sprintf(s__('AICatalog|Flow could not be added: %{flowName}'), {
                 flowName: flow.name,
@@ -212,10 +212,7 @@ export default {
             return;
           }
 
-          const name =
-            data.aiCatalogItemConsumerCreate.itemConsumer.group?.name ||
-            data.aiCatalogItemConsumerCreate.itemConsumer.project?.name ||
-            '';
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
 
           this.$toast.show(sprintf(s__('AICatalog|Flow added successfully to %{name}.'), { name }));
         }
