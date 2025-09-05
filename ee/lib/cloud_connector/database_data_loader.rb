@@ -8,27 +8,29 @@ module CloudConnector
     CATALOG_STORE_KEY = 'cloud_connector:catalog_json'
     ASSOCIATION_SUFFIX = '_association'
 
+    protected
+
     def load!
-      Gitlab::SafeRequestStore.fetch(cache_key) do
-        if catalog_data.empty?
-          log_warning("Catalog is empty or not synced")
+      if catalog_data.empty?
+        log_warning("Catalog is empty or not synced")
 
-          next []
-        end
-
-        model_attributes = catalog_data[model_name]
-
-        if model_attributes.blank?
-          log_warning("Catalog key '#{model_name}' is missing or empty")
-
-          next []
-        end
-
-        model_attributes.map { |raw_attributes| model_class.new(**transform_attributes(raw_attributes)) }
+        return []
       end
+
+      model_attributes = catalog_data[model_name]
+
+      if model_attributes.blank?
+        log_warning("Catalog key '#{model_name}' is missing or empty")
+
+        return []
+      end
+
+      model_attributes.map { |raw_attributes| model_class.new(**transform_attributes(raw_attributes)) }
     end
 
-    private
+    def with_cache
+      Gitlab::SafeRequestStore.fetch(cache_key) { yield }
+    end
 
     def transform_attributes(raw_attributes)
       attributes = raw_attributes.dup

@@ -7,38 +7,43 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
 
   subject(:unit_primitive_loader) { described_class.new(unit_primitive_class) }
 
-  describe '#load!' do
+  describe '#load_with_index!' do
     context 'with valid catalog data' do
       before do
         create(:cloud_connector_access)
       end
 
-      it 'returns objects with the correct set of attributes', :request_store do
-        result = unit_primitive_loader.load!
-        expect(result).not_to be_empty
+      it 'returns a name index (Hash) with correctly instantiated models', :request_store do
+        index = unit_primitive_loader.load_with_index!
 
-        expect(result).to all(be_instance_of(Gitlab::CloudConnector::DataModel::UnitPrimitive))
-        up = result.first
+        expect(index).to be_a(Hash)
+        expect(index).not_to be_empty
+        expect(index.keys).to all(be_a(Symbol))
+
+        up = index.each_value.first
+        expect(up).to be_a(Gitlab::CloudConnector::DataModel::UnitPrimitive)
 
         expect(up.backend_services).to all(be_instance_of(Gitlab::CloudConnector::DataModel::BackendService))
         expect(up.license_types).to all(be_instance_of(Gitlab::CloudConnector::DataModel::LicenseType))
       end
 
       it 'parses cut_off_date fields as Time objects when present' do
-        result = unit_primitive_loader.load!.select(&:cut_off_date)
+        index = unit_primitive_loader.load_with_index!
+        with_dates = index.values.select(&:cut_off_date)
 
-        expect(result).not_to be_empty
-        expect(result.map(&:cut_off_date)).to all(be_a(Time))
+        expect(with_dates).not_to be_empty
+        expect(with_dates.map(&:cut_off_date)).to all(be_a(Time))
       end
     end
 
     context 'with an empty catalog record' do
       before do
+        # catalog: nil simulates no synced data
         create(:cloud_connector_access, catalog: nil)
       end
 
-      it 'returns an empty array' do
-        expect(unit_primitive_loader.load!).to eq([])
+      it 'returns an empty Hash' do
+        expect(unit_primitive_loader.load_with_index!).to eq({})
       end
 
       it 'logs a warning' do
@@ -47,7 +52,7 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
           class_name: described_class.name
         )
 
-        unit_primitive_loader.load!
+        unit_primitive_loader.load_with_index!
       end
     end
 
@@ -59,8 +64,8 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
         create(:cloud_connector_access)
       end
 
-      it 'returns an empty array' do
-        expect(data_model_loader.load!).to eq([])
+      it 'returns an empty Hash' do
+        expect(data_model_loader.load_with_index!).to eq({})
       end
 
       it 'logs a warning' do
@@ -70,7 +75,7 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
           class_name: described_class.name
         )
 
-        data_model_loader.load!
+        data_model_loader.load_with_index!
       end
     end
 
@@ -84,21 +89,21 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
 
         expect(CloudConnector::Access).to receive(:with_catalog).once.and_call_original
 
-        unit_primitive_loader.load!
-        add_on_loader.load!
+        unit_primitive_loader.load_with_index!
+        add_on_loader.load_with_index!
       end
 
-      it 'uses the correct cache key for different model loaders' do
+      it 'uses separate cache keys per model loader and memoizes results per key' do
         add_on_loader = described_class.new(Gitlab::CloudConnector::DataModel::AddOn)
 
-        unit_primitives = unit_primitive_loader.load!
-        add_ons = add_on_loader.load!
+        unit_primitives_index = unit_primitive_loader.load_with_index!
+        add_ons_index = add_on_loader.load_with_index!
 
         allow(CloudConnector::Access).to receive(:with_catalog).and_return([])
 
-        expect(unit_primitive_loader.load!).to eq(unit_primitives)
-        expect(add_on_loader.load!).to eq(add_ons)
-        expect(unit_primitive_loader.load!).not_to eq(add_on_loader.load!)
+        expect(unit_primitive_loader.load_with_index!).to be(unit_primitives_index)
+        expect(add_on_loader.load_with_index!).to be(add_ons_index)
+        expect(unit_primitive_loader.load_with_index!).not_to be(add_on_loader.load_with_index!)
       end
     end
   end
