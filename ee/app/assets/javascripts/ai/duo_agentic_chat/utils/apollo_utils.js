@@ -1,6 +1,7 @@
 import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import deleteAgenticWorkflowMutation from 'ee/ai/graphql/delete_agentic_workflow.mutation.graphql';
 import getWorkflowEventsQuery from 'ee/ai/graphql/get_workflow_events.query.graphql';
+import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import {
   DUO_WORKFLOW_CHAT_DEFINITION,
   DUO_WORKFLOW_AGENT_PRIVILEGES,
@@ -11,7 +12,10 @@ import { parseGid } from '~/graphql_shared/utils';
 import { MULTI_THREADED_CONVERSATION_TYPE } from '../../tanuki_bot/constants';
 
 export const ApolloUtils = {
-  async createWorkflow(apollo, { projectId, namespaceId, goal, activeThread }) {
+  async createWorkflow(
+    apollo,
+    { projectId, namespaceId, goal, activeThread, aiCatalogItemVersionId },
+  ) {
     const variables = {
       goal,
       workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
@@ -23,6 +27,7 @@ export const ApolloUtils = {
 
     if (projectId) variables.projectId = projectId;
     if (namespaceId) variables.namespaceId = namespaceId;
+    if (aiCatalogItemVersionId) variables.aiCatalogItemVersionId = aiCatalogItemVersionId;
 
     const result = await apollo.mutate({
       mutation: duoWorkflowMutation,
@@ -60,5 +65,14 @@ export const ApolloUtils = {
     });
 
     return data;
+  },
+
+  async getAgentFlowConfig(apollo, agentVersionId) {
+    const { data } = await apollo.query({
+      query: getAgentFlowConfig,
+      variables: { agentVersionId },
+    });
+
+    return data?.aiCatalogAgentFlowConfig;
   },
 };

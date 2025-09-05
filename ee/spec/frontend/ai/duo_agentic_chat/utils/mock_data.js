@@ -137,3 +137,11 @@ export const MOCK_PARSE_WORKFLOW_PRESERVE_PROPERTIES_RESPONSE = {
     ],
   },
 };
+
+export const MOCK_AGENT_FLOW_CONFIG_RESPONSE = {
+  data: {
+    aiCatalogAgentFlowConfig: {
+      flowConfig: 'YAML STRING',
+    },
+  },
+};

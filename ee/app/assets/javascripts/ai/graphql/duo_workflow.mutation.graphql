@@ -6,6 +6,7 @@ mutation createAiDuoWorkflow(
   $agentPrivileges: [Int!]
   $preApprovedAgentPrivileges: [Int!]
   $allowAgentToRequestUser: Boolean
+  $aiCatalogItemVersionId: AiCatalogItemVersionID
 ) {
   aiDuoWorkflowCreate(
     input: {
@@ -17,6 +18,7 @@ mutation createAiDuoWorkflow(
       agentPrivileges: $agentPrivileges
       preApprovedAgentPrivileges: $preApprovedAgentPrivileges
       allowAgentToRequestUser: $allowAgentToRequestUser
+      aiCatalogItemVersionId: $aiCatalogItemVersionId
     }
   ) {
     workflow {
