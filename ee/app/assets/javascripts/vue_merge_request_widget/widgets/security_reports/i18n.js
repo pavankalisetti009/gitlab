@@ -33,6 +33,11 @@ export const i18n = {
   findingLoadingError: s__(
     'ciReport|Something went wrong while fetching the finding. Please try again later.',
   ),
+  partialScan: s__('ciReport|Diff-based'),
+  fullScan: s__('ciReport|Full scan'),
+  usingDiffBasedScans: s__(
+    'ciReport|This project uses diff-based scanning for GitLab Advanced SAST. For quicker results, GitLab scans only modified files. The results exclude any fixed findings. %{linkStart}Learn more%{linkEnd}.',
+  ),
 };
 
 export const popovers = {

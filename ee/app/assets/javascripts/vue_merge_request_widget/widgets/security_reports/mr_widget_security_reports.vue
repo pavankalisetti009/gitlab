@@ -45,7 +45,28 @@ export default {
       hasAtLeastOneReportWithMaxNewVulnerabilities: false,
       modalData: null,
       topLevelErrorMessage: '',
-      collapsedData: {},
+      /**
+       * Example data structure with all available fields:
+       *
+       * {
+       *   full: {
+       *     SAST: {
+       *       reportType: 'SAST',
+       *       reportTypeDescription: 'SAST',
+       *.      numberOfNewFindings: 2,
+       *       numberOfFixedFindings: 2,
+       *       added: [Array], // typeof Finding
+       *       fixed: [Array], // typeof Finding
+       *       findings: [Array] // typeof Finding,
+       *       testId: 'sast-scan-report'
+       *     }
+       *   }
+       * }
+       */
+      reportsByScanType: {
+        full: {},
+        partial: {},
+      },
       enabledScans: {
         partial: {},
         full: this.mr.enabledReports || {},
@@ -53,24 +74,54 @@ export default {
     };
   },
   computed: {
+    /**
+     * Returns an array of reports in the following format:
+     *
+     * [
+     *   { reportType: 'SAST', full: Report, partial: Report },
+     *   { reportType: 'DAST', full: Report, partial: Report },
+     *   // ...
+     * ]
+     */
     reports() {
-      return this.endpoints
-        .map(([, reportType]) => this.collapsedData[reportType])
-        .filter((r) => r);
+      return Object.keys(reportTypes)
+        .map((reportType) => {
+          if (
+            !this.reportsByScanType.full[reportType] &&
+            !this.reportsByScanType.partial[reportType]
+          ) {
+            return undefined;
+          }
+
+          return {
+            reportType,
+            full: this.reportsByScanType.full[reportType],
+            partial: this.reportsByScanType.partial[reportType],
+          };
+        })
+        .filter((rt) => rt?.full || rt?.partial);
     },
 
     isCollapsible() {
-      return this.vulnerabilitiesCount > 0;
-    },
+      for (let i = 0; i < this.reports.length; i += 1) {
+        const fullReport = this.reports[i].full;
+        const partialReport = this.reports[i].partial;
 
-    vulnerabilitiesCount() {
-      return this.reports.reduce((counter, current) => {
-        return counter + current.numberOfNewFindings + (current.fixed?.length || 0);
-      }, 0);
+        if (
+          fullReport?.numberOfNewFindings ||
+          fullReport?.numberOfFixedFindings ||
+          partialReport?.numberOfNewFindings ||
+          partialReport?.numberOfFixedFindings
+        ) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     highlights() {
-      if (!this.reports.length) {
+      if (!this.isCollapsible) {
         return {};
       }
 
@@ -80,25 +131,23 @@ export default {
         other: 0,
       };
 
-      // The data we receive from the API is something like:
-      // [
-      //  { scanner: "SAST", added: [{ id: 15, severity: 'critical' }] },
-      //  { scanner: "DAST", added: [{ id: 15, severity: 'high' }] },
-      //  ...
-      // ]
       this.reports.forEach((report) => highlightsFromReport(report, highlights));
 
       return highlights;
     },
 
-    totalNewVulnerabilities() {
+    totalNewFindings() {
       return this.reports.reduce((counter, current) => {
-        return counter + (current.numberOfNewFindings || 0);
+        return (
+          counter +
+          (current.full?.numberOfNewFindings || 0) +
+          (current.partial?.numberOfNewFindings || 0)
+        );
       }, 0);
     },
 
     statusIconName() {
-      if (this.totalNewVulnerabilities > 0) {
+      if (this.totalNewFindings > 0) {
         return EXTENSION_ICONS.warning;
       }
 
@@ -122,7 +171,7 @@ export default {
     endpoints() {
       // TODO: check if gl.mrWidgetData can be safely removed after we migrate to the
       // widget extension.
-      return [
+      const items = [
         [this.mr.sastComparisonPathV2, 'SAST'],
         [this.mr.dastComparisonPathV2, 'DAST'],
         [this.mr.secretDetectionComparisonPathV2, 'SECRET_DETECTION'],
@@ -130,10 +179,27 @@ export default {
         [this.mr.coverageFuzzingComparisonPathV2, 'COVERAGE_FUZZING'],
         [this.mr.dependencyScanningComparisonPathV2, 'DEPENDENCY_SCANNING'],
         [this.mr.containerScanningComparisonPathV2, 'CONTAINER_SCANNING'],
-      ].filter(([endpoint, reportType]) => {
+      ];
+
+      const endpoints = [];
+
+      items.forEach(([path, reportType]) => {
+        if (!path) {
+          return;
+        }
+
         const enabledReportsKeyName = convertToCamelCase(reportType.toLowerCase());
-        return Boolean(endpoint) && this.enabledScans.full[enabledReportsKeyName];
+
+        if (this.enabledScans.full[enabledReportsKeyName]) {
+          endpoints.push([path.concat('&scan_mode=full'), reportType, { partial: false }]);
+        }
+
+        if (this.enabledScans.partial[enabledReportsKeyName]) {
+          endpoints.push([path.concat('&scan_mode=partial'), reportType, { partial: true }]);
+        }
       });
+
+      return endpoints;
     },
 
     pipelineIid() {
@@ -219,6 +285,7 @@ export default {
         immediateExecution: true,
       });
     },
+
     handleResolveWithAiSuccess(commentUrl) {
       // the note's id is the hash of the url and also the DOM id which we want to scroll to
       const [, commentNoteId] = commentUrl.split('#');
@@ -287,6 +354,8 @@ export default {
       });
 
       return this.endpoints.map(([path, reportType]) => () => {
+        const isPartial = path.indexOf('scan_mode=partial') > -1;
+
         const props = {
           reportType,
           reportTypeDescription: reportTypes[reportType],
@@ -321,10 +390,8 @@ export default {
               testId: this.$options.testId[reportType],
             };
 
-            this.collapsedData = {
-              ...this.collapsedData,
-              [reportType]: report,
-            };
+            const key = isPartial ? 'partial' : 'full';
+            this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
 
             this.$emit('loaded', added.length);
 
@@ -337,10 +404,8 @@ export default {
           .catch(({ response: { status, headers } }) => {
             const report = { ...props, error: true };
 
-            this.collapsedData = {
-              ...this.collapsedData,
-              [reportType]: report,
-            };
+            const key = isPartial ? 'partial' : 'full';
+            this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
 
             if (status === 400) {
               this.topLevelErrorMessage = s__(
@@ -405,14 +470,11 @@ export default {
   >
     <template #summary>
       <summary-text
-        :total-new-vulnerabilities="totalNewVulnerabilities"
+        :total-new-vulnerabilities="totalNewFindings"
         :is-loading="isLoading"
         :show-at-least-hint="hasAtLeastOneReportWithMaxNewVulnerabilities"
       />
-      <summary-highlights
-        v-if="!isLoading && totalNewVulnerabilities > 0"
-        :highlights="highlights"
-      />
+      <summary-highlights v-if="!isLoading && totalNewFindings > 0" :highlights="highlights" />
     </template>
     <template #content>
       <vulnerability-finding-modal

@@ -53,13 +53,13 @@ describe('MR Widget Security Reports', () => {
   const containerScanningHelp = '/help/user/application_security/container-scanning/index';
 
   const reportEndpoints = {
-    sastComparisonPathV2: '/my/sast/endpoint',
-    dastComparisonPathV2: '/my/dast/endpoint',
-    dependencyScanningComparisonPathV2: '/my/dependency-scanning/endpoint',
-    coverageFuzzingComparisonPathV2: '/my/coverage-fuzzing/endpoint',
-    apiFuzzingComparisonPathV2: '/my/api-fuzzing/endpoint',
-    secretDetectionComparisonPathV2: '/my/secret-detection/endpoint',
-    containerScanningComparisonPathV2: '/my/container-scanning/endpoint',
+    sastComparisonPathV2: '/my/sast/endpoint?type=sast',
+    dastComparisonPathV2: '/my/dast/endpoint?type=dast',
+    dependencyScanningComparisonPathV2: '/my/dependency-scanning/endpoint?type=dependency_scanning',
+    coverageFuzzingComparisonPathV2: '/my/coverage-fuzzing/endpoint?type=coverage_fuzzing',
+    apiFuzzingComparisonPathV2: '/my/api-fuzzing/endpoint?type=api_fuzzing',
+    secretDetectionComparisonPathV2: '/my/secret-detection/endpoint?type=secret_deteection',
+    containerScanningComparisonPathV2: '/my/container-scanning/endpoint?type=container_scanning',
   };
 
   const enabledScansQueryResult = (overrides = { full: {}, partial: {} }) => ({
@@ -226,33 +226,46 @@ describe('MR Widget Security Reports', () => {
       expect(findWidget().exists()).toBe(true);
     });
 
-    it('should make fetch only enabled full scans', async () => {
-      createComponent({
-        provide: { glFeatures: { vulnerabilityPartialScans: true } },
-        mountFn: mountExtended,
-        mockApolloProvider: defaultMockApollo,
-      });
+    it.each`
+      fullScans | partialScans | expectedNumberOfRESTcalls | expectedScanModes
+      ${false}  | ${false}     | ${0}                      | ${[]}
+      ${true}   | ${false}     | ${1}                      | ${['full']}
+      ${false}  | ${true}      | ${1}                      | ${['partial']}
+      ${true}   | ${true}      | ${2}                      | ${['full', 'partial']}
+    `(
+      'should fetch full scans=$fullScans, partial scans=$partialScans',
+      async ({ fullScans, partialScans, expectedNumberOfRESTcalls, expectedScanModes }) => {
+        createComponent({
+          provide: { glFeatures: { vulnerabilityPartialScans: true } },
+          mountFn: mountExtended,
+          mockApolloProvider: createMockApollo([
+            [
+              enabledScansQuery,
+              jest.fn().mockResolvedValue(
+                enabledScansQueryResult({
+                  full: {
+                    sast: fullScans,
+                  },
+                  partial: {
+                    sast: partialScans,
+                  },
+                }),
+              ),
+            ],
+          ]),
+        });
 
-      mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
-        added: [
-          {
-            uuid: '1',
-            severity: 'critical',
-            name: 'Password leak',
-            state: 'dismissed',
-          },
-          { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-        ],
-        fixed: [
-          { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-          { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-        ],
-      });
+        await waitForPromises();
 
-      await waitForPromises();
+        expect(mockAxios.history.get).toHaveLength(expectedNumberOfRESTcalls);
 
-      expect(mockAxios.history.get).toHaveLength(1);
-    });
+        for (let i = 0; i < expectedNumberOfRESTcalls; i += 1) {
+          expect(mockAxios.history.get[i].url).toEqual(
+            reportEndpoints.sastComparisonPathV2.concat(`&scan_mode=${expectedScanModes[i]}`),
+          );
+        }
+      },
+    );
 
     it('should refetch the query if scan is not ready', async () => {
       // For some reason if this is not present, tests break
@@ -287,11 +300,6 @@ describe('MR Widget Security Reports', () => {
       expect(findWidget().exists()).toBe(false);
 
       const spy = jest.spyOn(wrapper.vm.pollingInterval, 'destroy');
-
-      mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
-        added: [],
-        fixed: [],
-      });
 
       wrapper.vm.$apollo.queries.enabledScans.refetch();
 
@@ -355,35 +363,39 @@ describe('MR Widget Security Reports', () => {
   });
 
   describe('with MR data', () => {
-    const mockWithData = ({ findings } = {}) => {
-      mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(
-        HTTP_STATUS_OK,
-        findings?.sast || {
-          added: [
-            {
-              uuid: '1',
-              severity: 'critical',
-              name: 'Password leak',
-              state: 'dismissed',
-            },
-            { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-          ],
-          fixed: [
-            { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-            { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-          ],
-        },
-      );
+    const mockWithData = ({ findings, scanMode = 'full' } = {}) => {
+      mockAxios
+        .onGet(reportEndpoints.sastComparisonPathV2.concat(`&scan_mode=${scanMode}`))
+        .replyOnce(
+          HTTP_STATUS_OK,
+          findings?.sast || {
+            added: [
+              {
+                uuid: '1',
+                severity: 'critical',
+                name: 'Password leak',
+                state: 'dismissed',
+              },
+              { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
+            ],
+            fixed: [
+              { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
+              { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
+            ],
+          },
+        );
 
-      mockAxios.onGet(reportEndpoints.dastComparisonPathV2).replyOnce(
-        HTTP_STATUS_OK,
-        findings?.dast || {
-          added: [
-            { uuid: '5', severity: 'low', name: 'SQL Injection' },
-            { uuid: '3', severity: 'unknown', name: 'Weak password' },
-          ],
-        },
-      );
+      mockAxios
+        .onGet(reportEndpoints.dastComparisonPathV2.concat(`&scan_mode=${scanMode}`))
+        .replyOnce(
+          HTTP_STATUS_OK,
+          findings?.dast || {
+            added: [
+              { uuid: '5', severity: 'low', name: 'SQL Injection' },
+              { uuid: '3', severity: 'unknown', name: 'Weak password' },
+            ],
+          },
+        );
 
       [
         reportEndpoints.dependencyScanningComparisonPathV2,
@@ -392,14 +404,14 @@ describe('MR Widget Security Reports', () => {
         reportEndpoints.secretDetectionComparisonPathV2,
         reportEndpoints.containerScanningComparisonPathV2,
       ].forEach((path) => {
-        mockAxios.onGet(path).replyOnce(HTTP_STATUS_OK, {
+        mockAxios.onGet(path.concat(`&scan_mode=${scanMode}`)).replyOnce(HTTP_STATUS_OK, {
           added: [],
         });
       });
     };
 
-    const createComponentWithData = async () => {
-      mockWithData();
+    const createComponentWithData = async (mockWithDataProps) => {
+      mockWithData(mockWithDataProps);
 
       createComponent({
         mountFn: mountExtended,
@@ -539,14 +551,18 @@ describe('MR Widget Security Reports', () => {
 
   describe('error states', () => {
     const mockWithData = ({ errorCode = HTTP_STATUS_INTERNAL_SERVER_ERROR } = {}) => {
-      mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(errorCode);
+      mockAxios
+        .onGet(reportEndpoints.sastComparisonPathV2.concat('&scan_mode=full'))
+        .replyOnce(errorCode);
 
-      mockAxios.onGet(reportEndpoints.dastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
-        added: [
-          { uuid: 5, severity: 'low', name: 'SQL Injection' },
-          { uuid: 3, severity: 'unknown', name: 'Weak password' },
-        ],
-      });
+      mockAxios
+        .onGet(reportEndpoints.dastComparisonPathV2.concat('&scan_mode=full'))
+        .replyOnce(HTTP_STATUS_OK, {
+          added: [
+            { uuid: 5, severity: 'low', name: 'SQL Injection' },
+            { uuid: 3, severity: 'unknown', name: 'Weak password' },
+          ],
+        });
 
       [
         reportEndpoints.dependencyScanningComparisonPathV2,
@@ -555,7 +571,7 @@ describe('MR Widget Security Reports', () => {
         reportEndpoints.secretDetectionComparisonPathV2,
         reportEndpoints.containerScanningComparisonPathV2,
       ].forEach((path) => {
-        mockAxios.onGet(path).replyOnce(HTTP_STATUS_OK, {
+        mockAxios.onGet(path.concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
           added: [],
         });
       });
@@ -608,7 +624,7 @@ describe('MR Widget Security Reports', () => {
 
     const mockWithData = (props) => {
       Object.keys(reportEndpoints).forEach((key, i) => {
-        mockAxios.onGet(reportEndpoints[key]).replyOnce(HTTP_STATUS_OK, {
+        mockAxios.onGet(reportEndpoints[key].concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
           added: [mockFinding({ uuid: i.toString(), ...props })],
         });
       });
@@ -634,10 +650,12 @@ describe('MR Widget Security Reports', () => {
     };
 
     const mockWithDataOneFinding = (state = 'dismissed') => {
-      mockAxios.onGet(reportEndpoints.sastComparisonPathV2).replyOnce(HTTP_STATUS_OK, {
-        added: [mockFinding({ state })],
-        fixed: [],
-      });
+      mockAxios
+        .onGet(reportEndpoints.sastComparisonPathV2.concat('&scan_mode=full'))
+        .replyOnce(HTTP_STATUS_OK, {
+          added: [mockFinding({ state })],
+          fixed: [],
+        });
 
       [
         reportEndpoints.dastComparisonPathV2,
@@ -647,7 +665,7 @@ describe('MR Widget Security Reports', () => {
         reportEndpoints.secretDetectionComparisonPathV2,
         reportEndpoints.containerScanningComparisonPathV2,
       ].forEach((path) => {
-        mockAxios.onGet(path).replyOnce(HTTP_STATUS_OK, {
+        mockAxios.onGet(path.concat('&scan_mode=full')).replyOnce(HTTP_STATUS_OK, {
           added: [],
         });
       });

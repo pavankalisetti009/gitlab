@@ -1,6 +1,4 @@
 import { nextTick } from 'vue';
-import { GlBadge } from '@gitlab/ui';
-
 import ReportDetails from 'ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_report_details.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
@@ -43,15 +41,6 @@ describe('MR Widget Security Reports - Finding', () => {
             path: '/path/to/pipeline',
             iid: 123,
           },
-          enabledReports: {
-            sast: true,
-            dast: true,
-            dependencyScanning: true,
-            containerScanning: true,
-            coverageFuzzing: true,
-            apiFuzzing: true,
-            secretDetection: true,
-          },
           ...propsData?.mr,
           securityConfigurationPath,
           sourceBranch,
@@ -69,49 +58,47 @@ describe('MR Widget Security Reports - Finding', () => {
     });
   };
 
-  const mockReport = ({
-    error,
-    reportType = 'SAST',
-    reportTypeDescription,
-    findings = [],
-    numberOfNewFindings = findings.length,
-  } = {}) => {
+  const mockReport = ({ reportType = 'SAST', full, partial } = {}) => {
+    const createReport = (key) => ({
+      reportTypeDescription: key.reportTypeDescription || reportType.toUpperCase(),
+      numberOfNewFindings: key.numberOfNewFindings,
+      numberOfFixedFindings: (key.findings?.length || 0) - (key.numberOfNewFindings || 0),
+      testId: `${reportType.toLowerCase()}-scan-report`,
+      findings: key.findings || [],
+      added: key.findings?.slice(0, key.numberOfNewFindings),
+      fixed: key.findings?.slice(key.numberOfNewFindings),
+      error: key.error,
+    });
+
     return {
       reportType,
-      reportTypeDescription: reportTypeDescription || `${reportType.toUpperCase()}`,
-      numberOfNewFindings,
-      numberOfFixedFindings: findings.length - (numberOfNewFindings || 0),
-      testId: `${reportType.toLowerCase()}-scan-report`,
-      findings,
-      added: findings.slice(0, numberOfNewFindings),
-      fixed: findings.slice(numberOfNewFindings),
-      error,
+      full: full ? createReport(full) : undefined,
+      partial: partial ? createReport(partial) : undefined,
     };
   };
 
-  const createComponentWithData = async ({
-    reportType,
-    findings,
-    numberOfNewFindings,
-    numberOfFixedFindings,
-  } = {}) => {
+  const mockReportData = ({ findings, numberOfNewFindings } = {}) => ({
+    numberOfNewFindings: numberOfNewFindings ?? findings?.length ?? 4,
+    findings: findings || [
+      {
+        uuid: '1',
+        severity: 'critical',
+        name: 'Password leak',
+        state: 'dismissed',
+      },
+      { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
+      { uuid: '14abc', severity: 'medium', name: 'SQL vulnerability' },
+      { uuid: 'bc41e', severity: 'low', name: 'SQL vulnerability 2' },
+    ],
+  });
+
+  const createComponentWithData = async ({ reportType, full, partial } = {}) => {
     createComponent({
       propsData: {
         report: mockReport({
           reportType,
-          numberOfNewFindings,
-          numberOfFixedFindings,
-          findings: findings || [
-            {
-              uuid: '1',
-              severity: 'critical',
-              name: 'Password leak',
-              state: 'dismissed',
-            },
-            { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-            { uuid: '14abc', severity: 'medium', name: 'SQL vulnerability' },
-            { uuid: 'bc41e', severity: 'low', name: 'SQL vulnerability 2' },
-          ],
+          partial,
+          full,
         }),
       },
     });
@@ -122,7 +109,7 @@ describe('MR Widget Security Reports - Finding', () => {
   const findMrWidgetRow = () => wrapper.findComponent(MrWidgetRow);
   const findSummaryText = () => wrapper.findComponent(SummaryText);
   const findSummaryHighlights = () => wrapper.findComponent(SummaryHighlights);
-  const findDismissedBadge = () => wrapper.findComponent(GlBadge);
+  const findDismissedBadge = () => wrapper.findByTestId('dismissed-badge');
   const findDynamicScroller = () => wrapper.findByTestId('dynamic-content-scroller');
 
   beforeEach(() => {
@@ -130,7 +117,7 @@ describe('MR Widget Security Reports - Finding', () => {
   });
 
   it('should display the dismissed badge', async () => {
-    createComponentWithData();
+    createComponentWithData({ full: mockReportData() });
 
     // This is for the dynamic scroller
     await nextTick();
@@ -139,6 +126,87 @@ describe('MR Widget Security Reports - Finding', () => {
     await nextTick();
 
     expect(findDismissedBadge().text()).toBe('Dismissed');
+  });
+
+  it('computes the total number of new potential vulnerabilities correctly', async () => {
+    await createComponentWithData({ full: mockReportData() });
+
+    expect(findSummaryText().props()).toMatchObject({ totalNewVulnerabilities: 4 });
+    expect(findSummaryHighlights().props()).toMatchObject({
+      highlights: { critical: 1, high: 1, other: 2 },
+    });
+  });
+
+  it('displays detailed data', async () => {
+    await createComponentWithData({ full: mockReportData() });
+
+    expect(wrapper.findByText(/XSS vulnerability/).exists()).toBe(true);
+    expect(wrapper.findByText(/Password leak/).exists()).toBe(true);
+    expect(wrapper.findByTestId('sast-scan-report').text()).toBe(
+      'SAST detected 4 new potential vulnerabilities',
+    );
+  });
+
+  it('contains new and fixed findings in the dynamic scroller', async () => {
+    await createComponentWithData({ full: mockReportData({ numberOfNewFindings: 2 }) });
+
+    expect(findDynamicScroller().props('items')).toEqual([
+      // New findings
+      {
+        uuid: '1',
+        severity: 'critical',
+        name: 'Password leak',
+        state: 'dismissed',
+      },
+      { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
+      // Fixed findings
+      { uuid: '14abc', severity: 'medium', name: 'SQL vulnerability' },
+      { uuid: 'bc41e', severity: 'low', name: 'SQL vulnerability 2' },
+    ]);
+
+    expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
+    expect(wrapper.findByTestId('fixed-findings-title').text()).toBe('Fixed');
+  });
+
+  it('contains only fixed findings in the dynamic scroller', async () => {
+    await createComponentWithData({
+      full: mockReportData({
+        numberOfNewFindings: 0,
+        numberOfFixedFindings: 2,
+        findings: [
+          { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
+          { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
+        ],
+      }),
+    });
+
+    expect(findDynamicScroller().props('items')).toEqual([
+      { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
+      { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
+    ]);
+
+    expect(wrapper.findByTestId('new-findings-title').exists()).toBe(false);
+    expect(wrapper.findByTestId('fixed-findings-title').text()).toBe('Fixed');
+  });
+
+  it('contains only added findings in the dynamic scroller', async () => {
+    await createComponentWithData({
+      full: {
+        findings: [
+          { uuid: '5', severity: 'low', name: 'SQL Injection' },
+          { uuid: '3', severity: 'unknown', name: 'Weak password' },
+        ],
+        numberOfNewFindings: 2,
+      },
+    });
+
+    expect(findDynamicScroller().props('items')).toEqual([
+      { uuid: '5', severity: 'low', name: 'SQL Injection' },
+      { uuid: '3', severity: 'unknown', name: 'Weak password' },
+    ]);
+
+    expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
+    expect(wrapper.findByTestId('fixed-findings-title').exists()).toBe(false);
   });
 
   describe('resolve with AI badge', () => {
@@ -158,16 +226,18 @@ describe('MR Widget Security Reports - Finding', () => {
           createComponent({
             propsData: {
               report: mockReport({
-                numberOfNewFindings: 1,
-                findings: [
-                  {
-                    uuid: findingUuid,
-                    severity: 'critical',
-                    name: 'Password leak',
-                    state: 'dismissed',
-                    ai_resolution_enabled: aiResolutionEnabled,
-                  },
-                ],
+                full: mockReportData({
+                  numberOfNewFindings: 1,
+                  findings: [
+                    {
+                      uuid: findingUuid,
+                      severity: 'critical',
+                      name: 'Password leak',
+                      state: 'dismissed',
+                      ai_resolution_enabled: aiResolutionEnabled,
+                    },
+                  ],
+                }),
               }),
             },
             provide: {
@@ -198,16 +268,18 @@ describe('MR Widget Security Reports - Finding', () => {
           },
           propsData: {
             report: mockReport({
-              numberOfNewFindings: 1,
-              findings: [
-                {
-                  uuid: findingUuid,
-                  severity: 'critical',
-                  name: 'Password leak',
-                  state: 'dismissed',
-                  ai_resolution_enabled: true,
-                },
-              ],
+              full: {
+                numberOfNewFindings: 1,
+                findings: [
+                  {
+                    uuid: findingUuid,
+                    severity: 'critical',
+                    name: 'Password leak',
+                    state: 'dismissed',
+                    ai_resolution_enabled: true,
+                  },
+                ],
+              },
             }),
           },
         });
@@ -238,87 +310,10 @@ describe('MR Widget Security Reports - Finding', () => {
     });
   });
 
-  it('computes the total number of new potential vulnerabilities correctly', async () => {
-    await createComponentWithData();
-
-    expect(findSummaryText().props()).toMatchObject({ totalNewVulnerabilities: 4 });
-    expect(findSummaryHighlights().props()).toMatchObject({
-      highlights: { critical: 1, high: 1, other: 2 },
-    });
-  });
-
-  it('displays detailed data', async () => {
-    await createComponentWithData();
-
-    expect(wrapper.findByText(/XSS vulnerability/).exists()).toBe(true);
-    expect(wrapper.findByText(/Password leak/).exists()).toBe(true);
-    expect(wrapper.findByTestId('sast-scan-report').text()).toBe(
-      'SAST detected 4 new potential vulnerabilities',
-    );
-  });
-
-  it('contains new and fixed findings in the dynamic scroller', async () => {
-    await createComponentWithData({ numberOfNewFindings: 2 });
-
-    expect(findDynamicScroller().props('items')).toEqual([
-      // New findings
-      {
-        uuid: '1',
-        severity: 'critical',
-        name: 'Password leak',
-        state: 'dismissed',
-      },
-      { uuid: '2', severity: 'high', name: 'XSS vulnerability' },
-      // Fixed findings
-      { uuid: '14abc', severity: 'medium', name: 'SQL vulnerability' },
-      { uuid: 'bc41e', severity: 'low', name: 'SQL vulnerability 2' },
-    ]);
-
-    expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
-    expect(wrapper.findByTestId('fixed-findings-title').text()).toBe('Fixed');
-  });
-
-  it('contains only fixed findings in the dynamic scroller', async () => {
-    await createComponentWithData({
-      numberOfNewFindings: 0,
-      numberOfFixedFindings: 2,
-      findings: [
-        { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-        { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-      ],
-    });
-
-    expect(findDynamicScroller().props('items')).toEqual([
-      { uuid: '14abc', severity: 'high', name: 'SQL vulnerability' },
-      { uuid: 'bc41e', severity: 'high', name: 'SQL vulnerability 2' },
-    ]);
-
-    expect(wrapper.findByTestId('new-findings-title').exists()).toBe(false);
-    expect(wrapper.findByTestId('fixed-findings-title').text()).toBe('Fixed');
-  });
-
-  it('contains only added findings in the dynamic scroller', async () => {
-    await createComponentWithData({
-      findings: [
-        { uuid: '5', severity: 'low', name: 'SQL Injection' },
-        { uuid: '3', severity: 'unknown', name: 'Weak password' },
-      ],
-      numberOfNewFindings: 2,
-    });
-
-    expect(findDynamicScroller().props('items')).toEqual([
-      { uuid: '5', severity: 'low', name: 'SQL Injection' },
-      { uuid: '3', severity: 'unknown', name: 'Weak password' },
-    ]);
-
-    expect(wrapper.findByTestId('new-findings-title').text()).toBe('New');
-    expect(wrapper.findByTestId('fixed-findings-title').exists()).toBe(false);
-  });
-
   describe('error states', () => {
     it('displays an error message for the individual level report', async () => {
       await createComponent({
-        propsData: { report: mockReport({ error: true }) },
+        propsData: { report: mockReport({ full: { error: true } }) },
       });
 
       expect(wrapper.findByText('SAST: Loading resulted in an error').exists()).toBe(true);
@@ -350,7 +345,7 @@ describe('MR Widget Security Reports - Finding', () => {
 
   describe('modal data', () => {
     it('should emit modal-data event when vulnerability is clicked', async () => {
-      await createComponentWithData();
+      await createComponentWithData({ full: mockReportData() });
 
       // Click on the vulnerability name
       wrapper.findByText('Password leak').trigger('click');
@@ -361,6 +356,82 @@ describe('MR Widget Security Reports - Finding', () => {
         state: 'dismissed',
         uuid: '1',
       });
+    });
+  });
+
+  describe('tab view', () => {
+    it.each`
+      report                                                   | diffBasedScan | fullScan | testCase
+      ${{ full: mockReportData(), partial: mockReportData() }} | ${true}       | ${true}  | ${'has both reports'}
+      ${{ partial: mockReportData() }}                         | ${true}       | ${true}  | ${'has partial only'}
+      ${{ full: mockReportData() }}                            | ${false}      | ${false} | ${'has full only'}
+    `(
+      'should adjust visibility of the tabs when $testCase',
+      async ({ report, fullScan, diffBasedScan }) => {
+        await createComponentWithData(report);
+
+        expect(wrapper.findByText('Diff-based').exists()).toBe(diffBasedScan);
+        expect(wrapper.findByText('Full scan').exists()).toBe(fullScan);
+      },
+    );
+
+    it.each`
+      report                           | shouldExist
+      ${{ partial: mockReportData() }} | ${true}
+      ${{ full: mockReportData() }}    | ${false}
+    `(
+      'should show the correct banner for diff-based tab view: $shouldExist',
+      async ({ shouldExist, report }) => {
+        await createComponentWithData(report);
+
+        expect(
+          wrapper
+            .findByText(/This project uses diff-based scanning for GitLab Advanced SAST/)
+            .exists(),
+        ).toBe(shouldExist);
+      },
+    );
+
+    it('should display full scans not enabled message when it is not configured', async () => {
+      await createComponentWithData({ partial: mockReportData() });
+
+      expect(wrapper.findByText('Full scan is not enabled for this project.').exists()).toBe(false);
+
+      wrapper.findByText('Full scan').trigger('click');
+
+      await nextTick();
+
+      expect(wrapper.findByText('Full scan is not enabled for this project.').exists()).toBe(true);
+    });
+
+    it('should display an empty message for full scans when report has no data', async () => {
+      await createComponentWithData({
+        partial: mockReportData(),
+        full: mockReportData({ findings: [] }),
+      });
+
+      expect(wrapper.findByText('No new vulnerabilities were found.').exists()).toBe(false);
+
+      wrapper.findByText('Full scan').trigger('click');
+
+      await nextTick();
+
+      expect(wrapper.findByText('No new vulnerabilities were found.').exists()).toBe(true);
+    });
+
+    it('should display an empty message for diff scans when report has no data', async () => {
+      await createComponentWithData({
+        partial: mockReportData({ findings: [] }),
+        full: mockReportData(),
+      });
+
+      expect(wrapper.findByText('No new vulnerabilities were found.').exists()).toBe(true);
+
+      wrapper.findByText('Full scan').trigger('click');
+
+      await nextTick();
+
+      expect(wrapper.findByText('No new vulnerabilities were found.').exists()).toBe(false);
     });
   });
 });
