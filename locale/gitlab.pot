@@ -48907,6 +48907,9 @@ msgstr ""
 msgid "Preferences|Select a default Duo namespace..."
 msgstr ""
 
+msgid "Preferences|Select the accent color for the application interface."
+msgstr ""
+
 msgid "Preferences|Show one file at a time on merge request's Changes tab"
 msgstr ""
 
@@ -48926,6 +48929,9 @@ msgid "Preferences|Syntax highlighting"
 msgstr ""
 
 msgid "Preferences|Tab width"
+msgstr ""
+
+msgid "Preferences|Theme"
 msgstr ""
 
 msgid "Preferences|This feature is experimental and translations are not yet complete."

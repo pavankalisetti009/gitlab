@@ -33,6 +33,8 @@ To change the appearance:
 1. In the **Mode** section, select an option.
 1. Select **Save changes**.
 
+<!-- When new navigation is released and feature flag `paneled_view` is removed, change **Navigation** to **Theme** -->
+
 ## Change the navigation theme
 
 {{< history >}}
