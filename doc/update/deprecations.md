@@ -3293,11 +3293,9 @@ The table below lists the deprecated metrics and their respective replacements. 
 </div>
 
 Today in GitLab you can see a list of all of the licenses your project and the components that
-use that license on the License List. As of 16.8, the License List
-is deprecated and scheduled to be removed in 17.0 as a breaking change.
-With the release of the [Group Dependency List](https://docs.gitlab.com/user/application_security/dependency_list/)
-and the ability to filter by license on the project and group Dependency List, you can now
-access all of the licenses your project or group is using on the Dependency List.
+use that license on the License List. As of 16.8, the License List is deprecated and scheduled
+to be removed in 17.0 as a breaking change. You can now access all of the licenses your project
+or group is using on the dependency list, including the ability to filter by license.
 
 </div>
 
