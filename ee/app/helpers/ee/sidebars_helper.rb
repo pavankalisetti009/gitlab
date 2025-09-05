@@ -39,7 +39,8 @@ module EE
       root_namespace = (project || group)&.root_ancestor
 
       context.merge!(
-        GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes
+        GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes,
+        GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter.new(user).attributes
       )
 
       context[:trial] = {
