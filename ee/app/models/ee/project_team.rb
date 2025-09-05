@@ -24,6 +24,13 @@ module EE
       users
     end
 
+    def user_exists_with_access_level_or_custom_roles?(user, levels: [], member_role_ids: [])
+      return false unless levels.any? || member_role_ids.any?
+      return false unless user
+
+      members_with_access_level_or_custom_roles(levels: levels, member_role_ids: member_role_ids).exists?(id: user.id)
+    end
+
     override :add_members
     def add_members(
       users,

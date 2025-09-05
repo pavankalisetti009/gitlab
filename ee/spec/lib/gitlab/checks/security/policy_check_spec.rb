@@ -129,6 +129,26 @@ RSpec.describe Gitlab::Checks::Security::PolicyCheck, '#validate!', feature_cate
           )
         end
       end
+
+      context 'when bypass is allowed but no bypass_reason is provided' do
+        let_it_be(:regular_user) { create(:user) }
+        let_it_be(:user_access) { Gitlab::UserAccess.new(regular_user, container: project) }
+
+        before do
+          # Create a policy that allows user bypass but requires a reason
+          create(:security_policy, linked_projects: [project], content: {
+            bypass_settings: {
+              users: [{ id: regular_user.id }]
+            }
+          })
+        end
+
+        it 'raises bypass reason error' do
+          expect { policy_check! }.to raise_error(
+            Gitlab::GitAccess::ForbiddenError, described_class::BYPASS_REASON_ERROR_MESSAGE
+          )
+        end
+      end
     end
   end
 end

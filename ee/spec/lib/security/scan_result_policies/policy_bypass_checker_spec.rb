@@ -7,13 +7,17 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
   let_it_be(:branch_name) { 'main' }
   let_it_be(:user) { create(:user, :project_bot) }
   let_it_be(:service_account) { create(:service_account) }
+  let_it_be(:normal_user) { create(:user) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:custom_role) { create(:member_role, namespace: project.group) }
 
-  let_it_be_with_refind(:security_policy) do
+  let(:security_policy) do
     create(:security_policy, linked_projects: [project], content: { bypass_settings: {} })
   end
 
   let_it_be(:service_account_access) { Gitlab::UserAccess.new(service_account, container: project) }
   let_it_be(:user_access) { Gitlab::UserAccess.new(user, container: project) }
+  let_it_be(:normal_user_access) { Gitlab::UserAccess.new(normal_user, container: project) }
 
   describe '#bypass_allowed?' do
     subject(:bypass_allowed?) do
@@ -22,9 +26,11 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
         project: project,
         user_access: user_access,
         branch_name: branch_name,
-        push_options: {}
+        push_options: push_options
       ).bypass_allowed?
     end
+
+    let(:push_options) { Gitlab::PushOptions.new([]) }
 
     before do
       allow(Gitlab::Audit::Auditor).to receive(:audit).and_call_original
@@ -82,6 +88,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
               "Branch push restriction on '#{branch_name}' for project '#{project.full_path}' " \
               "has been bypassed by access_token with ID: [#{personal_access_token.id}]",
             additional_details: hash_including(
+              bypass_type: :access_token,
+              access_token_ids: [personal_access_token.id],
               security_policy_name: security_policy.name,
               security_policy_id: security_policy.id,
               branch_name: branch_name
@@ -130,6 +138,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
               "Branch push restriction on '#{branch_name}' for project '#{project.full_path}' " \
               "has been bypassed by service_account with ID: #{service_account.id}",
             additional_details: hash_including(
+              bypass_type: :service_account,
+              service_account_id: service_account.id,
               security_policy_name: security_policy.name,
               security_policy_id: security_policy.id,
               branch_name: branch_name
@@ -151,6 +161,196 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
         let_it_be(:user_access) { Gitlab::UserAccess.new(user, container: project) }
 
         it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+    end
+
+    context 'when bypass_settings has users' do
+      let_it_be(:user_access) { normal_user_access }
+
+      before do
+        security_policy.update!(content: { bypass_settings: { users: [{ id: normal_user.id }] } })
+      end
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(security_policies_bypass_options_group_roles: false)
+        end
+
+        it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+
+      context 'when user is a project bot' do
+        let_it_be(:user_access) { Gitlab::UserAccess.new(user, container: project) }
+
+        it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+
+      context 'when user is a service account' do
+        let_it_be(:user_access) { service_account_access }
+
+        it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+
+      context 'when user is not in the allowed users list' do
+        before do
+          security_policy.update!(content: { bypass_settings: { users: [{ id: create(:user).id }] } })
+        end
+
+        it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+
+      context 'when user is in the allowed users list but no bypass reason provided' do
+        it 'raises BypassReasonRequiredError' do
+          expect { bypass_allowed? }.to raise_error(
+            Security::ScanResultPolicies::PolicyBypassChecker::BypassReasonRequiredError,
+            'Bypass reason is required for user bypass'
+          )
+        end
+      end
+
+      context 'when user is in the allowed users list and bypass reason is provided' do
+        let(:push_options) { Gitlab::PushOptions.new(['security_policy.bypass_reason=Emergency fix']) }
+
+        it 'returns true and creates an audit log' do
+          result = bypass_allowed?
+
+          expect(result).to be true
+          expect(Gitlab::Audit::Auditor).to have_received(:audit).with(hash_including(
+            name: 'security_policy_user_push_bypass',
+            author: normal_user,
+            scope: security_policy.security_policy_management_project,
+            target: security_policy,
+            message:
+              "Branch push restriction on '#{branch_name}' for project '#{project.full_path}' " \
+              "has been bypassed by user with ID: #{normal_user.id} with reason: Emergency fix",
+            additional_details: hash_including(
+              bypass_type: :user,
+              user_id: normal_user.id,
+              reason: 'Emergency fix',
+              security_policy_name: security_policy.name,
+              security_policy_id: security_policy.id,
+              branch_name: branch_name
+            )
+          ))
+        end
+      end
+    end
+
+    context 'when bypass_settings has groups' do
+      let_it_be(:user_access) { normal_user_access }
+
+      before do
+        group.add_member(normal_user, Gitlab::Access::DEVELOPER)
+        security_policy.update!(content: { bypass_settings: { groups: [{ id: group.id }] } })
+      end
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(security_policies_bypass_options_group_roles: false)
+        end
+
+        it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+
+      context 'when user is not a member of the allowed group' do
+        before do
+          group.members.find_by(user: normal_user).destroy!
+        end
+
+        it_behaves_like 'bypass is not allowed and audit log is not created'
+      end
+
+      context 'when user is a member of the allowed group but no bypass reason provided' do
+        it 'raises BypassReasonRequiredError' do
+          expect { bypass_allowed? }.to raise_error(
+            Security::ScanResultPolicies::PolicyBypassChecker::BypassReasonRequiredError,
+            'Bypass reason is required for user bypass'
+          )
+        end
+      end
+
+      context 'when user is a member of the allowed group and bypass reason is provided' do
+        let(:push_options) { Gitlab::PushOptions.new(['security_policy.bypass_reason=Critical security update']) }
+
+        it 'returns true and creates an audit log' do
+          result = bypass_allowed?
+
+          expect(result).to be true
+          expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+            hash_including(
+              name: 'security_policy_user_push_bypass',
+              author: normal_user,
+              additional_details: hash_including(
+                bypass_type: :group,
+                group_ids: [group.id],
+                user_id: normal_user.id,
+                reason: 'Critical security update',
+                event_name: 'security_policy_user_push_bypass'
+              )
+            )
+          ).at_least(:once)
+        end
+      end
+    end
+
+    context 'when bypass_settings has both default roles and custom roles' do
+      let_it_be(:user_access) { normal_user_access }
+
+      before do
+        project.add_member(normal_user, Gitlab::Access::MAINTAINER)
+        member = project.members.find_by(user: normal_user)
+        member.update!(member_role: custom_role)
+        security_policy.update!(content: {
+          bypass_settings: {
+            default_roles: ['MAINTAINER'],
+            custom_roles: [{ id: custom_role.id }]
+          }
+        })
+      end
+
+      context 'when bypass reason is provided' do
+        let(:push_options) { Gitlab::PushOptions.new(['security_policy.bypass_reason=Multiple role bypass']) }
+
+        it 'returns true and creates an audit log' do
+          result = bypass_allowed?
+
+          expect(result).to be true
+          expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+            hash_including(
+              name: 'security_policy_user_push_bypass',
+              author: normal_user,
+              additional_details: hash_including(
+                bypass_type: :role,
+                default_roles: [],
+                custom_role_ids: [custom_role.id],
+                reason: 'Multiple role bypass',
+                event_name: 'security_policy_user_push_bypass'
+              )
+            )
+          ).at_least(:once)
+        end
+      end
+    end
+
+    context 'when bypass reason contains HTML' do
+      let_it_be(:user_access) { normal_user_access }
+      let(:push_options) do
+        Gitlab::PushOptions.new(['security_policy.bypass_reason=<script>alert("xss")</script>Emergency fix'])
+      end
+
+      before do
+        security_policy.update!(content: { bypass_settings: { users: [{ id: normal_user.id }] } })
+      end
+
+      it 'sanitizes the bypass reason' do
+        result = bypass_allowed?
+
+        expect(result).to be true
+        expect(Gitlab::Audit::Auditor).to have_received(:audit).with(hash_including(
+          additional_details: hash_including(
+            reason: 'Emergency fix'
+          )
+        )).at_least(:once)
       end
     end
   end

@@ -5,6 +5,8 @@ module Security
     class PolicyBypassChecker
       include Gitlab::Utils::StrongMemoize
 
+      BypassReasonRequiredError = Class.new(StandardError)
+
       def initialize(security_policy:, project:, user_access:, branch_name:, push_options:)
         @security_policy = security_policy
         @project = project
@@ -16,8 +18,22 @@ module Security
       def bypass_allowed?
         return false unless user
 
-        bypass_with_access_token? || bypass_with_service_account?
+        bypass_with_access_token? || bypass_with_service_account? || bypass_with_user?
       end
+
+      private
+
+      attr_reader :security_policy, :project, :user, :branch_name, :push_options
+
+      def audit_logger
+        PolicyBypassAuditor.new(
+          security_policy: security_policy,
+          project: project,
+          user: user,
+          branch_name: branch_name
+        )
+      end
+      strong_memoize_attr :audit_logger
 
       def bypass_with_access_token?
         policy_token_ids = security_policy.bypass_settings.access_token_ids
@@ -28,7 +44,7 @@ module Security
         user_token_ids = user.personal_access_tokens.active.id_in(policy_token_ids).pluck_primary_key
         return false if user_token_ids.blank?
 
-        log_bypass_audit!(:access_token, user_token_ids)
+        audit_logger.log_access_token_bypass(user_token_ids)
         true
       end
 
@@ -39,34 +55,34 @@ module Security
         return false unless user.service_account?
         return false unless policy_service_account_ids.include?(user.id)
 
-        log_bypass_audit!(:service_account, user.id)
+        audit_logger.log_service_account_bypass(user.id)
         true
       end
 
-      private
+      def bypass_with_user?
+        return false if Feature.disabled?(:security_policies_bypass_options_group_roles, project)
 
-      attr_reader :security_policy, :project, :user, :branch_name, :push_options
+        user_bypass_scope = UserBypassChecker.new(
+          security_policy: security_policy, project: project, current_user: user
+        ).bypass_scope
 
-      def log_bypass_audit!(type, id)
-        message = <<~MSG.squish
-          Branch push restriction on '#{branch_name}' for project '#{project.full_path}'
-          has been bypassed by #{type} with ID: #{id}
-        MSG
+        return false unless user_bypass_scope
 
-        Gitlab::Audit::Auditor.audit(
-          name: "security_policy_#{type}_push_bypass",
-          author: user,
-          scope: security_policy.security_policy_management_project,
-          target: security_policy,
-          message: message,
-          additional_details: {
-            project_id: project.id,
-            security_policy_name: security_policy.name,
-            security_policy_id: security_policy.id,
-            branch_name: branch_name
-          }
-        )
+        reason = reason_from_push_options
+        raise BypassReasonRequiredError, "Bypass reason is required for user bypass" if reason.blank?
+
+        audit_logger.log_user_bypass(user_bypass_scope, reason)
+        true
       end
+
+      def reason_from_push_options
+        return if push_options.nil?
+
+        reason = push_options.get(:security_policy)&.dig(:bypass_reason)
+
+        Sanitize.clean(reason) if reason.present?
+      end
+      strong_memoize_attr :reason_from_push_options
     end
   end
 end

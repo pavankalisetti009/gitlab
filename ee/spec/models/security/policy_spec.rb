@@ -1338,18 +1338,18 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     context 'when bypass_settings is nil' do
       let(:policy) { build(:security_policy, content: {}) }
 
-      it 'returns a BypassSettings object with nil ids' do
-        expect(policy.bypass_settings.access_token_ids).to be_nil
-        expect(policy.bypass_settings.service_account_ids).to be_nil
+      it 'returns a BypassSettings object with empty arrays' do
+        expect(policy.bypass_settings.access_token_ids).to be_empty
+        expect(policy.bypass_settings.service_account_ids).to be_empty
       end
     end
 
     context 'when bypass_settings is empty' do
       let(:policy) { build(:security_policy, content: { bypass_settings: {} }) }
 
-      it 'returns a BypassSettings object with nil ids' do
-        expect(policy.bypass_settings.access_token_ids).to be_nil
-        expect(policy.bypass_settings.service_account_ids).to be_nil
+      it 'returns a BypassSettings object with empty arrays' do
+        expect(policy.bypass_settings.access_token_ids).to be_empty
+        expect(policy.bypass_settings.service_account_ids).to be_empty
       end
     end
 

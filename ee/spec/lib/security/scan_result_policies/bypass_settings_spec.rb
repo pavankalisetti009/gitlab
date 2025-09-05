@@ -26,8 +26,8 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when access_tokens is nil' do
       let(:bypass_settings) { {} }
 
-      it 'returns nil' do
-        expect(bypass_settings_instance.access_token_ids).to be_nil
+      it 'returns empty array' do
+        expect(bypass_settings_instance.access_token_ids).to be_empty
       end
     end
   end
@@ -40,8 +40,8 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when service_accounts is nil' do
       let(:bypass_settings) { {} }
 
-      it 'returns nil' do
-        expect(bypass_settings_instance.service_account_ids).to be_nil
+      it 'returns empty array' do
+        expect(bypass_settings_instance.service_account_ids).to be_empty
       end
     end
   end
@@ -64,7 +64,7 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when branches are nil or missing' do
       let(:bypass_settings) { {} }
 
-      it 'returns an empty array' do
+      it 'returns empty array' do
         expect(bypass_settings_instance.branches).to be_empty
       end
     end
@@ -82,8 +82,8 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when users is nil or missing' do
       let(:bypass_settings) { {} }
 
-      it 'returns nil' do
-        expect(bypass_settings_instance.user_ids).to be_nil
+      it 'returns empty array' do
+        expect(bypass_settings_instance.user_ids).to be_empty
       end
     end
   end
@@ -100,8 +100,8 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when groups is nil or missing' do
       let(:bypass_settings) { {} }
 
-      it 'returns nil' do
-        expect(bypass_settings_instance.group_ids).to be_nil
+      it 'returns empty array' do
+        expect(bypass_settings_instance.group_ids).to be_empty
       end
     end
   end
@@ -118,7 +118,7 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when roles is nil or missing' do
       let(:bypass_settings) { {} }
 
-      it 'returns an empty array' do
+      it 'returns empty array' do
         expect(bypass_settings_instance.default_roles).to eq([])
       end
     end
@@ -136,8 +136,8 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
     context 'when custom_roles is nil or missing' do
       let(:bypass_settings) { {} }
 
-      it 'returns nil' do
-        expect(bypass_settings_instance.custom_role_ids).to be_nil
+      it 'returns empty array' do
+        expect(bypass_settings_instance.custom_role_ids).to be_empty
       end
     end
   end

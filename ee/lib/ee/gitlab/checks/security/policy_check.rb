@@ -7,6 +7,7 @@ module EE
         module PolicyCheck
           PUSH_ERROR_MESSAGE = "Push is blocked by settings overridden by a security policy"
           FORCE_PUSH_ERROR_MESSAGE = "Force push is blocked by settings overridden by a security policy"
+          BYPASS_REASON_ERROR_MESSAGE = "Bypass reason is required when bypassing security policy restrictions"
           LOG_MESSAGE = "Checking if scan result policies apply to branch..."
 
           def validate!
@@ -40,6 +41,8 @@ module EE
               branch_name: branch_name,
               push_options: change_access.push_options
             ).check_bypass!
+          rescue ::Security::ScanResultPolicies::PolicyBypassChecker::BypassReasonRequiredError
+            raise ::Gitlab::GitAccess::ForbiddenError, BYPASS_REASON_ERROR_MESSAGE unless matching_merge_request?
           end
 
           def force_push?
