@@ -2,6 +2,7 @@ import { createRouter } from 'ee/ai/catalog/router';
 import {
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
+  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 
@@ -40,6 +41,14 @@ describe('AI Catalog Router', () => {
       await router.push(`/agents/${agentId}/run`);
 
       expect(router.currentRoute.name).toBe(AI_CATALOG_AGENTS_RUN_ROUTE);
+    });
+  });
+
+  describe('/agents/:id/duplicate', () => {
+    it('renders child route', async () => {
+      await router.push(`/agents/${agentId}/duplicate`);
+
+      expect(router.currentRoute.name).toBe(AI_CATALOG_AGENTS_DUPLICATE_ROUTE);
     });
   });
 

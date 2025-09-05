@@ -1,0 +1,19 @@
+extend type Query {
+  itemToDuplicate: ItemToDuplicate
+}
+
+extend type Mutation {
+  setItemToDuplicate(item: ItemToDuplicateInput!): ItemToDuplicate
+}
+
+type ItemToDuplicate {
+  id: String
+  type: String
+  data: JSON
+}
+
+input ItemToDuplicateInput {
+  id: String
+  type: String
+  data: JSON
+}

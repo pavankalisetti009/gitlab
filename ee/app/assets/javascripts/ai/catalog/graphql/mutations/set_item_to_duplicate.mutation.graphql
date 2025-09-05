@@ -1,0 +1,3 @@
+mutation setItemToDuplicate($item: ItemToDuplicateInput!) {
+  setItemToDuplicate(item: $item) @client
+}

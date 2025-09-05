@@ -12,15 +12,21 @@ import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
+import setItemToDuplicateMutation from '../graphql/mutations/set_item_to_duplicate.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import {
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
+  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from '../router/constants';
-import { AGENT_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from '../constants';
+import {
+  AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
+  PAGE_SIZE,
+  AI_CATALOG_TYPE_AGENT,
+} from '../constants';
 
 export default {
   name: 'AiCatalogAgents',
@@ -137,6 +143,11 @@ export default {
             icon: 'rocket-launch',
           },
           {
+            text: s__('AICatalog|Duplicate'),
+            action: () => this.handleDuplicate(itemId),
+            icon: 'duplicate',
+          },
+          {
             text: s__('AICatalog|Edit'),
             to: {
               name: AI_CATALOG_AGENTS_EDIT_ROUTE,
@@ -202,6 +213,39 @@ export default {
         first: PAGE_SIZE,
         last: null,
       });
+    },
+    findAgentInList(numberId) {
+      return this.aiCatalogAgents.find(
+        (n) => getIdFromGraphQLId(n.id).toString() === String(numberId),
+      );
+    },
+    async handleDuplicate(itemId) {
+      try {
+        const agent = this.findAgentInList(itemId);
+
+        if (!agent) {
+          throw new Error(s__('AICatalog|Agent not found.'));
+        }
+
+        await this.$apollo.mutate({
+          mutation: setItemToDuplicateMutation,
+          variables: {
+            item: {
+              id: itemId,
+              type: AI_CATALOG_TYPE_AGENT,
+              data: agent,
+            },
+          },
+        });
+
+        this.$router.push({
+          name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+          params: { id: itemId },
+        });
+      } catch (error) {
+        this.errors = [error.message];
+        Sentry.captureException(error);
+      }
     },
     handlePrevPage() {
       this.$apollo.queries.aiCatalogAgents.refetch({
