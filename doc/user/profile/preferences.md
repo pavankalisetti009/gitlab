@@ -393,7 +393,7 @@ For more information, see [epic 9404](https://gitlab.com/groups/gitlab-org/-/epi
 Prerequisites:
 
 - For [GitLab Self-Managed](../../subscriptions/self_managed/_index.md), an administrator must
-  [enable exact code search](../../integration/exact_code_search/zoekt.md#enable-exact-code-search).
+  [enable exact code search](../../integration/zoekt/_index.md#enable-exact-code-search).
 
 To disable [exact code search](../search/exact_code_search.md) in user preferences:
 
