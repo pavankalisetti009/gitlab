@@ -4,8 +4,8 @@ module CloudConnector
   class CatalogDataLoader < Gitlab::CloudConnector::DataModel::AbstractDataLoader
     include Gitlab::Utils::StrongMemoize
 
-    def load!
-      loader.load!
+    def load_with_index!
+      loader.load_with_index!
     end
 
     def loader

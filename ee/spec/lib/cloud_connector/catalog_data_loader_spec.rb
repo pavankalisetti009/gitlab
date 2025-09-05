@@ -7,17 +7,17 @@ RSpec.describe CloudConnector::CatalogDataLoader, feature_category: :plan_provis
 
   subject(:catalog_loader) { described_class.new(model_class) }
 
-  describe '#load!' do
+  describe '#load_with_index!' do
     let(:loader_instance) { instance_double(::Gitlab::CloudConnector::DataModel::YamlDataLoader) }
-    let(:expected_result) { [instance_double(model_class)] }
+    let(:expected_result) { { test_unit_primitive: instance_double(model_class) } }
 
     before do
       allow(catalog_loader).to receive(:loader).and_return(loader_instance)
-      allow(loader_instance).to receive(:load!).and_return(expected_result)
+      allow(loader_instance).to receive(:load_with_index!).and_return(expected_result)
     end
 
     it 'delegates to the selected loader instance' do
-      result = catalog_loader.load!
+      result = catalog_loader.load_with_index!
       expect(result).to eq(expected_result)
     end
   end
