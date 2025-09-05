@@ -95,7 +95,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'when user is guest' do
       let(:current_user) { guest }
 
-      it { is_expected.to be_allowed(:read_epic, :read_epic_board, :list_subgroup_epics) }
+      it { is_expected.to be_allowed(:read_epic, :read_epic_board, :read_subgroup_epic) }
       it { is_expected.to be_disallowed(*(epic_rules - [:read_epic, :read_epic_board, :read_epic_board_list])) }
     end
 

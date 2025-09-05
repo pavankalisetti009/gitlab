@@ -179,7 +179,7 @@ class EpicsFinder < IssuableFinder
     # group has private subgroups and therefore they would not necessarily be
     # able to read epics in the private subgroup even though they can in the
     # parent group.
-    !include_confidential && Ability.allowed?(current_user, :list_subgroup_epics, parent)
+    !include_confidential && Ability.allowed?(current_user, :read_subgroup_epic, parent)
   end
 
   override :sort
