@@ -14,6 +14,7 @@ import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
+import { AI_CATALOG_AGENTS_DUPLICATE_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
   mockAgents,
@@ -42,13 +43,21 @@ describe('AiCatalogAgents', () => {
   const mockToast = {
     show: jest.fn(),
   };
+  const mockSetItemToDuplicateMutation = jest.fn();
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
-    mockApollo = createMockApollo([
-      [aiCatalogAgentQuery, mockAgentQueryHandler],
-      [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
-      [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
-    ]);
+    mockApollo = createMockApollo(
+      [
+        [aiCatalogAgentQuery, mockAgentQueryHandler],
+        [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
+        [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
+      ],
+      {
+        Mutation: {
+          setItemToDuplicate: mockSetItemToDuplicateMutation,
+        },
+      },
+    );
 
     wrapper = shallowMountExtended(AiCatalogAgents, {
       apolloProvider: mockApollo,
@@ -63,6 +72,7 @@ describe('AiCatalogAgents', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
+  const agentNotFoundErrorMessage = 'Agent not found.';
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -245,7 +255,7 @@ describe('AiCatalogAgents', () => {
       });
 
       it('displays permission error message', () => {
-        expect(findErrorsAlert().props('errors')).toStrictEqual(['Agent not found.']);
+        expect(findErrorsAlert().props('errors')).toStrictEqual([agentNotFoundErrorMessage]);
       });
 
       it('does not log to Sentry for permission issues', () => {
@@ -332,6 +342,69 @@ describe('AiCatalogAgents', () => {
         expect(findErrorsAlert().props('errors')).toStrictEqual([
           'Failed to delete agent. Error: Request failed',
         ]);
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('on duplicating an agent', () => {
+    const duplicateAgent = async (index = 1) => {
+      await waitForPromises();
+      await wrapper.vm.handleDuplicate(getIdFromGraphQLId(mockAgents[index].id));
+    };
+
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('calls setItemToDuplicate mutation with correct variables', async () => {
+      mockSetItemToDuplicateMutation.mockResolvedValue({ data: {} });
+
+      await duplicateAgent();
+
+      expect(mockSetItemToDuplicateMutation).toHaveBeenCalledWith(
+        {},
+        {
+          item: {
+            id: getIdFromGraphQLId(mockAgents[1].id),
+            type: 'AGENT',
+            data: mockAgents[1],
+          },
+        },
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+
+    describe('when request succeeds', () => {
+      it('navigates to duplicate route', async () => {
+        mockSetItemToDuplicateMutation.mockResolvedValue({ data: {} });
+
+        await duplicateAgent();
+
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+          params: { id: getIdFromGraphQLId(mockAgents[1].id) },
+        });
+      });
+    });
+
+    describe('when agent is not found', () => {
+      it('shows error message and logs to Sentry', async () => {
+        // Create component with empty agents list
+        mockCatalogItemsQueryHandler.mockResolvedValue({
+          data: {
+            aiCatalogItems: {
+              nodes: [],
+              pageInfo: mockPageInfo,
+            },
+          },
+        });
+        createComponent();
+
+        await duplicateAgent();
+
+        expect(findErrorsAlert().props('errors')).toStrictEqual([agentNotFoundErrorMessage]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });
