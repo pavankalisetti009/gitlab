@@ -28,9 +28,9 @@ module EE
     override :project_permissions_panel_data
     def project_permissions_panel_data(project)
       super.merge({
-        canManageSecretManager: ::Feature.enabled?(:secrets_manager, project) &&
-          can?(current_user, :admin_project_secrets_manager, project),
-        isSecretsManagerAvailable: project.licensed_feature_available?(:native_secrets_management),
+        canManageSecretsManager: can?(current_user, :admin_project_secrets_manager, project),
+        isSecretsManagerAvailable: project.licensed_feature_available?(:native_secrets_management) &&
+          ::Feature.enabled?(:secrets_manager, project),
         requirementsAvailable: project.feature_available?(:requirements),
         requestCveAvailable: ::Gitlab.com?,
         cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request.md'),
