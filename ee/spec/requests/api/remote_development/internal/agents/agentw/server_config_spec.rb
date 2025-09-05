@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe API::RemoteDevelopment::Internal::Agent::Agentw, feature_category: :workspaces do
+RSpec.describe API::RemoteDevelopment::Internal::Agents::Agentw::ServerConfig, feature_category: :workspaces do
   let(:jwt_auth_headers) do
     jwt_token = JWT.encode(
       { "iss" => Gitlab::Kas::JWT_ISSUER, "aud" => Gitlab::Kas::JWT_AUDIENCE },
