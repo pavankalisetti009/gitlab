@@ -2350,9 +2350,6 @@ msgstr ""
 msgid "AI Agent was successfully deleted"
 msgstr ""
 
-msgid "AI Chat Panel"
-msgstr ""
-
 msgid "AI Gateway"
 msgstr ""
 
@@ -13017,6 +13014,9 @@ msgstr ""
 msgid "Characters over limit"
 msgstr ""
 
+msgid "Chat content placeholder"
+msgstr ""
+
 msgid "ChatMessage|%{project_link}: Pipeline %{pipeline_link} of %{ref_type} %{ref_link} by %{user_combined_name} %{humanized_status} in %{duration}"
 msgstr ""
 
@@ -15415,7 +15415,7 @@ msgstr ""
 msgid "Collapse %{section} merge requests"
 msgstr ""
 
-msgid "Collapse GitLab Duo Chat"
+msgid "Collapse GitLab Duo Panel"
 msgstr ""
 
 msgid "Collapse all files"
@@ -29835,6 +29835,12 @@ msgid "GitLab Duo Chat"
 msgstr ""
 
 msgid "GitLab Duo Chat with Amazon Q"
+msgstr ""
+
+msgid "GitLab Duo Sessions"
+msgstr ""
+
+msgid "GitLab Duo Suggestions"
 msgstr ""
 
 msgid "GitLab Duo code features"
@@ -60941,6 +60947,12 @@ msgstr ""
 msgid "SessionExpire|Your session has expired"
 msgstr ""
 
+msgid "Sessions"
+msgstr ""
+
+msgid "Sessions content placeholder"
+msgstr ""
+
 msgid "Session|There was a error loading the user verification challenge. Refresh to try again."
 msgstr ""
 
@@ -63555,6 +63567,9 @@ msgid "Suggestions are not applicable as one or more suggestions were not found.
 msgstr ""
 
 msgid "Suggestions are not applicable as their lines cannot overlap."
+msgstr ""
+
+msgid "Suggestions content placeholder"
 msgstr ""
 
 msgid "Suggestions must all be on the same branch."
