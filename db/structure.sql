@@ -37061,6 +37061,8 @@ CREATE INDEX idx_zoekt_repositories_on_zoekt_index_id_and_size_bytes ON zoekt_re
 
 CREATE INDEX idx_zoekt_repositories_on_zoekt_index_id_and_state_with_schema ON zoekt_repositories USING btree (zoekt_index_id, state) INCLUDE (schema_version);
 
+CREATE INDEX idx_zoekt_repositories_project_state_schema ON zoekt_repositories USING btree (project_identifier, state, schema_version);
+
 CREATE INDEX import_export_upload_uploads_checksum_idx ON import_export_upload_uploads USING btree (checksum);
 
 CREATE INDEX import_export_upload_uploads_model_id_model_type_uploader_c_idx ON import_export_upload_uploads USING btree (model_id, model_type, uploader, created_at);
