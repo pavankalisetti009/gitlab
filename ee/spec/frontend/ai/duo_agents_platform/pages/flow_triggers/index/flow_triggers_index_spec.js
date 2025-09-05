@@ -1,9 +1,11 @@
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
+import { GlExperimentBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
@@ -32,6 +34,8 @@ describe('FlowTriggersIndex', () => {
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
   const findTable = () => wrapper.findComponent(FlowTriggersTable);
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
 
   const createWrapper = ({
     queryHandler = mockFlowTriggerQueryHandler,
@@ -58,6 +62,14 @@ describe('FlowTriggersIndex', () => {
   });
 
   describe('Rendering', () => {
+    it('loads the page heading and experiment badge', () => {
+      expect(findPageHeading().exists()).toBe(true);
+      expect(findPageHeading().text()).toContain('Flow triggers');
+
+      expect(findExperimentBadge().exists()).toBe(true);
+      expect(findExperimentBadge().props('type')).toBe('beta');
+    });
+
     describe('while fetching data', () => {
       it('shows a loading state', () => {
         expect(findLoadingStateList().exists()).toBe(true);

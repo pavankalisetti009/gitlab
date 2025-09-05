@@ -13,6 +13,7 @@ import { createAlert } from '~/alert';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
 import projectServiceAccountsQuery from '../../../graphql/queries/get_project_service_accounts.query.graphql';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../../router/constants';
+import AiLegalDisclaimer from '../../../components/common/ai_legal_disclaimer.vue';
 
 const MODE_CREATE = 'create';
 const MODE_EDIT = 'edit';
@@ -28,6 +29,7 @@ export default {
     GlFormInput,
     GlFormTextarea,
     UserSelect,
+    AiLegalDisclaimer,
   },
   props: {
     mode: {
@@ -231,6 +233,7 @@ export default {
           {{ __('Cancel') }}
         </gl-button>
       </div>
+      <ai-legal-disclaimer />
     </gl-form>
   </div>
 </template>

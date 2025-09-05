@@ -1,5 +1,6 @@
 <script>
-import { GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlButton, GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
 import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
 import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
@@ -7,9 +8,11 @@ import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
 export default {
   name: AGENT_PLATFORM_INDEX_COMPONENT_NAME,
   components: {
-    GlButton,
-    GlLoadingIcon,
     AgentFlowList,
+    GlButton,
+    GlExperimentBadge,
+    GlLoadingIcon,
+    PageHeading,
   },
   inject: ['emptyStateIllustrationPath'],
   props: {
@@ -55,18 +58,25 @@ export default {
 </script>
 <template>
   <div class="gl-mt-3 gl-flex gl-flex-col">
-    <div class="gl-flex gl-justify-end">
-      <gl-button
-        variant="confirm"
-        :to="{ name: $options.newPage }"
-        data-testid="new-agent-flow-button"
-        >{{ s__('DuoAgentsPlatform|New session') }}</gl-button
-      >
-    </div>
+    <page-heading>
+      <template #heading>
+        <div class="gl-flex">
+          <span>{{ s__('DuoAgentsPlatform|Agent sessions') }}</span>
+          <gl-experiment-badge type="beta" class="gl-self-center" />
+        </div>
+      </template>
+      <template #actions>
+        <gl-button
+          variant="confirm"
+          :to="{ name: $options.newPage }"
+          data-testid="new-agent-flow-button"
+          >{{ s__('DuoAgentsPlatform|New session') }}</gl-button
+        >
+      </template>
+    </page-heading>
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
     <agent-flow-list
       v-else
-      class="gl-mt-5"
       :empty-state-illustration-path="emptyStateIllustrationPath"
       :workflows="workflows"
       :workflows-page-info="workflowsPageInfo"

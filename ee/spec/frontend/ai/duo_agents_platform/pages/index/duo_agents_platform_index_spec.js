@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 
 import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
 import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agents_platform_index.vue';
@@ -41,6 +42,18 @@ describe('AgentsPlatformIndex', () => {
   const findWorkflowsList = () => wrapper.findComponent(AgentFlowList);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findNewAgentFlowButton = () => wrapper.find('[data-testid="new-agent-flow-button"]');
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
+
+  it('loads the page heading and experiment badge', () => {
+    createWrapper();
+
+    expect(findPageHeading().exists()).toBe(true);
+    expect(findPageHeading().text()).toContain('Agent sessions');
+
+    expect(findExperimentBadge().exists()).toBe(true);
+    expect(findExperimentBadge().props('type')).toBe('beta');
+  });
 
   describe('when loading the queries', () => {
     beforeEach(() => {
