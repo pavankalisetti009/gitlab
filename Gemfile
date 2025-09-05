@@ -436,6 +436,10 @@ gem 'io-event', '~> 1.12', require: false, feature_category: :shared
 # Security report schemas used to validate CI job artifacts of security jobs
 gem 'gitlab-security_report_schemas', '0.1.3.min15.0.0.max15.2.3', feature_category: :vulnerability_management
 
+# Frontend bundling
+gem 'vite_rails', '~> 3.0.17', feature_category: :shared
+gem 'vite_ruby', '~> 3.9.0', feature_category: :shared
+
 # OpenTelemetry
 group :opentelemetry do
   # Core OpenTelemetry gems
@@ -540,11 +544,6 @@ group :development, :test do
   gem 'sigdump', '~> 0.2.4', require: 'sigdump/setup', feature_category: :shared
 
   gem 'pact', '~> 1.64', feature_category: :shared
-
-  # For now we only use vite in development / test, and not for production builds
-  # See: https://gitlab.com/gitlab-org/frontend/rfcs/-/issues/106
-  gem 'vite_rails', '~> 3.0.17', feature_category: :shared
-  gem 'vite_ruby', '~> 3.9.0', feature_category: :shared
 
   gem 'gitlab-housekeeper', path: 'gems/gitlab-housekeeper', feature_category: :tooling
 
