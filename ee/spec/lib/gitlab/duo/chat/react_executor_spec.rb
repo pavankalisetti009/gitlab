@@ -583,22 +583,22 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
     context 'when duo chat is vendored' do
       let_it_be(:ai_feature) { create(:ai_feature_setting, feature: :duo_chat, provider: :vendored) }
+      let_it_be(:instance_feature) { create(:instance_model_selection_feature_setting, feature: :duo_chat) }
 
       before do
         stub_feature_flags(ai_model_switching: false)
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
-      # This test is failing because instance_level has not been implemented yet, now it's returning nil for now
       it 'sends the vendored model metadata' do
         params = step_params
         params[:model_metadata] = {
           provider: 'gitlab',
-          identifier: '',
+          identifier: instance_feature.offered_model_ref,
           feature_setting: 'duo_chat'
         }
 
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor, user, ai_feature) do |react_agent|
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor, user, instance_feature) do |react_agent|
           expect(react_agent).to receive(:step).with(params)
             .and_yield(action_event).and_return([action_event])
         end
