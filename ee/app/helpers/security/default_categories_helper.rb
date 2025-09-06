@@ -21,30 +21,35 @@ module Security
         security_attributes: [
           Security::Attribute.new(
             name: 'Mission Critical',
+            template_type: :mission_critical,
             description: 'Essential for core business functions',
             editable_state: :locked,
             color: "#ab6100"
           ),
           Security::Attribute.new(
             name: 'Business Critical',
+            template_type: :business_critical,
             description: 'Important for key business operations',
             editable_state: :locked,
             color: "#c17d10"
           ),
           Security::Attribute.new(
             name: 'Business Operational',
+            template_type: :business_operational,
             description: 'Standard operational systems',
             editable_state: :locked,
             color: "#9d6e2b"
           ),
           Security::Attribute.new(
             name: 'Business Administrative',
+            template_type: :business_administrative,
             description: 'Supporting administrative functions',
             editable_state: :locked,
             color: "#e9be74"
           ),
           Security::Attribute.new(
             name: 'Non-essential',
+            template_type: :non_essential,
             description: 'Minimal business impact',
             editable_state: :locked,
             color: "#f5d9a8"

@@ -24653,6 +24653,7 @@ CREATE TABLE security_attributes (
     name text NOT NULL,
     description text,
     color text NOT NULL,
+    template_type smallint,
     CONSTRAINT check_219cd2b143 CHECK ((char_length(color) <= 7)),
     CONSTRAINT check_518516df75 CHECK ((char_length(description) <= 255)),
     CONSTRAINT check_5f6fd50ef3 CHECK ((char_length(name) <= 255))
