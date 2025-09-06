@@ -21,6 +21,7 @@ import {
   customYamlUrlParams,
   mockInvalidStrategyPipelineExecutionManifest,
   mockInvalidStrategyPipelineExecutionObject,
+  mockInvalidTypePipelineExecutionManifest,
   invalidYaml,
   mockPipelineExecutionObject,
   mockWithInjectCiPipelineExecutionObject,
@@ -138,6 +139,7 @@ describe('createPolicyObject', () => {
     ${'returns the policy object and no errors for a supported manifest with inject_ci'}    | ${INJECT_CI_PIPELINE_EXECUTION_POLICY}          | ${{ policy: fromYaml({ manifest: INJECT_CI_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter }), parsingError: {} }}
     ${'returns the policy object and no errors for a supported manifest with schedule PEP'} | ${mockSchedulePipelineExecutionManifest}        | ${{ policy: fromYaml({ manifest: mockSchedulePipelineExecutionManifest, type: PIPELINE_EXECUTION_SCHEDULE_POLICY }), parsingError: {} }}
     ${'returns the error policy object and the error for an invalid strategy name'}         | ${mockInvalidStrategyPipelineExecutionManifest} | ${{ policy: mockInvalidStrategyPipelineExecutionObject, parsingError: { actions: true } }}
+    ${'returns the policy object and no errors for a manifest with an invalid type'}        | ${mockInvalidTypePipelineExecutionManifest}     | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter }), parsingError: {} }}
   `('$title', ({ input, output }) => {
     expect(createPolicyObject(input)).toStrictEqual(output);
   });

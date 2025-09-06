@@ -74,16 +74,22 @@ export const validatePolicy = (policy) => {
  * @returns {string} policy type
  */
 const getPolicyType = (manifest) => {
+  const pipelineExecutionPolicyType = POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter;
+
   try {
     const parsedYaml = safeLoad(manifest, { json: true });
-    return (
-      parsedYaml.type ||
-      (parsedYaml[POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter]
-        ? POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter
-        : PIPELINE_EXECUTION_SCHEDULE_POLICY)
-    );
+
+    if (parsedYaml.type) {
+      return parsedYaml.type;
+    }
+
+    if (parsedYaml[PIPELINE_EXECUTION_SCHEDULE_POLICY]) {
+      return PIPELINE_EXECUTION_SCHEDULE_POLICY;
+    }
+
+    return pipelineExecutionPolicyType;
   } catch {
-    return POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter;
+    return pipelineExecutionPolicyType;
   }
 };
 

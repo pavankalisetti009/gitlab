@@ -1,4 +1,4 @@
-import { isEmpty, uniqueId } from 'lodash';
+import { isEmpty, uniqueId, isObject } from 'lodash';
 import { safeLoad } from 'js-yaml';
 import {
   EXCLUDING,
@@ -165,6 +165,32 @@ export const isScanningReport = (scanner) =>
   [REPORT_TYPE_CONTAINER_SCANNING, REPORT_TYPE_DEPENDENCY_SCANNING].includes(scanner);
 
 /**
+ * Extracts the policy content from a YAML object with a type as the root property
+ *
+ * @param {Object} parsedYaml - The parsed YAML object representing a policy.
+ * @param {string} type - The expected root property type to extract from `policyYaml`.
+ * @returns {Object} - The extracted policy content, or the entire YAML object if no matching type is found.
+ */
+export const extractPolicyContentFromRootTypeProperty = (parsedYaml, type) => {
+  if (type in parsedYaml) {
+    return parsedYaml[type];
+  }
+
+  // Handle unknown root type property
+  const policyKeys = Object.keys(parsedYaml);
+  if (policyKeys.length === 1) {
+    const rootProperty = policyKeys[0];
+    const rootValue = parsedYaml[rootProperty];
+
+    if (isObject(rootValue)) {
+      return rootValue;
+    }
+  }
+
+  return parsedYaml;
+};
+
+/**
  * Policy type, in this case, policy type is a wrapper
  * for a policy content. This method extracts policy content from
  * a wrapper
@@ -178,7 +204,6 @@ export const extractPolicyContent = ({ manifest, type, withType = false }) => {
 
   try {
     const parsedYaml = safeLoad(manifest, { json: true });
-
     /**
      * Remove type property from yaml
      * Type now is a parent property
@@ -188,8 +213,7 @@ export const extractPolicyContent = ({ manifest, type, withType = false }) => {
       delete parsedYaml.type;
     }
 
-    const hasNewTypeRootProperty = type in parsedYaml;
-    const extractedPolicy = hasNewTypeRootProperty ? parsedYaml[type] : parsedYaml;
+    const extractedPolicy = extractPolicyContentFromRootTypeProperty(parsedYaml, type);
 
     const isArray = Array.isArray(extractedPolicy);
     const policy = isArray ? extractedPolicy[0] : extractedPolicy;
