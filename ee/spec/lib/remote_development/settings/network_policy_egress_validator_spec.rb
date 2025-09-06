@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::Settings::NetworkPolicyEgressValidator, :rd_fast, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::Settings::NetworkPolicyEgressValidator, feature_category: :workspaces do
   include ResultMatchers
 
   let(:context) do
