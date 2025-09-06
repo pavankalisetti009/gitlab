@@ -1,5 +1,5 @@
 <script>
-import { GlAvatarLabeled, GlTab, GlTableLite } from '@gitlab/ui';
+import { GlAvatarLabeled, GlButton, GlTab, GlTableLite } from '@gitlab/ui';
 import { upperFirst } from 'lodash';
 import { __ } from '~/locale';
 import { ACCESS_LEVELS_INTEGER_TO_STRING } from '~/access_level/constants';
@@ -13,10 +13,15 @@ export default {
   name: 'SecretsManagerPermissionsTable',
   components: {
     GlAvatarLabeled,
+    GlButton,
     GlTab,
     GlTableLite,
   },
   props: {
+    canDelete: {
+      type: Boolean,
+      required: true,
+    },
     items: {
       type: Array,
       required: true,
@@ -58,7 +63,7 @@ export default {
               {
                 key: 'group',
                 label: __('Group'),
-                thClass: 'gl-w-1/5',
+                thClass: !this.canDelete ? 'gl-w-1/3' : 'gl-w-1/4',
               },
             ]
           : []),
@@ -67,14 +72,14 @@ export default {
               {
                 key: 'role',
                 label: __('Role'),
-                thClass: 'gl-w-1/5',
+                thClass: !this.canDelete ? 'gl-w-1/3' : 'gl-w-1/4',
               },
             ]
           : []),
         {
           key: 'scope',
           label: __('Scope'),
-          thClass: 'gl-w-1/5',
+          thClass: !this.canDelete ? 'gl-w-1/3' : 'gl-w-1/4',
         },
         // TODO: Add expiration column once available
         // See https://gitlab.com/gitlab-org/gitlab/-/issues/560580
@@ -82,10 +87,14 @@ export default {
           key: 'access-granted',
           label: __('Access granted'),
         },
-        {
-          key: 'actions',
-          label: __('Actions'),
-        },
+        ...(this.canDelete
+          ? [
+              {
+                key: 'actions',
+                label: __('Actions'),
+              },
+            ]
+          : []),
       ];
     },
     tableTitle() {
@@ -165,6 +174,14 @@ export default {
           :sub-label="grantedBy.name"
         />
         <span v-else>{{ __('N/A') }}</span>
+      </template>
+      <template #cell(actions)="{ item: { principal } }">
+        <gl-button
+          icon="remove"
+          :title="__('Delete')"
+          :aria-label="__('Delete')"
+          @click="$emit('delete-permission', principal)"
+        />
       </template>
     </gl-table-lite>
   </gl-tab>

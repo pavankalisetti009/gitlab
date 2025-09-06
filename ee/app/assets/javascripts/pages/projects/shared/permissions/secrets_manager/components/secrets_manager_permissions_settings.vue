@@ -1,13 +1,16 @@
 <script>
-import { GlCollapsibleListbox, GlLoadingIcon, GlTabs } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
+import { GlCollapsibleListbox, GlLoadingIcon, GlModal, GlTabs } from '@gitlab/ui';
+import { upperFirst } from 'lodash';
+import { __, s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import { ACCESS_LEVELS_INTEGER_TO_STRING } from '~/access_level/constants';
 import {
   PERMISSION_CATEGORY_GROUP,
   PERMISSION_CATEGORY_ROLE,
   PERMISSION_CATEGORY_USER,
 } from '../constants';
+import deleteSecretsPermission from '../graphql/delete_secrets_permission.mutation.graphql';
 import secretsPermissionsQuery from '../graphql/secrets_permission.query.graphql';
 import PermissionsModal from './secrets_manager_permissions_modal.vue';
 import PermissionsTable from './secrets_manager_permissions_table.vue';
@@ -18,6 +21,7 @@ export default {
     CrudComponent,
     GlCollapsibleListbox,
     GlLoadingIcon,
+    GlModal,
     GlTabs,
     PermissionsModal,
     PermissionsTable,
@@ -31,7 +35,9 @@ export default {
   },
   data() {
     return {
+      isDeletingPermission: false,
       permissions: [],
+      permissionToBeDeleted: null,
       selectedPermissionCategory: null,
     };
   },
@@ -58,6 +64,43 @@ export default {
     },
   },
   computed: {
+    deleteModalDescription() {
+      if (!this.permissionToBeDeleted) {
+        return '';
+      }
+
+      const { id, type, user, group } = this.permissionToBeDeleted;
+      const role = ACCESS_LEVELS_INTEGER_TO_STRING[id] || '';
+      let principalName = upperFirst(role.toLowerCase());
+
+      if (type === PERMISSION_CATEGORY_USER) {
+        principalName = user.name;
+      } else if (type === PERMISSION_CATEGORY_GROUP) {
+        principalName = group.name;
+      }
+
+      return sprintf(
+        s__('Secrets|Are you sure you want to remove permissions for %{principalName}?'),
+        { principalName },
+      );
+    },
+    deleteModalOptions() {
+      return {
+        actionPrimary: {
+          text: __('Remove permission'),
+          attributes: {
+            variant: 'confirm',
+            loading: this.isDeletingPermission,
+          },
+        },
+        actionSecondary: {
+          text: __('Cancel'),
+          attributes: {
+            variant: 'default',
+          },
+        },
+      };
+    },
     isLoading() {
       return this.$apollo.queries.permissions.loading;
     },
@@ -75,6 +118,9 @@ export default {
         ) || []
       );
     },
+    showDeleteModal() {
+      return this.permissionToBeDeleted !== null;
+    },
     userPermissions() {
       return (
         this.permissions.filter(
@@ -84,6 +130,46 @@ export default {
     },
   },
   methods: {
+    async deletePermission() {
+      this.isDeletingPermission = true;
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteSecretsPermission,
+          variables: {
+            projectPath: this.fullPath,
+            principal: {
+              id: Number(this.permissionToBeDeleted.id),
+              type: this.permissionToBeDeleted.type,
+            },
+          },
+        });
+
+        const error = data.secretPermissionDelete.errors[0];
+        if (error) {
+          createAlert({ message: error });
+          return;
+        }
+
+        this.refetchPermissions();
+        this.$toast.show(s__('Secrets|Permissions for secrets manager removed.'));
+      } catch (e) {
+        createAlert({
+          message: s__('Secrets|Failed to delete secrets manager permission. Please try again.'),
+          captureError: true,
+          error: e,
+        });
+      } finally {
+        this.hideDeleteModal();
+        this.isDeletingPermission = false;
+      }
+    },
+    hideDeleteModal() {
+      this.permissionToBeDeleted = null;
+    },
+    openDeleteModal(principal) {
+      this.permissionToBeDeleted = principal;
+    },
     refetchPermissions() {
       this.$apollo.queries.permissions.refetch();
     },
@@ -118,6 +204,22 @@ export default {
       @hide="resetSelectedPermissionCategory"
       @refetch="refetchPermissions"
     />
+    <gl-modal
+      :visible="showDeleteModal"
+      :title="s__('Secrets|Remove secrets manager permission?')"
+      :action-primary="deleteModalOptions.actionPrimary"
+      :action-secondary="deleteModalOptions.actionSecondary"
+      modal-id="delete-permission-modal"
+      data-testid="delete-permission-modal"
+      @primary.prevent="deletePermission"
+      @secondary="hideDeleteModal"
+      @canceled="hideDeleteModal"
+      @hidden="hideDeleteModal"
+    >
+      <div>
+        <p>{{ deleteModalDescription }}</p>
+      </div>
+    </gl-modal>
     <crud-component :title="s__('Secrets|Secrets manager user permissions')" class="gl-mt-5">
       <template #actions>
         <gl-collapsible-listbox
@@ -132,16 +234,22 @@ export default {
         <gl-loading-icon v-if="isLoading" />
         <gl-tabs v-else>
           <permissions-table
+            :can-delete="canManageSecretsManager"
             :items="userPermissions"
             :permission-category="$options.PERMISSION_CATEGORY_USER"
+            @delete-permission="openDeleteModal"
           />
           <permissions-table
+            :can-delete="canManageSecretsManager"
             :items="groupPermissions"
             :permission-category="$options.PERMISSION_CATEGORY_GROUP"
+            @delete-permission="openDeleteModal"
           />
           <permissions-table
+            :can-delete="canManageSecretsManager"
             :items="rolePermissions"
             :permission-category="$options.PERMISSION_CATEGORY_ROLE"
+            @delete-permission="openDeleteModal"
           />
         </gl-tabs>
       </template>
