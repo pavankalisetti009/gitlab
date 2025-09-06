@@ -10,6 +10,7 @@ module EE
       include ::Gitlab::Utils::StrongMemoize
       include Vulnerabilities::AdvancedVulnerabilityManagementPolicy
       include WorkItems::LifecycleAndStatusPolicy
+      include ::Ci::JobAbilities
 
       desc "User is a security policy bot on the project"
       condition(:security_policy_bot) { user&.security_policy_bot? && team_member? }
@@ -963,8 +964,7 @@ module EE
           prevent :"admin_#{feature}"
         end
 
-        prevent(*::ProjectPolicy::UPDATE_JOB_PERMISSIONS)
-        prevent(*::ProjectPolicy::CLEANUP_JOB_PERMISSIONS)
+        prevent(*all_job_write_abilities)
       end
 
       rule { auditor | can?(:developer_access) }.enable :add_project_to_instance_security_dashboard
