@@ -89,6 +89,14 @@ export const mockCreatePermissionErrorResponse = (errorMessage) => ({
   },
 });
 
+export const mockDeletePermissionResponse = (errorMessage) => ({
+  data: {
+    secretPermissionDelete: {
+      errors: [errorMessage],
+    },
+  },
+});
+
 export const ROOT_USER_DETAILS = {
   id: 'gid://gitlab/User/1',
   username: 'root',
