@@ -239,6 +239,20 @@ content:
        file: pipeline_execution_jobs.yml
 `;
 
+export const mockInvalidTypePipelineExecutionManifest = `invalid_pipeline_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: inject_policy
+    content:
+      include:
+        - project: ''
+    skip_ci:
+      allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []`;
+
 export const mockPipelineExecutionWithConfigurationManifest = `type: pipeline_execution_policy
 name: Include external file
 description: This policy enforces pipeline execution with configuration from external file

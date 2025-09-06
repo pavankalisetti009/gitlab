@@ -19,6 +19,7 @@ import {
   isGroup,
   isScanningReport,
   extractPolicyContent,
+  extractPolicyContentFromRootTypeProperty,
 } from 'ee/security_orchestration/components/utils';
 import {
   EXCLUDING,
@@ -330,6 +331,71 @@ describe('checkForPerformanceRisk', () => {
       'returns output without type wrapper for $type and withType $withType',
       ({ type, manifest, withType, expectedManifest }) => {
         expect(extractPolicyContent({ manifest, type, withType })).toEqual(expectedManifest);
+      },
+    );
+
+    describe('when root key differs from type parameter', () => {
+      const policyManifestWithUnknownRootKey = `
+        unknown_policy_type:
+          - name: test-policy
+            enabled: true
+      `;
+
+      const testPolicyContent = {
+        name: 'test-policy',
+        enabled: true,
+      };
+
+      it.each`
+        type                 | manifest                            | withType | expectedManifest
+        ${'approval_policy'} | ${policyManifestWithUnknownRootKey} | ${false} | ${testPolicyContent}
+        ${'approval_policy'} | ${policyManifestWithUnknownRootKey} | ${true}  | ${{ ...testPolicyContent, type: 'approval_policy' }}
+        ${'approval_policy'} | ${''}                               | ${true}  | ${defaultPayload}
+      `(
+        'ignores unknown root key and returns output without type wrapper for $type and withType $withType',
+        ({ type, manifest, withType, expectedManifest }) => {
+          expect(extractPolicyContent({ manifest, type, withType })).toEqual(expectedManifest);
+        },
+      );
+    });
+  });
+
+  describe('extractPolicyContentFromRootTypeProperty', () => {
+    const policyWithTypeRootKey = {
+      scan_execution_policy: {
+        name: 'Scan execution policy',
+        enabled: true,
+      },
+    };
+
+    const policyWithDifferentRootKey = {
+      unknown_policy: {
+        name: 'Scan execution policy',
+        enabled: true,
+      },
+    };
+
+    const policyWithoutTypeRootKey = {
+      name: 'Scan execution policy',
+      enabled: true,
+    };
+
+    const policyWrappedinArray = {
+      unknown_policy: [policyWithoutTypeRootKey],
+    };
+
+    it.each`
+      type                       | parsedYaml                    | expectedPolicyContent
+      ${'scan_execution_policy'} | ${policyWithTypeRootKey}      | ${policyWithoutTypeRootKey}
+      ${'scan_execution_policy'} | ${policyWithDifferentRootKey} | ${policyWithoutTypeRootKey}
+      ${'scan_execution_policy'} | ${policyWithoutTypeRootKey}   | ${policyWithoutTypeRootKey}
+      ${'scan_execution_policy'} | ${policyWrappedinArray}       | ${[policyWithoutTypeRootKey]}
+    `(
+      'returns payload without wrapper for $type',
+      ({ type, parsedYaml, expectedPolicyContent }) => {
+        expect(extractPolicyContentFromRootTypeProperty(parsedYaml, type)).toEqual(
+          expectedPolicyContent,
+        );
       },
     );
   });
