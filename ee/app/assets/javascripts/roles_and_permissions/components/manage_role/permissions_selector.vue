@@ -24,16 +24,6 @@ export const FIELDS = [
 ].map((field) => ({ ...field, class: '!gl-pt-6 !gl-pb-6' }));
 
 export default {
-  i18n: {
-    customPermissionsLabel: s__('MemberRole|Custom permissions'),
-    customPermissionsDescription: s__(
-      'MemberRole|Learn more about %{linkStart}available custom permissions%{linkEnd}.',
-    ),
-    permissionsFetchError: s__('MemberRole|Could not fetch available permissions.'),
-    permissionsSelected: s__('MemberRole|%{count} of %{total} permissions selected'),
-    permissionsSelectionError: s__('MemberRole|Select at least one permission.'),
-    badgeText: s__('MemberRole|Added from %{role}'),
-  },
   components: {
     GlFormCheckbox,
     GlLoadingIcon,
@@ -207,13 +197,13 @@ export default {
 
 <template>
   <crud-component
-    :title="$options.i18n.customPermissionsLabel"
+    :title="s__('MemberRole|Custom permissions')"
     class="gl-mb-5"
     title-class="gl-flex-wrap"
   >
     <template v-if="hasAvailablePermissions" #count>
       <span data-testid="permissions-selected-message">
-        <gl-sprintf :message="$options.i18n.permissionsSelected">
+        <gl-sprintf :message="s__('MemberRole|%{count} of %{total} permissions selected')">
           <template #count>{{ checkedPermissionsCount }}</template>
           <template #total>{{ availablePermissions.length }}</template>
         </gl-sprintf>
@@ -222,7 +212,11 @@ export default {
 
     <template v-if="!isAdminRole || !isValid" #description>
       <span v-if="!isAdminRole" data-testid="learn-more">
-        <gl-sprintf :message="$options.i18n.customPermissionsDescription">
+        <gl-sprintf
+          :message="
+            s__('MemberRole|Learn more about %{linkStart}available custom permissions%{linkEnd}.')
+          "
+        >
           <template #link="{ content }">
             <gl-link :href="docsPath" target="_blank">{{ content }}</gl-link>
           </template>
@@ -230,12 +224,12 @@ export default {
       </span>
 
       <p v-if="!isValid" class="gl-mb-0 gl-mt-2 gl-text-base gl-text-danger">
-        {{ $options.i18n.permissionsSelectionError }}
+        {{ s__('MemberRole|Select at least one permission.') }}
       </p>
     </template>
 
     <gl-alert v-if="isErrorLoadingPermissions" :dismissible="false" variant="danger">
-      {{ $options.i18n.permissionsFetchError }}
+      {{ s__('MemberRole|Could not fetch available permissions.') }}
     </gl-alert>
 
     <gl-table
@@ -278,7 +272,7 @@ export default {
           {{ item.name }}
 
           <gl-badge v-if="item.disabled" variant="info" class="gl-ml-2">
-            <gl-sprintf :message="$options.i18n.badgeText">
+            <gl-sprintf :message="s__('MemberRole|Added from %{role}')">
               <template #role>{{ baseRoleName }}</template>
             </gl-sprintf>
           </gl-badge>
