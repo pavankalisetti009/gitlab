@@ -245,7 +245,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
     context 'when analytics dashboards is available' do
       before do
-        stub_licensed_features({ combined_project_analytics_dashboards: true, product_analytics: true,
+        stub_licensed_features({ project_level_analytics_dashboard: true, product_analytics: true,
   iterations: false })
 
         visit project_path(project)

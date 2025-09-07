@@ -31,7 +31,7 @@ RSpec.describe 'Loading usage overview for a project', feature_category: :value_
 
   context 'when the feature is available' do
     before do
-      stub_licensed_features(combined_project_analytics_dashboards: true)
+      stub_licensed_features(project_level_analytics_dashboard: true)
     end
 
     it 'does return the count' do
@@ -54,7 +54,7 @@ RSpec.describe 'Loading usage overview for a project', feature_category: :value_
     end
 
     before do
-      stub_licensed_features(combined_project_analytics_dashboards: true)
+      stub_licensed_features(project_level_analytics_dashboard: true)
       allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
     end
 

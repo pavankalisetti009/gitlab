@@ -34,7 +34,7 @@ RSpec.describe Resolvers::Projects::Analytics::ValueStreamDashboard::CountResolv
 
     context 'when the feature is available' do
       before do
-        stub_licensed_features(combined_project_analytics_dashboards: true)
+        stub_licensed_features(project_level_analytics_dashboard: true)
       end
 
       it 'returns the correct count' do

@@ -34,13 +34,13 @@ module Analytics
         return if visualization_config.blank?
 
         @visualization = if visualization_config.is_a?(String)
-                           Dashboards::Visualization.from_file(
+                           Visualization.from_file(
                              filename: visualization_config,
                              config_project: config_project,
                              container: container
                            )
                          else
-                           Dashboards::Visualization.from_data(data: visualization_config,
+                           Visualization.from_data(data: visualization_config,
                              container: container)
                          end
       end

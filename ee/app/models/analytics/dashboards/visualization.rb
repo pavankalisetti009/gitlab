@@ -265,7 +265,7 @@ module Analytics
         end
 
         def visualization_config_path(data)
-          "#{Dashboards::Dashboard::DASHBOARD_ROOT_LOCATION}/visualizations/#{data}.yaml"
+          "#{Dashboard::DASHBOARD_ROOT_LOCATION}/visualizations/#{data}.yaml"
         end
 
         def load_project_visualization_data(filename:, project:)

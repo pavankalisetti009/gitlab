@@ -98,7 +98,6 @@ module GitlabSubscriptions
       cluster_deployments
       code_owner_approval_required
       code_suggestions
-      combined_project_analytics_dashboards
       commit_committer_check
       commit_committer_name_check
       compliance_framework

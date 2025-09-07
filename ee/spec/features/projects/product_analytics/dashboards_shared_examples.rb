@@ -82,7 +82,7 @@ RSpec.shared_examples 'product analytics dashboards' do
 
       context 'with the licensed feature disabled' do
         before do
-          stub_licensed_features(combined_project_analytics_dashboards: true, product_analytics: false)
+          stub_licensed_features(project_level_analytics_dashboard: true, product_analytics: false)
         end
 
         it_behaves_like 'does not render the product analytics list item'
@@ -90,7 +90,7 @@ RSpec.shared_examples 'product analytics dashboards' do
 
       context 'with the licensed feature enabled' do
         before do
-          stub_licensed_features(combined_project_analytics_dashboards: true, product_analytics: true)
+          stub_licensed_features(project_level_analytics_dashboard: true, product_analytics: true)
         end
 
         context 'with reporter permissions' do

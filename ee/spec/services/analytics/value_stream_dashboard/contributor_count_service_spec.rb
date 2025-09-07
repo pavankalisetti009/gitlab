@@ -77,7 +77,7 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
     context 'when data present', :click_house do
       before do
         allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
-        stub_licensed_features(combined_project_analytics_dashboards: true)
+        stub_licensed_features(project_level_analytics_dashboard: true)
 
         clickhouse_fixture(:events_new, [
           # push event
