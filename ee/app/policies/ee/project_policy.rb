@@ -159,8 +159,8 @@ module EE
         @subject.feature_available?(:issues_analytics, @user)
       end
 
-      condition(:combined_project_analytics_dashboards_enabled) do
-        @subject.feature_available?(:combined_project_analytics_dashboards, @user)
+      condition(:project_level_analytics_dashboard_enabled) do
+        @subject.feature_available?(:project_level_analytics_dashboard, @user)
       end
 
       condition(:google_cloud_support_available, scope: :global) do
@@ -889,9 +889,9 @@ module EE
 
       rule { can?(:read_customizable_dashboards) & duo_usage_analytics_enabled }.enable :read_duo_usage_analytics
 
-      rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
+      rule { project_level_analytics_dashboard_enabled }.enable :read_project_level_analytics_dashboard
 
-      rule { combined_project_analytics_dashboards_enabled & can?(:read_cycle_analytics) }.enable :read_project_level_value_stream_dashboard_overview_counts
+      rule { project_level_analytics_dashboard_enabled & can?(:read_cycle_analytics) }.enable :read_project_level_value_stream_dashboard_overview_counts
 
       rule { can?(:read_project) & requirements_available }.enable :read_requirement
 

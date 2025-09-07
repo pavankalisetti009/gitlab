@@ -51,7 +51,7 @@ RSpec.describe Projects::Analytics::DashboardsController, type: :request, featur
 
       context 'without the licensed feature' do
         before do
-          stub_licensed_features(combined_project_analytics_dashboards: false)
+          stub_licensed_features(project_level_analytics_dashboard: false)
         end
 
         it_behaves_like 'returns not found'
@@ -70,7 +70,7 @@ RSpec.describe Projects::Analytics::DashboardsController, type: :request, featur
           let(:user) { create(:user, :with_namespace) }
 
           before do
-            stub_licensed_features(combined_project_analytics_dashboards: true)
+            stub_licensed_features(project_level_analytics_dashboard: true)
             project.add_member(user, access_level)
           end
 

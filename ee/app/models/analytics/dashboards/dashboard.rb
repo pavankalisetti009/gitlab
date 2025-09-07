@@ -201,7 +201,7 @@ module Analytics
         @description = @yaml_definition['description']
         @schema_version = @yaml_definition['version']
         @status = @yaml_definition['status']
-        @panels = Dashboards::Panel.from_data(@yaml_definition['panels'], config_project, container)
+        @panels = Panel.from_data(@yaml_definition['panels'], config_project, container)
         @category = 'analytics'
 
         @errors = schema_errors_for(@yaml_definition)

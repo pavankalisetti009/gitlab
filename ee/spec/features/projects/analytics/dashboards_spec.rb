@@ -60,12 +60,12 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
       project.add_developer(user_2)
     end
 
-    context 'with combined_project_analytics_dashboards and project_level_analytics_dashboard license' do
+    context 'with project_level_analytics_dashboard license' do
       let_it_be(:environment) { create(:environment, :production, project: project) }
 
       before do
         stub_licensed_features(
-          combined_project_analytics_dashboards: true, project_level_analytics_dashboard: true,
+          project_level_analytics_dashboard: true,
           dora4_analytics: true, security_dashboard: true, cycle_analytics_for_projects: true,
           group_level_analytics_dashboard: true, cycle_analytics_for_groups: true
         )
@@ -207,8 +207,7 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
 
         context 'without the dora4_analytics ability' do
           before do
-            stub_licensed_features(combined_project_analytics_dashboards: true, project_level_analytics_dashboard: true,
-              dora4_analytics: false)
+            stub_licensed_features(project_level_analytics_dashboard: true, dora4_analytics: false)
 
             visit_project_value_streams_dashboard(project)
           end
@@ -218,8 +217,7 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
 
         context 'without the security_dashboard ability' do
           before do
-            stub_licensed_features(combined_project_analytics_dashboards: true, project_level_analytics_dashboard: true,
-              security_dashboard: false)
+            stub_licensed_features(project_level_analytics_dashboard: true, security_dashboard: false)
 
             visit_project_value_streams_dashboard(project)
           end
