@@ -7,3 +7,5 @@ class ReindexMergeRequestsToUpdateIntegerWithLongTypeSecondAttempt < Elastic::Mi
     %w[MergeRequest]
   end
 end
+
+ReindexMergeRequestsToUpdateIntegerWithLongTypeSecondAttempt.prepend ::Search::Elastic::MigrationObsolete
