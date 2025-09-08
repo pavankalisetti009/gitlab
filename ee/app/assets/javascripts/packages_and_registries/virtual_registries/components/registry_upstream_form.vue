@@ -199,32 +199,37 @@ export default {
         :min="0"
       />
     </gl-form-group>
-    <div class="gl-flex gl-gap-3">
-      <gl-button
-        data-testid="submit-button"
-        class="js-no-auto-disable"
-        variant="confirm"
-        category="primary"
-        type="submit"
-        :loading="loading"
-      >
-        {{ saveButtonText }}
-      </gl-button>
-      <gl-button
-        :href="upstreamPath"
-        data-testid="cancel-button"
-        category="secondary"
-        @click="cancel"
-      >
-        {{ $options.i18n.cancelButtonLabel }}
-      </gl-button>
-      <test-maven-upstream-button
-        :disabled="isTestUpstreamButtonDisabled"
-        :upstream-id="upstream.id"
-        :url="form.url"
-        :username="form.username"
-        :password="form.password"
-      />
+    <div class="gl-flex gl-flex-wrap gl-justify-between gl-gap-3">
+      <div class="gl-flex gl-gap-3">
+        <gl-button
+          data-testid="submit-button"
+          class="js-no-auto-disable"
+          variant="confirm"
+          category="primary"
+          type="submit"
+          :loading="loading"
+        >
+          {{ saveButtonText }}
+        </gl-button>
+        <gl-button
+          :href="upstreamPath"
+          data-testid="cancel-button"
+          category="secondary"
+          @click="cancel"
+        >
+          {{ $options.i18n.cancelButtonLabel }}
+        </gl-button>
+        <test-maven-upstream-button
+          :disabled="isTestUpstreamButtonDisabled"
+          :upstream-id="upstream.id"
+          :url="form.url"
+          :username="form.username"
+          :password="form.password"
+        />
+      </div>
+      <div>
+        <slot name="actions"></slot>
+      </div>
     </div>
   </gl-form>
 </template>

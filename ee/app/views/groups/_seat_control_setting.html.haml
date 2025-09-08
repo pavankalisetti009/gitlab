@@ -10,7 +10,7 @@
         radio_options: { disabled: group.shared_externally? }
   %div
     = f.gitlab_ui_radio_component :seat_control, :user_cap, _("Set user cap"),
-      help_text: _("Any user who is added or requests access in excess of the user cap must be approved by an administrator"),
+      help_text: _("Users who are added or request access beyond the user cap must be approved by a group owner."),
       radio_options: { disabled: group.shared_externally?, data: { testid: 'seat-control-user-cap-radio' } }
     = f.label :new_user_signups_cap, _('Number of users for user cap'), class: 'gl-sr-only'
     .gl-ml-6
@@ -20,7 +20,7 @@
         data: { testid: 'user-cap-limit-field', dirty_submit_original_value: @group.new_user_signups_cap }
   .gl-my-5
     = f.gitlab_ui_radio_component :seat_control, :off, "Open access",
-      help_text: _("Invitations do not require administrator approval"),
+      help_text: _("Invitations do not need to be approved by a group owner."),
       label_options: { data: { testid: 'seat-control-off-radio' } }
   - if group.shared_externally?
     .form-text.gl-text-subtle= seat_control_disabled_help_text
