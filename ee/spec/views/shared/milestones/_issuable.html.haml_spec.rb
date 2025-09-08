@@ -63,16 +63,6 @@ RSpec.describe 'shared/milestones/_issuable.html.haml', feature_category: :group
         expect(rendered).not_to have_text(status.name)
       end
     end
-
-    context 'when work_item_status_feature_flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_feature_flag: false)
-      end
-
-      it 'does not display status' do
-        expect(rendered).not_to have_text(status.name)
-      end
-    end
   end
 end
 # rubocop:enable RSpec/FactoryBot/AvoidCreate
