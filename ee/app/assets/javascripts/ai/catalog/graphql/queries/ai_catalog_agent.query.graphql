@@ -10,5 +10,10 @@ query aiCatalogAgent($id: AiCatalogItemID!) {
     latestVersion {
       ...BaseAiCatalogAgentVersion
     }
+    versions {
+      nodes {
+        ...BaseAiCatalogAgentVersion
+      }
+    }
   }
 }

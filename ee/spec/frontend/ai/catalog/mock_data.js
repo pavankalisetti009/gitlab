@@ -91,6 +91,21 @@ export const mockToolQueryResponse = {
 
 /* AGENTS */
 
+export const mockAgentVersions = {
+  nodes: [
+    {
+      id: 'gid://gitlab/Ai::Catalog::ItemVersion/20',
+      systemPrompt: 'sys',
+      tools: { nodes: [], __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION },
+      userPrompt: 'user',
+      versionName: '1.0.0',
+      humanVersionName: 'v1.0.0',
+      __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
+    },
+  ],
+  __typename: 'AiCatalogItemVersionConnection',
+};
+
 const mockAgentFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::Item/1',
   name: 'Test AI Agent 1',
@@ -103,6 +118,7 @@ const mockAgentFactory = (overrides = {}) => ({
   userPermissions: {
     adminAiCatalogItem: true,
   },
+  versions: mockAgentVersions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
 });
@@ -110,6 +126,7 @@ const mockAgentFactory = (overrides = {}) => ({
 export const mockAgentVersion = {
   ...mockBaseLatestVersion,
   humanVersionName: 'v1.0.0-draft',
+  versionName: '1.0.0',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
   userPrompt: 'The user prompt',
@@ -247,12 +264,15 @@ export const mockExecuteAgentResponse = {
 export const mockFlowVersion = {
   ...mockBaseLatestVersion,
   humanVersionName: 'v1.0.0-draft',
+  versionName: '1.0.0',
   steps: {
     nodes: [
       {
+        pinnedVersionPrefix: '1.0.0',
         agent: {
           id: 'gid://gitlab/Ai::Catalog::ItemVersion/100',
           name: 'Agent',
+          versions: mockAgentVersions,
           __typename: 'AiCatalogAgent',
         },
         __typename: 'AiCatalogFlowSteps',

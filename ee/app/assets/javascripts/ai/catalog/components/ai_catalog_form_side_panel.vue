@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import { fetchPolicies } from '~/lib/graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 
 export default {
@@ -11,6 +12,7 @@ export default {
     GlButton,
     GlCollapsibleListbox,
   },
+  mixins: [glFeatureFlagsMixin()],
   model: {
     prop: 'steps',
     event: 'setSteps',
@@ -31,6 +33,7 @@ export default {
     return {
       aiCatalogAgents: [],
       selectedAgent: null,
+      selectedVersion: null,
       isAgentsLoading: true,
       searchTerm: '',
     };
@@ -48,6 +51,7 @@ export default {
         data.aiCatalogItems.nodes.map((agent) => ({
           value: agent.id,
           text: agent.name,
+          versions: agent.versions,
         })) || [],
       result() {
         this.isAgentsLoading = false;
@@ -64,43 +68,64 @@ export default {
       }
       return s__('AICatalog|Select agent');
     },
+    versionListBoxToggleText() {
+      if (this.selectedVersion) {
+        return this.selectedVersion.text;
+      }
+      return s__('AICatalog|Always use latest version');
+    },
     formattedSteps() {
       return this.steps.map((agent) => ({
         value: agent.id,
         text: agent.name,
+        versions: agent.versions,
+        versionName: agent.versionName,
       }));
+    },
+    versionOptions() {
+      return (
+        this.selectedAgent?.versions?.nodes.map((version) => ({
+          value: version.id,
+          text: version.versionName,
+        })) || []
+      );
     },
   },
   watch: {
-    activeStepIndex() {
-      this.selectedAgent = this.formattedSteps[this.activeStepIndex] || null;
+    activeStepIndex: {
+      handler() {
+        this.selectedAgent = this.formattedSteps[this.activeStepIndex] || null;
+        this.selectedVersion =
+          this.versionOptions.find((version) => version.text === this.selectedAgent?.versionName) ||
+          null;
+      },
+      immediate: true,
     },
-  },
-  created() {
-    if (this.activeStepIndex !== null) {
-      this.selectedAgent = this.formattedSteps[this.activeStepIndex] || null;
-    }
   },
   methods: {
     selectAgent(agentId) {
       this.selectedAgent = this.aiCatalogAgents.find((agent) => agent.value === agentId);
+      this.selectedVersion = null;
+    },
+    selectVersion(versionId) {
+      this.selectedVersion = this.versionOptions.find((version) => version.value === versionId);
     },
     onSearch: debounce(function debouncedSearch(searchTerm) {
       this.searchTerm = searchTerm;
     }, DEFAULT_DEBOUNCE_AND_THROTTLE_MS),
     onSubmit() {
       let updatedSteps = [];
-      const { value: id, text: name } = this.selectedAgent;
+      const { value: id, text: name, versions } = this.selectedAgent;
+      const versionName = this.selectedVersion?.text || this.versionOptions[0]?.text;
       if (this.steps.length <= this.activeStepIndex) {
-        updatedSteps = this.steps.concat({ id, name });
+        updatedSteps = this.steps.concat({ id, name, versionName, versions });
       } else {
         updatedSteps = [...this.steps];
-        updatedSteps[this.activeStepIndex] = { id, name };
+        updatedSteps[this.activeStepIndex] = { id, name, versionName, versions };
       }
       this.$emit('setSteps', updatedSteps);
 
-      this.selectedAgent = null;
-      this.$emit('close');
+      this.onClose();
     },
     onDelete() {
       const updatedSteps = [
@@ -108,11 +133,11 @@ export default {
         ...this.steps.slice(this.activeStepIndex + 1),
       ];
       this.$emit('setSteps', updatedSteps);
-      this.selectedAgent = null;
-      this.$emit('close');
+      this.onClose();
     },
-    onCancel() {
+    onClose() {
       this.selectedAgent = null;
+      this.selectedVersion = null;
       this.$emit('close');
     },
   },
@@ -122,7 +147,7 @@ export default {
 <template>
   <div class="gl-border gl-flex gl-flex-col gl-justify-between">
     <div class="gl-p-4">
-      <label for="agent-select-listbox-label" class="gl-mt-3 gl-font-bold">
+      <label for="agent-select-listbox" class="gl-mt-3 gl-font-bold">
         {{ s__('AICatalog| Agent') }}
       </label>
       <gl-collapsible-listbox
@@ -132,19 +157,35 @@ export default {
         :toggle-text="agentListBoxToggleText"
         :loading="isAgentsLoading"
         :searching="isLoading"
-        toggle-id="agent-select-listbox-label"
+        toggle-id="agent-select-listbox"
+        data-testid="agent-select-listbox"
         @select="selectAgent"
         @search="onSearch"
       />
+      <div v-if="glFeatures.aiCatalogEnforceReadonlyVersions">
+        <label for="version-select-listbox" class="gl-mt-3 gl-font-bold">
+          {{ s__('AICatalog|Version') }}
+        </label>
+        <gl-collapsible-listbox
+          block
+          :items="versionOptions"
+          :toggle-text="versionListBoxToggleText"
+          :loading="isAgentsLoading"
+          :disabled="selectedAgent === null"
+          toggle-id="version-select-listbox"
+          data-testid="version-select-listbox"
+          @select="selectVersion"
+        />
+      </div>
     </div>
     <div class="gl-border-t gl-flex gl-justify-between gl-gap-3 gl-p-4">
       <div>
         <gl-button variant="confirm" @click="onSubmit">
           {{ __('Save') }}
         </gl-button>
-        <gl-button data-testid="agent-select-cancel-button" @click="onCancel">{{
-          __('Cancel')
-        }}</gl-button>
+        <gl-button data-testid="agent-select-cancel-button" @click="onClose">
+          {{ __('Cancel') }}
+        </gl-button>
       </div>
       <gl-button
         category="tertiary"

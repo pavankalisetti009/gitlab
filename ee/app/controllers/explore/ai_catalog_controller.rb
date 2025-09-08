@@ -4,6 +4,9 @@ module Explore
   class AiCatalogController < Explore::ApplicationController
     feature_category :workflow_catalog
     before_action :check_feature_flag
+    before_action do
+      push_frontend_feature_flag(:ai_catalog_enforce_readonly_versions)
+    end
 
     private
 
