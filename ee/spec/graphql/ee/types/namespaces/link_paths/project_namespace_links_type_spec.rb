@@ -11,7 +11,7 @@ RSpec.describe Types::Namespaces::LinkPaths::ProjectNamespaceLinksType, feature_
   subject(:type) { described_class.resolve_type(namespace, {}) }
 
   it_behaves_like "expose all link paths fields for the namespace" do
-    let(:type_specific_fields) { %i[newWorkItemEmailAddress releasesPath projectImportJiraPath] }
+    let(:type_specific_fields) { %i[newWorkItemEmailAddress releasesPath projectImportJiraPath rssPath calendarPath] }
   end
 
   shared_examples "project namespace link paths values" do
