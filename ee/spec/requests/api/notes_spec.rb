@@ -98,4 +98,11 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
       let(:note) { wiki_page_meta_note }
     end
   end
+
+  context "when noteable is an Issue" do
+    let!(:issue) { create(:issue, project: project, author: user) }
+    let!(:issue_note) { create(:note, noteable: issue, project: project, author: user) }
+
+    it_behaves_like "composite identity attribution"
+  end
 end
