@@ -29,7 +29,7 @@ module Gitlab
 
         override :prompt_version
         def prompt_version
-          PromptResolvers::ReviewMergeRequest.execute(user: user)
+          PromptResolvers::ReviewMergeRequest.execute
         end
         strong_memoize_attr :prompt_version
 
