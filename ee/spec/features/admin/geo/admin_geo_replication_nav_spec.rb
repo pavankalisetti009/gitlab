@@ -25,7 +25,7 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
 
       expect(breadcrumbs.length).to eq(3)
       expect(breadcrumbs[0].text).to eq('Admin area')
-      expect(breadcrumbs[1].text).to eq('Geo Sites')
+      expect(breadcrumbs[1].text).to eq('Geo sites')
       expect(breadcrumbs[2].text).to eq('Project Repositories')
     end
 

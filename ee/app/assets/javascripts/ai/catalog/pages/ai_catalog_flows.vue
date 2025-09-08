@@ -127,17 +127,17 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (itemId) => [
+        actionItems: (item) => [
           {
             text: s__('AICatalog|Add to project'),
-            action: () => this.handleAiCatalogFlowToBeAdded(itemId),
+            action: () => this.handleAiCatalogFlowToBeAdded(item),
             icon: 'plus',
           },
           {
             text: s__('AICatalog|Edit'),
             to: {
               name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-              params: { id: itemId },
+              params: { id: getIdFromGraphQLId(item.id) },
             },
             icon: 'pencil',
           },
@@ -153,14 +153,13 @@ export default {
   },
 
   methods: {
-    handleAiCatalogFlowToBeAdded(itemId) {
-      const convertedId = convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, itemId);
-      const flow = this.aiCatalogFlows?.find((item) => item.id === convertedId);
+    handleAiCatalogFlowToBeAdded({ id }) {
+      const flow = this.aiCatalogFlows?.find((item) => item.id === id);
       if (typeof flow === 'undefined') {
         Sentry.captureException(
           new Error('AiCatalogFlows: Reached invalid state in Add to target action.', {
             // eslint-disable-next-line @gitlab/require-i18n-strings
-            cause: `Couldn't find ${convertedId}.`,
+            cause: `Couldn't find ${id}.`,
           }),
         );
         this.errors = [s__('AICatalog|Failed to add flow to target. Flow not found.')];

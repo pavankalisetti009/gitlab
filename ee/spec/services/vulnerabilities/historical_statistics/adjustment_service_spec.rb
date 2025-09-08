@@ -41,7 +41,8 @@ RSpec.describe Vulnerabilities::HistoricalStatistics::AdjustmentService, feature
         'info' => 0,
         'unknown' => 0,
         'letter_grade' => 'f',
-        'date' => Date.current.to_s
+        'date' => Date.current.to_s,
+        "security_project_tracked_context_id" => nil
       }
     end
 

@@ -177,7 +177,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
           it 'sets the cookie' do
             post_create
 
-            expect(cookies[:confetti_post_signup]).to be true
+            expect(cookies[:confetti_post_signup].to_s).to eq('true')
           end
         end
       end

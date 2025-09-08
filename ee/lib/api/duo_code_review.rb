@@ -42,8 +42,10 @@ module API
             options: declared_params
           ).execute
 
-          review_match = evaluation_response.match(%r{^<review>(.+)</review>$}m)
-          review_content = review_match ? review_match[0] : evaluation_response
+          # Find the last occurrence of <review>...</review> in the response
+          # This ensures we get the actual review output, not any examples in thinking steps
+          review_matches = evaluation_response.scan(%r{<review>.*?</review>}m)
+          review_content = review_matches.last || evaluation_response
 
           review_response = { review: review_content }
           present review_response, with: Grape::Presenters::Presenter

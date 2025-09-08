@@ -5,6 +5,8 @@ module Ai
     class BaseService
       include Gitlab::Utils::StrongMemoize
 
+      UUID_MISMATCH_ERROR_MESSAGE = "GitLab instance UUID does not match the registered Identity Provider UUID in AWS"
+
       def initialize(user, params = {})
         @user = user
         @params = params

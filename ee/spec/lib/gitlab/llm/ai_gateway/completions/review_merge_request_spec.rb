@@ -416,7 +416,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         let(:combined_review_response) do
           <<~RESPONSE
           <review>
-          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
           </review>
           RESPONSE
         end
@@ -430,8 +429,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
           expected_message = <<~RESPONSE.chomp
           #{described_class.no_comment_msg}
-
-          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
           RESPONSE
           expect(merge_request.notes.non_diff_notes.last.note).to eq(expected_message)
         end

@@ -166,7 +166,6 @@ module Gitlab
 
             parsed_body = ResponseBodyParser.new(response.response_body)
             comments = parsed_body.comments
-            @review_description = parsed_body.review_description
 
             @comment_metrics[:total_comments] = comments.count
 
@@ -516,7 +515,7 @@ module Gitlab
           # rubocop: enable CodeReuse/ActiveRecord
 
           def review_summary
-            [exclusion_message_for_excluded_files + self.class.no_comment_msg, @review_description].compact.join("\n\n")
+            exclusion_message_for_excluded_files + self.class.no_comment_msg
           end
 
           def publish_draft_notes

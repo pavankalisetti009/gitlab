@@ -30,6 +30,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
 
     context "create" do
       let(:message) { "Created a new file with a very very looooooooooooooooooooooooooooooooooooooooooooooong commit message" }
+      let(:file_path) { "foo/bar/baz.txt" }
       let(:valid_c_params) do
         {
           branch: "master",
@@ -37,7 +38,7 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
           actions: [
             {
               action: "create",
-              file_path: "foo/bar/baz.txt",
+              file_path: file_path,
               content: "puts 8"
             }
           ]
@@ -65,6 +66,41 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
           let(:paths)  { valid_c_params[:actions].first[:file_path] }
 
           it_behaves_like "handling the codeowners interaction"
+        end
+      end
+
+      context "with composite identity" do
+        before do
+          project.add_developer(service_account)
+
+          post api(url, user, oauth_access_token: token), params: valid_c_params
+        end
+
+        let(:organization) { create(:organization) }
+        let(:oauth_app) { create(:doorkeeper_application) }
+        let(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
+
+        let(:service_account) do
+          create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+        end
+
+        let(:token) do
+          create(:oauth_access_token, {
+            organization: organization,
+            application: oauth_app,
+            resource_owner: service_account,
+            expires_in: 1.hour,
+            scopes: scopes
+          })
+        end
+
+        let(:file_path) { "foo/bar/1.txt" }
+
+        it 'attributes the commit author to the service account' do
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['title']).to eq(message)
+          expect(json_response['committer_name']).to eq(service_account.name)
+          expect(json_response['committer_email']).to eq(service_account.email)
         end
       end
     end

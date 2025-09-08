@@ -131,17 +131,18 @@ export default {
     },
     emptyState() {
       return {
-        title: sprintf(s__('Geo|There are no %{itemTitle} to show'), { itemTitle: this.itemTitle }),
+        title: sprintf(s__('Geo|No %{itemTitle} exist'), {
+          itemTitle: this.itemTitle,
+        }),
         description: s__(
-          'Geo|No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information.',
+          'Geo|If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
         ),
-        itemTitle: this.itemTitle,
         helpLink: GEO_TROUBLESHOOTING_LINK,
         hasFilters: this.emptyStateHasFilters,
       };
     },
     pageHeadingTitle() {
-      return sprintf(s__('Geo|Geo Replication - %{siteName}'), { siteName: this.siteName });
+      return sprintf(s__('Geo|Geo replication - %{siteName}'), { siteName: this.siteName });
     },
     humanizedPageCount() {
       if (!this.pageInfo.count) {

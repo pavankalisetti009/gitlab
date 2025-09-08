@@ -133,25 +133,25 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (itemId) => [
+        actionItems: (item) => [
           {
             text: s__('AICatalog|Test run'),
             to: {
               name: AI_CATALOG_AGENTS_RUN_ROUTE,
-              params: { id: itemId },
+              params: { id: getIdFromGraphQLId(item.id) },
             },
             icon: 'rocket-launch',
           },
           {
             text: s__('AICatalog|Duplicate'),
-            action: () => this.handleDuplicate(itemId),
+            action: () => this.handleDuplicate(item),
             icon: 'duplicate',
           },
           {
             text: s__('AICatalog|Edit'),
             to: {
               name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-              params: { id: itemId },
+              params: { id: getIdFromGraphQLId(item.id) },
             },
             icon: 'pencil',
           },
@@ -214,24 +214,19 @@ export default {
         last: null,
       });
     },
-    findAgentInList(numberId) {
-      return this.aiCatalogAgents.find(
-        (n) => getIdFromGraphQLId(n.id).toString() === String(numberId),
-      );
-    },
-    async handleDuplicate(itemId) {
+    async handleDuplicate(agent) {
       try {
-        const agent = this.findAgentInList(itemId);
-
         if (!agent) {
           throw new Error(s__('AICatalog|Agent not found.'));
         }
+
+        const iid = getIdFromGraphQLId(agent.id);
 
         await this.$apollo.mutate({
           mutation: setItemToDuplicateMutation,
           variables: {
             item: {
-              id: itemId,
+              id: iid,
               type: AI_CATALOG_TYPE_AGENT,
               data: agent,
             },
@@ -240,7 +235,7 @@ export default {
 
         this.$router.push({
           name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-          params: { id: itemId },
+          params: { id: iid },
         });
       } catch (error) {
         this.errors = [error.message];

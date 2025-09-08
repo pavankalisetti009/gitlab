@@ -1,7 +1,10 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
-import { AI_CATALOG_FLOWS_ROUTE } from 'ee/ai/catalog/router/constants';
+import {
+  AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_FLOWS_EDIT_ROUTE,
+} from 'ee/ai/catalog/router/constants';
 import NestedRouteApp from '../nested_route_app.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
@@ -9,6 +12,7 @@ import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
 import AiFlows from '../pages/flows/ai_flows.vue';
+import AiFlowsEdit from '../pages/flows/ai_flows_edit.vue';
 import {
   AGENTS_PLATFORM_INDEX_ROUTE,
   AGENTS_PLATFORM_NEW_ROUTE,
@@ -111,6 +115,14 @@ export const createRouter = (base, namespace) => {
             name: AI_CATALOG_FLOWS_ROUTE,
             path: '',
             component: AiFlows,
+          },
+          {
+            path: ':id(\\d+)/edit',
+            component: AiFlowsEdit,
+            name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+            meta: {
+              text: s__('AICatalog|Edit flow'),
+            },
           },
         ],
       },

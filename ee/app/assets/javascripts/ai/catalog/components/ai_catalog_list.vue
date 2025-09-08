@@ -1,6 +1,7 @@
 <script>
 import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
+import { __ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
@@ -51,6 +52,11 @@ export default {
       itemToDelete: null,
     };
   },
+  computed: {
+    deleteActionText() {
+      return this.itemTypeConfig.deleteActionItem?.text || __('Delete');
+    },
+  },
   methods: {
     async deleteItem() {
       await this.deleteFn(this.itemToDelete);
@@ -90,7 +96,7 @@ export default {
         variant="danger"
         :title="deleteConfirmTitle"
         :action-fn="deleteItem"
-        :action-text="__('Delete')"
+        :action-text="deleteActionText"
         @close="itemToDelete = null"
       >
         <gl-sprintf :message="deleteConfirmMessage">

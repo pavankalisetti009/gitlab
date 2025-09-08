@@ -46,11 +46,10 @@ module Gitlab
             def comments
               return [] if response.blank?
 
-              review_content = response.match(review_wrapper_regex)
+              review_block = extract_review_block
+              return [] if review_block.blank?
 
-              return [] if review_content.blank?
-
-              review_content[1].scan(comment_wrapper_regex).filter_map do |attrs, body|
+              review_block.scan(comment_wrapper_regex).filter_map do |attrs, body|
                 parsed_body = parsed_content(body)
                 comment = Comment.new(parsed_attrs(attrs), parsed_body[:body], parsed_body[:from])
                 comment if comment.valid?
@@ -58,23 +57,13 @@ module Gitlab
             end
             strong_memoize_attr :comments
 
-            def review_description
-              review_description_matches = response.match(review_description_regex)
-
-              return unless review_description_matches && review_description_matches[1].present?
-
-              review_description_matches[1].strip
-            end
-            strong_memoize_attr :review_description
-
             private
 
-            def review_description_regex
-              %r{<review>\s*(.*?)(?=\s*<comment|\s*</review>)}m
-            end
-
-            def review_wrapper_regex
-              %r{^<review>(.+)</review>$}m
+            def extract_review_block
+              # Find the last occurrence of <review>...</review> in the response
+              # This ensures we get the actual review output, not any examples in thinking steps
+              matches = response.scan(%r{<review>.*?</review>}m)
+              matches.last
             end
 
             def comment_wrapper_regex

@@ -29,9 +29,6 @@ module API
           end
 
           def human_user
-            identity = ::Gitlab::Auth::Identity.fabricate(current_user)
-            return identity.scoped_user if identity&.composite? && identity.linked?
-
             current_user
           end
 

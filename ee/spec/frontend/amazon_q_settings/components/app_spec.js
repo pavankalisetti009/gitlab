@@ -1,30 +1,32 @@
-import { nextTick } from 'vue';
 import {
   GlAlert,
   GlButton,
   GlForm,
+  GlFormCheckbox,
+  GlFormGroup,
   GlFormInput,
   GlFormInputGroup,
-  GlFormGroup,
-  GlFormRadioGroup,
   GlFormRadio,
-  GlSprintf,
-  GlFormCheckbox,
+  GlFormRadioGroup,
   GlLink,
+  GlSprintf,
 } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import axios from '~/lib/utils/axios_utils';
+import { nextTick } from 'vue';
+import App from 'ee/amazon_q_settings/components/app.vue';
 import DisconnectSuccessAlert from 'ee/amazon_q_settings/components/disconnect_success_alert.vue';
 import DisconnectWarningModal from 'ee/amazon_q_settings/components/disconnect_warning_modal.vue';
-import App from 'ee/amazon_q_settings/components/app.vue';
-import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import { stubComponent } from 'helpers/stub_component';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { createAlert } from '~/alert';
+import axios from '~/lib/utils/axios_utils';
 import { createAndSubmitForm } from '~/lib/utils/create_and_submit_form';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
-import { stubComponent } from 'helpers/stub_component';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 
 jest.mock('~/lib/utils/create_and_submit_form');
 jest.mock('~/lib/logger');
+jest.mock('~/alert');
 
 const TEST_SUBMIT_URL = '/foo/submit/url';
 const TEST_DISCONNECT_URL = '/foo/disconnect/url';
@@ -499,6 +501,31 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
 
       it('disconnect button is not loading', () => {
         expect(findDisconnectButton().props('loading')).toBe(false);
+      });
+    });
+
+    describe('when disconnect fails with UUID mismatch', () => {
+      beforeEach(async () => {
+        mock.onPost(TEST_DISCONNECT_URL).replyOnce(422, {
+          error_type: 'uuid_mismatch',
+        });
+
+        await findDisconnectWarning().vm.$emit('submit');
+        await axios.waitForAll();
+      });
+
+      it('shows UUID mismatch error message', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message:
+            'Amazon Q failed to disconnect because of a mismatch with the GitLab instance UUID. This issue typically occurs when the GitLab instance has been restored or migrated. %{linkStart}View troubleshooting information%{linkEnd}.',
+          messageLinks: {
+            link: {
+              href: '/help/user/duo_amazon_q/setup.md#troubleshooting',
+              target: '_blank',
+              rel: 'noopener noreferrer',
+            },
+          },
+        });
       });
     });
   });

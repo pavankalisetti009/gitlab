@@ -379,8 +379,6 @@ module EE
       end
 
       def should_audit_security_policy_pipeline_failure?(pipeline)
-        return false if ::Feature.disabled?(:collect_security_policy_failed_pipelines_audit_events, pipeline.project)
-
         pipeline_created_by_security_policies?(pipeline.source) || pipeline_with_security_policy_jobs? || pipeline_with_security_policy_errors?(pipeline)
       end
 

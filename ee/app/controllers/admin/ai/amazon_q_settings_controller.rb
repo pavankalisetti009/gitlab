@@ -41,7 +41,9 @@ module Admin
         if response.success?
           head :ok
         else
-          render json: { message: response.message }, status: :unprocessable_entity
+          uuid_mismatch = response.message&.include?(::Ai::AmazonQ::BaseService::UUID_MISMATCH_ERROR_MESSAGE)
+          error_type = uuid_mismatch ? 'uuid_mismatch' : 'generic'
+          render json: { message: response.message, error_type: error_type }, status: :unprocessable_entity
         end
       end
 

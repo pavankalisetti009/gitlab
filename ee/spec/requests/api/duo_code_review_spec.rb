@@ -54,18 +54,6 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
       )
     end
 
-    let(:expected_diffs_and_paths) do
-      {
-        'path.md' => raw_diffs
-      }
-    end
-
-    let(:expected_files_content) do
-      {
-        'path.md' => files_content
-      }
-    end
-
     subject(:post_api) do
       post api('/duo_code_review/evaluations', current_user), headers: headers, params: body
     end
@@ -176,61 +164,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
       end
     end
 
-    context 'with more complex diff content' do
-      let(:raw_diffs) do
-        <<~DIFFS
-        diff --git a/file1.rb b/file1.rb
-        index 123..456 100644
-        --- a/file1.rb
-        +++ b/file1.rb
-        @@ -1,3 +1,3 @@
-        -old line
-        +new line
-        unchanged
-        diff --git a/file2.rb b/file2.rb
-        index 789..012 100644
-        --- a/file2.rb
-        +++ b/file2.rb
-        @@ -5,2 +5,2 @@
-        -another old line
-        +another new line
-        DIFFS
-      end
-
-      let(:file1_content) { "# File 1\nnew line\nunchanged\nmore content" }
-      let(:file2_content) { "# File 2\nsome content\nanother new line" }
-      let(:body) do
-        {
-          diffs: raw_diffs,
-          mr_title: mr_title,
-          mr_description: mr_description,
-          files_content: {
-            'file1.rb' => file1_content,
-            'file2.rb' => file2_content
-          }
-        }
-      end
-
-      let(:expected_diffs_and_paths) do
-        {
-          'file1.rb' => %r{diff --git a/file1\.rb b/file1\.rb.+}m,
-          'file2.rb' => %r{diff --git a/file2\.rb b/file2\.rb.+}m
-        }
-      end
-
-      let(:expected_files_content) do
-        {
-          'file1.rb' => file1_content,
-          'file2.rb' => file2_content
-        }
-      end
-
-      it 'correctly processes multiple files' do
-        expect(response).to have_gitlab_http_status(:created)
-      end
-    end
-
-    context 'when extracting review from response' do
+    context 'when extracting review from response with thinking steps' do
       let(:evaluation_response_with_steps) do
         <<~RESPONSE
         <step1>
@@ -249,7 +183,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         RESPONSE
       end
 
-      it 'extracts only the review section from the response' do
+      it 'extracts only the final review section, ignoring thinking steps' do
         evaluator_double = instance_double(Gitlab::Llm::Evaluators::ReviewMergeRequest)
         allow(Gitlab::Llm::Evaluators::ReviewMergeRequest).to receive(:new).and_return(evaluator_double)
         allow(evaluator_double).to receive(:execute).and_return(evaluation_response_with_steps)
@@ -259,22 +193,58 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         expect(response).to have_gitlab_http_status(:created)
 
         response_body = ::Gitlab::Json.parse(response.body)
-        extracted_review =
-          <<~REVIEW.strip
-          <review>
-          <comment file="internal/services/order_orchestrator.go" old_line="" new_line="26">
-          The HTTP client lacks timeout configuration
-          </comment>
-          </review>
-          REVIEW
+        extracted_review = <<~REVIEW.strip
+        <review>
+        <comment file="internal/services/order_orchestrator.go" old_line="" new_line="26">
+        The HTTP client lacks timeout configuration
+        </comment>
+        </review>
+        REVIEW
 
         expect(response_body['review']).to eq(extracted_review)
         expect(response_body['review']).not_to include('<step')
       end
     end
 
+    context 'when response has multiple review sections' do
+      let(:multiple_review_response) do
+        <<~RESPONSE
+        Here's an example: <review>example content</review>
+
+        And here's the actual review:
+        <review>
+        <comment file="test.rb" old_line="5" new_line="10">
+        Real comment here#{'  '}
+        </comment>
+        </review>
+        RESPONSE
+      end
+
+      it 'extracts only the last review section' do
+        evaluator_double = instance_double(Gitlab::Llm::Evaluators::ReviewMergeRequest)
+        allow(Gitlab::Llm::Evaluators::ReviewMergeRequest).to receive(:new).and_return(evaluator_double)
+        allow(evaluator_double).to receive(:execute).and_return(multiple_review_response)
+
+        post api('/duo_code_review/evaluations', current_user), headers: headers, params: body
+
+        expect(response).to have_gitlab_http_status(:created)
+
+        response_body = ::Gitlab::Json.parse(response.body)
+        expected_review = <<~REVIEW.strip
+        <review>
+        <comment file="test.rb" old_line="5" new_line="10">
+        Real comment here#{'  '}
+        </comment>
+        </review>
+        REVIEW
+
+        expect(response_body['review']).to eq(expected_review)
+        expect(response_body['review']).not_to include('example content')
+      end
+    end
+
     context 'when response has no review tags' do
-      it 'returns the original response' do
+      it 'returns the original response when no review tags are found' do
         evaluator_double = instance_double(Gitlab::Llm::Evaluators::ReviewMergeRequest)
         allow(Gitlab::Llm::Evaluators::ReviewMergeRequest).to receive(:new).and_return(evaluator_double)
         allow(evaluator_double).to receive(:execute).and_return('Response without review tags')
