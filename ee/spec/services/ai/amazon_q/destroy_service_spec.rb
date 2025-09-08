@@ -65,6 +65,18 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
       end
     end
 
+    context 'when the AI client returns UUID mismatch error' do
+      let(:status) { 401 }
+      let(:body) { '{"error":"Header mismatch \'X-Gitlab-Instance-Id\'"}' }
+
+      it 'responds with UUID mismatch error' do
+        expect(instance.execute).to have_attributes(
+          success?: false,
+          message: 'Uuid mismatch GitLab instance UUID does not match the registered Identity Provider UUID in AWS'
+        )
+      end
+    end
+
     it 'blocks the service account' do
       expect { instance.execute }.to change { service_account.reload.blocked? }.from(false).to(true)
     end

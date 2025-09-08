@@ -57,8 +57,12 @@ module Ai
         )
 
         unless response.success?
-          ai_settings.errors.add(:application,
-            "could not be deleted by the AI Gateway: Error #{response.code} - #{response.body}")
+          if response.code == 401 && response.body&.include?("Header mismatch 'X-Gitlab-Instance-Id'")
+            ai_settings.errors.add(:uuid_mismatch, UUID_MISMATCH_ERROR_MESSAGE)
+          else
+            ai_settings.errors.add(:application,
+              "could not be deleted by the AI Gateway: Error #{response.code} - #{response.body}")
+          end
         end
 
         response
