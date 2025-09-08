@@ -108,6 +108,16 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWid
         end
       end
 
+      context 'when duo_agent_platform_widget_self_managed feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_agent_platform_widget_self_managed: false)
+        end
+
+        it 'is not eligible' do
+          expect(presenter.attributes).to eq({})
+        end
+      end
+
       context 'when amazon q customer' do
         before do
           allow(::Ai::AmazonQ).to receive(:enabled?).and_return(true)
