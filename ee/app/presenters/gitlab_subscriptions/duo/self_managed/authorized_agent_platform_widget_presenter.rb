@@ -13,14 +13,12 @@ module GitlabSubscriptions
           return false unless on_or_past_release_date?
           return false if amazon_q_customer?
           return false if self_hosted_ai_gateway?
-          return false if dedicated_pub_sec_customer?
+          return false if dedicated?
 
           License.duo_core_features_available?
         end
 
-        def dedicated_pub_sec_customer?
-          # TODO: resolve with https://gitlab.com/gitlab-org/gitlab/-/issues/565473#note_2725529152
-          # We'll just exclude all for now and iterate on this once the above thread is resolved.
+        def dedicated?
           ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
         end
 
