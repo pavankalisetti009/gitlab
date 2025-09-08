@@ -50,4 +50,14 @@ describe('AiContentContainer', () => {
     await nextTick();
     expect(wrapper.emitted('closePanel')).toEqual([[false]]);
   });
+
+  it('shows the maximize icon when minimized', () => {
+    expect(findMaximizeButton().props('icon')).toBe('maximize');
+  });
+
+  it('shows the minimized icon when maximized', async () => {
+    await findMaximizeButton().trigger('click');
+    await nextTick();
+    expect(findMaximizeButton().props('icon')).toBe('minimize');
+  });
 });
