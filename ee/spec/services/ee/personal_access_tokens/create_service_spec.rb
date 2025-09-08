@@ -66,6 +66,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
     subject(:create_token) { service.execute }
 
     let(:target_user) { create(:user) }
+    let(:current_user) { target_user }
     let(:organization) { create(:organization) }
     let(:service) do
       described_class.new(current_user: current_user, target_user: target_user,
@@ -289,6 +290,30 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
         let(:target_user) { enterprise_user_of_the_group }
 
         it_behaves_like 'an unsuccessfully created token'
+      end
+    end
+
+    context 'for group_id' do
+      let(:params) { valid_params }
+
+      context 'when the user is an enterprise user' do
+        let_it_be(:target_user) { create(:enterprise_user) }
+
+        it "creates personal access token record with group_id set to the user's enterprise_group_id" do
+          expect(target_user.enterprise_group_id).not_to be_nil
+
+          expect(create_token.success?).to be true
+          expect(token.group_id).to eq(target_user.enterprise_group_id)
+        end
+      end
+
+      context 'when the user is a regular user' do
+        let_it_be(:target_user) { create(:user) }
+
+        it "creates personal access token record with group_id set to nil" do
+          expect(create_token.success?).to be true
+          expect(token.group_id).to be_nil
+        end
       end
     end
   end

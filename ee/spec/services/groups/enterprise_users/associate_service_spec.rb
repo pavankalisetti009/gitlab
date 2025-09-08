@@ -22,6 +22,18 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
 
   let(:user) { create(:user, created_at: user_created_at) }
 
+  let(:user_personal_access_token1) { create(:personal_access_token, user: user, group_id: user.enterprise_group_id) }
+
+  let(:user_personal_access_token2) do
+    create(:personal_access_token, :expired, user: user, group_id: user.enterprise_group_id)
+  end
+
+  let(:user_personal_access_token3) do
+    create(:personal_access_token, :revoked, user: user, group_id: user.enterprise_group_id)
+  end
+
+  let(:another_user_personal_access_token) { create(:personal_access_token) }
+
   subject(:service) { described_class.new(group: group, user: user) }
 
   describe '#execute' do
@@ -54,6 +66,25 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
 
         expect(user.user_detail.enterprise_group_associated_at).not_to eq(previous_enterprise_group_associated_at)
         expect(user.user_detail.enterprise_group_associated_at).to eq(Time.current)
+      end
+
+      it 'sets group_id for user.personal_access_tokens', :aggregate_failures do
+        previous_enterprise_group_id = user.user_detail.enterprise_group_id
+        expect(previous_enterprise_group_id).not_to eq(group.id)
+
+        expect(user_personal_access_token1.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token2.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token3.group_id).to eq(previous_enterprise_group_id)
+
+        expect(another_user_personal_access_token.group_id).to be_nil
+
+        service.execute
+
+        expect(user_personal_access_token1.reload.group_id).to eq(group.id)
+        expect(user_personal_access_token2.reload.group_id).to eq(group.id)
+        expect(user_personal_access_token3.reload.group_id).to eq(group.id)
+
+        expect(another_user_personal_access_token.reload.group_id).to be_nil
       end
 
       it 'enqueues user_associated_with_enterprise_group_email email for later delivery to the user' do
@@ -162,6 +193,24 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
         user.reload
 
         expect(user.user_detail.enterprise_group_associated_at).to eq(previous_enterprise_group_associated_at)
+      end
+
+      it 'does not update group_id for user.personal_access_tokens', :aggregate_failures do
+        previous_enterprise_group_id = user.user_detail.enterprise_group_id
+
+        expect(user_personal_access_token1.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token2.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token3.group_id).to eq(previous_enterprise_group_id)
+
+        expect(another_user_personal_access_token.group_id).to be_nil
+
+        service.execute
+
+        expect(user_personal_access_token1.reload.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token2.reload.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token3.reload.group_id).to eq(previous_enterprise_group_id)
+
+        expect(another_user_personal_access_token.reload.group_id).to be_nil
       end
 
       it 'does not enqueue any email for later delivery' do

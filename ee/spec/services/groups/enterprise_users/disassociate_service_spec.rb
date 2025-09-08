@@ -5,6 +5,22 @@ require 'spec_helper'
 RSpec.describe Groups::EnterpriseUsers::DisassociateService, :saas, feature_category: :user_management do
   subject(:service) { described_class.new(user: user) }
 
+  let(:user_personal_access_token1) do
+    create(:personal_access_token, user: user, group_id: user.enterprise_group_id)
+  end
+
+  let(:user_personal_access_token2) do
+    create(:personal_access_token, :expired, user: user, group_id: user.enterprise_group_id)
+  end
+
+  let(:user_personal_access_token3) do
+    create(:personal_access_token, :revoked, user: user, group_id: user.enterprise_group_id)
+  end
+
+  let(:another_user_personal_access_token) do
+    create(:personal_access_token, group_id: create(:group).id)
+  end
+
   describe '#execute' do
     shared_examples 'disassociates the user from the enterprise group' do
       it 'returns a successful response', :aggregate_failures do
@@ -33,6 +49,25 @@ RSpec.describe Groups::EnterpriseUsers::DisassociateService, :saas, feature_cate
         user.reload
 
         expect(user.user_detail.enterprise_group_associated_at).to eq(nil)
+      end
+
+      it 'sets group_id for user.personal_access_tokens to nil', :aggregate_failures do
+        previous_enterprise_group_id = user.user_detail.enterprise_group_id
+        expect(previous_enterprise_group_id).not_to be_nil
+
+        expect(user_personal_access_token1.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token2.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token3.group_id).to eq(previous_enterprise_group_id)
+
+        expect(another_user_personal_access_token.group_id).not_to be_nil
+
+        service.execute
+
+        expect(user_personal_access_token1.reload.group_id).to be_nil
+        expect(user_personal_access_token2.reload.group_id).to be_nil
+        expect(user_personal_access_token3.reload.group_id).to be_nil
+
+        expect(another_user_personal_access_token.reload.group_id).not_to be_nil
       end
 
       it 'logs message with info level about disassociating the user from the enterprise group' do
@@ -90,6 +125,24 @@ RSpec.describe Groups::EnterpriseUsers::DisassociateService, :saas, feature_cate
         user.reload
 
         expect(user.user_detail.enterprise_group_associated_at).to eq(previous_enterprise_group_associated_at)
+      end
+
+      it 'does not update group_id for user.personal_access_tokens to nil', :aggregate_failures do
+        previous_enterprise_group_id = user.user_detail.enterprise_group_id
+
+        expect(user_personal_access_token1.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token2.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token3.group_id).to eq(previous_enterprise_group_id)
+
+        expect(another_user_personal_access_token.group_id).not_to be_nil
+
+        service.execute
+
+        expect(user_personal_access_token1.reload.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token2.reload.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token3.reload.group_id).to eq(previous_enterprise_group_id)
+
+        expect(another_user_personal_access_token.reload.group_id).not_to be_nil
       end
 
       it 'does not log any message with info level' do
