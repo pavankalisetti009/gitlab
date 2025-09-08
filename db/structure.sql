@@ -23093,6 +23093,29 @@ CREATE SEQUENCE project_repositories_id_seq
 
 ALTER SEQUENCE project_repositories_id_seq OWNED BY project_repositories.id;
 
+CREATE TABLE project_repository_states (
+    id bigint NOT NULL,
+    verification_started_at timestamp with time zone,
+    verification_retry_at timestamp with time zone,
+    verified_at timestamp with time zone,
+    project_repository_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    verification_state smallint DEFAULT 0 NOT NULL,
+    verification_retry_count smallint DEFAULT 0 NOT NULL,
+    verification_checksum bytea,
+    verification_failure text,
+    CONSTRAINT check_443803a648 CHECK ((char_length(verification_failure) <= 255))
+);
+
+CREATE SEQUENCE project_repository_states_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE project_repository_states_id_seq OWNED BY project_repository_states.id;
+
 CREATE TABLE project_repository_storage_moves (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -30268,6 +30291,8 @@ ALTER TABLE ONLY project_relation_exports ALTER COLUMN id SET DEFAULT nextval('p
 
 ALTER TABLE ONLY project_repositories ALTER COLUMN id SET DEFAULT nextval('project_repositories_id_seq'::regclass);
 
+ALTER TABLE ONLY project_repository_states ALTER COLUMN id SET DEFAULT nextval('project_repository_states_id_seq'::regclass);
+
 ALTER TABLE ONLY project_repository_storage_moves ALTER COLUMN id SET DEFAULT nextval('project_repository_storage_moves_id_seq'::regclass);
 
 ALTER TABLE ONLY project_requirement_compliance_statuses ALTER COLUMN id SET DEFAULT nextval('project_requirement_compliance_statuses_id_seq'::regclass);
@@ -33556,6 +33581,9 @@ ALTER TABLE ONLY project_relation_exports
 
 ALTER TABLE ONLY project_repositories
     ADD CONSTRAINT project_repositories_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY project_repository_states
+    ADD CONSTRAINT project_repository_states_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY project_repository_storage_moves
     ADD CONSTRAINT project_repository_storage_moves_pkey PRIMARY KEY (id);
@@ -40408,6 +40436,18 @@ CREATE UNIQUE INDEX index_project_repositories_on_project_id ON project_reposito
 
 CREATE INDEX index_project_repositories_on_shard_id_and_project_id ON project_repositories USING btree (shard_id, project_id);
 
+CREATE INDEX index_project_repository_states_failed_verification ON project_repository_states USING btree (verification_retry_at NULLS FIRST) WHERE (verification_state = 3);
+
+CREATE INDEX index_project_repository_states_needs_verification ON project_repository_states USING btree (verification_state) WHERE ((verification_state = 0) OR (verification_state = 3));
+
+CREATE INDEX index_project_repository_states_on_project_id ON project_repository_states USING btree (project_id);
+
+CREATE INDEX index_project_repository_states_on_project_repository_id ON project_repository_states USING btree (project_repository_id);
+
+CREATE INDEX index_project_repository_states_on_verification_state ON project_repository_states USING btree (verification_state);
+
+CREATE INDEX index_project_repository_states_pending_verification ON project_repository_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
+
 CREATE INDEX index_project_repository_storage_moves_on_project_id ON project_repository_storage_moves USING btree (project_id);
 
 CREATE INDEX index_project_requirement_compliance_statuses_on_project_id ON project_requirement_compliance_statuses USING btree (project_id);
@@ -46893,6 +46933,9 @@ ALTER TABLE ONLY merge_request_diffs
 
 ALTER TABLE ONLY ml_candidates
     ADD CONSTRAINT fk_56d6ed4d3d FOREIGN KEY (experiment_id) REFERENCES ml_experiments(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY project_repository_states
+    ADD CONSTRAINT fk_57201a9be7 FOREIGN KEY (project_repository_id) REFERENCES project_repositories(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY workspace_tokens
     ADD CONSTRAINT fk_5724f2499d FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
