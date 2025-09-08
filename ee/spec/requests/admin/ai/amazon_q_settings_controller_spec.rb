@@ -195,7 +195,29 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
           perform_request
 
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
-          expect(json_response).to eq({ 'message' => 'Oops' })
+          expect(json_response).to eq({ 'error_type' => 'generic', 'message' => 'Oops' })
+        end
+      end
+
+      context 'when ::Ai::AmazonQ::DestroyService.execute returns UUID mismatch error' do
+        let(:service_response) do
+          ServiceResponse.error(
+            message: 'GitLab instance UUID does not match the registered Identity Provider UUID in AWS'
+          )
+        end
+
+        it 'returns unprocessable entity response with uuid_mismatch error type' do
+          expect_next_instance_of(::Ai::AmazonQ::DestroyService, admin) do |destroy_service|
+            expect(destroy_service).to receive(:execute).and_return(service_response)
+          end
+
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response).to eq({
+            'message' => 'GitLab instance UUID does not match the registered Identity Provider UUID in AWS',
+            'error_type' => 'uuid_mismatch'
+          })
         end
       end
     end

@@ -217,12 +217,31 @@ export default {
         // eslint-disable-next-line @gitlab/require-i18n-strings
         logError('Unexpected error while disconnecting Amazon Q.', e);
 
-        createAlert({
-          message: s__(
-            'AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details.',
-          ),
-          error: e,
-        });
+        const errorType = e.response?.data?.error_type;
+
+        if (errorType === 'uuid_mismatch') {
+          createAlert({
+            message: s__(
+              'AmazonQ|Amazon Q failed to disconnect because of a mismatch with the GitLab instance UUID. This issue typically occurs when the GitLab instance has been restored or migrated. %{linkStart}View troubleshooting information%{linkEnd}.',
+            ),
+            messageLinks: {
+              link: {
+                href: helpPagePath('user/duo_amazon_q/setup.md', { anchor: 'troubleshooting' }),
+                target: '_blank',
+                // eslint-disable-next-line @gitlab/require-i18n-strings
+                rel: 'noopener noreferrer',
+              },
+            },
+          });
+        } else {
+          createAlert({
+            // show the normal alert
+            message: s__(
+              'AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details.',
+            ),
+            error: e,
+          });
+        }
       } finally {
         this.isDisconnecting = false;
       }
