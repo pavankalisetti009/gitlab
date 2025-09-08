@@ -217,8 +217,7 @@ describe('Projects section', () => {
 
     describe('project selection', () => {
       it('selects all projects when select all checkbox is clicked', async () => {
-        const selectAllCheckbox = findSelectAllCheckbox();
-        await selectAllCheckbox.setChecked(true);
+        await findSelectAllCheckbox().setChecked(true);
         await nextTick();
 
         const emittedEvents = wrapper.emitted('update:projects');
@@ -229,10 +228,9 @@ describe('Projects section', () => {
       });
 
       it('deselects all projects when select all checkbox is unchecked', async () => {
-        const selectAllCheckbox = findSelectAllCheckbox();
-        await selectAllCheckbox.setChecked(true);
+        await findSelectAllCheckbox().setChecked(true);
         await nextTick();
-        await selectAllCheckbox.setChecked(false);
+        await findSelectAllCheckbox().setChecked(false);
         await nextTick();
 
         const emittedEvents = wrapper.emitted('update:projects');

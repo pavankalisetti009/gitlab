@@ -271,7 +271,7 @@ describe('RequirementForm', () => {
 
           expect(wrapper.findComponent(GlFormCheckbox).exists()).toBe(true);
           expect(findCheckbox(wrapper).exists()).toBe(true);
-          expect(findCheckbox(wrapper).vm.$attrs.checked).toBe(satisfied);
+          expect(findCheckbox(wrapper).props('checked')).toBe(satisfied);
         },
       );
     });

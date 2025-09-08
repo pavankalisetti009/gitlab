@@ -60,8 +60,7 @@ describe('DuoPromptCacheForm', () => {
     });
 
     it('sets initial checkbox state based on promptCacheEnabled prop when unselected', () => {
-      // Fix: Use 'checked' prop instead of 'value'
-      expect(findFormCheckbox().props('value')).toBe(undefined);
+      expect(findFormCheckbox().props('checked')).toBe(false);
     });
 
     it('emits change event when checkbox is clicked', async () => {
@@ -86,7 +85,7 @@ describe('DuoPromptCacheForm', () => {
       });
 
       it('disables checkbox', () => {
-        expect(findFormCheckbox().attributes().disabled).toBe('true');
+        expect(findFormCheckbox().props('disabled')).toBe(true);
       });
 
       it('shows popover', () => {
@@ -95,7 +94,9 @@ describe('DuoPromptCacheForm', () => {
     });
 
     it('renders checkbox with data-testid attribute', () => {
-      expect(findFormCheckbox().attributes('data-testid')).toBe('use-prompt-cache-checkbox');
+      expect(findFormCheckbox().find('input').attributes('data-testid')).toBe(
+        'use-prompt-cache-checkbox',
+      );
     });
   });
 });

@@ -76,8 +76,6 @@ describe('ProjectsTable component', () => {
     findTable().findAll('th > div').at(0).findComponent(GlFormCheckbox);
   const findSelectedRows = () => findTable().findAll('.b-table-row-selected');
 
-  const isIndeterminate = (glFormCheckbox) => glFormCheckbox.vm.$attrs.indeterminate;
-
   const selectRow = (index) => findTableRowData(index).at(0).trigger('click');
   const getMockFrameworksGraphQl = (count = 2) =>
     jest.fn().mockResolvedValue(createComplianceFrameworksReportResponse({ count, projects: 2 }));
@@ -227,7 +225,7 @@ describe('ProjectsTable component', () => {
       it('renders indeterminate state when not all rows are selected', async () => {
         await selectRow(0);
 
-        expect(isIndeterminate(findSelectAllCheckbox())).toBe(true);
+        expect(findSelectAllCheckbox().props('indeterminate')).toBe(true);
       });
 
       it('does not render indeterminate state when all rows are selected', async () => {
@@ -236,7 +234,7 @@ describe('ProjectsTable component', () => {
           await selectRow(i);
         }
 
-        expect(isIndeterminate(findSelectAllCheckbox())).toBe(false);
+        expect(findSelectAllCheckbox().props('indeterminate')).toBe(false);
       });
 
       it('renders checked state when all rows are selected', async () => {
