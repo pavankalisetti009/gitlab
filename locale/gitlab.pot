@@ -43085,6 +43085,9 @@ msgstr ""
 msgid "No suggestions found"
 msgstr ""
 
+msgid "No suitable runners available for DAST validation"
+msgstr ""
+
 msgid "No template"
 msgstr ""
 

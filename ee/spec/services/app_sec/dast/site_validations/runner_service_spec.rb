@@ -7,6 +7,7 @@ RSpec.describe AppSec::Dast::SiteValidations::RunnerService do
   let_it_be(:developer) { create(:user, developer_of: project) }
   let_it_be(:dast_site_token) { create(:dast_site_token, project: project) }
   let_it_be(:dast_site_validation) { create(:dast_site_validation, dast_site_token: dast_site_token) }
+  let_it_be(:default_runner) { create(:ci_runner, :project, projects: [project], run_untagged: true) }
 
   subject do
     described_class.new(project: project, current_user: developer, params: { dast_site_validation: dast_site_validation }).execute
@@ -14,6 +15,10 @@ RSpec.describe AppSec::Dast::SiteValidations::RunnerService do
 
   before do
     project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+    # Grant admin permissions to avoid access denied errors in Ci::RunnersFinder
+    allow(Ability).to receive(:allowed?).and_call_original
+    allow(Ability).to receive(:allowed?).with(developer, :read_admin_cicd).and_return(true)
+    allow(Ability).to receive(:allowed?).with(developer, :read_runners, project).and_return(true)
   end
 
   describe 'execute' do
@@ -94,11 +99,86 @@ RSpec.describe AppSec::Dast::SiteValidations::RunnerService do
         end
       end
 
+      context 'when no suitable runners are available' do
+        before do
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:available_runners_exist?).and_return(false)
+          end
+        end
+
+        it 'returns an error' do
+          expect(subject).to have_attributes(
+            status: :error,
+            message: 'No suitable runners available for DAST validation'
+          )
+        end
+      end
+
+      context 'when tagged runners are available' do
+        let(:ci_tag) { create(:ci_tag, name: 'dast-validation-runner') }
+        let(:tagged_runner) { create(:ci_runner, :project, projects: [project]) }
+
+        before do
+          # Create the runner-tag association (avoid duplicates)
+          unless tagged_runner.taggings.joins(:tag).where(tags: { name: ci_tag.name }).exists?
+            create(:ci_runner_tagging, runner: tagged_runner, tag: ci_tag)
+          end
+        end
+
+        it 'creates pipeline with tagged configuration' do
+          expect { subject }.to change { Ci::Pipeline.count }.by(1)
+
+          pipeline = Ci::Pipeline.last
+          expect(pipeline.source).to eq('ondemand_dast_validation')
+        end
+
+        it 'sets tags in ci_configuration' do
+          service = described_class.new(project: project, current_user: developer, params: { dast_site_validation: dast_site_validation })
+          config = service.send(:ci_configuration)
+          expect(config['validation']['tags']).to eq(['dast-validation-runner'])
+        end
+      end
+
+      context 'when only untagged runners are available' do
+        it 'creates pipeline without tags configuration' do
+          expect { subject }.to change { Ci::Pipeline.count }.by(1)
+
+          pipeline = Ci::Pipeline.last
+          expect(pipeline.source).to eq('ondemand_dast_validation')
+        end
+
+        it 'does not set validation entry in ci_configuration' do
+          service = described_class.new(project: project, current_user: developer, params: { dast_site_validation: dast_site_validation })
+          config = service.send(:ci_configuration)
+          expect(config).not_to have_key('validation')
+        end
+      end
+
+      context 'when both tagged and untagged runners are available' do
+        let(:ci_tag_2) { create(:ci_tag, name: 'dast-validation-runner') }
+        let(:tagged_runner_2) { create(:ci_runner, :project, projects: [project]) }
+
+        before do
+          # Create the runner-tag association (avoid duplicates)
+          unless tagged_runner_2.taggings.joins(:tag).where(tags: { name: ci_tag_2.name }).exists?
+            create(:ci_runner_tagging, runner: tagged_runner_2, tag: ci_tag_2)
+          end
+        end
+
+        it 'prioritizes tagged runners and sets tags in configuration' do
+          service = described_class.new(project: project, current_user: developer, params: { dast_site_validation: dast_site_validation })
+          config = service.send(:ci_configuration)
+
+          expect(config['validation']['tags']).to eq(['dast-validation-runner'])
+        end
+      end
+
       context 'when pipeline creation fails' do
         before do
-          allow_next_instance_of(Ci::Pipeline) do |instance|
-            allow(instance).to receive(:created_successfully?).and_return(false)
-            allow(instance).to receive(:full_error_messages).and_return('error message')
+          # Mock successful Ci::CreatePipelineService result but failed pipeline
+          allow_next_instance_of(Ci::CreatePipelineService) do |instance|
+            mock_result = instance_double(ServiceResponse, success?: false)
+            allow(instance).to receive(:execute).and_return(mock_result)
           end
         end
 
