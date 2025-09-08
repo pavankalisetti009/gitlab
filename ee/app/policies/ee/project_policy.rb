@@ -724,6 +724,7 @@ module EE
         enable :read_project_audit_events
         enable :read_cluster
         enable :read_terraform_state
+        enable :read_feature_flag
         enable :read_project_merge_request_analytics
         enable :read_approvers
         enable :read_on_demand_dast_scan
