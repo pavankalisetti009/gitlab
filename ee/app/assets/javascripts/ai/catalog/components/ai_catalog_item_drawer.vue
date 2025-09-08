@@ -70,7 +70,7 @@ export default {
     @close="$emit('close')"
   >
     <template #title>
-      <div class="gl-text gl-flex gl-w-full gl-items-center gl-gap-x-4 xl:gl-px-4">
+      <div class="gl-flex gl-w-full gl-items-center gl-gap-x-4 xl:gl-px-4">
         <h2 class="gl-m-0">
           {{ activeItem.name }}
         </h2>

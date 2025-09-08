@@ -144,7 +144,7 @@ export default {
         v-for="(item, itemIdx) in initialList"
         :key="itemIdx"
         data-testid="list-item"
-        class="gl-text gl-mt-2"
+        class="gl-mt-2"
       >
         <gl-sprintf :message="item">
           <template #code="{ content }">
