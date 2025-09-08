@@ -33,6 +33,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:custom_lifecycles).class_name('WorkItems::Statuses::Custom::Lifecycle') }
   it { is_expected.to have_one(:ai_settings).class_name('Ai::NamespaceSetting') }
   it { is_expected.to have_many(:custom_statuses).class_name('WorkItems::Statuses::Custom::Status') }
+  it { is_expected.to have_many(:converted_statuses).class_name('WorkItems::Statuses::Custom::Status') }
 
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }

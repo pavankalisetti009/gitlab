@@ -108,6 +108,8 @@ module EE
     end
 
     def status
+      # Board lists don't use status mappings since they lack work item type and
+      # timestamp context required for mapping resolution.
       return custom_status if custom_status.present?
 
       system_defined_status&.converted_status_in_namespace(

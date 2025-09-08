@@ -21,11 +21,15 @@ module WorkItems
       validate :validate_custom_status_allowed_for_lifecycle
 
       def status
-        return custom_status if custom_status.present?
+        return find_mapped_status(custom_status_id) || custom_status if custom_status.present?
 
-        system_defined_status&.converted_status_in_namespace(
-          work_item.namespace.root_ancestor
-        )
+        converted_status = system_defined_status&.converted_status_in_namespace(top_level_namespace)
+        # Handle chained mappings: converted system-defined status -> custom status -> final mapped status
+        if converted_status.is_a?(WorkItems::Statuses::Custom::Status)
+          return find_mapped_status(converted_status.id) || converted_status
+        end
+
+        converted_status
       end
 
       def status=(new_status)
@@ -42,12 +46,17 @@ module WorkItems
       private
 
       def work_item_type
-        work_item.work_item_type
+        work_item&.work_item_type
       end
       strong_memoize_attr :work_item_type
 
+      def top_level_namespace
+        work_item.namespace.root_ancestor
+      end
+      strong_memoize_attr :top_level_namespace
+
       def top_level_namespace_id
-        work_item.namespace.root_ancestor.id
+        top_level_namespace.id
       end
       strong_memoize_attr :top_level_namespace_id
 
@@ -63,7 +72,7 @@ module WorkItems
         return if custom_status.nil?
         return unless custom_status_enabled?
 
-        lifecycle = work_item_type.custom_lifecycle_for(top_level_namespace_id)
+        lifecycle = work_item_type&.custom_lifecycle_for(top_level_namespace_id)
 
         return if lifecycle.nil?
 
@@ -75,7 +84,7 @@ module WorkItems
       # TODO: Pass the namespace once the namespace trigger is removed
       # https://gitlab.com/gitlab-org/gitlab/-/issues/528728
       def custom_status_enabled?
-        work_item_type.custom_status_enabled_for?(top_level_namespace_id)
+        work_item_type&.custom_status_enabled_for?(top_level_namespace_id)
       end
       strong_memoize_attr :custom_status_enabled?
 
@@ -103,6 +112,25 @@ module WorkItems
         return if custom_status_enabled?
 
         errors.add(:custom_status, 'not allowed for this work item type')
+      end
+
+      def find_mapped_status(status_id)
+        candidate_mappings = cached_status_mappings[[status_id, work_item.work_item_type_id]]
+        return if candidate_mappings.nil?
+
+        mapping = candidate_mappings.find { |mapping| mapping.applicable_for?(updated_at) }
+        mapping&.new_status
+      end
+
+      def cached_status_mappings
+        cache_key = "work_items:status_mappings:#{top_level_namespace_id}"
+
+        ::Gitlab::SafeRequestStore.fetch(cache_key) do
+          all_mappings = Custom::Mapping
+            .with_namespace_id(top_level_namespace_id)
+
+          all_mappings.group_by { |m| [m.old_status_id, m.work_item_type_id] }
+        end
       end
     end
   end
