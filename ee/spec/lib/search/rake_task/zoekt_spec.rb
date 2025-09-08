@@ -62,4 +62,57 @@ RSpec.describe Search::RakeTask::Zoekt, :silence_stdout, feature_category: :glob
       described_class.info(name: 'test', watch_interval: '5')
     end
   end
+
+  describe '.health' do
+    before do
+      # Make run_with_interval yield once and then raise Interrupt to stop the loop
+      allow(described_class).to receive(:run_with_interval).and_call_original
+      allow(described_class).to receive(:loop) do |&block|
+        block.call
+        raise Interrupt
+      end
+    end
+
+    it 'creates task executor with empty options when watch_interval is nil' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: stdout_logger, options: {})
+        .and_return(task_executor_service)
+
+      described_class.health(name: 'test', watch_interval: nil)
+    end
+
+    it 'creates task executor with empty options when watch_interval is zero' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: stdout_logger, options: {})
+        .and_return(task_executor_service)
+
+      described_class.health(name: 'test', watch_interval: '0')
+    end
+
+    it 'creates task executor with watch_mode options when interval is positive' do
+      expect(Search::Zoekt::RakeTaskExecutorService).to receive(:new)
+        .with(logger: stdout_logger, options: { watch_mode: true, watch_interval: 5 })
+        .and_return(task_executor_service)
+
+      described_class.health(name: 'test', watch_interval: '5')
+    end
+
+    it 'executes the health task' do
+      expect(task_executor_service).to receive(:execute).with(:health)
+
+      described_class.health(name: 'test')
+    end
+
+    it 'does not enter the loop when watch_interval is nil' do
+      expect(described_class).not_to receive(:loop)
+
+      described_class.health(name: 'test', watch_interval: nil)
+    end
+
+    it 'enters the loop when watch_interval is positive' do
+      expect(described_class).to receive(:loop)
+
+      described_class.health(name: 'test', watch_interval: '5')
+    end
+  end
 end
