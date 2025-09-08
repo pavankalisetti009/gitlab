@@ -174,6 +174,29 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
           expect(mutation_response['lifecycle']['name']).to eq(lifecycle_name)
         end
       end
+
+      context 'when mapping is provided' do
+        let(:params) do
+          super().merge({
+            statuses: nil,
+            status_mappings: [
+              {
+                old_status_id: existing_in_progress_status.to_gid,
+                new_status_id: custom_lifecycle.default_open_status.to_gid
+              }
+            ]
+          })
+        end
+
+        it 'accepts attribute and does nothing' do
+          post_graphql_mutation(mutation, current_user: user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect_graphql_errors_to_be_empty
+
+          expect(::WorkItems::Statuses::Custom::Mapping.count).to eq(0)
+        end
+      end
     end
   end
 
