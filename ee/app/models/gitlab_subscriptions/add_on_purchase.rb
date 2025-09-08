@@ -34,6 +34,7 @@ module GitlabSubscriptions
 
       where('started_at IS NULL OR started_at <= ?', today).where('? < expires_on', today)
     }
+
     scope :ready_for_cleanup, -> {
       where('expires_on < ?', CLEANUP_DELAY_PERIOD.ago.to_date)
     }
