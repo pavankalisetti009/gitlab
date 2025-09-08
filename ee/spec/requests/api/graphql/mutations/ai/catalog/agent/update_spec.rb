@@ -8,6 +8,10 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
   let_it_be_with_reload(:agent) { create(:ai_catalog_item, project: project) }
+  let_it_be_with_reload(:latest_released_version) do
+    create(:ai_catalog_item_version, :released, version: '1.0.0', item: agent)
+  end
+
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_item_version, version: '1.1.0', item: agent) }
 
   let(:current_user) { maintainer }
@@ -49,7 +53,8 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       release: true,
       system_prompt: 'New system prompt',
       tools: tools.map { |tool| global_id_of(tool) },
-      user_prompt: 'New user prompt'
+      user_prompt: 'New user prompt',
+      version_bump: 'PATCH'
     }
   end
 
@@ -130,7 +135,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
 
       expect(latest_version.reload).to have_attributes(
         schema_version: 1,
-        version: '1.1.0',
+        version: '1.0.1',
         release_date: Time.zone.now,
         definition: {
           system_prompt: 'New system prompt',

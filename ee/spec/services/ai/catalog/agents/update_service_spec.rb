@@ -6,6 +6,10 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:agent) { create(:ai_catalog_item, public: false, project: project) }
+  let_it_be_with_reload(:latest_released_version) do
+    create(:ai_catalog_item_version, :released, version: '1.0.0', item: agent)
+  end
+
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_item_version, version: '1.1.0', item: agent) }
 
   let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
@@ -84,6 +88,46 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         )
       end
 
+      context 'when version_bump is provided' do
+        let(:params) { super().merge(version_bump: :patch) }
+
+        it 'sets the version correctly' do
+          execute_service
+
+          expect(latest_version.reload).to have_attributes(
+            schema_version: 1,
+            version: '1.0.1',
+            release_date: Time.zone.now,
+            definition: {
+              user_prompt: 'New user prompt',
+              tools: [1, 9],
+              system_prompt: 'New system prompt'
+            }.stringify_keys
+          )
+        end
+
+        context 'when there is no previous released version' do
+          before do
+            latest_released_version.destroy!
+          end
+
+          it 'sets the version to the default version' do
+            execute_service
+
+            expect(latest_version.reload).to have_attributes(
+              schema_version: 1,
+              version: '1.0.0',
+              release_date: Time.zone.now,
+              definition: {
+                user_prompt: 'New user prompt',
+                tools: [1, 9],
+                system_prompt: 'New system prompt'
+              }.stringify_keys
+            )
+          end
+        end
+      end
+
       it 'returns success response with item in payload', :aggregate_failures do
         result = execute_service
 
@@ -120,6 +164,25 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
 
         it 'does not change the older version' do
           expect { execute_service }.not_to change { latest_version.reload.attributes }
+        end
+
+        context 'when version_bump is provided' do
+          let(:params) { super().merge(version_bump: :patch) }
+
+          it 'sets the version correctly' do
+            execute_service
+
+            expect(agent.reload.latest_version).to have_attributes(
+              schema_version: 1,
+              version: '1.1.1',
+              release_date: Time.zone.now,
+              definition: {
+                user_prompt: 'New user prompt',
+                tools: [1, 9],
+                system_prompt: 'New system prompt'
+              }.stringify_keys
+            )
+          end
         end
 
         context 'when the `ai_catalog_enforce_readonly_versions` flag is disabled' do

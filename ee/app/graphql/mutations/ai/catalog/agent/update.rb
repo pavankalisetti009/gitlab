@@ -45,6 +45,10 @@ module Mutations
             required: false,
             description: 'User prompt for the agent.'
 
+          argument :version_bump, Types::Ai::Catalog::VersionBumpEnum,
+            required: false,
+            description: 'Bump version, calculated from the last released version name.'
+
           authorize :admin_ai_catalog_item
 
           def resolve(args)
