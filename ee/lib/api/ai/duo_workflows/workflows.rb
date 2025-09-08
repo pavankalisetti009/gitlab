@@ -94,7 +94,12 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false).except(:start_workflow, :source_branch)
+            wrkf_params = declared_params(include_missing: false).except(:start_workflow, :source_branch)
+            return wrkf_params unless wrkf_params[:ai_catalog_item_version_id]
+
+            wrkf_params[:ai_catalog_item_version] = ::Ai::Catalog::ItemVersion
+                                                      .find(wrkf_params.delete(:ai_catalog_item_version_id))
+            wrkf_params
           end
 
           params :workflow_params do
@@ -129,6 +134,9 @@ module API
               values: ::Ai::DuoWorkflows::Workflow.environments.keys.map(&:to_s),
               desc: 'Environment for the workflow.',
               documentation: { example: 'web' }
+            optional :ai_catalog_item_version_id, type: Integer,
+              desc: 'The ID of AI Catalog ItemVersion that sourced flow config used by the workflow.',
+              documentation: { example: 1 }
             exactly_one_of :project_id, :namespace_id
           end
         end
@@ -254,6 +262,7 @@ module API
                 result = service.execute
 
                 forbidden!(result.message) if result.error? && result.http_status == :forbidden
+                not_found!(result.message) if result.error? && result.http_status == :not_found
                 bad_request!(result[:message]) if result[:status] == :error
 
                 push_ai_gateway_headers
