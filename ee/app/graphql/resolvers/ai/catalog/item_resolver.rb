@@ -11,17 +11,23 @@ module Resolvers
         argument :id,
           ::Types::GlobalIDType[::Ai::Catalog::Item],
           required: true,
-          loads: ::Types::Ai::Catalog::ItemInterface,
-          as: :item,
           description: 'Global ID of the catalog item to find.'
 
-        def resolve(item:)
-          # TODO We can remove this line when organization checks apply to all policy checks
-          # as the type authorization will take care of this.
-          # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196700
-          return unless item.organization == current_organization
+        def resolve(id:)
+          Gitlab::Graphql::Lazy.with_value(find_object(id: id)) do |item|
+            # TODO We can remove this line when organization checks apply to all policy checks
+            # as the type authorization will take care of this.
+            # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196700
+            next unless item&.organization == current_organization
 
-          item
+            item
+          end
+        end
+
+        private
+
+        def find_object(id:)
+          GitlabSchema.find_by_gid(id)
         end
       end
     end
