@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project) }
+  let_it_be(:pipeline) { create(:ee_ci_pipeline, project: project) }
 
   before do
     allow(Vulnerabilities::AutoResolveService).to receive(:new).and_call_original
@@ -11,7 +12,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
   def expect_vulnerability_to_be_resolved(vulnerability)
     expect(Vulnerabilities::AutoResolveService).to have_received(:new).with(
-      project,
+      pipeline,
       array_including(vulnerability.id),
       anything
     )
@@ -20,7 +21,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
   def expect_vulnerability_not_to_be_resolved(vulnerability)
     expect(Vulnerabilities::AutoResolveService).not_to have_received(:new).with(
-      project,
+      pipeline,
       array_including(vulnerability.id),
       anything
     )
@@ -34,8 +35,6 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
       let_it_be(:scanner) do
         create(:vulnerabilities_scanner, project: project, name: 'SAST scanner', external_id: 'semgrep')
       end
-
-      let(:pipeline) { create(:ee_ci_pipeline) }
 
       context 'when there is a vulnerability to be resolved' do
         let_it_be(:vulnerability) do
@@ -131,7 +130,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
             # twice then it will fail.
             # This expectation confirms that the first vulnerability is successfully passed on to the auto-resolve
             # service and the second is not.
-            expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id], 1) do |service|
+            expect_next_instance_of(Vulnerabilities::AutoResolveService, pipeline, [vulnerability.id], 1) do |service|
               expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: { count: 1 }))
             end
 

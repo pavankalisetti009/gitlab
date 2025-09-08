@@ -100,7 +100,7 @@ module Security
         budget = AUTO_RESOLVE_LIMIT - auto_resolved_count
         return unless budget > 0
 
-        result = Vulnerabilities::AutoResolveService.new(project, no_longer_detected_vulnerability_ids, budget).execute
+        result = Vulnerabilities::AutoResolveService.new(pipeline, no_longer_detected_vulnerability_ids, budget).execute
 
         if result.success?
           @auto_resolved_count += result.payload[:count]

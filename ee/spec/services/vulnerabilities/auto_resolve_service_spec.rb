@@ -6,6 +6,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   let_it_be(:user) { create(:user, :security_policy_bot) }
   let_it_be(:namespace) { create(:namespace) }
   let_it_be_with_reload(:project) { create(:project, namespace: namespace) }
+  let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_findings, :detected, :high_severity, project: project) }
   let_it_be(:resolved_vulnerability) { create(:vulnerability, :with_findings, :resolved, project: project) }
   let_it_be(:dismissed_vulnerability) { create(:vulnerability, :with_findings, :dismissed, project: project) }
@@ -24,14 +25,18 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   let(:vulnerability_ids) { [vulnerability.id] }
 
   let(:comment) do
-    format(_("Auto-resolved by the vulnerability management policy named '%{policy_name}'"),
-      policy_name: security_policy_name)
+    format(
+      _("Auto-resolved by the vulnerability management policy named '%{policy_name}' " \
+        "as the vulnerability was no longer detected in pipeline %{pipeline_link}."),
+      policy_name: security_policy_name,
+      pipeline_link: "[#{pipeline.id}](#{Gitlab::UrlBuilder.build(pipeline)})"
+    )
   end
 
   let(:security_policy_name) { policy.name }
   let(:budget) { 1000 }
 
-  subject(:service) { described_class.new(project, vulnerability_ids, budget) }
+  subject(:service) { described_class.new(pipeline, vulnerability_ids, budget) }
 
   before_all do
     project.add_guest(user)
@@ -226,8 +231,11 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       end
 
       it 'does not introduce N+1 queries' do
+        # Reload pipeline so that associations are not cached for the control
+        pipeline.reload
+
         control = ActiveRecord::QueryRecorder.new do
-          described_class.new(project, vulnerability_ids, budget).execute
+          described_class.new(pipeline, vulnerability_ids, budget).execute
         end
 
         new_vulnerability = create(:vulnerability, :with_findings, project: project)
@@ -244,12 +252,12 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         )
 
         expect do
-          described_class.new(project, vulnerability_ids, budget).execute
+          described_class.new(pipeline, vulnerability_ids, budget).execute
         end.not_to exceed_query_limit(control)
       end
 
       it 'respects the budget' do
-        result = described_class.new(project, vulnerability_ids, 1).execute
+        result = described_class.new(pipeline, vulnerability_ids, 1).execute
 
         expect(result.payload[:count]).to eq(1)
         ordered_vulnerabilities = Vulnerability.where(id: vulnerability_ids).order(:auto_resolved)
