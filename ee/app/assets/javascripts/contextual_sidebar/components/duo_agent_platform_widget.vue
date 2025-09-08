@@ -165,7 +165,7 @@ export default {
 <template>
   <div
     id="duo-agent-platform-sidebar-widget"
-    class="gl-m-2 gl-bg-subtle gl-p-4"
+    class="gl-m-2 gl-bg-default gl-p-4"
     data-testid="duo-agent-platform-widget-root-element"
   >
     <div
