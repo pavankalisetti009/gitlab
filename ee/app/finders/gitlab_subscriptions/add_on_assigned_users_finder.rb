@@ -3,25 +3,39 @@
 module GitlabSubscriptions
   class AddOnAssignedUsersFinder
     include Gitlab::Utils::StrongMemoize
+    include Concerns::HistoricalAddOnAssignedUsers
 
-    def initialize(current_user, namespace, add_on_name:)
+    def initialize(current_user, namespace, add_on_name:, after: nil, before: nil)
       @current_user = current_user
       @namespace = namespace
       @add_on_name = add_on_name
+      @after = after
+      @before = before
     end
 
     def execute
+      if (after || before) && Feature.enabled?(:historical_add_on_assigned_users_enabled, namespace)
+        historical_add_on_assigned_users
+      else
+        current_add_on_assigned_users
+      end
+    end
+
+    private
+
+    attr_reader :namespace, :current_user, :add_on_name, :after, :before
+
+    def current_add_on_assigned_users
       add_on_purchase = GitlabSubscriptions::AddOnPurchase
-        .by_add_on_name(add_on_name).by_namespace([namespace.root_ancestor, nil]).active.first
+        .by_add_on_name(add_on_name)
+        .by_namespace([namespace.root_ancestor, nil])
+        .active
+        .first
 
       return User.none unless add_on_purchase
 
       add_on_purchase.users.by_ids(namespace_members.reselect(:user_id))
     end
-
-    private
-
-    attr_reader :namespace, :current_user, :add_on_name
 
     def namespace_members
       # rubocop:disable CodeReuse/Finder -- member finders logic is way too complex to reconstruct it with scopes.

@@ -13,11 +13,13 @@ module Resolvers
 
         argument :start_date, Types::DateType,
           required: false,
-          description: 'Date range to start from. Default is the beginning of current month.'
+          description: 'Date range to start from. Default is the beginning of current month. \
+           ClickHouse needs to be enabled when passing this param.'
 
         argument :end_date, Types::DateType,
           required: false,
-          description: 'Date range to end at. Default is the end of current month.'
+          description: 'Date range to end at. Default is the end of current month. \
+           ClickHouse needs to be enabled when passing this param.'
 
         def ready?(**args)
           validate_params!(args)
@@ -29,7 +31,8 @@ module Resolvers
           context[:ai_metrics_params] = params_with_defaults(args).merge(namespace: namespace)
 
           ::GitlabSubscriptions::AddOnAssignedUsersFinder.new(
-            current_user, namespace, add_on_name: :duo_enterprise).execute
+            current_user, namespace, add_on_name: :duo_enterprise,
+            after: args[:start_date], before: args[:end_date]).execute
         end
 
         private

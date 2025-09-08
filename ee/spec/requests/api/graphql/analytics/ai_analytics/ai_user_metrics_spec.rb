@@ -33,10 +33,6 @@ RSpec.describe 'aiUserMetrics', :freeze_time, feature_category: :value_stream_ma
       ['codeSuggestionsAcceptedCount', 'duoChatInteractionsCount', 'user { id }']
     end
 
-    let(:from) { '2024-05-01'.to_date }
-    let(:to) { '2024-05-31'.to_date }
-    let(:filter_params) { { startDate: from, endDate: to } }
-    let(:expected_filters) { { from: from, to: to } }
     let(:service_payload) do
       { current_user.id => { code_suggestions_accepted_count: 1, duo_chat_interactions_count: 2 } }
     end

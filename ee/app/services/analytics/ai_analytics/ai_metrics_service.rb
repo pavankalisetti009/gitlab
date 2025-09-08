@@ -29,10 +29,11 @@ module Analytics
         # TODO: Refactor after https://gitlab.com/gitlab-org/gitlab/-/issues/489759 is done.
         # current code assumes that addons are mutually exclusive
         pro_users = GitlabSubscriptions::AddOnAssignedUsersFinder.new(
-          current_user, namespace, add_on_name: :code_suggestions).execute
-
+          current_user, namespace, add_on_name: :code_suggestions,
+          after: from, before: to).execute
         enterprise_users = GitlabSubscriptions::AddOnAssignedUsersFinder.new(
-          current_user, namespace, add_on_name: :duo_enterprise).execute
+          current_user, namespace, add_on_name: :duo_enterprise,
+          after: from, before: to).execute
 
         data.merge(duo_assigned_users_count: pro_users.count + enterprise_users.count)
       end
