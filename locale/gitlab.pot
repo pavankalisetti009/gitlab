@@ -20219,6 +20219,9 @@ msgstr ""
 msgid "Custom emoji will be available to use in every project in the group."
 msgstr ""
 
+msgid "Custom headers validation failed: %{errors}"
+msgstr ""
+
 msgid "Custom hostname (for private commit emails)"
 msgstr ""
 
@@ -48579,6 +48582,9 @@ msgid "Please fill in a title for your topic."
 msgstr ""
 
 msgid "Please fill out this field."
+msgstr ""
+
+msgid "Please fix the following errors: %{errors}"
 msgstr ""
 
 msgid "Please follow the %{link_start}Let's Encrypt troubleshooting instructions%{link_end} to re-obtain your Let's Encrypt certificate."
