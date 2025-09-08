@@ -9,7 +9,7 @@ module Gitlab
         included do
           # @return [RemoteDevelopment::WorkspaceToken]
           def workspace_token_from_authorization_token
-            # NOTE: "current_token" is the JWT token from KAS, because the agentw requests are proxied through KAS
+            # NOTE: "workspace_token_string" is the JWT token from KAS, because agentw requests are proxied through KAS
             workspace_token_string = current_request.headers[Gitlab::Kas::INTERNAL_API_AGENT_REQUEST_HEADER]
 
             return unless workspace_token_string.present?

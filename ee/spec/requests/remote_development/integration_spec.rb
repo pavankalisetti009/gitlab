@@ -212,6 +212,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     nil
   end
 
+  # @param [RemoteDevelopment::Workspace] workspace
   # @return [void]
   def do_get_internal_agents_agentw_agent_info(workspace:)
     # Perform an /internal/agents/agentw/agent_info GET which will authenticate with the workspace_token
@@ -235,6 +236,44 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(json_response.symbolize_keys).to eq(
       {
         workspace_id: workspace.id
+      }
+    )
+
+    nil
+  end
+
+  # @param [RemoteDevelopment::Workspace] workspace
+  # @param [User] user
+  # @return [void]
+  def do_get_internal_agents_agentw_authorize_user_access(workspace:, user:)
+    # Perform an /internal/agents/agentw/authorize_user_access GET which will check if the user
+    # is authorized to access the workspace based on the workspace host and user ID.
+
+    # Extract the host from the workspace URL instead of manually constructing it
+    workspace_host = URI.parse(workspace.url).host
+
+    params = {
+      workspace_host: workspace_host,
+      user_id: user.id
+    }
+
+    headers = {
+      Gitlab::Kas::INTERNAL_API_KAS_REQUEST_HEADER => kas_jwt_token
+    }
+    authorize_user_access_url = api("/internal/agents/agentw/authorize_user_access")
+
+    get authorize_user_access_url, params: params, headers: headers
+
+    expect(response).to have_gitlab_http_status(:ok)
+
+    expected_status = ::RemoteDevelopment::WorkspacesServerOperations::AuthorizeUserAccess::Status::AUTHORIZED
+    expect(json_response).to eq(
+      {
+        "status" => expected_status,
+        "info" => {
+          "port" => ::RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_EDITOR_PORT.to_s,
+          "workspace_id" => workspace.id
+        }
       }
     )
 
@@ -541,6 +580,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
       # AGENTW INTERNAL REQUEST: GET THE AGENTW AGENT INFO VIA REST API
       do_get_internal_agents_agentw_agent_info(workspace: workspace)
+
+      # KAS INTERNAL REQUEST: AUTHORIZE USER ACCESS VIA REST API
+      do_get_internal_agents_agentw_authorize_user_access(workspace: workspace, user: user)
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK SENDING NEW WORKSPACE
       simulate_first_poll(

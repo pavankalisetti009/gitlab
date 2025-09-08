@@ -49,6 +49,9 @@ module RemoteDevelopment
     DevfileRestrictionsFailed = Class.new(Gitlab::Fp::Message)
     DevfileFlattenFailed = Class.new(Gitlab::Fp::Message)
 
+    # Workspace Authorize User Access errors
+    WorkspaceAuthorizeUserAccessFailed = Class.new(Gitlab::Fp::Message)
+
     #---------------------------------------------------------
     # Domain Events - message name should describe the outcome
     #---------------------------------------------------------
@@ -78,5 +81,8 @@ module RemoteDevelopment
 
     # Workspaces Server Operations domain events
     WorkspacesServerConfigSuccessful = Class.new(Gitlab::Fp::Message)
+
+    # Workspace Authorize User Access domain events
+    WorkspaceAuthorizeUserAccessSuccessful = Class.new(Gitlab::Fp::Message)
   end
 end

@@ -1,0 +1,47 @@
+# frozen_string_literal: true
+
+module API
+  module RemoteDevelopment
+    module Internal
+      module Agents
+        module Agentw
+          class AuthorizeUserAccess < ::API::Base
+            before do
+              authenticate_gitlab_kas_request!
+            end
+
+            helpers ::API::Helpers::KasHelpers
+
+            namespace "internal" do
+              namespace "agents" do
+                namespace "agentw" do
+                  desc "authorize_user_access" do
+                    detail "Returns whether the user is authorized to access the workspace."
+                  end
+                  params do
+                    requires :workspace_host, type: String, desc: 'Host of the workspace being accessed'
+                    requires :user_id, type: Integer, desc: 'User ID of the user accessing the workspace'
+                  end
+                  get "/authorize_user_access", feature_category: :workspaces, urgency: :low do
+                    response = ::RemoteDevelopment::CommonService.execute(
+                      domain_main_class: ::RemoteDevelopment::WorkspacesServerOperations::AuthorizeUserAccess::Main,
+                      domain_main_class_args: {
+                        workspace_host: params[:workspace_host],
+                        user_id: params[:user_id]
+                      }
+                    )
+
+                    # NOTE: There's currently no way an error can be returned other than an unexpected raised
+                    #       exception, so we assume success.
+
+                    response.payload
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
