@@ -13,6 +13,12 @@ module EE
 
       private
 
+      def group_id
+        return target_user.enterprise_group_id if target_user.enterprise_user?
+
+        super
+      end
+
       def send_audit_event(response)
         message = if response.success?
                     "Created personal access token with id #{response.payload[:personal_access_token].id}"

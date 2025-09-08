@@ -88,4 +88,47 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
       expect(new_token.user).to eq(token.user)
     end
   end
+
+  context "for enterprise_user's token" do
+    let_it_be(:current_user) { create(:enterprise_user) }
+    let_it_be(:token, reload: true) do
+      create(:personal_access_token, user: current_user, group: current_user.enterprise_group)
+    end
+
+    it "rotates user's own token" do
+      expect(response).to be_success
+
+      new_token = response.payload[:personal_access_token]
+
+      expect(new_token.token).not_to eq(token.token)
+      expect(new_token.user).to eq(token.user)
+      expect(new_token.user_type).to eq(token.user_type)
+      expect(new_token.group_id).to eq(token.group_id)
+      expect(new_token.user.namespace).to eq(token.user.namespace)
+      expect(new_token.organization).to eq(token.organization)
+      expect(new_token.description).to eq(token.description)
+    end
+  end
+
+  context "for group service account's token" do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:current_user) { create(:user, :service_account, provisioned_by_group: group) }
+    let_it_be(:token, reload: true) do
+      create(:personal_access_token, user: current_user, group: group)
+    end
+
+    it "rotates user's own token" do
+      expect(response).to be_success
+
+      new_token = response.payload[:personal_access_token]
+
+      expect(new_token.token).not_to eq(token.token)
+      expect(new_token.user).to eq(token.user)
+      expect(new_token.user_type).to eq(token.user_type)
+      expect(new_token.group_id).to eq(token.group_id)
+      expect(new_token.user.namespace).to eq(token.user.namespace)
+      expect(new_token.organization).to eq(token.organization)
+      expect(new_token.description).to eq(token.description)
+    end
+  end
 end

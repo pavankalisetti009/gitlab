@@ -21,6 +21,7 @@ module Groups
 
         # Allows the raising of persistent failure and enables it to be retried when called from inside sidekiq.
         # see https://gitlab.com/gitlab-org/gitlab/-/merge_requests/130735#note_1550114699
+        associate_user_personal_access_tokens_with_group
         @user.update!(user_attributes)
 
         Notify.user_associated_with_enterprise_group_email(user.id).deliver_later
@@ -31,6 +32,12 @@ module Groups
       end
 
       private
+
+      def associate_user_personal_access_tokens_with_group
+        user.personal_access_tokens.each_batch(of: 100) do |personal_access_tokens_batch|
+          personal_access_tokens_batch.update_all(group_id: group.id)
+        end
+      end
 
       def user_attributes
         enterprise_user_attributes.merge(::Onboarding::FinishService.new(user).onboarding_attributes)
