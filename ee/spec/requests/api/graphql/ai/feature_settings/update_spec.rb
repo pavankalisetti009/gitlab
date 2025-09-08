@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted_models" do
   include GraphqlHelpers
 
+  include_context 'with mocked ::Ai::ModelSelection::FetchModelDefinitionsService'
+
   let_it_be(:current_user) { create(:admin) }
   let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
   let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :vendored, self_hosted_model: nil) }

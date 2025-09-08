@@ -24,7 +24,7 @@ RSpec.describe Ai::ModelSelection::UpdateSelfManagedModelSelectionService, featu
   end
 
   let(:feature) { :code_completions }
-  let(:provider) { :self_hosted }
+  let(:provider) { "self_hosted" }
   let(:offered_model_ref) { nil }
   let(:params) do
     {
@@ -69,7 +69,7 @@ RSpec.describe Ai::ModelSelection::UpdateSelfManagedModelSelectionService, featu
       end
 
       context 'when provider is not vendored' do
-        let(:provider) { :self_hosted }
+        let(:provider) { "self_hosted" }
 
         it 'only calls the feature setting update service' do
           expect(Ai::ModelSelection::UpsertInstanceFeatureSettingService).not_to receive(:new)
@@ -82,7 +82,7 @@ RSpec.describe Ai::ModelSelection::UpdateSelfManagedModelSelectionService, featu
       end
 
       context 'when provider is vendored' do
-        let(:provider) { :vendored }
+        let(:provider) { "vendored" }
         let(:instance_feature_setting) { create(:instance_model_selection_feature_setting, feature: feature) }
 
         it 'calls both instance feature setting service and feature setting update service' do
@@ -129,7 +129,7 @@ RSpec.describe Ai::ModelSelection::UpdateSelfManagedModelSelectionService, featu
           let(:params) do
             {
               feature: feature,
-              provider: :vendored,
+              provider: "vendored",
               offered_model_ref: nil,
               ai_self_hosted_model_id: 'invalid_id'
             }
