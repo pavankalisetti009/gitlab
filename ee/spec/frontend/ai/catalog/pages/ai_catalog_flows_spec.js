@@ -72,7 +72,7 @@ describe('AiCatalogFlows', () => {
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
   const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
   const findFirstItemActions = () =>
-    findAiCatalogList().props('itemTypeConfig').actionItems(getIdFromGraphQLId(mockFlows[0].id))[0];
+    findAiCatalogList().props('itemTypeConfig').actionItems(mockFlows[0])[0];
 
   describe('component rendering', () => {
     beforeEach(() => {

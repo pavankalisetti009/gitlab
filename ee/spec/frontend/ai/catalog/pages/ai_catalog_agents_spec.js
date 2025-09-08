@@ -350,7 +350,7 @@ describe('AiCatalogAgents', () => {
   describe('on duplicating an agent', () => {
     const duplicateAgent = async (index = 1) => {
       await waitForPromises();
-      await wrapper.vm.handleDuplicate(getIdFromGraphQLId(mockAgents[index].id));
+      await wrapper.vm.handleDuplicate(mockAgents[index]);
     };
 
     beforeEach(() => {
@@ -391,18 +391,7 @@ describe('AiCatalogAgents', () => {
 
     describe('when agent is not found', () => {
       it('shows error message and logs to Sentry', async () => {
-        // Create component with empty agents list
-        mockCatalogItemsQueryHandler.mockResolvedValue({
-          data: {
-            aiCatalogItems: {
-              nodes: [],
-              pageInfo: mockPageInfo,
-            },
-          },
-        });
-        createComponent();
-
-        await duplicateAgent();
+        await duplicateAgent(3);
 
         expect(findErrorsAlert().props('errors')).toStrictEqual([agentNotFoundErrorMessage]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
