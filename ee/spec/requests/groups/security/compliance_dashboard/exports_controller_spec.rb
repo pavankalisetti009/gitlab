@@ -7,20 +7,20 @@ RSpec.describe ::Groups::Security::ComplianceDashboard::ExportsController, featu
   let_it_be(:user) { create(:user) }
 
   before_all do
-    sign_in(user)
     group.add_owner(user)
   end
 
   describe 'GET #compliance_status_report' do
     before do
       stub_licensed_features(group_level_compliance_dashboard: true)
+      sign_in user
     end
 
     subject(:request_export) do
       get group_security_compliance_dashboard_exports_compliance_status_report_path(group), params: { format: :csv }
     end
 
-    it 'triggers export and redirects', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560221' do
+    it 'triggers export and redirects' do
       expect_next_instance_of(
         ::ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::ExportService) do |service|
         expect(service).to receive(:email_export).and_return(ServiceResponse.success)
