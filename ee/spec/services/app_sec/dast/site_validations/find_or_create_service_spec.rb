@@ -14,6 +14,10 @@ RSpec.describe AppSec::Dast::SiteValidations::FindOrCreateService do
 
   before do
     project.update!(ci_pipeline_variables_minimum_override_role: :developer)
+    # Grant admin permissions to avoid access denied errors in Ci::RunnersFinder
+    allow(Ability).to receive(:allowed?).and_call_original
+    allow(Ability).to receive(:allowed?).with(developer, :read_admin_cicd).and_return(true)
+    allow(Ability).to receive(:allowed?).with(developer, :read_runners, project).and_return(true)
   end
 
   describe 'execute', :clean_gitlab_redis_shared_state do
@@ -31,6 +35,14 @@ RSpec.describe AppSec::Dast::SiteValidations::FindOrCreateService do
     context 'when the licensed feature is available' do
       before do
         stub_licensed_features(security_on_demand_scans: true)
+        # Mock runner availability for successful execution
+        allow_next_instance_of(AppSec::Dast::SiteValidations::RunnerService) do |instance|
+          allow(instance).to receive_messages(
+            available_runners_exists?: true,
+            tagged_runners_available?: false,
+            untagged_runners_available?: true
+          )
+        end
       end
 
       it 'communicates success' do

@@ -18,6 +18,18 @@ RSpec.describe Mutations::DastSiteValidations::Create do
   before do
     project.update!(ci_pipeline_variables_minimum_override_role: :developer)
     stub_licensed_features(security_on_demand_scans: true)
+
+    allow(Ability).to receive(:allowed?).and_call_original
+    allow(Ability).to receive(:allowed?).with(current_user, :read_admin_cicd).and_return(true)
+    allow(Ability).to receive(:allowed?).with(current_user, :read_runners, project).and_return(true)
+
+    allow_next_instance_of(AppSec::Dast::SiteValidations::RunnerService) do |instance|
+      allow(instance).to receive_messages(
+        available_runners_exists?: true,
+        tagged_runners_available?: false,
+        untagged_runners_available?: true
+      )
+    end
   end
 
   specify { expect(described_class).to require_graphql_authorizations(:create_on_demand_dast_scan) }
