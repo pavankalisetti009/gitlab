@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ApplicationSettings::UpdateService do
+RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
   let!(:user) { create(:user) }
   let(:setting) { ApplicationSetting.create_from_defaults }
   let(:service) { described_class.new(setting, user, opts) }
@@ -63,7 +63,7 @@ RSpec.describe ApplicationSettings::UpdateService do
       end
     end
 
-    context 'elasticsearch_indexing update' do
+    context 'elasticsearch_indexing update', feature_category: :global_search do
       let(:helper) { Gitlab::Elastic::Helper.new }
 
       before do
@@ -104,6 +104,15 @@ RSpec.describe ApplicationSettings::UpdateService do
         context 'when ES service is not reachable' do
           it 'does not throw exception' do
             expect(helper).to receive(:index_exists?).and_raise(Faraday::ConnectionFailed, nil)
+            expect(helper).not_to receive(:create_standalone_indices)
+
+            expect { service.execute }.not_to raise_error
+          end
+        end
+
+        context 'when an authorization error is raised' do
+          it 'does not throw exception' do
+            expect(helper).to receive(:index_exists?).and_raise(Elasticsearch::Transport::Transport::Errors::Forbidden, nil)
             expect(helper).not_to receive(:create_standalone_indices)
 
             expect { service.execute }.not_to raise_error
@@ -151,7 +160,7 @@ RSpec.describe ApplicationSettings::UpdateService do
         end
       end
 
-      context 'elasticsearch' do
+      context 'elasticsearch', feature_category: :global_search do
         context 'limiting namespaces and projects' do
           before do
             setting.update!(elasticsearch_indexing: true)
