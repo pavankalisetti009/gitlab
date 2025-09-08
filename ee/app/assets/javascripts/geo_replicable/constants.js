@@ -161,8 +161,15 @@ export const BULK_ACTIONS = [
     modal: {
       title: s__('Geo|Resync all %{type}'),
       description: s__(
-        'Geo|This will resync all %{type}. It may take some time to complete. Are you sure you want to continue?',
+        'Geo|This will schedule a future job to retry the synchronization process for all %{type}. It may take some time to complete. Are you sure you want to continue?',
       ),
+      helpLink: {
+        text: s__('Geo|Learn more about manual resynchronization'),
+        href: helpPagePath(
+          'administration/geo/replication/troubleshooting/synchronization_verification',
+          { anchor: 'manually-retry-replication-or-verification' },
+        ),
+      },
     },
   },
   {
@@ -172,8 +179,15 @@ export const BULK_ACTIONS = [
     modal: {
       title: s__('Geo|Reverify all %{type}'),
       description: s__(
-        'Geo|This will reverify all %{type}. It may take some time to complete. Are you sure you want to continue?',
+        'Geo|This will schedule a future job to retry the secondary verification process for all %{type}. It may take some time to complete. Are you sure you want to continue?',
       ),
+      helpLink: {
+        text: s__('Geo|Learn more about manual reverification'),
+        href: helpPagePath(
+          'administration/geo/replication/troubleshooting/synchronization_verification',
+          { anchor: 'manually-retry-replication-or-verification' },
+        ),
+      },
     },
   },
 ];
