@@ -21,6 +21,7 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
     @group = group || create_group
     @projects_count_in_main_group = 75
     @projects_count_in_subgroup = 75
+    @projects = []
   end
 
   def seed!
@@ -31,17 +32,21 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
           green_framework = create_compliance_framework('Green framework', with_requirements: true, color: '#009966')
           create_compliance_framework('Blue framework', color: '#6699CC')
           (1..@projects_count_in_main_group).each do |project_no|
-            project = FactoryBot.create(:project, namespace: @group, creator: @admin,
-              name: "#{FFaker::Product.product_name}-#{project_no}")
+            project = FactoryBot.create(:project, :repository, namespace: @group, creator: @admin,
+              name: "#{FFaker::Product.product_name}-#{project_no}", visibility_level: @group.visibility_level)
+
+            @projects << project
             [red_framework, green_framework].slice(0, rand(1..2)).each do |framework|
               add_framework_to_project(project: project, framework: framework)
             end
             print '.'
           end
-          subgroup = FactoryBot.create(:group, parent: @group, name: "Subgroup #{suffix}")
+          subgroup = FactoryBot.create(:group, parent: @group, name: "Subgroup #{suffix}",
+            visibility_level: @group.visibility_level)
           (1..@projects_count_in_subgroup).each do |project_no|
-            project = FactoryBot.create(:project, namespace: subgroup, creator: @admin,
-              name: "#{FFaker::Product.product_name}-subgroup-#{project_no}")
+            project = FactoryBot.create(:project, :repository, namespace: subgroup, creator: @admin,
+              name: "#{FFaker::Product.product_name}-subgroup-#{project_no}", visibility_level: @group.visibility_level)
+            @projects << project
             [red_framework, green_framework].slice(0, rand(1..2)).each do |framework|
               add_framework_to_project(project: project, framework: framework)
             end
@@ -51,11 +56,33 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
       end
     end
 
+    generate_compliance_violations
+
     puts "\nSuccessfully seeded '#{group.full_path}'\n"
     puts "URL: #{Rails.application.routes.url_helpers.group_url(group)}"
   end
 
   private
+
+  def generate_compliance_violations
+    puts "\n#################### Seeding compliance violations ####################"
+
+    @projects.each do |project|
+      control = project.project_control_compliance_statuses.first&.compliance_requirements_control
+      next unless control
+
+      audit_event = FactoryBot.create(:audit_events_project_audit_event, target_project: project, user: @admin)
+
+      violation = FactoryBot.create(:project_compliance_violation, namespace: project.namespace, project: project,
+        audit_event_id: audit_event.id,
+        audit_event_table_name: :project_audit_events,
+        compliance_control: control,
+        status: generate_violation_status
+      )
+
+      FactoryBot.create(:project_compliance_violation_issue, project: project, project_compliance_violation: violation)
+    end
+  end
 
   def add_framework_to_project(project:, framework:)
     project.compliance_management_frameworks << framework
@@ -170,6 +197,10 @@ class Gitlab::Seeder::ComplianceReportData # rubocop:disable Style/ClassAndModul
 
   def suffix
     @suffix ||= Time.now.to_i
+  end
+
+  def generate_violation_status
+    [:detected, :in_review, :resolved, :dismissed].sample
   end
 end
 
