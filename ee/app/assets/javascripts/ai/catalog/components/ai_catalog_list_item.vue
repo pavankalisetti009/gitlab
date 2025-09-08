@@ -135,7 +135,7 @@ export default {
       >
         <gl-disclosure-dropdown-group>
           <gl-disclosure-dropdown-item
-            v-for="(actionItem, index) in itemTypeConfig.actionItems(formattedItemId)"
+            v-for="(actionItem, index) in itemTypeConfig.actionItems(item)"
             :key="index"
             :item="actionItem"
           >

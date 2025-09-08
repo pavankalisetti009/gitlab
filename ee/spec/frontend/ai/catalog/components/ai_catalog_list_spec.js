@@ -141,7 +141,10 @@ describe('AiCatalogList', () => {
     });
 
     it('opens confirm modal on delete', () => {
-      expect(findConfirmModal().props('title')).toBe(mockDeleteTitle);
+      expect(findConfirmModal().props()).toMatchObject({
+        title: mockDeleteTitle,
+        actionText: 'Delete',
+      });
       expect(findConfirmModal().text()).toBe(
         `Are you sure you want to delete item ${mockItems[1].name}?`,
       );
@@ -151,6 +154,26 @@ describe('AiCatalogList', () => {
       findConfirmModal().props('actionFn')();
 
       expect(mockDeleteFn).toHaveBeenCalledWith(mockItems[1]);
+    });
+
+    describe('with itemTypeConfig', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            itemTypeConfig: {
+              deleteActionItem: {
+                text: 'Remove',
+              },
+            },
+          },
+        });
+        const secondItem = findListItems().at(1);
+        secondItem.vm.$emit('delete');
+      });
+
+      it('passes correct actionText to modal', () => {
+        expect(findConfirmModal().props('actionText')).toBe('Remove');
+      });
     });
   });
 

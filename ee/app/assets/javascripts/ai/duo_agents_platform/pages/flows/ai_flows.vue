@@ -112,12 +112,12 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (itemId) => [
+        actionItems: (item) => [
           {
             text: s__('AICatalog|Edit'),
             to: {
               name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-              params: { id: itemId },
+              params: { id: getIdFromGraphQLId(item.itemConsumer?.id) },
             },
             icon: 'pencil',
           },
