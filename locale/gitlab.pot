@@ -28194,6 +28194,9 @@ msgstr ""
 msgid "File deleted."
 msgstr ""
 
+msgid "File exceeds 10MB and can't be edited in the browser. Edit locally and push your changes."
+msgstr ""
+
 msgid "File hooks are similar to system hooks but are executed as files instead of sending data to a URL."
 msgstr ""
 
