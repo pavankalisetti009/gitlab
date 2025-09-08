@@ -9637,7 +9637,7 @@ msgstr ""
 msgid "Auto-cancel redundant pipelines"
 msgstr ""
 
-msgid "Auto-resolved by the vulnerability management policy named '%{policy_name}'"
+msgid "Auto-resolved by the vulnerability management policy named '%{policy_name}' as the vulnerability was no longer detected in pipeline %{pipeline_link}."
 msgstr ""
 
 msgid "AutoDevOps|%{auto_devops_start}Automate building, testing, and deploying%{auto_devops_end} your applications based on your continuous integration and delivery configuration. %{quickstart_start}How do I get started?%{quickstart_end}"
