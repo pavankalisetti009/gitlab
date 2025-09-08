@@ -1501,6 +1501,104 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    context 'license validation for merge pipeline settings' do
+      context 'when merge_pipelines feature is not available' do
+        before do
+          stub_licensed_features(merge_pipelines: false)
+        end
+
+        let(:project_params) { { merge_pipelines_enabled: true } }
+
+        it 'does not update merge_pipelines_enabled even with admin permissions' do
+          expect { subject }.not_to change { project.reload.merge_pipelines_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).not_to have_key 'merge_pipelines_enabled'
+        end
+      end
+
+      context 'when merge_trains feature is not available' do
+        before do
+          stub_licensed_features(merge_trains: false)
+        end
+
+        let(:project_params) { { merge_trains_enabled: true } }
+
+        it 'does not update merge_trains_enabled even with admin permissions' do
+          expect { subject }.not_to change { project.reload.merge_trains_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).not_to have_key 'merge_trains_enabled'
+        end
+      end
+
+      context 'when merge_trains feature is not available for merge_trains_skip_train_allowed' do
+        before do
+          stub_licensed_features(merge_trains: false)
+        end
+
+        let(:project_params) { { merge_trains_skip_train_allowed: true } }
+
+        it 'does not update merge_trains_skip_train_allowed even with admin permissions' do
+          expect { subject }.not_to change { project.reload.merge_trains_skip_train_allowed }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).not_to have_key 'merge_trains_skip_train_allowed'
+        end
+      end
+
+      context 'when both merge_pipelines and merge_trains features are not available' do
+        before do
+          stub_licensed_features(merge_pipelines: false, merge_trains: false)
+        end
+
+        let(:project_params) do
+          {
+            merge_pipelines_enabled: true,
+            merge_trains_enabled: true,
+            merge_trains_skip_train_allowed: true
+          }
+        end
+
+        it 'does not update any merge pipeline/train settings even with admin permissions' do
+          expect { subject }
+          .to not_change { project.reload.merge_pipelines_enabled }
+          .and not_change { project.reload.merge_trains_enabled }
+          .and not_change { project.reload.merge_trains_skip_train_allowed }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).not_to have_key 'merge_pipelines_enabled'
+          expect(json_response).not_to have_key 'merge_trains_enabled'
+          expect(json_response).not_to have_key 'merge_trains_skip_train_allowed'
+        end
+      end
+
+      context 'when features are available' do
+        before do
+          stub_licensed_features(merge_pipelines: true, merge_trains: true)
+        end
+
+        let(:project_params) do
+          {
+            merge_pipelines_enabled: true,
+            merge_trains_enabled: true,
+            merge_trains_skip_train_allowed: true
+          }
+        end
+
+        it 'updates all merge pipeline/train settings with admin permissions' do
+          expect { subject }.to change { project.reload.merge_pipelines_enabled }.to(true)
+          .and change { project.reload.merge_trains_enabled }.to(true)
+          .and change { project.reload.merge_trains_skip_train_allowed }.to(true)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['merge_pipelines_enabled']).to eq(true)
+          expect(json_response['merge_trains_enabled']).to eq(true)
+          expect(json_response['merge_trains_skip_train_allowed']).to eq(true)
+        end
+      end
+    end
+
     context 'when setting ci_restrict_pipeline_cancellation_role' do
       let(:new_role) { 'maintainer' }
       let(:project_params) { { ci_restrict_pipeline_cancellation_role: new_role } }
