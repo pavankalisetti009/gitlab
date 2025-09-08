@@ -6,6 +6,7 @@ exports[`DependenciesApp component on creation if project has no dependencies sh
   "contentClass": [],
   "description": null,
   "headerLevel": 2,
+  "illustrationName": null,
   "invertInDarkMode": true,
   "primaryButtonLink": null,
   "primaryButtonText": null,

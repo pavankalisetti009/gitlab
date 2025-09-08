@@ -57,14 +57,14 @@ describe('DastSiteAuthSection', () => {
   describe('authentication toggle', () => {
     it('is set false by default', () => {
       createComponent();
-      expect(findAuthCheckbox().vm.$attrs.checked).toBe(false);
+      expect(findAuthCheckbox().props('checked')).toBe(false);
     });
 
     it.each([true, false])(
       'is set correctly when the "enabled" field is set to "%s"',
       (authEnabled) => {
         createComponent({ fields: { enabled: authEnabled } });
-        expect(findAuthCheckbox().vm.$attrs.checked).toBe(authEnabled);
+        expect(findAuthCheckbox().props('checked')).toBe(authEnabled);
       },
     );
 

@@ -65,7 +65,7 @@ describe('DuoExperimentBetaFeaturesForm', () => {
     });
 
     it('sets initial checkbox state based on experimentFeaturesEnabled prop when unselected', () => {
-      expect(findFormCheckbox().attributes('checked')).toBe(undefined);
+      expect(findFormCheckbox().props('checked')).toBe(false);
     });
 
     it('emits change event when checkbox is clicked', () => {
@@ -89,7 +89,7 @@ describe('DuoExperimentBetaFeaturesForm', () => {
     });
 
     it('disables checkbox', () => {
-      expect(findFormCheckbox().attributes().disabled).toBe('true');
+      expect(findFormCheckbox().props('disabled')).toBe(true);
     });
 
     it('shows popover', () => {
