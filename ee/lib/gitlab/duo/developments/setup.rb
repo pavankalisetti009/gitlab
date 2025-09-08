@@ -5,12 +5,15 @@ module Gitlab
   module Duo
     module Developments
       def self.seed_data(namespace)
-        if Group.find_by_full_path(namespace)
+        return if namespace.blank?
+
+        if Group.find_by_full_path(namespace) && !::Gitlab::Utils.to_boolean(ENV['GITLAB_DUO_RESEED'])
           puts <<~TXT.strip
           ================================================================================
           ## Gitlab Duo test group and project already seeded
           ## If you want to destroy and re-create them, you can re-run the seed task
           ## SEED_GITLAB_DUO=1 FILTER=gitlab_duo bundle exec rake db:seed_fu
+          ## Or set GITLAB_DUO_RESEED=1 to force reseeding via this setup task
           ## See https://docs.gitlab.com/development/development_seed_files/#seed-project-and-group-resources-for-gitlab-duo
           ================================================================================
           TXT
@@ -19,6 +22,7 @@ module Gitlab
           puts "Seeding GitLab Duo data..."
           ENV['FILTER'] = 'gitlab_duo'
           ENV['SEED_GITLAB_DUO'] = '1'
+          Rake::Task['db:seed_fu'].reenable
           Rake::Task['db:seed_fu'].invoke
         end
       end
@@ -195,7 +199,7 @@ module Gitlab
           setup_strategy = if ::Gitlab::Utils.to_boolean(ENV['GITLAB_SIMULATE_SAAS'])
                              GitlabComStrategy.new(@namespace, @args)
                            else
-                             SelfManagedStrategy.new(nil, @args)
+                             SelfManagedStrategy.new(@namespace, @args)
                            end
 
           ensure_dev_mode!
