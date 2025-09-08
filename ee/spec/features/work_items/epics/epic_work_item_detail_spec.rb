@@ -6,8 +6,8 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
   include DragTo
   include ListboxHelpers
 
-  let_it_be_with_reload(:user) { create(:user) }
-  let_it_be_with_reload(:user2) { create(:user, name: 'John') }
+  let_it_be_with_refind(:user) { create(:user) }
+  let_it_be_with_refind(:user2) { create(:user, name: 'John') }
 
   let_it_be(:group) { create(:group, :nested, developers: user) }
   let_it_be(:label) { create(:group_label, group: group) }
