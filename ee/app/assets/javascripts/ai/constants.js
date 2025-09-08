@@ -46,6 +46,11 @@ export const DUO_WORKFLOW_CHAT_DEFINITION = 'chat';
 export const DUO_WORKFLOW_AGENT_PRIVILEGES = [2, 3];
 export const DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES = [2];
 export const DUO_WORKFLOW_CLIENT_VERSION = '1.0';
+
+// SSOT: https://docs.gitlab.com/api/graphql/reference/#duoworkflowstatus
 export const DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED = 'TOOL_CALL_APPROVAL_REQUIRED';
+export const DUO_WORKFLOW_STATUS_RUNNING = 'RUNNING';
 export const DUO_WORKFLOW_STATUS_INPUT_REQUIRED = 'INPUT_REQUIRED';
+
 export const DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY = 'repository';
+export const DUO_CURRENT_WORKFLOW_STORAGE_KEY = 'agenticChat.currentWorkflow';

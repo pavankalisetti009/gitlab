@@ -6,9 +6,11 @@ import { GlToggle } from '@gitlab/ui';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getCookie } from '~/lib/utils/common_utils';
+import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
-import { parseGid } from '~/graphql_shared/utils';
+import { parseGid, convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
@@ -16,8 +18,10 @@ import {
   DUO_WORKFLOW_CHAT_DEFINITION,
   DUO_WORKFLOW_CLIENT_VERSION,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
+  DUO_WORKFLOW_STATUS_RUNNING,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
+  DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
@@ -103,6 +107,12 @@ export default {
     },
   },
   data() {
+    const currentWorkflowRecord = getStorageValue(DUO_CURRENT_WORKFLOW_STORAGE_KEY);
+    const currentWorkflowDefaultRecord = { activeThread: undefined, workflowId: null };
+    const { activeThread, workflowId } = currentWorkflowRecord.exists
+      ? currentWorkflowRecord.value
+      : currentWorkflowDefaultRecord;
+
     return {
       duoChatGlobalState,
       width: 550,
@@ -116,11 +126,11 @@ export default {
       maxWidth: null,
       contextPresets: [],
       socketManager: null,
-      workflowId: null,
+      workflowId,
       workflowStatus: null,
       isProcessingToolApproval: false,
       agenticWorkflows: [],
-      activeThread: undefined,
+      activeThread,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       chatMessageHistory: [],
     };
@@ -170,10 +180,8 @@ export default {
   watch: {
     'duoChatGlobalState.isAgenticChatShown': {
       handler(newVal) {
-        if (!newVal) {
-          // we reset chat when it gets closed, to avoid flickering the previously opened thread
-          // information when it's opened again
-          this.onNewChat();
+        if (newVal) {
+          this.hydrateActiveThread();
         }
       },
     },
@@ -183,6 +191,16 @@ export default {
         newStatus !== DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED
       ) {
         this.isProcessingToolApproval = false;
+      }
+    },
+    workflowId(newWorkflowId, oldWorkflowId) {
+      if (newWorkflowId !== oldWorkflowId) {
+        saveStorageValue(DUO_CURRENT_WORKFLOW_STORAGE_KEY, {
+          workflowId: newWorkflowId,
+          activeThread: newWorkflowId
+            ? convertToGraphQLId(TYPENAME_AI_DUO_WORKFLOW, parseInt(newWorkflowId, 10))
+            : '',
+        });
       }
     },
   },
@@ -368,19 +386,32 @@ export default {
       this.activeThread = thread.id;
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.chatMessageHistory = [];
+      this.setMessages([]);
       this.cleanupState(false);
       this.workflowId = parseGid(thread.id).id;
 
+      await this.hydrateActiveThread();
+    },
+    async hydrateActiveThread() {
+      if (this.workflowId && !this.messages?.length) {
+        await this.loadActiveThread();
+
+        if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
+          this.startWorkflow('');
+        }
+      }
+    },
+    async loadActiveThread() {
       try {
         this.setLoading(true);
-        const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, thread.id);
+        const data = await ApolloUtils.fetchWorkflowEvents(this.$apollo, this.activeThread);
 
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
         const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
         const messages = WorkflowUtils.transformChatMessages(uiChatLog, this.workflowId);
 
+        this.workflowStatus = parsedWorkflowData.workflowStatus;
         this.chatMessageHistory = messages;
-        this.setMessages([]);
       } catch (err) {
         this.onError(err);
       } finally {
