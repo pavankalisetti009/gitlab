@@ -11,7 +11,7 @@
   .gl-button.gl-button,
   .form-control:not(.gl-search-box-by-type-input-borderless),
   .gl-form-input,
-  .gl-form-input.form-control:not(.gl-search-box-by-type-input-borderless),
+  .gl-form-input.form-control:not(.gl-search-box-by-type-input-borderless):not(.input-group-prepend + .gl-form-input),
   .gl-form-select,
   .input-group-text,
   &.application-chrome .filtered-search-box {
@@ -25,6 +25,7 @@
   }
 
   // Filtered search button
+  .input-group-prepend > div,
   .filtered-search-history-dropdown-toggle-button.gl-button,
   .input-group-prepend .btn {
     @apply gl-rounded-l-lg #{!important};
