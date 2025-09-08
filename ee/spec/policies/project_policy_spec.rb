@@ -58,6 +58,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         read_project_audit_events
         read_cluster
         read_terraform_state
+        read_feature_flag
         read_project_merge_request_analytics
         read_on_demand_dast_scan
         read_alert_management_alert
