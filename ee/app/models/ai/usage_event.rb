@@ -58,7 +58,10 @@ module Ai
     def store_to_pg
       return false unless valid?
 
-      self.class.write_buffer.add(attributes.compact)
+      attrs = attributes_for_database.compact
+      attrs['extras'] = attributes['extras'] # preserve JSON type for extras
+
+      self.class.write_buffer.add(attrs)
     end
 
     private

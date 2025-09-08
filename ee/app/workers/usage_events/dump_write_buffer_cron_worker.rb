@@ -22,6 +22,11 @@ module UsageEvents
 
     MODELS = UPSERT_OPTIONS.keys.freeze
 
+    EVENT_NAMES_COMPATIBILITY_MAP = {
+      'start_agent_platform_session' => 'agent_platform_session_started',
+      'create_agent_platform_session' => 'agent_platform_session_created'
+    }.freeze
+
     def perform
       total_inserted_rows = 0
 
@@ -62,6 +67,14 @@ module UsageEvents
 
       # Deduplicate rows with the same uniqueness tuple.
       attributes.group_by { |attr| attr.slice(*uniq_tuple) }.values.map(&:first)
+    end
+
+    def compatible_attributes(attributes)
+      return attributes unless EVENT_NAMES_COMPATIBILITY_MAP[attributes['event']]
+
+      compatible_attrs = attributes.dup
+      compatible_attrs['event'] = EVENT_NAMES_COMPATIBILITY_MAP[compatible_attrs['event']]
+      compatible_attrs
     end
   end
 end
