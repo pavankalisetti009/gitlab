@@ -11,13 +11,15 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
       visit explore_ai_catalog_path
     end
 
-    it('displays tabs and new agent button as link') do
-      expect(page).to have_link('New agent')
-
+    it('displays tabs') do
       page.within('.gl-tabs') do
         expect(page).to have_link('Agents')
         expect(page).to have_link('Flows')
       end
+    end
+
+    it('does not display new agent button as link') do
+      expect(page).not_to have_link('New agent')
     end
 
     it 'displays an empty list of agents' do
@@ -55,6 +57,17 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
           agents = page.all('[data-testid="ai-catalog-item"]')
           expect(agents.length).to be(6)
         end
+      end
+    end
+
+    context 'with an authenticated user' do
+      before do
+        sign_in(user)
+        visit explore_ai_catalog_path
+      end
+
+      it('displays new agent button as link') do
+        expect(page).to have_link('New agent')
       end
     end
   end
