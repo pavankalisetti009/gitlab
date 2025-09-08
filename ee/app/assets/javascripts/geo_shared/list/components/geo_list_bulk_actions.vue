@@ -1,12 +1,14 @@
 <script>
-import { GlButton, GlModal, GlSprintf, GlModalDirective } from '@gitlab/ui';
-import { sprintf } from '~/locale';
+import { GlButton, GlModal, GlSprintf, GlModalDirective, GlLink, GlIcon } from '@gitlab/ui';
+import { __, sprintf } from '~/locale';
 
 export default {
   components: {
     GlButton,
     GlModal,
     GlSprintf,
+    GlLink,
+    GlIcon,
   },
   directives: {
     GlModalDirective,
@@ -43,6 +45,9 @@ export default {
         type: this.itemTitle,
       });
     },
+    modalHelpLink() {
+      return this.modalAction.modal.helpLink;
+    },
   },
   methods: {
     setModalData(action) {
@@ -50,6 +55,17 @@ export default {
     },
   },
   GEO_BULK_ACTION_MODAL_ID: 'geo-bulk-action',
+  modal: {
+    actionPrimary: {
+      text: __('Confirm'),
+      attributes: {
+        variant: 'confirm',
+      },
+    },
+    actionCancel: {
+      text: __('Cancel'),
+    },
+  },
 };
 </script>
 
@@ -72,11 +88,21 @@ export default {
       :modal-id="$options.GEO_BULK_ACTION_MODAL_ID"
       :title="modalTitle"
       size="sm"
+      no-focus-on-show
+      :action-primary="$options.modal.actionPrimary"
+      :action-cancel="$options.modal.actionCancel"
       @primary="$emit('bulkAction', modalAction.action)"
     >
-      <gl-sprintf v-if="modalAction" :message="modalDescription">
-        <template #type>{{ itemTitle }}</template>
-      </gl-sprintf>
+      <template v-if="modalAction">
+        <gl-sprintf :message="modalDescription">
+          <template #type>{{ itemTitle }}</template>
+        </gl-sprintf>
+        <div v-if="modalHelpLink" class="gl-mt-3">
+          <gl-link :href="modalHelpLink.href"
+            ><gl-icon name="question" class="gl-mr-2" />{{ modalHelpLink.text }}</gl-link
+          >
+        </div>
+      </template>
     </gl-modal>
   </div>
 </template>

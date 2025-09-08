@@ -1,4 +1,4 @@
-import { GlModal, GlSprintf, GlButton } from '@gitlab/ui';
+import { GlModal, GlSprintf, GlButton, GlLink } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
@@ -15,11 +15,11 @@ describe('GeoListBulkActions', () => {
     bulkActions: MOCK_BULK_ACTIONS,
   };
 
-  const createComponent = () => {
+  const createComponent = ({ props } = {}) => {
     wrapper = shallowMountExtended(GeoListBulkActions, {
       provide: { ...defaultProvide },
-      propsData: { ...defaultProps },
-      stubs: { GlModal, GlSprintf },
+      propsData: { ...defaultProps, ...props },
+      stubs: { GlSprintf },
     });
   };
 
@@ -62,6 +62,51 @@ describe('GeoListBulkActions', () => {
       await nextTick();
 
       expect(wrapper.emitted('bulkAction')).toStrictEqual([[defaultProps.bulkActions[0].action]]);
+    });
+  });
+
+  describe('Modal help links', () => {
+    describe('when link is not provided', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('does not render the modal help link', async () => {
+        findBulkActions().at(0).vm.$emit('click');
+        await nextTick();
+
+        expect(findGlModal().findComponent(GlLink).exists()).toBe(false);
+      });
+    });
+
+    describe('when link is provided', () => {
+      beforeEach(() => {
+        createComponent({
+          props: {
+            bulkActions: [
+              {
+                ...MOCK_BULK_ACTIONS[0],
+                modal: {
+                  title: 'Test title',
+                  description: 'Test description',
+                  helpLink: {
+                    text: 'Help link',
+                    href: '/help/link',
+                  },
+                },
+              },
+            ],
+          },
+        });
+      });
+
+      it('does render the modal help link', async () => {
+        findBulkActions().at(0).vm.$emit('click');
+        await nextTick();
+
+        expect(findGlModal().findComponent(GlLink).text()).toBe('Help link');
+        expect(findGlModal().findComponent(GlLink).props('href')).toBe('/help/link');
+      });
     });
   });
 });
