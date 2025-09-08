@@ -276,6 +276,10 @@ export default {
         filterBar.focus();
       }
     },
+    filterInputTooltipTarget() {
+      // The input might not always be available (i.e. when the FTB is in collapsed state)
+      return this.$refs.filterInput?.$el;
+    },
   },
   filterPlaceholder: s__('Repository|Filter files (*.vue, *.rb...)'),
 };
@@ -305,7 +309,7 @@ export default {
       <gl-tooltip
         v-if="!shortcutsDisabled"
         custom-class="file-browser-filter-tooltip"
-        :target="() => $refs.filterInput.$el"
+        :target="filterInputTooltipTarget"
         trigger="hover focus"
       >
         {{ __('Focus on the filter bar') }}
