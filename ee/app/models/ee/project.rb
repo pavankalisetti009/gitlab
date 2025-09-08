@@ -247,6 +247,8 @@ module EE
         -> { ready_with_active_connection },
         class_name: 'Ai::ActiveContext::Code::Repository'
 
+      has_many :policy_dismissals, class_name: '::Security::PolicyDismissal', inverse_of: :project
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level

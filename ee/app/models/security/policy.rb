@@ -42,6 +42,9 @@ module Security
     has_many :approval_policy_merge_request_bypass_events,
       class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent',
       foreign_key: :security_policy_id, inverse_of: :security_policy
+    has_many :policy_dismissals,
+      class_name: 'Security::PolicyDismissal',
+      foreign_key: :security_policy_id, inverse_of: :security_policy
 
     enum :type, {
       approval_policy: 0,
