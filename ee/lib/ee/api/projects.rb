@@ -124,8 +124,6 @@ module EE
           end
 
           def verify_merge_pipelines_attrs!(project, attrs)
-            return if can?(current_user, :admin_project, project)
-
             attrs.delete(:merge_pipelines_enabled) unless project.feature_available?(:merge_pipelines)
             attrs.delete(:merge_trains_enabled) unless project.feature_available?(:merge_trains)
             attrs.delete(:merge_trains_skip_train_allowed) unless project.feature_available?(:merge_trains)
