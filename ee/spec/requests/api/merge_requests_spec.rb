@@ -330,8 +330,8 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
   end
 
   describe "POST /projects/:id/merge_requests" do
-    def create_merge_request(args)
-      defaults = {
+    let(:merge_request_default_args) do
+      {
         title: 'Test merge_request',
         source_branch: 'feature_conflict',
         target_branch: 'master',
@@ -339,8 +339,43 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
         labels: 'label, label2',
         milestone_id: milestone.id
       }
-      defaults = defaults.merge(args)
+    end
+
+    def create_merge_request(args)
+      defaults = merge_request_default_args.merge(args)
       post api("/projects/#{project.id}/merge_requests", user), params: defaults
+    end
+
+    context 'with composite identity' do
+      let(:service_account) do
+        create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+      end
+
+      let(:organization) { create(:organization) }
+      let(:oauth_app) { create(:doorkeeper_application) }
+      let(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
+
+      let(:token) do
+        create(:oauth_access_token, {
+          organization: organization,
+          application: oauth_app,
+          resource_owner: service_account,
+          expires_in: 1.hour,
+          scopes: scopes
+        })
+      end
+
+      before do
+        project.add_developer(service_account)
+      end
+
+      it 'attributes the MR author to the service account' do
+        post api("/projects/#{project.id}/merge_requests", user, oauth_access_token: token), params: merge_request_default_args
+        expect(response).to have_gitlab_http_status(:created)
+
+        mr = MergeRequest.find(json_response['id'])
+        expect(mr.author.id).to eq(service_account.id)
+      end
     end
 
     context 'reviewers over the max limit' do
