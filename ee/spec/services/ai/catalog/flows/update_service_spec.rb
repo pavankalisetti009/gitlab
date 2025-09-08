@@ -97,9 +97,9 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         end
 
         context 'when the prefix is not valid' do
-          let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '2' }]) }
+          let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '2.2' }]) }
 
-          it_behaves_like 'an error response', 'Step 1: Unable to resolve version with prefix 2'
+          it_behaves_like 'an error response', 'Step 1: Unable to resolve version with prefix 2.2'
         end
       end
 

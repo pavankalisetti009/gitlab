@@ -23,6 +23,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       :system_prompt,
       :user_prompt,
       :tools,
+      :version_bump,
       :client_mutation_id
     )
   end
