@@ -443,6 +443,7 @@ CREATE TABLE project_repository_registry (
     verification_checksum_mismatched bytea,
     verification_failure text,
     last_sync_failure text,
+    project_repository_id bigint,
     CONSTRAINT check_45b82eebee CHECK ((char_length(last_sync_failure) <= 255)),
     CONSTRAINT check_58aa799387 CHECK ((char_length(verification_failure) <= 255))
 );
@@ -849,6 +850,8 @@ CREATE INDEX index_pipeline_artifact_registry_on_verified_at ON pipeline_artifac
 CREATE INDEX index_project_repository_registry_on_last_synced_at ON project_repository_registry USING btree (last_synced_at);
 
 CREATE UNIQUE INDEX index_project_repository_registry_on_project_id ON project_repository_registry USING btree (project_id);
+
+CREATE INDEX index_project_repository_registry_on_project_repository_id ON project_repository_registry USING btree (project_repository_id);
 
 CREATE INDEX index_project_repository_registry_on_retry_at ON project_repository_registry USING btree (retry_at);
 
