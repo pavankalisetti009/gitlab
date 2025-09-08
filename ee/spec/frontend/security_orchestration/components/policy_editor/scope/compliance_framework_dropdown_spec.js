@@ -41,6 +41,7 @@ describe('ComplianceFrameworkDropdown', () => {
       description: 'description 1',
       color: '#cd5b45',
       pipelineConfigurationFullPath: 'path 1',
+      namespaceId: 'gid://gitlab/Group/1',
       projects: { nodes: [] },
     },
     {
@@ -50,6 +51,7 @@ describe('ComplianceFrameworkDropdown', () => {
       description: 'description 2',
       color: '#cd5b45',
       pipelineConfigurationFullPath: 'path 2',
+      namespaceId: 'gid://gitlab/Group/1',
       projects: {
         nodes: [
           {
@@ -67,6 +69,7 @@ describe('ComplianceFrameworkDropdown', () => {
       description: 'description 3',
       color: '#cd5b45',
       pipelineConfigurationFullPath: 'path 3',
+      namespaceId: 'gid://gitlab/Group/1',
       projects: {
         nodes: [
           {
@@ -93,6 +96,7 @@ describe('ComplianceFrameworkDropdown', () => {
       description: 'description 4',
       color: '#cd5b45',
       pipelineConfigurationFullPath: 'path 4',
+      namespaceId: 'gid://gitlab/Group/1',
       projects: { nodes: [] },
     },
   ];
@@ -237,15 +241,13 @@ describe('ComplianceFrameworkDropdown', () => {
       await waitForPromises();
 
       expect(findAllPopovers().at(0).props('title')).toBe('A1 has 0 projects');
-      expect(findAllPopovers().at(0).attributes('content')).toBe(
-        'Compliance framework has no projects',
-      );
+      expect(findAllPopovers().at(0).text()).toBe('Compliance framework has no projects');
 
       expect(findAllPopovers().at(1).props('title')).toBe('B2 has 1 project');
-      expect(findAllPopovers().at(1).attributes('content')).toBe('project-1');
+      expect(findAllPopovers().at(1).text()).toBe('project-1');
 
       expect(findAllPopovers().at(2).props('title')).toBe('a3 has 2 projects');
-      expect(findAllPopovers().at(2).attributes('content')).toBe('project-1, project-2');
+      expect(findAllPopovers().at(2).text()).toBe('project-1, project-2');
     });
   });
 

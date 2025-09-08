@@ -16398,6 +16398,9 @@ msgstr ""
 msgid "ComplianceFramework|Import framework"
 msgstr ""
 
+msgid "ComplianceFramework|Instance level compliance framework"
+msgstr ""
+
 msgid "ComplianceFramework|Looking for a template? Need an example JSON schema? Look through our %{linkStart}examples here.%{linkEnd}"
 msgstr ""
 

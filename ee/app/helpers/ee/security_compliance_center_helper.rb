@@ -60,6 +60,7 @@ module EE
     def general_app_data(container)
       project = container.is_a?(Project) ? container : nil
       group = container.is_a?(Group) ? container : container.group
+      namespace_id = group.id
 
       can_admin_compliance_frameworks = can?(current_user, :admin_compliance_framework, container)
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
@@ -71,6 +72,7 @@ module EE
         project_id: project&.id,
         project_path: project&.full_path,
         project_name: project&.name,
+        namespace_id: namespace_id,
         group_path: group.full_path,
         group_compliance_center_path: group_security_compliance_dashboard_path(group, vueroute: 'projects'),
         group_name: group.name,
