@@ -1,0 +1,11 @@
+query getUpstreamRegistries($id: VirtualRegistriesPackagesMavenUpstreamID!, $first: Int) {
+  mavenUpstreamRegistry(id: $id) {
+    id
+    registries(first: $first) {
+      nodes {
+        id
+        name
+      }
+    }
+  }
+}

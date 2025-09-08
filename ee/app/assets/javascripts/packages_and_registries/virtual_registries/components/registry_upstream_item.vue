@@ -212,13 +212,12 @@ export default {
               with-tooltip
             />
           </gl-link>
-          <gl-link
+          <span
             data-testid="upstream-url"
-            :href="url"
             class="gl-min-w-0 gl-max-w-full gl-overflow-hidden gl-text-default"
           >
             <gl-truncate :text="url" class="gl-min-w-0 gl-max-w-full" with-tooltip />
-          </gl-link>
+          </span>
         </div>
         <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-2">
           <div v-if="cacheSize" data-testid="cache-size">
