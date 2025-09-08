@@ -1,6 +1,7 @@
 import {
   formatVulnerabilitiesOverTimeData,
   constructVulnerabilitiesReportWithFiltersPath,
+  generateGrid,
 } from 'ee/security_dashboard/utils/chart_utils';
 
 describe('Security Dashboard - Chart Utils', () => {
@@ -248,6 +249,79 @@ describe('Security Dashboard - Chart Utils', () => {
           `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL`,
         );
       });
+    });
+  });
+
+  describe('generateGrid', () => {
+    it('should return null for invalid input', () => {
+      expect(generateGrid({ totalItems: 0, width: 100, height: 100 })).toBeNull();
+      expect(generateGrid({ totalItems: -1, width: 100, height: 100 })).toBeNull();
+    });
+
+    it('should return rows and cols', () => {
+      const result = generateGrid({ totalItems: 10, width: 400, height: 300 });
+
+      expect(result).toHaveProperty('rows');
+      expect(result).toHaveProperty('cols');
+      expect(typeof result.rows).toBe('number');
+      expect(typeof result.cols).toBe('number');
+    });
+
+    it('should have enough cells for all items', () => {
+      const testCases = [
+        { totalItems: 1, width: 100, height: 100 },
+        { totalItems: 10, width: 400, height: 300 },
+        { totalItems: 24, width: 800, height: 600 },
+        { totalItems: 100, width: 1000, height: 1000 },
+      ];
+
+      testCases.forEach((params) => {
+        const result = generateGrid(params);
+        expect(result.rows * result.cols).toBeGreaterThanOrEqual(params.totalItems);
+      });
+    });
+
+    it('should minimize empty cells', () => {
+      const result = generateGrid({ totalItems: 10, width: 100, height: 100 });
+      const totalCells = result.rows * result.cols;
+      const emptyCells = totalCells - 10;
+
+      // Should not have more empty cells than a full row or column
+      expect(emptyCells).toBeLessThan(Math.max(result.rows, result.cols));
+    });
+
+    it('should prefer high utilization', () => {
+      // For 10 items, should prefer 3x4=12 over 4x4=16
+      const result = generateGrid({ totalItems: 10, width: 400, height: 300 });
+      const totalCells = result.rows * result.cols;
+
+      expect(totalCells).toBeLessThanOrEqual(12);
+    });
+
+    it('should handle perfect squares optimally', () => {
+      const result = generateGrid({ totalItems: 16, width: 400, height: 400 });
+
+      expect(result).toEqual({ rows: 4, cols: 4 });
+    });
+
+    it('should adapt to container aspect ratio', () => {
+      const wideResult = generateGrid({ totalItems: 12, width: 600, height: 200 });
+      const tallResult = generateGrid({ totalItems: 12, width: 200, height: 600 });
+
+      // Wide container should have more columns than rows
+      expect(wideResult.cols).toBeGreaterThan(wideResult.rows);
+
+      // Tall container should have more rows than columns
+      expect(tallResult.rows).toBeGreaterThan(tallResult.cols);
+    });
+
+    it('should return consistent results', () => {
+      const params = { totalItems: 24, width: 800, height: 600 };
+
+      const result1 = generateGrid(params);
+      const result2 = generateGrid(params);
+
+      expect(result1).toEqual(result2);
     });
   });
 });
