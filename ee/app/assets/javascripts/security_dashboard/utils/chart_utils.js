@@ -206,3 +206,64 @@ export const constructVulnerabilitiesReportWithFiltersPath = ({
 
   return `${securityVulnerabilitiesPath}?${params.toString()}`;
 };
+
+const OPTIMAL_ASPECT_RATIO = 4 / 3;
+
+/**
+ * Generates an optimal grid layout for a given number of items within a container.
+ *
+ * The algorithm finds the best row/column configuration by minimizing a score that
+ * balances two factors:
+ * 1. Aspect ratio - How close each tile's aspect ratio is to the optimal (4:3)
+ * 2. Space utilization - How efficiently the grid uses available space (weighted 2x)
+ *
+ * @param {Object} params - The configuration parameters
+ * @param {number} params.totalItems - The number of items to place in the grid (must be > 0)
+ * @param {number} params.width - The container width in pixels
+ * @param {number} params.height - The container height in pixels
+ *
+ * @returns {Object|null} The optimal grid configuration or null if n <= 0
+ * @returns {number} returns.rows - The optimal number of rows
+ * @returns {number} returns.cols - The optimal number of columns
+ *
+ * @example
+ * // Returns { rows: 4, cols: 6 } for 24 items in a 800x600 container
+ * const grid = generateGrid({ totalItems: 24, width: 800, height: 600 });
+ *
+ * @example
+ * // Returns { rows: 3, cols: 3 } for 9 items in a square container
+ * const grid = generateGrid({ totalItems: 9, width: 400, height: 400 });
+ *
+ * @example
+ * // Returns { rows: 10, cols: 10 } for 96 items in a 600x450 container
+ * const grid = generateGrid({ totalItems: 0, width: 600, height: 450 }); // null
+ */
+export const generateGrid = ({ totalItems, width, height }) => {
+  if (totalItems <= 0) return null;
+
+  let bestGrid = null;
+  let bestScore = Infinity;
+
+  // Limit search space for columns and rows with logical options – close to square with buffer (+ 2)
+  const maxDim = Math.ceil(Math.sqrt(totalItems)) + 2;
+
+  for (let rows = 1; rows <= maxDim; rows += 1) {
+    for (let cols = 1; cols <= maxDim; cols += 1) {
+      if (rows * cols >= totalItems) {
+        const rectWidth = width / cols;
+        const rectHeight = height / rows;
+        const aspectRatio = rectWidth / rectHeight;
+        const utilization = totalItems / (rows * cols);
+
+        const score = Math.abs(aspectRatio - OPTIMAL_ASPECT_RATIO) + 2 * (1 - utilization);
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestGrid = { rows, cols };
+        }
+      }
+    }
+  }
+
+  return bestGrid;
+};
