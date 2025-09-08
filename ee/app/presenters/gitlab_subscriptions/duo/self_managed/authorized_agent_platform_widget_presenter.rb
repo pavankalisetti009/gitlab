@@ -11,6 +11,7 @@ module GitlabSubscriptions
 
         def eligible?
           return false unless on_or_past_release_date?
+          return false if ::Feature.disabled?(:duo_agent_platform_widget_self_managed, :instance)
           return false if amazon_q_customer?
           return false if self_hosted_ai_gateway?
           return false if dedicated?
