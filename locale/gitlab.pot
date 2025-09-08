@@ -32997,10 +32997,7 @@ msgstr ""
 msgid "HomepageActivityWidget|Your contributions, like commits and work on issues and merge requests."
 msgstr ""
 
-msgid "Homepage|Go to preferences"
-msgstr ""
-
-msgid "Homepage|We're introducing a new way for you to get an overview of your work, so you can plan what to work on next. The homepage is now the default for everyone. If you prefer to change your default homepage, you can update your user preferences."
+msgid "Homepage|We're introducing a new way for you to get an overview of your work, so you can plan what to work on next. The homepage is now the default for everyone. If you prefer to change your default homepage, you can %{linkStart}update your user preferences%{linkEnd}."
 msgstr ""
 
 msgid "Homepage|Welcome to the new homepage"
