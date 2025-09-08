@@ -1,12 +1,16 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlButton, GlCollapsibleListbox } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import AiCatalogFormSidePanel from 'ee/ai/catalog/components/ai_catalog_form_side_panel.vue';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
-import { mockCatalogItemsResponse, mockCatalogEmptyItemsResponse } from '../mock_data';
+import {
+  mockCatalogItemsResponse,
+  mockCatalogEmptyItemsResponse,
+  mockAgentVersions,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -14,17 +18,42 @@ describe('AiCatalogFormSidePanel', () => {
   let wrapper;
   let mockApollo;
 
+  const versionName = '1.0.0';
+  const versionOptions = [{ text: '1.0.0', value: 'gid://gitlab/Ai::Catalog::ItemVersion/20' }];
+
   const agents = [
-    { value: 'gid://gitlab/Ai::Catalog::Item/1', text: 'Test AI Agent 1' },
-    { value: 'gid://gitlab/Ai::Catalog::Item/2', text: 'Test AI Agent 2' },
-    { value: 'gid://gitlab/Ai::Catalog::Item/3', text: 'Test AI Agent 3' },
+    {
+      value: 'gid://gitlab/Ai::Catalog::Item/1',
+      text: 'Test AI Agent 1',
+      versions: mockAgentVersions,
+    },
+    {
+      value: 'gid://gitlab/Ai::Catalog::Item/2',
+      text: 'Test AI Agent 2',
+      versions: mockAgentVersions,
+    },
+    {
+      value: 'gid://gitlab/Ai::Catalog::Item/3',
+      text: 'Test AI Agent 3',
+      versions: mockAgentVersions,
+    },
   ];
 
   const selectedAgent = agents[0];
 
   const selectedSteps = [
-    { id: 'gid://gitlab/Ai::Catalog::Item/1', name: 'Test AI Agent 1' },
-    { id: 'gid://gitlab/Ai::Catalog::Item/3', name: 'Test AI Agent 3' },
+    {
+      id: 'gid://gitlab/Ai::Catalog::Item/1',
+      name: 'Test AI Agent 1',
+      versionName,
+      versions: mockAgentVersions,
+    },
+    {
+      id: 'gid://gitlab/Ai::Catalog::Item/3',
+      name: 'Test AI Agent 3',
+      versionName,
+      versions: mockAgentVersions,
+    },
   ];
 
   const aiCatalogAgentsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
@@ -36,6 +65,7 @@ describe('AiCatalogFormSidePanel', () => {
     catalogItemsQueryHandler = aiCatalogAgentsQueryHandler,
     steps = [],
     activeStepIndex = 0,
+    aiCatalogEnforceReadonlyVersions = true,
   } = {}) => {
     mockApollo = createMockApollo([[aiCatalogAgentsQuery, catalogItemsQueryHandler]]);
 
@@ -45,18 +75,23 @@ describe('AiCatalogFormSidePanel', () => {
         steps,
         activeStepIndex,
       },
+      provide: {
+        glFeatures: {
+          aiCatalogEnforceReadonlyVersions,
+        },
+      },
     });
   };
   const findSaveButton = () => wrapper.findComponent(GlButton);
-  const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findAgentListbox = () => wrapper.findByTestId('agent-select-listbox');
+  const findVersionListbox = () => wrapper.findByTestId('version-select-listbox');
   const findCancelButton = () => wrapper.findByTestId('agent-select-cancel-button');
   const findDeleteNodeButton = () => wrapper.findByTestId('agent-node-delete-button');
 
   const selectAgent = async () => {
-    findListbox().vm.$emit('select', selectedAgent.value);
+    findAgentListbox().vm.$emit('select', selectedAgent.value);
     await nextTick();
-    expect(findListbox().props('toggleText')).toEqual(selectedAgent.text);
-    findSaveButton().vm.$emit('click');
+    expect(findAgentListbox().props('toggleText')).toEqual(selectedAgent.text);
   };
 
   beforeEach(() => {
@@ -65,8 +100,20 @@ describe('AiCatalogFormSidePanel', () => {
 
   describe('listbox', () => {
     it('renders the listbox with loading state', () => {
-      expect(findListbox().exists()).toBe(true);
-      expect(findListbox().props('loading')).toBe(true);
+      expect(findAgentListbox().exists()).toBe(true);
+      expect(findAgentListbox().props('loading')).toBe(true);
+    });
+
+    it('version listbox is disabled when no agent is selected', () => {
+      expect(findVersionListbox().exists()).toBe(true);
+      expect(findVersionListbox().props('disabled')).toBe(true);
+    });
+
+    it('version listbox does not exist when aiCatalogEnforceReadonlyVersions FF is off', async () => {
+      createComponent({ aiCatalogEnforceReadonlyVersions: false });
+      await waitForPromises();
+
+      expect(findVersionListbox().exists()).toBe(false);
     });
   });
 
@@ -80,26 +127,27 @@ describe('AiCatalogFormSidePanel', () => {
     it('passes transformed aiCatalogAgents as listbox items', async () => {
       await waitForPromises();
 
-      expect(findListbox().props('items')).toEqual(agents);
+      expect(findAgentListbox().props('items')).toEqual(agents);
     });
 
     it('sets loading in listbox to false after query completes', async () => {
       await waitForPromises();
-      expect(findListbox().props('loading')).toBe(false);
+      expect(findAgentListbox().props('loading')).toBe(false);
     });
 
     it('handles empty query response', async () => {
       createComponent({ catalogItemsQueryHandler: aiCatalogEmptyAgentsQueryHandler });
       await waitForPromises();
 
-      expect(findListbox().props('items')).toEqual([]);
+      expect(findAgentListbox().props('items')).toEqual([]);
     });
   });
 
   describe('agent selection', () => {
-    it('emits setSteps event', async () => {
+    it('emits setSteps event when saving', async () => {
       await waitForPromises();
       await selectAgent();
+      findSaveButton().vm.$emit('click');
 
       expect(wrapper.emitted('setSteps')).toEqual([[[selectedSteps[0]]]]);
     });
@@ -107,7 +155,7 @@ describe('AiCatalogFormSidePanel', () => {
     it('passes correct props to GlCollapsibleListbox', async () => {
       await waitForPromises();
 
-      const listbox = findListbox();
+      const listbox = findAgentListbox();
       expect(listbox.props()).toMatchObject({
         block: true,
         searchable: true,
@@ -119,7 +167,7 @@ describe('AiCatalogFormSidePanel', () => {
     });
 
     it('handles listbox search event', async () => {
-      const listbox = findListbox();
+      const listbox = findAgentListbox();
       listbox.vm.$emit('search', 'new search');
       await nextTick();
 
@@ -130,6 +178,29 @@ describe('AiCatalogFormSidePanel', () => {
 
       await waitForPromises();
       expect(listbox.props('searching')).toBe(false);
+    });
+  });
+
+  describe('version selection', () => {
+    it('version listbox is enabled when agent is selected', async () => {
+      await waitForPromises();
+      await selectAgent();
+
+      expect(findVersionListbox().props('disabled')).toBe(false);
+      expect(findVersionListbox().props('items')).toEqual(versionOptions);
+    });
+
+    it('emits setSteps event when saving', async () => {
+      await waitForPromises();
+      await selectAgent();
+
+      findVersionListbox().vm.$emit('select', versionOptions[0].value);
+      await nextTick();
+      expect(findVersionListbox().props('toggleText')).toEqual(versionOptions[0].text);
+
+      findSaveButton().vm.$emit('click');
+
+      expect(wrapper.emitted('setSteps')).toEqual([[[selectedSteps[0]]]]);
     });
   });
 
