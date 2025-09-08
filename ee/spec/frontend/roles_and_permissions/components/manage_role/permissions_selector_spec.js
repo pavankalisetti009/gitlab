@@ -47,7 +47,7 @@ describe('Permissions Selector component', () => {
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
-  const findCheckboxes = () => wrapper.findAllByTestId('permission-checkbox');
+  const findCheckbox = (idx) => findTableRow(idx).findComponent(GlFormCheckbox);
   const findToggleAllCheckbox = () => wrapper.findByTestId('permission-checkbox-all');
   const findPermissionsSelectedMessage = () => wrapper.findByTestId('permissions-selected-message');
   const findAlert = () => wrapper.findComponent(GlAlert);
@@ -143,12 +143,13 @@ describe('Permissions Selector component', () => {
 
         notIncludedIndexes.forEach((i) => {
           expect(findTableRowData(i).at(1).text()).not.toContain('Added from');
-          expect(findCheckboxes().at(i).attributes('disabled')).toBeUndefined();
+
+          expect(findCheckbox(i).props('disabled')).toBe(false);
         });
 
         includedIndexes.forEach((i) => {
           expect(findTableRowData(i).at(1).text()).toContain('Added from Developer');
-          expect(findCheckboxes().at(i).attributes('disabled')).toBeDefined();
+          expect(findCheckbox(i).props('disabled')).toBe(true);
         });
       });
 

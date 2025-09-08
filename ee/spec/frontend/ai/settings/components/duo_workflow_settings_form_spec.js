@@ -47,9 +47,9 @@ describe('DuoWorkflowSettingsForm', () => {
       await nextTick();
 
       if (isMcpEnabled) {
-        expect(findFormCheckbox().attributes('checked')).toBe(String(isMcpEnabled));
+        expect(findFormCheckbox().props('checked')).toBe(isMcpEnabled);
       } else {
-        expect(findFormCheckbox().attributes('checked')).toBeUndefined();
+        expect(findFormCheckbox().props('checked')).toBe(false);
       }
     },
   );
@@ -62,13 +62,13 @@ describe('DuoWorkflowSettingsForm', () => {
   });
 
   it('renders checkbox with correct data-testid attribute', () => {
-    expect(findFormCheckbox().attributes('data-testid')).toBe(
+    expect(findFormCheckbox().find('input').attributes('data-testid')).toBe(
       'enable-duo-workflow-mcp-enabled-checkbox',
     );
   });
 
   it('renders checkbox with correct name attribute', () => {
-    expect(findFormCheckbox().attributes('name')).toBe(
+    expect(findFormCheckbox().props('name')).toBe(
       'namespace[ai_settings_attributes][duo_workflow_mcp_enabled]',
     );
   });

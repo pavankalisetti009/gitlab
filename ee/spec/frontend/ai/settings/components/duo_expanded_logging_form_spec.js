@@ -28,14 +28,13 @@ describe('DuoExpandedLoggingForm', () => {
 
   const findTitle = () => wrapper.find('h5').text();
   const findCheckbox = () => wrapper.findComponent(GlFormCheckbox);
-  const findCheckboxLabel = () => wrapper.findByTestId('ai-logging-checkbox');
 
   it('has the correct title', () => {
     expect(findTitle()).toBe('Enable AI logs');
   });
 
   it('has the correct label', () => {
-    expect(findCheckboxLabel().text()).toBe(
+    expect(findCheckbox().text()).toBe(
       'Capture detailed information about AI-related activities and requests.',
     );
   });
@@ -46,7 +45,7 @@ describe('DuoExpandedLoggingForm', () => {
     });
 
     it('renders the checkbox checked', () => {
-      expect(findCheckbox().attributes('checked')).toBeDefined();
+      expect(findCheckbox().props('checked')).toBe(true);
     });
   });
 
@@ -56,7 +55,7 @@ describe('DuoExpandedLoggingForm', () => {
     });
 
     it('renders the checkbox unchecked', () => {
-      expect(findCheckbox().attributes('checked')).toBeUndefined();
+      expect(findCheckbox().props('checked')).toBe(false);
     });
   });
 });

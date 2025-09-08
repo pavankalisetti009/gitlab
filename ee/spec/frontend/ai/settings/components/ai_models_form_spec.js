@@ -64,7 +64,7 @@ describe('AiModelsForm', () => {
     });
 
     it('renders the checkbox checked', () => {
-      expect(findCheckbox().attributes('checked')).toBeDefined();
+      expect(findCheckbox().props('checked')).toBe(true);
     });
   });
 

@@ -113,7 +113,7 @@ describe('DuoCoreFeaturesForm', () => {
     it('disables the checkbox', () => {
       wrapper = createComponent({ props: { disabledCheckbox: true } });
 
-      expect(findFormCheckbox().attributes('disabled')).toBeDefined();
+      expect(findFormCheckbox().props('disabled')).toBeDefined();
     });
   });
 
@@ -122,6 +122,6 @@ describe('DuoCoreFeaturesForm', () => {
 
     await wrapper.setProps({ disabledCheckbox: true });
 
-    expect(findFormCheckbox().attributes('disabled')).toBeDefined();
+    expect(findFormCheckbox().props('disabled')).toBeDefined();
   });
 });

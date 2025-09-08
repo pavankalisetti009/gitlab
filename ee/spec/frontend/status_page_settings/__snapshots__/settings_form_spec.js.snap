@@ -82,7 +82,7 @@ exports[`Status Page settings form default state should match the default snapsh
           optionaltext="(optional)"
         >
           <gl-form-checkbox-stub
-            id="reference-2"
+            value="true"
           >
             <span
               class="gl-font-bold"
@@ -100,7 +100,7 @@ exports[`Status Page settings form default state should match the default snapsh
           optionaltext="(optional)"
         >
           <gl-form-input-stub
-            id="reference-3"
+            id="reference-2"
             type="text"
             value=""
           />
@@ -124,7 +124,7 @@ exports[`Status Page settings form default state should match the default snapsh
           optionaltext="(optional)"
         >
           <gl-form-input-stub
-            id="reference-4"
+            id="reference-3"
             type="text"
             value=""
           />
@@ -145,7 +145,7 @@ exports[`Status Page settings form default state should match the default snapsh
           optionaltext="(optional)"
         >
           <gl-form-input-stub
-            id="reference-5"
+            id="reference-4"
             placeholder="example: us-west-2"
             type="text"
             value=""
@@ -167,7 +167,7 @@ exports[`Status Page settings form default state should match the default snapsh
           optionaltext="(optional)"
         >
           <gl-form-input-stub
-            id="reference-6"
+            id="reference-5"
             type="text"
             value=""
           />
@@ -181,7 +181,7 @@ exports[`Status Page settings form default state should match the default snapsh
           optionaltext="(optional)"
         >
           <gl-form-input-stub
-            id="reference-7"
+            id="reference-6"
             type="text"
             value=""
           />
