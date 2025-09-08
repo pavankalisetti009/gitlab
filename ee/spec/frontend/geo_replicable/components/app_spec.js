@@ -66,16 +66,15 @@ describe('GeoReplicableApp', () => {
   let wrapper;
 
   const defaultProvide = {
-    itemTitle: 'Test Item',
+    itemTitle: 'Test Items',
     siteName: 'Test Site',
     replicableClass: MOCK_REPLICABLE_CLASS,
   };
 
   const MOCK_EMPTY_STATE = {
-    title: `There are no ${defaultProvide.itemTitle} to show`,
+    title: 'No Test Items exist',
     description:
-      'No %{itemTitle} were found. If you believe this may be an error, please refer to the %{linkStart}Geo Troubleshooting%{linkEnd} documentation for more information.',
-    itemTitle: defaultProvide.itemTitle,
+      'If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
     helpLink: GEO_TROUBLESHOOTING_LINK,
     hasFilters: false,
   };
@@ -214,7 +213,7 @@ describe('GeoReplicableApp', () => {
 
       expect(createAlert).toHaveBeenCalledWith({
         message:
-          'There was an error fetching the Test Item. The GraphQL API call to the secondary may have failed.',
+          'There was an error fetching the Test Items. The GraphQL API call to the secondary may have failed.',
         captureError: true,
         error: errorMessage,
       });
@@ -374,7 +373,7 @@ describe('GeoReplicableApp', () => {
 
         await waitForPromises();
 
-        expect(toast).toHaveBeenCalledWith('Scheduled all Test Item for resync.');
+        expect(toast).toHaveBeenCalledWith('Scheduled all Test Items for resync.');
         expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(1);
       });
     });
@@ -392,7 +391,7 @@ describe('GeoReplicableApp', () => {
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'There was an error scheduling resync for all Test Item.',
+          message: 'There was an error scheduling resync for all Test Items.',
           error: expect.any(Error),
           captureError: true,
         });
@@ -418,7 +417,7 @@ describe('GeoReplicableApp', () => {
     });
 
     it('passes the correct title and description to the topbar', () => {
-      expect(findGeoListTopBar().props('pageHeadingTitle')).toBe('Geo Replication - Test Site');
+      expect(findGeoListTopBar().props('pageHeadingTitle')).toBe('Geo replication - Test Site');
       expect(findGeoListTopBar().props('pageHeadingDescription')).toBe(
         'Review replication status, and resynchronize and reverify items with the primary site.',
       );
