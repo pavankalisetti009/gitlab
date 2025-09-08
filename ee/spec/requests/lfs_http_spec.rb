@@ -138,7 +138,7 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
         expect(download_href).to include("/gitlab-lfs/objects/#{sample_oid}")
       end
 
-      it 'validates geo_node_id against actual secondary nodes', :aggregate_failures do
+      it 'validates geo_node_id against actual secondary nodes', :aggregate_failures, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/565869' do
         # Create a node with the specific ID that the route expects
         valid_secondary_node = create(:geo_node, :secondary, id: 2)
         another_secondary_node = create(:geo_node, :secondary)
