@@ -51,6 +51,7 @@ module Ai
             version_to_update.schema_version = Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION
           end
 
+          version_to_update.version = calculate_next_version if should_calculate_version?(version_to_update)
           version_to_update.release_date ||= Time.zone.now if params[:release] == true
           version_to_update
         end
@@ -60,10 +61,9 @@ module Ai
           version_params = build_version_params(latest_version)
           latest_version.assign_attributes(version_params)
 
-          return latest_version unless latest_version.changed?
           return latest_version unless should_create_new_version?(latest_version)
 
-          build_new_version(latest_version, version_params)
+          build_new_version(version_params)
         end
 
         def build_version_params(latest_version)
@@ -78,21 +78,26 @@ module Ai
         end
 
         def should_create_new_version?(version)
-          version.released? && version.enforce_readonly_versions?
+          version.definition_changed? && version.released? && version.enforce_readonly_versions?
         end
 
-        def build_new_version(latest_version, version_params)
-          new_version_params = version_params.merge(
-            version: calculate_next_version(latest_version)
-          )
-
-          agent.build_new_version(new_version_params)
+        def build_new_version(version_params)
+          agent.build_new_version(version_params)
         end
 
-        def calculate_next_version(latest_version)
-          # TODO: Support params[:version_bump] parameter.
-          # For now, always make a major version bump.
-          latest_version.version_bump(Ai::Catalog::ItemVersion::VERSION_BUMP_MAJOR)
+        def should_calculate_version?(version)
+          version.new_record? || params[:version_bump].present?
+        end
+
+        def calculate_next_version
+          # TODO replace with agent.latest_released_version once
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/554673 is completed
+          latest_released_version = agent.versions.where.not(release_date: nil).order(id: :desc).take # rubocop:disable CodeReuse/ActiveRecord -- Will be fixed after https://gitlab.com/gitlab-org/gitlab/-/issues/554673
+
+          return BaseService::DEFAULT_VERSION unless latest_released_version
+
+          bump_level = params[:version_bump] || Ai::Catalog::ItemVersion::VERSION_BUMP_MAJOR
+          latest_released_version.version_bump(bump_level)
         end
       end
     end

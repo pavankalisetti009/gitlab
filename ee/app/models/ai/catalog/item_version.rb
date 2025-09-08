@@ -12,6 +12,7 @@ module Ai
       VERSION_BUMP_MAJOR = :major
       VERSION_BUMP_MINOR = :minor
       VERSION_BUMP_PATCH = :patch
+      VERSION_BUMP_OPTIONS = [VERSION_BUMP_MAJOR, VERSION_BUMP_MINOR, VERSION_BUMP_PATCH].freeze
 
       self.table_name = "ai_catalog_item_versions"
 
@@ -55,6 +56,7 @@ module Ai
 
       def version_bump(bump_level)
         return if version.nil?
+        raise ArgumentError, "unknown bump_level: #{bump_level}" unless bump_level.in?(VERSION_BUMP_OPTIONS)
 
         old_version = Gitlab::VersionInfo.parse(version)
 
@@ -65,8 +67,6 @@ module Ai
                         [old_version.major, old_version.minor + 1, 0]
                       when VERSION_BUMP_PATCH
                         [old_version.major, old_version.minor, old_version.patch + 1]
-                      else
-                        raise ArgumentError, "unknown bump_level: #{bump_level}"
                       end
 
         Gitlab::VersionInfo.new(*new_version).to_s
