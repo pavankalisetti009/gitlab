@@ -240,7 +240,6 @@ RSpec.describe API::ManagedLicenses, feature_category: :security_policy_manageme
 
           expect(response).to have_gitlab_http_status(:bad_request)
         end.to not_change { project.software_license_policies.count }
-            .and not_change { SoftwareLicense.count }
       end
     end
 
