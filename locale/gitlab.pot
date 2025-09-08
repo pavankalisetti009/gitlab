@@ -48931,6 +48931,9 @@ msgstr ""
 msgid "Pipeline|File"
 msgstr ""
 
+msgid "Pipeline|Fix pipeline with Duo"
+msgstr ""
+
 msgid "Pipeline|Manual"
 msgstr ""
 
