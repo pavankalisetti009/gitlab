@@ -13,6 +13,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     it { is_expected.to have_one(:security_pipeline_execution_policy_config_link) }
     it { is_expected.to have_many(:security_pipeline_execution_project_schedules) }
     it { is_expected.to have_many(:approval_policy_merge_request_bypass_events) }
+    it { is_expected.to have_many(:policy_dismissals) }
 
     it do
       is_expected.to validate_uniqueness_of(:security_orchestration_policy_configuration_id).scoped_to(%i[type
