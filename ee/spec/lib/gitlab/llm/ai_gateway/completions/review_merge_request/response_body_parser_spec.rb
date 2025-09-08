@@ -494,114 +494,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
           end
         end
       end
-
-      context 'when review has a description' do
-        let(:body) do
-          <<~RESPONSE
-          <review>
-          The changes in this MR update the security e2e test metadata by:
-
-          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
-
-          <comment file="example.rb" old_line="1" new_line="2">
-          First comment with suggestions
-          <from>
-              first offending line
-          </from>
-          <to>
-              first improved line
-          </to>
-          Some more comments
-          </comment>
-          </review>
-          RESPONSE
-        end
-
-        it 'returns the expected review description' do
-          review_description = parser.review_description
-          expect(review_description).to eq <<~REVIEW_DESCRIPTION.chomp
-          The changes in this MR update the security e2e test metadata by:
-
-          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
-          REVIEW_DESCRIPTION
-        end
-      end
-
-      context 'when review is in a single line' do
-        let(:body) do
-          <<~RESPONSE
-          <review>Some text</review>
-          RESPONSE
-        end
-
-        it 'returns the expected review description' do
-          review_description = parser.review_description
-          expect(review_description).to eq "Some text"
-        end
-      end
-
-      context 'when review does not have content' do
-        let(:body) do
-          <<~RESPONSE
-          <review>
-          </review>
-          RESPONSE
-        end
-
-        it 'returns the expected review description' do
-          review_description = parser.review_description
-          expect(review_description).to be_nil
-        end
-      end
-
-      context 'when response does not have review tag' do
-        let(:body) do
-          <<~RESPONSE
-          RESPONSE
-        end
-
-        it 'returns the expected review description' do
-          review_description = parser.review_description
-          expect(review_description).to be_nil
-        end
-      end
-
-      context 'when response have content outside of review tag' do
-        let(:body) do
-          <<~RESPONSE
-          this is text without <review> tag
-          RESPONSE
-        end
-
-        it 'returns the expected review description' do
-          review_description = parser.review_description
-          expect(review_description).to be_nil
-        end
-      end
-
-      context 'when review does not have a description' do
-        let(:body) do
-          <<~RESPONSE
-          <review>
-          <comment file="example.rb" old_line="1" new_line="2">
-          First comment with suggestions
-          <from>
-              first offending line
-          </from>
-          <to>
-              first improved line
-          </to>
-          Some more comments
-          </comment>
-          </review>
-          RESPONSE
-        end
-
-        it 'returns the expected review description' do
-          review_description = parser.review_description
-          expect(review_description).to be_nil
-        end
-      end
     end
 
     context 'when the review content is empty' do
@@ -680,6 +572,112 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::Response
       end
 
       it 'returns expected output' do
+        expect(parser.comments).to be_empty
+      end
+    end
+
+    context 'when response contains thinking steps with review tags' do
+      let(:body) do
+        <<~RESPONSE
+        <step1>
+        Understanding the context: This code uses <review>example content</review> for parsing.
+        </step1>
+
+        <step2>
+        The regex pattern %r{^<review>(.+)</review>$}m is used to extract review content.
+        </step2>
+
+        <review>
+        <comment file="example.rb" old_line="1" new_line="2">
+        Actual review comment
+        </comment>
+        </review>
+        RESPONSE
+      end
+
+      it 'only parses the final review section, ignoring examples in thinking steps' do
+        expect(parser.comments.count).to eq 1
+        comment = parser.comments.sole
+        expect(comment.content.strip).to eq "Actual review comment"
+        expect(comment.file).to eq "example.rb"
+      end
+    end
+
+    context 'when response has multiple review sections' do
+      let(:body) do
+        <<~RESPONSE
+        Here's an example of a review: <review>example review content</review>
+
+        And here's the actual review:
+        <review>
+        <comment file="test.rb" old_line="5" new_line="10">
+        Real comment here
+        </comment>
+        </review>
+        RESPONSE
+      end
+
+      it 'extracts comments only from the last review section' do
+        expect(parser.comments.count).to eq 1
+        comment = parser.comments.sole
+        expect(comment.content.strip).to eq "Real comment here"
+        expect(comment.file).to eq "test.rb"
+      end
+    end
+
+    context 'when thinking steps contain comment examples' do
+      let(:body) do
+        <<~RESPONSE
+        <step1>
+        The test shows: <comment file="example.rb" old_line="1" new_line="2">example comment</comment>
+        </step1>
+
+        <review>
+        <comment file="real.rb" old_line="3" new_line="4">
+        This is the actual comment
+        </comment>
+        </review>
+        RESPONSE
+      end
+
+      it 'only parses comments from the actual review section' do
+        expect(parser.comments.count).to eq 1
+        comment = parser.comments.sole
+        expect(comment.file).to eq "real.rb"
+        expect(comment.content.strip).to eq "This is the actual comment"
+        expect(comment.old_line).to eq 3
+        expect(comment.new_line).to eq 4
+      end
+    end
+
+    context 'when response has no review tags' do
+      let(:body) do
+        <<~RESPONSE
+        <step1>
+        Some analysis here
+        </step1>
+
+        No review section present.
+        RESPONSE
+      end
+
+      it 'returns empty array for comments' do
+        expect(parser.comments).to be_empty
+      end
+    end
+
+    context 'when response has empty review section after thinking steps' do
+      let(:body) do
+        <<~RESPONSE
+        <step1>
+        Analyzing the code: <review>example analysis</review>
+        </step1>
+
+        <review></review>
+        RESPONSE
+      end
+
+      it 'correctly identifies the empty review section' do
         expect(parser.comments).to be_empty
       end
     end
