@@ -171,7 +171,8 @@ RSpec.shared_examples 'model selection feature setting' do |scope_class_name:|
       let(:features_under_flags) do
         {
           summarize_review: 'summarize_my_code_review',
-          review_merge_request: 'add_ai_summary_for_new_mr'
+          review_merge_request: 'add_ai_summary_for_new_mr',
+          duo_agent_platform: 'duo_agent_platform_model_selection'
         }
       end
 

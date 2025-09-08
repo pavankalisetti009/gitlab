@@ -1,0 +1,9 @@
+---
+name: duo_agent_platform_model_selection
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/568112
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203917
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/568112
+milestone: '18.4'
+group: group::custom models
+type: development
+default_enabled: false

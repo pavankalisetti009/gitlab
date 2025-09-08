@@ -7,6 +7,7 @@ module Ai
       include Ai::FeatureConfigurable
 
       MODEL_PROVIDER = "gitlab"
+      DUO_AGENT_PLATFORM_FEATURE_FLAG = :duo_agent_platform_model_selection
 
       FEATURES = {
         code_generations: 0,
@@ -23,7 +24,8 @@ module Ai
         resolve_vulnerability: 11,
         summarize_review: 12,
         duo_chat_summarize_comments: 14,
-        review_merge_request: 15
+        review_merge_request: 15,
+        duo_agent_platform: 16
       }.freeze
       # Duo CLI should be number 13
       # But it has been disabled here because its context not namespaced
@@ -32,7 +34,8 @@ module Ai
 
       FEATURES_UNDER_FLAGS = {
         summarize_review: :summarize_my_code_review,
-        summarize_new_merge_request: :add_ai_summary_for_new_mr
+        summarize_new_merge_request: :add_ai_summary_for_new_mr,
+        duo_agent_platform: DUO_AGENT_PLATFORM_FEATURE_FLAG
       }.freeze
       # Keys are :feature enum values
       # Values are the names of the Feature Flags used to enable the features
