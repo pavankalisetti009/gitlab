@@ -135,7 +135,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         project.reload
         expect(project.mirror?).to be_truthy
         expect(import_data.auth_method).to eq('password')
-        expect(project.import_url).to eq('http://user:foo@example.com')
+        expect(project.unsafe_import_url).to eq('http://user:foo@example.com')
       end
 
       context 'when username is provided in url' do
@@ -149,7 +149,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
           project.reload
           expect(project.mirror?).to be_truthy
           expect(import_data.auth_method).to eq('password')
-          expect(project.import_url).to eq('http://user:foo@example.com')
+          expect(project.unsafe_import_url).to eq('http://user:foo@example.com')
         end
       end
 
@@ -163,7 +163,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
               add_mirror
 
               project.reload
-              expect(project.import_url).to eq('http://u%40s%2Be%2Fr:foo@example.com')
+              expect(project.unsafe_import_url).to eq('http://u%40s%2Be%2Fr:foo@example.com')
             end
           end
 
@@ -188,7 +188,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
               add_mirror
 
               project.reload
-              expect(project.import_url).to eq('http://user:f%40o%2Bo%2F@example.com')
+              expect(project.unsafe_import_url).to eq('http://user:f%40o%2Bo%2F@example.com')
             end
           end
 
@@ -222,7 +222,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
 
         project.reload
         expect(import_data.auth_method).to eq('password')
-        expect(project.import_url).to eq('http://2.example.com')
+        expect(project.unsafe_import_url).to eq('http://2.example.com')
       end
 
       it 'can be recreated after an SSH mirror is set' do
@@ -261,7 +261,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         project.reload
         expect(import_data.auth_method).to eq('password')
         expect(import_data.password).to eq('test_password')
-        expect(project.import_url).to eq('http://git:test_password@example.com')
+        expect(project.unsafe_import_url).to eq('http://git:test_password@example.com')
       end
     end
 

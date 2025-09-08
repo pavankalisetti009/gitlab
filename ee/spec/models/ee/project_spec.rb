@@ -2735,7 +2735,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it 'sets the import url and username' do
       project = build(:project, import_url: 'http://user@example.com')
 
-      expect(project.import_url).to eq('http://user@example.com')
+      expect(project.unsafe_import_url).to eq('http://user@example.com')
       expect(project.import_data.user).to eq('user')
     end
 
@@ -2744,7 +2744,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       project.username_only_import_url = 'http://user@example.com'
 
       expect(project.username_only_import_url).to eq('http://user@example.com')
-      expect(project.import_url).to eq('http://user:pass@example.com')
+      expect(project.unsafe_import_url).to eq('http://user:pass@example.com')
       expect(project.import_data.password).to eq('pass')
     end
 
@@ -2753,7 +2753,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       project.username_only_import_url = ''
 
       expect(project.username_only_import_url).to eq('')
-      expect(project.import_url).to eq('')
+      expect(project.unsafe_import_url).to eq('')
       expect(project.import_data.user).to be_nil
       expect(project.import_data.password).to eq('pass')
     end
@@ -3617,7 +3617,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
         project.import_state.finish
 
-        expect(project.reload.import_url).to eq('http://user:pass@test.com')
+        expect(project.reload.unsafe_import_url).to eq('http://user:pass@test.com')
       end
     end
 

@@ -832,7 +832,7 @@ module EE
       # Only send the password if it's needed
       url =
         if import_data&.password_auth?
-          import_url
+          unsafe_import_url
         else
           username_only_import_url
         end
@@ -1678,7 +1678,7 @@ module EE
     # also belong to a member of that fork network
     def import_url_inside_fork_network
       if forked?
-        mirror_project = ::Project.find_by_url(import_url)
+        mirror_project = ::Project.find_by_url(unsafe_import_url)
 
         unless mirror_project.present? && fork_network_projects.include?(mirror_project)
           errors.add(:url, _("must be inside the fork network"))

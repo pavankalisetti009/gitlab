@@ -122,8 +122,8 @@ module Projects
     end
 
     def import_url_invalid?
-      project.import_url && Gitlab::HTTP_V2::UrlBlocker.blocked_url?(
-        normalized_url(project.import_url),
+      project.unsafe_import_url && Gitlab::HTTP_V2::UrlBlocker.blocked_url?(
+        normalized_url(project.unsafe_import_url),
         schemes: Project::VALID_MIRROR_PROTOCOLS,
         allow_localhost: Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?,
         allow_local_network: Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?,

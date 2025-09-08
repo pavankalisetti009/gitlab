@@ -65,7 +65,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
           project.reload
 
           expect(project.mirror).to eq(true)
-          expect(project.import_url).to eq('http://local.dev')
+          expect(project.unsafe_import_url).to eq('http://local.dev')
           expect(project.mirror_user).to eq(first_owner)
         end
       end
@@ -78,7 +78,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
           do_put(project, mirror: true, mirror_user_id: new_user.id, import_url: 'http://local.dev')
 
           expect(project.mirror).to eq(true)
-          expect(project.import_url).to eq('http://local.dev')
+          expect(project.unsafe_import_url).to eq('http://local.dev')
           expect(project.mirror_user).to eq(first_owner)
         end
       end
@@ -179,7 +179,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
         do_put(project, { mirror: true, import_url: 'ftp://invalid.invalid' }, format: :json)
 
         expect(response).to have_gitlab_http_status(:unprocessable_entity)
-        expect(json_response['import_url'].first).to match(/is blocked/)
+        expect(json_response['unsafe_import_url'].first).to match(/is blocked/)
       end
 
       it "preserves the import_data object when the ID isn't in the request" do

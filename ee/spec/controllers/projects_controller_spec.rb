@@ -588,7 +588,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           expect(project.mirror).to eq(true)
           expect(project.mirror_trigger_builds).to eq(true)
           expect(project.mirror_user).to eq(user)
-          expect(project.import_url).to eq('https://example.com')
+          expect(project.unsafe_import_url).to eq('https://example.com')
         end
 
         it 'ignores mirror_user_id' do

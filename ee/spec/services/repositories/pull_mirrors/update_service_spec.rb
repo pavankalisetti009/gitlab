@@ -37,7 +37,7 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
       is_expected.to be_success
 
       expect(updated_project).to have_attributes(
-        import_url: "https://#{cred_user}:#{cred_password}@example.com",
+        unsafe_import_url: "https://#{cred_user}:#{cred_password}@example.com",
         mirror: enabled,
         only_mirror_protected_branches: only_protected_branches,
         id: project.id
@@ -143,7 +143,7 @@ RSpec.describe Repositories::PullMirrors::UpdateService, feature_category: :sour
 
       it 'returns an error' do
         is_expected.to be_error
-        expect(execute.message.full_messages).to include(/Import url is blocked/)
+        expect(execute.message.full_messages).to include(/Import URL is blocked/)
       end
     end
   end

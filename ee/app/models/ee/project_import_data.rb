@@ -4,7 +4,7 @@ module EE
   module ProjectImportData
     # Required for integration with MirrorAuthentication
     def url
-      project&.import_url
+      project&.unsafe_import_url
     end
 
     extend ActiveSupport::Concern

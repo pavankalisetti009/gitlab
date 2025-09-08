@@ -97,7 +97,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
 
     context "when the URL local" do
       before do
-        allow(project).to receive(:import_url).and_return('https://localhost:3000')
+        project.import_url = 'https://localhost:3000'
 
         stub_fetch_mirror(project)
       end
@@ -134,7 +134,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
         let(:result) { service.execute }
 
         before do
-          allow(project).to receive(:import_url).and_return(url)
+          project.import_url = url
 
           stub_fetch_mirror(project)
         end
