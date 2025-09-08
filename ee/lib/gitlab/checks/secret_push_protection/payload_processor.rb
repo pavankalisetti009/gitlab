@@ -180,7 +180,10 @@ module Gitlab
         private
 
         def diff_blobs(paths_slice)
-          blob_pair_ids = paths_slice.map do |path|
+          blob_pair_ids = paths_slice
+          .filter_map do |path|
+            next if path.old_blob_id == path.new_blob_id
+
             Gitaly::DiffBlobsRequest::BlobPair.new(
               left_blob: path.old_blob_id,
               right_blob: path.new_blob_id
@@ -191,14 +194,20 @@ module Gitlab
 
         def diff_blobs_with_raw_info(paths_slice)
           raw_info_data = paths_slice.map do |path|
-            Gitaly::ChangedPaths.new(
+            params = {
               path: path.path,
               status: path.status,
               old_mode: path.old_mode.to_i(8),
               new_mode: path.new_mode.to_i(8),
               old_blob_id: path.old_blob_id.to_s,
               new_blob_id: path.new_blob_id.to_s
-            )
+            }
+
+            # old_path should only be set for file renames.
+            # Remove this code when addressing https://gitlab.com/gitlab-org/gitlab/-/issues/568266
+            params[:old_path] = path.old_path if path.old_path != path.path
+
+            Gitaly::ChangedPaths.new(params)
           end
 
           project.repository.diff_blobs_with_raw_info(
