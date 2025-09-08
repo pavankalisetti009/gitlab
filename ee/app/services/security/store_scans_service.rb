@@ -28,6 +28,12 @@ module Security
         end
 
         remove_dangling_dependency_scans
+        # We need to set this to ready so that dependency_scanning reports do not keep polling
+        # in the event that no dependency scanning reports were processed in `StoreGroupedSbomScansService`.
+        ::Ci::CompareSecurityReportsService.set_security_report_type_to_ready(
+          pipeline_id: pipeline.id,
+          report_type: 'dependency_scanning'
+        )
       end
 
       sync_findings_to_approval_rules unless pipeline.default_branch?
