@@ -14,13 +14,17 @@ import {
   GlLink,
 } from '@gitlab/ui';
 import VueDraggable from 'vuedraggable';
-import { s__, __, sprintf } from '~/locale';
+import { s__, __, sprintf, createListFormat } from '~/locale';
 import { validateHexColor } from '~/lib/utils/color_utils';
-import { STATUS_CATEGORIES, STATUS_CATEGORIES_MAP } from 'ee/work_items/constants';
+import {
+  STATUS_CATEGORIES,
+  STATUS_CATEGORIES_MAP,
+  NAME_TO_TEXT_MAP,
+} from 'ee/work_items/constants';
 import { STATE_CLOSED } from '~/work_items/constants';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { updateNamespaceStatuses } from './utils';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
@@ -175,6 +179,15 @@ export default {
         return [...sameCategoryStatuses, ...otherStatuses];
       }
       return availableStatuses;
+    },
+    workItemStatusMvc2Enabled() {
+      return this.glFeatures.workItemStatusMvc2;
+    },
+    usageText() {
+      const workItemTypes = this.lifecycle.workItemTypes.map((type) => NAME_TO_TEXT_MAP[type.name]);
+      return sprintf(s__('WorkItem|Usage: %{workItemTypes}.'), {
+        workItemTypes: createListFormat().format(workItemTypes),
+      });
     },
   },
   methods: {
@@ -562,7 +575,11 @@ export default {
       <gl-loading-icon v-if="loading" size="lg" class="gl-my-7" />
 
       <template v-else>
-        <div class="gl-mb-5 gl-rounded-base gl-bg-strong gl-p-3" data-testid="status-info-alert">
+        <div
+          v-if="!workItemStatusMvc2Enabled"
+          class="gl-mb-5 gl-rounded-base gl-bg-strong gl-p-3"
+          data-testid="status-info-alert"
+        >
           <gl-sprintf
             class="gl-flex gl-items-center gl-gap-2"
             :message="
@@ -586,6 +603,29 @@ export default {
           >
             {{ s__('WorkItems|How do I use statuses?') }}
           </help-page-link>
+        </div>
+        <div
+          v-else
+          class="gl-border gl-mb-5 gl-rounded-lg gl-border-strong gl-bg-strong gl-p-4"
+          data-testid="lifecycle-info"
+        >
+          <div class="gl-font-[700]">{{ s__('WorkItem|Lifecycle:') }} {{ lifecycle.name }}</div>
+          <div class="gl-text-sm">
+            <span v-if="lifecycle.workItemTypes.length">
+              {{ usageText }}
+            </span>
+            <span v-else class="gl-text-subtle">
+              {{ s__('WorkItem|Not used on any items.') }}
+            </span>
+            <help-page-link
+              class="gl-text-size-reset"
+              data-testid="help-page-link"
+              href="user/work_items/status"
+              target="_blank"
+            >
+              {{ s__('WorkItems|How do I use statuses?') }}
+            </help-page-link>
+          </div>
         </div>
 
         <gl-alert
