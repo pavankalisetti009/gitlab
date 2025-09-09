@@ -2,6 +2,10 @@
 
 module VirtualRegistries
   class Setting < ApplicationRecord
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :enabled
+
     belongs_to :group
 
     validates :group, top_level_group: true, presence: true
