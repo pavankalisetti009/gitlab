@@ -377,6 +377,37 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
                       .to have_received(:perform_async).with(pipeline.id)
                   end
                 end
+
+                context 'when there are no security findings' do
+                  using RSpec::Parameterized::TableSyntax
+
+                  before do
+                    allow(pipeline).to receive_message_chain(:job_artifacts, :security_reports,
+                      :group_by).and_return({})
+                    allow(Sbom::ScheduleIngestReportsService).to receive_message_chain(:new, :execute)
+                    allow(pipeline).to receive_messages(default_branch?: is_default_branch,
+                      has_sbom_reports?: has_sbom_reports)
+                  end
+
+                  where(:is_default_branch, :has_sbom_reports, :receives_call) do
+                    false | false | false
+                    true | false | false
+                    false | true | false
+                    true | true | true
+                  end
+
+                  with_them do
+                    it "handles Sbom::ScheduleIngestReportsService as appropriated" do
+                      store_group_of_artifacts
+
+                      if receives_call
+                        expect(Sbom::ScheduleIngestReportsService).to have_received(:new).with(pipeline)
+                      else
+                        expect(Sbom::ScheduleIngestReportsService).not_to have_received(:new)
+                      end
+                    end
+                  end
+                end
               end
             end
           end
