@@ -23,6 +23,13 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
     it 'does not allow new deprecated events' do
       is_expected.not_to allow_value('code_suggestions_requested').for(:event).with_message(_('is read-only'))
     end
+
+    it 'does not allow invalid namespace_id' do
+      model = described_class.new(namespace_id: non_existing_record_id)
+      model.valid?
+
+      expect(model.errors[:namespace]).to include("can't be blank")
+    end
   end
 
   describe '.sort_by_timestamp_id' do

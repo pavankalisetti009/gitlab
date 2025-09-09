@@ -25,6 +25,7 @@ module Ai
     enum :event, Gitlab::Tracking::AiTracking.registered_events
 
     validates :timestamp, :user_id, :organization_id, presence: true
+    validates :namespace, presence: true, if: :namespace_id?
     validates :extras, json_schema: { filename: "ai_usage_event_extras", size_limit: 16.kilobytes }
     validate :validate_recent_timestamp, on: :create
     validate :validate_event_status, on: :create
