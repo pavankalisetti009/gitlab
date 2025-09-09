@@ -488,13 +488,6 @@ module EE
       ::Gitlab::CurrentSettings.zoekt_search_enabled?
     end
 
-    def zoekt_indexed_namespaces
-      ::Search::Zoekt::EnabledNamespace.where(
-        namespace: ::Namespace
-          .from("(#{namespace_union_for_reporter_developer_maintainer_owned}) #{::Namespace.table_name}")
-      )
-    end
-
     # Returns true if the user is a Reporter or higher on any namespace
     # currently on a paid plan
     def belongs_to_paid_namespace?(plans: ::Plan::PAID_HOSTED_PLANS, exclude_trials: false)

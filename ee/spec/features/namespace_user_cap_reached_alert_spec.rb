@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Namespace user cap reached alert', :feature, :js, :use_clean_rails_memory_store_caching,
+RSpec.describe 'Namespace user cap reached alert', :feature, :js, :saas, :use_clean_rails_memory_store_caching,
   feature_category: :seat_cost_management do
   include BillableMembersHelpers
 

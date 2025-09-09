@@ -1,0 +1,6 @@
+= render Pajamas::AlertComponent.new(variant: :warning,
+  dismissible: false,
+  alert_options: { class: [content_class], data: { testid: 'all-seats-used-alert' }},
+  title: _('No more seats in subscription')) do |c|
+  - c.with_body do
+    = alert_body

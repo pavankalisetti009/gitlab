@@ -69,8 +69,8 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         1 | 'SingleStat' | 'Code Suggestions: Usage'
         2 | 'SingleStat' | 'Code Suggestions: Acceptance rate'
         3 | 'SingleStat' | 'Duo Chat: Usage'
-        4 | 'AiImpactTable' | 'Lifecycle metrics for the %{namespaceName} %{namespaceType}'
-        5 | 'AiImpactTable' | 'AI usage metrics for the %{namespaceName} %{namespaceType}'
+        4 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
+        5 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
       end
 
       with_them do

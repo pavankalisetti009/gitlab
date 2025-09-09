@@ -11,6 +11,11 @@ module EE
           description: 'Retrieve all active add-on purchases. ' \
                        'This query can be used in GitLab.com and self-managed environments.',
           resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchasesResolver
+        field :ai_catalog_agent_flow_config,
+          resolver: ::Resolvers::Ai::Catalog::AgentFlowConfigResolver,
+          null: true,
+          description: 'Get flow configuration for an AI Catalog agent.',
+          experiment: { milestone: '18.4' }
         field :ai_catalog_built_in_tools, ::Types::Ai::Catalog::BuiltInToolType.connection_type,
           null: false,
           description: 'List of AI Catalog built-in tools.',

@@ -107,9 +107,12 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       end
 
       let(:builder) { described_class.new(single_agent_flow) }
-      let(:result) { builder.build }
 
-      include_examples 'builds valid flow configuration'
+      include_examples 'builds valid flow configuration' do
+        let(:result) { builder.build }
+        let(:environment) { 'remote' }
+        let(:version) { 'experimental' }
+      end
 
       it 'builds workflow with single component correctly', :aggregate_failures do
         agent_item_1_flow_id = "#{agent_item_1.id}/0"
@@ -192,9 +195,11 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
     end
 
     context 'when flow has multiple agents' do
-      let(:result) { builder.build }
-
-      include_examples 'builds valid flow configuration'
+      include_examples 'builds valid flow configuration' do
+        let(:result) { builder.build }
+        let(:environment) { 'remote' }
+        let(:version) { 'experimental' }
+      end
 
       it 'builds workflow with multiple components correctly', :aggregate_failures do
         agent_item_1_flow_id = "#{agent_item_1.id}/0"

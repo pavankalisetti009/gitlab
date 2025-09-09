@@ -39,7 +39,7 @@ RSpec.describe Groups::Settings::ServiceAccountsController, feature_category: :u
         it_behaves_like 'page is found'
       end
 
-      context 'when in SaaS mode' do
+      context 'when in SaaS mode', :saas do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
         end
