@@ -8,6 +8,7 @@ import SystemNote from '~/work_items/components/notes/system_note.vue';
 import updateProjectComplianceViolation from '../graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
+import DiscussionNote from './discussion_note.vue';
 import FixSuggestionSection from './fix_suggestion_section.vue';
 import RelatedIssues from './related_issues.vue';
 import ViolationSection from './violation_section.vue';
@@ -19,6 +20,7 @@ export default {
   components: {
     AuditEvent,
     ComplianceViolationStatusDropdown,
+    DiscussionNote,
     FixSuggestionSection,
     GlAlert,
     GlLoadingIcon,
@@ -83,12 +85,6 @@ export default {
       if (!this.hasNotes) return [];
       return this.projectComplianceViolation.notes.nodes;
     },
-    systemNotes() {
-      return this.notesNodes.filter((note) => note.system);
-    },
-    hasSystemNotes() {
-      return this.systemNotes.length > 0;
-    },
   },
   methods: {
     async handleStatusChange(newStatus) {
@@ -118,6 +114,9 @@ export default {
       } finally {
         this.isStatusUpdating = false;
       }
+    },
+    handleNoteDeleted() {
+      this.$apollo.queries.projectComplianceViolation.refetch();
     },
   },
   i18n: {
@@ -186,10 +185,13 @@ export default {
       :violation-id="graphqlViolationId"
       :project-path="projectComplianceViolation.project.fullPath"
     />
-    <section v-if="hasSystemNotes" class="issuable-discussion gl-pt-6">
+    <section v-if="hasNotes" class="issuable-discussion gl-pt-6">
       <h2 class="gl-mb-4 gl-mt-0 gl-text-size-h1">{{ $options.i18n.activity }}</h2>
       <ul class="timeline main-notes-list notes">
-        <system-note v-for="note in systemNotes" :key="note.id" :note="note" />
+        <template v-for="note in notesNodes">
+          <system-note v-if="note.system" :key="note.id" :note="note" />
+          <discussion-note v-else :key="note.id" :note="note" @noteDeleted="handleNoteDeleted" />
+        </template>
       </ul>
     </section>
   </div>
