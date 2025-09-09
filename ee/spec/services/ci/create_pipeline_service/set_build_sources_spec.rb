@@ -118,6 +118,9 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       end
 
       before do
+        # TODO: Remove this stub when resolving https://gitlab.com/gitlab-org/gitlab/-/issues/567952
+        stub_feature_flags(stop_writing_builds_metadata: false)
+
         create(:security_policy, :scan_execution_policy, linked_projects: [project],
           content: scan_execution_policy.slice(:actions),
           security_orchestration_policy_configuration: project_configuration)

@@ -108,6 +108,9 @@ RSpec.describe AppSec::Dast::Scans::RunService, feature_category: :dynamic_appli
       end
 
       it 'creates a build with appropriate variables' do
+        # TODO: Remove this stub when resolving https://gitlab.com/gitlab-org/gitlab/-/issues/567952
+        stub_feature_flags(stop_writing_builds_metadata: false)
+
         build = pipeline.builds.first
 
         expected_variables = [
