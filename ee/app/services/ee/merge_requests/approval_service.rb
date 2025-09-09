@@ -12,18 +12,15 @@ module EE
       def execute(merge_request)
         # TODO: rename merge request approval setting to require_reauthentication_to_approve
         # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/431346
-        if !feature_flag_for_saml_auth_to_approve_enabled?
-          return if incorrect_approval_password?(merge_request)
-        else
-          # use just the bare resolver here since this setting is for SAML and password now
-          # we can't let this path go through the project require_password_to_approve
-          return super unless mr_approval_setting_password_required?(merge_request)
+        #
+        # use just the bare resolver here since this setting is for SAML and password now
+        # we can't let this path go through the project require_password_to_approve
+        return super unless mr_approval_setting_password_required?(merge_request)
 
-          require_saml_auth = approval_requires_saml_auth?
+        require_saml_auth = approval_requires_saml_auth?
 
-          return if require_saml_auth && !saml_approval_in_time?
-          return if incorrect_approval_password?(merge_request) && !require_saml_auth
-        end
+        return if require_saml_auth && !saml_approval_in_time?
+        return if incorrect_approval_password?(merge_request) && !require_saml_auth
 
         super
       end
@@ -36,10 +33,6 @@ module EE
       end
 
       private
-
-      def feature_flag_for_saml_auth_to_approve_enabled?
-        root_group && ::Feature.enabled?(:ff_require_saml_auth_to_approve, root_group)
-      end
 
       def incorrect_approval_password?(merge_request)
         merge_request.require_password_to_approve? &&
