@@ -53,6 +53,7 @@ namespace :admin do
 
     scope :usage do
       get '/', action: :index, controller: 'usage', as: :usage
+      resources :users, only: [:show], controller: 'usage/users', param: :user_id, as: :usage_users
     end
 
     get 'self_hosted(/*vueroute)', to: 'self_hosted#index'

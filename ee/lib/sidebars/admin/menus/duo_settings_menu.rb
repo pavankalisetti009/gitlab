@@ -22,7 +22,7 @@ module Sidebars
         override :active_routes
         def active_routes
           {
-            controller: [:gitlab_duo, :seat_utilization, :configuration, :usage],
+            controller: [:gitlab_duo, :seat_utilization, :configuration, :usage, 'admin/gitlab_duo/usage/users'],
             action: %w[show index]
           }
         end
