@@ -227,6 +227,7 @@ export const createProject = ({ id, groupPath, archived = false } = {}) => ({
         default: false,
         description: 'this is a framework',
         color: '#3cb371',
+        namespaceId: 'gid://gitlab/Group/1',
         __typename: 'ComplianceFramework',
       },
     ],

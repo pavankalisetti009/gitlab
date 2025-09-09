@@ -12,6 +12,11 @@ export default {
     GlButton,
     GlPopover,
   },
+  inject: {
+    namespaceId: {
+      default: null,
+    },
+  },
   props: {
     framework: {
       type: Object,
@@ -51,6 +56,15 @@ export default {
     },
     showPopover() {
       return this.popoverMode !== 'hidden';
+    },
+    isCSPFramework() {
+      if (!this.framework.namespaceId || !this.namespaceId) {
+        return false;
+      }
+
+      return (
+        getIdFromGraphQLId(this.framework.namespaceId) !== getIdFromGraphQLId(this.namespaceId)
+      );
     },
     frameworkName() {
       const maxLength = 30;
@@ -94,6 +108,7 @@ export default {
     disabledText: s__(
       'ComplianceReport|Only group owners and maintainers can view the framework details',
     ),
+    CSPFramework: s__('ComplianceFramework|Instance level compliance framework'),
   },
 };
 </script>
@@ -109,6 +124,11 @@ export default {
       <div v-if="framework.description" class="gl-mb-3 gl-text-left">
         {{ framework.description }}
       </div>
+
+      <div v-if="isCSPFramework" class="gl-border-t gl-mb-2 gl-pt-2 gl-text-sm gl-text-secondary">
+        {{ $options.i18n.CSPFramework }}
+      </div>
+
       <div class="gl-text-left">
         <gl-button
           v-if="isEditMode"

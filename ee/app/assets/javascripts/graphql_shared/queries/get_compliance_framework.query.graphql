@@ -29,6 +29,7 @@ query getComplianceFramework(
         description
         color
         pipelineConfigurationFullPath
+        namespaceId
         projects {
           nodes {
             id
