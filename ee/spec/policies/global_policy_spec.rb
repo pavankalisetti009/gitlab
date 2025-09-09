@@ -948,6 +948,58 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
+  describe 'manage admin model selection' do
+    let(:current_user) { admin }
+
+    context 'when user is not an admin' do
+      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
+    end
+
+    context 'when instance level model selection flag is disabled', :enable_admin_mode do
+      before do
+        stub_feature_flags(instance_level_model_selection: false)
+      end
+
+      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
+    end
+
+    context 'when no online license found', :enable_admin_mode do
+      let(:license) { build(:license, cloud: false) }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
+    end
+
+    context 'when admin is not allowed to manage self-hosted model settings', :enable_admin_mode do
+      let(:license) { build(:license, cloud: true) }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?).and_return(false)
+      end
+
+      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
+    end
+
+    context 'when feature flag is enabled, admin can manage self-hosted model settings with CC',
+      :enable_admin_mode do
+      let(:license_double) { instance_double('License', ultimate?: true, premium?: true, online_cloud_license?: true) }
+
+      before do
+        stub_feature_flags(instance_level_model_selection: true)
+        allow(License).to receive(:current).and_return(license_double)
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?).and_return(true)
+      end
+
+      it { is_expected.to be_allowed(:manage_instance_model_selection) }
+    end
+  end
+
   describe 'manage duo core features' do
     let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
     let(:current_user) { admin }

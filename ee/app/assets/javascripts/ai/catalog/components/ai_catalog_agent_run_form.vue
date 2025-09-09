@@ -44,7 +44,10 @@ export default {
   },
   methods: {
     onSubmit() {
-      this.$emit('submit', this.formValues);
+      const transformedValues = {
+        userPrompt: this.formValues.userPrompt.trim(),
+      };
+      this.$emit('submit', transformedValues);
     },
   },
   fields: {
@@ -60,8 +63,13 @@ export default {
 </script>
 
 <template>
-  <gl-form :id="formId" @submit.prevent="onSubmit">
-    <gl-form-fields v-model="formValues" :form-id="formId" :fields="$options.fields">
+  <gl-form :id="formId">
+    <gl-form-fields
+      v-model="formValues"
+      :form-id="formId"
+      :fields="$options.fields"
+      @submit="onSubmit"
+    >
       <template #group(userPrompt)-label>
         {{ s__('AICatalog|User prompt') }}
         <div class="label-description">

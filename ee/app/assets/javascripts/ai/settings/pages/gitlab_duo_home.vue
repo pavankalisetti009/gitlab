@@ -22,6 +22,7 @@ export default {
   },
   inject: {
     canManageSelfHostedModels: { default: false },
+    canManageInstanceModelSelection: { default: false },
     duoSelfHostedPath: { default: '' },
     isSaaS: {},
     isAdminInstanceDuoHome: { default: false },
@@ -48,6 +49,17 @@ export default {
           description: s__('AiPowered|Assign models to AI-native features.'),
           buttonText: s__('AiPowered|Configure features'),
           path: this.modelSwitchingPath,
+        };
+      }
+
+      if (this.canManageInstanceModelSelection) {
+        return {
+          header: s__('AiPowered|GitLab Duo Model Selection'),
+          description: s__(
+            'AiPowered|Assign self-hosted or cloud-connected models to use with specific AI-native features.',
+          ),
+          buttonText: s__('AiPowered|Configure models for GitLab Duo'),
+          path: this.duoSelfHostedPath,
         };
       }
 

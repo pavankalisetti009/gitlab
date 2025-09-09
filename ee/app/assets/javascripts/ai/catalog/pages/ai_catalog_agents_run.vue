@@ -33,13 +33,13 @@ export default {
     },
   },
   methods: {
-    async onSubmit() {
+    async onSubmit({ userPrompt }) {
       try {
         this.isSubmitting = true;
 
         const { data } = await this.$apollo.mutate({
           mutation: executeAiCatalogAgent,
-          variables: { input: { agentId: this.aiCatalogAgent.id } },
+          variables: { input: { agentId: this.aiCatalogAgent.id, userPrompt } },
         });
 
         if (data) {

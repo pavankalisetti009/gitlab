@@ -106,13 +106,19 @@ module EE
       end
 
       condition(:user_allowed_to_manage_self_hosted_models_settings) do
-        next false if ::Feature.disabled?(:allow_self_hosted_features_for_com) &&
+        next false if ::Feature.disabled?(:allow_self_hosted_features_for_com, :instance) &&
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         next false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
 
         (::License.current&.ultimate? || ::License.current&.premium?) &&
           ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
+      end
+
+      condition(:instance_model_selection_available) do
+        next false unless ::Feature.enabled?(:instance_level_model_selection, :instance)
+
+        ::CloudConnector.self_managed_cloud_connected?
       end
 
       condition(:x_ray_available) do
@@ -170,6 +176,10 @@ module EE
 
       rule { admin & user_allowed_to_manage_self_hosted_models_settings }.policy do
         enable :manage_self_hosted_models_settings
+      end
+
+      rule { admin & instance_model_selection_available & user_allowed_to_manage_self_hosted_models_settings }.policy do
+        enable :manage_instance_model_selection
       end
 
       rule { admin & custom_roles_allowed }.policy do

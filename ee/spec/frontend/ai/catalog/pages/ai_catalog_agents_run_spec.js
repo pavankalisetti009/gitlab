@@ -45,8 +45,10 @@ describe('AiCatalogAgentsRun', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findRunForm = () => wrapper.findComponent(AiCatalogAgentRunForm);
 
+  const userPrompt = 'prompt';
+
   const submitForm = async () => {
-    findRunForm().vm.$emit('submit', { userPrompt: 'prompt' });
+    findRunForm().vm.$emit('submit', { userPrompt });
     await waitForPromises();
   };
 
@@ -71,7 +73,7 @@ describe('AiCatalogAgentsRun', () => {
       await submitForm();
 
       expect(executeAiCatalogAgentSuccessHandler).toHaveBeenCalledWith({
-        input: { agentId: mockAgent.id },
+        input: { agentId: mockAgent.id, userPrompt },
       });
     });
 

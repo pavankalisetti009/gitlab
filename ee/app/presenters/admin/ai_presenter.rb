@@ -25,6 +25,10 @@ module Admin
       :expires_at,
       to: :license
 
+    def initialize(current_user)
+      @current_user = current_user
+    end
+
     def settings
       {
         ai_gateway_url: ai_gateway_url,
@@ -35,6 +39,7 @@ module Admin
         are_prompt_cache_settings_allowed: true,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled,
         can_manage_self_hosted_models: can_manage_self_hosted_models?,
+        can_manage_instance_model_selection: can_manage_instance_model_selection?,
         direct_code_suggestions_enabled: !disabled_direct_code_suggestions?,
         duo_availability: duo_availability,
         duo_workflow_enabled: duo_workflow_enabled?,
@@ -91,6 +96,10 @@ module Admin
 
     def duo_workflow_enabled?
       ::Ai::DuoWorkflow.available?
+    end
+
+    def can_manage_instance_model_selection?
+      ::Ability.allowed?(@current_user, :manage_instance_model_selection)
     end
 
     def saas?

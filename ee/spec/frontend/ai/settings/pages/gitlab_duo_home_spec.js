@@ -23,6 +23,7 @@ describe('GitLab Duo Home', () => {
     isSaaS = true,
     isAdminInstanceDuoHome = false,
     canManageSelfHostedModels = false,
+    canManageInstanceModelSelection = false,
     customSlotProps = {},
     duoSelfHostedPath = '/admin/gitlab_duo/self_hosted',
     modelSwitchingEnabled = false,
@@ -36,6 +37,7 @@ describe('GitLab Duo Home', () => {
         duoSelfHostedPath,
         modelSwitchingEnabled,
         modelSwitchingPath,
+        canManageInstanceModelSelection,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -161,6 +163,26 @@ describe('GitLab Duo Home', () => {
           header: 'GitLab Duo Self-Hosted',
           description: 'Assign self-hosted models to specific AI-native features.',
           buttonText: 'Configure GitLab Duo Self-Hosted',
+          path: '/admin/gitlab_duo/self_hosted',
+        });
+      });
+    });
+
+    describe('when withAdminModelSelection is true', () => {
+      it('renders model switching card for Duo self-hosted with model selection support', () => {
+        createComponent({
+          isSaaS: false,
+          isAdminInstanceDuoHome: true,
+          canManageSelfHostedModels: true,
+          canManageInstanceModelSelection: true,
+        });
+
+        const duoSelfHostedCard = findDuoModelsConfigurationCard();
+        expect(duoSelfHostedCard.props('duoModelsConfigurationProps')).toMatchObject({
+          header: 'GitLab Duo Model Selection',
+          description:
+            'Assign self-hosted or cloud-connected models to use with specific AI-native features.',
+          buttonText: 'Configure models for GitLab Duo',
           path: '/admin/gitlab_duo/self_hosted',
         });
       });
