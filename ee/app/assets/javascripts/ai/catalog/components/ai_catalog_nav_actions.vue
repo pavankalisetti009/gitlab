@@ -1,6 +1,7 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { isLoggedIn } from '~/lib/utils/common_utils';
 import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
@@ -36,12 +37,17 @@ export default {
       }
     },
   },
+  isLoggedIn,
 };
 </script>
 
 <template>
   <div class="gl-flex gl-items-center">
-    <gl-button v-if="buttonProps.route" :to="{ name: buttonProps.route }" variant="confirm">
+    <gl-button
+      v-if="$options.isLoggedIn() && buttonProps.route"
+      :to="{ name: buttonProps.route }"
+      variant="confirm"
+    >
       {{ buttonProps.label }}
     </gl-button>
   </div>
