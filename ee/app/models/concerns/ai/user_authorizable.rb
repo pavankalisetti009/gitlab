@@ -100,53 +100,97 @@ module Ai
         end
       end
 
-      def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
-        allowed_to_use(ai_feature, service_name: service_name, licensed_feature: licensed_feature).allowed?
+      def allowed_to_use?(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features)
+        allowed_to_use(ai_feature, unit_primitive_name: unit_primitive_name, licensed_feature: licensed_feature)
+          .allowed?
       end
 
       def allowed_by_namespace_ids(...)
         allowed_to_use(...).namespace_ids
       end
 
-      def allowed_to_use(ai_feature, service_name: nil, licensed_feature: :ai_features)
+      def allowed_to_use(ai_feature, unit_primitive_name: nil, licensed_feature: :ai_features)
         amazon_q_response = check_amazon_q_feature(ai_feature)
         return amazon_q_response if amazon_q_response
 
-        # Check if feature and service are valid and available
+        # Check if feature and unit primitive are valid and available
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
         return denied_response unless feature_data
 
-        service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
-        return denied_response if service.name == :missing_service
+        unit_primitive = get_unit_primitive_model(unit_primitive_name || ai_feature)
+        return denied_response unless unit_primitive
 
         # Access through Duo Pro and Duo Enterprise
-        add_on_response = check_add_on_purchases(service)
+        add_on_response = check_add_on_purchases(unit_primitive)
         return add_on_response if add_on_response
 
         # Access through Duo Core
-        duo_core_response = check_duo_core_features(service)
+        duo_core_response = check_duo_core_features(unit_primitive)
         return duo_core_response if duo_core_response
 
         # If the user doesn't have access through Duo add-ons
-        # and the service isn't free, they don't have access
-        return denied_response unless service_free_access?(service)
+        # and the unit_primitive isn't free, they don't have access
+        return denied_response unless unit_primitive_free_access?(unit_primitive)
 
         check_free_access(feature_data, licensed_feature)
       end
 
       private
 
-      def service_free_access?(service)
-        service.cut_off_date.nil? || service.cut_off_date&.future?
+      def unit_primitive_is_self_hosted?(unit_primitive_name)
+        return false if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
+
+        ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive_name)&.self_hosted?
       end
 
-      def check_add_on_purchases(service)
+      def get_unit_primitive_model(unit_primitive_name)
+        if Feature.enabled?(:use_unit_primitives_in_user_authorizable, self, type: :gitlab_com_derisk)
+          fetch_from_catalog(unit_primitive_name)
+        else
+          fetch_from_available_services(unit_primitive_name)
+        end
+      end
+
+      def fetch_from_catalog(unit_primitive_name)
+        unit_primitive_name = :self_hosted_models if unit_primitive_is_self_hosted?(unit_primitive_name)
+
+        Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
+      end
+
+      # DEPRECATED: Remove after feature flag rollout
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/562380
+      def fetch_from_available_services(name)
+        service = CloudConnector::AvailableServices.find_by_name(name)
+
+        return if service.name == :missing_service
+
+        service
+      end
+
+      def unit_primitive_free_access?(unit_primitive)
+        unit_primitive.cut_off_date.nil? || unit_primitive.cut_off_date&.future?
+      end
+
+      # Remove after feature flag rollout
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/562380
+      def get_add_ons(unit_primitive)
+        # Handle both [:add_ons] (unit_primitive) and .add_on_names (service)
+        if unit_primitive.respond_to?(:add_on_names)
+          unit_primitive.add_on_names
+        else
+          unit_primitive[:add_ons] || []
+        end
+      end
+
+      def check_add_on_purchases(unit_primitive)
+        add_ons = get_add_ons(unit_primitive)
+
         # NOTE: We are passing `nil` as the resource to avoid filtering by namespace.
         # This is _not_ a good use of this API, and we should separate filtering by namespace
         # from filtering by user seat assignments. While this works, it will actually join
         # all add-on purchases in all tenant namespaces, which is not ideal.
-        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(service.add_on_names, nil)
-                                                      .assigned_to_user(self)
+        purchases = GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_ons, nil).assigned_to_user(self)
+
         return unless purchases.any?
 
         Response.new(
@@ -157,9 +201,12 @@ module Ai
         )
       end
 
-      def check_duo_core_features(service)
+      def check_duo_core_features(unit_primitive)
         return unless active? && !bot?
-        return unless service.add_on_names.include?("duo_core") && duo_core_add_on?
+
+        add_ons = get_add_ons(unit_primitive)
+
+        return unless add_ons.include?("duo_core") && duo_core_add_on?
 
         if saas?
           groups = groups_with_duo_core_enabled

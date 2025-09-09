@@ -31,9 +31,8 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
     let_it_be(:current_user) { create(:user) }
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed) }
 
-    let(:service) do
-      instance_double(::CloudConnector::BaseAvailableServiceData,
-        name: :any_name, add_on_names: ['code_suggestions'])
+    let(:unit_primitive) do
+      build(:cloud_connector_unit_primitive, name: :any_name, add_ons: %w[duo_pro])
     end
 
     before do
@@ -45,13 +44,14 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
         add_on_purchase: add_on_purchase
       )
 
-      allow(::CloudConnector::AvailableServices).to(
-        receive(:find_by_name).and_return(::CloudConnector::MissingServiceData.new)
+      allow(::Gitlab::CloudConnector::DataModel::UnitPrimitive).to(
+        receive(:find_by_name).and_return(nil)
       )
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:include_file_context)
-        .and_return(service)
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:include_merge_request_context)
-        .and_return(service)
+      allow(::Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).with(:include_file_context)
+        .and_return(unit_primitive)
+      allow(::Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name)
+        .with(:include_merge_request_context)
+        .and_return(unit_primitive)
     end
 
     it 'returns a list of available features' do

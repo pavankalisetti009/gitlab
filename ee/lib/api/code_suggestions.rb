@@ -183,7 +183,7 @@ module API
           unauthorized_with_origin_header! if task.feature_disabled?
 
           unless current_user.allowed_to_use?(:code_suggestions,
-            service_name: task.unit_primitive_name,
+            unit_primitive_name: task.unit_primitive_name,
             licensed_feature: task.licensed_feature
           )
             unauthorized_with_origin_header!
