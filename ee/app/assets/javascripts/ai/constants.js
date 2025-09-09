@@ -54,3 +54,5 @@ export const DUO_WORKFLOW_STATUS_INPUT_REQUIRED = 'INPUT_REQUIRED';
 
 export const DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY = 'repository';
 export const DUO_CURRENT_WORKFLOW_STORAGE_KEY = 'agenticChat.currentWorkflow';
+
+export const DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY = 'agentic-chat-user-selected-model';

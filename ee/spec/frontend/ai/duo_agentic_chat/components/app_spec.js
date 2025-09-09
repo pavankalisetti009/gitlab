@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 import VueApollo from 'vue-apollo';
 import { GlToggle } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import { setAgenticMode } from 'ee/ai/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -14,6 +15,7 @@ import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.q
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/app.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
+import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
@@ -24,11 +26,13 @@ import {
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
   DUO_WORKFLOW_STATUS_RUNNING,
+  DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { getCookie } from '~/lib/utils/common_utils';
+import { mockListItems as mockModelListItems } from '../../model_selection/mock_data';
 
 const mockSocketManager = {
   connect: jest.fn(),
@@ -1324,6 +1328,79 @@ describe('Duo Agentic Chat', () => {
 
       it('does not render the GlToggle component', () => {
         expect(findGlToggle().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('Agentic chat user model selection', () => {
+    useLocalStorageSpy();
+
+    const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
+
+    describe('when user model selection is enabled', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        createComponent({ propsData: { userModelSelectionEnabled: true } });
+      });
+
+      it('renders `ModelSelectDropdown`', () => {
+        expect(findModelSelectDropdown().exists()).toBe(true);
+      });
+
+      it('passes the correct props to `ModelSelectDropdown`', () => {
+        expect(findModelSelectDropdown().props('placeholderDropdownText')).toBe('Select a model');
+        expect(findModelSelectDropdown().props('items')).toBe(mockModelListItems);
+        expect(findModelSelectDropdown().props('selectedOption')).toBe(wrapper.vm.defaultModel);
+      });
+
+      describe('when there is a selected model set in `localStorage`', () => {
+        it('returns the selected model', async () => {
+          const selectedModel = mockModelListItems[0];
+          localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
+
+          createComponent({ propsData: { userModelSelectionEnabled: true } });
+          await nextTick();
+
+          expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
+          expect(findModelSelectDropdown().props('selectedOption')).toEqual(selectedModel);
+        });
+      });
+
+      describe('when there is no selected model set in `localStorage`', () => {
+        it('returns the default model', async () => {
+          localStorage.getItem.mockReturnValue(null);
+
+          createComponent({ propsData: { userModelSelectionEnabled: true } });
+          await nextTick();
+
+          expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
+          expect(findModelSelectDropdown().props('selectedOption')).toBe(wrapper.vm.defaultModel);
+        });
+      });
+
+      describe('updating the model selection', () => {
+        it('persists the selected model in a `localStorage` item and updates dropdown', async () => {
+          const selectedModel = mockModelListItems[0];
+
+          await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
+
+          expect(findModelSelectDropdown().props('selectedOption')).toBe(selectedModel);
+          expect(localStorage.setItem).toHaveBeenCalledWith(
+            DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
+            JSON.stringify(selectedModel),
+          );
+        });
+      });
+    });
+
+    describe('when user model selection is disabled', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        createComponent({ propsData: { userModelSelectionEnabled: false } });
+      });
+
+      it('does not render `ModelSelectDropdown`', () => {
+        expect(findModelSelectDropdown().exists()).toBe(false);
       });
     });
   });

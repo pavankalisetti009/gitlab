@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import store from '../tanuki_bot/store';
 import DuoAgenticChatApp from './components/app.vue';
 
@@ -17,7 +18,7 @@ export const initDuoAgenticChat = () => {
     return false;
   }
 
-  const { projectId, namespaceId, resourceId, metadata } = el.dataset;
+  const { projectId, namespaceId, resourceId, metadata, userModelSelectionEnabled } = el.dataset;
 
   return new Vue({
     el,
@@ -30,6 +31,7 @@ export const initDuoAgenticChat = () => {
           namespaceId,
           resourceId,
           metadata,
+          userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
         },
       });
     },
