@@ -72,21 +72,20 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     using RSpec::Parameterized::TableSyntax
 
     where(
-      :gitlab_com_subscriptions, :feature_flag_enabled, :root_group, :free_or_no_subscription, :trial, :expected_result
+      :gitlab_com_subscriptions, :feature_flag_enabled, :root_group, :trial, :expected_result
     ) do
-      true  | true  | true  | true  | false | true
-      false | true  | true  | true  | false | false
-      true  | false | true  | true  | false | false
-      true  | true  | false | true  | false | false
-      true  | true  | true  | false | false | false
+      true  | true  | true  | true  | true
+      false | true  | true  | false | false
+      true  | false | true  | false | false
+      true  | true  | false | false | false
+      true  | true  | true  | false | false
     end
 
     with_them do
       before do
         stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions)
         stub_feature_flags(group_page_plan_indicator: feature_flag_enabled)
-        allow(group)
-          .to receive_messages(root?: root_group, has_free_or_no_subscription?: free_or_no_subscription, trial?: trial)
+        allow(group).to receive_messages(root?: root_group, trial?: trial)
       end
 
       subject { helper.show_plan_indicator?(group) }

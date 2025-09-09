@@ -99,6 +99,8 @@ module EE
       has_many :v2_approval_rules, through: :v2_approval_rules_merge_requests,
         class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
 
+      has_many :policy_dismissals, class_name: 'Security::PolicyDismissal', inverse_of: :merge_request
+
       delegate :sha, to: :head_pipeline, prefix: :head_pipeline, allow_nil: true
       delegate :sha, to: :base_pipeline, prefix: :base_pipeline, allow_nil: true
       delegate :wrapped_approval_rules, :invalid_approvers_rules, to: :approval_state

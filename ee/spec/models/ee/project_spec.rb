@@ -118,6 +118,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to have_many(:configured_ai_catalog_items).class_name('Ai::Catalog::ItemConsumer') }
     it { is_expected.to have_many(:ai_flow_triggers).class_name('Ai::FlowTrigger') }
+    it { is_expected.to have_many(:policy_dismissals).class_name('Security::PolicyDismissal') }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do

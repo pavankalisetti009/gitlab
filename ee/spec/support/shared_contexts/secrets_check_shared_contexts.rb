@@ -18,13 +18,29 @@ RSpec.shared_context 'secrets check context' do
       branch_name: 'master',
       message: 'Initial commit',
       actions: [
-        { action: :create, file_path: 'README', content: 'Documentation goes here' }
+        { action: :create, file_path: 'README', content: 'Documentation goes here' },
+        { action: :create, file_path: 'old_config.txt', content: 'CONFIG_VALUE=old' }
       ]
     )
   end
 
-  # Create a default `new_commit` for use cases in which we don't care much about diffs.
-  let_it_be(:new_commit) { create_commit('.env' => 'BASE_URL=https://foo.bar') }
+  let_it_be(:new_commit) do
+    commit_sha = repository.commit_files(
+      user,
+      branch_name: 'a-new-branch',
+      message: 'Add a file',
+      start_sha: initial_commit,
+      actions: [
+        { action: :create, file_path: '.env', content: 'BASE_URL=https://foo.bar' },
+        { action: :move, file_path: 'new_config.txt', previous_path: 'old_config.txt', content: 'CONFIG_VALUE=old' }
+      ]
+    )
+
+    # `list_blobs` only returns unreferenced blobs because it is used for hooks, so we have
+    # to delete the branch since Gitaly does not allow us to create loose objects via the RPC.
+    repository.delete_branch('a-new-branch')
+    commit_sha
+  end
 
   # Define blob references as follows:
   #   1. old reference is used as the left blob id in diff_blob objects.

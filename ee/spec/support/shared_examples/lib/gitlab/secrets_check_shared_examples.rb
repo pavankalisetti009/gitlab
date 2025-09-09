@@ -206,17 +206,30 @@ RSpec.shared_examples 'diff scan passed' do
     )
   end
 
+  let(:move_diff_blob) do
+    ::Gitlab::GitalyClient::DiffBlob.new(
+      left_blob_id: "5d3962935b09208cd00252b050e632c75f9e7d7d",
+      right_blob_id: "5d3962935b09208cd00252b050e632c75f9e7d7d",
+      patch: "",
+      status: :STATUS_END_OF_PATCH,
+      binary: false,
+      over_patch_bytes_limit: false)
+  end
+
   it 'gets and parses diffs' do
     expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
       expect(instance).to receive(:get_diffs)
-        .once
-        .and_return([diff_blob])
+        .at_least(:once)
         .and_call_original
 
       expect(instance).to receive(:parse_diffs)
         .with(diff_blob)
-        .once
-        .and_return(raw_payloads)
+        .at_least(:once)
+        .and_call_original
+
+      expect(instance).to receive(:parse_diffs)
+        .with(move_diff_blob)
+        .at_least(:once)
         .and_call_original
     end
 

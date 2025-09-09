@@ -20,7 +20,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         expect(project.repository).to receive(:diff_blobs_with_raw_info)
           .and_wrap_original do |method, raw_info, **kwargs|
           expect(raw_info).to be_an(Array)
-          expect(raw_info.size).to eq(1)
+          expect(raw_info.size).to eq(2)
 
           changed_path = raw_info.first
           expect(changed_path).to be_a(Gitaly::ChangedPaths)

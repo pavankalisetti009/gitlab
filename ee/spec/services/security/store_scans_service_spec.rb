@@ -116,6 +116,16 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
                 .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
             end
 
+            it 'marks dependency_scanning sbom reports as ready' do
+              expect(::Ci::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
+                .with(
+                  pipeline_id: pipeline.id,
+                  report_type: 'dependency_scanning'
+                )
+
+              store_group_of_artifacts
+            end
+
             context 'when there is a created dependency scan' do
               let_it_be(:dependency_scan) do
                 create(:security_scan, build: cyclonedx_cs_build, scan_type: :dependency_scanning, status: :created)
