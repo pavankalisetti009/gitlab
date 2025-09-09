@@ -34,6 +34,7 @@ To configure your GitLab instance to access the available self-hosted models in 
 
 1. [Confirm that a fully self-hosted configuration is appropriate for your use case](_index.md#decide-on-your-configuration-type).
 1. Configure your GitLab instance to access the AI gateway.
+1. In GitLab 18.4 and later, configure your GitLab instance to access the GitLab Duo Agent Platform service.
 1. Configure the self-hosted model.
 1. Configure the GitLab Duo features to use your self-hosted model.
 
@@ -50,6 +51,50 @@ To configure your GitLab instance to access the available self-hosted models in 
 If your AI gateway URL points to a local network or private IP address (for example, `172.31.x.x` or internal hostnames like `ip-172-xx-xx-xx.region.compute.internal`), GitLab might block the request for security reasons. To allow requests to this address, [add the address to the IP allowlist](../../security/webhooks.md#allow-outbound-requests-to-certain-ip-addresses-and-domains).
 
 {{< /alert >}}
+
+## Configure access to the GitLab Duo Agent Platform
+
+{{< details >}}
+
+- Status: Experiment
+
+{{< /details >}}
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/19213) in GitLab 18.4, as an [experiment](../../policy/development_stages_support.md#experiment) with a [feature flag](../feature_flags/_index.md) named `self_hosted_agent_platform`. Disabled by default.
+
+{{< /history >}}
+
+{{< alert type="flag" >}}
+
+The availability of this feature is controlled by a feature flag.
+For more information, see the history.
+
+{{< /alert >}}
+You must provide a URL to access the Agent Platform service from your GitLab instance.
+
+- The URL for the Agent Platform service cannot start with `http://` or `https://`.
+
+- If the URL for the Agent Platform service is not set up with TLS, you must set the `DUO_AGENT_PLATFORM_SERVICE_SECURE` environment variable in your GitLab instance:
+
+  - For Linux package installations, in `gitlab_rails['env']`, set `'DUO_AGENT_PLATFORM_SERVICE_SECURE' => false`
+  - For self-compiled installations, in `/etc/default/gitlab` set `export DUO_AGENT_PLATFORM_SERVICE_SECURE=false`
+
+You must provide a URL to access the Agent Platform service from your GitLab instance.
+
+- Prefix the URL for the Agent Platform service cannot start with `http://` or `https://`.
+
+- If the URL for the Agent Platform service is not set up with TLS, you must set the `DUO_AGENT_PLATFORM_SERVICE_SECURE` environment variable in your GitLab instance:
+
+  - For Linux package installations, in `gitlab_rails['env']`, set `'DUO_AGENT_PLATFORM_SERVICE_SECURE' => false`
+  - For self-compiled installations, in `/etc/default/gitlab` set `export DUO_AGENT_PLATFORM_SERVICE_SECURE=false`
+
+1. On the left sidebar, at the bottom, select **Admin**.
+1. Select **GitLab Duo**.
+1. Select **Change configuration**.
+1. Under **Local URL for the GitLab Duo Agent Platform service**, enter the URL for the local Agent Platform service.
+1. Select **Save changes**.
 
 ## Configure the self-hosted model
 
