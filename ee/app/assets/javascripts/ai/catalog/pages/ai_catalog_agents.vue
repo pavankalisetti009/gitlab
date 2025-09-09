@@ -12,11 +12,13 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
+import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import setItemToDuplicateMutation from '../graphql/mutations/set_item_to_duplicate.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
+import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
 import {
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
@@ -38,6 +40,7 @@ export default {
     AiCatalogListHeader,
     AiCatalogList,
     AiCatalogItemDrawer,
+    AiCatalogItemConsumerModal,
     ErrorsAlert,
   },
   mixins: [InternalEvents.mixin()],
@@ -92,6 +95,7 @@ export default {
     return {
       aiCatalogAgents: [],
       aiCatalogAgent: null,
+      aiCatalogAgentToBeAdded: null,
       errors: [],
       pageInfo: {},
       hasTrackedPageView: false,
@@ -143,6 +147,11 @@ export default {
     itemTypeConfig() {
       return {
         actionItems: (item) => [
+          {
+            text: s__('AICatalog|Add to project'),
+            action: () => this.handleAiCatalogAgentToBeAdded(item),
+            icon: 'plus',
+          },
           {
             text: s__('AICatalog|Test run'),
             to: {
@@ -233,6 +242,67 @@ export default {
         Sentry.captureException(error);
       }
     },
+    handleAiCatalogAgentToBeAdded({ id }) {
+      const agent = this.aiCatalogAgents?.find((item) => item.id === id);
+      if (typeof agent === 'undefined') {
+        Sentry.captureException(
+          new Error('aiCatalogAgents: Reached invalid state in Add to target action.', {
+            // eslint-disable-next-line @gitlab/require-i18n-strings
+            cause: `Couldn't find ${id}.`,
+          }),
+        );
+        this.errors = [s__('AICatalog|Failed to add agent to target. Agent not found.')];
+        return;
+      }
+      this.aiCatalogAgentToBeAdded = agent;
+    },
+    resetAiCatalogAgentToBeAdded() {
+      this.aiCatalogAgentToBeAdded = null;
+    },
+    async addAgentToTarget(target) {
+      const agent = this.aiCatalogAgentToBeAdded;
+
+      const input = {
+        itemId: agent.id,
+        target,
+      };
+
+      this.resetAiCatalogAgentToBeAdded();
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: createAiCatalogItemConsumer,
+          variables: {
+            input,
+          },
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogItemConsumerCreate;
+          if (errors.length > 0) {
+            // TODO: Once we have a project selector, we could add the project name in this message.
+            this.errors = [
+              sprintf(s__('AICatalog|Agent could not be added: %{agentName}'), {
+                agentName: agent.name,
+              }),
+              ...errors,
+            ];
+            return;
+          }
+
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
+
+          this.$toast.show(
+            sprintf(s__('AICatalog|Agent added successfully to %{name}.'), { name }),
+          );
+        }
+      } catch (error) {
+        this.errors = [
+          sprintf(s__('AICatalog|The agent could not be enabled. Try again. %{error}'), { error }),
+        ];
+        Sentry.captureException(error);
+      }
+    },
     handleNextPage() {
       this.$apollo.queries.aiCatalogAgents.refetch({
         ...this.$apollo.queries.aiCatalogAgents.variables,
@@ -305,6 +375,12 @@ export default {
       :active-item="activeAgent"
       :edit-route="$options.editRoute"
       @close="closeDrawer"
+    />
+    <ai-catalog-item-consumer-modal
+      v-if="aiCatalogAgentToBeAdded"
+      :flow-name="aiCatalogAgentToBeAdded.name"
+      @submit="addAgentToTarget"
+      @hide="resetAiCatalogAgentToBeAdded"
     />
   </div>
 </template>
