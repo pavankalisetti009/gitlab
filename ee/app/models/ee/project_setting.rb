@@ -7,7 +7,7 @@ module EE
 
     prepended do
       cascading_attr :duo_features_enabled, :spp_repository_pipeline_access, :model_prompt_cache_enabled,
-        :auto_duo_code_review_enabled
+        :auto_duo_code_review_enabled, :duo_remote_flows_enabled
 
       belongs_to :push_rule
 

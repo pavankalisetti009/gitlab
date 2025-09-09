@@ -351,8 +351,7 @@ describe('AiCatalogAgents', () => {
       });
 
       describe('and the form is submitted', () => {
-        const createConsumer = () =>
-          findAiCatalogItemConsumerModal().vm.$emit('submit', { targetType: 'project' });
+        const createConsumer = () => findAiCatalogItemConsumerModal().vm.$emit('submit');
 
         describe('when adding to project request succeeds', () => {
           it('shows a toast message', async () => {
@@ -391,7 +390,7 @@ describe('AiCatalogAgents', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              'The agent could not be enabled. Try again. Error: Request failed',
+              'The agent could not be added to the project. Try again. Error: Request failed',
             ]);
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
           });

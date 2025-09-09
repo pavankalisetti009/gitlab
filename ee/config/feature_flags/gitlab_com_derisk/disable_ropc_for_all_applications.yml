@@ -1,0 +1,12 @@
+---
+name: disable_ropc_for_all_applications
+description: |
+  Disables Resource Owner Password Credentials OAuth flow for all OAuth applications. This is a global setting and
+  takes precedence over the `disable_ropc_for_new_applications` setting.
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/457352
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203145
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/566300
+milestone: '18.4'
+group: group::authentication
+type: gitlab_com_derisk
+default_enabled: false

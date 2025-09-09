@@ -149,7 +149,7 @@ export default {
         actionItems: (item) => [
           {
             text: s__('AICatalog|Add to project'),
-            action: () => this.handleAiCatalogAgentToBeAdded(item),
+            action: () => this.setAiCatalogAgentToBeAdded(item),
             icon: 'plus',
           },
           {
@@ -242,22 +242,8 @@ export default {
         Sentry.captureException(error);
       }
     },
-    handleAiCatalogAgentToBeAdded({ id }) {
-      const agent = this.aiCatalogAgents?.find((item) => item.id === id);
-      if (typeof agent === 'undefined') {
-        Sentry.captureException(
-          new Error('aiCatalogAgents: Reached invalid state in Add to target action.', {
-            // eslint-disable-next-line @gitlab/require-i18n-strings
-            cause: `Couldn't find ${id}.`,
-          }),
-        );
-        this.errors = [s__('AICatalog|Failed to add agent to target. Agent not found.')];
-        return;
-      }
+    setAiCatalogAgentToBeAdded(agent) {
       this.aiCatalogAgentToBeAdded = agent;
-    },
-    resetAiCatalogAgentToBeAdded() {
-      this.aiCatalogAgentToBeAdded = null;
     },
     async addAgentToTarget(target) {
       const agent = this.aiCatalogAgentToBeAdded;
@@ -267,7 +253,7 @@ export default {
         target,
       };
 
-      this.resetAiCatalogAgentToBeAdded();
+      this.setAiCatalogAgentToBeAdded(null);
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -298,7 +284,10 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(s__('AICatalog|The agent could not be enabled. Try again. %{error}'), { error }),
+          sprintf(
+            s__('AICatalog|The agent could not be added to the project. Try again. %{error}'),
+            { error },
+          ),
         ];
         Sentry.captureException(error);
       }
@@ -378,9 +367,9 @@ export default {
     />
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogAgentToBeAdded"
-      :flow-name="aiCatalogAgentToBeAdded.name"
+      :item="aiCatalogAgentToBeAdded"
       @submit="addAgentToTarget"
-      @hide="resetAiCatalogAgentToBeAdded"
+      @hide="setAiCatalogAgentToBeAdded(null)"
     />
   </div>
 </template>

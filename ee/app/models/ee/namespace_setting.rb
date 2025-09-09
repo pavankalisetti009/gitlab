@@ -8,7 +8,8 @@ module EE
     prepended do
       DORMANT_REVIEW_PERIOD = 18.hours.ago
 
-      cascading_attr :duo_features_enabled, :model_prompt_cache_enabled, :auto_duo_code_review_enabled
+      cascading_attr :duo_features_enabled, :model_prompt_cache_enabled, :auto_duo_code_review_enabled,
+        :duo_remote_flows_enabled
 
       scope :requiring_dormant_member_review, ->(limit) do
         # look for settings that have not been reviewed in more than
@@ -257,6 +258,7 @@ module EE
         duo_features_enabled
         lock_duo_features_enabled
         auto_duo_code_review_enabled
+        duo_remote_flows_enabled
         enterprise_users_extensions_marketplace_opt_in_status
         allow_enterprise_bypass_placeholder_confirmation
         web_based_commit_signing_enabled

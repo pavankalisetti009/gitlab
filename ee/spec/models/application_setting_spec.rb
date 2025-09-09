@@ -1257,6 +1257,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value(false).for(:auto_duo_code_review_enabled) }
       it { is_expected.not_to allow_value(nil).for(:auto_duo_code_review_enabled) }
     end
+
+    describe 'duo_remote_flows_enabled validations' do
+      it { is_expected.to allow_value(true).for(:duo_remote_flows_enabled) }
+      it { is_expected.to allow_value(false).for(:duo_remote_flows_enabled) }
+      it { is_expected.not_to allow_value(nil).for(:duo_remote_flows_enabled) }
+    end
   end
 
   describe 'search curation settings after .create_from_defaults', feature_category: :global_search do

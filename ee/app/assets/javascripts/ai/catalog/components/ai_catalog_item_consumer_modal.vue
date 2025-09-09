@@ -1,10 +1,11 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlForm, GlFormGroup, GlFormInput, GlModal } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { GlForm, GlFormGroup, GlFormInput, GlModal, GlSprintf } from '@gitlab/ui';
+import { __, s__, sprintf } from '~/locale';
+import { AI_CATALOG_ITEM_LABELS } from '../constants';
 
 const tmpProjectId = 'gid://gitlab/Project/1000000';
-const formId = uniqueId('ai-catalog-agent-form-');
+const formId = uniqueId('ai-catalog-item-consumer-form-');
 
 export default {
   name: 'AiCatalogItemConsumerModal',
@@ -13,10 +14,11 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlModal,
+    GlSprintf,
   },
   props: {
-    flowName: {
-      type: String,
+    item: {
+      type: Object,
       required: true,
     },
   },
@@ -29,6 +31,19 @@ export default {
   computed: {
     formId() {
       return formId;
+    },
+    itemTypeLabel() {
+      return AI_CATALOG_ITEM_LABELS[this.item.itemType];
+    },
+    title() {
+      return sprintf(s__('AICatalog|Add this %{itemType} to a project'), {
+        itemType: this.itemTypeLabel,
+      });
+    },
+    projectLabelDescription() {
+      return sprintf(s__('AICatalog|Select a project to which you want to add this %{itemType}.'), {
+        itemType: this.itemTypeLabel,
+      });
     },
   },
   methods: {
@@ -69,8 +84,8 @@ export default {
 <template>
   <gl-modal
     v-model="isOpen"
-    modal-id="add-flow-to-target"
-    :title="s__('AICatalog|Add this flow to a project')"
+    modal-id="add-item-consumer-modal"
+    :title="title"
     :action-primary="$options.modal.actionPrimary"
     :action-secondary="$options.modal.actionSecondary"
     @primary.prevent
@@ -78,17 +93,17 @@ export default {
   >
     <dl>
       <dt class="gl-mb-2 gl-font-bold">
-        {{ s__('AICatalog|Selected flow') }}
+        <gl-sprintf :message="s__('AICatalog|Selected %{itemType}')">
+          <template #itemType>{{ itemTypeLabel }}</template>
+        </gl-sprintf>
       </dt>
-      <dd>{{ flowName }}</dd>
+      <dd>{{ item.name }}</dd>
     </dl>
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
       <gl-form-group
         :label="s__('AICatalog|Project ID')"
-        :label-description="
-          s__('AICatalog|Select a project for which you want to enable this flow.')
-        "
+        :label-description="projectLabelDescription"
         description="For testing use 'gid://gitlab/Project/1000000'"
         label-for="target-id"
       >

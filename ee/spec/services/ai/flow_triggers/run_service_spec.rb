@@ -16,11 +16,12 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     create(:ai_flow_trigger, project: project, user: service_account, config_path: '.gitlab/duo/flow.yml')
   end
 
-  let_it_be(:flow_definition) do
+  let(:flow_definition) do
     {
       'image' => 'ruby:3.0',
       'commands' => ['echo "Hello World"', 'ruby script.rb'],
-      'variables' => %w[API_KEY DATABASE_URL]
+      'variables' => %w[API_KEY DATABASE_URL],
+      'injectGatewayToken' => true
     }
   end
 
@@ -33,7 +34,15 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     create(:ci_variable, project: project, key: 'ANOTHER_VAR_THAT_SHOULD_NOT_BE_PASSED', value: 'really secret')
   end
 
-  let_it_be(:flow_definition_yaml) { flow_definition.to_yaml }
+  let(:mock_token_response) do
+    ServiceResponse.success(payload: {
+      token: 'test-token-123',
+      headers: {
+        'Authorization' => 'Bearer test-token-123',
+        'Content-Type' => 'application/json'
+      }
+    })
+  end
 
   subject(:service) do
     described_class.new(
@@ -69,13 +78,15 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
   end
 
   describe '#execute' do
-    before_all do
-      project.repository.create_file(
-        project.creator,
-        '.gitlab/duo/flow.yml',
-        flow_definition_yaml,
-        message: 'Create flow definition',
-        branch_name: project.default_branch_or_main)
+    before do
+      # Mock the flow definition fetching instead of creating/updating files
+      allow(service).to receive(:fetch_flow_definition).and_return(flow_definition)
+
+      token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
+      allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
+        .with(current_user: current_user)
+        .and_return(token_service_double)
+      allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response)
     end
 
     it 'creates duo workflow with correct parameters' do
@@ -83,7 +94,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
 
       workflow = ::Ai::DuoWorkflows::Workflow.last
       expect(workflow.workflow_definition).to eq("Trigger - #{flow_trigger.description}")
-      expect(workflow.goal).to eq('test input') # Changed from discussion to input
+      expect(workflow.goal).to eq('test input')
       expect(workflow.environment).to eq('web')
       expect(workflow.project).to eq(project)
       expect(workflow.user).to eq(current_user)
@@ -112,27 +123,217 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       expect(workload.variable_inclusions.map(&:variable_name)).to eq(%w[API_KEY DATABASE_URL])
     end
 
-    it 'builds workload definition with correct settings' do
-      expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
-        workload_definition = kwargs[:workload_definition]
-        expect(workload_definition.image).to eq('ruby:3.0')
-        expect(workload_definition.commands).to eq(['echo "Hello World"', 'ruby script.rb'])
-        variables = workload_definition.variables
+    context 'when injectGatewayToken is true' do
+      it 'builds workload definition with gateway token variables' do
+        expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+          workload_definition = kwargs[:workload_definition]
+          expect(workload_definition.image).to eq('ruby:3.0')
+          expect(workload_definition.commands).to eq(['echo "Hello World"', 'ruby script.rb'])
+          variables = workload_definition.variables
 
-        expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
-        expect(variables[:AI_FLOW_INPUT]).to eq('test input')
-        expect(variables[:AI_FLOW_EVENT]).to eq('mention')
-        expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-        expect(variables[:AI_FLOW_ID]).to eq(::Ai::DuoWorkflows::Workflow.last.id)
+          expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+          expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+          expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+          expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+          expect(variables[:AI_FLOW_ID]).to be_present
 
-        expect(kwargs[:ci_variables_included]).to eq(%w[API_KEY DATABASE_URL])
-        expect(kwargs[:source]).to eq(:duo_workflow)
+          expect(variables[:AI_FLOW_AI_GATEWAY_TOKEN]).to eq('test-token-123')
+          expect(variables[:AI_FLOW_AI_GATEWAY_HEADERS]).to eq(
+            "Authorization: Bearer test-token-123\nContent-Type: application/json")
 
-        original_method.call(**kwargs)
+          expect(kwargs[:ci_variables_included]).to eq(%w[API_KEY DATABASE_URL])
+          expect(kwargs[:source]).to eq(:duo_workflow)
+
+          original_method.call(**kwargs)
+        end
+
+        response = service.execute(params)
+        expect(response).to be_success
       end
 
-      response = service.execute(params)
-      expect(response).to be_success
+      it 'calls token service to get direct access token' do
+        token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
+        expect(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
+          .with(current_user: current_user)
+          .and_return(token_service_double)
+        expect(token_service_double).to receive(:direct_access_token).and_return(mock_token_response)
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
+
+      context 'when token service returns error' do
+        let(:error_token_response) do
+          ServiceResponse.error(message: 'Token generation failed')
+        end
+
+        before do
+          token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
+          allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
+            .with(current_user: current_user)
+            .and_return(token_service_double)
+          allow(token_service_double).to receive(:direct_access_token).and_return(error_token_response)
+        end
+
+        it 'returns error without creating workload' do
+          expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
+          expect { service.execute(params) }.not_to change { ::Ci::Workloads::Workload.count }
+
+          response = service.execute(params)
+          expect(response).to be_error
+          expect(response.message).to eq('Token generation failed')
+        end
+      end
+
+      context 'when token response has empty headers' do
+        let(:mock_token_response_empty_headers) do
+          ServiceResponse.success(payload: {
+            token: 'test-token-123',
+            headers: {}
+          })
+        end
+
+        before do
+          token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
+          allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
+            .with(current_user: current_user)
+            .and_return(token_service_double)
+          allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response_empty_headers)
+        end
+
+        it 'builds variables with empty headers string' do
+          expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+            variables = kwargs[:workload_definition].variables
+            expect(variables[:AI_FLOW_AI_GATEWAY_TOKEN]).to eq('test-token-123')
+            expect(variables[:AI_FLOW_AI_GATEWAY_HEADERS]).to eq('')
+            original_method.call(**kwargs)
+          end
+
+          response = service.execute(params)
+          expect(response).to be_success
+        end
+      end
+
+      context 'when token response has nil headers' do
+        let(:mock_token_response_nil_headers) do
+          ServiceResponse.success(payload: {
+            token: 'test-token-123',
+            headers: nil
+          })
+        end
+
+        before do
+          token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
+          allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
+                                                           .with(current_user: current_user)
+                                                           .and_return(token_service_double)
+          allow(token_service_double).to receive(:direct_access_token).and_return(mock_token_response_nil_headers)
+        end
+
+        it 'builds variables with empty headers string' do
+          expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+            variables = kwargs[:workload_definition].variables
+            expect(variables[:AI_FLOW_AI_GATEWAY_TOKEN]).to eq('test-token-123')
+            expect(variables[:AI_FLOW_AI_GATEWAY_HEADERS]).to eq('')
+            original_method.call(**kwargs)
+          end
+
+          response = service.execute(params)
+          expect(response).to be_success
+        end
+      end
+    end
+
+    context 'when injectGatewayToken is false' do
+      let(:flow_definition) do
+        {
+          'image' => 'ruby:3.0',
+          'commands' => ['echo "Hello World"', 'ruby script.rb'],
+          'variables' => %w[API_KEY DATABASE_URL],
+          'injectGatewayToken' => false
+        }
+      end
+
+      before do
+        allow(service).to receive(:fetch_flow_definition).and_return(flow_definition)
+
+        allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new).and_call_original
+      end
+
+      it 'does not call token service' do
+        expect(::Ai::ThirdPartyAgents::TokenService).not_to receive(:new)
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
+
+      it 'builds workload definition without gateway token variables' do
+        expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+          expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+          expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+          expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+          expect(variables[:AI_FLOW_ID]).to be_present
+
+          # These should not be present
+          expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
+          expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_HEADERS)
+
+          original_method.call(**kwargs)
+        end
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
+    end
+
+    context 'when injectGatewayToken is not present' do
+      let(:flow_definition) do
+        {
+          'image' => 'ruby:3.0',
+          'commands' => ['echo "Hello World"', 'ruby script.rb'],
+          'variables' => %w[API_KEY DATABASE_URL]
+          # injectGatewayToken is not present
+        }
+      end
+
+      before do
+        allow(service).to receive(:fetch_flow_definition).and_return(flow_definition)
+
+        allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new).and_call_original
+      end
+
+      it 'does not call token service' do
+        expect(::Ai::ThirdPartyAgents::TokenService).not_to receive(:new)
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
+
+      it 'builds workload definition without gateway token variables' do
+        expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+          expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+          expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+          expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+          expect(variables[:AI_FLOW_ID]).to be_present
+
+          # These should not be present
+          expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
+          expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_HEADERS)
+
+          original_method.call(**kwargs)
+        end
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
     end
 
     it 'creates appropriate notes' do
@@ -240,7 +441,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     end
 
     context 'when flow definition file does not exist' do
-      let_it_be_with_refind(:project) { create(:project, :repository) }
+      before do
+        allow(service).to receive(:fetch_flow_definition).and_return(nil)
+      end
 
       it 'returns error without calling workload service' do
         expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
@@ -251,33 +454,20 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       end
     end
 
-    context 'when flow definition is not a valid' do
-      where(:flow_definition_yaml) do
-        ['invalid yaml', '[not_a_hash]', "--- &1\n- *1\n", "%x"]
+    context 'when flow definition is not valid' do
+      before do
+        allow(service).to receive(:fetch_flow_definition).and_return(nil)
       end
 
-      with_them do
-        let_it_be(:project) { create(:project, :repository) }
+      it 'returns error without calling workload service' do
+        expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
 
-        before do
-          project.repository.create_file(
-            project.creator,
-            '.gitlab/duo/flow.yml',
-            flow_definition_yaml,
-            message: 'Create flow definition',
-            branch_name: project.default_branch_or_main)
-        end
+        expect do
+          response = service.execute(params)
 
-        it 'returns nil without calling workload service' do
-          expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
-
-          expect do
-            response = service.execute(params)
-
-            expect(response).to be_error
-            expect(response.message).to eq('invalid or missing flow definition')
-          end.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
-        end
+          expect(response).to be_error
+          expect(response.message).to eq('invalid or missing flow definition')
+        end.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
       end
     end
   end

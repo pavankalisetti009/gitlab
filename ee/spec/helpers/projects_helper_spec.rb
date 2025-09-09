@@ -706,7 +706,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       { duoFeaturesEnabled: true,
         licensedAiFeaturesAvailable: false,
         duoFeaturesLocked: false,
-        initialDuoFlowEnabled: false,
+        initialDuoFlowEnabled: true,
         experimentFeaturesEnabled: false }
     end
 

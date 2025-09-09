@@ -7,6 +7,10 @@ import {
 
 export const AI_CATALOG_TYPE_AGENT = 'AGENT';
 export const AI_CATALOG_TYPE_FLOW = 'FLOW';
+export const AI_CATALOG_ITEM_LABELS = {
+  [AI_CATALOG_TYPE_AGENT]: s__('AICatalog|agent'),
+  [AI_CATALOG_TYPE_FLOW]: s__('AICatalog|flow'),
+};
 
 export const PAGE_SIZE = 20;
 

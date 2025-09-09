@@ -45,6 +45,13 @@ module Ai
         flow_definition = fetch_flow_definition
         return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
 
+        if flow_definition['injectGatewayToken'] == true
+          token_response = ::Ai::ThirdPartyAgents::TokenService.new(current_user: current_user).direct_access_token
+          return token_response if token_response.error?
+
+          params[:token] = token_response.payload
+        end
+
         workload_definition = ::Ci::Workloads::WorkloadDefinition.new do |d|
           d.image = flow_definition['image']
           d.commands = flow_definition['commands']
@@ -88,13 +95,30 @@ module Ai
         serialized_resource =
           ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
 
-        {
+        base_variables = {
           AI_FLOW_CONTEXT: serialized_resource,
           AI_FLOW_INPUT: params[:input],
           AI_FLOW_EVENT: params[:event].to_s,
           AI_FLOW_DISCUSSION_ID: params[:discussion_id],
           AI_FLOW_ID: params[:flow_id]
         }
+
+        if params.key?(:token)
+          gateway_token = params[:token]
+
+          headers_string = if gateway_token[:headers].present?
+                             gateway_token[:headers].map { |k, v| "#{k}: #{v}" }.join("\n")
+                           else
+                             ''
+                           end
+
+          base_variables.merge!({
+            AI_FLOW_AI_GATEWAY_TOKEN: gateway_token[:token],
+            AI_FLOW_AI_GATEWAY_HEADERS: headers_string
+          })
+        end
+
+        base_variables
       end
 
       def branch_args
