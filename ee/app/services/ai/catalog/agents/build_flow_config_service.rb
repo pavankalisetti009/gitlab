@@ -9,7 +9,6 @@ module Ai
         CHAT_FLOW_TYPE = 'chat'
 
         def initialize(project:, current_user:, params:)
-          @agent = params[:agent]
           @agent_version = params[:agent_version]
           @flow_config_type = params[:flow_config_type]
           super
@@ -31,14 +30,13 @@ module Ai
         attr_reader :agent, :agent_version, :flow_config_type
 
         def allowed?
-          Ability.allowed?(current_user, :read_ai_catalog_item, agent)
+          Ability.allowed?(current_user, :read_ai_catalog_item, agent_version)
         end
 
         def validate
-          return error('Agent is required') unless agent && agent.agent?
           return error('Agent version is required') unless agent_version
 
-          return error('Agent version must belong to the agent') unless agent_version.item == agent
+          @agent = agent_version.item
 
           ServiceResponse.success
         end
