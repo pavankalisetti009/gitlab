@@ -173,12 +173,12 @@ The migration follows a four-milestone process to ensure zero-downtime deploymen
 **Milestone M+1 (Column Rename):**
 
 1. **Finalize migration**: Ensure the background migration has completed
-1. **Rename column**: Rename `tmp_<attribute>` to `<attribute>`
+1. **Rename column**: Rename the `tmp_<attribute>` column to `<attribute>`
    - [Add the regular migration](database/avoiding_downtime_in_migrations.md#add-the-regular-migration-release-m)
    - [Ignore the column](database/avoiding_downtime_in_migrations.md#ignore-the-column-release-m)
    - [Add a post-deployment migration](database/avoiding_downtime_in_migrations.md#add-a-post-deployment-migration-release-m)
-1. **Update model**: Change `migrate_to_encrypts` to `encrypts`
-1. **Ignore old columns**: [Add `ignore_column` for the `encrypted_<attribute>`, `encrypted_<attribute>_iv`, and `encrypted_<attribute>_salt` columns](database/avoiding_downtime_in_migrations.md#ignoring-the-column-release-m)
+1. **Update model**: Replace the `migrate_to_encrypts` method call with [the native `encrypts` Rails method](https://guides.rubyonrails.org/active_record_encryption.html#declaration-of-encrypted-attributes)
+1. **Ignore old columns**: [Add `ignore_columns` for the `encrypted_<attribute>`, `encrypted_<attribute>_iv`, and `encrypted_<attribute>_salt` columns](database/avoiding_downtime_in_migrations.md#ignoring-the-column-release-m)
 
 **Milestone M+2 (Cleanup):**
 
