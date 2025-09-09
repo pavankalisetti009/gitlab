@@ -46,14 +46,10 @@ exports[`Merge requests data source with data available returns data and paginat
   ],
   "pageInfo": {
     "__typename": "PageInfo",
-    "currentPage": 1,
     "endCursor": "this-is-an-end-cursor",
-    "firstPageSize": 20,
+    "first": 20,
     "hasNextPage": false,
     "hasPreviousPage": false,
-    "lastPageSize": null,
-    "nextPageCursor": "",
-    "prevPageCursor": "",
     "startCursor": "this-is-a-start-cursor",
   },
 }

@@ -17,7 +17,6 @@ module API
       def push_feature_flags
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_work_item_tools, current_user)
         Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, current_user)
-        Gitlab::AiGateway.push_feature_flag(:duo_workflow_prompt_registry, current_user)
         Gitlab::AiGateway.push_feature_flag(:use_duo_context_exclusion, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_agentic_chat_openai_gpt_5, current_user)
         Gitlab::AiGateway.push_feature_flag(:dap_side_panel, current_user)

@@ -6,6 +6,7 @@ import {
   GlPopover,
   GlSprintf,
   GlLoadingIcon,
+  GlDrawer,
 } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -602,6 +603,172 @@ describe('FrameworkInfoDrawer component', () => {
     });
 
     expect(findProjectsTitle().exists()).toBe(false);
+  });
+
+  describe('framework watcher functionality', () => {
+    let projectsInNamespaceResolverMock;
+
+    const makeProjectsListResponse = ({
+      pageInfo = mockPageInfo(),
+      count = 30,
+      nodes = defaultFramework.projects.nodes,
+    } = {}) => {
+      return {
+        namespace: {
+          __typename: 'Group',
+          id: 'gid://gitlab/Group/1',
+          projects: {
+            nodes,
+            count,
+            pageInfo,
+          },
+        },
+      };
+    };
+
+    beforeEach(() => {
+      projectsInNamespaceResolverMock = jest.fn().mockResolvedValue({
+        data: makeProjectsListResponse(),
+      });
+    });
+
+    it('resets projects display when framework changes', async () => {
+      createComponent({
+        projectsInNamespaceResolverMock,
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: defaultFramework,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(findProjectsLinks()).toHaveLength(3);
+      expect(findProjectsCount().text()).toBe('30');
+      expect(findLoadMoreButton().exists()).toBe(true);
+
+      const newFramework = createFramework({ id: 999, name: 'New Framework' });
+
+      projectsInNamespaceResolverMock.mockResolvedValueOnce({
+        data: makeProjectsListResponse(),
+      });
+
+      await wrapper.setProps({ framework: newFramework });
+      await waitForPromises();
+
+      expect(findProjectsLinks()).toHaveLength(3);
+      expect(findProjectsCount().text()).toBe('30');
+      expect(findLoadMoreButton().exists()).toBe(true);
+
+      expect(projectsInNamespaceResolverMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          frameworkId: 'gid://gitlab/ComplianceManagement::Framework/999',
+        }),
+      );
+    });
+
+    it('maintains projects display when the same framework is set', async () => {
+      createComponent({
+        projectsInNamespaceResolverMock,
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: defaultFramework,
+        },
+      });
+
+      await waitForPromises();
+
+      const initialProjectsCount = findProjectsLinks().length;
+      const initialCountText = findProjectsCount().text();
+      const initialLoadMoreExists = findLoadMoreButton().exists();
+
+      const callCountBeforeSet = projectsInNamespaceResolverMock.mock.calls.length;
+
+      await wrapper.setProps({ framework: { ...defaultFramework } });
+
+      await Vue.nextTick();
+
+      expect(findProjectsLinks()).toHaveLength(initialProjectsCount);
+      expect(findLoadMoreButton().exists()).toBe(initialLoadMoreExists);
+      expect(findProjectsCount().text()).toBe(initialCountText);
+
+      expect(projectsInNamespaceResolverMock.mock.calls).toHaveLength(callCountBeforeSet);
+    });
+
+    it('handles framework change from null to a framework', async () => {
+      createComponent({
+        projectsInNamespaceResolverMock,
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: null,
+        },
+      });
+
+      expect(findProjectsTitle().exists()).toBe(false);
+
+      await wrapper.setProps({ framework: defaultFramework });
+      await waitForPromises();
+
+      expect(findProjectsTitle().exists()).toBe(true);
+      expect(findProjectsLinks()).toHaveLength(3);
+      expect(findProjectsCount().text()).toBe('30');
+      expect(findLoadMoreButton().exists()).toBe(true);
+    });
+
+    it('handles framework change from a framework to null', async () => {
+      createComponent({
+        projectsInNamespaceResolverMock,
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: defaultFramework,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(findProjectsTitle().exists()).toBe(true);
+      expect(findProjectsLinks()).toHaveLength(3);
+
+      await wrapper.setProps({ framework: null });
+
+      expect(wrapper.findComponent(GlDrawer).props('open')).toBe(false);
+    });
+
+    it('shows loading state correctly during framework changes', async () => {
+      const pendingResolverMock = jest.fn().mockReturnValue(new Promise(() => {}));
+
+      createComponent({
+        projectsInNamespaceResolverMock: pendingResolverMock,
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: defaultFramework,
+        },
+      });
+
+      expect(findProjectsCount().findComponent(GlLoadingIcon).exists()).toBe(true);
+      expect(findProjectsLinks()).toHaveLength(0);
+
+      const newFramework = createFramework({ id: 999, name: 'New Framework' });
+      await wrapper.setProps({ framework: newFramework });
+
+      expect(findProjectsCount().findComponent(GlLoadingIcon).exists()).toBe(true);
+      expect(findProjectsLinks()).toHaveLength(0);
+    });
   });
 
   describe('orderedRequirements computed property', () => {
