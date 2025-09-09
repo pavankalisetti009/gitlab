@@ -63,9 +63,7 @@ module EE
             params_ee << { value_stream_dashboard_aggregation_attributes: [:enabled] }
           end
 
-          if experiment_settings_allowed?
-            params_ee.push(:experiment_features_enabled, :early_access_program_participant)
-          end
+          params_ee << :experiment_features_enabled if experiment_settings_allowed?
 
           if licensed_ai_features_available?
             params_ee.push(%i[duo_features_enabled duo_core_features_enabled lock_duo_features_enabled

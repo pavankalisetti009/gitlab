@@ -967,8 +967,6 @@ Gitlab/BoundedContexts:
     - 'app/models/discussion.rb'
     - 'app/models/discussion_note.rb'
     - 'app/models/draft_note.rb'
-    - 'app/models/early_access_program/base.rb'
-    - 'app/models/early_access_program/tracking_event.rb'
     - 'app/models/email.rb'
     - 'app/models/environment.rb'
     - 'app/models/environment_status.rb'

@@ -6,13 +6,10 @@ import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import DuoWorkflowSettingsForm from '../components/duo_workflow_settings_form.vue';
 
-const EarlyAccessProgramBanner = () => import('../components/early_access_program_banner.vue');
-
 export default {
   name: 'AiGroupSettings',
   components: {
     AiCommonSettings,
-    EarlyAccessProgramBanner,
     DuoWorkflowSettingsForm,
   },
   i18n: {
@@ -22,7 +19,6 @@ export default {
     ),
   },
   inject: [
-    'showEarlyAccessBanner',
     'onGeneralSettingsPage',
     'duoWorkflowAvailable',
     'duoWorkflowMcpEnabled',
@@ -132,10 +128,6 @@ export default {
 </script>
 <template>
   <ai-common-settings :has-parent-form-changed="hasFormChanged" @submit="updateSettings">
-    <template #ai-common-settings-top>
-      <early-access-program-banner v-if="showEarlyAccessBanner" />
-    </template>
-
     <template #ai-common-settings-bottom>
       <duo-workflow-settings-form
         v-if="showWorkflowSettingsForm"

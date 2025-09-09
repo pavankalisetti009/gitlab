@@ -247,7 +247,6 @@ module EE
         :experiment_features_enabled=,
         :product_analytics_enabled,
         :product_analytics_enabled=,
-        :early_access_program_participant,
         :enforce_ssh_certificates,
         :enforce_ssh_certificates=,
         to: :namespace_settings,

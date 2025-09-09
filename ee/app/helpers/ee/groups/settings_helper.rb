@@ -29,12 +29,6 @@ module EE
         @group.licensed_ai_features_available? && show_gitlab_duo_settings_app?(@group)
       end
 
-      def show_early_access_program_banner?
-        return false unless ::Feature.enabled?(:early_access_program_toggle, @current_user)
-
-        !current_user.user_preference.early_access_program_participant? && @group.experiment_features_enabled
-      end
-
       def show_virtual_registries_setting?(group)
         ::Feature.enabled?(:maven_virtual_registry, group) &&
           group.licensed_feature_available?(:packages_virtual_registry) &&
@@ -88,7 +82,7 @@ module EE
         }
       end
 
-      def duo_feature_settings_data # rubocop:disable Metrics/AbcSize -- TODO: refactor this method to contain less fields
+      def duo_feature_settings_data
         {
           duo_availability: @group.namespace_settings.duo_availability.to_s,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
@@ -97,8 +91,6 @@ module EE
           prompt_cache_enabled: @group.namespace_settings.model_prompt_cache_enabled.to_s,
           are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           are_prompt_cache_settings_allowed: (@group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
-          show_early_access_banner: show_early_access_program_banner?.to_s,
-          early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id,
           duo_agent_platform_enabled: @group.duo_agent_platform_enabled.to_s,
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
