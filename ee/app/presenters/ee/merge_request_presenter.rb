@@ -69,7 +69,6 @@ module EE
     end
 
     def saml_approval_path
-      return unless feature_flag_for_saml_auth_to_approve_enabled?
       return if personal_namespace? # does not apply to personal projects
 
       return group_saml_path if group_requires_saml_auth_for_approval?
@@ -78,8 +77,6 @@ module EE
     end
 
     def instance_saml_path
-      return unless ::Feature.enabled?(:ff_require_saml_auth_to_approve)
-
       approval_path = saml_approval_namespace_project_merge_request_path(
         project&.group,
         target_project,
@@ -123,8 +120,6 @@ module EE
     end
 
     def require_saml_auth_to_approve
-      return false unless feature_flag_for_saml_auth_to_approve_enabled?
-
       # require_password_to_approve setting is used to require password or SAML
       # re-auth, setting should be renamed via
       # https://gitlab.com/gitlab-org/gitlab/-/issues/431346
@@ -135,10 +130,6 @@ module EE
     end
 
     private
-
-    def feature_flag_for_saml_auth_to_approve_enabled?
-      root_group && ::Feature.enabled?(:ff_require_saml_auth_to_approve, root_group)
-    end
 
     def root_group
       group.root_ancestor
