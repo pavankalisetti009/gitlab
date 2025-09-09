@@ -54,6 +54,8 @@ module Gitlab
             # No secrets found, we log and skip the check.
             secret_detection_logger.info(build_structured_payload(message: LOG_MESSAGES[:secrets_not_found]))
           when ::Gitlab::SecretDetection::Core::Status::FOUND
+            audit_logger.track_spp_push_blocked_secrets_found(response.results.size)
+
             # One or more secrets found, generate message with findings and fail check.
             message = build_secrets_found_message(results)
 

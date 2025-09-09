@@ -3,10 +3,6 @@ mutation createAiCatalogItemConsumer($input: AiCatalogItemConsumerCreateInput!) 
     errors
     itemConsumer {
       id
-      group {
-        id
-        name
-      }
       project {
         id
         name

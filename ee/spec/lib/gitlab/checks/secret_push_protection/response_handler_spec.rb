@@ -56,6 +56,22 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ResponseHandler, feature_ca
           .and_return([tree_entries, gitaly_pagination_cursor])
       end
 
+      it 'triggers internal events and increment usage metrics' do
+        expect { response_handler.format_response(response) }
+          .to trigger_internal_events('spp_push_blocked_secrets_found')
+          .with(
+            user: user,
+            project: project,
+            namespace: project.namespace,
+            category: 'Gitlab::Checks::SecretPushProtection::AuditLogger',
+            additional_properties: {
+              value: response.results.size
+            }
+          )
+          .and increment_usage_metrics('counts.count_total_spp_push_blocked_secrets_found')
+          .and raise_error(::Gitlab::GitAccess::ForbiddenError)
+      end
+
       it 'raises ForbiddenError with findings details and logs found secrets' do
         expect { response_handler.format_response(response) }
           .to raise_error(::Gitlab::GitAccess::ForbiddenError) do |error|
@@ -75,11 +91,19 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ResponseHandler, feature_ca
       end
 
       it 'tracks findings in audit logger' do
-        audit_logger = instance_double(Gitlab::Checks::SecretPushProtection::AuditLogger)
-        allow(response_handler).to receive(:audit_logger).and_return(audit_logger)
-        expect(audit_logger).to receive(:track_secret_found).with("GitLab personal access token")
-
-        expect { response_handler.format_response(response) }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
+        expect { response_handler.format_response(response) }
+          .to trigger_internal_events('detect_secret_type_on_push')
+          .with(
+            user: user,
+            project: project,
+            namespace: project.namespace,
+            category: 'Gitlab::Checks::SecretPushProtection::AuditLogger',
+            additional_properties: {
+              label: "GitLab personal access token"
+            }
+          )
+          .and increment_usage_metrics('counts.count_total_detect_secret_type_on_push_monthly')
+          .and raise_error(::Gitlab::GitAccess::ForbiddenError)
       end
 
       context 'when the path matches exclusion patterns' do
