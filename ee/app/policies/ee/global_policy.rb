@@ -288,7 +288,7 @@ module EE
       end
 
       condition(:allowed_to_use_model_proxy, scope: :user) do
-        @user.allowed_to_use?(:duo_agent_platform, service_name: :ai_gateway_model_provider_proxy)
+        @user.allowed_to_use?(:duo_agent_platform, unit_primitive_name: :ai_gateway_model_provider_proxy)
       end
 
       rule { third_party_agents_enabled & direct_access_enabled & allowed_to_use_model_proxy }.policy do

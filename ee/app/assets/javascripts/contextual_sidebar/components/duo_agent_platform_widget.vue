@@ -46,6 +46,16 @@ export default {
     shouldShowActions() {
       return this.currentState !== 'enabled';
     },
+    shouldShowSecondaryAction() {
+      return this.currentState !== 'enableFeaturePreview';
+    },
+    openModalText() {
+      if (this.currentState === 'enableFeaturePreview') {
+        return __('Learn more');
+      }
+
+      return __('Turn on');
+    },
     showActionsWithoutBody() {
       return this.shouldShowActions && !this.shouldShowBody;
     },
@@ -148,9 +158,13 @@ export default {
 
         return sprintf(
           s__(
-            'DuoAgentPlatform|By turning on these features, you accept the %{termsStart}GitLab Testing Agreement%{linkEnd}.',
+            `DuoAgentPlatform|%{pStart}Get early access to new GitLab Duo features before they're generally
+            available. Help improve your development workflow and get started now.%{pEnd}
+            By turning on these features, you accept the %{termsStart}GitLab Testing Agreement%{linkEnd}.`,
           ),
           {
+            pStart: '<p>',
+            pEnd: '</p>',
             termsStart: `<a href="${testingTermsPath}" class="gl-link-inline" target="_blank" rel="noopener noreferrer">`,
             linkEnd: '</a>',
           },
@@ -181,14 +195,19 @@ export default {
         />
         <span class="gl-font-monospace">{{ title }}</span>
       </div>
-      <p v-if="shouldShowBody" data-testid="widget-body" class="gl-mt-4 gl-font-bold">
+      <p v-if="shouldShowBody" data-testid="widget-body" class="gl-my-3 gl-font-bold">
         {{ bodyText }}
       </p>
       <div
         v-if="shouldShowActions"
-        :class="['gl-flex gl-w-full gl-justify-between', { 'gl-mt-4': showActionsWithoutBody }]"
+        :class="[
+          'gl-flex gl-w-full',
+          shouldShowSecondaryAction ? 'gl-justify-between' : 'gl-justify-end',
+          { 'gl-mt-3': showActionsWithoutBody },
+        ]"
       >
         <gl-button
+          v-if="shouldShowSecondaryAction"
           :href="$options.learnMoreHref"
           class="gl-text-sm gl-no-underline hover:gl-no-underline"
           size="small"
@@ -205,7 +224,7 @@ export default {
           data-testid="open-modal"
           @click="openConfirmModal"
         >
-          {{ __('Turn on') }}
+          {{ openModalText }}
         </gl-button>
       </div>
     </div>

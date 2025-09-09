@@ -239,7 +239,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         .with(unit_primitive: unit_primitive_name, resource: user)
         .and_return(token)
       allow(user).to receive(:allowed_to_use)
-        .with(ai_feature, service_name: unit_primitive_name)
+        .with(ai_feature, unit_primitive_name: unit_primitive_name)
         .and_return(auth_response)
       allow(::CloudConnector).to(
         receive(:ai_headers).with(user, namespace_ids: namespace_ids).and_return(cloud_connector_headers)
@@ -349,7 +349,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       end
 
       allow(user).to receive(:allowed_to_use)
-        .with(ai_feature, service_name: unit_primitive_name)
+        .with(ai_feature, unit_primitive_name: unit_primitive_name)
         .and_return(auth_response)
 
       allow(described_class).to receive(:enabled_feature_flags)

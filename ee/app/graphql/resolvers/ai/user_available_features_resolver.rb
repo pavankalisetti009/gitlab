@@ -12,7 +12,9 @@ module Resolvers
         ::Ai::AdditionalContext::DUO_CHAT_CONTEXT_CATEGORIES.values
           .select { |category| category_enabled?(category) }
           .map { |category| "include_#{category}_context" }
-          .select { |service_name| current_user.allowed_to_use?(:chat, service_name: service_name.to_sym) }
+          .select do |unit_primitive|
+            current_user.allowed_to_use?(:chat, unit_primitive_name: unit_primitive.to_sym)
+          end
       end
 
       private

@@ -68,7 +68,7 @@ RSpec.describe API::Ai::ThirdPartyAgents, feature_category: :agent_foundations d
       before do
         allow_next_found_instance_of(User) do |user|
           allow(user).to receive(:allowed_to_use?).with(
-            :duo_agent_platform, service_name: :ai_gateway_model_provider_proxy
+            :duo_agent_platform, unit_primitive_name: :ai_gateway_model_provider_proxy
           ).and_return(true)
         end
       end

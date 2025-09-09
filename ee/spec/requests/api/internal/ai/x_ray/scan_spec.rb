@@ -22,9 +22,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   before do
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_uuid)
-    allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name)
-      .with(:complete_code)
-      .and_return(build(:cloud_connector_unit_primitive, :complete_code))
   end
 
   describe 'POST /internal/jobs/:id/x_ray/scan' do

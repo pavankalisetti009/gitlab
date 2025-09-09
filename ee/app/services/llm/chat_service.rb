@@ -18,7 +18,7 @@ module Llm
         user: user,
         project: project,
         namespace: namespace,
-        feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, service_name: :duo_chat)
+        feature_enabled_by_namespace_ids: user.allowed_by_namespace_ids(:chat, unit_primitive_name: :duo_chat)
       )
 
       prompt_message.save!

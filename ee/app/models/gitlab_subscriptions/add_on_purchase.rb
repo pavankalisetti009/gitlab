@@ -68,7 +68,10 @@ module GitlabSubscriptions
     #     One of :instance, `User`, `Project` or `Group` to scope the search.
     #     Allowed to be nil, in which case results will not be filtered by resource.
     scope :for_active_add_ons, ->(add_on_names, resource) do
-      scope = by_add_on_name(add_on_names).active
+      add_on_names = Array.wrap(add_on_names)
+
+      normalized_names = add_on_names.filter_map { |name| NORMALIZED_ADD_ON_NAME_INVERTED[name] || name }
+      scope = by_add_on_name(normalized_names).active
 
       # On SM/Dedicated, or when requesting instance-wide purchases, we do not need to check namespace rules.
       if resource == :instance || !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
@@ -122,9 +125,8 @@ module GitlabSubscriptions
       return none unless unit_primitive
 
       add_on_names = unit_primitive.add_ons.map(&:name)
-      normalized_names = add_on_names.map { |name| NORMALIZED_ADD_ON_NAME_INVERTED[name] || name }
 
-      for_active_add_ons(normalized_names, resource)
+      for_active_add_ons(add_on_names, resource)
     end
 
     def self.exists_for_unit_primitive?(unit_primitive_name, resource)

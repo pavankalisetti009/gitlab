@@ -30,7 +30,7 @@ module API
             def model_gateway_headers(headers)
               Gitlab::AiGateway.headers(
                 user: current_job.user,
-                service: :code_suggestions,
+                service: :complete_code,
                 ai_feature_name: :code_suggestions,
                 agent: headers["User-Agent"]
               ).merge(saas_headers).transform_values { |v| Array(v) }

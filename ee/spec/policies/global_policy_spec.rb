@@ -997,7 +997,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
           stub_feature_flags(agent_platform_claude_code: feature_flag)
           stub_application_setting(disabled_direct_code_suggestions: direct_access_setting_disabled)
           allow(current_user).to receive(:allowed_to_use?).with(
-            :duo_agent_platform, service_name: :ai_gateway_model_provider_proxy
+            :duo_agent_platform, unit_primitive_name: :ai_gateway_model_provider_proxy
           ).and_return(user_allowed)
         end
 
