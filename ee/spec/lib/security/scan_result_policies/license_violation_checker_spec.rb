@@ -120,13 +120,7 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
           let(:match_on_inclusion_license) { policy_state == :denied }
           let(:license_states) { states }
 
-          let(:license) do
-            if policy_license[0].present?
-              create(:software_license, spdx_identifier: policy_license[0], name: policy_license[1])
-            else
-              create(:custom_software_license, name: policy_license[1])
-            end
-          end
+          let(:catalog_license?) { policy_license[0].present? }
 
           let(:scan_result_policy_read) do
             create(:scan_result_policy_read, project: project, license_states: license_states,
@@ -142,7 +136,7 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
               pipeline_report.add_license(id: ld[0], name: ld[1]).add_dependency(name: ld[2])
             end
 
-            if license.is_a?(SoftwareLicense)
+            if catalog_license?
               create(:software_license_policy, policy_state,
                 project: project,
                 custom_software_license: nil,
@@ -152,7 +146,7 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
             else
               create(:software_license_policy, policy_state,
                 project: project,
-                custom_software_license: license,
+                custom_software_license: create(:custom_software_license, name: policy_license[1]),
                 software_license_spdx_identifier: nil,
                 scan_result_policy_read: scan_result_policy_read
               )
