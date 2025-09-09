@@ -27,7 +27,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns true for the features' do
         expect(work_items_data).to include(
           {
-            duo_remote_flows_enabled: "false",
+            duo_remote_flows_enabled: "true",
             has_blocked_issues_feature: "true",
             has_group_bulk_edit_feature: "true",
             can_bulk_edit_epics: "true",

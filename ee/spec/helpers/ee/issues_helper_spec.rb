@@ -142,7 +142,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         result = helper.project_issues_list_data(project, current_user)
 
         expect(result).to include(:duo_remote_flows_enabled)
-        expect(result[:duo_remote_flows_enabled]).to eq('false')
+        expect(result[:duo_remote_flows_enabled]).to eq('true')
       end
 
       context 'when project does not have group' do
@@ -191,7 +191,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         result = helper.project_issues_list_data(project, current_user)
 
         expect(result).to include(:duo_remote_flows_enabled)
-        expect(result[:duo_remote_flows_enabled]).to eq('false')
+        expect(result[:duo_remote_flows_enabled]).to eq('true')
       end
     end
   end

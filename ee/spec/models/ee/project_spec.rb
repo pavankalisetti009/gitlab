@@ -5738,26 +5738,26 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'auto_duo_code_review_enabled cascading' do
+  shared_examples 'cascading project setting' do |settings_attribute:|
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
     context 'with application setting enabled' do
       before do
-        stub_application_setting(auto_duo_code_review_enabled: true)
+        stub_application_setting(settings_attribute => true)
       end
 
       it 'inherits from application setting' do
-        expect(project.auto_duo_code_review_enabled).to be_truthy
+        expect(project.send(settings_attribute)).to be_truthy
       end
 
       context 'when group overrides to false' do
         before do
-          group.namespace_settings.update!(auto_duo_code_review_enabled: false)
+          group.namespace_settings.update!(settings_attribute => false)
         end
 
         it 'uses group setting' do
-          expect(project.reload.auto_duo_code_review_enabled).to be_falsey
+          expect(project.reload.send(settings_attribute)).to be_falsey
         end
       end
     end
@@ -5768,22 +5768,30 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let_it_be(:project) { create(:project, group: child_group) }
 
       before do
-        parent_group.namespace_settings.update!(auto_duo_code_review_enabled: true)
+        parent_group.namespace_settings.update!(settings_attribute => true)
       end
 
       it 'inherits from parent group' do
-        expect(project.auto_duo_code_review_enabled).to be_truthy
+        expect(project.send(settings_attribute)).to be_truthy
       end
 
       context 'when child group overrides' do
         before do
-          child_group.namespace_settings.update!(auto_duo_code_review_enabled: false)
+          child_group.namespace_settings.update!(settings_attribute => false)
         end
 
         it 'uses child group setting' do
-          expect(project.reload.auto_duo_code_review_enabled).to be_falsey
+          expect(project.reload.send(settings_attribute)).to be_falsey
         end
       end
     end
+  end
+
+  describe '#auto_duo_code_review_enabled' do
+    it_behaves_like 'cascading project setting', settings_attribute: :auto_duo_code_review_enabled
+  end
+
+  describe '#duo_remote_flows_enabled' do
+    it_behaves_like 'cascading project setting', settings_attribute: :duo_remote_flows_enabled
   end
 end
