@@ -43,7 +43,7 @@ module Mutations
           feature_settings = results.reject(&:error?).flat_map(&:payload)
 
           decorated_feature_settings = ::Gitlab::Graphql::Representation::AiFeatureSetting
-            .decorate(feature_settings, with_valid_models: true)
+            .decorate(feature_settings, with_valid_models: true, model_definitions: gitlab_model_definitions)
 
           {
             ai_feature_settings: decorated_feature_settings,
@@ -57,6 +57,16 @@ module Mutations
           ::Ai::ModelSelection::UpdateSelfManagedModelSelectionService.new(
             current_user, args.merge(feature: feature)
           ).execute
+        end
+
+        def gitlab_model_definitions
+          return unless Feature.enabled?(:instance_level_model_selection, :instance)
+
+          response = ::Ai::ModelSelection::FetchModelDefinitionsService
+                      .new(current_user, model_selection_scope: nil)
+                      .execute
+
+          ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(response.payload)
         end
       end
     end
