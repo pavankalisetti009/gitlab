@@ -36,7 +36,7 @@ export default {
 </script>
 <template>
   <div
-    class="gl-flex gl-w-[32px] gl-flex-col gl-gap-3 gl-bg-transparent gl-pt-3"
+    class="gl-flex gl-gap-3 gl-bg-transparent gl-p-3 sm:gl-px-0 lg:gl-flex-col"
     role="tablist"
     aria-orientation="vertical"
   >
