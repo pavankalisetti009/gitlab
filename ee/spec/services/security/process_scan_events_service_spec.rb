@@ -203,6 +203,14 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
           label: '12',
           patch: 0
         }
+        'collect_dast_scan_run_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          value: 5,
+          label: '1',
+          auth_type: '2',
+          panic_st_f: 'main.divideByZero()',
+          panic_st_l: '/path/to/your/file.go:6'
+        }
         'collect_dast_scan_vulnerability_metrics_from_pipeline' | {
           property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
           value: 5,
