@@ -6454,7 +6454,7 @@ msgstr ""
 msgid "AiPowered|Local AI gateway URL"
 msgstr ""
 
-msgid "AiPowered|Local Duo Agent Platform Service URL"
+msgid "AiPowered|Local URL for the GitLab Duo Agent Platform service"
 msgstr ""
 
 msgid "AiPowered|Lock tooltip icon"

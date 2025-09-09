@@ -10,7 +10,9 @@ export default {
   i18n: {
     aiLogsText: s__('AiPowered|AI logs'),
     aiGatewayUrlText: s__('AiPowered|Local AI gateway URL'),
-    duoAgentPlatformServiceUrlText: s__('AiPowered|Local Duo Agent Platform Service URL'),
+    duoAgentPlatformServiceUrlText: s__(
+      'AiPowered|Local URL for the GitLab Duo Agent Platform service',
+    ),
     duoChangeConfigurationButtonText: s__('AiPowered|Change configuration'),
     experimentAndBetaFeaturesText: s__('AiPowered|Experiment and beta features'),
     betaSelfHostedModelsText: s__('AiPowered|Self-hosted beta models and features'),

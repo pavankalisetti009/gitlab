@@ -133,10 +133,10 @@ describe('DuoConfigurationSettingsInfoCard', () => {
           });
         });
 
-        describe('Local Duo Agent Platform Service URL', () => {
+        describe('Local URL for the GitLab Duo Agent Platform service', () => {
           describe('when feature flag is enabled', () => {
             describe('when URL is set', () => {
-              it('renders the Local Duo Agent Platform Service URL row', () => {
+              it('renders the Local URL for the GitLab Duo Agent Platform service row', () => {
                 createComponent({
                   isSaaS: false,
                   canManageSelfHostedModels: true,
@@ -146,7 +146,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
                 expect(findDuoConfigurationRows()).toHaveLength(7);
                 expect(findDuoConfigurationRowTitlePropByRowIdx(6)).toBe(
-                  'Local Duo Agent Platform Service URL',
+                  'Local URL for the GitLab Duo Agent Platform service',
                 );
                 expect(findDuoConfigurationRows().at(6).props('configValue')).toBe(
                   'duo-agent-platform:50052',
@@ -155,7 +155,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
             });
 
             describe('when URL is not set', () => {
-              it('does not render the Local Duo Agent Platform Service URL row', () => {
+              it('does not render the Local URL for the GitLab Duo Agent Platform service row', () => {
                 createComponent({
                   isSaaS: false,
                   canManageSelfHostedModels: true,
@@ -165,13 +165,13 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
                 expect(findDuoConfigurationRows()).toHaveLength(6);
                 expect(findAllDuoConfigurationRowTitleProps()).not.toContain(
-                  'Local Duo Agent Platform Service URL',
+                  'Local URL for the GitLab Duo Agent Platform service',
                 );
               });
             });
 
             describe('when URL is null', () => {
-              it('does not render the Local Duo Agent Platform Service URL row', () => {
+              it('does not render the Local URL for the GitLab Duo Agent Platform service row', () => {
                 createComponent({
                   isSaaS: false,
                   canManageSelfHostedModels: true,
@@ -181,7 +181,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
                 expect(findDuoConfigurationRows()).toHaveLength(6);
                 expect(findAllDuoConfigurationRowTitleProps()).not.toContain(
-                  'Local Duo Agent Platform Service URL',
+                  'Local URL for the GitLab Duo Agent Platform service',
                 );
               });
             });
@@ -198,7 +198,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
 
               expect(findDuoConfigurationRows()).toHaveLength(6);
               expect(findAllDuoConfigurationRowTitleProps()).not.toContain(
-                'Local Duo Agent Platform Service URL',
+                'Local URL for the GitLab Duo Agent Platform service',
               );
             });
           });

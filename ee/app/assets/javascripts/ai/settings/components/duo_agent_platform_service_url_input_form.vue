@@ -10,7 +10,7 @@ export default {
     GlSprintf,
   },
   i18n: {
-    label: s__('AiPowered|Local Duo Agent Platform Service URL'),
+    label: s__('AiPowered|Local URL for the GitLab Duo Agent Platform service'),
     description: s__(
       'AiPowered|Enter the URL for your Duo Agent Platform service. This endpoint is used for GitLab Duo Agent Platform requests. %{br} The URL must not include the "http://" or "https://" protocol. For example "example.com:50052".',
     ),
