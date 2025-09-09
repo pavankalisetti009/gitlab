@@ -28422,7 +28422,7 @@ msgstr ""
 msgid "First seen"
 msgstr ""
 
-msgid "Fix with Duo"
+msgid "Fix pipeline with Duo"
 msgstr ""
 
 msgid "Fixed"

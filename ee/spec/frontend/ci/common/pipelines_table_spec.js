@@ -112,7 +112,7 @@ describe('EE - Pipelines Table', () => {
           projectId: failedPipelineWithMR.project.id,
           projectPath: 'frontend-fixtures/pipelines-project',
           goal: 'https://gitlab.com/project/-/merge_requests/123',
-          title: 'Fix with Duo',
+          hoverMessage: 'Fix pipeline with Duo',
           workflowDefinition: 'fix_pipeline/experimental',
           size: 'medium',
         });
