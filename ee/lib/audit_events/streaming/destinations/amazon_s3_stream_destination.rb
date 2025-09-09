@@ -30,13 +30,18 @@ module AuditEvents
         # Returns the name of the json file to be saved in the S3 bucket
         # Eg: Group/2023/09/update_approval_rules_887_1694441509820.json
         def filename(payload)
-          entity_type = if audit_event['entity_type'] == 'Gitlab::Audit::InstanceScope'
+          # Remove audit_event['entity_type'] from below and only use Gitlab::Json.parse(payload)['entity_type']
+          # once feature flag is rolled out completely https://gitlab.com/gitlab-org/gitlab/-/issues/516895.
+          # Check comment https://gitlab.com/gitlab-org/gitlab/-/issues/567249#note_2723093844
+          audit_event_entity_type = audit_event['entity_type'] || ::Gitlab::Json.parse(payload)['entity_type']
+
+          entity_type = if audit_event_entity_type == 'Gitlab::Audit::InstanceScope'
                           'instance'
-                        elsif audit_event['entity_type'] == 'Namespaces::UserNamespace'
+                        elsif audit_event_entity_type == 'Namespaces::UserNamespace'
                           'user'
                         else
                           # replace all non alpha numeric characters in audit_event['entity_type'] with underscore
-                          audit_event['entity_type'].downcase.gsub(/[^0-9A-Za-z]+/, '_')
+                          audit_event_entity_type.downcase.gsub(/[^0-9A-Za-z]+/, '_')
                         end
 
           "#{entity_type}/#{current_year_and_month}/#{event_type}_" \
