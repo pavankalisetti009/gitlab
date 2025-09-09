@@ -1,9 +1,6 @@
 <script>
-import { GlToggle, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
-import { linearRegression } from 'ee/analytics/shared/utils';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import {
@@ -13,7 +10,6 @@ import {
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import { spriteIcon } from '~/lib/utils/common_utils';
-import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
 import { DEFAULT_SELECTED_CHART } from '~/analytics/ci_cd/components/constants';
 import { PROMO_URL } from '~/constants';
@@ -38,7 +34,6 @@ import {
 import {
   apiDataToChartSeries,
   seriesToAverageSeries,
-  forecastDataToSeries,
   extractOverviewMetricsQueryParameters,
 } from './util';
 
@@ -47,7 +42,6 @@ const filterFn = (data) =>
   data.filter((d) => VISIBLE_METRICS.includes(d.identifier)).map(({ links, ...rest }) => rest);
 
 const TESTING_TERMS_URL = `${PROMO_URL}/handbook/legal/testing-agreement/`;
-const FORECAST_FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/416833';
 
 export default {
   name: 'DeploymentFrequencyCharts',
@@ -55,10 +49,6 @@ export default {
     CiCdAnalyticsCharts,
     DoraChartHeader,
     ValueStreamMetrics,
-    GlToggle,
-    GlAlert,
-    GlSprintf,
-    GlLink,
     GlChartSeriesLabel,
   },
   directives: {
@@ -84,15 +74,7 @@ export default {
     [LAST_90_DAYS]: 90,
     [LAST_180_DAYS]: 180,
   },
-  forecastDays: {
-    [LAST_WEEK]: 3,
-    [LAST_MONTH]: 14,
-    [LAST_90_DAYS]: 45,
-    [LAST_180_DAYS]: 90,
-  },
   i18n: {
-    showForecast: s__('DORA4Metrics|Show forecast'),
-    forecast: s__('DORA4Metrics|Forecast'),
     confirmationTitle: s__('DORA4Metrics|Accept testing terms of use?'),
     confirmationBtnText: s__('DORA4Metrics|Accept testing terms'),
     confirmationHtmlMessage: sprintf(
@@ -105,23 +87,10 @@ export default {
       },
       false,
     ),
-    forecastFeedbackText: sprintf(
-      s__(
-        'DORA4Metrics|To help us improve the Show forecast feature, please share feedback about your experience in %{linkStart}this issue%{linkEnd}.',
-      ),
-    ),
   },
   data() {
     return {
       chartData: {
-        [LAST_WEEK]: [],
-        [LAST_MONTH]: [],
-        [LAST_90_DAYS]: [],
-        [LAST_180_DAYS]: [],
-      },
-      showForecast: false,
-      forecastConfirmed: false,
-      forecastChartData: {
         [LAST_WEEK]: [],
         [LAST_MONTH]: [],
         [LAST_90_DAYS]: [],
@@ -141,33 +110,11 @@ export default {
   computed: {
     charts() {
       return allChartDefinitions.map((chart) => {
-        const data = [...this.chartData[chart.id]];
-        if (this.showForecast) {
-          data.push(this.forecastChartData[chart.id]);
-        }
-        return { ...chart, data };
+        return { ...chart, data: [...this.chartData[chart.id]] };
       });
     },
     metricsRequestPath() {
       return this.projectPath ? this.projectPath : this.groupPath;
-    },
-    selectedChartDefinition() {
-      return allChartDefinitions[this.selectedChartIndex];
-    },
-    selectedChartId() {
-      return this.selectedChartDefinition.id;
-    },
-    selectedForecast() {
-      return this.forecastChartData[this.selectedChartId];
-    },
-    selectedDataSeries() {
-      return this.chartData[this.selectedChartId][0];
-    },
-    shouldBuildForecast() {
-      return this.showForecast && this.forecastConfirmed && !this.selectedForecast?.data.length;
-    },
-    forecastHorizon() {
-      return this.$options.forecastDays[this.selectedChartId];
     },
   },
   async mounted() {
@@ -213,11 +160,6 @@ export default {
         ];
 
         this.rawApiData[id] = apiData;
-        this.forecastChartData[id] = {
-          ...BASE_FORECAST_SERIES_OPTIONS,
-          name: this.$options.i18n.forecast,
-          data: [],
-        };
       }),
     );
 
@@ -239,52 +181,9 @@ export default {
   methods: {
     onSelectChart(selectedChartIndex) {
       this.selectedChartIndex = selectedChartIndex;
-      this.calculateForecast();
     },
     getMetricsRequestParams(selectedChart) {
       return extractOverviewMetricsQueryParameters(allChartDefinitions[selectedChart]);
-    },
-    calculateForecast() {
-      if (!this.shouldBuildForecast) return;
-
-      const { endDate } = this.selectedChartDefinition;
-      const { selectedChartId: id, forecastHorizon } = this;
-      const forecastData = linearRegression(this.rawApiData[id], forecastHorizon);
-
-      this.forecastChartData[id].data = forecastDataToSeries({
-        forecastData,
-        forecastHorizon,
-        endDate,
-        dataSeries: this.selectedDataSeries.data,
-        forecastSeriesLabel: this.$options.i18n.forecast,
-      });
-    },
-    async onToggleForecast(toggleValue) {
-      if (toggleValue) {
-        await this.confirmForecastTerms();
-        if (this.forecastConfirmed) {
-          this.showForecast = toggleValue;
-          this.calculateForecast();
-        }
-      } else {
-        this.showForecast = toggleValue;
-      }
-    },
-    async confirmForecastTerms() {
-      if (this.forecastConfirmed) return;
-
-      const {
-        confirmationTitle: title,
-        confirmationBtnText: primaryBtnText,
-        confirmationHtmlMessage: modalHtmlMessage,
-      } = this.$options.i18n;
-
-      this.forecastConfirmed = await confirmAction('', {
-        primaryBtnVariant: 'confirm',
-        primaryBtnText,
-        title,
-        modalHtmlMessage,
-      });
     },
     formatTooltipText({ value, seriesData }) {
       this.tooltipTitle = value;
@@ -300,7 +199,6 @@ export default {
   chartDescriptionText,
   chartDocumentationHref,
   filterFn,
-  FORECAST_FEEDBACK_ISSUE_URL,
   ALL_METRICS_QUERY_TYPE,
 };
 </script>
@@ -329,37 +227,6 @@ export default {
           </gl-chart-series-label>
           <div class="gl-font-bold">{{ value }}</div>
         </div>
-      </template>
-      <template #extend-button-group>
-        <div class="gl-flex gl-items-center">
-          <gl-toggle
-            :value="showForecast"
-            :label="$options.i18n.showForecast"
-            label-position="left"
-            data-testid="data-forecast-toggle"
-            @change="onToggleForecast"
-          />
-        </div>
-      </template>
-      <template #alerts>
-        <gl-alert
-          v-if="showForecast"
-          class="gl-my-5"
-          data-testid="forecast-feedback"
-          variant="info"
-          :dismissible="false"
-        >
-          <gl-sprintf :message="$options.i18n.forecastFeedbackText">
-            <template #link="{ content }">
-              <gl-link
-                class="!gl-no-underline"
-                :href="$options.FORECAST_FEEDBACK_ISSUE_URL"
-                target="_blank"
-                >{{ content }}</gl-link
-              >
-            </template>
-          </gl-sprintf>
-        </gl-alert>
       </template>
       <template #metrics="{ selectedChart }">
         <value-stream-metrics

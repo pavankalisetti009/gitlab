@@ -2,7 +2,6 @@ import dateFormat from '~/lib/dateformat';
 import {
   getDatesInRange,
   nDaysBefore,
-  nDaysAfter,
   getStartOfDay,
   humanizeTimeInterval,
 } from '~/lib/utils/datetime_utility';
@@ -148,41 +147,6 @@ export const extractTimeSeriesTooltip = (params, seriesName, formatter = humaniz
  */
 export const formatAsPercentage = (decimalValue = 0, precision = 1) => {
   return `${formatAsPercentageWithoutSymbol(decimalValue, precision)}%`;
-};
-
-/**
- * @typedef {[Date, Integer]} RawChartDataItem
- */
-
-/**
- * Converts the forecast data into series data using
- * the `apiDataToChartSeries` method. The returned series
- * will also include the final data point from the data series.
- *
- * @param {Object} options
- * @param {Array} options.forecastData The forecasted data in JSON format
- * @param {Integer} options.forecastHorizon The number of days to be forecasted
- * @param {String} options.forecastSeriesLabel The name of the series
- * @param {Date} options.endDate The last day (exclusive) of the graph's date range
- * @param {Array} options.dataSeries The historical data in JSON format
- * @returns {RawChartDataItem[]}
- */
-export const forecastDataToSeries = ({
-  forecastData,
-  forecastHorizon,
-  forecastSeriesLabel,
-  dataSeries,
-  endDate,
-}) => {
-  const { data } = apiDataToChartSeries(
-    forecastData,
-    endDate,
-    nDaysAfter(endDate, forecastHorizon),
-    forecastSeriesLabel,
-  )[0];
-
-  // Add the last point from the data series so the chart visually joins together
-  return [...dataSeries.slice(-1), ...data];
 };
 
 /**

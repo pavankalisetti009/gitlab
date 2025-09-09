@@ -20600,9 +20600,6 @@ msgstr ""
 msgid "DORA4Metrics|Filtered by"
 msgstr ""
 
-msgid "DORA4Metrics|Forecast"
-msgstr ""
-
 msgid "DORA4Metrics|Go to docs"
 msgstr ""
 
@@ -20713,9 +20710,6 @@ msgstr ""
 msgid "DORA4Metrics|Percentage of failed deployments"
 msgstr ""
 
-msgid "DORA4Metrics|Show forecast"
-msgstr ""
-
 msgid "DORA4Metrics|Some metric charts failed to load"
 msgstr ""
 
@@ -20756,9 +20750,6 @@ msgid "DORA4Metrics|Time to restore service (Quality)"
 msgstr ""
 
 msgid "DORA4Metrics|Time to restore service (median days)"
-msgstr ""
-
-msgid "DORA4Metrics|To help us improve the Show forecast feature, please share feedback about your experience in %{linkStart}this issue%{linkEnd}."
 msgstr ""
 
 msgid "DORA4Metrics|To help us improve the Value Stream Management Dashboard, please share feedback about your experience in this %{linkStart}survey%{linkEnd}."
