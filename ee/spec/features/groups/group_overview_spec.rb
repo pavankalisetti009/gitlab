@@ -104,17 +104,20 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
       let_it_be(:subscription) { create(:gitlab_subscription, :premium, namespace: group, seats: 1) }
 
       before do
-        group.namespace_settings.update!(seat_control: :block_overages)
         stub_billable_members_reactive_cache(group)
       end
 
-      context 'when the user is an owner' do
+      context 'with seat block overages enabled' do
+        before do
+          group.namespace_settings.update!(seat_control: :block_overages)
+        end
+
         it 'displays the all seats used alert' do
           visit_page
 
-          expect(page).to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+          expect(page).to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
 
-          within_testid('all-seats-used-alert') do
+          within_testid('bso-all-seats-used-alert') do
             expect(page).to have_css('[data-testid="close-icon"]')
             expect(page).to have_text "No more seats in subscription"
             expect(page).to have_text "Your namespace has used all the seats in your subscription and users can " \
@@ -123,18 +126,18 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
               help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats')
           end
         end
+      end
 
-        context 'when the user is not an owner' do
-          where(:role) do
-            ::Gitlab::Access.sym_options.keys.map(&:to_sym)
-          end
+      context 'when the user is not an owner' do
+        where(:role) do
+          ::Gitlab::Access.sym_options.keys.map(&:to_sym)
+        end
 
-          with_them do
-            it 'does not display the all seats used alert' do
-              visit_page
+        with_them do
+          it 'does not display the all seats used alert' do
+            visit_page
 
-              expect(page).not_to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
-            end
+            expect(page).not_to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
           end
         end
       end
@@ -150,7 +153,7 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
       it 'does not display the all seats used alert' do
         visit_page
 
-        expect(page).not_to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+        expect(page).not_to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
       end
     end
 
@@ -164,7 +167,7 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
       it 'does not display the all seats used alert' do
         visit_page
 
-        expect(page).not_to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+        expect(page).not_to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
       end
     end
   end

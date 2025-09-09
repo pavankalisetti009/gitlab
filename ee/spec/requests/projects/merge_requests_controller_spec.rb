@@ -52,7 +52,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
         get project_merge_request_path(public_project, public_merge_request)
       end
 
-      context "with AI features available" do
+      context "with AI features available", :saas do
         before do
           authorizer = instance_double(::Gitlab::Llm::FeatureAuthorizer)
           allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)

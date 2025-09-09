@@ -142,9 +142,9 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
         it 'displays the all seats used alert' do
           visit project_path(project)
 
-          expect(page).to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+          expect(page).to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
 
-          within_testid('all-seats-used-alert') do
+          within_testid('bso-all-seats-used-alert') do
             expect(page).to have_css('[data-testid="close-icon"]')
             expect(page).to have_text "No more seats in subscription"
             expect(page).to have_text "Your namespace has used all the seats in your subscription and users can " \
@@ -161,7 +161,7 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
         it 'does not display the all seats used alert' do
           visit project_path(project)
 
-          expect(page).not_to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+          expect(page).not_to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
         end
       end
     end
@@ -176,7 +176,7 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
       it 'does not display the all seats used alert' do
         visit project_path(project)
 
-        expect(page).not_to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+        expect(page).not_to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
       end
     end
 
@@ -190,7 +190,7 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
       it 'does not display the all seats used alert' do
         visit project_path(project)
 
-        expect(page).not_to have_css '[data-testid="all-seats-used-alert"].gl-alert-warning'
+        expect(page).not_to have_css '[data-testid="bso-all-seats-used-alert"].gl-alert-warning'
       end
     end
   end
