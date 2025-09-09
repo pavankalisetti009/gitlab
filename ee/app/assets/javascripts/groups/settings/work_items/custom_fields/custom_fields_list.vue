@@ -329,6 +329,7 @@ export default {
       outlined
       responsive
       class="gl-rounded-b-base !gl-bg-subtle"
+      details-td-class="!gl-pt-0"
     >
       <template #table-busy>
         <gl-loading-icon size="lg" class="gl-my-5" />
@@ -385,7 +386,7 @@ export default {
         </div>
       </template>
       <template #row-details="{ item }">
-        <div class="gl-border gl-col-span-5 gl-mt-3 gl-rounded-lg gl-bg-default gl-p-5">
+        <div class="gl-border gl-col-span-5 gl-rounded-lg gl-bg-default gl-p-5">
           <dl class="gl-mb-3 gl-flex gl-gap-3">
             <dt>{{ s__('WorkItem|Usage:') }}</dt>
             <dd>
