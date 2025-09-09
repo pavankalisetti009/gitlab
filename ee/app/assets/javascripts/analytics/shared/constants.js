@@ -1,4 +1,4 @@
-import { DATA_VIZ_BLUE_500, GRAY_300, GRAY_50 } from '@gitlab/ui/src/tokens/build/js/tokens';
+import { DATA_VIZ_BLUE_500, GRAY_300 } from '@gitlab/ui/src/tokens/build/js/tokens';
 import { defaultAreaOpacity } from '@gitlab/ui/src/utils/charts/config';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 
@@ -56,11 +56,6 @@ export const NULL_SERIES_ID = 'nullSeries';
 export const AREA_CHART_SERIES_OPTIONS = {
   areaStyle: { opacity: defaultAreaOpacity },
   type: 'line',
-};
-
-export const BASE_FORECAST_SERIES_OPTIONS = {
-  lineStyle: { type: 'dashed', color: DATA_VIZ_BLUE_500 },
-  areaStyle: { opacity: defaultAreaOpacity, color: GRAY_50 },
 };
 
 export const STACKED_AREA_CHART_SERIES_OPTIONS = {

@@ -14,8 +14,6 @@ RSpec.describe 'Group CI/CD Analytics', :js, feature_category: :value_stream_man
   let_it_be(:releases) { create_list(:release, 5, project: project_3) }
   let_it_be(:unrelated_release) { create(:release, project: unrelated_project) }
 
-  forecast_toggle_selector = '[data-testid="data-forecast-toggle"] button'
-  chart_series_legend_selector = '[data-testid="deployment-frequency-charts"] .gl-legend-inline'
   vsa_metrics_selector = '[data-testid="vsa-metrics"]'
 
   before do
@@ -98,37 +96,6 @@ RSpec.describe 'Group CI/CD Analytics', :js, feature_category: :value_stream_man
         expect(page).to have_selector '#deployment_frequency'
         expect(page).to have_content 'Deployment frequency'
       end
-    end
-  end
-
-  describe 'Deployment frequency' do
-    let(:toggle) { page.find(forecast_toggle_selector) }
-
-    before do
-      click_link('Deployment frequency')
-    end
-
-    it 'can toggle data forecasting', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/410102' do
-      expect(page).to have_css(forecast_toggle_selector)
-      expect(toggle[:class].include?('is-checked')).to be(false)
-
-      within chart_series_legend_selector do
-        expect(page).not_to have_content "Forecast"
-      end
-
-      find(forecast_toggle_selector).click
-      expect(page).to have_text("Accept testing terms of use?")
-
-      click_button('Accept testing terms')
-      wait_for_requests
-      expect(toggle[:class].include?('is-checked')).to be(true)
-
-      within chart_series_legend_selector do
-        expect(page).to have_content "Forecast"
-      end
-
-      find(forecast_toggle_selector).click
-      expect(toggle[:class].include?('is-checked')).to be(false)
     end
   end
 end

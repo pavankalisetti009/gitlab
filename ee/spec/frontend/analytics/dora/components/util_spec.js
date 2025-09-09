@@ -1,5 +1,4 @@
 import lastWeekData from 'test_fixtures/api/dora/metrics/daily_lead_time_for_changes_for_last_week.json';
-import deploymentFrequencyLastWeekData from 'test_fixtures/api/dora/metrics/daily_deployment_frequency_for_last_week.json';
 import { secondsToDays } from '~/analytics/shared/utils';
 import { buildNullSeries } from 'ee/analytics/shared/utils';
 import {
@@ -8,11 +7,8 @@ import {
   seriesToMedianSeries,
   extractTimeSeriesTooltip,
   formatAsPercentage,
-  forecastDataToSeries,
   extractOverviewMetricsQueryParameters,
 } from 'ee/analytics/dora/components/util';
-import { forecastDataToChartDate } from './helpers';
-import { mockLastWeekData, mockLastWeekRawForecastData } from './mock_data';
 
 const NO_DATA_MESSAGE = 'No data available';
 
@@ -181,33 +177,6 @@ describe('ee/analytics/dora/components/util.js', () => {
     it('formats valid values', () => {
       expect(formatAsPercentage(0.25)).toBe('25.0%');
       expect(formatAsPercentage('1.86', 0)).toBe('186%');
-    });
-  });
-
-  describe('forecastDataToSeries', () => {
-    let res;
-
-    const forecastResponse = forecastDataToChartDate(
-      deploymentFrequencyLastWeekData,
-      mockLastWeekRawForecastData,
-    );
-
-    beforeEach(() => {
-      res = forecastDataToSeries({
-        forecastData: mockLastWeekRawForecastData,
-        forecastHorizon: 3,
-        forecastSeriesLabel: 'Forecast',
-        dataSeries: mockLastWeekData,
-        endDate: new Date('2015-07-04'),
-      });
-    });
-
-    it('returns the data series to be displayed in charts', () => {
-      expect(res).toEqual(forecastResponse);
-    });
-
-    it('includes the last data point from the data series', () => {
-      expect(res[0]).toEqual(['Jul 03, 2015', 1]);
     });
   });
 
