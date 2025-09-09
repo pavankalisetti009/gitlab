@@ -32,7 +32,7 @@ Prerequisites:
 
 To configure your GitLab instance to access the available self-hosted models in your infrastructure:
 
-1. [Confirm that a fully self-hosted configuration is appropriate for your use case](_index.md#decide-on-your-configuration-type).
+1. [Confirm that a fully self-hosted configuration is appropriate for your use case](_index.md#configuration-types).
 1. Configure your GitLab instance to access the AI gateway.
 1. In GitLab 18.4 and later, configure your GitLab instance to access the GitLab Duo Agent Platform service.
 1. Configure the self-hosted model.
@@ -245,7 +245,7 @@ In GitLab 18.3 and later, even when you are using your self-hosted AI gateway an
 
    ![GitLab Duo Self-Hosted Feature Configuration using GitLab AI vendor model](img/gitlab_duo_self_hosted_feature_configuration_with_vendored_model_v18_3.png)
 
-For more information on this hybrid configuration, see the documentation on [GitLab Duo Self-Hosted configuration type](_index.md#decide-on-your-configuration-type).
+For more information on this hybrid configuration, see the documentation on [GitLab Duo Self-Hosted configuration type](_index.md#configuration-types).
 
 ### GitLab Duo Chat sub-feature fall back configuration
 
