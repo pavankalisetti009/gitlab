@@ -128,4 +128,15 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
       expect(result).to eq exclusion
     end
   end
+
+  describe '#track_spp_push_blocked_secrets_found' do
+    let(:properties) { { value: 2 } }
+
+    it 'triggers internal events and increment usage metrics' do
+      expect { audit_logger.track_spp_push_blocked_secrets_found(properties[:value]) }
+        .to trigger_internal_events('spp_push_blocked_secrets_found')
+        .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+        .and increment_usage_metrics('counts.count_total_spp_push_blocked_secrets_found')
+    end
+  end
 end
