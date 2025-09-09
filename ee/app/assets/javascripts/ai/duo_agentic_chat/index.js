@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import { activeWorkItemIds } from '~/work_items/utils';
 import store from '../tanuki_bot/store';
 import DuoAgenticChatApp from './components/app.vue';
 
@@ -25,11 +26,12 @@ export const initDuoAgenticChat = () => {
     store: store(),
     apolloProvider,
     render(createElement) {
+      const latestActiveWorkItemId = activeWorkItemIds.value[activeWorkItemIds.value.length - 1];
       return createElement(DuoAgenticChatApp, {
         props: {
           projectId,
           namespaceId,
-          resourceId,
+          resourceId: latestActiveWorkItemId ?? resourceId,
           metadata,
           userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
         },
