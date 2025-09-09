@@ -6,7 +6,7 @@ module API
 
     ldap_group_links_tags = %w[ldap_group_links]
 
-    feature_category :system_access
+    feature_category :user_management
 
     params do
       requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the group'

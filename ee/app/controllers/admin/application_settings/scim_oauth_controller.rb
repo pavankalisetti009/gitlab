@@ -3,7 +3,7 @@
 module Admin
   module ApplicationSettings
     class ScimOauthController < Admin::ApplicationController
-      feature_category :system_access
+      feature_category :user_management
       before_action :check_feature_available
 
       # rubocop: disable CodeReuse/ActiveRecord

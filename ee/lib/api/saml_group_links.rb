@@ -6,7 +6,7 @@ module API
 
     SAML_GROUP_LINKS = %w[saml_group_links].freeze
 
-    feature_category :system_access
+    feature_category :user_management
 
     params do
       requires :id, types: [String, Integer], desc: 'ID or URL-encoded path of the group'
