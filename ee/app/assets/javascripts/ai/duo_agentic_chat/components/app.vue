@@ -432,7 +432,7 @@ export default {
         const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
         const messages = WorkflowUtils.transformChatMessages(uiChatLog, this.workflowId);
 
-        this.workflowStatus = parsedWorkflowData.workflowStatus;
+        this.workflowStatus = parsedWorkflowData?.workflowStatus;
         this.chatMessageHistory = messages;
       } catch (err) {
         this.onError(err);
