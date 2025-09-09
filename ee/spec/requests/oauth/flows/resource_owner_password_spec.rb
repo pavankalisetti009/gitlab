@@ -3,11 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe 'GitLab OAuth2 Resource Owner Password Credentials Flow', feature_category: :system_access do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:organization) { create(:organization) }
-  let_it_be(:application) { create(:oauth_application, redirect_uri: 'urn:ietf:wg:oauth:2.0:oob') }
+  let(:application) { create(:oauth_application, redirect_uri: 'urn:ietf:wg:oauth:2.0:oob') }
+  let(:client_id) { application.uid }
+  let(:client_secret) { application.secret }
   let_it_be(:user) { create(:user, :with_namespace, organizations: [organization], password: 'High5ive!') }
-  let_it_be(:client_id) { application.uid }
-  let_it_be(:client_secret) { application.secret }
 
   let(:token_params) do
     {
@@ -31,9 +33,71 @@ RSpec.describe 'GitLab OAuth2 Resource Owner Password Credentials Flow', feature
   end
 
   describe 'Token Request with Resource Owner Password' do
+    context 'for different combinations of the disable_all and disable_new flags and the application-level setting' do
+      where(:disable_all_ff, :disable_all_feature, :disable_new_ff, :disable_new_feature, :app_ropc_enabled,
+        :expected_status) do
+        # Disable all is active, and ROPC flow is globally disabled, regardless of other settings
+        true | true | true | true | true | :unauthorized
+        true | true | true | true | false | :unauthorized
+        true | true | true | false | true | :unauthorized
+        true | true | true | false | false | :unauthorized
+        true | true | false | true | true | :unauthorized
+        true | true | false | true | false | :unauthorized
+        true | true | false | false | true | :unauthorized
+        true | true | false | false | false | :unauthorized
+
+        # Disable all is inactive, and OAuth application-level settings takes precedence
+        true | false | true | true | true | :ok
+        true | false | true | true | false | :unauthorized
+        true | false | true | false | true | :ok
+        true | false | true | false | false | :ok
+        true | false | false | true | true | :ok
+        true | false | false | true | false | :ok
+        true | false | false | false | true | :ok
+        true | false | false | false | false | :ok
+
+        false | true | true | true | true | :ok
+        false | true | true | true | false | :unauthorized
+        false | true | true | false | true | :ok
+        false | true | true | false | false | :ok
+        false | true | false | true | true | :ok
+        false | true | false | true | false | :ok
+        false | true | false | false | true | :ok
+        false | true | false | false | false | :ok
+
+        false | false | true | true | true | :ok
+        false | false | true | true | false | :unauthorized
+        false | false | true | false | true | :ok
+        false | false | true | false | false | :ok
+        false | false | false | true | true | :ok
+        false | false | false | true | false | :ok
+        false | false | false | false | true | :ok
+        false | false | false | false | false | :ok
+      end
+
+      with_them do
+        before do
+          stub_saas_features(disable_ropc_for_all_applications: disable_all_feature)
+          stub_saas_features(disable_ropc_for_new_applications: disable_new_feature)
+          stub_feature_flags(disable_ropc_for_all_applications: disable_all_ff)
+          stub_feature_flags(disable_ropc_for_new_applications: disable_new_ff)
+          application.update!(ropc_enabled: app_ropc_enabled)
+        end
+
+        it "returns the correct expected status" do
+          fetch_access_token(token_params)
+
+          expect(response).to have_gitlab_http_status(expected_status)
+        end
+      end
+    end
+
     context 'when ROPC is disabled for an application' do
       before do
+        stub_saas_features(disable_ropc_for_all_applications: false)
+        stub_feature_flags(disable_ropc_for_all_applications: false)
         stub_saas_features(disable_ropc_for_new_applications: true)
+        stub_feature_flags(disable_ropc_for_new_applications: true)
         application.update!(ropc_enabled: false)
       end
 

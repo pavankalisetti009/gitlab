@@ -1,0 +1,5 @@
+---
+name: disable_ropc_for_all_applications
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203145
+milestone: '18.4'
+group: group::authentication
