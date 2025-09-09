@@ -122,7 +122,7 @@ module Gitlab
     end
 
     def self.public_headers(user:, ai_feature_name:, unit_primitive_name:)
-      auth_response = user&.allowed_to_use(ai_feature_name, service_name: unit_primitive_name)
+      auth_response = user&.allowed_to_use(ai_feature_name, unit_primitive_name: unit_primitive_name)
       enablement_type = auth_response&.enablement_type || ''
       namespace_ids = auth_response&.namespace_ids || []
 
