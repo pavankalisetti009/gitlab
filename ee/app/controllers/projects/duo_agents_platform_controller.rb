@@ -10,6 +10,8 @@ module Projects
     private
 
     def check_access
+      return render_404 unless project&.duo_features_enabled
+
       if duo_agents_platform_params[:vueroute] == 'flow-triggers'
         render_404 unless current_user.can?(:manage_ai_flow_triggers, project)
         return
