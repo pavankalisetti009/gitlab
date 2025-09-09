@@ -171,7 +171,7 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
             let(:expected_to_sha) { git_repository.commit.id }
             let(:expected_force_reindex) { false }
 
-            it 'calls the indexer with the correct command' do
+            it 'calls the indexer with force_reindex=false' do
               expect(Gitlab::Popen).to receive(:popen_with_streaming)
                 .with(expected_command, nil, env_vars)
                 .and_return(0)
@@ -185,12 +185,30 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
             let(:expected_to_sha) { git_repository.commit.id }
             let(:expected_force_reindex) { true }
 
-            it 'calls the indexer with the correct command' do
+            it 'calls the indexer with force_reindex=true' do
               expect(Gitlab::Popen).to receive(:popen_with_streaming)
                 .with(expected_command, nil, env_vars)
                 .and_return(0)
 
+              expect(logger).to receive(:info).with(
+                build_log_payload('git_repository_contains_last_indexed_commit?', from_sha: nil, duration_s: anything)
+              ).ordered
+
+              if with_last_ancestor_check
+                expect(logger).to receive(:info).with(
+                  build_log_payload('last_indexed_commit_ancestor_of_to_sha?', from_sha: nil, duration_s: anything)
+                ).ordered
+              end
+
               run
+            end
+
+            context 'when active_context_code_indexer_check_force_push FF is disabled' do
+              before do
+                stub_feature_flags(active_context_code_indexer_check_force_push: false)
+              end
+
+              it_behaves_like 'normal indexing update'
             end
           end
 
@@ -210,7 +228,9 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
               "3b13b8d3573f096ade95789818d37c80bdbbcdcf"
             end
 
-            it_behaves_like 'forced reindexing'
+            it_behaves_like 'forced reindexing' do
+              let(:with_last_ancestor_check) { false }
+            end
           end
 
           context 'when the last indexed commit was the empty tree id' do
@@ -238,7 +258,9 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
                 end
               end
 
-              it_behaves_like 'forced reindexing'
+              it_behaves_like 'forced reindexing' do
+                let(:with_last_ancestor_check) { true }
+              end
             end
           end
         end
@@ -261,7 +283,7 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
         it 'processes streamed output and calls block for each hash ID' do
           expect(repository).to receive(:update!).with(last_commit: expected_to_commit)
 
-          expect(logger).to receive(:info).with(build_log_payload('Start indexer')).ordered
+          expect(logger).to receive(:info).with(build_log_payload('Run indexer', duration_s: anything)).ordered
           expect(logger).to receive(:info).with(build_log_payload('Indexer successful', status: 0)).ordered
 
           run
