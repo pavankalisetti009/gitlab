@@ -95,6 +95,9 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :dynamic_application
 
       shared_examples 'a missing profile' do
         it 'communicates failure' do
+          # TODO: Remove this stub when resolving https://gitlab.com/gitlab-org/gitlab/-/issues/567952
+          stub_feature_flags(stop_writing_builds_metadata: false)
+
           expect(subject.error_messages[0].content).to include("DAST profile not found: #{profile.name}")
         end
       end

@@ -46,6 +46,22 @@ module Gitlab
         true
       end
 
+      def self.namespace
+        namespace_path = Gitlab::ApplicationContext.current_context_attribute(:root_namespace).presence
+        return unless namespace_path
+
+        Group.find_by_full_path(namespace_path)
+      end
+
+      def self.user_model_selection_enabled?(user:)
+        return false unless namespace
+        return false if ::Feature.disabled?(:duo_agent_platform_model_selection, namespace)
+        return false if ::Feature.disabled?(:ai_model_switching, namespace)
+        return false if ::Feature.disabled?(:ai_user_model_switching, user)
+
+        true
+      end
+
       def self.resource_id
         Gitlab::ApplicationContext.current_context_attribute(:ai_resource).presence
       end
@@ -56,10 +72,6 @@ module Gitlab
       end
 
       def self.root_namespace_id
-        namespace_path = Gitlab::ApplicationContext.current_context_attribute(:root_namespace).presence
-        return unless namespace_path
-
-        namespace = Group.find_by_full_path(namespace_path)
         return unless namespace
         return unless ::Feature.enabled?(:ai_model_switching, namespace)
 
