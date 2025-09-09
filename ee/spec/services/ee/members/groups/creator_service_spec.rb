@@ -256,9 +256,9 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
 
     context 'when a `member_role_id` is passed', feature_category: :permissions do
       let_it_be(:group) { create(:group) }
-      let_it_be(:member_role) { create(:member_role, namespace: group) }
+      let_it_be(:member_role) { create(:member_role, :developer, namespace: group) }
 
-      subject(:member) { described_class.add_member(group, user, :owner, member_role_id: member_role.id) }
+      subject(:member) { described_class.add_member(group, user, :developer, member_role_id: member_role.id) }
 
       context 'when custom roles are enabled' do
         before do
@@ -266,15 +266,38 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
         end
 
         it 'saves the `member_role`' do
+          expect(member).to be_persisted
           expect(member.member_role).to eq(member_role)
         end
 
-        it 'calls update_user_group_member_roles on the new member' do
+        it 'calls update_user_group_member_roles on the new member with correct args' do
           expect_next_instance_of(GroupMember) do |instance|
-            expect(instance).to receive(:update_user_group_member_roles)
+            expect(instance).to receive(:update_user_group_member_roles).with(old_values_map: a_hash_including(
+              access_level: nil, member_role_id: nil))
           end
 
           member
+        end
+
+        context 'when user is an existing member of the group' do
+          it 'calls update_user_group_member_roles on the member with correct args' do
+            # Initial addition to the group
+            expect_next_instance_of(GroupMember) do |instance|
+              expect(instance).to receive(:update_user_group_member_roles)
+                .with(old_values_map: a_hash_including(access_level: nil, member_role_id: nil))
+            end
+
+            existing_member = member
+
+            # Update existing membership
+            expect_next_found_instance_of(GroupMember) do |instance|
+              expect(instance).to receive(:update_user_group_member_roles)
+                .with(old_values_map: a_hash_including(access_level: existing_member.access_level,
+                  member_role_id: existing_member.member_role_id))
+            end
+
+            described_class.add_member(group, user, :owner)
+          end
         end
       end
 

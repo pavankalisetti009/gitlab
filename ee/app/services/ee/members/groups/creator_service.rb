@@ -9,7 +9,12 @@ module EE
 
         override :execute
         def execute
-          super.tap(&:update_user_group_member_roles)
+          super.tap do |m|
+            m.update_user_group_member_roles(old_values_map: {
+              access_level: m.attribute_before_last_save(:access_level),
+              member_role_id: m.attribute_before_last_save(:member_role_id)
+            })
+          end
         end
 
         class_methods do

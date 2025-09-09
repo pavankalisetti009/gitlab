@@ -323,6 +323,8 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
           create(:member_role, namespace: top_level_group, base_access_level: ::Gitlab::Access::GUEST)
         end
 
+        let(:member) { top_level_group.member(user) }
+
         before do
           stub_licensed_features(custom_roles: true)
           top_level_group.add_member(user, ::Gitlab::Access::GUEST, member_role_id: member_role.id)
@@ -331,10 +333,16 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
         it 'retains the correct access level, but removes the member_role connection' do
           expect(sync.payload).to include({ added: 1, removed: 0, updated: 1 })
 
-          member = top_level_group.member(user)
-
           expect(member.access_level).to eq(::Gitlab::Access::GUEST)
           expect(member.member_role).to eq(nil)
+        end
+
+        it 'updates the user\'s user_group_member_roles' do
+          allow(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to receive(:perform_async)
+
+          sync.payload
+
+          expect(::Authz::UserGroupMemberRoles::UpdateForGroupWorker).to have_received(:perform_async).with(member.id)
         end
       end
 
