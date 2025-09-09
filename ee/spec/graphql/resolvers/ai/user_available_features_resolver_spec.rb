@@ -60,27 +60,29 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
           context 'when testing each context category individually' do
             feature_flags =
               {
-                duo_include_context_merge_request: 'include_merge_request_context',
-                duo_include_context_issue: 'include_issue_context',
-                duo_include_context_dependency: 'include_dependency_context',
-                duo_include_context_local_git: 'include_local_git_context',
-                duo_include_context_terminal: 'include_terminal_context',
-                duo_include_context_repository: 'include_repository_context',
-                duo_include_context_agent_user_environment: 'include_agent_user_environment_context'
+                duo_include_context_merge_request: ['include_merge_request_context'],
+                duo_include_context_issue: ['include_issue_context'],
+                duo_include_context_dependency: ['include_dependency_context'],
+                duo_include_context_local_git: ['include_local_git_context'],
+                duo_include_context_terminal: ['include_terminal_context'],
+                duo_include_context_repository: %w[include_repository_context include_directory_context],
+                duo_include_context_agent_user_environment: ['include_agent_user_environment_context']
               }
 
-            already_enabled_context = %w[include_file_context include_snippet_context include_user_rule_context].freeze
+            let(:default_enabled_features) do
+              %w[include_file_context include_snippet_context include_user_rule_context]
+            end
 
-            feature_flags.each do |flag, feature|
+            feature_flags.each do |flag, ff_enabled_features|
               context "when only #{flag} is enabled" do
                 before do
                   feature_flags.each_key { |f| stub_feature_flags(f => false) }
                   stub_feature_flags(flag => true)
                 end
 
-                it "returns #{feature} and all already enabled features" do
-                  expect(Feature.enabled?(flag, current_user)).to be(true)
-                  expect(resolver).to contain_exactly(feature, *already_enabled_context)
+                it "returns #{ff_enabled_features} and all already enabled features" do
+                  expected_features = ff_enabled_features + default_enabled_features
+                  expect(resolver).to match_array(expected_features)
                 end
               end
             end

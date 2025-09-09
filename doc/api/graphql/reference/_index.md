@@ -46214,6 +46214,7 @@ The category of the additional context.
 | ----- | ----------- |
 | <a id="aiadditionalcontextcategoryagent_user_environment"></a>`AGENT_USER_ENVIRONMENT` | Agent_user_environment content category. |
 | <a id="aiadditionalcontextcategorydependency"></a>`DEPENDENCY` | Dependency content category. |
+| <a id="aiadditionalcontextcategorydirectory"></a>`DIRECTORY` | Directory content category. |
 | <a id="aiadditionalcontextcategoryfile"></a>`FILE` | File content category. |
 | <a id="aiadditionalcontextcategoryissue"></a>`ISSUE` | Issue content category. |
 | <a id="aiadditionalcontextcategorylocal_git"></a>`LOCAL_GIT` | Local_git content category. |
