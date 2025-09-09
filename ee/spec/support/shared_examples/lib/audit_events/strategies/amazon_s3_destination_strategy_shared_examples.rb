@@ -131,5 +131,158 @@ RSpec.shared_examples 'validate Amazon S3 destination strategy' do
         track_and_stream
       end
     end
+
+    context 'when audit_event["entity_type"] is nil' do
+      context 'and payload contains regular entity type' do
+        let(:event) do
+          create(:audit_event, :group_event).tap do |e|
+            allow(e).to receive(:[]).with('entity_type').and_return(nil)
+            allow(e).to receive(:[]).with('id').and_return(e.id)
+          end
+        end
+
+        let(:request_body) { { entity_type: "Group", id: event.id }.to_json }
+
+        it 'falls back to parsing entity_type from payload', :freeze_time do
+          time_in_ms = (Time.now.to_f * 1000).to_i
+          date = Date.current.strftime("%Y/%m")
+
+          expect(instance).to receive(:track_audit_event)
+          expect(::Gitlab::Json).to receive(:parse).with(request_body).at_least(:once).and_call_original
+
+          allow_next_instance_of(Aws::S3::Client) do |s3_client|
+            expect(s3_client).to receive(:put_object).with(
+              {
+                key: "group/#{date}/#{event_type}_#{event.id}_#{time_in_ms}.json",
+                bucket: destination.bucket_name,
+                content_type: 'application/json',
+                body: request_body
+              }
+            )
+          end
+
+          track_and_stream
+        end
+      end
+
+      context 'and payload contains Gitlab::Audit::InstanceScope' do
+        let(:event) do
+          create(:audit_event, :instance_event).tap do |e|
+            allow(e).to receive(:[]).with('entity_type').and_return(nil)
+            allow(e).to receive(:[]).with('id').and_return(e.id)
+          end
+        end
+
+        let(:request_body) { { entity_type: "Gitlab::Audit::InstanceScope", id: event.id }.to_json }
+
+        it 'correctly maps to "instance" from payload', :freeze_time do
+          time_in_ms = (Time.now.to_f * 1000).to_i
+          date = Date.current.strftime("%Y/%m")
+
+          expect(instance).to receive(:track_audit_event)
+
+          allow_next_instance_of(Aws::S3::Client) do |s3_client|
+            expect(s3_client).to receive(:put_object).with(
+              {
+                key: "instance/#{date}/#{event_type}_#{event.id}_#{time_in_ms}.json",
+                bucket: destination.bucket_name,
+                content_type: 'application/json',
+                body: request_body
+              }
+            )
+          end
+
+          track_and_stream
+        end
+      end
+
+      context 'and payload contains Namespaces::UserNamespace' do
+        let(:event) do
+          create(:audit_event).tap do |e|
+            allow(e).to receive(:[]).with('entity_type').and_return(nil)
+            allow(e).to receive(:[]).with('id').and_return(e.id)
+          end
+        end
+
+        let(:request_body) { { entity_type: "Namespaces::UserNamespace", id: event.id }.to_json }
+
+        it 'correctly maps to "user" from payload', :freeze_time do
+          time_in_ms = (Time.now.to_f * 1000).to_i
+          date = Date.current.strftime("%Y/%m")
+
+          expect(instance).to receive(:track_audit_event)
+
+          allow_next_instance_of(Aws::S3::Client) do |s3_client|
+            expect(s3_client).to receive(:put_object).with(
+              {
+                key: "user/#{date}/#{event_type}_#{event.id}_#{time_in_ms}.json",
+                bucket: destination.bucket_name,
+                content_type: 'application/json',
+                body: request_body
+              }
+            )
+          end
+
+          track_and_stream
+        end
+      end
+
+      context 'and payload contains entity type with special characters' do
+        let(:event) do
+          create(:audit_event).tap do |e|
+            allow(e).to receive(:[]).with('entity_type').and_return(nil)
+            allow(e).to receive(:[]).with('id').and_return(e.id)
+          end
+        end
+
+        let(:request_body) { { entity_type: "Some::Special::Type", id: event.id }.to_json }
+
+        it 'sanitizes the entity type from payload', :freeze_time do
+          time_in_ms = (Time.now.to_f * 1000).to_i
+          date = Date.current.strftime("%Y/%m")
+
+          expect(instance).to receive(:track_audit_event)
+
+          allow_next_instance_of(Aws::S3::Client) do |s3_client|
+            expect(s3_client).to receive(:put_object).with(
+              {
+                key: "some_special_type/#{date}/#{event_type}_#{event.id}_#{time_in_ms}.json",
+                bucket: destination.bucket_name,
+                content_type: 'application/json',
+                body: request_body
+              }
+            )
+          end
+
+          track_and_stream
+        end
+      end
+    end
+
+    context 'when audit_event["entity_type"] is present' do
+      let(:event) { create(:audit_event, entity_type: 'Project') }
+      let(:request_body) { { entity_type: "Different::Type", id: event.id }.to_json }
+
+      it 'uses audit_event["entity_type"] without fallback to payload', :freeze_time do
+        time_in_ms = (Time.now.to_f * 1000).to_i
+        date = Date.current.strftime("%Y/%m")
+
+        expect(instance).to receive(:track_audit_event)
+        expect(::Gitlab::Json).to receive(:parse).with(request_body).once.and_call_original
+
+        allow_next_instance_of(Aws::S3::Client) do |s3_client|
+          expect(s3_client).to receive(:put_object).with(
+            {
+              key: "project/#{date}/#{event_type}_#{event.id}_#{time_in_ms}.json",
+              bucket: destination.bucket_name,
+              content_type: 'application/json',
+              body: request_body
+            }
+          )
+        end
+
+        track_and_stream
+      end
+    end
   end
 end

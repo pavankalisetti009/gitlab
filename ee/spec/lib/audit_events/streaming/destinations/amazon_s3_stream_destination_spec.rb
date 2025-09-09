@@ -90,6 +90,61 @@ RSpec.describe AuditEvents::Streaming::Destinations::AmazonS3StreamDestination, 
         expect(filename).to start_with('other_entity_type/')
       end
     end
+
+    context 'when audit_event["entity_type"] is nil' do
+      let(:audit_event) do
+        create(:audit_event, :group_event).tap do |event|
+          allow(event).to receive(:[]).with('entity_type').and_return(nil)
+          allow(event).to receive(:as_json).and_return(
+            event.attributes.merge('entity_type' => 'Group')
+          )
+        end
+      end
+
+      it 'falls back to parsing entity_type from payload' do
+        expect(::Gitlab::Json).to receive(:parse).with(payload).at_least(:once).and_call_original
+        expect(filename).to start_with('group/')
+      end
+    end
+
+    context 'when audit_event["entity_type"] is present' do
+      let(:audit_event) { create(:audit_event, entity_type: 'Project') }
+
+      it 'uses audit_event["entity_type"] without parsing payload' do
+        expect(::Gitlab::Json).to receive(:parse).with(payload).once.and_call_original
+        expect(filename).to start_with('project/')
+      end
+    end
+
+    context 'when audit_event["entity_type"] is nil and payload contains Gitlab::Audit::InstanceScope' do
+      let(:audit_event) do
+        create(:audit_event, :instance_event).tap do |event|
+          allow(event).to receive(:[]).with('entity_type').and_return(nil)
+          allow(event).to receive(:as_json).and_return(
+            event.attributes.merge('entity_type' => 'Gitlab::Audit::InstanceScope')
+          )
+        end
+      end
+
+      it 'correctly maps to "instance" from payload' do
+        expect(filename).to start_with('instance/')
+      end
+    end
+
+    context 'when audit_event["entity_type"] is nil and payload contains Namespaces::UserNamespace' do
+      let(:audit_event) do
+        create(:audit_event).tap do |event|
+          allow(event).to receive(:[]).with('entity_type').and_return(nil)
+          allow(event).to receive(:as_json).and_return(
+            event.attributes.merge('entity_type' => 'Namespaces::UserNamespace')
+          )
+        end
+      end
+
+      it 'correctly maps to "user" from payload' do
+        expect(filename).to start_with('user/')
+      end
+    end
   end
 
   describe '#aws_s3_client' do
