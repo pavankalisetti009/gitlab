@@ -11,8 +11,10 @@ import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
+import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
+import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { AI_CATALOG_AGENTS_DUPLICATE_ROUTE } from 'ee/ai/catalog/router/constants';
@@ -29,6 +31,8 @@ import {
   mockCatalogAgentDeleteErrorResponse,
   mockAiCatalogAgentResponse,
   mockAiCatalogAgentResponse2,
+  mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+  mockAiCatalogItemConsumerCreateErrorResponse,
   mockPageInfo,
 } from '../mock_data';
 
@@ -52,6 +56,7 @@ describe('AiCatalogAgents', () => {
 
   const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
+  const createAiCatalogItemConsumerHandler = jest.fn();
   const deleteCatalogItemMutationHandler = jest.fn();
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
@@ -65,6 +70,7 @@ describe('AiCatalogAgents', () => {
       [
         [aiCatalogAgentQuery, mockAgentQueryHandler],
         [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
+        [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
         [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
       ],
       {
@@ -87,6 +93,7 @@ describe('AiCatalogAgents', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
+  const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
   const agentNotFoundErrorMessage = 'Agent not found.';
 
   afterEach(() => {
@@ -302,6 +309,93 @@ describe('AiCatalogAgents', () => {
 
       it('logs error to Sentry', () => {
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+      });
+    });
+  });
+
+  describe('on adding an agent to project', () => {
+    const openModal = async () => {
+      const firstItemAction = findAiCatalogList()
+        .props('itemTypeConfig')
+        .actionItems(mockAgents[0])[0];
+      // We pass the function down to child components. Because we use shallowMount
+      // we cannot trigger the action which would call the function. So we call it
+      // using the properties.
+      firstItemAction.action();
+      await nextTick();
+    };
+
+    beforeEach(async () => {
+      mockCatalogItemsQueryHandler.mockResolvedValue(mockCatalogItemsResponse);
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('opens the modal on button click', async () => {
+      expect(findAiCatalogItemConsumerModal().exists()).toBe(false);
+      await openModal();
+
+      expect(findAiCatalogItemConsumerModal().exists()).toBe(true);
+    });
+
+    describe('when the modal is open', () => {
+      beforeEach(async () => {
+        await openModal();
+      });
+
+      it('removes the component once it emits the hide event', async () => {
+        findAiCatalogItemConsumerModal().vm.$emit('hide');
+        await nextTick();
+
+        expect(findAiCatalogItemConsumerModal().exists()).toBe(false);
+      });
+
+      describe('and the form is submitted', () => {
+        const createConsumer = () =>
+          findAiCatalogItemConsumerModal().vm.$emit('submit', { targetType: 'project' });
+
+        describe('when adding to project request succeeds', () => {
+          it('shows a toast message', async () => {
+            createAiCatalogItemConsumerHandler.mockResolvedValue(
+              mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+            );
+
+            createConsumer();
+            await waitForPromises();
+
+            expect(mockToast.show).toHaveBeenCalledWith('Agent added successfully to Test.');
+          });
+        });
+
+        describe('when request succeeds but returns errors', () => {
+          it('shows alert with error', async () => {
+            createAiCatalogItemConsumerHandler.mockResolvedValue(
+              mockAiCatalogItemConsumerCreateErrorResponse,
+            );
+
+            createConsumer();
+            await waitForPromises();
+
+            expect(findErrorsAlert().props('errors')).toEqual([
+              `Agent could not be added: ${mockAgent.name}`,
+              'Item already configured.',
+            ]);
+          });
+        });
+
+        describe('when request fails', () => {
+          it('shows alert with error and captures exception', async () => {
+            createAiCatalogItemConsumerHandler.mockRejectedValue(new Error('Request failed'));
+
+            createConsumer();
+            await waitForPromises();
+
+            expect(findErrorsAlert().props('errors')).toEqual([
+              'The agent could not be enabled. Try again. Error: Request failed',
+            ]);
+            expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+          });
+        });
       });
     });
   });

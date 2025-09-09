@@ -29,7 +29,6 @@ import {
   mockCatalogFlowsResponse,
   mockCatalogFlowDeleteResponse,
   mockCatalogFlowDeleteErrorResponse,
-  mockAiCatalogItemConsumerCreateSuccessGroupResponse,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
   mockFlows,
@@ -85,8 +84,6 @@ describe('AiCatalogFlows', () => {
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
   const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
-  const findFirstItemActions = () =>
-    findAiCatalogList().props('itemTypeConfig').actionItems(mockFlows[0])[0];
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -364,14 +361,17 @@ describe('AiCatalogFlows', () => {
     });
   });
 
-  describe('when clicking on the button to create a consumer', () => {
-    async function openModal() {
+  describe('on adding a flow to project', () => {
+    const openModal = async () => {
+      const firstItemAction = findAiCatalogList()
+        .props('itemTypeConfig')
+        .actionItems(mockFlows[0])[0];
       // We pass the function down to child components. Because we use shallowMount
       // we cannot trigger the action which would call the function. So we call it
-      // it using the properties.
-      findFirstItemActions().action();
+      // using the properties.
+      firstItemAction.action();
       await nextTick();
-    }
+    };
 
     beforeEach(async () => {
       mockCatalogItemsQueryHandler.mockResolvedValue(mockCatalogFlowsResponse);
@@ -412,19 +412,6 @@ describe('AiCatalogFlows', () => {
             await waitForPromises();
 
             expect(mockToast.show).toHaveBeenCalledWith('Flow added successfully to Test.');
-          });
-        });
-
-        describe('when adding to group request succeeds', () => {
-          it('shows a toast message', async () => {
-            createAiCatalogItemConsumerHandler.mockResolvedValue(
-              mockAiCatalogItemConsumerCreateSuccessGroupResponse,
-            );
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(mockToast.show).toHaveBeenCalledWith('Flow added successfully to GitLab Duo.');
           });
         });
 

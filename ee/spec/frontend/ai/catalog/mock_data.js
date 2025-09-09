@@ -450,29 +450,12 @@ export const mockConfiguredFlowsEmptyResponse = {
   },
 };
 
-export const mockAiCatalogItemConsumerCreateSuccessGroupResponse = {
-  data: {
-    aiCatalogItemConsumerCreate: {
-      errors: [],
-      itemConsumer: {
-        id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
-        group: null,
-        project: {
-          id: 'gid://gitlab/Group/1',
-          name: 'GitLab Duo',
-        },
-      },
-    },
-  },
-};
-
 export const mockAiCatalogItemConsumerCreateSuccessProjectResponse = {
   data: {
     aiCatalogItemConsumerCreate: {
       errors: [],
       itemConsumer: {
         id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
-        group: null,
         project: {
           id: 'gid://gitlab/Project/1',
           name: 'Test',
