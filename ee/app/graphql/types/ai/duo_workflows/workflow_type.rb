@@ -104,6 +104,11 @@ module Types
         field :last_executor_logs_url, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: "URL to the latest executor logs of the workflow."
+
+        field :ai_catalog_item_version_id, Types::GlobalIDType[::Ai::Catalog::ItemVersion],
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          null: true, description: 'ID of the AI catalog item version that triggered the workflow.',
+          experiment: { milestone: '18.4' }
       end
     end
   end

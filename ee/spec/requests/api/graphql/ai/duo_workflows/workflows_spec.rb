@@ -19,6 +19,8 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
     end
   end
 
+  let_it_be(:ai_catalog_item_version) { create(:ai_catalog_agent_version) }
+
   let_it_be(:workflow_with_ide_environment) do
     create(:duo_workflows_workflow, environment: :ide, project: project, user: user, created_at: 1.day.ago)
   end
@@ -67,7 +69,10 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
     ]
   end
 
-  let_it_be(:workflows_project_2) { create_list(:duo_workflows_workflow, 2, project: project_2, user: user) }
+  let_it_be(:workflows_project_2) do
+    create_list(:duo_workflows_workflow, 2, project: project_2, user: user,
+      ai_catalog_item_version: ai_catalog_item_version)
+  end
 
   let_it_be(:workflows_for_different_user) do
     create_list(:duo_workflows_workflow, 4, project: project, user: another_user)
@@ -112,6 +117,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
           workflowStatus
         }
         lastExecutorLogsUrl
+        aiCatalogItemVersionId
       }
     GRAPHQL
   end
@@ -224,6 +230,9 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
           expect(returned_workflow['mcpEnabled']).to eq(matching_workflow.mcp_enabled?)
           expect(returned_workflow['allowAgentToRequestUser']).to eq(matching_workflow.allow_agent_to_request_user)
           expect(returned_workflow['lastExecutorLogsUrl']).to eq(matching_workflow.last_executor_logs_url)
+          expect(returned_workflow['aiCatalogItemVersionId']).to eq(
+            matching_workflow.ai_catalog_item_version&.to_global_id&.to_s
+          )
 
           expect(returned_workflow).to have_key('firstCheckpoint')
         end
@@ -343,6 +352,9 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
           expect(returned_workflows.first['lastExecutorLogsUrl']).not_to be_nil
           expect(returned_workflows.first['lastExecutorLogsUrl']).to eq(
             specific_workflow.last_executor_logs_url
+          )
+          expect(returned_workflows.first['aiCatalogItemVersionId']).to eq(
+            specific_workflow.ai_catalog_item_version&.to_global_id&.to_s
           )
           expect(returned_workflows.first).to have_key('firstCheckpoint')
         end
