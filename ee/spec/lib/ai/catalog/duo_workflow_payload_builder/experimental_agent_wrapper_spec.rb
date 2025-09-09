@@ -28,8 +28,10 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
   end
 
   describe '#build' do
-    let(:result) { builder.build }
-
-    it_behaves_like 'builds valid flow configuration'
+    it_behaves_like 'builds valid flow configuration' do
+      let(:result) { builder.build }
+      let(:environment) { 'remote' }
+      let(:version) { 'experimental' }
+    end
   end
 end

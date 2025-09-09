@@ -102,8 +102,8 @@ module Ai
               }
             },
             'prompt_template' => {
-              'system' => definition.system_prompt,
-              'user' => definition.user_prompt,
+              'system' => system_prompt(definition),
+              'user' => user_prompt(definition),
               'placeholder' => PLACEHOLDER_VALUE
             }
           }
@@ -120,6 +120,14 @@ module Ai
             on_agent_final_answer
             on_tool_execution_failed
           ]
+        end
+
+        def user_prompt(definition)
+          definition.user_prompt
+        end
+
+        def system_prompt(definition)
+          definition.system_prompt
         end
       end
     end

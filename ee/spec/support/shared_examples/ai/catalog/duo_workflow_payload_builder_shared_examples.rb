@@ -3,8 +3,8 @@
 RSpec.shared_examples 'builds valid flow configuration' do
   it 'returns correct flow configuration structure' do
     expect(result).to include(
-      'version' => 'experimental',
-      'environment' => 'remote',
+      'version' => version,
+      'environment' => environment,
       'components' => be_an(Array),
       'routers' => be_an(Array),
       'flow' => be_a(Hash),
