@@ -42,6 +42,10 @@ module Mutations
           required: false,
           description: 'Index of the default duplicated status in the statuses array.'
 
+        argument :status_mappings, [Types::WorkItems::StatusMappingInputType],
+          required: false,
+          description: 'Mappings for statuses being removed from the lifecycle. Maps old status to replacement status.'
+
         def resolve(namespace_path:, **args)
           group = authorized_find!(namespace_path: namespace_path)
 
