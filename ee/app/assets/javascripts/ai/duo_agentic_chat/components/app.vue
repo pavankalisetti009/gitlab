@@ -23,19 +23,25 @@ import {
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
+  DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
+import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
+import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
+// TODO: Remove mock data when API is ready https://gitlab.com/gitlab-org/gitlab/-/work_items/566562
+import { mockListItems } from '../../../../../../spec/frontend/ai/model_selection/mock_data';
 
 export default {
   name: 'DuoAgenticChatApp',
   components: {
     AgenticDuoChat,
     GlToggle,
+    ModelSelectDropdown,
   },
   provide() {
     return {
@@ -63,6 +69,11 @@ export default {
       type: String,
       required: false,
       default: null,
+    },
+    userModelSelectionEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   apollo: {
@@ -133,6 +144,7 @@ export default {
       activeThread,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       chatMessageHistory: [],
+      selectedModel: null,
     };
   },
   computed: {
@@ -148,6 +160,14 @@ export default {
         minHeight: this.minHeight,
         left: this.left,
       };
+    },
+    mockModelSelectionOptions() {
+      // Temporarily return mock model data while API is under development
+      // https://gitlab.com/gitlab-org/gitlab/-/work_items/566562
+      return mockListItems;
+    },
+    defaultModel() {
+      return this.mockModelSelectionOptions.find((item) => item.value === GITLAB_DEFAULT_MODEL);
     },
     predefinedPrompts() {
       return this.contextPresets.questions || [];
@@ -207,6 +227,8 @@ export default {
   mounted() {
     this.setDimensions();
     window.addEventListener('resize', this.onWindowResize);
+    // Initialize selected model on mount
+    this.selectedModel = this.getSelectedModel();
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
@@ -448,6 +470,17 @@ export default {
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.cleanupState();
     },
+    getSelectedModel() {
+      const selectedModel = JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY));
+
+      return selectedModel || this.defaultModel;
+    },
+    onModelSelect(selectedModel) {
+      const model = this.mockModelSelectionOptions.find((item) => item.value === selectedModel);
+
+      this.selectedModel = model;
+      localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(model));
+    },
   },
 };
 </script>
@@ -483,14 +516,26 @@ export default {
         @thread-selected="onThreadSelected"
         @back-to-list="onBackToList"
         @delete-thread="onDeleteThread"
-      >
-        <template #footer-controls>
-          <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
-            <gl-toggle
-              v-model="duoAgenticModePreference"
-              :label="s__('DuoChat|Agentic mode (Beta)')"
-              label-position="left"
-            />
+        ><template #footer-controls>
+          <div :class="{ 'gl-flex gl-justify-between': userModelSelectionEnabled }">
+            <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+              <gl-toggle
+                v-model="duoAgenticModePreference"
+                :label="s__('DuoChat|Agentic mode (Beta)')"
+                label-position="left"
+              />
+            </div>
+            <div>
+              <div v-if="userModelSelectionEnabled" class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+                <model-select-dropdown
+                  class="gl-max-w-31"
+                  :items="mockModelSelectionOptions"
+                  :selected-option="selectedModel"
+                  :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
+                  @select="onModelSelect"
+                />
+              </div>
+            </div>
           </div>
         </template>
       </agentic-duo-chat>

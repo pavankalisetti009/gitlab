@@ -331,4 +331,80 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
   end
+
+  describe '.user_model_selection_enabled?' do
+    let_it_be(:group) { create(:group) }
+
+    context 'when root namespace is not found' do
+      let(:result) do
+        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: 'non_existent_namespace') do
+          described_class.user_model_selection_enabled?(user: user)
+        end
+      end
+
+      it 'returns false' do
+        expect(result).to be(false)
+      end
+    end
+
+    context 'when root_namespace is found' do
+      let(:result) do
+        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: group.full_path) do
+          described_class.user_model_selection_enabled?(user: user)
+        end
+      end
+
+      context 'when duo_agent_platform_model_selection feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+        end
+
+        it 'returns false' do
+          expect(result).to be(false)
+        end
+      end
+
+      context 'when ai_model_switching feature flag is disabled' do
+        before do
+          stub_feature_flags(ai_model_switching: false)
+        end
+
+        it 'returns false' do
+          expect(result).to be(false)
+        end
+      end
+
+      context 'when ai_user_model_switching feature flag is disabled' do
+        before do
+          stub_feature_flags(ai_user_model_switching: false)
+        end
+
+        it 'returns false' do
+          expect(result).to be(false)
+        end
+      end
+
+      context 'when duo_agent_platform_model_selection feature flag is enabled' do
+        before do
+          stub_feature_flags(duo_agent_platform_model_selection: true)
+        end
+
+        context 'when ai_model_switching feature flag is enabled' do
+          before do
+            stub_feature_flags(ai_model_switching: true)
+          end
+
+          context 'when ai_user_model_switching feature flag is enabled' do
+            before do
+              stub_feature_flags(ai_user_model_switching: true)
+            end
+
+            it 'returns true' do
+              expect(result).to be(true)
+            end
+          end
+        end
+      end
+    end
+  end
 end

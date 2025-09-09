@@ -57,7 +57,7 @@ export default {
       return model?.releaseState === RELEASE_STATES.BETA;
     },
     isDefaultModel(model) {
-      return model?.value === '';
+      return model?.value === GITLAB_DEFAULT_MODEL;
     },
     onSelect(option) {
       this.$emit('select', option);
