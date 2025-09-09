@@ -9,7 +9,7 @@ import {
   GlLink,
 } from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
 import { BASE_ROLES_WITHOUT_OWNER } from '~/access_level/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -18,20 +18,9 @@ import PermissionsSelector from './permissions_selector.vue';
 
 export default {
   i18n: {
-    cancel: __('Cancel'),
-    baseRolePlaceholder: s__('MemberRole|Select a role'),
-    baseRoleLabel: s__('MemberRole|Base role'),
-    baseRoleHelpText: s__(
-      'MemberRole|Select a %{linkStart} default role%{linkEnd} to predefine a set of permissions.',
-    ),
-    nameLabel: s__('MemberRole|Name'),
-    descriptionLabel: s__('MemberRole|Description'),
     descriptionHelpText: s__(
       'MemberRole|Example: "Developer with admin and read access to vulnerability"',
     ),
-    permissionsLabel: __('Permissions'),
-    invalidFeedback: __('This field is required.'),
-    validationError: s__('MemberRole|You must fill out all required fields.'),
   },
   components: {
     GlButton,
@@ -102,7 +91,7 @@ export default {
       // selected yet.
       return this.baseAccessLevel
         ? BASE_ROLES_WITHOUT_OWNER.find(({ value }) => value === this.baseAccessLevel).text
-        : this.$options.i18n.baseRolePlaceholder;
+        : s__('MemberRole|Select a role');
     },
   },
   methods: {
@@ -116,7 +105,9 @@ export default {
         !this.isBaseRoleValid ||
         !this.isPermissionsValid
       ) {
-        this.alert = createAlert({ message: this.$options.i18n.validationError });
+        this.alert = createAlert({
+          message: s__('MemberRole|You must fill out all required fields.'),
+        });
       } else {
         const { name, description, baseAccessLevel, permissions } = this;
         this.$emit('submit', { name, description, baseAccessLevel, permissions });
@@ -133,9 +124,9 @@ export default {
 
     <settings-section>
       <gl-form-group
-        :label="$options.i18n.nameLabel"
+        :label="s__('MemberRole|Name')"
         label-for="role-name"
-        :invalid-feedback="$options.i18n.invalidFeedback"
+        :invalid-feedback="__('This field is required.')"
       >
         <gl-form-input
           id="role-name"
@@ -148,8 +139,8 @@ export default {
       </gl-form-group>
 
       <gl-form-group
-        :label="$options.i18n.descriptionLabel"
-        :invalid-feedback="$options.i18n.invalidFeedback"
+        :label="s__('MemberRole|Description')"
+        :invalid-feedback="__('This field is required.')"
         :description="$options.i18n.descriptionHelpText"
         label-for="description"
       >
@@ -164,11 +155,11 @@ export default {
       </gl-form-group>
     </settings-section>
 
-    <settings-section :heading="$options.i18n.permissionsLabel">
+    <settings-section :heading="__('Permissions')">
       <gl-form-group
         v-if="showBaseRole"
-        :label="$options.i18n.baseRoleLabel"
-        :invalid-feedback="$options.i18n.invalidFeedback"
+        :label="s__('MemberRole|Base role')"
+        :invalid-feedback="__('This field is required.')"
         :state="isBaseRoleValid"
         label-for="base-role-select"
         label-class="!gl-pb-1"
@@ -177,7 +168,13 @@ export default {
       >
         <template #label-description>
           <div class="gl-mb-3">
-            <gl-sprintf :message="$options.i18n.baseRoleHelpText">
+            <gl-sprintf
+              :message="
+                s__(
+                  'MemberRole|Select a %{linkStart} default role%{linkEnd} to predefine a set of permissions.',
+                )
+              "
+            >
               <template #link="{ content }">
                 <gl-link :href="defaultRolesHelpPagePath" target="_blank">{{ content }}</gl-link>
               </template>
@@ -214,7 +211,7 @@ export default {
         {{ submitText }}
       </gl-button>
       <gl-button data-testid="cancel-button" :disabled="busy" @click="$emit('cancel')">
-        {{ $options.i18n.cancel }}
+        {{ __('Cancel') }}
       </gl-button>
     </div>
   </gl-form>
