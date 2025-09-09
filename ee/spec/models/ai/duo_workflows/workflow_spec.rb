@@ -47,6 +47,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
   describe '.with_environment' do
     let_it_be(:ide_workflow) { create(:duo_workflows_workflow, environment: :ide) }
     let_it_be(:web_workflow) { create(:duo_workflows_workflow, environment: :web) }
+    let_it_be(:chat_partial_workflow) { create(:duo_workflows_workflow, environment: :chat_partial) }
 
     it 'finds the local workflows when environment is ide' do
       expect(described_class.with_environment(:ide)).to eq([ide_workflow])
@@ -54,6 +55,10 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
 
     it 'finds the remote workflows when environment is web' do
       expect(described_class.with_environment(:web)).to eq([web_workflow])
+    end
+
+    it 'finds the chat partial workflows when environment is chat_partial' do
+      expect(described_class.with_environment(:chat_partial)).to eq([chat_partial_workflow])
     end
   end
 

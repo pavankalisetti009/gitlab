@@ -124,5 +124,75 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :age
         expect(execute[:message]).to include('Something bad')
       end
     end
+
+    context 'when ai_catalog_item_version is provided' do
+      let_it_be(:ai_catalog_item) { create(:ai_catalog_item) }
+      let_it_be(:ai_catalog_item_version) { create(:ai_catalog_item_version, item: ai_catalog_item) }
+      let(:params) { { environment: "ide", ai_catalog_item_version: ai_catalog_item_version } }
+
+      context 'when user has access to the AI catalog item' do
+        before do
+          allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: true))
+          end
+        end
+
+        it 'creates a new workflow' do
+          expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+          expect(execute[:workflow]).to be_a(Ai::DuoWorkflows::Workflow)
+          expect(execute[:workflow].ai_catalog_item_version).to eq(ai_catalog_item_version)
+        end
+      end
+
+      context 'when user does not have access to the AI catalog item' do
+        before do
+          allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: false))
+          end
+        end
+
+        it 'returns error' do
+          expect(execute[:status]).to eq(:error)
+          expect(execute[:http_status]).to eq(:not_found)
+          expect(execute[:message]).to include('ItemVersion not found')
+        end
+      end
+
+      context 'with namespace-level workflow' do
+        let(:container) { group }
+
+        before do
+          allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: true))
+          end
+        end
+
+        it 'passes group_id to ItemConsumersFinder' do
+          expect(Ai::Catalog::ItemConsumersFinder).to receive(:new).with(
+            user,
+            params: hash_including(group_id: group.id, item_id: ai_catalog_item.id)
+          )
+
+          execute
+        end
+      end
+
+      context 'with project-level workflow' do
+        before do
+          allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: true))
+          end
+        end
+
+        it 'passes project_id to ItemConsumersFinder' do
+          expect(Ai::Catalog::ItemConsumersFinder).to receive(:new).with(
+            user,
+            params: hash_including(project_id: project.id, item_id: ai_catalog_item.id)
+          )
+
+          execute
+        end
+      end
+    end
   end
 end

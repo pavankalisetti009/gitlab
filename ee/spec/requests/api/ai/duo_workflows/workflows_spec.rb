@@ -251,6 +251,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(response).to have_gitlab_http_status(:created)
         end
       end
+
+      context 'when environment is chat_partial' do
+        let(:params) { { project_id: project.id, environment: 'chat_partial' } }
+
+        it 'creates a workflow with chat_partial environment' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.environment).to eq('chat_partial')
+        end
+      end
     end
 
     context 'when failure' do
@@ -426,6 +438,51 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response).to eq({ "error" => "environment does not have a valid value" })
+        end
+      end
+
+      context 'when ai_catalog_item_version_id is provided' do
+        let_it_be(:ai_catalog_item) { create(:ai_catalog_item) }
+        let_it_be(:ai_catalog_item_version) { create(:ai_catalog_item_version, item: ai_catalog_item) }
+        let(:params) { super().merge(ai_catalog_item_version_id: ai_catalog_item_version.id) }
+
+        before do
+          allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+            allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: true))
+          end
+        end
+
+        it 'creates a workflow with the AI catalog item version' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.ai_catalog_item_version).to eq(ai_catalog_item_version)
+        end
+
+        context 'when user does not have access to the AI catalog item' do
+          before do
+            allow_next_instance_of(Ai::Catalog::ItemConsumersFinder) do |finder|
+              allow(finder).to receive(:execute).and_return(class_double(::Ai::Catalog::ItemConsumer, exists?: false))
+            end
+          end
+
+          it 'returns not found error' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to include('ItemVersion not found')
+          end
+        end
+
+        context 'when ai_catalog_item_version_id does not exist' do
+          let(:params) { super().merge(ai_catalog_item_version_id: non_existing_record_id) }
+
+          it 'returns not found error' do
+            post api(path, user), params: params
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
       end
     end

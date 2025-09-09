@@ -17,7 +17,7 @@ module Ai
           return error('container must be a Project or Namespace', :bad_request)
         end
 
-        response = check_access
+        response = check_ai_catalog_item_access || check_access
         return response if response&.error?
 
         workflow = Ai::DuoWorkflows::Workflow.new(workflow_attributes)
@@ -46,6 +46,24 @@ module Ai
       end
 
       private
+
+      def check_ai_catalog_item_access
+        return unless @params[:ai_catalog_item_version]
+
+        finder_params = {
+          item_id: @params[:ai_catalog_item_version].ai_catalog_item_id
+        }
+
+        if @container.is_a?(::Project)
+          finder_params[:project_id] = @container.id
+        elsif @container.is_a?(::Namespace)
+          finder_params[:group_id] = @container.id
+        end
+
+        return if Ai::Catalog::ItemConsumersFinder.new(@current_user, params: finder_params).execute.exists?
+
+        error('ItemVersion not found', :not_found)
+      end
 
       def check_access
         if workflow_definition == 'chat' || workflow_definition == :chat
