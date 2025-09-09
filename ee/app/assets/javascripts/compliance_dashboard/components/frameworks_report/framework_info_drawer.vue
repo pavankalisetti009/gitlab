@@ -65,6 +65,7 @@ export default {
         pageInfo: {
           hasNextPage: false,
         },
+        count: 0,
       },
       error: null,
     };
@@ -73,20 +74,28 @@ export default {
     projects: {
       query: projectsInNamespaceWithFrameworkQuery,
       skip() {
-        return !this.framework || !this.groupPath;
+        return !this.framework?.id || !this.groupPath;
       },
       variables() {
         return {
           fullPath: this.groupPath,
-          frameworkId: this.framework.id,
+          frameworkId: this.framework?.id,
           after: this.after,
         };
       },
       update(data) {
+        const isInitialLoad = !this.after;
+        const incomingProjects = data.namespace.projects;
+
+        if (isInitialLoad) {
+          return incomingProjects;
+        }
+        const existingIds = new Set(this.projects.nodes.map((node) => node.id));
+        const newUniqueNodes = incomingProjects.nodes.filter((node) => !existingIds.has(node.id));
+
         return {
-          ...this.projects,
-          ...data.namespace.projects,
-          nodes: [...this.projects.nodes, ...data.namespace.projects.nodes],
+          ...incomingProjects,
+          nodes: [...this.projects.nodes, ...newUniqueNodes],
         };
       },
     },
@@ -151,6 +160,26 @@ export default {
           return Number(idA) - Number(idB);
         }) || []
       );
+    },
+  },
+  watch: {
+    framework: {
+      handler(newFramework, oldFramework) {
+        const oldId = oldFramework?.id ?? null;
+        const newId = newFramework?.id ?? null;
+
+        if (oldId !== newId) {
+          this.projects = {
+            nodes: [],
+            pageInfo: {
+              hasNextPage: false,
+            },
+            count: 0,
+          };
+          this.after = null;
+        }
+      },
+      immediate: false,
     },
   },
   methods: {
