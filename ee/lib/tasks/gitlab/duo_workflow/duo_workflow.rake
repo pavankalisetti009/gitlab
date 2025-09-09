@@ -37,7 +37,7 @@ namespace :gitlab do
         # Create checkpoint JSONB data
         checkpoint_data = {
           "v" => 1,
-          "id" => SecureRandom.uuid_v7,
+          "id" => Gitlab::Utils.uuid_v7,
           "ts" => timestamp,
           "pending_sends" => [],
           "versions_seen" => {
@@ -132,8 +132,8 @@ namespace :gitlab do
         }
 
         {
-          parent_ts: step > 0 ? SecureRandom.uuid_v7 : nil,
-          thread_ts: SecureRandom.uuid_v7,
+          parent_ts: step > 0 ? Gitlab::Utils.uuid_v7 : nil,
+          thread_ts: Gitlab::Utils.uuid_v7,
           checkpoint: checkpoint_data,
           metadata: metadata
         }
