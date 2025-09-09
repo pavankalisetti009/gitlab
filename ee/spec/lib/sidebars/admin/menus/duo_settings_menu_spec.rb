@@ -10,6 +10,6 @@ RSpec.describe Sidebars::Admin::Menus::DuoSettingsMenu, feature_category: :navig
 
   it_behaves_like 'Admin menu without sub menus', active_routes: {
     action: %w[show index],
-    controller: [:gitlab_duo, :seat_utilization, :configuration, :usage]
+    controller: [:gitlab_duo, :seat_utilization, :configuration, :usage, 'admin/gitlab_duo/usage/users']
   }
 end
