@@ -31,7 +31,9 @@ RSpec.describe Groups::Settings::GitlabDuoController, type: :request, feature_ca
       end
     end
 
-    context "when show_gitlab_duo_settings_app? returns true" do
+    context "when show_gitlab_duo_settings_app? returns true", :saas do
+      let_it_be(:group) { create(:group_with_plan, owners: owner) }
+
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end

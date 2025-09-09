@@ -24,7 +24,9 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
       sign_in(user)
     end
 
-    it_behaves_like 'namespace storage limit alert'
+    describe 'with storage limit', :saas do
+      it_behaves_like 'namespace storage limit alert'
+    end
 
     it_behaves_like 'seat count alert'
 
@@ -596,7 +598,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
     end
   end
 
-  context 'when ai settings are specified' do
+  context 'when ai settings are specified', :saas do
     let(:group) { create(:group_with_plan, plan: :ultimate_plan, trial_ends_on: Date.tomorrow) }
 
     before do

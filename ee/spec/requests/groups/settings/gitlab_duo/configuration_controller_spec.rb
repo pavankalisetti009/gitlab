@@ -20,7 +20,7 @@ RSpec.describe Groups::Settings::GitlabDuo::ConfigurationController, type: :requ
       group.add_owner(user)
     end
 
-    context 'when show_gitlab_duo_settings_menu_item? returns true' do
+    context 'when show_gitlab_duo_settings_menu_item? returns true', :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         allow(controller).to receive(:show_gitlab_duo_settings_menu_item?).and_return(true)

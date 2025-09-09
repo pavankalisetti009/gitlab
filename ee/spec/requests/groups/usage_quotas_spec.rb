@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'view usage quotas', feature_category: :consumables_cost_management do
+RSpec.describe 'view usage quotas', :saas, feature_category: :consumables_cost_management do
   let_it_be(:namespace) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:subscription_history) do

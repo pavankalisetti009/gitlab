@@ -76,7 +76,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
     subject { get :show, params: { namespace_id: public_project.namespace.path, id: public_project.path } }
 
-    context 'additional repo storage by namespace', feature_category: :consumables_cost_management do
+    context 'additional repo storage by namespace', :saas, feature_category: :consumables_cost_management do
       before do
         stub_saas_features(namespaces_storage_limit: true)
         stub_feature_flags(namespace_storage_limit: false)
@@ -135,6 +135,14 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
           expect(response.body).not_to match(/purchase more storage/)
         end
+
+        context 'namespace storage limit' do
+          let(:namespace) { public_project.namespace }
+
+          it_behaves_like 'namespace storage limit alert'
+
+          it_behaves_like 'seat count alert'
+        end
       end
     end
 
@@ -174,14 +182,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         expect(response.body).not_to match(/The size of this repository.+exceeds the limit/)
       end
-    end
-
-    context 'namespace storage limit', feature_category: :consumables_cost_management do
-      let(:namespace) { public_project.namespace }
-
-      it_behaves_like 'namespace storage limit alert'
-
-      it_behaves_like 'seat count alert'
     end
   end
 

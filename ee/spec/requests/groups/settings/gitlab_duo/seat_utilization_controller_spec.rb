@@ -56,7 +56,7 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
       it_behaves_like 'renders not found error'
     end
 
-    context "when show_gitlab_duo_settings_app? returns true" do
+    context "when show_gitlab_duo_settings_app? returns true", :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
@@ -64,7 +64,7 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
       it_behaves_like 'renders seat management index page for group'
     end
 
-    context 'with a non seat assignable duo add on' do
+    context 'with a non seat assignable duo add on', :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
@@ -82,7 +82,7 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
       end
     end
 
-    context 'when in a subgroup' do
+    context 'when in a subgroup', :saas do
       let(:subgroup) { create(:group, :private, parent: group) }
 
       before do
@@ -98,7 +98,7 @@ RSpec.describe Groups::Settings::GitlabDuo::SeatUtilizationController, type: :re
     end
   end
 
-  context 'when user does not have read_usage_quotas permission' do
+  context 'when user does not have read_usage_quotas permission', :saas do
     before do
       group.add_maintainer(user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- cannot use stub_saas_features in before_all
       stub_saas_features(gitlab_com_subscriptions: true)

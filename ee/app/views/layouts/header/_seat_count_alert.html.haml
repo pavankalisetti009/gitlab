@@ -1,4 +1,11 @@
-- if show_seat_count_alert?
+- all_seats_used_component = Namespaces::AllSeatsUsedAlertComponent.new(context: context, content_class: '', current_user: current_user)
+- bso_all_seats_used_component = Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent.new(context: context, content_class: full_content_class, current_user: current_user)
+
+- if all_seats_used_component.render?
+  = render all_seats_used_component
+- elsif bso_all_seats_used_component.render?
+  = render bso_all_seats_used_component
+- elsif show_seat_count_alert?
   = render Pajamas::AlertComponent.new(alert_options: { class: 'js-approaching-seat-count-threshold',
     data: { dismiss_endpoint: group_callouts_path,
             feature_id: Users::GroupCalloutsHelper::APPROACHING_SEAT_COUNT_THRESHOLD,
@@ -11,5 +18,3 @@
       = link_to _('Learn more.'), seat_count_help_page_link, target: '_blank', rel: 'noopener noreferrer'
     - c.with_actions do
       = link_button_to _('View seat usage'), usage_quotas_path(namespace, anchor: 'seats-quota-tab'), class: 'gl-alert-action', variant: :confirm
-- else
-  = render Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent.new(context: context, content_class: full_content_class, current_user: current_user)

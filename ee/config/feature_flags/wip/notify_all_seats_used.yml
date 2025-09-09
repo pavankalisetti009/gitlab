@@ -1,0 +1,10 @@
+---
+name: notify_all_seats_used
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/523557
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/193889
+rollout_issue_url:
+milestone: '18.4'
+group: group::seat management
+type: wip
+default_enabled: false
