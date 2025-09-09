@@ -105,8 +105,7 @@ module EE
       # It should only apply for new signups, so we check if the user is new in the database.
       new_user = super
 
-      if new_user && restricted_country?(request.env['HTTP_CF_IPCOUNTRY']) && ::Feature.enabled?(
-        :restrict_sso_login_for_pipl_compliance, :instance)
+      if new_user && restricted_country?(request.env['HTTP_CF_IPCOUNTRY'])
 
         return new_user if allow_invited_user?
 
