@@ -1,5 +1,7 @@
 import { nextTick } from 'vue';
+import { GlPopover, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import RiskScoreByProject from 'ee/security_dashboard/components/shared/charts/risk_score_by_project.vue';
 import { generateGrid } from 'ee/security_dashboard/utils/chart_utils';
@@ -10,17 +12,55 @@ describe('RiskScoreByProject chart', () => {
   let wrapper;
 
   const DEFAULT_RISK_SCORES = [
-    { project: { id: 1, name: 'Project Delta' }, score: 85, rating: 'CRITICAL' },
-    { project: { id: 2, name: 'Project Gamma' }, score: 65, rating: 'HIGH' },
-    { project: { id: 3, name: 'Project Beta' }, score: 35, rating: 'MEDIUM' },
-    { project: { id: 4, name: 'Project Alpha' }, score: 15, rating: 'LOW' },
+    {
+      project: {
+        id: 1,
+        name: 'Project Delta',
+        webUrl: '/project/delta',
+      },
+      score: 85,
+      rating: 'CRITICAL',
+    },
+    {
+      project: {
+        id: 2,
+        name: 'Project Gamma',
+        webUrl: '/project/gamma',
+      },
+      score: 65,
+      rating: 'HIGH',
+    },
+    {
+      project: {
+        id: 3,
+        name: 'Project Beta',
+        webUrl: '/project/beta',
+      },
+      score: 35,
+      rating: 'MEDIUM',
+    },
+    {
+      project: {
+        id: 4,
+        name: 'Project Alpha',
+        webUrl: '/project/alpha',
+      },
+      score: 15,
+      rating: 'LOW',
+    },
   ];
 
-  const EXPECTED_RISK_SCORE_CLASSES = {
-    LOW: 'gl-bg-green-200 gl-text-green-800',
-    MEDIUM: 'gl-bg-orange-200 gl-text-orange-800',
-    HIGH: 'gl-bg-red-500 gl-text-white',
-    CRITICAL: 'gl-bg-red-700 gl-text-white',
+  const EXPECTED_RISK_SCORE_BG = {
+    LOW: 'gl-bg-green-200',
+    MEDIUM: 'gl-bg-orange-200',
+    HIGH: 'gl-bg-red-500',
+    CRITICAL: 'gl-bg-red-700',
+  };
+  const EXPECTED_RISK_SCORE_COLOR = {
+    LOW: 'gl-text-green-800',
+    MEDIUM: 'gl-text-orange-800',
+    HIGH: 'gl-text-white',
+    CRITICAL: 'gl-text-white',
   };
 
   const createComponent = (props = {}) => {
@@ -32,11 +72,20 @@ describe('RiskScoreByProject chart', () => {
       directives: {
         GlResizeObserver: createMockDirective('gl-resize-observer'),
       },
+      stubs: {
+        GlPopover: stubComponent(GlPopover, { template: RENDER_ALL_SLOTS_TEMPLATE }),
+      },
     });
   };
 
   const findRiskScoreTiles = () => wrapper.findAllByTestId('risk-score-tile');
   const findRiskScoreTile = (index) => findRiskScoreTiles().at(index);
+  const findPopovers = () => wrapper.findAllComponents(GlPopover);
+  const findPopover = (index) => findPopovers().at(index);
+  const findPopoverLink = (index) => findPopover(index).findComponent(GlLink);
+  const findRiskScoreButtons = () => wrapper.findAllByRole('button');
+  const findRiskScoreButton = (index) => findRiskScoreButtons().at(index);
+
   const triggerResizeObserver = (width = 600, height = 500) => {
     const resizeObserverEntry = {
       contentRect: { width, height },
@@ -74,16 +123,47 @@ describe('RiskScoreByProject chart', () => {
     it.each(DEFAULT_RISK_SCORES.map((item, index) => [item, index]))(
       'project risk score has expected tile properties',
       (riskScore, index) => {
-        const cell = findRiskScoreTile(index);
-        expect(cell.text()).toBe(`${riskScore.score}`);
-        expect(cell.classes()).toContain(
-          ...EXPECTED_RISK_SCORE_CLASSES[riskScore.rating].split(' '),
-        );
-        expect(cell.attributes('aria-label')).toBe(
+        const text = findRiskScoreButton(index);
+        expect(text.text()).toBe(`${riskScore.score}`);
+        expect(text.attributes('aria-label')).toBe(
           `Project ${riskScore.project.name}, risk score: ${riskScore.score}`,
+        );
+        expect(findRiskScoreTile(index).classes()).toContain(
+          EXPECTED_RISK_SCORE_BG[riskScore.rating],
+        );
+        expect(findRiskScoreButton(index).classes()).toContain(
+          EXPECTED_RISK_SCORE_COLOR[riskScore.rating],
         );
       },
     );
+  });
+
+  describe('popovers', () => {
+    it('renders a popover for each risk score', () => {
+      expect(findPopovers()).toHaveLength(DEFAULT_RISK_SCORES.length);
+    });
+
+    const itemIndex = 0;
+
+    it('has the correct target', () => {
+      expect(findPopover(itemIndex).props('target')).toBe(
+        `risk-score-by-project-${DEFAULT_RISK_SCORES[itemIndex].project.id}`,
+      );
+    });
+
+    it('renders a link to the project', () => {
+      expect(findPopoverLink(itemIndex).props('href')).toBe(
+        DEFAULT_RISK_SCORES[itemIndex].project.webUrl,
+      );
+    });
+
+    it('renders the risk score', () => {
+      expect(findPopover(itemIndex).text()).toContain(`${DEFAULT_RISK_SCORES[itemIndex].score}`);
+    });
+
+    it('renders correct risk rating', () => {
+      expect(findPopover(itemIndex).text()).toContain('Critical risk score');
+    });
   });
 
   describe('grid resizing', () => {

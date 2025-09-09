@@ -44,7 +44,7 @@ const generateRiskScores = (count) => {
       project: {
         id: `project-${i + 1}`,
         name: `project-${rating.toLowerCase()}-${i + 1}`,
-        fullPath: `gitlab-org/project-${rating.toLowerCase()}-${i + 1}`,
+        webUrl: `https://gitlab.com/gitlab-org/project-${rating.toLowerCase()}-${i + 1}`,
       },
     });
   }

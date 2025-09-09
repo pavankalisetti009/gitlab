@@ -1,11 +1,15 @@
 <script>
-import { GlResizeObserverDirective } from '@gitlab/ui';
+import { GlResizeObserverDirective, GlPopover, GlLink } from '@gitlab/ui';
 import { generateGrid } from 'ee/security_dashboard/utils/chart_utils';
 import { s__, sprintf } from '~/locale';
 
 export default {
   directives: {
     GlResizeObserver: GlResizeObserverDirective,
+  },
+  components: {
+    GlPopover,
+    GlLink,
   },
   props: {
     riskScores: {
@@ -19,11 +23,17 @@ export default {
       nrRows: 0,
     };
   },
-  riskScoreClasses: {
-    LOW: 'gl-bg-green-200 gl-text-green-800',
-    MEDIUM: 'gl-bg-orange-200 gl-text-orange-800',
-    HIGH: 'gl-bg-red-500 gl-text-white',
-    CRITICAL: 'gl-bg-red-700 gl-text-white',
+  riskScoreBg: {
+    LOW: 'gl-bg-green-200',
+    MEDIUM: 'gl-bg-orange-200',
+    HIGH: 'gl-bg-red-500',
+    CRITICAL: 'gl-bg-red-700',
+  },
+  riskScoreColor: {
+    LOW: 'gl-text-green-800',
+    MEDIUM: 'gl-text-orange-800',
+    HIGH: 'gl-text-white',
+    CRITICAL: 'gl-text-white',
   },
   computed: {
     gridStyle() {
@@ -48,6 +58,19 @@ export default {
         riskScore: riskScore.score,
       });
     },
+    getRiskRatingLabel(rating) {
+      return sprintf(s__('SecurityReports|%{rating} risk score'), {
+        rating: this.$options.i18n.ratings[rating],
+      });
+    },
+  },
+  i18n: {
+    ratings: {
+      CRITICAL: s__('SecurityReports|Critical'),
+      HIGH: s__('SecurityReports|High'),
+      MEDIUM: s__('SecurityReports|Medium'),
+      LOW: s__('SecurityReports|Low'),
+    },
   },
 };
 </script>
@@ -61,12 +84,37 @@ export default {
     <div
       v-for="riskScore in riskScores"
       :key="riskScore.project.id"
-      :aria-label="getAriaLabel(riskScore)"
       class="gl-flex gl-items-center gl-justify-center gl-bg-gray-200"
-      :class="$options.riskScoreClasses[riskScore.rating]"
+      :class="$options.riskScoreBg[riskScore.rating]"
       data-testid="risk-score-tile"
     >
-      {{ riskScore.score }}
+      <button
+        :id="`risk-score-by-project-${riskScore.project.id}`"
+        :aria-label="getAriaLabel(riskScore)"
+        class="gl-m-0 gl-cursor-default gl-border-none gl-bg-transparent gl-p-0"
+        :class="$options.riskScoreColor[riskScore.rating]"
+        type="button"
+      >
+        {{ riskScore.score }}
+      </button>
+      <gl-popover
+        :target="`risk-score-by-project-${riskScore.project.id}`"
+        container="viewport"
+        :css-classes="['gl-min-w-20', 'gl-max-w-34']"
+      >
+        <template #title>
+          <div class="gl-flex gl-w-full gl-justify-between gl-gap-6">
+            <gl-link
+              :href="riskScore.project.webUrl"
+              target="_blank"
+              class="gl-flex-shrink gl-truncate"
+              >{{ riskScore.project.name }}</gl-link
+            >
+            <div class="gl-text-nowrap">{{ riskScore.score }}</div>
+          </div></template
+        >
+        <span>{{ getRiskRatingLabel(riskScore.rating) }}</span>
+      </gl-popover>
     </div>
   </div>
 </template>
