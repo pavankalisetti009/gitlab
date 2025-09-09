@@ -1,11 +1,12 @@
 import VueApollo from 'vue-apollo';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
@@ -16,12 +17,18 @@ import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { AI_CATALOG_AGENTS_DUPLICATE_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+  TRACK_EVENT_TYPE_AGENT,
+} from 'ee/ai/catalog/constants';
+import {
   mockAgent,
   mockAgents,
   mockCatalogItemsResponse,
   mockCatalogAgentDeleteResponse,
   mockCatalogAgentDeleteErrorResponse,
   mockAiCatalogAgentResponse,
+  mockAiCatalogAgentResponse2,
   mockPageInfo,
 } from '../mock_data';
 
@@ -32,20 +39,28 @@ Vue.use(VueApollo);
 describe('AiCatalogAgents', () => {
   let wrapper;
   let mockApollo;
+  let mockRoute;
 
   const mockRouter = {
     push: jest.fn(),
   };
 
-  const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
-  const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
-  const deleteCatalogItemMutationHandler = jest.fn();
   const mockToast = {
     show: jest.fn(),
   };
   const mockSetItemToDuplicateMutation = jest.fn();
 
+  const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
+  const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
+  const deleteCatalogItemMutationHandler = jest.fn();
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   const createComponent = ({ $route = { query: {} } } = {}) => {
+    mockRoute = Vue.observable({
+      query: $route.query,
+    });
+
     mockApollo = createMockApollo(
       [
         [aiCatalogAgentQuery, mockAgentQueryHandler],
@@ -64,7 +79,7 @@ describe('AiCatalogAgents', () => {
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
-        $route,
+        $route: mockRoute,
       },
     });
   };
@@ -430,6 +445,124 @@ describe('AiCatalogAgents', () => {
         before: null,
         first: 20,
         last: null,
+      });
+    });
+  });
+
+  describe('tracking events', () => {
+    describe('when component is mounted without show query param', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX} event`, () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+      });
+    });
+
+    describe('when component is mounted with show query param', () => {
+      beforeEach(async () => {
+        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse);
+        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } } });
+        await waitForPromises();
+      });
+
+      it('does not track the index event immediately on mount', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+      });
+
+      it('tracks the detail event for the initial show param', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+      });
+
+      it('waits for the query param to be removed before tracking the index event', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        mockRoute.query = {};
+        await nextTick();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+      });
+    });
+
+    describe('when show query param changes', () => {
+      beforeEach(async () => {
+        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse);
+        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } } });
+        await waitForPromises();
+      });
+
+      it('tracks the detail event for every show query param change', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+
+        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse2);
+        mockRoute.query = { show: getIdFromGraphQLId(mockAgents[1].id) };
+        await waitForPromises();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+
+        expect(trackEventSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('does not track the index event more than once', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        mockRoute.query = {};
+        await nextTick();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+
+        mockRoute.query = { show: getIdFromGraphQLId(mockAgents[0].id) };
+        await waitForPromises();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
+
+        trackEventSpy.mockClear();
+        mockRoute.query = {};
+        await nextTick();
+
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_AGENT },
+          undefined,
+        );
       });
     });
   });

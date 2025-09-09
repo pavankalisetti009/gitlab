@@ -6,6 +6,7 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
@@ -15,10 +16,16 @@ import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.qu
 import aiCatalogFlowsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flows.query.graphql';
 import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import {
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+  TRACK_EVENT_TYPE_FLOW,
+} from 'ee/ai/catalog/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
   mockFlow,
   mockAiCatalogFlowResponse,
+  mockAiCatalogFlowResponse2,
   mockCatalogFlowsResponse,
   mockCatalogFlowDeleteResponse,
   mockCatalogFlowDeleteErrorResponse,
@@ -36,6 +43,7 @@ Vue.use(VueApollo);
 describe('AiCatalogFlows', () => {
   let wrapper;
   let mockApollo;
+  let mockRoute;
 
   const mockRouter = {
     push: jest.fn(),
@@ -49,7 +57,13 @@ describe('AiCatalogFlows', () => {
   const deleteCatalogItemMutationHandler = jest.fn();
   const createAiCatalogItemConsumerHandler = jest.fn();
 
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
   const createComponent = ({ $route = { query: {} } } = {}) => {
+    mockRoute = Vue.observable({
+      query: $route.query,
+    });
+
     mockApollo = createMockApollo([
       [aiCatalogFlowQuery, mockFlowQueryHandler],
       [aiCatalogFlowsQuery, mockCatalogItemsQueryHandler],
@@ -62,7 +76,7 @@ describe('AiCatalogFlows', () => {
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
-        $route,
+        $route: mockRoute,
       },
     });
   };
@@ -443,6 +457,124 @@ describe('AiCatalogFlows', () => {
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
           });
         });
+      });
+    });
+  });
+
+  describe('tracking events', () => {
+    describe('when component is mounted without show query param', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX} event`, () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
+    });
+
+    describe('when component is mounted with show query param', () => {
+      beforeEach(async () => {
+        mockFlowQueryHandler.mockResolvedValue(mockAiCatalogFlowResponse);
+        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockFlows[0].id) } } });
+        await waitForPromises();
+      });
+
+      it('does not track the index event immediately on mount', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
+
+      it('tracks the detail event for the initial show param', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
+
+      it('waits for the query param to be removed before tracking the index event', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        mockRoute.query = {};
+        await nextTick();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+      });
+    });
+
+    describe('when show query param changes', () => {
+      beforeEach(async () => {
+        mockFlowQueryHandler.mockResolvedValue(mockAiCatalogFlowResponse);
+        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockFlows[0].id) } } });
+        await waitForPromises();
+      });
+
+      it('tracks the detail event for every show query param change', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+
+        mockFlowQueryHandler.mockResolvedValue(mockAiCatalogFlowResponse2);
+        mockRoute.query = { show: getIdFromGraphQLId(mockFlows[1].id) };
+        await waitForPromises();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+
+        expect(trackEventSpy).toHaveBeenCalledTimes(2);
+      });
+
+      it('does not track the index event more than once', async () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        mockRoute.query = {};
+        await nextTick();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+
+        mockRoute.query = { show: getIdFromGraphQLId(mockFlows[0].id) };
+        await waitForPromises();
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
+
+        trackEventSpy.mockClear();
+        mockRoute.query = {};
+        await nextTick();
+
+        expect(trackEventSpy).not.toHaveBeenCalledWith(
+          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+          { label: TRACK_EVENT_TYPE_FLOW },
+          undefined,
+        );
       });
     });
   });
