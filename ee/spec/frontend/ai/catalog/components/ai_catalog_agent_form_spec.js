@@ -52,7 +52,7 @@ describe('AiCatalogAgentForm', () => {
 
   const mockToolQueryHandler = jest.fn().mockResolvedValue(mockToolQueryResponse);
 
-  const createWrapper = (props = {}) => {
+  const createWrapper = ({ props = {}, aiCatalogAgentTools = true } = {}) => {
     mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentForm, {
@@ -64,12 +64,17 @@ describe('AiCatalogAgentForm', () => {
       stubs: {
         GlFormFields,
       },
+      provide: {
+        glFeatures: {
+          aiCatalogAgentTools,
+        },
+      },
     });
   };
 
   describe('Initial Rendering', () => {
     it('renders the form with the correct initial values when props are provided', () => {
-      createWrapper({ initialValues });
+      createWrapper({ props: { initialValues } });
 
       expect(findProjectDropdown().props('value')).toBe(initialValues.projectId);
       expect(findNameField().props('value')).toBe(initialValues.name);
@@ -93,9 +98,22 @@ describe('AiCatalogAgentForm', () => {
     });
 
     it('does not render project dropdown when in edit mode', () => {
-      createWrapper({ mode: 'edit' });
+      createWrapper({ props: { mode: 'edit' } });
 
       expect(findProjectDropdown().exists()).toBe(false);
+    });
+
+    it('does not render tools selector when aiCatalogAgentTools FF is off', () => {
+      createWrapper({ aiCatalogAgentTools: false });
+
+      expect(findToolsField().exists()).toBe(false);
+    });
+
+    it('does not fetch available tools when aiCatalogAgentTools FF is off', async () => {
+      createWrapper({ aiCatalogAgentTools: false });
+      await waitForPromises();
+
+      expect(mockToolQueryHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -123,7 +141,7 @@ describe('AiCatalogAgentForm', () => {
 
   describe('Loading Prop', () => {
     it('shows button with loading icon when the loading property is true', () => {
-      createWrapper({ isLoading: true });
+      createWrapper({ props: { isLoading: true } });
 
       expect(findSubmitButton().props('loading')).toBe(true);
     });
@@ -137,7 +155,7 @@ describe('AiCatalogAgentForm', () => {
 
   describe('Form Submission', () => {
     it('emits form values when user clicks submit', async () => {
-      createWrapper({ initialValues });
+      createWrapper({ props: { initialValues } });
 
       await findFormFields().vm.$emit('submit');
 
@@ -155,7 +173,7 @@ describe('AiCatalogAgentForm', () => {
         userPrompt: addRandomSpacesToString(initialValues.userPrompt),
       };
 
-      createWrapper({ initialValues: formValuesWithRandomSpaces });
+      createWrapper({ props: { initialValues: formValuesWithRandomSpaces } });
 
       await findFormFields().vm.$emit('submit');
 
@@ -167,7 +185,7 @@ describe('AiCatalogAgentForm', () => {
     const mockErrorMessage = 'The agent could not be created';
 
     beforeEach(() => {
-      createWrapper({ errors: [mockErrorMessage] });
+      createWrapper({ props: { errors: [mockErrorMessage] } });
     });
 
     it('passes error alert', () => {
