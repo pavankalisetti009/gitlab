@@ -74,7 +74,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
             context 'with admin custom permissions' do
               let(:abilities) { { read_admin_users: true } }
 
-              let(:error_message) { 'Namespace must be blank' }
+              let(:error_message) { 'Unknown permission: read_admin_users' }
 
               it_behaves_like 'custom role create service returns error'
             end
@@ -149,6 +149,10 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         context 'when creating an admin custom role' do
           let(:abilities) { { read_admin_users: true } }
+
+          before do
+            params.delete(:base_access_level)
+          end
 
           it_behaves_like 'custom role creation' do
             let(:fail_condition!) do
