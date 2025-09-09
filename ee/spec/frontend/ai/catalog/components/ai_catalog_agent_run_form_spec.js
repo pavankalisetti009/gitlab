@@ -54,9 +54,16 @@ describe('AiCatalogAgentRunForm', () => {
       const mockUserPrompt = 'Mock user prompt';
 
       findUserPromptField().vm.$emit('update', mockUserPrompt);
-      findForm().vm.$emit('submit', {
-        preventDefault: jest.fn(),
-      });
+      findFormFields().vm.$emit('submit');
+
+      expect(wrapper.emitted('submit')[0]).toEqual([{ userPrompt: mockUserPrompt }]);
+    });
+
+    it('trims the form values before emitting them', () => {
+      const mockUserPrompt = 'Mock user prompt';
+
+      findUserPromptField().vm.$emit('update', `  ${mockUserPrompt}  `);
+      findFormFields().vm.$emit('submit');
 
       expect(wrapper.emitted('submit')[0]).toEqual([{ userPrompt: mockUserPrompt }]);
     });
