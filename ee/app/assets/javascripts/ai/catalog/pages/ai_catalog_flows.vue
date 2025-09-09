@@ -9,6 +9,7 @@ import {
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
@@ -18,7 +19,13 @@ import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
 import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
-import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from '../constants';
+import {
+  FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
+  PAGE_SIZE,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+  TRACK_EVENT_TYPE_FLOW,
+} from '../constants';
 
 export default {
   name: 'AiCatalogFlows',
@@ -29,6 +36,7 @@ export default {
     AiCatalogItemConsumerModal,
     ErrorsAlert,
   },
+  mixins: [InternalEvents.mixin()],
   apollo: {
     aiCatalogFlows: {
       query: aiCatalogFlowsQuery,
@@ -62,7 +70,10 @@ export default {
 
         if (data.aiCatalogItem === null && this.hasQueryParam) {
           this.handleNotFound();
+          return;
         }
+
+        this.trackViewEvent();
       },
       error(error) {
         if (this.showQueryParam) {
@@ -80,6 +91,7 @@ export default {
       aiCatalogFlowToBeAdded: null,
       errors: [],
       pageInfo: {},
+      hasTrackedPageView: false,
     };
   },
   computed: {
@@ -151,8 +163,26 @@ export default {
       };
     },
   },
-
+  watch: {
+    hasQueryParam: {
+      handler: 'trackViewIndexEvent',
+      immediate: true,
+    },
+  },
   methods: {
+    trackViewIndexEvent() {
+      if (this.hasTrackedPageView || this.hasQueryParam) return;
+
+      this.hasTrackedPageView = true;
+      this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
+        label: TRACK_EVENT_TYPE_FLOW,
+      });
+    },
+    trackViewEvent() {
+      this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_TYPE_FLOW,
+      });
+    },
     handleAiCatalogFlowToBeAdded({ id }) {
       const flow = this.aiCatalogFlows?.find((item) => item.id === id);
       if (typeof flow === 'undefined') {
