@@ -1,5 +1,4 @@
 import getMergeRequests from 'ee/analytics/merge_request_analytics/graphql/queries/throughput_table.query.graphql';
-import { INITIAL_PAGINATION_STATE } from 'ee/analytics/merge_request_analytics/constants';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
@@ -64,7 +63,7 @@ const fetchMergeRequests = async ({
   notLabels = null,
   sourceBranches = null,
   targetBranches = null,
-  pagination = INITIAL_PAGINATION_STATE,
+  pagination,
   // The rest should not be set to null
   milestoneTitle,
   notMilestoneTitle,
@@ -86,7 +85,10 @@ const fetchMergeRequests = async ({
         notMilestoneTitle,
         assigneeUsername,
         authorUsername,
-        ...pagination,
+        firstPageSize: pagination.first,
+        lastPageSize: pagination.last,
+        nextPageCursor: pagination.endCursor,
+        prevPageCursor: pagination.startCursor,
       },
     })
     .then((result) => {
@@ -110,7 +112,7 @@ const fetchMergeRequests = async ({
 
 export default function fetch({
   namespace,
-  query: { dateRange = DATE_RANGE_OPTION_LAST_365_DAYS },
+  query: { dateRange = DATE_RANGE_OPTION_LAST_365_DAYS, pagination },
   queryOverrides = {},
   filters: { startDate: filtersStartDate, endDate = startOfTomorrow, searchFilters } = {},
 }) {
@@ -120,6 +122,7 @@ export default function fetch({
     namespace,
     startDate,
     endDate,
+    pagination: pagination || { first: 20 },
     ...filterToMRThroughputQueryObject(searchFilters),
     ...queryOverrides,
   });
