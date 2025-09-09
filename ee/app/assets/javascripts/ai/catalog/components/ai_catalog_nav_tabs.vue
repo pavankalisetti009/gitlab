@@ -1,6 +1,7 @@
 <script>
 import { GlTab, GlTabs } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
 
 export default {
@@ -8,6 +9,7 @@ export default {
     GlTab,
     GlTabs,
   },
+  mixins: [glFeatureFlagsMixin()],
   computed: {
     tabs() {
       return [
@@ -16,11 +18,15 @@ export default {
           route: AI_CATALOG_AGENTS_ROUTE,
           active: !this.$route.path.startsWith(AI_CATALOG_FLOWS_ROUTE),
         },
-        {
-          text: s__('AICatalog|Flows'),
-          route: AI_CATALOG_FLOWS_ROUTE,
-          active: this.$route.path.startsWith(AI_CATALOG_FLOWS_ROUTE),
-        },
+        ...(this.glFeatures.aiCatalogFlows
+          ? [
+              {
+                text: s__('AICatalog|Flows'),
+                route: AI_CATALOG_FLOWS_ROUTE,
+                active: this.$route.path.startsWith(AI_CATALOG_FLOWS_ROUTE),
+              },
+            ]
+          : []),
       ];
     },
   },

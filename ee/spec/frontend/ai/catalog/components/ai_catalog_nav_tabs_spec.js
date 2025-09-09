@@ -11,13 +11,18 @@ describe('AiCatalogNavTabs', () => {
     push: jest.fn(),
   };
 
-  const createComponent = ({ routePath = '/ai/catalog' } = {}) => {
+  const createComponent = ({ routePath = '/ai/catalog', aiCatalogFlows = true } = {}) => {
     wrapper = shallowMountExtended(AiCatalogNavTabs, {
       mocks: {
         $route: {
           path: routePath,
         },
         $router: mockRouter,
+      },
+      provide: {
+        glFeatures: {
+          aiCatalogFlows,
+        },
       },
     });
   };
@@ -48,6 +53,17 @@ describe('AiCatalogNavTabs', () => {
     const flowsTab = findAllTabs().at(1);
 
     expect(flowsTab.attributes('title')).toBe('Flows');
+  });
+
+  describe('when aiCatalogFlows FF is off', () => {
+    beforeEach(() => {
+      createComponent({ aiCatalogFlows: false });
+    });
+
+    it('does not render the Flows tab', () => {
+      expect(findAllTabs()).toHaveLength(1);
+      expect(findAllTabs().at(0).attributes('title')).toBe('Agents');
+    });
   });
 
   describe('when on Flows route', () => {
