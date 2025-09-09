@@ -55,7 +55,7 @@ export default {
         <gl-button
           v-gl-tooltip
           class="gl-hidden lg:gl-flex"
-          icon="maximize"
+          :icon="isMaximized ? 'minimize' : 'maximize'"
           category="tertiary"
           :aria-label="maximizeButtonLabel"
           :title="maximizeButtonLabel"

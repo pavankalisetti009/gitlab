@@ -9,6 +9,7 @@ import ComplianceViolationDetailsApp from 'ee/compliance_violations/components/c
 import AuditEvent from 'ee/compliance_violations/components/audit_event.vue';
 import ViolationSection from 'ee/compliance_violations/components/violation_section.vue';
 import SystemNote from '~/work_items/components/notes/system_note.vue';
+import DiscussionNote from 'ee/compliance_violations/components/discussion_note.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import RelatedIssues from 'ee/compliance_violations/components/related_issues.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
@@ -250,6 +251,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssues);
   const findErrorMessage = () => wrapper.findComponent(GlAlert);
   const findSystemNotes = () => wrapper.findAllComponents(SystemNote);
+  const findDiscussionNotes = () => wrapper.findAllComponents(DiscussionNote);
   const findActivitySection = () => wrapper.find('.issuable-discussion');
   const findActivityHeader = () => wrapper.find('.issuable-discussion h2');
 
@@ -378,7 +380,7 @@ describe('ComplianceViolationDetailsApp', () => {
     });
   });
 
-  describe('system notes section', () => {
+  describe('notes section', () => {
     describe('when violation has notes', () => {
       beforeEach(async () => {
         createComponent();
@@ -393,32 +395,31 @@ describe('ComplianceViolationDetailsApp', () => {
         expect(findActivityHeader().text()).toBe('Activity');
       });
 
-      it('renders only system notes', () => {
+      it('renders both system and discussion notes', () => {
         const systemNotes = findSystemNotes();
+        const discussionNotes = findDiscussionNotes();
+
         expect(systemNotes).toHaveLength(1);
+        expect(discussionNotes).toHaveLength(1);
       });
 
-      it('filters out non-system notes', () => {
-        const systemNotes = findSystemNotes();
-        const nonSystemNotes = mockComplianceViolation.notes.nodes.filter((note) => !note.system);
-
-        expect(nonSystemNotes).toHaveLength(1);
-
-        systemNotes.wrappers.forEach((noteWrapper) => {
-          const noteId = noteWrapper.props('note').id;
-          const isSystemNote = mockComplianceViolation.notes.nodes.find(
-            (note) => note.id === noteId,
-          ).system;
-          expect(isSystemNote).toBe(true);
-        });
-      });
-
-      it('passes correct props to each system note', () => {
+      it('renders system notes with correct props', () => {
         const systemNotes = findSystemNotes();
         const systemNotesData = mockComplianceViolation.notes.nodes.filter((note) => note.system);
 
         systemNotes.wrappers.forEach((noteWrapper, index) => {
           expect(noteWrapper.props('note')).toEqual(systemNotesData[index]);
+        });
+      });
+
+      it('renders discussion notes with correct props', () => {
+        const discussionNotes = findDiscussionNotes();
+        const discussionNotesData = mockComplianceViolation.notes.nodes.filter(
+          (note) => !note.system,
+        );
+
+        discussionNotes.wrappers.forEach((noteWrapper, index) => {
+          expect(noteWrapper.props('note')).toEqual(discussionNotesData[index]);
         });
       });
 
@@ -436,12 +437,16 @@ describe('ComplianceViolationDetailsApp', () => {
         await waitForPromises();
       });
 
-      it('does not render the activity section when there are no system notes', () => {
-        expect(findActivitySection().exists()).toBe(false);
+      it('renders the activity section when there are discussion notes', () => {
+        expect(findActivitySection().exists()).toBe(true);
       });
 
       it('does not render any system notes', () => {
         expect(findSystemNotes()).toHaveLength(0);
+      });
+
+      it('renders discussion notes', () => {
+        expect(findDiscussionNotes()).toHaveLength(2);
       });
     });
 
