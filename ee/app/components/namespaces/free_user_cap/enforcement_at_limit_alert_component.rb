@@ -25,7 +25,7 @@ module Namespaces
           # https://github.com/github/view_component/issues/156#issuecomment-737469885
           title: Kernel.format(
             s_(
-              "EnforcementAtLimitAlert|Your top-level group %{namespace_name} has reached the %{free_limit}-user limit"
+              "EnforcementAtLimitAlert|Your top-level group %{namespace_name} has reached the %{free_limit} user limit"
             ),
             free_limit: free_user_limit,
             namespace_name: namespace.name
