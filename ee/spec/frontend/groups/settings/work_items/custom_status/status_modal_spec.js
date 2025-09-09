@@ -115,6 +115,7 @@ describe('StatusLifecycleModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findStatusInfo = () => wrapper.findByTestId('status-info-alert');
+  const findLifecycleInfo = () => wrapper.findAllByTestId('lifecycle-info');
   const findConfirmationModal = () => wrapper.findByTestId('remove-status-confirmation-modal');
   const findIssuesPathLink = () => wrapper.findComponent(GlLink);
   const findCategorySection = (category) => wrapper.findByTestId(`category-${category}`);
@@ -229,10 +230,20 @@ describe('StatusLifecycleModal', () => {
       expect(findModal().props('visible')).toBe(true);
     });
 
-    it('shows status info alert with work item types', () => {
+    it('shows status info alert with work item types when FF `work_item_status_mvc2` is disabled', () => {
+      createComponent({ workItemStatusMvc2Enabled: false });
+
       expect(findStatusInfo().exists()).toBe(true);
+      expect(findLifecycleInfo().exists()).toBe(false);
       expect(findStatusInfo().text()).toContain('Issue');
       expect(findStatusInfo().text()).toContain('Task');
+    });
+
+    it('shows lifecycle name and status info when the FF `work_item_status_mvc2` is enabled', () => {
+      createComponent({ workItemStatusMvc2Enabled: true });
+
+      expect(findStatusInfo().exists()).toBe(false);
+      expect(findLifecycleInfo().exists()).toBe(true);
     });
 
     it('displays statuses grouped by category', () => {
