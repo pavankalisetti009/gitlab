@@ -25829,7 +25829,7 @@ msgstr ""
 msgid "EnforcementAtLimitAlert|To invite more users, you can reduce the number of users in your top-level group to %{pluralized_limit} or less. You can also upgrade to a paid tier which do not have user limits. If you need additional time, you can start a free %{duration}-day trial which includes unlimited users."
 msgstr ""
 
-msgid "EnforcementAtLimitAlert|Your top-level group %{namespace_name} has reached the %{free_limit}-user limit"
+msgid "EnforcementAtLimitAlert|Your top-level group %{namespace_name} has reached the %{free_limit} user limit"
 msgstr ""
 
 msgid "Engine"

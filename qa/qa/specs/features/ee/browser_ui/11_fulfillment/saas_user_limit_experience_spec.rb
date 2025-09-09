@@ -164,7 +164,7 @@ module QA
       def notifications(group, type)
         {
           limit_reached_enforcement_msg:
-            "Your top-level group #{group.path} has reached the 5-user limit To invite more users,
+            "Your top-level group #{group.path} has reached the 5 user limit To invite more users,
             you can reduce the number of users in your top-level group to 5 users or less",
           limit_overage_enforcement_msg:
             "Your top-level group #{group.path} is over the 5 user limit and has been placed in a read-only state"
