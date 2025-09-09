@@ -6,6 +6,8 @@ import { isExternal } from '~/lib/utils/url_utility';
 
 import { formatVisualizationValue } from '../utils';
 
+const DEFAULT_PAGE_SIZE = 20;
+
 export default {
   name: 'DataTable',
   components: {
@@ -69,18 +71,20 @@ export default {
     },
     formatVisualizationValue,
     nextPage() {
-      const { endCursor } = this.pageInfo;
+      const { first, last, endCursor } = this.pageInfo;
       this.$emit('updateQuery', {
         pagination: {
-          nextPageCursor: endCursor,
+          first: first ?? last ?? DEFAULT_PAGE_SIZE,
+          endCursor,
         },
       });
     },
     prevPage() {
-      const { startCursor } = this.pageInfo;
+      const { first, last, startCursor } = this.pageInfo;
       this.$emit('updateQuery', {
         pagination: {
-          prevPageCursor: startCursor,
+          last: last ?? first ?? DEFAULT_PAGE_SIZE,
+          startCursor,
         },
       });
     },

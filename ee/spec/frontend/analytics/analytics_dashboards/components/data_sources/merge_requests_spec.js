@@ -116,6 +116,53 @@ describe('Merge requests data source', () => {
     expect(defaultClient.query).toHaveBeenCalledTimes(1);
   });
 
+  it('can transform pagination into correct query parameters', async () => {
+    mockResolvedQuery();
+
+    res = await fetch({
+      namespace,
+      query: {
+        ...defaultQueryParams,
+        pagination: { first: 10, endCursor: 'end' },
+      },
+    });
+
+    expectQueryWithVariables({
+      fullPath: namespace,
+      startDate: new Date('2020-05-13'),
+      endDate: new Date('2020-07-07'),
+      firstPageSize: 10,
+      nextPageCursor: 'end',
+    });
+
+    expect(defaultClient.query).toHaveBeenCalledTimes(1);
+  });
+
+  it('can override default pagination', async () => {
+    mockResolvedQuery();
+
+    res = await fetch({
+      namespace,
+      query: {
+        ...defaultQueryParams,
+        pagination: { first: 10, endCursor: 'end' },
+      },
+      queryOverrides: {
+        pagination: { last: 20, startCursor: 'start' },
+      },
+    });
+
+    expectQueryWithVariables({
+      fullPath: namespace,
+      startDate: new Date('2020-05-13'),
+      endDate: new Date('2020-07-07'),
+      lastPageSize: 20,
+      prevPageCursor: 'start',
+    });
+
+    expect(defaultClient.query).toHaveBeenCalledTimes(1);
+  });
+
   describe('with data available', () => {
     beforeEach(async () => {
       mockResolvedQuery(mockMergeRequestsResponseData);

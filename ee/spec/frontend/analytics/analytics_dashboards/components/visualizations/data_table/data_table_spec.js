@@ -191,14 +191,17 @@ describe('DataTable Visualization', () => {
     });
 
     describe('with previous page', () => {
-      const pageInfo = { hasPreviousPage: true, startCursor: 'start' };
+      const pageInfo = { hasPreviousPage: true, startCursor: 'start', first: 10 };
 
       beforeEach(() => {
         createWrapper(mount, { data: { nodes, pageInfo } });
       });
 
       it('renders pagination controls', () => {
-        expect(findPagination().props()).toMatchObject(pageInfo);
+        expect(findPagination().props()).toMatchObject({
+          hasPreviousPage: pageInfo.hasPreviousPage,
+          startCursor: pageInfo.startCursor,
+        });
       });
 
       it('emits updateQuery when selected', () => {
@@ -206,21 +209,25 @@ describe('DataTable Visualization', () => {
 
         expect(wrapper.emitted('updateQuery')[0][0]).toMatchObject({
           pagination: {
-            prevPageCursor: pageInfo.startCursor,
+            startCursor: pageInfo.startCursor,
+            last: 10,
           },
         });
       });
     });
 
     describe('with next page', () => {
-      const pageInfo = { hasNextPage: true, endCursor: 'end' };
+      const pageInfo = { hasNextPage: true, endCursor: 'end', first: 10 };
 
       beforeEach(() => {
         createWrapper(mount, { data: { nodes, pageInfo } });
       });
 
       it('renders pagination controls', () => {
-        expect(findPagination().props()).toMatchObject(pageInfo);
+        expect(findPagination().props()).toMatchObject({
+          hasNextPage: pageInfo.hasNextPage,
+          endCursor: pageInfo.endCursor,
+        });
       });
 
       it('emits updateQuery when selected', () => {
@@ -228,7 +235,8 @@ describe('DataTable Visualization', () => {
 
         expect(wrapper.emitted('updateQuery')[0][0]).toMatchObject({
           pagination: {
-            nextPageCursor: pageInfo.endCursor,
+            endCursor: pageInfo.endCursor,
+            first: 10,
           },
         });
       });
