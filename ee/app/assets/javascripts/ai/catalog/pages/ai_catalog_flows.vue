@@ -142,7 +142,7 @@ export default {
         actionItems: (item) => [
           {
             text: s__('AICatalog|Add to project'),
-            action: () => this.handleAiCatalogFlowToBeAdded(item),
+            action: () => this.setAiCatalogFlowToBeAdded(item),
             icon: 'plus',
           },
           {
@@ -183,22 +183,8 @@ export default {
         label: TRACK_EVENT_TYPE_FLOW,
       });
     },
-    handleAiCatalogFlowToBeAdded({ id }) {
-      const flow = this.aiCatalogFlows?.find((item) => item.id === id);
-      if (typeof flow === 'undefined') {
-        Sentry.captureException(
-          new Error('AiCatalogFlows: Reached invalid state in Add to target action.', {
-            // eslint-disable-next-line @gitlab/require-i18n-strings
-            cause: `Couldn't find ${id}.`,
-          }),
-        );
-        this.errors = [s__('AICatalog|Failed to add flow to target. Flow not found.')];
-        return;
-      }
+    setAiCatalogFlowToBeAdded(flow = null) {
       this.aiCatalogFlowToBeAdded = flow;
-    },
-    resetAiCatalogFlowToBeAdded() {
-      this.aiCatalogFlowToBeAdded = null;
     },
     closeDrawer() {
       const { show, ...otherQuery } = this.$route.query;
@@ -246,7 +232,7 @@ export default {
         target,
       };
 
-      this.resetAiCatalogFlowToBeAdded();
+      this.setAiCatalogFlowToBeAdded(null);
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -275,7 +261,10 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(s__('AICatalog|The flow could not be enabled. Try again. %{error}'), { error }),
+          sprintf(
+            s__('AICatalog|The flow could not be added to the project. Try again. %{error}'),
+            { error },
+          ),
         ];
         Sentry.captureException(error);
       }
@@ -327,9 +316,9 @@ export default {
     />
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogFlowToBeAdded"
-      :flow-name="aiCatalogFlowToBeAdded.name"
+      :item="aiCatalogFlowToBeAdded"
       @submit="addFlowToTarget"
-      @hide="resetAiCatalogFlowToBeAdded"
+      @hide="setAiCatalogFlowToBeAdded(null)"
     />
   </div>
 </template>
