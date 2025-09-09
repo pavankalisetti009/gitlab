@@ -853,4 +853,9 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       it { is_expected.to eq(expected_opt_in_status) }
     end
   end
+
+  describe '#duo_remote_flows_enabled' do
+    it_behaves_like 'a cascading namespace setting boolean attribute',
+      settings_attribute_name: :duo_remote_flows_enabled
+  end
 end

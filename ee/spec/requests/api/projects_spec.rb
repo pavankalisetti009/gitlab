@@ -2065,7 +2065,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     end
 
     context 'when setting duo_remote_flows_enabled' do
-      let(:project_params) { { duo_remote_flows_enabled: true } }
+      let(:project_params) { { duo_remote_flows_enabled: false } }
 
       context 'when licence is available' do
         before do
@@ -2076,7 +2076,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           expect { subject }.to change { project.reload.duo_remote_flows_enabled }
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['duo_remote_flows_enabled']).to eq true
+          expect(json_response['duo_remote_flows_enabled']).to eq false
         end
       end
 
