@@ -1,11 +1,7 @@
 import { merge, cloneDeep, zip, isEmpty, mapKeys } from 'lodash';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
-import {
-  convertObjectPropsToCamelCase,
-  parseBoolean,
-  roundOffFloat,
-} from '~/lib/utils/common_utils';
+import { convertObjectPropsToCamelCase, parseBoolean } from '~/lib/utils/common_utils';
 import { getDateInFuture, newDate } from '~/lib/utils/datetime/date_calculation_utility';
 import {
   DEFAULT_NULL_SERIES_OPTIONS,
@@ -313,50 +309,6 @@ export const generateFutureDateRange = (startDate, maxDays) => {
     futureDates.push(getDateInFuture(startDate, i));
   }
   return futureDates;
-};
-
-const calculateRegression = ({ slope, intercept, timeInMilliseconds, rounding }) => {
-  return roundOffFloat(intercept + slope * timeInMilliseconds, rounding);
-};
-
-/**
- * This function accepts time series data and provides forecasted time series data
- * by applying a least squares linear regression
- *
- * Example input times series data format:
- *
- * [
- *   {"date":"2023-01-12","value":160},
- *   {"date":"2023-01-13","value":52},
- *   {"date":"2023-01-14","value":47},
- *   {"date":"2023-01-15","value":37},
- *   {"date":"2023-01-16","value":106},
- * ]
- *
- *
- * @param {Array} timeSeriesData - The historic time series data which will be used for the linear regression
- * @param {Number} forecastAmount - The number of days which should be forecasted
- * @param {Number} rounding - The number of decimal places to round to
- * @returns {Array} Array of objects with the same time series format, but future dates equal to the forecastAmount value
- */
-export const linearRegression = (timeSeriesData, forecastAmount = 30, rounding = 0) => {
-  if (!timeSeriesData.length) return [];
-
-  const { slope, intercept } = calculateSlopeAndInterceptFromDataset(timeSeriesData);
-
-  const { date: lastDate } = timeSeriesData[timeSeriesData.length - 1];
-  const nextDate = new Date(lastDate);
-  const futureDates = generateFutureDateRange(nextDate, forecastAmount);
-
-  return futureDates.map((futureDate) => ({
-    date: dateFormat(futureDate, dateFormats.isoDate),
-    value: calculateRegression({
-      timeInMilliseconds: futureDate.getTime(),
-      intercept,
-      slope,
-      rounding,
-    }),
-  }));
 };
 
 /**
