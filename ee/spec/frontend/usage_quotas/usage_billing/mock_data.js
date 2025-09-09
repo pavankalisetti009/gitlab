@@ -1,0 +1,305 @@
+export const mockUsageDataWithoutPool = {
+  subscription: {
+    gitlabUnitsUsage: {
+      lastUpdated: '2024-01-15T10:30:00Z',
+      // boundaries
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+
+      overageUnits: 0,
+      totalUnits: 0,
+      totalUnitsUsed: 0,
+
+      // pool allocation statistics (commitment)
+      poolUsage: null,
+
+      // daily seat allocation usage statistics
+      seatUsage: {
+        dailyAverage: 167,
+        peakUsage: 234,
+        usageTrend: 0.12,
+        // daily summaries for the month
+        dailyUsage: [
+          ['2025-07-15', 7076],
+          ['2025-07-16', 7235],
+          ['2025-07-17', 6789],
+          ['2025-07-18', 6855],
+          ['2025-07-19', 6482],
+          ['2025-07-20', 6887],
+          ['2025-07-21', 6662],
+          ['2025-07-22', 6124],
+          ['2025-07-23', 6433],
+          ['2025-07-24', 7028],
+          ['2025-07-25', 7103],
+          ['2025-07-26', 7307],
+          ['2025-07-27', 7618],
+          ['2025-07-28', 8326],
+          ['2025-07-29', 8549],
+          ['2025-07-30', 9208],
+          ['2025-07-31', 10008],
+          ['2025-08-01', 9566],
+          ['2025-08-02', 9909],
+          ['2025-08-03', 10706],
+          ['2025-08-04', 10056],
+          ['2025-08-05', 10253],
+          ['2025-08-06', 10213],
+          ['2025-08-07', 10494],
+          ['2025-08-08', 10040],
+          ['2025-08-09', 10338],
+          ['2025-08-10', 9168],
+          ['2025-08-11', 9610],
+          ['2025-08-12', 9125],
+          ['2025-08-13', 8178],
+        ],
+      },
+
+      // per user summaries for the month
+      usersUsage: {
+        // overall statistics
+        totalUsers: 50,
+        totalUsersUsingAllocation: 35,
+        totalUsersUsingPool: null, // or 0
+        totalUsersBlocked: 10,
+        avgUnitsPerUser: 150,
+
+        // per-user details
+        users: [
+          {
+            id: '1',
+            name: 'Alice Johnson',
+            avatarUrl: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
+            allocationUsed: 450,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 450,
+            status: 'seat',
+          },
+          {
+            id: '2',
+            name: 'Bob Smith',
+            avatarUrl: 'https://www.gravatar.com/avatar/2?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 125,
+            totalUnitsUsed: 625,
+            status: 'pool',
+          },
+          {
+            id: '3',
+            name: 'Carol Davis',
+            avatarUrl: 'https://www.gravatar.com/avatar/3?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 200,
+            totalUnitsUsed: 700,
+            status: 'overage',
+          },
+          {
+            id: '4',
+            name: 'David Wilson',
+            avatarUrl: 'https://www.gravatar.com/avatar/4?s=80&d=identicon',
+            allocationUsed: 320,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 320,
+            status: 'seat',
+          },
+          {
+            id: '5',
+            name: 'Eva Martinez',
+            avatarUrl: 'https://www.gravatar.com/avatar/5?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 75,
+            totalUnitsUsed: 575,
+            status: 'pool',
+          },
+          {
+            id: '6',
+            name: 'Frank Thompson',
+            avatarUrl: 'https://www.gravatar.com/avatar/6?s=80&d=identicon',
+            allocationUsed: 480,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 480,
+            status: 'blocked',
+          },
+          {
+            id: '7',
+            name: 'Grace Lee',
+            avatarUrl: 'https://www.gravatar.com/avatar/7?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 150,
+            totalUnitsUsed: 650,
+            status: 'pool',
+          },
+          {
+            id: '8',
+            name: 'Henry Brown',
+            avatarUrl: 'https://www.gravatar.com/avatar/8?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 300,
+            totalUnitsUsed: 800,
+            status: 'overage',
+          },
+        ],
+      },
+    },
+  },
+};
+
+// Mock data for daily usage API response
+export const mockUsageDataWithPool = {
+  subscription: {
+    gitlabUnitsUsage: {
+      lastUpdated: '2024-01-15T10:30:00Z',
+      // boundaries
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+
+      overageUnits: 0,
+      totalUnits: 300,
+      totalUnitsUsed: 50,
+
+      // pool allocation statistics (commitment)
+      poolUsage: {
+        // statistics
+        dailyAverage: 167,
+        peakUsage: 234,
+        usageTrend: 0.12,
+        // daily summaries for the month
+        dailyUsage: [
+          ['2025-07-15', 7076],
+          ['2025-07-16', 7235],
+          ['2025-07-17', 6789],
+          ['2025-07-18', 6855],
+          ['2025-07-19', 6482],
+          ['2025-07-20', 6887],
+          ['2025-07-21', 6662],
+          ['2025-07-22', 6124],
+          ['2025-07-23', 6433],
+          ['2025-07-24', 7028],
+          ['2025-07-25', 7103],
+          ['2025-07-26', 7307],
+          ['2025-07-27', 7618],
+          ['2025-07-28', 8326],
+          ['2025-07-29', 8549],
+          ['2025-07-30', 9208],
+          ['2025-07-31', 10008],
+          ['2025-08-01', 9566],
+          ['2025-08-02', 9909],
+          ['2025-08-03', 10706],
+          ['2025-08-04', 10056],
+          ['2025-08-05', 10253],
+          ['2025-08-06', 10213],
+          ['2025-08-07', 10494],
+          ['2025-08-08', 10040],
+          ['2025-08-09', 10338],
+          ['2025-08-10', 9168],
+          ['2025-08-11', 9610],
+          ['2025-08-12', 9125],
+          ['2025-08-13', 8178],
+        ],
+      },
+
+      // daily seat allocation usage statistics
+      // we probably can skip seat usage data
+      seatUsage: null,
+
+      // per user summaries for the month
+      usersUsage: {
+        // overall statistics
+        totalUsers: 50,
+        totalUsersUsingAllocation: 35,
+        totalUsersUsingPool: 15,
+        totalUsersBlocked: 10,
+
+        // per-user details
+        users: [
+          {
+            id: '1',
+            name: 'Alice Johnson',
+            avatarUrl: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
+            allocationUsed: 450,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 450,
+            status: 'seat',
+          },
+          {
+            id: '2',
+            name: 'Bob Smith',
+            avatarUrl: 'https://www.gravatar.com/avatar/2?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 125,
+            totalUnitsUsed: 625,
+            status: 'pool',
+          },
+          {
+            id: '3',
+            name: 'Carol Davis',
+            avatarUrl: 'https://www.gravatar.com/avatar/3?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 200,
+            totalUnitsUsed: 700,
+            status: 'overage',
+          },
+          {
+            id: '4',
+            name: 'David Wilson',
+            avatarUrl: 'https://www.gravatar.com/avatar/4?s=80&d=identicon',
+            allocationUsed: 320,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 320,
+            status: 'seat',
+          },
+          {
+            id: '5',
+            name: 'Eva Martinez',
+            avatarUrl: 'https://www.gravatar.com/avatar/5?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 75,
+            totalUnitsUsed: 575,
+            status: 'pool',
+          },
+          {
+            id: '6',
+            name: 'Frank Thompson',
+            avatarUrl: 'https://www.gravatar.com/avatar/6?s=80&d=identicon',
+            allocationUsed: 480,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 480,
+            status: 'blocked',
+          },
+          {
+            id: '7',
+            name: 'Grace Lee',
+            avatarUrl: 'https://www.gravatar.com/avatar/7?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 150,
+            totalUnitsUsed: 650,
+            status: 'pool',
+          },
+          {
+            id: '8',
+            name: 'Henry Brown',
+            avatarUrl: 'https://www.gravatar.com/avatar/8?s=80&d=identicon',
+            allocationUsed: 500,
+            allocationTotal: 500,
+            poolUsed: 300,
+            totalUnitsUsed: 800,
+            status: 'overage',
+          },
+        ],
+      },
+    },
+  },
+};
