@@ -4789,6 +4789,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Assign a model to enable this feature"
 msgstr ""
 
+msgid "AdminSelfHostedModels|Configure and assign self-hosted models or GitLab managed models to AI-native features."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Create self-hosted model"
 msgstr ""
 
@@ -6292,6 +6295,9 @@ msgstr ""
 msgid "AiPowered|Assign self-hosted models to specific AI-native features."
 msgstr ""
 
+msgid "AiPowered|Assign self-hosted or cloud-connected models to use with specific AI-native features."
+msgstr ""
+
 msgid "AiPowered|Automatic Code Reviews"
 msgstr ""
 
@@ -6323,6 +6329,9 @@ msgid "AiPowered|Configure features"
 msgstr ""
 
 msgid "AiPowered|Configure how long GitLab Duo Chat conversations persist before they expire:"
+msgstr ""
+
+msgid "AiPowered|Configure models for GitLab Duo"
 msgstr ""
 
 msgid "AiPowered|Connection method"
@@ -6413,6 +6422,9 @@ msgid "AiPowered|GitLab Duo Chat conversation expiration"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Core available to all users"
+msgstr ""
+
+msgid "AiPowered|GitLab Duo Model Selection"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Pro or Enterprise"

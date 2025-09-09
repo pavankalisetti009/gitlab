@@ -6,8 +6,9 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
   include SubscriptionPortalHelper
 
   describe '#settings' do
-    subject(:settings) { described_class.new.settings }
+    subject(:settings) { described_class.new(user).settings }
 
+    let(:user) { build(:user) }
     let(:application_setting_attributes) do
       {
         disabled_direct_code_suggestions?: false,
@@ -54,6 +55,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:active_add_on_purchase_for_self_managed?) { true }
     let(:active_self_managed_duo_pro_or_enterprise) { any_add_on_purchase }
     let(:auto_review_enabled) { true }
+    let(:can_manage_instance_model_selection) { true }
     let(:beta_self_hosted_models_enabled) { true }
     let(:duo_workflow_enabled) { true }
     let(:is_saas) { true }
@@ -65,19 +67,23 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
 
     before do
       allow(GitlabSubscriptions::AddOnPurchase)
-        .to receive(:active_duo_add_ons_exist?)
-        .with(:instance)
-        .and_return(active_duo_add_ons_exist?)
+      .to receive(:active_duo_add_ons_exist?)
+      .with(:instance)
+      .and_return(active_duo_add_ons_exist?)
 
       allow(Ai::Setting).to receive(:instance).and_return(ai_settings)
 
       allow(Ai::TestingTermsAcceptance)
-        .to receive(:has_accepted?)
-        .and_return(beta_self_hosted_models_enabled)
+      .to receive(:has_accepted?)
+      .and_return(beta_self_hosted_models_enabled)
 
+      allow(License).to receive(:feature_available?).and_call_original
       allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return self_hosted_models
 
       allow(License).to receive(:current).and_return license
+
+      allow(Ability).to receive(:allowed?).with(user,
+        :manage_instance_model_selection).and_return(can_manage_instance_model_selection)
 
       allow(Gitlab::CurrentSettings)
         .to receive_messages(
@@ -118,6 +124,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         are_prompt_cache_settings_allowed: 'true',
         beta_self_hosted_models_enabled: 'true',
         can_manage_self_hosted_models: 'true',
+        can_manage_instance_model_selection: 'true',
         direct_code_suggestions_enabled: 'true',
         duo_workflow_service_account: {
           id: 1,
@@ -192,6 +199,12 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       let(:beta_self_hosted_models_enabled) { 'false' }
 
       it { expect(settings).to include(beta_self_hosted_models_enabled: 'false') }
+    end
+
+    context 'with instance-level model selection disabled' do
+      let(:can_manage_instance_model_selection) { false }
+
+      it { expect(settings).to include(can_manage_instance_model_selection: 'false') }
     end
 
     context 'with Dedicated instance' do

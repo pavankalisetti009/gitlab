@@ -22,6 +22,7 @@ function mountSelfHostedDuoRootApp() {
     betaModelsEnabled,
     duoConfigurationSettingsPath,
     showVendoredModelOption,
+    canManageInstanceModelSelection,
   } = JSON.parse(el.dataset.viewModel);
 
   const router = createRouter(basePath);
@@ -37,6 +38,7 @@ function mountSelfHostedDuoRootApp() {
       betaModelsEnabled,
       showVendoredModelOption,
       duoConfigurationSettingsPath,
+      canManageInstanceModelSelection,
     },
     render(createElement) {
       return createElement('router-view');
