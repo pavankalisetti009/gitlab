@@ -469,6 +469,7 @@ export default {
         :should-render-resizable="true"
         :with-feedback="false"
         :show-header="true"
+        :session-id="workflowId"
         badge-type="beta"
         :dimensions="dimensions"
         :is-tool-approval-processing="isProcessingToolApproval"
@@ -482,7 +483,8 @@ export default {
         @thread-selected="onThreadSelected"
         @back-to-list="onBackToList"
         @delete-thread="onDeleteThread"
-        ><template #footer-controls>
+      >
+        <template #footer-controls>
           <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
             <gl-toggle
               v-model="duoAgenticModePreference"
