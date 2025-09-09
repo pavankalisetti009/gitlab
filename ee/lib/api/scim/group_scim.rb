@@ -5,7 +5,7 @@ module API
     class GroupScim < ::API::Base
       include ::Gitlab::Utils::StrongMemoize
 
-      feature_category :system_access
+      feature_category :user_management
 
       prefix 'api/scim'
       version 'v2'

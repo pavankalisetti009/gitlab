@@ -25,7 +25,6 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
   describe '#execute' do
     before do
       stub_licensed_features merge_request_approvers: true, group_saml: true
-      stub_feature_flags ff_require_saml_auth_to_approve: false
 
       create(:saml_provider, group: project.group, enforced_sso: enforced_sso, enabled: true)
       merge_request.clear_memoization(:policy_approval_settings)
@@ -83,30 +82,17 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
             simulate_require_saml_auth_to_approve_mr_approval_setting(restricted: true)
           end
 
-          context 'without ff_require_saml_auth_to_approve feature flag' do
-            it 'does not change approval count' do
-              expect { service.execute(merge_request) }.not_to change { merge_request.approvals.size }
+          # passes when run with :focus flaky when without
+          xit 'approves when in time' do
+            simulate_saml_approval_in_time? in_time: true
+            allow_next_instances_of(ApprovalState, 2) do |approval_state|
+              allow(approval_state).to receive(:eligible_for_approval_by?).and_return(true)
             end
+            expect { service.execute(merge_request) }.to change { merge_request.approvals.size }
           end
 
-          context 'with ff_require_saml_auth_to_approve feature flag' do
-            before do
-              stub_feature_flags ff_require_saml_auth_to_approve: group
-            end
-
-            # passes when run with :focus flaky when without
-            xit 'approves when in time' do
-              simulate_require_saml_auth_to_approve_mr_approval_setting
-              simulate_saml_approval_in_time? in_time: true
-              allow_next_instances_of(ApprovalState, 2) do |approval_state|
-                allow(approval_state).to receive(:eligible_for_approval_by?).and_return(true)
-              end
-              expect { service.execute(merge_request) }.to change { merge_request.approvals.size }
-            end
-
-            it 'does not approve when not in time' do
-              expect { service.execute(merge_request) }.not_to change { merge_request.approvals.size }
-            end
+          it 'does not approve when not in time' do
+            expect { service.execute(merge_request) }.not_to change { merge_request.approvals.size }
           end
         end
       end
@@ -137,37 +123,21 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
         context 'when SAML auth is required' do
           let(:enforced_sso) { true }
 
-          context 'without ff_require_saml_auth_to_approve feature flag' do
-            it 'changes approval count' do
-              simulate_require_saml_auth_to_approve_mr_approval_setting(restricted: false)
+          it 'when not in time does not change approval count' do
+            simulate_require_saml_auth_to_approve_mr_approval_setting
 
-              service_with_params = described_class.new(project: project, current_user: user, params: params)
+            service_with_params = described_class.new(project: project, current_user: user, params: params)
 
-              expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
-            end
+            expect { service_with_params.execute(merge_request) }.not_to change { merge_request.approvals.size }
           end
 
-          context 'with ff_require_saml_auth_to_approve feature flag' do
-            before do
-              stub_feature_flags ff_require_saml_auth_to_approve: group
-            end
+          it 'when in time changes approval count' do
+            simulate_require_saml_auth_to_approve_mr_approval_setting(restricted: false)
+            simulate_saml_approval_in_time?(in_time: true)
 
-            it 'does not change approval count' do
-              simulate_require_saml_auth_to_approve_mr_approval_setting
+            service_with_params = described_class.new(project: project, current_user: user, params: params)
 
-              service_with_params = described_class.new(project: project, current_user: user, params: params)
-
-              expect { service_with_params.execute(merge_request) }.not_to change { merge_request.approvals.size }
-            end
-
-            it 'changes approval count' do
-              simulate_require_saml_auth_to_approve_mr_approval_setting(restricted: false)
-              simulate_saml_approval_in_time?(in_time: true)
-
-              service_with_params = described_class.new(project: project, current_user: user, params: params)
-
-              expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
-            end
+            expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
           end
         end
       end
@@ -275,15 +245,7 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
         end
       end
 
-      context 'with `ff_require_saml_auth_to_approve` feature enabled' do
-        before do
-          stub_feature_flags(ff_require_saml_auth_to_approve: true)
-        end
-
-        it_behaves_like 'enforces policy'
-      end
-
-      context 'with `ff_require_saml_auth_to_approve` feature disabled' do
+      context 'with MR approval policy that sets `require_password_to_approve`' do
         it_behaves_like 'enforces policy'
       end
     end

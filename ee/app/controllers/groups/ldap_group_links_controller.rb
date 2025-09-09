@@ -8,7 +8,7 @@ class Groups::LdapGroupLinksController < Groups::ApplicationController
 
   layout 'group_settings'
 
-  feature_category :system_access
+  feature_category :user_management
 
   def index; end
 

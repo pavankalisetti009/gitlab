@@ -5,7 +5,7 @@ module SystemAccess
     include ::ApplicationWorker
     include ::Gitlab::Utils::StrongMemoize
 
-    feature_category :system_access
+    feature_category :user_management
     idempotent!
     urgency :low
     data_consistency :always

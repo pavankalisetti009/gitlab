@@ -3,7 +3,7 @@
 module API
   module Scim
     class InstanceScim < ::API::Base
-      feature_category :system_access
+      feature_category :user_management
 
       prefix 'api/scim'
       version 'v2'

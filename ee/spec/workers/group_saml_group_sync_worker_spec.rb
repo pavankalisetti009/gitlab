@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupSamlGroupSyncWorker, feature_category: :system_access do
+RSpec.describe GroupSamlGroupSyncWorker, feature_category: :user_management do
   include ::SystemAccess::GroupSyncHelpers
 
   describe '#perform' do

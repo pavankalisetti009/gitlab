@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupScimIdentity, type: :model, feature_category: :system_access do
+RSpec.describe GroupScimIdentity, type: :model, feature_category: :user_management do
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
     it { is_expected.to belong_to(:user) }

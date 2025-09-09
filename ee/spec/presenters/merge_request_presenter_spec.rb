@@ -247,16 +247,6 @@ RSpec.describe MergeRequestPresenter, feature_category: :shared do
           expect(presenter.saml_approval_path).to include('root')
         end
       end
-
-      context 'without ff_require_saml_auth_to_approve feature flag' do
-        before do
-          stub_feature_flags(ff_require_saml_auth_to_approve: false)
-        end
-
-        it 'is disabled' do
-          expect(presenter.saml_approval_path).to be_nil
-        end
-      end
     end
 
     context 'when instance saml' do
@@ -283,16 +273,6 @@ RSpec.describe MergeRequestPresenter, feature_category: :shared do
       it 'returns the instance saml path' do
         expect(presenter.saml_approval_path).to start_with('/gitlab/users/auth/saml')
       end
-
-      context 'without ff_require_saml_auth_to_approve feature flag' do
-        before do
-          stub_feature_flags(ff_require_saml_auth_to_approve: false)
-        end
-
-        it 'is disabled' do
-          expect(presenter.saml_approval_path).to be_nil
-        end
-      end
     end
   end
 
@@ -313,16 +293,6 @@ RSpec.describe MergeRequestPresenter, feature_category: :shared do
 
     it 'is enabled' do
       expect(presenter.require_saml_auth_to_approve).to be true
-    end
-
-    context 'without ff_require_saml_auth_to_approve feature flag' do
-      before do
-        stub_feature_flags ff_require_saml_auth_to_approve: false
-      end
-
-      it 'is disabled' do
-        expect(presenter.require_saml_auth_to_approve).to be false
-      end
     end
   end
 end

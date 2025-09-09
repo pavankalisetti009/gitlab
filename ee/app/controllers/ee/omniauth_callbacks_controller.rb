@@ -127,8 +127,6 @@ module EE
 
     override :store_redirect_to
     def store_redirect_to
-      return unless ::Feature.enabled?(:ff_require_saml_auth_to_approve)
-
       redirect_to = request.env.dig('omniauth.params', 'redirect_to').presence
       redirect_to = sanitize_redirect redirect_to
 
