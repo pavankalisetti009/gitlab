@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_context 'with mocked ::Ai::ModelSelection::FetchModelDefinitionsService' do
+RSpec.shared_context 'with fetch_model_definitions_example' do
   let_it_be(:fetch_model_definitions_example) do
     {
       'models' => [
@@ -23,6 +23,10 @@ RSpec.shared_context 'with mocked ::Ai::ModelSelection::FetchModelDefinitionsSer
       ]
     }
   end
+end
+
+RSpec.shared_context 'with mocked ::Ai::ModelSelection::FetchModelDefinitionsService' do
+  include_context 'with fetch_model_definitions_example'
 
   let_it_be(:successful_model_definitions_service_response) do
     ServiceResponse.success(payload: fetch_model_definitions_example)

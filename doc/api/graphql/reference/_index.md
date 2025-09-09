@@ -15061,6 +15061,29 @@ The edge type for [`AiModelSelectionNamespaceFeatureSetting`](#aimodelselectionn
 | <a id="aimodelselectionnamespacefeaturesettingedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aimodelselectionnamespacefeaturesettingedgenode"></a>`node` | [`AiModelSelectionNamespaceFeatureSetting`](#aimodelselectionnamespacefeaturesetting) | The item at the end of the edge. |
 
+#### `AiModelSelectionOfferedModelConnection`
+
+The connection type for [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aimodelselectionofferedmodelconnectionedges"></a>`edges` | [`[AiModelSelectionOfferedModelEdge]`](#aimodelselectionofferedmodeledge) | A list of edges. |
+| <a id="aimodelselectionofferedmodelconnectionnodes"></a>`nodes` | [`[AiModelSelectionOfferedModel]`](#aimodelselectionofferedmodel) | A list of nodes. |
+| <a id="aimodelselectionofferedmodelconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiModelSelectionOfferedModelEdge`
+
+The edge type for [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aimodelselectionofferedmodeledgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aimodelselectionofferedmodeledgenode"></a>`node` | [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel) | The item at the end of the edge. |
+
 #### `AiSelfHostedModelConnection`
 
 The connection type for [`AiSelfHostedModel`](#aiselfhostedmodel).
@@ -23165,12 +23188,15 @@ Duo Chat feature setting.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="aifeaturesettingcompatiblellms"></a>`compatibleLlms` | [`[String!]`](#string) | LLMs Compatible with the feature. |
+| <a id="aifeaturesettingdefaultgitlabmodel"></a>`defaultGitlabModel` | [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel) | GitLab model selected for use with the AI feature. |
 | <a id="aifeaturesettingfeature"></a>`feature` | [`String!`](#string) | Identifier for the AI feature. |
+| <a id="aifeaturesettinggitlabmodel"></a>`gitlabModel` | [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel) | GitLab model selected for use with the AI feature. |
 | <a id="aifeaturesettingmainfeature"></a>`mainFeature` | [`String`](#string) | Displayed name of the main feature. |
 | <a id="aifeaturesettingprovider"></a>`provider` | [`String!`](#string) | Humanized name for the AI feature, e.g "Code Completion". |
 | <a id="aifeaturesettingreleasestate"></a>`releaseState` | [`String`](#string) | Current release state of the feature. |
 | <a id="aifeaturesettingselfhostedmodel"></a>`selfHostedModel` | [`AiSelfHostedModel`](#aiselfhostedmodel) | Self-hosted model selected for use with the AI feature. |
 | <a id="aifeaturesettingtitle"></a>`title` | [`String`](#string) | Displayed AI feature name. |
+| <a id="aifeaturesettingvalidgitlabmodels"></a>`validGitlabModels` | [`AiModelSelectionOfferedModelConnection!`](#aimodelselectionofferedmodelconnection) | Valid GitLab managed models for the feature. (see [Connections](#connections)) |
 | <a id="aifeaturesettingvalidmodels"></a>`validModels` | [`AiSelfHostedModelConnection!`](#aiselfhostedmodelconnection) | Compatible self-hosted models for the feature. (see [Connections](#connections)) |
 
 ### `AiFlowTriggerType`

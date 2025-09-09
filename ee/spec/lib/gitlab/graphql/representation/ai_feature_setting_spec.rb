@@ -3,104 +3,155 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_category: :"self-hosted_models" do
-  let :feature_setting_params do
+  include_context 'with fetch_model_definitions_example'
+
+  let_it_be(:self_hosted_model) do
+    create(:ai_self_hosted_model, name: 'codegemma', model: :codegemma)
+  end
+
+  let_it_be(:code_completion_feature_setting) do
+    create(:ai_feature_setting, { feature: :code_completions,
+                                  provider: :self_hosted,
+                                  self_hosted_model: self_hosted_model })
+  end
+
+  let_it_be(:duo_chat_feature_setting) do
+    create(:ai_feature_setting, { feature: :duo_chat, provider: :vendored, self_hosted_model: nil })
+  end
+
+  let_it_be(:code_generations_feature_setting) do
+    create(:ai_feature_setting, { feature: :code_generations, provider: :vendored, self_hosted_model: nil })
+  end
+
+  let_it_be(:feature_settings) do
     [
-      { feature: :duo_chat, provider: :vendored, self_hosted_model: nil },
-      { feature: :code_completions, provider: :vendored, self_hosted_model: nil },
-      { feature: :code_generations, provider: :vendored, self_hosted_model: nil }
+      code_completion_feature_setting,
+      duo_chat_feature_setting,
+      code_generations_feature_setting
     ]
   end
 
-  let :feature_settings do
-    feature_setting_params.map { |params| create(:ai_feature_setting, **params) }
+  let_it_be(:model_definitions_response) { fetch_model_definitions_example }
+
+  let_it_be(:model_definitions) do
+    ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(
+      model_definitions_response
+    )
   end
 
-  let :model_params do
-    [
-      { name: 'vllm-codellama', model: :codellama },
-      { name: 'vllm-codegemma', model: :codegemma },
-      { name: 'vllm-mistral', model: :mistral }
-    ]
-  end
+  let(:with_valid_models) { true }
 
-  let :self_hosted_models do
-    model_params.map { |params| create(:ai_self_hosted_model, **params) }
-  end
-
-  before do
-    allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+  subject(:decorate) do
+    described_class.decorate(
+      feature_settings,
+      with_valid_models: with_valid_models,
+      model_definitions: model_definitions
+    )
   end
 
   describe '.decorate' do
+    context 'when feature_settings is empty' do
+      let(:feature_settings) { [] }
+
+      it { is_expected.to be_empty }
+    end
+
     context 'when feature_settings is nil' do
-      it 'returns nil' do
-        expect(described_class.decorate(nil)).to eq []
-      end
+      let(:feature_settings) { nil }
+
+      it { is_expected.to be_empty }
     end
 
     context 'when feature_settings is present' do
-      it 'returns an array of decorated objects' do
-        result = described_class.decorate(feature_settings)
-        expect(result).to all(be_a(described_class))
-      end
+      context 'without valid models' do
+        let(:with_valid_models) { false }
 
-      context 'when with_valid_models is true' do
-        it 'calls decorate_with_valid_models' do
-          expect(described_class).to receive(:decorate_with_valid_models).with(feature_settings)
-          described_class.decorate(feature_settings, with_valid_models: true)
+        it 'does not include valid_models' do
+          decorate.each do |setting|
+            expect(setting.valid_models).to be_empty
+          end
+        end
+
+        it 'includes gitlab model information' do
+          duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
+          expect(duo_chat_setting.default_gitlab_model).to eq({
+            'name' => 'Claude Sonnet',
+            'ref' => 'claude-sonnet'
+          })
+          expect(duo_chat_setting.valid_gitlab_models).to be_empty
         end
       end
 
-      context 'when with_valid_models is false' do
-        it 'does not call decorate_with_valid_models' do
-          expect(described_class).not_to receive(:decorate_with_valid_models)
-          described_class.decorate(feature_settings, with_valid_models: false)
+      context 'with valid models' do
+        before do
+          allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+        end
+
+        it 'includes valid_models for compatible features' do
+          code_completions_setting = decorate.find { |s| s.feature == 'code_completions' }
+          expect(code_completions_setting.valid_models).to be_present
+        end
+
+        it 'includes valid gitlab models' do
+          duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
+          expect(duo_chat_setting.valid_gitlab_models).to contain_exactly(
+            { 'name' => 'Claude Sonnet', 'ref' => 'claude-sonnet' },
+            { 'name' => 'GPT-4', 'ref' => 'gpt-4' }
+          )
         end
       end
-    end
-  end
 
-  describe '.decorate_with_valid_models' do
-    let(:result) { described_class.decorate_with_valid_models(feature_settings) }
+      context 'with self-hosted feature setting' do
+        subject(:decorated_self_hosted_setting) do
+          decorate.find { |s| s.feature == 'code_completions' }
+        end
 
-    let(:duo_chat_valid_models) { result.first.valid_models.map(&:name) }
-    let(:code_generation_valid_models) { result.second.valid_models.map(&:name) }
-    let(:code_completion_valid_models) { result.third.valid_models.map(&:name) }
+        it 'does not include gitlab_model' do
+          expect(decorated_self_hosted_setting.gitlab_model).to be_nil
+        end
 
-    before do
-      allow(::Ai::SelfHostedModel).to receive(:all).and_return(self_hosted_models)
-    end
+        it 'includes default_gitlab_model' do
+          expect(decorated_self_hosted_setting.default_gitlab_model).to eq({
+            "ref" => 'gpt-4',
+            "name" => 'GPT-4'
+          })
+        end
 
-    it 'returns an array of decorated objects with valid models, sorted by name' do
-      expect(duo_chat_valid_models).to eq(["vllm-mistral"])
-      expect(code_generation_valid_models).to eq(%w[vllm-codegemma vllm-codellama vllm-mistral])
-      expect(code_completion_valid_models).to eq(%w[vllm-codegemma vllm-codellama vllm-mistral])
-    end
+        it 'includes valid gitlab models' do
+          expect(decorated_self_hosted_setting.valid_gitlab_models).to match_array([{ "ref" => 'gpt-4',
+                                                                                      "name" => 'GPT-4' }])
+        end
 
-    context 'when the testing terms have not been accepted' do
-      before do
-        allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(false)
+        it 'fetches the proper feature_setting' do
+          expect(decorated_self_hosted_setting.feature_setting).to eq(code_completion_feature_setting)
+        end
       end
 
-      it 'returns an array of decorated objects with valid models, excluding beta models' do
-        expect(duo_chat_valid_models).to eq(["vllm-mistral"])
-        expect(code_generation_valid_models).to eq(%w[vllm-mistral])
-        expect(code_completion_valid_models).to eq(%w[vllm-mistral])
+      context 'with vendored feature setting' do
+        let_it_be(:instance_setting) do
+          create(:instance_model_selection_feature_setting,
+            feature: :duo_chat,
+            offered_model_ref: 'claude-sonnet',
+            model_definitions: model_definitions_response)
+        end
+
+        it 'includes gitlab_model from offered_model_ref' do
+          duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
+          expect(duo_chat_setting.gitlab_model).to eq({
+            'name' => 'Claude Sonnet',
+            'ref' => 'claude-sonnet'
+          })
+        end
       end
-    end
-  end
 
-  describe '#initialize' do
-    it 'sets the feature_setting and valid_models', :aggregate_failures do
-      decorated = described_class.new(feature_settings.first, valid_models: self_hosted_models)
-
-      expect(decorated.valid_models).to eq(self_hosted_models)
-      expect(decorated.__getobj__).to eq(feature_settings.first)
-    end
-
-    it 'defaults valid_models to an empty array' do
-      decorated = described_class.new(feature_settings.first)
-      expect(decorated.valid_models).to eq([])
+      context 'when model definitions for feature does not exist' do
+        it 'does not include gitlab data' do
+          decorated_setting = decorate.find { |s| s.feature == 'code_generations' }
+          expect(decorated_setting.gitlab_model).to be_nil
+          expect(decorated_setting.default_gitlab_model).to be_nil
+          expect(decorated_setting.valid_gitlab_models).to be_empty
+        end
+      end
     end
   end
 end

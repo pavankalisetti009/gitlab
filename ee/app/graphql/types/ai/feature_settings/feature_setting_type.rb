@@ -25,10 +25,27 @@ module Types
           null: true,
           description: 'Self-hosted model selected for use with the AI feature.'
 
+        field :gitlab_model,
+          Types::Ai::ModelSelection::OfferedModelType,
+          null: true,
+          description: 'GitLab model selected for use with the AI feature.'
+
+        field :default_gitlab_model,
+          Types::Ai::ModelSelection::OfferedModelType,
+          null: true,
+          description: 'GitLab model selected for use with the AI feature.'
+
         field :valid_models,
           Types::Ai::SelfHostedModels::SelfHostedModelType.connection_type,
           null: false,
           description: 'Compatible self-hosted models for the feature.'
+
+        # rubocop: disable GraphQL/ExtractType -- they are not part of the same object
+        field :valid_gitlab_models,
+          Types::Ai::ModelSelection::OfferedModelType.connection_type,
+          null: false,
+          description: 'Valid GitLab managed models for the feature.'
+        # rubocop: enable GraphQL/ExtractType
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end
