@@ -85,12 +85,10 @@ RSpec.describe Security::Scans::IngestReportsService, :clean_gitlab_redis_shared
       let_it_be(:pipeline) { create(:ci_pipeline, user: user) }
       let_it_be(:job) { create(:ci_build, :sast, pipeline: pipeline, status: 'success') }
 
-      it 'does not schedule store security scans job and to ingests sbom reports' do
+      it 'does not schedule store security scans job' do
         ingest_security_scans
 
         expect(::Security::StoreScansWorker).not_to have_received(:perform_async)
-        expect(::Sbom::ScheduleIngestReportsService).to have_received(:new).with(pipeline)
-        expect(mock_sbom_ingestion_service).to have_received(:execute)
       end
     end
   end

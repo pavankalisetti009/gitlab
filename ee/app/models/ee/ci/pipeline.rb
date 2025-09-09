@@ -80,7 +80,6 @@ module EE
                   ::Security::StoreScansWorker.perform_async(pipeline.id)
                   ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
                 else
-                  ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
                   ::Ci::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
                 end
               end
