@@ -3,6 +3,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
+import { InternalEvents } from '~/tracking';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -24,8 +25,11 @@ import {
 } from '../router/constants';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
-  PAGE_SIZE,
   AI_CATALOG_TYPE_AGENT,
+  PAGE_SIZE,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+  TRACK_EVENT_TYPE_AGENT,
 } from '../constants';
 
 export default {
@@ -36,6 +40,7 @@ export default {
     AiCatalogItemDrawer,
     ErrorsAlert,
   },
+  mixins: [InternalEvents.mixin()],
   apollo: {
     aiCatalogAgents: {
       query: aiCatalogAgentsQuery,
@@ -69,7 +74,10 @@ export default {
 
         if (data.aiCatalogItem === null && this.hasQueryParam) {
           this.handleNotFound();
+          return;
         }
+
+        this.trackViewEvent();
       },
       error(error) {
         if (this.showQueryParam) {
@@ -86,6 +94,7 @@ export default {
       aiCatalogAgent: null,
       errors: [],
       pageInfo: {},
+      hasTrackedPageView: false,
     };
   },
   computed: {
@@ -165,7 +174,26 @@ export default {
       };
     },
   },
+  watch: {
+    hasQueryParam: {
+      handler: 'trackViewIndexEvent',
+      immediate: true,
+    },
+  },
   methods: {
+    trackViewIndexEvent() {
+      if (this.hasTrackedPageView || this.hasQueryParam) return;
+
+      this.hasTrackedPageView = true;
+      this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
+        label: TRACK_EVENT_TYPE_AGENT,
+      });
+    },
+    trackViewEvent() {
+      this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM, {
+        label: TRACK_EVENT_TYPE_AGENT,
+      });
+    },
     closeDrawer() {
       const { show, ...otherQuery } = this.$route.query;
 
