@@ -31,17 +31,17 @@ module Ai
           # to ensure we are logging the correct values
           determine_shas_and_force_reindex_flag
 
-          log_info('Start indexer')
-
           response_processor = IndexerResponseModifier.new(&block)
           stderr_output = []
 
-          status = Gitlab::Popen.popen_with_streaming(command, nil, environment_variables) do |stream_type, line|
-            case stream_type
-            when :stdout
-              response_processor.process_line(line)
-            when :stderr
-              stderr_output << line
+          status = log_duration('Run indexer') do
+            Gitlab::Popen.popen_with_streaming(command, nil, environment_variables) do |stream_type, line|
+              case stream_type
+              when :stdout
+                response_processor.process_line(line)
+              when :stderr
+                stderr_output << line
+              end
             end
           end
 
@@ -78,6 +78,8 @@ module Ai
         end
 
         def force_push?
+          return false if Feature.disabled?(:active_context_code_indexer_check_force_push, project)
+
           if last_indexed_commit.blank? ||
               Gitlab::Git.blank_ref?(last_indexed_commit) ||
               last_indexed_commit == project_repository.empty_tree_id
@@ -88,7 +90,7 @@ module Ai
           return true unless git_repository_contains_last_indexed_commit?
 
           # force-push if the last_indexed_commit is NOT an ancestor of the to_sha (latest commit)
-          !project_repository.ancestor?(last_indexed_commit, to_sha)
+          !last_indexed_commit_ancestor_of_to_sha?
         end
 
         def last_indexed_commit
@@ -96,9 +98,18 @@ module Ai
         end
 
         def git_repository_contains_last_indexed_commit?
-          last_indexed_commit.present? && project_repository.commit(last_indexed_commit).present?
+          log_duration('git_repository_contains_last_indexed_commit?') do
+            last_indexed_commit.present? && project_repository.commit(last_indexed_commit).present?
+          end
         end
         strong_memoize_attr :git_repository_contains_last_indexed_commit?
+
+        def last_indexed_commit_ancestor_of_to_sha?
+          log_duration('last_indexed_commit_ancestor_of_to_sha?') do
+            project_repository.ancestor?(last_indexed_commit, to_sha)
+          end
+        end
+        strong_memoize_attr :last_indexed_commit_ancestor_of_to_sha?
 
         def command
           [
@@ -160,6 +171,19 @@ module Ai
           ::ActiveContext.adapter
         end
         strong_memoize_attr :adapter
+
+        def log_duration(message, extra_params = {})
+          result = nil
+
+          duration = Benchmark.realtime do
+            result = yield
+          end
+
+          extra_params[:duration_s] = duration.round(2)
+          log_info(message, extra_params)
+
+          result
+        end
 
         def log_info(message, extra_params = {})
           logger.info(build_log_payload(message, extra_params))
