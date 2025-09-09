@@ -26,6 +26,12 @@ module Resolvers
         already_enabled_context = %w[file snippet user_rule].freeze
         return true if already_enabled_context.include?(category)
 
+        # both the `repository` and `directory` categories are part of the "Codebase as Additional Context" feature
+        # both are in turn toggled by the same Feature Flag (duo_include_context_repository)
+        # as they will be enabled at the same time
+        # https://gitlab.com/groups/gitlab-org/-/epics/17300#note_2711064088
+        return Feature.enabled?(:duo_include_context_repository, current_user) if category.to_sym == :directory
+
         Feature.enabled?(:"duo_include_context_#{category}", current_user)
       end
     end

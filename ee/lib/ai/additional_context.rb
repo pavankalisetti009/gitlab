@@ -30,6 +30,7 @@ module Ai
       terminal: 'terminal',
       user_rule: 'user_rule',
       repository: 'repository',
+      directory: 'directory',
       agent_user_environment: 'agent_user_environment'
     }.freeze
 
