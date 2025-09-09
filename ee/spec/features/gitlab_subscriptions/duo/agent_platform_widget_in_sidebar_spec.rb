@@ -38,7 +38,7 @@ RSpec.describe 'Duo agent platform widget in Sidebar', :enable_admin_mode, :js, 
     expect_widget_to_have_content(s_('DuoAgentPlatform|Agent Platform On'))
     expect_widget_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
 
-    widget_turn_on
+    widget_turn_on_preview
     confirm_modal_turn_on
 
     expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
@@ -64,6 +64,12 @@ RSpec.describe 'Duo agent platform widget in Sidebar', :enable_admin_mode, :js, 
   def widget_turn_on
     within_testid(widget_menu_selector) do
       click_button(_('Turn on'))
+    end
+  end
+
+  def widget_turn_on_preview
+    within_testid(widget_menu_selector) do
+      click_button(_('Learn more'))
     end
   end
 

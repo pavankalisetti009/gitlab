@@ -99,7 +99,7 @@ describe('DuoAgentPlatformWidget component', () => {
         createComponent({ stateProgression: ['enablePlatform', 'enabled'] });
 
         expect(findIcon().props('variant')).toBe('disabled');
-        expect(findActionButton().exists()).toBe(true);
+        expect(findActionButton().text()).toBe('Turn on');
         expect(findLearnMoreButton().exists()).toBe(true);
       });
 
@@ -107,8 +107,8 @@ describe('DuoAgentPlatformWidget component', () => {
         createComponent({ stateProgression: ['enableFeaturePreview', 'enabled'] });
 
         expect(findIcon().props('variant')).toBe('success');
-        expect(findActionButton().exists()).toBe(true);
-        expect(findLearnMoreButton().exists()).toBe(true);
+        expect(findActionButton().text()).toBe('Learn more');
+        expect(findLearnMoreButton().exists()).toBe(false);
       });
 
       it('does not show actions for enabled state', () => {
@@ -182,6 +182,7 @@ describe('DuoAgentPlatformWidget component', () => {
         await findActionButton().vm.$emit('click');
 
         const modalHtml = findConfirmModal().html();
+        expect(modalHtml).toContain('Get early access to new GitLab Duo features');
         expect(modalHtml).toContain('By turning on these features, you accept the');
         expect(modalHtml).toContain('/handbook/legal/testing-agreement/');
         expect(modalHtml).toContain('GitLab Testing Agreement');
