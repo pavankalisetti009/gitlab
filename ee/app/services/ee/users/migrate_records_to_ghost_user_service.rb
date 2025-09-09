@@ -54,11 +54,22 @@ module EE
       end
 
       def log_audit_event(user)
-        ::AuditEventService.new(
-          initiator_user,
-          user,
-          action: :destroy
-        ).for_user.security_event
+        audit_context = {
+          name: 'user_records_migrated_to_ghost',
+          author: initiator_user,
+          scope: user,
+          target: user,
+          target_details: user.full_path,
+          message: 'User records migrated to ghost user',
+          additional_details: {
+            action: 'migrate_to_ghost',
+            author_name: initiator_user.name,
+            target_id: user.id,
+            target_type: 'User'
+          }
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

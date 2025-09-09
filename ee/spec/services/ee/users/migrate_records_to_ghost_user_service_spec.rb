@@ -8,6 +8,11 @@ RSpec.describe Users::MigrateRecordsToGhostUserService, feature_category: :user_
   let(:execution_tracker) { instance_double(::Gitlab::Utils::ExecutionTracker, over_limit?: false) }
 
   let_it_be(:admin) { create(:admin) }
+  let_it_be(:ghost_user) { create(:user, :ghost) }
+
+  before do
+    allow(Users::Internal).to receive(:ghost).and_return(ghost_user)
+  end
 
   context "when migrating a user's associated records to the ghost user" do
     context 'for epics' do
@@ -88,26 +93,34 @@ RSpec.describe Users::MigrateRecordsToGhostUserService, feature_category: :user_
     subject(:operation) { service.execute }
 
     describe 'audit events' do
-      include_examples 'audit event logging' do
-        let(:fail_condition!) do
-          expect(user).to receive(:destroy).and_return(user)
-          expect(user).to receive(:destroyed?).and_return(false)
-        end
-
-        let(:attributes) do
-          {
-            author_id: admin.id,
-            entity_id: user.id,
-            entity_type: 'User',
-            details: {
-              remove: 'user',
-              author_name: admin.name,
-              target_id: user.id,
-              target_type: 'User',
-              target_details: user.full_path
-            }
+      it 'sends the audit event for user migration to ghost' do
+        audit_context = {
+          name: 'user_records_migrated_to_ghost',
+          author: admin,
+          scope: user,
+          target: user,
+          target_details: user.full_path,
+          message: 'User records migrated to ghost user',
+          additional_details: {
+            action: 'migrate_to_ghost',
+            author_name: admin.name,
+            target_id: user.id,
+            target_type: 'User'
           }
-        end
+        }
+
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context)
+
+        operation
+      end
+
+      it 'does not send audit event when user is not destroyed' do
+        expect(user).to receive(:destroy).and_return(user)
+        expect(user).to receive(:destroyed?).and_return(false)
+
+        expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+        operation
       end
     end
   end
