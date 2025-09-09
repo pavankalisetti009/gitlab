@@ -23,6 +23,7 @@ export default {
     noFrameworksText: s__('SecurityOrchestration|No compliance frameworks'),
     selectAllLabel: __('Select all'),
     clearAllLabel: __('Clear all'),
+    CSPFramework: s__('ComplianceFramework|Instance level compliance framework'),
   },
   name: 'ComplianceFrameworkDropdown',
   components: {
@@ -40,9 +41,13 @@ export default {
         return {
           search: this.searchTerm,
           fullPath: this.fullPath,
+          ids: null,
         };
       },
       update(data) {
+        if (!this.namespaceId) {
+          this.namespaceId = data.namespace.id;
+        }
         return this.getUniqueFrameworks(data.namespace?.complianceFrameworks?.nodes);
       },
       result({ data }) {
@@ -62,6 +67,7 @@ export default {
       groupPath: this.fullPath,
       pipelineConfigurationFullPathEnabled: true,
       pipelineConfigurationEnabled: true,
+      namespaceId: this.namespaceId,
     };
   },
   props: {
@@ -102,6 +108,7 @@ export default {
       complianceFrameworks: [],
       searchTerm: '',
       pageInfo: {},
+      namespaceId: null,
     };
   },
   computed: {
@@ -202,6 +209,8 @@ export default {
           variables: {
             after: this.pageInfo.endCursor,
             fullPath: this.fullPath,
+            ids: null,
+            search: this.searchTerm,
           },
           updateQuery(previousResult, { fetchMoreResult }) {
             return produce(fetchMoreResult, (draftData) => {
@@ -238,12 +247,20 @@ export default {
     onComplianceFrameworkCreated() {
       this.$refs.formModal.hide();
       this.$refs.listbox.open();
+      this.$apollo.queries.complianceFrameworks.refetch();
     },
     extractProjects(framework) {
       return framework?.projects?.nodes || [];
     },
     getUniqueFrameworks(items = []) {
       return uniqBy([...this.complianceFrameworks, ...items], 'id');
+    },
+    isCSPFramework(framework) {
+      if (!framework.namespaceId || !this.namespaceId) {
+        return false;
+      }
+
+      return getIdFromGraphQLId(framework.namespaceId) !== getIdFromGraphQLId(this.namespaceId);
     },
     renderPopoverContent(framework) {
       return (
@@ -313,10 +330,18 @@ export default {
               boundary="viewport"
               placement="right"
               triggers="hover"
-              :content="renderPopoverContent(item)"
               :target="item.value"
               :title="renderPopoverTitle(item.text, extractProjects(item).length)"
-            />
+            >
+              <div>
+                <span>{{ renderPopoverContent(item) }}</span>
+                <span
+                  v-if="isCSPFramework(item)"
+                  class="gl-border-t gl-mb-2 gl-block gl-pt-2 gl-text-sm gl-text-secondary"
+                  >{{ $options.i18n.CSPFramework }}</span
+                >
+              </div>
+            </gl-popover>
           </div>
         </template>
         <template #footer>

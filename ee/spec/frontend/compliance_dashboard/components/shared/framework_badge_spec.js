@@ -20,11 +20,15 @@ describe('FrameworkBadge component', () => {
   const findTooltip = () => wrapper.findComponent(GlPopover);
   const findCtaButton = () => wrapper.findComponent(GlPopover).findComponent(GlButton);
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     routerPushMock = jest.fn();
     return shallowMount(FrameworkBadge, {
       propsData: {
         ...props,
+      },
+      provide: {
+        namespaceId: 'gid://gitlab/Group/1',
+        ...provide,
       },
       mocks: {
         $router: { push: routerPushMock },
@@ -65,6 +69,79 @@ describe('FrameworkBadge component', () => {
       wrapper = createComponent({ framework: complianceFramework, popoverMode: 'hidden' });
 
       expect(findTooltip().exists()).toBe(false);
+    });
+  });
+
+  describe('CSP framework detection', () => {
+    it('shows CSP framework message when framework is from different namespace', () => {
+      const cspFramework = {
+        ...complianceFramework,
+        namespaceId: 'gid://gitlab/Group/2',
+      };
+
+      wrapper = createComponent(
+        { framework: cspFramework, popoverMode: 'details' },
+        { namespaceId: 'gid://gitlab/Group/1' },
+      );
+
+      expect(findTooltip().text()).toContain('Instance level compliance framework');
+    });
+
+    it('does not show CSP framework message when framework is from same namespace', () => {
+      const localFramework = {
+        ...complianceFramework,
+        namespaceId: 'gid://gitlab/Group/1',
+      };
+
+      wrapper = createComponent(
+        { framework: localFramework, popoverMode: 'details' },
+        { namespaceId: 'gid://gitlab/Group/1' },
+      );
+
+      expect(findTooltip().text()).not.toContain('Instance level compliance framework');
+    });
+
+    it('does not show CSP framework message when framework has no namespaceId', () => {
+      const frameworkWithoutNamespace = {
+        ...complianceFramework,
+        namespaceId: null,
+      };
+
+      wrapper = createComponent(
+        { framework: frameworkWithoutNamespace, popoverMode: 'details' },
+        { namespaceId: 'gid://gitlab/Group/1' },
+      );
+
+      expect(findTooltip().text()).not.toContain('Instance level compliance framework');
+    });
+
+    it('does not show CSP framework message when namespaceId is not injected', () => {
+      const cspFramework = {
+        ...complianceFramework,
+        namespaceId: 'gid://gitlab/Group/2',
+      };
+
+      wrapper = createComponent(
+        { framework: cspFramework, popoverMode: 'details' },
+        { namespaceId: null },
+      );
+
+      expect(findTooltip().text()).not.toContain('Instance level compliance framework');
+    });
+
+    it('correctly identifies CSP framework using numeric IDs', () => {
+      const cspFramework = {
+        ...complianceFramework,
+        namespaceId: 'gid://gitlab/Group/999',
+      };
+
+      wrapper = createComponent(
+        { framework: cspFramework, popoverMode: 'details' },
+        { namespaceId: 'gid://gitlab/Group/123' },
+      );
+
+      expect(wrapper.vm.isCSPFramework).toBe(true);
+      expect(findTooltip().text()).toContain('Instance level compliance framework');
     });
   });
 

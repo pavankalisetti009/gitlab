@@ -28,6 +28,7 @@ export const validFetchResponse = {
             description: 'General Data Protection Regulation',
             pipelineConfigurationFullPath: 'file.yml@group/project',
             color: '#1aaa55',
+            namespaceId: 'gid://gitlab/Group/1',
             projects: {
               nodes: [],
             },
@@ -40,6 +41,7 @@ export const validFetchResponse = {
             description: 'Payment Card Industry-Data Security Standard',
             pipelineConfigurationFullPath: 'file.yml@group/project',
             color: '#6666c4',
+            namespaceId: 'gid://gitlab/Group/1',
             projects: {
               nodes: [],
             },
@@ -93,6 +95,7 @@ export const validFetchOneResponse = {
             description: 'General Data Protection Regulation',
             pipelineConfigurationFullPath: 'file.yml@group/project',
             color: '#1aaa55',
+            namespaceId: 'gid://gitlab/Group/1',
             projects: { nodes: [] },
             __typename: 'ComplianceFramework',
           },
@@ -114,6 +117,7 @@ export const validCreateResponse = {
         description: 'General Data Protection Regulation',
         pipelineConfigurationFullPath: 'file.yml@group/project',
         color: '#1aaa55',
+        namespaceId: 'gid://gitlab/Group/1',
         __typename: 'ComplianceFramework',
       },
       errors: [],
@@ -198,6 +202,7 @@ export const framework = {
   default: false,
   description: 'a framework',
   color: '#112233',
+  namespaceId: 'gid://gitlab/Group/1',
   editPath: 'group/framework/1/edit',
 };
 
@@ -207,5 +212,6 @@ export const defaultFramework = {
   default: true,
   description: 'b framework',
   color: '#00b140',
+  namespaceId: 'gid://gitlab/Group/1',
   editPath: 'group/framework/2/edit',
 };

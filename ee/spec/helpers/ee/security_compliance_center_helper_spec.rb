@@ -11,6 +11,7 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       root_ancestor_path: group.root_ancestor.full_path,
       root_ancestor_name: group.root_ancestor.name,
       group_path: group.full_path,
+      namespace_id: group.id,
       active_compliance_frameworks: "false",
       feature_projects_report_enabled: "true",
       can_admin_compliance_frameworks: "true",
@@ -56,6 +57,10 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
         is_expected.to include(project_id: project.id)
       end
 
+      it 'includes namespace id' do
+        is_expected.to include(namespace_id: project.group.id)
+      end
+
       it_behaves_like 'includes compliance center app data'
     end
 
@@ -83,6 +88,10 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
 
       it 'includes group path' do
         is_expected.to include(group_path: group.full_path)
+      end
+
+      it 'includes namespace id' do
+        is_expected.to include(namespace_id: group.id)
       end
 
       it 'includes designated_as_csp flag' do

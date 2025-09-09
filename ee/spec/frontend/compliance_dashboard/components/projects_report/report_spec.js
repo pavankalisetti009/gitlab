@@ -71,6 +71,7 @@ describe('ComplianceProjectsReport component', () => {
         apolloProvider,
         propsData: {
           groupPath,
+          groupName: 'Test Group',
           rootAncestor,
           ...props,
         },
