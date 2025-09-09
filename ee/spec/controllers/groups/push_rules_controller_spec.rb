@@ -43,9 +43,10 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
       end
 
       context "when global setting #{rule_attr} is enabled" do
-        context 'with read_organization_push_rules feature flag disabled' do
+        context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
           before do
             stub_feature_flags(read_organization_push_rules: false)
+            stub_feature_flags(update_organization_push_rules: false)
             stub_licensed_features(rule_attr => true)
             create(:push_rule_sample, rule_attr => true)
           end
@@ -274,12 +275,13 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
 
               it_behaves_like 'updateable setting', rule_attr, true
 
-              context 'with read_organization_push_rules feature flag disabled' do
+              context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
                 let(:global_push_rule) { create(:push_rule_sample, rule_attr => true) }
                 let(:push_rule) { global_push_rule.reload }
 
                 before do
                   stub_feature_flags(read_organization_push_rules: false)
+                  stub_feature_flags(update_organization_push_rules: false)
                   stub_licensed_features(rule_attr => false)
                 end
 
@@ -288,9 +290,10 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
             end
 
             context "when global setting #{rule_attr} is enabled" do
-              context 'with read_organization_push_rules feature flag disabled' do
+              context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
                 before do
                   stub_feature_flags(read_organization_push_rules: false)
+                  stub_feature_flags(update_organization_push_rules: false)
                   stub_licensed_features(rule_attr => true)
                   create(:push_rule_sample, rule_attr => true)
                 end
@@ -375,9 +378,10 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
               end
 
               context "when global setting #{rule_attr} is disabled" do
-                context 'with read_organization_push_rules feature flag disabled' do
+                context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
                   before do
                     stub_feature_flags(read_organization_push_rules: false)
+                    stub_feature_flags(update_organization_push_rules: false)
                     stub_licensed_features(rule_attr => false)
                     create(:push_rule_sample, rule_attr => true)
                   end
@@ -396,9 +400,10 @@ RSpec.describe Groups::PushRulesController, feature_category: :source_code_manag
               end
 
               context "when global setting #{rule_attr} is enabled" do
-                context 'with read_organization_push_rules feature flag disabled' do
+                context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
                   before do
                     stub_feature_flags(read_organization_push_rules: false)
+                    stub_feature_flags(update_organization_push_rules: false)
                     stub_licensed_features(rule_attr => true)
                     create(:push_rule_sample, rule_attr => true)
                   end

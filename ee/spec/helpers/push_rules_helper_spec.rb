@@ -73,9 +73,10 @@ RSpec.describe PushRulesHelper, feature_category: :source_code_management do
     end
   end
 
-  context 'with read_organization_push_rules feature flag disabled' do
+  context 'with read_organization_push_rules and update_organization_push_rules feature flag disabled' do
     before do
       stub_feature_flags(read_organization_push_rules: false)
+      stub_feature_flags(update_organization_push_rules: false)
     end
 
     let(:global_push_rule) { create(:push_rule_sample) }
