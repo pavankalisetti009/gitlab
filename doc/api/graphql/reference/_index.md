@@ -41476,6 +41476,31 @@ Returns [`Commit`](#commit).
 | ---- | ---- | ----------- |
 | <a id="repositorycommitref"></a>`ref` | [`String!`](#string) | Commit reference (SHA, branch name, or tag name). |
 
+##### `Repository.commits`
+
+{{< details >}}
+**Introduced** in GitLab 18.4.
+**Status**: Experiment.
+{{< /details >}}
+
+List of commits from the repository.
+
+Returns [`CommitConnection`](#commitconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="repositorycommitsauthor"></a>`author` | [`String`](#string) | Name or email of the author. |
+| <a id="repositorycommitscommittedafter"></a>`committedAfter` | [`Time`](#time) | Commits created after an ISO8601 formatted time or date. |
+| <a id="repositorycommitscommittedbefore"></a>`committedBefore` | [`Time`](#time) | Commits created before an ISO8601 formatted time or date. |
+| <a id="repositorycommitsquery"></a>`query` | [`UntrustedRegexp`](#untrustedregexp) | Regular expression to filter the commits. |
+| <a id="repositorycommitsref"></a>`ref` | [`String!`](#string) | Branch or tag to search for commits. |
+
 ##### `Repository.lastCommit`
 
 The last commit made in the repository for the given path and ref.
