@@ -68969,6 +68969,9 @@ msgstr ""
 msgid "Usage trends"
 msgstr ""
 
+msgid "UsageBilling|An error occurred while fetching data"
+msgstr ""
+
 msgid "UsageBilling|Current month usage"
 msgstr ""
 
