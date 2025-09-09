@@ -6,7 +6,7 @@ class GroupSamlGroupSyncWorker < SystemAccess::BaseSaasGroupSyncWorker
 
   data_consistency :always
   sidekiq_options retry: 3
-  feature_category :system_access
+  feature_category :user_management
   idempotent!
 
   loggable_arguments 2

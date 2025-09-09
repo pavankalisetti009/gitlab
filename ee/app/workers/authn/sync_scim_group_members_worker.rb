@@ -4,7 +4,7 @@ module Authn
   class SyncScimGroupMembersWorker
     include ApplicationWorker
 
-    feature_category :system_access
+    feature_category :user_management
     data_consistency :sticky
 
     idempotent!

@@ -5,7 +5,7 @@ module Authn
     include ApplicationWorker
 
     data_consistency :sticky
-    feature_category :system_access
+    feature_category :user_management
 
     idempotent!
     def perform(args)

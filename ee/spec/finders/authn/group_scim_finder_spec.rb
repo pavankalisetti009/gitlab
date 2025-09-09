@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Authn::GroupScimFinder, feature_category: :system_access do
+RSpec.describe Authn::GroupScimFinder, feature_category: :user_management do
   let_it_be(:group) { create(:group) }
 
   subject(:finder) { described_class.new(group) }

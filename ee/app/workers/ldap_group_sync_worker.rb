@@ -7,7 +7,7 @@ class LdapGroupSyncWorker # rubocop:disable Scalability/IdempotentWorker
 
   sidekiq_options retry: 3
 
-  feature_category :system_access
+  feature_category :user_management
   worker_has_external_dependencies!
   weight 2
   loggable_arguments 0, 1
