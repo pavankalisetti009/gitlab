@@ -365,6 +365,37 @@ CREATE SEQUENCE package_file_registry_id_seq
 
 ALTER SEQUENCE package_file_registry_id_seq OWNED BY package_file_registry.id;
 
+CREATE TABLE packages_nuget_symbol_registry (
+    id bigint NOT NULL,
+    packages_nuget_symbol_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    last_synced_at timestamp with time zone,
+    retry_at timestamp with time zone,
+    verified_at timestamp with time zone,
+    verification_started_at timestamp with time zone,
+    verification_retry_at timestamp with time zone,
+    state smallint DEFAULT 0 NOT NULL,
+    verification_state smallint DEFAULT 0 NOT NULL,
+    retry_count smallint DEFAULT 0 NOT NULL,
+    verification_retry_count smallint DEFAULT 0 NOT NULL,
+    checksum_mismatch boolean DEFAULT false NOT NULL,
+    verification_checksum bytea,
+    verification_checksum_mismatched bytea,
+    verification_failure text,
+    last_sync_failure text,
+    CONSTRAINT check_353acf9c46 CHECK ((char_length(last_sync_failure) <= 255)),
+    CONSTRAINT check_4b08fc53d8 CHECK ((char_length(verification_failure) <= 255))
+);
+
+CREATE SEQUENCE packages_nuget_symbol_registry_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE packages_nuget_symbol_registry_id_seq OWNED BY packages_nuget_symbol_registry.id;
+
 CREATE TABLE pages_deployment_registry (
     id bigint NOT NULL,
     pages_deployment_id bigint NOT NULL,
@@ -592,6 +623,8 @@ ALTER TABLE ONLY merge_request_diff_registry ALTER COLUMN id SET DEFAULT nextval
 
 ALTER TABLE ONLY package_file_registry ALTER COLUMN id SET DEFAULT nextval('package_file_registry_id_seq'::regclass);
 
+ALTER TABLE ONLY packages_nuget_symbol_registry ALTER COLUMN id SET DEFAULT nextval('packages_nuget_symbol_registry_id_seq'::regclass);
+
 ALTER TABLE ONLY pages_deployment_registry ALTER COLUMN id SET DEFAULT nextval('pages_deployment_registry_id_seq'::regclass);
 
 ALTER TABLE ONLY pipeline_artifact_registry ALTER COLUMN id SET DEFAULT nextval('pipeline_artifact_registry_id_seq'::regclass);
@@ -647,6 +680,9 @@ ALTER TABLE ONLY merge_request_diff_registry
 
 ALTER TABLE ONLY package_file_registry
     ADD CONSTRAINT package_file_registry_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY packages_nuget_symbol_registry
+    ADD CONSTRAINT packages_nuget_symbol_registry_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY pages_deployment_registry
     ADD CONSTRAINT pages_deployment_registry_pkey PRIMARY KEY (id);
@@ -826,6 +862,10 @@ CREATE INDEX index_package_file_registry_on_state ON package_file_registry USING
 
 CREATE INDEX index_package_file_registry_on_verified_at ON package_file_registry USING btree (verified_at);
 
+CREATE INDEX index_packages_nuget_symbol_registry_on_retry_at ON packages_nuget_symbol_registry USING btree (retry_at);
+
+CREATE INDEX index_packages_nuget_symbol_registry_on_state ON packages_nuget_symbol_registry USING btree (state);
+
 CREATE INDEX index_pages_deployment_registry_on_last_synced_at ON pages_deployment_registry USING btree (last_synced_at);
 
 CREATE UNIQUE INDEX index_pages_deployment_registry_on_pages_deployment_id ON pages_deployment_registry USING btree (pages_deployment_id);
@@ -845,6 +885,8 @@ CREATE INDEX index_pipeline_artifact_registry_on_retry_at ON pipeline_artifact_r
 CREATE INDEX index_pipeline_artifact_registry_on_state ON pipeline_artifact_registry USING btree (state);
 
 CREATE INDEX index_pipeline_artifact_registry_on_verified_at ON pipeline_artifact_registry USING btree (verified_at);
+
+CREATE UNIQUE INDEX index_pkgs_nuget_symbol_registry_on_pkgs_nuget_symbol_id ON packages_nuget_symbol_registry USING btree (packages_nuget_symbol_id);
 
 CREATE INDEX index_project_repository_registry_on_last_synced_at ON project_repository_registry USING btree (last_synced_at);
 
@@ -913,6 +955,12 @@ CREATE INDEX package_file_registry_failed_verification ON package_file_registry 
 CREATE INDEX package_file_registry_needs_verification ON package_file_registry USING btree (verification_state) WHERE ((state = 2) AND (verification_state = ANY (ARRAY[0, 3])));
 
 CREATE INDEX package_file_registry_pending_verification ON package_file_registry USING btree (verified_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 0));
+
+CREATE INDEX packages_nuget_symbol_registry_failed_verification ON packages_nuget_symbol_registry USING btree (verification_retry_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 3));
+
+CREATE INDEX packages_nuget_symbol_registry_needs_verification ON packages_nuget_symbol_registry USING btree (verification_state) WHERE ((state = 2) AND (verification_state = ANY (ARRAY[0, 3])));
+
+CREATE INDEX packages_nuget_symbol_registry_pending_verification ON packages_nuget_symbol_registry USING btree (verified_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 0));
 
 CREATE INDEX pages_deployment_registry_failed_verification ON pages_deployment_registry USING btree (verification_retry_at NULLS FIRST) WHERE ((state = 2) AND (verification_state = 3));
 
