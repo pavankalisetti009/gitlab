@@ -54469,6 +54469,9 @@ msgstr ""
 msgid "Review App|View latest app"
 msgstr ""
 
+msgid "Review and edit media"
+msgstr ""
+
 msgid "Review approval"
 msgstr ""
 
