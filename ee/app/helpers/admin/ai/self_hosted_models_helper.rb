@@ -39,6 +39,10 @@ module Admin
         !!::License.current&.online_cloud_license?
       end
 
+      def can_manage_instance_model_selection?
+        ::Ability.allowed?(current_user, :manage_instance_model_selection)
+      end
+
       def beta_models_enabled?
         ::Ai::TestingTermsAcceptance.has_accepted?
       end

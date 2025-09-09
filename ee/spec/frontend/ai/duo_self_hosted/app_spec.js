@@ -15,6 +15,7 @@ describe('DuoSelfHostedApp', () => {
         ...props,
       },
       provide: {
+        canManageInstanceModelSelection: false,
         ...provide,
       },
       mocks: {
@@ -43,6 +44,22 @@ describe('DuoSelfHostedApp', () => {
     expect(wrapper.text()).toMatch(
       'Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
     );
+  });
+
+  describe('with admin model selection', () => {
+    beforeEach(() => {
+      createComponent({
+        provide: {
+          canManageInstanceModelSelection: true,
+        },
+      });
+
+      it('renders description', () => {
+        expect(wrapper.text()).toMatch(
+          'Configure and assign self-hosted models or GitLab managed models to AI-native features.',
+        );
+      });
+    });
   });
 
   it('has a button to add a new self-hosted model', () => {

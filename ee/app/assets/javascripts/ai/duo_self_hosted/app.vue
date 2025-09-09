@@ -16,11 +16,9 @@ export default {
     FeatureSettings,
     PageHeading,
   },
+  inject: ['canManageInstanceModelSelection'],
   i18n: {
     title: s__('AdminSelfHostedModels|GitLab Duo Self-Hosted'),
-    description: s__(
-      'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
-    ),
   },
   props: {
     tabId: {
@@ -46,6 +44,17 @@ export default {
     };
   },
   computed: {
+    description() {
+      if (this.canManageInstanceModelSelection) {
+        return s__(
+          'AdminSelfHostedModels|Configure and assign self-hosted models or GitLab managed models to AI-native features.',
+        );
+      }
+
+      return s__(
+        'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
+      );
+    },
     isSelfHostedModelsTab() {
       return this.tabId === SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS;
     },
@@ -85,7 +94,7 @@ export default {
       <template #heading>
         <div data-testid="self-hosted-title">{{ $options.i18n.title }}</div>
       </template>
-      <template #description>{{ $options.i18n.description }}</template>
+      <template #description>{{ description }}</template>
       <template #actions>
         <gl-button variant="confirm" :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }">
           {{ s__('AdminSelfHostedModels|Add self-hosted model') }}

@@ -36,6 +36,7 @@ export function mountGitlabDuoHomeApp() {
     amazonQAutoReviewEnabled,
     amazonQConfigurationPath,
     canManageSelfHostedModels,
+    canManageInstanceModelSelection,
     areDuoCoreFeaturesEnabled,
     duoWorkflowEnabled,
     duoWorkflowServiceAccount,
@@ -77,6 +78,7 @@ export function mountGitlabDuoHomeApp() {
       amazonQAutoReviewEnabled: parseBoolean(amazonQAutoReviewEnabled),
       amazonQConfigurationPath,
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
+      canManageInstanceModelSelection: parseBoolean(canManageInstanceModelSelection),
       areDuoCoreFeaturesEnabled: parseBoolean(areDuoCoreFeaturesEnabled),
       duoWorkflowEnabled: parseBoolean(duoWorkflowEnabled),
       duoWorkflowServiceAccount: duoWorkflowServiceAccount
