@@ -241,60 +241,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           end
         end
 
-        context 'for SyncFindingsToApprovalRulesWorker with scan result policies' do
-          let(:security_orchestration_policy_configuration) do
-            create(:security_orchestration_policy_configuration, project: pipeline.project)
-          end
-
-          before do
-            allow(pipeline.project).to receive(:all_security_orchestration_policy_configurations)
-              .and_return([security_orchestration_policy_configuration])
-          end
-
-          context 'when security_orchestration_policies is not licensed' do
-            before do
-              stub_licensed_features(security_orchestration_policies: false)
-            end
-
-            it 'does not call SyncFindingsToApprovalRulesWorker' do
-              expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to receive(:perform_async)
-
-              store_group_of_artifacts
-            end
-          end
-
-          context 'when security_orchestration_policies is licensed' do
-            before do
-              stub_licensed_features(security_orchestration_policies: true, sast: true)
-            end
-
-            context 'when the pipeline is not for the default branch' do
-              before do
-                allow(pipeline).to receive(:default_branch?).and_return(false)
-              end
-
-              it 'calls SyncFindingsToApprovalRulesWorker' do
-                expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
-                  .to receive(:perform_async).with(pipeline.id)
-
-                store_group_of_artifacts
-              end
-            end
-
-            context 'when the pipeline is for the default branch' do
-              before do
-                allow(pipeline).to receive(:default_branch?).and_return(true)
-              end
-
-              it 'does not call SyncFindingsToApprovalRulesWorker' do
-                expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to receive(:perform_async)
-
-                store_group_of_artifacts
-              end
-            end
-          end
-        end
-
         context 'for Security::SecretDetection::GitlabTokenVerificationWorker' do
           shared_examples 'does not schedule token status updates' do
             it 'does not schedule the `GitlabTokenVerificationWorker`' do
@@ -430,32 +376,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           store_group_of_artifacts
 
           expect(Security::StoreSecurityReportsByProjectWorker).not_to have_received(:perform_async)
-        end
-
-        describe 'scheduling `SyncFindingsToApprovalRulesWorker`' do
-          before do
-            stub_licensed_features(security_orchestration_policies: true, sast: true)
-          end
-
-          context 'when the pipeline is for the default branch' do
-            it 'does not schedule the `SyncFindingsToApprovalRulesWorker`' do
-              expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to receive(:perform_async)
-
-              store_group_of_artifacts
-            end
-          end
-
-          context 'when the pipeline is not for the default branch' do
-            before do
-              allow(pipeline).to receive(:default_branch?).and_return(false)
-            end
-
-            it 'schedules the `SyncFindingsToApprovalRulesWorker`' do
-              expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).to receive(:perform_async)
-
-              store_group_of_artifacts
-            end
-          end
         end
       end
 

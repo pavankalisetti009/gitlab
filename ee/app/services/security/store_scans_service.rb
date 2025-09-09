@@ -36,8 +36,6 @@ module Security
         )
       end
 
-      sync_findings_to_approval_rules unless pipeline.default_branch?
-
       unless results.any?(true)
         schedule_sbom_records if has_sbom_reports? && pipeline.default_branch?
 
@@ -141,12 +139,6 @@ module Security
 
     def secret_detection_scans_found?
       pipeline.security_scans.by_scan_types(:secret_detection).any?
-    end
-
-    def sync_findings_to_approval_rules
-      return unless project.licensed_feature_available?(:security_orchestration_policies)
-
-      Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker.perform_async(pipeline.id)
     end
 
     def has_sbom_reports?
