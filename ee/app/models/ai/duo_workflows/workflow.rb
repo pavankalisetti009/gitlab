@@ -12,6 +12,7 @@ module Ai
       belongs_to :user
       belongs_to :project, optional: true
       belongs_to :namespace, optional: true
+      belongs_to :ai_catalog_item_version, optional: true, class_name: 'Ai::Catalog::ItemVersion'
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
       has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'
       has_many :events, class_name: 'Ai::DuoWorkflows::Event'

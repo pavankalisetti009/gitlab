@@ -11752,6 +11752,9 @@ msgstr ""
 msgid "Browse files at this commit"
 msgstr ""
 
+msgid "Browse your repository files and folders with the tree view sidebar."
+msgstr ""
+
 msgid "Build a new repository or import existing work."
 msgstr ""
 
@@ -28249,6 +28252,9 @@ msgid "File too large. Secure files must be less than %{limit} MB."
 msgstr ""
 
 msgid "File tree"
+msgstr ""
+
+msgid "File tree navigation"
 msgstr ""
 
 msgid "File upload error."

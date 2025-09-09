@@ -15,6 +15,7 @@ import {
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
@@ -34,10 +35,14 @@ export default {
     GlTokenSelector,
     VisibilityLevelRadioGroup,
   },
+  mixins: [glFeatureFlagsMixin()],
   apollo: {
     availableTools: {
       query: aiCatalogBuiltInToolsQuery,
       update: (data) => data.aiCatalogBuiltInTools.nodes.map((t) => ({ id: t.id, name: t.title })),
+      skip() {
+        return !this.isToolsAvailable;
+      },
     },
   },
   props: {
@@ -85,6 +90,9 @@ export default {
     };
   },
   computed: {
+    isToolsAvailable() {
+      return this.glFeatures.aiCatalogAgentTools;
+    },
     formId() {
       return uniqueId('ai-catalog-agent-form-');
     },
@@ -113,6 +121,19 @@ export default {
               },
             },
           };
+      const toolsField = this.isToolsAvailable
+        ? {
+            tools: {
+              label: s__('AICatalog|Tools'),
+              groupAttrs: {
+                optional: true,
+                labelDescription: s__(
+                  'AICatalog|Select tools that this agent will have access to.',
+                ),
+              },
+            },
+          }
+        : {};
 
       return {
         ...projectIdField,
@@ -142,13 +163,7 @@ export default {
             ),
           },
         },
-        tools: {
-          label: s__('AICatalog|Tools'),
-          groupAttrs: {
-            optional: true,
-            labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
-          },
-        },
+        ...toolsField,
         systemPrompt: {
           label: s__('AICatalog|System prompt'),
           validators: createFieldValidators({

@@ -6,6 +6,7 @@ module Explore
     before_action :check_feature_flag
     before_action do
       push_frontend_feature_flag(:ai_catalog_enforce_readonly_versions)
+      push_frontend_feature_flag(:ai_catalog_agent_tools)
     end
 
     private
