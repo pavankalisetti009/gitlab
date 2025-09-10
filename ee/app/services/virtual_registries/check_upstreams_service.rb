@@ -31,7 +31,7 @@ module VirtualRegistries
       registry.upstreams.each_with_index do |upstream, index|
         request = Typhoeus::Request.new(
           upstream.url_for(path),
-          headers: upstream.headers,
+          headers: upstream.headers(path),
           method: :head,
           followlocation: true,
           timeout: NETWORK_TIMEOUT

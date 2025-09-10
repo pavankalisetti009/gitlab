@@ -39,23 +39,4 @@ RSpec.shared_examples 'virtual registry upstream common behavior' do
       end
     end
   end
-
-  describe '#url_for' do
-    subject { upstream.url_for(path) }
-
-    where(:path, :expected_url) do
-      'path'      | 'http://test.maven/path'
-      ''          | 'http://test.maven/'
-      '/path'     | 'http://test.maven/path'
-      '/sub/path' | 'http://test.maven/sub/path'
-    end
-
-    with_them do
-      before do
-        upstream.url = 'http://test.maven/'
-      end
-
-      it { is_expected.to eq(expected_url) }
-    end
-  end
 end
