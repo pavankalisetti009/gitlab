@@ -811,6 +811,9 @@ expires_at: duo_workflow_service_token_expires_at })
 
         before do
           stub_feature_flags(self_hosted_agent_platform: true)
+          stub_feature_flags(instance_level_model_selection: false)
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+          stub_feature_flags(ai_model_switching: false)
         end
 
         it 'includes model metadata headers in the response' do
@@ -889,6 +892,9 @@ expires_at: duo_workflow_service_token_expires_at })
 
         before do
           stub_feature_flags(self_hosted_agent_platform: false)
+          stub_feature_flags(instance_level_model_selection: false)
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+          stub_feature_flags(ai_model_switching: false)
         end
 
         it 'does not include model metadata headers' do
@@ -924,6 +930,101 @@ expires_at: duo_workflow_service_token_expires_at })
 
           expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
           expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        end
+      end
+
+      context 'for model selection at instance level' do
+        before do
+          stub_feature_flags(instance_level_model_selection: true)
+          stub_feature_flags(duo_agent_platform_model_selection: false)
+          stub_feature_flags(ai_model_switching: false)
+          stub_feature_flags(self_hosted_agent_platform: false)
+        end
+
+        context 'when model selection at instance level does not exist' do
+          it 'includes model metadata headers with default model' do
+            get api(path, user), headers: workhorse_headers
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+            expect(headers).to include(
+              'x-gitlab-oauth-token' => 'oauth_token',
+              'x-gitlab-unidirectional-streaming' => 'enabled'
+            )
+
+            metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+            expect(metadata).to include(
+              'provider' => 'gitlab',
+              'feature_setting' => 'duo_agent_platform',
+              'identifier' => nil
+            )
+          end
+        end
+
+        context 'when model selection at instance level exists' do
+          let_it_be(:instance_setting) do
+            create(:instance_model_selection_feature_setting,
+              feature: :duo_agent_platform,
+              offered_model_ref: 'claude-3-7-sonnet-20250219')
+          end
+
+          it 'includes model metadata headers in the response' do
+            get api(path, user), headers: workhorse_headers
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+
+            metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+            expect(metadata).to include(
+              'provider' => 'gitlab',
+              'feature_setting' => 'duo_agent_platform',
+              'identifier' => 'claude-3-7-sonnet-20250219'
+            )
+          end
+        end
+
+        context 'when the feature flag is disabled' do
+          before do
+            stub_feature_flags(instance_level_model_selection: false)
+          end
+
+          it 'does not include model metadata headers' do
+            get api(path, user), headers: workhorse_headers
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            headers = json_response['DuoWorkflow']['Headers']
+            expect(headers).to include(
+              'x-gitlab-oauth-token' => 'oauth_token',
+              'x-gitlab-unidirectional-streaming' => 'enabled'
+            )
+            expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
+          end
+        end
+      end
+
+      context 'for model selection at namespace level', :saas do
+        before do
+          stub_feature_flags(instance_level_model_selection: false)
+          stub_feature_flags(duo_agent_platform_model_selection: true)
+          stub_feature_flags(ai_model_switching: true)
+          stub_feature_flags(self_hosted_agent_platform: false)
+        end
+
+        it 'does not include model metadata headers' do
+          get api(path, user), headers: workhorse_headers
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          headers = json_response['DuoWorkflow']['Headers']
+          expect(headers).to include(
+            'x-gitlab-oauth-token' => 'oauth_token',
+            'x-gitlab-unidirectional-streaming' => 'enabled'
+          )
+
+          expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
         end
       end
 
