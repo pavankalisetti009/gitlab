@@ -70,6 +70,15 @@ module Gitlab
           )
         end
 
+        def track_spp_scan_passed
+          track_internal_event(
+            'spp_scan_passed',
+            user: @user,
+            project: project,
+            namespace: project.namespace
+          )
+        end
+
         def track_spp_push_blocked_secrets_found(number)
           track_internal_event(
             'spp_push_blocked_secrets_found',

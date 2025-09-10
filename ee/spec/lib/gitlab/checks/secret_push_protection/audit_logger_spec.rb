@@ -129,7 +129,16 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
     end
   end
 
-  describe '#track_spp_push_blocked_secrets_found_with_errors' do
+  describe '#track_spp_scan_passed' do
+    it 'triggers internal events and increment usage metrics' do
+      expect { audit_logger.track_spp_scan_passed }
+        .to trigger_internal_events('spp_scan_passed')
+        .with(user: user, project: project, namespace: project.namespace)
+        .and increment_usage_metrics('counts.count_total_spp_scan_passed')
+    end
+  end
+
+  describe '#track_spp_push_blocked_secrets_found' do
     let(:properties) { { value: 2 } }
 
     it 'triggers internal events and increment usage metrics' do
@@ -140,7 +149,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
     end
   end
 
-  describe '#track_spp_push_blocked_secrets_found' do
+  describe '#track_spp_push_blocked_secrets_found_with_errors' do
     let(:properties) { { value: 2 } }
 
     it 'triggers internal events and increment usage metrics' do
