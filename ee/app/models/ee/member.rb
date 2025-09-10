@@ -83,11 +83,24 @@ module EE
       extend ::Gitlab::Utils::Override
       include ::Authz::MemberRoleInSharedGroup
 
-      override :member_role_id
-      def member_role_id(group_link_table, custom_role_for_group_link_enabled)
-        return super unless custom_role_for_group_link_enabled
+      override :with_group_group_sharing_access
+      def with_group_group_sharing_access(group)
+        return super unless ::Feature.enabled?(:use_user_group_member_roles, ::Feature.current_request)
 
-        member_role_id_in_shared_group
+        super.joins("LEFT OUTER JOIN user_group_member_roles ON members.user_id = user_group_member_roles.user_id \
+          AND user_group_member_roles.group_id = group_group_links.shared_group_id \
+          AND user_group_member_roles.shared_with_group_id = group_group_links.shared_with_group_id")
+      end
+
+      override :member_role_id
+      def member_role_id(group)
+        return super unless group.can_assign_custom_roles_to_group_links?
+
+        unless ::Feature.enabled?(:use_user_group_member_roles, ::Feature.current_request)
+          return member_role_id_in_shared_group
+        end
+
+        ::Authz::UserGroupMemberRole.arel_table[:member_role_id]
       end
     end
 
