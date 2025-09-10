@@ -20,228 +20,168 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    context 'when self_hosted_agent_platform feature flag is disabled' do
-      before do
-        stub_feature_flags(self_hosted_agent_platform: false)
+    it 'creates ModelMetadata with the provided feature_setting' do
+      allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
+        allow(metadata).to receive(:to_params).and_return({ provider: :gitlab })
       end
 
-      it 'returns nil' do
-        expect(execute).to be_nil
+      expect(::Gitlab::Llm::AiGateway::ModelMetadata).to receive(:new)
+        .with(feature_setting: feature_setting)
+        .and_call_original
+
+      execute
+    end
+
+    context 'when ModelMetadata returns blank values' do
+      where(:blank_value) do
+        [nil, {}, [], '', '   ', false]
       end
 
-      it 'does not call ModelMetadata' do
-        expect(::Gitlab::Llm::AiGateway::ModelMetadata).not_to receive(:new)
-        execute
+      with_them do
+        before do
+          allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
+            allow(metadata).to receive(:to_params).and_return(blank_value)
+          end
+        end
+
+        it 'returns {} for blank values' do
+          expect(execute).to eq({})
+        end
       end
     end
 
-    context 'when self_hosted_agent_platform feature flag is enabled' do
-      before do
-        stub_feature_flags(self_hosted_agent_platform: true)
+    context 'when ModelMetadata returns valid data' do
+      let(:model_metadata) do
+        {
+          provider: 'gitlab',
+          name: 'claude-3-sonnet',
+          identifier: 'claude-3-7-sonnet-20250219'
+        }
       end
 
-      it 'creates ModelMetadata with the provided feature_setting' do
+      before do
         allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-          allow(metadata).to receive(:to_params).and_return({ provider: :gitlab })
+          allow(metadata).to receive(:to_params).and_return(model_metadata)
+        end
+      end
+
+      it 'returns model metadata header with JSON serialized data' do
+        expect(execute).to eq({
+          'x-gitlab-agent-platform-model-metadata' => model_metadata.to_json
+        })
+      end
+    end
+
+    context 'with different types of valid model metadata' do
+      it 'serializes minimal metadata correctly' do
+        test_data = { provider: 'gitlab' }
+
+        allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
+          allow(metadata).to receive(:to_params).and_return(test_data)
+        end
+
+        expect(execute).to eq({
+          'x-gitlab-agent-platform-model-metadata' => test_data.to_json
+        })
+      end
+
+      it 'serializes complete gitlab metadata correctly' do
+        test_data = {
+          provider: 'gitlab',
+          name: 'claude-3-sonnet',
+          identifier: 'claude-3-7-sonnet-20250219',
+          feature_setting: 'duo_agent_platform'
+        }
+
+        allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
+          allow(metadata).to receive(:to_params).and_return(test_data)
+        end
+
+        expect(execute).to eq({
+          'x-gitlab-agent-platform-model-metadata' => test_data.to_json
+        })
+      end
+
+      it 'serializes self-hosted metadata correctly' do
+        test_data = {
+          provider: 'self_hosted',
+          name: 'mistral-7b',
+          endpoint: 'http://localhost:11434/v1',
+          api_key: 'secret-key',
+          identifier: 'mistral/mistral-7b'
+        }
+
+        allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
+          allow(metadata).to receive(:to_params).and_return(test_data)
+        end
+
+        expect(execute).to eq({
+          'x-gitlab-agent-platform-model-metadata' => test_data.to_json
+        })
+      end
+    end
+
+    context 'when feature_setting is nil' do
+      let(:service) { described_class.new(feature_setting: nil) }
+
+      it 'passes nil to ModelMetadata and returns {} when metadata is blank' do
+        allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
+          allow(metadata).to receive(:to_params).and_return(nil)
         end
 
         expect(::Gitlab::Llm::AiGateway::ModelMetadata).to receive(:new)
-          .with(feature_setting: feature_setting)
+          .with(feature_setting: nil)
           .and_call_original
 
-        execute
+        result = execute
+        expect(result).to eq({})
       end
+    end
 
-      context 'when ModelMetadata returns blank values' do
-        where(:blank_value) do
-          [nil, {}, [], '', '   ', false]
-        end
-
-        with_them do
-          before do
-            allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-              allow(metadata).to receive(:to_params).and_return(blank_value)
-            end
-          end
-
-          it 'returns nil for blank values' do
-            expect(execute).to be_nil
-          end
-        end
-      end
-
-      context 'when ModelMetadata returns valid data' do
-        let(:model_metadata) do
-          {
-            provider: 'gitlab',
-            name: 'claude-3-sonnet',
-            identifier: 'claude-3-7-sonnet-20250219'
-          }
-        end
-
+    context 'with error handling' do
+      context 'when ModelMetadata raises an exception' do
         before do
           allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-            allow(metadata).to receive(:to_params).and_return(model_metadata)
+            allow(metadata).to receive(:to_params).and_raise(StandardError, 'Model metadata error')
           end
         end
 
-        it 'returns model metadata header with JSON serialized data' do
-          expect(execute).to eq({
-            'x-gitlab-agent-platform-model-metadata' => model_metadata.to_json
-          })
+        it 'lets the exception bubble up' do
+          expect { execute }.to raise_error(StandardError, 'Model metadata error')
         end
       end
 
-      context 'with different types of valid model metadata' do
-        it 'serializes minimal metadata correctly' do
-          test_data = { provider: 'gitlab' }
+      context 'when ModelMetadata initialization raises an exception' do
+        before do
+          allow(::Gitlab::Llm::AiGateway::ModelMetadata).to receive(:new)
+            .and_raise(ArgumentError, 'Invalid feature setting')
+        end
+
+        it 'lets the exception bubble up' do
+          expect { execute }.to raise_error(ArgumentError, 'Invalid feature setting')
+        end
+      end
+
+      context 'when JSON serialization fails' do
+        let(:invalid_data) { instance_double(Object, present?: true) }
+
+        before do
+          allow(invalid_data).to receive(:to_json).and_raise(JSON::GeneratorError, 'Invalid JSON')
 
           allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-            allow(metadata).to receive(:to_params).and_return(test_data)
-          end
-
-          expect(execute).to eq({
-            'x-gitlab-agent-platform-model-metadata' => test_data.to_json
-          })
-        end
-
-        it 'serializes complete gitlab metadata correctly' do
-          test_data = {
-            provider: 'gitlab',
-            name: 'claude-3-sonnet',
-            identifier: 'claude-3-7-sonnet-20250219',
-            feature_setting: 'duo_agent_platform'
-          }
-
-          allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-            allow(metadata).to receive(:to_params).and_return(test_data)
-          end
-
-          expect(execute).to eq({
-            'x-gitlab-agent-platform-model-metadata' => test_data.to_json
-          })
-        end
-
-        it 'serializes self-hosted metadata correctly' do
-          test_data = {
-            provider: 'self_hosted',
-            name: 'mistral-7b',
-            endpoint: 'http://localhost:11434/v1',
-            api_key: 'secret-key',
-            identifier: 'mistral/mistral-7b'
-          }
-
-          allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-            allow(metadata).to receive(:to_params).and_return(test_data)
-          end
-
-          expect(execute).to eq({
-            'x-gitlab-agent-platform-model-metadata' => test_data.to_json
-          })
-        end
-      end
-
-      context 'when feature_setting is nil' do
-        let(:service) { described_class.new(feature_setting: nil) }
-
-        it 'passes nil to ModelMetadata and returns nil when metadata is blank' do
-          allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-            allow(metadata).to receive(:to_params).and_return(nil)
-          end
-
-          expect(::Gitlab::Llm::AiGateway::ModelMetadata).to receive(:new)
-            .with(feature_setting: nil)
-            .and_call_original
-
-          result = execute
-          expect(result).to be_nil
-        end
-      end
-
-      context 'with error handling' do
-        context 'when ModelMetadata raises an exception' do
-          before do
-            allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-              allow(metadata).to receive(:to_params).and_raise(StandardError, 'Model metadata error')
-            end
-          end
-
-          it 'lets the exception bubble up' do
-            expect { execute }.to raise_error(StandardError, 'Model metadata error')
+            allow(metadata).to receive(:to_params).and_return(invalid_data)
           end
         end
 
-        context 'when ModelMetadata initialization raises an exception' do
-          before do
-            allow(::Gitlab::Llm::AiGateway::ModelMetadata).to receive(:new)
-              .and_raise(ArgumentError, 'Invalid feature setting')
-          end
-
-          it 'lets the exception bubble up' do
-            expect { execute }.to raise_error(ArgumentError, 'Invalid feature setting')
-          end
+        it 'lets the JSON error bubble up' do
+          expect { execute }.to raise_error(JSON::GeneratorError, 'Invalid JSON')
         end
-
-        context 'when JSON serialization fails' do
-          let(:invalid_data) { instance_double(Object, present?: true) }
-
-          before do
-            allow(invalid_data).to receive(:to_json).and_raise(JSON::GeneratorError, 'Invalid JSON')
-
-            allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
-              allow(metadata).to receive(:to_params).and_return(invalid_data)
-            end
-          end
-
-          it 'lets the JSON error bubble up' do
-            expect { execute }.to raise_error(JSON::GeneratorError, 'Invalid JSON')
-          end
-        end
-      end
-    end
-  end
-
-  describe '#feature_flag_enabled?' do
-    subject(:feature_flag_enabled) { service.send(:feature_flag_enabled?) }
-
-    context 'when self_hosted_agent_platform is enabled globally' do
-      before do
-        stub_feature_flags(self_hosted_agent_platform: true)
-      end
-
-      it 'returns true' do
-        expect(feature_flag_enabled).to be true
-      end
-    end
-
-    context 'when self_hosted_agent_platform is disabled globally' do
-      before do
-        stub_feature_flags(self_hosted_agent_platform: false)
-      end
-
-      it 'returns false' do
-        expect(feature_flag_enabled).to be false
-      end
-    end
-
-    context 'when feature flag check raises an exception' do
-      before do
-        allow(Feature).to receive(:enabled?).with(:self_hosted_agent_platform)
-          .and_raise(StandardError, 'Feature flag error')
-      end
-
-      it 'lets the feature flag error bubble up' do
-        expect { feature_flag_enabled }.to raise_error(StandardError, 'Feature flag error')
       end
     end
   end
 
   describe 'return value consistency' do
-    before do
-      stub_feature_flags(self_hosted_agent_platform: true)
-    end
-
-    it 'returns either nil or a hash with metadata' do
+    it 'returns a hash with or without metadata' do
       # Test with valid data
       allow_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |metadata|
         allow(metadata).to receive(:to_params).and_return({ provider: :gitlab })
@@ -256,7 +196,7 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
       end
 
       result = service.execute
-      expect(result).to be_nil
+      expect(result).to eq({})
     end
 
     it 'returns expected header key when data is present' do
@@ -272,10 +212,6 @@ RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_cat
   end
 
   describe 'integration behavior' do
-    before do
-      stub_feature_flags(self_hosted_agent_platform: true)
-    end
-
     it 'flows through the complete happy path' do
       expected_metadata = {
         provider: 'gitlab',
