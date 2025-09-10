@@ -31,6 +31,18 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ResponseHandler, feature_ca
           )
         )
       end
+
+      it 'triggers internal events and increment usage metrics' do
+        expect { response_handler.format_response(response) }
+          .to trigger_internal_events('spp_scan_passed')
+          .with(
+            user: user,
+            project: project,
+            namespace: project.namespace,
+            category: 'Gitlab::Checks::SecretPushProtection::AuditLogger'
+          )
+          .and increment_usage_metrics('counts.count_total_spp_scan_passed')
+      end
     end
 
     context 'when response status is FOUND' do
