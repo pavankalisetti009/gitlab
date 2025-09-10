@@ -6,7 +6,7 @@ RSpec.describe Geo::NodeUpdateService, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   let_it_be(:primary, reload: true) { create(:geo_node, :primary) }
-  let_it_be(:geo_node) { create(:geo_node) }
+  let!(:geo_node) { create(:geo_node) }
 
   before do
     stub_current_geo_node(primary)

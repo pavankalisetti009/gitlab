@@ -6,8 +6,6 @@ class GeoNode < ApplicationRecord
   include StripAttribute
   include Gitlab::EncryptedAttribute
 
-  SELECTIVE_SYNC_TYPES = %w[namespaces shards].freeze
-
   # Array of repository storages to synchronize for selective sync by shards
   serialize :selective_sync_shards, type: Array
 
