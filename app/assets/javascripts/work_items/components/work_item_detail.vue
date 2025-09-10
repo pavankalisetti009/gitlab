@@ -1163,6 +1163,7 @@ export default {
                   v-if="hasDescriptionWidget"
                   :edit-mode="editMode"
                   :full-path="workItemFullPath"
+                  :is-group="isGroupWorkItem"
                   :work-item-id="workItem.id"
                   :work-item-iid="workItem.iid"
                   :update-in-progress="updateInProgress"

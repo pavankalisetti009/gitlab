@@ -1324,6 +1324,7 @@ export default {
             :display-settings="displaySettings"
             :full-path="rootPageFullPath"
             :is-epics-list="isEpicsList"
+            :is-group="isGroup"
           />
         </template>
         <template v-if="!isPlanningViewsEnabled" #nav-actions>
