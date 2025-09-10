@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe RegistrationsController, :with_current_organization, type: :request, feature_category: :system_access do
   include SessionHelpers
+  include IdentityVerificationHelpers
 
   let_it_be(:user_attrs) do
     build_stubbed(:user).slice(:first_name, :last_name, :username, :email, :password)

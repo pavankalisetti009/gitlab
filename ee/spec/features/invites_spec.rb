@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Group or Project invitations', :with_current_organization, :js, feature_category: :system_access do
+  include IdentityVerificationHelpers
+
   let(:group) { create(:group, name: 'Owned') }
   let(:project) { create(:project, :repository, namespace: group) }
   let(:group_invite) { create(:group_member, :invited, group: group) }

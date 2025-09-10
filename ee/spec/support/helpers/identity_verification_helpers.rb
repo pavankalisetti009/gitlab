@@ -20,6 +20,8 @@ module IdentityVerificationHelpers
                       }
                     end
 
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
+
     stub_request(:post, 'https://verify-api.arkoselabs.com/api/v4/verify/')
     .to_return(
       status: token_verification_response == :success ? 200 : 400,

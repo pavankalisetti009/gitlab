@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category: :user_profile do
+  include IdentityVerificationHelpers
+
   let(:new_user) { build_stubbed(:user) }
 
   before do

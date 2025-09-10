@@ -219,8 +219,6 @@ module EE
       return unless arkose_labs_enabled?(user: user)
       return unless arkose_labs_verify_response
 
-      track_arkose_challenge_result
-
       Arkose::RecordUserDataService.new(
         response: arkose_labs_verify_response,
         user: user

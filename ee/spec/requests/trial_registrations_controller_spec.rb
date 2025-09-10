@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe TrialRegistrationsController, :with_current_organization, feature_category: :onboarding do
   include FullNameHelper
+  include IdentityVerificationHelpers
 
   let(:onboarding_enabled?) { true }
 
