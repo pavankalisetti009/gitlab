@@ -14,6 +14,7 @@ module Security
       collect_dast_scan_page_metrics_from_pipeline
       collect_dast_scan_version_metrics_from_pipeline
       collect_dast_scan_run_metrics_from_pipeline
+      collect_dast_scan_runner_metrics_from_pipeline
       collect_dast_scan_vulnerability_metrics_from_pipeline
     ].freeze
 

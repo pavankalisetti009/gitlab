@@ -72,6 +72,13 @@
           "value": 5,
           "label": "1",
           "passive": 4
+        },
+        {
+          "event": "collect_dast_scan_runner_metrics_from_pipeline",
+          "property": "294f623d-b2ce-4568-8008-6fd4a5fb3330",
+          "value": 5,
+          "label": "1",
+          "arch": "amd64"
         }
       ]
     },
