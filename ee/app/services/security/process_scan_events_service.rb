@@ -16,6 +16,7 @@ module Security
       collect_dast_scan_run_metrics_from_pipeline
       collect_dast_scan_runner_metrics_from_pipeline
       collect_dast_scan_vulnerability_metrics_from_pipeline
+      collect_dast_scan_w3c_metrics_from_pipeline
     ].freeze
 
     def self.execute(pipeline)

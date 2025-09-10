@@ -79,6 +79,21 @@
           "value": 5,
           "label": "1",
           "arch": "amd64"
+        },
+        {
+          "event": "collect_dast_scan_w3c_metrics_from_pipeline",
+          "property": "294f623d-b2ce-4568-8008-6fd4a5fb3330",
+          "value": 1,
+          "label": "1",
+          "svg_usage": 0,
+          "file_api_usage": 1,
+          "web_rtc_usage": 1,
+          "web_authentication_usage": 1,
+          "wasm_usage": 0,
+          "web_share_api_usage": 1,
+          "trusted_types_usage": 1,
+          "editcontext_api_usage": 1,
+          "wai_aria_usage": 1
         }
       ]
     },
