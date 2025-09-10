@@ -140,7 +140,7 @@ export const mockAgentVersion = {
 export const mockBaseAgent = mockAgentFactory();
 
 export const mockAgent = mockAgentFactory({
-  project: mockProject,
+  project: { ...mockProject, name: 'Project name' },
   latestVersion: mockAgentVersion,
 });
 
@@ -324,7 +324,7 @@ const mockFlowFactory = (overrides = {}) => ({
 });
 
 export const mockFlow = mockFlowFactory({
-  project: mockProject,
+  project: { ...mockProject, name: 'Project name' },
   latestVersion: mockFlowVersion,
 });
 

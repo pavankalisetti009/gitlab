@@ -33,7 +33,7 @@ describe('AiCatalogAgentDetails', () => {
     createComponent();
   });
 
-  it('renders system and user prompts', () => {
+  it('renders system and user prompts and tools', () => {
     expect(findAllDetails().at(0).text()).toBe(mockAgent.latestVersion.systemPrompt);
     expect(findAllDetails().at(1).text()).toBe(mockAgent.latestVersion.userPrompt);
     expect(findAllDetails().at(2).text()).toBe(TOOLS.join(', '));

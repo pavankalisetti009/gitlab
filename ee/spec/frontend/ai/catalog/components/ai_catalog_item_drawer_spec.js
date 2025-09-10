@@ -48,6 +48,10 @@ describe('CatalogItemDrawer', () => {
       expect(findDrawer().props('open')).toBe(true);
     });
 
+    it('renders project name', () => {
+      expect(findDrawerContent().html()).toContain(mockAgent.project.name);
+    });
+
     it('displays the item name', () => {
       expect(wrapper.text()).toContain(mockAgent.name);
     });
@@ -87,6 +91,10 @@ describe('CatalogItemDrawer', () => {
           activeItem: mockFlow,
         },
       });
+    });
+
+    it('renders project name', () => {
+      expect(findDrawerContent().html()).toContain(mockFlow.project.name);
     });
 
     it('renders description', () => {
