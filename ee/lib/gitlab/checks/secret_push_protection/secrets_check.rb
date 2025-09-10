@@ -45,6 +45,8 @@ module Gitlab
         # Only runs for public projects that don't have SPP enabled or licensed.
         # See: https://gitlab.com/gitlab-org/gitlab/-/issues/551932
         def run_validation_dark_launch!
+          audit_logger.track_spp_scan_executed('dark-launch')
+
           logger.log_timed(LOG_MESSAGES[:secrets_check]) do
             payloads = payload_processor.standardize_payloads
             break unless payloads
@@ -61,6 +63,8 @@ module Gitlab
 
         def run_validation!
           return unless eligibility_checker.should_scan?
+
+          audit_logger.track_spp_scan_executed('regular')
 
           thread = nil
 

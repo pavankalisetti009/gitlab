@@ -70,6 +70,18 @@ module Gitlab
           )
         end
 
+        def track_spp_scan_executed(scan_type)
+          track_internal_event(
+            'spp_scan_executed',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: scan_type
+            }
+          )
+        end
+
         def track_spp_scan_passed
           track_internal_event(
             'spp_scan_passed',
