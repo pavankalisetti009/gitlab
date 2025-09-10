@@ -34,26 +34,58 @@ RSpec.describe PushRules::CreateOrUpdateService, feature_category: :source_code_
           .and change { push_rule.reload.max_file_size }.to(28)
       end
 
-      it 'responds with a successful service response', :aggregate_failures do
+      it 'returns OrganizationPushRule in a successful service response', :aggregate_failures do
         response = subject.execute
 
         expect(response).to be_success
-        expect(response.payload).to match(push_rule: push_rule)
+        expect(response.payload).to match(push_rule: PushRuleFinder.new(container).execute)
+      end
+
+      context 'with read_organization_push_rules feature flag disabled' do
+        before do
+          stub_feature_flags(read_organization_push_rules: false)
+        end
+
+        it 'returns PushRule in a successful service response', :aggregate_failures do
+          response = subject.execute
+
+          expect(response).to be_success
+          expect(response.payload).to match(push_rule: push_rule)
+        end
       end
     end
 
     context 'without existing global push rule' do
-      it 'creates a new push rule', :aggregate_failures do
-        expect { subject.execute }.to change { PushRule.count }.by(1)
+      context 'with read_organization_push_rules feature flag disabled' do
+        before do
+          stub_feature_flags(read_organization_push_rules: false)
+        end
 
-        expect(PushRuleFinder.new.execute.max_file_size).to eq(28)
+        it 'creates a new push rule', :aggregate_failures do
+          expect { subject.execute }.to change { PushRule.count }.by(1)
+
+          expect(PushRuleFinder.new(container).execute.max_file_size).to eq(28)
+        end
+
+        it 'responds with a successful service response', :aggregate_failures do
+          response = subject.execute
+
+          expect(response).to be_success
+          expect(response.payload).to match(push_rule: PushRuleFinder.new(container).execute)
+        end
+      end
+
+      it 'creates a new push rule', :aggregate_failures do
+        expect { subject.execute }.to change { OrganizationPushRule.count }.by(1)
+
+        expect(PushRuleFinder.new(container).execute.max_file_size).to eq(28)
       end
 
       it 'responds with a successful service response', :aggregate_failures do
         response = subject.execute
 
         expect(response).to be_success
-        expect(response.payload).to match(push_rule: PushRuleFinder.new.execute)
+        expect(response.payload).to match(push_rule: PushRuleFinder.new(container).execute)
       end
     end
 

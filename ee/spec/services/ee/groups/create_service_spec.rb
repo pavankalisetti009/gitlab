@@ -151,11 +151,24 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
       end
 
       context 'when there are push rules settings' do
-        let_it_be(:sample) { create(:push_rule_sample) }
+        let_it_be(:sample) { create(:organization_push_rule, organization_id: organization.id) }
 
         it 'uses the configured push rules settings' do
           expect(created_group.push_rule).to be_nil
           expect(created_group.predefined_push_rule).to eq(sample)
+        end
+
+        context 'with read_organization_push_rules feature flag enabled' do
+          let_it_be(:sample) { create(:push_rule_sample) }
+
+          before do
+            stub_feature_flags(read_organization_push_rules: false)
+          end
+
+          it 'uses the configured push rules settings' do
+            expect(created_group.push_rule).to be_nil
+            expect(created_group.predefined_push_rule).to eq(sample)
+          end
         end
       end
 

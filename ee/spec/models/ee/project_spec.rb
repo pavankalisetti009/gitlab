@@ -1343,9 +1343,19 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       context 'when has global push rule' do
-        let!(:push_rule_sample) { create(:push_rule_sample) }
+        let!(:push_rule_sample) { create(:organization_push_rule, organization: project.organization) }
 
         it { is_expected.to eq(push_rule_sample) }
+
+        context "when read_organization_push_rules FF is disabled" do
+          before do
+            stub_feature_flags(read_organization_push_rules: false)
+          end
+
+          let!(:push_rule_sample) { create(:push_rule_sample) }
+
+          it { is_expected.to eq(push_rule_sample) }
+        end
       end
     end
   end

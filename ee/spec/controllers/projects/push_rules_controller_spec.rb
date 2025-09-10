@@ -63,12 +63,24 @@ RSpec.describe Projects::PushRulesController, feature_category: :source_code_man
       end
 
       context 'when global setting is enabled' do
-        before do
-          stub_licensed_features(rule_attr => true)
-          create(:push_rule_sample, rule_attr => true)
+        context 'with read_organization_push_rules feature flag disabled' do
+          before do
+            stub_feature_flags(read_organization_push_rules: false)
+            stub_licensed_features(rule_attr => true)
+            create(:push_rule_sample, rule_attr => true)
+          end
+
+          it_behaves_like 'updateable setting', rule_attr, updates_when_global_enabled, false
         end
 
-        it_behaves_like 'updateable setting', rule_attr, updates_when_global_enabled, false
+        context 'with read_organization_push_rules feature flag enabled' do
+          before do
+            stub_licensed_features(rule_attr => true)
+            create(:organization_push_rule, organization_id: project.organization.id, rule_attr => true)
+          end
+
+          it_behaves_like 'updateable setting', rule_attr, updates_when_global_enabled, false
+        end
       end
     end
 

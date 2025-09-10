@@ -280,7 +280,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
     end
 
     context 'with sample' do
-      let_it_be(:sample) { create(:push_rule_sample) }
+      let_it_be(:sample) { create(:push_rule_sample, organization: user.organization) }
 
       before do
         stub_licensed_features(push_rules: true)
@@ -383,7 +383,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
       end
 
       context 'when group does not have push rule defined' do
-        let_it_be(:sample) { create(:push_rule_sample) }
+        let_it_be(:sample) { create(:push_rule_sample, organization: user.organization) }
 
         it 'creates push rule from sample' do
           expect(created_project.push_rule).to(

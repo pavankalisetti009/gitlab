@@ -18,7 +18,7 @@ module PushRules
       if push_rule.update(processed_params)
         audit_changes(push_rule)
 
-        ServiceResponse.success(payload: { push_rule: push_rule })
+        ServiceResponse.success(payload: { push_rule: returned_push_rule })
       else
         error_message = push_rule.errors.full_messages.to_sentence
         ServiceResponse.error(message: error_message, payload: { push_rule: push_rule })
@@ -55,6 +55,14 @@ module PushRules
     def audit_changes(push_rule)
       ::Repositories::GroupPushRulesChangesAuditor.new(current_user, push_rule).execute if group_container?
       ::Repositories::ProjectPushRulesChangesAuditor.new(current_user, push_rule).execute if project_container?
+    end
+
+    def returned_push_rule
+      return push_rule unless organization_container?
+
+      # load organization push rule and return it when feature flag is on
+      # because the trigger currently syncs writes from push_rules to organization_push_rules
+      PushRuleFinder.new(container).execute
     end
   end
 end

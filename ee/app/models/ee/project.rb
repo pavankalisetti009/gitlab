@@ -1419,7 +1419,7 @@ module EE
       if group
         group.predefined_push_rule
       else
-        PushRuleFinder.new.execute
+        PushRuleFinder.new(organization).execute
       end
     end
 

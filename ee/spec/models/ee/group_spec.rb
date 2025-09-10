@@ -996,10 +996,22 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
   describe '#predefined_push_rule' do
     context 'group with no associated push_rules record' do
-      let!(:sample) { create(:push_rule_sample) }
+      let!(:sample) { create(:organization_push_rule, organization: group.organization) }
 
       it 'returns instance push rule' do
         expect(group.predefined_push_rule).to eq(sample)
+      end
+
+      context "when read_organization_push_rules FF is disabled" do
+        before do
+          stub_feature_flags(read_organization_push_rules: false)
+        end
+
+        let!(:sample) { create(:push_rule_sample) }
+
+        it 'returns instance push rule' do
+          expect(group.predefined_push_rule).to eq(sample)
+        end
       end
     end
 
