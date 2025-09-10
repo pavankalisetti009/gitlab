@@ -1,0 +1,9 @@
+mutation LifecycleRemove($input: LifecycleDeleteInput!) {
+  lifecycleDelete(input: $input) {
+    errors
+    lifecycle {
+      id
+      name
+    }
+  }
+}

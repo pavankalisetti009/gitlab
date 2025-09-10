@@ -1,9 +1,13 @@
 <script>
 import { GlIcon, GlButton, GlCollapsibleListbox } from '@gitlab/ui';
+import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { NAME_TO_ENUM_MAP } from '~/work_items/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
+import RemoveLifecycleConfirmationModal from './remove_lifecycle_confirmation_modal.vue';
 import LifecycleNameForm from './lifecycle_name_form.vue';
+import removeLifecycleMutation from './remove_lifecycle.mutation.graphql';
 
 export default {
   components: {
@@ -12,6 +16,7 @@ export default {
     LifecycleNameForm,
     GlButton,
     GlCollapsibleListbox,
+    RemoveLifecycleConfirmationModal,
   },
   props: {
     lifecycle: {
@@ -51,6 +56,7 @@ export default {
   data() {
     return {
       cardHover: false,
+      showConfirmationModal: false,
     };
   },
   computed: {
@@ -75,6 +81,42 @@ export default {
           workItemType: NAME_TO_ENUM_MAP[workItemType].toLowerCase(),
         },
       });
+    },
+    confirmDeletion() {
+      this.showConfirmationModal = true;
+    },
+    discardDelete() {
+      this.showConfirmationModal = false;
+    },
+    async removeLifecycle() {
+      this.showConfirmationModal = false;
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: removeLifecycleMutation,
+          variables: {
+            input: {
+              namespacePath: this.fullPath,
+              id: this.lifecycle.id,
+            },
+          },
+        });
+
+        const {
+          lifecycleDelete: { errors },
+        } = data;
+
+        if (errors.length) {
+          const message = sprintf(s__('WorkItem|Failed to delete lifecycle. %{error}'), {
+            error: data.lifecycleDelete.errors.join(', '),
+          });
+          throw new Error(message);
+        }
+
+        this.$emit('deleted');
+        this.$toast.show(s__('WorkItem|Lifecycle deleted.'));
+      } catch (error) {
+        Sentry.captureException(error);
+      }
     },
   },
 };
@@ -154,9 +196,19 @@ export default {
         {{ s__('WorkItem|Not in use') }}
       </span>
 
-      <gl-button v-if="showRemoveLifecycleCta" size="small">{{
-        s__('WorkItem|Remove lifecycle')
-      }}</gl-button>
+      <gl-button
+        v-if="showRemoveLifecycleCta"
+        :data-testid="`remove-lifecycle-${lifecycleId}`"
+        size="small"
+        @click="confirmDeletion"
+        >{{ s__('WorkItem|Remove lifecycle') }}</gl-button
+      >
     </div>
+    <remove-lifecycle-confirmation-modal
+      :is-visible="showConfirmationModal"
+      :lifecycle-name="lifecycle.name"
+      @continue="removeLifecycle"
+      @cancel="discardDelete"
+    />
   </div>
 </template>

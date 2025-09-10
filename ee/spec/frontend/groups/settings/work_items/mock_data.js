@@ -611,3 +611,13 @@ export const mockStatusesResponse = {
     },
   },
 };
+
+export const removeLifecycleSuccessResponse = {
+  data: {
+    lifecycleDelete: {
+      errors: [],
+      lifecycle: null,
+      __typename: 'LifecycleDeletePayload',
+    },
+  },
+};
