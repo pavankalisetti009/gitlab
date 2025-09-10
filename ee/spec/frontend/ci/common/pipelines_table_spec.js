@@ -115,6 +115,7 @@ describe('EE - Pipelines Table', () => {
           hoverMessage: 'Fix pipeline with Duo',
           workflowDefinition: 'fix_pipeline/experimental',
           size: 'medium',
+          agentPrivileges: [1, 2, 3, 5],
         });
       });
     });
