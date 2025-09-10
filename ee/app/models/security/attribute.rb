@@ -18,5 +18,9 @@ module Security
     validates :description, presence: true, length: { maximum: 255 }
     validates :editable_state, presence: true
     validates :color, color: true, presence: true
+
+    def editable?
+      editable_state != "locked"
+    end
   end
 end

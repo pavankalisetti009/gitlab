@@ -27,18 +27,22 @@ module Security
     }
     scope :preload_attributes, -> { preload(:security_attributes) }
 
+    def editable?
+      editable_state != "locked"
+    end
+
     private
 
     def valid_namespace
       return if namespace&.root? && namespace.group_namespace?
 
-      errors.add(:namespace, _('must be a root group.'))
+      errors.add(:namespace, 'must be a root group.')
     end
 
     def attributes_limit
       return unless security_attributes.size > MAX_ATTRIBUTES
 
-      errors.add(:security_attributes, _('cannot have more than 50 attributes per category'))
+      errors.add(:security_attributes, "cannot have more than #{MAX_ATTRIBUTES} attributes per category")
     end
 
     def strip_whitespaces

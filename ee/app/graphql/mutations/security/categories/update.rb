@@ -53,7 +53,7 @@ module Mutations
 
         def validate_arguments(id, template_type)
           if id.blank? && template_type.blank?
-            raise Gitlab::Graphql::Errors::ArgumentError, 'Either Category id or templateType must be provided'
+            raise Gitlab::Graphql::Errors::ArgumentError, 'Either categoryId or templateType must be provided'
           end
 
           return unless id.present? && template_type.present?
