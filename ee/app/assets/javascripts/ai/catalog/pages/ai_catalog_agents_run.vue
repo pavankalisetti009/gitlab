@@ -1,19 +1,19 @@
 <script>
-import { s__ } from '~/locale';
+import { sprintf, s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import CodeBlockHighlighted from '~/vue_shared/components/code_block_highlighted.vue';
-import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
+import { createAlert } from '~/alert';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import AiCatalogAgentRunForm from '../components/ai_catalog_agent_run_form.vue';
 import executeAiCatalogAgent from '../graphql/mutations/execute_ai_catalog_agent.mutation.graphql';
 
 export default {
   name: 'AiCatalogAgentsRun',
   components: {
-    PageHeading,
     AiCatalogAgentRunForm,
-    ClipboardButton,
-    CodeBlockHighlighted,
+    ErrorsAlert,
+    PageHeading,
   },
   props: {
     aiCatalogAgent: {
@@ -23,8 +23,8 @@ export default {
   },
   data() {
     return {
+      errors: [],
       isSubmitting: false,
-      flowConfig: null,
     };
   },
   computed: {
@@ -33,8 +33,30 @@ export default {
     },
   },
   methods: {
+    dismissErrors() {
+      this.errors = [];
+    },
+    successAlert({ id, project }) {
+      const formattedId = getIdFromGraphQLId(id);
+
+      // Hardcoded for an easier integration with any page at GitLab.
+      // https://gitlab.com/gitlab-org/gitlab/-/blob/b50c9e5ad666bab0e45365b2c6994d99407a68d1/ee/app/assets/javascripts/ai/duo_agents_platform/router/index.js#L61
+      const link = `/${project.fullPath}/-/automate/agent-sessions/${formattedId}`;
+
+      return {
+        message: sprintf(
+          s__(
+            `AICatalog|Test run executed successfully, see %{linkStart}Session %{formattedId}%{linkEnd}.`,
+          ),
+          { formattedId },
+        ),
+        variant: 'success',
+        messageLinks: { link },
+      };
+    },
     async onSubmit({ userPrompt }) {
       try {
+        this.dismissErrors();
         this.isSubmitting = true;
 
         const { data } = await this.$apollo.mutate({
@@ -43,11 +65,20 @@ export default {
         });
 
         if (data) {
-          this.flowConfig = data.aiCatalogAgentExecute.flowConfig;
-          this.$toast.show(s__('AICatalog|Agent executed successfully.'));
+          const { errors, workflow } = data.aiCatalogAgentExecute;
+
+          if (errors.length > 0) {
+            this.errors = errors;
+            return;
+          }
+          createAlert(this.successAlert(workflow));
         }
       } catch (error) {
-        this.$toast.show(s__('AICatalog|Failed to execute agent.'));
+        this.errors = [
+          sprintf(s__('AICatalog|The test run failed. %{error}'), {
+            error: error.message || error.toString(),
+          }),
+        ];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;
@@ -67,21 +98,12 @@ export default {
       </template>
     </page-heading>
 
+    <errors-alert :errors="errors" @dismiss="dismissErrors" />
+
     <ai-catalog-agent-run-form
       :is-submitting="isSubmitting"
       :ai-catalog-agent="aiCatalogAgent"
       @submit="onSubmit"
     />
-
-    <div v-if="flowConfig" class="gl-relative">
-      <code-block-highlighted class="gl-border gl-mt-4 gl-p-4" :code="flowConfig" language="yaml" />
-
-      <clipboard-button
-        :text="flowConfig"
-        :title="s__('AICatalog|Copy flow config')"
-        category="tertiary"
-        class="gl-absolute gl-right-0 gl-top-0 gl-m-3 gl-hidden md:gl-flex"
-      />
-    </div>
   </div>
 </template>
