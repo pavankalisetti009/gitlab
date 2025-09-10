@@ -24,7 +24,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
       sign_in(user)
     end
 
-    describe 'with storage limit', :saas do
+    context 'with storage limit', :saas do
       it_behaves_like 'namespace storage limit alert'
     end
 
