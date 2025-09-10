@@ -33,7 +33,7 @@ RSpec.describe SecretsManagement::SecretsManagerJwt, feature_category: :secrets_
       allow(Labkit::Correlation::CorrelationId).to receive(:current_id).and_return('test-correlation-id')
     end
 
-    it 'includes the standard JWT claims', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/547360' do
+    it 'includes the standard JWT claims' do
       expect(payload).to include(
         iss: Gitlab.config.gitlab.url,
         iat: now,
