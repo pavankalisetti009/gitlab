@@ -14,7 +14,6 @@ module Security
         current_user,
         type: :wip
       )
-      push_frontend_feature_flag(:security_policy_approval_warn_mode, current_user, type: :wip)
 
       push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerable, user: current_user)
     end
