@@ -37,7 +37,7 @@ module RemoteDevelopment
           clone_dir = "#{volume_path}/#{project.path}"
           project_url = project.http_url_to_repo
 
-          clone_depth_option = workspaces_shallow_clone_project_feature_enabled?(project) ? CLONE_DEPTH_OPTION : ""
+          clone_depth_option = CLONE_DEPTH_OPTION
 
           # Add the clone_project event
           clone_project_command_id = "gl-clone-project-command"
@@ -155,14 +155,6 @@ module RemoteDevelopment
 
           context
         end
-
-        # @param [Project] project
-        # @return [TrueClass, FalseClass]
-        def self.workspaces_shallow_clone_project_feature_enabled?(project)
-          Feature.enabled?(:workspaces_shallow_clone_project, project)
-        end
-
-        private_class_method :workspaces_shallow_clone_project_feature_enabled?
       end
     end
   end
