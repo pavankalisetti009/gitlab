@@ -83,6 +83,26 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         )
       end
 
+      context 'with experiment lightweight_trial_registration_redesign' do
+        let(:experiment) { instance_double(ApplicationExperiment) }
+
+        before do
+          allow_next_instance_of(described_class) do |service|
+            allow(service).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+              actor: user).and_return(experiment)
+          end
+        end
+
+        it 'tracks experiment assignment' do
+          allow_next_instance_of(::Projects::CreateService) do |service|
+            allow(service).to receive(:after_create_actions)
+          end
+
+          expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
+          expect(execute).to be_success
+        end
+      end
+
       it 'enqueues a create event worker' do
         expect(Groups::CreateEventWorker).to receive(:perform_async).with(anything, user.id, 'created')
 

@@ -19,6 +19,8 @@ module Registrations
       Gitlab::Tracking.event(self.class.name, group_track_action, namespace: group, user: user)
       ::Onboarding::Progress.onboard(group)
 
+      experiment(:lightweight_trial_registration_redesign, actor: user).track(:assignment, namespace: group)
+
       apply_trial if onboarding_user_status.apply_trial?
     end
 
