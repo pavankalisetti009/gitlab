@@ -12,6 +12,8 @@ module GitlabSubscriptions
       deduplicate :until_executed
 
       def handle_event(event)
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
         user = ::User.find_by_id(event.data[:user_id])
         namespace = ::Namespace.find_by_id(event.data[:root_namespace_id])
 
