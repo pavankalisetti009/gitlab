@@ -6,6 +6,7 @@ import TestMavenUpstreamButton from './test_maven_upstream_button.vue';
 
 const DEFAULT_CACHE_VALIDITY_HOURS = 24;
 const PASSWORD_PLACEHOLDER = '*****';
+const DEFAULT_MAVEN_CENTRAL_CACHE_VALIDITY_HOURS = 0;
 
 export default {
   name: 'RegistryUpstreamForm',
@@ -18,6 +19,9 @@ export default {
     TestMavenUpstreamButton,
   },
   inject: {
+    mavenCentralUrl: {
+      default: '',
+    },
     upstreamPath: {
       default: '',
     },
@@ -87,6 +91,14 @@ export default {
     metadataCacheValidityHoursInputId: 'metadata-cache-validity-hours-input',
   },
   computed: {
+    cacheValidityHoursDescription() {
+      if (this.isMavenCentralUrl) {
+        return s__(
+          'VirtualRegistry|Cache revalidation is disabled. Upstream URL is known to have immutable responses.',
+        );
+      }
+      return '';
+    },
     isTestUpstreamButtonDisabled() {
       if (!this.isValidURL) return true;
       return !this.upstream.id && this.form.username.length > 0 && this.form.password.length === 0;
@@ -103,19 +115,28 @@ export default {
     saveButtonText() {
       return this.upstream.id ? __('Save changes') : this.$options.i18n.createUpstreamButtonLabel;
     },
+    isMavenCentralUrl() {
+      return this.mavenCentralUrl && this.form.url.startsWith(this.mavenCentralUrl);
+    },
   },
   methods: {
     submit() {
       this.showValidation = true;
 
       if (this.isValidURL) {
-        this.$emit('submit', this.form);
+        this.$emit('submit', {
+          ...this.form,
+          ...(this.isMavenCentralUrl && {
+            cacheValidityHours: DEFAULT_MAVEN_CENTRAL_CACHE_VALIDITY_HOURS,
+          }),
+        });
       }
     },
     cancel() {
       this.$emit('cancel');
     },
   },
+  DEFAULT_MAVEN_CENTRAL_CACHE_VALIDITY_HOURS,
 };
 </script>
 <template>
@@ -173,8 +194,20 @@ export default {
       :label="$options.i18n.cacheValidityHoursLabel"
       :label-for="$options.ids.cacheValidityHoursInputId"
       :label-description="$options.i18n.cacheValidityHoursHelpText"
+      :description="cacheValidityHoursDescription"
     >
       <gl-form-input
+        v-if="isMavenCentralUrl"
+        :id="$options.ids.cacheValidityHoursInputId"
+        :readonly="true"
+        data-testid="cache-validity-hours-input"
+        class="gl-max-w-15"
+        type="number"
+        :value="$options.DEFAULT_MAVEN_CENTRAL_CACHE_VALIDITY_HOURS"
+        :min="0"
+      />
+      <gl-form-input
+        v-else
         :id="$options.ids.cacheValidityHoursInputId"
         v-model="form.cacheValidityHours"
         data-testid="cache-validity-hours-input"
