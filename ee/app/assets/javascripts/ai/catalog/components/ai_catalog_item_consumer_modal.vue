@@ -43,9 +43,12 @@ export default {
       });
     },
     projectLabelDescription() {
-      return sprintf(s__('AICatalog|Select a project to which you want to add this %{itemType}.'), {
+      return sprintf(s__('AICatalog|Project members will be able to run this %{itemType}.'), {
         itemType: this.itemTypeLabel,
       });
+    },
+    isPrivateItem() {
+      return !this.item.public;
     },
   },
   methods: {
@@ -86,8 +89,32 @@ export default {
     @primary.prevent
     @hidden="$emit('hide')"
   >
-    <gl-alert v-if="error" variant="danger" class="gl-mb-5" @dismiss="error = null">
+    <gl-alert
+      v-if="error"
+      data-testid="error-alert"
+      variant="danger"
+      class="gl-mb-5"
+      @dismiss="error = null"
+    >
       {{ error }}
+    </gl-alert>
+
+    <gl-alert
+      v-if="isPrivateItem"
+      data-testid="private-alert"
+      :dismissible="false"
+      variant="info"
+      class="gl-mb-5"
+    >
+      <gl-sprintf
+        :message="
+          s__(
+            'AICatalog|This %{itemType} is private and can only be added to the project it was created in. Duplicate the agent to use the same configuration in other projects.',
+          )
+        "
+      >
+        <template #itemType>{{ itemTypeLabel }}</template>
+      </gl-sprintf>
     </gl-alert>
 
     <dl>
@@ -101,12 +128,22 @@ export default {
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
       <gl-form-group
+        v-if="item.public"
         :label="s__('AICatalog|Project')"
         :label-description="projectLabelDescription"
         label-for="target-id"
       >
         <form-project-dropdown id="target-id" v-model="targetId" @error="onError" />
       </gl-form-group>
+
+      <dl v-else>
+        <dt class="gl-mb-2 gl-font-bold">
+          {{ s__('AICatalog|Project') }}
+        </dt>
+        <dd>
+          {{ item.project.nameWithNamespace }}
+        </dd>
+      </dl>
     </gl-form>
   </gl-modal>
 </template>

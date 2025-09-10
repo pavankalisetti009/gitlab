@@ -1,6 +1,6 @@
 import { nextTick } from 'vue';
 import { noop } from 'lodash';
-import { GlAlert, GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
@@ -13,7 +13,8 @@ describe('AiCatalogItemConsumerModal', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
-  const findAlert = () => wrapper.findComponent(GlAlert);
+  const findErrorAlert = () => wrapper.findByTestId('error-alert');
+  const findPrivateAlert = () => wrapper.findByTestId('private-alert');
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
 
   const createWrapper = ({ item = agent } = {}) => {
@@ -40,20 +41,44 @@ describe('AiCatalogItemConsumerModal', () => {
 
     it('renders the label description of the project field', () => {
       expect(findFormGroup().props('labelDescription')).toBe(
-        'Select a project to which you want to add this agent.',
+        'Project members will be able to run this agent.',
       );
     });
 
-    it('preselects the project id of the item', () => {
-      expect(findProjectDropdown().props('value')).toBe(agent.project.id);
+    describe('when the item is private', () => {
+      beforeEach(() => {
+        createWrapper({ item: { ...agent, public: false } });
+      });
+
+      it('renders private alert', () => {
+        expect(findPrivateAlert().exists()).toBe(true);
+      });
+
+      it('does not render project dropdown', () => {
+        expect(findProjectDropdown().exists()).toBe(false);
+      });
     });
 
-    it('renders alert when there was a problem fetching the projects', async () => {
-      const error = 'Failed to load projects.';
+    describe('when the item is public', () => {
+      it('renders project dropdown', () => {
+        expect(findProjectDropdown().exists()).toBe(true);
+      });
 
-      await findProjectDropdown().vm.$emit('error', error);
+      it('renders project dropdown with preselected project', () => {
+        expect(findProjectDropdown().props('value')).toBe(agent.project.id);
+      });
 
-      expect(findAlert().text()).toBe(error);
+      it('renders alert when there was a problem fetching the projects', async () => {
+        const error = 'Failed to load projects.';
+
+        await findProjectDropdown().vm.$emit('error', error);
+
+        expect(findErrorAlert().text()).toBe(error);
+      });
+
+      it('does not render private alert', () => {
+        expect(findPrivateAlert().exists()).toBe(false);
+      });
     });
   });
 
@@ -77,7 +102,7 @@ describe('AiCatalogItemConsumerModal', () => {
         findForm().vm.$emit('submit', { preventDefault: noop });
         await nextTick();
 
-        expect(findAlert().text()).toBe('Project is required.');
+        expect(findErrorAlert().text()).toBe('Project is required.');
         expect(wrapper.emitted('submit')).toBeUndefined();
       });
     });
