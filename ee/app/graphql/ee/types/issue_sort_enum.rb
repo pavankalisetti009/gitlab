@@ -16,6 +16,8 @@ module EE
         value 'BLOCKING_ISSUES_DESC', 'Blocking issues count by descending order.', value: :blocking_issues_desc
         value 'HEALTH_STATUS_ASC', 'Issues with healthy issues first.', value: :health_status_asc
         value 'HEALTH_STATUS_DESC', 'Issues with unhealthy issues first.', value: :health_status_desc
+        value 'STATUS_ASC', 'Status by ascending order.', value: :status_asc, experiment: { milestone: '18.4' }
+        value 'STATUS_DESC', 'Status by descending order.', value: :status_desc, experiment: { milestone: '18.4' }
       end
     end
   end

@@ -48119,6 +48119,8 @@ Values for sorting issues.
 | <a id="issuesortseverity_desc"></a>`SEVERITY_DESC` | Severity from more critical to less critical. |
 | <a id="issuesortsla_due_at_asc"></a>`SLA_DUE_AT_ASC` | Issues with earliest SLA due time shown first. |
 | <a id="issuesortsla_due_at_desc"></a>`SLA_DUE_AT_DESC` | Issues with latest SLA due time shown first. |
+| <a id="issuesortstatus_asc"></a>`STATUS_ASC` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 18.4. **Status**: Experiment. Status by ascending order. |
+| <a id="issuesortstatus_desc"></a>`STATUS_DESC` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 18.4. **Status**: Experiment. Status by descending order. |
 | <a id="issuesorttitle_asc"></a>`TITLE_ASC` | Title by ascending order. |
 | <a id="issuesorttitle_desc"></a>`TITLE_DESC` | Title by descending order. |
 | <a id="issuesortupdated_asc"></a>`UPDATED_ASC` | Updated at ascending order. |
