@@ -322,6 +322,11 @@ module EE
           resolver: ::Resolvers::Ai::SlashCommandsResolver,
           description: 'Get available GitLab Duo Chat slash commands for the current user for a specific URL'
 
+        field :ai_chat_available_models, ::Types::Ai::Chat::AvailableModelsType, null: true,
+          resolver: ::Resolvers::Ai::Chat::AvailableModelsResolver,
+          description: "Get available models for Duo Agentic Chat",
+          experiment: { milestone: '18.4' }
+
         field :ai_chat_context_presets, ::Types::Ai::Chat::ContextPresetsType, null: true,
           resolver: ::Resolvers::Ai::Chat::ContextPresetsResolver,
           calls_gitaly: true,
