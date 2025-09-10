@@ -136,7 +136,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           expect(response.body).not_to match(/purchase more storage/)
         end
 
-        context 'namespace storage limit' do
+        context 'for namespace storage limit' do
           let(:namespace) { public_project.namespace }
 
           it_behaves_like 'namespace storage limit alert'
