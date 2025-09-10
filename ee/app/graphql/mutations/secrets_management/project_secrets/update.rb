@@ -36,7 +36,7 @@ module Mutations
           description: 'New branches that can access the secret.'
 
         argument :metadata_cas, GraphQL::Types::Int,
-          required: false,
+          required: true,
           description: 'This should match the current metadata version of the project secret being updated.'
 
         field :project_secret,
