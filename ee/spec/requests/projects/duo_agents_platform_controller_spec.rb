@@ -8,7 +8,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
 
   before_all do
     project.add_developer(user)
-    project.project_setting.update!(duo_remote_flows_enabled: true)
+    project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
   end
 
   before do
@@ -61,6 +61,19 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       before do
         allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
         project.project_setting.update!(duo_remote_flows_enabled: false)
+      end
+
+      it 'returns 404' do
+        get project_automate_agent_sessions_path(project)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when duo_features_enabled setting is disabled for the project' do
+      before do
+        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
+        project.project_setting.update!(duo_features_enabled: false)
       end
 
       it 'returns 404' do

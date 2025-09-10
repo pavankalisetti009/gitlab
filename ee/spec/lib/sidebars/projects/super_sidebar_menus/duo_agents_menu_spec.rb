@@ -12,25 +12,38 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
   describe '#configure_menu_items' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers, :ai_catalog,
-      :configure_result, :expected_items) do
-      true  | true  | false | false | true  | [:agents_runs]
-      true  | true  | true  | false | true  | [:agents_runs, :ai_flow_triggers]
-      true  | true  | true  | true  | true  | [:agents_runs, :ai_flow_triggers, :ai_flows]
-      true  | false | false | false | false | []
-      true  | false | true  | true  | true  | [:ai_flow_triggers, :ai_flows]
-      false | true  | false | true  | true | [:ai_flows]
-      false | true  | false | false | false | []
-      false | true  | true  | false | true  | [:ai_flow_triggers]
-      false | false | false | false | false | []
-      false | false | true  | false | true  | [:ai_flow_triggers]
+    where(:duo_features_enabled, :duo_workflow_in_ci_ff, :duo_remote_flows_enabled, :can_manage_ai_flow_triggers,
+      :ai_catalog, :configure_result, :expected_items) do
+      true  | true  | true  | false | false | true  | [:agents_runs]
+      true  | true  | true  | true  | false | true  | [:agents_runs, :ai_flow_triggers]
+      true  | true  | true  | true  | true  | true  | [:agents_runs, :ai_flow_triggers, :ai_flows]
+      true  | true  | false | false | false | false | []
+      true  | true  | false | true  | true  | true  | [:ai_flow_triggers, :ai_flows]
+      true  | false | true  | false | true  | true | [:ai_flows]
+      true  | false | true  | false | false | false | []
+      true  | false | true  | true  | false | true  | [:ai_flow_triggers]
+      true  | false | false | false | false | false | []
+      true  | false | false | true  | false | true  | [:ai_flow_triggers]
+      false | true  | true  | false | false | false | []
+      false | true  | true  | true  | false | false | []
+      false | true  | true  | true  | true  | false | []
+      false | true  | false | false | false | false | []
+      false | true  | false | true  | true  | false | []
+      false | false | true  | false | true  | false | []
+      false | false | true  | false | false | false | []
+      false | false | true  | true  | false | false | []
+      false | false | false | false | false | false | []
+      false | false | false | true  | false | false | []
     end
 
     with_them do
       before do
         stub_feature_flags(duo_workflow_in_ci: duo_workflow_in_ci_ff)
         stub_feature_flags(global_ai_catalog: ai_catalog)
-        project.project_setting.update!(duo_remote_flows_enabled: duo_remote_flows_enabled)
+        project.project_setting.update!(
+          duo_remote_flows_enabled: duo_remote_flows_enabled,
+          duo_features_enabled: duo_features_enabled
+        )
         allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(can_manage_ai_flow_triggers)
       end
 
@@ -64,7 +77,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
 
   describe 'agents runs menu item' do
     before do
-      project.project_setting.update!(duo_remote_flows_enabled: true)
+      project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
       menu.configure_menu_items
     end
 
@@ -89,6 +102,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
 
   describe 'flow triggers menu item' do
     before do
+      project.project_setting.update!(duo_features_enabled: true)
       allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(true)
       menu.configure_menu_items
     end
@@ -114,6 +128,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
 
   describe 'flows menu item' do
     before do
+      project.project_setting.update!(duo_features_enabled: true)
       menu.configure_menu_items
     end
 
