@@ -37,6 +37,10 @@ module VirtualRegistries
         rule { deploy_token_user & ~deploy_token_can_read_virtual_registry }.policy do
           prevent :read_virtual_registry
         end
+
+        rule { group.owner }.policy do
+          enable :admin_virtual_registry
+        end
       end
     end
   end

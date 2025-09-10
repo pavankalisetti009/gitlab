@@ -165,4 +165,59 @@ RSpec.describe VirtualRegistries::Packages::Policies::GroupPolicy, feature_categ
       end
     end
   end
+
+  describe 'admin_virtual_registry' do
+    where(:group_visibility, :current_user, :allowed?) do
+      'PUBLIC' | nil | false
+      'PUBLIC' | ref(:non_group_member)   | false
+      'PUBLIC' | ref(:guest)              | false
+      'PUBLIC' | ref(:reporter)           | false
+      'PUBLIC' | ref(:developer)          | false
+      'PUBLIC' | ref(:maintainer)         | false
+      'PUBLIC' | ref(:owner)              | true
+
+      'INTERNAL' | nil                      | false
+      'INTERNAL' | ref(:non_group_member)   | false
+      'INTERNAL' | ref(:guest)              | false
+      'INTERNAL' | ref(:reporter)           | false
+      'INTERNAL' | ref(:developer)          | false
+      'INTERNAL' | ref(:maintainer)         | false
+      'INTERNAL' | ref(:owner)              | true
+
+      'PRIVATE' | nil                      | false
+      'PRIVATE' | ref(:non_group_member)   | false
+      'PRIVATE' | ref(:guest)              | false
+      'PRIVATE' | ref(:reporter)           | false
+      'PRIVATE' | ref(:developer)          | false
+      'PRIVATE' | ref(:maintainer)         | false
+      'PRIVATE' | ref(:owner)              | true
+    end
+
+    with_them do
+      before do
+        group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_visibility, false))
+      end
+
+      it { is_expected.to public_send(allowed? ? :be_allowed : :be_disallowed, :admin_virtual_registry) }
+    end
+
+    context 'for admin' do
+      let_it_be(:current_user) { admin }
+
+      context 'when admin mode is enabled', :enable_admin_mode do
+        it { expect_allowed(:admin_virtual_registry) }
+      end
+
+      context 'when admin mode is disabled' do
+        it { expect_disallowed(:admin_virtual_registry) }
+      end
+    end
+
+    context 'when group is a subgroup' do
+      let_it_be(:policy_subject) { ::VirtualRegistries::Packages::Policies::Group.new(subgroup) }
+      let(:current_user) { build_stubbed(:user, owner_of: subgroup) }
+
+      it { expect_disallowed(:admin_virtual_registry) }
+    end
+  end
 end
