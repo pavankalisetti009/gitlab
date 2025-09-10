@@ -83,6 +83,12 @@ module ApprovalRuleLike
     scope :by_report_types, ->(report_types) { where(report_type: report_types) }
   end
 
+  def security_report_time_window
+    return unless approval_policy_rule
+
+    approval_policy_rule.security_policy.security_report_time_window
+  end
+
   def vulnerability_attribute_false_positive
     nil
   end

@@ -312,6 +312,53 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       end
     end
 
+    describe '#security_report_time_window' do
+      context 'when approval_policy_rule is not present' do
+        it 'returns nil' do
+          expect(subject.security_report_time_window).to be_nil
+        end
+      end
+
+      context 'when approval_policy_rule is present' do
+        let_it_be_with_reload(:security_policy) { create(:security_policy, :approval_policy) }
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+        before do
+          subject.update!(approval_policy_rule: approval_policy_rule)
+          security_policy.clear_memoization(:policy_content)
+          security_policy.clear_memoization(:policy_tuning)
+        end
+
+        context 'when security_policy has no policy_tuning' do
+          it 'returns nil' do
+            expect(subject.security_report_time_window).to be_nil
+          end
+        end
+
+        context 'when security_policy has policy_tuning without security_report_time_window' do
+          before do
+            security_policy.update!(content: { policy_tuning: {} })
+          end
+
+          it 'returns nil' do
+            expect(subject.security_report_time_window).to be_nil
+          end
+        end
+
+        context 'when security_policy has policy_tuning with security_report_time_window' do
+          let(:time_window) { 7 }
+
+          before do
+            security_policy.update!(content: { policy_tuning: { security_report_time_window: time_window } })
+          end
+
+          it 'returns the security_report_time_window value' do
+            expect(subject.security_report_time_window).to eq(time_window)
+          end
+        end
+      end
+    end
+
     describe 'validation' do
       context 'when value is too big' do
         it 'is invalid' do

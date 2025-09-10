@@ -1,0 +1,10 @@
+---
+name: approval_policy_time_window
+description: This feature flag will enable MR approval policies to select pipelines with security reports from a time window.
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/525509
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204521
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/543027
+milestone: '18.4'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

@@ -676,6 +676,117 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       end
     end
 
+    shared_examples 'checks if security_report_time_window is valid' do
+      context "when policy_type is approval_policy" do
+        let(:policy_type) { 'approval_policy' }
+
+        before do
+          stub_feature_flags(approval_policy_time_window: true)
+        end
+
+        context 'when security_report_time_window is not provided' do
+          it { expect(result[:status]).to eq(:success) }
+        end
+
+        context 'when security_report_time_window is provided' do
+          let(:policy) do
+            {
+              type: policy_type,
+              name: name,
+              enabled: enabled,
+              rules: rules,
+              policy_tuning: {
+                security_report_time_window: security_report_time_window
+              }
+            }
+          end
+
+          context 'when security_report_time_window is valid' do
+            where(:security_report_time_window, :status) do
+              1      | :success
+              60     | :success
+              1440   | :success
+              10080  | :success
+            end
+
+            with_them do
+              it { expect(result[:status]).to eq(status) }
+            end
+          end
+
+          context 'when security_report_time_window is invalid' do
+            where(:security_report_time_window, :status) do
+              0      | :error
+              -1     | :error
+              10081  | :error
+              20000  | :error
+            end
+
+            with_them do
+              it { expect(result[:status]).to eq(status) }
+              it { expect(result[:message]).to eq('Invalid policy') }
+              it { expect(result[:details]).to match_array(['Invalid security report time window']) }
+
+              it_behaves_like 'sets validation errors', field: :security_report_time_window, message: 'Invalid security report time window'
+            end
+          end
+
+          context 'when security_report_time_window is nil' do
+            let(:security_report_time_window) { nil }
+
+            it { expect(result[:status]).to eq(:success) }
+          end
+
+          context 'when security_report_time_window is empty string' do
+            let(:security_report_time_window) { '' }
+
+            it { expect(result[:status]).to eq(:success) }
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(approval_policy_time_window: false)
+          end
+
+          let(:policy) do
+            {
+              type: policy_type,
+              name: name,
+              enabled: enabled,
+              rules: rules,
+              policy_tuning: {
+                security_report_time_window: 0
+              }
+            }
+          end
+
+          it { expect(result[:status]).to eq(:success) }
+        end
+      end
+
+      context "when policy_type is not approval_policy" do
+        let(:policy_type) { 'scan_execution_policy' }
+        let(:policy) do
+          {
+            type: policy_type,
+            name: name,
+            enabled: enabled,
+            rules: rules,
+            policy_tuning: {
+              security_report_time_window: 0
+            }
+          }
+        end
+
+        before do
+          stub_feature_flags(approval_policy_time_window: true)
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+    end
+
     shared_examples 'checks scan execution policy action limit' do
       let(:action) { { scan: 'container_scanning' } }
       let(:action_limit) { 2 }
@@ -879,6 +990,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if branches are provided in rule'
       it_behaves_like 'checks if timezone is valid'
       it_behaves_like 'checks if vulnerability_age is valid'
+      it_behaves_like 'checks if security_report_time_window is valid'
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks scan execution policy action limit'
       it_behaves_like 'checks scan execution policy schedule limit'
@@ -938,6 +1050,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if timezone is valid'
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
+        it_behaves_like 'checks if security_report_time_window is valid'
         it_behaves_like 'checks scan execution policy action limit'
         it_behaves_like 'checks scan execution policy schedule limit'
         it_behaves_like 'checks pipeline execution schedule policy schedule limit'
@@ -973,6 +1086,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if timezone is valid'
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
+        it_behaves_like 'checks if security_report_time_window is valid'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
           where(:policy_type, :branch_type, :status, :expected_error_message) do
             :scan_execution_policy | 'all' | :success | nil
@@ -1039,6 +1153,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if timezone is valid'
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks if vulnerability_age is valid'
+      it_behaves_like 'checks if security_report_time_window is valid'
       it_behaves_like 'checks scan execution policy action limit'
       it_behaves_like 'checks scan execution policy schedule limit'
       it_behaves_like 'checks pipeline execution schedule policy schedule limit'

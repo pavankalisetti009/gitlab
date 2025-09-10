@@ -1368,4 +1368,30 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
   end
+
+  describe '#security_report_time_window' do
+    subject(:security_report_time_window) { policy.security_report_time_window }
+
+    context 'when policy_tuning is present in content' do
+      let(:policy) do
+        build(:security_policy, content: {
+          policy_tuning: {
+            security_report_time_window: 1440
+          }
+        })
+      end
+
+      it 'returns the security_report_time_window value from policy_tuning' do
+        expect(security_report_time_window).to eq(1440)
+      end
+    end
+
+    context 'when policy_tuning is empty in content' do
+      let(:policy) { build(:security_policy, content: { policy_tuning: {} }) }
+
+      it 'returns nil' do
+        expect(security_report_time_window).to be_nil
+      end
+    end
+  end
 end

@@ -344,6 +344,15 @@ module Security
       Security::PolicyRule::SUPPORTED_POLICY_TYPES.include?(type.to_sym)
     end
 
+    def policy_tuning
+      Security::ScanResultPolicies::PolicyTuning.new(policy_content[:policy_tuning])
+    end
+    strong_memoize_attr :policy_tuning
+
+    def security_report_time_window
+      policy_tuning.security_report_time_window
+    end
+
     private
 
     def content_by_type
