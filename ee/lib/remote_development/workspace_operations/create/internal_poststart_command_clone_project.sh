@@ -35,6 +35,17 @@ then
   echo "$(date -Iseconds): Project cloning successful"
   touch "%<project_cloning_successful_file>s"
   echo "$(date -Iseconds): Updated '%<project_cloning_successful_file>s' file to indicate successful project cloning"
+  # shellcheck disable=SC2164 # We assume that 'clone_dir' must exist if 'project_cloning_successful_file' exists
+  if cd "%<clone_dir>s"; then
+    if git remote set-branches origin '*' && git fetch origin; then
+      echo "$(date -Iseconds): Successfully configured remote branch tracking"
+    else
+      fetch_exit_code=$?
+      echo "$(date -Iseconds): Warning: Failed to fetch all remote branches, exit code: ${fetch_exit_code}" >&2
+    fi
+  else
+    echo "$(date -Iseconds): Warning: Failed to change to clone directory" >&2
+  fi
   echo "$(date -Iseconds): Successfully finished cloning project."
 else
   echo "$(date -Iseconds): Project cloning failed with exit code: ${exit_code}" >&2
