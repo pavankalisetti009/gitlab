@@ -119,21 +119,29 @@ describe('MavenEditUpstreamApp', () => {
   });
 
   describe('updating registry', () => {
+    const formData = {
+      name: 'New Upstream',
+      url: 'http://local.test/maven/',
+      description: 'description',
+      username: null,
+      cacheValidityHours: 24,
+      metadataCacheValidityHours: 48,
+    };
+
     it('calls updateUpstream API with correct ID', async () => {
       createComponent();
 
-      const formData = {
+      await findForm().vm.$emit('submit', formData);
+
+      const expectedData = {
         name: 'New Upstream',
         url: 'http://local.test/maven/',
         description: 'description',
         username: null,
-        cacheValidityHours: 24,
-        metadataCacheValidityHours: 48,
+        cache_validity_hours: 24,
+        metadata_cache_validity_hours: 48,
       };
-
-      await findForm().vm.$emit('submit', formData);
-
-      expect(updateMavenUpstream).toHaveBeenCalledWith({ data: formData, id: 1 });
+      expect(updateMavenUpstream).toHaveBeenCalledWith({ data: expectedData, id: 1 });
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
         '/groups/package-group/-/virtual_registries/maven/upstreams/3',
         [{ message: 'Maven upstream has been updated.' }],
@@ -152,7 +160,7 @@ describe('MavenEditUpstreamApp', () => {
 
       expect(findAlert().exists()).toBe(false);
 
-      findForm().vm.$emit('submit');
+      findForm().vm.$emit('submit', formData);
 
       await waitForPromises();
 
@@ -167,7 +175,7 @@ describe('MavenEditUpstreamApp', () => {
 
       expect(findAlert().exists()).toBe(false);
 
-      findForm().vm.$emit('submit');
+      findForm().vm.$emit('submit', formData);
 
       await waitForPromises();
 
