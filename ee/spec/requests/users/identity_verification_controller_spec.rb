@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Users::IdentityVerificationController, :with_organization_url_helpers, :clean_gitlab_redis_sessions,
   :clean_gitlab_redis_rate_limiting, feature_category: :instance_resiliency do
   include SessionHelpers
+  include IdentityVerificationHelpers
 
   let_it_be(:user) { create(:user, :low_risk) }
   let_it_be(:current_organization) { user.organization }
@@ -128,7 +129,7 @@ RSpec.describe Users::IdentityVerificationController, :with_organization_url_hel
     subject(:do_request) { post send_phone_verification_code_identity_verification_path(params) }
 
     before do
-      mock_arkose_token_verification(success: true)
+      stub_arkose_token_verification(token_verification_response: :success)
     end
 
     it { is_expected.to have_request_urgency(:low) }

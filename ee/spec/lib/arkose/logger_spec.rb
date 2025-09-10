@@ -68,7 +68,7 @@ RSpec.describe Arkose::Logger, feature_category: :instance_resiliency do
   end
 
   describe '#log_successful_token_verification' do
-    let(:log_message) { 'Arkose verify response' }
+    let(:log_message) { 'Arkose challenge solved' }
 
     subject { logger.log_successful_token_verification }
 
@@ -76,8 +76,17 @@ RSpec.describe Arkose::Logger, feature_category: :instance_resiliency do
     it_behaves_like 'logs the event without user info'
   end
 
+  describe '#log_invalid_token' do
+    let(:log_message) { 'Arkose was unable to verify the token' }
+
+    subject { logger.log_invalid_token }
+
+    it_behaves_like 'logs the event with the correct payload'
+    it_behaves_like 'logs the event without user info'
+  end
+
   describe '#log_unsolved_challenge' do
-    let(:log_message) { 'Challenge was not solved' }
+    let(:log_message) { 'Arkose challenge not solved' }
 
     subject { logger.log_unsolved_challenge }
 
@@ -105,8 +114,9 @@ RSpec.describe Arkose::Logger, feature_category: :instance_resiliency do
     subject(:logger) { described_class.new(session_token: session_token, user: user, verify_response: nil) }
 
     it 'logs the event with the correct info' do
-      message = /Error verifying user on Arkose: {:session_token=>"#{session_token}", :log_data=>#{user.id}}/
-      expect(Gitlab::AppLogger).to receive(:error).with(a_string_matching(message))
+      expect(Gitlab::AppLogger).to receive(:error).with(a_string_including(
+        /Arkose returned an error while verifying token: {:session_token=>"#{session_token}", :log_data=>#{user.id}}/
+      ))
 
       logger.log_failed_token_verification
     end
@@ -115,8 +125,9 @@ RSpec.describe Arkose::Logger, feature_category: :instance_resiliency do
       let(:user) { nil }
 
       it 'logs the event with the correct info' do
-        message = /Error verifying user on Arkose: {:session_token=>"#{session_token}", :log_data=>nil}/
-        expect(Gitlab::AppLogger).to receive(:error).with(a_string_matching(message))
+        expect(Gitlab::AppLogger).to receive(:error).with(a_string_including(
+          /Arkose returned an error while verifying token: {:session_token=>"#{session_token}", :log_data=>nil}/
+        ))
 
         logger.log_failed_token_verification
       end

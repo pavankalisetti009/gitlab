@@ -29,7 +29,6 @@ module Users
         return render action: :arkose_labs_challenge
       end
 
-      track_arkose_challenge_result
       @user.assume_high_risk_if_phone_verification_limit_exceeded!
 
       redirect_to action: :show

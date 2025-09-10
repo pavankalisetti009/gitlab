@@ -22,16 +22,20 @@ module Arkose
 
       @response = ::Arkose::VerifyResponse.new(parsed_response)
 
-      logger.log_successful_token_verification
-
-      return ServiceResponse.error(message: response.error) if response.invalid_token?
+      if response.invalid_token?
+        logger.log_invalid_token
+        return error
+      end
 
       RecordUserDataService.new(response: response, user: user).execute if user
 
-      return success if response.allowlisted? || response.challenge_solved?
+      if response.allowlisted? || response.challenge_solved?
+        logger.log_successful_token_verification
+        return success
+      end
 
       logger.log_unsolved_challenge
-      ServiceResponse.error(message: 'Captcha was not solved')
+      error
 
     rescue StandardError => error
       Gitlab::ErrorTracking.track_exception(error)
@@ -79,6 +83,10 @@ module Arkose
       verify_response = response || ::Arkose::VerifyResponse.new({})
 
       ServiceResponse.success(payload: { response: verify_response })
+    end
+
+    def error
+      ServiceResponse.error(message: 'Captcha was not solved')
     end
   end
 end

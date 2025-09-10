@@ -9,6 +9,10 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
   let(:verify_api_url) { "https://verify-api.arkoselabs.com/api/v4/verify/" }
   let(:arkose_labs_private_api_key) { 'foo' }
 
+  let(:arkose_ec_response) { {} }
+  let(:mock_verify_response) { Arkose::VerifyResponse.new(arkose_ec_response) }
+  let(:log_args) { { session_token: session_token, user: user, verify_response: mock_verify_response } }
+
   subject { service.execute }
 
   def verify_request_body
@@ -40,6 +44,12 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
         body: arkose_ec_response.to_json,
         headers: { 'Content-Type' => 'application/json' }
       )
+
+    if mock_verify_response
+      allow(Arkose::VerifyResponse)
+      .to receive(:new).with(arkose_ec_response)
+      .and_return(mock_verify_response)
+    end
   end
 
   describe '#execute' do
@@ -53,6 +63,28 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
 
         it 'returns an error response' do
           expect(subject).to be_error
+        end
+
+        it 'returns an error message' do
+          expect(subject.message).to eq 'Captcha was not solved'
+        end
+      end
+
+      context 'when the token is invalid' do
+        let(:arkose_ec_response) do
+          Gitlab::Json.parse(File.read(Rails.root.join('ee/spec/fixtures/arkose/invalid_token.json')))
+        end
+
+        it 'returns an error response' do
+          expect(subject).to be_error
+        end
+
+        it 'logs the event' do
+          expect_next_instance_of(::Arkose::Logger, log_args) do |logger|
+            expect(logger).to receive(:log_invalid_token)
+          end
+
+          subject
         end
 
         it 'returns an error message' do
@@ -81,12 +113,6 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
               )
             end
 
-            let(:mock_verify_response) { Arkose::VerifyResponse.new(arkose_ec_response) }
-
-            before do
-              allow(Arkose::VerifyResponse).to receive(:new).with(arkose_ec_response).and_return(mock_verify_response)
-            end
-
             it 'makes a request to the Verify API' do
               subject
 
@@ -96,8 +122,7 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
             it_behaves_like 'returns success response with the correct payload'
 
             it 'logs the event' do
-              init_args = { session_token: session_token, user: user, verify_response: mock_verify_response }
-              expect_next_instance_of(::Arkose::Logger, init_args) do |logger|
+              expect_next_instance_of(::Arkose::Logger, log_args) do |logger|
                 expect(logger).to receive(:log_successful_token_verification)
               end
 
@@ -113,10 +138,10 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
               subject
             end
 
-            context "when the user is nil" do
+            context 'when the user is nil' do
               let(:user) { nil }
 
-              it "does not record Arkose data" do
+              it 'does not record Arkose data' do
                 expect(Arkose::RecordUserDataService).not_to receive(:new)
 
                 subject
@@ -167,12 +192,6 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
               )
             end
 
-            let(:mock_verify_response) { Arkose::VerifyResponse.new(arkose_ec_response) }
-
-            before do
-              allow(Arkose::VerifyResponse).to receive(:new).with(arkose_ec_response).and_return(mock_verify_response)
-            end
-
             it 'returns an error response' do
               expect(subject).to be_error
             end
@@ -182,8 +201,7 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
             end
 
             it 'logs the event' do
-              init_args = { session_token: session_token, user: user, verify_response: mock_verify_response }
-              expect_next_instance_of(::Arkose::Logger, init_args) do |logger|
+              expect_next_instance_of(::Arkose::Logger, log_args) do |logger|
                 expect(logger).to receive(:log_unsolved_challenge)
               end
 
@@ -194,22 +212,23 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
       end
 
       shared_examples 'an unexpected token verification failure' do
+        let(:mock_verify_response) { nil }
+
         it 'logs the event' do
-          init_args = { session_token: session_token, user: user, verify_response: nil }
-          expect_next_instance_of(::Arkose::Logger, init_args) do |logger|
+          expect_next_instance_of(::Arkose::Logger, log_args) do |logger|
             expect(logger).to receive(:log_failed_token_verification)
           end
 
           subject
         end
 
-        it "does not record Arkose data" do
+        it 'does not record Arkose data' do
           expect(Arkose::RecordUserDataService).not_to receive(:new)
 
           subject
         end
 
-        it "assumes low risk for the user" do
+        it 'assumes low risk for the user' do
           expect { subject }.to change {
             user.custom_attributes.by_key(IdentityVerification::UserRiskProfile::ASSUMED_LOW_RISK_ATTR_KEY).count
           }.from(0).to(1)
@@ -220,6 +239,7 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
         # For example: https://gitlab.com/gitlab-org/modelops/anti-abuse/team-tasks/-/issues/54
 
         let(:arkose_ec_response) { 'unexpected_from_arkose' }
+        let(:mock_verify_response) { nil }
 
         it_behaves_like 'returns success response with the correct payload' do
           let(:expected_response_json) { {} }
