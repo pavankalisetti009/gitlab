@@ -129,6 +129,30 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::AuditLogger, feature_catego
     end
   end
 
+  describe '#track_spp_scan_executed' do
+    context 'when scan type is dark launch' do
+      let(:properties) { { label: 'dark-launch' } }
+
+      it 'triggers internal events and increment usage metrics' do
+        expect { audit_logger.track_spp_scan_executed('dark-launch') }
+          .to trigger_internal_events('spp_scan_executed')
+          .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+          .and increment_usage_metrics('counts.count_total_spp_scan_executed')
+      end
+    end
+
+    context 'when scan type is regular' do
+      let(:properties) { { label: 'regular' } }
+
+      it 'triggers internal events and increment usage metrics' do
+        expect { audit_logger.track_spp_scan_executed('regular') }
+          .to trigger_internal_events('spp_scan_executed')
+          .with(user: user, project: project, namespace: project.namespace, additional_properties: properties)
+          .and increment_usage_metrics('counts.count_total_spp_scan_executed')
+      end
+    end
+  end
+
   describe '#track_spp_scan_passed' do
     it 'triggers internal events and increment usage metrics' do
       expect { audit_logger.track_spp_scan_passed }
