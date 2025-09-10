@@ -35,7 +35,9 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
         annotations
         default_resources_per_workspace_container
         default_runtime_class
+        gitlab_workspaces_proxy_http_enabled
         gitlab_workspaces_proxy_namespace
+        gitlab_workspaces_proxy_ssh_enabled
         labels
         max_active_hours_before_stop
         max_resources_per_workspace
@@ -337,7 +339,9 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
         default_runtime_class
         dns_zone
         enabled
+        gitlab_workspaces_proxy_http_enabled
         gitlab_workspaces_proxy_namespace
+        gitlab_workspaces_proxy_ssh_enabled
         id
         image_pull_secrets
         labels

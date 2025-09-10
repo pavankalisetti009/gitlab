@@ -43,6 +43,8 @@ module RemoteDevelopment
     validates :shared_namespace, 'remote_development/shared_namespace': true
     validates :annotations, 'remote_development/annotations': true
     validates :labels, 'remote_development/labels': true
+    validates :gitlab_workspaces_proxy_http_enabled, inclusion: { in: [true, false] }
+    validates :gitlab_workspaces_proxy_ssh_enabled, inclusion: { in: [true, false] }
 
     validates :image_pull_secrets,
       json_schema: {
