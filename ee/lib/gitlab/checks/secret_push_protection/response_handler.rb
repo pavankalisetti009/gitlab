@@ -65,6 +65,8 @@ module Gitlab
 
             raise ::Gitlab::GitAccess::ForbiddenError, message
           when ::Gitlab::SecretDetection::Core::Status::FOUND_WITH_ERRORS
+            audit_logger.track_spp_push_blocked_secrets_found_with_errors(response.results.size)
+
             # One or more secrets found, but with scan errors, so we
             # generate a message with findings and errors, and fail the check.
             message = build_secrets_found_message(results, with_errors: true)

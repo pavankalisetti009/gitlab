@@ -82,6 +82,18 @@ module Gitlab
           )
         end
 
+        def track_spp_push_blocked_secrets_found_with_errors(number)
+          track_internal_event(
+            'spp_push_blocked_secrets_found_with_errors',
+            user: @user,
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              value: number
+            }
+          )
+        end
+
         private
 
         def generate_target_details
