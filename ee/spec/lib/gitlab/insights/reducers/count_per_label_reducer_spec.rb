@@ -26,8 +26,6 @@ RSpec.describe Gitlab::Insights::Reducers::CountPerLabelReducer do
 
   let(:issuable_relation) { find_issuables(project, query) }
 
-  subject { reduce(issuable_relation, query[:collection_labels]) }
-
   let(:expected) do
     {
       label_manage.title => 1,
@@ -35,6 +33,8 @@ RSpec.describe Gitlab::Insights::Reducers::CountPerLabelReducer do
       Gitlab::Insights::UNCATEGORIZED => 1
     }
   end
+
+  subject { reduce(issuable_relation, query[:collection_labels]) }
 
   it 'raises an error for an unknown :issuable_type option' do
     expect { reduce(issuable_relation, nil) }.to raise_error(described_class::InvalidLabelsError, "Invalid value for `labels`: `[]`. It must be a non-empty array!")

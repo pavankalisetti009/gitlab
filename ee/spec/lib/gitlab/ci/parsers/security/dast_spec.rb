@@ -76,10 +76,6 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Dast do
     describe 'parses scanned_resources' do
       let(:artifact) { create(:ee_ci_job_artifact, 'dast') }
 
-      before do
-        artifact.each_blob { |blob| described_class.parse!(blob, report) }
-      end
-
       let(:raw_json) do
         {
           vulnerabilities: [],
@@ -95,6 +91,10 @@ RSpec.describe Gitlab::Ci::Parsers::Security::Dast do
             ]
           }
         }
+      end
+
+      before do
+        artifact.each_blob { |blob| described_class.parse!(blob, report) }
       end
 
       it 'skips invalid URLs' do

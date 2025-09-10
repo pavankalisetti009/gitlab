@@ -16,15 +16,6 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
     )
   end
 
-  before do
-    allow_next_instance_of(Repository) do |repository|
-      allow(repository).to receive(:blob_data_at).and_return(active_policies.to_yaml)
-      allow(repository).to receive(:last_commit_for_path)
-    end
-
-    allow(configuration).to receive(:policy_last_updated_by).and_return(project.owner)
-  end
-
   let(:worker) do
     Class.new do
       def self.name
@@ -33,6 +24,15 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
 
       include UpdateOrchestrationPolicyConfiguration
     end.new
+  end
+
+  before do
+    allow_next_instance_of(Repository) do |repository|
+      allow(repository).to receive(:blob_data_at).and_return(active_policies.to_yaml)
+      allow(repository).to receive(:last_commit_for_path)
+    end
+
+    allow(configuration).to receive(:policy_last_updated_by).and_return(project.owner)
   end
 
   describe '.update_policy_configuration' do

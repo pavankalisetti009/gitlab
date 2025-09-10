@@ -7,8 +7,6 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, namespace: group) }
 
-  subject(:loader) { described_class.new(project, 'with-codeowners', paths) }
-
   let(:codeowner_content) do
     <<~CODEOWNERS
       docs/* @documentation-owner
@@ -26,6 +24,8 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
   let!(:test_owner) { create(:user, username: 'test-owner') }
   let(:codeowner_blob) { fake_blob(path: 'CODEOWNERS', data: codeowner_content) }
   let(:paths) { 'docs/CODEOWNERS' }
+
+  subject(:loader) { described_class.new(project, 'with-codeowners', paths) }
 
   before do
     project.add_developer(owner_1)

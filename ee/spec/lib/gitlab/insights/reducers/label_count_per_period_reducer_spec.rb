@@ -26,8 +26,6 @@ RSpec.describe Gitlab::Insights::Reducers::LabelCountPerPeriodReducer do
 
   let(:issuable_relation) { find_issuables(project, query) }
 
-  subject { reduce(issuable_relation, query[:group_by], query[:collection_labels]) }
-
   let(:expected) do
     {
       'January 2019' => {
@@ -57,6 +55,8 @@ RSpec.describe Gitlab::Insights::Reducers::LabelCountPerPeriodReducer do
       }
     }
   end
+
+  subject { reduce(issuable_relation, query[:group_by], query[:collection_labels]) }
 
   it 'returns issuables with only the needed fields' do
     expect(subject).to eq(expected)
