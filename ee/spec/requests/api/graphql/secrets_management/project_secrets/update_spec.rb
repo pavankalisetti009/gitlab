@@ -179,21 +179,12 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
         }
       end
 
-      it 'updates the project secret', :aggregate_failures do
+      it 'returns an error', :aggregate_failures do
         post_mutation
 
-        expect(response).to have_gitlab_http_status(:success)
-        expect(mutation_response['errors']).to be_empty
-
-        expect(graphql_data_at(mutation_name, :project_secret))
-          .to match(a_graphql_entity_for(
-            project: a_graphql_entity_for(project),
-            name: project_secret_attributes[:name],
-            description: 'updated description',
-            branch: 'feature',
-            environment: 'staging',
-            metadata_version: nil
-          ))
+        expect_graphql_errors_to_include(
+          "ProjectSecretUpdateInput! was provided invalid value for metadataCas"
+        )
       end
     end
 
