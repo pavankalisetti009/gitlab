@@ -11,11 +11,12 @@ RSpec.describe 'getting AI catalog built-in tools', feature_category: :workflow_
     "{ #{query_nodes('AiCatalogBuiltInTools')} }"
   end
 
-  it 'returns all built-in tools' do
+  it 'returns all built-in tools sorted by name' do
     post_graphql(query, current_user: nil)
 
     expect(response).to have_gitlab_http_status(:success)
     expect(nodes).to have_attributes(size: ::Ai::Catalog::BuiltInTool.count)
+    expect(nodes.sort_by { |node| node['name'] }).to eq(nodes)
 
     first_node = nodes.first
     tool = ::Ai::Catalog::BuiltInTool.find_by(name: first_node['name'])

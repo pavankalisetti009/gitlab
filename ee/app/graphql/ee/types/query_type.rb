@@ -17,6 +17,7 @@ module EE
           description: 'Get flow configuration for an AI Catalog agent.',
           experiment: { milestone: '18.4' }
         field :ai_catalog_built_in_tools, ::Types::Ai::Catalog::BuiltInToolType.connection_type,
+          max_page_size: 1_000,
           null: false,
           description: 'List of AI Catalog built-in tools.',
           experiment: { milestone: '18.3' }
@@ -456,7 +457,7 @@ module EE
       def ai_catalog_built_in_tools
         return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-        ::Ai::Catalog::BuiltInTool.all
+        ::Ai::Catalog::BuiltInTool.all.sort_by(&:name)
       end
 
       def maven_virtual_registry(id:)

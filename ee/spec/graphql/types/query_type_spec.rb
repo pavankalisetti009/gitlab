@@ -95,6 +95,14 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
     end
   end
 
+  describe 'aiCatalogBuiltInTools field' do
+    subject(:field) { described_class.fields['aiCatalogBuiltInTools'] }
+
+    it 'has custom max_page_size' do
+      expect(field.max_page_size).to eq(1000)
+    end
+  end
+
   describe '.authorization_scopes' do
     it 'includes :ai_workflows' do
       expect(described_class.authorization_scopes).to include(:ai_workflows)
