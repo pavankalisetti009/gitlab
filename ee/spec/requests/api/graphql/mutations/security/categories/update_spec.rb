@@ -139,7 +139,7 @@ RSpec.describe 'Mutation.securityCategoryUpdate', feature_category: :security_as
         end
 
         it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['Either Category id or templateType must be provided']
+          errors: ['Either categoryId or templateType must be provided']
       end
 
       context 'when both id and template_type are provided' do
