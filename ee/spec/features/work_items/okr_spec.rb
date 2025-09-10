@@ -6,10 +6,9 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
   include DragTo
   include ListboxHelpers
 
-  let_it_be(:organization) { create(:organization) }
   let(:user) { create(:user, name: 'Sherlock Holmes') }
   let(:user2) { create(:user, name: 'John') }
-  let(:group) { create(:group, :public, organization: organization) }
+  let(:group) { create(:group, :public) }
   let(:project) { create(:project, :public, namespace: group) }
   let(:label) { create(:label, project: project, title: "testing-label") }
   let(:label2) { create(:label, project: project, title: "another-label") }

@@ -2,14 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category: :user_management do
+RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate_failures, feature_category: :user_management do
   include Auth::DpopTokenHelper
 
-  let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let(:current_user) { create(:user) }
-  let(:group) { create(:group, organization: organization) }
+  let(:group) { create(:group) }
   let(:subgroup) { create(:group, :private, parent: group) }
 
   let_it_be(:service_account_user) { create(:user, :service_account) }
@@ -147,7 +146,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
         user = User.find(json_response['id'])
 
-        expect(user.namespace.organization).to eq(organization)
+        expect(user.namespace.organization).to eq(current_organization)
         expect(user.user_type).to eq('service_account')
         expect(user).to be_confirmed
       end
@@ -176,7 +175,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
           user = User.find(json_response['id'])
 
-          expect(user.namespace.organization).to eq(organization)
+          expect(user.namespace.organization).to eq(current_organization)
           expect(user.user_type).to eq('service_account')
           expect(user).not_to be_confirmed
         end
@@ -394,7 +393,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
                 user = User.find(json_response['id'])
 
-                expect(user.namespace.organization).to eq(organization)
+                expect(user.namespace.organization).to eq(current_organization)
                 expect(user.user_type).to eq('service_account')
                 expect(user.email).to eq('test_service_account@example.com')
                 expect(user).to be_confirmed
@@ -990,7 +989,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
   end
 
   describe 'DELETE /groups/:id/service_accounts/:user_id/personal_access_tokens/:token_id' do
-    let(:group) { create(:group, organization: organization) }
+    let(:group) { create(:group) }
     let(:service_account_user) { create(:user, :service_account, provisioned_by_group: group) }
     let(:admin) { create(:admin) }
 

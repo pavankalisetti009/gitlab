@@ -45,8 +45,7 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
       )
     end
 
-    let_it_be(:organization) { create(:organization) }
-    let_it_be(:current_user) { create(:user, organizations: [organization]) }
+    let_it_be(:current_user) { create(:user) }
     let_it_be(:finding_uuid) { security_finding.uuid }
     let_it_be(:new_severity) { 'HIGH' }
     let_it_be(:mutation_input) { { uuid: security_finding.uuid.to_s, severity: new_severity } }
