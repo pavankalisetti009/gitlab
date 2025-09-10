@@ -40,6 +40,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       before do
         stub_feature_flags(duo_workflow_in_ci: duo_workflow_in_ci_ff)
         stub_feature_flags(global_ai_catalog: ai_catalog)
+        stub_feature_flags(ai_catalog_flows: true)
         project.project_setting.update!(
           duo_remote_flows_enabled: duo_remote_flows_enabled,
           duo_features_enabled: duo_features_enabled
