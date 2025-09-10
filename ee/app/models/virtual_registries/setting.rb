@@ -8,10 +8,15 @@ module VirtualRegistries
 
     belongs_to :group
 
-    validates :group, top_level_group: true, presence: true
+    attribute :enabled, default: true
+
+    validates :group, top_level_group: true, presence: true, uniqueness: true
     validates :enabled, inclusion: { in: [true, false] }
 
-    scope :for_group, ->(group) { where(group: group) }
     scope :enabled, -> { where(enabled: true) }
+
+    def self.find_for_group(group)
+      find_or_initialize_by(group: group)
+    end
   end
 end
