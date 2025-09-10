@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe 'List of configurable AI feature with metadata.', feature_category: :"self-hosted_models" do
   include GraphqlHelpers
 
+  include_context 'with mocked ::Ai::ModelSelection::FetchModelDefinitionsService'
+
   let_it_be(:current_user) { create(:admin) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   let_it_be(:add_on_purchase) do
@@ -38,6 +40,20 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                 releaseState
               }
             }
+            defaultGitlabModel {
+              ref
+              name
+            }
+            gitlabModel {
+              ref
+              name
+            }
+            validGitlabModels {
+              nodes {
+                ref
+                name
+              }
+            }
           }
         }
       }
@@ -65,6 +81,10 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     }
   end
 
+  let_it_be(:generation_feature_setting) do
+    create(:ai_feature_setting, self_hosted_model: nil, feature: :code_generations, provider: :vendored)
+  end
+
   let(:model_name_mapper) { ::Admin::Ai::SelfHostedModelsHelper::MODEL_NAME_MAPPER }
 
   before do
@@ -84,7 +104,19 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
       it 'returns the expected response' do
         post_graphql(query, current_user: current_user)
 
-        expect(ai_feature_settings_data).to match_array(expected_response)
+        result = ai_feature_settings_data
+
+        expect(result).to match_array(expected_response)
+      end
+
+      context 'when :instance_level_model_selection feature flag is off' do
+        before do
+          stub_feature_flags(instance_level_model_selection: false)
+        end
+
+        it 'does not make request for model definitions' do
+          expect(::Ai::ModelSelection::FetchModelDefinitionsService).not_to receive(:new)
+        end
       end
     end
 
@@ -116,6 +148,20 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
                     releaseState
                   }
                 }
+                defaultGitlabModel {
+                  ref
+                  name
+                }
+                gitlabModel {
+                  ref
+                  name
+                }
+                validGitlabModels {
+                  nodes {
+                    ref
+                    name
+                  }
+                }
               }
             }
           }
@@ -126,8 +172,6 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
         let(:model_gid) { self_hosted_model.to_global_id }
 
         let(:expected_response) do
-          feature_setting = ::Ai::FeatureSetting.find_or_initialize_by_feature(:code_completions)
-
           [generate_feature_setting_data(feature_setting)]
         end
 
@@ -160,6 +204,24 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
   end
 
   def generate_feature_setting_data(feature_setting)
+    gitlab_data = if feature_setting.feature.to_s == 'code_completions'
+                    {
+                      'defaultGitlabModel' => { 'name' => 'GPT-4', 'ref' => 'gpt-4' },
+                      'gitlabModel' => nil,
+                      'validGitlabModels' => {
+                        'nodes' => [
+                          { 'name' => 'GPT-4', 'ref' => 'gpt-4' }
+                        ]
+                      }
+                    }
+                  else
+                    {
+                      'defaultGitlabModel' => nil,
+                      'gitlabModel' => nil,
+                      'validGitlabModels' => { 'nodes' => [] }
+                    }
+                  end
+
     {
       'feature' => feature_setting.feature.to_s,
       'title' => feature_setting.title,
@@ -170,7 +232,8 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
       'selfHostedModel' => generate_self_hosted_data(feature_setting.self_hosted_model),
       'validModels' => {
         'nodes' => feature_setting.compatible_self_hosted_models.map { |s| generate_self_hosted_data(s) }
-      }
+      },
+      **gitlab_data
     }
   end
 

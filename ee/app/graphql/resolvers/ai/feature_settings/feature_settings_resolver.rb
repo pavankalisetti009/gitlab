@@ -19,7 +19,9 @@ module Resolvers
           feature_settings = get_feature_settings(self_hosted_model_id)
 
           ::Gitlab::Graphql::Representation::AiFeatureSetting
-            .decorate(feature_settings, with_valid_models: valid_models_field_requested?)
+            .decorate(feature_settings,
+              with_valid_models: valid_models_field_requested?,
+              model_definitions: gitlab_model_definitions)
         end
 
         private
@@ -30,6 +32,17 @@ module Resolvers
 
         def valid_models_field_requested?
           context.query.sanitized_query_string.include?('validModels')
+        end
+
+        def gitlab_model_definitions
+          return unless Feature.enabled?(:instance_level_model_selection, :instance)
+
+          payload = ::Ai::ModelSelection::FetchModelDefinitionsService
+            .new(current_user, model_selection_scope: nil)
+            .execute
+            .payload
+
+          ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(payload)
         end
       end
     end
