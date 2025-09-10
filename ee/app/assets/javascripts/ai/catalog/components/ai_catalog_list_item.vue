@@ -46,6 +46,12 @@ export default {
     canAdmin() {
       return this.item.userPermissions?.adminAiCatalogItem;
     },
+    actionItems() {
+      return this.itemTypeConfig.actionItems(this.item);
+    },
+    showActions() {
+      return this.canAdmin || Boolean(this.actionItems.length);
+    },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
     },
@@ -126,7 +132,7 @@ export default {
     </template>
     <template #actions>
       <gl-disclosure-dropdown
-        v-if="canAdmin"
+        v-if="showActions"
         :toggle-text="__('More actions')"
         category="tertiary"
         icon="ellipsis_v"
@@ -152,7 +158,7 @@ export default {
             </template>
           </gl-disclosure-dropdown-item>
         </gl-disclosure-dropdown-group>
-        <gl-disclosure-dropdown-group bordered>
+        <gl-disclosure-dropdown-group v-if="canAdmin" bordered>
           <gl-disclosure-dropdown-item variant="danger" @action="$emit('delete')">
             <template #list-item>
               <span>

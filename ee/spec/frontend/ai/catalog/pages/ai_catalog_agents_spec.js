@@ -3,6 +3,7 @@ import Vue, { nextTick } from 'vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { isLoggedIn } from '~/lib/utils/common_utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -37,6 +38,7 @@ import {
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('~/lib/utils/common_utils');
 
 Vue.use(VueApollo);
 
@@ -62,6 +64,8 @@ describe('AiCatalogAgents', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
+    isLoggedIn.mockReturnValue(true);
+
     mockRoute = Vue.observable({
       query: $route.query,
     });

@@ -4,6 +4,7 @@ import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
+import { isLoggedIn } from '~/lib/utils/common_utils';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -146,34 +147,49 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => [
-          {
-            text: s__('AICatalog|Add to project'),
-            action: () => this.setAiCatalogAgentToBeAdded(item),
-            icon: 'plus',
-          },
-          {
-            text: s__('AICatalog|Test run'),
-            to: {
-              name: AI_CATALOG_AGENTS_RUN_ROUTE,
-              params: { id: getIdFromGraphQLId(item.id) },
+        actionItems: (item) => {
+          if (!isLoggedIn()) {
+            return [];
+          }
+
+          const items = [
+            {
+              text: s__('AICatalog|Duplicate'),
+              action: () => this.handleDuplicate(item),
+              icon: 'duplicate',
             },
-            icon: 'rocket-launch',
-          },
-          {
-            text: s__('AICatalog|Duplicate'),
-            action: () => this.handleDuplicate(item),
-            icon: 'duplicate',
-          },
-          {
-            text: s__('AICatalog|Edit'),
-            to: {
-              name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-              params: { id: getIdFromGraphQLId(item.id) },
+          ];
+
+          if (!item.userPermissions?.adminAiCatalogItem) {
+            return items;
+          }
+
+          const adminItems = [
+            {
+              text: s__('AICatalog|Add to project'),
+              action: () => this.setAiCatalogAgentToBeAdded(item),
+              icon: 'plus',
             },
-            icon: 'pencil',
-          },
-        ],
+            {
+              text: s__('AICatalog|Test run'),
+              to: {
+                name: AI_CATALOG_AGENTS_RUN_ROUTE,
+                params: { id: getIdFromGraphQLId(item.id) },
+              },
+              icon: 'rocket-launch',
+            },
+            {
+              text: s__('AICatalog|Edit'),
+              to: {
+                name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+                params: { id: getIdFromGraphQLId(item.id) },
+              },
+              icon: 'pencil',
+            },
+          ];
+
+          return [...adminItems, ...items];
+        },
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
             AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
