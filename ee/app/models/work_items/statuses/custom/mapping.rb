@@ -13,15 +13,11 @@ module WorkItems
 
         validates :old_status, :new_status, :work_item_type, :namespace, presence: true
 
-        validates :old_status_id, uniqueness: {
-          scope: [:namespace_id, :new_status_id, :work_item_type_id],
-          message: 'mapping already exists for this combination'
-        }
-
         validate :statuses_in_same_namespace
         validate :no_self_mapping
         validate :no_chained_mappings
         validate :valid_date_range
+        validate :no_overlapping_date_ranges
 
         scope :in_namespace, ->(namespace) { where(namespace: namespace) }
 
@@ -69,6 +65,33 @@ module WorkItems
           return unless valid_from >= valid_until
 
           errors.add(:valid_until, 'must be after valid_from date')
+        end
+
+        def no_overlapping_date_ranges
+          return unless old_status_id && work_item_type_id && namespace_id
+
+          overlapping = self.class.where(
+            namespace_id: namespace_id,
+            old_status_id: old_status_id,
+            work_item_type_id: work_item_type_id
+          ).where.not(id: id)
+
+          overlapping.each do |existing|
+            if date_ranges_overlap?(existing)
+              errors.add(:base, 'date range overlaps with existing mapping')
+              break
+            end
+          end
+        end
+
+        def date_ranges_overlap?(other_mapping)
+          # Two ranges overlap if they have any time in common
+          # Handle nil dates by treating them as unbounded ranges
+          # nil valid_from --> beginning of time, nil valid_until --> end of time
+          return false if valid_until && other_mapping.valid_from && valid_until <= other_mapping.valid_from
+          return false if other_mapping.valid_until && valid_from && other_mapping.valid_until <= valid_from
+
+          true
         end
       end
     end
