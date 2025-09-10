@@ -504,6 +504,7 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
           post api(path, user), params: params
 
           expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['ai_catalog_item_version_id']).to eq(ai_catalog_item_version.id)
           created_workflow = Ai::DuoWorkflows::Workflow.last
           expect(created_workflow.ai_catalog_item_version).to eq(ai_catalog_item_version)
         end
