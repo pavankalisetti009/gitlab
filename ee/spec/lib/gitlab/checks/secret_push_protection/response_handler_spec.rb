@@ -171,6 +171,22 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ResponseHandler, feature_ca
           .and_return([tree_entries, gitaly_pagination_cursor])
       end
 
+      it 'triggers internal events and increment usage metrics' do
+        expect { response_handler.format_response(response) }
+          .to trigger_internal_events('spp_push_blocked_secrets_found_with_errors')
+          .with(
+            user: user,
+            project: project,
+            namespace: project.namespace,
+            category: 'Gitlab::Checks::SecretPushProtection::AuditLogger',
+            additional_properties: {
+              value: response.results.size
+            }
+          )
+          .and increment_usage_metrics('counts.count_total_spp_push_blocked_secrets_found_with_errors')
+          .and raise_error(::Gitlab::GitAccess::ForbiddenError)
+      end
+
       it 'raises ForbiddenError with errors message and logs found secrets with errors' do
         expect { response_handler.format_response(response) }
           .to raise_error(::Gitlab::GitAccess::ForbiddenError) do |error|
