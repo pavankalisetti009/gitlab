@@ -12,14 +12,21 @@ describe('RegistryUpstreamForm', () => {
     url: 'https://example.com',
     description: 'bar',
     username: 'bax',
-    cacheValidityHours: 0,
-    metadataCacheValidityHours: 0,
+    cacheValidityHours: 48,
+    metadataCacheValidityHours: 48,
+  };
+
+  const defaultProvide = {
+    mavenCentralUrl: 'https://repo1.maven.org/maven2',
   };
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(RegistryUpstreamForm, {
       propsData: props,
-      provide,
+      provide: {
+        ...defaultProvide,
+        ...provide,
+      },
     });
   };
 
@@ -73,6 +80,17 @@ describe('RegistryUpstreamForm', () => {
       it('renders Metadata cache validity hours input', () => {
         expect(findMetadataCacheValidityHoursInput().props('value')).toBe(24);
       });
+
+      describe('when URL field is set to maven central', () => {
+        beforeEach(() => {
+          findUpstreamUrlInput().vm.$emit('input', defaultProvide.mavenCentralUrl);
+        });
+
+        it('sets Artifact cache validity hours input to readonly & value to 0', () => {
+          expect(findCacheValidityHoursInput().props('value')).toBe(0);
+          expect(findCacheValidityHoursInput().props('readonly')).toBe(true);
+        });
+      });
     });
 
     describe('inputs when upstream prop is set', () => {
@@ -104,11 +122,11 @@ describe('RegistryUpstreamForm', () => {
       });
 
       it('renders Artifact cache validity hours input', () => {
-        expect(findCacheValidityHoursInput().props('value')).toBe(0);
+        expect(findCacheValidityHoursInput().props('value')).toBe(48);
       });
 
       it('renders Metadata cache validity hours input', () => {
-        expect(findMetadataCacheValidityHoursInput().props('value')).toBe(0);
+        expect(findMetadataCacheValidityHoursInput().props('value')).toBe(48);
       });
     });
 
@@ -154,8 +172,31 @@ describe('RegistryUpstreamForm', () => {
           url: 'https://example.com',
           description: 'bar',
           username: 'bax',
+          cacheValidityHours: 48,
+          metadataCacheValidityHours: 48,
+        }),
+      );
+    });
+
+    it('emits submit event with cacheValidityHours set to 0 when URL is maven central', () => {
+      createComponent({ props: { upstream } });
+
+      findUpstreamUrlInput().vm.$emit('input', defaultProvide.mavenCentralUrl);
+
+      findForm().vm.$emit('submit', { preventDefault: () => {} });
+
+      const submittedEvent = wrapper.emitted('submit');
+      const [eventParams] = submittedEvent[0];
+
+      expect(Boolean(submittedEvent)).toBe(true);
+      expect(eventParams).toEqual(
+        expect.objectContaining({
+          name: 'foo',
+          url: defaultProvide.mavenCentralUrl,
+          description: 'bar',
+          username: 'bax',
           cacheValidityHours: 0,
-          metadataCacheValidityHours: 0,
+          metadataCacheValidityHours: 48,
         }),
       );
     });

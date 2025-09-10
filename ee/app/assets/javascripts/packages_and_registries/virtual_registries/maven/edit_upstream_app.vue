@@ -67,9 +67,15 @@ export default {
       this.alertMessage = '';
       this.loading = true;
       try {
+        const { cacheValidityHours, metadataCacheValidityHours, ...restFields } = formData;
+
         await updateMavenUpstream({
           id: this.upstream.id,
-          data: formData,
+          data: {
+            ...restFields,
+            cache_validity_hours: formData.cacheValidityHours,
+            metadata_cache_validity_hours: formData.metadataCacheValidityHours,
+          },
         });
 
         visitUrlWithAlerts(this.upstreamPath, [

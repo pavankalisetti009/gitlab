@@ -7,6 +7,7 @@ module VirtualRegistries
         include Gitlab::SQL::Pattern
 
         TEST_PATH = 'com/company/app/maven-metadata.xml'
+        MAVEN_CENTRAL_URL = 'https://repo1.maven.org/maven2'
 
         belongs_to :group
         has_many :registry_upstreams,
@@ -122,7 +123,7 @@ module VirtualRegistries
         end
 
         def set_cache_validity_hours_for_maven_central
-          return unless url.start_with?('https://repo1.maven.org/maven2')
+          return unless url.start_with?(MAVEN_CENTRAL_URL)
 
           self.cache_validity_hours = 0
         end
