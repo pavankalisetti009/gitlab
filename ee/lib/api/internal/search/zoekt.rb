@@ -59,6 +59,8 @@ module API
                   requires 'disk.all', type: Integer, desc: 'Total disk space'
                   requires 'disk.used', type: Integer, desc: 'Total disk space utilized'
                   requires 'node.name', type: String, desc: 'Name of indexer node'
+                  optional 'node.services', type: Array[String],
+                    desc: 'The array of services served by the node'
                   optional 'node.schema_version', type: Integer, desc: 'Schema version of the node'
                   optional 'node.knowledge_graph_schema_version', type: Integer,
                     desc: 'Knowledge graph schema version of the node'

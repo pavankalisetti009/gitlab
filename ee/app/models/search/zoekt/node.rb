@@ -115,24 +115,25 @@ module Search
       def self.find_or_initialize_by_task_request(params)
         params = params.with_indifferent_access
 
-        find_or_initialize_by(uuid: params.fetch(:uuid)).tap do |s|
+        find_or_initialize_by(uuid: params.fetch(:uuid)).tap do |node|
           # Note: if zoekt node makes task_request with a different `node.url`,
           # we will respect that and make change here.
-          s.index_base_url = params.fetch('node.url')
-          s.search_base_url = params['node.search_url'] || params.fetch('node.url')
+          node.index_base_url = params.fetch('node.url')
+          node.search_base_url = params['node.search_url'] || params.fetch('node.url')
 
-          s.last_seen_at = Time.zone.now
-          s.total_bytes = params.fetch('disk.all')
-          s.indexed_bytes = params['disk.indexed'] if params['disk.indexed'].present?
-          s.used_bytes = params.fetch('disk.used')
-          s.metadata['name'] = params.fetch('node.name')
-          s.metadata['task_count'] = params['node.task_count'].to_i if params['node.task_count'].present?
-          s.metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
-          s.schema_version = params['node.schema_version'] if params['node.schema_version'].present?
-          s.metadata['version'] = params['node.version'] if params['node.version'].present?
+          node.last_seen_at = Time.zone.now
+          node.total_bytes = params.fetch('disk.all')
+          node.indexed_bytes = params['disk.indexed'] if params['disk.indexed'].present?
+          node.used_bytes = params.fetch('disk.used')
+          node.schema_version = params['node.schema_version'] if params['node.schema_version'].present?
+          node.assign_metadata(params)
+
+          if params['node.services'].present?
+            node.services = params['node.services'].filter_map { |service| SERVICES[service.to_sym] }
+          end
 
           if params['node.knowledge_graph_schema_version'].present?
-            s.knowledge_graph_schema_version = params['node.knowledge_graph_schema_version']
+            node.knowledge_graph_schema_version = params['node.knowledge_graph_schema_version']
           end
         end
       end
@@ -213,6 +214,13 @@ module Search
         return true if persisted? && updated_at && (Time.current - updated_at) < DEBOUNCE_DELAY
 
         save
+      end
+
+      def assign_metadata(params)
+        metadata['name'] = params.fetch('node.name')
+        metadata['task_count'] = params['node.task_count'].to_i if params['node.task_count'].present?
+        metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
+        metadata['version'] = params['node.version'] if params['node.version'].present?
       end
 
       private

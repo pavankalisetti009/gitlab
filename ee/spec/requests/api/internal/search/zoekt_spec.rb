@@ -119,18 +119,17 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
   describe 'POST /internal/search/zoekt/:uuid/heartbeat' do
     let(:endpoint) { "/internal/search/zoekt/#{uuid}/heartbeat" }
     let(:uuid) { '3869fe21-36d1-4612-9676-0b783ef2dcd7' }
-    let(:valid_params) do
+    let(:base_params) do
       {
         'uuid' => uuid,
         'node.url' => 'http://localhost:6090',
         'node.name' => 'm1.local',
-        'node.schema_version' => 2531,
-        'node.knowledge_graph_schema_version' => 2542,
         'disk.all' => 994662584320,
-        'disk.indexed' => 2416879,
         'disk.used' => 532673712128
       }
     end
+
+    let(:valid_params) { base_params }
 
     context 'with invalid auth' do
       it 'returns 401' do
@@ -157,18 +156,35 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
           allow(::Search::Zoekt::TaskPresenterService).to receive(:execute).and_return(tasks)
         end
 
-        it 'returns node ID and tasks for task request' do
-          expect(node).to receive(:save).and_return(true)
+        shared_examples 'successful heartbeat request' do
+          it 'returns node ID and tasks for task request' do
+            expect(node).to receive(:save).and_return(true)
 
-          post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+            post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to eq(
-            {
-              'id' => node.id, 'tasks' => tasks, 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-              'truncate' => true, 'stop_indexing' => false
-            }
-          )
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq(
+              {
+                'id' => node.id, 'tasks' => tasks, 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
+                'truncate' => true, 'stop_indexing' => false
+              }
+            )
+          end
+        end
+
+        it_behaves_like 'successful heartbeat request'
+
+        context 'with optional parameters' do
+          let(:valid_params) do
+            base_params.merge(
+              'node.schema_version' => 2531,
+              'node.knowledge_graph_schema_version' => 2542,
+              'disk.indexed' => 2416879,
+              'node.services' => ['zoekt']
+            )
+          end
+
+          it_behaves_like 'successful heartbeat request'
         end
 
         context 'when node is over critical watermark' do

@@ -31,6 +31,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to validate_presence_of(:knowledge_graph_schema_version) }
     it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
 
+    describe 'node URLs' do
+      it 'allows creation of another node with the same URLs' do
+        node2 = create(:zoekt_node, index_base_url: node.index_base_url, search_base_url: node.search_base_url)
+
+        expect(node2.save).to be(true)
+      end
+    end
+
     describe 'metadata JSON schema validation' do
       it 'allows null values in version field' do
         node = build(:zoekt_node)
@@ -180,7 +188,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
           context 'when there is no online nodes' do
             before do
-              Search::Zoekt::Node.update_all(last_seen_at: Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD.ago - 1.hour)
+              described_class.update_all(last_seen_at: described_class::ONLINE_DURATION_THRESHOLD.ago - 1.hour)
             end
 
             it 'is empty' do
@@ -400,57 +408,50 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
     subject(:tasked_node) { described_class.find_or_initialize_by_task_request(params) }
 
-    context 'when node.search_url is unset' do
-      let(:params) { base_params }
-
-      it 'returns a new record with correct base_urls' do
-        expect(tasked_node).not_to be_persisted
+    shared_examples 'node with attributes from params' do
+      it 'sets correct attributes' do
         expect(tasked_node.index_base_url).to eq(params['node.url'])
         expect(tasked_node.search_base_url).to eq(params['node.url'])
+        expect(tasked_node.uuid).to eq(params['uuid'])
+        expect(tasked_node.last_seen_at).to eq(Time.zone.now)
+        expect(tasked_node.used_bytes).to eq(params['disk.used'])
+        expect(tasked_node.total_bytes).to eq(params['disk.all'])
+        expect(tasked_node.indexed_bytes).to eq(0)
+        expect(tasked_node.schema_version).to eq(0)
+        expect(tasked_node.knowledge_graph_schema_version).to eq(0)
+        expect(tasked_node.services).to match_array([described_class::SERVICES[:zoekt]])
+        expect(tasked_node.metadata['name']).to eq(params['node.name'])
+        expect(tasked_node.metadata['task_count']).to eq(params['node.task_count'])
+        expect(tasked_node.metadata['concurrency']).to eq(params['node.concurrency'])
+        expect(tasked_node.metadata['version']).to be_nil
       end
+    end
+
+    context 'when node does not exist for given UUID' do
+      let(:params) { base_params }
+
+      it 'returns a new record' do
+        expect(tasked_node).not_to be_persisted
+      end
+
+      it_behaves_like 'node with attributes from params'
+    end
+
+    context 'when node already exists for given UUID' do
+      let(:params) { base_params.merge('uuid' => node.uuid) }
+
+      it 'returns existing node' do
+        expect(tasked_node).to be_persisted
+      end
+
+      it_behaves_like 'node with attributes from params'
     end
 
     context 'when node.search_url is set' do
       let(:params) { base_params.merge('node.search_url' => 'http://localhost:6090') }
 
-      context 'when node does not exist for given UUID' do
-        it 'returns a new record with correct attributes' do
-          expect(tasked_node).not_to be_persisted
-          expect(tasked_node.index_base_url).to eq(params['node.url'])
-          expect(tasked_node.search_base_url).to eq(params['node.search_url'])
-          expect(tasked_node.uuid).to eq(params['uuid'])
-          expect(tasked_node.last_seen_at).to eq(Time.zone.now)
-          expect(tasked_node.used_bytes).to eq(params['disk.used'])
-          expect(tasked_node.total_bytes).to eq(params['disk.all'])
-          expect(tasked_node.indexed_bytes).to eq 0
-          expect(tasked_node.metadata['name']).to eq(params['node.name'])
-          expect(tasked_node.metadata['task_count']).to eq(params['node.task_count'])
-          expect(tasked_node.metadata['concurrency']).to eq(params['node.concurrency'])
-          expect(tasked_node.metadata['version']).to be_nil
-        end
-      end
-
-      context 'when node already exists for given UUID' do
-        it 'returns existing node and updates correct attributes' do
-          node.update!(uuid: params['uuid'])
-
-          expect(tasked_node).to be_persisted
-          expect(tasked_node.id).to eq(node.id)
-          expect(tasked_node.index_base_url).to eq(params['node.url'])
-          expect(tasked_node.search_base_url).to eq(params['node.search_url'])
-          expect(tasked_node.uuid).to eq(params['uuid'])
-          expect(tasked_node.last_seen_at).to eq(Time.zone.now)
-          expect(tasked_node.used_bytes).to eq(params['disk.used'])
-          expect(tasked_node.total_bytes).to eq(params['disk.all'])
-          expect(tasked_node.indexed_bytes).to eq 0
-          expect(tasked_node.metadata['name']).to eq(params['node.name'])
-        end
-
-        it 'allows creation of another node with the same URL' do
-          node.update!(index_base_url: params['node.url'], search_base_url: params['node.url'])
-
-          expect(tasked_node.save).to be(true)
-        end
+      it 'sets search_base_url from params' do
+        expect(tasked_node.search_base_url).to eq(params['node.search_url'])
       end
     end
 
@@ -475,6 +476,17 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
       it 'sets schema_version' do
         expect(tasked_node.schema_version).to eq(2525)
+      end
+    end
+
+    context 'when node.services is present' do
+      let(:params) { base_params.merge('node.services' => %w[zoekt knowledge_graph]) }
+
+      it 'sets services' do
+        expect(tasked_node.services).to eq([
+          described_class::SERVICES[:zoekt],
+          described_class::SERVICES[:knowledge_graph]
+        ])
       end
     end
 
@@ -567,7 +579,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
     context 'when node does not have task_count/concurrency set' do
       it 'returns the default limit' do
-        expect(concurrency_limit).to eq(::Search::Zoekt::Node::DEFAULT_CONCURRENCY_LIMIT)
+        expect(concurrency_limit).to eq(described_class::DEFAULT_CONCURRENCY_LIMIT)
       end
     end
 
@@ -584,9 +596,9 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         1   | nil | 1.0 | 1
         1   | nil | 2.0 | 2
         10  | 20  | 1.5 | 20
-        200 | nil | 1.0 | ::Search::Zoekt::Node::MAX_CONCURRENCY_LIMIT
-        200 | nil | 1.5 | ::Search::Zoekt::Node::MAX_CONCURRENCY_LIMIT
-        0   | nil | 1.5 | ::Search::Zoekt::Node::DEFAULT_CONCURRENCY_LIMIT
+        200 | nil | 1.0 | described_class::MAX_CONCURRENCY_LIMIT
+        200 | nil | 1.5 | described_class::MAX_CONCURRENCY_LIMIT
+        0   | nil | 1.5 | described_class::DEFAULT_CONCURRENCY_LIMIT
       end
 
       with_them do
@@ -614,7 +626,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       node.used_bytes = 0
       expect(node).not_to be_watermark_exceeded_low
 
-      node.used_bytes = node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_LOW
+      node.used_bytes = node.total_bytes * described_class::WATERMARK_LIMIT_LOW
       expect(node).to be_watermark_exceeded_low
       expect(node).not_to be_watermark_exceeded_high
       expect(node).not_to be_watermark_exceeded_critical
@@ -626,7 +638,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       node.used_bytes = 0
       expect(node).not_to be_watermark_exceeded_high
 
-      node.used_bytes = node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_HIGH
+      node.used_bytes = node.total_bytes * described_class::WATERMARK_LIMIT_HIGH
       expect(node).to be_watermark_exceeded_low
       expect(node).to be_watermark_exceeded_high
       expect(node).not_to be_watermark_exceeded_critical
@@ -664,7 +676,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       node.used_bytes = 0
       expect(node).not_to be_watermark_exceeded_critical
 
-      node.used_bytes = node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_CRITICAL
+      node.used_bytes = node.total_bytes * described_class::WATERMARK_LIMIT_CRITICAL
       expect(node).to be_watermark_exceeded_low
       expect(node).to be_watermark_exceeded_high
       expect(node).to be_watermark_exceeded_critical
