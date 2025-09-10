@@ -273,7 +273,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       it 'creates a note with nothing to review message' do
         expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
 
-        completion.send(:perform_review)
+        completion.execute
       end
     end
 
