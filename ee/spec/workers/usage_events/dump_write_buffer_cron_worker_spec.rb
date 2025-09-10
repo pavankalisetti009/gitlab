@@ -263,4 +263,21 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
           hash_including('event' => 'request_duo_chat_response')])
     end
   end
+
+  context 'when data contains invalid namespace id' do
+    it 'filters out events with incorrect namespace_id' do
+      add_to_buffer({ user_id: 1,
+                      event: Ai::UsageEvent.events['request_duo_chat_response'],
+                      organization_id: organization.id,
+                      namespace_id: non_existing_record_id },
+        Ai::UsageEvent)
+      add_to_buffer({ user_id: 2,
+                      event: Ai::UsageEvent.events['request_duo_chat_response'],
+                      organization_id: organization.id },
+        Ai::UsageEvent)
+
+      expect(perform).to eq({ status: :processed, inserted_rows: 1 })
+      expect(inserted_records).to match([hash_including('user_id' => 2)])
+    end
+  end
 end
