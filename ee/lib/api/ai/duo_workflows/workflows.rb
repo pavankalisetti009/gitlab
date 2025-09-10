@@ -55,6 +55,7 @@ module API
               workflow_service_token: duo_workflow_token[:token],
               use_service_account: use_service_account,
               source_branch: params[:source_branch],
+              additional_context: params[:additional_context],
               workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
             }
           end
@@ -94,7 +95,8 @@ module API
           end
 
           def create_workflow_params
-            wrkf_params = declared_params(include_missing: false).except(:start_workflow, :source_branch)
+            wrkf_params = declared_params(include_missing: false).except(:start_workflow, :source_branch,
+              :additional_context)
             return wrkf_params unless wrkf_params[:ai_catalog_item_version_id]
 
             wrkf_params[:ai_catalog_item_version] = ::Ai::Catalog::ItemVersion
@@ -137,6 +139,20 @@ module API
             optional :ai_catalog_item_version_id, type: Integer,
               desc: 'The ID of AI Catalog ItemVersion that sourced flow config used by the workflow.',
               documentation: { example: 1 }
+            optional :additional_context, type: Array[Hash],
+              values: ->(array_entry) {
+                array_entry.is_a?(Hash) &&
+                  array_entry.key?('Category') &&
+                  array_entry.key?('Content') &&
+                  array_entry['Category'].is_a?(String) &&
+                  array_entry['Content'].is_a?(String)
+              },
+              desc: 'Additional Context required by the Flow, in JSON format. Contains an array of context details, ' \
+                'where each detail is a Hash with a minimum of "Category" and "Content" keys.',
+              documentation: {
+                example: '[{"Category": "agent_user_environment", "Content": "{\"merge_request_url\": ' \
+                  'https://gitlab.com/project/-/merge_requests/1\"}", "Metadata": "{}"}]'
+              }
             exactly_one_of :project_id, :namespace_id
           end
         end
