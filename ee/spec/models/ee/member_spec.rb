@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
   using RSpec::Parameterized::TableSyntax
+  include MemberRoleHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -939,7 +940,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
   end
 
-  describe '.with_group_group_sharing_access' do
+  describe '.with_group_group_sharing_access', feature_category: :permissions do
     let_it_be(:user) { create(:user) }
     let_it_be(:shared_group) { create(:group) }
     let_it_be(:invited_group) { create(:group) }
@@ -955,41 +956,83 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       let(:group_role) { create(:member_role, base_access_level: group_access, namespace: shared_group) }
 
       let(:member) do
-        create(:group_member,
-          access_level: user_access,
+        create_group_member(
           user: user,
-          group: invited_group,
-          member_role: user_role
+          source: invited_group,
+          member_role: user_role,
+          access_level: user_access
         )
       end
 
       before do
-        create(:group_group_link,
+        create_group_link(
           group_access: group_access,
           shared_group: shared_group,
           shared_with_group: invited_group,
-          member_role: group_role)
+          member_role: group_role
+        )
       end
 
       subject(:members) do
         invited_group
-          .members.with_group_group_sharing_access(shared_group, custom_roles_enabled)
+          .members.with_group_group_sharing_access(shared_group)
           .id_in(member.id).to_a
       end
 
-      # more specs for group-sharing with custom roles are in Authz::MemberRoleInSharedGroup
-      context 'when custom roles are enabled' do
-        let(:custom_roles_enabled) { true }
-
+      shared_examples 'invited group members' do
         it 'returns minimum access level and expected member role' do
           expect(members.size).to eq(1)
           expect(members.first.access_level).to eq(expected_access_level)
           expect(members.first.member_role_id).to eq expected_member_role.id
         end
+
+        context 'when user is also a direct member of the group' do
+          let_it_be(:role) { create(:member_role, :developer, namespace: shared_group) }
+
+          let_it_be(:direct_member) do
+            create_group_member(
+              user: user,
+              source: shared_group,
+              member_role: role,
+              access_level: Gitlab::Access::DEVELOPER
+            )
+          end
+
+          it 'returns minimum access level and expected member role' do
+            expect(members.size).to eq(1)
+            expect(members.first.access_level).to eq(expected_access_level)
+            expect(members.first.member_role_id).to eq expected_member_role.id
+          end
+        end
+      end
+
+      # more specs for group-sharing with custom roles are in Authz::MemberRoleInSharedGroup
+      context 'when custom roles are enabled' do
+        before do
+          allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(true)
+        end
+
+        context 'when `use_user_group_member_roles` feature flag is disabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles: false)
+          end
+
+          it_behaves_like 'invited group members'
+        end
+
+        context 'when `use_user_group_member_roles` feature flag is enabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles: true)
+          end
+
+          it_behaves_like 'invited group members'
+        end
       end
 
       context 'when custom roles are not enabled' do
-        let(:custom_roles_enabled) { false }
+        before do
+          allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(false)
+        end
 
         it 'returns minimum access level and nil member role' do
           expect(members.size).to eq(1)

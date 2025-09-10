@@ -720,6 +720,16 @@ module EE
       root_ancestor.licensed_feature_available?(:custom_roles)
     end
 
+    def can_assign_custom_roles_to_group_links?
+      return false unless custom_roles_enabled?
+
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, root_ancestor)
+      end
+
+      ::Feature.enabled?(:assign_custom_roles_to_group_links_sm, :instance)
+    end
+
     # This method is used to optimize preloading of custom roles on SaaS
     # where custom roles are required to be defined at the root group.
     # If there are no roles defined for the group, we return false and custom role queries are skipped.

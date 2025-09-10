@@ -2871,7 +2871,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#custom_roles_enabled?', feature_category: :system_access do
+  describe '#custom_roles_enabled?', feature_category: :permissions do
     let_it_be(:namespace) { create(:group) }
 
     let(:licensed_feature_available) { true }
@@ -2894,6 +2894,54 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       let(:subgroup) { create(:group, parent: namespace) }
 
       subject { subgroup.custom_roles_enabled? }
+
+      it { is_expected.to eq true }
+    end
+  end
+
+  describe '#can_assign_custom_roles_to_group_links?', feature_category: :permissions do
+    let_it_be(:namespace) { create(:group) }
+    let(:group) { namespace }
+
+    let(:licensed_feature_available) { true }
+
+    before do
+      stub_licensed_features(custom_roles: licensed_feature_available)
+    end
+
+    subject(:custom_roles_to_group_links) { group.can_assign_custom_roles_to_group_links? }
+
+    it { is_expected.to eq true }
+
+    context 'when on SaaS', :saas do
+      context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+        end
+
+        it { is_expected.to eq false }
+      end
+    end
+
+    context 'when on self-managed' do
+      context 'when feature-flag `assign_custom_roles_to_group_links_sm` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_sm: false)
+        end
+
+        it { is_expected.to eq false }
+      end
+    end
+
+    context 'when licensed feature is not available' do
+      let(:licensed_feature_available) { false }
+
+      it { is_expected.to eq false }
+    end
+
+    context 'when sub-group' do
+      let_it_be(:subgroup) { create(:group, parent: namespace) }
+      let(:group) { subgroup }
 
       it { is_expected.to eq true }
     end
