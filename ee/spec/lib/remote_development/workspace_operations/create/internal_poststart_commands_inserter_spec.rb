@@ -47,16 +47,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::InternalPoststart
     end
   end
 
-  let(:workspaces_shallow_clone_project_feature_enabled) { true }
-
   subject(:returned_value) do
     described_class.insert(context)
-  end
-
-  before do
-    expect(described_class) # rubocop:disable RSpec/ExpectInHook -- We are intentionally doing an expect here, so we will be forced to remove this code when we remove the feature flag
-      .to receive(:workspaces_shallow_clone_project_feature_enabled?)
-            .and_return(workspaces_shallow_clone_project_feature_enabled)
   end
 
   it "updates the devfile" do
@@ -74,18 +66,5 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::InternalPoststart
     expect(command_line).to include("git fetch --unshallow")
     expect(command_line).to include("clone-unshallow.log")
     expect(command_line).to include("git rev-parse --is-shallow-repository")
-  end
-
-  context "when workspaces_shallow_clone_project feature option is disabled" do
-    let(:workspaces_shallow_clone_project_feature_enabled) { false }
-
-    it "does not include depth option in clone command" do
-      expect(clone_command).not_to be_nil
-      expect(clone_command[:exec][:commandLine]).not_to include("--depth")
-    end
-
-    it "does not add clone unshallow command" do
-      expect(clone_unshallow_command).to be_nil
-    end
   end
 end
