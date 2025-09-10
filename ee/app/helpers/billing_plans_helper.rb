@@ -214,7 +214,7 @@ module BillingPlansHelper
   end
 
   def highest_tier?(namespace)
-    namespace.gold_plan? || namespace.ultimate_plan? || namespace.opensource_plan?
+    namespace.ultimate_plan? || namespace.opensource_plan?
   end
 
   def plans_features

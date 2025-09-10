@@ -515,24 +515,12 @@ module EE
       actual_plan_name == ::Plan::FREE
     end
 
-    def bronze_plan?
-      actual_plan_name == ::Plan::BRONZE
-    end
-
-    def silver_plan?
-      actual_plan_name == ::Plan::SILVER
-    end
-
     def premium_plan?
       actual_plan_name == ::Plan::PREMIUM
     end
 
     def premium_trial_plan?
       actual_plan_name == ::Plan::PREMIUM_TRIAL
-    end
-
-    def gold_plan?
-      actual_plan_name == ::Plan::GOLD
     end
 
     def ultimate_plan?
