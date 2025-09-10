@@ -11,4 +11,4 @@
       = render Pajamas::ButtonComponent.new(variant: :danger, category: :tertiary, button_options: { class: 'js-confirm-modal-button', data: delete_registry_modal_data(@group, @maven_registry) }) do
         = s_('VirtualRegistry|Delete registry')
 
-= render 'form', url: group_virtual_registries_maven_registry_path(@group, @maven_registry), cancel_path: group_virtual_registries_maven_registries_path(@group)
+= render 'form', url: group_virtual_registries_maven_registry_path(@group, @maven_registry), cancel_path: group_virtual_registries_maven_registry_path(@group, @maven_registry)

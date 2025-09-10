@@ -4,7 +4,7 @@
 - page_title title
 
 = render ::Layouts::PageHeadingComponent.new(title) do |c|
-  - if can_create_virtual_registry?(@group)
+  - if can_create_virtual_registry?(@group) && ::VirtualRegistries.registries_count_for(@group, registry_type: 'maven') < VirtualRegistries::Packages::Maven::Registry::MAX_REGISTRY_COUNT
     - c.with_actions do
       = render Pajamas::ButtonComponent.new(variant: :confirm, href: new_group_virtual_registries_maven_registry_path(@group)) do
         = s_('VirtualRegistry|Create registry')
