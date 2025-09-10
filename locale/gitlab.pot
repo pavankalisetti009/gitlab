@@ -24987,7 +24987,7 @@ msgstr ""
 msgid "DuoFeatures|Save exclusions"
 msgstr ""
 
-msgid "DuoFeatures|Specify project files and directories that GitLab Duo will not access. Excluded content is never sent to AI models. %{linkStart}learn more%{linkEnd}."
+msgid "DuoFeatures|Specify project files and directories that GitLab Duo will not access. Excluded content is never sent to AI models. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
 msgid "DuoFeatures|The exclusion rule was deleted."
