@@ -1963,6 +1963,21 @@ Returns [`WorkItem`](#workitem).
 | ---- | ---- | ----------- |
 | <a id="queryworkitemid"></a>`id` | [`WorkItemID!`](#workitemid) | Global ID of the work item. |
 
+### `Query.workItemAllowedStatuses`
+
+{{< details >}}
+**Introduced** in GitLab 18.4.
+**Status**: Experiment.
+{{< /details >}}
+
+Allowed work item statuses from the root groups the current user belongs to.
+
+Returns [`WorkItemStatusConnection`](#workitemstatusconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
 ### `Query.workItemDescriptionTemplateContent`
 
 {{< details >}}
