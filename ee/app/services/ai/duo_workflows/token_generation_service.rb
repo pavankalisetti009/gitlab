@@ -26,7 +26,7 @@ module Ai
 
       def generate_workflow_token
         ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
-          duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
+          duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url,
           current_user: current_user,
           secure: Gitlab::DuoWorkflow::Client.secure?
         ).generate_token

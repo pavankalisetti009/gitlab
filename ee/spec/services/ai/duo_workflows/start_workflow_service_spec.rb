@@ -126,6 +126,54 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
     end
   end
 
+  shared_examples 'additional context' do
+    let(:additional_context) do
+      [
+        {
+          Category: "agent_user_environment",
+          Content: "some content",
+          Metadata: "{}"
+        }
+      ]
+    end
+
+    context 'when additional_context is provided' do
+      let(:params) do
+        super().merge(additional_context: additional_context)
+      end
+
+      it 'sets DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT as JSON string' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT]).to eq(
+            ::Gitlab::Json.dump(additional_context)
+          )
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when additional_context is not provided' do
+      it 'sets DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT as empty array' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT]).to eq("[]")
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
   subject(:execute) { described_class.new(workflow: workflow, params: params).execute }
 
   context 'with workflow enablement checks' do
@@ -141,6 +189,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       true  | true  | false | true  | ref(:developer)  | 'failure'
       true  | true  | false | false | ref(:developer)  | 'failure'
       true  | true  | true  | true  | ref(:maintainer) | 'successful flow config'
+      true  | true  | true  | true  | ref(:developer) | 'additional context'
     end
 
     with_them do
