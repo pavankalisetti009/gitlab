@@ -4819,9 +4819,6 @@ msgstr ""
 msgid "AdminSelfHostedModels|Endpoint"
 msgstr ""
 
-msgid "AdminSelfHostedModels|GitLab Duo Self-Hosted"
-msgstr ""
-
 msgid "AdminSelfHostedModels|GitLab managed models"
 msgstr ""
 
@@ -4829,6 +4826,9 @@ msgid "AdminSelfHostedModels|If required, provide the API token that grants acce
 msgstr ""
 
 msgid "AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features."
+msgstr ""
+
+msgid "AdminSelfHostedModels|Model configuration"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Model family"
