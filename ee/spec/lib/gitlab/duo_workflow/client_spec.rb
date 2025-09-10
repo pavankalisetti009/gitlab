@@ -179,5 +179,49 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations
     it 'returns workflow related user metadata' do
       expect(described_class.metadata(user)).to eq({ extended_logging: true, is_team_member: nil })
     end
+
+    context 'for extended logging' do
+      context 'when `duo_workflow_extended_logging` feature flag is enabled' do
+        it 'returns true' do
+          expect(described_class.metadata(user)[:extended_logging]).to eq(true)
+        end
+      end
+
+      context 'when `duo_workflow_extended_logging` feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_workflow_extended_logging: false)
+        end
+
+        it 'returns false' do
+          expect(described_class.metadata(user)[:extended_logging]).to eq(false)
+        end
+      end
+    end
+
+    context 'on a self-hosted Duo instance' do
+      before do
+        ::Ai::Setting.instance.update!(duo_agent_platform_service_url: 'localhost:50052')
+      end
+
+      context 'when enabled_instance_verbose_ai_logs setting is enabled' do
+        before do
+          ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: true)
+        end
+
+        it 'returns true' do
+          expect(described_class.metadata(user)[:extended_logging]).to eq(true)
+        end
+      end
+
+      context 'when enabled_instance_verbose_ai_logs setting is disabled' do
+        before do
+          ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
+        end
+
+        it 'returns false' do
+          expect(described_class.metadata(user)[:extended_logging]).to eq(false)
+        end
+      end
+    end
   end
 end
