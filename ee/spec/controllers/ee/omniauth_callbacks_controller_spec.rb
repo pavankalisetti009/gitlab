@@ -485,20 +485,6 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
           it_behaves_like 'restricted country message'
         end
       end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(restrict_sso_login_for_pipl_compliance: false)
-        end
-
-        it 'allows new user signup and login' do
-          post provider
-
-          expect(request.env['warden']).to be_authenticated
-          created_user = User.find_by_email(user.email)
-          expect(created_user).to be_present
-        end
-      end
     end
 
     context 'when existing user attempts login from restricted country' do
@@ -576,23 +562,6 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
 
           expect(request.env['warden']).not_to be_authenticated
           expect(response).to redirect_to(new_user_session_path)
-        end
-      end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(restrict_sso_login_for_pipl_compliance: false)
-        end
-
-        it 'allows login for all OAuth providers from restricted countries' do
-          providers_to_test.each do |test_provider|
-            mock_auth_hash(test_provider.to_s, "uid-#{test_provider}", "user-#{test_provider}@example.com")
-            stub_omniauth_provider(test_provider, context: request)
-
-            post test_provider
-
-            expect(request.env['warden']).to be_authenticated
-          end
         end
       end
     end
