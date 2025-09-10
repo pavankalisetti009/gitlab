@@ -8,6 +8,10 @@ RSpec.describe ComplianceManagement::Pipl::SendInitialComplianceEmailService, fe
 
   subject(:send_email) { described_class.new(user: user).execute }
 
+  before do
+    stub_ee_application_setting(enforce_pipl_compliance: true)
+  end
+
   it 'sends the pipl email' do
     expect do
       perform_enqueued_jobs do
@@ -79,6 +83,7 @@ RSpec.describe ComplianceManagement::Pipl::SendInitialComplianceEmailService, fe
     before do
       allow(user).to receive(:pipl_user).and_return(pipl_user)
       allow(pipl_user).to receive(:update!).and_raise(StandardError)
+      stub_ee_application_setting(enforce_pipl_compliance: true)
     end
 
     it 'raises an exception and does not perform the operation' do

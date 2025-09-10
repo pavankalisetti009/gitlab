@@ -7,6 +7,10 @@ RSpec.describe ComplianceManagement::Pipl::DeletePiplUsersWorker,
   feature_category: :compliance_management do
   subject(:perform) { described_class.new.perform }
 
+  before do
+    stub_ee_application_setting(enforce_pipl_compliance: true)
+  end
+
   it_behaves_like 'an idempotent worker'
 
   it 'has the `until_executing` deduplicate strategy' do

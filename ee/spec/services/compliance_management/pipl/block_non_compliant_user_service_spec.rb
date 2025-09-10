@@ -28,6 +28,10 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUserService,
   end
 
   describe '#execute' do
+    before do
+      stub_ee_application_setting(enforce_pipl_compliance: true)
+    end
+
     context 'when admin_mode is disabled', :do_not_mock_admin_mode_setting do
       context 'when validations fail' do
         context 'when the feature is not available on the instance' do

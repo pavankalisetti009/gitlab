@@ -157,6 +157,7 @@ RSpec.describe EE::Users::CalloutsHelper do
 
     before do
       allow(helper).to receive(:current_user).and_return(user)
+      stub_ee_application_setting(enforce_pipl_compliance: true)
       allow(ComplianceManagement::Pipl).to receive(:user_subject_to_pipl?).and_return(true)
     end
 

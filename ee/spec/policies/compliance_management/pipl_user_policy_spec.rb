@@ -35,10 +35,18 @@ RSpec.describe ComplianceManagement::PiplUserPolicy, feature_category: :complian
   end
 
   context 'when system admin_mode is enabled', :enable_admin_mode do
+    before do
+      stub_ee_application_setting(enforce_pipl_compliance: true)
+    end
+
     it_behaves_like 'rules work as expected'
   end
 
   context 'when system admin_mode is enabled', :do_not_mock_admin_mode_setting do
+    before do
+      stub_ee_application_setting(enforce_pipl_compliance: true)
+    end
+
     it_behaves_like 'rules work as expected'
   end
 end

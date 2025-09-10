@@ -132,7 +132,7 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response['enforce_pipl_compliance']).to eq(true)
+        expect(json_response['enforce_pipl_compliance']).to eq(false)
       end
     end
 
