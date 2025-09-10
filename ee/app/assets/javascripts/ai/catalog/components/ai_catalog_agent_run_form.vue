@@ -53,7 +53,7 @@ export default {
   fields: {
     userPrompt: {
       validators: createFieldValidators({
-        requiredLabel: s__('AICatalog|User Prompt is required.'),
+        requiredLabel: s__('AICatalog|User prompt is required.'),
         maxLength: MAX_LENGTH_PROMPT,
       }),
     },

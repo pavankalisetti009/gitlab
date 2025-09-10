@@ -20,10 +20,13 @@ export const mockBaseLatestVersion = {
   updatedAt: '2025-08-21T14:30:00Z',
 };
 
-const mockProject = {
+const mockProjectFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Project/1',
   __typename: TYPENAME_PROJECT,
-};
+  ...overrides,
+});
+
+const mockProject = mockProjectFactory();
 
 export const mockPageInfo = {
   hasNextPage: true,
@@ -34,18 +37,16 @@ export const mockPageInfo = {
 };
 
 export const mockProjects = [
-  {
+  mockProjectFactory({
     id: 'gid://gitlab/Project/1',
     name: 'Project 1',
     nameWithNamespace: 'Group / Project 1',
-    __typename: TYPENAME_PROJECT,
-  },
-  {
+  }),
+  mockProjectFactory({
     id: 'gid://gitlab/Project/2',
     name: 'Project 2',
     nameWithNamespace: 'Group / Project 2',
-    __typename: TYPENAME_PROJECT,
-  },
+  }),
 ];
 
 export const mockProjectsResponse = {
@@ -255,11 +256,24 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
   },
 };
 
-export const mockExecuteAgentResponse = {
+export const mockExecuteAgentSuccessResponse = {
   data: {
     aiCatalogAgentExecute: {
       errors: [],
-      flowConfig: '---\nversion: experimental\nenvironment: remote...',
+      workflow: {
+        id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/1',
+        project: mockProjectFactory({ fullPath: 'gitlab-duo/test' }),
+      },
+      __typename: 'AiCatalogAgentExecutePayload',
+    },
+  },
+};
+
+export const mockExecuteAgentErrorResponse = {
+  data: {
+    aiCatalogAgentExecute: {
+      errors: ['Could not find agent ID'],
+      workflow: null,
       __typename: 'AiCatalogAgentExecutePayload',
     },
   },
