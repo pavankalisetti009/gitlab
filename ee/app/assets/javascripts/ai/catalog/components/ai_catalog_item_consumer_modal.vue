@@ -4,7 +4,6 @@ import { GlForm, GlFormGroup, GlFormInput, GlModal, GlSprintf } from '@gitlab/ui
 import { __, s__, sprintf } from '~/locale';
 import { AI_CATALOG_ITEM_LABELS } from '../constants';
 
-const tmpProjectId = 'gid://gitlab/Project/1000000';
 const formId = uniqueId('ai-catalog-item-consumer-form-');
 
 export default {
@@ -25,7 +24,7 @@ export default {
   data() {
     return {
       isOpen: true,
-      targetId: tmpProjectId,
+      targetId: this.item.project?.id,
     };
   },
   computed: {
@@ -104,10 +103,9 @@ export default {
       <gl-form-group
         :label="s__('AICatalog|Project ID')"
         :label-description="projectLabelDescription"
-        description="For testing use 'gid://gitlab/Project/1000000'"
         label-for="target-id"
       >
-        <gl-form-input id="target-id" v-model="targetId" required />
+        <gl-form-input id="target-id" v-model="targetId" required data-testid="target-id" />
       </gl-form-group>
     </gl-form>
   </gl-modal>

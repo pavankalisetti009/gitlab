@@ -144,18 +144,22 @@ export const mockAgent = mockAgentFactory({
 });
 
 export const mockAgents = [
-  mockBaseAgent,
+  mockAgentFactory({
+    project: mockProject,
+  }),
   mockAgentFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/2',
     name: 'Test AI Agent 2',
     description: 'Another AI assistant',
     createdAt: '2024-02-10T14:20:00Z',
+    project: mockProject,
   }),
   mockAgentFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/3',
     name: 'Test AI Agent 3',
     description: 'Another AI assistant',
     createdAt: '2024-02-10T14:20:00Z',
+    project: mockProject,
   }),
 ];
 
@@ -313,18 +317,22 @@ export const mockFlow = mockFlowFactory({
 export const mockBaseFlow = mockFlowFactory();
 
 export const mockFlows = [
-  mockBaseFlow,
+  mockFlowFactory({
+    project: mockProject,
+  }),
   mockFlowFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/5',
     name: 'Test AI Flow 2',
     description: 'Another AI flow',
     createdAt: '2024-02-10T14:20:00Z',
+    project: mockProject,
   }),
   mockFlowFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/6',
     name: 'Test AI Flow 3',
     description: 'Another AI flow',
     createdAt: '2024-02-10T14:20:00Z',
+    project: mockProject,
   }),
 ];
 

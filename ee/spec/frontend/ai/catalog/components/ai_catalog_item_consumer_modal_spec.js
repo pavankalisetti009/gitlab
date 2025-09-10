@@ -1,6 +1,6 @@
-import { shallowMount } from '@vue/test-utils';
 import { noop } from 'lodash';
 import { GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
 import { mockBaseAgent } from '../mock_data';
 
@@ -10,9 +10,10 @@ describe('AiCatalogItemConsumerModal', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
+  const findTargetIdInput = () => wrapper.findByTestId('target-id');
 
   const createWrapper = () => {
-    wrapper = shallowMount(AiCatalogItemConsumerModal, {
+    wrapper = shallowMountExtended(AiCatalogItemConsumerModal, {
       propsData: {
         item: mockBaseAgent,
       },
@@ -41,6 +42,10 @@ describe('AiCatalogItemConsumerModal', () => {
   });
 
   describe('when submitting the form', () => {
+    beforeEach(() => {
+      findTargetIdInput().vm.$emit('input', 'gid://gitlab/Project/1000000');
+    });
+
     it('emits the submit event', () => {
       findForm().vm.$emit('submit', { preventDefault: noop });
 

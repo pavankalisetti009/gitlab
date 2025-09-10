@@ -5,6 +5,9 @@ query aiCatalogFlows($before: String, $after: String, $first: Int, $last: Int) {
   aiCatalogItems(itemType: FLOW, before: $before, after: $after, first: $first, last: $last) {
     nodes {
       ...BaseAiCatalogItem
+      project {
+        id
+      }
     }
     pageInfo {
       ...PageInfo
