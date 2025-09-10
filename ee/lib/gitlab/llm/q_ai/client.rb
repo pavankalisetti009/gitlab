@@ -100,20 +100,11 @@ module Gitlab
           Gitlab::Utils.append_path(Gitlab::AiGateway.url, path)
         end
 
-        def service_name
-          :amazon_q_integration
-        end
-
-        def service
-          ::CloudConnector::AvailableServices.find_by_name(service_name)
-        end
-
         def request_headers
           {
             "Accept" => "application/json",
-            # Note: In this case, the service is the same as the unit primitive name
-            'X-Gitlab-Unit-Primitive' => service_name.to_s
-          }.merge(Gitlab::AiGateway.headers(user: user, service: service))
+            'X-Gitlab-Unit-Primitive' => 'amazon_q_integration'
+          }.merge(Gitlab::AiGateway.headers(user: user, service: :amazon_q_integration))
         end
 
         def with_response_logger

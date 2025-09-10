@@ -35,7 +35,7 @@ module Gitlab
           end
 
           def allowed_item_types
-            Ai::Catalog::Item.item_types.keys.map(&:to_s)
+            ::Ai::Catalog::Item.item_types.keys.map(&:to_s)
           end
         end
       end
