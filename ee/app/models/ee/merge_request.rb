@@ -561,20 +561,35 @@ module EE
     end
 
     def latest_pipeline_for_target_branch
-      @latest_pipeline ||= project.ci_pipelines
-          .order(id: :desc)
-          .find_by(ref: target_branch)
+      project.ci_pipelines.order(id: :desc).find_by(ref: target_branch)
+    end
+    strong_memoize_attr :latest_pipeline_for_target_branch
+
+    def all_target_branch_pipelines
+      project.all_pipelines.where(ref: target_branch)
     end
 
     def latest_comparison_pipeline_with_sbom_reports
-      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha]
-      find_target_branch_pipeline_by_sha_in_order_of_preference(target_shas, :has_sbom_reports?)
+      approval_policy_comparison_pipelines.find do |pipeline|
+        pipeline.self_and_project_descendants.any?(&:has_sbom_reports?)
+      end
     end
 
     def latest_scan_finding_comparison_pipeline
-      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha]
-      find_target_branch_pipeline_by_sha_in_order_of_preference(target_shas, :has_security_reports?)
+      approval_policy_comparison_pipelines.find do |pipeline|
+        pipeline.self_and_project_descendants.any?(&:has_security_reports?)
+      end
     end
+
+    def approval_policy_comparison_pipelines
+      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha]
+      target_shas.compact.lazy.flat_map do |sha|
+        target_branch_pipelines_for(sha: sha)
+          .order(id: :desc)
+          .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
+      end
+    end
+    strong_memoize_attr :approval_policy_comparison_pipelines
 
     def diff_head_pipeline?(pipeline)
       pipeline.source_sha == diff_head_sha || pipeline.sha == diff_head_sha
@@ -723,19 +738,6 @@ module EE
 
     def security_comparison?(service_class)
       service_class == ::Ci::CompareSecurityReportsService
-    end
-
-    def find_target_branch_pipeline_by_sha_in_order_of_preference(shas, predicate)
-      pipelines = shas
-        .compact
-        .lazy
-        .flat_map do |sha|
-          target_branch_pipelines_for(sha: sha)
-            .order(id: :desc)
-            .limit(MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON)
-        end
-
-      pipelines.find { |pipeline| pipeline.self_and_project_descendants.any?(&predicate) }
     end
 
     def has_approved_license_check?

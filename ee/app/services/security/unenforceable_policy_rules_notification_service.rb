@@ -44,7 +44,7 @@ module Security
       policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService.new(merge_request)
 
       applicable_rules.each do |rule|
-        policy_evaluation.error!(rule, pipeline_error, context: validation_context(report_type))
+        policy_evaluation.error!(rule, pipeline_error, context: validation_context(report_type, rule))
       end
 
       policy_evaluation.save
@@ -74,11 +74,11 @@ module Security
       pipeline&.failed? ? :pipeline_failed : :artifacts_missing
     end
 
-    def validation_context(report_type)
+    def validation_context(report_type, rule)
       return if pipeline.nil?
 
       { pipeline_ids: related_pipeline_ids(pipeline),
-        target_pipeline_ids: related_target_pipeline_ids_for_merge_request(merge_request, report_type) }
+        target_pipeline_ids: related_target_pipeline_ids_for_merge_request(merge_request, report_type, rule) }
     end
 
     def log_message(report_type, message, **attributes)

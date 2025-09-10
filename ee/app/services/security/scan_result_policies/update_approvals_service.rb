@@ -48,8 +48,12 @@ module Security
         related_pipelines(pipeline).with_reports(::Ci::JobArtifact.security_reports).exists?
       end
 
-      def validation_context
-        { pipeline_ids: related_source_pipeline_ids, target_pipeline_ids: related_target_pipeline_ids }
+      def validation_context(approval_rule = nil)
+        if approval_rule
+          { pipeline_ids: related_source_pipeline_ids, target_pipeline_ids: related_target_pipeline_ids(approval_rule) }
+        else
+          { pipeline_ids: related_source_pipeline_ids }
+        end
       end
 
       delegate :project, to: :pipeline
@@ -73,7 +77,7 @@ module Security
 
             evaluation.error!(
               merge_request_approval_rule, :scan_removed,
-              context: validation_context, missing_scans: missing_scans(approval_rule)
+              context: validation_context(approval_rule), missing_scans: missing_scans(approval_rule)
             )
             next true
           end
@@ -140,9 +144,9 @@ module Security
 
       def missing_scans(approval_rule)
         scanners = approval_rule.scanners
-        return (scanners - pipeline_security_scan_types) unless target_pipeline
+        return (scanners - pipeline_security_scan_types) unless target_pipeline(approval_rule)
 
-        scan_types_diff = target_pipeline_security_scan_types - pipeline_security_scan_types
+        scan_types_diff = target_pipeline_security_scan_types(approval_rule) - pipeline_security_scan_types
 
         return scan_types_diff if scanners.empty?
 
@@ -154,15 +158,11 @@ module Security
       end
       strong_memoize_attr :pipeline_security_scan_types
 
-      def target_pipeline_security_scan_types
-        security_scan_types(related_target_pipeline_ids)
+      def target_pipeline_security_scan_types(approval_rule)
+        strong_memoize_with(:target_pipeline_security_scan_types, approval_rule) do
+          security_scan_types(related_target_pipeline_ids(approval_rule))
+        end
       end
-      strong_memoize_attr :target_pipeline_security_scan_types
-
-      def target_pipeline
-        target_pipeline_for_merge_request(merge_request, :scan_finding)
-      end
-      strong_memoize_attr :target_pipeline
 
       def fail_evaluation_with_data!(rule, newly_detected: nil, previously_existing: nil)
         evaluation.fail!(
@@ -173,7 +173,7 @@ module Security
               previously_existing: Security::ScanResultPolicyViolation.trim_violations(previously_existing)
             }.compact_blank
           },
-          context: validation_context
+          context: validation_context(rule)
         )
       end
 
@@ -185,10 +185,17 @@ module Security
         Security::Scan.by_pipeline_ids(pipeline_ids).distinct_scan_types
       end
 
-      def related_target_pipeline_ids
-        related_target_pipeline_ids_for_merge_request(merge_request, :scan_finding)
+      def target_pipeline(approval_rule)
+        strong_memoize_with(:target_pipeline, approval_rule) do
+          target_pipeline_for_merge_request(merge_request, :scan_finding, approval_rule)
+        end
       end
-      strong_memoize_attr :related_target_pipeline_ids
+
+      def related_target_pipeline_ids(approval_rule)
+        strong_memoize_with(:related_target_pipeline_ids, approval_rule) do
+          related_target_pipeline_ids_for_merge_request(merge_request, :scan_finding, approval_rule)
+        end
+      end
 
       def related_source_pipeline_ids
         related_pipeline_ids(pipeline)
@@ -196,7 +203,7 @@ module Security
       strong_memoize_attr :related_source_pipeline_ids
 
       def target_pipeline_findings_uuids(approval_rule)
-        findings_uuids(target_pipeline, approval_rule, related_target_pipeline_ids)
+        findings_uuids(target_pipeline(approval_rule), approval_rule, related_target_pipeline_ids(approval_rule))
       end
 
       def pipeline_findings_uuids(approval_rule)
