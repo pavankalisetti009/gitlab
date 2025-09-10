@@ -70,76 +70,157 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
     end
   end
 
-  context 'if user is signed in as developer' do
-    let(:issuable_container) { '[data-testid="issuable-container"]' }
+  context 'when project studio is disabled' do
+    context 'if user is signed in as developer' do
+      let(:issuable_container) { '[data-testid="issuable-container"]' }
 
-    before_all do
-      stub_feature_flags(tailwind_container_queries: false)
-      group.add_developer(user)
+      before_all do
+        stub_feature_flags(tailwind_container_queries: false)
+        group.add_developer(user)
+      end
+
+      context 'when accessing work item from project work item list' do
+        before do
+          stub_feature_flags(work_item_view_for_issues: true)
+          stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
+
+          sign_in(user)
+
+          visit project_work_items_path(project)
+
+          first_card.click
+
+          wait_for_requests
+        end
+
+        include_examples 'updates weight of a work item on the list'
+        include_examples 'updates health status of a work item on the list'
+        include_examples 'updates iteration of a work item on the list'
+      end
+
+      context 'when accessing work item from group work item list' do
+        before do
+          stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
+          stub_feature_flags(work_item_view_for_issues: true)
+
+          sign_in(user)
+
+          visit group_work_items_path(group)
+
+          first_card.click
+
+          wait_for_requests
+        end
+
+        it_behaves_like 'work item drawer on the list page'
+
+        include_examples 'updates weight of a work item on the list'
+        include_examples 'updates health status of a work item on the list'
+        include_examples 'updates iteration of a work item on the list'
+      end
+
+      context 'when accessing work item from group epics list' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+          stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
+
+          sign_in(user)
+
+          visit group_epics_path(group)
+
+          first_card.click
+
+          wait_for_requests
+        end
+
+        it_behaves_like 'work item drawer on the list page' do
+          let(:issue) { epic }
+          let(:label) { label_group }
+          let(:milestone) { milestone_group }
+        end
+
+        it_behaves_like 'updates health status of a work item on the list' do
+          let(:issue) { epic }
+        end
+      end
+    end
+  end
+
+  context 'when project studio is enabled' do
+    before do
+      enable_project_studio!(user)
     end
 
-    context 'when accessing work item from project work item list' do
-      before do
-        stub_feature_flags(work_item_view_for_issues: true)
-        stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
+    context 'if user is signed in as developer' do
+      let(:issuable_container) { '[data-testid="issuable-container"]' }
 
-        sign_in(user)
-
-        visit project_work_items_path(project)
-
-        first_card.click
-
-        wait_for_requests
+      before_all do
+        group.add_developer(user)
       end
 
-      include_examples 'updates weight of a work item on the list'
-      include_examples 'updates health status of a work item on the list'
-      include_examples 'updates iteration of a work item on the list'
-    end
+      context 'when accessing work item from project work item list' do
+        before do
+          stub_feature_flags(work_item_view_for_issues: true)
+          stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
 
-    context 'when accessing work item from group work item list' do
-      before do
-        stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
-        stub_feature_flags(work_item_view_for_issues: true)
+          sign_in(user)
 
-        sign_in(user)
+          visit project_work_items_path(project)
 
-        visit group_work_items_path(group)
+          first_card.click
 
-        first_card.click
+          wait_for_requests
+        end
 
-        wait_for_requests
+        include_examples 'updates weight of a work item on the list'
+        include_examples 'updates health status of a work item on the list'
+        include_examples 'updates iteration of a work item on the list'
       end
 
-      it_behaves_like 'work item drawer on the list page'
+      context 'when accessing work item from group work item list' do
+        before do
+          stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
+          stub_feature_flags(work_item_view_for_issues: true)
 
-      include_examples 'updates weight of a work item on the list'
-      include_examples 'updates health status of a work item on the list'
-      include_examples 'updates iteration of a work item on the list'
-    end
+          sign_in(user)
 
-    context 'when accessing work item from group epics list' do
-      before do
-        stub_feature_flags(work_item_planning_view: false)
-        stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
+          visit group_work_items_path(group)
 
-        sign_in(user)
+          first_card.click
 
-        visit group_epics_path(group)
+          wait_for_requests
+        end
 
-        first_card.click
+        it_behaves_like 'work item drawer on the list page'
 
-        wait_for_requests
+        include_examples 'updates weight of a work item on the list'
+        include_examples 'updates health status of a work item on the list'
+        include_examples 'updates iteration of a work item on the list'
       end
 
-      it_behaves_like 'work item drawer on the list page' do
-        let(:issue) { epic }
-        let(:label) { label_group }
-        let(:milestone) { milestone_group }
-      end
+      context 'when accessing work item from group epics list' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+          stub_licensed_features(epics: true, issuable_health_status: true, iterations: true)
 
-      it_behaves_like 'updates health status of a work item on the list' do
-        let(:issue) { epic }
+          sign_in(user)
+
+          visit group_epics_path(group)
+
+          first_card.click
+
+          wait_for_requests
+        end
+
+        it_behaves_like 'work item drawer on the list page' do
+          let(:issue) { epic }
+          let(:label) { label_group }
+          let(:milestone) { milestone_group }
+        end
+
+        it_behaves_like 'updates health status of a work item on the list' do
+          let(:issue) { epic }
+        end
       end
     end
   end
