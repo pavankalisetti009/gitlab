@@ -81,11 +81,15 @@ module Ci
       return true if pipeline.nil? || report_type_ingested?(pipeline, params[:report_type])
       return false if ingesting_security_scans_for?(pipeline)
 
-      !pipeline.security_scans.by_build_ids(
-        pipeline.builds
+      build_ids = pipeline.builds
           .with_reports_of_type(params[:report_type])
           .pluck_primary_key
-      ).not_in_terminal_state.any?
+
+      !pipeline.security_scans
+        .by_build_ids(build_ids)
+        .by_scan_types(params[:report_type])
+        .not_in_terminal_state
+        .any?
     end
 
     def report_type_ingested?(pipeline, report_type)
