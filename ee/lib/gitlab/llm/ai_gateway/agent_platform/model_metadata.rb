@@ -10,10 +10,8 @@ module Gitlab
           end
 
           def execute
-            return unless feature_flag_enabled?
-
             model_metadata = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
-            return unless model_metadata.present?
+            return {} unless model_metadata.present?
 
             { 'x-gitlab-agent-platform-model-metadata' => model_metadata.to_json }
           end
@@ -21,10 +19,6 @@ module Gitlab
           private
 
           attr_reader :feature_setting
-
-          def feature_flag_enabled?
-            Feature.enabled?(:self_hosted_agent_platform) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This is an instance level feature flag
-          end
         end
       end
     end

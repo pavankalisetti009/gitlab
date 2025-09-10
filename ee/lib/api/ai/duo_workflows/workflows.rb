@@ -201,7 +201,7 @@ module API
 
                 model_metadata_headers = Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata.new(
                   feature_setting: duo_agent_platform_setting
-                ).execute || {}
+                ).execute
 
                 headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
                   'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
