@@ -112,52 +112,56 @@ export const createRouter = (base) => {
         ],
       },
       // FLOWS
-      {
-        component: NestedRouteApp,
-        path: '/flows',
-        meta: {
-          text: s__('AICatalog|Flows'),
-        },
-        children: [
-          {
-            name: AI_CATALOG_FLOWS_ROUTE,
-            path: '',
-            component: AiCatalogFlows,
-          },
-          {
-            name: AI_CATALOG_FLOWS_NEW_ROUTE,
-            path: 'new',
-            component: AiCatalogFlowsNew,
-            beforeEnter: requireAuth,
-            meta: {
-              text: s__('AICatalog|New flow'),
-            },
-          },
-          // Catch-all route for /flows/:id - redirect to /flows?show=:id
-          {
-            path: ':id(\\d+)',
-            redirect: (to) => ({
+      ...(gon.features?.aiCatalogFlows
+        ? [
+            {
+              component: NestedRouteApp,
               path: '/flows',
-              query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
-            }),
-          },
-          {
-            path: ':id(\\d+)',
-            component: AiCatalogFlow,
-            children: [
-              {
-                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-                path: 'edit',
-                component: AiCatalogFlowsEdit,
-                beforeEnter: requireAuth,
-                meta: {
-                  text: s__('AICatalog|Edit flow'),
-                },
+              meta: {
+                text: s__('AICatalog|Flows'),
               },
-            ],
-          },
-        ],
-      },
+              children: [
+                {
+                  name: AI_CATALOG_FLOWS_ROUTE,
+                  path: '',
+                  component: AiCatalogFlows,
+                },
+                {
+                  name: AI_CATALOG_FLOWS_NEW_ROUTE,
+                  path: 'new',
+                  component: AiCatalogFlowsNew,
+                  beforeEnter: requireAuth,
+                  meta: {
+                    text: s__('AICatalog|New flow'),
+                  },
+                },
+                // Catch-all route for /flows/:id - redirect to /flows?show=:id
+                {
+                  path: ':id(\\d+)',
+                  redirect: (to) => ({
+                    path: '/flows',
+                    query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
+                  }),
+                },
+                {
+                  path: ':id(\\d+)',
+                  component: AiCatalogFlow,
+                  children: [
+                    {
+                      name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+                      path: 'edit',
+                      component: AiCatalogFlowsEdit,
+                      beforeEnter: requireAuth,
+                      meta: {
+                        text: s__('AICatalog|Edit flow'),
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ]
+        : []),
       { path: '*', redirect: { name: AI_CATALOG_INDEX_ROUTE } },
     ],
   });

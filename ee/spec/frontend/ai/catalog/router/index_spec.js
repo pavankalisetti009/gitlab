@@ -22,6 +22,9 @@ describe('AI Catalog Router', () => {
   const flowId = 1;
 
   beforeEach(() => {
+    gon.features = {
+      aiCatalogFlows: true,
+    };
     isLoggedIn.mockReturnValue(true);
     router = createRouter();
 
@@ -41,6 +44,31 @@ describe('AI Catalog Router', () => {
       ${'flows index'}      | ${'/flows'}                       | ${AI_CATALOG_FLOWS_ROUTE}
       ${'flows new'}        | ${'/flows/new'}                   | ${AI_CATALOG_FLOWS_NEW_ROUTE}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}        | ${AI_CATALOG_FLOWS_EDIT_ROUTE}
+    `('renders $testName child route', async ({ path, expectedRouteName }) => {
+      await router.push(path);
+
+      expect(router.currentRoute.name).toBe(expectedRouteName);
+    });
+  });
+
+  describe('When aiCatalogFlows FF is off', () => {
+    beforeEach(() => {
+      gon.features = {
+        aiCatalogFlows: false,
+      };
+      router = createRouter();
+    });
+
+    it.each`
+      testName              | path                              | expectedRouteName
+      ${'agents index'}     | ${'/agents'}                      | ${AI_CATALOG_AGENTS_ROUTE}
+      ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
+      ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
+      ${'agents run'}       | ${`/agents/${agentId}/run`}       | ${AI_CATALOG_AGENTS_RUN_ROUTE}
+      ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
+      ${'flows index'}      | ${'/flows'}                       | ${AI_CATALOG_INDEX_ROUTE}
+      ${'flows new'}        | ${'/flows/new'}                   | ${AI_CATALOG_INDEX_ROUTE}
+      ${'flows edit'}       | ${`/flows/${flowId}/edit`}        | ${AI_CATALOG_INDEX_ROUTE}
     `('renders $testName child route', async ({ path, expectedRouteName }) => {
       await router.push(path);
 

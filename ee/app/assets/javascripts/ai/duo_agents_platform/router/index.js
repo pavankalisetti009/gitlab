@@ -104,28 +104,32 @@ export const createRouter = (base, namespace) => {
           },
         ],
       },
-      {
-        component: NestedRouteApp,
-        path: '/flows',
-        meta: {
-          text: s__('AICatalog|Flows'),
-        },
-        children: [
-          {
-            name: AI_CATALOG_FLOWS_ROUTE,
-            path: '',
-            component: AiFlows,
-          },
-          {
-            path: ':id(\\d+)/edit',
-            component: AiFlowsEdit,
-            name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-            meta: {
-              text: s__('AICatalog|Edit flow'),
+      ...(gon.features?.aiCatalogFlows
+        ? [
+            {
+              component: NestedRouteApp,
+              path: '/flows',
+              meta: {
+                text: s__('AICatalog|Flows'),
+              },
+              children: [
+                {
+                  name: AI_CATALOG_FLOWS_ROUTE,
+                  path: '',
+                  component: AiFlows,
+                },
+                {
+                  path: ':id(\\d+)/edit',
+                  component: AiFlowsEdit,
+                  name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+                  meta: {
+                    text: s__('AICatalog|Edit flow'),
+                  },
+                },
+              ],
             },
-          },
-        ],
-      },
+          ]
+        : []),
       // /automate route is currently empty, so we can't redirect there
       { path: '*', redirect: '/agent-sessions' },
     ],
