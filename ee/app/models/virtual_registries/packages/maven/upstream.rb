@@ -61,7 +61,7 @@ module VirtualRegistries
           Addressable::URI.parse(full_url).to_s
         end
 
-        def headers
+        def headers(_ = nil)
           return {} unless username.present? && password.present?
 
           authorization = ActionController::HttpAuthentication::Basic.encode_credentials(username, password)
