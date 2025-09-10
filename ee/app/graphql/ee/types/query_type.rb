@@ -399,6 +399,11 @@ module EE
             required: true,
             description: 'Global ID of the Maven upstream registry.'
         end
+
+        field :work_item_allowed_statuses, ::Types::WorkItems::StatusType.connection_type,
+          null: true,
+          description: 'Allowed work item statuses from the root groups the current user belongs to.',
+          experiment: { milestone: '18.4' }
       end
 
       def vulnerability(id:)
@@ -460,6 +465,11 @@ module EE
 
       def maven_upstream_registry(id:)
         find_maven_registry_by_id(id)
+      end
+
+      def work_item_allowed_statuses
+        # The API will be implemented via https://gitlab.com/gitlab-org/gitlab/-/issues/560683
+        []
       end
 
       private
