@@ -19,14 +19,16 @@ module GitlabSubscriptions
       end
 
       def execute
-        sync_base_product
-        sync_storage
-        sync_compute_minutes
-        sync_add_on_purchases
+        payload = {
+          base_product: sync_base_product,
+          storage: sync_storage,
+          compute_minutes: sync_compute_minutes,
+          add_on_purchases: sync_add_on_purchases
+        }
 
-        return ServiceResponse.success if errors.blank?
+        return ServiceResponse.success(message: nil, payload: payload) if errors.blank?
 
-        ServiceResponse.error(message: errors.flatten.join(', '))
+        ServiceResponse.error(message: format_message(errors), payload: payload)
       end
 
       private
@@ -52,26 +54,26 @@ module GitlabSubscriptions
       def sync_base_product
         return if base_product_params.blank?
 
-        return if namespace.update(gitlab_subscription_attributes: base_product_params)
+        return sync_success_response if namespace.update(gitlab_subscription_attributes: base_product_params)
 
-        errors << namespace.errors.full_messages
+        sync_error_response(namespace.errors.full_messages)
       end
 
       def sync_storage
         return if storage_params.blank?
 
-        return if namespace.reset.update(storage_params)
+        return sync_success_response if namespace.reset.update(storage_params)
 
-        errors << namespace.errors.full_messages
+        sync_error_response(namespace.errors.full_messages)
       end
 
       def sync_compute_minutes
         return if compute_minutes_params.blank?
 
         result = SyncComputeMinutesService.new(namespace: namespace.reset, params: compute_minutes_params).execute
-        return if result.success?
+        return sync_success_response if result.success?
 
-        errors << result.message
+        sync_error_response(result.message)
       end
 
       def sync_add_on_purchases
@@ -81,9 +83,28 @@ module GitlabSubscriptions
           namespace.reset,
           add_on_purchases_params
         ).execute
-        return if result.success?
+        return sync_success_response if result.success?
 
-        errors << result.message
+        sync_error_response(result.message)
+      end
+
+      def sync_success_response
+        {
+          status: :success
+        }
+      end
+
+      def sync_error_response(message)
+        errors << message
+
+        {
+          status: :error,
+          message: format_message(message)
+        }
+      end
+
+      def format_message(message)
+        Array(message).flatten.compact.join(', ')
       end
     end
   end

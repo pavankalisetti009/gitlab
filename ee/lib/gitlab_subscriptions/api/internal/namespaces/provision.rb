@@ -55,7 +55,7 @@ module GitlabSubscriptions
                 desc 'Provision a namespace' do
                   detail 'Complete provisioning of a namespace with base product, add-on purchases,' \
                     'compute minutes, and storage'
-                  success Entities::Internal::Namespace
+                  success Entities::Internal::ProvisionResult
                   failure [
                     { code: 400, message: 'Bad Request' },
                     { code: 401, message: 'Unauthorized' },
@@ -96,12 +96,8 @@ module GitlabSubscriptions
                     namespace: @namespace,
                     params: declared_params(include_missing: false)[:provision]
                   ).execute
-
-                  if result.success?
-                    status :ok
-                  else
-                    render_api_error!(result.message, :unprocessable_entity)
-                  end
+                  status result.success? ? :ok : :unprocessable_entity
+                  present result, with: Entities::Internal::ProvisionResult
                 end
               end
             end
