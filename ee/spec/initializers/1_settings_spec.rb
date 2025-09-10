@@ -98,7 +98,6 @@ RSpec.describe '1_settings', feature_category: :shared do
         image_ttl_group_policy_worker
         import_export_project_cleanup_worker
         import_placeholder_user_cleanup_worker
-        import_software_licenses_worker
         import_stuck_project_import_jobs
         inactive_projects_deletion_cron_worker
         incident_management_persist_oncall_rotation_worker
