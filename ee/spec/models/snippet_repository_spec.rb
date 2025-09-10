@@ -127,10 +127,11 @@ RSpec.describe SnippetRepository, :geo, type: :model, feature_category: :geo_rep
         end
       end
 
-      it 'returns nothing if an unrecognised selective sync type is used' do
+      it 'raises if an unrecognised selective sync type is used' do
         secondary.update_attribute(:selective_sync_type, 'unknown')
 
-        expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to be_empty
+        expect { described_class.replicables_for_current_secondary(1..described_class.last.id) }
+          .to raise_error(Geo::Errors::UnknownSelectiveSyncType)
       end
     end
   end

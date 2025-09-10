@@ -4,16 +4,31 @@ module Geo
   module SelectiveSync
     extend ActiveSupport::Concern
 
+    SELECTIVE_SYNC_TYPES = %w[namespaces shards].freeze
+
     def selective_sync?
+      validate_selective_sync_type!
+
       selective_sync_type.present?
     end
 
     def selective_sync_by_namespaces?
+      validate_selective_sync_type!
+
       selective_sync_type == 'namespaces'
     end
 
     def selective_sync_by_shards?
+      validate_selective_sync_type!
+
       selective_sync_type == 'shards'
+    end
+
+    def validate_selective_sync_type!
+      return if selective_sync_type.blank?
+      return if SELECTIVE_SYNC_TYPES.include?(selective_sync_type)
+
+      raise ::Geo::Errors::UnknownSelectiveSyncType.new(selective_sync_type: selective_sync_type)
     end
 
     # This method should only be used when:

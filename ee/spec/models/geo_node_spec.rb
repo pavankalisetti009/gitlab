@@ -734,7 +734,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
   end
 
   describe '#selective_sync?' do
-    subject { node.selective_sync? }
+    subject(:selective_sync?) { node.selective_sync? }
 
     it 'returns true when selective sync is by namespaces' do
       node.update!(selective_sync_type: 'namespaces')
@@ -756,6 +756,18 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
       )
 
       is_expected.to be_falsy
+    end
+
+    it 'returns false when selective_sync_type is nil' do
+      node.update!(selective_sync_type: nil)
+
+      is_expected.to be_falsy
+    end
+
+    it 'raises when selective_sync_type is invalid' do
+      node.selective_sync_type = 'invalid_type'
+
+      expect { selective_sync? }.to raise_error(Geo::Errors::UnknownSelectiveSyncType, /Selective sync type is not known: invalid_type/)
     end
   end
 

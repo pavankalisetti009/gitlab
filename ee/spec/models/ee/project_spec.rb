@@ -5453,10 +5453,10 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
     end
 
-    it 'returns nothing if an unrecognised selective sync type is used' do
+    it 'raises if an unrecognised selective sync type is used' do
       node.update_attribute(:selective_sync_type, 'unknown')
 
-      expect(described_class.selective_sync_scope(node)).to be_empty
+      expect { described_class.selective_sync_scope(node) }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
     end
   end
 
