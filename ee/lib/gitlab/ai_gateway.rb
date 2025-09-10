@@ -36,6 +36,10 @@ module Gitlab
       ::Ai::Setting.instance&.ai_gateway_url || ENV["AI_GATEWAY_URL"]
     end
 
+    def self.has_self_hosted_ai_gateway?
+      !::Ai::Setting.instance&.ai_gateway_url.blank?
+    end
+
     def self.enabled_instance_verbose_ai_logs
       ::Ai::Setting.instance&.enabled_instance_verbose_ai_logs.to_s || ''
     end
