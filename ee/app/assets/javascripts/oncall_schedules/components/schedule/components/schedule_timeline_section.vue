@@ -52,7 +52,7 @@ export default {
 </script>
 
 <template>
-  <div class="timeline-section clearfix gl-sticky gl-top-0">
+  <div class="timeline-section gl-sticky gl-top-0 gl-clearfix">
     <div>
       <span class="timeline-header-label gl-float-left gl-text-subtle">{{
         presetIsDay ? __('Hour') : __('Date')
@@ -60,15 +60,16 @@ export default {
     </div>
     <div ref="timelineHeaderWrapper" v-gl-resize-observer="updateShiftStyles">
       <days-header-item v-if="presetIsDay" :timeframe-item="timeframe[0]" />
-      <weeks-header-item
-        v-for="(timeframeItem, index) in timeframe"
-        v-else
-        :key="index"
-        :timeframe-index="index"
-        :timeframe-item="timeframeItem"
-        :timeframe="timeframe"
-        :preset-type="presetType"
-      />
+      <template v-else>
+        <weeks-header-item
+          v-for="(timeframeItem, index) in timeframe"
+          :key="index"
+          :timeframe-index="index"
+          :timeframe-item="timeframeItem"
+          :timeframe="timeframe"
+          :preset-type="presetType"
+        />
+      </template>
     </div>
   </div>
 </template>
