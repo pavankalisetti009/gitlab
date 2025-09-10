@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab_redis_sessions,
   :clean_gitlab_redis_rate_limiting, feature_category: :instance_resiliency do
   include SessionHelpers
+  include IdentityVerificationHelpers
+
   using RSpec::Parameterized::TableSyntax
 
   let_it_be_with_reload(:unconfirmed_user) { create(:user, :unconfirmed, :low_risk) }
@@ -357,7 +359,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
     before do
       stub_session(session_data: { verification_user_id: user.id })
-      mock_arkose_token_verification(success: true)
+      stub_arkose_token_verification(token_verification_response: :success)
     end
 
     it { is_expected.to have_request_urgency(:low) }
@@ -449,8 +451,6 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
     before do
       stub_session(session_data: { verification_user_id: user.id })
-
-      mock_arkose_token_verification(success: true)
     end
 
     it_behaves_like 'it requires a signed-in user', :redirect
@@ -459,7 +459,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     describe 'token verification' do
       context 'when it fails' do
         it 'renders arkose_labs_challenge with the correct alert flash' do
-          mock_arkose_token_verification(success: false)
+          stub_arkose_token_verification(token_verification_response: :failed)
 
           do_request
 
@@ -469,7 +469,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
         context 'with tracking' do
           before do
-            mock_arkose_token_verification(success: false)
+            stub_arkose_token_verification(token_verification_response: :failed)
           end
 
           it_behaves_like 'internal event tracking' do
@@ -481,9 +481,11 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
         end
 
         context 'when Arkose is down' do
-          it 'marks the user as Arkose-verified', :aggregate_failures do
-            mock_arkose_token_verification(success: false, service_down: true)
+          before do
+            stub_arkose_token_verification(token_verification_response: :failed, service_down: true)
+          end
 
+          it 'marks the user as Arkose-verified', :aggregate_failures do
             expect { do_request }.to change { User.find(user.id).arkose_verified? }.from(false).to(true)
 
             expect(response).to redirect_to(signup_identity_verification_path)
@@ -492,15 +494,18 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       end
 
       context 'when it succeeds' do
-        it 'redirects to show action' do
-          mock_arkose_token_verification(success: true)
+        before do
+          stub_arkose_token_verification(token_verification_response: :success)
+        end
 
+        it 'redirects to show action' do
           do_request
 
           expect(response).to redirect_to(signup_identity_verification_path)
         end
 
         it_behaves_like 'logs challenge solved event'
+
         it 'executes the phone verification limit check' do
           expect_next_found_instance_of(User) do |user|
             expect(user).to receive(:assume_high_risk_if_phone_verification_limit_exceeded!)

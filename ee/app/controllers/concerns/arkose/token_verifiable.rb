@@ -17,7 +17,6 @@ module Arkose
         return true
       end
 
-      log_token_missing
       false
     end
 
@@ -28,39 +27,11 @@ module Arkose
       end
     end
 
-    def arkose_interactive_challenge_solved?
-      return false unless arkose_labs_verify_response
-
-      arkose_labs_verify_response.interactive_challenge_solved?
-    end
-
     def log_challenge_skipped
       ::Gitlab::AppLogger.info(
-        message: 'Sign-up verification skipped',
-        reason: 'arkose is experiencing an outage',
+        message: 'Arkose challenge skipped',
+        reason: 'Arkose is experiencing an outage',
         username: username
-      )
-    end
-
-    def log_token_missing
-      ::Gitlab::AppLogger.info(
-        message: 'Sign-up blocked',
-        reason: 'arkose token is missing in request',
-        username: username
-      )
-    end
-
-    def track_arkose_challenge_result
-      log_arkose_challenge_solved(interactive: arkose_interactive_challenge_solved?)
-    end
-
-    def log_arkose_challenge_solved(interactive: false)
-      challenge_type = interactive ? 'interactive' : 'transparent'
-
-      ::Gitlab::AppLogger.info(
-        username: username,
-        message: "Arkose challenge",
-        event: "#{challenge_type} challenge solved"
       )
     end
 

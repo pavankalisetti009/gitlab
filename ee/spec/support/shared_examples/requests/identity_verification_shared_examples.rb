@@ -1,39 +1,5 @@
 # frozen_string_literal: true
 
-def mock_arkose_token_verification(success:, challenge_shown: true, service_down: false)
-  allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
-
-  response = Gitlab::Json.parse(
-    File.read(
-      Rails.root.join(
-        # Arkose can opt to not show a challenge ("Transparent mode") to the user if
-        # they are deemed safe. When this happens `solved` is still `true` even
-        # though the user didn't actually solve a challenge.
-        #
-        # Here, we default to a solved, shown challenge (suppressed field is
-        # false) and use "Transparent mode" response when challenge_shown param
-        # is false
-        #
-        # See Arkose::VerifyResponse#interactive_challenge_solved?
-        "ee/spec/fixtures/arkose/successfully_solved_#{challenge_shown ? '' : 'transparent_'}ec_response.json"
-      )
-    )
-  )
-
-  success_response = ServiceResponse.success(payload: { response: Arkose::VerifyResponse.new(response) })
-  failed_response = ServiceResponse.error(message: "DENIED ACCESS")
-
-  allow_next_instance_of(Arkose::TokenVerificationService) do |instance|
-    verification_response = success ? success_response : failed_response
-    allow(instance).to receive(:execute).and_return(verification_response)
-  end
-
-  allow_next_instance_of(::Arkose::StatusService) do |instance|
-    status_response = service_down ? ServiceResponse.error(message: 'Arkose outage') : ServiceResponse.success
-    allow(instance).to receive(:execute).and_return(status_response)
-  end
-end
-
 def mock_send_phone_number_verification_code(success:, service_params: [], response_opts: {})
   response = success ? ServiceResponse.success(**response_opts) : ServiceResponse.error(**response_opts)
 
@@ -154,7 +120,7 @@ RSpec.shared_examples 'logs challenge solved event' do
 
   with_them do
     before do
-      mock_arkose_token_verification(success: true, challenge_shown: challenge_shown)
+      stub_arkose_token_verification(challenge_shown: challenge_shown)
     end
 
     it "logs the event" do
@@ -162,9 +128,7 @@ RSpec.shared_examples 'logs challenge solved event' do
 
       expect(Gitlab::AppLogger).to receive(:info).with(
         hash_including(
-          username: an_instance_of(String),
-          message: "Arkose challenge",
-          event: "#{challenge_type} challenge solved"
+          message: "Arkose challenge solved"
         )
       )
 
@@ -194,7 +158,7 @@ RSpec.shared_examples 'it verifies arkose token' do |method|
 
   context 'when verification fails' do
     it 'returns a 400 with an error message', :aggregate_failures do
-      mock_arkose_token_verification(success: false)
+      stub_arkose_token_verification(token_verification_response: :failed)
 
       do_request
 
@@ -206,7 +170,7 @@ RSpec.shared_examples 'it verifies arkose token' do |method|
 
   context 'when verification succeeds' do
     it 'returns a 200' do
-      mock_arkose_token_verification(success: true)
+      stub_arkose_token_verification(token_verification_response: :success)
 
       do_request
 
@@ -218,7 +182,7 @@ RSpec.shared_examples 'it verifies arkose token' do |method|
 
   context 'when Arkose is down' do
     it 'returns a 200' do
-      mock_arkose_token_verification(success: false, service_down: true)
+      stub_arkose_token_verification(token_verification_response: :error, service_down: true)
 
       do_request
 

@@ -159,12 +159,10 @@ module Users
     end
 
     def ensure_challenge_completed!
-      if verify_arkose_labs_token
-        track_arkose_challenge_result
-      else
-        message = s_('IdentityVerification|Complete verification to proceed.')
-        render status: :bad_request, json: { message: message }
-      end
+      return if verify_arkose_labs_token
+
+      message = s_('IdentityVerification|Complete verification to proceed.')
+      render status: :bad_request, json: { message: message }
     end
 
     def arkose_challenge_required?(method:)

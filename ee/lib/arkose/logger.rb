@@ -13,13 +13,19 @@ module Arkose
     def log_successful_token_verification
       return unless response
 
-      logger.info(build_message('Arkose verify response'))
+      logger.info(build_message('Arkose challenge solved'))
+    end
+
+    def log_invalid_token
+      return unless response
+
+      logger.info(build_message('Arkose was unable to verify the token'))
     end
 
     def log_unsolved_challenge
       return unless response
 
-      logger.info(build_message('Challenge was not solved'))
+      logger.info(build_message('Arkose challenge not solved'))
     end
 
     def log_failed_token_verification
@@ -28,7 +34,7 @@ module Arkose
         log_data: user&.id
       }
 
-      logger.error("Error verifying user on Arkose: #{payload}")
+      logger.error("Arkose returned an error while verifying token: #{payload}")
     end
 
     def log_risk_band_assignment

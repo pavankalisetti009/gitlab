@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_category: :acquisition do
+  include IdentityVerificationHelpers
+
   before do
     stub_application_setting(require_admin_approval_after_user_signup: false)
   end
