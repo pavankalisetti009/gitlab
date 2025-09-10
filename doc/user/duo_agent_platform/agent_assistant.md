@@ -171,6 +171,15 @@ You must create a different AI flow configuration file for each CLI agent.
 
 ### Example flow configuration files
 
+Use the following examples to create your flow configuration file.
+These examples contain the following variables:
+
+- `AI_FLOW_CONTEXT`: the JSON-serialized parent object, including:
+  - In merge requests, the diff and comments (up to a limit)
+  - In issues or epics, the comments (up to a limit)
+- `$AI_FLOW_EVENT`: the type of flow event (for example, `mention`)
+- `$AI_FLOW_INPUT`: the prompt the user enters as a comment in the merge request, issue, or epic
+
 #### Anthropic Claude
 
 ```yaml
