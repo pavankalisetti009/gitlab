@@ -11,7 +11,6 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
 
   let_it_be(:service_params) do
     {
-      agent: agent,
       agent_version: agent_version,
       flow_config_type: 'chat'
     }
@@ -79,30 +78,10 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
       it_behaves_like 'returns error response', 'Generated flow is invalid'
     end
 
-    context 'when agent is nil' do
-      let(:service_params) { super().merge({ agent: nil }) }
-
-      it_behaves_like 'returns error response', 'Agent is required'
-    end
-
-    context 'when agent item_type is flow' do
-      let(:service_params) { super().merge({ agent: build(:ai_catalog_flow) }) }
-
-      it_behaves_like 'returns error response', 'Agent is required'
-    end
-
     context 'when agent_version is nil' do
       let(:service_params) { super().merge({ agent_version: nil }) }
 
       it_behaves_like 'returns error response', 'Agent version is required'
-    end
-
-    context 'when agent_version does not belong to the agent' do
-      let(:other_agent) { build(:ai_catalog_agent, organization: organization, project: project) }
-      let(:other_agent_version) { other_agent.versions.last }
-      let(:service_params) { super().merge({ agent_version: other_agent_version }) }
-
-      it_behaves_like 'returns error response', 'Agent version must belong to the agent'
     end
 
     context 'when flow_config_type is invalid' do

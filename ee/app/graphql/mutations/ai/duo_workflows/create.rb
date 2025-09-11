@@ -45,6 +45,10 @@ module Mutations
           required: false,
           description: 'Environment for the workflow.'
 
+        argument :ai_catalog_item_version_id, ::Types::GlobalIDType[::Ai::Catalog::ItemVersion],
+          required: false,
+          description: 'ID of the catalog item the workflow is triggered from.'
+
         field :workflow, Types::Ai::DuoWorkflows::WorkflowType,
           null: true,
           description: 'Created workflow.'
@@ -62,7 +66,12 @@ module Mutations
                         GitlabSchema.find_by_gid(args[:namespace_id]).sync
                       end
 
+          item_version = GitlabSchema.find_by_gid(args[:ai_catalog_item_version_id])&.sync
+
           raise_resource_not_available_error! unless allowed?(container)
+
+          raise_resource_not_available_error! 'User is not authorized to use agent catalog item.' unless
+            item_version.nil? || Ability.allowed?(current_user, :read_ai_catalog_item, item_version)
 
           workflow_params = {
             goal: args[:goal],
@@ -70,7 +79,8 @@ module Mutations
             pre_approved_agent_privileges: args[:pre_approved_agent_privileges],
             workflow_definition: args[:workflow_definition],
             allow_agent_to_request_user: args[:allow_agent_to_request_user],
-            environment: args[:environment]
+            environment: args[:environment],
+            ai_catalog_item_version_id: item_version&.id
           }.compact
 
           service = ::Ai::DuoWorkflows::CreateWorkflowService.new(

@@ -9,6 +9,7 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
   let_it_be(:unlicensed_developer) { create(:user) }
   let_it_be(:group) { create(:group, developers: [licensed_developer, unlicensed_developer]) }
   let_it_be_with_reload(:project) { create(:project, group: group) }
+  let_it_be(:other_project) { create(:project) }
 
   let_it_be(:add_on_purchase) do
     create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, namespace: group)
@@ -16,6 +17,18 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
 
   let_it_be(:add_on_assignment) do
     create(:gitlab_subscription_user_add_on_assignment, user: licensed_developer, add_on_purchase: add_on_purchase)
+  end
+
+  let_it_be(:agent) do
+    create(:ai_catalog_agent, project: other_project, public: true)
+  end
+
+  let_it_be(:agent_version) do
+    create(:ai_catalog_agent_version, item: agent)
+  end
+
+  let_it_be(:agent_consumer) do
+    create(:ai_catalog_item_consumer, item: agent, project: project)
   end
 
   let(:current_user) { licensed_developer }
@@ -29,6 +42,7 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
       workflow_definition: workflow_type,
       allow_agent_to_request_user: true,
       environment: 'WEB',
+      ai_catalog_item_version_id: agent_version.to_global_id,
       **container_input
     }
   end
@@ -73,7 +87,8 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
             pre_approved_agent_privileges: [1],
             workflow_definition: workflow_type,
             allow_agent_to_request_user: true,
-            environment: 'web'
+            environment: 'web',
+            ai_catalog_item_version_id: agent_version.id
           }
         ).and_call_original
 
@@ -104,7 +119,8 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
           pre_approved_agent_privileges: [1],
           workflow_definition: workflow_type,
           allow_agent_to_request_user: true,
-          environment: 'web'
+          environment: 'web',
+          ai_catalog_item_version_id: agent_version.id
         }
       ).and_call_original
 
@@ -145,6 +161,28 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
 
         workflow = ::Ai::DuoWorkflows::Workflow.last
         expect(mutation_response['workflow']).to match a_graphql_entity_for(workflow)
+      end
+
+      context 'when user cannot use agent version' do
+        let(:agent) { create(:ai_catalog_agent, project: other_project) }
+        let(:agent_version) { create(:ai_catalog_agent_version, item: agent) }
+
+        include_examples 'a mutation that returns top-level errors',
+          errors: ['User is not authorized to use agent catalog item.']
+      end
+
+      context 'when an agent version is not provided' do
+        let(:input) { super().merge(ai_catalog_item_version_id: nil) }
+
+        it 'creates and returns a workflow' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(mutation_response['errors']).to be_empty
+
+          workflow = ::Ai::DuoWorkflows::Workflow.last
+          expect(mutation_response['workflow']).to match a_graphql_entity_for(workflow)
+        end
       end
     end
 

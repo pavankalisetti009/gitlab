@@ -11,9 +11,9 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
   let_it_be(:agent_version) { create(:ai_catalog_agent_version, item: agent) }
 
   let(:current_user) { user }
-  let(:agent_gid) { agent.to_global_id }
+  let(:agent_version_gid) { agent_version.to_global_id }
   let(:chat_flow_type) { :CHAT }
-  let(:args) { { agentId: agent_gid, flowConfigType: chat_flow_type } }
+  let(:args) { { agentVersionId: agent_version_gid, flowConfigType: chat_flow_type } }
 
   let(:query) do
     graphql_query_for('aiCatalogAgentFlowConfig', args)
@@ -78,29 +78,10 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
     let(:agent_version) { another_agent_version }
 
     let(:args) do
-      { agentId: agent_gid, flowConfigType: chat_flow_type, agentVersionId: agent_version.to_global_id }
+      { flowConfigType: chat_flow_type, agentVersionId: agent_version.to_global_id }
     end
 
     it_behaves_like 'returns valid flow configuration'
-  end
-
-  context 'with invalid agent_version_id' do
-    context 'when agent_version_id does not exist' do
-      let(:agent_version) { Ai::Catalog::ItemVersion.new(id: non_existing_record_id) }
-      let(:args) { { agentId: agent_gid, flowConfigType: chat_flow_type, agentVersionId: agent_version.to_global_id } }
-
-      it_behaves_like 'when request fails'
-    end
-
-    context 'when agent_version belongs to different agent' do
-      let(:different_agent) { create(:ai_catalog_agent) }
-      let(:mismatched_agent_version) { different_agent.latest_version }
-      let(:args) do
-        { agentId: agent_gid, flowConfigType: chat_flow_type, agentVersionId: mismatched_agent_version.to_global_id }
-      end
-
-      it_behaves_like 'when request fails'
-    end
   end
 
   context 'when WrappedAgentFlowBuilder returns error' do
@@ -126,7 +107,8 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
   context 'when agent belongs to different organization' do
     let_it_be(:different_organization) { create(:organization) }
     let_it_be(:different_agent) { create(:ai_catalog_agent, organization: different_organization) }
-    let(:agent_gid) { different_agent.to_global_id }
+    let_it_be(:different_agent_version) { create(:ai_catalog_agent_version, item: different_agent) }
+    let(:agent_version_gid) { different_agent_version.to_global_id }
 
     it_behaves_like 'when request fails'
   end
@@ -139,8 +121,8 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
     it_behaves_like 'when request fails'
   end
 
-  context 'with an invalid agent_id' do
-    let(:agent_gid) { "gid://gitlab/Ai::Catalog::Item/#{non_existing_record_id}" }
+  context 'with an invalid agent_version_id' do
+    let(:agent_version_gid) { "gid://gitlab/Ai::Catalog::ItemVersion/#{non_existing_record_id}" }
 
     it_behaves_like 'when request fails'
   end

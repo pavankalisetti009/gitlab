@@ -9,7 +9,6 @@ RSpec.describe Resolvers::Ai::Catalog::AgentFlowConfigResolver, feature_category
 
   it 'has expected arguments' do
     is_expected.to have_graphql_arguments(
-      :agent_id,
       :agent_version_id,
       :flow_config_type
     )
