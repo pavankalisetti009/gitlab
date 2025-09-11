@@ -75,6 +75,32 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     end
   end
 
+  describe '.has_self_hosted_ai_gateway?' do
+    subject(:has_self_hosted_ai_gateway) { described_class.has_self_hosted_ai_gateway? }
+
+    context 'when AI Gateway url is set' do
+      before do
+        ai_setting.update!(ai_gateway_url: url)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context  'when AI Gateway url is not set' do
+      before do
+        ai_setting.update!(ai_gateway_url: nil)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when AI Gateway url is nil' do
+      let(:ai_setting) { nil }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '.access_token_url' do
     before do
       stub_env('AI_GATEWAY_URL', 'http://local-aigw:5052')

@@ -176,10 +176,38 @@ RSpec.describe Ai::FeatureSettingSelectionService, feature_category: :"self-host
         end
 
         context 'when self-hosted feature setting does not exist' do
-          it 'returns success with instance level setting' do
-            expect(response).to be_success
-            expect(response.payload).to be_a(::Ai::ModelSelection::InstanceModelSelectionFeatureSetting)
-            expect(response.payload.feature).to eq(feature.to_s)
+          context 'and self-hosted AI Gateway has not been configured' do
+            it 'returns success with default instance level setting' do
+              expect(response).to be_success
+              expect(response.payload.offered_model_ref).to be_blank
+              expect(response.payload).not_to be_persisted
+              expect(response.payload.feature).to eq(feature.to_s)
+            end
+          end
+
+          context 'and instance is on offline cloud license' do
+            let_it_be(:license) { create(:license) }
+
+            before do
+              allow(::License).to receive(:current).and_return(license)
+              allow(license).to receive(:offline_cloud_license?).and_return(true)
+            end
+
+            it 'does not create a default vendored instance setting and returns nil instead' do
+              expect(response).to be_success
+              expect(response.payload).to be_nil
+            end
+          end
+
+          context 'and self-hosted AI Gateway has been configured' do
+            before do
+              create(:ai_settings, ai_gateway_url: 'http://example.com')
+            end
+
+            it 'does not create a default vendored instance setting and returns nil instead' do
+              expect(response).to be_success
+              expect(response.payload).to be_nil
+            end
           end
         end
 
