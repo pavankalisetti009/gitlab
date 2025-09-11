@@ -158,6 +158,38 @@ RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature
     end
   end
 
+  describe '#pinned_model?' do
+    context 'when offered_model_ref is nil' do
+      subject(:pinned_model?) do
+        build(:instance_model_selection_feature_setting, offered_model_ref: nil).pinned_model?
+      end
+
+      it 'returns false' do
+        expect(pinned_model?).to be false
+      end
+    end
+
+    context 'when offered_model_ref is empty string' do
+      subject(:pinned_model?) do
+        build(:instance_model_selection_feature_setting, offered_model_ref: "").pinned_model?
+      end
+
+      it 'returns false' do
+        expect(pinned_model?).to be false
+      end
+    end
+
+    context 'when offered_model_ref has a value' do
+      subject(:pinned_model?) do
+        build(:instance_model_selection_feature_setting, offered_model_ref: "claude-3-7-sonnet-20250219").pinned_model?
+      end
+
+      it 'returns true' do
+        expect(pinned_model?).to be true
+      end
+    end
+  end
+
   describe 'feature enum' do
     it 'includes all expected features from FEATURES constant' do
       expected_features = described_class::FEATURES.keys.map(&:to_s)

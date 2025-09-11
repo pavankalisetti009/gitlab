@@ -140,6 +140,14 @@ module Ai
           model_metadata_params
         end
 
+        def set_to_gitlab_default?
+          offered_model_ref.blank?
+        end
+
+        def pinned_model?
+          !set_to_gitlab_default?
+        end
+
         private
 
         def validate_model_selection_enabled
