@@ -323,6 +323,7 @@ export default {
             data-testid="agent-form-token-selector-tools"
             @input="handleToolsInput"
             @text-input="handleToolSearch"
+            @keydown.enter.prevent
           />
         </template>
         <template #input(visibilityLevel)="{ id, input, validation, value }">
