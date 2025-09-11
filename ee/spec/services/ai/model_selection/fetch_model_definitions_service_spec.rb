@@ -5,9 +5,8 @@ require 'spec_helper'
 RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_category: :"self-hosted_models" do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
+  let(:endpoint_url) { "https://cloud.gitlab.com/ai/v1/models%2Fdefinitions" }
   let(:cache_key) { described_class::RESPONSE_CACHE_NAME }
-  let(:base_url) { 'http://0.0.0.0:5052' }
-  let(:endpoint_url) { "#{base_url}/v1/models%2Fdefinitions" }
   let(:unit_primitive) { :code_suggestions }
   let(:model_definitions) do
     {
@@ -32,7 +31,6 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   subject(:service) { initialized_class.execute }
 
   before do
-    allow(::Gitlab::AiGateway).to receive(:url).and_return(base_url)
     allow(::Gitlab::AiGateway).to receive(:headers)
       .with(user: user, service: unit_primitive, ai_feature_name: unit_primitive)
   end
@@ -85,6 +83,19 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
     context 'when model switching is enabled' do
       before do
         allow(initialized_class).to receive(:model_selection_enabled?).and_return(true)
+      end
+
+      context 'and license is offline' do
+        before do
+          license = create(:license)
+          allow(::License).to receive(:current).and_return(license)
+          allow(license).to receive(:offline_cloud_license?).and_return(true)
+        end
+
+        it 'returns nil' do
+          expect(service).to be_success
+          expect(service.payload).to be_nil
+        end
       end
 
       context 'when response is cached' do
@@ -152,7 +163,7 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
 
   describe '#endpoint' do
     it 'returns the correct endpoint URL' do
-      expect(initialized_class.send(:endpoint)).to eq(endpoint_url)
+      expect(initialized_class.send(:endpoint)).to eq("https://cloud.gitlab.com/ai/v1/models%2Fdefinitions")
     end
   end
 end
