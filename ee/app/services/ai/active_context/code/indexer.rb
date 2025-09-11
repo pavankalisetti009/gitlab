@@ -102,14 +102,12 @@ module Ai
             last_indexed_commit.present? && project_repository.commit(last_indexed_commit).present?
           end
         end
-        strong_memoize_attr :git_repository_contains_last_indexed_commit?
 
         def last_indexed_commit_ancestor_of_to_sha?
           log_duration('last_indexed_commit_ancestor_of_to_sha?') do
             project_repository.ancestor?(last_indexed_commit, to_sha)
           end
         end
-        strong_memoize_attr :last_indexed_commit_ancestor_of_to_sha?
 
         def command
           [
