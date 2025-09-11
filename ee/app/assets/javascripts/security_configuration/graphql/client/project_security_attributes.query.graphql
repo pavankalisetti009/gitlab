@@ -5,6 +5,7 @@ query getProjectSecurityAttributes($fullPath: ID!, $categoryId: ID) {
       nodes {
         id
         category {
+          id
           name
         }
         name
