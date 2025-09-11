@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'targeted message interactions' do
+  include SubscriptionPortalHelpers
+
   before do
     create(:targeted_message_namespace, namespace: group)
+    stub_subscription_trial_types
     sign_in(user)
   end
 

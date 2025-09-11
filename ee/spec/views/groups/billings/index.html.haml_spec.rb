@@ -15,6 +15,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
     allow(view).to receive(:current_user).and_return(user)
     assign(:group, group)
     assign(:plans_data, plans_data)
+    stub_subscription_trial_types
   end
 
   context 'when the group is a subgroup' do

@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas, :aggregate_failures,
   type: :component, feature_category: :acquisition do
+  include SubscriptionPortalHelpers
   let(:namespace) { build(:group, id: non_existing_record_id) }
   let(:user) { build(:user) }
   let(:title) { 'Introducing GitLab Duo Enterprise' }
@@ -14,6 +15,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent, :saas
 
   before do
     build(:gitlab_subscription, :ultimate, namespace: namespace)
+    stub_subscription_trial_types
   end
 
   context 'when gold plan' do

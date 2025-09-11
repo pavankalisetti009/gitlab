@@ -4,6 +4,7 @@ require 'spec_helper'
 RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_projects do
   include Features::MembersHelpers
   include Features::InviteMembersModalHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be(:user1) { create(:user, name: 'John Doe') }
   let_it_be(:user2) { create(:user, name: 'Mary Jane') }
@@ -134,6 +135,7 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
     before do
       group.add_member(user, role)
       sign_in(user)
+      stub_subscription_trial_types
     end
 
     it_behaves_like 'over the free user limit alert'

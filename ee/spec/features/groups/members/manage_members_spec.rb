@@ -24,6 +24,7 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
     stub_signing_key
     stub_reconciliation_request(true)
     stub_subscription_request_seat_usage(true)
+    stub_subscription_trial_types
     stub_feature_flags(show_role_details_in_drawer: false)
     create(:callout, user: user1, feature_name: :duo_chat_callout)
   end

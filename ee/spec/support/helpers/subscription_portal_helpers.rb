@@ -106,6 +106,50 @@ module SubscriptionPortalHelpers
       }.to_json)
   end
 
+  # Stubs the subscription portal client to prevent real HTTP calls in tests
+  # This is needed because TrialDurationService makes HTTP requests to fetch trial types
+  #
+  # @param trial_types [Hash] Custom trial types to return. Defaults to standard trial types.
+  # @param success [Boolean] Whether the API call should be successful. Defaults to true.
+  #
+  # @example Basic usage
+  #   stub_subscription_trial_types
+  #
+  # @example Custom trial types
+  #   stub_subscription_trial_types(
+  #     trial_types: {
+  #       'free' => { duration_days: 14 },
+  #       'premium' => { duration_days: 60 }
+  #     }
+  #   )
+  #
+  # @example Simulate API failure
+  #   stub_subscription_trial_types(success: false)
+  def stub_subscription_trial_types(trial_types: nil, success: true)
+    default_trial_types = {
+      GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: 30 },
+      GitlabSubscriptions::Trials::DUO_ENTERPRISE_TRIAL_TYPE => { duration_days: 60 }
+    }
+
+    response = if success
+                 {
+                   success: true,
+                   data: {
+                     trial_types: trial_types || default_trial_types
+                   }
+                 }
+               else
+                 {
+                   success: false,
+                   data: {
+                     errors: ['API Error']
+                   }
+                 }
+               end
+
+    allow(Gitlab::SubscriptionPortal::Client).to receive(:namespace_trial_types).and_return(response)
+  end
+
   private
 
   def plans_fixture

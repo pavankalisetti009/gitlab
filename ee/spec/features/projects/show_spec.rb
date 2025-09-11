@@ -3,9 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe 'Project show page', :js, :saas, feature_category: :groups_and_projects do
+  include SubscriptionPortalHelpers
+
   let_it_be(:user) { create(:user) }
 
   let(:path) { project_path(project) }
+
+  before do
+    stub_subscription_trial_types
+  end
 
   context "with free tier badge" do
     let(:tier_badge_selector) { '[data-testid="tier-badge"]' }

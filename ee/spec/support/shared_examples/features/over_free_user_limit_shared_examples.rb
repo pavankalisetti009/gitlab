@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples_for 'over the free user limit alert' do
+  include SubscriptionPortalHelpers
+
   let_it_be(:new_user) { create(:user) }
   let_it_be(:dismiss_button) do
     '[data-testid="user-over-limit-free-plan-dismiss"]'
@@ -8,6 +10,7 @@ RSpec.shared_examples_for 'over the free user limit alert' do
 
   before do
     stub_ee_application_setting(dashboard_limit_enabled: true)
+    stub_subscription_trial_types
   end
 
   shared_context 'with over storage limit setup' do

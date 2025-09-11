@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'dashboard ultimate trial callout' do
+  include SubscriptionPortalHelpers
+
   before do
+    stub_subscription_trial_types
     sign_in(user)
   end
 

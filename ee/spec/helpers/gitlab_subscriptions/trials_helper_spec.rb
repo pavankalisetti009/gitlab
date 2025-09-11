@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition do
   using RSpec::Parameterized::TableSyntax
   include Devise::Test::ControllerHelpers
+  include SubscriptionPortalHelpers
 
   describe '#show_tier_badge_for_new_trial?' do
     where(:trials_available?, :paid?, :private?, :never_had_trial?, :authorized, :result) do
@@ -46,6 +47,10 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
 
   describe '#trial_duration' do
     let(:trial_duration) { 30 }
+
+    before do
+      stub_subscription_trial_types
+    end
 
     subject { helper.trial_duration }
 

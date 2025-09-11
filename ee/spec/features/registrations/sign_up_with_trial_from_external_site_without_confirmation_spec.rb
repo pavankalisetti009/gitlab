@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Sign up with trial from external site without confirmation', :saas, :js, :with_current_organization,
   feature_category: :onboarding do
   include SaasRegistrationHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be(:glm_params) do
     { glm_source: 'some_source', glm_content: 'some_content' }
@@ -13,6 +14,7 @@ RSpec.describe 'Sign up with trial from external site without confirmation', :sa
   before do
     stub_application_setting(require_admin_approval_after_user_signup: false)
     stub_application_setting(import_sources: %w[github gitlab_project])
+    stub_subscription_trial_types
 
     # The groups_and_projects_controller (on `click_on 'Create project'`) is over
     # the query limit threshold, so we have to adjust it.

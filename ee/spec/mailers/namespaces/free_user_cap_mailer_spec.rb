@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Namespaces::FreeUserCapMailer, feature_category: :seat_cost_management do
   include EmailSpec::Matchers
+  include SubscriptionPortalHelpers
 
   describe '#over_limit_email' do
     let(:namespace) { build(:namespace) }
@@ -13,6 +14,7 @@ RSpec.describe Namespaces::FreeUserCapMailer, feature_category: :seat_cost_manag
 
     it 'creates an email message namespace being over free user cap', :aggregate_failures do
       stub_ee_application_setting(dashboard_limit: 5)
+      stub_subscription_trial_types
 
       result = format(
         s_('FreeUserCap|Action required: %{namespace_name} group has been placed into a read-only state'),

@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Company Information', :js, feature_category: :activation do
   include SaasRegistrationHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be(:user) do
     create(:user, onboarding_in_progress: true, onboarding_status_registration_type: 'trial',
@@ -20,6 +21,7 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
 
   before do
     stub_saas_features(onboarding: true)
+    stub_subscription_trial_types
 
     sign_in(user)
     visit new_users_sign_up_company_path

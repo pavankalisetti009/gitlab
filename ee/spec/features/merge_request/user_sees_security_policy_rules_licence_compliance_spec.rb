@@ -6,6 +6,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
   :js, :sidekiq_inline, :use_clean_rails_memory_store_caching,
   feature_category: :security_policy_management do
   include Features::SecurityPolicyHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be(:project) { create(:project, :repository) }
   let(:policy_management_project) { create(:project, :repository, creator: user, namespace: project.namespace) }
@@ -15,6 +16,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
 
   before do
     allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(125)
+    stub_subscription_trial_types
 
     sign_in(user)
   end

@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Groups > Usage quotas', :saas, feature_category: :consumables_cost_management do
   include ContentSecurityPolicyHelpers
+  include SubscriptionPortalHelpers
 
   let_it_be_with_reload(:user) { create(:user) }
   let_it_be_with_reload(:group) { create(:group) }
@@ -55,6 +56,7 @@ RSpec.describe 'Groups > Usage quotas', :saas, feature_category: :consumables_co
                            one_trust_id: onetrust_id })
       stub_saas_features(marketing_google_tag_manager: gtm_enabled)
       stub_feature_flags(ecomm_instrumentation: onetrust_enabled)
+      stub_subscription_trial_types
 
       visit group_usage_quotas_path(group)
     end
