@@ -9,6 +9,8 @@ module Security
       ValidationError = Struct.new(:field, :level, :message, :title, :index)
 
       DEFAULT_VALIDATION_ERROR_FIELD = :base
+      SECURITY_REPORT_TIME_WINDOW_MIN_MINUTES = 1
+      SECURITY_REPORT_TIME_WINDOW_MAX_MINUTES = 10080
 
       # rubocop:disable Metrics/CyclomaticComplexity -- flat branching
       # rubocop:disable Metrics/PerceivedComplexity -- policy validation
@@ -31,6 +33,7 @@ module Security
         return error_with_title(s_('SecurityOrchestration|Timezone is invalid'), field: :timezone) if invalid_timezone?
         return error_with_title(s_('SecurityOrchestration|Vulnerability age requires previously existing vulnerability states (detected, confirmed, resolved, or dismissed)'), field: :vulnerability_age) if invalid_vulnerability_age?
         return error_with_title(s_('SecurityOrchestration|Invalid Compliance Framework ID(s)'), field: :compliance_frameworks) if invalid_compliance_framework_ids?
+        return error_with_title(s_('SecurityOrchestration|Invalid security report time window'), field: :security_report_time_window) if invalid_security_report_time_window?
 
         if required_approvals_exceed_eligible_approvers?
           return errors_with_title(s_('SecurityOrchestration|Required approvals exceed eligible approvers.'), title: s_('SecurityOrchestration|Logic error'), field: :actions, indices: multiple_approvals_failed_action_indices)
@@ -291,6 +294,16 @@ module Security
                       .any? do |rule|
           ((rule[:vulnerability_states] || []) & ::Enums::Vulnerability.vulnerability_states.keys.map(&:to_s)).empty?
         end
+      end
+
+      def invalid_security_report_time_window?
+        return false if ::Feature.disabled?(:approval_policy_time_window, container)
+        return false unless approval_policy?
+
+        security_report_time_window = policy.dig(:policy_tuning, :security_report_time_window)
+        security_report_time_window.present? && (
+          security_report_time_window < SECURITY_REPORT_TIME_WINDOW_MIN_MINUTES ||
+            security_report_time_window > SECURITY_REPORT_TIME_WINDOW_MAX_MINUTES)
       end
 
       def policy_type

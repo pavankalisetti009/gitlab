@@ -58737,6 +58737,9 @@ msgstr ""
 msgid "SecurityOrchestration|Invalid policy type"
 msgstr ""
 
+msgid "SecurityOrchestration|Invalid security report time window"
+msgstr ""
+
 msgid "SecurityOrchestration|Invalid syntax"
 msgstr ""
 

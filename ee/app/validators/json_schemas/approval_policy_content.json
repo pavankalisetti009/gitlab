@@ -30,6 +30,10 @@
         "unblock_rules_using_execution_policies": {
           "type": "boolean",
           "description": "Experimental: Unblock policy approval rules with missing scans of scanners which are enforced by Scan execution policies. If scan does not produce artifacts because it is not applicable to the given project, approval rules are automatically unblocked and do not require approvals."
+        },
+        "security_report_time_window": {
+          "type": "integer",
+          "description": "Specifies the time window in minutes for choosing the target pipeline for the security report comparison."
         }
       }
     },
