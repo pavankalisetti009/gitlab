@@ -456,14 +456,6 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
     end
 
-    describe 'scanner_iac_running' do
-      it 'calls security_scanner_running? with scanner type iac' do
-        expect(described_class).to receive(:security_scanner_running?).with(:iac, project, {})
-
-        described_class.map_field(project, 'scanner_iac_running')
-      end
-    end
-
     describe 'security_scanner_running?' do
       let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
       let_it_be(:build) { create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project) }
@@ -505,6 +497,50 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
 
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
+      end
+    end
+
+    describe 'scanner_iac_running' do
+      let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
+
+      before do
+        allow(project).to receive(:latest_successful_pipeline_for_default_branch).and_return(pipeline)
+      end
+
+      context 'when pipeline is nil' do
+        before do
+          allow(project).to receive(:latest_successful_pipeline_for_default_branch).and_return(nil)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(project, 'scanner_iac_running')).to be false
+        end
+      end
+
+      context 'when kics-iac-sast job exists' do
+        let_it_be(:iac_build) { create(:ci_build, name: 'kics-iac-sast', pipeline: pipeline, project: project) }
+
+        context 'with SAST artifacts' do
+          before do
+            create(:ci_job_artifact, :sast, job: iac_build, project: project)
+          end
+
+          it 'returns true' do
+            expect(described_class.map_field(project, 'scanner_iac_running')).to be true
+          end
+        end
+
+        context 'without SAST artifacts' do
+          it 'returns false' do
+            expect(described_class.map_field(project, 'scanner_iac_running')).to be false
+          end
+        end
+      end
+
+      context 'when kics-iac-sast job does not exist' do
+        it 'returns false' do
+          expect(described_class.map_field(project, 'scanner_iac_running')).to be false
+        end
       end
     end
 

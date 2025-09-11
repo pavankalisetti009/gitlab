@@ -116,8 +116,15 @@ module ComplianceManagement
           security_scanner_running?(:codequality, project, context)
         end
 
-        def scanner_iac_running?(project, context = {})
-          security_scanner_running?(:iac, project, context)
+        def scanner_iac_running?(project, _context = {})
+          pipeline = project.latest_successful_pipeline_for_default_branch
+
+          return false if pipeline.nil?
+
+          iac_job = pipeline.builds.by_name('kics-iac-sast').first
+          return false unless iac_job
+
+          iac_job.job_artifacts_sast.present?
         end
 
         def code_changes_requires_code_owners?(project, _context = {})
