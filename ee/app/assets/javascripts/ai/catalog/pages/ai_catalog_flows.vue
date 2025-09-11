@@ -2,6 +2,7 @@
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
+import { isLoggedIn } from '~/lib/utils/common_utils';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -140,16 +141,23 @@ export default {
     itemTypeConfig() {
       return {
         actionItems: (item) => {
-          if (!item.userPermissions?.adminAiCatalogItem) {
+          if (!isLoggedIn()) {
             return [];
           }
 
-          return [
+          const items = [
             {
               text: s__('AICatalog|Add to project'),
               action: () => this.setAiCatalogFlowToBeAdded(item),
               icon: 'plus',
             },
+          ];
+
+          if (!item.userPermissions?.adminAiCatalogItem) {
+            return items;
+          }
+
+          const adminItems = [
             {
               text: s__('AICatalog|Edit'),
               to: {
@@ -159,6 +167,8 @@ export default {
               icon: 'pencil',
             },
           ];
+
+          return [...items, ...adminItems];
         },
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
