@@ -16,6 +16,7 @@ module Ai
 
       def execute(force_api_call: false)
         return unless model_selection_enabled?
+        return ServiceResponse.success(payload: nil) if ::License.current&.offline_cloud_license?
 
         return cached_response if Rails.cache.exist?(RESPONSE_CACHE_NAME) && !force_api_call
 
@@ -76,7 +77,8 @@ module Ai
       end
 
       def endpoint
-        base_url = Gitlab::AiGateway.url
+        # GitLab Model selection data should always come from cloud connected, never from local AIGW
+        base_url = Gitlab::AiGateway.cloud_connector_url
         endpoint_route = 'models%2Fdefinitions'
 
         "#{base_url}/v1/#{endpoint_route}"

@@ -64,7 +64,7 @@ RSpec.shared_context 'with model selections fetch definition service side-effect
 end
 
 RSpec.shared_context 'with the model selections fetch definition service as side-effect' do
-  let(:base_url) { 'http://0.0.0.0:5052' }
+  let(:base_url) { ::Gitlab::AiGateway.cloud_connector_url }
   let(:unit_primitive_name) { :code_suggestions }
   let(:fetch_service_endpoint_url) { "#{base_url}/v1/models%2Fdefinitions" }
 
