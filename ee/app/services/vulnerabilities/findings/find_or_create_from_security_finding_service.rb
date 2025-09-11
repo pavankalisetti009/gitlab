@@ -42,21 +42,23 @@ module Vulnerabilities
       def save_identifiers(identifiers)
         return if identifiers.blank?
 
-        identifiers = identifiers.each do |identifier|
+        sorted_identifiers = identifiers.sort_by(&:fingerprint)
+
+        sorted_identifiers.each do |identifier|
           identifier.created_at = identifier.updated_at = Time.zone.now
         end
 
         identifier_ids = Vulnerabilities::Identifier.bulk_upsert!(
-          identifiers,
+          sorted_identifiers,
           unique_by: %i[project_id fingerprint],
           returns: :id
         )
 
         identifier_ids.each_with_index do |id, index|
-          identifiers[index].id = id
+          sorted_identifiers[index].id = id
           # We need to mark the identifiers as persisted, otherwise ActiveRecord
           # will try to insert identifiers again while saving the finding object
-          identifiers[index].instance_variable_set(:@new_record, false)
+          sorted_identifiers[index].instance_variable_set(:@new_record, false)
         end
       end
 
