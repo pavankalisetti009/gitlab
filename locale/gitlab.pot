@@ -66057,9 +66057,6 @@ msgstr ""
 msgid "This group does not have any group runners yet."
 msgstr ""
 
-msgid "This group has been scheduled for deletion and cannot be commented on."
-msgstr ""
-
 msgid "This group has been scheduled for deletion on %{date}. To cancel the scheduled deletion, you can restore this group, including all its resources."
 msgstr ""
 
@@ -66067,6 +66064,9 @@ msgid "This group has no active access tokens."
 msgstr ""
 
 msgid "This group has no inactive access tokens."
+msgstr ""
+
+msgid "This group is archived and cannot be commented on."
 msgstr ""
 
 msgid "This group is archived. Its subgroups, projects, and data are %{strong_open}read-only%{strong_close}."
