@@ -18,7 +18,7 @@ export default {
   props: {
     activeTab: {
       type: String,
-      required: true,
+      required: false,
       default: null,
     },
     isExpanded: {
