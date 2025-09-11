@@ -42,8 +42,7 @@ module Gitlab
       # obtains licenses by using data from the `licenses` jsonb column in the pm_packages table to query
       # data from the pm_licenses table
       def fetch
-        sessions = [::ApplicationRecord, ::Ci::ApplicationRecord]
-        ::Gitlab::Database::LoadBalancing::SessionMap.use_replica_if_available(sessions) do
+        ::Gitlab::Database::LoadBalancing::SessionMap.use_replica_if_available do
           init_all_records_to_unknown_licenses do |component|
             # build cache for faster lookups of licenses and component_version data
             build_component_data_cache(component)
