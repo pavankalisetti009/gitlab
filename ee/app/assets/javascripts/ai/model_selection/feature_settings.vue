@@ -30,6 +30,7 @@ export default {
   issuesHelpPage: helpPagePath('user/discussions/_index', {
     anchor: 'summarize-issue-discussions-with-duo-chat',
   }),
+  duoAgentPlatformHelpPage: helpPagePath('user/duo_agent_platform/_index'),
   otherGitLabDuoHelpPage: helpPagePath('user/get_started/getting_started_gitlab_duo', {
     anchor: 'step-3-try-other-gitlab-duo-features',
   }),
@@ -48,6 +49,9 @@ export default {
     },
     otherGitLabDuoFeatures() {
       return this.getSubFeatures(DUO_MAIN_FEATURES.OTHER_GITLAB_DUO_FEATURES);
+    },
+    duoAgentPlatformFeatures() {
+      return this.getSubFeatures(DUO_MAIN_FEATURES.AGENT_PLATFORM);
     },
   },
   methods: {
@@ -154,6 +158,34 @@ export default {
         <model-selection-feature-settings-table
           data-testid="duo-issues-table"
           :feature-settings="issueFeatures"
+          :is-loading="isLoading"
+        />
+      </template>
+    </feature-settings-block>
+    <feature-settings-block
+      v-if="duoAgentPlatformFeatures.length"
+      id="duo-agent-platform"
+      :title="s__('AdminAIPoweredFeatures|GitLab Duo Agent Platform')"
+    >
+      <template #description>
+        <gl-sprintf
+          :message="
+            s__(
+              'AdminAIPoweredFeatures|AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously. %{linkStart}Learn more.%{linkEnd}',
+            )
+          "
+        >
+          <template #link="{ content }">
+            <gl-link :href="$options.duoAgentPlatformHelpPage" target="_blank">{{
+              content
+            }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </template>
+      <template #content>
+        <model-selection-feature-settings-table
+          data-testid="duo-agent-platform-table"
+          :feature-settings="duoAgentPlatformFeatures"
           :is-loading="isLoading"
         />
       </template>

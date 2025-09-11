@@ -164,6 +164,35 @@ export const mockIssueFeatureSettings = [
   },
 ];
 
+export const mockDuoAgentPlatformSettings = [
+  {
+    feature: 'duo_agent_platform',
+    title: 'GitLab Duo Agent Platform - all agents',
+    mainFeature: 'GitLab Duo Agent Platform',
+    selectedModel: {
+      ref: 'claude_3_5_sonnet_20240620',
+      name: 'Claude Sonnet 3.5 - Anthropic',
+    },
+    defaultModel: {
+      name: 'Claude Sonnet 4.0 - Anthropic',
+    },
+    selectableModels: [
+      {
+        ref: 'claude_3_5_sonnet_20240620',
+        name: 'Claude Sonnet 3.5 - Anthropic',
+      },
+      {
+        ref: 'claude_sonnet_3_7_20250219',
+        name: 'Claude Sonnet 3.7 - Anthropic',
+      },
+      {
+        ref: 'claude_sonnet_4_20250514',
+        name: 'Claude Sonnet 4.0 - Anthropic',
+      },
+    ],
+  },
+];
+
 export const mockOtherDuoFeaturesSettings = [
   {
     feature: 'glab_ask_git_command',
@@ -199,4 +228,5 @@ export const mockAiFeatureSettings = [
   ...mockMergeRequestFeatureSettings,
   ...mockIssueFeatureSettings,
   ...mockOtherDuoFeaturesSettings,
+  ...mockDuoAgentPlatformSettings,
 ];
