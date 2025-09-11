@@ -8,6 +8,7 @@ import Api from 'ee/api';
 import waitForPromises from 'helpers/wait_for_promises';
 import axios from '~/lib/utils/axios_utils';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 const TEST_GROUP_ID = 'gitlab-org';
 const TEST_GROUP_NAME = 'Gitlab Org';
@@ -210,6 +211,23 @@ describe('GroupActivity component', () => {
 
         expect(findSubscriptionStatLink().exists()).toBe(false);
         expect(findSubscriptionStatInfo().exists()).toBe(false);
+      });
+    });
+
+    describe('tracking', () => {
+      const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+      it('tracks learn more button click', () => {
+        createComponent();
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        findSubscriptionStatLink().vm.$emit('click', { stopPropagation: jest.fn() });
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_plan_indicator_on_group_overview_page',
+          {},
+          undefined,
+        );
       });
     });
   });
