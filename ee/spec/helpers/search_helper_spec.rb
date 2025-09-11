@@ -642,4 +642,62 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       it { is_expected.to be_nil }
     end
   end
+
+  describe 'AI catalog autocomplete results' do
+    let_it_be(:user) { create(:user) }
+
+    before do
+      allow(self).to receive(:current_user).and_return(user)
+    end
+
+    context 'when global_ai_catalog feature is enabled' do
+      before do
+        stub_feature_flags(global_ai_catalog: true)
+        allow(self).to receive(:explore_ai_catalog_path).and_return('/explore/ai_catalog')
+      end
+
+      it 'includes AI catalog sections' do
+        expect(search_autocomplete_opts('ai').size).to eq(2)
+      end
+
+      it 'includes AI catalog agents section' do
+        results = search_autocomplete_opts('agents')
+        agents_result = results.find { |r| r[:label].include?('Agents') }
+        expect(agents_result).to include({
+          category: 'Jump to',
+          label: 'Explore / AI Catalog (Agents)',
+          url: '/explore/ai_catalog/agents'
+        })
+      end
+
+      it 'includes AI catalog flows section' do
+        results = search_autocomplete_opts('flows')
+        flows_result = results.find { |r| r[:label].include?('Flows') }
+        expect(flows_result).to include({
+          category: 'Jump to',
+          label: 'Explore / AI Catalog (Flows)',
+          url: '/explore/ai_catalog/flows'
+        })
+      end
+
+      it 'matches case insensitive search terms' do
+        expect(search_autocomplete_opts('AI').size).to eq(2)
+        expect(search_autocomplete_opts('CATALOG').size).to eq(2)
+        expect(search_autocomplete_opts('explore').size).to eq(2)
+      end
+    end
+
+    context 'when global_ai_catalog feature is disabled' do
+      before do
+        stub_feature_flags(global_ai_catalog: false)
+      end
+
+      it 'does not include AI catalog sections' do
+        expect(search_autocomplete_opts('ai').size).to eq(0)
+        expect(search_autocomplete_opts('catalog').size).to eq(0)
+        expect(search_autocomplete_opts('agents').size).to eq(0)
+        expect(search_autocomplete_opts('flows').size).to eq(0)
+      end
+    end
+  end
 end

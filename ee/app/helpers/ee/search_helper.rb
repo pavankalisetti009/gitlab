@@ -138,6 +138,31 @@ module EE
 
     private
 
+    override :combined_generic_results
+    def combined_generic_results
+      super + default_autocomplete_ai_catalog
+    end
+
+    # Autocomplete results for AI catalog pages
+    def default_autocomplete_ai_catalog
+      return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
+
+      [
+        {
+          category: "Jump to",
+          id: "ai_catalog_agents",
+          label: _("Explore / AI Catalog (Agents)"),
+          url: File.join(explore_ai_catalog_path, "/agents")
+        },
+        {
+          category: "Jump to",
+          id: "ai_catalog_flows",
+          label: _("Explore / AI Catalog (Flows)"),
+          url: File.join(explore_ai_catalog_path, "/flows")
+        }
+      ]
+    end
+
     def recent_epics_autocomplete(term)
       return [] unless current_user
 
