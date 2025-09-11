@@ -189,6 +189,13 @@ module EE
           experiment: { milestone: '17.2' },
           description: 'List the workflows owned by the current user.'
 
+        field :duo_default_namespace_candidates, ::Types::NamespaceType.connection_type,
+          null: true,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          resolver: ::Resolvers::Ai::DuoDefaultNamespaceCandidatesResolver,
+          experiment: { milestone: '18.7' },
+          description: "List namespaces suitable to be set as default namespace."
+
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,

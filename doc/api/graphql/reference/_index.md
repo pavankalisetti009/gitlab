@@ -829,6 +829,21 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="querydevopsadoptionenablednamespacesdisplaynamespaceid"></a>`displayNamespaceId` | [`NamespaceID`](#namespaceid) | Filter by display namespace. |
 
+### `Query.duoDefaultNamespaceCandidates`
+
+{{< details >}}
+**Introduced** in GitLab 18.7.
+**Status**: Experiment.
+{{< /details >}}
+
+List namespaces suitable to be set as default namespace.
+
+Returns [`NamespaceConnection`](#namespaceconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
 ### `Query.duoSettings`
 
 {{< details >}}
@@ -14021,6 +14036,7 @@ Input type: `UserPreferencesUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationuserpreferencesupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationuserpreferencesupdateduodefaultnamespaceid"></a>`duoDefaultNamespaceId` | [`Int`](#int) | Default namespace context for Duo features when namespace can not be inferred. |
 | <a id="mutationuserpreferencesupdateextensionsmarketplaceoptinstatus"></a>`extensionsMarketplaceOptInStatus` | [`ExtensionsMarketplaceOptInStatus`](#extensionsmarketplaceoptinstatus) | Status of the Web IDE Extension Marketplace opt-in for the user. |
 | <a id="mutationuserpreferencesupdateissuessort"></a>`issuesSort` | [`IssueSort`](#issuesort) | Sort order for issue lists. |
 | <a id="mutationuserpreferencesupdatemergerequestdashboardlisttype"></a>`mergeRequestDashboardListType` | [`MergeRequestsDashboardListType`](#mergerequestsdashboardlisttype) | Merge request dashboard list rendering type. |
