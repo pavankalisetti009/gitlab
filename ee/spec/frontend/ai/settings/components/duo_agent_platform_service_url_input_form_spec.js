@@ -38,7 +38,7 @@ describe('DuoAgentPlatformServiceUrlInputForm', () => {
 
   it('has the correct label', () => {
     expect(findDuoAgentPlatformServiceUrlInputForm().attributes('label')).toEqual(
-      'Local Duo Agent Platform Service URL',
+      'Local URL for the GitLab Duo Agent Platform service',
     );
   });
 
