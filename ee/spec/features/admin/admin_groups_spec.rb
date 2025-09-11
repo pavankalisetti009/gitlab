@@ -71,7 +71,8 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
     end
 
     describe 'list' do
-      let_it_be(:group) { create(:group, owners: [current_user]) }
+      let_it_be(:group) { create(:group, :private, owners: [current_user]) }
+      let_it_be(:unauthorized_group) { create(:group, :private) }
 
       it 'does not render admin-only buttons' do
         visit admin_groups_path
@@ -79,14 +80,32 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
         expect(page).not_to have_content("New group")
       end
 
-      it 'does not render admin-only action buttons' do
+      shared_examples 'does not render admin-only action buttons' do
+        specify do
+          visit admin_groups_path
+
+          expect(page).to have_content(group.name)
+
+          within_testid("groups-list-item-#{group.id}") do
+            expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
+          end
+        end
+      end
+
+      it_behaves_like 'does not render admin-only action buttons'
+
+      context 'when read_admin_groups feature flag is disabled' do
+        before do
+          stub_feature_flags(read_admin_groups: false)
+        end
+
+        it_behaves_like 'does not render admin-only action buttons'
+      end
+
+      it 'displays groups the user is not a member of' do
         visit admin_groups_path
 
-        expect(page).to have_content(group.name)
-
-        within_testid("groups-list-item-#{group.id}") do
-          expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
-        end
+        expect(page).to have_content(unauthorized_group.name)
       end
 
       context 'when admin_groups_vue is disabled' do
