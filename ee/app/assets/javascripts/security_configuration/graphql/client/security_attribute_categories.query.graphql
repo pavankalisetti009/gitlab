@@ -1,0 +1,13 @@
+query getSecurityAttributeCategories($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    securityAttributeCategories @client {
+      nodes {
+        id
+        name
+        description
+        multipleSelection
+      }
+    }
+  }
+}

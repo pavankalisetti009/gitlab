@@ -242,13 +242,14 @@ export default {
           // Temporarily (for mock data), return only attributes that contain the letter p
           .filter((attribute) => attribute.name.includes('p'))
           .map((attribute) => {
-            const { name } = mockSecurityAttributeCategories.find(
-              (category) => category.id === attribute.categoryId,
+            const category = mockSecurityAttributeCategories.find(
+              (c) => c.id === attribute.categoryId,
             );
             return {
               ...attribute,
               category: {
-                name,
+                id: category.id,
+                name: category.name,
               },
             };
           }),
