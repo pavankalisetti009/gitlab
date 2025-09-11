@@ -330,25 +330,12 @@ To upload an avatar in your project settings:
 {{< history >}}
 
 - Default behavior [changed](https://gitlab.com/gitlab-org/gitlab/-/issues/389557) to delayed project deletion for Premium and Ultimate tiers on [GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in 16.0.
-- Option to delete projects immediately as a group setting removed [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
 - Default behavior changed to delayed project deletion for [GitLab Free](https://gitlab.com/groups/gitlab-org/-/epics/17208) and [personal projects](https://gitlab.com/gitlab-org/gitlab/-/issues/536244) in 18.0.
-- Option to delete projects immediately [moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
-- Support for disallowing immediate deletion for groups or projects scheduled for deletion [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201957) in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
 
 {{< /history >}}
 
-{{< alert type="flag" >}}
-
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-
-{{< /alert >}}
-
-You can schedule a project for deletion.
 By default, when you delete a project for the first time, it enters a pending deletion state.
 Delete a project again to remove it immediately.
-
-On GitLab.com, after a project is deleted, its data is retained for 30 days.
 
 Prerequisites:
 
@@ -362,14 +349,59 @@ To delete a project:
 1. Expand **Advanced**.
 1. In the **Delete project** section, select **Delete project**.
 1. On the confirmation dialog, enter the project name and select **Yes, delete project**.
-1. Optional. To delete the project immediately, repeat these steps.
 
-You can also [delete projects using the Rails console](troubleshooting.md#delete-a-project-using-console).
+This action adds a background job to mark a group for deletion. On GitLab.com, the group is deleted after 30 days. On GitLab Self-Managed,
+you can modify the retention period through the [instance settings](../../administration/settings/visibility_and_access_controls.md#deletion-protection).
 
 If the user who scheduled the project deletion loses access to the project before the deletion occurs
 (for example, by leaving the project, having their role downgraded, or being banned from the project),
-the deletion job restores the project. However, if the user regains access before the deletion job runs,
-the job removes the project permanently.
+the deletion job instead restores the project, and the project is no longer scheduled for deletion.
+
+{{< alert type="warning" >}}
+
+If the user who scheduled the project deletion regains Owner role or administrator access before the job runs, then the job removes the project permanently.
+
+{{< /alert >}}
+
+You can also [delete projects using the Rails console](troubleshooting.md#delete-a-project-using-console).
+
+## Delete a project immediately
+
+{{< history >}}
+
+- Option to delete projects immediately as a group setting removed [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
+- Option to delete projects immediately [moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
+- [Instance setting](../../administration/settings/visibility_and_access_controls.md#immediate-deletion)
+  to allow immediate deletion for groups or projects scheduled for deletion
+  [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/205556) in GitLab 18.5
+  [with a flag](../../administration/feature_flags/_index.md) named `allow_immediate_namespaces_deletion`.
+  Enabled by default. Disabled on GitLab.com and Dedicated.
+
+{{< /history >}}
+
+{{< alert type="warning" >}}
+
+On GitLab.com, after a project is deleted, its data is retained for 30 days, and immediate deletion is not available.
+If you really need to delete a project immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
+
+{{< /alert >}}
+
+If you don't want to wait, you can delete a project immediately.
+
+Prerequisites:
+
+- You must have the Owner role for a project.
+- You have [marked the project for deletion](#delete-a-project).
+
+To immediately delete a project marked for deletion:
+
+1. On the left sidebar, select **Search or go to** and find your project.
+1. Select **Settings > General**.
+1. Expand **Advanced**.
+1. In the **Delete project immediately** section, select **Delete project immediately**.
+1. Confirm the action when asked to.
+
+This action deletes the group, its subgroups, projects, and all related resources, including issues and merge requests.
 
 ### Restore a project
 

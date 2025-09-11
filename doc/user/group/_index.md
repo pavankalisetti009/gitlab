@@ -124,6 +124,34 @@ This page shows groups that you are a member of through:
 - Membership of a subgroup's parent group.
 - Direct or inherited membership of a project in the group or subgroup.
 
+### View inactive groups
+
+{{< history >}}
+
+- **Inactive** tab [introduced](https://gitlab.com/groups/gitlab-org/-/epics/13781) in GitLab 18.2 [with a flag](../../administration/feature_flags/_index.md) named `your_work_groups_vue`. Disabled by default.
+- [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/542790) in GitLab 18.3. Feature flag `your_work_groups_vue` removed.
+
+{{< /history >}}
+
+A group is inactive when:
+
+- It is pending deletion.
+- It has been archived.
+
+To view all inactive groups:
+
+1. On the left sidebar, select **Search or go to** and find your group.
+1. Select **View all my groups**.
+1. Select the **Inactive** tab.
+
+Each group in the list shows:
+
+- A badge indicating that the group is archived or marked for deletion.
+  If the group is marked for deletion, the list also shows:
+  - The time the group was marked for deletion.
+  - The time the group is scheduled for final deletion.
+  - A **Restore** action to stop the group being eventually deleted.
+
 ## View a group
 
 {{< history >}}
@@ -249,6 +277,14 @@ To leave a group:
 
 {{< /history >}}
 
+By default, when you delete a group for the first time, it enters a pending deletion state.
+Delete a group again to remove it immediately.
+
+Prerequisites:
+
+- You must have the Owner role for a group.
+- If the groups contains any project, owners must be [allowed to delete projects](../../administration/settings/visibility_and_access_controls.md#restrict-project-deletion-to-administrators).
+
 To delete a group and its contents:
 
 1. On the left sidebar, select **Search or go to** and find your group.
@@ -272,28 +308,11 @@ you can modify the retention period through the [instance settings](../../admini
 If the user who scheduled the group deletion loses access to the group (for example, by leaving the group, having their role downgraded, or being banned from the group) before the deletion occurs,
 the deletion job instead restores the group, and the group is no longer scheduled for deletion.
 
-   {{< alert type="warning" >}}
+{{< alert type="warning" >}}
 
-   If the user who scheduled the group deletion regains Owner role or administrator access before the job runs, then the job removes the group permanently.
+If the user who scheduled the group deletion regains Owner role or administrator access before the job runs, then the job removes the group permanently.
 
-   {{< /alert >}}
-
-### View groups pending deletion
-
-{{< history >}}
-
-- **Inactive** tab [introduced](https://gitlab.com/groups/gitlab-org/-/epics/13781) in GitLab 18.2 [with a flag](../../administration/feature_flags/_index.md) named `your_work_groups_vue`. Disabled by default.
-- [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/542790) in GitLab 18.3. Feature flag `your_work_groups_vue` removed.
-
-{{< /history >}}
-
-To view a list of the groups that are pending deletion:
-
-1. On the left sidebar, select **Search or go to** and find your group.
-1. Select **View all my groups**.
-1. Select the **Inactive** tab.
-
-Groups that are marked for deletion are labeled **Pending deletion**.
+{{< /alert >}}
 
 ## Delete a group immediately
 
@@ -301,14 +320,18 @@ Groups that are marked for deletion are labeled **Pending deletion**.
 
 - Enabled delayed deletion by default [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
 - [Moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
-- Support for disallowing immediate deletion for groups or projects scheduled for deletion [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201957) in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
+- [Instance setting](../../administration/settings/visibility_and_access_controls.md#immediate-deletion)
+  to allow immediate deletion for groups or projects scheduled for deletion
+  [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/205556) in GitLab 18.5
+  [with a flag](../../administration/feature_flags/_index.md) named `allow_immediate_namespaces_deletion`.
+  Enabled by default. Disabled on GitLab.com and Dedicated.
 
 {{< /history >}}
 
-{{< alert type="flag" >}}
+{{< alert type="warning" >}}
 
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
+On GitLab.com, after a group is deleted, its data is retained for 30 days, and immediate deletion is not available.
+If you really need to delete a group immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
 
 {{< /alert >}}
 
@@ -324,7 +347,7 @@ To immediately delete a group marked for deletion:
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Settings** > **General**.
 1. Expand **Advanced**.
-1. In the **Permanently delete group** section, select **Delete group**.
+1. In the **Delete group immediately** section, select **Delete group immediately**.
 1. Confirm the action when asked to.
 
 This action deletes the group, its subgroups, projects, and all related resources, including issues and merge requests.

@@ -115,6 +115,15 @@ module Namespaces
       )
     end
 
+    def delete_immediately_unavailable_due_to_ancestor_message(namespace)
+      messages = {
+        group: _('To delete immediately this group, you must delete immediately its parent group.'),
+        project: _('To delete immediately this project, you must delete immediately its parent group.')
+      }
+
+      message_for_namespace(namespace, messages)
+    end
+
     def group_confirm_modal_data(
       group:,
       remove_form_id: nil,

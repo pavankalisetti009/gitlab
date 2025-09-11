@@ -1,17 +1,35 @@
-- return if Feature.enabled?(:disallow_immediate_deletion, current_user)
-- return unless group.self_deletion_scheduled?
+- return unless can?(current_user, :remove_group, group)
+- return unless group.scheduled_for_deletion_in_hierarchy_chain?
 
 - remove_form_id = local_assigns.fetch(:remove_form_id, nil)
+- allow_immediate_namespaces_deletion = Gitlab::CurrentSettings.allow_immediate_namespaces_deletion_for_user?(current_user)
+- immediate_deletion_disabled = group.self_deletion_scheduled? && allow_immediate_namespaces_deletion
+- deletion_available = !group.scheduled_for_deletion_in_hierarchy_chain? || immediate_deletion_disabled
+- component_class = deletion_available ? 'gl-bg-feedback-danger' : ''
+- h4_class = deletion_available ? 'gl-text-feedback-danger' : ''
+- title = group.scheduled_for_deletion_in_hierarchy_chain? ? s_('GroupSettings|Delete group immediately') : s_('GroupSettings|Delete group')
 
-= render Pajamas::CardComponent.new(body_options: { class: 'gl-bg-feedback-danger' }) do |c|
+= render Pajamas::CardComponent.new(body_options: { class: component_class }) do |c|
   - c.with_header do
     .gl-flex.gl-grow
-      %h4.gl-text-base.gl-leading-24.gl-m-0.gl-text-feedback-danger= _('Delete group immediately')
+      %h4.gl-text-base.gl-leading-24.gl-m-0{ class: h4_class }
+        = title
+        - unless deletion_available
+          - tooltip = allow_immediate_namespaces_deletion && group.ancestor_scheduled_for_deletion? ? delete_immediately_unavailable_due_to_ancestor_message(group) : s_('GroupSettings|Immediate deletion is disabled')
+          %span.has-tooltip{ title: tooltip }
+            = sprite_icon('cancel', css_class: "gl-icon gl-cursor-pointer", size: 16)
 
   - c.with_body do
-    = form_tag(group, method: :delete, id: remove_form_id) do
-      %p= delete_immediately_namespace_scheduled_for_deletion_message(group)
+    - if group.self_deletion_scheduled? && allow_immediate_namespaces_deletion
+      = form_tag(group, method: :delete, id: remove_form_id) do
+        %p= delete_immediately_namespace_scheduled_for_deletion_message(group)
+        = hidden_field_tag(:permanently_remove, true)
+        = render 'groups/settings/remove_button', group: group, remove_form_id: remove_form_id, button_text: title
 
-      = hidden_field_tag(:permanently_remove, true)
-
-      = render 'groups/settings/remove_button', group: group, remove_form_id: remove_form_id, button_text: _('Delete group immediately')
+    - else
+      -# Immediate deletion not available: either because of ancestor, or instance setting
+      - help_page_link = link_to('', help_page_path('user/group/_index.md', anchor: 'delete-a-group-immediately'), target: '_blank', rel: 'noopener noreferrer')
+      %div
+        = self_or_ancestors_deletion_in_progress_or_scheduled_message(group)
+        - if group.self_deletion_scheduled?
+          = safe_format(s_('GroupSettings|%{link_start}How do I immediately delete a group?%{link_end}'), tag_pair(help_page_link, :link_start, :link_end))

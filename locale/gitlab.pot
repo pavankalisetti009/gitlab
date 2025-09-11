@@ -22435,9 +22435,6 @@ msgstr ""
 msgid "Delete group"
 msgstr ""
 
-msgid "Delete group immediately"
-msgstr ""
-
 msgid "Delete group immediately?"
 msgstr ""
 
@@ -22463,9 +22460,6 @@ msgid "Delete pipeline"
 msgstr ""
 
 msgid "Delete project"
-msgstr ""
-
-msgid "Delete project immediately"
 msgstr ""
 
 msgid "Delete release"
@@ -32414,6 +32408,9 @@ msgstr ""
 msgid "GroupSelect|Select a group"
 msgstr ""
 
+msgid "GroupSettings|%{link_start}How do I immediately delete a group?%{link_end}"
+msgstr ""
+
 msgid "GroupSettings|Add additional webhook triggers for group access token expiration"
 msgstr ""
 
@@ -32493,6 +32490,12 @@ msgid "GroupSettings|Customize this group's badges."
 msgstr ""
 
 msgid "GroupSettings|Default to Auto DevOps pipeline for all projects within this group"
+msgstr ""
+
+msgid "GroupSettings|Delete group"
+msgstr ""
+
+msgid "GroupSettings|Delete group immediately"
 msgstr ""
 
 msgid "GroupSettings|Disable personal access tokens"
@@ -32586,6 +32589,9 @@ msgid "GroupSettings|If not specified at the group or instance level, the defaul
 msgstr ""
 
 msgid "GroupSettings|If the parent group's visibility is lower than the group's current visibility, visibility levels for subgroups and projects will be changed to match the new parent group's visibility."
+msgstr ""
+
+msgid "GroupSettings|Immediate deletion is disabled"
 msgstr ""
 
 msgid "GroupSettings|Include diff previews"
@@ -51521,6 +51527,9 @@ msgstr ""
 msgid "ProjectService|Trigger event when an issue is created, updated, or closed."
 msgstr ""
 
+msgid "ProjectSettings|%{link_start}How do I immediately delete a project?%{link_end}"
+msgstr ""
+
 msgid "ProjectSettings|%{link_start}What are description templates?%{link_end}"
 msgstr ""
 
@@ -51635,6 +51644,12 @@ msgstr ""
 msgid "ProjectSettings|Data sources"
 msgstr ""
 
+msgid "ProjectSettings|Delete project"
+msgstr ""
+
+msgid "ProjectSettings|Delete project immediately"
+msgstr ""
+
 msgid "ProjectSettings|Determine what happens to the commit history when you merge a merge request."
 msgstr ""
 
@@ -51747,6 +51762,9 @@ msgid "ProjectSettings|If enabled, project access tokens expiry webhooks execute
 msgstr ""
 
 msgid "ProjectSettings|If merge trains are enabled, merging is only possible if the branch can be rebased without conflicts."
+msgstr ""
+
+msgid "ProjectSettings|Immediate deletion is disabled"
 msgstr ""
 
 msgid "ProjectSettings|Include diff previews"
@@ -68244,6 +68262,12 @@ msgid "To continue, please update your password. After you update, you'll be dir
 msgstr ""
 
 msgid "To continue, you need to select the link in the confirmation email we sent to verify your email address. If you didn't get our email, select %{strongStart}Resend confirmation email.%{strongEnd}"
+msgstr ""
+
+msgid "To delete immediately this group, you must delete immediately its parent group."
+msgstr ""
+
+msgid "To delete immediately this project, you must delete immediately its parent group."
 msgstr ""
 
 msgid "To disable the setting, set this value to 0."

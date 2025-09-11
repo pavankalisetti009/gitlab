@@ -402,20 +402,14 @@ RSpec.describe 'Edit group settings', :with_current_organization, feature_catego
     context 'when group is marked for deletion', :js do
       before do
         create(:group_deletion_schedule, group: group)
+
+        visit edit_group_path(group)
       end
 
-      context 'when the :disallow_immediate_deletion feature flag is disabled' do
-        before do
-          stub_feature_flags(disallow_immediate_deletion: false)
+      it 'deletes the project immediately', :sidekiq_inline do
+        expect { remove_with_confirm('Delete group immediately', group.path) }.to change { Group.count }.by(-1)
 
-          visit edit_group_path(group)
-        end
-
-        it 'deletes the project immediately', :sidekiq_inline do
-          expect { remove_with_confirm('Delete group immediately', group.path) }.to change { Group.count }.by(-1)
-
-          expect(page).to have_content "is being deleted"
-        end
+        expect(page).to have_content "is being deleted"
       end
     end
   end

@@ -1,17 +1,35 @@
 - return unless can?(current_user, :remove_project, @project)
-- return if Feature.enabled?(:disallow_immediate_deletion, current_user) && @project.self_deletion_scheduled?
-- return if @project.ancestor_scheduled_for_deletion?
 
-- title = @project.self_deletion_scheduled? ? _('Delete project immediately') : _('Delete project')
+- allow_immediate_namespaces_deletion = Gitlab::CurrentSettings.allow_immediate_namespaces_deletion_for_user?(current_user)
+- immediate_deletion_disabled = @project.self_deletion_scheduled? && allow_immediate_namespaces_deletion
+- deletion_available = !@project.scheduled_for_deletion_in_hierarchy_chain? || immediate_deletion_disabled
+- component_class = deletion_available ? 'gl-bg-feedback-danger' : ''
+- h4_class = deletion_available ? 'gl-text-feedback-danger' : ''
+- title = @project.scheduled_for_deletion_in_hierarchy_chain? ? s_('ProjectSettings|Delete project immediately') : s_('ProjectSettings|Delete project')
 
-= render Pajamas::CardComponent.new(body_options: { class: 'gl-bg-feedback-danger' }) do |c|
+= render Pajamas::CardComponent.new(body_options: { class: component_class }) do |c|
   - c.with_header do
     .gl-flex.gl-grow
-      %h4.gl-text-base.gl-leading-24.gl-m-0.gl-text-feedback-danger= title
+      %h4.gl-text-base.gl-leading-24.gl-m-0{ class: h4_class }
+        = title
+        - unless deletion_available
+          - tooltip = allow_immediate_namespaces_deletion && @project.ancestor_scheduled_for_deletion? ? delete_immediately_unavailable_due_to_ancestor_message(@project) : s_('ProjectSettings|Immediate deletion is disabled')
+          %span.has-tooltip{ title: tooltip }
+            = sprite_icon('cancel', css_class: "gl-icon gl-cursor-pointer", size: 16)
 
   - c.with_body do
-    - if @project.self_deletion_scheduled?
+    - if @project.self_deletion_scheduled? && allow_immediate_namespaces_deletion
       %p= delete_immediately_namespace_scheduled_for_deletion_message(@project)
-      #js-project-delete-button{ data: project_delete_immediately_button_data(@project, _('Delete project immediately')) }
+      #js-project-delete-button{ data: project_delete_immediately_button_data(@project, title) }
+
+    - elsif @project.scheduled_for_deletion_in_hierarchy_chain?
+      -# Immediate deletion not available: either because of ancestor, or instance setting
+      - help_page_link = link_to('', help_page_path('user/project/working_with_projects.md', anchor: 'delete-a-project-immediately'), target: '_blank', rel: 'noopener noreferrer')
+      %p
+        = self_or_ancestors_deletion_in_progress_or_scheduled_message(@project)
+        - if @project.self_deletion_scheduled?
+          = safe_format(s_('ProjectSettings|%{link_start}How do I immediately delete a project?%{link_end}'), tag_pair(help_page_link, :link_start, :link_end))
+
     - else
+      -# Neither the project or its ancestor is scheduled for deletion
       = render 'delete_delayed'
