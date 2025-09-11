@@ -10,6 +10,14 @@ query getAiFeatureSetting {
         id
         releaseState
       }
+      defaultGitlabModel {
+        name
+        ref
+      }
+      gitlabModel {
+        name
+        ref
+      }
       validModels {
         nodes {
           id
@@ -17,6 +25,12 @@ query getAiFeatureSetting {
           model
           modelDisplayName
           releaseState
+        }
+      }
+      validGitlabModels {
+        nodes {
+          name
+          ref
         }
       }
     }

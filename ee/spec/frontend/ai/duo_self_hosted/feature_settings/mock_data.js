@@ -36,6 +36,17 @@ export const mockSelfHostedModels = [
   },
 ];
 
+export const mockGitlabManagedModels = [
+  {
+    name: 'Claude Sonnet 4.0 - Anthropic',
+    ref: 'claude_sonnet_4_20250514',
+  },
+  {
+    name: 'Claude Sonnet 3.7 - Vertex',
+    ref: 'claude_sonnet_3_7_20250219_vertex',
+  },
+];
+
 export const mockCodeSuggestionsFeatureSettings = [
   {
     feature: 'code_generations',
@@ -45,6 +56,9 @@ export const mockCodeSuggestionsFeatureSettings = [
     provider: 'vendored',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
   {
     feature: 'code_completions',
@@ -54,6 +68,9 @@ export const mockCodeSuggestionsFeatureSettings = [
     provider: 'disabled',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
 ];
 
@@ -69,6 +86,9 @@ export const mockDuoChatFeatureSettings = [
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
   {
     feature: 'duo_chat',
@@ -81,6 +101,9 @@ export const mockDuoChatFeatureSettings = [
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
   {
     feature: 'duo_chat_explain_code',
@@ -93,6 +116,9 @@ export const mockDuoChatFeatureSettings = [
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
 ];
 
@@ -105,6 +131,9 @@ export const mockMergeRequestFeatureSettings = [
     provider: 'disabled',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
   {
     feature: 'generate_commit_message',
@@ -117,6 +146,9 @@ export const mockMergeRequestFeatureSettings = [
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
 ];
 
@@ -129,6 +161,9 @@ export const mockIssueFeatureSettings = [
     provider: 'disabled',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
 ];
 
@@ -144,6 +179,9 @@ export const mockDuoAgentPlatformFeatureSettings = [
       releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
 ];
 
@@ -156,6 +194,9 @@ export const mockOtherDuoFeaturesSettings = [
     provider: 'disabled',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
+    gitlabModel: null,
+    defaultGitlabModel: null,
+    validGitlabModels: { nodes: [] },
   },
 ];
 
