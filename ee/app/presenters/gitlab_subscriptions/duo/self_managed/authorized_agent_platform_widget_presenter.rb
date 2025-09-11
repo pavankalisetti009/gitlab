@@ -5,6 +5,7 @@ module GitlabSubscriptions
     module SelfManaged
       class AuthorizedAgentPlatformWidgetPresenter < Duo::BaseAgentPlatformWidgetPresenter
         include GitlabSubscriptions::Duo::SelfManaged::WidgetCommon
+        extend ::Gitlab::Utils::Override
 
         private
 
@@ -14,6 +15,11 @@ module GitlabSubscriptions
 
         def action_path
           ::Gitlab::Routing.url_helpers.update_duo_agent_platform_admin_application_settings_path
+        end
+
+        override :feature_preview_attribute
+        def feature_preview_attribute
+          :instance_level_ai_beta_features_enabled
         end
       end
     end

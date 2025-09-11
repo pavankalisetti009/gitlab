@@ -42,6 +42,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
             stateProgression: [:enabled],
+            featurePreviewAttribute: nil,
+            initialState: :enabled,
             isAuthorized: true
           }
         }
@@ -58,6 +60,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
             stateProgression: [:enableFeaturePreview, :enabled],
+            featurePreviewAttribute: nil,
+            initialState: :enabled_without_beta_features,
             isAuthorized: true
           }
         }
@@ -74,6 +78,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
             stateProgression: [:enablePlatform, :enabled],
+            featurePreviewAttribute: nil,
+            initialState: :enabled_without_core,
             isAuthorized: true
           }
         }
@@ -90,6 +96,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
             stateProgression: [:enablePlatform, :enabled],
+            featurePreviewAttribute: nil,
+            initialState: :only_duo_default_off,
             isAuthorized: true
           }
         }
@@ -106,6 +114,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
             stateProgression: [:enablePlatform, :enableFeaturePreview, :enabled],
+            featurePreviewAttribute: nil,
+            initialState: :disabled,
             isAuthorized: true
           }
         }
@@ -121,8 +131,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
     klass = stub_const('TestPresenter', Class.new(described_class))
 
     complete_methods = [
-      :action_path, :eligible?, :enabled_without_beta_features?,
-      :fully_enabled?, :only_duo_default_off?, :enabled_without_core?, :user_attributes
+      :action_path, :eligible?, :enabled_without_beta_features?, :enabled_without_core?,
+      :fully_enabled?, :only_duo_default_off?, :user_attributes
     ]
 
     complete_methods.each do |m|

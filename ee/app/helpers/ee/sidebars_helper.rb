@@ -40,7 +40,7 @@ module EE
 
       context.merge!(
         GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes,
-        GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter.new(user).attributes
+        GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter.new(user, context: project || group).attributes
       )
 
       context[:trial] = {

@@ -7,6 +7,7 @@ import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/alert');
 
@@ -27,6 +28,8 @@ describe('DuoAgentPlatformWidget component', () => {
   const defaultProvide = {
     actionPath: '/admin/application_settings/general',
     stateProgression: ['enablePlatform', 'enabled'],
+    featurePreviewAttribute: 'instance_level_ai_beta_features_enabled',
+    initialState: 'disabled',
     isAuthorized: true,
   };
 
@@ -261,6 +264,23 @@ describe('DuoAgentPlatformWidget component', () => {
         );
       });
 
+      it('uses featurePreviewAttribute from provide', async () => {
+        createComponent({
+          stateProgression: ['enableFeaturePreview', 'enabled'],
+          featurePreviewAttribute: 'experiment_features_enabled',
+        });
+        mockAxios.onPut('/admin/application_settings/general').reply(HTTP_STATUS_OK);
+
+        await findActionButton().vm.$emit('click');
+        await findConfirmModal().props('actionFn')();
+
+        expect(mockAxios.history.put[0].data).toBe(
+          JSON.stringify({
+            experiment_features_enabled: true,
+          }),
+        );
+      });
+
       it('shows correct toast message', async () => {
         await findActionButton().vm.$emit('click');
         await findConfirmModal().props('actionFn')();
@@ -401,6 +421,75 @@ describe('DuoAgentPlatformWidget component', () => {
 
       expect(findBody().exists()).toBe(false);
       expect(findActionButton().exists()).toBe(false);
+    });
+  });
+
+  describe('tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    it('tracks widget render on mount', () => {
+      const { trackEventSpy } = bindInternalEventDocument(document);
+
+      createComponent({ initialState: 'enabled' });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'render_duo_agent_platform_widget_in_sidebar',
+        {
+          label: 'enabled',
+        },
+        undefined,
+      );
+    });
+
+    it('tracks learn more button click', () => {
+      createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      trackEventSpy.mockClear();
+
+      findLearnMoreButton().vm.$emit('click', { stopPropagation: jest.fn() });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_learn_more_in_duo_agent_platform_widget_in_sidebar',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks successful enable action', async () => {
+      createComponent();
+      mockAxios.onPut('/admin/application_settings/general').reply(HTTP_STATUS_OK);
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await findActionButton().vm.$emit('click');
+      await findConfirmModal().props('actionFn')();
+      await waitForPromises();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar',
+        {
+          label: 'enablePlatform',
+        },
+        undefined,
+      );
+    });
+
+    it('tracks with different state labels', async () => {
+      createComponent({ stateProgression: ['enableFeaturePreview', 'enabled'] });
+      mockAxios.onPut('/admin/application_settings/general').reply(HTTP_STATUS_OK);
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await findActionButton().vm.$emit('click');
+      await findConfirmModal().props('actionFn')();
+      await waitForPromises();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar',
+        {
+          label: 'enableFeaturePreview',
+        },
+        undefined,
+      );
     });
   });
 });
