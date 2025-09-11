@@ -45,6 +45,7 @@ export default {
   methods: {
     toggleAIPanel(val) {
       this.isExpanded = val;
+      if (!val) this.activeTab = null;
     },
     handleTabToggle(tab) {
       if (tab === this.activeTab) {

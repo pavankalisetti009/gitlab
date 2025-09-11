@@ -40,7 +40,6 @@ describe('AIPanel', () => {
     findLocalStorageSync().vm.$emit('input', false);
     await waitForPromises();
 
-    expect(findContentContainer().props('isExpanded')).toBe(false);
     expect(findNavigationRail().props('isExpanded')).toBe(false);
   });
 
