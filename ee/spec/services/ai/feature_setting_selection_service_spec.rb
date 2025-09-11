@@ -93,6 +93,7 @@ RSpec.describe Ai::FeatureSettingSelectionService, feature_category: :"self-host
 
             it 'returns error with missing default namespace message' do
               expect(response).to be_error
+              expect(response.payload).to be_nil
               expect(response.message).to eq(described_class::MISSING_DEFAULT_NAMESPACE)
             end
           end

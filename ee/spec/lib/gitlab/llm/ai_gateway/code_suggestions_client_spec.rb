@@ -35,6 +35,8 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     allow(Gitlab::AiGateway).to receive(:headers).with(
       user: user, service: unit_primitive, ai_feature_name: expected_ai_feature
     ).and_return(ai_gateway_headers)
+
+    stub_feature_flags(instance_level_model_selection: false)
   end
 
   shared_examples "error response" do |message|

@@ -6,12 +6,17 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   let_it_be(:feature_setting_name) { 'code_generations' }
   let_it_be(:unit_primitive_name) { 'generate_code' }
   let_it_be(:user) { create(:user) }
+  let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
 
   let(:root_namespace) { nil }
 
   subject(:model_details) do
     described_class.new(current_user: user, feature_setting_name: feature_setting_name,
       unit_primitive_name: unit_primitive_name, root_namespace: root_namespace)
+  end
+
+  before do
+    stub_saas_features(gitlab_com_subscriptions: true)
   end
 
   shared_context 'with a default duo namespace assigned' do
@@ -52,7 +57,13 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     end
 
     context 'when the feature is governed via self-hosted models' do
-      let_it_be(:feature_setting) { create(:ai_feature_setting, feature: feature_setting_name) }
+      let_it_be(:feature_setting) do
+        create(:ai_feature_setting, feature: feature_setting_name, self_hosted_model: self_hosted_model)
+      end
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
 
       context 'without a default duo namespace assigned' do
         it 'returns the feature setting' do
@@ -90,7 +101,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
 
     context 'when the feature is governed via self-hosted models' do
       it 'returns false' do
-        create(:ai_feature_setting, feature: feature_setting_name)
+        create(:ai_feature_setting, feature: feature_setting_name, self_hosted_model: self_hosted_model)
 
         expect(namespace_feature_setting?).to be(false)
       end
@@ -114,22 +125,6 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   describe '#duo_context_not_found?' do
     let(:duo_default_required) { true }
 
-    before do
-      allow(model_details).to receive(:default_duo_namespace_required?).and_return(duo_default_required)
-    end
-
-    context 'when no duo context can be found and it is required' do
-      it_behaves_like 'feature_setting cannot be inferred for method', :duo_context_not_found?, true
-    end
-
-    context 'when no duo context can be found and it is not required' do
-      let(:duo_default_required) { false }
-
-      it 'returns false' do
-        expect(model_details.duo_context_not_found?).to be(false)
-      end
-    end
-
     context 'when Amazon Q is connected' do
       it 'returns false' do
         allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
@@ -138,11 +133,33 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       end
     end
 
-    context 'when the feature has a self-hosted models feature setting' do
-      it 'returns false' do
-        create(:ai_feature_setting, feature: feature_setting_name)
+    context 'when AmazonQ is not connected' do
+      before do
+        expect_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+          allow(service).to receive(:default_duo_namespace_required?).and_return(duo_default_required)
+        end
+      end
 
-        expect(model_details.duo_context_not_found?).to be(false)
+      context 'when no duo context can be found and it is required' do
+        it_behaves_like 'feature_setting cannot be inferred for method', :duo_context_not_found?, true
+      end
+
+      context 'when no duo context can be found and it is not required' do
+        let(:duo_default_required) { false }
+
+        it 'returns false' do
+          expect(model_details.duo_context_not_found?).to be(false)
+        end
+      end
+
+      context 'when on self-managed' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
+
+        it 'returns false' do
+          expect(model_details.duo_context_not_found?).to be(false)
+        end
       end
     end
   end
@@ -155,6 +172,10 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     context 'when the feature is self-hosted, but set to disabled' do
       let_it_be(:feature_setting) do
         create(:ai_feature_setting, provider: :disabled, feature: feature_setting_name)
+      end
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
       end
 
       it 'returns true' do
@@ -178,6 +199,74 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
     end
   end
 
+  describe '#default?' do
+    subject(:default?) { model_details.default? }
+
+    before do
+      stub_feature_flags(instance_level_model_selection: false)
+    end
+
+    context 'when the feature setting is nil' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when on self-managed' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      context 'when the feature setting is self-hosted' do
+        before do
+          create(
+            :ai_feature_setting,
+            feature: feature_setting_name,
+            self_hosted_model: self_hosted_model,
+            provider: :self_hosted
+          )
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when is set to vendored' do
+        before do
+          create(
+            :ai_feature_setting,
+            feature: feature_setting_name,
+            self_hosted_model: nil,
+            provider: :vendored
+          )
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'when :instance_level_model_selection is enabled' do
+          before do
+            stub_feature_flags(instance_level_model_selection: true)
+          end
+
+          context 'when the instance level namespace is default' do
+            before do
+              create(:instance_model_selection_feature_setting, feature: feature_setting_name, offered_model_ref: nil)
+            end
+
+            it { is_expected.to be(true) }
+          end
+
+          context 'when the instance level namespace is not default' do
+            before do
+              create(:instance_model_selection_feature_setting,
+                feature: feature_setting_name,
+                offered_model_ref: 'claude_sonnet_3_5')
+            end
+
+            it { is_expected.to be(false) }
+          end
+        end
+      end
+    end
+  end
+
   describe '#vendored?' do
     subject(:vendored?) { model_details.vendored? }
 
@@ -188,6 +277,10 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
         create(:ai_feature_setting, provider: :vendored, feature: feature_setting_name)
       end
 
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
       it 'returns true' do
         expect(vendored?).to be(true)
       end
@@ -195,7 +288,7 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
 
     context 'when the feature is governed via self-hosted models' do
       it 'returns false' do
-        create(:ai_feature_setting, feature: feature_setting_name)
+        create(:ai_feature_setting, feature: feature_setting_name, self_hosted_model: self_hosted_model)
 
         expect(vendored?).to be(false)
       end

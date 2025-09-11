@@ -52,6 +52,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       context 'on GitLab self-managed' do
         before do
           allow(Gitlab).to receive(:org_or_com?).and_return(false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         it 'returns the fireworks/codestral model' do
@@ -82,6 +83,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       context 'on GitLab saas' do
         before do
           allow(Gitlab).to receive(:org_or_com?).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         it 'returns the fireworks/codestral model' do
@@ -124,7 +126,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
     context 'when code_completions is self-hosted' do
       before do
-        feature_setting_double = instance_double(::Ai::FeatureSetting, self_hosted?: true)
+        feature_setting_double = instance_double(::Ai::FeatureSetting, self_hosted?: true, vendored?: false)
         allow(::Ai::FeatureSetting).to receive(:find_by_feature).with('code_completions')
           .and_return(feature_setting_double)
       end
@@ -157,11 +159,59 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
       let(:expected_self_hosted_model_result) { {} }
 
-      context 'when code_completions is vendored' do
-        it 'returns the vendored model' do
-          create(:ai_feature_setting, :code_completions, provider: :vendored)
+      before do
+        stub_feature_flags(
+          use_claude_code_completion: false,
+          instance_level_model_selection: false
+        )
+      end
 
-          expect(actual_result).to eq({ model_provider: 'gitlab', model_name: '' })
+      context 'when instance level model selection is enabled' do
+        before do
+          stub_feature_flags(
+            instance_level_model_selection: true,
+            code_completion_opt_out_fireworks: false
+          )
+        end
+
+        context 'when instance duo self-hosted config exists' do
+          context 'and is not set to vendored' do
+            let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
+
+            before do
+              create(:ai_feature_setting,
+                self_hosted_model: self_hosted_model,
+                provider: :self_hosted,
+                feature: 'code_completions')
+            end
+
+            it 'returns empty response' do
+              expect(actual_result).to eq(expected_self_hosted_model_result)
+            end
+          end
+
+          context 'and is set to vendored' do
+            context 'and instance level is not default' do
+              before do
+                create(:instance_model_selection_feature_setting,
+                  feature: 'code_completions',
+                  offered_model_ref: 'claude_sonnet_3_5')
+              end
+
+              it 'returns the selected model' do
+                expect(actual_result).to eq({
+                  model_provider: 'gitlab',
+                  model_name: 'claude_sonnet_3_5'
+                })
+              end
+            end
+
+            context 'and instance level is default' do
+              it 'returns the default model' do
+                expect(actual_result).to eq(expected_fireworks_codestral_result)
+              end
+            end
+          end
         end
       end
     end

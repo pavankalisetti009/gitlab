@@ -562,7 +562,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           it 'responds with an unauthorized request with a special error message' do
-            msg = 'No default Duo group found. Select a default Duo group in your user preferences and try again.'
+            msg = "I'm sorry, you have not selected a default GitLab Duo namespace. " \
+              "Please select a default GitLab namespace for Duo in User Preferences - Behaviour in GitLab."
             post_api
 
             expect(response).to have_gitlab_http_status(:unprocessable_entity)
@@ -1039,6 +1040,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         }
       end
 
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+        stub_feature_flags(instance_level_model_selection: false)
+      end
+
       context 'when user is authorized' do
         let(:current_user) { authorized_user }
 
@@ -1172,6 +1178,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
             before do
               allow(::Gitlab::AiGateway).to receive(:self_hosted_url).and_return('http://local-aigw:5052')
+              stub_saas_features(gitlab_com_subscriptions: false)
+              stub_feature_flags(instance_level_model_selection: false)
             end
 
             it 'does not include the model metadata in the direct access details' do
@@ -1209,6 +1217,50 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
                 expect(response).to have_gitlab_http_status(:created)
                 expect(json_response).to match(expected_response)
+              end
+
+              context  'when :instance_level_model_selection is enabled' do
+                before do
+                  stub_feature_flags(instance_level_model_selection: true)
+                  allow(Gitlab).to receive(:com?).and_return(false)
+
+                  create(:ai_feature_setting, provider: :vendored, feature: :code_completions)
+                end
+
+                context 'and set to gitlab default' do
+                  let(:model_details) do
+                    {
+                      "model_name" => "codestral-2501",
+                      "model_provider" => "fireworks_ai"
+                    }
+                  end
+
+                  it 'returns access details with gitlab default model' do
+                    post_api
+
+                    expect(response).to have_gitlab_http_status(:created)
+                    expect(json_response['model_details']).to match(model_details)
+                  end
+                end
+
+                context 'with a pinned model' do
+                  let(:model_details) do
+                    {
+                      "model_name" => "claude_sonnet_3_5",
+                      "model_provider" => "gitlab"
+                    }
+                  end
+
+                  it 'returns access details with pinned model information' do
+                    create(:instance_model_selection_feature_setting, feature: :code_completions,
+                      offered_model_ref: "claude_sonnet_3_5")
+
+                    post_api
+
+                    expect(response).to have_gitlab_http_status(:created)
+                    expect(json_response['model_details']).to match(model_details)
+                  end
+                end
               end
             end
           end
@@ -1550,7 +1602,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       end
 
       context 'when code completions is disabled' do
-        let(:top_level_namespace) { nil }
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
 
         it 'returns unauthorized' do
           create(:ai_feature_setting, provider: :disabled, feature: :code_completions)

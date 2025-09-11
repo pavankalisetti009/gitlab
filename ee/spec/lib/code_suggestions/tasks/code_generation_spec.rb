@@ -33,6 +33,10 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     )
   end
 
+  before do
+    stub_feature_flags(instance_level_model_selection: false)
+  end
+
   context 'when using saas anthropic model' do
     before do
       allow(CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages)
@@ -432,6 +436,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
 
     before do
       stub_feature_flags(ai_model_switching: true)
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     it_behaves_like 'code suggestion task' do

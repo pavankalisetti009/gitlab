@@ -30,5 +30,18 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::SelfHosted::Vendored, f
         expect(prompt.request_params).to eq(expected_params)
       end
     end
+
+    context 'when gitlab model is pinned' do
+      let(:feature_setting) { create(:instance_model_selection_feature_setting, :code_completions) }
+
+      it 'returns the pinned model information' do
+        expected_params = {
+          model_name: "claude_sonnet_3_5",
+          model_provider: "gitlab"
+        }
+
+        expect(prompt.request_params).to eq(expected_params)
+      end
+    end
   end
 end

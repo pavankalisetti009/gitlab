@@ -28,6 +28,14 @@ module Ai
       def set_to_gitlab_default?
         offered_model_ref.blank?
       end
+
+      def base_url
+        ::Gitlab::AiGateway.cloud_connector_url
+      end
+
+      def vendored?
+        true
+      end
     end
   end
 end
