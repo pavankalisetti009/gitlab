@@ -37,16 +37,13 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
     end
 
     context 'when valid parameters are specified' do
-      let(:license_name) { 'MIT License' }
-      let(:license_spdx_identifier) { 'MIT' }
       let(:params) { { name: license_name, approval_status: 'allowed' } }
 
       subject(:result) { described_class.new(project, user, params).execute }
 
-      context 'when a software license with the given name exists' do
-        before do
-          create(:software_license, name: license_name)
-        end
+      context 'when a software license is part of the spdx catalog' do
+        let(:license_name) { 'MIT License' }
+        let(:license_spdx_identifier) { 'MIT' }
 
         it 'does not call CustomSoftwareLicense::FindOrCreateService' do
           expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
@@ -67,7 +64,7 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
         end
       end
 
-      context 'when the software license does not exists' do
+      context 'when the software license is not part of the spdx catalog' do
         let(:license_name) { 'License outside spdx catalogue' }
 
         it 'calls CustomSoftwareLicense::FindOrCreateService' do
