@@ -280,6 +280,13 @@ module EE
               description: "Global ID of a self-hosted model."
           end
 
+        field :semantic_code_search,
+          [::Types::Ai::SemanticSearch::CodeSnippet],
+          null: true,
+          description: 'Semantically search for code in provided repositories.',
+          resolver: ::Resolvers::Ai::SemanticSearch::CodeResolver,
+          experiment: { milestone: '18.4' }
+
         field :cloud_connector_status,
           ::Types::CloudConnector::StatusType,
           null: true,

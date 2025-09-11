@@ -15,7 +15,7 @@ module Ai
           @user = user
         end
 
-        def filter(project_id:, path: nil)
+        def filter(project_id:, path: nil, knn_count: KNN_COUNT, limit: SEARCH_RESULTS_LIMIT)
           if no_collection_record?
             raise(
               NoCollectionRecordError,
@@ -23,37 +23,41 @@ module Ai
             )
           end
 
-          query = path.nil? ? repository_query(project_id) : directory_query(project_id, path)
+          query = if path.nil?
+                    repository_query(project_id, knn_count, limit)
+                  else
+                    directory_query(project_id, path, knn_count, limit)
+                  end
 
           COLLECTION_CLASS.search(query: query, user: user)
         end
 
         private
 
-        attr_reader :search_term, :user
+        attr_reader :user, :search_term
 
-        def repository_query(project_id)
+        def repository_query(project_id, knn_count, limit)
           ::ActiveContext::Query.filter(
             project_id: project_id
           ).knn(
             target: current_embeddings_field,
             vector: target_embeddings,
-            k: KNN_COUNT
+            k: knn_count
           ).limit(
-            SEARCH_RESULTS_LIMIT
+            limit
           )
         end
 
-        def directory_query(project_id, path)
+        def directory_query(project_id, path, knn_count, limit)
           ::ActiveContext::Query.and(
             ::ActiveContext::Query.filter(project_id: project_id),
             ::ActiveContext::Query.prefix(path: path_with_trailing_slash(path))
           ).knn(
             target: current_embeddings_field,
             vector: target_embeddings,
-            k: KNN_COUNT
+            k: knn_count
           ).limit(
-            SEARCH_RESULTS_LIMIT
+            limit
           )
         end
 
