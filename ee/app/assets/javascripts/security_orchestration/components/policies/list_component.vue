@@ -149,6 +149,11 @@ export default {
     };
   },
   computed: {
+    disabledPopoverTitle() {
+      return this.disableScanPolicyUpdate
+        ? this.$options.i18n.popoverPermissionTitle
+        : this.$options.i18n.popoverTitle;
+    },
     hasCombinedList() {
       return this.glFeatures.securityPoliciesCombinedList;
     },
@@ -418,6 +423,14 @@ export default {
     handlePrevPage() {
       this.handlePageChange('prev-page');
     },
+    isPolicyMenuDisabled(source) {
+      return isPolicyInherited(source) || this.disableScanPolicyUpdate;
+    },
+    showDisabledPopover(source) {
+      return (
+        (isPolicyInherited(source) && policyHasNamespace(source)) || this.disableScanPolicyUpdate
+      );
+    },
   },
   dateTimeFormat: DATE_ONLY_FORMAT,
   i18n: {
@@ -432,6 +445,12 @@ export default {
     projectTypeLabel: s__('SecurityOrchestration|This project'),
     openPolicyActionsDropdown: s__('SecurityOrchestration|Open policy actions dropdown'),
     popoverTitle: s__('SecurityOrchestration|Inherited policy'),
+    popoverPermissionTitle: s__(
+      'SecurityOrchestration|You do not have the permission required to edit policies',
+    ),
+    popoverPermissionText: s__(
+      'SecurityOrchestration|You need the Developer, Maintainer, or Owner role in the project or group. You also need one one of these roles in the security policy project.',
+    ),
   },
   BREAKING_CHANGES_POPOVER_CONTENTS,
 };
@@ -539,18 +558,18 @@ export default {
               icon="ellipsis_v"
               placement="bottom-end"
               class="-gl-my-3"
-              :disabled="isPolicyInherited(item.source)"
+              :disabled="isPolicyMenuDisabled(item.source)"
               :toggle-text="$options.i18n.openPolicyActionsDropdown"
               text-sr-only
             />
           </span>
         </gl-button-group>
-        <gl-popover
-          v-if="isPolicyInherited(item.source) && policyHasNamespace(item.source)"
-          :target="() => $refs[item.editPath]"
-        >
-          <template #title>{{ $options.i18n.popoverTitle }}</template>
-          <gl-sprintf :message="$options.i18n.actionsDisabled">
+        <gl-popover v-if="showDisabledPopover(item.source)" :target="() => $refs[item.editPath]">
+          <template #title>{{ disabledPopoverTitle }}</template>
+          <div v-if="disableScanPolicyUpdate">
+            {{ $options.i18n.popoverPermissionText }}
+          </div>
+          <gl-sprintf v-else :message="$options.i18n.actionsDisabled">
             <template #link>
               <gl-link
                 :href="getSecurityPolicyListUrl(policyListUrlArgs(item.source))"

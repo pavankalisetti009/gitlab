@@ -787,4 +787,78 @@ describe('List component', () => {
       expect(wrapper.emitted('prev-page')).toHaveLength(1);
     });
   });
+
+  describe('user permissions', () => {
+    describe('user with sufficient permissions', () => {
+      beforeEach(async () => {
+        mountWrapper();
+        await waitForPromises();
+      });
+
+      it('enables policy action dropdown for non-inherited policies', () => {
+        const policyCell = findNonInheritedPolicyCell(findActionCells);
+        expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(false);
+      });
+
+      it('shows inherited policy popover with correct title for inherited policies', () => {
+        const policyCell = findInheritedPolicyCell(findActionCells);
+        const popover = findPopover(policyCell);
+
+        expect(popover.exists()).toBe(true);
+        expect(popover.text()).toContain('Inherited policy');
+      });
+
+      it('does not show permission-related popover content', () => {
+        const policyCell = findInheritedPolicyCell(findActionCells);
+        const popover = findPopover(policyCell);
+
+        expect(popover.text()).not.toContain('You do not have the permission to edit policy');
+        expect(popover.text()).not.toContain('You need the Developer, Maintainer or Owner role');
+      });
+    });
+
+    describe('when user lacks sufficient permissions', () => {
+      beforeEach(async () => {
+        mountWrapper({
+          provide: { disableScanPolicyUpdate: true },
+        });
+
+        await waitForPromises();
+      });
+
+      it('disables policy action dropdown for all policies', () => {
+        const nonInheritedCell = findNonInheritedPolicyCell(findActionCells);
+        const inheritedCell = findInheritedPolicyCell(findActionCells);
+
+        expect(findDisclosureDropdown(nonInheritedCell).props('disabled')).toBe(true);
+        expect(findDisclosureDropdown(inheritedCell).props('disabled')).toBe(true);
+      });
+
+      it('shows permission popover for non-inherited policies', () => {
+        const policyCell = findNonInheritedPolicyCell(findActionCells);
+        const popover = findPopover(policyCell);
+
+        expect(popover.exists()).toBe(true);
+        expect(popover.text()).toContain(
+          'You do not have the permission required to edit policies',
+        );
+        expect(popover.text()).toContain(
+          'You need the Developer, Maintainer, or Owner role in the project or group. You also need one one of these roles in the security policy project.',
+        );
+      });
+
+      it('shows permission popover for inherited policies', () => {
+        const policyCell = findInheritedPolicyCell(findActionCells);
+        const popover = findPopover(policyCell);
+
+        expect(popover.exists()).toBe(true);
+        expect(popover.text()).toContain(
+          'You do not have the permission required to edit policies',
+        );
+        expect(popover.text()).toContain(
+          'You need the Developer, Maintainer, or Owner role in the project or group. You also need one one of these roles in the security policy project.',
+        );
+      });
+    });
+  });
 });
