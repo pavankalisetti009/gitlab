@@ -208,7 +208,8 @@
       }
 
       // Hide alert wrapper if it's empty
-      > .alert-wrapper:not(:has(*)) {
+      > .alert-wrapper:not(:has(*)),
+      > .alert-wrapper:not(:has(.container-fluid *)) {
         @apply gl-hidden;
       }
     }
