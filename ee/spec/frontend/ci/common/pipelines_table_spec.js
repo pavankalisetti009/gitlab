@@ -125,6 +125,7 @@ describe('EE - Pipelines Table', () => {
               Category: 'agent_user_environment',
               Content: JSON.stringify({
                 merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
+                source_branch: 'master',
               }),
               Metadata: '{}',
             },
@@ -211,6 +212,7 @@ describe('EE - Pipelines Table', () => {
           Category: 'agent_user_environment',
           Content: JSON.stringify({
             merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
+            source_branch: 'master',
           }),
           Metadata: '{}',
         });
