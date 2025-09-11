@@ -83,6 +83,26 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         )
       end
 
+      it 'adds nav experiment context and tracks group', :experiment do
+        stub_saas_features(onboarding: true)
+        stub_experiments(default_pinned_nav_items: :candidate)
+
+        user.user_detail.update!(onboarding_status: {
+          registration_type: 'trial',
+          role: 0, # software_developer
+          registration_objective: 1 # move_repository
+        })
+
+        expect_any_instance_of(DefaultPinnedNavItemsExperiment) do |instance|
+          expect(instance).to receive(:track).with(:assignment, namespace: anything).and_call_original
+        end
+
+        execute
+
+        user.reload
+        expect(user.onboarding_status[:experiments]).to include('default_pinned_nav_items')
+      end
+
       context 'with experiment lightweight_trial_registration_redesign' do
         let(:experiment) { instance_double(ApplicationExperiment) }
 

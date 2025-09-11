@@ -83,6 +83,29 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute.payload).to eq({ namespace: Group.last, project: Project.last })
       end
 
+      it 'adds nav experiment context and tracks namespace', :experiment do
+        stub_experiments(
+          default_pinned_nav_items: :candidate,
+          lightweight_trial_registration_redesign: :candidate
+        )
+
+        user.user_detail.update!(onboarding_status: {
+          registration_type: 'trial',
+          role: 0, # software_developer
+          registration_objective: 1 # move_repository
+        })
+
+        expect_create_lead_success(lead_params)
+        expect_any_instance_of(DefaultPinnedNavItemsExperiment) do |instance|
+          expect(instance).to receive(:track).with(:assignment, namespace: anything).and_call_original
+        end
+
+        execute
+
+        user.reload
+        expect(user.onboarding_status[:experiments]).to include('default_pinned_nav_items')
+      end
+
       context 'when retrying' do
         before do
           allow(GitlabSubscriptions::Trials)
@@ -216,13 +239,21 @@ RSpec.describe GitlabSubscriptions::Trials::WelcomeCreateService, :saas, feature
         expect(execute.payload.dig(:model_errors, :project_name)).to include(/name can't be blank/)
       end
 
-      it 'experiment is not tracked' do
+      it 'trial registration experiment is not tracked' do
+        trial_experiment = instance_double(ApplicationExperiment)
+        nav_experiment = instance_double(ApplicationExperiment)
+
         allow_next_instance_of(GitlabSubscriptions::Trials::WelcomeCreateService) do |service|
           allow(service).to receive(:experiment).with(:lightweight_trial_registration_redesign,
-            actor: user).and_return(experiment)
+            actor: user).and_return(trial_experiment)
+          allow(service).to receive(:experiment).with(:default_pinned_nav_items,
+            actor: user).and_return(nav_experiment)
+
+          allow(nav_experiment).to receive(:enabled?).and_return(false)
+          allow(nav_experiment).to receive(:track).with(:assignment, namespace: anything)
         end
 
-        expect(experiment).not_to receive(:track).with(:assignment, namespace: existing_group)
+        expect(trial_experiment).not_to receive(:track).with(:assignment, namespace: existing_group)
         expect(lead_service_class).not_to receive(:new)
 
         execute

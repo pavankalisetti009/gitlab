@@ -15,17 +15,11 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
     before do
       allow(helper).to receive(:current_user) { user }
       allow(user_namespace).to receive(:actual_plan_name).and_return(::Plan::ULTIMATE)
-      allow(helper).to receive(:current_user_menu?).and_return(true)
-      allow(helper).to receive(:can?).and_return(true)
-      allow(helper).to receive(:show_buy_pipeline_with_subtext?).and_return(true)
-      allow(helper).to receive(:current_user_mode).and_return(current_user_mode)
-      allow(panel).to receive(:super_sidebar_menu_items).and_return(nil)
-      allow(panel).to receive(:super_sidebar_context_header).and_return(nil)
-      allow(user).to receive(:assigned_open_issues_count).and_return(1)
-      allow(user).to receive(:assigned_open_merge_requests_count).and_return(4)
-      allow(user).to receive(:review_requested_open_merge_requests_count).and_return(0)
-      allow(user).to receive(:todos_pending_count).and_return(3)
-      allow(user).to receive(:total_merge_requests_count).and_return(4)
+      allow(helper).to receive_messages(current_user_menu?: true, can?: true, show_buy_pipeline_with_subtext?: true,
+        current_user_mode: current_user_mode)
+      allow(panel).to receive_messages(super_sidebar_menu_items: nil, super_sidebar_context_header: nil)
+      allow(user).to receive_messages(assigned_open_issues_count: 1, assigned_open_merge_requests_count: 4,
+        review_requested_open_merge_requests_count: 0, todos_pending_count: 3, total_merge_requests_count: 4)
     end
 
     # Tests for logged-out sidebar context,
@@ -320,6 +314,104 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         end
       end
     end
+
+    describe '#super_sidebar_default_pins', :experiment do
+      let_it_be(:user) do
+        build(:user) do |u|
+          u.user_detail.update!(onboarding_status: {
+            registration_type: 'trial',
+            role: 0, # software_developer
+            registration_objective: 1, # move_repository
+            experiments: []
+          })
+        end
+      end
+
+      context 'when default_pinned_nav_items experiment is control' do
+        before do
+          allow(helper).to receive(:experiment).and_call_original
+        end
+
+        it 'returns "group" default pins' do
+          panel_type = 'group'
+
+          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+            panel_type: panel_type)
+
+          expect(result).to include(pinned_items: %i[group_issue_list group_merge_request_list group_epic_list])
+        end
+
+        it 'returns "project" default pins' do
+          panel_type = 'project'
+
+          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+            panel_type: panel_type)
+
+          expect(result).to include(pinned_items: %i[project_issue_list project_merge_request_list])
+        end
+      end
+
+      context 'when default_pinned_nav_items experiment is candidate' do
+        before do
+          user.user_detail.onboarding_status[:experiments] << 'default_pinned_nav_items'
+          user.user_detail.save!
+          allow(helper).to receive(:experiment).and_call_original
+        end
+
+        it 'returns "group" default pins' do
+          panel_type = 'group'
+
+          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+            panel_type: panel_type)
+
+          expect(result).to include(pinned_items: %i[members group_issue_list group_merge_request_list group_epic_list])
+        end
+
+        it 'returns "project" default pins' do
+          panel_type = 'project'
+
+          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+            panel_type: panel_type)
+
+          expect(result).to include(pinned_items: %i[files pipelines members project_merge_request_list
+            project_issue_list])
+        end
+      end
+
+      context 'when experiment flag is does not exist on onboarding status' do
+        let_it_be(:user) do
+          build(:user) do |u|
+            u.user_detail.update!(onboarding_status: {
+              registration_type: 'trial',
+              role: 0, # software_developer
+              registration_objective: 1 # move_repository
+            })
+          end
+        end
+
+        before do
+          allow(helper).to receive(:experiment).and_call_original
+        end
+
+        it 'returns control "group" pins' do
+          panel_type = 'group'
+
+          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+            panel_type: panel_type)
+
+          expect(result).to include(pinned_items: %i[group_issue_list group_merge_request_list group_epic_list])
+        end
+
+        it 'returns control "project" pins' do
+          panel_type = 'project'
+
+          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+            panel_type: panel_type)
+
+          expect(result).to include(pinned_items: %i[project_issue_list project_merge_request_list])
+        end
+      end
+    end
   end
 
   describe '#context_switcher_links' do
@@ -337,10 +429,8 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
     end
 
     before do
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(panel).to receive(:super_sidebar_menu_items).and_return(nil)
-      allow(panel).to receive(:super_sidebar_context_header).and_return(nil)
-      allow(helper).to receive(:current_user_mode).and_return(current_user_mode)
+      allow(panel).to receive_messages(super_sidebar_menu_items: nil, super_sidebar_context_header: nil)
+      allow(helper).to receive_messages(current_user: user, current_user_mode: current_user_mode)
     end
 
     context 'when user is assigned a custom admin role' do
