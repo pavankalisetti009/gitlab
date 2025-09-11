@@ -114,7 +114,7 @@ RSpec.describe Registrations::TrialWelcomeController, :with_current_organization
 
         it 'tracks completed_group_project_creation' do
           expect_next_instance_of(GitlabSubscriptions::Trials::WelcomeCreateService,
-            hash_including(params: params)) do |instance|
+            hash_including(params: ActionController::Parameters.new(params).permit!)) do |instance|
             result = ServiceResponse.success(
               message: 'Trial applied',
               payload: { namespace: namespace, project: project }
