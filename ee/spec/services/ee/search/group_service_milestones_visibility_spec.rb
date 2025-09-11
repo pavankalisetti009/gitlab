@@ -36,11 +36,17 @@ RSpec.describe Search::GroupService, '#visibility', feature_category: :global_se
 
       with_them do
         before do
+          # We are not modifying namespaces anywhere in this test
+          # so let's skip this expensive operation that could cause pg query timeout
+          # example failed job with save_namespace_details_changes causing pg query timeout error:
+          # https://gitlab.com/gitlab-org/gitlab/-/jobs/11282506950
+          Namespace.skip_callback(:save, :after, :save_namespace_details_changes)
           project.update!(
             visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s),
             issues_access_level: issues_access_level,
             merge_requests_access_level: merge_requests_access_level
           )
+          Namespace.set_callback(:save, :after, :save_namespace_details_changes)
 
           Elastic::ProcessInitialBookkeepingService.track!(milestone)
 
