@@ -135,7 +135,7 @@ export default {
   },
   computed: {
     ...mapState(useFileTreeBrowserVisibility, ['fileTreeBrowserVisible']),
-    ...mapState(useViewport, ['isNarrowScreen']),
+    ...mapState(useViewport, ['isCompactViewport']),
     isTreeView() {
       return this.$route.name !== 'blobPathDecoded';
     },
@@ -209,7 +209,7 @@ export default {
         this.glFeatures.repositoryFileTreeBrowser &&
         !this.isProjectOverview &&
         !this.fileTreeBrowserVisible &&
-        !this.isNarrowScreen
+        !this.isCompactViewport
       );
     },
     toggleFileBrowserShortcutKey() {
