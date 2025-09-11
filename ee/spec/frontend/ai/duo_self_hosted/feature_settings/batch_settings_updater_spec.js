@@ -8,7 +8,7 @@ import updateAiFeatureSettings from 'ee/ai/duo_self_hosted/feature_settings/grap
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import DuoSelfHostedBatchSettingsUpdater from 'ee/ai/duo_self_hosted/feature_settings/components/batch_settings_updater.vue';
 import BatchUpdateButton from 'ee/ai/shared/feature_settings/batch_update_button.vue';
-import { mockDuoChatFeatureSettings } from './mock_data';
+import { mockDuoChatFeatureSettings, mockGitlabManagedModels } from './mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -70,6 +70,28 @@ describe('DuoSelfHostedBatchSettingsUpdater', () => {
     expect(findBatchUpdateButton().props()).toEqual({
       tooltipTitle: 'Apply to all GitLab Duo Chat sub-features',
       disabled: false,
+    });
+  });
+
+  describe('with GitLab managed models', () => {
+    beforeEach(() => {
+      const unassignedFeatureSetting = {
+        feature: 'duo_chat',
+        title: 'General Chat',
+        provider: 'unassigned',
+        validGitlabModels: { nodes: mockGitlabManagedModels },
+      };
+
+      createComponent({ props: { selectedFeatureSetting: unassignedFeatureSetting } });
+    });
+
+    it('does not show batch update button', () => {
+      expect(findBatchUpdateButton().exists()).toBe(false);
+    });
+
+    it('does not show warning tooltip and icon', () => {
+      expect(findUnassignedFeatureIcon().exists()).toBe(false);
+      expect(findUnassignedFeatureTooltip().exists()).toBe(false);
     });
   });
 

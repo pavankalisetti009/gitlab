@@ -4498,6 +4498,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|GitLab default model %{defaultModel}"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|GitLab default model (%{defaultModel})"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Model"
 msgstr ""
 

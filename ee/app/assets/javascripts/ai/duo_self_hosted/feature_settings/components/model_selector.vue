@@ -8,7 +8,7 @@ import { RELEASE_STATES } from '../../constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import { PROVIDERS, DUO_AGENT_PLATFORM_FEATURE } from '../constants';
+import { PROVIDERS, DUO_AGENT_PLATFORM_FEATURE, GITLAB_DEFAULT_MODEL } from '../constants';
 
 export default {
   name: 'ModelSelector',
@@ -38,6 +38,20 @@ export default {
     };
   },
   computed: {
+    isGitlabManagedModelSelected() {
+      const { provider, gitlabModel } = this.aiFeatureSetting;
+      // Refers to the GitLab managed models offered by instance-level model selection
+      return provider === PROVIDERS.VENDORED && gitlabModel?.ref;
+    },
+    isDefaultGitlabModelSelected() {
+      const { provider, gitlabModel, defaultGitlabModel } = this.aiFeatureSetting;
+
+      if (!defaultGitlabModel) return false;
+
+      return Boolean(
+        (provider === PROVIDERS.VENDORED && !gitlabModel) || provider === PROVIDERS.UNASSIGNED,
+      );
+    },
     selectedOption() {
       const { provider, selfHostedModel, gitlabModel } = this.aiFeatureSetting;
       let selected = provider;
@@ -46,9 +60,12 @@ export default {
         selected = selfHostedModel?.id;
       }
 
-      // Refers to the GitLab managed models offered by instance-level model selection
-      if (provider === PROVIDERS.VENDORED && gitlabModel?.ref) {
+      if (this.isGitlabManagedModelSelected) {
         selected = gitlabModel?.ref;
+      }
+
+      if (this.isDefaultGitlabModelSelected) {
+        selected = GITLAB_DEFAULT_MODEL;
       }
 
       return this.listItems
@@ -112,11 +129,25 @@ export default {
     },
     gitlabManagedModels() {
       const validGitlabModels = this.aiFeatureSetting.validGitlabModels?.nodes || [];
+      const { defaultGitlabModel } = this.aiFeatureSetting;
 
-      return validGitlabModels.map(({ name, ref }) => ({
+      const models = validGitlabModels.map(({ name, ref }) => ({
         value: ref,
         text: name,
       }));
+
+      if (defaultGitlabModel) {
+        const text = sprintf(s__('AdminAIPoweredFeatures|GitLab default model (%{defaultModel})'), {
+          defaultModel: defaultGitlabModel.name,
+        });
+
+        models.push({
+          text,
+          value: GITLAB_DEFAULT_MODEL,
+        });
+      }
+
+      return models;
     },
   },
 
