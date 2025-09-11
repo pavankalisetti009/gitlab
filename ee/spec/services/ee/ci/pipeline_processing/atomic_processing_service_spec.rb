@@ -342,9 +342,6 @@ RSpec.describe Ci::PipelineProcessing::AtomicProcessingService, feature_category
         end
 
         it 'skips all jobs in later stages' do
-          # TODO: Remove this stub when resolving https://gitlab.com/gitlab-org/gitlab/-/issues/567952
-          stub_feature_flags(stop_writing_builds_metadata: false)
-
           process_pipeline
 
           expect(pipeline).to be_persisted
@@ -379,9 +376,6 @@ RSpec.describe Ci::PipelineProcessing::AtomicProcessingService, feature_category
         end
 
         it 'skips all later jobs' do
-          # TODO: Remove this stub when resolving https://gitlab.com/gitlab-org/gitlab/-/issues/567952
-          stub_feature_flags(stop_writing_builds_metadata: false)
-
           process_pipeline
 
           expect(pipeline).to be_persisted

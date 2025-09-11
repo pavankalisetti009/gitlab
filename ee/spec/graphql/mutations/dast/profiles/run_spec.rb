@@ -50,11 +50,6 @@ RSpec.describe Mutations::Dast::Profiles::Run, :dynamic_analysis,
               )
             end
 
-            before do
-              # TODO: Remove this stub when resolving https://gitlab.com/gitlab-org/gitlab/-/issues/567952
-              stub_feature_flags(stop_writing_builds_metadata: false)
-            end
-
             it 'makes the variable available to the dast build' do
               subject
 
