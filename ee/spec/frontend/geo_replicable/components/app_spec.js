@@ -363,17 +363,18 @@ describe('GeoReplicableApp', () => {
       });
 
       it('when top bar emits @bulkAction, bulk action mutation is called with correct action, emits a toast and calls refetch', async () => {
-        findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
+        findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0]);
         await nextTick();
 
         expect(MOCK_BULK_MUTATION_HANDLER).toHaveBeenCalledWith({
           action: BULK_ACTIONS[0].action.toUpperCase(),
           registryClass: MOCK_REPLICABLE_CLASS.graphqlMutationRegistryClass,
+          replicationState: null,
         });
 
         await waitForPromises();
 
-        expect(toast).toHaveBeenCalledWith('Scheduled all Test Items for resync.');
+        expect(toast).toHaveBeenCalledWith('Scheduled all Test Items for resynchronization.');
         expect(MOCK_QUERY_HANDLER_WITH_DATA).toHaveBeenCalledTimes(1);
       });
     });
@@ -387,11 +388,11 @@ describe('GeoReplicableApp', () => {
       });
 
       it('when top bar emits @bulkAction, createAlert is called and not toast', async () => {
-        findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
+        findGeoListTopBar().vm.$emit('bulkAction', BULK_ACTIONS[0]);
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'There was an error scheduling resync for all Test Items.',
+          message: 'There was an error scheduling all Test Items for resynchronization.',
           error: expect.any(Error),
           captureError: true,
         });

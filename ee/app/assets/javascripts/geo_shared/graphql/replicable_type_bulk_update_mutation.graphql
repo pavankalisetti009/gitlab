@@ -1,8 +1,11 @@
 mutation replicableTypeBulkUpdate(
   $action: GeoRegistriesBulkAction!
   $registryClass: GeoRegistryClass!
+  $replicationState: ReplicationStateEnum
 ) {
-  geoRegistriesBulkUpdate(input: { action: $action, registryClass: $registryClass }) {
+  geoRegistriesBulkUpdate(
+    input: { action: $action, registryClass: $registryClass, replicationState: $replicationState }
+  ) {
     errors
   }
 }

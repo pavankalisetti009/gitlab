@@ -24,6 +24,7 @@ import {
   getPaginationObject,
   getSortObject,
 } from '../filters';
+import { getGraphqlBulkMutationVariables } from '../mutations';
 import {
   REPLICATION_STATUS_STATES_ARRAY,
   VERIFICATION_STATUS_STATES_ARRAY,
@@ -251,34 +252,21 @@ export default {
         });
       }
     },
-    async handleBulkAction(action) {
-      const actionName = action.toLowerCase().replace(/_[^_]*$/, '');
-
+    async handleBulkAction(bulkAction) {
       try {
         await this.$apollo.mutate({
           mutation: replicableTypeBulkUpdateMutation,
-          variables: {
-            action: action.toUpperCase(),
+          variables: getGraphqlBulkMutationVariables({
+            action: bulkAction.action,
             registryClass: this.replicableClass.graphqlMutationRegistryClass,
-          },
+          }),
         });
 
-        toast(
-          sprintf(s__('Geo|Scheduled all %{replicableType} for %{actionName}.'), {
-            replicableType: this.itemTitle,
-            actionName,
-          }),
-        );
+        toast(sprintf(bulkAction.successMessage, { replicableType: this.itemTitle }));
         this.$apollo.queries.replicableItems.refetch();
       } catch (error) {
         createAlert({
-          message: sprintf(
-            s__('Geo|There was an error scheduling %{actionName} for all %{replicableType}.'),
-            {
-              replicableType: this.itemTitle,
-              actionName,
-            },
-          ),
+          message: sprintf(bulkAction.errorMessage, { replicableType: this.itemTitle }),
           error,
           captureError: true,
         });

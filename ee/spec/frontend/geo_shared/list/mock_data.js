@@ -60,6 +60,13 @@ export const MOCK_BULK_ACTIONS = [
   },
 ];
 
+export const MOCK_ADDITIONAL_BULK_ACTION = {
+  id: 'nested_action',
+  text: 'Nested bulk action',
+  action: 'NESTED_TEST_ACTION',
+  modal: MOCK_MODAL_DEFINITION,
+};
+
 export const MOCK_STATUSES = [
   {
     tooltip: 'Status: A',
