@@ -91,6 +91,13 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
     end
   end
 
+  context 'when creating identifiers' do
+    it 'sorts identifiers by fingerprint' do
+      identifiers = subject.payload[:vulnerability_finding].identifiers.reload
+      expect(identifiers.map(&:fingerprint)).to be_sorted
+    end
+  end
+
   context 'when there is an error saving the security finding' do
     let(:error_messages_array) { instance_double("Array", join: "Primary identifier can't be blank") }
     let(:security_finding_uuid) { security_finding.uuid }
