@@ -70271,6 +70271,9 @@ msgstr ""
 msgid "UserProfile|Retry"
 msgstr ""
 
+msgid "UserProfile|Set status"
+msgstr ""
+
 msgid "UserProfile|Snippets"
 msgstr ""
 
@@ -76215,6 +76218,9 @@ msgid "attach a new file"
 msgstr ""
 
 msgid "authored"
+msgstr ""
+
+msgid "avatar for %{name}"
 msgstr ""
 
 msgid "banned user already exists"
