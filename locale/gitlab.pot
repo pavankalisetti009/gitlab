@@ -15511,6 +15511,9 @@ msgstr ""
 msgid "Colorize messages"
 msgstr ""
 
+msgid "Columns charts require an aggregation to be defined"
+msgstr ""
+
 msgid "Comma-separated list of branches to be automatically inspected. Leave blank to include all branches."
 msgstr ""
 
