@@ -161,8 +161,11 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
 
         created_workflow = Ai::DuoWorkflows::Workflow.last
 
-        expect(created_workflow.goal).to eq(goal)
-        expect(created_workflow.environment).to eq("web")
+        expect(created_workflow).to have_attributes(
+          goal: goal,
+          environment: 'web',
+          workflow_definition: 'ai_catalog_agent'
+        )
       end
 
       context 'when oauth token creation fails' do
