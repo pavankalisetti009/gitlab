@@ -2,51 +2,87 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Duo agent platform widget in Sidebar', :enable_admin_mode, :js, feature_category: :activation do
-  let_it_be(:user) { create(:admin) }
+RSpec.describe 'Duo GitLab Duo Core widget in Sidebar', :js, feature_category: :activation do
+  shared_examples_for 'Duo GitLab Duo Core progressive enabling' do
+    it 'performs progressive enabling of the Duo agent platform' do
+      visit path
 
-  before_all do
-    create(:application_setting, duo_availability: 'default_off')
-    create(:ai_settings, duo_agent_platform_service_url: '', duo_core_features_enabled: false)
+      expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core Off'))
+      expect_widget_to_have_content(_('Team requests'))
+
+      widget_turn_on
+      confirm_modal_turn_on
+
+      expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
+
+      page.refresh
+
+      expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
+      expect_widget_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
+
+      widget_turn_on_preview
+      confirm_modal_turn_on
+
+      expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
+
+      page.refresh
+
+      expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
+      expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
+    end
   end
 
-  around do |example|
-    travel_to(Date.new(2025, 9, 18))
-    example.run
-    travel_back
+  shared_examples_for 'Duo GitLab Duo Core requestor' do
+    it 'performs request for the Duo GitLab Duo Core enablement' do
+      visit path
+
+      expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core Off'))
+      expect_widget_to_have_content(_('Request'))
+
+      widget_request
+
+      expect_widget_to_have_content(_('Requested'))
+
+      page.refresh
+
+      expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core Off'))
+      expect_widget_to_have_content(_('Requested'))
+    end
   end
 
-  before do
-    stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
-    stub_saas_features(gitlab_duo_saas_only: false)
-    stub_licensed_features(code_suggestions: true)
-    sign_in(user)
-  end
+  context 'when gitlab_duo_saas_only is disabled' do
+    let(:path) { root_path }
 
-  it 'performs progressive enabling of Duo Core' do
-    visit root_path
+    before_all do
+      create(:application_setting, duo_availability: 'default_off')
+      create(:ai_settings, duo_agent_platform_service_url: '', duo_core_features_enabled: false,
+        duo_agent_platform_request_count: 1)
+    end
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core Off'))
+    around do |example|
+      travel_to(Date.new(2025, 9, 18))
+      example.run
+      travel_back
+    end
 
-    widget_turn_on
-    confirm_modal_turn_on
+    before do
+      stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
+      stub_saas_features(gitlab_duo_saas_only: false)
+      stub_licensed_features(code_suggestions: true)
+      sign_in(user)
+    end
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
+    context 'when authorized', :enable_admin_mode do
+      let_it_be(:user) { create(:admin) }
 
-    page.refresh
+      it_behaves_like 'Duo GitLab Duo Core progressive enabling'
+    end
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
-    expect_widget_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
+    context 'when requestor' do
+      let_it_be(:user) { create(:user) }
 
-    widget_turn_on_preview
-    confirm_modal_turn_on
-
-    expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
-
-    page.refresh
-
-    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
-    expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
+      it_behaves_like 'Duo GitLab Duo Core requestor'
+    end
   end
 
   def expect_widget_to_have_content(widget_title)
@@ -70,6 +106,12 @@ RSpec.describe 'Duo agent platform widget in Sidebar', :enable_admin_mode, :js, 
   def widget_turn_on_preview
     within_testid(widget_menu_selector) do
       click_button(_('Learn more'))
+    end
+  end
+
+  def widget_request
+    within_testid(widget_menu_selector) do
+      click_button(_('Request'))
     end
   end
 

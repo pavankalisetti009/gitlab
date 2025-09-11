@@ -32,11 +32,19 @@ RSpec.describe GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter, feature_c
       end
     end
 
-    context 'when user is not admin' do
-      it 'returns empty hash' do
-        expect(GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWidgetPresenter).not_to receive(:new)
+    context 'when user is not an admin and gitlab_duo_saas_only is disabled' do
+      let(:instance_admin?) { false }
 
-        expect(attributes).to eq({})
+      it 'delegates to SelfManaged::AgentPlatformWidgetPresenter' do
+        expected_attributes = { duoAgentWidgetProvide: {} }
+        expected_presenter = instance_double(
+          GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresenter, attributes: expected_attributes
+        )
+
+        expect(GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresenter)
+          .to receive(:new).with(user).and_return(expected_presenter)
+
+        expect(attributes).to eq(expected_attributes)
       end
     end
 

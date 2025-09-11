@@ -27,6 +27,7 @@ describe('DuoAgentPlatformWidget component', () => {
   const defaultProvide = {
     actionPath: '/admin/application_settings/general',
     stateProgression: ['enablePlatform', 'enabled'],
+    isAuthorized: true,
   };
 
   const createComponent = (provide = {}) => {
@@ -63,7 +64,7 @@ describe('DuoAgentPlatformWidget component', () => {
         expect(findIcon().props('variant')).toBe('disabled');
       });
 
-      it('shows action buttons', () => {
+      it('shows action buttons when user is authorized', () => {
         expect(findLearnMoreButton().exists()).toBe(true);
         expect(findActionButton().exists()).toBe(true);
       });
@@ -94,17 +95,34 @@ describe('DuoAgentPlatformWidget component', () => {
       });
     });
 
+    describe('when user is not authorized', () => {
+      beforeEach(() => {
+        createComponent({ isAuthorized: false });
+      });
+
+      it('does not show authorized action buttons', () => {
+        expect(findLearnMoreButton().exists()).toBe(false);
+        expect(findActionButton().exists()).toBe(false);
+      });
+    });
+
     describe('with different state progressions', () => {
-      it('shows actions for enablePlatform state', () => {
-        createComponent({ stateProgression: ['enablePlatform', 'enabled'] });
+      it('shows actions for enablePlatform state when authorized', () => {
+        createComponent({
+          stateProgression: ['enablePlatform', 'enabled'],
+          isAuthorized: true,
+        });
 
         expect(findIcon().props('variant')).toBe('disabled');
         expect(findActionButton().text()).toBe('Turn on');
         expect(findLearnMoreButton().exists()).toBe(true);
       });
 
-      it('shows actions for enableFeaturePreview state', () => {
-        createComponent({ stateProgression: ['enableFeaturePreview', 'enabled'] });
+      it('shows actions for enableFeaturePreview state when authorized', () => {
+        createComponent({
+          stateProgression: ['enableFeaturePreview', 'enabled'],
+          isAuthorized: true,
+        });
 
         expect(findIcon().props('variant')).toBe('success');
         expect(findActionButton().text()).toBe('Learn more');
@@ -299,6 +317,64 @@ describe('DuoAgentPlatformWidget component', () => {
         expect(findWidgetTitle().text()).toContain('GitLab Duo Core Off');
         expect(findConfirmModal().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('request access functionality', () => {
+    describe('when user can request access', () => {
+      beforeEach(() => {
+        createComponent({
+          isAuthorized: false,
+          showRequestAccess: true,
+          hasRequested: false,
+          actionPath: '/-/users/callouts/request_duo_agent_platform',
+        });
+      });
+
+      it('shows request access section', () => {
+        const requestSection = wrapper.find('[data-testid="request-access-btn"]');
+        expect(requestSection.exists()).toBe(true);
+      });
+
+      it('handles successful request access', async () => {
+        mockAxios.onPost('/-/users/callouts/request_duo_agent_platform').reply(HTTP_STATUS_OK);
+
+        const requestBtn = wrapper.findByTestId('request-access-btn');
+        await requestBtn.vm.$emit('click');
+        await waitForPromises();
+
+        expect($toast.show).toHaveBeenCalledWith('Request has been sent to the instance Admin');
+      });
+    });
+
+    describe('when user has already requested access', () => {
+      beforeEach(() => {
+        createComponent({
+          isAuthorized: false,
+          showRequestAccess: true,
+          hasRequested: true,
+        });
+      });
+
+      it('shows access requested state', () => {
+        expect(wrapper.text()).toContain('Requested');
+      });
+    });
+  });
+
+  describe('request counter for admins', () => {
+    beforeEach(() => {
+      createComponent({
+        isAuthorized: true,
+        requestCount: 5,
+      });
+    });
+
+    it('shows request counter when admin has pending requests', () => {
+      const counter = wrapper.findByTestId('request-counter');
+      expect(counter.exists()).toBe(true);
+      expect(counter.text()).toContain('Team requests');
+      expect(counter.text()).toContain('5');
     });
   });
 
