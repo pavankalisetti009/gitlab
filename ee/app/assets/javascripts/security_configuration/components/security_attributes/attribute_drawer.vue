@@ -109,7 +109,7 @@ export default {
     />
 
     <template #footer>
-      <div class="flex-fill gl-align-items-center gl-flex gl-justify-between">
+      <div class="gl-align-items-center gl-flex !gl-flex-auto gl-justify-between">
         <div class="gl-display-flex gl-gap-3">
           <gl-button
             category="primary"
