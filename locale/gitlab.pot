@@ -59909,9 +59909,6 @@ msgstr ""
 msgid "SecurityReports|Dismissed as…"
 msgstr ""
 
-msgid "SecurityReports|Dismissed in MR"
-msgstr ""
-
 msgid "SecurityReports|Does not have a solution"
 msgstr ""
 
@@ -60114,9 +60111,6 @@ msgid "SecurityReports|Parsing errors in pipeline"
 msgstr ""
 
 msgid "SecurityReports|Parsing warnings in pipeline"
-msgstr ""
-
-msgid "SecurityReports|Policy violations"
 msgstr ""
 
 msgid "SecurityReports|Possibly active secret"

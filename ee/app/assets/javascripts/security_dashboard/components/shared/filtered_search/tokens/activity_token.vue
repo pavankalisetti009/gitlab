@@ -24,10 +24,6 @@ const ITEMS = {
     value: 'AI_RESOLUTION_UNAVAILABLE',
     text: s__('SecurityReports|Vulnerability Resolution unavailable'),
   },
-  DISMISSED_IN_MR: {
-    value: 'DISMISSED_IN_MR',
-    text: s__('SecurityReports|Dismissed in MR'),
-  },
 };
 
 export const GROUPS = [
@@ -149,9 +145,6 @@ export default {
     showAiResolutionFilter() {
       return this.glAbilities.resolveVulnerabilityWithAi;
     },
-    showPolicyViolationsFilter() {
-      return this.glFeatures.securityPolicyApprovalWarnMode;
-    },
     activityTokenGroups() {
       return [
         ...GROUPS,
@@ -162,15 +155,6 @@ export default {
                 options: [ITEMS.AI_RESOLUTION_AVAILABLE, ITEMS.AI_RESOLUTION_UNAVAILABLE],
                 icon: 'tanuki-ai',
                 variant: 'info',
-              },
-            ]
-          : []),
-        ...(this.showPolicyViolationsFilter
-          ? [
-              {
-                text: s__('SecurityReports|Policy violations'),
-                options: [ITEMS.DISMISSED_IN_MR],
-                icon: 'flag',
               },
             ]
           : []),
