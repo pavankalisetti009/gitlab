@@ -160,7 +160,7 @@ description: with missing properties
             'Behavior',
             'Value Streams Dashboard',
             'DORA metrics analytics',
-            'AI impact analytics',
+            'GitLab Duo and SDLC trends',
             'Merge request analytics',
             'GitLab Duo usage analytics'
           ]
@@ -212,7 +212,7 @@ description: with missing properties
 
         it 'excludes the dashboard from the list' do
           expected_dashboards =
-            ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics",
+            ["Audience", "Behavior", "Value Streams Dashboard", "GitLab Duo and SDLC trends",
               "DORA metrics analytics", "Merge request analytics", "GitLab Duo usage analytics", "Dashboard Example 1"]
 
           expect(dashboards.map(&:title)).to eq(expected_dashboards)
@@ -237,7 +237,7 @@ description: with missing properties
 
       it 'returns a collection of builtin dashboards' do
         expect(dashboards.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA metrics analytics',
-          'AI impact analytics', 'GitLab Duo usage analytics', 'Contributions Dashboard'])
+          'GitLab Duo and SDLC trends', 'GitLab Duo usage analytics', 'Contributions Dashboard'])
       end
 
       context 'when configuration project is set' do
@@ -248,7 +248,7 @@ description: with missing properties
         it 'returns custom and builtin dashboards' do
           expect(dashboards).to be_a(Array)
           expect(dashboards.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
+            ['Value Streams Dashboard', 'GitLab Duo and SDLC trends', 'DORA metrics analytics',
               'Dashboard Example 1', 'GitLab Duo usage analytics', 'Contributions Dashboard']
           )
         end
@@ -267,7 +267,7 @@ description: with missing properties
 
         it 'excludes the dashboard from the list' do
           expect(dashboards.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
+            ['Value Streams Dashboard', 'GitLab Duo and SDLC trends', 'DORA metrics analytics',
               'Dashboard Example 1', 'GitLab Duo usage analytics', 'Contributions Dashboard']
           )
         end
@@ -422,7 +422,7 @@ description: with missing properties
       subject(:dashboard) { described_class.ai_impact_dashboard(group, config_project, user) }
 
       it 'returns the dashboard' do
-        expect(dashboard.title).to eq('AI impact analytics')
+        expect(dashboard.title).to eq('GitLab Duo and SDLC trends')
         expect(dashboard.slug).to eq('ai_impact')
         expect(dashboard.schema_version).to eq('2')
         expect(dashboard.filters).to be_nil
@@ -441,7 +441,7 @@ description: with missing properties
       subject(:dashboard) { described_class.ai_impact_dashboard(project, config_project, user) }
 
       it 'returns the dashboard' do
-        expect(dashboard.title).to eq('AI impact analytics')
+        expect(dashboard.title).to eq('GitLab Duo and SDLC trends')
         expect(dashboard.slug).to eq('ai_impact')
         expect(dashboard.schema_version).to eq('2')
         expect(dashboard.filters).to be_nil

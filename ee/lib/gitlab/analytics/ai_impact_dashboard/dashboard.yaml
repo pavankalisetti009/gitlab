@@ -1,6 +1,6 @@
 ---
-title: AI impact analytics
-description: Visualize the relation between AI usage and SDLC trends.
+title: GitLab Duo and SDLC trends
+description: Visualize Duo usage and development trends side-by-side.
 version: "2"
 panels:
   - title: "Assigned Duo seat engagement"
