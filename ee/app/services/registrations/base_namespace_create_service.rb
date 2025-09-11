@@ -21,7 +21,19 @@ module Registrations
 
       experiment(:lightweight_trial_registration_redesign, actor: user).track(:assignment, namespace: group)
 
-      apply_trial if onboarding_user_status.apply_trial?
+      return unless onboarding_user_status.apply_trial?
+
+      apply_trial
+
+      experiment(:default_pinned_nav_items, actor: user) do |e| # rubocop:disable Cop/ExperimentsTestCoverage -- test incl in standard_namespace_create_service_spec.rb
+        e.candidate do
+          updated_status = user.onboarding_status.dup
+          updated_status[:experiments] = Array(updated_status[:experiments]) | ['default_pinned_nav_items']
+          user.update(onboarding_status: updated_status)
+        end
+
+        e.track(:assignment, namespace: group)
+      end
     end
 
     def modified_group_params
