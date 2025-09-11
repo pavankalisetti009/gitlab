@@ -27,9 +27,93 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
         end
 
         it 'schedules workers' do
-          expect(described_class).to receive(:perform_async).with(worker_with_concurrency_limit.name)
+          expect(Sidekiq::Client).to receive(:push).with(
+            'class' => described_class,
+            'args' => [worker_with_concurrency_limit.name],
+            'queue' => ::Gitlab::SidekiqConfig::WorkerRouter.global.route(worker_with_concurrency_limit)
+          )
 
           perform
+        end
+
+        context 'when worker is routed to another queue' do
+          before do
+            allow(::Gitlab::SidekiqConfig::WorkerRouter.global).to receive(:route)
+                                                                     .with(worker_with_concurrency_limit)
+                                                                     .and_return("other_queue")
+          end
+
+          it 'schedules the worker to the other queue' do
+            expect(Sidekiq::Client).to receive(:push).with(
+              'class' => described_class,
+              'args' => [worker_with_concurrency_limit.name],
+              'queue' => "other_queue"
+            )
+
+            perform
+          end
+        end
+
+        context 'when worker is routed to another shard' do
+          let(:test_shard_name) { 'queues_shard_test' }
+          let(:shard_config) { { test_shard_name => { 'url' => 'redis://dummyhost' } } }
+
+          before do
+            redis_class = Gitlab::Redis::Queues.send(:create_shard_class, test_shard_name,
+              shard_config)
+
+            test_redis_params = Gitlab::Redis::Queues.params.deep_dup
+            # change only the db so the test can run in both CI and local.
+            test_redis_params[:db] = (test_redis_params[:db].to_i + 1) % 15
+            redis_class.instance_variable_set(:@params, test_redis_params.freeze)
+
+            allow(Gitlab::Redis::Queues).to receive(:instances).and_return({
+              test_shard_name => redis_class,
+              'main' => Gitlab::Redis::Queues
+            })
+
+            # set worker to use the test shard
+            allow(worker_with_concurrency_limit).to receive(:get_sidekiq_options)
+                                                      .and_return({ "store" => test_shard_name })
+
+            allow(Feature).to receive(:enabled?).and_call_original
+            allow(Feature).to receive(:enabled?)
+                                .with(:sidekiq_route_to_queues_shard_test, default_enabled_if_undefined: false,
+                                  type: :worker)
+                                .and_return(true)
+            allow(::Gitlab::SidekiqConfig::WorkerRouter.global).to receive(:route)
+                                                                     .and_call_original
+            allow(::Gitlab::SidekiqConfig::WorkerRouter.global).to receive(:route)
+                                                                     .with(worker_with_concurrency_limit)
+                                                                     .and_return("other_queue")
+            with_shard_client do
+              Sidekiq::Queue.new("other_queue").clear
+            end
+          end
+
+          after do
+            with_shard_client do
+              Sidekiq::Queue.new("other_queue").clear
+            end
+          end
+
+          def with_shard_client(&block)
+            _, pool = Gitlab::SidekiqSharding::Router.get_shard_instance(test_shard_name)
+            Sidekiq::Client.via(pool, &block)
+          end
+
+          it "schedules a job to the worker's sharded redis store" do
+            Sidekiq::Testing.disable! do
+              perform
+
+              with_shard_client do
+                queue = Sidekiq::Queue.new("other_queue")
+                expect(queue.size).to eq(1)
+                expect(queue.first['class']).to eq(described_class.name)
+                expect(queue.first['args']).to eq([worker_with_concurrency_limit.name])
+              end
+            end
+          end
         end
       end
 
