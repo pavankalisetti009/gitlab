@@ -66,7 +66,7 @@ module API
                 hidden true
               end
               params do
-                optional :upstream_name, type: String, desc: 'Return packages with this name'
+                optional :upstream_name, type: String, desc: 'Return upstreams with this name'
               end
               get do
                 upstreams = ::VirtualRegistries::Packages::Maven::UpstreamsFinder.new(
