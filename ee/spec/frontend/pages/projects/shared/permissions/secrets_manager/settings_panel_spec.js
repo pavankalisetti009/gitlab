@@ -46,7 +46,7 @@ describe('Settings Panel', () => {
     });
 
     it('passes the correct props', () => {
-      wrapper = mountComponent({ canManageSecretManager: true, isSecretsManagerAvailable: true });
+      wrapper = mountComponent({ canManageSecretsManager: true, isSecretsManagerAvailable: true });
 
       expect(findSecretsManagerSettings().props()).toMatchObject({
         canManageSecretsManager: true,

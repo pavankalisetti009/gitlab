@@ -649,52 +649,44 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     describe 'Secrets Manager settings' do
-      it { is_expected.to include(canManageSecretManager: false) }
       it { is_expected.to include(projectId: project.id) }
 
-      context 'when feature is licensed' do
+      where(:feature_flag, :license, :is_secrets_manager_available) do
+        true  | true  | true
+        true  | false | false
+        false | true  | false
+        false | false | false
+      end
+
+      with_them do
         before do
+          stub_licensed_features(native_secrets_management: license)
+          stub_feature_flags(secrets_manager: feature_flag)
+        end
+
+        it { is_expected.to include(isSecretsManagerAvailable: is_secrets_manager_available) }
+      end
+
+      describe 'canManageSecretsManager' do
+        before do
+          stub_feature_flags(secrets_manager: true)
           stub_licensed_features(native_secrets_management: true)
         end
 
-        it { is_expected.to include(isSecretsManagerAvailable: true) }
-      end
-
-      context 'when feature is not licenced' do
-        before do
-          stub_licensed_features(native_secrets_management: false)
-        end
-
-        it { is_expected.to include(isSecretsManagerAvailable: false) }
-      end
-
-      context 'when secrets_manager feature flag is disabled' do
-        before do
-          stub_feature_flags(secrets_manager: false)
-        end
-
-        it { is_expected.to include(canManageSecretManager: false) }
-      end
-
-      context 'when secrets_manager feature flag is enabled' do
-        before do
-          stub_feature_flags(secrets_manager: true)
-        end
-
-        context 'when the user has admin_project_secrets_manager permission' do
+        context 'when current user is authorized to manage the secrets manager' do
           before do
             allow(helper).to receive(:can?).with(user, :admin_project_secrets_manager, project).and_return(true)
           end
 
-          it { is_expected.to include(canManageSecretManager: true) }
+          it { is_expected.to include(canManageSecretsManager: true) }
         end
 
-        context 'when the user does not have admin_project_secrets_manager permission' do
+        context 'when current user is not authorized to manage the secrets manager' do
           before do
             allow(helper).to receive(:can?).with(user, :admin_project_secrets_manager, project).and_return(false)
           end
 
-          it { is_expected.to include(canManageSecretManager: false) }
+          it { is_expected.to include(canManageSecretsManager: false) }
         end
       end
     end
