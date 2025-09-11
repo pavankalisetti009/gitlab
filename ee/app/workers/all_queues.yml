@@ -4024,6 +4024,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_vulnerability_scanning_process_sbom_scan_throttled
+  :worker_name: Security::VulnerabilityScanning::ProcessSbomScanThrottledWorker
+  :feature_category: :software_composition_analysis
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: set_user_status_based_on_user_cap_setting
   :worker_name: SetUserStatusBasedOnUserCapSettingWorker
   :feature_category: :user_profile
