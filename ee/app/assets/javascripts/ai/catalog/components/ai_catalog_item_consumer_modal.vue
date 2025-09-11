@@ -1,17 +1,19 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlForm, GlFormGroup, GlFormInput, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { AI_CATALOG_ITEM_LABELS } from '../constants';
+import FormProjectDropdown from './form_project_dropdown.vue';
 
 const formId = uniqueId('ai-catalog-item-consumer-form-');
 
 export default {
   name: 'AiCatalogItemConsumerModal',
   components: {
+    FormProjectDropdown,
+    GlAlert,
     GlForm,
     GlFormGroup,
-    GlFormInput,
     GlModal,
     GlSprintf,
   },
@@ -24,7 +26,8 @@ export default {
   data() {
     return {
       isOpen: true,
-      targetId: this.item.project?.id,
+      targetId: this.item.project?.id || null,
+      error: null,
     };
   },
   computed: {
@@ -46,21 +49,14 @@ export default {
     },
   },
   methods: {
+    onError(error) {
+      this.error = error;
+    },
     handleSubmit() {
-      // TODO: This is a tmp solution until we're using
-      // a project dropdown select instead of an
-      // input field.
-      const isProjectSelected = this.targetId.toLowerCase().includes('project');
-
-      if (!isProjectSelected) {
-        // eslint-disable-next-line
-        console.error(
-          // eslint-disable-next-line
-          'Invalid State. Target ID must contain "project"',
-        );
+      if (this.targetId === null) {
+        this.onError(s__('AICatalog|Project is required.'));
         return;
       }
-
       this.$emit('submit', { projectId: this.targetId });
     },
   },
@@ -90,6 +86,10 @@ export default {
     @primary.prevent
     @hidden="$emit('hide')"
   >
+    <gl-alert v-if="error" variant="danger" class="gl-mb-5" @dismiss="error = null">
+      {{ error }}
+    </gl-alert>
+
     <dl>
       <dt class="gl-mb-2 gl-font-bold">
         <gl-sprintf :message="s__('AICatalog|Selected %{itemType}')">
@@ -101,11 +101,11 @@ export default {
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
       <gl-form-group
-        :label="s__('AICatalog|Project ID')"
+        :label="s__('AICatalog|Project')"
         :label-description="projectLabelDescription"
         label-for="target-id"
       >
-        <gl-form-input id="target-id" v-model="targetId" required data-testid="target-id" />
+        <form-project-dropdown id="target-id" v-model="targetId" @error="onError" />
       </gl-form-group>
     </gl-form>
   </gl-modal>

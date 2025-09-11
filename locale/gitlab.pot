@@ -2647,9 +2647,6 @@ msgstr ""
 msgid "AICatalog|Project"
 msgstr ""
 
-msgid "AICatalog|Project ID"
-msgstr ""
-
 msgid "AICatalog|Project is required."
 msgstr ""
 
