@@ -68,6 +68,16 @@ export default {
       required: false,
       validator: (size) => ['small', 'medium', 'large'].includes(size),
     },
+    sourceBranch: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    additionalContext: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -137,9 +147,12 @@ export default {
         environment: FLOW_WEB_ENVIRONMENT,
         workflow_definition: this.workflowDefinition,
         agent_privileges: this.agentPrivileges,
+        additionalContext: this.additionalContext,
       };
 
-      if (this.currentRef) {
+      if (this.sourceBranch) {
+        requestData.source_branch = this.sourceBranch;
+      } else if (this.currentRef) {
         requestData.source_branch = this.currentRef;
       }
 
