@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :secrets_management do
+RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature_category: :secrets_management do
   include GraphqlHelpers
 
   before do
@@ -99,7 +99,8 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
         description: 'test description 1',
         branch: 'dev-branch-*',
         environment: 'review/*',
-        value: 'test value 1'
+        value: 'test value 1',
+        rotation_interval_days: 30
       )
     end
 
@@ -111,7 +112,8 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
         description: 'test description 2',
         branch: 'master',
         environment: 'production',
-        value: 'test value 2'
+        value: 'test value 2',
+        rotation_interval_days: 60
       )
     end
 
@@ -142,11 +144,12 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
     end
 
     context 'and the project secrets manager is active' do
-      before do
-        post_graphql(list_query, current_user: current_user)
-      end
-
       it 'returns the list of project secrets' do
+        post_graphql(list_query, current_user: current_user)
+
+        rotation_info_1 = secret_rotation_info_for_project_secret(project, secret_1.name)
+        rotation_info_2 = secret_rotation_info_for_project_secret(project, secret_2.name)
+
         expect(graphql_data_at(:project_secrets, :nodes))
           .to contain_exactly(
             a_graphql_entity_for(
@@ -155,7 +158,13 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
               description: secret_1.description,
               branch: secret_1.branch,
               environment: secret_1.environment,
-              metadata_version: 1
+              metadata_version: 1,
+              rotation_info: a_graphql_entity_for(
+                rotation_interval_days: rotation_info_1.rotation_interval_days,
+                status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+                updated_at: rotation_info_1.updated_at.iso8601,
+                created_at: rotation_info_1.created_at.iso8601
+              )
             ),
             a_graphql_entity_for(
               project: a_graphql_entity_for(project),
@@ -163,9 +172,36 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
               description: secret_2.description,
               branch: secret_2.branch,
               environment: secret_2.environment,
-              metadata_version: 1
+              metadata_version: 1,
+              rotation_info: a_graphql_entity_for(
+                rotation_interval_days: rotation_info_2.rotation_interval_days,
+                status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+                updated_at: rotation_info_2.updated_at.iso8601,
+                created_at: rotation_info_2.created_at.iso8601
+              )
             )
           )
+      end
+
+      it 'avoids N+1 queries' do
+        control_count = ActiveRecord::QueryRecorder.new do
+          post_graphql(list_query, current_user: current_user)
+        end
+
+        create_project_secret(
+          user: current_user,
+          project: project,
+          name: 'MY_SECRET_3',
+          description: 'test description 3',
+          branch: 'master',
+          environment: 'production',
+          value: 'test value 3',
+          rotation_interval_days: 70
+        )
+
+        expect do
+          post_graphql(list_query, current_user: current_user)
+        end.not_to exceed_query_limit(control_count)
       end
 
       context 'and we can fetch secrets' do
@@ -174,6 +210,8 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
         end
 
         it 'returns a secret' do
+          rotation_info = secret_rotation_info_for_project_secret(project, secret_1.name)
+
           expect(graphql_data_at(:project_secret))
             .to match(
               a_graphql_entity_for(
@@ -182,7 +220,13 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
                 description: secret_1.description,
                 branch: secret_1.branch,
                 environment: secret_1.environment,
-                metadata_version: 1
+                metadata_version: 1,
+                rotation_info: a_graphql_entity_for(
+                  rotation_interval_days: rotation_info.rotation_interval_days,
+                  status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+                  updated_at: rotation_info.updated_at.iso8601,
+                  created_at: rotation_info.created_at.iso8601
+                )
               )
             )
         end

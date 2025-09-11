@@ -8,11 +8,12 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
   let!(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
   let(:service) { described_class.new(project, user) }
+  let(:include_rotation_info) { true }
 
   describe '#execute' do
     let(:user) { create(:user, owner_of: project) }
 
-    subject(:result) { service.execute }
+    subject(:result) { service.execute(include_rotation_info: include_rotation_info) }
 
     context 'when secrets manager is active and user is owner' do
       before do
@@ -45,7 +46,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
             description: 'Second secret',
             branch: 'staging',
             environment: 'staging',
-            value: 'secret-value-2'
+            value: 'secret-value-2',
+            rotation_interval_days: 30
           )
         end
 
@@ -63,12 +65,29 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
           expect(secret1.branch).to eq('main')
           expect(secret1.environment).to eq('production')
           expect(secret1.metadata_version).to eq(1)
+          expect(secret1.rotation_info).to be_nil
 
           secret2 = secrets.find { |s| s.name == 'SECRET2' }
           expect(secret2.description).to eq('Second secret')
           expect(secret2.branch).to eq('staging')
           expect(secret2.environment).to eq('staging')
           expect(secret2.metadata_version).to eq(1)
+
+          rotation_info = secret_rotation_info_for_project_secret(project, secret2.name, secret2.metadata_version)
+          expect(secret2.rotation_info).to eq(rotation_info)
+        end
+
+        context 'and include_rotation_info is false' do
+          let(:include_rotation_info) { false }
+
+          it 'does not include the rotation info in the result' do
+            expect(result).to be_success
+
+            secrets = result.payload[:project_secrets]
+            expect(secrets.size).to eq(2)
+
+            expect(secrets.filter_map(&:rotation_info)).to be_empty
+          end
         end
       end
     end

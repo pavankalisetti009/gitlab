@@ -53,6 +53,16 @@ module SecretsManagement
       expect(stored_data["custom_metadata"]).to include(metadata)
     end
 
+    def expect_kv_secret_not_to_have_custom_metadata(mount_path, path, metadata)
+      stored_data = secrets_manager_client.read_secret_metadata(mount_path, path)
+      expect(stored_data["custom_metadata"]).not_to include(metadata)
+    end
+
+    def expect_kv_secret_to_have_metadata_version(mount_path, path, version)
+      stored_data = secrets_manager_client.read_secret_metadata(mount_path, path)
+      expect(stored_data["current_metadata_version"]).to eq(version)
+    end
+
     def expect_project_secret_not_to_exist(project, name, user = nil)
       user ||= create(:user)
       result = ProjectSecrets::ReadService.new(project, user).execute(name)
@@ -84,13 +94,16 @@ module SecretsManagement
       TestClient.new(jwt: jwt)
     end
 
-    def create_project_secret(user:, project:, name:, branch:, environment:, value:, description: nil)
+    def create_project_secret(
+      user:, project:, name:, branch:, environment:, value:, description: nil,
+      rotation_interval_days: nil)
       result = ProjectSecrets::CreateService.new(project, user).execute(
         name: name,
         value: value,
         description: description,
         branch: branch,
-        environment: environment
+        environment: environment,
+        rotation_interval_days: rotation_interval_days
       )
 
       project_secret = result.payload[:project_secret]
@@ -117,6 +130,10 @@ module SecretsManagement
       end
 
       secret_permission
+    end
+
+    def secret_rotation_info_for_project_secret(project, name, version = 1)
+      SecretRotationInfo.for_project_secret(project, name, version)
     end
   end
 end

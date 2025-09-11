@@ -35,6 +35,10 @@ module Mutations
           required: false,
           description: 'New branches that can access the secret.'
 
+        argument :rotation_interval_days, GraphQL::Types::Int,
+          required: false,
+          description: 'Number of days between rotation reminders for the secret.'
+
         argument :metadata_cas, GraphQL::Types::Int,
           required: true,
           description: 'This should match the current metadata version of the project secret being updated.'
@@ -55,7 +59,8 @@ module Mutations
               value: args[:secret],
               environment: args[:environment],
               branch: args[:branch],
-              metadata_cas: args[:metadata_cas]
+              metadata_cas: args[:metadata_cas],
+              rotation_interval_days: args[:rotation_interval_days]
             )
 
           if result.success?

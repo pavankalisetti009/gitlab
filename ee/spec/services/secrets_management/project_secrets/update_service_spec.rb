@@ -6,8 +6,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
   include SecretsManagement::GitlabSecretsManagerHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
-  let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
+  let_it_be(:user) { create(:user, owner_of: project) }
 
   let(:service) { described_class.new(project, user) }
   let(:name) { 'TEST_SECRET' }
@@ -15,19 +15,22 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
   let(:original_value) { 'the-secret-value' }
   let(:original_branch) { 'main' }
   let(:original_environment) { 'prod' }
+  let(:original_rotation_interval_days) { nil }
 
   let(:new_description) { 'updated description' }
   let(:new_value) { 'updated-secret-value' }
   let(:new_branch) { 'feature' }
   let(:new_environment) { 'staging' }
+  let(:new_rotation_interval_days) { 30 }
 
   let(:description) { nil }
   let(:value) { nil }
   let(:branch) { nil }
   let(:environment) { nil }
+  let(:rotation_interval_days) { nil }
   let(:metadata_cas) { 1 }
 
-  describe '#execute', :aggregate_failures do
+  describe '#execute', :aggregate_failures, :freeze_time do
     context 'when the project secrets manager is active' do
       subject(:result) do
         service.execute(
@@ -36,6 +39,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           value: value,
           branch: branch,
           environment: environment,
+          rotation_interval_days: rotation_interval_days,
           metadata_cas: metadata_cas
         )
       end
@@ -51,8 +55,37 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           value: original_value,
           branch: original_branch,
           environment: original_environment,
-          description: original_description
+          description: original_description,
+          rotation_interval_days: original_rotation_interval_days
         )
+      end
+
+      shared_examples_for 'handling empty rotation_interval_days parameter' do
+        context 'when original secret had rotation configured' do
+          let(:original_rotation_interval_days) { 60 }
+
+          it 'unassigns the old rotation info record from the secret' do
+            expect(result).to be_success
+
+            secret = result.payload[:project_secret]
+            expect(secret.rotation_info).to be_nil
+
+            # Rotation info with the previous version still exists (will be cleaned by background job)
+            original_rotation_info = secret_rotation_info_for_project_secret(project, name, 1)
+            expect(original_rotation_info).not_to be_nil
+
+            # No new rotation record is created
+            rotation_info = secret_rotation_info_for_project_secret(project, name, 2)
+            expect(rotation_info).to be_nil
+
+            # Rotation ID is removed from metadata
+            expect_kv_secret_not_to_have_custom_metadata(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              "secret_rotation_info_id"
+            )
+          end
+        end
       end
 
       context 'when updating description only' do
@@ -82,6 +115,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           policy = secrets_manager_client.get_policy(policy_name)
           expect(policy.paths).to include(project.secrets_manager.ci_full_path(name))
         end
+
+        it_behaves_like 'handling empty rotation_interval_days parameter'
       end
 
       context 'when updating value only' do
@@ -98,13 +133,115 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             new_value
           )
 
-          # Verify metadata is unchanged
+          # Verify metadata is unchanged except version
           expect_kv_secret_to_have_custom_metadata(
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "description" => original_description,
             "environment" => original_environment,
             "branch" => original_branch
+          )
+        end
+
+        it_behaves_like 'handling empty rotation_interval_days parameter'
+      end
+
+      context 'when adding rotation to a secret without rotation' do
+        let(:rotation_interval_days) { new_rotation_interval_days }
+
+        it 'creates a new rotation info record' do
+          expect(result).to be_success
+
+          secret = result.payload[:project_secret]
+          new_version = metadata_cas + 1
+          rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
+
+          expect(rotation_info).not_to be_nil
+          expect(rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(secret.rotation_info).to eq(rotation_info)
+
+          expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            new_version
+          )
+
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "secret_rotation_info_id" => rotation_info.id.to_s
+          )
+        end
+      end
+
+      context 'when updating rotation interval of existing rotation' do
+        let(:original_rotation_interval_days) { 60 }
+        let(:rotation_interval_days) { new_rotation_interval_days }
+
+        it 'creates a new rotation info record with new interval' do
+          expect(result).to be_success
+
+          secret = result.payload[:project_secret]
+
+          # Old rotation info is left untouched and will be cleaned up by the background job
+          old_rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas)
+          expect(old_rotation_info).not_to be_nil
+          expect(old_rotation_info.rotation_interval_days).to eq(original_rotation_interval_days)
+
+          # New rotation info should be created with new version
+          new_version = metadata_cas + 1
+          new_rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
+          expect(new_rotation_info).not_to be_nil
+          expect(new_rotation_info.id).not_to eq(old_rotation_info.id)
+          expect(new_rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(secret.rotation_info).to eq(new_rotation_info)
+
+          expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            new_version
+          )
+
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "secret_rotation_info_id" => new_rotation_info.id.to_s
+          )
+        end
+      end
+
+      context 'when explicitly preserving rotation with same interval' do
+        let(:original_rotation_interval_days) { new_rotation_interval_days }
+        let(:rotation_interval_days) { new_rotation_interval_days }
+
+        it 'creates a new rotation info record with the same interval' do
+          expect(result).to be_success
+
+          secret = result.payload[:project_secret]
+
+          # Old rotation info is left untouched and will be cleaned up by the background job
+          old_rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas)
+          expect(old_rotation_info).not_to be_nil
+          expect(old_rotation_info.rotation_interval_days).to eq(original_rotation_interval_days)
+
+          # New rotation info should be created with new version
+          new_version = metadata_cas + 1
+          new_rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
+          expect(new_rotation_info).not_to be_nil
+          expect(new_rotation_info.id).not_to eq(old_rotation_info.id)
+          expect(new_rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(secret.rotation_info).to eq(new_rotation_info)
+
+          expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            new_version
+          )
+
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "secret_rotation_info_id" => new_rotation_info.id.to_s
           )
         end
       end
@@ -186,41 +323,60 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         let(:value) { new_value }
         let(:branch) { new_branch }
         let(:environment) { new_environment }
+        let(:rotation_interval_days) { new_rotation_interval_days }
 
-        it 'updates all fields and policies' do
-          expect(result).to be_success
-          expect(result.payload[:project_secret].description).to eq(new_description)
-          expect(result.payload[:project_secret].branch).to eq(new_branch)
-          expect(result.payload[:project_secret].environment).to eq(new_environment)
-          expect(result.payload[:project_secret].metadata_version).to eq(2)
+        context 'without original rotation' do
+          it 'updates all fields, policies, and adds rotation' do
+            expect(result).to be_success
 
-          # Verify value was updated
-          expect_kv_secret_to_have_value(
-            project.secrets_manager.ci_secrets_mount_path,
-            secrets_manager.ci_data_path(name),
-            new_value
-          )
+            secret = result.payload[:project_secret]
+            expect(secret.description).to eq(new_description)
+            expect(secret.branch).to eq(new_branch)
+            expect(secret.environment).to eq(new_environment)
+            expect(secret.metadata_version).to eq(2)
 
-          # Verify metadata was updated
-          expect_kv_secret_to_have_custom_metadata(
-            project.secrets_manager.ci_secrets_mount_path,
-            secrets_manager.ci_data_path(name),
-            "description" => new_description,
-            "environment" => new_environment,
-            "branch" => new_branch
-          )
+            # Verify rotation was added
+            new_version = metadata_cas + 1
+            rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
+            expect(rotation_info).not_to be_nil
+            expect(rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+            expect(secret.rotation_info).to eq(rotation_info)
 
-          # Verify old policy no longer contains the secret
-          old_policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
-          old_policy = secrets_manager_client.get_policy(old_policy_name)
+            # Verify value was updated
+            expect_kv_secret_to_have_value(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              new_value
+            )
 
-          expect(old_policy.paths).not_to include(project.secrets_manager.ci_full_path(name))
+            # Verify metadata was updated
+            expect_kv_secret_to_have_metadata_version(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              new_version
+            )
 
-          # Verify new policy contains the secret
-          new_policy_name = project.secrets_manager.ci_policy_name(new_environment, new_branch)
-          new_policy = secrets_manager_client.get_policy(new_policy_name)
+            expect_kv_secret_to_have_custom_metadata(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              "description" => new_description,
+              "environment" => new_environment,
+              "branch" => new_branch,
+              "secret_rotation_info_id" => rotation_info.id.to_s
+            )
 
-          expect(new_policy.paths).to include(project.secrets_manager.ci_full_path(name))
+            # Verify old policy no longer contains the secret
+            old_policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
+            old_policy = secrets_manager_client.get_policy(old_policy_name)
+
+            expect(old_policy.paths).not_to include(project.secrets_manager.ci_full_path(name))
+
+            # Verify new policy contains the secret
+            new_policy_name = project.secrets_manager.ci_policy_name(new_environment, new_branch)
+            new_policy = secrets_manager_client.get_policy(new_policy_name)
+
+            expect(new_policy.paths).to include(project.secrets_manager.ci_full_path(name))
+          end
         end
       end
 
@@ -326,14 +482,25 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         let(:value) { new_value }
         let(:branch) { new_branch }
         let(:environment) { new_environment }
+        let(:rotation_interval_days) { new_rotation_interval_days }
         let(:metadata_cas) { nil }
 
-        it 'updates the secret' do
+        it 'updates the secret without checking CAS' do
           expect(result).to be_success
-          expect(result.payload[:project_secret].description).to eq(new_description)
-          expect(result.payload[:project_secret].branch).to eq(new_branch)
-          expect(result.payload[:project_secret].environment).to eq(new_environment)
-          expect(result.payload[:project_secret].metadata_version).to be_nil
+
+          secret = result.payload[:project_secret]
+          expect(secret.description).to eq(new_description)
+          expect(secret.branch).to eq(new_branch)
+          expect(secret.environment).to eq(new_environment)
+          expect(secret.metadata_version).to be_nil
+
+          # Verify rotation was added
+          # When no CAS, we use previous_metadata_version + 1
+          new_version = 2
+          rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
+          expect(rotation_info).not_to be_nil
+          expect(rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(secret.rotation_info).to eq(rotation_info)
 
           # Verify value was updated
           expect_kv_secret_to_have_value(
@@ -343,12 +510,19 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           )
 
           # Verify metadata was updated
+          expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            new_version
+          )
+
           expect_kv_secret_to_have_custom_metadata(
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "description" => new_description,
             "environment" => new_environment,
-            "branch" => new_branch
+            "branch" => new_branch,
+            "secret_rotation_info_id" => rotation_info.id.to_s
           )
         end
       end
@@ -373,6 +547,12 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           )
 
           # Verify metadata is unchanged
+          expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            1
+          )
+
           expect_kv_secret_to_have_custom_metadata(
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
@@ -380,6 +560,24 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             "environment" => original_environment,
             "branch" => original_branch
           )
+        end
+
+        context 'and rotation interval is specified' do
+          let(:rotation_interval_days) { new_rotation_interval_days }
+
+          it 'creates a rotation info record but is unassigned' do
+            expect(result).not_to be_success
+
+            # Rotation info is created but will be cleaned up later by the background job
+            rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas + 1)
+            expect(rotation_info).not_to be_nil
+
+            expect_kv_secret_not_to_have_custom_metadata(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              "secret_rotation_info_id"
+            )
+          end
         end
       end
 
@@ -398,11 +596,45 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
       end
 
       context 'with invalid inputs' do
-        let(:branch) { '' } # Empty branch is invalid
+        context 'when branch is empty' do
+          let(:branch) { '' }
 
-        it 'returns an error' do
-          expect(result).not_to be_success
-          expect(result.message).to eq("Branch can't be blank")
+          it 'returns an error' do
+            expect(result).not_to be_success
+            expect(result.message).to eq("Branch can't be blank")
+          end
+
+          context 'with rotation interval specified' do
+            let(:rotation_interval_days) { new_rotation_interval_days }
+
+            it 'does not create rotation info when validation fails' do
+              expect(result).not_to be_success
+
+              # No new rotation info should be created
+              rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas + 1)
+              expect(rotation_info).to be_nil
+            end
+          end
+        end
+
+        context 'when rotation interval is invalid' do
+          let(:rotation_interval_days) { 1 } # Less than minimum
+
+          it 'returns an error and does not update' do
+            expect(result).not_to be_success
+            expect(result.message).to include('Rotation configuration error')
+
+            # Secret should remain unchanged
+            expect_kv_secret_to_have_value(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              original_value
+            )
+
+            # No rotation info should be created
+            rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas + 1)
+            expect(rotation_info).to be_nil
+          end
         end
       end
 
@@ -436,45 +668,46 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         end
       end
     end
+  end
 
-    context 'when user is a developer and no permissions' do
-      let(:user) { create(:user, developer_of: project) }
+  context 'when user is a developer and no permissions' do
+    let(:user) { create(:user, developer_of: project) }
 
-      subject(:result) do
-        service.execute(
-          name: name,
-          description: description,
-          value: value,
-          branch: branch,
-          environment: environment,
-          metadata_cas: metadata_cas
-        )
-      end
-
-      it 'returns an error' do
-        provision_project_secrets_manager(secrets_manager, user)
-        expect { result }
-        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError,
-          "1 error occurred:\n\t* permission denied\n\n")
-      end
+    subject(:result) do
+      service.execute(
+        name: name,
+        description: description,
+        value: value,
+        branch: branch,
+        environment: environment,
+        metadata_cas: metadata_cas
+      )
     end
 
-    context 'when the project secrets manager is not active' do
-      subject(:result) do
-        service.execute(
-          name: name,
-          description: description,
-          value: value,
-          branch: branch,
-          environment: environment,
-          metadata_cas: metadata_cas
-        )
-      end
+    it 'returns an error' do
+      provision_project_secrets_manager(secrets_manager, user)
 
-      it 'returns an error' do
-        expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active')
-      end
+      expect { result }
+      .to raise_error(SecretsManagement::SecretsManagerClient::ApiError,
+        "1 error occurred:\n\t* permission denied\n\n")
+    end
+  end
+
+  context 'when the project secrets manager is not active' do
+    subject(:result) do
+      service.execute(
+        name: name,
+        description: description,
+        value: value,
+        branch: branch,
+        environment: environment,
+        metadata_cas: metadata_cas
+      )
+    end
+
+    it 'returns an error' do
+      expect(result).to be_error
+      expect(result.message).to eq('Project secrets manager is not active')
     end
   end
 end

@@ -18,6 +18,8 @@ module SecretsManagement
     # We only track changes for environment and branch for policy updates
     define_attribute_methods :branch, :environment
 
+    attribute :rotation_info
+
     validates :project, presence: true
     validates :name,
       presence: true,
@@ -56,7 +58,7 @@ module SecretsManagement
     private
 
     def ensure_active_secrets_manager
-      errors.add(:base, 'Project secrets manager is not active.') unless project.secrets_manager&.active?
+      errors.add(:base, 'Project secrets manager is not active.') unless project&.secrets_manager&.active?
     end
   end
 end

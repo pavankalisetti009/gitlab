@@ -12,12 +12,20 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
   let(:value) { 'the-secret-value' }
   let(:branch) { 'main' }
   let(:environment) { 'prod' }
+  let(:rotation_interval_days) { 30 }
 
   subject(:result) do
-    service.execute(name: name, description: description, value: value, branch: branch, environment: environment)
+    service.execute(
+      name: name,
+      description: description,
+      value: value,
+      branch: branch,
+      environment: environment,
+      rotation_interval_days: rotation_interval_days
+    )
   end
 
-  describe '#execute', :aggregate_failures do
+  describe '#execute', :aggregate_failures, :freeze_time do
     context 'when the project secrets manager is active' do
       let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
@@ -40,12 +48,27 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           secrets_manager.ci_data_path(name),
           value
         )
+
+        rotation_info = secret_rotation_info_for_project_secret(project, secret.name)
+        expect(rotation_info).not_to be_nil
+        expect(rotation_info.rotation_interval_days).to eq(rotation_interval_days)
+        expect(rotation_info.secret_metadata_version).to eq(1)
+
+        expect(secret.rotation_info).to eq(rotation_info)
+
+        expect_kv_secret_to_have_metadata_version(
+          project.secrets_manager.ci_secrets_mount_path,
+          secrets_manager.ci_data_path(name),
+          rotation_info.secret_metadata_version
+        )
+
         expect_kv_secret_to_have_custom_metadata(
           project.secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name),
           "description" => description,
           "environment" => environment,
-          "branch" => branch
+          "branch" => branch,
+          "secret_rotation_info_id" => rotation_info.id.to_s
         )
 
         # Validate correct policy has path.
@@ -60,6 +83,19 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         expected_path = project.secrets_manager.ci_metadata_full_path(name)
         expect(actual_policy.paths).to include(expected_path)
         expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
+      end
+
+      context 'when rotation_interval_days is not given' do
+        let(:rotation_interval_days) { nil }
+
+        it 'does not create a rotation info record' do
+          expect(result).to be_success
+
+          secret = result.payload[:project_secret]
+          rotation_info = secret_rotation_info_for_project_secret(project, secret.name)
+          expect(rotation_info).to be_nil
+          expect(secret.rotation_info).to be_nil
+        end
       end
 
       context 'when using any environment' do
@@ -164,12 +200,219 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
       context 'when the secret already exists' do
         before do
-          described_class.new(project, user).execute(name: name, value: value, environment: environment, branch: branch)
+          described_class.new(project, user)
+            .execute(
+              name: name,
+              value: value,
+              environment: environment,
+              branch: branch,
+              rotation_interval_days: existing_rotation_interval_days
+            )
         end
 
-        it 'fails' do
-          expect(result).to be_error
-          expect(result.message).to eq('Project secret already exists.')
+        shared_examples_for 'rejecting secrets that exist' do
+          it 'fails' do
+            expect(result).to be_error
+            expect(result.message).to eq('Project secret already exists.')
+          end
+        end
+
+        context 'and the existing secret was not configured to rotate' do
+          let(:existing_rotation_interval_days) { nil }
+
+          it_behaves_like 'rejecting secrets that exist'
+
+          it 'does not create a secret rotation info record' do
+            expect(result).to be_error
+            rotation_info = secret_rotation_info_for_project_secret(project, name)
+            expect(rotation_info).to be_nil
+          end
+        end
+
+        context 'and the existing secret was configured to rotate' do
+          let(:existing_rotation_interval_days) { 60 }
+
+          context 'and the new request did not have rotation for the secret' do
+            let(:rotation_interval_days) { nil }
+
+            it_behaves_like 'rejecting secrets that exist'
+
+            it 'does not remove the existing secret rotation info record' do
+              expect(result).to be_error
+              rotation_info = secret_rotation_info_for_project_secret(project, name)
+              expect(rotation_info).not_to be_nil
+              expect(rotation_info.reload.rotation_interval_days).to eq(existing_rotation_interval_days)
+              expect(rotation_info.secret_metadata_version).to eq(1)
+            end
+          end
+
+          context 'and the new request have rotation for the secret' do
+            it_behaves_like 'rejecting secrets that exist'
+
+            it 'does not update the existing secret rotation info record' do
+              expect(result).to be_error
+              rotation_info = secret_rotation_info_for_project_secret(project, name)
+              expect(rotation_info).not_to be_nil
+              expect(rotation_info.reload.rotation_interval_days).to eq(existing_rotation_interval_days)
+              expect(rotation_info.secret_metadata_version).to eq(1)
+            end
+          end
+        end
+      end
+
+      context 'when retrying to create a secret that previously partially failed' do
+        context 'and it failed to create the secret in openbao after rotation info record was created successfully' do
+          let(:existing_rotation_interval_days) { 30 }
+          let(:existing_rotation_info) { secret_rotation_info_for_project_secret(project, name) }
+
+          before do
+            webmock_enable!(allow_localhost: false)
+
+            secret_metadata_path = [
+              SecretsManagement::SecretsManagerClient.configuration.host,
+              SecretsManagement::SecretsManagerClient.configuration.base_path,
+              secrets_manager.ci_secrets_mount_path,
+              'metadata',
+              secrets_manager.ci_data_path(name)
+            ].join('/')
+
+            secret_create_path = [
+              SecretsManagement::SecretsManagerClient.configuration.host,
+              SecretsManagement::SecretsManagerClient.configuration.base_path,
+              secrets_manager.ci_secrets_mount_path,
+              'data',
+              secrets_manager.ci_data_path(name)
+            ].join('/')
+
+            # Mock the openbao read secret metadata API call to return not found so that it proceeds with creation
+            stub_request(:get, secret_metadata_path).to_return(status: 404, body: '')
+
+            # Mock the openbao create secret API call to fail
+            stub_request(:post, secret_create_path).to_timeout
+
+            # rubocop:disable RSpec/ExpectInHook -- Just to ensure our setup is correct
+            expect do
+              # This first execution will fail
+              described_class.new(project, user)
+                .execute(
+                  name: name,
+                  value: value,
+                  environment: environment,
+                  branch: branch,
+                  rotation_interval_days: existing_rotation_interval_days
+                )
+            end.to raise_error(SecretsManagement::SecretsManagerClient::ConnectionError)
+
+            webmock_enable!(allow_localhost: true)
+            WebMock.reset!
+
+            # Before we retry, let's validate the first request results
+            # The secret rotation record should exist
+            expect(existing_rotation_info.rotation_interval_days).to eq(existing_rotation_interval_days)
+            expect(existing_rotation_info.secret_metadata_version).to eq(1)
+
+            # The secret should not exist in openbao
+            expect_kv_secret_not_to_exist(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name)
+            )
+            # rubocop:enable RSpec/ExpectInHook
+          end
+
+          context 'and rotation_interval_days value was changed upon retry' do
+            let(:rotation_interval_days) { 60 }
+
+            it 'updates the rotation info and creates the secret in openbao' do
+              # Now, retry
+              # Verify that the secret rotation interval days was updated
+              expect { result }.to change {
+                existing_rotation_info.reload.rotation_interval_days
+              }.to rotation_interval_days
+              expect(result).to be_success
+              expect(existing_rotation_info.secret_metadata_version).to eq(1)
+              secret = result.payload[:project_secret]
+              expect(secret.rotation_info).to eq(existing_rotation_info)
+
+              # Verify that the secret now exists in openbao
+              expect_kv_secret_to_have_value(
+                project.secrets_manager.ci_secrets_mount_path,
+                secrets_manager.ci_data_path(name),
+                value
+              )
+
+              expect_kv_secret_to_have_metadata_version(
+                project.secrets_manager.ci_secrets_mount_path,
+                secrets_manager.ci_data_path(name),
+                existing_rotation_info.secret_metadata_version
+              )
+
+              expect_kv_secret_to_have_custom_metadata(
+                project.secrets_manager.ci_secrets_mount_path,
+                secrets_manager.ci_data_path(name),
+                "secret_rotation_info_id" => existing_rotation_info.id.to_s
+              )
+            end
+          end
+
+          context 'and rotation_interval_days was removed upon retry' do
+            let(:rotation_interval_days) { nil }
+
+            it 'ignores the existing rotation info record and creates the secret in openbao' do
+              # Now, retry
+              # Verify that the secret rotation record was not removed or updated.
+              # We let the background job to eventually clean this orphaned record for consistency.
+              expect { result }.not_to change {
+                existing_rotation_info.reload.rotation_interval_days
+              }
+              expect(result).to be_success
+              secret = result.payload[:project_secret]
+              expect(secret.rotation_info).to be_nil
+
+              # Verify that the secret now exists in openbao
+              expect_kv_secret_to_have_value(
+                project.secrets_manager.ci_secrets_mount_path,
+                secrets_manager.ci_data_path(name),
+                value
+              )
+
+              expect_kv_secret_to_have_metadata_version(
+                project.secrets_manager.ci_secrets_mount_path,
+                secrets_manager.ci_data_path(name),
+                1
+              )
+
+              expect_kv_secret_not_to_have_custom_metadata(
+                project.secrets_manager.ci_secrets_mount_path,
+                secrets_manager.ci_data_path(name),
+                "secret_rotation_info_id" => existing_rotation_info.id.to_s
+              )
+            end
+          end
+        end
+
+        shared_examples_for 'handling invalid input' do
+          it 'fails and does not create anything' do
+            expect(result).to be_error
+
+            expect(SecretsManagement::SecretRotationInfo.count).to be_zero
+
+            expect_kv_secret_not_to_exist(
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name)
+            )
+          end
+        end
+
+        context 'when the secret rotation info is invalid' do
+          let(:rotation_interval_days) { 1 }
+
+          it_behaves_like 'handling invalid input'
+        end
+
+        context 'when the secret info is invalid' do
+          let(:name) { "inv@lid-name!" }
+
+          it_behaves_like 'handling invalid input'
         end
       end
     end
@@ -185,8 +428,10 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
       it 'returns an error' do
         provision_project_secrets_manager(secrets_manager, user)
         expect { result }
-        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError,
-          "1 error occurred:\n\t* permission denied\n\n")
+          .to raise_error(
+            SecretsManagement::SecretsManagerClient::ApiError,
+            "1 error occurred:\n\t* permission denied\n\n"
+          )
       end
     end
 

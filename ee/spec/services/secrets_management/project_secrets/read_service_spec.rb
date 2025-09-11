@@ -16,8 +16,10 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
   let(:value) { 'secret-value' }
 
   describe '#execute' do
+    let(:include_rotation_info) { true }
+
     context 'when secrets manager is active' do
-      subject(:result) { service.execute(name) }
+      subject(:result) { service.execute(name, include_rotation_info: include_rotation_info) }
 
       before do
         provision_project_secrets_manager(secrets_manager, user)
@@ -32,7 +34,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
             description: description,
             branch: branch,
             environment: environment,
-            value: value
+            value: value,
+            rotation_interval_days: 30
           )
         end
 
@@ -47,6 +50,24 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
             expect(project_secret.environment).to eq(environment)
             expect(project_secret.metadata_version).to eq(1)
             expect(project_secret.project).to eq(project)
+
+            rotation_info = secret_rotation_info_for_project_secret(
+              project,
+              project_secret.name,
+              project_secret.metadata_version
+            )
+
+            expect(project_secret.rotation_info).to eq(rotation_info)
+          end
+
+          context 'and include_rotation_info is false' do
+            let(:include_rotation_info) { false }
+
+            it 'does not include the rotation info in the result' do
+              expect(result).to be_success
+              project_secret = result.payload[:project_secret]
+              expect(project_secret.rotation_info).to be_nil
+            end
           end
         end
       end

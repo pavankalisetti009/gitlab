@@ -13,7 +13,7 @@ module SecretsManagement
 
     self.table_name = 'project_secrets_managers'
 
-    belongs_to :project
+    belongs_to :project, inverse_of: :secrets_manager
 
     validates :project, presence: true
 
