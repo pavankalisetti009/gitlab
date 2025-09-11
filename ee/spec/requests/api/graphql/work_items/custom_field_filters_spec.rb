@@ -42,6 +42,20 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     }
   end
 
+  let(:or_params) do
+    {
+      custom_field: [
+        {
+          custom_field_id: select_field.to_global_id.to_s,
+          selected_option_ids: [
+            select_option_1.to_global_id.to_s,
+            select_option_2.to_global_id.to_s
+          ]
+        }
+      ]
+    }
+  end
+
   before_all do
     create(:work_item_select_field_value, work_item_id: work_item_a.id, custom_field: select_field,
       custom_field_select_option: select_option_1)
@@ -93,6 +107,25 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
     end
   end
 
+  shared_examples 'returns OR filtered counts' do
+    it 'returns counts matching any of the custom field filter options' do
+      post_graphql(query, current_user: current_user)
+
+      expect(count).to eq(3) # All work items should match (a has option_1, b and c have option_2)
+    end
+  end
+
+  shared_examples 'returns OR filtered items' do
+    it 'returns items matching any of the custom field filter options' do
+      post_graphql(query, current_user: current_user)
+
+      model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+      expect(model_ids.size).to eq(3)
+      expect(model_ids).to contain_exactly(work_item_a.id, work_item_b.id, work_item_c.id)
+    end
+  end
+
   context 'when querying project.issueStatusCounts' do
     let(:query) do
       graphql_query_for(:project, { full_path: project.full_path },
@@ -108,6 +141,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
       let(:params) { { not: not_params } }
 
       it_behaves_like 'returns inverse filtered counts'
+    end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered counts'
     end
   end
 
@@ -127,6 +166,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
 
       it_behaves_like 'returns inverse filtered items'
     end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered items'
+    end
   end
 
   context 'when querying group.issues' do
@@ -144,6 +189,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
       let(:params) { { not: not_params } }
 
       it_behaves_like 'returns inverse filtered items'
+    end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered items'
     end
   end
 
@@ -163,6 +214,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
 
       it_behaves_like 'returns inverse filtered counts'
     end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered counts'
+    end
   end
 
   context 'when querying group.workItemStateCounts' do
@@ -180,6 +237,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
       let(:params) { { not: not_params } }
 
       it_behaves_like 'returns inverse filtered counts'
+    end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered counts'
     end
   end
 
@@ -311,6 +374,98 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
         end
       end
     end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered items'
+
+      context 'when filtering using custom field names and values with or_params' do
+        let(:or_params) do
+          {
+            custom_field: [
+              {
+                custom_field_name: select_field.name,
+                selected_option_values: [
+                  select_option_1.value,
+                  select_option_2.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it_behaves_like 'returns OR filtered items'
+      end
+
+      context "without existing select option value" do
+        let(:option) { build(:custom_field_select_option) }
+        let(:or_params) do
+          {
+            custom_field: [
+              {
+                custom_field_name: select_field.name,
+                selected_option_values: [
+                  option.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'returns 0 items' do
+          post_graphql(query, current_user: current_user)
+
+          model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+          expect(model_ids.size).to eq(0)
+          expect(model_ids).to be_empty
+        end
+      end
+
+      context "when only one select option value exists" do
+        let(:option) { build(:custom_field_select_option) }
+        let(:or_params) do
+          {
+            custom_field: [
+              {
+                custom_field_name: select_field.name,
+                selected_option_values: [
+                  select_option_1.value,
+                  option.value
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'returns 1 items' do
+          post_graphql(query, current_user: current_user)
+
+          model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+          expect(model_ids.size).to eq(1)
+          expect(model_ids).to contain_exactly(work_item_a.id)
+        end
+      end
+
+      context 'when testing OR with single option (should behave like regular filter)' do
+        let(:or_params) do
+          {
+            custom_field: [
+              {
+                custom_field_id: select_field.to_global_id.to_s,
+                selected_option_ids: [
+                  select_option_2.to_global_id.to_s
+                ]
+              }
+            ]
+          }
+        end
+
+        it_behaves_like 'returns filtered items'
+      end
+    end
   end
 
   context 'when querying group.workItems' do
@@ -328,6 +483,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
       let(:params) { { not: not_params } }
 
       it_behaves_like 'returns inverse filtered items'
+    end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered items'
     end
   end
 
@@ -368,6 +529,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
 
       it_behaves_like 'returns inverse filtered items'
     end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered items'
+    end
   end
 
   context 'when querying group.board.lists.issues' do
@@ -407,6 +574,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
 
       it_behaves_like 'returns inverse filtered items'
     end
+
+    context 'when using or params for OR filtering' do
+      let(:params) { { or: or_params } }
+
+      it_behaves_like 'returns OR filtered items'
+    end
   end
 
   context 'with legacy epics' do
@@ -442,6 +615,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
         let(:params) { { not: not_params } }
 
         it_behaves_like 'returns inverse filtered items'
+      end
+
+      context 'when using or params for OR filtering' do
+        let(:params) { { or: or_params } }
+
+        it_behaves_like 'returns OR filtered items'
       end
     end
 
@@ -483,6 +662,12 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
         let(:params) { { not: not_params } }
 
         it_behaves_like 'returns inverse filtered items'
+      end
+
+      context 'when using or params for OR filtering' do
+        let(:params) { { or: or_params } }
+
+        it_behaves_like 'returns OR filtered items'
       end
     end
   end
