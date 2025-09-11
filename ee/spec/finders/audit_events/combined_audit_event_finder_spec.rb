@@ -767,6 +767,29 @@ RSpec.describe AuditEvents::CombinedAuditEventFinder, feature_category: :audit_e
             expect(result[:records]).to eq(expected_order)
           end
         end
+
+        context 'when filtering by entity_username' do
+          let_it_be(:user_with_username) { create(:user, username: 'testuser') }
+          let_it_be(:user_event_with_username) do
+            create(:audit_events_user_audit_event,
+              created_at: Time.zone.parse('2024-01-15 12:00:00'),
+              user_id: user_with_username.id)
+          end
+
+          context 'with entity_type User and entity_username' do
+            let(:params) do
+              { entity_type: 'User', entity_username: 'testuser', page: 1, per_page: 20, pagination: 'offset' }
+            end
+
+            it 'returns only events for the user with specified username' do
+              result = execute
+
+              expect(result[:records]).to eq([user_event_with_username])
+              expect(result[:records]).to all(have_attributes(user_id: user_with_username.id))
+              expect(result[:total_count]).to eq(1)
+            end
+          end
+        end
       end
 
       context 'when using combined filters with pagination' do

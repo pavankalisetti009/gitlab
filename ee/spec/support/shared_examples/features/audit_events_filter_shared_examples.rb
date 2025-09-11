@@ -6,9 +6,9 @@ RSpec.shared_examples_for 'audit events date filter' do
 
     find('.audit-log-table td', match: :first)
 
-    expect(page).not_to have_content(audit_event_1.present.date)
-    expect(page).to have_content(audit_event_2.present.date)
-    expect(page).not_to have_content(audit_event_3.present.date)
+    expect(page).not_to have_content(audit_event_1.created_at.to_date.iso8601)
+    expect(page).to have_content(audit_event_2.created_at.to_date.iso8601)
+    expect(page).not_to have_content(audit_event_3.created_at.to_date.iso8601)
   end
 
   it 'shows only today\'s event' do
@@ -16,9 +16,9 @@ RSpec.shared_examples_for 'audit events date filter' do
 
     find('.audit-log-table td', match: :first)
 
-    expect(page).not_to have_content(audit_event_1.present.date)
-    expect(page).not_to have_content(audit_event_2.present.date)
-    expect(page).to have_content(audit_event_3.present.date)
+    expect(page).not_to have_content(audit_event_1.created_at.to_date.iso8601)
+    expect(page).not_to have_content(audit_event_2.created_at.to_date.iso8601)
+    expect(page).to have_content(audit_event_3.created_at.to_date.iso8601)
   end
 
   it 'shows a message if provided date is invalid' do

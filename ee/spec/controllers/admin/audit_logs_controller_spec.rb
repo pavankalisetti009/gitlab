@@ -24,6 +24,8 @@ RSpec.describe Admin::AuditLogsController, feature_category: :audit_events do
           serializer = instance_spy(AuditEventSerializer)
           allow(AuditEventSerializer).to receive(:new).and_return(serializer)
 
+          stub_feature_flags(read_audit_events_from_new_tables: false)
+
           get :index, params: { entity_type: 'User' }
 
           expect(serializer).to have_received(:represent).with(kind_of(Kaminari::PaginatableWithoutCount))
@@ -70,9 +72,9 @@ RSpec.describe Admin::AuditLogsController, feature_category: :audit_events do
         it 'tracks without frameworks' do
           expect(Gitlab::InternalEvents)
             .to receive(:track_event)
-            .with('user_perform_visit', hash_including(additional_properties: hash_including(
-              page_name: 'audit_events'
-            )))
+                  .with('user_perform_visit', hash_including(additional_properties: hash_including(
+                    page_name: 'audit_events'
+                  )))
 
           index_request
         end
@@ -83,10 +85,10 @@ RSpec.describe Admin::AuditLogsController, feature_category: :audit_events do
 
             expect(Gitlab::InternalEvents)
               .to receive(:track_event)
-              .with('user_perform_visit', hash_including(additional_properties: hash_including(
-                page_name: 'audit_events',
-                with_active_compliance_frameworks: 'true'
-              )))
+                    .with('user_perform_visit', hash_including(additional_properties: hash_including(
+                      page_name: 'audit_events',
+                      with_active_compliance_frameworks: 'true'
+                    )))
 
             index_request
           end
@@ -139,6 +141,75 @@ RSpec.describe Admin::AuditLogsController, feature_category: :audit_events do
 
         # find_by_username gets called in thee controller and in the AuditEvent model
         expect(User).to have_received(:find_by_username).twice.with('abc')
+      end
+    end
+
+    context 'when using new audit tables' do
+      before do
+        stub_licensed_features(admin_audit_log: true)
+        stub_feature_flags(read_audit_events_from_new_tables: true)
+      end
+
+      it 'uses CombinedAuditEventFinder' do
+        audit_event = create(:user_audit_event)
+        finder_instance = instance_double(::AuditEvents::CombinedAuditEventFinder)
+        result = {
+          records: [audit_event],
+          page: 1,
+          per_page: 25,
+          total_count: 1,
+          total_pages: 1
+        }
+
+        expect(::AuditEvents::CombinedAuditEventFinder).to receive(:new).with(
+          params: hash_including(
+            pagination: 'offset',
+            page: nil,
+            per_page: 25
+          )
+        ).and_return(finder_instance)
+        expect(finder_instance).to receive(:execute).and_return(result)
+
+        get :index
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      context 'when no audit events exist' do
+        it 'handles empty results correctly' do
+          finder_instance = instance_double(::AuditEvents::CombinedAuditEventFinder)
+          result = {
+            records: [],
+            page: 1,
+            per_page: 25,
+            total_count: 0,
+            total_pages: 1
+          }
+
+          expect(::AuditEvents::CombinedAuditEventFinder).to receive(:new).and_return(finder_instance)
+          expect(finder_instance).to receive(:execute).and_return(result)
+
+          get :index
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(assigns(:events)).to eq([])
+          expect(assigns(:is_last_page)).to be true
+        end
+      end
+    end
+
+    context 'when not using new audit tables' do
+      before do
+        stub_licensed_features(admin_audit_log: true)
+        stub_feature_flags(read_audit_events_from_new_tables: false)
+      end
+
+      it 'uses AuditEventFinder' do
+        create(:user_audit_event)
+
+        get :index, params: { entity_type: 'User' }
+
+        expect(response).to have_gitlab_http_status(:ok)
       end
     end
   end

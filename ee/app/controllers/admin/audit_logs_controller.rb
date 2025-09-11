@@ -25,7 +25,12 @@ class Admin::AuditLogsController < Admin::ApplicationController
   PER_PAGE = 25
 
   def index
-    @is_last_page = events.last_page?
+    @is_last_page = if use_new_audit_tables? && events.total_count == 0
+                      true # Handle empty results edge case: Kaminari's last_page? returns false when total_pages=0
+                    else
+                      events.last_page?
+                    end
+
     @events = AuditEventSerializer.new.represent(events)
     @audit_event_definitions = Gitlab::Audit::Type::Definition.names_with_category
 
@@ -65,16 +70,39 @@ class Admin::AuditLogsController < Admin::ApplicationController
 
   def events
     strong_memoize(:events) do
-      level = Gitlab::Audit::Levels::Instance.new
-      events = AuditEventFinder
-        .new(level: level, params: audit_events_params)
-        .execute
-        .page(pagination_params[:page])
-        .per(PER_PAGE)
-        .without_count
+      if use_new_audit_tables?
+        finder_params = audit_events_params.merge(
+          pagination: 'offset',
+          page: pagination_params[:page],
+          per_page: PER_PAGE
+        )
+        finder = ::AuditEvents::CombinedAuditEventFinder.new(params: finder_params)
+        result = finder.execute
 
-      Gitlab::Audit::Events::Preloader.preload!(events)
+        events_array = Kaminari.paginate_array(
+          result[:records],
+          total_count: result[:total_count]
+        ).page(result[:page]).per(result[:per_page])
+
+        Gitlab::Audit::Events::Preloader.preload!(events_array)
+
+        events_array
+      else
+        level = Gitlab::Audit::Levels::Instance.new
+        events = AuditEventFinder
+                   .new(level: level, params: audit_events_params)
+                   .execute
+                   .page(pagination_params[:page])
+                   .per(PER_PAGE)
+                   .without_count
+
+        Gitlab::Audit::Events::Preloader.preload!(events)
+      end
     end
+  end
+
+  def use_new_audit_tables?
+    Feature.enabled?(:read_audit_events_from_new_tables, current_user)
   end
 
   def check_license_admin_audit_event_available!

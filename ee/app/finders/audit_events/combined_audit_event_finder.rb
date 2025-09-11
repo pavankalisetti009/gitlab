@@ -160,7 +160,16 @@ module AuditEvents
     def apply_filters(scope)
       scope = by_created_at(scope)
       scope = by_author(scope)
-      by_entity(scope)
+      scope = by_entity(scope)
+      by_username(scope)
+    end
+
+    def by_username(audit_events)
+      return audit_events unless params[:entity_username].present?
+      return audit_events unless audit_events.model == AuditEvents::UserAuditEvent
+      return audit_events unless params[:entity_type] == 'User'
+
+      audit_events.by_username(params[:entity_username])
     end
 
     def build_keyset_scopes(scopes)
