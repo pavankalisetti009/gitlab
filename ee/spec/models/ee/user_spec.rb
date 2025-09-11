@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe User, feature_category: :system_access do
   subject(:user) { described_class.new }
 
+  it_behaves_like 'associations with defined deletion strategies'
+
   describe 'user creation' do
     describe 'with defaults' do
       it "applies defaults to user" do
