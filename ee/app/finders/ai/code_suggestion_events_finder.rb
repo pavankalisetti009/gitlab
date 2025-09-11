@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
 module Ai
-  class CodeSuggestionEventsFinder
+  class CodeSuggestionEventsFinder < UsageEventsFinder
     include Gitlab::Utils::StrongMemoize
-
-    attr_reader :resource, :current_user
 
     # TODO - Replace with namespace_traversal_path filter
     # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491
@@ -29,23 +27,15 @@ module Ai
       WHERE deleted = false
     SQL
     private_constant :CONTRIBUTORS_IDS_QUERY
+    def initialize(current_user, **params)
+      super
 
-    def initialize(current_user, resource:)
-      @current_user = current_user
-      @resource = resource
-    end
+      @events ||= Gitlab::Tracking::AiTracking.registered_events.keys.grep(/^code_suggestion/)
 
-    def execute
-      return ::Ai::CodeSuggestionEvent.none unless Ability.allowed?(current_user, :read_enterprise_ai_analytics,
-        resource)
+      return if Feature.enabled?(:use_ai_events_namespace_path_filter, namespace)
 
-      if Feature.enabled?(:use_ai_events_namespace_path_filter, resource)
-        ::Ai::CodeSuggestionEvent.for(resource)
-      else
-        # rubocop: disable CodeReuse/ActiveRecord -- will be replaced after namespace_path is populated at ai_code_suggestion_events
-        ::Ai::CodeSuggestionEvent.where(user_id: contributors_ids)
-        # rubocop: enable CodeReuse/ActiveRecord
-      end
+      @users = contributors_ids
+      @namespace = nil
     end
 
     private
@@ -58,7 +48,7 @@ module Ai
     # and filtering by groups/projects implemented, after https://gitlab.com/gitlab-org/gitlab/-/issues/490601
     # we can move this logic to Ai::CodeSuggestionEvent model.
     def contributors_ids
-      if ::Gitlab::ClickHouse.enabled_for_analytics?(resource)
+      if ::Gitlab::ClickHouse.enabled_for_analytics?(namespace)
         contributors_ids_from_ch
       else
         contributors_ids_from_postgresql
@@ -70,20 +60,20 @@ module Ai
     def contributors_ids_from_postgresql
       Event.pushed_action
         .where('created_at >= ?', 1.week.ago.beginning_of_day)
-        .where(project_id: Project.for_group_and_its_subgroups(resource))
+        .where(project_id: Project.for_group_and_its_subgroups(namespace))
         .where(target_type: nil) # Filter for pushed events without targets to optimize index usage
         .select('DISTINCT author_id')
     end
 
     def fetch_contributions_from_new_table?
-      Feature.enabled?(:fetch_contributions_data_from_new_tables, resource)
+      Feature.enabled?(:fetch_contributions_data_from_new_tables, namespace)
     end
     strong_memoize_attr :fetch_contributions_from_new_table?
 
     def contributors_ids_from_ch
       variables =
         {
-          traversal_path: resource.traversal_path(with_organization: fetch_contributions_from_new_table?)
+          traversal_path: namespace.traversal_path(with_organization: fetch_contributions_from_new_table?)
         }
 
       query =
