@@ -8036,7 +8036,7 @@ msgstr ""
 msgid "Analytics|Last updated: %{recordedAt}"
 msgstr ""
 
-msgid "Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo seats%{subscriptionLinkEnd}."
+msgid "Analytics|Learn more about %{docsLinkStart}Duo and SDLC trends%{docsLinkEnd} and %{subscriptionLinkStart}Duo seats%{subscriptionLinkEnd}."
 msgstr ""
 
 msgid "Analytics|No dashboard matches the specified URL path."

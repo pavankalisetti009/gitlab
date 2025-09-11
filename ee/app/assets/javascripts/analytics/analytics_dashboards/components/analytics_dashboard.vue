@@ -335,7 +335,7 @@ export default {
   }),
   i18n: {
     aiImpactDescriptionLink: s__(
-      'Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo seats%{subscriptionLinkEnd}.',
+      'Analytics|Learn more about %{docsLinkStart}Duo and SDLC trends%{docsLinkEnd} and %{subscriptionLinkStart}Duo seats%{subscriptionLinkEnd}.',
     ),
     dateRangeFilterValidationTitle: __('Date range filter validation'),
     dateRangeFilterValidationMessage: s__(
@@ -343,7 +343,7 @@ export default {
     ),
   },
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
-  AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
+  AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/duo_and_sdlc_trends'),
   DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons'),
   HISTORY_REPLACE_UPDATE_METHOD,
   URL_SET_PARAMS_STRATEGY,

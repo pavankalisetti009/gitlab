@@ -857,7 +857,7 @@ describe('AnalyticsDashboard', () => {
       expect(findDashboard().props()).toMatchObject({
         config: {
           ...getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
-          title: 'AI impact analytics',
+          title: 'GitLab Duo and SDLC trends',
           slug: 'ai_impact',
         },
       });
@@ -873,15 +873,15 @@ describe('AnalyticsDashboard', () => {
       const linkWrapper = findCustomDescriptionLink();
       const links = linkWrapper.findAllComponents(GlLink);
 
-      expect(linkWrapper.text()).toBe('Learn more about AI impact analytics and GitLab Duo seats.');
+      expect(linkWrapper.text()).toBe('Learn more about Duo and SDLC trends and Duo seats.');
 
       const expectedLinks = [
         {
-          text: 'AI impact analytics',
-          href: '/help/user/analytics/ai_impact_analytics',
+          text: 'Duo and SDLC trends',
+          href: '/help/user/analytics/duo_and_sdlc_trends',
         },
         {
-          text: 'GitLab Duo seats',
+          text: 'Duo seats',
           href: '/help/subscriptions/subscription-add-ons',
         },
       ];

@@ -102,7 +102,7 @@ export const AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS = {
     message: s__(
       'AiImpactAnalytics|Data available after upgrade to GitLab 18.0. %{linkStart}Learn more%{linkEnd}.',
     ),
-    link: helpPagePath('user/analytics/ai_impact_analytics', {
+    link: helpPagePath('user/analytics/duo_and_sdlc_trends', {
       anchor: 'duo-usage-metrics',
     }),
   },
