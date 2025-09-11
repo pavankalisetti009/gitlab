@@ -1,6 +1,7 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { isLoggedIn } from '~/lib/utils/common_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -36,6 +37,7 @@ import {
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('~/lib/utils/common_utils');
 
 Vue.use(VueApollo);
 
@@ -59,6 +61,8 @@ describe('AiCatalogFlows', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
+    isLoggedIn.mockReturnValue(true);
+
     mockRoute = Vue.observable({
       query: $route.query,
     });

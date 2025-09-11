@@ -154,6 +154,11 @@ export default {
 
           const items = [
             {
+              text: s__('AICatalog|Add to project'),
+              action: () => this.setAiCatalogAgentToBeAdded(item),
+              icon: 'plus',
+            },
+            {
               text: s__('AICatalog|Duplicate'),
               action: () => this.handleDuplicate(item),
               icon: 'duplicate',
@@ -165,11 +170,6 @@ export default {
           }
 
           const adminItems = [
-            {
-              text: s__('AICatalog|Add to project'),
-              action: () => this.setAiCatalogAgentToBeAdded(item),
-              icon: 'plus',
-            },
             {
               text: s__('AICatalog|Test run'),
               to: {
@@ -188,7 +188,7 @@ export default {
             },
           ];
 
-          return [...adminItems, ...items];
+          return [...items, ...adminItems];
         },
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
