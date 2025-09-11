@@ -7,6 +7,9 @@ import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue
 import axios from '~/lib/utils/axios_utils';
 import { PROMO_URL } from '~/constants';
 import SafeHtml from '~/vue_shared/directives/safe_html';
+import { InternalEvents } from '~/tracking';
+
+const trackingMixin = InternalEvents.mixin();
 
 const LEARN_MORE_HREF = helpPagePath('subscriptions/subscription-add-ons', {
   anchor: 'gitlab-duo-core',
@@ -24,9 +27,12 @@ export default {
     SafeHtml,
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [trackingMixin],
   inject: {
     actionPath: { required: true },
     stateProgression: { required: true },
+    featurePreviewAttribute: { required: true },
+    initialState: { required: true },
     isAuthorized: { default: false },
     showRequestAccess: { default: false },
     hasRequested: { default: false },
@@ -84,7 +90,7 @@ export default {
     },
     actionParams() {
       if (this.currentState === 'enableFeaturePreview') {
-        return { instance_level_ai_beta_features_enabled: true };
+        return { [this.featurePreviewAttribute]: true };
       }
 
       return { duo_availability: 'default_on', duo_core_features_enabled: true };
@@ -95,6 +101,11 @@ export default {
     showRequestCounter() {
       return this.isAuthorized && this.requestCount > 0 && !this.isEnabled;
     },
+  },
+  mounted() {
+    this.trackEvent('render_duo_agent_platform_widget_in_sidebar', {
+      label: this.initialState,
+    });
   },
   methods: {
     openConfirmModal() {
@@ -126,6 +137,9 @@ export default {
     },
     onEnableSuccess() {
       this.$toast.show(this.toastMessage);
+      this.trackEvent('click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar', {
+        label: this.currentState,
+      });
 
       const currentIndex = this.stateProgression.indexOf(this.currentState);
       const nextIndex = (currentIndex + 1) % this.stateProgression.length;
@@ -140,6 +154,9 @@ export default {
         captureError: true,
         error,
       });
+    },
+    handleLearnMore() {
+      this.trackEvent('click_learn_more_in_duo_agent_platform_widget_in_sidebar');
     },
   },
   learnMoreHref: LEARN_MORE_HREF,
@@ -270,6 +287,7 @@ export default {
           category="tertiary"
           variant="confirm"
           data-testid="learn-about-features-btn"
+          @click.stop="handleLearnMore"
         >
           {{ __('Learn more') }}
         </gl-button>

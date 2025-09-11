@@ -24,7 +24,9 @@ module GitlabSubscriptions
       def widget_attributes
         {
           actionPath: action_path,
-          stateProgression: state_progression
+          featurePreviewAttribute: feature_preview_attribute,
+          stateProgression: state_progression,
+          initialState: state
         }.merge(user_attributes)
       end
 
@@ -62,6 +64,10 @@ module GitlabSubscriptions
 
       def action_path
         raise NoMethodError, 'This method must be implemented in a subclass'
+      end
+
+      def feature_preview_attribute
+        # overridden by authorized presenters
       end
 
       def eligible?
