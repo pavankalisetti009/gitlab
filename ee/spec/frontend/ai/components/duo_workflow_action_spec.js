@@ -20,6 +20,7 @@ describe('DuoWorkflowAction component', () => {
   const projectId = 123;
   const duoWorkflowInvokePath = `/api/v4/projects/${projectId}/duo_workflows`;
   const currentRef = 'feature-branch';
+  const sourceBranch = 'source-branch';
 
   const defaultProps = {
     projectId,
@@ -179,6 +180,7 @@ describe('DuoWorkflowAction component', () => {
       goal: defaultProps.goal,
       workflow_definition: defaultProps.workflowDefinition,
       agent_privileges: defaultProps.agentPrivileges,
+      additionalContext: [],
     };
 
     beforeEach(async () => {
@@ -228,18 +230,130 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    describe('when currentRef is provided', () => {
-      beforeEach(async () => {
-        await createComponent({}, { currentRef });
+    describe('additionalContext handling', () => {
+      describe('when additionalContext is provided', () => {
+        const additionalContext = [
+          {
+            Category: 'agent_user_environment',
+            Content: "{'merge_request_url': 'test.com'}",
+            Metadata: '{}',
+          },
+          {
+            Category: 'file_content',
+            Content: 'pipeline content',
+            Metadata: '{"type": "jenkins"}',
+          },
+        ];
 
-        findButton().vm.$emit('click');
-        await waitForPromises();
+        beforeEach(async () => {
+          await createComponent({ additionalContext });
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('includes additionalContext array in the request params', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+            ...expectedRequestData,
+            additionalContext,
+          });
+        });
       });
 
-      it('includes source_branch in the request params', () => {
-        expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
-          ...expectedRequestData,
-          source_branch: currentRef,
+      describe('when additionalContext is an empty array', () => {
+        const additionalContext = [];
+
+        beforeEach(async () => {
+          await createComponent({ additionalContext });
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('includes empty additionalContext array in the request params', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+            ...expectedRequestData,
+            additionalContext: [],
+          });
+        });
+      });
+
+      describe('when additionalContext is not provided', () => {
+        beforeEach(async () => {
+          await createComponent();
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('includes empty array as additionalContext in the request params', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+            ...expectedRequestData,
+            additionalContext: [],
+          });
+        });
+      });
+    });
+
+    describe('source branch handling', () => {
+      describe('when currentRef is provided', () => {
+        beforeEach(async () => {
+          await createComponent({}, { currentRef });
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('includes currentRef as source_branch in the request params', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+            ...expectedRequestData,
+            source_branch: currentRef,
+          });
+        });
+      });
+
+      describe('when sourceBranch prop is provided', () => {
+        beforeEach(async () => {
+          await createComponent({ sourceBranch });
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('includes sourceBranch as source_branch in the request params', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+            ...expectedRequestData,
+            source_branch: sourceBranch,
+          });
+        });
+      });
+
+      describe('when both currentRef and sourceBranch are provided', () => {
+        beforeEach(async () => {
+          await createComponent({ sourceBranch }, { currentRef });
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('prioritizes sourceBranch over currentRef', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+            ...expectedRequestData,
+            source_branch: sourceBranch,
+          });
+        });
+      });
+
+      describe('when neither currentRef nor sourceBranch are provided', () => {
+        beforeEach(async () => {
+          await createComponent();
+
+          findButton().vm.$emit('click');
+          await waitForPromises();
+        });
+
+        it('does not include source_branch in the request params', () => {
+          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, expectedRequestData);
         });
       });
     });

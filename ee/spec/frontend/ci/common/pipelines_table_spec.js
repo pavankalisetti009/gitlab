@@ -53,6 +53,7 @@ describe('EE - Pipelines Table', () => {
   describe('Duo Workflow Action', () => {
     const failedPipelineWithMR = {
       ...firstPipeline,
+      path: '/project/-/pipelines/123',
       details: {
         ...firstPipeline.details,
         status: {
@@ -67,6 +68,7 @@ describe('EE - Pipelines Table', () => {
 
     const failedPipelineWithoutMR = {
       ...firstPipeline,
+      path: '/project/-/pipelines/456',
       details: {
         ...firstPipeline.details,
         status: {
@@ -78,6 +80,7 @@ describe('EE - Pipelines Table', () => {
 
     const successfulPipelineWithMR = {
       ...firstPipeline,
+      path: '/project/-/pipelines/789',
       details: {
         ...firstPipeline.details,
         status: {
@@ -111,11 +114,21 @@ describe('EE - Pipelines Table', () => {
           duoWorkflowInvokePath: '/api/v4/ai/duo_workflows/workflows',
           projectId: failedPipelineWithMR.project.id,
           projectPath: 'frontend-fixtures/pipelines-project',
-          goal: 'https://gitlab.com/project/-/merge_requests/123',
+          goal: 'https://gitlab.com/project/-/pipelines/123',
           hoverMessage: 'Fix pipeline with Duo',
           workflowDefinition: 'fix_pipeline/experimental',
           size: 'medium',
           agentPrivileges: [1, 2, 3, 5],
+          sourceBranch: 'master',
+          additionalContext: [
+            {
+              Category: 'agent_user_environment',
+              Content: JSON.stringify({
+                merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
+              }),
+              Metadata: '{}',
+            },
+          ],
         });
       });
     });
@@ -128,6 +141,21 @@ describe('EE - Pipelines Table', () => {
       });
 
       it('does not render DuoWorkflowAction component', () => {
+        expect(findDuoWorkflowAction().exists()).toBe(false);
+      });
+    });
+
+    describe('when merge_request property is null', () => {
+      it('does not render DuoWorkflowAction component', () => {
+        const failedPipelineWithNullMR = {
+          ...failedPipelineWithoutMR,
+          merge_request: null,
+        };
+
+        createComponent({
+          props: { pipelines: [failedPipelineWithNullMR] },
+        });
+
         expect(findDuoWorkflowAction().exists()).toBe(false);
       });
     });
@@ -161,17 +189,31 @@ describe('EE - Pipelines Table', () => {
       });
     });
 
-    describe('merge request path handling', () => {
-      it('correctly constructs full URL when gon.gitlab_url is set', () => {
-        gon.api_version = 'v4';
-
+    describe('pipeline path and additional context handling', () => {
+      it('correctly constructs pipeline URL when gon.gitlab_url is set', () => {
         createComponent({
           props: { pipelines: [failedPipelineWithMR] },
         });
 
         expect(findDuoWorkflowAction().props('goal')).toBe(
-          'https://gitlab.com/project/-/merge_requests/123',
+          'https://gitlab.com/project/-/pipelines/123',
         );
+      });
+
+      it('includes merge request URL in additional context when available', () => {
+        createComponent({
+          props: { pipelines: [failedPipelineWithMR] },
+        });
+
+        const additionalContext = findDuoWorkflowAction().props('additionalContext');
+        expect(additionalContext).toHaveLength(1);
+        expect(additionalContext[0]).toEqual({
+          Category: 'agent_user_environment',
+          Content: JSON.stringify({
+            merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
+          }),
+          Metadata: '{}',
+        });
       });
     });
 
