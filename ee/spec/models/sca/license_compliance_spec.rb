@@ -6,15 +6,9 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
   let(:license_compliance) { described_class.new(project, pipeline) }
   let_it_be(:mit_spdx_identifier) { 'MIT' }
   let_it_be(:mit_name) { 'MIT License' }
-
   let_it_be(:project) { create(:project, :repository, :private) }
-
-  let_it_be(:mit) { create(:software_license, :mit) }
-  let_it_be(:bsd_3_license) { create(:software_license, spdx_identifier: "BSD-3-Clause", name: 'BSD-3-Clause') }
   let_it_be(:bsd_3_spdx_identifier) { 'BSD-3-Clause' }
   let_it_be(:bsd_3_name) { 'BSD 3-Clause "New" or "Revised" License' }
-  let_it_be(:other_license) { create(:software_license, name: "SOFTWARE-LICENSE", spdx_identifier: "Other-Id") }
-  let_it_be(:custom_denied_license) { create(:software_license, spdx_identifier: 'CUSTOM_DENIED_LICENSE', name: 'CUSTOM_DENIED_LICENSE') }
 
   before_all do
     create(:pm_package, name: "activesupport", purl_type: "gem",
@@ -64,17 +58,6 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
           { id: 'Apache-2.0', name: 'Apache-2.0 License', classification: 'allowed', approval_policy: true },
           { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', approval_policy: true }
         ]
-      end
-
-      let(:license_map) do
-        {
-          'MIT' => mit,
-          'AML' => create(:software_license, name: 'Apple MIT License', spdx_identifier: 'AML'),
-          'MS-PL' => create(:software_license, name: 'Microsoft Public License', spdx_identifier: 'MS-PL'),
-          'Apache-2.0' => create(:software_license, name: 'Apache-2.0 License', spdx_identifier: 'Apache-2.0'),
-          'GPL-3-Clause' => create(:software_license, name: 'GPL-3-Clause', spdx_identifier: 'GPL-3-Clause'),
-          'unknown' => create(:software_license, name: 'unknown', spdx_identifier: 'unknown')
-        }
       end
 
       using RSpec::Parameterized::TableSyntax
