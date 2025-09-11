@@ -35,12 +35,18 @@ module Gitlab
             unit_primitive_name: :duo_workflow_execute_workflow)
           .transform_keys(&:downcase)
           .merge(
-            'x-gitlab-base-url' => Gitlab.config.gitlab.url,
             'authorization' => "Bearer #{cloud_connector_token(user: user)}",
             'x-gitlab-authentication-type' => 'oidc'
           )
 
-        headers.delete('x-gitlab-base-url') if Feature.enabled?(:duo_agent_platform_disable_direct_http, user)
+        # The feature flag should stay disabled globally and by default. We inverted the value in this MR:
+        #
+        # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204647
+        #
+        # To be able to identify whether some particular problem happens due to direct-http disablement.
+        # Once we issues are resolved, this line can be removed along with the disabled feature flag.
+        headers['x-gitlab-base-url'] = Gitlab.config.gitlab.url if Feature.enabled?(
+          :duo_agent_platform_enable_direct_http, user)
 
         headers
       end

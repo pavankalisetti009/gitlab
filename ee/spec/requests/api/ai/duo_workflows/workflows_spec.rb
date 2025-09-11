@@ -23,6 +23,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
   before do
     stub_feature_flags(ci_validate_config_options: false)
+    stub_feature_flags(duo_agent_platform_enable_direct_http: false)
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
     allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
@@ -773,12 +774,10 @@ expires_at: duo_workflow_service_token_expires_at })
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
       end
 
-      context 'when duo_agent_platform_disable_direct_http is disabled' do
-        before do
-          stub_feature_flags(duo_agent_platform_disable_direct_http: false)
-        end
-
+      context 'when duo_agent_platform_enable_direct_http is enabled' do
         it 'returns the websocket configuration with proper headers' do
+          stub_feature_flags(duo_agent_platform_enable_direct_http: true)
+
           get api(path, user), headers: workhorse_headers
 
           expect(response).to have_gitlab_http_status(:ok)
