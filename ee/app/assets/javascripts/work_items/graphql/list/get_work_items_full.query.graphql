@@ -4,6 +4,7 @@
 query getWorkItemsFullEE(
   $excludeProjects: Boolean = false
   $includeDescendants: Boolean = true
+  $iid: String
   $fullPath: ID!
   $search: String
   $sort: WorkItemSort
@@ -51,6 +52,7 @@ query getWorkItemsFullEE(
     id
     name
     workItems(
+      iid: $iid
       excludeProjects: $excludeProjects
       includeDescendants: $includeDescendants
       search: $search
