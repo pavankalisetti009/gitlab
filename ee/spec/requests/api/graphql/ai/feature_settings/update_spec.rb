@@ -53,7 +53,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
         it 'does not update the AI feature setting' do
           request
-          expect { feature_setting.reload }.not_to change { feature_setting.provider }
+          expect(feature_setting.reload.provider).to eq("vendored")
         end
       end
 
@@ -78,7 +78,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
         let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
         let(:mutation_params) do
           {
-            features: %w[CODE_GENERATIONS DUO_CHAT_EXPLAIN_CODE],
+            features: %w[CODE_GENERATIONS DUO_CHAT],
             provider: 'SELF_HOSTED',
             ai_self_hosted_model_id: self_hosted_model_id
           }
@@ -86,15 +86,14 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
         context 'when the feature setting exists' do
           before do
-            create(:ai_feature_setting, feature: 'duo_chat_explain_code', provider: :vendored, self_hosted_model: nil)
+            create(:ai_feature_setting, feature: 'duo_chat', provider: :vendored, self_hosted_model: nil)
           end
 
           it 'updates the feature settings correctly' do
             expect { request }.not_to change { ::Ai::FeatureSetting.count }
             expect(response).to have_gitlab_http_status(:success)
 
-            feature_settings = ::Ai::FeatureSetting.where(feature: %w[code_generations
-              duo_chat_explain_code]).order(:feature)
+            feature_settings = ::Ai::FeatureSetting.where(feature: %w[code_generations duo_chat]).order(:feature)
 
             expect(feature_settings.count).to eq(2)
 
@@ -115,6 +114,28 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             expect(feature_settings_payload.first['feature']).to eq(feature_setting.feature)
             expect(feature_settings_payload.first['provider']).to eq(feature_setting.reload.provider)
             expect(feature_settings_payload.first['selfHostedModel']['id']).to eq(self_hosted_model_id)
+          end
+
+          it 'returns gitlab model information' do
+            request
+
+            result = json_response['data']['aiFeatureSettingUpdate']
+            feature_setting_response = result['aiFeatureSettings'][1]
+
+            expect(feature_setting_response['defaultGitlabModel']).to eq(
+              { 'name' => 'Claude Sonnet',
+                'ref' => 'claude-sonnet' }
+            )
+          end
+
+          context 'when :instance_level_model_selection feature flag is off' do
+            before do
+              stub_feature_flags(instance_level_model_selection: false)
+            end
+
+            it 'does not make request for model definitions' do
+              expect(::Ai::ModelSelection::FetchModelDefinitionsService).not_to receive(:new)
+            end
           end
         end
 
