@@ -53,6 +53,7 @@ export const ACTION_TYPES = {
   RESYNC: 'resync',
   REVERIFY: 'reverify',
   RESYNC_ALL: 'resync_all',
+  RESYNC_ALL_FAILED: 'resync_all_failed',
   REVERIFY_ALL: 'reverify_all',
 };
 
@@ -70,7 +71,7 @@ export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
 
 export const GEO_FEEDBACK_BANNER_DISMISSED_KEY = 'geo_feedback_banner_dismissed';
 
-const GEO_SHARED_STATUS_STATES = {
+export const GEO_SHARED_STATUS_STATES = {
   PENDING: {
     title: s__('Geo|Pending'),
     value: 'pending',
@@ -152,6 +153,33 @@ export const FILTERED_SEARCH_TOKENS = [
   },
 ];
 
+export const ADDITIONAL_RESYNC_BULK_ACTIONS = [
+  {
+    id: 'geo-bulk-action-resync-failed',
+    action: ACTION_TYPES.RESYNC_ALL_FAILED,
+    text: s__('Geo|Resync all failed'),
+    modal: {
+      title: s__('Geo|Resync all failed %{type}'),
+      description: s__(
+        'Geo|This will schedule a future job to retry the synchronization process for all %{type} that have a failed replication status. It may take some time to complete. Are you sure you want to continue?',
+      ),
+      helpLink: {
+        text: s__('Geo|Learn more about manual resynchronization'),
+        href: helpPagePath(
+          'administration/geo/replication/troubleshooting/synchronization_verification',
+          { anchor: 'manually-retry-replication-or-verification' },
+        ),
+      },
+    },
+    successMessage: s__(
+      'Geo|Scheduled all %{replicableType} with a failed replication status for resynchronization.',
+    ),
+    errorMessage: s__(
+      'Geo|There was an error scheduling all %{replicableType} with a failed replication status for resynchronization.',
+    ),
+  },
+];
+
 export const BULK_ACTIONS = [
   {
     id: 'geo-bulk-action-resync',
@@ -171,6 +199,11 @@ export const BULK_ACTIONS = [
         ),
       },
     },
+    successMessage: s__('Geo|Scheduled all %{replicableType} for resynchronization.'),
+    errorMessage: s__(
+      'Geo|There was an error scheduling all %{replicableType} for resynchronization.',
+    ),
+    additionalActions: ADDITIONAL_RESYNC_BULK_ACTIONS,
   },
   {
     id: 'geo-bulk-action-reverify',
@@ -188,6 +221,10 @@ export const BULK_ACTIONS = [
           { anchor: 'manually-retry-replication-or-verification' },
         ),
       },
+      successMessage: s__('Geo|Scheduled all %{replicableType} for reverification.'),
+      errorMessage: s__(
+        'Geo|There was an error scheduling all %{replicableType} for reverification.',
+      ),
     },
   },
 ];

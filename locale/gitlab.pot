@@ -29449,6 +29449,12 @@ msgstr ""
 msgid "Geo|Resync all %{type}"
 msgstr ""
 
+msgid "Geo|Resync all failed"
+msgstr ""
+
+msgid "Geo|Resync all failed %{type}"
+msgstr ""
+
 msgid "Geo|Reverify"
 msgstr ""
 
@@ -29464,7 +29470,13 @@ msgstr ""
 msgid "Geo|Scheduled %{name} for %{actionName}."
 msgstr ""
 
-msgid "Geo|Scheduled all %{replicableType} for %{actionName}."
+msgid "Geo|Scheduled all %{replicableType} for resynchronization."
+msgstr ""
+
+msgid "Geo|Scheduled all %{replicableType} for reverification."
+msgstr ""
+
+msgid "Geo|Scheduled all %{replicableType} with a failed replication status for resynchronization."
 msgstr ""
 
 msgid "Geo|Secondary"
@@ -29605,10 +29617,16 @@ msgstr ""
 msgid "Geo|There was an error saving this Geo Site"
 msgstr ""
 
-msgid "Geo|There was an error scheduling %{actionName} for all %{replicableType}."
+msgid "Geo|There was an error scheduling %{name} for %{actionName}."
 msgstr ""
 
-msgid "Geo|There was an error scheduling %{name} for %{actionName}."
+msgid "Geo|There was an error scheduling all %{replicableType} for resynchronization."
+msgstr ""
+
+msgid "Geo|There was an error scheduling all %{replicableType} for reverification."
+msgstr ""
+
+msgid "Geo|There was an error scheduling all %{replicableType} with a failed replication status for resynchronization."
 msgstr ""
 
 msgid "Geo|There was an error updating the Geo Settings"
@@ -29618,6 +29636,9 @@ msgid "Geo|This GitLab instance is subscribed to the %{insufficient_license} tie
 msgstr ""
 
 msgid "Geo|This will schedule a future job to retry the secondary verification process for all %{type}. It may take some time to complete. Are you sure you want to continue?"
+msgstr ""
+
+msgid "Geo|This will schedule a future job to retry the synchronization process for all %{type} that have a failed replication status. It may take some time to complete. Are you sure you want to continue?"
 msgstr ""
 
 msgid "Geo|This will schedule a future job to retry the synchronization process for all %{type}. It may take some time to complete. Are you sure you want to continue?"

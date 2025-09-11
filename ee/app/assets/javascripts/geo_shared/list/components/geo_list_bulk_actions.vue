@@ -1,14 +1,25 @@
 <script>
-import { GlButton, GlModal, GlSprintf, GlModalDirective, GlLink, GlIcon } from '@gitlab/ui';
+import {
+  GlButtonGroup,
+  GlButton,
+  GlModal,
+  GlSprintf,
+  GlModalDirective,
+  GlLink,
+  GlIcon,
+  GlDisclosureDropdown,
+} from '@gitlab/ui';
 import { __, sprintf } from '~/locale';
 
 export default {
   components: {
+    GlButtonGroup,
     GlButton,
     GlModal,
     GlSprintf,
     GlLink,
     GlIcon,
+    GlDisclosureDropdown,
   },
   directives: {
     GlModalDirective,
@@ -53,6 +64,18 @@ export default {
     setModalData(action) {
       this.modalAction = action;
     },
+    formatAdditionalActions(actions) {
+      return actions.map((action) => {
+        return {
+          text: action.text,
+          extraAttrs: action,
+        };
+      });
+    },
+    handleAdditionalAction(action) {
+      this.setModalData(action.extraAttrs);
+      this.$refs[this.$options.GEO_BULK_ACTION_MODAL_ID].show();
+    },
   },
   GEO_BULK_ACTION_MODAL_ID: 'geo-bulk-action',
   modal: {
@@ -71,27 +94,30 @@ export default {
 
 <template>
   <div>
-    <div>
+    <gl-button-group v-for="action in bulkActions" :key="action.id" class="gl-ml-3">
       <gl-button
-        v-for="action in bulkActions"
-        :key="action.id"
         v-gl-modal-directive="$options.GEO_BULK_ACTION_MODAL_ID"
         :icon="action.icon"
         :data-testid="action.id"
-        class="gl-ml-3"
         @click="setModalData(action)"
       >
         {{ action.text }}
       </gl-button>
-    </div>
+      <gl-disclosure-dropdown
+        v-if="action.additionalActions"
+        :items="formatAdditionalActions(action.additionalActions)"
+        @action="handleAdditionalAction"
+      />
+    </gl-button-group>
     <gl-modal
+      :ref="$options.GEO_BULK_ACTION_MODAL_ID"
       :modal-id="$options.GEO_BULK_ACTION_MODAL_ID"
       :title="modalTitle"
       size="sm"
       no-focus-on-show
       :action-primary="$options.modal.actionPrimary"
       :action-cancel="$options.modal.actionCancel"
-      @primary="$emit('bulkAction', modalAction.action)"
+      @primary="$emit('bulkAction', modalAction)"
     >
       <template v-if="modalAction">
         <gl-sprintf :message="modalDescription">
