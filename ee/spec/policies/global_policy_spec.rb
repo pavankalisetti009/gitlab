@@ -985,9 +985,11 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       it { is_expected.to be_disallowed(:manage_instance_model_selection) }
     end
 
-    context 'when feature flag is enabled, admin can manage self-hosted model settings with CC',
+    context 'when feature flag is enabled, admin can manage self-hosted model settings with non-offline license',
       :enable_admin_mode do
-      let(:license_double) { instance_double('License', ultimate?: true, premium?: true, online_cloud_license?: true) }
+      let(:license_double) do
+        instance_double('License', ultimate?: true, premium?: true, offline_cloud_license?: false)
+      end
 
       before do
         stub_feature_flags(instance_level_model_selection: true)

@@ -118,7 +118,7 @@ module EE
       condition(:instance_model_selection_available) do
         next false unless ::Feature.enabled?(:instance_level_model_selection, :instance)
 
-        ::CloudConnector.self_managed_cloud_connected?
+        !::License.current&.offline_cloud_license?
       end
 
       condition(:x_ray_available) do
