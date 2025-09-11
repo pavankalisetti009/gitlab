@@ -139,21 +139,27 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => [
-          {
-            text: s__('AICatalog|Add to project'),
-            action: () => this.setAiCatalogFlowToBeAdded(item),
-            icon: 'plus',
-          },
-          {
-            text: s__('AICatalog|Edit'),
-            to: {
-              name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-              params: { id: getIdFromGraphQLId(item.id) },
+        actionItems: (item) => {
+          if (!item.userPermissions?.adminAiCatalogItem) {
+            return [];
+          }
+
+          return [
+            {
+              text: s__('AICatalog|Add to project'),
+              action: () => this.setAiCatalogFlowToBeAdded(item),
+              icon: 'plus',
             },
-            icon: 'pencil',
-          },
-        ],
+            {
+              text: s__('AICatalog|Edit'),
+              to: {
+                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+                params: { id: getIdFromGraphQLId(item.id) },
+              },
+              icon: 'pencil',
+            },
+          ];
+        },
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],

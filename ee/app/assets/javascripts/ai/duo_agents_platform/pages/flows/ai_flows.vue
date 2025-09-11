@@ -112,16 +112,22 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => [
-          {
-            text: s__('AICatalog|Edit'),
-            to: {
-              name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-              params: { id: getIdFromGraphQLId(item.itemConsumer?.id) },
+        actionItems: (item) => {
+          if (!item.userPermissions?.adminAiCatalogItem) {
+            return [];
+          }
+
+          return [
+            {
+              text: s__('AICatalog|Edit'),
+              to: {
+                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
+                params: { id: getIdFromGraphQLId(item.itemConsumer?.id) },
+              },
+              icon: 'pencil',
             },
-            icon: 'pencil',
-          },
-        ],
+          ];
+        },
         deleteActionItem: {
           text: __('Remove'),
         },

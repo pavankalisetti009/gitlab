@@ -140,7 +140,22 @@ describe('AiCatalogListItem', () => {
       expect(items.at(2).text()).toBe('Remove');
     });
 
-    describe('when the user does not have permission to admin the item', () => {
+    describe('when the action items are empty but the user has permission to admin the item', () => {
+      beforeEach(() => {
+        createComponent({
+          itemTypeConfig: { ...defaultItemTypeConfig, actionItems: () => [] },
+        });
+      });
+
+      it('does render the the disclosure dropdown with the delete action', () => {
+        const items = findDisclosureDropdownItems();
+
+        expect(items).toHaveLength(1);
+        expect(items.at(0).text()).toBe('Delete');
+      });
+    });
+
+    describe('when the action items are empty and the user does not have permission to admin the item', () => {
       beforeEach(() => {
         createComponent({
           item: {
@@ -148,6 +163,7 @@ describe('AiCatalogListItem', () => {
             userPermissions: { adminAiCatalogItem: false },
             public: true,
           },
+          itemTypeConfig: { ...defaultItemTypeConfig, actionItems: [] },
         });
       });
 
