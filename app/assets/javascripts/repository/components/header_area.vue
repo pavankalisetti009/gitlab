@@ -413,7 +413,7 @@ export default {
         <!-- web ide -->
         <web-ide-link
           :class="[
-            'gl-w-full sm:!gl-ml-0',
+            'gl-w-full @sm/panel:!gl-ml-0',
             glFeatures.repositoryFileTreeBrowser ? '@md/panel:gl-w-auto' : '@sm/panel:gl-w-auto',
           ]"
           data-testid="js-tree-web-ide-link"
