@@ -54,7 +54,14 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
   end
 
   describe "#show_self_hosted_vendored_model_option?" do
-    it "returns false when the feature flag is disabled" do
+    it "returns false when the instance-level model selection flag is enabled" do
+      stub_feature_flags(instance_level_model_selection: true)
+
+      expect(helper.show_self_hosted_vendored_model_option?).to be(false)
+    end
+
+    it "returns false when the vendored model option feature flag is disabled" do
+      stub_feature_flags(instance_level_model_selection: false)
       stub_feature_flags(ai_self_hosted_vendored_features: false)
 
       expect(helper.show_self_hosted_vendored_model_option?).to be(false)
@@ -64,6 +71,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
       subject { helper.show_self_hosted_vendored_model_option? }
 
       before do
+        stub_feature_flags(instance_level_model_selection: false)
         stub_feature_flags(ai_self_hosted_vendored_features: true)
       end
 

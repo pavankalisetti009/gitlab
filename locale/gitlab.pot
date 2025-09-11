@@ -4819,6 +4819,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|GitLab Duo Self-Hosted"
 msgstr ""
 
+msgid "AdminSelfHostedModels|GitLab managed models"
+msgstr ""
+
 msgid "AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment."
 msgstr ""
 

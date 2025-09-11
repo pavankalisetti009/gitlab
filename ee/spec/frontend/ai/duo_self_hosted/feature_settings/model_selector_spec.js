@@ -16,12 +16,78 @@ import {
   mockSelfHostedModels,
   mockAiFeatureSettings,
   mockDuoAgentPlatformFeatureSettings,
+  mockGitlabManagedModels,
 } from './mock_data';
 
 Vue.use(VueApollo);
 Vue.use(GlToast);
 
 jest.mock('~/alert');
+
+const EXPECTED_SELF_HOSTED_MODELS_OPTIONS = [
+  {
+    releaseState: 'GA',
+    text: 'Model 1 (Mistral)',
+    value: 'gid://gitlab/Ai::SelfHostedModel/1',
+  },
+  {
+    releaseState: 'GA',
+    text: 'Model 4 (GPT)',
+    value: 'gid://gitlab/Ai::SelfHostedModel/4',
+  },
+  {
+    releaseState: 'GA',
+    text: 'Model 5 (Claude)',
+    value: 'gid://gitlab/Ai::SelfHostedModel/5',
+  },
+  {
+    releaseState: 'BETA',
+    text: 'Model 2 (Code Llama)',
+    value: 'gid://gitlab/Ai::SelfHostedModel/2',
+  },
+  {
+    releaseState: 'BETA',
+    text: 'Model 3 (CodeGemma)',
+    value: 'gid://gitlab/Ai::SelfHostedModel/3',
+  },
+];
+
+const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS = {
+  text: 'Self-hosted models',
+  options: [
+    ...EXPECTED_SELF_HOSTED_MODELS_OPTIONS,
+    {
+      text: 'Disabled',
+      value: PROVIDERS.DISABLED,
+    },
+  ],
+};
+
+const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION = {
+  text: 'Self-hosted models',
+  options: [
+    ...EXPECTED_SELF_HOSTED_MODELS_OPTIONS,
+    {
+      text: 'GitLab AI vendor model',
+      value: PROVIDERS.VENDORED,
+    },
+    {
+      text: 'Disabled',
+      value: PROVIDERS.DISABLED,
+    },
+  ],
+};
+
+const EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS = {
+  text: 'GitLab managed models',
+  options: [
+    {
+      text: 'Claude Sonnet 4.0 - Anthropic',
+      value: 'claude_sonnet_4_20250514',
+    },
+    { text: 'Claude Sonnet 3.7 - Vertex', value: 'claude_sonnet_3_7_20250219_vertex' },
+  ],
+};
 
 describe('ModelSelector', () => {
   let wrapper;
@@ -98,51 +164,107 @@ describe('ModelSelector', () => {
   });
 
   describe('.listItems', () => {
-    it('contains a list of options sorted by release state', () => {
-      createComponent();
+    describe('for self-hosted models', () => {
+      it('contains a list of options sorted by release state', () => {
+        createComponent();
 
-      const modelOptions = findModelSelectDropdown().props('items');
+        const modelOptions = findModelSelectDropdown().props('items');
+        const selfHostedModelsOptions = modelOptions[0].options;
 
-      expect(
-        modelOptions.map(({ text, releaseState }) => {
-          const withReleaseState = releaseState ? [releaseState] : [];
-          return [text, ...withReleaseState];
-        }),
-      ).toEqual([
-        ['Model 1 (Mistral)', 'GA'],
-        ['Model 4 (GPT)', 'GA'],
-        ['Model 5 (Claude)', 'GA'],
-        ['Model 2 (Code Llama)', 'BETA'],
-        ['Model 3 (CodeGemma)', 'BETA'],
-        ['GitLab AI vendor model'],
-        ['Disabled'],
-      ]);
+        expect(
+          selfHostedModelsOptions.map(({ text, releaseState }) => {
+            const withReleaseState = releaseState ? [releaseState] : [];
+            return [text, ...withReleaseState];
+          }),
+        ).toEqual([
+          ['Model 1 (Mistral)', 'GA'],
+          ['Model 4 (GPT)', 'GA'],
+          ['Model 5 (Claude)', 'GA'],
+          ['Model 2 (Code Llama)', 'BETA'],
+          ['Model 3 (CodeGemma)', 'BETA'],
+          ['GitLab AI vendor model'],
+          ['Disabled'],
+        ]);
+      });
+
+      describe('when showVendoredModelOption is false', () => {
+        it('does not include vendored option in options list', () => {
+          createComponent({
+            injectedProps: {
+              showVendoredModelOption: false,
+            },
+          });
+
+          expect(findVendoredModelOption()).toBeUndefined();
+        });
+      });
+
+      describe('when feature is Duo Agent Platform', () => {
+        it('does not include vendored option in options list', () => {
+          createComponent({
+            injectedProps: {
+              showVendoredModelOption: true,
+            },
+            props: {
+              aiFeatureSetting: mockDuoAgentPlatformFeatureSettings[0],
+            },
+          });
+
+          expect(findVendoredModelOption()).toBeUndefined();
+        });
+      });
     });
 
-    describe('when showVendoredModelOption is false', () => {
-      it('does not include vendored option in options list', () => {
+    describe('with GitLab managed models', () => {
+      it('renders two groups of options: self-hosted models and GitLab managed models', () => {
         createComponent({
           injectedProps: {
             showVendoredModelOption: false,
           },
+          props: {
+            aiFeatureSetting: {
+              ...mockAiFeatureSetting,
+              validGitlabModels: { nodes: mockGitlabManagedModels },
+            },
+          },
         });
 
-        expect(findVendoredModelOption()).toBeUndefined();
+        const modelOptions = findModelSelectDropdown().props('items');
+        expect(modelOptions).toStrictEqual([
+          EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS,
+          EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS,
+        ]);
       });
-    });
 
-    describe('when feature is Duo Agent Platform', () => {
-      it('does not include vendored option in options list', () => {
+      it('does not render self-hosted models if there are none returned', () => {
+        createComponent({
+          injectedProps: {
+            showVendoredModelOption: false,
+          },
+          props: {
+            aiFeatureSetting: {
+              ...mockAiFeatureSetting,
+              validModels: { nodes: [] },
+              validGitlabModels: { nodes: mockGitlabManagedModels },
+            },
+          },
+        });
+
+        const modelOptions = findModelSelectDropdown().props('items');
+        expect(modelOptions).toStrictEqual([EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS]);
+      });
+
+      it('does not render GitLab managed models group if there are none returned', () => {
         createComponent({
           injectedProps: {
             showVendoredModelOption: true,
           },
-          props: {
-            aiFeatureSetting: mockDuoAgentPlatformFeatureSettings[0],
-          },
         });
 
-        expect(findVendoredModelOption()).toBeUndefined();
+        const modelOptions = findModelSelectDropdown().props('items');
+        expect(modelOptions).toStrictEqual([
+          EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION,
+        ]);
       });
     });
   });
@@ -171,20 +293,22 @@ describe('ModelSelector', () => {
     });
 
     it.each`
-      testCase               | selectedOption | provider                 | aiSelfHostedModelId
-      ${'self-hosted model'} | ${1}           | ${PROVIDERS.SELF_HOSTED} | ${1}
-      ${'disabled'}          | ${'disabled'}  | ${PROVIDERS.DISABLED}    | ${null}
-      ${'vendored'}          | ${'vendored'}  | ${PROVIDERS.VENDORED}    | ${null}
+      testCase                  | selectedOption                          | provider                 | selfHostedModelId                       | offeredModelRef
+      ${'self-hosted model'}    | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${PROVIDERS.SELF_HOSTED} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${null}
+      ${'GitLab managed model'} | ${'claude_sonnet_4_20250514'}           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${'claude_sonnet_4_20250514'}
+      ${'disabled'}             | ${'disabled'}                           | ${PROVIDERS.DISABLED}    | ${null}                                 | ${null}
+      ${'vendored'}             | ${'vendored'}                           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${null}
     `(
       'with $testCase as selected option: calls the update mutation with the correct input',
-      ({ selectedOption, provider, aiSelfHostedModelId }) => {
+      ({ selectedOption, provider, selfHostedModelId, offeredModelRef }) => {
         const modelSelectDropdown = findModelSelectDropdown();
         modelSelectDropdown.vm.$emit('select', selectedOption);
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
             features: ['CODE_GENERATIONS'],
             provider: provider.toUpperCase(),
-            aiSelfHostedModelId,
+            aiSelfHostedModelId: selfHostedModelId,
+            offeredModelRef,
           },
         });
       },
@@ -237,7 +361,7 @@ describe('ModelSelector', () => {
     });
 
     describe('when a model has been selected', () => {
-      it('displays the selected deployment name and model', async () => {
+      it('for a self-hosted model: displays the selected deployment name and model', async () => {
         const selectedModel = mockSelfHostedModels[0];
         const modelSelectDropdown = findModelSelectDropdown();
 
@@ -247,7 +371,7 @@ describe('ModelSelector', () => {
         await wrapper.setProps({
           aiFeatureSetting: {
             ...mockAiFeatureSetting,
-            provider: 'self_hosted',
+            provider: PROVIDERS.SELF_HOSTED,
             selfHostedModel: { id: selectedModel.id },
           },
         });
@@ -256,6 +380,28 @@ describe('ModelSelector', () => {
           value: selectedModel.id,
           text: `${selectedModel.name} (${selectedModel.modelDisplayName})`,
           releaseState: selectedModel.releaseState,
+        });
+      });
+
+      it('for a GitLab managed model: displays the selected deployment name and model', async () => {
+        const selectedModel = mockGitlabManagedModels[0];
+        const modelSelectDropdown = findModelSelectDropdown();
+
+        modelSelectDropdown.vm.$emit('select', selectedModel.ref);
+        await waitForPromises();
+
+        await wrapper.setProps({
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            validGitlabModels: { nodes: mockGitlabManagedModels },
+            provider: PROVIDERS.VENDORED,
+            gitlabModel: { ref: selectedModel.ref },
+          },
+        });
+
+        expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
+          value: selectedModel.ref,
+          text: selectedModel.name,
         });
       });
     });

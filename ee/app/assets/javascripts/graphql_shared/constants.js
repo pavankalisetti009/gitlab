@@ -7,3 +7,4 @@ export const TYPENAME_CUSTOM_FIELD_SELECT_OPTION = 'Issuables::CustomFieldSelect
 export const TYPENAME_GROUPS_SAVED_REPLY = 'Groups::SavedReply';
 export const TYPENAME_PROJECTS_SAVED_REPLY = 'Projects::SavedReply';
 export const TYPENAME_SBOM_OCCURRENCE = 'Sbom::Occurrence';
+export const TYPENAME_AI_SELF_HOSTED_MODEL = 'Ai::SelfHostedModel';
