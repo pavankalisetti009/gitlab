@@ -17677,7 +17677,6 @@ CREATE TABLE integrations (
     group_mention_events boolean DEFAULT false NOT NULL,
     group_confidential_mention_events boolean DEFAULT false NOT NULL,
     organization_id bigint,
-    CONSTRAINT check_2aae034509 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1)),
     CONSTRAINT check_a948a0aa7e CHECK ((char_length(type_new) <= 255))
 );
 
@@ -32034,6 +32033,9 @@ ALTER TABLE epic_issues
 
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
+
+ALTER TABLE integrations
+    ADD CONSTRAINT check_2aae034509 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1)) NOT VALID;
 
 ALTER TABLE security_scans
     ADD CONSTRAINT check_2d56d882f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
