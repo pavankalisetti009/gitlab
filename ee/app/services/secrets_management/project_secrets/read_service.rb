@@ -5,7 +5,7 @@ module SecretsManagement
     class ReadService < BaseService
       include Helpers::UserClientHelper
 
-      def execute(name)
+      def execute(name, include_rotation_info: true)
         return inactive_response unless project.secrets_manager&.active?
         return invalid_name_response unless /\A[a-zA-Z0-9_]+\z/.match?(name)
 
@@ -15,7 +15,7 @@ module SecretsManagement
         )
 
         if secret_metadata
-          build_success_response(name, secret_metadata)
+          build_success_response(name, secret_metadata, include_rotation_info)
         else
           not_found_response
         end
@@ -23,7 +23,7 @@ module SecretsManagement
 
       private
 
-      def build_success_response(name, secret_metadata)
+      def build_success_response(name, secret_metadata, include_rotation_info)
         project_secret = ProjectSecret.new(
           name: name,
           project: project,
@@ -32,6 +32,16 @@ module SecretsManagement
           branch: secret_metadata["custom_metadata"]["branch"],
           metadata_version: secret_metadata["current_metadata_version"]
         )
+
+        if include_rotation_info
+          rotation_info = SecretRotationInfo.for_project_secret(
+            project,
+            project_secret.name,
+            project_secret.metadata_version
+          )
+
+          project_secret.rotation_info = rotation_info
+        end
 
         ServiceResponse.success(payload: { project_secret: project_secret })
       end

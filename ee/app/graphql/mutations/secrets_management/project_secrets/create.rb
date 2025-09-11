@@ -35,17 +35,28 @@ module Mutations
           required: true,
           description: 'Branches that can access the secret.'
 
+        argument :rotation_interval_days, GraphQL::Types::Int,
+          required: false,
+          description: 'Number of days between rotation reminders for the secret.'
+
         field :project_secret,
           Types::SecretsManagement::ProjectSecretType,
           null: true,
           description: "Project secret."
 
-        def resolve(project_path:, name:, secret:, environment:, branch:, description: nil)
+        def resolve(project_path:, name:, secret:, environment:, branch:, description: nil, rotation_interval_days: nil)
           project = authorized_find!(project_path: project_path)
 
           result = ::SecretsManagement::ProjectSecrets::CreateService
             .new(project, current_user)
-            .execute(name: name, description: description, value: secret, environment: environment, branch: branch)
+            .execute(
+              name: name,
+              description: description,
+              value: secret,
+              environment: environment,
+              branch: branch,
+              rotation_interval_days: rotation_interval_days
+            )
 
           if result.success?
             track_secret_creation_event(project)

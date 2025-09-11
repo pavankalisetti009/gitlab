@@ -90,7 +90,9 @@ module EE
 
       has_one :dependency_proxy_packages_setting, class_name: '::DependencyProxy::Packages::Setting', inverse_of: :project
       has_many :zoekt_repositories, class_name: '::Search::Zoekt::Repository', inverse_of: :project
-      has_one :secrets_manager, class_name: '::SecretsManagement::ProjectSecretsManager'
+
+      has_one :secrets_manager, class_name: '::SecretsManagement::ProjectSecretsManager', inverse_of: :project
+      has_many :secret_rotation_infos, class_name: '::SecretsManagement::SecretRotationInfo', inverse_of: :project
 
       has_many :approvers, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :approver_users, through: :approvers, source: :user

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_category: :secrets_management do
+RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, feature_category: :secrets_management do
   include GraphqlHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
@@ -21,7 +21,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
       description: 'test description',
       branch: 'main',
       environment: 'prod',
-      value: 'test value'
+      value: 'test value',
+      rotation_interval_days: 10
     }
   end
 
@@ -32,7 +33,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
       description: 'updated description',
       branch: 'feature',
       environment: 'staging',
-      metadata_cas: 1
+      metadata_cas: 1,
+      rotation_interval_days: 30
     }
   end
 
@@ -91,6 +93,9 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
 
+      new_version = 2
+      rotation_info = secret_rotation_info_for_project_secret(project, params[:name], new_version)
+
       expect(graphql_data_at(mutation_name, :project_secret))
         .to match(a_graphql_entity_for(
           project: a_graphql_entity_for(project),
@@ -98,7 +103,13 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
           description: 'updated description',
           branch: 'feature',
           environment: 'staging',
-          metadata_version: 2
+          metadata_version: new_version,
+          rotation_info: a_graphql_entity_for(
+            rotation_interval_days: rotation_info.rotation_interval_days,
+            status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+            updated_at: rotation_info.updated_at.iso8601,
+            created_at: rotation_info.created_at.iso8601
+          )
         ))
     end
 
@@ -112,7 +123,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
         }
       end
 
-      it 'updates only the specified fields', :aggregate_failures do
+      it 'updates only the specified fields but clears the rotation info', :aggregate_failures do
         post_mutation
 
         expect(response).to have_gitlab_http_status(:success)
@@ -124,7 +135,8 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
             description: 'updated description',
             branch: project_secret_attributes[:branch],
             environment: project_secret_attributes[:environment],
-            metadata_version: 2
+            metadata_version: 2,
+            rotation_info: nil
           ))
 
         # Can't check the value directly in GraphQL response, but we can verify it was updated

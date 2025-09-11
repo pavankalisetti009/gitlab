@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_category: :secrets_management do
+RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, feature_category: :secrets_management do
   include GraphqlHelpers
 
   let_it_be_with_reload(:project) { create(:project) }
@@ -21,7 +21,8 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
       description: 'test description',
       secret: 'the-secret-value',
       branch: 'main',
-      environment: 'prod'
+      environment: 'prod',
+      rotation_interval_days: 30
     }
   end
 
@@ -72,6 +73,8 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
 
+      rotation_info = secret_rotation_info_for_project_secret(project, params[:name])
+
       expect(graphql_data_at(mutation_name, :project_secret))
         .to match(a_graphql_entity_for(
           project: a_graphql_entity_for(project),
@@ -79,7 +82,13 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
           description: params[:description],
           branch: params[:branch],
           environment: params[:environment],
-          metadata_version: 1
+          metadata_version: 1,
+          rotation_info: a_graphql_entity_for(
+            rotation_interval_days: rotation_info.rotation_interval_days,
+            status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+            updated_at: rotation_info.updated_at.iso8601,
+            created_at: rotation_info.created_at.iso8601
+          )
         ))
     end
 

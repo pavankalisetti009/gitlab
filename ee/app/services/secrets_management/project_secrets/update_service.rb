@@ -8,11 +8,18 @@ module SecretsManagement
       include CiPolicies::SecretRefresherHelper
       include Helpers::UserClientHelper
 
-      def execute(name:, metadata_cas: nil, value: nil, description: nil, environment: nil, branch: nil)
+      def execute(
+        name:,
+        metadata_cas: nil,
+        value: nil,
+        description: nil,
+        environment: nil,
+        branch: nil,
+        rotation_interval_days: nil
+      )
         return inactive_response unless project.secrets_manager&.active?
 
         read_result = read_project_secret(name)
-
         return read_result unless read_result.success?
 
         project_secret = read_result.payload[:project_secret]
@@ -21,21 +28,45 @@ module SecretsManagement
         project_secret.environment = environment unless environment.nil?
         project_secret.branch = branch unless branch.nil?
 
-        # Update the secret
-        update_secret(project_secret, value, metadata_cas)
+        update_secret(
+          project_secret,
+          value,
+          metadata_cas,
+          build_secret_rotation_info(project_secret, metadata_cas, rotation_interval_days)
+        )
       end
 
       private
 
       delegate :secrets_manager, to: :project
 
-      def update_secret(project_secret, value, metadata_cas)
+      def build_secret_rotation_info(project_secret, metadata_cas, rotation_interval_days)
+        return unless rotation_interval_days
+
+        SecretRotationInfo.new(
+          project: project,
+          secret_name: project_secret.name,
+          rotation_interval_days: rotation_interval_days,
+          secret_metadata_version: (metadata_cas || project_secret.metadata_version) + 1
+        )
+      end
+
+      def update_secret(project_secret, value, metadata_cas, secret_rotation_info)
         return error_response(project_secret) unless project_secret.valid?
+
+        if secret_rotation_info&.invalid?
+          return secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
+        end
+
+        # Based on https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_manager/decisions/010_secret_rotation_metadata_storage/
+        # we want to create/update the secret rotation info record first.
+        secret_rotation_info&.upsert
 
         custom_metadata = {
           environment: project_secret.environment,
           branch: project_secret.branch,
-          description: project_secret.description
+          description: project_secret.description,
+          secret_rotation_info_id: secret_rotation_info&.id
         }.compact
 
         # NOTE: The current implementation makes two separate API calls (one for the value, one for metadata).
@@ -62,6 +93,7 @@ module SecretsManagement
         refresh_secret_ci_policies(project_secret)
 
         project_secret.metadata_version = metadata_cas ? metadata_cas + 1 : nil
+        project_secret.rotation_info = secret_rotation_info
 
         ServiceResponse.success(payload: { project_secret: project_secret })
       rescue SecretsManagerClient::ApiError => e
@@ -75,8 +107,9 @@ module SecretsManagement
       end
 
       def read_project_secret(name)
-        read_service = ProjectSecrets::ReadService.new(project, current_user)
-        read_service.execute(name)
+        # No need to include rotation info in this case because we just want to upsert if ever
+        ProjectSecrets::ReadService.new(project, current_user)
+          .execute(name, include_rotation_info: false)
       end
 
       def error_response(project_secret)
@@ -84,6 +117,14 @@ module SecretsManagement
           message: project_secret.errors.full_messages.to_sentence,
           payload: { project_secret: project_secret }
         )
+      end
+
+      def secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
+        secret_rotation_info.errors.full_messages.each do |message|
+          project_secret.errors.add(:base, "Rotation configuration error: #{message}")
+        end
+
+        error_response(project_secret)
       end
 
       def inactive_response

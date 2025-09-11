@@ -10431,6 +10431,7 @@ Input type: `ProjectSecretCreateInput`
 | <a id="mutationprojectsecretcreateenvironment"></a>`environment` | [`String!`](#string) | Environments that can access the secret. |
 | <a id="mutationprojectsecretcreatename"></a>`name` | [`String!`](#string) | Name of the project secret. |
 | <a id="mutationprojectsecretcreateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project of the secret. |
+| <a id="mutationprojectsecretcreaterotationintervaldays"></a>`rotationIntervalDays` | [`Int`](#int) | Number of days between rotation reminders for the secret. |
 | <a id="mutationprojectsecretcreatesecret"></a>`secret` | [`String!`](#string) | Value of the project secret. |
 
 #### Fields
@@ -10476,6 +10477,7 @@ Input type: `ProjectSecretUpdateInput`
 | <a id="mutationprojectsecretupdatemetadatacas"></a>`metadataCas` | [`Int!`](#int) | This should match the current metadata version of the project secret being updated. |
 | <a id="mutationprojectsecretupdatename"></a>`name` | [`String!`](#string) | Name of the project secret to update. |
 | <a id="mutationprojectsecretupdateprojectpath"></a>`projectPath` | [`ID!`](#id) | Project of the secret. |
+| <a id="mutationprojectsecretupdaterotationintervaldays"></a>`rotationIntervalDays` | [`Int`](#int) | Number of days between rotation reminders for the secret. |
 | <a id="mutationprojectsecretupdatesecret"></a>`secret` | [`String`](#string) | New value of the project secret. |
 
 #### Fields
@@ -41230,6 +41232,7 @@ Representation of a project secret.
 | <a id="projectsecretmetadataversion"></a>`metadataVersion` | [`Int`](#int) | Current metadata version of the project secret. |
 | <a id="projectsecretname"></a>`name` | [`String!`](#string) | Name of the project secret. |
 | <a id="projectsecretproject"></a>`project` | [`Project!`](#project) | Project the secret belong to. |
+| <a id="projectsecretrotationinfo"></a>`rotationInfo` | [`SecretRotationInfo`](#secretrotationinfo) | Rotation configuration for the secret. |
 
 ### `ProjectSecretsManager`
 
@@ -42408,6 +42411,19 @@ Representation of a secrets permission.
 | <a id="secretpermissionpermissions"></a>`permissions` | [`String!`](#string) | Permissions to be provided. ['create', 'update', 'read', 'delete']. |
 | <a id="secretpermissionprincipal"></a>`principal` | [`Principal!`](#principal) | Who is provided access to. For eg: User/Role/MemberRole/Group. |
 | <a id="secretpermissionproject"></a>`project` | [`Project!`](#project) | Project the secret permission belong to. |
+
+### `SecretRotationInfo`
+
+Rotation configuration and status for a project secret.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="secretrotationinfocreatedat"></a>`createdAt` | [`Time!`](#time) | When the rotation configuration was created. |
+| <a id="secretrotationinforotationintervaldays"></a>`rotationIntervalDays` | [`Int!`](#int) | Number of days between rotation reminders. |
+| <a id="secretrotationinfostatus"></a>`status` | [`SecretRotationStatus!`](#secretrotationstatus) | Current rotation status. |
+| <a id="secretrotationinfoupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the rotation configuration was last updated. |
 
 ### `SecurityAttribute`
 
@@ -49645,6 +49661,16 @@ Type of search.
 | <a id="searchtypeadvanced"></a>`ADVANCED` | Advanced search. |
 | <a id="searchtypebasic"></a>`BASIC` | Basic search. |
 | <a id="searchtypezoekt"></a>`ZOEKT` | Exact code search. |
+
+### `SecretRotationStatus`
+
+Status of secret rotation.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="secretrotationstatusapproaching"></a>`APPROACHING` | Rotation is due within 7 days. |
+| <a id="secretrotationstatusok"></a>`OK` | Rotation is not due soon. |
+| <a id="secretrotationstatusoverdue"></a>`OVERDUE` | Rotation is overdue (reminder was sent). |
 
 ### `SecurityCategoryEditableState`
 

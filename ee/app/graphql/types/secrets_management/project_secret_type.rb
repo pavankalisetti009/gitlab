@@ -33,6 +33,11 @@ module Types
         null: false,
         description: 'Branches that can access the secret.'
 
+      field :rotation_info,
+        type: SecretRotationInfoType,
+        null: true,
+        description: 'Rotation configuration for the secret.'
+
       field :metadata_version,
         type: GraphQL::Types::Int,
         null: true,

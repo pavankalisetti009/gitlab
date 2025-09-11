@@ -7,6 +7,7 @@ module Resolvers
       include ResolvesProject
 
       type [::Types::SecretsManagement::ProjectSecretType], null: true
+      extras [:lookahead]
 
       argument :project_path, GraphQL::Types::ID,
         required: true,
@@ -14,13 +15,13 @@ module Resolvers
 
       authorize :read_project_secrets
 
-      def resolve(project_path:)
+      def resolve(lookahead:, project_path:)
         project = authorized_find!(project_path: project_path)
 
         result = ::SecretsManagement::ProjectSecrets::ListService.new(
           project,
           current_user
-        ).execute
+        ).execute(include_rotation_info: lookahead.selection(:nodes).selects?(:rotation_info))
 
         if result.success?
           result.payload[:project_secrets]
