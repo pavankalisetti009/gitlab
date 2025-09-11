@@ -10,6 +10,7 @@ import {
   mockIssueFeatureSettings,
   mockOtherDuoFeaturesSettings,
   mockAiFeatureSettings,
+  mockDuoAgentPlatformSettings,
 } from './mock_data';
 
 describe('FeatureSettings', () => {
@@ -33,6 +34,7 @@ describe('FeatureSettings', () => {
   const findOtherDuoFeaturesTable = () => wrapper.findByTestId('other-duo-features-table');
   const findDuoIssuesTable = () => wrapper.findByTestId('duo-issues-table');
   const findDuoMergeRequestTable = () => wrapper.findByTestId('duo-merge-requests-table');
+  const findDuoAgentPlatformTable = () => wrapper.findByTestId('duo-agent-platform-table');
 
   it('renders the component', () => {
     createComponent();
@@ -52,63 +54,40 @@ describe('FeatureSettings', () => {
     });
   });
 
-  describe('sections', () => {
-    beforeEach(() => {
-      createComponent();
-    });
+  describe.each`
+    section                         | index | expectedTitle                      | expectedDescription                                                                                             | findSectionTableFn           | expectedFeatureSettings
+    ${'Code Suggestions'}           | ${0}  | ${'Code Suggestions'}              | ${'Assists developers by generating and completing code in real-time.'}                                         | ${findCodeSuggestionsTable}  | ${mockCodeSuggestionsFeatureSettings}
+    ${'Duo Chat'}                   | ${1}  | ${'GitLab Duo Chat'}               | ${'An AI assistant that helps users accelerate software development using real-time conversational AI.'}        | ${findDuoChatTable}          | ${mockDuoChatFeatureSettings}
+    ${'Duo merge request features'} | ${2}  | ${'GitLab Duo for merge requests'} | ${'AI-native features that help users accomplish tasks during the lifecycle of a merge request.'}               | ${findDuoMergeRequestTable}  | ${mockMergeRequestFeatureSettings}
+    ${'Duo issues'}                 | ${3}  | ${'GitLab Duo for issues'}         | ${'An AI-native feature that generates a summary of discussions on an issue.'}                                  | ${findDuoIssuesTable}        | ${mockIssueFeatureSettings}
+    ${'GitLab Duo Agent Platform'}  | ${4}  | ${'GitLab Duo Agent Platform'}     | ${'AI agents, such as Agentic Chat and agent flows, that work in parallel to accomplish tasks simultaneously.'} | ${findDuoAgentPlatformTable} | ${mockDuoAgentPlatformSettings}
+    ${'Other Duo features'}         | ${5}  | ${'Other GitLab Duo features'}     | ${'AI-native features that support users outside of Chat or Code Suggestions.'}                                 | ${findOtherDuoFeaturesTable} | ${mockOtherDuoFeaturesSettings}
+  `(
+    '$section',
+    ({
+      index,
+      expectedTitle,
+      expectedDescription,
+      findSectionTableFn,
+      expectedFeatureSettings,
+    }) => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-    it('renders Code Suggestions section', () => {
-      expect(findAllSettingsBlock().at(0).props('title')).toBe('Code Suggestions');
-      expect(findAllSettingsDescriptions().at(0).attributes('message')).toContain(
-        'Assists developers by generating and completing code in real-time.',
-      );
-      expect(findCodeSuggestionsTable().props('featureSettings')).toEqual(
-        mockCodeSuggestionsFeatureSettings,
-      );
-    });
+      it('renders section and table', () => {
+        expect(findAllSettingsBlock().at(index).props('title')).toBe(expectedTitle);
+        expect(findAllSettingsDescriptions().at(index).attributes('message')).toContain(
+          expectedDescription,
+        );
+        expect(findSectionTableFn().exists()).toBe(true);
+      });
 
-    it('renders Duo Chat section', () => {
-      createComponent();
-
-      expect(findAllSettingsBlock().at(1).props('title')).toBe('GitLab Duo Chat');
-      expect(findAllSettingsDescriptions().at(1).attributes('message')).toContain(
-        'An AI assistant that helps users accelerate software development using real-time conversational AI',
-      );
-      expect(findDuoChatTable().props('featureSettings')).toEqual(mockDuoChatFeatureSettings);
-    });
-
-    it('renders Duo Merge Request section', () => {
-      createComponent();
-
-      expect(findAllSettingsBlock().at(2).props('title')).toBe('GitLab Duo for merge requests');
-      expect(findAllSettingsDescriptions().at(2).attributes('message')).toContain(
-        'AI-native features that help users accomplish tasks during the lifecycle of a merge request.',
-      );
-      expect(findDuoMergeRequestTable().props('featureSettings')).toEqual(
-        mockMergeRequestFeatureSettings,
-      );
-    });
-
-    it('renders Duo issues section', () => {
-      createComponent();
-
-      expect(findAllSettingsBlock().at(3).props('title')).toBe('GitLab Duo for issues');
-      expect(findAllSettingsDescriptions().at(3).attributes('message')).toContain(
-        'An AI-native feature that generates a summary of discussions on an issue.',
-      );
-      expect(findDuoIssuesTable().props('featureSettings')).toEqual(mockIssueFeatureSettings);
-    });
-
-    it('renders Other GitLab Duo features section', () => {
-      createComponent();
-
-      expect(findAllSettingsBlock().at(4).props('title')).toBe('Other GitLab Duo features');
-      expect(findAllSettingsDescriptions().at(4).attributes('message')).toContain(
-        'AI-native features that support users outside of Chat or Code Suggestions.',
-      );
-      expect(findOtherDuoFeaturesTable().props('featureSettings')).toEqual(
-        mockOtherDuoFeaturesSettings,
-      );
-    });
-  });
+      it('passes the correct feature settings as table props', () => {
+        expect(findSectionTableFn().props('featureSettings')).toStrictEqual(
+          expectedFeatureSettings,
+        );
+      });
+    },
+  );
 });
