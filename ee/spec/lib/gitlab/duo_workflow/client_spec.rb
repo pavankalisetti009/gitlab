@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations do
   let_it_be(:user) { create(:user) }
 
+  before do
+    stub_feature_flags(duo_agent_platform_enable_direct_http: false)
+  end
+
   describe '.url' do
     subject(:url) { described_class.url }
 
@@ -102,12 +106,10 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations
       expect(described_class.cloud_connector_headers(user: user)).to eq(expected_headers)
     end
 
-    context 'when duo_agent_platform_disable_direct_http is disabled' do
-      before do
-        stub_feature_flags(duo_agent_platform_disable_direct_http: false)
-      end
-
+    context 'when duo_agent_platform_enable_direct_http is enabled' do
       it 'returns headers with x-gitlab-base-url' do
+        stub_feature_flags(duo_agent_platform_enable_direct_http: true)
+
         expected_headers = {
           'authorization' => "Bearer #{token}",
           'x-gitlab-authentication-type' => 'oidc',
