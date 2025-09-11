@@ -15,6 +15,13 @@ module WorkItems
           default_closed_status
         end
       end
+
+      def status_counts
+        ordered_statuses.map do |status|
+          # Logic will be implemented with https://gitlab.com/gitlab-org/gitlab/-/issues/554090
+          { status: status, count: nil }
+        end
+      end
     end
   end
 end
