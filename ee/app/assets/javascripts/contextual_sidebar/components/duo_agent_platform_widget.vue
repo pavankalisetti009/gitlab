@@ -8,6 +8,10 @@ import axios from '~/lib/utils/axios_utils';
 import { PROMO_URL } from '~/constants';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 
+const LEARN_MORE_HREF = helpPagePath('subscriptions/subscription-add-ons', {
+  anchor: 'gitlab-duo-core',
+});
+
 export default {
   name: 'DuoAgentPlatformWidget',
   components: {
@@ -37,8 +41,8 @@ export default {
     },
     title() {
       return this.isEnabled
-        ? s__('DuoAgentPlatform|Agent Platform On')
-        : s__('DuoAgentPlatform|Agent Platform Off');
+        ? s__('DuoAgentPlatform|GitLab Duo Core On')
+        : s__('DuoAgentPlatform|GitLab Duo Core Off');
     },
     shouldShowBody() {
       return this.bodyText && this.shouldShowActions;
@@ -106,13 +110,13 @@ export default {
     onEnableError(error) {
       this.closeConfirmModal();
       createAlert({
-        message: s__('AiPowered|Failed to enable GitLab Duo Agent Platform.'),
+        message: s__('AiPowered|Failed to enable GitLab Duo Core.'),
         captureError: true,
         error,
       });
     },
   },
-  learnMoreHref: helpPagePath('user/duo_agent_platform/_index'),
+  learnMoreHref: LEARN_MORE_HREF,
   i18n: {
     enabled: {
       modalBodyText() {
@@ -120,18 +124,15 @@ export default {
       },
     },
     enablePlatform: {
-      toastMessage: __('Duo Agent Platform is on'),
-      modalTitle: s__('DuoAgentPlatform|Start using the Agent Platform'),
+      toastMessage: __('GitLab Duo Core is on'),
+      modalTitle: s__('DuoAgentPlatform|Start using GitLab Duo Core'),
       modalBodyText() {
         const termsPath = `${PROMO_URL}/handbook/legal/ai-functionality-terms/`;
-        const eligibilityPath = helpPagePath('subscriptions/subscription-add-ons', {
-          anchor: 'gitlab-duo-core',
-        });
 
         return sprintf(
           s__(
             `DuoAgentPlatform|%{pStart}Access GitLab Duo features throughout this instance by
-            turning on the GitLab Duo Agent Platform.%{pEnd}
+            turning on GitLab Duo Core.%{pEnd}
             %{pStart}When you turn it on, GitLab Duo will process your code and project data.
             Also, you accept the %{termsStart}GitLab AI Functionality Terms%{linkEnd},
             unless your organization has a separate agreement with GitLab governing AI feature usage.%{pEnd}
@@ -143,7 +144,7 @@ export default {
             pEnd: '</p>',
             termsStart: `<a href="${termsPath}" class="gl-link-inline" target="_blank" rel="noopener noreferrer">`,
             linkEnd: '</a>',
-            eligibilityStart: `<a href="${eligibilityPath}" class="gl-link-inline" target="_blank" rel="noopener noreferrer">`,
+            eligibilityStart: `<a href="${LEARN_MORE_HREF}" class="gl-link-inline" target="_blank" rel="noopener noreferrer">`,
           },
           false,
         );

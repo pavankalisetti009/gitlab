@@ -23,19 +23,19 @@ RSpec.describe 'Duo agent platform widget in Sidebar', :enable_admin_mode, :js, 
     sign_in(user)
   end
 
-  it 'performs progressive enabling of the Duo agent platform' do
+  it 'performs progressive enabling of Duo Core' do
     visit root_path
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|Agent Platform Off'))
+    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core Off'))
 
     widget_turn_on
     confirm_modal_turn_on
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|Agent Platform On'))
+    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
 
     page.refresh
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|Agent Platform On'))
+    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
     expect_widget_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
 
     widget_turn_on_preview
@@ -45,7 +45,7 @@ RSpec.describe 'Duo agent platform widget in Sidebar', :enable_admin_mode, :js, 
 
     page.refresh
 
-    expect_widget_to_have_content(s_('DuoAgentPlatform|Agent Platform On'))
+    expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
     expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
   end
 

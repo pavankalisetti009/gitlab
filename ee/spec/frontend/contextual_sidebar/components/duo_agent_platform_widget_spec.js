@@ -56,7 +56,7 @@ describe('DuoAgentPlatformWidget component', () => {
       });
 
       it('displays the correct title', () => {
-        expect(findWidgetTitle().text()).toContain('Agent Platform Off');
+        expect(findWidgetTitle().text()).toContain('GitLab Duo Core Off');
       });
 
       it('displays icon with disabled variant', () => {
@@ -70,18 +70,18 @@ describe('DuoAgentPlatformWidget component', () => {
 
       it('configures learn more button correctly', () => {
         expect(findLearnMoreButton().attributes('href')).toBe(
-          '/help/user/duo_agent_platform/_index',
+          '/help/subscriptions/subscription-add-ons#gitlab-duo-core',
         );
       });
     });
 
-    describe('when agent platform is enabled', () => {
+    describe('when core is enabled', () => {
       beforeEach(() => {
         createComponent({ stateProgression: ['enabled'] });
       });
 
       it('displays the correct title', () => {
-        expect(findWidgetTitle().text()).toContain('Agent Platform On');
+        expect(findWidgetTitle().text()).toContain('GitLab Duo Core On');
       });
 
       it('displays icon with success variant', () => {
@@ -153,7 +153,7 @@ describe('DuoAgentPlatformWidget component', () => {
       it('configures modal with correct title', async () => {
         await findActionButton().vm.$emit('click');
 
-        expect(findConfirmModal().props('title')).toBe('Start using the Agent Platform');
+        expect(findConfirmModal().props('title')).toBe('Start using GitLab Duo Core');
       });
 
       it('generates modal body text with links', async () => {
@@ -220,9 +220,9 @@ describe('DuoAgentPlatformWidget component', () => {
 
         expect(findBody().exists()).toBe(false);
         expect(findActionButton().exists()).toBe(false);
-        expect(findWidgetTitle().text()).toContain('Agent Platform On');
+        expect(findWidgetTitle().text()).toContain('GitLab Duo Core On');
         expect(findIcon().props('variant')).toBe('success');
-        expect($toast.show).toHaveBeenCalledWith('Duo Agent Platform is on');
+        expect($toast.show).toHaveBeenCalledWith('GitLab Duo Core is on');
       });
     });
 
@@ -258,12 +258,12 @@ describe('DuoAgentPlatformWidget component', () => {
         mockAxios.onPut('/admin/application_settings/general').reply(HTTP_STATUS_OK);
       });
 
-      it('enables agent platform and shows success toast', async () => {
+      it('enables core and shows success toast', async () => {
         await findActionButton().vm.$emit('click');
         await findConfirmModal().props('actionFn')();
         await waitForPromises();
 
-        expect(findWidgetTitle().text()).toContain('Agent Platform On');
+        expect(findWidgetTitle().text()).toContain('GitLab Duo Core On');
         expect(findConfirmModal().exists()).toBe(false);
         expect($toast.show).toHaveBeenCalled();
       });
@@ -273,7 +273,7 @@ describe('DuoAgentPlatformWidget component', () => {
         await findConfirmModal().props('actionFn')();
         await waitForPromises();
 
-        expect(findWidgetTitle().text()).toContain('Agent Platform On');
+        expect(findWidgetTitle().text()).toContain('GitLab Duo Core On');
         expect(findIcon().props('variant')).toBe('success');
       });
     });
@@ -292,11 +292,11 @@ describe('DuoAgentPlatformWidget component', () => {
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Failed to enable GitLab Duo Agent Platform.',
+          message: 'Failed to enable GitLab Duo Core.',
           captureError: true,
           error: expect.any(Error),
         });
-        expect(findWidgetTitle().text()).toContain('Agent Platform Off');
+        expect(findWidgetTitle().text()).toContain('GitLab Duo Core Off');
         expect(findConfirmModal().exists()).toBe(false);
       });
     });
@@ -315,7 +315,7 @@ describe('DuoAgentPlatformWidget component', () => {
       await findConfirmModal().props('actionFn')();
       await waitForPromises();
 
-      expect(findWidgetTitle().text()).toContain('Agent Platform On');
+      expect(findWidgetTitle().text()).toContain('GitLab Duo Core On');
       expect(findBody().exists()).toBe(true);
       expect(findActionButton().exists()).toBe(true);
 
