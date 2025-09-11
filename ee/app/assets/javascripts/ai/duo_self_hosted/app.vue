@@ -18,7 +18,7 @@ export default {
   },
   inject: ['canManageInstanceModelSelection'],
   i18n: {
-    title: s__('AdminSelfHostedModels|GitLab Duo Self-Hosted'),
+    title: s__('AdminSelfHostedModels|Model configuration'),
   },
   props: {
     tabId: {

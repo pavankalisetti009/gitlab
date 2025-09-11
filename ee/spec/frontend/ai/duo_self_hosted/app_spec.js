@@ -35,7 +35,7 @@ describe('DuoSelfHostedApp', () => {
     createComponent();
 
     const title = wrapper.findByTestId('self-hosted-title');
-    expect(title.text()).toBe('GitLab Duo Self-Hosted');
+    expect(title.text()).toBe('Model configuration');
   });
 
   it('has a description', () => {
