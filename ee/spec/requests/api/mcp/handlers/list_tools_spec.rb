@@ -143,6 +143,37 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           "inputSchema" => {
             "type" => "object", "properties" => {}, "required" => []
           }
+        }, {
+          "name" => "gitlab_search",
+          "description" => "Search on GitLab",
+          "inputSchema" => {
+            "type" => "object",
+            "properties" => {
+              "scope" => {
+                "type" => "string", "description" => "The scope of the search"
+              },
+              "search" => {
+                "type" => "string", "description" => "The expression it should be searched for"
+              },
+              "state" => {
+                "type" => "string", "description" => "Filter results by state"
+              },
+              "confidential" => {
+                "type" => "boolean", "description" => "Filter results by confidentiality"
+              },
+              "page" => {
+                "type" => "integer", "description" => "Current page number"
+              },
+              "per_page" => {
+                "type" => "integer", "description" => "Number of items per page"
+              },
+              "fields" => {
+                "type" => "string", "description" => "Array of fields you wish to search"
+              }
+            },
+            "required" => %w[scope search],
+            "additionalProperties" => false
+          }
         }
       )
     end
