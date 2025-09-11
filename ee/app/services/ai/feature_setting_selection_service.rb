@@ -17,7 +17,10 @@ module Ai
         feature_setting = model_selection_namespace_setting
 
         return ServiceResponse.success(payload: feature_setting) if feature_setting
-        return ServiceResponse.error(message: MISSING_DEFAULT_NAMESPACE) if default_duo_namespace_required?
+
+        if default_duo_namespace_required?
+          return ServiceResponse.error(payload: nil, message: MISSING_DEFAULT_NAMESPACE)
+        end
 
         ServiceResponse.success(payload: nil)
       else

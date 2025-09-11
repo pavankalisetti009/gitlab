@@ -87,9 +87,12 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
   before do
     stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
-    stub_feature_flags(incident_fail_over_completion_provider: false)
-    stub_feature_flags(use_claude_code_completion: false)
-    stub_feature_flags(code_completion_opt_out_fireworks: false)
+    stub_feature_flags(
+      incident_fail_over_completion_provider: false,
+      use_claude_code_completion: false,
+      code_completion_opt_out_fireworks: false,
+      instance_level_model_selection: false
+    )
   end
 
   describe 'saas failover model' do
@@ -143,6 +146,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       context 'on GitLab self-managed' do
         before do
           allow(Gitlab).to receive(:org_or_com?).and_return(false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         it_behaves_like 'code suggestion task' do
@@ -220,6 +224,10 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     let_it_be(:project) { create(:project, group: group) }
 
     let(:params) { { current_file: current_file, project: project } }
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+    end
 
     context 'when the namespace feature setting is set to a specific Anthropic model' do
       let_it_be(:namespace_feature_setting) do
@@ -507,6 +515,69 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         end
 
         let(:expected_feature_name) { :code_suggestions }
+      end
+
+      context 'when :instance_level_model_selection is enabled' do
+        let(:model_details) do
+          {
+            "model_provider" => "gitlab",
+            "model_name" => ""
+          }
+        end
+
+        let(:expected_body) do
+          {
+            "current_file" => {
+              "file_name" => "test.py",
+              "content_above_cursor" => "sor",
+              "content_below_cursor" => "som"
+            },
+            "telemetry" => [],
+            "stream" => false,
+            **model_details
+          }
+        end
+
+        let(:expected_feature_name) { :code_suggestions }
+
+        before do
+          stub_feature_flags(instance_level_model_selection: true)
+          allow(Gitlab).to receive(:com?).and_return(false)
+
+          ai_feature_setting.update!(self_hosted_model: nil, provider: :vendored)
+        end
+
+        context 'and instance level is default' do
+          it_behaves_like 'code suggestion task' do
+            let(:model_details) do
+              {
+                "model_name" => "codestral-2501",
+                "model_provider" => "fireworks_ai",
+                "prompt_version" => 1
+              }
+            end
+
+            let(:expected_feature_name) { :code_suggestions }
+          end
+        end
+
+        context 'and vendored model is pinned' do
+          it_behaves_like 'code suggestion task' do
+            before do
+              create(:instance_model_selection_feature_setting, feature: :code_completions,
+                offered_model_ref: "claude_sonnet_3_5")
+            end
+
+            let(:model_details) do
+              {
+                "model_name" => "claude_sonnet_3_5",
+                "model_provider" => "gitlab"
+              }
+            end
+
+            let(:expected_feature_name) { :code_suggestions }
+          end
+        end
       end
     end
   end

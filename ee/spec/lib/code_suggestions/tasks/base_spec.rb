@@ -64,12 +64,20 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
   describe '#vendored?' do
     subject(:vendored?) { klass.new(current_user: user).vendored? }
 
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+    end
+
     it 'returns false' do
       expect(vendored?).to eq(false)
     end
 
     context 'when the feature is self-hosted' do
       include RSpec::Parameterized::TableSyntax
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
 
       where(:provider, :expected_result) do
         [

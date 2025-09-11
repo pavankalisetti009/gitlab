@@ -171,7 +171,8 @@ module API
           ).task
 
           if task.duo_context_not_found?
-            msg = _('No default Duo group found. Select a default Duo group in your user preferences and try again.')
+            msg = _("I'm sorry, you have not selected a default GitLab Duo namespace. " \
+              "Please select a default GitLab namespace for Duo in User Preferences - Behaviour in GitLab.")
 
             render_structured_api_error!({
               'error' => 'missing_default_duo_group',

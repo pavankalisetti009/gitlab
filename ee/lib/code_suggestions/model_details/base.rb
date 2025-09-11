@@ -4,7 +4,6 @@ module CodeSuggestions
   module ModelDetails
     class Base
       include Gitlab::Utils::StrongMemoize
-      include ::Ai::ModelSelection::SelectionApplicable
 
       def initialize(current_user:, feature_setting_name:, unit_primitive_name:, root_namespace: nil)
         @current_user = current_user
@@ -14,9 +13,8 @@ module CodeSuggestions
       end
 
       def feature_setting
-        model_selection_feature_setting || self_hosted_feature_setting
+        feature_setting_execution.payload
       end
-      strong_memoize_attr :feature_setting
 
       def base_url
         feature_setting&.base_url || ::Gitlab::AiGateway.url
@@ -57,46 +55,37 @@ module CodeSuggestions
         !!feature_setting&.vendored?
       end
 
+      def default?
+        return true unless feature_setting.present?
+        return false unless vendored?
+        return true if feature_setting.is_a?(Ai::FeatureSetting)
+        return true if ::Feature.disabled?(:instance_level_model_selection, :instance)
+
+        feature_setting.set_to_gitlab_default?
+      end
+
       def namespace_feature_setting?
         feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
       end
 
       def duo_context_not_found?
         return false if ::Ai::AmazonQ.connected?
-        return false if self_hosted_feature_setting.present?
 
-        return model_selection_namespace.nil? if default_duo_namespace_required?
-
-        false
+        feature_setting_execution.error?
       end
 
       private
 
       attr_reader :current_user, :feature_setting_name, :root_namespace
 
-      def model_selection_feature_setting
-        namespace = model_selection_namespace
-
-        return unless namespace
-
-        ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(namespace, feature_setting_name)
+      def feature_setting_execution
+        ::Ai::FeatureSettingSelectionService.new(
+          current_user,
+          feature_setting_name,
+          root_namespace
+        ).execute
       end
-
-      def self_hosted_feature_setting
-        ::Ai::FeatureSetting.find_by_feature(feature_setting_name)
-      end
-      strong_memoize_attr :self_hosted_feature_setting
-
-      def model_selection_namespace
-        return root_namespace if root_namespace
-
-        # if no root_namespace provided self_hosted feature_settings should have precedence
-        return if self_hosted_feature_setting
-
-        # infer or find a default namespace if neither a root_namespace or a self_hosted setting is present
-        get_default_duo_namespace
-      end
-      strong_memoize_attr :model_selection_namespace
+      strong_memoize_attr :feature_setting_execution
     end
   end
 end

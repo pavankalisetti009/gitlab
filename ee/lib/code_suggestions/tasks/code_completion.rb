@@ -68,6 +68,11 @@ module CodeSuggestions
       end
 
       def self_hosted_vendored_prompt
+        if Feature.enabled?(:instance_level_model_selection, :instance) &&
+            feature_setting.set_to_gitlab_default?
+          return saas_prompt
+        end
+
         CodeSuggestions::Prompts::CodeCompletion::SelfHosted::Vendored.new(
           params,
           current_user,

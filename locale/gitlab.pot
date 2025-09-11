@@ -33185,6 +33185,9 @@ msgstr ""
 msgid "I'm sorry, you have not selected a default GitLab Duo namespace. Please select a default GitLab namespace for Duo in Preferences &gt Behaviour in GitLab."
 msgstr ""
 
+msgid "I'm sorry, you have not selected a default GitLab Duo namespace. Please select a default GitLab namespace for Duo in User Preferences - Behaviour in GitLab."
+msgstr ""
+
 msgid "I'm sorry, you've entered too many prompts. Please run /clear or /reset before asking the next question."
 msgstr ""
 
@@ -42893,9 +42896,6 @@ msgid "No data available."
 msgstr ""
 
 msgid "No data found for this query."
-msgstr ""
-
-msgid "No default Duo group found. Select a default Duo group in your user preferences and try again."
 msgstr ""
 
 msgid "No deployments found"

@@ -114,6 +114,18 @@ RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature
     end
   end
 
+  describe "#base_url" do
+    it "returns cloud connector url" do
+      expect(instance_feature_setting.base_url).to eq(::Gitlab::AiGateway.cloud_connector_url)
+    end
+  end
+
+  describe '#vendored?' do
+    it 'returns true' do
+      expect(instance_feature_setting.vendored?).to be(true)
+    end
+  end
+
   describe '#set_to_gitlab_default?' do
     context 'when offered_model_ref is nil' do
       subject(:instance_feature_setting) do
