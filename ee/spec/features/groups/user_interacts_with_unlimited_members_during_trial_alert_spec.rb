@@ -12,6 +12,7 @@ RSpec.describe 'Group > Unlimited members alert', :js, :saas, feature_category: 
 
   before do
     stub_feature_flags(streamlined_first_product_experience: false)
+    stub_subscription_trial_types
   end
 
   context 'when group not in trial' do

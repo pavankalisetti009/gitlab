@@ -5,6 +5,7 @@ require_relative './ci_shared_runner_alerts_shared_examples'
 
 RSpec.describe 'CI shared runner limits', feature_category: :runner do
   include UsageQuotasHelpers
+  include SubscriptionPortalHelpers
   include ::Ci::MinutesHelpers
 
   using RSpec::Parameterized::TableSyntax
@@ -25,6 +26,7 @@ RSpec.describe 'CI shared runner limits', feature_category: :runner do
     stub_ee_application_setting(should_check_namespace_plan: true)
     group.add_member(owner, :owner)
     group.add_member(developer, :developer)
+    stub_subscription_trial_types
 
     sign_in(owner)
   end

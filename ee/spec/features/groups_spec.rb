@@ -5,6 +5,11 @@ require 'spec_helper'
 RSpec.describe 'Group', :with_current_organization, feature_category: :groups_and_projects do
   include NamespaceStorageHelpers
   include FreeUserCapHelpers
+  include SubscriptionPortalHelpers
+
+  before do
+    stub_subscription_trial_types
+  end
 
   describe 'group edit', :js do
     let_it_be(:user) { create(:user) }

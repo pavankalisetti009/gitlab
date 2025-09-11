@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acquisition do
-  describe '#execute', :saas, :sidekiq_inline, :use_clean_rails_memory_store_caching do
+  include SubscriptionPortalHelpers
+  describe '#execute', :saas, :use_clean_rails_memory_store_caching do
     let_it_be(:free_duration) { 1 }
     let_it_be(:premium_duration) { 2 }
     let_it_be(:premium_next_duration) { 3 }
@@ -41,17 +42,44 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
     subject(:service) { described_class.new }
 
     before do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:namespace_trial_types).and_return(response)
+      stub_subscription_trial_types(trial_types: trial_types)
     end
 
-    it 'returns default duration, makes a request, caches it, and returns correct duration on the next execution' do
-      expect(service.execute).to eq(default_free_duration) # first execution to spawn the worker
+    it 'makes a request, caches it, and returns correct duration' do
+      expect(Gitlab::SubscriptionPortal::Client).to receive(:namespace_trial_types).once.and_return(response)
       expect(service.execute).to eq(free_duration)
+    end
+
+    it 'uses cache on subsequent calls' do
+      service.execute
+
+      expect(Gitlab::SubscriptionPortal::Client).not_to receive(:namespace_trial_types)
+      expect(service.execute).to eq(free_duration)
+    end
+
+    it 'uses Rails cache with correct key and expiry' do
+      expect(Rails.cache).to receive(:fetch)
+        .with('gitlab_subscriptions_trial_duration_service', expires_in: 1.hour, race_condition_ttl: 30.seconds)
+        .and_call_original
+
+      service.execute
+    end
+
+    context 'when cache fails' do
+      before do
+        allow(Rails.cache).to receive(:fetch)
+          .with('gitlab_subscriptions_trial_duration_service', expires_in: 1.hour, race_condition_ttl: 30.seconds)
+          .and_return(nil)
+      end
+
+      it 'falls back to empty hash and returns default duration' do
+        expect(service.execute).to eq(default_free_duration)
+      end
     end
 
     context 'when trial type is specified' do
       before do
-        service.execute # first execution to spawn the worker
+        service.execute # first execution to populate cache
       end
 
       subject(:service) { described_class.new(trial_type) }
@@ -84,7 +112,9 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
     end
 
     context 'with an unsuccessful CustomersDot query' do
-      let(:response) { { success: false } }
+      before do
+        stub_subscription_trial_types(success: false)
+      end
 
       it { expect(service.execute).to eq(default_free_duration) }
 

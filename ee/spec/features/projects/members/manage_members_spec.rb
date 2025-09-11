@@ -21,6 +21,7 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
       stub_signing_key
       stub_reconciliation_request(true)
       stub_ee_application_setting(dashboard_limit_enabled: true)
+      stub_subscription_trial_types
     end
 
     context 'when at free user limit' do

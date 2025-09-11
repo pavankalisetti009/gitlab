@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Group show page', :js, :saas, feature_category: :groups_and_projects do
+  include SubscriptionPortalHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private, owners: user) }
 
@@ -12,6 +14,7 @@ RSpec.describe 'Group show page', :js, :saas, feature_category: :groups_and_proj
 
     before do
       sign_in(user)
+      stub_subscription_trial_types
       visit group_path(group)
     end
 

@@ -20,6 +20,7 @@ RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :
       stub_signing_key
       stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
       stub_subscription_permissions_data(group.id)
+      stub_subscription_trial_types
 
       group.add_owner(user)
       sign_in(user)
@@ -258,6 +259,7 @@ RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :
       stub_signing_key
       stub_subscription_permissions_data(group.id, can_add_seats: false)
       stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
+      stub_subscription_trial_types
 
       group.add_owner(user)
       sign_in(user)

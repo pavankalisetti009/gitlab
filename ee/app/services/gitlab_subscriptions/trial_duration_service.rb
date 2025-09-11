@@ -2,7 +2,8 @@
 
 module GitlabSubscriptions
   class TrialDurationService
-    include ReactiveCaching
+    CACHE_EXPIRY = 1.hour
+    CACHE_KEY = 'gitlab_subscriptions_trial_duration_service'
 
     DEFAULT_DURATIONS = {
       GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: 30 },
@@ -10,12 +11,6 @@ module GitlabSubscriptions
     }.freeze
 
     attr_reader :trial_type
-
-    self.reactive_cache_key = ->(_record) { model_name.singular }
-    self.reactive_cache_refresh_interval = 1.hour
-    self.reactive_cache_lifetime = 1.hour
-    self.reactive_cache_work_type = :external_dependency
-    self.reactive_cache_worker_finder = ->(trial_type, *_args) { new(trial_type) }
 
     def initialize(trial_type = GitlabSubscriptions::Trials::FREE_TRIAL_TYPE)
       @trial_type = trial_type
@@ -32,23 +27,16 @@ module GitlabSubscriptions
       duration[:duration_days]
     end
 
-    # Required for ReactiveCaching
-    def id
-      trial_type
-    end
-
     private
 
     def find_trial_types
-      with_reactive_cache { |data| data } || {}
+      Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_EXPIRY, race_condition_ttl: 30.seconds) do
+        trial_types_request
+      end || {}
     end
 
     def default_duration
       DEFAULT_DURATIONS[trial_type] || DEFAULT_DURATIONS[GitlabSubscriptions::Trials::FREE_TRIAL_TYPE]
-    end
-
-    def calculate_reactive_cache
-      trial_types_request
     end
 
     def client

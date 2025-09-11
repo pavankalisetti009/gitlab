@@ -56,6 +56,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
         stub_application_setting(check_namespace_plan: true)
         stub_subscription_permissions_data(group.id)
         stub_licensed_features(code_suggestions: true)
+        stub_subscription_trial_types
       end
 
       it 'shows expired widget and dismisses it' do

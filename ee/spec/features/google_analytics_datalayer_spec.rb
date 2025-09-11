@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_category: :application_instrumentation do
   include JavascriptFormHelper
+  include SubscriptionPortalHelpers
 
   let(:google_tag_manager_id) { 'GTM-WWKMTWS' }
   let(:new_user) { build(:user) }
@@ -13,6 +14,7 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
   before do
     stub_application_setting(require_admin_approval_after_user_signup: false)
     stub_config(extra: { google_tag_manager_id: google_tag_manager_id, google_tag_manager_nonce_id: google_tag_manager_id })
+    stub_subscription_trial_types
   end
 
   context 'on account sign up pages' do
