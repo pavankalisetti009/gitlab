@@ -29,7 +29,7 @@ export default {
         };
       },
       update(data) {
-        return data.group?.securityMetrics?.vulnerabilitiesPerSeverity?.[this.severity] || 0;
+        return data.group?.securityMetrics?.vulnerabilitiesPerSeverity?.[this.severity]?.count || 0;
       },
       error() {
         this.fetchError = true;

@@ -63,7 +63,9 @@ module Resolvers
         counts = finder.execute
 
         ::Enums::Vulnerability.severity_levels.each_key.index_with do |severity|
-          counts[severity.to_s] || 0
+          {
+            count: counts[severity.to_s] || 0
+          }
         end
       end
     end

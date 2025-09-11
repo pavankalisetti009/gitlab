@@ -27,12 +27,12 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
         id: 'gid://gitlab/Group/1',
         securityMetrics: {
           vulnerabilitiesPerSeverity: {
-            critical: 3,
-            high: 5,
-            medium: 8,
-            low: 10,
-            unknown: 5,
-            info: 3,
+            critical: { count: 3 },
+            high: { count: 5 },
+            medium: { count: 8 },
+            low: { count: 10 },
+            unknown: { count: 5 },
+            info: { count: 3 },
           },
         },
       },
@@ -86,7 +86,7 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
         defaultMockVulnerabilitiesPerSeverityData.data.group.securityMetrics
           .vulnerabilitiesPerSeverity;
       await waitForPromises();
-      expect(findVulnerabilitiesForSeverityPanel().props('count')).toBe(medium);
+      expect(findVulnerabilitiesForSeverityPanel().props('count')).toBe(medium.count);
     });
 
     it('passes loading state to panels base', async () => {

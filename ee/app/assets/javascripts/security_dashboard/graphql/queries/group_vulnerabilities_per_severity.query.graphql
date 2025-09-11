@@ -7,12 +7,24 @@ query groupVulnerabilitiesPerSeverity(
     id
     securityMetrics(projectId: $projectId, reportType: $reportType) {
       vulnerabilitiesPerSeverity {
-        critical
-        high
-        medium
-        low
-        info
-        unknown
+        critical {
+          count
+        }
+        high {
+          count
+        }
+        medium {
+          count
+        }
+        low {
+          count
+        }
+        info {
+          count
+        }
+        unknown {
+          count
+        }
       }
     }
   }
