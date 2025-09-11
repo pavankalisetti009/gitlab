@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlCard, GlLoadingIcon, GlTab, GlTabs } from '@gitlab/ui';
+import { GlAlert, GlCard, GlTab, GlTabs } from '@gitlab/ui';
 import { mockUsageDataWithPool } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
@@ -12,7 +12,6 @@ export default {
   components: {
     GlAlert,
     GlCard,
-    GlLoadingIcon,
     GlTabs,
     GlTab,
     PageHeading,
@@ -61,8 +60,32 @@ export default {
       {{ s__('UsageBilling|An error occurred while fetching data') }}
     </gl-alert>
 
-    <div v-if="isLoading">
-      <gl-loading-icon />
+    <div v-if="isLoading" data-testid="skeleton-loaders">
+      <section class="gl-my-5 gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
+        <div class="gl-flex-1">
+          <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-12 gl-w-1/2 gl-rounded-base"></div>
+          <div class="gl-w-24 gl-animate-skeleton-loader gl-h-5 gl-rounded-base"></div>
+        </div>
+
+        <div class="gl-flex-1">
+          <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-12 gl-w-1/2 gl-rounded-base"></div>
+          <div class="gl-w-24 gl-animate-skeleton-loader gl-h-5 gl-rounded-base"></div>
+        </div>
+      </section>
+
+      <div class="gl-mt-15 gl-flex gl-flex-col gl-gap-3">
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+        <div class="gl-animate-skeleton-loader gl-h-5 !gl-max-w-full gl-rounded-base"></div>
+      </div>
     </div>
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">

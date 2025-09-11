@@ -1,4 +1,4 @@
-import { GlAlert, GlLoadingIcon, GlTab } from '@gitlab/ui';
+import { GlAlert, GlTab } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -24,7 +24,7 @@ describe('UsageBillingApp', () => {
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
   const findTabs = () => wrapper.findAllComponents(GlTab);
 
   beforeEach(() => {
@@ -41,7 +41,7 @@ describe('UsageBillingApp', () => {
     });
 
     it('shows only a loading icon when fetching data', () => {
-      expect(findLoadingIcon().exists()).toBe(true);
+      expect(findSkeletonLoaders().exists()).toBe(true);
       expect(findTabs().exists()).toBe(false);
       expect(findAlert().exists()).toBe(false);
     });
