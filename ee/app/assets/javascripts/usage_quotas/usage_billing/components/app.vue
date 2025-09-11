@@ -6,6 +6,7 @@ import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
+import UsageTrendsChart from './usage_trends_chart.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -16,6 +17,7 @@ export default {
     GlTab,
     PageHeading,
     PurchaseCommitmentCard,
+    UsageTrendsChart,
   },
   data() {
     return {
@@ -23,6 +25,32 @@ export default {
       isError: false,
       subscriptionData: null,
     };
+  },
+  computed: {
+    gitlabUnitsUsage() {
+      return this.subscriptionData.gitlabUnitsUsage;
+    },
+    trend() {
+      return (
+        this.gitlabUnitsUsage.poolUsage?.usageTrend || this.gitlabUnitsUsage.seatUsage?.usageTrend
+      );
+    },
+    dailyUsage() {
+      return (
+        this.gitlabUnitsUsage.poolUsage?.dailyUsage || this.gitlabUnitsUsage.seatUsage?.dailyUsage
+      );
+    },
+    dailyPeak() {
+      return (
+        this.gitlabUnitsUsage.poolUsage?.peakUsage || this.gitlabUnitsUsage.seatUsage?.peakUsage
+      );
+    },
+    dailyAverage() {
+      return (
+        this.gitlabUnitsUsage.poolUsage?.dailyAverage ||
+        this.gitlabUnitsUsage.seatUsage?.dailyAverage
+      );
+    },
   },
   async mounted() {
     await this.fetchUsageData();
@@ -99,7 +127,14 @@ export default {
       </section>
       <gl-tabs class="gl-mt-5">
         <gl-tab :title="s__('UsageBilling|Usage trends')">
-          {{ s__('UsageBilling|Usage trends') }}
+          <usage-trends-chart
+            :usage-data="dailyUsage"
+            :month-start-date="gitlabUnitsUsage.startDate"
+            :month-end-date="gitlabUnitsUsage.endDate"
+            :trend="trend"
+            :daily-peak="dailyPeak"
+            :daily-average="dailyAverage"
+          />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
           {{ s__('UsageBilling|Usage by user') }}

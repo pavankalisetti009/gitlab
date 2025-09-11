@@ -69115,19 +69115,46 @@ msgstr ""
 msgid "UsageBilling|An error occurred while fetching data"
 msgstr ""
 
+msgid "UsageBilling|Current month"
+msgstr ""
+
 msgid "UsageBilling|Current month usage"
+msgstr ""
+
+msgid "UsageBilling|Custom dates"
+msgstr ""
+
+msgid "UsageBilling|Daily average use"
+msgstr ""
+
+msgid "UsageBilling|Daily usage"
 msgstr ""
 
 msgid "UsageBilling|Increase monthly commitment"
 msgstr ""
 
+msgid "UsageBilling|Last 3 months"
+msgstr ""
+
+msgid "UsageBilling|Last month"
+msgstr ""
+
+msgid "UsageBilling|Peak daily use"
+msgstr ""
+
 msgid "UsageBilling|Purchase a monthly commitment"
+msgstr ""
+
+msgid "UsageBilling|Tokens"
 msgstr ""
 
 msgid "UsageBilling|Usage Billing"
 msgstr ""
 
 msgid "UsageBilling|Usage by user"
+msgstr ""
+
+msgid "UsageBilling|Usage trend"
 msgstr ""
 
 msgid "UsageBilling|Usage trends"
