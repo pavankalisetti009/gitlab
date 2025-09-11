@@ -13,6 +13,8 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
 
+  let_it_be(:ai_catalog_item_version) { create(:ai_catalog_item_version) }
+
   let(:workflow) do
     create(
       :duo_workflows_workflow,
@@ -20,6 +22,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
       workflow_definition: workflow_definition,
       pre_approved_agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
       agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
+      ai_catalog_item_version_id: ai_catalog_item_version.id,
       **container_params
     )
   end
@@ -437,6 +440,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
       expect(json_response['mcp_enabled']).to be(true)
       expect(json_response['gitlab_url']).to eq(Gitlab.config.gitlab.url)
       expect(json_response['status']).to eq("created")
+      expect(json_response['ai_catalog_item_version_id']).to eq(ai_catalog_item_version.id)
       expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
     end
 

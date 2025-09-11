@@ -17,6 +17,7 @@ module API
           expose :allow_agent_to_request_user
           expose :image
           expose :environment
+          expose :ai_catalog_item_version_id
 
           def agent_privileges_names
             object.agent_privileges.map do |privilege|
