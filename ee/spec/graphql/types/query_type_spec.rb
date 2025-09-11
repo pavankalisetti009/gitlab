@@ -73,6 +73,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ldap_admin_role_links,
       :ai_model_selection_namespace_settings,
       :dependency,
+      :semantic_code_search,
       :project_compliance_violation,
       :maven_virtual_registry,
       :namespace_security_projects,
