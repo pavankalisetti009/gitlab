@@ -10,6 +10,7 @@ RSpec.describe 'New project', :js, feature_category: :importers do
 
   before do
     stub_feature_flags(new_project_creation_form: false)
+    stub_feature_flags(import_by_url_new_page: false)
     stub_application_setting(import_sources: Gitlab::ImportSources.values)
 
     sign_in(user)
