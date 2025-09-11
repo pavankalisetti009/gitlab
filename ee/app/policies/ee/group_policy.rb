@@ -242,6 +242,14 @@ module EE
         ::Authz::CustomAbility.allowed?(@user, :read_admin_cicd)
       end
 
+      condition(:admin_custom_role_enables_read_admin_groups, scope: :user) do
+        ::Authz::CustomAbility.allowed?(@user, :read_admin_groups)
+      end
+
+      rule { admin_custom_role_enables_read_admin_groups }.policy do
+        enable :read_group_metadata
+      end
+
       rule { admin_custom_role_enables_read_admin_cicd }.policy do
         enable :read_group_metadata
       end

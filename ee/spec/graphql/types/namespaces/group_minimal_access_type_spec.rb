@@ -26,8 +26,8 @@ RSpec.describe Types::Namespaces::GroupMinimalAccessType, feature_category: :gro
       stub_licensed_features(custom_roles: true)
     end
 
-    it 'only the defined fields resolve to non-nil values' do
-      defined_fields = %w[full_name name avatar_url]
+    it 'only the defined fields resolve to non-nil values', :aggregate_failures do
+      defined_fields = %w[avatar_url full_name full_path id name user_permissions web_url]
 
       expect(described_class.own_fields.keys.map(&:underscore)).to match_array(defined_fields)
 

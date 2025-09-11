@@ -4895,26 +4895,21 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     subject { described_class.new(user, group) }
 
-    before do
-      create(:admin_member_role, :read_admin_cicd, user: user)
+    where(:custom_admin_permission, :feature_available, :permissions, :allowed) do
+      :read_admin_cicd   | false | [:read_group_metadata] | false
+      :read_admin_cicd   | true  | [:read_group_metadata] | true
+      :read_admin_groups | false | [:read_group_metadata] | false
+      :read_admin_groups | true  | [:read_group_metadata] | true
     end
 
-    context 'when user can read_admin_cicd' do
-      context 'when custom roles feature is unavailable' do
-        before do
-          stub_licensed_features(custom_roles: false)
-        end
+    with_them do
+      before do
+        create(:admin_member_role, custom_admin_permission, user: user)
 
-        it { is_expected.to be_disallowed(:read_group_metadata) }
+        stub_licensed_features(custom_roles: feature_available)
       end
 
-      context 'when custom roles feature is available' do
-        before do
-          stub_licensed_features(custom_roles: true)
-        end
-
-        it { is_expected.to be_allowed(:read_group_metadata) }
-      end
+      it { is_expected.to(allowed ? be_allowed(*permissions) : be_disallowed(*permissions)) }
     end
   end
 

@@ -15,6 +15,10 @@ module EE
         before_action do
           push_saas_feature(:gitlab_com_subscriptions)
         end
+
+        before_action only: :index do
+          push_frontend_feature_flag(:read_admin_groups, current_user)
+        end
       end
 
       def reset_runners_minutes
