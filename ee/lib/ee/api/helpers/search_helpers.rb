@@ -18,6 +18,11 @@ module EE
           def group_search_scopes
             ['wiki_blobs', 'blobs', 'commits', 'notes', *super]
           end
+
+          override :gitlab_search_mcp_params
+          def gitlab_search_mcp_params
+            [*super, :fields]
+          end
         end
       end
     end
