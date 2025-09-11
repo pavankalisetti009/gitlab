@@ -9,7 +9,7 @@ import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_drop
 import updateAiFeatureSetting from 'ee/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import { PROVIDERS } from 'ee/ai/duo_self_hosted/feature_settings/constants';
+import { PROVIDERS, GITLAB_DEFAULT_MODEL } from 'ee/ai/duo_self_hosted/feature_settings/constants';
 import { createAlert } from '~/alert';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import {
@@ -17,6 +17,7 @@ import {
   mockAiFeatureSettings,
   mockDuoAgentPlatformFeatureSettings,
   mockGitlabManagedModels,
+  mockDefaultGitlabModel,
 } from './mock_data';
 
 Vue.use(VueApollo);
@@ -52,6 +53,14 @@ const EXPECTED_SELF_HOSTED_MODELS_OPTIONS = [
   },
 ];
 
+const EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS = [
+  {
+    text: 'Claude Sonnet 4.0 - Anthropic',
+    value: 'claude_sonnet_4_20250514',
+  },
+  { text: 'Claude Sonnet 3.7 - Vertex', value: 'claude_sonnet_3_7_20250219_vertex' },
+];
+
 const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS = {
   text: 'Self-hosted models',
   options: [
@@ -80,12 +89,14 @@ const EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION = {
 
 const EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS = {
   text: 'GitLab managed models',
+  options: EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS,
+};
+
+const EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION = {
+  text: 'GitLab managed models',
   options: [
-    {
-      text: 'Claude Sonnet 4.0 - Anthropic',
-      value: 'claude_sonnet_4_20250514',
-    },
-    { text: 'Claude Sonnet 3.7 - Vertex', value: 'claude_sonnet_3_7_20250219_vertex' },
+    ...EXPECTED_GITLAB_MANAGED_MODELS_OPTIONS,
+    { text: 'GitLab default model (Claude Sonnet 4.0 - Anthropic)', value: GITLAB_DEFAULT_MODEL },
   ],
 };
 
@@ -254,6 +265,27 @@ describe('ModelSelector', () => {
         expect(modelOptions).toStrictEqual([EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS]);
       });
 
+      it('renders default GitLab model under GitLab managed models group if it exists', () => {
+        createComponent({
+          injectedProps: {
+            showVendoredModelOption: false,
+          },
+          props: {
+            aiFeatureSetting: {
+              ...mockAiFeatureSetting,
+              validModels: { nodes: [] },
+              validGitlabModels: { nodes: mockGitlabManagedModels },
+              defaultGitlabModel: mockDefaultGitlabModel,
+            },
+          },
+        });
+
+        const modelOptions = findModelSelectDropdown().props('items');
+        expect(modelOptions).toStrictEqual([
+          EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION,
+        ]);
+      });
+
       it('does not render GitLab managed models group if there are none returned', () => {
         createComponent({
           injectedProps: {
@@ -293,11 +325,12 @@ describe('ModelSelector', () => {
     });
 
     it.each`
-      testCase                  | selectedOption                          | provider                 | selfHostedModelId                       | offeredModelRef
-      ${'self-hosted model'}    | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${PROVIDERS.SELF_HOSTED} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${null}
-      ${'GitLab managed model'} | ${'claude_sonnet_4_20250514'}           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${'claude_sonnet_4_20250514'}
-      ${'disabled'}             | ${'disabled'}                           | ${PROVIDERS.DISABLED}    | ${null}                                 | ${null}
-      ${'vendored'}             | ${'vendored'}                           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${null}
+      testCase                   | selectedOption                          | provider                 | selfHostedModelId                       | offeredModelRef
+      ${'self-hosted model'}     | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${PROVIDERS.SELF_HOSTED} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${null}
+      ${'GitLab managed model'}  | ${'claude_sonnet_4_20250514'}           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${'claude_sonnet_4_20250514'}
+      ${'GitlLab default model'} | ${GITLAB_DEFAULT_MODEL}                 | ${PROVIDERS.VENDORED}    | ${null}                                 | ${GITLAB_DEFAULT_MODEL}
+      ${'disabled'}              | ${'disabled'}                           | ${PROVIDERS.DISABLED}    | ${null}                                 | ${null}
+      ${'vendored'}              | ${'vendored'}                           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${null}
     `(
       'with $testCase as selected option: calls the update mutation with the correct input',
       ({ selectedOption, provider, selfHostedModelId, offeredModelRef }) => {
@@ -313,6 +346,43 @@ describe('ModelSelector', () => {
         });
       },
     );
+
+    describe('when initial state is unassigned', () => {
+      it('sets default GitLab model as the default when it is available', () => {
+        createComponent({
+          props: {
+            aiFeatureSetting: {
+              ...mockAiFeatureSetting,
+              provider: PROVIDERS.UNASSIGNED,
+              defaultGitlabModel: mockDefaultGitlabModel,
+              gitlabModel: mockDefaultGitlabModel,
+            },
+          },
+        });
+
+        const modelSelectDropdown = findModelSelectDropdown();
+        expect(modelSelectDropdown.props('selectedOption')).toStrictEqual({
+          text: `GitLab default model (Claude Sonnet 4.0 - Anthropic)`,
+          value: GITLAB_DEFAULT_MODEL,
+        });
+      });
+
+      it('does not set default GitLab model as the default when it is not available', () => {
+        createComponent({
+          props: {
+            aiFeatureSetting: {
+              ...mockAiFeatureSetting,
+              provider: PROVIDERS.UNASSIGNED,
+              defaultGitlabModel: null,
+              gitlabModel: null,
+            },
+          },
+        });
+
+        const modelSelectDropdown = findModelSelectDropdown();
+        expect(modelSelectDropdown.props('selectedOption')).toEqual(null);
+      });
+    });
 
     it('triggers a success toast', async () => {
       findModelSelectDropdown().vm.$emit('select', 1);

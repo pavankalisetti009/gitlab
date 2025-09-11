@@ -26,6 +26,8 @@ export default {
   },
   computed: {
     selectedFeatureSettingUnassigned() {
+      if (this.selectedFeatureSettingHasGitlabManagedModels) return false;
+
       return this.selectedFeatureSetting.provider === PROVIDERS.UNASSIGNED;
     },
     selectedFeatureSettingDisabled() {
@@ -34,6 +36,10 @@ export default {
     selectedFeatureSettingSelfHosted() {
       return this.selectedFeatureSetting.provider === PROVIDERS.SELF_HOSTED;
     },
+    selectedFeatureSettingHasGitlabManagedModels() {
+      return this.selectedFeatureSetting.validGitlabModels?.nodes.length;
+    },
+
     selectedFeatureSettingVendored() {
       return this.selectedFeatureSetting.provider === PROVIDERS.VENDORED;
     },
@@ -162,6 +168,7 @@ export default {
       />
     </div>
     <batch-update-button
+      v-if="!selectedFeatureSettingHasGitlabManagedModels"
       :main-feature="selectedFeatureSetting.mainFeature"
       :disabled="!canBatchUpdate"
       :tooltip-title="tooltipTitle"

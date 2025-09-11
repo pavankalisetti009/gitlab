@@ -47,6 +47,11 @@ export const mockGitlabManagedModels = [
   },
 ];
 
+export const mockDefaultGitlabModel = {
+  name: 'Claude Sonnet 4.0 - Anthropic',
+  ref: 'claude_sonnet_4_20250514',
+};
+
 export const mockCodeSuggestionsFeatureSettings = [
   {
     feature: 'code_generations',
