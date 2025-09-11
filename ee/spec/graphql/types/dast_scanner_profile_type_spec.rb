@@ -95,8 +95,8 @@ RSpec.describe GitlabSchema.types['DastScannerProfile'], :dynamic_analysis,
         create_file_in_repo(policies_project, 'master', 'master', Security::OrchestrationPolicyConfiguration::POLICY_PATH, policy_yaml)
       end
 
-      it 'only calls Gitaly twice when multiple profiles are present', :request_store do
-        expect { response }.to change { Gitlab::GitalyClient.get_request_count }.by(2)
+      it 'only calls Gitaly once when multiple profiles are present', :request_store do
+        expect { response }.to change { Gitlab::GitalyClient.get_request_count }.by(1)
       end
     end
   end
