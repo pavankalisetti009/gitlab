@@ -2,10 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Usage quotas > Seats tab', :js, :saas, feature_category: :seat_cost_management do
+RSpec.describe 'Groups > Usage quotas > Seats tab', :with_trial_types, :js, :saas, feature_category: :seat_cost_management do
   include Spec::Support::Helpers::ModalHelpers
   include Features::MembersHelpers
-  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -19,7 +18,6 @@ RSpec.describe 'Groups > Usage quotas > Seats tab', :js, :saas, feature_category
     stub_signing_key
     stub_application_setting(check_namespace_plan: true)
     stub_subscription_permissions_data(group.id)
-    stub_subscription_trial_types
 
     group.add_owner(user)
     group.add_maintainer(maintainer)

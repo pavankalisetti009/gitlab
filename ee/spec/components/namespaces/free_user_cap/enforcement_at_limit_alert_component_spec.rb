@@ -2,9 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :saas, :aggregate_failures, type: :component,
-  feature_category: :seat_cost_management do
-  include SubscriptionPortalHelpers
+RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :with_trial_types, :saas, :aggregate_failures, type: :component, feature_category: :seat_cost_management do
   let(:namespace) { build_stubbed(:group) }
   let(:content_class) { '_content_class_' }
   let(:user) { build_stubbed(:user) }
@@ -27,8 +25,6 @@ RSpec.describe Namespaces::FreeUserCap::EnforcementAtLimitAlertComponent, :saas,
     allow(Ability).to receive(:allowed?)
                   .with(user, :owner_access, namespace)
                   .and_return(owner_access?)
-
-    stub_subscription_trial_types
   end
 
   context 'when user is authorized to see alert' do

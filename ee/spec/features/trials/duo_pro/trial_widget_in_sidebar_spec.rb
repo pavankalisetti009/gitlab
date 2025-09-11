@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: :acquisition do
-  include SubscriptionPortalHelpers
   include Features::HandRaiseLeadHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
@@ -50,13 +49,12 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
       end
     end
 
-    context 'on the first day of expired trial' do
+    context 'on the first day of expired trial', :with_trial_types do
       before do
         stub_signing_key
         stub_application_setting(check_namespace_plan: true)
         stub_subscription_permissions_data(group.id)
         stub_licensed_features(code_suggestions: true)
-        stub_subscription_trial_types
       end
 
       it 'shows expired widget and dismisses it' do

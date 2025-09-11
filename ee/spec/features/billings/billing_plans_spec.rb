@@ -2,8 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Billing plan pages', :feature, :saas, :js, :with_organization_url_helpers, feature_category: :subscription_management do
-  include SubscriptionPortalHelpers
+RSpec.describe 'Billing plan pages', :with_trial_types, :feature, :saas, :js, :with_organization_url_helpers, feature_category: :subscription_management do
   include Features::HandRaiseLeadHelpers
   include Features::BillingPlansHelpers
 
@@ -26,7 +25,6 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, :with_organization_ur
     stub_billing_plans(namespace.id, plan.name, plans_data.to_json)
     stub_subscription_management_data(namespace.id)
     stub_temporary_extension_data(namespace.id)
-    stub_subscription_trial_types
 
     sign_in(user)
   end

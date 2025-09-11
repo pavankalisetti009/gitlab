@@ -2,11 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :groups_and_projects do
+RSpec.describe 'Groups > Members > Manage members', :with_trial_types, :js, feature_category: :groups_and_projects do
   include Features::MembersHelpers
   include Features::InviteMembersModalHelpers
   include Spec::Support::Helpers::ModalHelpers
-  include SubscriptionPortalHelpers
 
   let_it_be(:group) { create(:group) }
   let_it_be(:user1) { create(:user, name: 'John Doe') }
@@ -24,7 +23,6 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
     stub_signing_key
     stub_reconciliation_request(true)
     stub_subscription_request_seat_usage(true)
-    stub_subscription_trial_types
     stub_feature_flags(show_role_details_in_drawer: false)
     create(:callout, user: user1, feature_name: :duo_chat_callout)
   end

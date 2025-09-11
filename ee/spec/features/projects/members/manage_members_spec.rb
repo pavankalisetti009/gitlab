@@ -6,9 +6,8 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
   include ListboxHelpers
   include Features::InviteMembersModalHelpers
   include Spec::Support::Helpers::ModalHelpers
-  include SubscriptionPortalHelpers
 
-  context 'with free user limit', :saas do
+  context 'with free user limit', :with_trial_types, :saas do
     let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan) }
     let_it_be(:project) { create(:project, :private, group: group, name: 'free-user-limit-project') }
     let_it_be(:user) { project.creator }
@@ -21,7 +20,6 @@ RSpec.describe 'Projects > Members > Manage members', :js, feature_category: :gr
       stub_signing_key
       stub_reconciliation_request(true)
       stub_ee_application_setting(dashboard_limit_enabled: true)
-      stub_subscription_trial_types
     end
 
     context 'when at free user limit' do

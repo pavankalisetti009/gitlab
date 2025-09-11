@@ -1,28 +1,25 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'targeted message interactions' do
-  include SubscriptionPortalHelpers
-
   before do
     create(:targeted_message_namespace, namespace: group)
-    stub_subscription_trial_types
     sign_in(user)
   end
 
-  it 'is not shown to non-owner' do
+  it 'is not shown to non-owner', :with_trial_types do
     sign_in(non_owner)
     visit path
 
     expect(page).not_to have_content("Get access to Premium + GitLab Duo for")
   end
 
-  it 'is shown to owner' do
+  it 'is shown to owner', :with_trial_types do
     visit path
 
     expect(page).to have_content("Get access to Premium + GitLab Duo for")
   end
 
-  it 'dismisses when closed' do
+  it 'dismisses when closed', :with_trial_types do
     visit path
 
     expect(page).to have_content("Get access to Premium + GitLab Duo for")
@@ -32,7 +29,7 @@ RSpec.shared_examples 'targeted message interactions' do
     expect(page).not_to have_content("Get access to Premium + GitLab Duo for")
   end
 
-  context 'with disabled targeted message' do
+  context 'with disabled targeted message', :with_trial_types do
     before do
       stub_feature_flags(targeted_messages_admin_ui: false)
     end

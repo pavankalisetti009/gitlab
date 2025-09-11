@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::FreeUserCap::GroupOverLimitNotificationWorker, :saas, feature_category: :seat_cost_management, type: :worker do
-  include SubscriptionPortalHelpers
-  describe '#perform' do
+RSpec.describe Namespaces::FreeUserCap::GroupOverLimitNotificationWorker, :with_trial_types, :saas, feature_category: :seat_cost_management, type: :worker do
+  describe '#perform', :with_trial_types do
     let_it_be(:owner) { create :owner }
     let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan, owners: owner) }
     let_it_be(:project) { create(:project, namespace: group) }
@@ -41,7 +40,6 @@ RSpec.describe Namespaces::FreeUserCap::GroupOverLimitNotificationWorker, :saas,
     before do
       stub_ee_application_setting(dashboard_limit_enabled: dashboard_limit_enabled)
       stub_ee_application_setting(dashboard_limit: 5)
-      stub_subscription_trial_types
     end
 
     subject(:perform) { described_class.new.perform(invited_group.id, added_member_ids) }

@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'dashboard ultimate trial callout' do
-  include SubscriptionPortalHelpers
-
   before do
-    stub_subscription_trial_types
     sign_in(user)
   end
 
@@ -14,7 +11,7 @@ RSpec.shared_examples 'dashboard ultimate trial callout' do
     expect(page).not_to have_selector '[data-testid="start-trial-banner"]'
   end
 
-  describe '.com', :saas do
+  describe '.com', :saas, :with_trial_types do
     it 'shows dismissable promotion callout if default dashboard for an owner', :js do
       group = create(:group)
       group.add_owner(user)

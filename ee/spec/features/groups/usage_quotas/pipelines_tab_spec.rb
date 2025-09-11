@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :consumables_cost_management do
   include UsageQuotasHelpers
-  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
 
@@ -15,12 +14,11 @@ RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :
 
   let(:gitlab_dot_com) { true }
 
-  shared_context 'when user is allowed to see usage quotas' do
+  shared_context 'when user is allowed to see usage quotas', :with_trial_types do
     before do
       stub_signing_key
       stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
       stub_subscription_permissions_data(group.id)
-      stub_subscription_trial_types
 
       group.add_owner(user)
       sign_in(user)
@@ -254,12 +252,11 @@ RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :
     end
   end
 
-  context 'when user has limited access to subscription' do
+  context 'when user has limited access to subscription', :with_trial_types do
     before do
       stub_signing_key
       stub_subscription_permissions_data(group.id, can_add_seats: false)
       stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
-      stub_subscription_trial_types
 
       group.add_owner(user)
       sign_in(user)

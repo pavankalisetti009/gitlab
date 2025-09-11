@@ -2,14 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial Sign In', feature_category: :subscription_management do
-  include SubscriptionPortalHelpers
-
+RSpec.describe 'Trial Sign In', :with_trial_types, feature_category: :subscription_management do
   let(:user) { create(:user) }
-
-  before do
-    stub_subscription_trial_types
-  end
 
   describe 'on GitLab.com', :saas do
     it 'logs the user in' do

@@ -2,16 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe TrialRegistrationsController, :with_current_organization, feature_category: :onboarding do
+RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_organization, feature_category: :onboarding do
   include FullNameHelper
-  include SubscriptionPortalHelpers
   include IdentityVerificationHelpers
 
   let(:onboarding_enabled?) { true }
 
   before do
     stub_saas_features(onboarding: onboarding_enabled?)
-    stub_subscription_trial_types
   end
 
   describe 'GET new' do

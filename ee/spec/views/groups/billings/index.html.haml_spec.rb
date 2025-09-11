@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_category: :subscription_management do
+RSpec.describe 'groups/billings/index', :with_trial_types, :saas, :aggregate_failures, feature_category: :subscription_management do
   include RenderedHtml
-  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group_with_plan, plan: :free_plan) }
@@ -15,7 +14,6 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
     allow(view).to receive(:current_user).and_return(user)
     assign(:group, group)
     assign(:plans_data, plans_data)
-    stub_subscription_trial_types
   end
 
   context 'when the group is a subgroup' do

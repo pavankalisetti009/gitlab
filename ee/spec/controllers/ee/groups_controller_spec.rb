@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe GroupsController, :with_current_organization, feature_category: :groups_and_projects do
   include ExternalAuthorizationServiceHelpers
-  include SubscriptionPortalHelpers
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:user) { create(:user, organizations: [current_organization]) }
@@ -31,7 +30,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
 
     it_behaves_like 'seat count alert'
 
-    context 'with free user cap performance concerns', :saas do
+    context 'with free user cap performance concerns', :with_trial_types, :saas do
       render_views
 
       let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan) }
@@ -39,7 +38,6 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
       before do
         stub_ee_application_setting(dashboard_limit_enabled: true)
         stub_ee_application_setting(dashboard_limit: 5)
-        stub_subscription_trial_types
       end
 
       it 'avoids extra user count queries', :request_store do
