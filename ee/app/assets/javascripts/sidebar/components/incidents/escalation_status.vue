@@ -1,6 +1,6 @@
 <script>
 import EscalationStatus from '~/sidebar/components/incidents/escalation_status.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import { i18nStatusHeaderText, STATUS_SUBTEXTS } from '../../constants';
 
 export default {
@@ -9,7 +9,7 @@ export default {
   components: {
     EscalationStatus,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   props: {
     // eslint-disable-next-line @gitlab/vue-require-required-key
     value: EscalationStatus.props.value,
@@ -23,7 +23,7 @@ export default {
     },
 
     escalationPoliciesEnabled() {
-      return this.glFeatures.escalationPolicies;
+      return this.glLicensedFeatures.escalationPolicies;
     },
   },
   methods: {
