@@ -900,6 +900,7 @@ describe('Dependencies actions', () => {
             expect(graphQLClient.query).toHaveBeenCalledWith({
               query: projectDependencies,
               variables: expectedVariables,
+              fetchPolicy: 'network-only',
             });
           },
         );
@@ -938,6 +939,7 @@ describe('Dependencies actions', () => {
             expect(graphQLClient.query).toHaveBeenCalledWith({
               query: projectDependencies,
               variables: expectedVariables,
+              fetchPolicy: 'network-only',
             });
           },
         );
@@ -945,40 +947,49 @@ describe('Dependencies actions', () => {
 
       describe('filters', () => {
         it.each`
-          scenario                                                                            | searchFilterParameters                               | expectedComponentNames
-          ${'includes componentNames as a query variable when present'}                       | ${{ component_names: ['component1', 'component2'] }} | ${['component1', 'component2']}
-          ${'does not include componentNames as a query variable when filter is empty'}       | ${{ component_names: [] }}                           | ${undefined}
-          ${'does not include componentNames as a query variable when filter is not present'} | ${{}}                                                | ${undefined}
-        `('$scenario', async ({ searchFilterParameters, expectedComponentNames }) => {
-          state.searchFilterParameters = searchFilterParameters;
+          scenario                                                                            | searchFilterParameters                               | expectedComponentNames          | expectedComponentVersions
+          ${'includes componentNames as a query variable when present'}                       | ${{ component_names: ['component1', 'component2'] }} | ${['component1', 'component2']} | ${undefined}
+          ${'does not include componentNames as a query variable when filter is empty'}       | ${{ component_names: [] }}                           | ${undefined}                    | ${undefined}
+          ${'does not include componentNames as a query variable when filter is not present'} | ${{}}                                                | ${undefined}                    | ${undefined}
+          ${'includes componentVersions as a query variable when present'}                    | ${{ component_versions: ['1.0.0', '2.0.0'] }}        | ${undefined}                    | ${['1.0.0', '2.0.0']}
+          ${'does not include componentVersions as a query variable when filter is empty'}    | ${{ component_versions: [] }}                        | ${undefined}                    | ${undefined}
+        `(
+          '$scenario',
+          async ({ searchFilterParameters, expectedComponentNames, expectedComponentVersions }) => {
+            state.searchFilterParameters = searchFilterParameters;
 
-          await testAction(
-            actions.fetchDependenciesViaGraphQL,
-            undefined,
-            state,
-            [
-              {
-                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
-                payload: {
-                  dependencies: expectedDependencies,
-                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
+            await testAction(
+              actions.fetchDependenciesViaGraphQL,
+              undefined,
+              state,
+              [
+                {
+                  type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                  payload: {
+                    dependencies: expectedDependencies,
+                    pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
+                  },
                 },
+              ],
+              [{ type: 'requestDependencies' }],
+            );
+
+            const expectedVariables = {
+              query: projectDependencies,
+              variables: {
+                first: 20,
+                fullPath: state.fullPath,
+                ...(expectedComponentNames && { componentNames: expectedComponentNames }),
+                ...(expectedComponentVersions && { componentVersions: expectedComponentVersions }),
               },
-            ],
-            [{ type: 'requestDependencies' }],
-          );
+            };
 
-          const expectedVariables = {
-            query: projectDependencies,
-            variables: {
-              first: 20,
-              fullPath: state.fullPath,
-              ...(expectedComponentNames && { componentNames: expectedComponentNames }),
-            },
-          };
-
-          expect(graphQLClient.query).toHaveBeenCalledWith(expectedVariables);
-        });
+            expect(graphQLClient.query).toHaveBeenCalledWith({
+              ...expectedVariables,
+              fetchPolicy: 'network-only',
+            });
+          },
+        );
       });
 
       describe('pagination', () => {
@@ -1005,6 +1016,7 @@ describe('Dependencies actions', () => {
               first: 20,
               fullPath: state.fullPath,
             },
+            fetchPolicy: 'network-only',
           });
         });
 
@@ -1033,6 +1045,7 @@ describe('Dependencies actions', () => {
               first: 20,
               fullPath: state.fullPath,
             },
+            fetchPolicy: 'network-only',
           });
         });
 
@@ -1062,6 +1075,7 @@ describe('Dependencies actions', () => {
               after: forwardCursor,
               fullPath: state.fullPath,
             },
+            fetchPolicy: 'network-only',
           });
         });
 
@@ -1098,6 +1112,7 @@ describe('Dependencies actions', () => {
               before: backwardCursor,
               fullPath: state.fullPath,
             },
+            fetchPolicy: 'network-only',
           });
         });
 
@@ -1126,6 +1141,7 @@ describe('Dependencies actions', () => {
               first: customPageSize,
               fullPath: state.fullPath,
             },
+            fetchPolicy: 'network-only',
           });
         });
       });
