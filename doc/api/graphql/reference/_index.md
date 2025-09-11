@@ -44429,12 +44429,12 @@ Represents vulnerability counts grouped by severity level.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="vulnerabilitiesperseveritycritical"></a>`critical` | [`Int!`](#int) | Number of CRITICAL severity vulnerabilities. |
-| <a id="vulnerabilitiesperseverityhigh"></a>`high` | [`Int!`](#int) | Number of HIGH severity vulnerabilities. |
-| <a id="vulnerabilitiesperseverityinfo"></a>`info` | [`Int!`](#int) | Number of INFO severity vulnerabilities. |
-| <a id="vulnerabilitiesperseveritylow"></a>`low` | [`Int!`](#int) | Number of LOW severity vulnerabilities. |
-| <a id="vulnerabilitiesperseveritymedium"></a>`medium` | [`Int!`](#int) | Number of MEDIUM severity vulnerabilities. |
-| <a id="vulnerabilitiesperseverityunknown"></a>`unknown` | [`Int!`](#int) | Number of UNKNOWN severity vulnerabilities. |
+| <a id="vulnerabilitiesperseveritycritical"></a>`critical` | [`VulnerabilitySeverityCount`](#vulnerabilityseveritycount) | Number of CRITICAL severity vulnerabilities. |
+| <a id="vulnerabilitiesperseverityhigh"></a>`high` | [`VulnerabilitySeverityCount`](#vulnerabilityseveritycount) | Number of HIGH severity vulnerabilities. |
+| <a id="vulnerabilitiesperseverityinfo"></a>`info` | [`VulnerabilitySeverityCount`](#vulnerabilityseveritycount) | Number of INFO severity vulnerabilities. |
+| <a id="vulnerabilitiesperseveritylow"></a>`low` | [`VulnerabilitySeverityCount`](#vulnerabilityseveritycount) | Number of LOW severity vulnerabilities. |
+| <a id="vulnerabilitiesperseveritymedium"></a>`medium` | [`VulnerabilitySeverityCount`](#vulnerabilityseveritycount) | Number of MEDIUM severity vulnerabilities. |
+| <a id="vulnerabilitiesperseverityunknown"></a>`unknown` | [`VulnerabilitySeverityCount`](#vulnerabilityseveritycount) | Number of UNKNOWN severity vulnerabilities. |
 
 ### `Vulnerability`
 

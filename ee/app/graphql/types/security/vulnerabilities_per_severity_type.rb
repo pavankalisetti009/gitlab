@@ -9,8 +9,8 @@ module Types
 
       ::Enums::Vulnerability.severity_levels.each_key do |severity|
         field severity.to_s,
-          GraphQL::Types::Int,
-          null: false,
+          Types::Security::VulnerabilitySeverityCountType,
+          null: true,
           description: "Number of #{severity.upcase} severity vulnerabilities."
       end
     end

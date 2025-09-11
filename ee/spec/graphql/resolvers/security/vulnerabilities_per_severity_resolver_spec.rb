@@ -92,10 +92,10 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
     shared_examples 'counts vulnerabilities from specified projects' do
       it 'only counts vulnerabilities from specified projects' do
         expect(resolved_metrics).not_to be_empty
-        expect(resolved_metrics['critical']).to eq(6)
-        expect(resolved_metrics['low']).to eq(3)
-        expect(resolved_metrics['medium']).to eq(3)
-        expect(resolved_metrics['high']).to eq(6)
+        expect(resolved_metrics['critical'][:count]).to eq(6)
+        expect(resolved_metrics['low'][:count]).to eq(3)
+        expect(resolved_metrics['medium'][:count]).to eq(3)
+        expect(resolved_metrics['high'][:count]).to eq(6)
       end
     end
 
@@ -114,10 +114,10 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
 
         it 'returns vulnerability metrics data' do
           expect(resolved_metrics).not_to be_empty
-          expect(resolved_metrics['critical']).to eq(7)
-          expect(resolved_metrics['low']).to eq(4)
-          expect(resolved_metrics['medium']).to eq(3)
-          expect(resolved_metrics['high']).to eq(6)
+          expect(resolved_metrics['critical'][:count]).to eq(7)
+          expect(resolved_metrics['low'][:count]).to eq(4)
+          expect(resolved_metrics['medium'][:count]).to eq(3)
+          expect(resolved_metrics['high'][:count]).to eq(6)
         end
 
         context 'with project filtering' do
@@ -131,10 +131,10 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
 
           it 'only counts vulnerabilities with filtered report types' do
             expect(resolved_metrics).not_to be_empty
-            expect(resolved_metrics['critical']).to eq(4)
-            expect(resolved_metrics['low']).to eq(3)
-            expect(resolved_metrics['medium']).to eq(0)
-            expect(resolved_metrics['high']).to eq(3)
+            expect(resolved_metrics['critical'][:count]).to eq(4)
+            expect(resolved_metrics['low'][:count]).to eq(3)
+            expect(resolved_metrics['medium'][:count]).to eq(0)
+            expect(resolved_metrics['high'][:count]).to eq(3)
           end
         end
       end
@@ -166,10 +166,10 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
 
           it 'only counts vulnerabilities with filtered report types' do
             expect(resolved_metrics).not_to be_empty
-            expect(resolved_metrics['critical']).to eq(3)
-            expect(resolved_metrics['low']).to eq(3)
-            expect(resolved_metrics['medium']).to eq(0)
-            expect(resolved_metrics['high']).to eq(3)
+            expect(resolved_metrics['critical'][:count]).to eq(3)
+            expect(resolved_metrics['low'][:count]).to eq(3)
+            expect(resolved_metrics['medium'][:count]).to eq(0)
+            expect(resolved_metrics['high'][:count]).to eq(3)
           end
         end
       end
