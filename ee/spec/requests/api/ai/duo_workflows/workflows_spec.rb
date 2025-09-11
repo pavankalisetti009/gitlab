@@ -1026,6 +1026,72 @@ expires_at: duo_workflow_service_token_expires_at })
 
           expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
         end
+
+        context 'when namespace params are provided' do
+          let_it_be(:group) { create(:group) }
+
+          context 'when a model selection setting exists' do
+            let_it_be(:namespace_setting) do
+              create(:ai_namespace_feature_setting,
+                namespace: group,
+                feature: :duo_agent_platform,
+                offered_model_ref: 'claude-3-7-sonnet-20250219')
+            end
+
+            context 'when provided as param[:root_namespace_id]' do
+              it 'includes model metadata headers' do
+                get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+
+                expect(response).to have_gitlab_http_status(:ok)
+
+                headers = json_response['DuoWorkflow']['Headers']
+                expect(headers).to have_key('x-gitlab-agent-platform-model-metadata')
+
+                metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                expect(metadata).to include(
+                  'provider' => 'gitlab',
+                  'feature_setting' => 'duo_agent_platform',
+                  'identifier' => 'claude-3-7-sonnet-20250219'
+                )
+              end
+            end
+
+            context 'when provided as header[X-Gitlab-Namespace-Id]' do
+              it 'includes model metadata headers' do
+                get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
+
+                expect(response).to have_gitlab_http_status(:ok)
+
+                headers = json_response['DuoWorkflow']['Headers']
+                metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                expect(metadata).to include(
+                  'provider' => 'gitlab',
+                  'feature_setting' => 'duo_agent_platform',
+                  'identifier' => 'claude-3-7-sonnet-20250219'
+                )
+              end
+            end
+          end
+
+          context 'when a model selection setting does not exist' do
+            context 'when provided as param[:root_namespace_id]' do
+              it 'includes model metadata headers with default model' do
+                get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+
+                expect(response).to have_gitlab_http_status(:ok)
+
+                headers = json_response['DuoWorkflow']['Headers']
+
+                metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                expect(metadata).to include(
+                  'provider' => 'gitlab',
+                  'feature_setting' => 'duo_agent_platform',
+                  'identifier' => nil
+                )
+              end
+            end
+          end
+        end
       end
 
       context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
