@@ -4,7 +4,7 @@ import { GlSingleStat } from '@gitlab/ui/src/charts';
 import Api from 'ee/api';
 import { createAlert } from '~/alert';
 import { sprintf, __, s__ } from '~/locale';
-import Tracking from '~/tracking';
+import Tracking, { InternalEvents } from '~/tracking';
 
 const MERGE_REQUESTS_TRACKING_LABEL = 'g_analytics_activity_widget_mr_created_clicked';
 const ISSUES_TRACKING_LABEL = 'g_analytics_activity_widget_issues_created_clicked';
@@ -21,7 +21,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [Tracking.mixin()],
+  mixins: [Tracking.mixin(), InternalEvents.mixin()],
   inject: [
     'currentUserIsOwner',
     'showPlanIndicator',
@@ -106,6 +106,9 @@ export default {
     clickMetric(trackingLabel) {
       this.track('click_button', { label: trackingLabel });
     },
+    handlePlanIndicatorClick() {
+      this.trackEvent('click_plan_indicator_on_group_overview_page');
+    },
   },
   activityTimeSpan: sprintf(__('Last %{days} days'), { days: 30 }),
 };
@@ -126,6 +129,7 @@ export default {
         :href="groupBillingsPath"
         data-testid="subscription-stat-link"
         class="!gl-no-underline hover:gl-bg-strong"
+        @click.stop="handlePlanIndicatorClick"
       >
         <gl-single-stat
           :value="groupSubscriptionPlanName"

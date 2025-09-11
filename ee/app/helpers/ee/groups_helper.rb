@@ -23,7 +23,6 @@ module EE
 
     def show_plan_indicator?(group)
       ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
-        ::Feature.enabled?(:group_page_plan_indicator, group) &&
         group.root? &&
         group.trial?
     end
