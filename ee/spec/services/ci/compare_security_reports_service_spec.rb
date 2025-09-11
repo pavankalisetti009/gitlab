@@ -226,6 +226,34 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       stub_licensed_features(security_dashboard: true, scan_type => true)
     end
 
+    context 'when there is a different scan in the same build that is not ready yet' do
+      let_it_be(:scan_type) { :dependency_scanning }
+      let_it_be(:base_pipeline) { test_pipelines[:default_base] }
+      let_it_be(:head_pipeline) { test_pipelines[:with_dependency_scanning_feature_branch] }
+      let_it_be(:incomplete_scan) do
+        create(
+          :security_scan,
+          build: head_pipeline.builds.last,
+          status: :created,
+          scan_type: :container_scanning
+        )
+      end
+
+      let_it_be(:complete_scan) do
+        create(
+          :security_scan,
+          :latest_successful,
+          project: project,
+          build: head_pipeline.builds.last,
+          scan_type: scan_type
+        )
+      end
+
+      it 'reports status as parsed' do
+        expect(subject[:status]).to eq(:parsed)
+      end
+    end
+
     context 'with dependency_scanning' do
       let_it_be(:scan_type) { :dependency_scanning }
 
