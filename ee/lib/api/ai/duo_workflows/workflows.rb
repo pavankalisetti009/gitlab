@@ -17,6 +17,18 @@ module API
         end
 
         helpers do
+          def find_root_namespace
+            # The IDE sends namespace data via the header, while the web agentic chat UI
+            # sends it as a query param.
+            # The IDE only sends the namespace_id of the project's
+            # immediate group, so we have to find the root_ancestor separately.
+            namespace_id = params[:root_namespace_id].presence || headers['X-Gitlab-Namespace-Id'].presence
+            return unless namespace_id
+
+            namespace = find_namespace(namespace_id)
+            namespace&.root_ancestor
+          end
+
           def find_workflow!(id)
             workflow = ::Ai::DuoWorkflows::Workflow.for_user_with_id!(current_user.id, id)
             return workflow if current_user.can?(:read_duo_workflow, workflow)
@@ -220,7 +232,8 @@ module API
 
               push_feature_flags
 
-              model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new.execute
+              model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new(
+                root_namespace: find_root_namespace).execute
 
               headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
                 'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
