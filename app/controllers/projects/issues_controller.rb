@@ -248,6 +248,8 @@ class Projects::IssuesController < Projects::ApplicationController
   end
 
   def create_merge_request
+    start_covered_experience_create_mr
+
     create_params = params.slice(:branch_name, :ref).merge(issue_iid: issue.iid)
     create_params[:target_project_id] = params[:target_project_id]
     result = ::MergeRequests::CreateFromIssueService.new(project: project, current_user: current_user, mr_params: create_params).execute
@@ -500,6 +502,12 @@ class Projects::IssuesController < Projects::ApplicationController
 
   # Overridden in EE
   def redirect_if_epic_params; end
+
+  def start_covered_experience_create_mr
+    return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
+
+    Labkit::CoveredExperience.start(:create_merge_request)
+  end
 end
 
 Projects::IssuesController.prepend_mod_with('Projects::IssuesController')
