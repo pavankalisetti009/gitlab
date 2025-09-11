@@ -28,18 +28,45 @@ RSpec.describe Security::Attribute, feature_category: :security_asset_inventorie
   end
 
   describe '#before_validation' do
-    describe '#before_validation' do
-      it 'strips leading and trailing whitespace from name' do
-        attribute = described_class.new(name: '  Test Label  ')
-        attribute.valid?
-        expect(attribute.name).to eq('Test Label')
-      end
+    it 'strips leading and trailing whitespace from name' do
+      attribute = described_class.new(name: '  Test Label  ')
+      attribute.valid?
+      expect(attribute.name).to eq('Test Label')
+    end
 
-      it 'strips leading and trailing whitespace from description' do
-        attribute = described_class.new(description: '   Test description   ')
-        attribute.valid?
-        expect(attribute.description).to eq('Test description')
+    it 'strips leading and trailing whitespace from description' do
+      attribute = described_class.new(description: '   Test description   ')
+      attribute.valid?
+      expect(attribute.description).to eq('Test description')
+    end
+  end
+
+  describe 'scopes' do
+    describe '.by_category' do
+      let(:category1) { create(:security_category, namespace: parent, name: 'Category 1') }
+      let(:category2) { create(:security_category, namespace: parent, name: 'Category 2') }
+      let!(:attribute1) { create(:security_attribute, security_category: category1, namespace: parent, name: 'Attr 1') }
+      let!(:attribute2) { create(:security_attribute, security_category: category2, namespace: parent, name: 'Attr 2') }
+
+      it 'returns only attributes from the specified category' do
+        result = described_class.by_category(category1)
+
+        expect(result).to include(attribute1)
+        expect(result).not_to include(attribute2)
+        expect(result.count).to eq(1)
       end
+    end
+  end
+
+  describe '#editable?' do
+    it 'returns true when editable_state is not locked' do
+      attribute = build(:security_attribute, editable_state: 'editable')
+      expect(attribute.editable?).to be true
+    end
+
+    it 'returns false when editable_state is locked' do
+      attribute = build(:security_attribute, editable_state: 'locked')
+      expect(attribute.editable?).to be false
     end
   end
 

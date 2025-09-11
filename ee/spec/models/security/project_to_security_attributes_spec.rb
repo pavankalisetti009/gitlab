@@ -4,8 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security_asset_inventories do
   let_it_be(:root_group) { create(:group) }
-  let_it_be(:category) { create(:security_category, namespace: root_group) }
+  let_it_be(:other_root_group) { create(:group) }
+  let_it_be(:category) { create(:security_category, namespace: root_group, name: 'Test Category') }
   let_it_be(:attribute) { create(:security_attribute, security_category: category, namespace: root_group) }
+  let_it_be(:project) { create(:project, namespace: root_group) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:project).required }
@@ -16,17 +18,59 @@ RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security
     it { is_expected.to validate_presence_of(:traversal_ids) }
 
     context 'when validating uniqueness of name scoped to project' do
-      let_it_be(:project) { create(:project) }
-
       subject { build(:project_to_security_attribute, project: project, security_attribute: attribute) }
 
       it { is_expected.to validate_uniqueness_of(:security_attribute_id).scoped_to(:project_id) }
+    end
+
+    describe 'same_root_ancestor validation' do
+      context 'when project and attribute belong to the same root namespace' do
+        let(:association) { build(:project_to_security_attribute, project: project, security_attribute: attribute) }
+
+        it 'is valid' do
+          expect(association).to be_valid
+        end
+      end
+
+      context 'when project and attribute belong to different root namespaces' do
+        let(:other_category) { create(:security_category, namespace: other_root_group, name: 'Other Category') }
+        let(:association) do
+          build(:project_to_security_attribute, project: project, security_attribute: other_attribute)
+        end
+
+        let(:other_attribute) do
+          create(:security_attribute, security_category: other_category, namespace: other_root_group,
+            name: 'Other Attribute')
+        end
+
+        it 'is invalid' do
+          expect(association).not_to be_valid
+          expect(association.errors[:base]).to include('Project and attribute must belong to the same namespace')
+        end
+      end
+    end
+  end
+
+  describe 'scopes' do
+    describe '.by_attribute_id' do
+      let(:other_category) { create(:security_category, namespace: root_group, name: 'Other Category') }
+      let(:other_attribute) { create(:security_attribute, security_category: other_category, namespace: root_group) }
+      let!(:association) { create(:project_to_security_attribute, project: project, security_attribute: attribute) }
+      let!(:excluded) { create(:project_to_security_attribute, project: project, security_attribute: other_attribute) }
+
+      it 'returns only associations with the specified attribute_id' do
+        result = described_class.by_attribute_id(attribute.id)
+
+        expect(result).to include(association)
+        expect(result).not_to include(excluded)
+        expect(result.count).to eq(1)
+      end
     end
   end
 
   context 'with loose foreign key on project_to_security_attributes.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:project) }
+      let_it_be(:parent) { create(:project, namespace: root_group) }
       let_it_be(:model) { create(:project_to_security_attribute, project: parent, security_attribute: attribute) }
     end
   end
