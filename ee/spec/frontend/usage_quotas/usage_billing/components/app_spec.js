@@ -6,6 +6,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
+import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
+import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import { mockUsageDataWithPool } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -62,11 +64,24 @@ describe('UsageBillingApp', () => {
       );
     });
 
+    it('renders purchase-commitment-card', () => {
+      expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(true);
+    });
+
     it('renders the correct tabs', () => {
       const tabs = findTabs();
 
       expect(tabs.at(0).attributes('title')).toBe('Usage trends');
       expect(tabs.at(1).attributes('title')).toBe('Usage by user');
+    });
+
+    it('renders usage trends chart with correct props', () => {
+      expect(wrapper.findComponent(UsageTrendsChart).props()).toMatchObject({
+        monthStartDate: '2024-01-01',
+        monthEndDate: '2024-01-31',
+        trend: 0.12,
+      });
+      expect(wrapper.findComponent(UsageTrendsChart).props('usageData')).toHaveLength(30);
     });
   });
 
