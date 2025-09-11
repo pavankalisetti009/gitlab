@@ -27271,6 +27271,12 @@ msgstr ""
 msgid "Explore"
 msgstr ""
 
+msgid "Explore / AI Catalog (Agents)"
+msgstr ""
+
+msgid "Explore / AI Catalog (Flows)"
+msgstr ""
+
 msgid "Explore groups"
 msgstr ""
 
