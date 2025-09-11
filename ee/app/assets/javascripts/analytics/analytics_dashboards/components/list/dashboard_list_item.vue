@@ -27,6 +27,9 @@ export default {
     statusBadgeType() {
       return this.dashboard?.status || null;
     },
+    hasStatusBadge() {
+      return Boolean(!this.dashboard.userDefined && this.statusBadgeType);
+    },
     showErrorsBadge() {
       return this.dashboard?.errors?.length > 0;
     },
@@ -82,7 +85,7 @@ export default {
             >{{ dashboard.title }}</router-link
           >
           <gl-experiment-badge
-            v-if="statusBadgeType"
+            v-if="hasStatusBadge"
             data-testid="dashboard-status-badge"
             class="gl-ml-3"
             :type="statusBadgeType"

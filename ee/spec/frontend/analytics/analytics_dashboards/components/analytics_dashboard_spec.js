@@ -515,18 +515,35 @@ describe('AnalyticsDashboard', () => {
   });
 
   describe('status badge', () => {
-    beforeEach(async () => {
-      await setupDashboard(
-        createDashboardGraphqlSuccessResponse(
-          getGraphQLDashboardWithPanels({ status: 'beta', title: 'Beta dashboard' }),
-        ),
-        'test-beta-dashboard',
-      );
+    describe('with a built-in dashboard', () => {
+      it('renders the custom title with badge', async () => {
+        await setupDashboard(
+          createDashboardGraphqlSuccessResponse(
+            getGraphQLDashboardWithPanels({ status: 'beta', title: 'Beta dashboard' }),
+          ),
+          'test-beta-dashboard',
+        );
+
+        expect(findCustomTitle().text()).toContain('Beta dashboard');
+        expect(findExperimentBadge().props('type')).toBe('beta');
+      });
     });
 
-    it('renders the custom title with badge', () => {
-      expect(findCustomTitle().text()).toContain('Beta dashboard');
-      expect(findExperimentBadge().props('type')).toBe('beta');
+    describe('with a user defined dashboard', () => {
+      it('does not render a status badge', async () => {
+        await setupDashboard(
+          createDashboardGraphqlSuccessResponse(
+            getGraphQLDashboardWithPanels({
+              status: 'beta',
+              title: 'Beta dashboard',
+              userDefined: true,
+            }),
+          ),
+          'test-beta-dashboard',
+        );
+
+        expect(findExperimentBadge().exists()).toBe(false);
+      });
     });
   });
 
