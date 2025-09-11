@@ -17009,7 +17009,8 @@ CREATE TABLE identities (
     updated_at timestamp without time zone,
     secondary_extern_uid character varying,
     saml_provider_id bigint,
-    trusted_extern_uid boolean DEFAULT true
+    trusted_extern_uid boolean DEFAULT true,
+    CONSTRAINT check_e6693ca8db CHECK ((user_id IS NOT NULL))
 );
 
 CREATE SEQUENCE identities_id_seq
