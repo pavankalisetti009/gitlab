@@ -354,4 +354,53 @@ RSpec.describe Ci::BuildDependencies do
       end
     end
   end
+
+  describe '#invalid' do
+    let(:build_dependencies) { described_class.new(job) }
+
+    subject { build_dependencies.invalid }
+
+    context 'with invalid cross-project dependencies' do
+      let(:other_project) { create(:project, :repository) }
+      let(:deploy_stage) { create(:ci_stage, pipeline: other_project_pipeline, name: 'deploy') }
+
+      let(:other_project_pipeline) do
+        create(:ci_pipeline,
+          project: other_project,
+          sha: other_project.commit.id,
+          ref: other_project.default_branch,
+          status: 'success',
+          user: user)
+      end
+
+      let!(:invalid_cross_project_job) do
+        create(:ci_build, :success, :expired,
+          pipeline: other_project_pipeline,
+          name: 'invalid_deploy',
+          stage_idx: 1,
+          ci_stage: deploy_stage,
+          user: user)
+      end
+
+      let(:dependencies) do
+        [
+          {
+            project: other_project.full_path,
+            job: 'invalid_deploy',
+            ref: other_project_pipeline.ref,
+            artifacts: true
+          }
+        ]
+      end
+
+      before do
+        other_project.add_developer(user)
+        other_project_pipeline.unlocked!
+      end
+
+      it 'returns invalid cross-project dependencies' do
+        is_expected.to include(invalid_cross_project_job)
+      end
+    end
+  end
 end
