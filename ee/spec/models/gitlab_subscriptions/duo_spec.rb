@@ -394,4 +394,27 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
       it { is_expected.to eq(expected_result) }
     end
   end
+
+  describe '.self_managed_requestable?' do
+    subject { described_class.self_managed_requestable? }
+
+    before do
+      stub_application_setting(duo_features_enabled: duo_default_on)
+      stub_application_setting(lock_duo_feature_enabled: !duo_default_on)
+      ::Ai::Setting.instance.update!(duo_core_features_enabled: duo_core_features_enabled)
+    end
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:duo_default_on, :duo_core_features_enabled, :expected_result) do
+      true  | true  | false
+      false | true  | true
+      true  | false | true
+      false | false | true
+    end
+
+    with_them do
+      it { is_expected.to eq(expected_result) }
+    end
+  end
 end

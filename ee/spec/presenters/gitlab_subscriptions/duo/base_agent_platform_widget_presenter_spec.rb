@@ -14,6 +14,7 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
         fully_enabled?
         only_duo_default_off?
         enabled_without_core?
+        user_attributes
       ]
     end
 
@@ -40,7 +41,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
         expected_attributes = {
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
-            stateProgression: [:enabled]
+            stateProgression: [:enabled],
+            isAuthorized: true
           }
         }
 
@@ -55,7 +57,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
         expected_attributes = {
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
-            stateProgression: [:enableFeaturePreview, :enabled]
+            stateProgression: [:enableFeaturePreview, :enabled],
+            isAuthorized: true
           }
         }
 
@@ -70,7 +73,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
         expected_attributes = {
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
-            stateProgression: [:enablePlatform, :enabled]
+            stateProgression: [:enablePlatform, :enabled],
+            isAuthorized: true
           }
         }
 
@@ -85,7 +89,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
         expected_attributes = {
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
-            stateProgression: [:enablePlatform, :enabled]
+            stateProgression: [:enablePlatform, :enabled],
+            isAuthorized: true
           }
         }
 
@@ -100,7 +105,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
         expected_attributes = {
           duoAgentWidgetProvide: {
             actionPath: '/test/action/path',
-            stateProgression: [:enablePlatform, :enableFeaturePreview, :enabled]
+            stateProgression: [:enablePlatform, :enableFeaturePreview, :enabled],
+            isAuthorized: true
           }
         }
 
@@ -115,8 +121,8 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
     klass = stub_const('TestPresenter', Class.new(described_class))
 
     complete_methods = [
-      :toast_message, :action_path, :eligible?, :enabled_without_beta_features?,
-      :fully_enabled?, :only_duo_default_off?, :modal_title, :modal_body_text
+      :action_path, :eligible?, :enabled_without_beta_features?,
+      :fully_enabled?, :only_duo_default_off?, :enabled_without_core?, :user_attributes
     ]
 
     complete_methods.each do |m|
@@ -131,6 +137,7 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
           when :fully_enabled? then false
           when :only_duo_default_off? then false
           when :enabled_without_core? then false
+          when :user_attributes then { isAuthorized: true }
           end
         end
       end
@@ -151,6 +158,7 @@ RSpec.describe GitlabSubscriptions::Duo::BaseAgentPlatformWidgetPresenter, :aggr
       define_method(:only_duo_default_off?) { only_duo_default_off }
       define_method(:action_path) { '/test/action/path' }
       define_method(:enabled_without_core?) { enabled_without_core }
+      define_method(:user_attributes) { { isAuthorized: true } }
     end
   end
 

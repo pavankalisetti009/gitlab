@@ -27850,6 +27850,9 @@ msgstr ""
 msgid "Failed to sign in using smart card authentication."
 msgstr ""
 
+msgid "Failed to submit access request"
+msgstr ""
+
 msgid "Failed to toggle the to-do status for the design."
 msgstr ""
 
@@ -54183,6 +54186,9 @@ msgstr ""
 msgid "Request details"
 msgstr ""
 
+msgid "Request has been sent to the instance Admin"
+msgstr ""
+
 msgid "Request queued for administrator approval."
 msgstr ""
 
@@ -64279,6 +64285,9 @@ msgstr ""
 msgid "Team domain"
 msgstr ""
 
+msgid "Team requests"
+msgstr ""
+
 msgid "TeamCityIntegration|A user with permissions to trigger a manual build."
 msgstr ""
 
@@ -65212,6 +65221,9 @@ msgid "The number of merge requests merged by month."
 msgstr ""
 
 msgid "The number of times an upload record could not find its file"
+msgstr ""
+
+msgid "The number of users in your instance who have requested access to GitLab Duo Core."
 msgstr ""
 
 msgid "The only thread is resolved"

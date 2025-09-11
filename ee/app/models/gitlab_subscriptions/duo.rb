@@ -26,6 +26,10 @@ module GitlabSubscriptions
         !::Ai::Setting.instance.duo_core_features_enabled?
     end
 
+    def self.self_managed_requestable?
+      !::Gitlab::CurrentSettings.duo_default_on? || !::Ai::Setting.instance.duo_core_features_enabled?
+    end
+
     def self.todo_message
       s_('Todos|You now have access to AI-native features. Learn how to set up Code Suggestions and Chat in your IDE')
     end

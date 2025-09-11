@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlIcon } from '@gitlab/ui';
+import { GlBadge, GlButton, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -16,20 +16,27 @@ export default {
   name: 'DuoAgentPlatformWidget',
   components: {
     ConfirmActionModal,
+    GlBadge,
     GlButton,
     GlIcon,
   },
   directives: {
     SafeHtml,
+    GlTooltip: GlTooltipDirective,
   },
   inject: {
     actionPath: { required: true },
     stateProgression: { required: true },
+    isAuthorized: { default: false },
+    showRequestAccess: { default: false },
+    hasRequested: { default: false },
+    requestCount: { default: 0 },
   },
   data() {
     return {
       showEnableDuoConfirmModal: false,
       currentState: this.stateProgression[0],
+      hasRequestedDuoPlatform: this.hasRequested,
     };
   },
   computed: {
@@ -48,7 +55,7 @@ export default {
       return this.bodyText && this.shouldShowActions;
     },
     shouldShowActions() {
-      return this.currentState !== 'enabled';
+      return this.currentState !== 'enabled' && this.isAuthorized;
     },
     shouldShowSecondaryAction() {
       return this.currentState !== 'enableFeaturePreview';
@@ -82,6 +89,12 @@ export default {
 
       return { duo_availability: 'default_on', duo_core_features_enabled: true };
     },
+    showRequestSection() {
+      return this.showRequestAccess && !this.isEnabled && !this.isAuthorized;
+    },
+    showRequestCounter() {
+      return this.isAuthorized && this.requestCount > 0 && !this.isEnabled;
+    },
   },
   methods: {
     openConfirmModal() {
@@ -96,6 +109,19 @@ export default {
         this.onEnableSuccess();
       } catch (error) {
         this.onEnableError(error);
+      }
+    },
+    async handleRequestAccess() {
+      try {
+        await axios.post(this.actionPath);
+        this.hasRequestedDuoPlatform = true;
+        this.$toast.show(__('Request has been sent to the instance Admin'));
+      } catch (error) {
+        createAlert({
+          message: __('Failed to submit access request'),
+          captureError: true,
+          error,
+        });
       }
     },
     onEnableSuccess() {
@@ -200,6 +226,35 @@ export default {
         {{ bodyText }}
       </p>
       <div
+        v-if="showRequestCounter"
+        class="gl-my-3 gl-flex gl-items-center gl-justify-between gl-gap-3"
+        data-testid="request-counter"
+      >
+        <span class="gl-text-secondary">
+          {{ __('Team requests') }}
+          <button
+            v-gl-tooltip
+            class="gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0 gl-text-secondary"
+            :title="
+              __(
+                'The number of users in your instance who have requested access to GitLab Duo Core.',
+              )
+            "
+            :aria-label="
+              __(
+                'The number of users in your instance who have requested access to GitLab Duo Core.',
+              )
+            "
+          >
+            <gl-icon name="question" />
+          </button>
+        </span>
+
+        <span class="gl-text-secondary">
+          {{ requestCount }}
+        </span>
+      </div>
+      <div
         v-if="shouldShowActions"
         :class="[
           'gl-flex gl-w-full',
@@ -227,6 +282,48 @@ export default {
         >
           {{ openModalText }}
         </gl-button>
+      </div>
+
+      <div
+        v-if="showRequestSection"
+        :class="['gl-flex gl-w-full gl-justify-between', { 'gl-mt-3': !shouldShowBody }]"
+      >
+        <template v-if="!hasRequestedDuoPlatform">
+          <gl-button
+            :href="$options.learnMoreHref"
+            class="gl-text-sm"
+            size="small"
+            category="tertiary"
+            variant="confirm"
+            data-testid="learn-about-features-btn"
+          >
+            {{ __('Learn more') }}
+          </gl-button>
+
+          <gl-button
+            size="small"
+            variant="confirm"
+            data-testid="request-access-btn"
+            @click="handleRequestAccess"
+          >
+            {{ __('Request') }}
+          </gl-button>
+        </template>
+        <div v-else class="gl-flex gl-w-full gl-justify-between">
+          <gl-badge variant="neutral" class="gl-text-sm gl-text-secondary">
+            {{ __('Requested') }}
+          </gl-badge>
+
+          <gl-button
+            :href="$options.learnMoreHref"
+            class="gl-text-sm gl-no-underline hover:gl-no-underline"
+            size="small"
+            variant="confirm"
+            data-testid="learn-about-features-btn"
+          >
+            {{ __('Learn more') }}
+          </gl-button>
+        </div>
       </div>
     </div>
 

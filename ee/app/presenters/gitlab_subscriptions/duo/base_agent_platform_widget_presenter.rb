@@ -13,16 +13,20 @@ module GitlabSubscriptions
         return {} unless eligible?
 
         {
-          duoAgentWidgetProvide: {
-            actionPath: action_path,
-            stateProgression: state_progression
-          }
+          duoAgentWidgetProvide: widget_attributes
         }
       end
 
       private
 
       attr_reader :user
+
+      def widget_attributes
+        {
+          actionPath: action_path,
+          stateProgression: state_progression
+        }.merge(user_attributes)
+      end
 
       def state
         if fully_enabled?
@@ -50,6 +54,10 @@ module GitlabSubscriptions
         else
           [:enablePlatform, :enableFeaturePreview, :enabled]
         end
+      end
+
+      def user_attributes
+        raise NoMethodError, 'This method must be implemented in a subclass'
       end
 
       def action_path
