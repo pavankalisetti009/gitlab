@@ -50,6 +50,21 @@ RSpec.describe 'Admin updates settings', feature_category: :shared do
         end
       end
 
+      it 'change deletion settings', :js do
+        within_testid('admin-visibility-access-settings') do
+          fill_in 'Deletion protection', with: 30
+          uncheck 'Allow immediate deletion'
+          click_button 'Save changes'
+        end
+
+        expect(page).to have_content 'Application settings saved successfully'
+
+        within_testid('admin-visibility-access-settings') do
+          expect(find_field('Deletion protection').value).to eq('30')
+          expect(find_field('Allow immediate deletion')).not_to be_checked
+        end
+      end
+
       it 'modify import sources' do
         expect(current_settings.import_sources).to be_empty
 

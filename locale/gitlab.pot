@@ -33968,6 +33968,15 @@ msgstr ""
 msgid "Images with incorrect dimensions are not resized automatically, and may result in unexpected behavior."
 msgstr ""
 
+msgid "ImmediateNamespacesDeletionSettings|Allow immediate deletion"
+msgstr ""
+
+msgid "ImmediateNamespacesDeletionSettings|Groups and projects marked for deletion can be immediately deleted with a second deletion action, bypassing the configured retention period. %{link_start}Learn more.%{link_end}"
+msgstr ""
+
+msgid "ImmediateNamespacesDeletionSettings|Prevent non-administrators from immediately deleting groups and projects."
+msgstr ""
+
 msgid "Immutable tag rules require an Ultimate license"
 msgstr ""
 
