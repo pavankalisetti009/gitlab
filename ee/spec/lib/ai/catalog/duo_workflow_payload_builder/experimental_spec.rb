@@ -141,6 +141,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
               'system' => agent1_v1.def_system_prompt,
               'user' => agent1_v1.def_user_prompt,
               'placeholder' => described_class::PLACEHOLDER_VALUE
+            },
+            'params' => {
+              'timeout' => described_class::DUO_FLOW_TIMEOUT
             }
           }
         ])
@@ -148,9 +151,6 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
         expect(result['routers']).to eq([
           { 'from' => agent_item_1_flow_id, 'to' => 'end' }
         ])
-        expect(result['params']).to eq({
-          'timeout' => described_class::DUO_FLOW_TIMEOUT
-        })
       end
 
       describe 'version handling' do
@@ -240,6 +240,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
               'system' => agent1_v1.def_system_prompt,
               'user' => agent1_v1.def_user_prompt,
               'placeholder' => described_class::PLACEHOLDER_VALUE
+            },
+            'params' => {
+              'timeout' => described_class::DUO_FLOW_TIMEOUT
             }
           },
           {
@@ -254,6 +257,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
               'system' => agent2_v2.def_system_prompt,
               'user' => agent2_v2.def_user_prompt,
               'placeholder' => described_class::PLACEHOLDER_VALUE
+            },
+            'params' => {
+              'timeout' => described_class::DUO_FLOW_TIMEOUT
             }
           }
         ])
@@ -262,9 +268,6 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           { 'from' => agent_item_2_flow_id, 'to' => 'end' }
         ])
         expect(result['flow']['entry_point']).to eq(agent_item_1_flow_id)
-        expect(result['params']).to eq({
-          'timeout' => described_class::DUO_FLOW_TIMEOUT
-        })
       end
 
       it 'verifies all components have unique names' do
