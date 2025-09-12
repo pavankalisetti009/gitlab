@@ -1,4 +1,4 @@
-import { GlAlert, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlAvatar, GlLoadingIcon } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import UsageBillingUserDashboardApp from 'ee/usage_quotas/usage_billing/users/show/components/app.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -14,11 +14,12 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('UsageBillingUserDashboardApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
-  /** @type { MockAdapter} */
+  /** @type { MockAdapter } */
   let mockAxios;
 
-  const USER_ID = 42;
-  const API_ENDPOINT = '/admin/gitlab_duo/usage/users/42/data';
+  const MOCK_USER = mockData.subscription.gitlabUnitsUsage.userUsage.user;
+  const USER_ID = MOCK_USER.id;
+  const API_ENDPOINT = `/admin/gitlab_duo/usage/users/${USER_ID}/data`;
 
   const createComponent = () => {
     wrapper = shallowMountExtended(UsageBillingUserDashboardApp, {
@@ -30,6 +31,8 @@ describe('UsageBillingUserDashboardApp', () => {
 
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findUserAvatar = () => wrapper.findComponent(GlAvatar);
+  const findExportButton = () => wrapper.findByTestId('export-usage-data-button');
 
   beforeEach(() => {
     mockAxios = new MockAdapter(axios);
@@ -49,19 +52,27 @@ describe('UsageBillingUserDashboardApp', () => {
     });
   });
 
-  describe('rendering elements', () => {
+  describe('loaded state', () => {
     beforeEach(async () => {
       mockAxios.onGet(API_ENDPOINT).reply(200, mockData);
       createComponent();
       await waitForPromises();
     });
 
-    // NOTE: this is a temporary placeholder until we start using fetched data
-    it('shows debug information', () => {
-      const debugPre = wrapper.find('pre');
-      expect(debugPre.text()).toContain(
-        JSON.stringify(mockData.subscription.gitlabUnitsUsage, null, 2),
-      );
+    describe('header', () => {
+      it('renders user avatar', () => {
+        expect(findUserAvatar().exists()).toBe(true);
+        expect(findUserAvatar().props('src')).toBe(MOCK_USER.avatar_url);
+      });
+
+      it('renders user info', () => {
+        expect(wrapper.text()).toContain(MOCK_USER.name);
+        expect(wrapper.text()).toContain(`@${MOCK_USER.username}`);
+      });
+
+      it('renders export usage data button', () => {
+        expect(findExportButton().exists()).toBe(true);
+      });
     });
   });
 
