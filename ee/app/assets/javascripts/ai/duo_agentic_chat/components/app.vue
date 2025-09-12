@@ -26,6 +26,7 @@ import {
   DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
+import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -33,8 +34,6 @@ import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
-// TODO: Remove mock data when API is ready https://gitlab.com/gitlab-org/gitlab/-/work_items/566562
-import { mockListItems } from '../../../../../../spec/frontend/ai/model_selection/mock_data';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -56,6 +55,11 @@ export default {
       default: null,
     },
     namespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    rootNamespaceId: {
       type: String,
       required: false,
       default: null,
@@ -116,6 +120,39 @@ export default {
         this.onError(err);
       },
     },
+    availableModels: {
+      query: getAiChatAvailableModels,
+      skip() {
+        if (!this.userModelSelectionEnabled) return true;
+
+        return !(this.duoChatGlobalState.isAgenticChatShown && this.rootNamespaceId);
+      },
+      variables() {
+        return {
+          rootNamespaceId: this.rootNamespaceId,
+        };
+      },
+      update(data) {
+        const { selectableModels = [], defaultModel } = data.aiChatAvailableModels;
+
+        const models = selectableModels.map(({ ref, name }) => ({
+          text: name,
+          value: ref,
+        }));
+
+        if (defaultModel) {
+          models.push({
+            text: `GitLab default model (${defaultModel.name})`,
+            value: GITLAB_DEFAULT_MODEL,
+          });
+        }
+
+        return models;
+      },
+      error(err) {
+        this.onError(err);
+      },
+    },
   },
   data() {
     const currentWorkflowRecord = getStorageValue(DUO_CURRENT_WORKFLOW_STORAGE_KEY);
@@ -136,6 +173,7 @@ export default {
       maxHeight: null,
       maxWidth: null,
       contextPresets: [],
+      availableModels: [],
       socketManager: null,
       workflowId,
       workflowStatus: null,
@@ -161,13 +199,20 @@ export default {
         left: this.left,
       };
     },
-    mockModelSelectionOptions() {
-      // Temporarily return mock model data while API is under development
-      // https://gitlab.com/gitlab-org/gitlab/-/work_items/566562
-      return mockListItems;
-    },
     defaultModel() {
-      return this.mockModelSelectionOptions.find((item) => item.value === GITLAB_DEFAULT_MODEL);
+      return this.availableModels.find((item) => item.value === GITLAB_DEFAULT_MODEL);
+    },
+    currentModel: {
+      get() {
+        return (
+          this.selectedModel ||
+          JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY)) ||
+          this.defaultModel
+        );
+      },
+      set(val) {
+        this.selectedModel = val;
+      },
     },
     predefinedPrompts() {
       return this.contextPresets.questions || [];
@@ -227,8 +272,6 @@ export default {
   mounted() {
     this.setDimensions();
     window.addEventListener('resize', this.onWindowResize);
-    // Initialize selected model on mount
-    this.selectedModel = this.getSelectedModel();
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
@@ -470,15 +513,10 @@ export default {
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.cleanupState();
     },
-    getSelectedModel() {
-      const selectedModel = JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY));
-
-      return selectedModel || this.defaultModel;
-    },
     onModelSelect(selectedModel) {
-      const model = this.mockModelSelectionOptions.find((item) => item.value === selectedModel);
+      const model = this.availableModels.find((item) => item.value === selectedModel);
 
-      this.selectedModel = model;
+      this.currentModel = model;
       localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(model));
     },
   },
@@ -529,8 +567,9 @@ export default {
               <div v-if="userModelSelectionEnabled" class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
                 <model-select-dropdown
                   class="gl-max-w-31"
-                  :items="mockModelSelectionOptions"
-                  :selected-option="selectedModel"
+                  :is-loading="$apollo.queries.availableModels.loading"
+                  :items="availableModels"
+                  :selected-option="currentModel"
                   :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
                   @select="onModelSelect"
                 />

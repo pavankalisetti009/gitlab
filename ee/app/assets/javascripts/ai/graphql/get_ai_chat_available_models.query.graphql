@@ -1,0 +1,12 @@
+query getAiChatAvailableModels($rootNamespaceId: GroupID!) {
+  aiChatAvailableModels(rootNamespaceId: $rootNamespaceId) {
+    defaultModel {
+      name
+      ref
+    }
+    selectableModels {
+      name
+      ref
+    }
+  }
+}

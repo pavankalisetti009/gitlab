@@ -19,7 +19,14 @@ export const initDuoAgenticChat = () => {
     return false;
   }
 
-  const { projectId, namespaceId, resourceId, metadata, userModelSelectionEnabled } = el.dataset;
+  const {
+    projectId,
+    namespaceId,
+    rootNamespaceId,
+    resourceId,
+    metadata,
+    userModelSelectionEnabled,
+  } = el.dataset;
 
   return new Vue({
     el,
@@ -31,6 +38,7 @@ export const initDuoAgenticChat = () => {
         props: {
           projectId,
           namespaceId,
+          rootNamespaceId,
           resourceId: latestActiveWorkItemId ?? resourceId,
           metadata,
           userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
