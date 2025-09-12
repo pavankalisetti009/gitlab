@@ -50,10 +50,6 @@ module GitlabSubscriptions
         def dedicated?
           ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
         end
-
-        def current_request_count
-          ::Ai::Setting.instance.duo_agent_platform_request_count
-        end
       end
     end
   end

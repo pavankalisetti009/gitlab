@@ -43,13 +43,12 @@ module GitlabSubscriptions
           api_v4_groups_path(id: namespace.id)
         end
 
-        override :feature_preview_attribute
-        def feature_preview_attribute
-          :experiment_features_enabled
-        end
-
-        def user_attributes
-          { isAuthorized: true, showRequestAccess: false, requestCount: 0 }
+        def contextual_attributes
+          {
+            isAuthorized: true,
+            featurePreviewAttribute: :experiment_features_enabled,
+            requestCount: 0
+          }
         end
       end
     end

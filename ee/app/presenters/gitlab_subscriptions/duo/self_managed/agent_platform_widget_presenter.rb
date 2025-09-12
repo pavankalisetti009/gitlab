@@ -12,7 +12,7 @@ module GitlabSubscriptions
           user.dismissed_callout?(feature_name: 'duo_agent_platform_requested')
         end
 
-        def user_attributes
+        def contextual_attributes
           {
             isAuthorized: false,
             showRequestAccess: requestable?,
