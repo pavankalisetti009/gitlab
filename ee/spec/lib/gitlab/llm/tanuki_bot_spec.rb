@@ -333,35 +333,29 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
   end
 
   describe '.user_model_selection_enabled?' do
-    let_it_be(:group) { create(:group) }
-
-    context 'when root namespace is not found' do
-      let(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: 'non_existent_namespace') do
-          described_class.user_model_selection_enabled?(user: user)
-        end
-      end
-
-      it 'returns false' do
-        expect(result).to be(false)
+    subject(:result) do
+      ::Gitlab::ApplicationContext.with_raw_context(root_namespace: root_namespace) do
+        described_class.user_model_selection_enabled?(user: user)
       end
     end
 
+    let_it_be(:group) { create(:group) }
+
+    context 'when root namespace is not found' do
+      let(:root_namespace) { 'non_existent_namespace' }
+
+      it { is_expected.to be_falsey }
+    end
+
     context 'when root_namespace is found' do
-      let(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: group.full_path) do
-          described_class.user_model_selection_enabled?(user: user)
-        end
-      end
+      let(:root_namespace) { group.full_path }
 
       context 'when duo_agent_platform_model_selection feature flag is disabled' do
         before do
           stub_feature_flags(duo_agent_platform_model_selection: false)
         end
 
-        it 'returns false' do
-          expect(result).to be(false)
-        end
+        it { is_expected.to be_falsey }
       end
 
       context 'when ai_model_switching feature flag is disabled' do
@@ -369,9 +363,7 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
           stub_feature_flags(ai_model_switching: false)
         end
 
-        it 'returns false' do
-          expect(result).to be(false)
-        end
+        it { is_expected.to be_falsey }
       end
 
       context 'when ai_user_model_switching feature flag is disabled' do
@@ -379,9 +371,7 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
           stub_feature_flags(ai_user_model_switching: false)
         end
 
-        it 'returns false' do
-          expect(result).to be(false)
-        end
+        it { is_expected.to be_falsey }
       end
 
       context 'when duo_agent_platform_model_selection feature flag is enabled' do
@@ -397,10 +387,39 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
           context 'when ai_user_model_switching feature flag is enabled' do
             before do
               stub_feature_flags(ai_user_model_switching: true)
+
+              allow_next_instance_of(Ai::FeatureSettingSelectionService) do |service|
+                allow(service).to receive(:execute).and_return(service_response)
+              end
             end
 
-            it 'returns true' do
-              expect(result).to be(true)
+            context 'when feature setting service returns no model metadata' do
+              let(:service_response) { ServiceResponse.success(payload: nil) }
+
+              it { is_expected.to be_truthy }
+            end
+
+            context 'when the feature setting returns payload' do
+              let(:payload) { build(:ai_namespace_feature_setting, namespace: group, feature: :duo_agent_platform) }
+              let(:service_response) { ServiceResponse.success(payload: payload) }
+
+              context 'when model is set to default setting' do
+                before do
+                  allow(payload).to receive(:set_to_gitlab_default?).and_return(true)
+                end
+
+                it { is_expected.to be_truthy }
+              end
+
+              context 'when owner pinned a model' do
+                it { is_expected.to be_falsey }
+              end
+            end
+
+            context 'when the feature setting service returns an error' do
+              let(:service_response) { ServiceResponse.error(message: "error!") }
+
+              it { is_expected.to be_falsey }
             end
           end
         end

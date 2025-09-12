@@ -59,7 +59,14 @@ module Gitlab
         return false if ::Feature.disabled?(:ai_model_switching, namespace)
         return false if ::Feature.disabled?(:ai_user_model_switching, user)
 
-        true
+        feature_setting = ::Ai::FeatureSettingSelectionService
+                            .new(user, :duo_agent_platform, namespace)
+                            .execute
+
+        # User-level model selection is enabled if either owner of the namespace didn't pin the model
+        # or it's set to default
+        feature_setting.success? &&
+          (feature_setting.payload.nil? || feature_setting.payload.set_to_gitlab_default?)
       end
 
       def self.resource_id
