@@ -318,7 +318,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
 
     context 'when .gitlab/duo/agent-config.yml exists with valid configuration' do
       before do
-        allow(duo_config).to receive_messages(valid?: true, default_image: custom_image)
+        allow(duo_config).to receive_messages(
+          valid?: true,
+          default_image: custom_image,
+          setup_script: nil,
+          cache_config: nil
+        )
       end
 
       context 'when workflow has no image specified' do
@@ -354,7 +359,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
 
     context 'when .gitlab/duo/agent-config.yml exists but has no default_image' do
       before do
-        allow(duo_config).to receive_messages(valid?: true, default_image: nil)
+        allow(duo_config).to receive_messages(
+          valid?: true,
+          default_image: nil,
+          setup_script: nil,
+          cache_config: nil
+        )
       end
 
       let(:image) { nil }
@@ -382,7 +392,12 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       allow(maintainer).to receive(:allowed_to_use?).and_return(true)
       project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
       allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
-      allow(duo_config).to receive_messages(valid?: true, default_image: config_image)
+      allow(duo_config).to receive_messages(
+        valid?: true,
+        default_image: config_image,
+        setup_script: nil,
+        cache_config: nil
+      )
     end
 
     context 'when workflow image is present' do
@@ -419,7 +434,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       let(:image) { nil }
 
       before do
-        allow(duo_config).to receive(:default_image).and_return(nil)
+        allow(duo_config).to receive_messages(
+          default_image: nil,
+          setup_script: nil,
+          cache_config: nil
+        )
       end
 
       it 'uses the default IMAGE constant' do
@@ -429,6 +448,344 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
           expect(workload_definition.image).to eq(described_class::IMAGE)
           method.call(**kwargs)
         end
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
+  context 'with setup_script configuration' do
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+    let(:setup_commands) { ['npm install', 'npm run build', 'npm test'] }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+      allow(duo_config).to receive_messages(
+        valid?: true,
+        default_image: nil,
+        cache_config: nil
+      )
+    end
+
+    context 'when setup_script is present' do
+      before do
+        allow(duo_config).to receive(:setup_script).and_return(setup_commands)
+      end
+
+      it 'prepends setup_script commands to the main commands' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          commands = workload_definition.commands
+
+          # Verify setup commands are prepended
+          expect(commands[0]).to eq('npm install')
+          expect(commands[1]).to eq('npm run build')
+          expect(commands[2]).to eq('npm test')
+
+          # Verify main commands follow
+          expect(commands[3]).to eq('echo $DUO_WORKFLOW_DEFINITION')
+          expect(commands[4]).to eq('echo $DUO_WORKFLOW_GOAL')
+          expect(commands[5]).to eq('git checkout $CI_WORKLOAD_REF')
+
+          # Total should be setup commands + main commands
+          expect(commands.size).to eq(11) # 3 setup + 8 main
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when setup_script is not present' do
+      before do
+        allow(duo_config).to receive(:setup_script).and_return(nil)
+      end
+
+      it 'uses only the main commands' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          commands = workload_definition.commands
+
+          # Should start with main commands
+          expect(commands[0]).to eq('echo $DUO_WORKFLOW_DEFINITION')
+          expect(commands[1]).to eq('echo $DUO_WORKFLOW_GOAL')
+
+          # Should have only main commands
+          expect(commands.size).to eq(8)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when setup_script is empty array' do
+      before do
+        allow(duo_config).to receive(:setup_script).and_return([])
+      end
+
+      it 'does not prepend any commands' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          commands = workload_definition.commands
+
+          # Should start with main commands
+          expect(commands.first).to eq('echo $DUO_WORKFLOW_DEFINITION')
+          expect(commands.size).to eq(8)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when setup_script has a single command' do
+      before do
+        allow(duo_config).to receive(:setup_script).and_return(['bundle install'])
+      end
+
+      it 'prepends the single command' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          commands = workload_definition.commands
+
+          expect(commands[0]).to eq('bundle install')
+          expect(commands[1]).to eq('echo $DUO_WORKFLOW_DEFINITION')
+          expect(commands.size).to eq(9) # 1 setup + 8 main
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
+  context 'with cache configuration' do
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+      allow(duo_config).to receive_messages(
+        valid?: true,
+        default_image: nil,
+        setup_script: nil
+      )
+    end
+
+    context 'when cache config with file-based key is present' do
+      let(:cache_config) do
+        {
+          'key' => { 'files' => ['package.json', 'package-lock.json'] },
+          'paths' => ['node_modules', '.npm']
+        }
+      end
+
+      before do
+        allow(duo_config).to receive(:cache_config).and_return(cache_config)
+      end
+
+      it 'passes cache configuration to workload definition' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.cache).to eq(cache_config)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when cache config with string key is present' do
+      let(:cache_config) do
+        {
+          'key' => 'my-cache-key',
+          'paths' => ['vendor/bundle']
+        }
+      end
+
+      before do
+        allow(duo_config).to receive(:cache_config).and_return(cache_config)
+      end
+
+      it 'passes cache configuration to workload definition' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.cache).to eq(cache_config)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when cache config with file key and prefix is present' do
+      let(:cache_config) do
+        {
+          'key' => {
+            'files' => ['Gemfile.lock'],
+            'prefix' => 'rspec'
+          },
+          'paths' => ['vendor/ruby']
+        }
+      end
+
+      before do
+        allow(duo_config).to receive(:cache_config).and_return(cache_config)
+      end
+
+      it 'passes cache configuration with prefix to workload definition' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.cache).to eq(cache_config)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when cache config with only paths (no key) is present' do
+      let(:cache_config) do
+        {
+          'paths' => ['node_modules']
+        }
+      end
+
+      before do
+        allow(duo_config).to receive(:cache_config).and_return(cache_config)
+      end
+
+      it 'passes cache configuration without key to workload definition' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.cache).to eq(cache_config)
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when cache config is not present' do
+      before do
+        allow(duo_config).to receive(:cache_config).and_return(nil)
+      end
+
+      it 'does not set cache on workload definition' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          # Cache should not be set when config returns nil
+          expect(workload_definition.cache).to be_nil
+        end.and_call_original
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
+  context 'with both setup_script and cache configuration' do
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+    let(:setup_commands) { ['npm ci', 'npm test'] }
+    let(:cache_config) do
+      {
+        'key' => {
+          'files' => ['package.json'],
+          'prefix' => 'test'
+        },
+        'paths' => ['node_modules']
+      }
+    end
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+      allow(duo_config).to receive_messages(
+        valid?: true,
+        default_image: 'node:18',
+        setup_script: setup_commands,
+        cache_config: cache_config
+      )
+    end
+
+    it 'includes both setup commands and cache configuration' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+        # Check setup commands are prepended
+        commands = workload_definition.commands
+        expect(commands[0]).to eq('npm ci')
+        expect(commands[1]).to eq('npm test')
+        expect(commands[2]).to eq('echo $DUO_WORKFLOW_DEFINITION')
+
+        # Check cache is configured
+        expect(workload_definition.cache).to eq(cache_config)
+
+        # Check image is set
+        expect(workload_definition.image).to eq('node:18')
+      end.and_call_original
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'without agent configuration' do
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+      allow(duo_config).to receive_messages(
+        valid?: false,
+        default_image: nil,
+        setup_script: nil,
+        cache_config: nil
+      )
+    end
+
+    it 'uses defaults and does not set cache or setup commands' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+        # Should use default or workflow image
+        expect(workload_definition.image).to eq(image)
+
+        # Should not have setup commands prepended
+        commands = workload_definition.commands
+        expect(commands.first).to eq('echo $DUO_WORKFLOW_DEFINITION')
+        expect(commands.size).to eq(8)
+
+        # Should not have cache
+        expect(workload_definition.cache).to be_nil
+      end.and_call_original
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'with priority ordering for all features' do
+    let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
+    let(:workflow_image) { 'workflow-priority:latest' }
+    let(:config_image) { 'config-priority:latest' }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(::Gitlab::DuoAgentPlatform::Config).to receive(:new).with(project).and_return(duo_config)
+    end
+
+    context 'when workflow has image and config has all features' do
+      let(:image) { workflow_image }
+
+      before do
+        allow(duo_config).to receive_messages(
+          valid?: true,
+          default_image: config_image,
+          setup_script: ['echo "from config"'],
+          cache_config: { 'paths' => ['test'] }
+        )
+      end
+
+      it 'uses workflow image but config setup_script and cache' do
+        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
+          # Workflow image takes priority
+          expect(workload_definition.image).to eq(workflow_image)
+
+          # But setup_script from config is used
+          expect(workload_definition.commands.first).to eq('echo "from config"')
+
+          # And cache from config is used
+          expect(workload_definition.cache).to eq({ 'paths' => ['test'] })
+        end.and_call_original
 
         expect(execute).to be_success
       end
