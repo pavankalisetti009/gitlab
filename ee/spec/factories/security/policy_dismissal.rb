@@ -6,6 +6,7 @@ FactoryBot.define do
     merge_request
     security_policy
     user
+    dismissal_types { Security::PolicyDismissal::DISMISSAL_TYPES.values.sample(2) }
     security_findings_uuids { [SecureRandom.uuid] }
   end
 end

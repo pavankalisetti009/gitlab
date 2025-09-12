@@ -24071,7 +24071,10 @@ CREATE TABLE security_policy_dismissals (
     merge_request_id bigint NOT NULL,
     security_policy_id bigint NOT NULL,
     user_id bigint,
-    security_findings_uuids text[] DEFAULT '{}'::text[] NOT NULL
+    security_findings_uuids text[] DEFAULT '{}'::text[],
+    dismissal_types smallint[] DEFAULT '{}'::smallint[] NOT NULL,
+    comment text,
+    CONSTRAINT check_654ff06528 CHECK ((char_length(comment) <= 255))
 );
 
 CREATE SEQUENCE security_policy_dismissals_id_seq
@@ -39330,6 +39333,8 @@ CREATE INDEX index_security_orchestration_policy_rule_schedules_on_project_i ON 
 CREATE INDEX index_security_policies_on_policy_management_project_id ON security_policies USING btree (security_policy_management_project_id);
 
 CREATE UNIQUE INDEX index_security_policies_on_unique_config_type_policy_index ON security_policies USING btree (security_orchestration_policy_configuration_id, type, policy_index);
+
+CREATE INDEX index_security_policy_dismissals_on_dismissal_types ON security_policy_dismissals USING gin (dismissal_types);
 
 CREATE INDEX index_security_policy_dismissals_on_project_id ON security_policy_dismissals USING btree (project_id);
 
