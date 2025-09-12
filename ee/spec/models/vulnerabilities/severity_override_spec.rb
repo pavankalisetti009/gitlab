@@ -161,4 +161,13 @@ RSpec.describe Vulnerabilities::SeverityOverride, feature_category: :vulnerabili
       expect(described_class.latest).to contain_exactly(new_override1, new_override2)
     end
   end
+
+  describe '.by_vulnerability' do
+    let!(:severity_override_1) { create(:vulnerability_severity_override) }
+    let!(:severity_override_2) { create(:vulnerability_severity_override) }
+
+    subject { described_class.by_vulnerability(severity_override_2.vulnerability) }
+
+    it { is_expected.to contain_exactly(severity_override_2) }
+  end
 end

@@ -25,6 +25,7 @@ module Vulnerabilities
 
     attribute :data, Gitlab::Database::Type::JsonPgSafe.new(replace_with: '\\\\\u0000')
 
+    validates :original_record_identifier, presence: true, numericality: { only_integer: true, greater_than: 0 }
     validates :data, presence: true, json_schema: { filename: 'vulnerability_backup_data' } # rubocop:disable Database/JsonbSizeLimit -- We can't add a limit for this attribute
 
     def original_data

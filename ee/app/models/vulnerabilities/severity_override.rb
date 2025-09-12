@@ -33,6 +33,7 @@ module Vulnerabilities
       SQL
     end
 
+    scope :by_vulnerability, ->(values) { where(vulnerability_id: values) }
     scope :with_author, -> { includes(:author) }
 
     def author_data

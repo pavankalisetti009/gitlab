@@ -64,6 +64,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
 
         create(:vulnerabilities_external_issue_link, vulnerability: vulnerabilities.first)
         create(:vulnerabilities_merge_request_link, vulnerability: vulnerabilities.first, merge_request: merge_request)
+        create(:vulnerability_severity_override, vulnerability: vulnerabilities.first)
 
         create(:finding_link, finding: finding)
         create(:vulnerabilities_flag, finding: finding)
@@ -88,6 +89,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                          .and change { Vulnerabilities::Feedback.count }.by(-1)
                                          .and change { Vulnerabilities::IssueLink.count }.by(-4)
                                          .and change { Vulnerabilities::FindingLink.count }.by(-1)
+                                         .and change { Vulnerabilities::SeverityOverride.count }.by(-1)
                                          .and change { Vulnerabilities::StateTransition.count }.by(-2)
                                          .and change { Vulnerabilities::MergeRequestLink.count }.by(-1)
                                          .and change { Vulnerabilities::FindingSignature.count }.by(-1)
@@ -121,6 +123,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                              .and not_change { Vulnerabilities::Identifier.count }
                                              .and not_change { Vulnerabilities::FindingLink.count }
                                              .and not_change { Vulnerabilities::Remediation.count }
+                                             .and not_change { Vulnerabilities::SeverityOverride.count }
                                              .and not_change { Vulnerabilities::StateTransition.count }
                                              .and not_change { Vulnerabilities::MergeRequestLink.count }
                                              .and not_change { Vulnerabilities::FindingSignature.count }
@@ -145,6 +148,7 @@ RSpec.describe Vulnerabilities::Removal::RemoveFromProjectService, feature_categ
                                              .and change { Vulnerabilities::Finding.count }.by(-2)
                                              .and change { Vulnerabilities::IssueLink.count }.by(-4)
                                              .and change { Vulnerabilities::FindingLink.count }.by(-1)
+                                             .and change { Vulnerabilities::SeverityOverride.count }.by(-1)
                                              .and change { Vulnerabilities::StateTransition.count }.by(-2)
                                              .and change { Vulnerabilities::MergeRequestLink.count }.by(-1)
                                              .and change { Vulnerabilities::FindingSignature.count }.by(-1)

@@ -128,6 +128,10 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
       factory: :vulnerabilities_merge_request_link
 
     it_behaves_like 'creating backup for',
+      Vulnerabilities::Backups::VulnerabilitySeverityOverride,
+      factory: :vulnerability_severity_override
+
+    it_behaves_like 'creating backup for',
       Vulnerabilities::Backups::VulnerabilityStateTransition,
       factory: :vulnerability_state_transition
 
