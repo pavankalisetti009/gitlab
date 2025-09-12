@@ -111,8 +111,6 @@ describe('EE - Pipelines Table', () => {
 
       it('passes correct props to DuoWorkflowAction', () => {
         expect(findDuoWorkflowAction().props()).toMatchObject({
-          duoWorkflowInvokePath: '/api/v4/ai/duo_workflows/workflows',
-          projectId: failedPipelineWithMR.project.id,
           projectPath: 'frontend-fixtures/pipelines-project',
           goal: 'https://gitlab.com/project/-/pipelines/123',
           hoverMessage: 'Fix pipeline with Duo',

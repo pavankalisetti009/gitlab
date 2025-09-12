@@ -12,9 +12,7 @@ describe('DuoAgentsPlatformNew', () => {
     push: jest.fn(),
   };
   const defaultProvide = {
-    projectId: '123',
     projectPath: 'group/project',
-    duoAgentsInvokePath: '/api/v4/projects/123/duo_workflow/invoke',
   };
 
   const createWrapper = (props = {}, provide = {}) => {
@@ -47,8 +45,6 @@ describe('DuoAgentsPlatformNew', () => {
   it('passes the right props to the RunAgentFlowForm component', () => {
     expect(findRunAgentFlowForm().props()).toEqual({
       defaultAgentFlowType: AGENTFLOW_TYPE_JENKINS_TO_CI,
-      duoAgentsInvokePath: defaultProvide.duoAgentsInvokePath,
-      projectId: Number(defaultProvide.projectId),
       projectPath: defaultProvide.projectPath,
       flows: expect.any(Array),
     });

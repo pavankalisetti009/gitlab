@@ -5,7 +5,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import BlobHeader from 'ee/blob/components/blob_header.vue';
 import CeBlobHeader from '~/blob/components/blob_header.vue';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import duoWorkflowActionQuery from 'ee/repository/queries/duo_workflow_action.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -31,7 +30,6 @@ describe('EE Blob Header', () => {
   };
   const testProps = {
     blob: testBlob,
-    projectId: 'gid://gitlab/Project/123',
     projectPath: 'group/project',
     currentRef: 'main',
   };
@@ -65,7 +63,7 @@ describe('EE Blob Header', () => {
 
     it('passes all props to CE component', () => {
       // Exclude props from the CE props comparison
-      const { projectPath, currentRef, projectId, ...propsToCheck } = testProps;
+      const { projectPath, currentRef, ...propsToCheck } = testProps;
       expect(findCeBlobHeader().props()).toMatchObject(propsToCheck);
     });
 
@@ -77,7 +75,6 @@ describe('EE Blob Header', () => {
   describe('with GraphQL data', () => {
     const createMockData = (showAction = true) => ({
       showDuoWorkflowAction: showAction,
-      duoWorkflowInvokePath: '/api/duo/workflow',
     });
 
     it('renders DuoWorkflowAction when showDuoWorkflowAction is true', async () => {
@@ -87,16 +84,12 @@ describe('EE Blob Header', () => {
 
       const duoWorkflowAction = findDuoWorkflowAction();
       expect(duoWorkflowAction.props()).toMatchObject({
-        projectId: 123,
         title: 'Convert to GitLab CI/CD',
         hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
         goal: 'test/Jenkinsfile',
         workflowDefinition: 'convert_to_gitlab_ci',
         agentPrivileges: [1, 2, 5],
-        duoWorkflowInvokePath: '/api/duo/workflow',
       });
-
-      expect(getIdFromGraphQLId).toHaveBeenCalledWith('gid://gitlab/Project/123');
     });
 
     it('does not render DuoWorkflowAction when showDuoWorkflowAction is false', () => {

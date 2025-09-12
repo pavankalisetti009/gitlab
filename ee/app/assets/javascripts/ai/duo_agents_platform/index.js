@@ -23,7 +23,6 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
 
   const {
     agentsPlatformBaseRoute,
-    duoAgentsInvokePath,
     emptyStateIllustrationPath,
     exploreAiCatalogPath,
     flowTriggersEventTypeOptions,
@@ -56,7 +55,6 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     router,
     apolloProvider,
     provide: {
-      duoAgentsInvokePath,
       emptyStateIllustrationPath,
       exploreAiCatalogPath,
       flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions),
