@@ -1162,15 +1162,11 @@ module EE
         enable :access_duo_chat
       end
 
-      condition(:model_pinned_for_duo_chat) do
-        ::Feature.enabled?(:ai_model_switching, @subject.root_ancestor) && Ai::ModelSelection::NamespaceFeatureSetting.any_non_default_for_duo_chat?(@subject.root_ancestor.id)
-      end
-
       condition(:can_use_agentic_chat) do
         can?(:access_duo_agentic_chat, subject.root_ancestor)
       end
 
-      rule { can_use_agentic_chat & duo_features_enabled & ~model_pinned_for_duo_chat & ~amazon_q_enabled }.policy do
+      rule { can_use_agentic_chat & duo_features_enabled & ~amazon_q_enabled }.policy do
         enable :access_duo_agentic_chat
       end
 

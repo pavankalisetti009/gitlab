@@ -95,7 +95,7 @@ export default {
         <gl-sprintf
           :message="
             s__(
-              'AdminAIPoweredFeatures|An AI assistant that helps users accelerate software development using real-time conversational AI. %{linkStart}Learn more.%{linkEnd}',
+              'AdminAIPoweredFeatures|An AI assistant that helps users accelerate software development using real-time conversational AI. This setting is for regular Duo Chat only. %{linkStart}Learn more.%{linkEnd}',
             )
           "
         >

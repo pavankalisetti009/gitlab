@@ -64,7 +64,7 @@ export default {
           id: 'duo-chat',
           title: s__('AdminAIPoweredFeatures|GitLab Duo Chat'),
           description: s__(
-            'AdminAIPoweredFeatures|An AI assistant that helps users accelerate software development using real-time conversational AI. %{linkStart}Learn more.%{linkEnd}',
+            'AdminAIPoweredFeatures|An AI assistant that helps users accelerate software development using real-time conversational AI. This setting is for regular Duo Chat only. %{linkStart}Learn more.%{linkEnd}',
           ),
           link: this.$options.duoChatHelpPage,
           features: this.getSubFeatures(DUO_MAIN_FEATURES.DUO_CHAT),
