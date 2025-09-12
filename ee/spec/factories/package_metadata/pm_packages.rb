@@ -9,12 +9,12 @@ FactoryBot.define do
     # "OLDAP-2.1", for example, instead of needing to know the exact license id value.
     licenses do
       default_license_ids = default_license_names.map do |spdx_id|
-        create(:pm_license, :with_software_license, spdx_identifier: spdx_id).id
+        create(:pm_license, spdx_identifier: spdx_id).id
       end
 
       other_licenses_with_ids = other_licenses.map do |l|
         s = l[:license_names].map do |spdx_id|
-          create(:pm_license, :with_software_license, spdx_identifier: spdx_id).id
+          create(:pm_license, spdx_identifier: spdx_id).id
         end
         [s, l[:versions]]
       end
