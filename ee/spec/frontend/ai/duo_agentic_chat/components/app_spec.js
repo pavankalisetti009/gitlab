@@ -12,6 +12,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
+import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/app.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
@@ -32,7 +33,11 @@ import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { getCookie } from '~/lib/utils/common_utils';
-import { mockListItems as mockModelListItems } from '../../model_selection/mock_data';
+import {
+  MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE,
+  MOCK_MODEL_LIST_ITEMS,
+  MOCK_GITLAB_DEFAULT_MODEL_ITEM,
+} from './mock_data';
 
 const mockSocketManager = {
   connect: jest.fn(),
@@ -183,6 +188,9 @@ describe('Duo Agentic Chat', () => {
 
   const userWorkflowsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_USER_WORKFLOWS_RESPONSE);
   const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
+  const availableModelsQueryHandlerMock = jest
+    .fn()
+    .mockResolvedValue(MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(AgenticDuoChat);
   const getLastSocketCall = () => {
@@ -211,6 +219,7 @@ describe('Duo Agentic Chat', () => {
     const apolloProvider = createMockApollo([
       [getUserWorkflows, userWorkflowsQueryHandlerMock],
       [getAiChatContextPresets, contextPresetsQueryHandlerMock],
+      [getAiChatAvailableModels, availableModelsQueryHandlerMock],
     ]);
 
     if (duoChatGlobalState.isAgenticChatShown !== false) {
@@ -1340,25 +1349,33 @@ describe('Duo Agentic Chat', () => {
     describe('when user model selection is enabled', () => {
       beforeEach(() => {
         duoChatGlobalState.isAgenticChatShown = true;
-        createComponent({ propsData: { userModelSelectionEnabled: true } });
+        createComponent({
+          propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+        });
       });
 
       it('renders `ModelSelectDropdown`', () => {
         expect(findModelSelectDropdown().exists()).toBe(true);
       });
 
-      it('passes the correct props to `ModelSelectDropdown`', () => {
+      it('passes the correct props to `ModelSelectDropdown`', async () => {
+        await waitForPromises();
+
         expect(findModelSelectDropdown().props('placeholderDropdownText')).toBe('Select a model');
-        expect(findModelSelectDropdown().props('items')).toBe(mockModelListItems);
-        expect(findModelSelectDropdown().props('selectedOption')).toBe(wrapper.vm.defaultModel);
+        expect(findModelSelectDropdown().props('items')).toMatchObject(MOCK_MODEL_LIST_ITEMS);
+        expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
+          MOCK_GITLAB_DEFAULT_MODEL_ITEM,
+        );
       });
 
       describe('when there is a selected model set in `localStorage`', () => {
         it('returns the selected model', async () => {
-          const selectedModel = mockModelListItems[0];
+          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
           localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
 
-          createComponent({ propsData: { userModelSelectionEnabled: true } });
+          createComponent({
+            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+          });
           await nextTick();
 
           expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
@@ -1370,21 +1387,30 @@ describe('Duo Agentic Chat', () => {
         it('returns the default model', async () => {
           localStorage.getItem.mockReturnValue(null);
 
-          createComponent({ propsData: { userModelSelectionEnabled: true } });
-          await nextTick();
+          createComponent({
+            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+          });
+          await waitForPromises();
 
           expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          expect(findModelSelectDropdown().props('selectedOption')).toBe(wrapper.vm.defaultModel);
+          expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
+            MOCK_GITLAB_DEFAULT_MODEL_ITEM,
+          );
         });
       });
 
       describe('updating the model selection', () => {
         it('persists the selected model in a `localStorage` item and updates dropdown', async () => {
-          const selectedModel = mockModelListItems[0];
+          createComponent({
+            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+          });
+          await waitForPromises();
+
+          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
 
           await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
 
-          expect(findModelSelectDropdown().props('selectedOption')).toBe(selectedModel);
+          expect(findModelSelectDropdown().props('selectedOption')).toStrictEqual(selectedModel);
           expect(localStorage.setItem).toHaveBeenCalledWith(
             DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
             JSON.stringify(selectedModel),
@@ -1392,6 +1418,28 @@ describe('Duo Agentic Chat', () => {
         });
       });
     });
+
+    it.each`
+      case                                       | isAgenticChatShown | userModelSelectionEnabled | hasRootNamespaceId
+      ${'when user model selection is disabled'} | ${true}            | ${false}                  | ${true}
+      ${'when isAgenticChatShown is false'}      | ${false}           | ${true}                   | ${true}
+      ${'when no root namespace ID is passed'}   | ${true}            | ${true}                   | ${false}
+    `(
+      'when $case: query is skipped',
+      ({ isAgenticChatShown, userModelSelectionEnabled, hasRootNamespaceId }) => {
+        beforeEach(() => {
+          duoChatGlobalState.isAgenticChatShown = isAgenticChatShown;
+          createComponent({
+            propsData: {
+              userModelSelectionEnabled,
+              rootNamespaceId: hasRootNamespaceId ? MOCK_NAMESPACE_ID : undefined,
+            },
+          });
+        });
+
+        expect(availableModelsQueryHandlerMock).not.toHaveBeenCalled();
+      },
+    );
 
     describe('when user model selection is disabled', () => {
       beforeEach(() => {
