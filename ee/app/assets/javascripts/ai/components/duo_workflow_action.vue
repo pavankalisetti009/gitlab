@@ -61,6 +61,12 @@ export default {
       required: false,
       validator: (size) => ['small', 'medium', 'large'].includes(size),
     },
+    variant: {
+      type: String,
+      default: 'default',
+      required: false,
+      validator: (variant) => ['default', 'confirm', 'danger', 'dashed', 'link'].includes(variant),
+    },
     sourceBranch: {
       type: String,
       required: false,
@@ -198,6 +204,7 @@ export default {
     :loading="isStartingFlow"
     :title="hoverMessage"
     :size="size"
+    :variant="variant"
     data-testid="duo-workflow-action-button"
     @click="startWorkflow"
   >

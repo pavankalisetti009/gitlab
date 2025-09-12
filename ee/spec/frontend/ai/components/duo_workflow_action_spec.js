@@ -108,6 +108,7 @@ describe('DuoWorkflowAction component', () => {
         expect(findButton().props('category')).toBe('primary');
         expect(findButton().props('icon')).toBe('tanuki-ai');
         expect(findButton().props('size')).toBe('small');
+        expect(findButton().props('variant')).toBe('default');
         expect(findButton().props('loading')).toBe(false);
         expect(findButton().attributes('title')).toBe(defaultProps.hoverMessage);
         expect(findButton().text()).toBe(defaultProps.title);

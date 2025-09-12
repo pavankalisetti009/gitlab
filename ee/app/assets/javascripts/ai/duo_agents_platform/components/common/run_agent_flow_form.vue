@@ -99,6 +99,8 @@ export default {
       :workflow-definition="selectedAgentFlowItem.value"
       :disabled="isStartButtonDisabled"
       :prompt-validator-regex="selectedAgentFlowItem.promptValidatorRegex"
+      variant="confirm"
+      size="medium"
       @agent-flow-started="handleAgentFlowStarted"
       @prompt-validation-error="handleValidationError"
     />
