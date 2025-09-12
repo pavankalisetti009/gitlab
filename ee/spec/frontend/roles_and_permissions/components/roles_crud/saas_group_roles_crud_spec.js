@@ -29,7 +29,7 @@ describe('SaasGroupRolesCrud component', () => {
   } = {}) => {
     wrapper = shallowMountExtended(SaasGroupRolesCrud, {
       apolloProvider: createMockApollo([[groupRolesQuery, rolesQueryHandler]]),
-      provide: { newRolePath, groupFullPath, glFeatures: { customRoles } },
+      provide: { newRolePath, groupFullPath, glLicensedFeatures: { customRoles } },
     });
 
     return waitForPromises();

@@ -31,7 +31,8 @@ describe('InstanceRolesCrud component', () => {
       apolloProvider: createMockApollo([[instanceRolesQuery, rolesQueryHandler]]),
       provide: {
         newRolePath,
-        glFeatures: { customRoles, customAdminRoles },
+        glLicensedFeatures: { customRoles },
+        glFeatures: { customAdminRoles },
       },
     });
 

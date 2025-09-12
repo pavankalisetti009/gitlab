@@ -1,12 +1,13 @@
 <script>
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import instanceRolesQuery from '../../graphql/instance_roles.query.graphql';
 import RolesCrud from './roles_crud.vue';
 import { showRolesFetchError, createNewCustomRoleOption, createNewAdminRoleOption } from './utils';
 
 export default {
   components: { RolesCrud },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glFeatureFlagsMixin(), glLicensedFeaturesMixin()],
   inject: ['newRolePath'],
   data() {
     return {
@@ -15,7 +16,7 @@ export default {
   },
   computed: {
     isCustomAdminRolesAvailable() {
-      return this.glFeatures.customRoles && this.glFeatures.customAdminRoles;
+      return this.glLicensedFeatures.customRoles && this.glFeatures.customAdminRoles;
     },
     newRoleOptions() {
       if (!this.newRolePath) return [];
@@ -34,7 +35,7 @@ export default {
       query: instanceRolesQuery,
       variables() {
         return {
-          includeCustomRoles: this.glFeatures.customRoles,
+          includeCustomRoles: this.glLicensedFeatures.customRoles,
           includeAdminRoles: this.isCustomAdminRolesAvailable,
         };
       },

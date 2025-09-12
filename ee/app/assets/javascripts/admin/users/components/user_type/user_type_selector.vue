@@ -8,6 +8,7 @@ import RegularAccessSummary from '~/admin/users/components/user_type/regular_acc
 import AdminAccessSummary from '~/admin/users/components/user_type/admin_access_summary.vue';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import { LDAP_TAB_QUERYSTRING_VALUE } from 'ee/roles_and_permissions/components/role_tabs.vue';
 import AuditorAccessSummary from './auditor_access_summary.vue';
 import AdminRoleDropdown from './admin_role_dropdown.vue';
@@ -31,7 +32,7 @@ export default {
     GlSprintf,
     GlLink,
   },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glFeatureFlagsMixin(), glLicensedFeaturesMixin()],
   inject: ['manageRolesPath'],
   props: {
     userType: {
@@ -74,7 +75,7 @@ export default {
     },
     shouldShowAdminRoleDropdown() {
       return (
-        this.glFeatures.customRoles &&
+        this.glLicensedFeatures.customRoles &&
         this.glFeatures.customAdminRoles &&
         (this.isRegularSelected || this.isAuditorSelected)
       );

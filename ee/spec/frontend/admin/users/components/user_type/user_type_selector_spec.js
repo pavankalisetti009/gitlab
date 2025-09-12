@@ -29,7 +29,8 @@ describe('UserTypeSelector component', () => {
       propsData: { userType, licenseAllowsAuditorUser, adminRole, isCurrentUser: true },
       provide: {
         manageRolesPath: 'manage/roles/path',
-        glFeatures: { customRoles, customAdminRoles },
+        glLicensedFeatures: { customRoles },
+        glFeatures: { customAdminRoles },
       },
       stubs: {
         GlSprintf,
