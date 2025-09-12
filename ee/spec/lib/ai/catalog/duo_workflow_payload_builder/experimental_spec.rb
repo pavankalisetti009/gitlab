@@ -61,7 +61,8 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       expect(described_class::FLOW_VERSION).to eq('experimental')
       expect(described_class::FLOW_ENVIRONMENT).to eq('remote')
       expect(described_class::AGENT_COMPONENT_TYPE).to eq('AgentComponent')
-      expect(described_class::LLM_CONFIG_FILE).to eq('claude_4_0')
+      expect(described_class::LLM_MODEL_CLASS_PROVIDER).to eq('anthropic')
+      expect(described_class::LLM_MODEL_CLASS_NAME).to eq('claude-opus-4-20250514')
       expect(described_class::MAX_TOKEN_SIZE).to eq(8_192)
       expect(described_class::DUO_FLOW_TIMEOUT).to eq(30)
       expect(described_class::PLACEHOLDER_VALUE).to eq('history')
@@ -132,8 +133,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           {
             'prompt_id' => "#{agent_item_1_flow_id}_prompt",
             'model' => {
-              'config_file' => described_class::LLM_CONFIG_FILE,
               'params' => {
+                'model_class_provider' => described_class::LLM_MODEL_CLASS_PROVIDER,
+                'model' => described_class::LLM_MODEL_CLASS_NAME,
                 'max_tokens' => described_class::MAX_TOKEN_SIZE
               }
             },
@@ -231,8 +233,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           {
             'prompt_id' => "#{agent_item_1_flow_id}_prompt",
             'model' => {
-              'config_file' => described_class::LLM_CONFIG_FILE,
               'params' => {
+                'model_class_provider' => described_class::LLM_MODEL_CLASS_PROVIDER,
+                'model' => described_class::LLM_MODEL_CLASS_NAME,
                 'max_tokens' => described_class::MAX_TOKEN_SIZE
               }
             },
@@ -248,8 +251,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           {
             'prompt_id' => "#{agent_item_2_flow_id}_prompt",
             'model' => {
-              'config_file' => described_class::LLM_CONFIG_FILE,
               'params' => {
+                'model_class_provider' => described_class::LLM_MODEL_CLASS_PROVIDER,
+                'model' => described_class::LLM_MODEL_CLASS_NAME,
                 'max_tokens' => described_class::MAX_TOKEN_SIZE
               }
             },

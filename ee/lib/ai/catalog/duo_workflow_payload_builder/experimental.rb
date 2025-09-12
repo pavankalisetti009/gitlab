@@ -8,7 +8,8 @@ module Ai
         FLOW_ENVIRONMENT = 'remote'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
         DEFAULT_INPUTS = [{ 'from' => 'context:goal', 'as' => 'goal' }].freeze
-        LLM_CONFIG_FILE = 'claude_4_0'
+        LLM_MODEL_CLASS_PROVIDER = 'anthropic'
+        LLM_MODEL_CLASS_NAME = 'claude-opus-4-20250514'
         MAX_TOKEN_SIZE = 8_192
         DUO_FLOW_TIMEOUT = 30
         PLACEHOLDER_VALUE = 'history'
@@ -95,8 +96,9 @@ module Ai
           {
             'prompt_id' => step_prompt_id(step),
             'model' => {
-              'config_file' => LLM_CONFIG_FILE,
               'params' => {
+                'model_class_provider' => LLM_MODEL_CLASS_PROVIDER,
+                'model' => LLM_MODEL_CLASS_NAME,
                 'max_tokens' => MAX_TOKEN_SIZE
               }
             },
