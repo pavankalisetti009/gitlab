@@ -26,6 +26,18 @@ jest.mock(
           },
         ],
       },
+      'passed-control': {
+        description: 'This control has passed successfully. No action is required.',
+        fixes: [
+          {
+            title: 'Learn More',
+            description: 'Learn more about this control',
+            linkTitle: 'Learn more',
+            link: 'https://example.com/learn-more',
+            ultimate: false,
+          },
+        ],
+      },
       'control-with-settings': {
         description: 'Control with project settings',
         projectSettingsPath: '/-/settings/merge_requests',
@@ -109,6 +121,8 @@ describe('StatusesList', () => {
   const findBadges = () => wrapper.findAllComponents(GlBadge);
   const findTitles = () => wrapper.findAll('h4');
   const findAllButtons = () => wrapper.findAllComponents(GlButton);
+  const findSuccessMessage = () => wrapper.find('[data-testid="passed-control-message"]');
+  const findLearnMoreButtons = () => wrapper.findAll('[data-testid="passed-documentation-button"]');
 
   function createComponent(props = {}) {
     mockRequirementsControlsQuery = jest
@@ -181,32 +195,96 @@ describe('StatusesList', () => {
   });
 
   describe('fix information', () => {
-    beforeEach(async () => {
-      // Create a control with a fix available
-      const controlWithFix = {
-        status: 'FAIL',
-        complianceRequirementsControl: {
-          name: 'test-control',
-          controlType: 'internal',
-        },
-      };
+    describe('for failed controls', () => {
+      beforeEach(async () => {
+        const controlWithFix = {
+          status: 'FAIL',
+          complianceRequirementsControl: {
+            name: 'test-control',
+            controlType: 'internal',
+          },
+        };
 
-      createComponent({
-        controlStatuses: [controlWithFix],
+        createComponent({
+          controlStatuses: [controlWithFix],
+        });
+
+        await waitForPromises();
+        return nextTick();
       });
 
-      await waitForPromises();
-      await nextTick();
+      it('displays fix section for failed controls with fixes', () => {
+        expect(findFixSection()).toHaveLength(1);
+      });
+
+      it('renders Ultimate badge for fixes with ultimate flag', () => {
+        const badges = findBadges();
+        expect(badges).toHaveLength(1);
+        expect(badges.at(0).text()).toBe('Ultimate');
+      });
+
+      it('continues to show "How to fix" section for failed controls', () => {
+        expect(findFixSection()).toHaveLength(1);
+        expect(findFixSection().at(0).text()).toBe('How to fix');
+      });
     });
 
-    it('displays fix section for controls with fixes', () => {
-      expect(findFixSection()).toHaveLength(1);
+    describe('for pending controls', () => {
+      beforeEach(async () => {
+        const pendingControlWithFix = {
+          status: 'PENDING',
+          complianceRequirementsControl: {
+            name: 'test-control',
+            controlType: 'internal',
+          },
+        };
+
+        createComponent({
+          controlStatuses: [pendingControlWithFix],
+        });
+
+        await waitForPromises();
+        return nextTick();
+      });
+
+      it('shows "How to fix" section for pending controls', () => {
+        expect(findFixSection()).toHaveLength(1);
+        expect(findFixSection().at(0).text()).toBe('How to fix');
+      });
     });
 
-    it('renders Ultimate badge for fixes with ultimate flag', () => {
-      const badges = findBadges();
-      expect(badges).toHaveLength(1);
-      expect(badges.at(0).text()).toBe('Ultimate');
+    describe('for passed controls', () => {
+      beforeEach(async () => {
+        const passedControlWithFix = {
+          status: 'PASS',
+          complianceRequirementsControl: {
+            name: 'passed-control',
+            controlType: 'internal',
+          },
+        };
+
+        createComponent({
+          controlStatuses: [passedControlWithFix],
+        });
+
+        await waitForPromises();
+        return nextTick();
+      });
+
+      it('does not display "How to fix" section for passed controls', () => {
+        expect(findFixSection()).toHaveLength(0);
+      });
+
+      it('displays success message for passed controls', () => {
+        expect(findSuccessMessage().text()).toContain(
+          'This control has passed successfully. No action is required.',
+        );
+      });
+
+      it('displays "Learn more" button for passed controls', () => {
+        expect(findLearnMoreButtons()).toHaveLength(1);
+        expect(findLearnMoreButtons().at(0).text()).toBe('Learn more');
+      });
     });
   });
 

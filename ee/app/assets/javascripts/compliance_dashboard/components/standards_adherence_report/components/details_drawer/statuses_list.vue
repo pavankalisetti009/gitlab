@@ -6,6 +6,8 @@ import DrawerAccordion from '../../../shared/drawer_accordion.vue';
 import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
 import { statusesInfo } from './statuses_info';
 
+const PASS_STATUS = 'PASS';
+
 export default {
   components: {
     GlBadge,
@@ -31,6 +33,7 @@ export default {
   data() {
     return {
       complianceRequirementsControls: [],
+      PASS_STATUS,
     };
   },
   apollo: {
@@ -43,7 +46,7 @@ export default {
   },
   computed: {
     sortedControlStatuses() {
-      const STATUSES_ORDER = ['FAIL', 'PENDING', 'PASS'];
+      const STATUSES_ORDER = ['FAIL', 'PENDING', PASS_STATUS];
       return [...this.controlStatuses].sort((a, b) => {
         const aIndex = STATUSES_ORDER.indexOf(a.status);
         const bIndex = STATUSES_ORDER.indexOf(b.status);
@@ -81,6 +84,9 @@ export default {
       }
       return `${this.project.webUrl}${statusInfo.projectSettingsPath}`;
     },
+    getControlStatusFixes(controlStatus) {
+      return this.getStatusInfo(controlStatus.complianceRequirementsControl).fixes;
+    },
   },
   i18n: {
     EXTERNAL_CONTROL_LABEL,
@@ -106,10 +112,7 @@ export default {
           <gl-icon name="status_failed" class="gl-mr-2" />{{
             s__('ComplianceStandardsAdherence|Failed')
           }}
-          <span
-            v-if="getStatusInfo(controlStatus.complianceRequirementsControl).fixes.length"
-            class="gl-text-status-neutral"
-          >
+          <span v-if="getControlStatusFixes(controlStatus).length" class="gl-text-status-neutral">
             {{ s__('ComplianceStandardsAdherence|Fix available') }}
           </span>
         </span>
@@ -118,7 +121,7 @@ export default {
             s__('ComplianceStandardsAdherence|Pending')
           }}
         </span>
-        <span v-if="controlStatus.status === 'PASS'" class="gl-text-status-success">
+        <span v-if="controlStatus.status === PASS_STATUS" class="gl-text-status-success">
           <gl-icon name="status_success" class="gl-mr-2" />{{
             s__('ComplianceStandardsAdherence|Passed')
           }}
@@ -142,51 +145,80 @@ export default {
       </p>
       <p v-else>{{ getStatusInfo(controlStatus.complianceRequirementsControl).description }}</p>
 
-      <template v-if="getStatusInfo(controlStatus.complianceRequirementsControl).fixes.length">
-        <h4 class="gl-heading-4">
-          {{ s__('ComplianceStandardsAdherence|How to fix') }}
-        </h4>
-        <div
-          v-for="(fix, index) in getStatusInfo(controlStatus.complianceRequirementsControl).fixes"
-          :key="index"
-          class="gl-mb-5"
-        >
-          <h5 class="gl-heading-5 gl-flex gl-flex-row gl-items-center gl-gap-2">
-            {{ fix.title }}
-            <gl-badge v-if="fix.ultimate" variant="tier" icon="license" icon-size="md">{{
-              __('Ultimate')
-            }}</gl-badge>
-          </h5>
-          <p :key="`description-${index}`">{{ fix.description }}</p>
+      <template v-if="getControlStatusFixes(controlStatus).length">
+        <template v-if="controlStatus.status !== PASS_STATUS">
+          <h4 class="gl-heading-4">
+            {{ s__('ComplianceStandardsAdherence|How to fix') }}
+          </h4>
+          <div
+            v-for="(fix, index) in getControlStatusFixes(controlStatus)"
+            :key="`${fix.title}-${index}`"
+            class="gl-mb-5"
+          >
+            <h5 class="gl-heading-5 gl-flex gl-flex-row gl-items-center gl-gap-2">
+              {{ fix.title }}
+              <gl-badge v-if="fix.ultimate" variant="tier" icon="license" icon-size="md">{{
+                __('Ultimate')
+              }}</gl-badge>
+            </h5>
+            <p :key="`description-${fix.title}-${index}`">{{ fix.description }}</p>
+            <div class="gl-display-flex gl-flex-wrap gl-gap-3">
+              <gl-button
+                :key="`button-${fix.title}-${index}`"
+                category="secondary"
+                variant="confirm"
+                size="small"
+                :href="fix.link"
+                target="_blank"
+                icon="external-link"
+                class="gl-flex-shrink-0"
+                data-testid="documentation-button"
+              >
+                {{ fix.linkTitle }}
+              </gl-button>
+              <gl-button
+                v-if="
+                  getStatusInfo(controlStatus.complianceRequirementsControl).projectSettingsPath
+                "
+                :key="`settings-button-${fix.title}-${index}`"
+                category="secondary"
+                variant="default"
+                size="small"
+                :href="getProjectSettingsUrl(controlStatus)"
+                icon="settings"
+                class="gl-flex-shrink-0"
+                data-testid="settings-button"
+              >
+                {{ $options.i18n.projectSettingsButton }}
+              </gl-button>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <p class="gl-mb-5" data-testid="passed-control-message">
+            {{
+              s__(
+                'ComplianceStandardsAdherence|This control has passed successfully. No action is required.',
+              )
+            }}
+          </p>
           <div class="gl-display-flex gl-flex-wrap gl-gap-3">
             <gl-button
-              :key="`button-${index}`"
+              v-for="(fix, index) in getControlStatusFixes(controlStatus)"
+              :key="`passed-button-${fix.title}-${index}`"
               category="secondary"
-              variant="confirm"
+              variant="default"
               size="small"
               :href="fix.link"
               target="_blank"
               icon="external-link"
               class="gl-flex-shrink-0"
-              data-testid="documentation-button"
+              data-testid="passed-documentation-button"
             >
-              {{ fix.linkTitle }}
-            </gl-button>
-            <gl-button
-              v-if="getStatusInfo(controlStatus.complianceRequirementsControl).projectSettingsPath"
-              :key="`settings-button-${index}`"
-              category="secondary"
-              variant="default"
-              size="small"
-              :href="getProjectSettingsUrl(controlStatus)"
-              icon="settings"
-              class="gl-flex-shrink-0"
-              data-testid="settings-button"
-            >
-              {{ $options.i18n.projectSettingsButton }}
+              {{ __('Learn more') }}
             </gl-button>
           </div>
-        </div>
+        </template>
       </template>
     </template>
   </drawer-accordion>
