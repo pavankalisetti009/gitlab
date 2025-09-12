@@ -362,11 +362,11 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     it 'does not show the retry migration card' do
       render
 
-      expect(rendered).not_to include('Elasticsearch migration halted')
+      expect(rendered).not_to include('Advanced search migration halted')
       expect(rendered).not_to include('Retry migration')
     end
 
-    context 'when Elasticsearch migration halted' do
+    context 'when Advanced search migration halted' do
       let(:elasticsearch_available) { true }
       let(:halted_migrations) { true }
       let(:migration) { Elastic::DataMigrationService.migrations.last }
@@ -383,7 +383,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         it 'shows the retry migration card' do
           render
 
-          expect(rendered).to include('Elasticsearch migration halted')
+          expect(rendered).to include('Advanced search migration halted')
           expect(rendered).to have_css('a', text: 'Retry migration')
           expect(rendered).not_to have_css('a[disabled="disabled"]', text: 'Retry migration')
         end
@@ -397,7 +397,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         it 'shows the retry migration card with retry button disabled' do
           render
 
-          expect(rendered).to include('Elasticsearch migration halted')
+          expect(rendered).to include('Advanced search migration halted')
           expect(rendered).to have_css('a[disabled="disabled"]', text: 'Retry migration')
         end
       end
@@ -409,7 +409,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       it 'does not show the retry migration card' do
         render
 
-        expect(rendered).not_to include('Elasticsearch migration halted')
+        expect(rendered).not_to include('Advanced search migration halted')
         expect(rendered).not_to include('Retry migration')
       end
     end

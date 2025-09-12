@@ -5,13 +5,13 @@
 - elasticsearch_available = elastic_helper.ping?
 - projects_not_indexed_max_shown = EE::Admin::ApplicationSettingsController::UNINDEXED_PROJECT_DISPLAY_LIMIT
 
-= render ::Layouts::SettingsBlockComponent.new(_('Advanced Search'),
+= render ::Layouts::SettingsBlockComponent.new(_('Advanced search'),
   id: 'js-elasticsearch-settings',
   testid: 'elasticsearch-settings',
   expanded: expanded_by_default?,
   button_options: { data: { testid: 'expand-advanced-search-button' } }) do |c|
   - c.with_description do
-    = _('Configure settings for Advanced Search with Elasticsearch.')
+    = _('Configure settings for Advanced search with Elasticsearch or OpenSearch.')
   - c.with_body do
     = gitlab_ui_form_for @application_setting, url: search_admin_application_settings_path(anchor: 'js-elasticsearch-settings'), html: { class: 'fieldset-form' } do |f|
       = form_errors(@application_setting)
@@ -20,7 +20,7 @@
         - halted_migrations = elasticsearch_available && Elastic::DataMigrationService.halted_migrations?
         - if halted_migrations
           = render Pajamas::AlertComponent.new(variant: :warning,
-            title: _('Elasticsearch migration halted'),
+            title: _('Advanced search migration halted'),
             alert_options: { class: 'gl-my-3' }) do |c|
             - c.with_body do
               = html_escape(_('Check the %{code_open}elasticsearch.log%{code_close} file to debug why the migration halted and make any changes before retrying the migration. When you fix the cause of the failure, select %{strong_open}Retry migration%{strong_close}, and the migration is scheduled to retry in the background.')) % { strong_open: '<strong>'.html_safe, strong_close: '</strong>'.html_safe, code_open: '<code>'.html_safe, code_close: '</code>'.html_safe }
@@ -55,21 +55,21 @@
             = f.label :elasticsearch_url, 'URL', class: 'label-bold'
             = f.text_field :elasticsearch_url, value: @application_setting.elasticsearch_url.join(', '), class: 'form-control gl-form-input', placeholder: 'http://localhost:9200, http://localhost:9201', data: { testid: 'url-field' }
             .form-text.gl-text-subtle.gl-mt-0
-              = _('The URLs for connecting to Elasticsearch. For clustering, add the URLs separated by commas.')
+              = _('The URLs for connecting to Elasticsearch or OpenSearch. For clustering, add the URLs separated by commas.')
 
           .form-group
             = f.label :elasticsearch_username, _('Username'), class: 'label-bold'
             = f.text_field :elasticsearch_username, value: @application_setting.elasticsearch_username, class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
-              = _('Enter the username for password-protected Elasticsearch servers.')
+              = _('Enter the username for password-protected Elasticsearch or OpenSearch servers.')
           .form-group
             = f.label :elasticsearch_password, _('Password'), class: 'label-bold'
             = f.password_field :elasticsearch_password, value: (@application_setting.elasticsearch_password.present? ? ApplicationSetting::MASK_PASSWORD : ''), class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
-              = _('Enter the password for password-protected Elasticsearch servers.')
+              = _('Enter the password for password-protected Elasticsearch or OpenSearch servers.')
 
           .form-group
-            = render ::Layouts::CrudComponent.new(_('Number of Elasticsearch shards and replicas per index')) do |c|
+            = render ::Layouts::CrudComponent.new(_('Number of shards and replicas per index')) do |c|
               - c.with_description do
                 - configuration_link_url = help_page_url('integration/advanced_search/elasticsearch.md', anchor: 'advanced-search-configuration')
                 - configuration_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: configuration_link_url }
@@ -106,7 +106,7 @@
               = f.label :elasticsearch_max_code_indexing_concurrency, _('Code indexing concurrency'), class: 'label-bold'
               = f.number_field :elasticsearch_max_code_indexing_concurrency, value: @application_setting.elasticsearch_max_code_indexing_concurrency, class: 'form-control gl-form-input'
               .form-text.gl-text-subtle.gl-mt-0
-                = _('How many code indexing jobs are allowed to run concurrently. A higher value improves repository indexing performance by increasing Sidekiq and Elasticsearch load. Setting it to 0 allows an unlimited number of indexing jobs.')
+                = _('How many code indexing jobs are allowed to run concurrently. A higher value improves repository indexing performance by increasing Sidekiq and Elasticsearch or OpenSearch load. Setting it to 0 allows an unlimited number of indexing jobs.')
 
           .form-group
             = f.label :elasticsearch_indexed_file_size_limit_kb, _('Maximum file size indexed (KiB)'), class: 'label-bold'
@@ -124,31 +124,31 @@
             = f.label :elasticsearch_max_bulk_size_mb, _('Maximum bulk request size (MiB)'), class: 'label-bold'
             = f.number_field :elasticsearch_max_bulk_size_mb, value: @application_setting.elasticsearch_max_bulk_size_mb, class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
-              = _('Maximum size of Elasticsearch bulk indexing requests.')
+              = _('Maximum size of bulk indexing requests.')
 
           .form-group
             = f.label :elasticsearch_max_bulk_concurrency, _('Bulk request concurrency'), class: 'label-bold'
             = f.number_field :elasticsearch_max_bulk_concurrency, value: @application_setting.elasticsearch_max_bulk_concurrency, class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
-              = _('Maximum concurrency of Elasticsearch bulk requests per indexing operation.')
+              = _('Maximum concurrency of bulk requests per indexing operation.')
               = _('This only applies to repository indexing operations.')
 
           .form-group
             = f.label :elasticsearch_client_request_timeout, _('Client request timeout'), class: 'label-bold'
             = f.number_field :elasticsearch_client_request_timeout, value: @application_setting.elasticsearch_client_request_timeout, class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
-              = _('Elasticsearch HTTP client timeout value in seconds.')
+              = _('Elasticsearch or OpenSearch HTTP client timeout value in seconds.')
               = _('To use the system\'s default, set this value to 0.')
 
           .form-group
             = f.label :elasticsearch_retry_on_failure, _('Retry on failure'), class: 'label-bold'
             = f.number_field :elasticsearch_retry_on_failure, value: @application_setting.elasticsearch_retry_on_failure, class: 'form-control gl-form-input'
             .form-text.gl-text-subtle.gl-mt-0
-              = _('Maximum number of possible retries for Elasticsearch search requests.')
+              = _('Maximum number of possible retries for Elasticsearch or OpenSearch search requests.')
               = _('To disable the setting, set this value to 0.')
 
         %div
-          %h3.gl-heading-3= _('Elasticsearch indexing restrictions')
+          %h3.gl-heading-3= _('Advanced search indexing restrictions')
           .form-group
             = f.gitlab_ui_checkbox_component :elasticsearch_limit_indexing, s_("AdminSettings|Limit the amount of namespace and project data to index"), checkbox_options: { class: 'js-limit-checkbox' }
             = f.gitlab_ui_checkbox_component :global_search_limited_indexing_enabled, s_("Use advanced search for global search when limited indexing is enabled"),
@@ -221,7 +221,7 @@
         %div
           = f.submit _('Save changes'), data: { testid: 'submit-button' }, pajamas_button: true
 
-= render ::Layouts::SettingsBlockComponent.new(_('Elasticsearch zero-downtime reindexing'),
+= render ::Layouts::SettingsBlockComponent.new(_('Advanced search zero-downtime reindexing'),
   id: 'js-elasticsearch-reindexing',
   testid: 'elasticsearch-reindexing-settings',
   expanded: expanded_by_default?) do |c|
@@ -244,7 +244,7 @@
           .form-text.gl-text-subtle.gl-mt-0
             - max_slices_running_link_url = help_page_path('integration/advanced_search/elasticsearch.md', anchor: 'maximum-running-slices')
             - max_slices_running_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: max_slices_running_link_url }
-            = html_escape(_('Set the maximum number of slices allowed to run concurrently during Elasticsearch reindexing. Learn more about %{max_slices_running_link_start}maximum running slices configuration%{max_slices_link_end}.')) % { max_slices_running_link_start: max_slices_running_link_start, max_slices_link_end: '</a>'.html_safe }
+            = html_escape(_('Set the maximum number of slices allowed to run concurrently during reindexing. Learn more about %{max_slices_running_link_start}maximum running slices configuration%{max_slices_link_end}.')) % { max_slices_running_link_start: max_slices_running_link_start, max_slices_link_end: '</a>'.html_safe }
 
         = f.submit _('Trigger cluster reindexing'), pajamas_button: true, disabled: @last_elasticsearch_reindexing_task&.in_progress?, data: { confirm: _('Are you sure you want to reindex?') }
         .form-text.gl-text-subtle.gl-mt-5
@@ -304,7 +304,7 @@
             = render Pajamas::ButtonComponent.new(variant: :danger, href: admin_elasticsearch_cancel_index_deletion_path, method: :post) do
               = _('Cancel deletion for all indices')
 
-= render ::Layouts::SettingsBlockComponent.new(_('Indexing status'),
+= render ::Layouts::SettingsBlockComponent.new(_('Advanced search indexing status'),
   id: 'js-indexing-status',
   expanded: expanded_by_default?) do |c|
   - c.with_description do
