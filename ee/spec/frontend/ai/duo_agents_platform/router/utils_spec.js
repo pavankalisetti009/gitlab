@@ -5,6 +5,7 @@ import {
 } from 'ee/ai/duo_agents_platform/router/utils';
 import * as domUtils from 'ee/ai/duo_agents_platform/router/dom_utils';
 import ProjectAgentsPlatformIndex from 'ee/ai/duo_agents_platform/namespace/project/project_agents_platform_index.vue';
+import UserAgentsPlatformIndex from 'ee/ai/duo_agents_platform/namespace/user/user_agents_platform_index.vue';
 
 describe('extractNavScopeFromRoute', () => {
   describe('when route is empty', () => {
@@ -19,9 +20,11 @@ describe('extractNavScopeFromRoute', () => {
     });
   });
 
-  describe('when t route has no multiple matched items', () => {
-    it('returns an the first item path withotu hte leading', () => {
-      expect(extractNavScopeFromRoute({ matched: [] })).toBe('');
+  describe('when the route has multiple matched items', () => {
+    it('returns the first item path without the leading slash', () => {
+      expect(extractNavScopeFromRoute({ matched: [{ path: '/agent-sessions/new' }] })).toBe(
+        'agent-sessions',
+      );
     });
   });
 });
@@ -100,12 +103,13 @@ describe('getNamespaceIndexComponent', () => {
   });
 
   it.each`
-    namespace    | expectedComponent
-    ${'project'} | ${ProjectAgentsPlatformIndex}
-    ${'group'}   | ${undefined}
-    ${'unknown'} | ${undefined}
+    namespace    | expectedComponent             | expectedComponentName
+    ${'project'} | ${ProjectAgentsPlatformIndex} | ${'ProjectAgentsPlatformIndex'}
+    ${'user'}    | ${UserAgentsPlatformIndex}    | ${'UserAgentsPlatformIndex'}
+    ${'group'}   | ${undefined}                  | ${'undefined'}
+    ${'unknown'} | ${undefined}                  | ${'undefined'}
   `(
-    'returns $expectedComponent when namespace is $namespace',
+    'returns $expectedComponentName when namespace is $namespace',
     ({ namespace, expectedComponent }) => {
       expect(getNamespaceIndexComponent(namespace)).toBe(expectedComponent);
     },

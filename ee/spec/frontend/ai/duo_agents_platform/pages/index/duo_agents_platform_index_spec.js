@@ -28,11 +28,13 @@ describe('AgentsPlatformIndex', () => {
     },
   };
 
-  const createWrapper = (props = {}) => {
+  const createWrapper = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMount(AgentsPlatformIndex, {
       propsData: { ...defaultProps, ...props },
       provide: {
         emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
+        isSidePanelView: false,
+        ...provide,
       },
     });
 
@@ -45,19 +47,45 @@ describe('AgentsPlatformIndex', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
 
-  it('loads the page heading and experiment badge', () => {
-    createWrapper();
+  describe('when not in side panel view', () => {
+    beforeEach(() => {
+      createWrapper({ provide: { isSidePanelView: false } });
+    });
 
-    expect(findPageHeading().exists()).toBe(true);
-    expect(findPageHeading().text()).toContain('Agent sessions');
+    it('loads the page heading and experiment badge', () => {
+      expect(findPageHeading().exists()).toBe(true);
+      expect(findPageHeading().text()).toContain('Agent sessions');
 
-    expect(findExperimentBadge().exists()).toBe(true);
-    expect(findExperimentBadge().props('type')).toBe('beta');
+      expect(findExperimentBadge().exists()).toBe(true);
+      expect(findExperimentBadge().props('type')).toBe('beta');
+    });
+
+    it('renders the new agent flow button', () => {
+      expect(findNewAgentFlowButton().exists()).toBe(true);
+    });
+
+    it('applies no margin top class to page heading', () => {
+      expect(findPageHeading().classes()).not.toContain('gl-mt-0');
+    });
+  });
+
+  describe('when in side panel view', () => {
+    beforeEach(() => {
+      createWrapper({ provide: { isSidePanelView: true } });
+    });
+
+    it('does not render the page heading', () => {
+      expect(findPageHeading().exists()).toBe(false);
+    });
+
+    it('does not render the new agent flow button', () => {
+      expect(findNewAgentFlowButton().exists()).toBe(false);
+    });
   });
 
   describe('when loading the queries', () => {
     beforeEach(() => {
-      createWrapper({ isLoadingWorkflows: true });
+      createWrapper({ props: { isLoadingWorkflows: true } });
     });
 
     it('renders the loading icon', () => {
@@ -81,10 +109,6 @@ describe('AgentsPlatformIndex', () => {
     it('does not render the loading icon', () => {
       expect(findLoadingIcon().exists()).toBe(false);
     });
-
-    it('renders the new agent flow button', () => {
-      expect(findNewAgentFlowButton().exists()).toBe(true);
-    });
   });
 
   describe('pagination', () => {
@@ -104,18 +128,18 @@ describe('AgentsPlatformIndex', () => {
           first: 20,
         });
       });
+    });
 
-      describe('when previous page is requested', () => {
-        it('calls refetch with correct parameters', () => {
-          findWorkflowsList().vm.$emit('prev-page');
+    describe('when previous page is requested', () => {
+      it('calls refetch with correct parameters', () => {
+        findWorkflowsList().vm.$emit('prev-page');
 
-          expect(mockRefetch).toHaveBeenCalledWith({
-            projectPath: 'hello!',
-            after: null,
-            last: 20,
-            before: 'asdf',
-            first: null,
-          });
+        expect(mockRefetch).toHaveBeenCalledWith({
+          projectPath: 'hello!',
+          after: null,
+          last: 20,
+          before: 'asdf',
+          first: null,
         });
       });
     });

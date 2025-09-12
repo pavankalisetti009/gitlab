@@ -1,6 +1,9 @@
 <script>
 import { __ } from '~/locale';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
+import AgentSessions from 'ee/ai/duo_agents_platform/duo_agents_platform_app.vue';
+import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
+import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
 
@@ -34,18 +37,36 @@ export default {
           };
         case 'sessions':
           return {
-            title: __('Sessions'),
-            component: __('Sessions content placeholder'),
+            title: this.sessionTitle,
+            component: AgentSessions,
+            initialRoute: '/agent-sessions',
           };
         default:
           return null;
       }
+    },
+    sessionTitle() {
+      // For now, we don't know the flow type here to format the title.
+      return this.$route.name === AGENTS_PLATFORM_SHOW_ROUTE
+        ? formatAgentFlowName(null, this.$route.params.id)
+        : __('Sessions');
+    },
+    showBackButton() {
+      return (
+        this.currentTabComponent?.initialRoute &&
+        this.currentTabComponent.initialRoute !== this.$route.path
+      );
     },
   },
   methods: {
     toggleAIPanel(val) {
       this.isExpanded = val;
       if (!val) this.activeTab = null;
+    },
+    handleGoBack() {
+      if (this.currentTabComponent.initialRoute) {
+        this.$router.push(this.currentTabComponent.initialRoute);
+      }
     },
     handleTabToggle(tab) {
       if (tab === this.activeTab) {
@@ -75,7 +96,9 @@ export default {
       v-if="activeTab"
       :active-tab="currentTabComponent"
       :is-expanded="isExpanded"
+      :show-back-button="showBackButton"
       @closePanel="toggleAIPanel"
+      @go-back="handleGoBack()"
     />
     <navigation-rail
       :is-expanded="isExpanded"
