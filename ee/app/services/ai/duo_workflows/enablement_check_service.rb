@@ -36,7 +36,8 @@ module Ai
 
         {
           enabled: enabled,
-          checks: checks
+          checks: checks,
+          remote_flows_enabled: @project.duo_remote_flows_enabled
         }
       end
     end

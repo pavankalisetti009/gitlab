@@ -18,6 +18,10 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
 
       it { is_expected.not_to be_nil }
 
+      it 'includes remote_flows_enabled in the response' do
+        expect(result).to have_key(:remote_flows_enabled)
+      end
+
       context 'when duo_workflow licensed feature is available' do
         before do
           allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
@@ -30,6 +34,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
           expect(result[:enabled]).to be_truthy
           expect(success_checks(result[:checks]))
             .to match_array([:developer_access, :duo_features_enabled, :feature_flag, :feature_available])
+          expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
         end
       end
 
@@ -41,6 +46,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         it "returns status and checks" do
           expect(result[:enabled]).to be_falsey
           expect(success_checks(result[:checks])).to match_array([:developer_access, :duo_features_enabled])
+          expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
         end
       end
 
@@ -52,6 +58,27 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
         it "returns status and checks" do
           expect(result[:enabled]).to be_falsey
           expect(success_checks(result[:checks])).to match_array([:developer_access, :feature_flag])
+          expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
+        end
+      end
+
+      context 'when project has duo remote flows enabled' do
+        before do
+          allow(project).to receive(:duo_remote_flows_enabled).and_return(true)
+        end
+
+        it "returns remote_flows_enabled as true" do
+          expect(result[:remote_flows_enabled]).to be_truthy
+        end
+      end
+
+      context 'when project has duo remote flows disabled' do
+        before do
+          allow(project).to receive(:duo_remote_flows_enabled).and_return(false)
+        end
+
+        it "returns remote_flows_enabled as false" do
+          expect(result[:remote_flows_enabled]).to be_falsey
         end
       end
     end
@@ -64,6 +91,7 @@ RSpec.describe Ai::DuoWorkflows::EnablementCheckService, type: :service, feature
       it "returns status and checks" do
         expect(result[:enabled]).to be_falsey
         expect(success_checks(result[:checks])).to match_array([:duo_features_enabled, :feature_flag])
+        expect(result[:remote_flows_enabled]).to eq(project.duo_remote_flows_enabled)
       end
     end
 
