@@ -243,6 +243,97 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
 
         it_behaves_like 'an error response', 'Flow not found'
       end
+
+      describe 'dependency tracking' do
+        let_it_be(:agent2) { create(:ai_catalog_item, :agent, project:) }
+        let_it_be(:agent3) { create(:ai_catalog_item, :agent, project:) }
+        let_it_be(:agent4) { create(:ai_catalog_item, :agent, project:) }
+
+        let_it_be(:existing_dependency) do
+          create(
+            :ai_catalog_item_version_dependency, ai_catalog_item_version: flow.latest_version, dependency_id: agent.id
+          )
+        end
+
+        let_it_be(:existing_dependency_no_longer_needed) do
+          create(
+            :ai_catalog_item_version_dependency, ai_catalog_item_version: flow.latest_version, dependency_id: agent2.id
+          )
+        end
+
+        let(:params) do
+          {
+            flow: flow,
+            name: 'New name',
+            description: 'New description',
+            public: true,
+            release: true,
+            steps: [
+              { agent: agent3 },
+              { agent: agent }
+            ]
+          }
+        end
+
+        it 'updates the dependencies' do
+          execute_service
+
+          expect(latest_version.reload.dependencies.pluck(:dependency_id)).to contain_exactly(agent3.id, agent.id)
+        end
+
+        context 'when there are other item versions with dependencies' do
+          let_it_be(:other_latest_version_dependency) { create(:ai_catalog_item_version_dependency) }
+
+          it 'does not affect dependencies from other records' do
+            expect { execute_service }
+              .not_to change { Ai::Catalog::ItemVersionDependency.find(other_latest_version_dependency.id) }
+          end
+        end
+
+        context 'when saving dependencies fails' do
+          before do
+            allow(Ai::Catalog::ItemVersionDependency).to receive(:bulk_insert!)
+              .and_raise("Dummy error")
+          end
+
+          it 'does not update the item' do
+            expect { execute_service }
+              .to raise_error("Dummy error").and not_change { flow.reload.attributes }
+          end
+        end
+
+        context 'when the flow version is not changing' do
+          let(:params) do
+            {
+              flow: flow,
+              description: 'New description'
+            }
+          end
+
+          it 'does not update the dependencies' do
+            expect(Ai::Catalog::ItemVersionDependency).not_to receive(:bulk_insert!)
+
+            execute_service
+          end
+        end
+
+        it 'does not cause N+1 queries for each dependency created' do
+          # Warmup
+          params = { flow: flow, steps: [{ agent: agent4 }] }
+          service = described_class.new(project: project, current_user: user, params: params)
+          service.execute
+
+          params = { flow: flow, steps: [{ agent: agent }] }
+          service = described_class.new(project: project, current_user: user, params: params)
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) { service.execute }
+
+          params = { flow: flow, steps: [{ agent: agent2 }, { agent: agent3 }] }
+          service = described_class.new(project: project, current_user: user, params: params)
+
+          # Ai::Catalog::Flows::FlowHelper#allowed? queries for each agent to check permissions.
+          expect { service.execute }.not_to exceed_query_limit(control).with_threshold(1)
+        end
+      end
     end
   end
 end

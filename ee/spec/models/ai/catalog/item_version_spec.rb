@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
   subject(:version) { build_stubbed(:ai_catalog_item_version) }
 
+  it_behaves_like 'Ai::Catalog::Concerns::FlowVersion'
+
   describe 'associations' do
     it { is_expected.to belong_to(:organization) }
     it { is_expected.to belong_to(:item).required }

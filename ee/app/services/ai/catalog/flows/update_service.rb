@@ -22,7 +22,11 @@ module Ai
 
           prepare_version_to_update
 
-          if flow.save
+          Ai::Catalog::Item.transaction do
+            populate_dependencies(flow.latest_version) if flow.save && flow.latest_version.saved_changes?
+          end
+
+          if flow.saved_changes?
             track_ai_item_events('update_ai_catalog_item', { label: flow.item_type })
             return ServiceResponse.success(payload: payload)
           end

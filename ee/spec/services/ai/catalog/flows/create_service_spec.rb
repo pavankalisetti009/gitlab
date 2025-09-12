@@ -148,4 +148,47 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       it_behaves_like 'an error response', 'Maximum steps for a flow (1) exceeded'
     end
   end
+
+  describe 'dependency tracking' do
+    let_it_be(:agent2) { create(:ai_catalog_item, :agent, project:) }
+    let_it_be(:agent3) { create(:ai_catalog_item, :agent, project:) }
+
+    let(:params) do
+      {
+        name: 'Agent',
+        description: 'Description',
+        public: true,
+        steps: [
+          { agent: agent },
+          { agent: agent2 },
+          { agent: agent2 }
+        ]
+      }
+    end
+
+    it 'creates dependencies for each agent in the steps' do
+      expect { response }.to change { Ai::Catalog::ItemVersionDependency.count }.by(2)
+      flow_version = Ai::Catalog::ItemVersion.last
+      expect(flow_version.dependencies.pluck(:dependency_id)).to contain_exactly(agent.id, agent2.id)
+    end
+
+    it 'does not call delete_no_longer_used_dependencies' do
+      expect_next_instance_of(Ai::Catalog::ItemVersion) do |instance|
+        expect(instance).not_to receive(:delete_no_longer_used_dependencies)
+      end
+
+      response
+    end
+
+    context 'when saving dependencies fails' do
+      before do
+        allow(Ai::Catalog::ItemVersionDependency).to receive(:bulk_insert!)
+          .and_raise("Dummy error")
+      end
+
+      it 'does not create the item version' do
+        expect { response }.to raise_error("Dummy error").and not_change { Ai::Catalog::Item.count }
+      end
+    end
+  end
 end
