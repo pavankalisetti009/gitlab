@@ -15,6 +15,7 @@ module Security
     strip_attributes! :name, :description
 
     enum :editable_state, Enums::Security.editable_states
+    enum :template_type, Enums::Security.attributes_template_types
     attribute :color, ::Gitlab::Database::Type::Color.new
 
     validates :name, presence: true, length: { maximum: 255 }, uniqueness: { scope: :security_category_id }

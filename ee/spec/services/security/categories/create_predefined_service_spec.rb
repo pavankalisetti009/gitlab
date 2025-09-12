@@ -78,8 +78,10 @@ RSpec.describe Security::Categories::CreatePredefinedService, feature_category: 
         business_impact = Security::Category.find_by(namespace: namespace, template_type: :business_impact)
         expect(business_impact.security_attributes.count).to eq(attributes.length)
 
-        attribute_names = business_impact.security_attributes.pluck(:name)
-        expect(attribute_names).to match_array(attributes.map(&:name))
+        created_values = business_impact.security_attributes.pluck(:name, :template_type)
+        expected_attributes = attributes.map { |attr| [attr.name, attr.template_type] }
+
+        expect(created_values).to match_array(expected_attributes)
       end
 
       it 'creates all expected template types' do
