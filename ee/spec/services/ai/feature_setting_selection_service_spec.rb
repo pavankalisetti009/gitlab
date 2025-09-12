@@ -205,9 +205,29 @@ RSpec.describe Ai::FeatureSettingSelectionService, feature_category: :"self-host
               create(:ai_settings, ai_gateway_url: 'http://example.com')
             end
 
-            it 'does not create a default vendored instance setting and returns nil instead' do
-              expect(response).to be_success
-              expect(response.payload).to be_nil
+            context 'and instance level is default' do
+              let_it_be(:instance_setting) do
+                create(:instance_model_selection_feature_setting,
+                  feature: :duo_chat,
+                  offered_model_ref: nil)
+              end
+
+              it 'does not create a default vendored instance setting and returns nil instead' do
+                expect(response).to be_success
+                expect(response.payload).to be_nil
+              end
+            end
+
+            context 'and instance level is not default' do
+              let_it_be(:instance_setting) do
+                create(:instance_model_selection_feature_setting,
+                  feature: :duo_chat)
+              end
+
+              it 'returns the existing instance setting' do
+                expect(response).to be_success
+                expect(response.payload.offered_model_ref).to eq('claude-3-7-sonnet-20250219')
+              end
             end
           end
         end
