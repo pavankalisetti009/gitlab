@@ -5120,6 +5120,36 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: work_items_process_group_transfer_events
+  :worker_name: WorkItems::ProcessGroupTransferEventsWorker
+  :feature_category: :portfolio_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: work_items_process_project_transfer_events
+  :worker_name: WorkItems::ProcessProjectTransferEventsWorker
+  :feature_category: :portfolio_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: work_items_update_namespace_traversal_ids
+  :worker_name: WorkItems::UpdateNamespaceTraversalIdsWorker
+  :feature_category: :portfolio_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: work_items_user_preferences_destroy
   :worker_name: WorkItems::UserPreferences::DestroyWorker
   :feature_category: :seat_cost_management
