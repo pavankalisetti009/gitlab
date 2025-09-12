@@ -1035,7 +1035,7 @@ expires_at: duo_workflow_service_token_expires_at })
               create(:ai_namespace_feature_setting,
                 namespace: group,
                 feature: :duo_agent_platform,
-                offered_model_ref: 'claude-3-7-sonnet-20250219')
+                offered_model_ref: 'claude_sonnet_3_7_20250219')
             end
 
             context 'when provided as param[:root_namespace_id]' do
@@ -1051,8 +1051,31 @@ expires_at: duo_workflow_service_token_expires_at })
                 expect(metadata).to include(
                   'provider' => 'gitlab',
                   'feature_setting' => 'duo_agent_platform',
-                  'identifier' => 'claude-3-7-sonnet-20250219'
+                  'identifier' => 'claude_sonnet_3_7_20250219'
                 )
+              end
+
+              context 'when user_selected_model_identifier is provided' do
+                context 'when a valid user_selected_model_identifier is provided' do
+                  let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+                  it 'continues to use the namespace-level model selection' do
+                    get api(path, user), headers: workhorse_headers, params: {
+                      root_namespace_id: group.id,
+                      user_selected_model_identifier: user_selected_model_identifier
+                    }
+
+                    expect(response).to have_gitlab_http_status(:ok)
+
+                    headers = json_response['DuoWorkflow']['Headers']
+                    metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                    expect(metadata).to include(
+                      'provider' => 'gitlab',
+                      'feature_setting' => 'duo_agent_platform',
+                      'identifier' => 'claude_sonnet_3_7_20250219'
+                    )
+                  end
+                end
               end
             end
 
@@ -1067,7 +1090,7 @@ expires_at: duo_workflow_service_token_expires_at })
                 expect(metadata).to include(
                   'provider' => 'gitlab',
                   'feature_setting' => 'duo_agent_platform',
-                  'identifier' => 'claude-3-7-sonnet-20250219'
+                  'identifier' => 'claude_sonnet_3_7_20250219'
                 )
               end
             end
@@ -1088,6 +1111,96 @@ expires_at: duo_workflow_service_token_expires_at })
                   'feature_setting' => 'duo_agent_platform',
                   'identifier' => nil
                 )
+              end
+            end
+
+            context 'when a user_selected_model_identifier is provided' do
+              context 'when a valid user_selected_model_identifier is provided' do
+                let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+                it 'uses the user-selected model' do
+                  get api(path, user), headers: workhorse_headers, params: {
+                    root_namespace_id: group.id,
+                    user_selected_model_identifier: user_selected_model_identifier
+                  }
+
+                  expect(response).to have_gitlab_http_status(:ok)
+
+                  headers = json_response['DuoWorkflow']['Headers']
+                  metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                  expect(metadata).to include(
+                    'provider' => 'gitlab',
+                    'feature_setting' => 'duo_agent_platform',
+                    'identifier' => user_selected_model_identifier
+                  )
+                end
+              end
+
+              context 'when an invalid user_selected_model_identifier is provided' do
+                let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
+
+                it 'uses the default model' do
+                  get api(path, user), headers: workhorse_headers, params: {
+                    root_namespace_id: group.id,
+                    user_selected_model_identifier: user_selected_model_identifier
+                  }
+
+                  expect(response).to have_gitlab_http_status(:ok)
+
+                  headers = json_response['DuoWorkflow']['Headers']
+                  metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                  expect(metadata).to include(
+                    'provider' => 'gitlab',
+                    'feature_setting' => 'duo_agent_platform',
+                    'identifier' => nil
+                  )
+                end
+              end
+
+              context 'when an empty user_selected_model_identifier is provided' do
+                it 'uses the default model' do
+                  get api(path, user), headers: workhorse_headers, params: {
+                    root_namespace_id: group.id,
+                    user_selected_model_identifier: ''
+                  }
+
+                  expect(response).to have_gitlab_http_status(:ok)
+
+                  headers = json_response['DuoWorkflow']['Headers']
+                  metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                  expect(metadata).to include(
+                    'provider' => 'gitlab',
+                    'feature_setting' => 'duo_agent_platform',
+                    'identifier' => nil
+                  )
+                end
+              end
+
+              context 'when user level model selection is disabled' do
+                before do
+                  stub_feature_flags(ai_user_model_switching: false)
+                end
+
+                context 'when a valid user_selected_model_identifier is provided' do
+                  let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+                  it 'uses the default model' do
+                    get api(path, user), headers: workhorse_headers, params: {
+                      root_namespace_id: group.id,
+                      user_selected_model_identifier: user_selected_model_identifier
+                    }
+
+                    expect(response).to have_gitlab_http_status(:ok)
+
+                    headers = json_response['DuoWorkflow']['Headers']
+                    metadata = ::Gitlab::Json.parse(headers['x-gitlab-agent-platform-model-metadata'])
+                    expect(metadata).to include(
+                      'provider' => 'gitlab',
+                      'feature_setting' => 'duo_agent_platform',
+                      'identifier' => nil
+                    )
+                  end
+                end
               end
             end
           end
