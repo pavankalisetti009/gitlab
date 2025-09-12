@@ -201,7 +201,22 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
         end
       end
 
-      context 'when a base seat has a membership higher than guest remaining on an ultimate plan' do
+      context 'when a base seat has only planner memberships remaining on an ultimate plan' do
+        before_all do
+          create(:gitlab_subscription, :ultimate, namespace: root_namespace)
+          subgroup.add_planner(user)
+        end
+
+        it 'changes the seat type to plan' do
+          consume_event(subscriber: described_class, event: members_destroyed_event)
+
+          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
+
+          expect(seat.seat_type).to eq('plan')
+        end
+      end
+
+      context 'when a base seat has a remaining membership higher than planner on an ultimate plan' do
         before_all do
           create(:gitlab_subscription, :ultimate, namespace: root_namespace)
           root_namespace.add_guest(user)
@@ -217,7 +232,7 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
         end
       end
 
-      context 'when a free seat has a membership higher than guest remaining on an ultimate plan' do
+      context 'when a free seat has a membership higher than planner remaining on an ultimate plan' do
         before_all do
           seat_assignment.update!(seat_type: :free)
           create(:gitlab_subscription, :ultimate, namespace: root_namespace)
@@ -246,20 +261,6 @@ RSpec.describe GitlabSubscriptions::Members::DestroyedWorker, feature_category: 
           seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
 
           expect(seat.seat_type).to eq('base')
-        end
-      end
-
-      context 'when the highest membership remaining is minimal access' do
-        before_all do
-          create(:group_member, :minimal_access, source: root_namespace, user: user)
-        end
-
-        it 'changes the seat type to free' do
-          consume_event(subscriber: described_class, event: members_destroyed_event)
-
-          seat = ::GitlabSubscriptions::SeatAssignment.find_by(namespace: root_namespace, user: user)
-
-          expect(seat.seat_type).to eq('free')
         end
       end
     end
