@@ -1,12 +1,13 @@
 <script>
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import groupRolesQuery from '../../graphql/group_roles.query.graphql';
 import RolesCrud from './roles_crud.vue';
 import { showRolesFetchError, createNewCustomRoleOption } from './utils';
 
 export default {
   components: { RolesCrud },
-  mixins: [glFeatureFlagsMixin()],
+  mixins: [glFeatureFlagsMixin(), glLicensedFeaturesMixin()],
   inject: ['groupFullPath', 'newRolePath'],
   data() {
     return {
@@ -24,7 +25,7 @@ export default {
       variables() {
         return {
           fullPath: this.groupFullPath,
-          includeCustomRoles: this.glFeatures.customRoles,
+          includeCustomRoles: this.glLicensedFeatures.customRoles,
         };
       },
       update: (data) => data.group,

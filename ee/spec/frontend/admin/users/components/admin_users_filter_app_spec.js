@@ -13,7 +13,8 @@ describe('AdminUsersFilterApp', () => {
   }) => {
     wrapper = shallowMount(AdminUsersFilterApp, {
       provide: {
-        glFeatures: { customRoles, customAdminRoles },
+        glLicensedFeatures: { customRoles },
+        glFeatures: { customAdminRoles },
         glAbilities: { readAdminRole },
       },
     });
