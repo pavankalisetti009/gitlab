@@ -2,9 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group > Unlimited members alert', :js, :saas, feature_category: :groups_and_projects do
-  include SubscriptionPortalHelpers
-
+RSpec.describe 'Group > Unlimited members alert', :with_trial_types, :js, :saas, feature_category: :groups_and_projects do
   let(:alert_selector) { '[data-testid="unlimited-members-during-trial-alert"]' }
   let_it_be(:group) { create(:group, :private, name: 'unlimited-members-during-trial-alert-group') }
   let_it_be(:subgroup) { create(:group, :private, parent: group, name: 'subgroup') }
@@ -12,7 +10,6 @@ RSpec.describe 'Group > Unlimited members alert', :js, :saas, feature_category: 
 
   before do
     stub_feature_flags(streamlined_first_product_experience: false)
-    stub_subscription_trial_types
   end
 
   context 'when group not in trial' do

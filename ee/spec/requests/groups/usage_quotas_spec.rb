@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe 'view usage quotas', :saas, feature_category: :consumables_cost_management do
-  include SubscriptionPortalHelpers
-
   let_it_be(:namespace) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:subscription_history) do
@@ -20,7 +18,7 @@ RSpec.describe 'view usage quotas', :saas, feature_category: :consumables_cost_m
     )
   end
 
-  describe 'GET /groups/:group/-/usage_quotas' do
+  describe 'GET /groups/:group/-/usage_quotas', :with_trial_types do
     subject(:request) { get group_usage_quotas_path(namespace) }
 
     before_all do
@@ -29,7 +27,6 @@ RSpec.describe 'view usage quotas', :saas, feature_category: :consumables_cost_m
 
     before do
       login_as(user)
-      stub_subscription_trial_types
     end
 
     context 'when storage size is over limit' do

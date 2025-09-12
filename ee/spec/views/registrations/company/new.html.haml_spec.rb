@@ -2,8 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'registrations/company/new', feature_category: :onboarding do
-  include SubscriptionPortalHelpers
+RSpec.describe 'registrations/company/new', :with_trial_types, feature_category: :onboarding do
   let(:user) { build_stubbed(:user) }
   let(:show_company_form_side_column?) { false }
   let(:onboarding_status_presenter) do
@@ -17,7 +16,6 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
 
   before do
     allow(view).to receive_messages(current_user: user, onboarding_status_presenter: onboarding_status_presenter)
-    stub_subscription_trial_types
   end
 
   describe 'Google Tag Manager' do

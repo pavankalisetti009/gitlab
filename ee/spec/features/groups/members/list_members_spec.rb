@@ -4,7 +4,6 @@ require 'spec_helper'
 RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_projects do
   include Features::MembersHelpers
   include Features::InviteMembersModalHelpers
-  include SubscriptionPortalHelpers
 
   let_it_be(:user1) { create(:user, name: 'John Doe') }
   let_it_be(:user2) { create(:user, name: 'Mary Jane') }
@@ -125,7 +124,7 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
     end
   end
 
-  context 'when over free user limit', :saas do
+  context 'when over free user limit', :with_trial_types, :saas do
     let(:role) { :owner }
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan) }
@@ -135,7 +134,6 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
     before do
       group.add_member(user, role)
       sign_in(user)
-      stub_subscription_trial_types
     end
 
     it_behaves_like 'over the free user limit alert'

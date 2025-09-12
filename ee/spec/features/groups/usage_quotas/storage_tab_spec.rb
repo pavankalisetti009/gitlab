@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Usage quotas > Storage tab', :js, :saas, feature_category: :consumables_cost_management do
+RSpec.describe 'Groups > Usage quotas > Storage tab', :with_trial_types, :js, :saas, feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
-  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group_with_plan, plan: :premium_plan, owners: user) }
@@ -19,7 +18,6 @@ RSpec.describe 'Groups > Usage quotas > Storage tab', :js, :saas, feature_catego
 
     stub_application_setting(check_namespace_plan: true)
     create(:callout, user: user, feature_name: :duo_chat_callout, dismissed_at: Time.current)
-    stub_subscription_trial_types
 
     sign_in(user)
   end

@@ -2,15 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project show page', :feature, feature_category: :groups_and_projects do
+RSpec.describe 'Project show page', :with_trial_types, :feature, feature_category: :groups_and_projects do
   include BillableMembersHelpers
-  include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
-
-  before do
-    stub_subscription_trial_types
-  end
 
   describe 'stat button existence' do
     describe 'populated project' do

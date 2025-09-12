@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
-  include SubscriptionPortalHelpers
-  describe '#create_company_form_data' do
+  describe '#create_company_form_data', :with_trial_types do
     let(:user) { build_stubbed(:user, onboarding_status_registration_type: 'trial') }
     let(:trial_duration) { 30 }
     let(:extra_params) do
@@ -19,7 +18,6 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
 
     before do
       allow(helper).to receive_messages(params: params, current_user: user)
-      stub_subscription_trial_types
     end
 
     subject(:form_data) { helper.create_company_form_data(::Onboarding::StatusPresenter.new({}, {}, user)) }

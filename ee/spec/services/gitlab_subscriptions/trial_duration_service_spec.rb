@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acquisition do
   include SubscriptionPortalHelpers
+
   describe '#execute', :saas, :use_clean_rails_memory_store_caching do
     let_it_be(:free_duration) { 1 }
     let_it_be(:premium_duration) { 2 }

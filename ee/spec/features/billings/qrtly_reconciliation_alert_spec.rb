@@ -2,9 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Billings > Qrtly Reconciliation Alert', :js, :saas, feature_category: :subscription_management do
-  include SubscriptionPortalHelpers
-
+RSpec.describe 'Billings > Qrtly Reconciliation Alert', :with_trial_types, :js, :saas, feature_category: :subscription_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
   let_it_be(:group_member) { create(:group_member, :owner, group: namespace, user: user) }
@@ -27,7 +25,6 @@ RSpec.describe 'Billings > Qrtly Reconciliation Alert', :js, :saas, feature_cate
       .to_return(status: 200, body: plans_data.to_json)
     stub_subscription_management_data(namespace.id)
     stub_temporary_extension_data(namespace.id)
-    stub_subscription_trial_types
     create(:callout, user: user, feature_name: :duo_chat_callout)
     sign_in(user)
   end

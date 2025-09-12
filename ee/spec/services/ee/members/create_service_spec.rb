@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
-  include SubscriptionPortalHelpers
   let_it_be(:user) { create(:user) }
   let_it_be(:root_ancestor, reload: true) { create(:group) }
   let_it_be(:project, reload: true) { create(:project, group: root_ancestor) }
@@ -276,7 +275,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
   end
 
   context 'when part of a group that a free group invited', :saas, :sidekiq_inline do
-    context 'when free group is over the limit' do
+    context 'when free group is over the limit', :with_trial_types do
       let(:dashboard_limit_enabled) { true }
       let_it_be(:owner) { create(:user) }
       let_it_be(:root_ancestor) do
@@ -293,7 +292,6 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       before do
         stub_ee_application_setting(dashboard_limit: 3)
         stub_ee_application_setting(dashboard_limit_enabled: dashboard_limit_enabled)
-        stub_subscription_trial_types
       end
 
       subject(:execute_service) { described_class.new(user, params.merge({ source: invited_group })).execute }

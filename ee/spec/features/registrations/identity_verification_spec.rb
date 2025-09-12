@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Identity Verification', :js, :with_current_organization, feature_category: :instance_resiliency do
+RSpec.describe 'Identity Verification', :with_trial_types, :js, :with_current_organization, feature_category: :instance_resiliency do
   include IdentityVerificationHelpers
-  include SubscriptionPortalHelpers
 
   before do
     stub_saas_features(identity_verification: true)
@@ -16,7 +15,6 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
       telesign_customer_xid: 'customer_id',
       telesign_api_key: 'private_key'
     )
-    stub_subscription_trial_types
   end
 
   let(:user_email) { 'onboardinguser@example.com' }

@@ -2,17 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::FreeUserCap::NotifyOverLimitService, feature_category: :seat_cost_management do
+RSpec.describe Namespaces::FreeUserCap::NotifyOverLimitService, :with_trial_types, feature_category: :seat_cost_management do
   include SubscriptionPortalHelpers
   let_it_be(:group) { create(:group) }
 
   before_all do
     group.add_owner(create(:owner))
     group.add_owner(create(:owner))
-  end
-
-  before do
-    stub_subscription_trial_types
   end
 
   describe '#execute', :saas do

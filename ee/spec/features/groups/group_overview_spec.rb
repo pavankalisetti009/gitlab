@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: :groups_and_projects do
+RSpec.describe 'Group information', :with_trial_types, :js, :aggregate_failures, feature_category: :groups_and_projects do
   include BillableMembersHelpers
-  include SubscriptionPortalHelpers
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:user) { create(:user) }
@@ -17,7 +16,6 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
   before do
     group.add_member(user, role)
     sign_in(user)
-    stub_subscription_trial_types
   end
 
   context 'when the default value of "Group information content" preference is used' do

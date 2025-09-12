@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe GroupsHelper, feature_category: :source_code_management do
   using RSpec::Parameterized::TableSyntax
-  include SubscriptionPortalHelpers
 
   let(:owner) { create(:user, group_view: :security_dashboard) }
   let(:current_user) { owner }
@@ -238,7 +237,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#group_seats_usage_quota_app_data' do
+  describe '#group_seats_usage_quota_app_data', :with_trial_types do
     subject(:group_seats_usage_quota_app_data) { helper.group_seats_usage_quota_app_data(group) }
 
     let(:enforcement_free_user_cap) { false }
@@ -260,7 +259,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
     before do
       stub_ee_application_setting(dashboard_limit: 10)
-      stub_subscription_trial_types
 
       expect_next_instance_of(::Namespaces::FreeUserCap::Enforcement, group) do |instance|
         expect(instance).to receive(:enforce_cap?).and_return(enforcement_free_user_cap)
