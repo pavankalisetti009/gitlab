@@ -69172,6 +69172,9 @@ msgstr ""
 msgid "UsageBilling|Daily usage"
 msgstr ""
 
+msgid "UsageBilling|Export usage data"
+msgstr ""
+
 msgid "UsageBilling|Increase monthly commitment"
 msgstr ""
 
@@ -69179,6 +69182,9 @@ msgid "UsageBilling|Last 3 months"
 msgstr ""
 
 msgid "UsageBilling|Last month"
+msgstr ""
+
+msgid "UsageBilling|Last updated:"
 msgstr ""
 
 msgid "UsageBilling|No user data available"

@@ -8,7 +8,7 @@ export const mockData = {
 
       userUsage: {
         user: {
-          id: 1,
+          id: 42,
           username: 'alice_johnson',
           name: 'Alice Johnson',
           avatar_url: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
