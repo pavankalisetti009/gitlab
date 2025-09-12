@@ -157,7 +157,7 @@ export default {
         environment: FLOW_WEB_ENVIRONMENT,
         workflow_definition: this.workflowDefinition,
         agent_privileges: this.agentPrivileges,
-        additionalContext: this.additionalContext,
+        additional_context: this.additionalContext,
       };
 
       if (this.sourceBranch) {

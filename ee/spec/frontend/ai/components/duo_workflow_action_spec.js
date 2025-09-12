@@ -201,7 +201,7 @@ describe('DuoWorkflowAction component', () => {
       goal: defaultProps.goal,
       workflow_definition: defaultProps.workflowDefinition,
       agent_privileges: defaultProps.agentPrivileges,
-      additionalContext: [],
+      additional_context: [],
     };
 
     beforeEach(async () => {
@@ -273,10 +273,10 @@ describe('DuoWorkflowAction component', () => {
           await waitForPromises();
         });
 
-        it('includes additionalContext array in the request params', () => {
+        it('includes additional_context array in the request params', () => {
           expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
             ...expectedRequestData,
-            additionalContext,
+            additional_context: additionalContext,
           });
         });
       });
@@ -291,10 +291,10 @@ describe('DuoWorkflowAction component', () => {
           await waitForPromises();
         });
 
-        it('includes empty additionalContext array in the request params', () => {
+        it('includes empty additional_context array in the request params', () => {
           expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
             ...expectedRequestData,
-            additionalContext: [],
+            additional_context: [],
           });
         });
       });
@@ -307,10 +307,10 @@ describe('DuoWorkflowAction component', () => {
           await waitForPromises();
         });
 
-        it('includes empty array as additionalContext in the request params', () => {
+        it('includes empty array as additional_context in the request params', () => {
           expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
             ...expectedRequestData,
-            additionalContext: [],
+            additional_context: [],
           });
         });
       });
