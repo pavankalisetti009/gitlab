@@ -10,7 +10,7 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
 
   describe 'timestamp' do
     it 'returns the checkpoint thread_ts' do
-      expect(presenter.timestamp).to eq(Time.parse(checkpoint.thread_ts))
+      expect(presenter.timestamp).to eq(checkpoint.thread_ts)
     end
   end
 
@@ -21,7 +21,7 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
     end
 
     it 'returns the checkpoint parent_ts' do
-      expect(presenter.parent_timestamp).to eq(Time.parse(checkpoint.parent_ts))
+      expect(presenter.parent_timestamp).to eq(checkpoint.parent_ts)
     end
   end
 

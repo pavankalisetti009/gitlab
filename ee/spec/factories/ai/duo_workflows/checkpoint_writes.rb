@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :duo_workflows_checkpoint_write, class: 'Ai::DuoWorkflows::CheckpointWrite' do
     workflow { association(:duo_workflows_workflow) }
-    sequence(:thread_ts) { |n| (Time.current + n.seconds).to_s }
+    thread_ts { Gitlab::Utils.uuid_v7 }
     project { association(:project) }
     task { 'id' }
     idx { 0 }

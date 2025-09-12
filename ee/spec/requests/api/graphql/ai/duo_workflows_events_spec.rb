@@ -74,8 +74,8 @@ RSpec.describe 'Querying Duo Workflow Events', feature_category: :agent_foundati
         expect(event['errors']).to eq([])
         expect(event['checkpoint']).to eq(checkpoints[i].checkpoint.to_json)
         expect(event['metadata']).to eq(checkpoints[i].metadata.to_json)
-        expect(event['timestamp']).to eq(Time.parse(checkpoints[i].thread_ts).iso8601)
-        expect(event['parentTimestamp']).to eq(Time.parse(checkpoints[i].parent_ts).iso8601)
+        expect(event['timestamp']).to eq(checkpoints[i].thread_ts)
+        expect(event['parentTimestamp']).to eq(checkpoints[i].parent_ts)
         expect(event['workflowGoal']).to eq("Fix pipeline")
         expect(event['workflowDefinition']).to eq("software_development")
       end
