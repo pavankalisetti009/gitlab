@@ -1,6 +1,7 @@
 import { GlAlert, GlTab } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
+import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
@@ -84,7 +85,6 @@ describe('UsageBillingApp', () => {
       expect(wrapper.findComponent(UsageTrendsChart).props('usageData')).toHaveLength(30);
     });
   });
-
   describe('error state', () => {
     const errorMessage = 'Network Error';
 
@@ -102,6 +102,27 @@ describe('UsageBillingApp', () => {
     it('logs the error to console and Sentry', () => {
       expect(logError).toHaveBeenCalledWith(expect.any(Error));
       expect(captureException).toHaveBeenCalledWith(expect.any(Error));
+    });
+  });
+
+  describe('rendering usage by user tab', () => {
+    beforeEach(async () => {
+      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithPool);
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('renders the tab with correct props', () => {
+      expect(wrapper.findComponent(UsageByUserTab).exists()).toBe(true);
+      expect(wrapper.findComponent(UsageByUserTab).props('usersData')).toMatchObject({
+        totalUsers: 50,
+        totalUsersUsingAllocation: 35,
+        totalUsersUsingPool: 15,
+        totalUsersBlocked: 10,
+
+        // per-user details
+        users: expect.any(Array),
+      });
     });
   });
 });
