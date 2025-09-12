@@ -41,6 +41,10 @@ module Ai
           joins(:active_context_connection).where(active_context_connection: { active: true })
         }
 
+        def self.find_enabled_namespace(connection, namespace)
+          connection.enabled_namespaces.find_by(namespace: namespace)
+        end
+
         private
 
         def valid_namespace

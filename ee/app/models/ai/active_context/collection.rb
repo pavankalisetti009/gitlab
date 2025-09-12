@@ -24,6 +24,14 @@ module Ai
       validates :number_of_partitions, presence: true, numericality: { greater_than_or_equal_to: 1, only_integer: true }
       validates :connection_id, presence: true
 
+      def self.find_by_id(connection, id)
+        connection.collections.find_by(id: id)
+      end
+
+      def self.find_by_name(connection, name)
+        connection.collections.find_by(name: name)
+      end
+
       def partition_for(routing_value)
         ::ActiveContext::Hash.consistent_hash(number_of_partitions, routing_value)
       end
