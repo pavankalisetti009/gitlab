@@ -106,9 +106,11 @@ describe('FeatureSettings', () => {
       }) => {
         it('renders section and table', () => {
           expect(findAllSettingsBlock().at(index).props('title')).toBe(expectedTitle);
-          expect(findAllSettingsDescriptions().at(index).attributes('message')).toContain(
-            expectedDescription,
-          );
+          const msg = findAllSettingsDescriptions().at(index).attributes('message');
+          expect(msg).toContain(expectedDescription);
+          if (expectedTitle === 'GitLab Duo Chat') {
+            expect(msg).toContain('This setting is for regular Duo Chat only.');
+          }
           expect(findSectionTableFn().exists()).toBe(true);
         });
 

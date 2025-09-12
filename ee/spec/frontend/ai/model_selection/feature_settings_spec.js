@@ -50,6 +50,7 @@ describe('FeatureSettings', () => {
       expect(findDuoChatTable().props('isLoading')).toBe(true);
       expect(findDuoMergeRequestTable().props('isLoading')).toBe(true);
       expect(findDuoIssuesTable().props('isLoading')).toBe(true);
+      expect(findDuoAgentPlatformTable().props('isLoading')).toBe(true);
       expect(findOtherDuoFeaturesTable().props('isLoading')).toBe(true);
     });
   });
@@ -83,10 +84,8 @@ describe('FeatureSettings', () => {
         expect(findSectionTableFn().exists()).toBe(true);
       });
 
-      it('passes the correct feature settings as table props', () => {
-        expect(findSectionTableFn().props('featureSettings')).toStrictEqual(
-          expectedFeatureSettings,
-        );
+      it('passes correct featureSettings to section table', () => {
+        expect(findSectionTableFn().props('featureSettings')).toEqual(expectedFeatureSettings);
       });
     },
   );
