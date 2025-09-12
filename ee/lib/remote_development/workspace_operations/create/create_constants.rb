@@ -13,6 +13,9 @@ module RemoteDevelopment
         include WorkspaceOperationsConstants
 
         # Please keep alphabetized
+        AGENTW_OBSERVABILITY_LISTEN_ADDRESS = ":60031"
+        AGENTW_TOKEN_FILE_NAME = "gl_agentw_token"
+        AGENTW_TOKEN_FILE_PATH = "#{VARIABLES_VOLUME_PATH}/#{AGENTW_TOKEN_FILE_NAME}".freeze
         GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME = "gl_git_credential_store.sh"
         GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH =
           "#{VARIABLES_VOLUME_PATH}/#{GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME}".freeze

@@ -25,6 +25,7 @@ module RemoteDevelopment
               }
             },
             params: {
+              agent: agent,
               project: project,
               project_ref: String => project_ref,
             },
@@ -32,6 +33,29 @@ module RemoteDevelopment
               data_volume: { path: String => volume_path }
             },
           }
+
+          # NOTE: We will always have exactly one main_component found, because we have already
+          #       validated this in devfile processing
+          main_component = components.find do |component|
+            # NOTE: We can't use pattern matching here, because constants can't be used in pattern matching.
+            #       Otherwise, we could do this all in a single pattern match.
+            component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
+          end
+
+          main_component => { name: String => main_component_name }
+
+          if start_agentw?(agent)
+            # Add the start_agentw event
+            start_agentw_command_id = "gl-start-agentw-command"
+            commands << {
+              id: start_agentw_command_id,
+              exec: {
+                commandLine: INTERNAL_POSTSTART_COMMAND_START_AGENTW_SCRIPT,
+                component: main_component_name,
+                label: INTERNAL_BLOCKING_COMMAND_LABEL
+              }
+            }
+          end
 
           project_cloning_successful_file = "#{volume_path}/#{PROJECT_CLONING_SUCCESSFUL_FILE_NAME}"
           clone_dir = "#{volume_path}/#{project.path}"
@@ -55,16 +79,6 @@ module RemoteDevelopment
               project_url: Shellwords.shellescape(project_url),
               clone_depth_option: clone_depth_option
             )
-
-          # NOTE: We will always have exactly one main_component found, because we have already
-          #       validated this in devfile processing
-          main_component = components.find do |component|
-            # NOTE: We can't use pattern matching here, because constants can't be used in pattern matching.
-            #       Otherwise, we could do this all in a single pattern match.
-            component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
-          end
-
-          main_component => { name: String => main_component_name }
 
           commands << {
             id: clone_project_command_id,
@@ -154,12 +168,24 @@ module RemoteDevelopment
 
           # Insert the unshallow command after the clone command, if the FF is enabled and clone_depth_option is set.
           commands_to_prepend.insert(1, clone_unshallow_command_id) unless clone_depth_option.empty?
+          # Insert the start agentw command at the beginning, if the appropriate values are set.
+          commands_to_prepend.insert(0, start_agentw_command_id) if start_agentw?(agent)
 
           # Prepend internal commands so they are executed before any user-defined poststart events.
           poststart_events.prepend(*commands_to_prepend)
 
           context
         end
+
+        # @param [Clusters::Agent] agent
+        # @return [TrueClass, FalseClass]
+        def self.start_agentw?(agent)
+          gitlab_workspaces_proxy_http_enabled =
+            agent.unversioned_latest_workspaces_agent_config.gitlab_workspaces_proxy_http_enabled
+          WorkspaceOperations::WorkspaceUrlHelper.common_workspace_host_suffix?(gitlab_workspaces_proxy_http_enabled)
+        end
+
+        private_class_method :start_agentw?
       end
     end
   end

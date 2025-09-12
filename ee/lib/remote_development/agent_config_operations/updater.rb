@@ -51,8 +51,19 @@ module RemoteDevelopment
         #       it is a single `gitlab_workspaces_proxy_namespace`, not a jsonb field for `gitlab_workspaces_proxy`.
         #       So, in order to do the `merge` below of config_from_agent_config_file into agent_config_settings,
         #       we will make the config_from_agent_config_file match the single field name.
+        #       The same is true for other fields nested under `gitlab_workspaces_proxy` - `http_enabled`, `ssh_enabled`
         proxy_namespace = normalized_config_from_file.dig(:gitlab_workspaces_proxy, :namespace)
         normalized_config_from_file[:gitlab_workspaces_proxy_namespace] = proxy_namespace if proxy_namespace
+
+        proxy_http_enabled = normalized_config_from_file.dig(:gitlab_workspaces_proxy, :http_enabled)
+        unless proxy_http_enabled.nil?
+          normalized_config_from_file[:gitlab_workspaces_proxy_http_enabled] = proxy_http_enabled
+        end
+
+        proxy_ssh_enabled = normalized_config_from_file.dig(:gitlab_workspaces_proxy, :ssh_enabled)
+        unless proxy_ssh_enabled.nil?
+          normalized_config_from_file[:gitlab_workspaces_proxy_ssh_enabled] = proxy_ssh_enabled
+        end
         #       Same for `network_policy_enabled` and `network_policy_egress` db fields - rename them from the
         #       network_policy field in the config_from_agent_config_file spec
         network_policy_enabled = normalized_config_from_file.dig(:network_policy, :enabled)
@@ -74,7 +85,9 @@ module RemoteDevelopment
             :annotations,
             :default_resources_per_workspace_container,
             :default_runtime_class,
+            :gitlab_workspaces_proxy_http_enabled,
             :gitlab_workspaces_proxy_namespace,
+            :gitlab_workspaces_proxy_ssh_enabled,
             :image_pull_secrets,
             :labels,
             :max_active_hours_before_stop,
@@ -112,7 +125,9 @@ module RemoteDevelopment
           default_runtime_class: values[:default_runtime_class],
           dns_zone: values[:dns_zone],
           enabled: values[:enabled],
+          gitlab_workspaces_proxy_http_enabled: values[:gitlab_workspaces_proxy_http_enabled],
           gitlab_workspaces_proxy_namespace: values[:gitlab_workspaces_proxy_namespace],
+          gitlab_workspaces_proxy_ssh_enabled: values[:gitlab_workspaces_proxy_ssh_enabled],
           image_pull_secrets: values[:image_pull_secrets],
           labels: values[:labels],
           max_active_hours_before_stop: values[:max_active_hours_before_stop],

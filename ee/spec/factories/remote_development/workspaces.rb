@@ -122,13 +122,34 @@ FactoryBot.define do
         end
 
         unless evaluator.without_workspace_variables
+          workspace_name = workspace.name
+          dns_zone = workspace.workspaces_agent_config.dns_zone
+          gitlab_workspaces_proxy_http_enabled = workspace.workspaces_agent_config.gitlab_workspaces_proxy_http_enabled
+          domain_template = RemoteDevelopment::WorkspaceOperations::WorkspaceUrlHelper.url_template(
+            workspace_name,
+            dns_zone,
+            gitlab_workspaces_proxy_http_enabled
+          )
+          common_host_prefix =
+            RemoteDevelopment::WorkspaceOperations::WorkspaceUrlHelper.common_workspace_host_suffix?(
+              gitlab_workspaces_proxy_http_enabled
+            )
+
+          workspace_token = ""
+          # The model's before_save and after_save ensures that the token is only associated for workspaces who are
+          # in the running state.
+          if common_host_prefix && desired_state == RemoteDevelopment::WorkspaceOperations::States::RUNNING
+            workspace_token = workspace.workspace_token.token
+          end
+
           workspace_variables = RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesBuilder.build(
-            name: workspace.name,
-            dns_zone: workspace.workspaces_agent_config.dns_zone,
+            domain_template: domain_template,
+            gitlab_kas_external_url: RemoteDevelopment::Settings.get_single_setting(:gitlab_kas_external_url),
             personal_access_token_value: workspace.personal_access_token.token,
             user_name: workspace.user.name,
             user_email: workspace.user.email,
             workspace_id: workspace.id,
+            workspace_token: workspace_token,
             vscode_extension_marketplace: ::WebIde::ExtensionMarketplacePreset.open_vsx.values,
             variables: []
           )

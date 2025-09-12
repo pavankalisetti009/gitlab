@@ -38,8 +38,19 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:network_policy) { network_policy_without_egress }
   let(:gitlab_workspaces_proxy_present) { false }
   let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
-  let(:gitlab_workspaces_proxy) { { namespace: gitlab_workspaces_proxy_namespace } }
   let(:gitlab_workspaces_proxy_namespace_present) { true }
+  let(:gitlab_workspaces_proxy_http_enabled) { true }
+  let(:gitlab_workspaces_proxy_http_enabled_present) { true }
+  let(:gitlab_workspaces_proxy_ssh_enabled) { true }
+  let(:gitlab_workspaces_proxy_ssh_enabled_present) { true }
+  let(:gitlab_workspaces_proxy) do
+    val = {}
+    val[:namespace] = gitlab_workspaces_proxy_namespace if gitlab_workspaces_proxy_namespace_present
+    val[:http_enabled] = gitlab_workspaces_proxy_http_enabled if gitlab_workspaces_proxy_http_enabled_present
+    val[:ssh_enabled] = gitlab_workspaces_proxy_ssh_enabled if gitlab_workspaces_proxy_ssh_enabled_present
+
+    val
+  end
 
   let(:default_resources_per_workspace_container) { {} }
   let(:max_resources_per_workspace) { {} }
@@ -71,14 +82,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     remote_development_config['enabled'] = enabled if enabled_present
     # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['network_policy'] = network_policy if network_policy_present
-
-    remote_development_config['gitlab_workspaces_proxy'] =
-      if gitlab_workspaces_proxy_present && gitlab_workspaces_proxy_namespace_present
-        gitlab_workspaces_proxy
-      elsif gitlab_workspaces_proxy_present
-        {}
-      end
-
+    remote_development_config['gitlab_workspaces_proxy'] = gitlab_workspaces_proxy if gitlab_workspaces_proxy_present
     remote_development_config['default_resources_per_workspace_container'] = default_resources_per_workspace_container
     remote_development_config['max_resources_per_workspace'] = max_resources_per_workspace
 
@@ -249,6 +253,18 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
           context 'when gitlab_workspaces_proxy.namespace is explicitly specified in the config passed' do
             let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces-specified' }
+
+            it_behaves_like 'successful update'
+          end
+
+          context 'when gitlab_workspaces_proxy.http_enabled is explicitly specified in the config passed' do
+            let(:gitlab_workspaces_proxy_http_enabled) { false }
+
+            it_behaves_like 'successful update'
+          end
+
+          context 'when gitlab_workspaces_proxy.ssh_enabled is explicitly specified in the config passed' do
+            let(:gitlab_workspaces_proxy_ssh_enabled) { false }
 
             it_behaves_like 'successful update'
           end

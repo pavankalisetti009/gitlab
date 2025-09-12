@@ -144,47 +144,6 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           }
         end
       end
-
-      describe "WorkspaceToken deletion" do
-        before do
-          workspace.save!
-        end
-
-        context "when changing from Running" do
-          using RSpec::Parameterized::TableSyntax
-
-          let(:desired_state) { states_module::RUNNING }
-
-          shared_examples "deletes the associated WorkspaceToken record if it exists" do
-            it "deletes the associated WorkspaceToken record if it exists when Stopped" do
-              expect { workspace.update!(desired_state: new_desired_state) }.to change {
-                RemoteDevelopment::WorkspaceToken.count
-              }.by(-1)
-
-              expect(workspace.workspace_token).to be_nil
-            end
-
-            it "does not raise an error when WorkspaceToken record does not exist" do
-              workspace.workspace_token.destroy!
-              workspace.reload
-
-              expect { workspace.update!(desired_state: new_desired_state) }.not_to raise_error
-            end
-          end
-
-          where(:new_desired_state) do
-            [
-              states_module::RESTART_REQUESTED,
-              states_module::STOPPED,
-              states_module::TERMINATED
-            ]
-          end
-
-          with_them do
-            it_behaves_like "deletes the associated WorkspaceToken record if it exists"
-          end
-        end
-      end
     end
 
     describe "before_validation" do
@@ -314,6 +273,47 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
                 expect(workspace.workspace_token.id).not_to eq(previous_token_id)
               end
             end
+          end
+        end
+      end
+
+      describe "WorkspaceToken deletion" do
+        before do
+          workspace.save!
+        end
+
+        context "when changing from Running" do
+          using RSpec::Parameterized::TableSyntax
+
+          let(:desired_state) { states_module::RUNNING }
+
+          shared_examples "deletes the associated WorkspaceToken record if it exists" do
+            it "deletes the associated WorkspaceToken record if it exists when Stopped" do
+              expect { workspace.update!(desired_state: new_desired_state) }.to change {
+                RemoteDevelopment::WorkspaceToken.count
+              }.by(-1)
+
+              expect(workspace.workspace_token).to be_nil
+            end
+
+            it "does not raise an error when WorkspaceToken record does not exist" do
+              workspace.workspace_token.destroy!
+              workspace.reload
+
+              expect { workspace.update!(desired_state: new_desired_state) }.not_to raise_error
+            end
+          end
+
+          where(:new_desired_state) do
+            [
+              states_module::RESTART_REQUESTED,
+              states_module::STOPPED,
+              states_module::TERMINATED
+            ]
+          end
+
+          with_them do
+            it_behaves_like "deletes the associated WorkspaceToken record if it exists"
           end
         end
       end

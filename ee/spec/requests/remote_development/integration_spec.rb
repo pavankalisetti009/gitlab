@@ -9,6 +9,10 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   include RemoteDevelopment::IntegrationSpecHelpers
   include_context "with remote development shared fixtures"
 
+  let(:agentw_token) { "" }
+  let(:agentw_observability_listen_address) { create_constants_module::AGENTW_OBSERVABILITY_LISTEN_ADDRESS }
+  let(:agentw_token_file_path) { create_constants_module::AGENTW_TOKEN_FILE_PATH }
+  let(:gitlab_kas_external_url) { RemoteDevelopment::Settings.get_single_setting(:gitlab_kas_external_url) }
   let(:token_file_name) { create_constants_module::TOKEN_FILE_NAME }
   let(:token_file_path) { create_constants_module::TOKEN_FILE_PATH }
   let(:git_credential_store_script) { files_module::GIT_CREDENTIAL_STORE_SCRIPT }
@@ -26,7 +30,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
   let(:agent_token) { create(:cluster_agent_token, agent: agent) }
 
-  let(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
   let(:dns_zone) { "integration-spec-workspaces.localdev.me" }
   let(:workspaces_per_user_quota) { 20 }
   let(:workspaces_quota) { 100 }
@@ -182,6 +185,10 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GIT_CONFIG_VALUE_0", type: :environment, value: git_credential_store_script_file_path },
       { key: "GIT_CONFIG_VALUE_1", type: :environment, value: user.name },
       { key: "GIT_CONFIG_VALUE_2", type: :environment, value: user.email },
+      { key: "gl_agentw_token", type: :file, value: agentw_token },
+      { key: "GL_AGENTW_TOKEN_FILE_PATH", type: :environment, value: agentw_token_file_path },
+      { key: "GL_AGENTW_OBSERVABILITY_LISTEN_ADDRESS", type: :environment, value: agentw_observability_listen_address },
+      { key: "GL_GITLAB_AGENT_SERVER_ADDRESS", type: :environment, value: gitlab_kas_external_url },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },

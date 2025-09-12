@@ -44,12 +44,8 @@ module RemoteDevelopment
           workspace.devfile_path = devfile_path
           workspace.devfile = devfile_yaml
           workspace.processed_devfile = YAML.dump(processed_devfile.deep_stringify_keys)
-
-          set_workspace_url(
-            workspace: workspace,
-            agent_dns_zone: agent.unversioned_latest_workspaces_agent_config.dns_zone,
-            project_dir: project_dir
-          )
+          workspace.url_prefix = "#{WORKSPACE_EDITOR_PORT}-#{workspace.name}"
+          workspace.url_query_string = { folder: project_dir }.to_query
 
           # associations for workspace
           workspace.user = user
@@ -71,24 +67,6 @@ module RemoteDevelopment
             })
           )
         end
-
-        # @param [Workspace] workspace
-        # @param [String] agent_dns_zone
-        # @param [String] project_dir
-        # @return [void]
-        def self.set_workspace_url(workspace:, agent_dns_zone:, project_dir:)
-          host = "#{WORKSPACE_EDITOR_PORT}-#{workspace.name}.#{agent_dns_zone}"
-          query = { folder: project_dir }.to_query
-
-          # NOTE: Use URI builder to ensure that we are building a valid URI, then retrieve parts from it
-
-          uri = URI::HTTPS.build(host: host, query: query)
-
-          workspace.url_prefix = uri.hostname.gsub(".#{agent_dns_zone}", '')
-          # noinspection RubyMismatchedArgumentType - RubyMine thinks this is nilable for some reason
-          workspace.url_query_string = uri.query
-        end
-        private_class_method :set_workspace_url
       end
     end
   end

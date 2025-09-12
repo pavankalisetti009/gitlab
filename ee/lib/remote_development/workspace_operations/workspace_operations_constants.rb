@@ -34,7 +34,7 @@ module RemoteDevelopment
         "#{VARIABLES_VOLUME_PATH}/#{WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}".freeze
       # Image digest used to avoid arm64 compatibility issues in local development
       # See https://gitlab.com/gitlab-org/gitlab/-/issues/550128 for tracking arm64 support
-      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/gitlab-build-images:20250627091546-workspaces-tools@sha256:9bf96edd6a7e64ee898d774f55e153f78b85e2a911e565158e374efdd2def2c5" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective -- Docker image should not be in multi-lines
+      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/gitlab-build-images:20250903132715-workspaces-tools@sha256:0f92a034804994de1cd5fa3b77833f3f167b652ae9bc89f478d1e74319378f0e" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective -- Docker image should not be in multi-lines
     end
   end
 end

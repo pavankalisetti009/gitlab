@@ -17,6 +17,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:project_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
+  let(:gitlab_kas_external_url) { "ws://kas.example.com/-/external/namespace/path" }
   let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
   let(:expected_processed_devfile) { example_processed_devfile }
   let(:logger) { instance_double(Logger) }
@@ -73,7 +74,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:settings) do
     {
       tools_injector_image: tools_injector_image_from_settings,
-      default_devfile_yaml: default_devfile_yaml
+      default_devfile_yaml: default_devfile_yaml,
+      gitlab_kas_external_url: gitlab_kas_external_url
     }
   end
 

@@ -11,7 +11,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   # noinspection RubyArgCount -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
   let_it_be(:user) { create(:user) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
-  let_it_be(:workspace) { create(:workspace, user: user, personal_access_token: personal_access_token) }
+  # The desired state of the workspace is set to running so that a workspace token gets associated to it.
+  let_it_be(:workspace) do
+    create(:workspace, user: user, personal_access_token: personal_access_token, desired_state: states_module::RUNNING)
+  end
+
   let(:vscode_extension_marketplace) do
     {
       service_url: "service_url",
@@ -20,6 +24,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
     }
   end
 
+  let(:gitlab_kas_external_url) { "ws://kas.example.com/-/external/namespace/path" }
   let(:variable_type) { RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE }
 
   let(:user_provided_variables) do
@@ -37,6 +42,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       vscode_extension_marketplace: vscode_extension_marketplace,
       params: {
         variables: user_provided_variables
+      },
+      settings: {
+        gitlab_kas_external_url: gitlab_kas_external_url
       }
     }
   end
@@ -48,7 +56,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   context "when workspace variables create is successful" do
     let(:valid_variable_type) { RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE }
     let(:variable_type) { valid_variable_type }
-    let(:expected_number_of_records_saved) { 19 }
+    let(:expected_number_of_records_saved) { 23 }
 
     it "creates the workspace variable records and returns ok result containing original context" do
       expect { result }.to change { workspace.workspace_variables.count }.by(expected_number_of_records_saved)
@@ -63,7 +71,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   context "when workspace create fails" do
     let(:invalid_variable_type) { 9999999 }
     let(:variable_type) { invalid_variable_type }
-    let(:expected_number_of_records_saved) { 17 }
+    let(:expected_number_of_records_saved) { 21 }
 
     it "does not create the invalid workspace variable records and returns an error result with model errors" do
       # NOTE: Any valid records will be saved if they are first in the array before the invalid record, but that's OK,
