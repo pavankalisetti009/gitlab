@@ -48237,6 +48237,7 @@ Import source.
 | <a id="importsourcegitlab_group"></a>`GITLAB_GROUP` | Gitlab Group. |
 | <a id="importsourcegitlab_migration"></a>`GITLAB_MIGRATION` | Gitlab Migration. |
 | <a id="importsourcegitlab_project"></a>`GITLAB_PROJECT` | Gitlab Project. |
+| <a id="importsourcejira"></a>`JIRA` | Jira. |
 | <a id="importsourcemanifest"></a>`MANIFEST` | Manifest. |
 | <a id="importsourcenone"></a>`NONE` | Not imported. |
 
