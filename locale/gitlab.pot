@@ -58837,6 +58837,9 @@ msgstr ""
 msgid "SecurityOrchestration|In each pipeline, a %{boldStart}maximum of 1000%{boldEnd} vulnerabilities that are %{italicStart}no longer detected%{italicEnd} will be set to status %{italicStart}Resolved%{italicEnd} until all have been auto-resolved."
 msgstr ""
 
+msgid "SecurityOrchestration|In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. %{linkStart}Learn more%{linkEnd}"
+msgstr ""
+
 msgid "SecurityOrchestration|Individual users"
 msgstr ""
 
@@ -59056,6 +59059,9 @@ msgid "SecurityOrchestration|Policy definition"
 msgstr ""
 
 msgid "SecurityOrchestration|Policy editor"
+msgstr ""
+
+msgid "SecurityOrchestration|Policy enforcement"
 msgstr ""
 
 msgid "SecurityOrchestration|Policy exceeds the maximum of %{limit} actions"
@@ -59346,6 +59352,9 @@ msgstr ""
 msgid "SecurityOrchestration|Status"
 msgstr ""
 
+msgid "SecurityOrchestration|Strictly enforced"
+msgstr ""
+
 msgid "SecurityOrchestration|Summary"
 msgstr ""
 
@@ -59437,6 +59446,9 @@ msgid "SecurityOrchestration|This policy is inherited from %{linkStart}namespace
 msgstr ""
 
 msgid "SecurityOrchestration|This policy is inherited from %{namespace}"
+msgstr ""
+
+msgid "SecurityOrchestration|This policy was previously in warn mode, which was an experimental feature. Due to changes in the feature, warn mode is now disabled. To enable the new warn mode setting, update this property."
 msgstr ""
 
 msgid "SecurityOrchestration|This project"
@@ -59560,6 +59572,9 @@ msgid "SecurityOrchestration|Vulnerability management policy"
 msgstr ""
 
 msgid "SecurityOrchestration|Warn in merge request"
+msgstr ""
+
+msgid "SecurityOrchestration|Warn mode"
 msgstr ""
 
 msgid "SecurityOrchestration|Warn users with a bot comment and contact the following users as security consultants for support: %{approvers}"
