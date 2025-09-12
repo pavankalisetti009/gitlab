@@ -2,10 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_cache_disabled, feature_category: :global_search do
-  let_it_be(:project_1) { create(:project, :public, :repository) }
-  let_it_be(:project_2) { create(:project, :public, :repository) }
-  let_it_be(:project_3) { create(:project, :public, :repository) }
+RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_cache_disabled, :clean_gitlab_redis_cache, feature_category: :global_search do
+  let_it_be(:namespace) { create(:group) }
+  let_it_be(:project_1) { create(:project, :public, :repository, namespace: namespace) }
+  let_it_be(:project_2) { create(:project, :public, :repository, namespace: namespace) }
+  let_it_be(:project_3) { create(:project, :public, :repository, namespace: namespace) }
   let(:client) { described_class.new }
 
   before_all do
@@ -308,9 +309,10 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_
     let(:node_id) { node.id }
     let(:search_mode) { 'regex' }
     let(:targets) { { node_id => project_ids } }
+    let(:options) { {} }
 
     subject(:search) do
-      client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: search_mode)
+      client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: search_mode, **options)
     end
 
     context 'when user does not have permission to read across the projects' do
@@ -334,6 +336,66 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt_settings_enabled, :zoekt_
         it 'returns an empty response' do
           expect(search.file_count).to eq 0
           expect(search.result[:Files]).to be_empty
+        end
+      end
+    end
+
+    context 'with load balancer' do
+      context 'with global search' do
+        it 'tracks correct load for node via load balancer' do
+          load_balancer = ::Search::Zoekt::LoadBalancer.new([node])
+          allow(::Search::Zoekt::LoadBalancer).to receive(:new).and_return(load_balancer)
+          expect(load_balancer).to receive(:increase_load).with(node, weight: 5)
+          expect(load_balancer).to receive(:decrease_load).with(node, weight: 5)
+
+          search
+
+          distribution = load_balancer.distribution
+          expect(distribution.find { |h| h[:node_id] == node.id }[:current_load]).to eq(0.0)
+        end
+      end
+
+      context 'with group search' do
+        let(:options) { { group_id: project_1.namespace.id } }
+
+        it 'tracks load for node via load balancer' do
+          load_balancer = ::Search::Zoekt::LoadBalancer.new([node])
+          expect(::Search::Zoekt::LoadBalancer).to receive(:new).and_return(load_balancer)
+          expect(load_balancer).to receive(:increase_load).with(node, weight: 3)
+          expect(load_balancer).to receive(:decrease_load).with(node, weight: 3)
+
+          search
+
+          distribution = load_balancer.distribution
+          expect(distribution.find { |h| h[:node_id] == node.id }[:current_load]).to eq(0.0)
+        end
+      end
+
+      context 'with project search' do
+        let(:options) { { project_id: project_1.id } }
+
+        it 'tracks correct load for node via load balancer' do
+          load_balancer = ::Search::Zoekt::LoadBalancer.new([node])
+          expect(::Search::Zoekt::LoadBalancer).to receive(:new).and_return(load_balancer)
+          expect(load_balancer).to receive(:increase_load).with(node, weight: 1)
+          expect(load_balancer).to receive(:decrease_load).with(node, weight: 1)
+
+          search
+
+          distribution = load_balancer.distribution
+          expect(distribution.find { |h| h[:node_id] == node.id }[:current_load]).to eq(0.0)
+        end
+      end
+
+      context 'when using traversal id search' do
+        let(:targets) { {} }
+
+        it 'calls #pick on the load balancer to select the appropriate node' do
+          load_balancer = ::Search::Zoekt::LoadBalancer.new([node])
+          expect(::Search::Zoekt::LoadBalancer).to receive(:new).and_return(load_balancer)
+          expect(load_balancer).to receive(:pick).and_return(node)
+
+          search
         end
       end
     end
