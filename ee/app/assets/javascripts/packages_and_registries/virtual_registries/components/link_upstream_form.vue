@@ -1,17 +1,10 @@
 <script>
-import {
-  GlAlert,
-  GlButton,
-  GlCard,
-  GlCollapsibleListbox,
-  GlForm,
-  GlFormGroup,
-  GlSkeletonLoader,
-} from '@gitlab/ui';
+import { GlAlert, GlButton, GlCard, GlForm, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui';
 import { sprintf, n__ } from '~/locale';
 import { getMavenUpstream } from 'ee/api/virtual_registries_api';
 import { captureException } from '../sentry_utils';
 import TestMavenUpstreamButton from './test_maven_upstream_button.vue';
+import UpstreamSelector from './upstream_selector.vue';
 
 export default {
   name: 'LinkUpstreamForm',
@@ -19,11 +12,11 @@ export default {
     GlAlert,
     GlButton,
     GlCard,
-    GlCollapsibleListbox,
     GlForm,
     GlFormGroup,
     GlSkeletonLoader,
     TestMavenUpstreamButton,
+    UpstreamSelector,
   },
   props: {
     loading: {
@@ -31,8 +24,16 @@ export default {
       required: false,
       default: false,
     },
-    upstreamOptions: {
+    linkedUpstreams: {
       type: Array,
+      required: true,
+    },
+    initialUpstreams: {
+      type: Array,
+      required: true,
+    },
+    upstreamsCount: {
+      type: Number,
       required: true,
     },
   },
@@ -53,22 +54,24 @@ export default {
     };
   },
   computed: {
-    hasOptions() {
-      return this.upstreamOptions.length > 0;
+    selectedUpstreamName() {
+      return this.selectedUpstreamDetails?.name ?? '';
     },
   },
   methods: {
-    async fetchUpstreamDetails(upstreamId) {
+    async selectUpstream(upstreamId) {
       if (!upstreamId) return;
+
+      this.selectedUpstream = upstreamId;
 
       this.fetchUpstreamDetailsError = false;
       this.isFetchingUpstreamDetails = true;
-      this.selectedUpstreamDetails = null;
       try {
         const response = await getMavenUpstream({ id: upstreamId });
         this.selectedUpstreamDetails = response.data;
       } catch (error) {
         this.fetchUpstreamDetailsError = true;
+        this.selectedUpstreamDetails = null;
         captureException({ error, component: this.$options.name });
       } finally {
         this.isFetchingUpstreamDetails = false;
@@ -94,25 +97,20 @@ export default {
 </script>
 
 <template>
-  <gl-form v-if="hasOptions" @submit.prevent="submit">
+  <gl-form @submit.prevent="submit">
     <gl-form-group
       id="upstream-select-group"
       :label="s__('VirtualRegistry|Select an upstream')"
       label-for="upstream-select"
       class="md:gl-w-3/10"
     >
-      <gl-collapsible-listbox
-        v-model="selectedUpstream"
-        block
-        toggle-id="upstream-select"
-        :items="upstreamOptions"
-        @select="fetchUpstreamDetails"
-      >
-        <template #list-item="{ item }">
-          <div class="gl-whitespace-nowrap">{{ item.text }}</div>
-          <div class="gl-text-subtle">{{ item.secondaryText }}</div>
-        </template>
-      </gl-collapsible-listbox>
+      <upstream-selector
+        :selected-upstream-name="selectedUpstreamName"
+        :linked-upstreams="linkedUpstreams"
+        :upstreams-count="upstreamsCount"
+        :initial-upstreams="initialUpstreams"
+        @select="selectUpstream"
+      />
     </gl-form-group>
     <gl-card class="gl-my-3" header-class="gl-bg-subtle" body-class="gl-p-0">
       <template #header>

@@ -68,10 +68,10 @@ export function getMavenUpstreamCacheEntries({ id, params = {} }) {
   return axios.get(url, { params });
 }
 
-export function getMavenUpstreamRegistriesList({ id }) {
+export function getMavenUpstreamRegistriesList({ id, params = {} }) {
   const url = buildApiUrl(MAVEN_UPSTREAMS_PATH).replace(':id', id);
 
-  return axios.get(url);
+  return axios.get(url, { params });
 }
 
 export function deleteMavenRegistryCache({ id }) {

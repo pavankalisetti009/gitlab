@@ -119,31 +119,6 @@ export default {
     upstreamsCount() {
       return this.upstreams.length;
     },
-    upstreamItemIdsMap() {
-      return this.upstreamItems.reduce(
-        (map, { id }) => ({
-          ...map,
-          [getIdFromGraphQLId(id)]: true,
-        }),
-        {},
-      );
-    },
-    linkableUpstreamsDropdownOptions() {
-      return (
-        this.topLevelUpstreams
-          // filter out upstreams that are already linked to this virtual registry
-          .filter((upstream) => {
-            return !this.upstreamItemIdsMap[upstream.id];
-          })
-          .map((upstream) => {
-            return {
-              value: upstream.id,
-              text: upstream.name,
-              secondaryText: upstream.description,
-            };
-          })
-      );
-    },
     mavenVirtualRegistryID() {
       return convertToMavenRegistryGraphQLId(this.registryId);
     },
@@ -458,7 +433,9 @@ export default {
       <link-upstream-form
         v-if="isLinkUpstreamForm"
         :loading="linkUpstreamInProgress"
-        :upstream-options="linkableUpstreamsDropdownOptions"
+        :upstreams-count="topLevelUpstreamsTotalCount"
+        :linked-upstreams="upstreamItems"
+        :initial-upstreams="topLevelUpstreams"
         @submit="linkUpstream"
         @cancel="hideForm"
       />
