@@ -112,7 +112,7 @@ module Sbom
         end
         strong_memoize_attr :licenses
 
-        # This can be deleted after https://gitlab.com/gitlab-org/gitlab/-/issues/370013
+        # A component's licenses are sourced from Package Metadata DB unless overridden by licenses passed via SBOM.
         class Licenses
           include Gitlab::Utils::StrongMemoize
 
