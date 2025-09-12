@@ -25,7 +25,7 @@ module Gitlab
         end
 
         def gitlab_models_by_ref
-          return unless definitions
+          return unless definitions && definitions['models']
 
           definitions['models'].to_h do |model|
             [model['identifier'], { 'name' => model['name'], 'ref' => model['identifier'] }]
@@ -34,7 +34,7 @@ module Gitlab
         strong_memoize_attr :gitlab_models_by_ref
 
         def model_definition_per_feature
-          return unless definitions
+          return unless definitions && definitions['unit_primitives']
 
           definitions['unit_primitives'].index_by { |up| up['feature_setting'] }
         end

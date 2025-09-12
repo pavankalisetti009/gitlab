@@ -74,6 +74,14 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
         expect(parser.gitlab_models_by_ref).to be_nil
       end
     end
+
+    context 'if definitions is empty' do
+      let(:model_definitions_response) { {} }
+
+      it 'is nil' do
+        expect(parser.gitlab_models_by_ref).to be_nil
+      end
+    end
   end
 
   describe '#model_definition_per_feature' do
@@ -96,6 +104,14 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
 
     context 'if definitions is nil' do
       let(:model_definitions_response) { nil }
+
+      it 'is nil' do
+        expect(parser.model_definition_per_feature).to be_nil
+      end
+    end
+
+    context 'if definitions is empty' do
+      let(:model_definitions_response) { {} }
 
       it 'is nil' do
         expect(parser.model_definition_per_feature).to be_nil
