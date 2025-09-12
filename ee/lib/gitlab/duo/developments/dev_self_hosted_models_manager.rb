@@ -27,7 +27,7 @@ module Gitlab
           {
             name: "Llama 3.3 70b [Bedrock]",
             model: :llama3,
-            identifier: "bedrock/meta.llama3-3-70b-instruct-v1:0",
+            identifier: "bedrock/us.meta.llama3-3-70b-instruct-v1:0",
             endpoint: "http://ignorethis.com"
           },
           {
