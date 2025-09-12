@@ -99,8 +99,9 @@ describe('Dependencies mutations', () => {
       ${'name'}     | ${SORT_ASCENDING}
       ${'packager'} | ${SORT_ASCENDING}
       ${'severity'} | ${SORT_DESCENDING}
+      ${'license'}  | ${SORT_ASCENDING}
       ${'foo'}      | ${undefined}
-    `('sets the sort field to $field and sort order to $order', ({ field, order }) => {
+    `('sets the sort field to $field and default sort order to $order', ({ field, order }) => {
       mutations[types.SET_SORT_FIELD](state, field);
 
       expect(state.sortField).toBe(field);
