@@ -3,6 +3,7 @@ query getDuoWorkflowStatusCheck($projectPath: ID!) {
     id
     duoWorkflowStatusCheck {
       enabled
+      remoteFlowsEnabled
     }
   }
 }

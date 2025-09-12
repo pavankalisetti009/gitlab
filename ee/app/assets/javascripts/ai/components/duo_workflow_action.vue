@@ -103,7 +103,9 @@ export default {
       update(data) {
         if (data.project) {
           return {
-            isDuoActionEnabled: Boolean(data.project?.duoWorkflowStatusCheck?.enabled),
+            isDuoActionEnabled:
+              Boolean(data.project?.duoWorkflowStatusCheck?.enabled) &&
+              Boolean(data.project?.duoWorkflowStatusCheck?.remoteFlowsEnabled),
             projectId: getIdFromGraphQLId(data.project.id),
           };
         }

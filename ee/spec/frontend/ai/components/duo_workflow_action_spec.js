@@ -39,6 +39,7 @@ describe('DuoWorkflowAction component', () => {
         id: 'gid://gitlab/Project/1',
         duoWorkflowStatusCheck: {
           enabled: true,
+          remoteFlowsEnabled: true,
         },
       },
     },
@@ -50,6 +51,31 @@ describe('DuoWorkflowAction component', () => {
         id: 'gid://gitlab/Project/1',
         duoWorkflowStatusCheck: {
           enabled: false,
+          remoteFlowsEnabled: false,
+        },
+      },
+    },
+  };
+
+  const mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled = {
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        duoWorkflowStatusCheck: {
+          enabled: true,
+          remoteFlowsEnabled: false,
+        },
+      },
+    },
+  };
+
+  const mockDuoWorkflowStatusCheckDisabledButRemoteFlowsEnabled = {
+    data: {
+      project: {
+        id: 'gid://gitlab/Project/1',
+        duoWorkflowStatusCheck: {
+          enabled: false,
+          remoteFlowsEnabled: true,
         },
       },
     },
@@ -99,7 +125,41 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    describe('when duoWorkflowStatusCheck is enabled', () => {
+    describe('when duoWorkflowStatusCheck is enabled but remoteFlowsEnabled is false', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest
+          .fn()
+          .mockResolvedValue(mockDuoWorkflowStatusCheckEnabledButRemoteFlowsDisabled);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+
+      it('calls health checks query', () => {
+        expect(mockGetHealthCheckHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('when duoWorkflowStatusCheck is disabled but remoteFlowsEnabled is true', () => {
+      beforeEach(async () => {
+        mockGetHealthCheckHandler = jest
+          .fn()
+          .mockResolvedValue(mockDuoWorkflowStatusCheckDisabledButRemoteFlowsEnabled);
+        await createComponent();
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+
+      it('calls health checks query', () => {
+        expect(mockGetHealthCheckHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('when both duoWorkflowStatusCheck and remoteFlowsEnabled are enabled', () => {
       beforeEach(async () => {
         await createComponent();
       });
@@ -128,7 +188,7 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    describe('when duoWorkflowStatusCheck is enabled but projectId is missing', () => {
+    describe('when duoWorkflowStatusCheck is enabled with remoteFlowsEnabled but projectId is missing', () => {
       beforeEach(async () => {
         mockGetHealthCheckHandler = jest.fn().mockResolvedValue({
           data: {
@@ -136,6 +196,7 @@ describe('DuoWorkflowAction component', () => {
               id: null,
               duoWorkflowStatusCheck: {
                 enabled: true,
+                remoteFlowsEnabled: true,
               },
             },
           },
