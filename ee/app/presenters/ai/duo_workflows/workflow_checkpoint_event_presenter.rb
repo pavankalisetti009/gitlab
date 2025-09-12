@@ -6,11 +6,11 @@ module Ai
       presents ::Ai::DuoWorkflows::Checkpoint, as: :event
 
       def timestamp
-        Time.parse(event.thread_ts)
+        event.thread_ts
       end
 
       def parent_timestamp
-        Time.parse(event.parent_ts) if event.parent_ts
+        event.parent_ts
       end
 
       def workflow_status

@@ -8,8 +8,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCheckpointService, feature_category: :a
     let_it_be(:project) { create(:project, group: group) }
     let(:workflow) { create(:duo_workflows_workflow, **container_params) }
     let(:container_params) { { project: project } }
-    let(:thread_ts) { Time.current.to_s }
-    let(:parent_ts) { (Time.current - 1.second).to_s }
+    let(:thread_ts) { Gitlab::Utils.uuid_v7 }
+    let(:parent_ts) { Gitlab::Utils.uuid_v7 }
     let(:metadata) { { another_key: 'another value' } }
     let(:params) { { thread_ts: thread_ts, parent_ts: parent_ts, checkpoint: { key: 'value' }, metadata: metadata } }
 

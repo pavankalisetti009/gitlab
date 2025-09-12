@@ -28,13 +28,13 @@ module Types
           null: false, description: "Granular status of the session's execution.",
           experiment: { milestone: '17.10' }
 
-        field :timestamp, Types::TimeType,
+        field :timestamp, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Time of the event.'
+          description: 'UUID v7 timestamp identifier for the conversation thread/session in LangGraph state management.'
 
-        field :parent_timestamp, Types::TimeType,
+        field :parent_timestamp, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'Time of the parent event.'
+          description: 'UUID v7 timestamp identifier of the parent message for branched conversations or responses.'
 
         field :errors, [GraphQL::Types::String],
           scopes: [:api, :read_api, :ai_features, :ai_workflows],

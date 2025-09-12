@@ -39,9 +39,9 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
 
   describe 'POST /ai/duo_workflows/workflows/:id/checkpoints' do
     let(:current_time) { Time.current }
-    let(:thread_ts) { current_time.to_s }
-    let(:later_thread_ts) { (current_time + 1.second).to_s }
-    let(:parent_ts) { (current_time - 1.second).to_s }
+    let(:thread_ts) { Gitlab::Utils.uuid_v7 }
+    let(:later_thread_ts) { Gitlab::Utils.uuid_v7 }
+    let(:parent_ts) { Gitlab::Utils.uuid_v7 }
     let(:checkpoint) { { key: 'value' } }
     let(:metadata) { { key: 'value' } }
     let(:params) { { thread_ts: thread_ts, checkpoint: checkpoint, parent_ts: parent_ts, metadata: metadata } }
