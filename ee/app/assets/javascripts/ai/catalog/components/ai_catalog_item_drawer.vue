@@ -44,8 +44,8 @@ export default {
     },
   },
   computed: {
-    canAdmin() {
-      return Boolean(this.activeItem?.userPermissions?.adminAiCatalogItem);
+    canEdit() {
+      return Boolean(this.activeItem?.userPermissions?.adminAiCatalogItem && this.editRoute);
     },
     getDrawerHeight() {
       return `calc(${getContentWrapperHeight()} + var(--top-bar-height))`;
@@ -78,7 +78,7 @@ export default {
           {{ activeItem.name }}
         </h2>
         <gl-button
-          v-if="canAdmin"
+          v-if="canEdit"
           v-gl-tooltip
           :to="{ name: editRoute, params: { id: activeItemId } }"
           :title="s__('AICatalog|Edit')"

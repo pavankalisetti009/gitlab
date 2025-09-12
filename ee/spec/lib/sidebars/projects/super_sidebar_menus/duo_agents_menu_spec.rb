@@ -16,10 +16,10 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       :ai_catalog, :configure_result, :expected_items) do
       true  | true  | true  | false | false | true  | [:agents_runs]
       true  | true  | true  | true  | false | true  | [:agents_runs, :ai_flow_triggers]
-      true  | true  | true  | true  | true  | true  | [:agents_runs, :ai_flow_triggers, :ai_flows]
+      true  | true  | true  | true  | true  | true  | [:agents_runs, :ai_catalog_agents, :ai_flow_triggers, :ai_flows]
       true  | true  | false | false | false | false | []
-      true  | true  | false | true  | true  | true  | [:ai_flow_triggers, :ai_flows]
-      true  | false | true  | false | true  | true | [:ai_flows]
+      true  | true  | false | true  | true  | true  | [:ai_catalog_agents, :ai_flow_triggers, :ai_flows]
+      true  | false | true  | false | true  | true  | [:ai_catalog_agents, :ai_flows]
       true  | false | true  | false | false | false | []
       true  | false | true  | true  | false | true  | [:ai_flow_triggers]
       true  | false | false | false | false | false | []

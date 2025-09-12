@@ -5,19 +5,19 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import AiFlows from 'ee/ai/duo_agents_platform/pages/flows/ai_flows.vue';
+import AiAgents from 'ee/ai/duo_agents_platform/pages/agents/ai_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
-import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
+import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
-  mockAiCatalogFlowResponse,
-  mockBaseFlow,
+  mockAiCatalogAgentResponse,
+  mockBaseAgent,
   mockBaseItemConsumer,
-  mockConfiguredFlowsResponse,
+  mockConfiguredAgentsResponse,
   mockConfiguredItemsEmptyResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
@@ -28,7 +28,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
 
-describe('AiFlows', () => {
+describe('AiAgents', () => {
   let wrapper;
   let mockApollo;
 
@@ -39,20 +39,22 @@ describe('AiFlows', () => {
     show: jest.fn(),
   };
   const mockProjectId = 1;
-  const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
-  const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
+  const mockConfiguredAgentsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockConfiguredAgentsResponse);
+  const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
-      [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
-      [aiCatalogFlowQuery, mockFlowQueryHandler],
+      [aiCatalogConfiguredItemsQuery, mockConfiguredAgentsQueryHandler],
+      [aiCatalogAgentQuery, mockAgentQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
-    wrapper = shallowMountExtended(AiFlows, {
+    wrapper = shallowMountExtended(AiAgents, {
       apolloProvider: mockApollo,
       provide: {
         projectId: mockProjectId,
@@ -81,7 +83,7 @@ describe('AiFlows', () => {
 
     it('renders AiCatalogList component', async () => {
       const expectedItem = {
-        ...mockBaseFlow,
+        ...mockBaseAgent,
         itemConsumer: mockBaseItemConsumer,
       };
       const catalogList = findAiCatalogList();
@@ -94,17 +96,17 @@ describe('AiFlows', () => {
       expect(catalogList.props('isLoading')).toBe(false);
     });
 
-    describe('when there are no flows', () => {
+    describe('when there are no agents', () => {
       beforeEach(async () => {
-        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
+        mockConfiguredAgentsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
 
         await waitForPromises();
       });
 
       it('renders empty state with correct props', () => {
         expect(findEmptyState().props()).toMatchObject({
-          title: 'Use flows in your project.',
-          description: 'Automate tasks and processes using flows.',
+          title: 'Use agents in your project.',
+          description: 'Automate tasks and processes using agents.',
         });
       });
     });
@@ -112,8 +114,8 @@ describe('AiFlows', () => {
 
   describe('Apollo queries', () => {
     it('fetches list data', () => {
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'FLOW',
+      expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
+        itemType: 'AGENT',
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         after: null,
         before: null,
@@ -122,15 +124,15 @@ describe('AiFlows', () => {
       });
     });
 
-    describe('deleting a flow', () => {
+    describe('deleting an agent', () => {
       const item = {
-        ...mockBaseFlow,
+        ...mockBaseAgent,
         itemConsumer: mockBaseItemConsumer,
       };
-      const deleteFlow = () => findAiCatalogList().props('deleteFn')(item);
+      const deleteAgent = () => findAiCatalogList().props('deleteFn')(item);
 
       it('calls delete mutation', () => {
-        deleteFlow();
+        deleteAgent();
 
         expect(deleteItemConsumerMutationHandler).toHaveBeenCalledWith({
           id: mockBaseItemConsumer.id,
@@ -139,13 +141,13 @@ describe('AiFlows', () => {
 
       describe('when request succeeds', () => {
         it('shows a toast message and refetches the list', async () => {
-          deleteFlow();
+          deleteAgent();
 
           await waitForPromises();
 
-          expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledTimes(2);
+          expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledTimes(2);
           expect(mockToast.show).toHaveBeenCalledWith(
-            'Flow removed successfully from this project.',
+            'Agent removed successfully from this project.',
           );
         });
       });
@@ -156,11 +158,11 @@ describe('AiFlows', () => {
             mockAiCatalogItemConsumerDeleteErrorResponse,
           );
 
-          deleteFlow();
+          deleteAgent();
 
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to remove flow. You do not have permission to delete this item.',
+            'Failed to remove agent. You do not have permission to delete this item.',
           ]);
         });
       });
@@ -169,11 +171,11 @@ describe('AiFlows', () => {
         it('shows alert with error and captures exception', async () => {
           deleteItemConsumerMutationHandler.mockRejectedValue(new Error('Request failed'));
 
-          deleteFlow();
+          deleteAgent();
 
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
-            'Failed to remove flow. Error: Request failed',
+            'Failed to remove agent. Error: Request failed',
           ]);
           expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         });
@@ -193,8 +195,8 @@ describe('AiFlows', () => {
 
     it('refetches query with correct variables when paging backward', () => {
       findAiCatalogList().vm.$emit('prev-page');
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'FLOW',
+      expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
+        itemType: 'AGENT',
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         after: null,
         before: 'eyJpZCI6IjUxIn0',
@@ -205,8 +207,8 @@ describe('AiFlows', () => {
 
     it('refetches query with correct variables when paging forward', () => {
       findAiCatalogList().vm.$emit('next-page');
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'FLOW',
+      expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
+        itemType: 'AGENT',
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         after: 'eyJpZCI6IjM1In0',
         before: null,
