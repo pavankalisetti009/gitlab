@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe ProjectPolicy, feature_category: :system_access do
   include ExternalAuthorizationServiceHelpers
   include AdminModeHelper
+  include LoginHelpers
   include_context 'ProjectPolicy context'
 
   using RSpec::Parameterized::TableSyntax
@@ -4966,6 +4967,123 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
       end
+    end
+  end
+
+  describe 'admin_group_member policy' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    let(:policy) { :admin_project_member }
+
+    let(:enable_membership_lock) { true }
+    let(:enable_group_link) { true }
+    let(:enable_group_sync) { true }
+
+    before do
+      stub_application_setting(lock_memberships_to_saml: true) if enable_membership_lock
+      create(:saml_group_link, group: group) if enable_group_link
+
+      if enable_group_sync
+        stub_licensed_features(saml_group_sync: true)
+        create(:saml_provider, group: group.root_ancestor, enabled: true)
+        allow(::Gitlab::Auth::GroupSaml::Config).to receive_messages(enabled?: true)
+      end
+    end
+
+    shared_examples 'allows policy for all maintainers, owners and admins' do
+      context 'with maintainer' do
+        let(:current_user) { maintainer }
+
+        before do
+          project.add_maintainer(current_user)
+        end
+
+        it { is_expected.to be_allowed(policy) }
+      end
+
+      context 'with owner' do
+        let(:current_user) { owner }
+
+        before do
+          project.add_owner(current_user)
+        end
+
+        it { is_expected.to be_allowed(policy) }
+      end
+
+      context 'with admin' do
+        let(:current_user) { admin }
+
+        context 'when admin mode is enabled', :enable_admin_mode do
+          it { is_expected.to be_allowed(policy) }
+        end
+
+        context 'when admin mode is disabled' do
+          it { is_expected.not_to be_allowed(policy) }
+        end
+      end
+    end
+
+    shared_examples 'restricts policy based on SAML configuration for all maintainers, owners and admins' do
+      context 'with maintainer' do
+        let(:current_user) { maintainer }
+
+        before do
+          project.add_maintainer(current_user)
+        end
+
+        it { is_expected.not_to be_allowed(policy) }
+      end
+
+      context 'with owner' do
+        let(:current_user) { owner }
+
+        before do
+          project.add_owner(current_user)
+        end
+
+        it { is_expected.not_to be_allowed(policy) }
+      end
+
+      context 'with admin' do
+        let(:current_user) { admin }
+
+        context 'when admin mode is enabled', :enable_admin_mode do
+          it { is_expected.to be_allowed(policy) }
+        end
+
+        context 'when admin mode is disabled' do
+          it { is_expected.not_to be_allowed(policy) }
+        end
+      end
+
+      context 'without membership lock' do
+        let(:enable_membership_lock) { false }
+
+        it_behaves_like 'allows policy for all maintainers, owners and admins'
+      end
+
+      context 'without group sync' do
+        let(:enable_group_sync) { false }
+
+        it_behaves_like 'allows policy for all maintainers, owners and admins'
+      end
+
+      context 'without group link' do
+        let(:enable_group_link) { false }
+
+        it_behaves_like 'allows policy for all maintainers, owners and admins'
+      end
+    end
+
+    it_behaves_like 'restricts policy based on SAML configuration for all maintainers, owners and admins'
+
+    context 'with project from subgroup' do
+      let_it_be(:subgroup) { create(:group, parent: group) }
+      let_it_be(:project) { create(:project, group: subgroup) }
+
+      it_behaves_like 'restricts policy based on SAML configuration for all maintainers, owners and admins'
     end
   end
 

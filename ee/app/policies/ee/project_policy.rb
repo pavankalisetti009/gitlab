@@ -246,6 +246,22 @@ module EE
         prevent :invite_member
       end
 
+      condition(:memberships_locked_to_saml, scope: :global) do
+        ::Gitlab::CurrentSettings.lock_memberships_to_saml?
+      end
+
+      condition(:saml_group_sync_available, scope: :subject) do
+        @subject.group.saml_group_sync_available?
+      end
+
+      condition(:saml_group_links_exists, scope: :subject) do
+        @subject.root_ancestor.saml_group_links_exists?
+      end
+
+      rule { memberships_locked_to_saml & saml_group_sync_available & saml_group_links_exists & ~admin }.policy do
+        prevent :admin_project_member
+      end
+
       condition(:custom_roles_allowed) do
         @subject.custom_roles_enabled?
       end
