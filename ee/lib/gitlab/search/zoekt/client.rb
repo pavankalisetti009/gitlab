@@ -71,18 +71,35 @@ module Gitlab
             **options
           ).as_json
 
-          proxy_node = fetch_proxy_node(**options)
-          raise 'Node can not be found' unless proxy_node
-
-          response = post_request(join_url(proxy_node.search_base_url, PROXY_SEARCH_PATH), payload)
-          log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
-          log_debug('Zoekt AST request', payload: payload) if debug?
-          Gitlab::Search::Zoekt::Response.new parse_response(response), current_user: current_user
+          with_load_balanced_node(**options) do |zkt_node|
+            response = post_request(join_url(zkt_node.search_base_url, PROXY_SEARCH_PATH), payload)
+            log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
+            log_debug('Zoekt AST request', payload: payload) if debug?
+            Gitlab::Search::Zoekt::Response.new parse_response(response), current_user: current_user
+          end
         ensure
           add_request_details(start_time: start, path: PROXY_SEARCH_PATH, body: payload)
         end
 
         private
+
+        def with_load_balanced_node(**options)
+          load_increased = false
+          node = fetch_proxy_node(**options)
+          raise 'Node can not be found' unless node
+
+          query_weight = determine_query_weight(options)
+
+          load_balancer.increase_load(node, weight: query_weight)
+          load_increased = true
+
+          yield node
+        rescue StandardError => e
+          log_error(e.message, options)
+          raise
+        ensure
+          load_balancer.decrease_load(node, weight: query_weight) if load_increased
+        end
 
         def fetch_proxy_node(**options)
           return node(options[:node_id]) if options[:node_id].present?
@@ -95,9 +112,22 @@ module Gitlab
             end.first
 
             node(node_id)
-          else # Otherwise pick a random online node
-            ::Search::Zoekt::Node.for_search.online.sample
+          else
+            load_balancer.pick
           end
+        end
+
+        def determine_query_weight(options)
+          case search_level(options)
+          when :project then 1
+          when :group then 3
+          else
+            5
+          end
+        end
+
+        def load_balancer
+          @load_balancer ||= ::Search::Zoekt::LoadBalancer.new(::Search::Zoekt::Node.for_search.online)
         end
 
         def post_request(url, payload = {}, **options)
