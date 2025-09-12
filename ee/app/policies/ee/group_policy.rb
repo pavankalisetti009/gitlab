@@ -351,7 +351,7 @@ module EE
 
         # Only used on specific scenario to filter out subgroup epics not visible
         # to user when showing parent group epics list
-        enable :list_subgroup_epics
+        enable :read_subgroup_epic
       end
 
       rule { planner }.policy do
