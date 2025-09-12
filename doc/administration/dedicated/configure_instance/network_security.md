@@ -80,7 +80,7 @@ restricted to private networks.
 
 ### Add your custom hostname
 
-To add a custom hostname to your existing GitLab Dedicated instance, submit a [support ticket](https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=4414917877650).
+To use a custom hostname with the [container registry](../../packages/container_registry.md) or the [GitLab agent server for Kubernetes](../../clusters/kas.md) on your existing GitLab Dedicated instance, submit a [support ticket](https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=4414917877650).
 
 ## Custom certificates
 
