@@ -13,6 +13,7 @@ export function initPlaceholderBypassGroupSetting() {
     isBypassOn: parseBoolean(viewModel.is_bypass_on),
     currentExpiryDate: viewModel.current_expiry_date || null,
     minDate: new Date(viewModel.min_date),
+    maxDate: new Date(viewModel.max_date),
     shouldDisableCheckbox: parseBoolean(viewModel.should_disable_checkbox),
   };
 

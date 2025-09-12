@@ -9,6 +9,10 @@ export default {
     GlFormCheckbox,
   },
   props: {
+    maxDate: {
+      type: Date,
+      required: true,
+    },
     minDate: {
       type: Date,
       required: true,
@@ -93,11 +97,12 @@ export default {
         id="group[enterprise_bypass_expires_at]"
         v-model="selectedDate"
         :min-date="minDate"
+        :max-date="maxDate"
         :disabled="!bypassIsOn"
         show-clear-button
         data-testid="placeholder-bypass-expiry-date-field"
       />
-      <!-- We need a hidden input as when bypass is turned off and datepicker is disabled, the datepicker still needs to update the backend -->
+      <!-- when bypass is turned off and datepicker is disabled, the date still needs to be cleared on the backend -->
       <input
         type="hidden"
         name="group[enterprise_bypass_expires_at]"

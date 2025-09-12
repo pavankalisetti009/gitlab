@@ -8,6 +8,7 @@ describe('PlaceholderBypassGroupSetting', () => {
 
   const defaultProps = {
     minDate: new Date('2025-05-28'),
+    maxDate: new Date('2026-05-28'),
     shouldDisableCheckbox: false,
     isBypassOn: false,
   };
@@ -52,6 +53,12 @@ describe('PlaceholderBypassGroupSetting', () => {
       createComponent();
 
       expect(findDatepicker().props('minDate')).toBe(defaultProps.minDate);
+    });
+
+    it('picker passes the correct maxDate', () => {
+      createComponent();
+
+      expect(findDatepicker().props('maxDate')).toBe(defaultProps.maxDate);
     });
 
     it('picker uses the currentExpiryDate when passed in', () => {
