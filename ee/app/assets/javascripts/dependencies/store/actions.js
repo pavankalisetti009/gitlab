@@ -152,12 +152,12 @@ const buildGraphQLFilterOptions = (searchFilterParameters) => {
 
   const filterOptions = {};
 
-  if (componentNamesFilters?.length > 0) {
-    filterOptions.componentNames = componentNamesFilters;
-  }
-
   if (componentVersionsFilters?.length > 0) {
     filterOptions.componentVersions = componentVersionsFilters;
+  }
+
+  if (componentNamesFilters?.length > 0) {
+    filterOptions.componentNames = componentNamesFilters;
   }
 
   return filterOptions;
@@ -211,7 +211,6 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params 
     .query({
       query,
       variables,
-      fetchPolicy: 'network-only',
     })
     .then(({ data }) => {
       const { nodes: dependenciesData, pageInfo: responsePageInfo } = data.namespace.dependencies;
@@ -294,7 +293,10 @@ export const setSearchFilterParameters = ({ state, commit }, searchFilters = [])
       type = `not[${type}]`;
     }
 
-    searchFilterParameters[type] = filterData;
+    // Convert reactive Vue arrays to plain arrays to fix caching issue
+    // Without this, Apollo returns wrong cached data when filters change
+    // Ex. ['0.24.0', '1.6.7', __ob__: Observer2] → ['0.24.0', '1.6.7']
+    searchFilterParameters[type] = Array.isArray(filterData) ? [...filterData] : filterData;
   });
 
   commit(types.SET_SEARCH_FILTER_PARAMETERS, searchFilterParameters);
