@@ -16,6 +16,7 @@ import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_str
 import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { InternalEvents } from '~/tracking';
 import DurationChartLoader from './duration_charts/duration_chart_loader.vue';
 import TypeOfWorkChartsLoader from './tasks_by_type/type_of_work_charts_loader.vue';
 import ValueStreamAggregationStatus from './value_stream_aggregation_status.vue';
@@ -41,7 +42,7 @@ export default {
     ValueStreamSelect,
     UrlSync,
   },
-  mixins: [glLicensedFeaturesMixin()],
+  mixins: [glLicensedFeaturesMixin(), InternalEvents.mixin()],
   props: {
     emptyStateSvgPath: {
       type: String,
@@ -153,6 +154,19 @@ export default {
     },
     overviewRequestParams() {
       return overviewMetricsRequestParams(this.cycleAnalyticsRequestParams);
+    },
+  },
+  watch: {
+    selectedValueStream: {
+      immediate: true,
+      handler(selectedValueStream) {
+        if (selectedValueStream) {
+          this.trackEvent('view_value_stream_analytics', {
+            label: selectedValueStream.name,
+            value: selectedValueStream.id,
+          });
+        }
+      },
     },
   },
   methods: {
