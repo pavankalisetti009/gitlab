@@ -24,7 +24,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
   before do
     stub_ee_application_setting(vertex_ai_host: host)
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: unit_primitive.to_sym, ai_feature_name: :vertex_ai_proxy)
+      .with(user: user, unit_primitive_name: unit_primitive, ai_feature_name: :vertex_ai_proxy)
       .and_return(aigw_headers)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end

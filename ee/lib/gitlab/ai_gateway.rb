@@ -84,10 +84,11 @@ module Gitlab
       name.to_sym == :expanded_ai_logging && self_managed_instance
     end
 
-    def self.headers(user:, service:, ai_feature_name: service.name, agent: nil, lsp_version: nil)
-      # Temporarily allow both UP names and service objects.
-      # See https://gitlab.com/gitlab-org/gitlab/-/issues/564979
-      unit_primitive_name = service.is_a?(Symbol) ? service : service.name
+    def self.headers(user:, unit_primitive_name:, ai_feature_name: unit_primitive_name, agent: nil, lsp_version: nil)
+      # Make interface flexible for the caller allowing both Symbol and String for `unit_primitive_name`.
+      # At the same time, operate with the deterministic type (Symbol) within the implementation.
+      unit_primitive_name = unit_primitive_name.to_sym
+      ai_feature_name = ai_feature_name.to_sym
 
       {
         'X-Gitlab-Authentication-Type' => 'oidc',

@@ -102,7 +102,7 @@ module Gitlab
           Gitlab::HTTP.post(
             url,
             headers: Gitlab::AiGateway.headers(
-              user: user, service: unit_primitive_name, ai_feature_name: unit_primitive_name
+              user: user, unit_primitive_name: unit_primitive_name, ai_feature_name: unit_primitive_name
             ),
             body: body.to_json,
             timeout: timeout,

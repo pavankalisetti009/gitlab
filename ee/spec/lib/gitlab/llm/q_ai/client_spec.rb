@@ -26,7 +26,7 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     allow(Doorkeeper::OAuth::Helpers::UniqueToken).to receive(:generate).and_return('1234')
 
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: expected_unit_primitive)
+      .with(user: user, unit_primitive_name: expected_unit_primitive)
       .and_return(aigw_headers)
   end
 

@@ -84,7 +84,7 @@ module Gitlab
         end
         strong_memoize_attr(:model_metadata)
 
-        # Must be overridden by subclasses to specify the service name.
+        # Must be overridden by subclasses to specify the UP name.
         def unit_primitive_name
           raise NotImplementedError
         end

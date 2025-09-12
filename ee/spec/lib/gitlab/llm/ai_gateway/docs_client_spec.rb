@@ -46,7 +46,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
 
   before do
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: :duo_chat, ai_feature_name: :duo_chat)
+      .with(user: user, unit_primitive_name: :duo_chat, ai_feature_name: :duo_chat)
       .and_return(expected_request_headers)
     allow(Gitlab::AiGateway).to receive_messages(
       self_hosted_url: self_hosted_url,

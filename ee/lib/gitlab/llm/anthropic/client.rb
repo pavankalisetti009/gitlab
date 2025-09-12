@@ -161,7 +161,7 @@ module Gitlab
             "Accept" => "application/json",
             'anthropic-version' => '2023-06-01',
             'X-Gitlab-Unit-Primitive' => unit_primitive.to_s
-          }.merge(Gitlab::AiGateway.headers(user: user, service: unit_primitive.to_sym,
+          }.merge(Gitlab::AiGateway.headers(user: user, unit_primitive_name: unit_primitive,
             ai_feature_name: :anthropic_proxy))
         end
 

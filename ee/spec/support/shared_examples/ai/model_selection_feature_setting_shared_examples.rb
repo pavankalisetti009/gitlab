@@ -75,7 +75,7 @@ RSpec.shared_context 'with the model selections fetch definition service as side
 
     allow(::Gitlab::AiGateway).to receive(:url).and_return(base_url)
     allow(::Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: unit_primitive_name, ai_feature_name: unit_primitive_name)
+      .with(user: user, unit_primitive_name: unit_primitive_name, ai_feature_name: unit_primitive_name)
   end
 end
 

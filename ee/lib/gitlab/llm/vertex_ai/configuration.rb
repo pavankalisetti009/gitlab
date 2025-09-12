@@ -35,7 +35,7 @@ module Gitlab
             "Accept" => "application/json",
             "Host" => model_config.host,
             'X-Gitlab-Unit-Primitive' => unit_primitive
-          }.merge(Gitlab::AiGateway.headers(user: user, service: unit_primitive.to_sym,
+          }.merge(Gitlab::AiGateway.headers(user: user, unit_primitive_name: unit_primitive,
             ai_feature_name: :vertex_ai_proxy))
         end
 

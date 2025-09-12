@@ -56,7 +56,7 @@ RSpec.shared_examples 'anthropic client' do
 
     allow(Gitlab::AiGateway)
       .to receive(:headers)
-      .with(user: user, service: unit_primitive, ai_feature_name: :anthropic_proxy)
+      .with(user: user, unit_primitive_name: unit_primitive, ai_feature_name: :anthropic_proxy)
       .and_return(aigw_headers)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
 

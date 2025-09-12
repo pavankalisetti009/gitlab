@@ -251,7 +251,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
 
     subject(:headers) do
       described_class.headers(
-        user: user, service: unit_primitive_name, ai_feature_name: ai_feature,
+        user: user, unit_primitive_name: unit_primitive_name, ai_feature_name: ai_feature,
         agent: agent, lsp_version: lsp_version
       )
     end
@@ -280,6 +280,17 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     end
 
     it { is_expected.to match(expected_headers) }
+
+    context 'when unit_primitive_name supplied as a String, not Symbol' do
+      subject(:headers) do
+        described_class.headers(
+          user: user, unit_primitive_name: unit_primitive_name.to_s, ai_feature_name: ai_feature,
+          agent: agent, lsp_version: lsp_version
+        )
+      end
+
+      it { is_expected.to match(expected_headers) }
+    end
 
     context 'when agent is set' do
       let(:agent) { 'user agent' }
@@ -340,21 +351,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
       let(:is_team_member) { true }
 
       it { is_expected.to match(expected_headers) }
-    end
-
-    context 'when passing service object' do
-      let(:service) { instance_double(CloudConnector::BaseAvailableServiceData, name: unit_primitive_name) }
-
-      it 'uses the service name as unit primitive name' do
-        expect(service).to receive(:name).and_return(unit_primitive_name)
-
-        headers = described_class.headers(
-          user: user, service: service, ai_feature_name: ai_feature,
-          agent: agent, lsp_version: lsp_version
-        )
-
-        expect(headers).to match(expected_headers)
-      end
     end
   end
 
