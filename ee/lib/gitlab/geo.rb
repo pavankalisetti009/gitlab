@@ -359,5 +359,9 @@ module Gitlab
     def self.org_mover_extend_selective_sync_to_primary_checksumming?
       Feature.enabled?(:org_mover_extend_selective_sync_to_primary_checksumming, type: :ops) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Checksumming is instance wide
     end
+
+    def self.geo_selective_sync_by_organizations_enabled?
+      ::Feature.enabled?(:geo_selective_sync_by_organizations, :instance)
+    end
   end
 end

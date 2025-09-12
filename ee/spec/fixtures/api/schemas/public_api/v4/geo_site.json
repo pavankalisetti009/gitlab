@@ -14,6 +14,7 @@
     "selective_sync_type",
     "selective_sync_shards",
     "selective_sync_namespace_ids",
+    "selective_sync_organization_ids",
     "minimum_reverification_interval",
     "web_edit_url",
     "_links"
@@ -77,6 +78,15 @@
       }
     },
     "selective_sync_namespace_ids": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "integer"
+      }
+    },
+    "selective_sync_organization_ids": {
       "type": [
         "array",
         "null"

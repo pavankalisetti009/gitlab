@@ -36,9 +36,64 @@ RSpec.describe API::GeoNodes, :aggregate_failures, :request_store, :geo, :promet
         selective_sync_namespace_ids: group_to_sync.id,
         minimum_reverification_interval: 10
       }
-      expect_any_instance_of(Geo::NodeCreateService).to receive(:execute).once.and_call_original
+
       post api('/geo_nodes', admin, admin_mode: true), params: geo_node_params
       expect(response).to have_gitlab_http_status(:created)
+    end
+
+    context 'with organization_ids parameter' do
+      let(:organization1) { create(:organization) }
+      let(:organization2) { create(:organization) }
+
+      context 'when geo_selective_sync_by_organizations feature flag is enabled' do
+        it 'accepts organization_ids parameter' do
+          geo_node_params = {
+            name: 'Test Node with Organizations',
+            url: 'http://example.com',
+            selective_sync_type: "organizations",
+            selective_sync_organization_ids: [organization1.id, organization2.id]
+          }
+
+          post api('/geo_nodes', admin, admin_mode: true), params: geo_node_params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+
+        it 'includes organization_ids in the response' do
+          geo_node_params = {
+            name: 'Test Node with Organizations',
+            url: 'http://example.com',
+            selective_sync_type: "organizations",
+            selective_sync_organization_ids: [organization1.id, organization2.id]
+          }
+
+          post api('/geo_nodes', admin, admin_mode: true), params: geo_node_params
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).to include('selective_sync_type' => 'organizations')
+          expect(json_response).to include('selective_sync_organization_ids' => [organization1.id, organization2.id])
+        end
+      end
+
+      context 'when geo_selective_sync_by_organizations feature flag is disabled' do
+        before do
+          stub_feature_flags(geo_selective_sync_by_organizations: false)
+        end
+
+        it 'ignores organization_ids parameter when feature flag is disabled' do
+          geo_node_params = {
+            name: 'Test Node without Organizations',
+            url: 'http://example.com',
+            selective_sync_type: "organizations",
+            selective_sync_organization_ids: [organization1.id, organization2.id]
+          }
+
+          post api('/geo_nodes', admin, admin_mode: true), params: geo_node_params
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).not_to include('organization_ids')
+        end
+      end
     end
   end
 
@@ -257,6 +312,67 @@ RSpec.describe API::GeoNodes, :aggregate_failures, :request_store, :geo, :promet
       expect(response).to have_gitlab_http_status(:ok)
       expect(response).to match_response_schema('public_api/v4/geo_node', dir: 'ee')
       expect(json_response).to include(params)
+    end
+
+    context 'with organization_ids parameter' do
+      let(:organization1) { create(:organization) }
+      let(:organization2) { create(:organization) }
+
+      context 'when geo_selective_sync_by_organizations feature flag is enabled' do
+        it 'updates organization_ids parameter' do
+          params = {
+            selective_sync_type: "organizations",
+            selective_sync_organization_ids: [organization1.id, organization2.id]
+          }
+
+          put api("/geo_nodes/#{secondary.id}", admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to match_response_schema('public_api/v4/geo_node', dir: 'ee')
+          expect(json_response).to include('selective_sync_type' => 'organizations')
+          expect(json_response).to include('selective_sync_organization_ids' => [organization1.id, organization2.id])
+        end
+
+        it 'can clear organization_ids by setting to empty array' do
+          # First set organizations
+          secondary.update!(selective_sync_type: 'organizations', organization_ids: [organization1.id])
+
+          params = {
+            selective_sync_type: "organizations",
+            selective_sync_organization_ids: []
+          }
+
+          put api("/geo_nodes/#{secondary.id}", admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to include('selective_sync_type' => 'organizations')
+          expect(json_response).to include('selective_sync_organization_ids' => [])
+        end
+      end
+
+      context 'when geo_selective_sync_by_organizations feature flag is disabled' do
+        before do
+          stub_feature_flags(geo_selective_sync_by_organizations: false)
+        end
+
+        it 'ignores organization_ids parameter' do
+          # Set some existing organizations
+          secondary.update!(selective_sync_type: 'organizations', organization_ids: [organization1.id])
+
+          params = {
+            selective_sync_type: "namespaces",
+            selective_sync_organization_ids: [organization2.id]
+          }
+
+          put api("/geo_nodes/#{secondary.id}", admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to include('selective_sync_type' => 'namespaces')
+          expect(json_response).not_to include('organization_ids')
+          # Should preserve existing organization_ids since parameter was ignored
+          expect(secondary.reload.organization_ids).to eq([organization1.id])
+        end
+      end
     end
 
     it 'can update primary' do

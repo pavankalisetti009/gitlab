@@ -45,6 +45,12 @@ module Admin
       private
 
       def geo_node_params
+        permitted_hash_params = {
+          selective_sync_shards: []
+        }
+
+        permitted_hash_params[:organization_ids] = [] if ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
+
         params.require(:geo_node).permit(
           :name,
           :url,
@@ -58,7 +64,7 @@ module Admin
           :minimum_reverification_interval,
           :container_repositories_max_capacity,
           :sync_object_storage,
-          selective_sync_shards: []
+          **permitted_hash_params
         )
       end
 

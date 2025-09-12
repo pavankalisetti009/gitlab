@@ -22,6 +22,8 @@ module EE
         expose :selective_sync_type
         expose :selective_sync_shards
         expose :namespace_ids, as: :selective_sync_namespace_ids
+        expose :organization_ids, as: :selective_sync_organization_ids,
+          if: ->(_, _) { ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled? }
         expose :minimum_reverification_interval
         expose :sync_object_storage, if: ->(geo_node, _) { geo_node.secondary? }
 

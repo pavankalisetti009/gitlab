@@ -36,5 +36,50 @@ RSpec.describe Geo::NodeUpdateService, feature_category: :geo_replication do
 
       expect(service.execute).to eq false
     end
+
+    context 'when params includes organization_ids' do
+      context 'when organization_ids is a string of comma-separated integers' do
+        it 'updates the organization links' do
+          organization_1 = create(:organization)
+          organization_2 = create(:organization)
+
+          service = described_class.new(geo_node, { organization_ids: "#{organization_1.id},#{organization_2.id}" })
+          expect(service.execute).to be true
+          geo_node.reload
+
+          expect(geo_node.organizations).to match_array([organization_1, organization_2])
+        end
+      end
+
+      context 'when organization_ids is an empty string' do
+        it 'successfully removes organization links' do
+          organization = create(:organization)
+          geo_node.organizations << organization
+          geo_node.save!
+          expect(geo_node.organizations).not_to be_empty
+
+          service = described_class.new(geo_node, { organization_ids: '' })
+          expect(service.execute).to be true
+          geo_node.reload
+
+          expect(geo_node.organizations).to be_empty
+        end
+      end
+
+      context 'when organization_ids is an empty Array' do
+        it 'successfully removes organization links' do
+          organization = create(:organization)
+          geo_node.organizations << organization
+          geo_node.save!
+          expect(geo_node.organizations).not_to be_empty
+
+          service = described_class.new(geo_node, { organization_ids: [] })
+          expect(service.execute).to be true
+          geo_node.reload
+
+          expect(geo_node.organizations).to be_empty
+        end
+      end
+    end
   end
 end

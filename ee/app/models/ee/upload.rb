@@ -64,6 +64,10 @@ module EE
       override :selective_sync_scope
       def selective_sync_scope(node, **_params)
         if node.selective_sync?
+          # TODO: Implement selective sync by organizations
+          # https://gitlab.com/gitlab-org/gitlab/-/issues/534193
+          return none if node.selective_sync_by_organizations?
+
           group_attachments(node).or(project_attachments(node)).or(other_attachments)
         else
           all

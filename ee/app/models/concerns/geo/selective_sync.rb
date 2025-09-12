@@ -4,12 +4,19 @@ module Geo
   module SelectiveSync
     extend ActiveSupport::Concern
 
-    SELECTIVE_SYNC_TYPES = %w[namespaces shards].freeze
+    SELECTIVE_SYNC_TYPES = %w[namespaces shards organizations].freeze
 
     def selective_sync?
       validate_selective_sync_type!
 
-      selective_sync_type.present?
+      types = SELECTIVE_SYNC_TYPES
+
+      # If someone enables the FF, tries selective sync by org, and finally disables the FF:
+      # 1. We won't raise unknown selective sync type error
+      # 2. But we will assume that they want selective sync to be disabled (sync everything).
+      types -= 'organizations' unless ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
+
+      types.include?(selective_sync_type)
     end
 
     def selective_sync_by_namespaces?
@@ -22,6 +29,13 @@ module Geo
       validate_selective_sync_type!
 
       selective_sync_type == 'shards'
+    end
+
+    def selective_sync_by_organizations?
+      validate_selective_sync_type!
+      return false unless ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
+
+      selective_sync_type == 'organizations'
     end
 
     def validate_selective_sync_type!
@@ -53,6 +67,10 @@ module Geo
         selected_namespaces_and_descendants
       elsif selective_sync_by_shards?
         selected_leaf_namespaces_and_ancestors
+      elsif selective_sync_by_organizations?
+        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/534201 or other sibling issues that need this
+        # This should return all namespaces owned by the selected orgs.
+        Namespace.none
       else
         raise 'This scope should not be needed without selective sync'
       end

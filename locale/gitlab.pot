@@ -29354,6 +29354,9 @@ msgstr ""
 msgid "Geo|Projects in certain groups"
 msgstr ""
 
+msgid "Geo|Projects in certain organizations"
+msgstr ""
+
 msgid "Geo|Projects in certain storage shards"
 msgstr ""
 
