@@ -21,7 +21,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
     end
 
-    it 'configures JWT role with correct settings', :aggregate_failures do
+    it 'configures JWT auth role with correct settings', :aggregate_failures do
       result
 
       jwt_role = secrets_manager_client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
@@ -37,6 +37,20 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       secrets_manager.ci_auth_literal_policies.each do |policy|
         expect(jwt_role["token_policies"]).to include(policy)
       end
+    end
+
+    it 'configures JWT CEL user auth role with correct settings', :aggregate_failures do
+      result
+
+      jwt_role = secrets_manager_client.read_jwt_cel_role(
+        secrets_manager.user_auth_mount,
+        secrets_manager.user_auth_role)
+
+      expect(jwt_role).to be_present
+      expect(jwt_role["token_policies"]).to be_nil
+      expect(jwt_role["bound_audiences"]).to include(SecretsManagement::ProjectSecretsManager.server_url)
+      expect(jwt_role["name"]).to eq(secrets_manager.user_auth_role)
+      expect(jwt_role["cel_program"]).to eq(secrets_manager.user_auth_cel_program(project.id.to_s).deep_stringify_keys)
     end
 
     context 'when the secrets manager is already active' do
@@ -140,5 +154,149 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         expect(jwt_role["bound_audiences"]).to include('http://127.0.0.1:9800')
       end
     end
+  end
+
+  describe 'JWT CEL roles' do
+    it 'authenticates via CEL and returns expected policies', :aggregate_failures do
+      result
+
+      jwt = sign_test_jwt(
+        {
+          project_id: project.id.to_s,
+          groups: [101, 102, 103],
+          user_id: user.id.to_s,
+          member_role_id: '7',
+          role_id: 'deploy'
+        }
+      )
+
+      resp = secrets_manager_client.cel_login_jwt(
+        mount_path: secrets_manager.user_auth_mount,
+        role: secrets_manager.user_auth_role,
+        jwt: jwt
+      )
+
+      expect(resp.dig('auth', 'client_token')).to be_present
+      policies = resp.dig('auth', 'policies')
+      expect(policies).to include(
+        "project_#{project.id}/users/direct/user_#{user.id}",
+        "project_#{project.id}/users/direct/member_role_7",
+        "project_#{project.id}/users/direct/group_101",
+        "project_#{project.id}/users/direct/group_102",
+        "project_#{project.id}/users/direct/group_103",
+        "project_#{project.id}/users/roles/deploy"
+      )
+    end
+
+    context 'when project_id is wrong' do
+      it 'fails to authenticate via CEL', :aggregate_failures do
+        result
+
+        jwt = sign_test_jwt(
+          {
+            project_id: (project.id + 1).to_s,
+            user_id: user.id.to_s,
+            groups: [101, 102, 103]
+          }
+        )
+
+        expect do
+          secrets_manager_client.cel_login_jwt(
+            mount_path: secrets_manager.user_auth_mount,
+            role: secrets_manager.user_auth_role,
+            jwt: jwt
+          )
+        end.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          "error executing cel program: " \
+            "Cel role 'project_#{project.id}' blocked authorization with message: " \
+            "token project_id does not match role base"
+        )
+      end
+    end
+
+    context 'when user_id is missing' do
+      it 'fails to authenticate via CEL', :aggregate_failures do
+        result
+        jwt = sign_test_jwt(
+          {
+            project_id: project.id.to_s,
+            groups: [101, 102, 103],
+            user_id: ""
+          }
+        )
+        expect do
+          secrets_manager_client.cel_login_jwt(
+            mount_path: secrets_manager.user_auth_mount,
+            role: secrets_manager.user_auth_role,
+            jwt: jwt
+          )
+        end.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          "error executing cel program: Cel role 'project_#{project.id}' " \
+            "blocked authorization with message: missing user_id"
+        )
+      end
+    end
+
+    it 'assign groups more than 25 groups' do
+      result
+
+      many = (1..30).to_a
+      jwt = sign_test_jwt(
+        project_id: project.id.to_s,
+        user_id: user.id.to_s,
+        groups: many
+      )
+
+      resp = secrets_manager_client.cel_login_jwt(
+        mount_path: secrets_manager.user_auth_mount,
+        role: secrets_manager.user_auth_role,
+        jwt: jwt
+      )
+
+      policies = resp.dig('auth', 'policies') || []
+      group_policies = policies.grep(%r{\Aproject_#{project.id}/users/direct/group_})
+      expect(group_policies.size).to eq(30)
+    end
+  end
+
+  context 'when aud is wrong' do
+    it 'is rejected by the JWT role (bound_audiences) before CEL', :aggregate_failures do
+      result
+
+      jwt = sign_test_jwt(
+        {
+          project_id: project.id.to_s,
+          groups: [101, 102, 103],
+          user_id: user.id.to_s,
+          aud: 'http://wrong.com/aud'
+        }
+      )
+
+      expect do
+        secrets_manager_client.cel_login_jwt(
+          mount_path: secrets_manager.user_auth_mount,
+          role: secrets_manager.user_auth_role,
+          jwt: jwt
+        )
+      end.to raise_error(
+        SecretsManagement::SecretsManagerClient::ApiError,
+        "error validating token: " \
+          "invalid audience (aud) claim: audience claim " \
+          "does not match any expected audience"
+      )
+    end
+  end
+
+  def sign_test_jwt(claims)
+    iss = SecretsManagement::ProjectSecretsManager.jwt_issuer
+    aud = SecretsManagement::ProjectSecretsManager.server_url
+    ttl = 600
+
+    priv = OpenSSL::PKey::RSA.new(Gitlab::CurrentSettings.ci_jwt_signing_key)
+    now  = Time.now.to_i
+    payload = { iss: iss, aud: aud, iat: now, exp: now + ttl }.merge(claims)
+    JWT.encode(payload, priv, 'RS256')
   end
 end

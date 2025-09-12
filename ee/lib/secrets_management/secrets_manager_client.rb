@@ -10,6 +10,9 @@ module SecretsManagement
     GITLAB_JWT_AUTH_PATH = 'gitlab_rails_jwt'
     OPENBAO_TOKEN_TTL = '15m'
     OPENBAO_TOKEN_MAX_TTL = '15m'
+    OPENBAO_EXPIRATION_LEEWAY = 150
+    OPENBAO_NOT_BEFORE_LEEWAY = 150
+    OPENBAO_CLOCK_SKEW_LEEWAY = 60
 
     ApiError = Class.new(StandardError)
     ConnectionError = Class.new(StandardError)
@@ -29,10 +32,11 @@ module SecretsManagement
       path.read.chomp
     end
 
-    def initialize(jwt:, role: DEFAULT_JWT_ROLE, auth_mount: GITLAB_JWT_AUTH_PATH)
+    def initialize(jwt:, role: DEFAULT_JWT_ROLE, auth_mount: GITLAB_JWT_AUTH_PATH, use_cel_auth: false)
       @jwt = jwt
       @role = role
       @auth_mount = auth_mount
+      @use_cel_auth = use_cel_auth
     end
 
     def enable_auth_engine(mount_path, type, allow_existing: false)
@@ -163,8 +167,26 @@ module SecretsManagement
       make_request(:post, url, update_jwt_role_payload)
     end
 
+    def update_cel_role(mount_path, role_name, **role_data)
+      payload = {
+        name: role_name,
+        expiration_leeway: OPENBAO_EXPIRATION_LEEWAY,
+        not_before_leeway: OPENBAO_NOT_BEFORE_LEEWAY,
+        clock_skew_leeway: OPENBAO_CLOCK_SKEW_LEEWAY
+      }
+      update_cel_role_payload = payload.merge(role_data)
+
+      make_request(:post, "auth/#{mount_path}/cel/role/#{role_name}", update_cel_role_payload)
+    end
+
     def read_jwt_role(mount_path, role_name)
       url = "auth/#{mount_path}/role/#{role_name}"
+      body = make_request(:get, url)
+      body["data"] if body
+    end
+
+    def read_jwt_cel_role(mount_path, role_name)
+      url = "auth/#{mount_path}/cel/role/#{role_name}"
       body = make_request(:get, url)
       body["data"] if body
     end
@@ -190,9 +212,23 @@ module SecretsManagement
       )
     end
 
+    def cel_login_jwt(mount_path:, role:, jwt:)
+      url = "auth/#{mount_path}/cel/login"
+      body = { role: role, jwt: jwt }
+      make_request(:post, url, body)
+    end
+
+    def inline_auth_path
+      if use_cel_auth
+        "auth/#{auth_mount}/cel/login"
+      else
+        "auth/#{auth_mount}/login"
+      end
+    end
+
     private
 
-    attr_reader :jwt, :role, :auth_mount
+    attr_reader :jwt, :role, :auth_mount, :use_cel_auth
 
     # save_raw_policy and read_raw_policy handle raw (direct API responses)
     # and the get_policy/set_policy forms should be preferred as they return
@@ -219,7 +255,7 @@ module SecretsManagement
         f.request :json
         f.response :json
 
-        f.headers['X-Vault-Inline-Auth-Path'] = "auth/#{auth_mount}/login"
+        f.headers['X-Vault-Inline-Auth-Path'] = inline_auth_path
 
         f.headers['X-Vault-Inline-Auth-Parameter-token'] =
           Base64.urlsafe_encode64({ key: "jwt", value: jwt }.to_json, padding: false)

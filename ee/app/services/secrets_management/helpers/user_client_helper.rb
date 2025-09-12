@@ -11,8 +11,10 @@ module SecretsManagement
           project: project
         ).encoded
 
-        SecretsManagerClient.new(jwt: user_jwt, role: project.secrets_manager.user_auth_role,
-          auth_mount: project.secrets_manager.user_auth_mount)
+        SecretsManagerClient.new(
+          jwt: user_jwt, role: project.secrets_manager.user_auth_role,
+          auth_mount: project.secrets_manager.user_auth_mount,
+          use_cel_auth: true)
       end
       strong_memoize_attr :user_client
     end

@@ -461,4 +461,88 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       end
     end
   end
+
+  describe '#user_auth_cel_program' do
+    let_it_be(:project) { create(:project) }
+    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+    let(:server_url) { 'http://example.internal:8200' }
+
+    before do
+      allow(described_class).to receive(:server_url).and_return(server_url)
+    end
+
+    def var_map(program)
+      program[:variables].index_by { |v| v[:name] }
+    end
+
+    context 'with integer project_id' do
+      subject(:program) { secrets_manager.user_auth_cel_program(project.id) }
+
+      it 'returns a hash with :variables and :expression' do
+        expect(program).to include(:variables, :expression)
+        expect(program[:variables]).to be_an(Array)
+        expect(program[:expression]).to be_a(String)
+      end
+
+      it 'sets base and expected_pid for the given project' do
+        vars = var_map(program)
+        expect(vars['base'][:expression]).to eq(%("project_#{project.id}"))
+        expect(vars['expected_pid'][:expression]).to eq(%("#{project.id}"))
+      end
+
+      it 'binds expected_aud to ProjectSecretsManager.server_url' do
+        vars = var_map(program)
+        expect(vars['expected_aud'][:expression]).to eq(%("#{server_url}"))
+      end
+
+      it 'defines uid, pid, grps, who with expected expressions' do
+        vars = var_map(program)
+        expect(vars['uid'][:expression]).to include("('user_id' in claims)")
+        expect(vars['pid'][:expression]).to include("('project_id' in claims)")
+        expect(vars['grps'][:expression]).to include("('groups' in claims)")
+        expect(vars['who'][:expression]).to include(%q(gitlab-user:))
+      end
+
+      it 'defines mrid conditionally and converts to string only when present' do
+        vars = var_map(program)
+        expr = vars['mrid'][:expression]
+        expect(expr).to include("member_role_id")
+        expect(expr).to include("!= null")
+        expect(expr).to include("string(claims['member_role_id'])")
+      end
+
+      it 'guards on project_id, audience, and user_id' do
+        expr = program[:expression]
+        expect(expr).to include('missing project_id')
+        expect(expr).to include('token project_id does not match role base')
+        expect(expr).to include('missing audience')
+        expect(expr).to include('audience validation failed')
+        expect(expr).to include('missing user_id')
+      end
+
+      it 'emits policies for user, member_role, groups, and role' do
+        expr = program[:expression]
+        expect(expr).to include('/users/direct/user_')
+        expect(expr).to include('/users/direct/member_role_')
+        expect(expr).to include('grps.map')
+        expect(expr).to include('/users/roles/')
+      end
+
+      it 'sets display_name and alias to "who"' do
+        expr = program[:expression]
+        expect(expr).to include('display_name: who')
+        expect(expr).to include('alias: logical.Alias { name: who }')
+      end
+    end
+
+    context 'with string project_id' do
+      subject(:program) { secrets_manager.user_auth_cel_program(project.id.to_s) }
+
+      it 'embeds the project id consistently in base and expected_pid' do
+        vars = var_map(program)
+        expect(vars['base'][:expression]).to eq(%("project_#{project.id}"))
+        expect(vars['expected_pid'][:expression]).to eq(%("#{project.id}"))
+      end
+    end
+  end
 end

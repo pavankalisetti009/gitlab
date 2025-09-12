@@ -42,10 +42,13 @@ module SecretsManagement
       def enable_auth
         # configure pipeline auth
         pipeline_jwt_exists = enable_auth_engine(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_type)
-        configure_auth(pipeline_jwt_exists)
+        configure_jwt(secrets_manager.ci_auth_mount) unless pipeline_jwt_exists
+        configure_auth
+
         # configure user auth
         user_jwt_exists = enable_auth_engine(secrets_manager.user_auth_mount, secrets_manager.user_auth_type)
-        configure_user_auth(user_jwt_exists)
+        configure_jwt(secrets_manager.user_auth_mount) unless user_jwt_exists
+        configure_user_auth_cel
       end
 
       def enable_auth_engine(auth_mount, auth_type)
@@ -56,17 +59,27 @@ module SecretsManagement
         )
       end
 
-      def configure_auth(jwt_exists)
-        unless jwt_exists
-          # We use the OIDC discovery URL to configure this JWT mount so that
-          # OpenBao can automatically update its copy of the issuer. However,
-          # if we're running under a spec, we'll use a hard-coded JKS instead
-          # so that we don't need a full Puma instance running.
-          issuer_base_url = ProjectSecretsManager.jwt_issuer
-          issuer_key = Gitlab::CurrentSettings.ci_jwt_signing_key
-          secrets_manager_client.configure_jwt(secrets_manager.ci_auth_mount, issuer_base_url, issuer_key)
-        end
+      def configure_jwt(auth_mount)
+        # We use the OIDC discovery URL to configure this JWT mount so that
+        # OpenBao can automatically update its copy of the issuer. However,
+        # if we're running under a spec, we'll use a hard-coded JKS instead
+        # so that we don't need a full Puma instance running.
 
+        issuer_base_url = ProjectSecretsManager.jwt_issuer
+        issuer_key = Gitlab::CurrentSettings.ci_jwt_signing_key
+        secrets_manager_client.configure_jwt(auth_mount, issuer_base_url, issuer_key)
+      end
+
+      def configure_user_auth_cel
+        secrets_manager_client.update_cel_role(
+          secrets_manager.user_auth_mount,
+          secrets_manager.user_auth_role,
+          cel_program: secrets_manager.user_auth_cel_program(secrets_manager.project.id),
+          bound_audiences: [ProjectSecretsManager.server_url]
+        )
+      end
+
+      def configure_auth
         secrets_manager_client.update_jwt_role(
           secrets_manager.ci_auth_mount,
           secrets_manager.ci_auth_role,
@@ -78,32 +91,6 @@ module SecretsManagement
           },
           bound_audiences: [ProjectSecretsManager.server_url],
           user_claim: "project_id",
-          token_type: "service"
-        )
-      end
-
-      def configure_user_auth(jwt_exists)
-        unless jwt_exists
-          # We use the OIDC discovery URL to configure this JWT mount so that
-          # OpenBao can automatically update its copy of the issuer. However,
-          # if we're running under a spec, we'll use a hard-coded JKS instead
-          # so that we don't need a full Puma instance running.
-          issuer_base_url = ProjectSecretsManager.jwt_issuer
-          issuer_key = Gitlab::CurrentSettings.ci_jwt_signing_key
-          secrets_manager_client.configure_jwt(secrets_manager.user_auth_mount, issuer_base_url, issuer_key)
-        end
-
-        secrets_manager_client.update_jwt_role(
-          secrets_manager.user_auth_mount,
-          secrets_manager.user_auth_role,
-          role_type: 'jwt',
-          token_policies_template_claims: true,
-          token_policies: secrets_manager.user_auth_policies,
-          bound_claims: {
-            project_id: secrets_manager.project.id.to_s
-          },
-          bound_audiences: [ProjectSecretsManager.server_url],
-          user_claim: "user_id",
           token_type: "service"
         )
       end

@@ -621,17 +621,100 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
-  def update_kv_secret_with_metadata(mount_path, secret_path, value, custom_metadata)
-    client.update_kv_secret(
-      mount_path,
-      secret_path,
-      value
-    )
+  describe "CEL authentication" do
+    let(:user_id) { '0' }
+    let(:project_id) { '123' }
+    let(:server_aud) { SecretsManagement::OpenbaoTestSetup::SERVER_ADDRESS_WITH_HTTP }
+    let(:auth_mount) { "project_#{project_id}/users/direct/user_#{user_id}" }
+    let(:jwt) do
+      SecretsManagement::TestJwt.new(
+        project_id: project_id,
+        user_id: user_id,
+        aud: server_aud
+      ).encoded
+    end
 
-    client.update_kv_secret_metadata(
-      mount_path,
-      secret_path,
-      custom_metadata
-    )
+    let(:user_client) { described_class.new(jwt: jwt, role: role, auth_mount: auth_mount, use_cel_auth: true) }
+
+    before do
+      allow(SecretsManagement::ProjectSecretsManager)
+        .to receive(:server_url)
+        .and_return(server_aud)
+    end
+
+    describe '#inline_auth_path' do
+      it 'returns CEL login path instead of regular JWT login path' do
+        expect(user_client.inline_auth_path).to eq("auth/#{auth_mount}/cel/login")
+      end
+
+      it 'differs from the default class auth path' do
+        default_client = described_class.new(jwt: jwt, role: role, auth_mount: auth_mount)
+
+        expect(user_client.inline_auth_path).to eq("auth/#{auth_mount}/cel/login")
+        expect(default_client.inline_auth_path).to eq("auth/#{auth_mount}/login")
+        expect(user_client.inline_auth_path).not_to eq(default_client.inline_auth_path)
+      end
+    end
+
+    describe 'CEL mounted requests' do
+      let(:mount_path) { 'some/test/path' }
+      let(:other_mount_path) { 'other/mount/path' }
+      let(:engine) { 'kv-v2' }
+      let(:secrets_path) { 'secrets' }
+
+      before do
+        client.enable_secrets_engine(mount_path, 'kv-v2')
+        client.enable_secrets_engine(other_mount_path, 'kv-v2')
+
+        update_kv_secret_with_metadata(
+          mount_path,
+          "#{secrets_path}/DBPASS",
+          'somevalue',
+          environment: 'staging'
+        )
+
+        issuer = Gitlab.config.gitlab.url
+        client.enable_auth_engine(auth_mount, 'jwt', allow_existing: true)
+        client.configure_jwt(auth_mount, issuer, Gitlab::CurrentSettings.ci_jwt_signing_key)
+
+        client.update_cel_role(
+          auth_mount,
+          role,
+          cel_program: SecretsManagement::ProjectSecretsManager.new.user_auth_cel_program(project_id),
+          bound_audiences: [server_aud]
+        )
+
+        policy_name = "project_#{project_id}/users/direct/user_#{user_id}"
+        policy_body = {
+          "path" => {
+            # list on detailed-metadata and read on metadata is enough for list_secrets
+            "#{mount_path}/detailed-metadata/*" => { "capabilities" => ["list"] },
+            "#{mount_path}/metadata/*" => { "capabilities" => ["read"] }
+          }
+        }
+        client.set_policy(
+          SecretsManagement::AclPolicy.build_from_hash(policy_name, policy_body)
+        )
+      end
+
+      it 'lists secrets' do
+        result = user_client.list_secrets(mount_path, secrets_path) do |data|
+          { new_data: data["key"] }
+        end
+
+        expect(result).to contain_exactly(new_data: "DBPASS")
+      end
+    end
+
+    def update_cel_role
+      secrets_manager = SecretsManagement::ProjectSecretsManager.new
+
+      client.update_cel_role(
+        SecretsManagement::SecretsManagerClient::GITLAB_JWT_AUTH_PATH,
+        SecretsManagement::SecretsManagerClient::DEFAULT_JWT_ROLE,
+        cel_program: secrets_manager.user_auth_cel_program(project_id),
+        bound_audiences: [server_aud]
+      )
+    end
   end
 end
