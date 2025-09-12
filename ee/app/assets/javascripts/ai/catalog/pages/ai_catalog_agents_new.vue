@@ -64,11 +64,7 @@ export default {
     <page-heading :heading="s__('AICatalog|New agent')">
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{
-            s__(
-              'AICatalog|AI agents complete specialized tasks. They become active when included in a Flow.',
-            )
-          }}
+          {{ s__('AICatalog|AI agents complete specialized tasks.') }}
         </div>
       </template>
     </page-heading>
