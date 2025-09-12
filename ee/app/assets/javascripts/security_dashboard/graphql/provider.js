@@ -18,6 +18,9 @@ export const cacheConfig = {
     Group: {
       fields: {
         projects: relayStylePagination(['includeSubgroups', 'ids', 'search']),
+        securityMetrics: {
+          merge: true,
+        },
       },
     },
     InstanceSecurityDashboard: {
@@ -59,6 +62,9 @@ export const cacheConfig = {
 
             return containerScanningForRegistry();
           },
+        },
+        securityMetrics: {
+          merge: true,
         },
       },
     },
