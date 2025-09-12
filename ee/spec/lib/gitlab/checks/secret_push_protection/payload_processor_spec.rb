@@ -59,6 +59,21 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       end
     end
 
+    context 'when diff_blobs_with_raw_info fails' do
+      before do
+        allow(project.repository).to receive(:diff_blobs_with_raw_info).and_raise(GRPC::Internal,
+          "waiting for git-diff-pairs: exit status 128")
+      end
+
+      it 'logs the failing arguments and re-raises the error' do
+        expect(secret_detection_logger).to receive(:error).with(
+          a_string_starting_with("diff_blobs_with_raw_info Gitaly call failed with args:")
+        )
+
+        expect { payload_processor.standardize_payloads }.to raise_error(GRPC::Internal)
+      end
+    end
+
     context 'when secret_detection_transition_to_raw_info_gitaly_endpoint is disabled' do
       before do
         stub_feature_flags(secret_detection_transition_to_raw_info_gitaly_endpoint: false)

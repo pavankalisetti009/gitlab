@@ -210,10 +210,17 @@ module Gitlab
             Gitaly::ChangedPaths.new(params)
           end
 
-          project.repository.diff_blobs_with_raw_info(
-            raw_info_data,
-            patch_bytes_limit: PAYLOAD_BYTES_LIMIT
-          ).to_a
+          begin
+            project.repository.diff_blobs_with_raw_info(
+              raw_info_data,
+              patch_bytes_limit: PAYLOAD_BYTES_LIMIT
+            ).to_a
+          rescue StandardError
+            secret_detection_logger.error(
+              "diff_blobs_with_raw_info Gitaly call failed with args: #{raw_info_data.map(&:inspect)}"
+            )
+            raise
+          end
         end
 
         def get_diffs
