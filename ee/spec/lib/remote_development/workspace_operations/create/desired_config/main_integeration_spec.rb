@@ -76,6 +76,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
     )
   end
 
+  let(:project) { instance_double("Project", path: "test-project") }
+
   let(:input_processed_devfile_yaml) { input_processed_devfile_yaml_with_poststart_event }
 
   let(:workspace) do
@@ -89,6 +91,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
       desired_state_running?: desired_state_running,
       actual_state: states_module::RUNNING,
       workspace_variables: workspace_variables,
+      project: project,
       processed_devfile: input_processed_devfile_yaml
     )
   end
@@ -262,10 +265,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
             commandLine: "echo 'gl-internal-example-command-1'"
             component: tooling-container
             label: gl-internal-blocking
+            workingDir: /projects
         - id: gl-internal-example-command-2
           exec:
             commandLine: "echo 'gl-internal-example-command-2'"
             component: tooling-container
+            label: gl-internal
+            workingDir: /projects
         - id: example-prestart-apply-command
           apply:
             component: sidecar-container
@@ -895,8 +901,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
-          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-1) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-2) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
           "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
           "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
@@ -1480,8 +1486,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
-          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-1) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-2) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
           "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
           "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
@@ -2063,8 +2069,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
-          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-1) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-2) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
           "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
           "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
@@ -3765,8 +3771,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
           namespace: "default"
         },
         data: {
-          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
-          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-1) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-2) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
           "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
           "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }
@@ -4336,8 +4342,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
           namespace: "default"
         },
         data: {
-          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n/workspace-scripts/gl-internal-example-command-1 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
-          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n/workspace-scripts/gl-internal-example-command-2 || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
+          "gl-run-internal-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-1...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-1) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-1.\"\n",
+          "gl-run-non-blocking-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): ----------------------------------------\"\necho \"$(date -Iseconds): Running /workspace-scripts/gl-internal-example-command-2...\"\n(cd /projects && /workspace-scripts/gl-internal-example-command-2) || true\necho \"$(date -Iseconds): Finished running /workspace-scripts/gl-internal-example-command-2.\"\n",
           "gl-internal-example-command-1": "echo 'gl-internal-example-command-1'",
           "gl-internal-example-command-2": "echo 'gl-internal-example-command-2'"
         }

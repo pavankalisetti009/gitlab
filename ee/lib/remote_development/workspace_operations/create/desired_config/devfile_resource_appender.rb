@@ -32,7 +32,8 @@ module RemoteDevelopment
               workspace_inventory_annotations_for_partial_reconciliation,
               workspace_inventory_name: workspace_inventory_name,
               workspace_name: workspace_name,
-              workspace_namespace: workspace_namespace
+              workspace_namespace: workspace_namespace,
+              project_path: project_path
             }
 
             append_inventory_configmap(
@@ -69,6 +70,7 @@ module RemoteDevelopment
               processed_devfile_yaml: processed_devfile_yaml,
               name: scripts_configmap_name,
               namespace: workspace_namespace,
+              project_path: project_path,
               labels: labels,
               annotations: workspace_inventory_annotations_for_partial_reconciliation
             )
@@ -261,6 +263,7 @@ module RemoteDevelopment
           # @param [String] processed_devfile_yaml
           # @param [String] name
           # @param [String] namespace
+          # @param [String] project_path
           # @param [Hash] labels
           # @param [Hash] annotations
           # @return [void]
@@ -269,6 +272,7 @@ module RemoteDevelopment
             processed_devfile_yaml:,
             name:,
             namespace:,
+            project_path:,
             labels:,
             annotations:
           )
@@ -303,10 +307,12 @@ module RemoteDevelopment
               desired_config_array: desired_config_array,
               name: name,
               namespace: namespace,
+              project_path: project_path,
               labels: labels,
               annotations: annotations,
               devfile_commands: devfile_commands,
-              devfile_events: devfile_events
+              devfile_events: devfile_events,
+              processed_devfile: processed_devfile
             )
 
             ScriptsVolumeInserter.insert(

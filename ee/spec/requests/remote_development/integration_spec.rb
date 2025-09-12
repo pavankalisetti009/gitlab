@@ -77,10 +77,36 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:user_defined_commands) do
     [
       {
+        id: "db-component-command-with-working-dir",
+        exec: {
+          component: "database-container",
+          commandLine: "echo 'executes postStart command in the specified workingDir'",
+          workingDir: "test-dir",
+          hotReloadCapable: false
+        }
+      },
+      {
+        id: "db-component-command-without-working-dir",
+        exec: {
+          component: "database-container",
+          commandLine: "echo 'executes postStart command in the the container's default WORKDIR'",
+          hotReloadCapable: false
+        }
+      },
+      {
+        id: "main-component-command-without-working-dir",
+        exec: {
+          component: "tooling-container",
+          commandLine: "echo 'executes postStart command in the projects/project_path directory'",
+          hotReloadCapable: false
+        }
+      },
+      {
         id: "user-defined-command",
         exec: {
           component: "tooling-container",
-          commandLine: "echo 'user-defined postStart command'",
+          commandLine: "echo 'executes postStart command in the specified workingDir'",
+          workingDir: "test-dir",
           hotReloadCapable: false
         }
       }

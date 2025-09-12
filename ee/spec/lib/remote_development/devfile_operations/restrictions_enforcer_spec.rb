@@ -112,7 +112,7 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-restricted-prefix-variable-name-with-underscore-devfile.yaml.erb" | "Variable name 'gl_example' must not start with 'gl_'" | :processed_devfile
         "example.invalid-root-attributes-pod-overrides-devfile.yaml.erb" | "Attribute 'pod-overrides' is not yet supported" | :processed_devfile
         "example.invalid-unsupported-command-exec-hot-reload-capable-option-devfile.yaml.erb" | "Property 'hotReloadCapable' for exec command 'unsupported-hot-reload-option' must be false when specified" | :processed_devfile
-        "example.invalid-unsupported-command-exec-options-devfile.yaml.erb" | "Unsupported options 'unsupportedOption' for exec command 'unsupported-options'. Only 'commandLine, component, label, hotReloadCapable' are supported." | :processed_devfile
+        "example.invalid-unsupported-command-exec-options-devfile.yaml.erb" | "Unsupported options 'unsupportedOption' for exec command 'unsupported-options'. Only 'commandLine, component, label, hotReloadCapable, workingDir' are supported." | :processed_devfile
         "example.invalid-unsupported-command-type-devfile.yaml.erb" | "Command 'composite-command' must have one of the supported command types: exec, apply" | :processed_devfile
         "example.invalid-unsupported-command-type-poststart-event-devfile.yaml.erb" | "PostStart event references command 'apply-command' which is not an exec command. Only exec commands are supported in postStart events" | :processed_devfile
         "example.invalid-poststart-event-nonexistent-command-devfile.yaml.erb" | "PostStart event references command 'nonexistent-command' which has no command definition." | :processed_devfile

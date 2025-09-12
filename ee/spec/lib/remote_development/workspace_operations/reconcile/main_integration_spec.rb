@@ -16,6 +16,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     agent.reload
   end
 
+  let_it_be(:project) { create(:project, path: "test-project") }
+
   let(:desired_state) { states_module::STOPPED }
   let(:actual_state) { states_module::STOPPED }
   let(:force_include_all_resources) { false }
@@ -23,6 +25,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     {
       user: user,
       agent: agent,
+      project: project,
       desired_state: desired_state,
       actual_state: actual_state,
       force_include_all_resources: force_include_all_resources
@@ -74,10 +77,36 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
   let(:user_defined_commands) do
     [
       {
+        id: "db-component-command-with-working-dir",
+        exec: {
+          component: "database-container",
+          commandLine: "echo 'executes postStart command in the specified workingDir'",
+          workingDir: "test-dir",
+          hotReloadCapable: false
+        }
+      },
+      {
+        id: "db-component-command-without-working-dir",
+        exec: {
+          component: "database-container",
+          commandLine: "echo 'executes postStart command in the the container's default WORKDIR'",
+          hotReloadCapable: false
+        }
+      },
+      {
+        id: "main-component-command-without-working-dir",
+        exec: {
+          component: "tooling-container",
+          commandLine: "echo 'executes postStart command in the projects/project_path directory'",
+          hotReloadCapable: false
+        }
+      },
+      {
         id: "user-defined-command",
         exec: {
           component: "tooling-container",
-          commandLine: "echo 'user-defined postStart command'",
+          commandLine: "echo 'executes postStart command in the specified workingDir'",
+          workingDir: "test-dir",
           hotReloadCapable: false
         }
       }

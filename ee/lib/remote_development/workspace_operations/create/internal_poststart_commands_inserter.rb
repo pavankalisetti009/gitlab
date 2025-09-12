@@ -71,7 +71,8 @@ module RemoteDevelopment
             exec: {
               commandLine: clone_project_script,
               component: main_component_name,
-              label: INTERNAL_BLOCKING_COMMAND_LABEL
+              label: INTERNAL_BLOCKING_COMMAND_LABEL,
+              workingDir: WORKSPACE_DATA_VOLUME_PATH
             }
           }
 
@@ -93,7 +94,8 @@ module RemoteDevelopment
               exec: {
                 commandLine: clone_unshallow_script,
                 component: main_component_name,
-                label: INTERNAL_BLOCKING_COMMAND_LABEL
+                label: INTERNAL_BLOCKING_COMMAND_LABEL,
+                workingDir: WORKSPACE_DATA_VOLUME_PATH
               }
             }
           end
@@ -105,7 +107,8 @@ module RemoteDevelopment
             exec: {
               commandLine: INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
               component: main_component_name,
-              label: INTERNAL_BLOCKING_COMMAND_LABEL
+              label: INTERNAL_BLOCKING_COMMAND_LABEL,
+              workingDir: WORKSPACE_DATA_VOLUME_PATH
             }
           }
 
@@ -116,7 +119,8 @@ module RemoteDevelopment
             exec: {
               commandLine: INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
               component: main_component_name,
-              label: INTERNAL_BLOCKING_COMMAND_LABEL
+              label: INTERNAL_BLOCKING_COMMAND_LABEL,
+              workingDir: WORKSPACE_DATA_VOLUME_PATH
             }
           }
 
@@ -136,7 +140,8 @@ module RemoteDevelopment
             exec: {
               commandLine: sleep_until_container_is_running_script,
               component: main_component_name,
-              label: INTERNAL_COMMAND_LABEL
+              label: INTERNAL_COMMAND_LABEL,
+              workingDir: WORKSPACE_DATA_VOLUME_PATH
             }
           }
 

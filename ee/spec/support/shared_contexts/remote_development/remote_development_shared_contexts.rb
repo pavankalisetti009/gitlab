@@ -781,7 +781,26 @@ RSpec.shared_context 'with remote development shared fixtures' do
                       name: "#{workspace_name}-env-var"
                     }
                   }
-                ]
+                ],
+                lifecycle: {
+                  postStart: {
+                    exec: {
+                      command: [
+                        "/bin/sh",
+                        "-c",
+                        format(
+                          files_module::KUBERNETES_POSTSTART_HOOK_COMMAND,
+                          run_internal_blocking_poststart_commands_script_file_path:
+                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                              "#{create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                          run_non_blocking_poststart_commands_script_file_path:
+                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                              "#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                        )
+                      ]
+                    }
+                  }
+                }
               },
               {
                 image: "quay.io/mloriedo/universal-developer-image:ubi8-dw-demo",
@@ -921,6 +940,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       status: {}
     }
 
+    database_container = deployment[:spec][:template][:spec][:containers].find { |c| c[:name] == "database-container" }
+
     unless include_scripts_resources
       deployment[:spec][:template][:spec][:containers].each do |container|
         container[:volumeMounts].delete_if do |volume_mount|
@@ -931,9 +952,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
         volume[:name] == create_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
       end
       deployment[:spec][:template][:spec][:containers][0].delete(:lifecycle)
+      database_container&.delete(:lifecycle)
     end
 
     if legacy_poststart_container_command
+      database_container&.delete(:lifecycle)
       deployment[:spec][:template][:spec][:containers][0][:lifecycle] = {
         postStart: {
           exec: {
@@ -950,6 +973,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
           }
         }
       }
+      deployment[:spec][:template][:spec][:containers][1][:lifecycle]
     end
 
     if legacy_no_poststart_container_command
@@ -1207,44 +1231,68 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @return [String]
   def internal_blocking_poststart_commands_script
+    data_volume_path = workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
     <<~SCRIPT
       #!/bin/sh
       echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
-      #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command || true
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command) || true
       echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command."
       echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command..."
-      #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command || true
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command) || true
       echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command."
       echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
-      #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command) || true
       echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command."
       echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
-      #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command) || true
       echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command."
     SCRIPT
   end
 
   # @param [Array<String>] user_command_ids
+  # @param [Array<Hash>] devfile_commands
+  # @param [String] project_path
+  # @param [String] main_component_name
   # @return [String]
-  def non_blocking_poststart_commands_script(user_command_ids: [])
+  def non_blocking_poststart_commands_script(
+    user_command_ids:,
+    devfile_commands:,
+    project_path: "test-project",
+    main_component_name: "tooling-container"
+  )
+    data_volume_path = workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
     script = <<~SCRIPT
       #!/bin/sh
       echo "$(date -Iseconds): ----------------------------------------"
       echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
-      #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command) || true
       echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command."
     SCRIPT
 
     # Add user-defined commands if any
     user_command_ids.each do |command_id|
+      command = devfile_commands.find { |cmd| cmd[:id] == command_id }
+      script_execution = "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}"
+
+      working_dir = command.dig(:exec, :workingDir)
+      component_name = command.dig(:exec, :component)
+
+      effective_working_dir = if working_dir.present?
+                                working_dir
+                              elsif component_name == main_component_name
+                                "${PROJECT_SOURCE}/#{Shellwords.shellescape(project_path)}"
+                              end
+
+      script_execution = "(cd #{effective_working_dir} && #{script_execution})" if effective_working_dir.present?
+
       script += <<~SCRIPT
         echo "$(date -Iseconds): ----------------------------------------"
         echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}..."
-        #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id} || true
+        #{script_execution} || true
         echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}."
       SCRIPT
     end
@@ -1337,7 +1385,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
       create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
       create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
-        non_blocking_poststart_commands_script(user_command_ids: user_command_ids),
+        non_blocking_poststart_commands_script(
+          user_command_ids: user_command_ids,
+          devfile_commands: user_defined_commands
+        ),
       "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
       "gl-start-sshd-command": files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
     }

@@ -24,10 +24,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
       desired_config_array: desired_config_array,
       name: name,
       namespace: namespace,
+      project_path: "test-project",
       labels: labels,
       annotations: annotations,
       devfile_commands: devfile_commands,
-      devfile_events: devfile_events
+      devfile_events: devfile_events,
+      processed_devfile: processed_devfile
     )
 
     desired_config_array
@@ -56,12 +58,37 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
       create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         internal_blocking_poststart_commands_script,
       create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
-        non_blocking_poststart_commands_script(user_command_ids: ["user-defined-command"]),
+        non_blocking_poststart_commands_script(
+          user_command_ids: %w[
+            db-component-command-with-working-dir
+            db-component-command-without-working-dir
+            main-component-command-without-working-dir
+            user-defined-command
+          ],
+          devfile_commands: devfile_commands
+        ),
       "gl-sleep-until-container-is-running-command":
         sleep_until_container_is_running_script,
       "gl-start-sshd-command": files::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
-      "user-defined-command": "echo 'user-defined postStart command'"
+      "db-component-command-with-working-dir": "echo 'executes postStart command in the specified workingDir'",
+      "db-component-command-without-working-dir":
+        "echo 'executes postStart command in the the container's default WORKDIR'",
+      "main-component-command-without-working-dir":
+        "echo 'executes postStart command in the projects/project_path directory'",
+      "user-defined-command": "echo 'executes postStart command in the specified workingDir'"
     )
+
+    non_blocking_script = data[create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym]
+    expect(non_blocking_script).to include(
+      '(cd test-dir && /workspace-scripts/db-component-command-with-working-dir) || true'
+    )
+    expect(non_blocking_script).to include(
+      '/workspace-scripts/db-component-command-without-working-dir || true'
+    )
+    expect(non_blocking_script).to include(
+      '(cd ${PROJECT_SOURCE}/test-project && /workspace-scripts/main-component-command-without-working-dir) || true'
+    )
+    expect(non_blocking_script).to include('(cd test-dir && /workspace-scripts/user-defined-command) || true')
   end
 
   context "when legacy poststart scripts are used" do
