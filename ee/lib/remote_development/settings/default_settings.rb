@@ -38,7 +38,6 @@ module RemoteDevelopment
           }], Array],
           network_policy_enabled: [true, :Boolean],
           partial_reconciliation_interval_seconds: [10, Integer],
-          project_cloner_image: ["alpine/git:2.45.2", String],
           shared_namespace: ["", String],
           tools_injector_image: [
             RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE, String
