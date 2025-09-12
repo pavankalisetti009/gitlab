@@ -4,6 +4,17 @@ query groupTotalRiskScore($fullPath: ID!, $projectId: [ID!]) {
     securityMetrics(projectId: $projectId) {
       riskScore {
         score
+        byProject {
+          nodes {
+            rating
+            score
+            project {
+              id
+              name
+              path
+            }
+          }
+        }
       }
     }
   }
