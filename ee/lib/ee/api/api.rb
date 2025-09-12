@@ -87,6 +87,7 @@ module EE
         mount ::API::SecurityScans
         mount ::API::ComplianceExternalControls
         mount ::API::Security::VulnerabilityScanning::SbomScans
+        mount ::API::VirtualRegistries::Container::Registries
         mount ::API::VirtualRegistries::Packages::Maven::Registries
         mount ::API::VirtualRegistries::Packages::Maven::Upstreams
         mount ::API::VirtualRegistries::Packages::Maven::RegistryUpstreams

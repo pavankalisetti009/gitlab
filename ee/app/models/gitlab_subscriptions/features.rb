@@ -101,6 +101,7 @@ module GitlabSubscriptions
       commit_committer_check
       commit_committer_name_check
       compliance_framework
+      container_virtual_registry
       custom_compliance_frameworks
       custom_fields
       custom_file_templates
