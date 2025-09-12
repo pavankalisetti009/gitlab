@@ -1,0 +1,18 @@
+query getConfiguredAgents($projectId: ProjectID, $groupId: GroupID) {
+  aiCatalogConfiguredItems(projectId: $projectId, groupId: $groupId, itemType: AGENT) {
+    nodes {
+      id
+      item {
+        id
+        name
+        description
+        versions(first: 2) {
+          nodes {
+            id
+            released
+          }
+        }
+      }
+    }
+  }
+}

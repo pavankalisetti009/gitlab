@@ -5,6 +5,7 @@ query getUserWorkflows($type: String, $first: Int) {
         id
         lastUpdatedAt: updatedAt
         title: goal
+        aiCatalogItemVersionId
       }
     }
   }

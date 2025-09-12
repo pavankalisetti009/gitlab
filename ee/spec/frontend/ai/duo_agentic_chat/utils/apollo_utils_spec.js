@@ -2,6 +2,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import duoWorkflowMutation from 'ee/ai/graphql/duo_workflow.mutation.graphql';
 import deleteAgenticWorkflowMutation from 'ee/ai/graphql/delete_agentic_workflow.mutation.graphql';
 import getWorkflowEventsQuery from 'ee/ai/graphql/get_workflow_events.query.graphql';
+import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import {
   DUO_WORKFLOW_CHAT_DEFINITION,
@@ -19,6 +20,7 @@ import {
   MOCK_WORKFLOW_MUTATION_RESPONSE,
   MOCK_DELETE_WORKFLOW_RESPONSE,
   MOCK_FETCH_WORKFLOW_EVENTS_RESPONSE,
+  MOCK_AGENT_FLOW_CONFIG_RESPONSE,
 } from './mock_data';
 
 jest.mock('~/graphql_shared/utils', () => ({
@@ -59,6 +61,7 @@ describe('ApolloUtils', () => {
       const params = {
         goal: MOCK_GOAL,
         activeThread: MOCK_ACTIVE_THREAD,
+        aiCatalogItemVersionId: 5,
       };
 
       if (projectId) params.projectId = projectId;
@@ -73,6 +76,7 @@ describe('ApolloUtils', () => {
         preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
         threadId: MOCK_ACTIVE_THREAD,
         conversationType: MULTI_THREADED_CONVERSATION_TYPE,
+        aiCatalogItemVersionId: 5,
       };
 
       if (projectId) expectedCallVariables.projectId = projectId;
@@ -118,6 +122,27 @@ describe('ApolloUtils', () => {
       });
 
       expect(result).toBe(MOCK_FETCH_WORKFLOW_EVENTS_RESPONSE.data);
+    });
+  });
+
+  describe('getAgentFlowConfig', () => {
+    const mockAgentVersionId = '456';
+
+    it('successfully retrieves a flow config for the agent', async () => {
+      const mockApolloClient = {
+        query: jest.fn().mockResolvedValue(MOCK_AGENT_FLOW_CONFIG_RESPONSE),
+      };
+
+      const result = await ApolloUtils.getAgentFlowConfig(mockApolloClient, mockAgentVersionId);
+
+      expect(mockApolloClient.query).toHaveBeenCalledWith({
+        query: getAgentFlowConfig,
+        variables: {
+          agentVersionId: mockAgentVersionId,
+        },
+      });
+
+      expect(result).toBe(MOCK_AGENT_FLOW_CONFIG_RESPONSE.data.aiCatalogAgentFlowConfig);
     });
   });
 });

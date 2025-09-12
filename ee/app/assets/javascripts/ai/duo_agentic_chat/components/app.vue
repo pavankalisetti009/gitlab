@@ -3,7 +3,9 @@
 import { mapActions, mapState } from 'vuex';
 import { AgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle } from '@gitlab/ui';
+import { parseDocument } from 'yaml';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
+import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getCookie } from '~/lib/utils/common_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
@@ -31,6 +33,7 @@ import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_drop
 import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
+import { s__ } from '~/locale';
 import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
@@ -149,6 +152,21 @@ export default {
 
         return models;
       },
+    },
+    catalogAgents: {
+      query: getConfiguredAgents,
+      skip() {
+        return !this.duoChatGlobalState.isAgenticChatShown;
+      },
+      variables() {
+        return {
+          projectId: this.projectId,
+          groupId: this.namespaceId,
+        };
+      },
+      update(data) {
+        return (data?.aiCatalogConfiguredItems.nodes || []).map((agent) => agent.item);
+      },
       error(err) {
         this.onError(err);
       },
@@ -183,6 +201,9 @@ export default {
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       chatMessageHistory: [],
       selectedModel: null,
+      catalogAgents: [],
+      flowConfig: '',
+      aiCatalogItemVersionId: '',
     };
   },
   computed: {
@@ -240,6 +261,15 @@ export default {
       set(value) {
         setAgenticMode(value, true);
       },
+    },
+    agents() {
+      return [
+        {
+          name: s__('DuoAgenticChat|GitLab Duo Agent'),
+          description: s__('DuoAgenticChat|Duo is your general development assistant'),
+        },
+        ...this.catalogAgents,
+      ].map((agent) => ({ ...agent, text: agent.name }));
     },
   },
   watch: {
@@ -341,6 +371,11 @@ export default {
         startRequest.startRequest.additionalContext = additionalContext;
       }
 
+      if (this.flowConfig) {
+        startRequest.startRequest.flowConfig = parseDocument(this.flowConfig);
+        startRequest.startRequest.flowConfigSchemaVersion = 'experimental';
+      }
+
       this.socketManager = createWebSocket('/api/v4/ai/duo_workflows/ws', {
         onMessage: this.onMessageReceived,
         onError: () => {
@@ -392,7 +427,7 @@ export default {
 
     async onSendChatPrompt(question) {
       if (this.shouldStartNewChat(question)) {
-        this.onNewChat();
+        this.onNewChat(null, true);
         return;
       }
 
@@ -400,6 +435,13 @@ export default {
         this.setLoading(true);
       }
 
+      if (this.aiCatalogItemVersionId && !this.flowConfig) {
+        const config = await ApolloUtils.getAgentFlowConfig(
+          this.$apollo,
+          this.aiCatalogItemVersionId,
+        );
+        this.flowConfig = config;
+      }
       if (!this.workflowId) {
         try {
           const { workflowId, threadId } = await ApolloUtils.createWorkflow(this.$apollo, {
@@ -407,6 +449,7 @@ export default {
             namespaceId: this.namespaceId,
             goal: question,
             activeThread: this.activeThread,
+            aiCatalogItemVersionId: this.aiCatalogItemVersionId,
           });
 
           this.workflowId = workflowId;
@@ -474,8 +517,15 @@ export default {
         const parsedWorkflowData = WorkflowUtils.parseWorkflowData(data);
         const uiChatLog = parsedWorkflowData?.checkpoint?.channel_values?.ui_chat_log || [];
         const messages = WorkflowUtils.transformChatMessages(uiChatLog, this.workflowId);
+        const [workflow] = data.duoWorkflowWorkflows.nodes ?? [];
 
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
+        this.aiCatalogItemVersionId = workflow?.aiCatalogItemVersionId;
+
+        if (!this.aiCatalogItemVersionId) {
+          this.flowConfig = '';
+        }
+
         this.chatMessageHistory = messages;
       } catch (err) {
         this.onError(err);
@@ -505,13 +555,24 @@ export default {
         this.onError(err);
       }
     },
-    onNewChat() {
+    async onNewChat(agent, reuseAgent) {
       clearDuoChatCommands();
       this.setMessages([]);
       this.activeThread = undefined;
       this.chatMessageHistory = [];
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.cleanupState();
+
+      if (reuseAgent) {
+        return;
+      }
+
+      if (agent?.id) {
+        this.aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
+      } else {
+        this.flowConfig = '';
+        this.aiCatalogItemVersionId = '';
+      }
     },
     onModelSelect(selectedModel) {
       const model = this.availableModels.find((item) => item.value === selectedModel);
@@ -544,6 +605,7 @@ export default {
         badge-type="beta"
         :dimensions="dimensions"
         :is-tool-approval-processing="isProcessingToolApproval"
+        :agents="agents"
         @new-chat="onNewChat"
         @send-chat-prompt="onSendChatPrompt"
         @chat-cancel="onChatCancel"

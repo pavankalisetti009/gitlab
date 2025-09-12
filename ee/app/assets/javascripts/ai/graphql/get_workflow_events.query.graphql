@@ -12,6 +12,7 @@ query getDuoWorkflowEvents($workflowId: AiDuoWorkflowsWorkflowID!) {
     nodes {
       id
       status
+      aiCatalogItemVersionId
     }
   }
 }
