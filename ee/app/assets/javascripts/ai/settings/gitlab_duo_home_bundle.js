@@ -28,6 +28,7 @@ export function initGitLabDuoHome() {
         areExperimentSettingsAllowed: parseBoolean(data.areExperimentSettingsAllowed),
         arePromptCacheSettingsAllowed: parseBoolean(data.arePromptCacheSettingsAllowed),
         areDuoCoreFeaturesEnabled: parseBoolean(data.areDuoCoreFeaturesEnabled),
+        initialDuoRemoteFlowsAvailability: parseBoolean(data.duoRemoteFlowsAvailability),
       };
     },
     render(createElement) {

@@ -12,7 +12,7 @@ export default {
   provide() {
     return {
       areDuoSettingsLocked: this.areDuoSettingsLocked,
-      cascadingSettingsData: this.cascadingSettingsData,
+      duoAvailabilityCascadingSettings: this.duoAvailabilityCascadingSettings,
     };
   },
   props: {
@@ -37,7 +37,7 @@ export default {
       default: false,
     },
     // This is needed by duo_availability_form through provide/inject
-    cascadingSettingsData: {
+    duoAvailabilityCascadingSettings: {
       type: Object,
       required: false,
       default: () => ({}),

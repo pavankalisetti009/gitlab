@@ -10,6 +10,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
       {
         disabled_direct_code_suggestions?: true,
         duo_availability: 'default_off',
+        duo_remote_flows_availability: true,
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         enabled_expanded_logging: true,
@@ -67,6 +68,7 @@ RSpec.describe Admin::AiConfigurationPresenter, feature_category: :ai_abstractio
         can_manage_self_hosted_models: 'true',
         disabled_direct_connection_method: 'true',
         duo_availability: 'default_off',
+        duo_remote_flows_availability: 'true',
         duo_chat_expiration_column: 'last_updated_at',
         duo_chat_expiration_days: '30',
         duo_core_features_enabled: 'true',

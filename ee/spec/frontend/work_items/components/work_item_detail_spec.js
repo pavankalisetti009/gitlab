@@ -63,7 +63,7 @@ describe('EE WorkItemDetail component', () => {
           workItemsAlpha: true,
           ...glFeatures,
         },
-        duoRemoteFlowsEnabled: true,
+        duoRemoteFlowsAvailability: true,
         hasSubepicsFeature: true,
         hasLinkedItemsEpicsFeature: true,
         fullPath: 'group/project',
@@ -103,11 +103,11 @@ describe('EE WorkItemDetail component', () => {
   });
 
   describe('Duo Workflow Action', () => {
-    describe('when duoRemoteFlowsEnabled  is false', () => {
+    describe('when duoRemoteFlowsAvailability  is false', () => {
       beforeEach(async () => {
         createComponent({
           glFeatures: { duoWorkflowInCi: true },
-          provide: { duoRemoteFlowsEnabled: false },
+          provide: { duoRemoteFlowsAvailability: false },
         });
         await waitForPromises();
       });
@@ -117,11 +117,11 @@ describe('EE WorkItemDetail component', () => {
       });
     });
 
-    describe('when duoRemoteFlowsEnabled is true', () => {
+    describe('when duoRemoteFlowsAvailability is true', () => {
       beforeEach(async () => {
         createComponent({
           glFeatures: { duoWorkflowInCi: true },
-          provide: { duoRemoteFlowsEnabled: true },
+          provide: { duoRemoteFlowsAvailability: true },
         });
         await waitForPromises();
       });

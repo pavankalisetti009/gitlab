@@ -6,6 +6,7 @@ module Admin
 
     delegate :disabled_direct_code_suggestions?,
       :duo_availability,
+      :duo_remote_flows_availability,
       :duo_chat_expiration_column,
       :duo_chat_expiration_days,
       :enabled_expanded_logging,
@@ -30,6 +31,7 @@ module Admin
         can_manage_self_hosted_models: can_manage_self_hosted_models?,
         disabled_direct_connection_method: disabled_direct_code_suggestions?,
         duo_availability: duo_availability,
+        duo_remote_flows_availability: duo_remote_flows_availability,
         duo_chat_expiration_column: duo_chat_expiration_column,
         duo_chat_expiration_days: duo_chat_expiration_days,
         duo_core_features_enabled: duo_core_features_enabled?,

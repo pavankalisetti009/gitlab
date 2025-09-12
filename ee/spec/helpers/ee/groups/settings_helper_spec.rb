@@ -86,8 +86,10 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
     it 'returns the expected data' do
       is_expected.to eq(
         {
-          cascading_settings_data: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
+          duo_availability_cascading_settings: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
           duo_availability: group.namespace_settings.duo_availability.to_s,
+          duo_remote_flows_cascading_settings: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
+          duo_remote_flows_availability: group.namespace_settings.duo_remote_flows_availability.to_s,
           duo_core_features_enabled: group.namespace_settings.duo_core_features_enabled.to_s,
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
@@ -144,7 +146,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           group_id: group.id.to_s,
           init_availability: group.namespace_settings.duo_availability.to_s,
           init_auto_review_enabled: true,
-          cascading_settings_data: { locked_by_application_setting: false, locked_by_ancestor: false },
+          duo_availability_cascading_settings: { locked_by_application_setting: false, locked_by_ancestor: false },
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?
         }
       )
@@ -161,7 +163,7 @@ RSpec.describe EE::Groups::SettingsHelper, feature_category: :groups_and_project
           initAvailability: "default_on",
           initAutoReviewEnabled: false,
           areDuoSettingsLocked: false,
-          cascadingSettingsData: { lockedByApplicationSetting: false, lockedByAncestor: false }
+          duoAvailabilityCascadingSettings: { lockedByApplicationSetting: false, lockedByAncestor: false }
         }.to_json
       )
     end

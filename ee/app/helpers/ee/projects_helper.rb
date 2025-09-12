@@ -50,7 +50,7 @@ module EE
         amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {},
-        initialDuoFlowEnabled: project.duo_remote_flows_enabled,
+        initialDuoRemoteFlowsAvailability: project.duo_remote_flows_enabled,
         experimentFeaturesEnabled: project.root_ancestor.experiment_features_enabled || false,
         paidDuoTier: paid_duo_tier_for_project(project)
       })

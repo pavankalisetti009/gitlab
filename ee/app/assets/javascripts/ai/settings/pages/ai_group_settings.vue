@@ -51,6 +51,7 @@ export default {
   methods: {
     async updateSettings({
       duoAvailability,
+      duoRemoteFlowsAvailability,
       experimentFeaturesEnabled,
       duoCoreFeaturesEnabled,
       promptCacheEnabled,
@@ -60,6 +61,7 @@ export default {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
           model_prompt_cache_enabled: promptCacheEnabled,
+          duo_remote_flows_availability: duoRemoteFlowsAvailability,
           ai_settings_attributes: {
             duo_workflow_mcp_enabled: this.duoWorkflowMcp,
           },

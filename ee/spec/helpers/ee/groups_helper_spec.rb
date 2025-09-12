@@ -310,6 +310,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         duo_availability: 'default_on',
         experiment_features_enabled: 'true',
         prompt_cache_enabled: 'true',
+        duo_remote_flows_availability: 'true',
         duo_configuration_path: '/groups/test_group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data',
         are_experiment_settings_allowed: 'true',

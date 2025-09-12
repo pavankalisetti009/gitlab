@@ -38,6 +38,7 @@ export function mountGitlabDuoHomeApp() {
     canManageSelfHostedModels,
     canManageInstanceModelSelection,
     areDuoCoreFeaturesEnabled,
+    duoRemoteFlowsAvailability,
     duoWorkflowEnabled,
     duoWorkflowServiceAccount,
     isSaas,
@@ -80,6 +81,7 @@ export function mountGitlabDuoHomeApp() {
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
       canManageInstanceModelSelection: parseBoolean(canManageInstanceModelSelection),
       areDuoCoreFeaturesEnabled: parseBoolean(areDuoCoreFeaturesEnabled),
+      initialDuoRemoteFlowsAvailability: parseBoolean(duoRemoteFlowsAvailability),
       duoWorkflowEnabled: parseBoolean(duoWorkflowEnabled),
       duoWorkflowServiceAccount: duoWorkflowServiceAccount
         ? JSON.parse(duoWorkflowServiceAccount)

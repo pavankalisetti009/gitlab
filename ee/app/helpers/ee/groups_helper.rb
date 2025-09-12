@@ -80,11 +80,12 @@ module EE
         duo_seat_utilization_path: group_settings_gitlab_duo_seat_utilization_index_path(group),
         duo_availability: settings.duo_availability.to_s,
         experiment_features_enabled: settings.experiment_features_enabled.to_s,
-        prompt_cache_enabled: group.namespace_settings.model_prompt_cache_enabled.to_s,
+        prompt_cache_enabled: settings.model_prompt_cache_enabled.to_s,
         are_experiment_settings_allowed: group.experiment_settings_allowed?.to_s,
         are_prompt_cache_settings_allowed: group.prompt_cache_settings_allowed?.to_s,
         duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group),
         are_duo_core_features_enabled: settings.duo_core_features_enabled.to_s,
+        duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
         model_switching_enabled: can?(current_user, :admin_group_model_selection, group).to_s,
         model_switching_path: group_settings_gitlab_duo_model_selection_index_path(group)
       }.merge(code_suggestions_usage_app_data(group))
