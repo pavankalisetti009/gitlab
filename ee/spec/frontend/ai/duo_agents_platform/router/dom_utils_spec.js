@@ -3,7 +3,6 @@ import { updateActiveNavigation } from 'ee/ai/duo_agents_platform/router/dom_uti
 // Test constants
 const CSS_CLASSES = {
   activeClass: 'super-sidebar-nav-item-current',
-  activeIndicatorClass: 'active-indicator',
   hiddenClass: 'gl-hidden',
 };
 
@@ -22,11 +21,6 @@ const createMockElement = (methods = {}) => ({
   ...methods,
 });
 
-const createMockNavItem = (indicator = null) => ({
-  ...createMockElement(),
-  querySelector: jest.fn().mockReturnValue(indicator),
-});
-
 const createMockSuperSidebar = (queryResults = {}) => ({
   querySelectorAll: jest.fn().mockImplementation((selector) => {
     return queryResults[selector] || [];
@@ -38,11 +32,10 @@ describe('updateActiveNavigation', () => {
   let mockElements;
 
   const setupMockSuperSidebar = (config = {}) => {
-    const { activeNavItems = [], activeIndicators = [], newNavItems = [] } = config;
+    const { activeNavItems = [], newNavItems = [] } = config;
 
     const queryResults = {
       [`.${CSS_CLASSES.activeClass}`]: activeNavItems,
-      [`.${CSS_CLASSES.activeIndicatorClass}`]: activeIndicators,
     };
 
     // Add dynamic href-based queries
@@ -72,14 +65,9 @@ describe('updateActiveNavigation', () => {
     // Create reusable mock elements
     mockElements = {
       activeNavItems: [createMockElement(), createMockElement()],
-      activeIndicators: [createMockElement(), createMockElement()],
-      newIndicators: [createMockElement(), createMockElement()],
     };
 
-    mockElements.newNavItems = [
-      createMockNavItem(mockElements.newIndicators[0]),
-      createMockNavItem(mockElements.newIndicators[1]),
-    ];
+    mockElements.newNavItems = [createMockElement()];
 
     mockSuperSidebar = createMockSuperSidebar();
     setupDocumentMock();
@@ -93,7 +81,6 @@ describe('updateActiveNavigation', () => {
     beforeEach(() => {
       setupMockSuperSidebar({
         activeNavItems: mockElements.activeNavItems,
-        activeIndicators: mockElements.activeIndicators,
         newNavItems: mockElements.newNavItems,
       });
     });
@@ -106,31 +93,12 @@ describe('updateActiveNavigation', () => {
       });
     });
 
-    it('hides current active indicators', () => {
-      updateActiveNavigation('/test-href');
-
-      mockElements.activeIndicators.forEach((indicator) => {
-        expect(indicator.classList.add).toHaveBeenCalledWith(CSS_CLASSES.hiddenClass);
-      });
-    });
-
     it('adds active class to new nav items matching href', () => {
       updateActiveNavigation('/test-href');
 
       expect(mockSuperSidebar.querySelectorAll).toHaveBeenCalledWith('[href*="/test-href"]');
       mockElements.newNavItems.forEach((item) => {
         expect(item.classList.add).toHaveBeenCalledWith(CSS_CLASSES.activeClass);
-      });
-    });
-
-    it('shows indicators for new active nav items', () => {
-      updateActiveNavigation('/test-href');
-
-      mockElements.newNavItems.forEach((item, index) => {
-        expect(item.querySelector).toHaveBeenCalledWith(`.${CSS_CLASSES.activeIndicatorClass}`);
-        expect(mockElements.newIndicators[index].classList.remove).toHaveBeenCalledWith(
-          CSS_CLASSES.hiddenClass,
-        );
       });
     });
 
@@ -145,7 +113,6 @@ describe('updateActiveNavigation', () => {
       beforeEach(() => {
         setupMockSuperSidebar({
           activeNavItems: [],
-          activeIndicators: [],
           newNavItems: [mockElements.newNavItems[0]],
         });
       });
@@ -167,41 +134,19 @@ describe('updateActiveNavigation', () => {
       });
     });
 
-    describe('when no current active indicators exist', () => {
-      beforeEach(() => {
-        setupMockSuperSidebar({
-          activeNavItems: [mockElements.activeNavItems[0]],
-          activeIndicators: [],
-          newNavItems: [mockElements.newNavItems[0]],
-        });
-      });
-
-      it('does not attempt to hide non-existent indicators', () => {
-        updateActiveNavigation('/test-href');
-
-        mockElements.activeIndicators.forEach((indicator) => {
-          expect(indicator.classList.add).not.toHaveBeenCalled();
-        });
-      });
-    });
-
     describe('when no new nav items match the href', () => {
       beforeEach(() => {
         setupMockSuperSidebar({
           activeNavItems: [mockElements.activeNavItems[0]],
-          activeIndicators: [mockElements.activeIndicators[0]],
           newNavItems: [],
         });
       });
 
-      it('still removes current active classes and hides indicators', () => {
+      it('still removes current active classes', () => {
         updateActiveNavigation('/non-matching-href');
 
         expect(mockElements.activeNavItems[0].classList.remove).toHaveBeenCalledWith(
           CSS_CLASSES.activeClass,
-        );
-        expect(mockElements.activeIndicators[0].classList.add).toHaveBeenCalledWith(
-          CSS_CLASSES.hiddenClass,
         );
       });
 
@@ -214,17 +159,16 @@ describe('updateActiveNavigation', () => {
       });
     });
 
-    describe('when new nav items exist but have no indicators', () => {
+    describe('when new nav items exist', () => {
       beforeEach(() => {
-        const navItemWithoutIndicator = createMockNavItem(null);
+        const navItems = createMockElement();
         setupMockSuperSidebar({
           activeNavItems: [],
-          activeIndicators: [],
-          newNavItems: [navItemWithoutIndicator],
+          newNavItems: [navItems],
         });
       });
 
-      it('adds active class to nav items but does not attempt to show indicators', () => {
+      it('adds active class to nav items', () => {
         expect(() => updateActiveNavigation('/test-href')).not.toThrow();
       });
     });
