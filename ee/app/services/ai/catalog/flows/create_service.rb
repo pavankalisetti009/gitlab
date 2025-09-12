@@ -30,7 +30,11 @@ module Ai
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
 
-          if item.save
+          Ai::Catalog::Item.transaction do
+            populate_dependencies(item.latest_version, delete_no_longer_used_dependencies: false) if item.save
+          end
+
+          if item.saved_changes?
             track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
             return ServiceResponse.success(payload: { item: item })
           end

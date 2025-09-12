@@ -4,6 +4,7 @@ module Ai
   module Catalog
     class ItemVersion < ApplicationRecord
       include SafelyChangeColumnDefault
+      include ::Ai::Catalog::Concerns::FlowVersion
 
       AGENT_SCHEMA_VERSION = 1
       FLOW_SCHEMA_VERSION = 1
@@ -30,6 +31,8 @@ module Ai
       belongs_to :item, class_name: 'Ai::Catalog::Item',
         foreign_key: :ai_catalog_item_id, inverse_of: :versions, optional: false
       belongs_to :organization, class_name: 'Organizations::Organization'
+
+      has_many :dependencies, class_name: 'Ai::Catalog::ItemVersionDependency', inverse_of: :ai_catalog_item_version
 
       before_create :populate_organization
 

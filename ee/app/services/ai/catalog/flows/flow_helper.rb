@@ -58,6 +58,24 @@ module Ai
         def error_max_steps
           error("Maximum steps for a flow (#{MAX_STEPS}) exceeded")
         end
+
+        def populate_dependencies(item_version, delete_no_longer_used_dependencies: true)
+          dependency_ids = item_version.dependency_ids
+
+          return unless dependency_ids
+
+          item_version.delete_no_longer_used_dependencies if delete_no_longer_used_dependencies
+
+          new_dependencies = dependency_ids.map do |dependency_id|
+            Ai::Catalog::ItemVersionDependency.build(
+              dependency_id: dependency_id,
+              organization_id: item_version.organization_id,
+              ai_catalog_item_version: item_version
+            )
+          end
+
+          Ai::Catalog::ItemVersionDependency.bulk_insert!(new_dependencies, validate: false, skip_duplicates: true)
+        end
       end
     end
   end
