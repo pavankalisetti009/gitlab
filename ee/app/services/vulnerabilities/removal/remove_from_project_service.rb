@@ -24,6 +24,7 @@ module Vulnerabilities
           Tasks::DeleteVulnerabilityIssueLinks,
           Tasks::DeleteVulnerabilityMergeRequestLinks,
           Tasks::DeleteVulnerabilityReads,
+          Tasks::DeleteVulnerabilitySeverityOverrides,
           Tasks::DeleteVulnerabilityStateTransitions,
           Tasks::DeleteVulnerabilityUserMentions
         ].freeze
