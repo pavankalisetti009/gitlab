@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlDashboardPanel } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -6,6 +6,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 import TotalRiskScore from 'ee/security_dashboard/components/shared/charts/total_risk_score.vue';
+import RiskScoreByProject from 'ee/security_dashboard/components/shared/charts/risk_score_by_project.vue';
+import RiskScoreGroupBy from 'ee/security_dashboard/components/shared/risk_score_group_by.vue';
 import groupTotalRiskScore from 'ee/security_dashboard/graphql/queries/group_total_risk_score.query.graphql';
 
 Vue.use(VueApollo);
@@ -17,6 +19,26 @@ describe('GroupRiskScorePanel', () => {
   const mockGroupFullPath = 'group/subgroup';
   const mockFilters = { projectId: 'gid://gitlab/Project/123' };
   const defaultRiskScore = 50;
+  const defaultByProjectMockData = [
+    {
+      rating: 'CRITICAL',
+      score: 85.5,
+      project: {
+        id: 1,
+        name: 'Project A',
+        path: 'project-a',
+      },
+    },
+    {
+      rating: 'HIGH',
+      score: 70.1,
+      project: {
+        id: 2,
+        name: 'Project B',
+        path: 'project-b',
+      },
+    },
+  ];
   const defaultMockRiskScoreData = {
     data: {
       group: {
@@ -24,6 +46,9 @@ describe('GroupRiskScorePanel', () => {
         securityMetrics: {
           riskScore: {
             score: defaultRiskScore,
+            byProject: {
+              nodes: defaultByProjectMockData,
+            },
           },
         },
       },
@@ -50,6 +75,8 @@ describe('GroupRiskScorePanel', () => {
 
   const findDashboardPanel = () => wrapper.findComponent(GlDashboardPanel);
   const findTotalRiskScore = () => wrapper.findComponent(TotalRiskScore);
+  const findRiskScoreByProject = () => wrapper.findComponent(RiskScoreByProject);
+  const findRiskScoreGroupBy = () => wrapper.findComponent(RiskScoreGroupBy);
 
   beforeEach(() => {
     createComponent();
@@ -74,6 +101,44 @@ describe('GroupRiskScorePanel', () => {
       await waitForPromises();
 
       expect(findDashboardPanel().props('loading')).toBe(false);
+    });
+
+    it('passes the projects to the risk score by project component', async () => {
+      const riskScoreGroupBy = findRiskScoreGroupBy();
+
+      await riskScoreGroupBy.vm.$emit('input', 'project');
+      await waitForPromises();
+
+      expect(findRiskScoreByProject().props('riskScores')).toMatchObject(defaultByProjectMockData);
+    });
+  });
+
+  describe('group by functionality', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('switches to project grouping when project button is clicked', async () => {
+      await waitForPromises();
+      const riskScoreGroupBy = findRiskScoreGroupBy();
+
+      await riskScoreGroupBy.vm.$emit('input', 'project');
+      await nextTick();
+
+      expect(riskScoreGroupBy.props('value')).toBe('project');
+    });
+
+    it('switches back to "No grouping" grouping when no grouping button is clicked', async () => {
+      await waitForPromises();
+      const riskScoreGroupBy = findRiskScoreGroupBy();
+
+      await riskScoreGroupBy.vm.$emit('input', 'project');
+      await nextTick();
+
+      await riskScoreGroupBy.vm.$emit('input', 'default');
+      await nextTick();
+
+      expect(riskScoreGroupBy.props('value')).toBe('default');
     });
   });
 

@@ -60089,6 +60089,9 @@ msgstr ""
 msgid "SecurityReports|New status must be different than current status."
 msgstr ""
 
+msgid "SecurityReports|No grouping"
+msgstr ""
+
 msgid "SecurityReports|No identifiers found."
 msgstr ""
 
