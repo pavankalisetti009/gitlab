@@ -291,7 +291,7 @@ export default {
       key: 'policies',
       label: __('Policies'),
       thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
-      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer gl-break-words',
       sortable: false,
     },
     {
