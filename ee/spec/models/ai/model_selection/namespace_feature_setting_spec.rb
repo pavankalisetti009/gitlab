@@ -333,6 +333,38 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     end
   end
 
+  describe '#pinned_model?' do
+    context 'when offered_model_ref is nil' do
+      subject(:pinned_model?) do
+        build(:ai_namespace_feature_setting, offered_model_ref: nil, namespace: group).pinned_model?
+      end
+
+      it 'returns false' do
+        expect(pinned_model?).to be(false)
+      end
+    end
+
+    context 'when offered_model_ref is an empty string' do
+      subject(:pinned_model?) do
+        build(:ai_namespace_feature_setting, offered_model_ref: '', namespace: group).pinned_model?
+      end
+
+      it 'returns false' do
+        expect(pinned_model?).to be(false)
+      end
+    end
+
+    context 'when offered_model_ref has a value' do
+      subject(:pinned_model?) do
+        build(:ai_namespace_feature_setting, offered_model_ref: 'claude_sonnet_3_7', namespace: group).pinned_model?
+      end
+
+      it 'returns true' do
+        expect(pinned_model?).to be(true)
+      end
+    end
+  end
+
   describe 'validations' do
     include_context 'with model selection definitions'
 

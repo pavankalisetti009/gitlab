@@ -39,10 +39,6 @@ module Ai
         namespace
       end
 
-      def set_to_gitlab_default?
-        offered_model_ref.blank?
-      end
-
       private
 
       def validate_root_namespace
