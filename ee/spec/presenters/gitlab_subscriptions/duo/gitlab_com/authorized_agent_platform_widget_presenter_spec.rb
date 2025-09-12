@@ -58,6 +58,21 @@ RSpec.describe GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidge
     end
 
     context 'when eligible' do
+      include GrapePathHelpers::NamedRouteMatcher
+
+      it 'returns all of the attributes' do
+        results = {
+          stateProgression: [:enabled],
+          actionPath: api_v4_groups_path(id: namespace.id),
+          initialState: :enabled,
+          contextualAttributes:
+            {
+              featurePreviewAttribute: :experiment_features_enabled, isAuthorized: true, requestCount: 0
+            }
+        }
+        expect(presenter.attributes[:duoAgentWidgetProvide]).to eq(results)
+      end
+
       context 'when fully enabled' do
         it 'returns attributes with enabled state' do
           results = { stateProgression: [:enabled] }

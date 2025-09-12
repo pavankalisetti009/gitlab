@@ -31,18 +31,18 @@ export default {
   inject: {
     actionPath: { required: true },
     stateProgression: { required: true },
-    featurePreviewAttribute: { required: true },
     initialState: { required: true },
-    isAuthorized: { default: false },
-    showRequestAccess: { default: false },
-    hasRequested: { default: false },
-    requestCount: { default: 0 },
+    contextualAttributes: { required: true },
   },
   data() {
     return {
       showEnableDuoConfirmModal: false,
       currentState: this.stateProgression[0],
-      hasRequestedDuoPlatform: this.hasRequested,
+      hasRequestedDuoPlatform: this.contextualAttributes.hasRequested,
+      isAuthorized: this.contextualAttributes.isAuthorized,
+      featurePreviewAttribute: this.contextualAttributes.featurePreviewAttribute,
+      showRequestAccess: this.contextualAttributes.showRequestAccess,
+      requestCount: this.contextualAttributes.requestCount,
     };
   },
   computed: {
@@ -103,9 +103,9 @@ export default {
     },
   },
   mounted() {
-    this.trackEvent('render_duo_agent_platform_widget_in_sidebar', {
-      label: this.initialState,
-    });
+    const label = this.isAuthorized ? `${this.initialState}_authorized` : this.initialState;
+
+    this.trackEvent('render_duo_agent_platform_widget_in_sidebar', { label });
   },
   methods: {
     openConfirmModal() {

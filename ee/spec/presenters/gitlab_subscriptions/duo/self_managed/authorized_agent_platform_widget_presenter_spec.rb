@@ -47,6 +47,19 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWid
         stub_application_setting(gitlab_dedicated_instance: false)
       end
 
+      it 'returns all of the attributes' do
+        results = {
+          stateProgression: [:enabled],
+          actionPath: ::Gitlab::Routing.url_helpers.update_duo_agent_platform_admin_application_settings_path,
+          initialState: :enabled,
+          contextualAttributes:
+            {
+              featurePreviewAttribute: :instance_level_ai_beta_features_enabled, isAuthorized: true, requestCount: 0
+            }
+        }
+        expect(presenter.attributes[:duoAgentWidgetProvide]).to eq(results)
+      end
+
       context 'when fully enabled' do
         it 'returns attributes with enabled state' do
           results = { stateProgression: [:enabled] }

@@ -28,16 +28,22 @@ describe('DuoAgentPlatformWidget component', () => {
   const defaultProvide = {
     actionPath: '/admin/application_settings/general',
     stateProgression: ['enablePlatform', 'enabled'],
-    featurePreviewAttribute: 'instance_level_ai_beta_features_enabled',
     initialState: 'disabled',
-    isAuthorized: true,
+    contextualAttributes: {
+      isAuthorized: true,
+      featurePreviewAttribute: 'instance_level_ai_beta_features_enabled',
+    },
   };
 
-  const createComponent = (provide = {}) => {
+  const createComponent = (provide = {}, contextualAttributes = {}) => {
     wrapper = shallowMountExtended(DuoAgentPlatformWidget, {
       provide: {
         ...defaultProvide,
         ...provide,
+        contextualAttributes: {
+          ...defaultProvide.contextualAttributes,
+          ...contextualAttributes,
+        },
       },
       mocks: {
         $toast,
@@ -100,7 +106,7 @@ describe('DuoAgentPlatformWidget component', () => {
 
     describe('when user is not authorized', () => {
       beforeEach(() => {
-        createComponent({ isAuthorized: false });
+        createComponent({}, { isAuthorized: false });
       });
 
       it('does not show authorized action buttons', () => {
@@ -265,10 +271,12 @@ describe('DuoAgentPlatformWidget component', () => {
       });
 
       it('uses featurePreviewAttribute from provide', async () => {
-        createComponent({
-          stateProgression: ['enableFeaturePreview', 'enabled'],
-          featurePreviewAttribute: 'experiment_features_enabled',
-        });
+        createComponent(
+          {
+            stateProgression: ['enableFeaturePreview', 'enabled'],
+          },
+          { featurePreviewAttribute: 'experiment_features_enabled' },
+        );
         mockAxios.onPut('/admin/application_settings/general').reply(HTTP_STATUS_OK);
 
         await findActionButton().vm.$emit('click');
@@ -343,12 +351,14 @@ describe('DuoAgentPlatformWidget component', () => {
   describe('request access functionality', () => {
     describe('when user can request access', () => {
       beforeEach(() => {
-        createComponent({
-          isAuthorized: false,
-          showRequestAccess: true,
-          hasRequested: false,
-          actionPath: '/-/users/callouts/request_duo_agent_platform',
-        });
+        createComponent(
+          { actionPath: '/-/users/callouts/request_duo_agent_platform' },
+          {
+            isAuthorized: false,
+            showRequestAccess: true,
+            hasRequested: false,
+          },
+        );
       });
 
       it('shows request access section', () => {
@@ -369,11 +379,14 @@ describe('DuoAgentPlatformWidget component', () => {
 
     describe('when user has already requested access', () => {
       beforeEach(() => {
-        createComponent({
-          isAuthorized: false,
-          showRequestAccess: true,
-          hasRequested: true,
-        });
+        createComponent(
+          {},
+          {
+            isAuthorized: false,
+            showRequestAccess: true,
+            hasRequested: true,
+          },
+        );
       });
 
       it('shows access requested state', () => {
@@ -384,10 +397,13 @@ describe('DuoAgentPlatformWidget component', () => {
 
   describe('request counter for admins', () => {
     beforeEach(() => {
-      createComponent({
-        isAuthorized: true,
-        requestCount: 5,
-      });
+      createComponent(
+        {},
+        {
+          isAuthorized: true,
+          requestCount: 5,
+        },
+      );
     });
 
     it('shows request counter when admin has pending requests', () => {
@@ -427,10 +443,24 @@ describe('DuoAgentPlatformWidget component', () => {
   describe('tracking', () => {
     const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-    it('tracks widget render on mount', () => {
+    it('tracks widget render on authorized mount', () => {
       const { trackEventSpy } = bindInternalEventDocument(document);
 
       createComponent({ initialState: 'enabled' });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'render_duo_agent_platform_widget_in_sidebar',
+        {
+          label: 'enabled_authorized',
+        },
+        undefined,
+      );
+    });
+
+    it('tracks widget render on unauthorized mount', () => {
+      const { trackEventSpy } = bindInternalEventDocument(document);
+
+      createComponent({ initialState: 'enabled' }, { isAuthorized: false });
 
       expect(trackEventSpy).toHaveBeenCalledWith(
         'render_duo_agent_platform_widget_in_sidebar',

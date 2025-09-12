@@ -47,9 +47,10 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
         it 'returns attributes with showRequestAccess false' do
           results = {
             actionPath: '/-/users/callouts/request_duo_agent_platform',
-            isAuthorized: false,
-            showRequestAccess: false,
-            hasRequested: false
+            contextualAttributes:
+              {
+                isAuthorized: false, showRequestAccess: false, hasRequested: false
+              }
           }
           expect(presenter.attributes[:duoAgentWidgetProvide]).to match(a_hash_including(results))
         end
@@ -64,9 +65,10 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
           it 'returns attributes with showRequestAccess true and hasRequested false' do
             results = {
               actionPath: '/-/users/callouts/request_duo_agent_platform',
-              isAuthorized: false,
-              showRequestAccess: true,
-              hasRequested: false
+              contextualAttributes:
+                {
+                  isAuthorized: false, showRequestAccess: true, hasRequested: false
+                }
             }
             expect(presenter.attributes[:duoAgentWidgetProvide]).to match(a_hash_including(results))
           end
@@ -78,9 +80,10 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
           it 'returns attributes with hasRequested true' do
             results = {
               actionPath: '/-/users/callouts/request_duo_agent_platform',
-              isAuthorized: false,
-              showRequestAccess: true,
-              hasRequested: true
+              contextualAttributes:
+                {
+                  isAuthorized: false, showRequestAccess: true, hasRequested: true
+                }
             }
             expect(presenter.attributes[:duoAgentWidgetProvide]).to match(a_hash_including(results))
           end
