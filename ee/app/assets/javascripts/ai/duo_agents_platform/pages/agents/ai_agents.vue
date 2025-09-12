@@ -6,25 +6,23 @@ import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
-import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
+import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
-import { AI_CATALOG_TYPE_FLOW, PAGE_SIZE } from 'ee/ai/catalog/constants';
+import { AI_CATALOG_TYPE_AGENT, PAGE_SIZE } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
-  AI_CATALOG_FLOWS_EDIT_ROUTE,
-  AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 
 export default {
-  name: 'AiFlows',
+  name: 'AiAgents',
   components: {
     GlButton,
     PageHeading,
@@ -42,11 +40,11 @@ export default {
     },
   },
   apollo: {
-    aiFlows: {
+    aiAgents: {
       query: aiCatalogConfiguredItemsQuery,
       variables() {
         return {
-          itemType: AI_CATALOG_TYPE_FLOW,
+          itemType: AI_CATALOG_TYPE_AGENT,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
           before: null,
           after: null,
@@ -60,8 +58,8 @@ export default {
         this.pageInfo = data.aiCatalogConfiguredItems.pageInfo;
       },
     },
-    aiCatalogFlow: {
-      query: aiCatalogFlowQuery,
+    aiCatalogAgent: {
+      query: aiCatalogAgentQuery,
       skip() {
         return !this.isItemSelected;
       },
@@ -83,28 +81,28 @@ export default {
   },
   data() {
     return {
-      aiFlows: [],
-      aiCatalogFlow: {},
+      aiAgents: [],
+      aiCatalogAgent: {},
       errors: [],
       pageInfo: {},
     };
   },
   computed: {
     isLoading() {
-      return this.$apollo.queries.aiFlows.loading;
+      return this.$apollo.queries.aiAgents.loading;
     },
     exploreHref() {
-      return `${this.exploreAiCatalogPath}${AI_CATALOG_FLOWS_ROUTE}`;
+      return `${this.exploreAiCatalogPath}${AI_CATALOG_AGENTS_ROUTE}`;
     },
     isItemDetailsLoading() {
-      return this.$apollo.queries.aiCatalogFlow.loading;
+      return this.$apollo.queries.aiCatalogAgent.loading;
     },
     isItemSelected() {
       return Boolean(this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]);
     },
     items() {
-      return this.aiFlows.map((flow) => {
-        const { item, ...itemConsumerData } = flow;
+      return this.aiAgents.map((agent) => {
+        const { item, ...itemConsumerData } = agent;
         return {
           ...item,
           itemConsumer: itemConsumerData,
@@ -113,35 +111,20 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => {
-          if (!item.userPermissions?.adminAiCatalogItem) {
-            return [];
-          }
-
-          return [
-            {
-              text: s__('AICatalog|Edit'),
-              to: {
-                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-                params: { id: getIdFromGraphQLId(item.itemConsumer?.id) },
-              },
-              icon: 'pencil',
-            },
-          ];
-        },
+        actionItems: () => [],
         deleteActionItem: {
           text: __('Remove'),
         },
       };
     },
-    activeFlow() {
-      if (!this.isItemDetailsLoading) return this.aiCatalogFlow;
+    activeAgent() {
+      if (!this.isItemDetailsLoading) return this.aiCatalogAgent;
 
-      // Returns the fully-loaded flow if available from aiFlows
+      // Returns the fully-loaded agent if available from aiAgents
       const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
       if (!iid) return {};
 
-      const fromList = this.aiFlows.find(
+      const fromList = this.aiAgents.find(
         (n) => this.formatId(n.item.id).toString() === String(iid),
       );
       return fromList?.item || { iid };
@@ -159,7 +142,7 @@ export default {
         query: otherQuery,
       });
     },
-    async deleteFlow(item) {
+    async deleteAgent(item) {
       const { id } = item.itemConsumer;
 
       try {
@@ -173,22 +156,22 @@ export default {
 
         if (!data.aiCatalogItemConsumerDelete.success) {
           this.errors = [
-            sprintf(s__('AICatalog|Failed to remove flow. %{error}'), {
+            sprintf(s__('AICatalog|Failed to remove agent. %{error}'), {
               error: data.aiCatalogItemConsumerDelete.errors?.[0],
             }),
           ];
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Flow removed successfully from this project.'));
+        this.$toast.show(s__('AICatalog|Agent removed successfully from this project.'));
       } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to remove flow. %{error}'), { error })];
+        this.errors = [sprintf(s__('AICatalog|Failed to remove agent. %{error}'), { error })];
         Sentry.captureException(error);
       }
     },
     handleNextPage() {
-      this.$apollo.queries.aiFlows.refetch({
-        ...this.$apollo.queries.aiFlows.variables,
+      this.$apollo.queries.aiAgents.refetch({
+        ...this.$apollo.queries.aiAgents.variables,
         before: null,
         after: this.pageInfo.endCursor,
         first: PAGE_SIZE,
@@ -196,8 +179,8 @@ export default {
       });
     },
     handlePrevPage() {
-      this.$apollo.queries.aiFlows.refetch({
-        ...this.$apollo.queries.aiFlows.variables,
+      this.$apollo.queries.aiAgents.refetch({
+        ...this.$apollo.queries.aiAgents.variables,
         after: null,
         before: this.pageInfo.startCursor,
         first: null,
@@ -205,36 +188,35 @@ export default {
       });
     },
   },
-  editRoute: AI_CATALOG_FLOWS_EDIT_ROUTE,
   EMPTY_SVG_URL,
 };
 </script>
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Flows')" />
+    <page-heading :heading="s__('AICatalog|Agents')" />
 
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
       :is-loading="isLoading"
       :items="items"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="s__('AICatalog|Remove flow from this project')"
-      :delete-confirm-message="s__('AICatalog|Are you sure you want to remove flow %{name}?')"
-      :delete-fn="deleteFlow"
+      :delete-confirm-title="s__('AICatalog|Remove agent from this project')"
+      :delete-confirm-message="s__('AICatalog|Are you sure you want to remove agent %{name}?')"
+      :delete-fn="deleteAgent"
       :page-info="pageInfo"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
     >
       <template #empty-state>
         <resource-lists-empty-state
-          :title="s__('AICatalog|Use flows in your project.')"
-          :description="s__('AICatalog|Automate tasks and processes using flows.')"
+          :title="s__('AICatalog|Use agents in your project.')"
+          :description="s__('AICatalog|Automate tasks and processes using agents.')"
           :svg-path="$options.EMPTY_SVG_URL"
         >
           <template #actions>
             <gl-button variant="confirm" :href="exploreHref">
-              {{ s__('AICatalog|Explore AI Catalog flows') }}
+              {{ s__('AICatalog|Explore AI Catalog agents') }}
             </gl-button>
           </template>
         </resource-lists-empty-state>
@@ -243,8 +225,7 @@ export default {
     <ai-catalog-item-drawer
       :is-open="isItemSelected"
       :is-item-details-loading="isItemDetailsLoading"
-      :active-item="activeFlow"
-      :edit-route="$options.editRoute"
+      :active-item="activeAgent"
       @close="closeDrawer"
     />
   </div>

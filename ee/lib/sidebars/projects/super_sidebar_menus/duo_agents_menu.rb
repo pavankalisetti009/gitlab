@@ -10,6 +10,7 @@ module Sidebars
             (show_agents_runs_menu_items? || show_flow_triggers_menu_items? || show_flows_menu_item?)
 
           add_item(duo_agents_runs_menu_item) if show_agents_runs_menu_items?
+          add_item(ai_catalog_agents_menu_item) if show_agents_menu_item?
           add_item(duo_flow_triggers_menu_item) if show_flow_triggers_menu_items?
           add_item(ai_catalog_flows_menu_item) if show_flows_menu_item?
 
@@ -36,6 +37,10 @@ module Sidebars
           context.current_user&.can?(:manage_ai_flow_triggers, context.project)
         end
 
+        def show_agents_menu_item?
+          Feature.enabled?(:global_ai_catalog, context.current_user)
+        end
+
         def show_flows_menu_item?
           Feature.enabled?(:global_ai_catalog, context.current_user) &&
             Feature.enabled?(:ai_catalog_flows, context.current_user)
@@ -56,6 +61,15 @@ module Sidebars
             link: project_automate_flow_triggers_path(context.project),
             active_routes: { controller: :duo_agents_platform },
             item_id: :ai_flow_triggers
+          )
+        end
+
+        def ai_catalog_agents_menu_item
+          ::Sidebars::MenuItem.new(
+            title: s_('AICatalog|Agents'),
+            link: project_automate_agents_path(context.project),
+            active_routes: { controller: :duo_agents_platform },
+            item_id: :ai_catalog_agents
           )
         end
 

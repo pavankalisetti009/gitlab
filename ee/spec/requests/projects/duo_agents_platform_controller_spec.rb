@@ -15,7 +15,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     sign_in(user)
   end
 
-  describe 'GET /:namespace/:project/-/agents' do
+  describe 'GET /:namespace/:project/-/automate' do
     before do
       stub_feature_flags(duo_workflow_in_ci: true)
     end
@@ -83,6 +83,32 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       end
     end
 
+    context 'when vueroute is agents' do
+      context 'when global_ai_catalog feature is enabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: true)
+        end
+
+        it 'returns successfully' do
+          get project_automate_agents_path(project)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when global_ai_catalog feature is disabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: false)
+        end
+
+        it 'returns 404' do
+          get project_automate_agents_path(project)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
     context 'when vueroute is flow-triggers' do
       context 'when user can manage ai flow triggers' do
         let_it_be(:subscription_purchase) do
@@ -114,9 +140,9 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     end
 
     context 'when vueroute is flows' do
-      context 'when global_ai_catalog feature is enabled' do
+      context 'when ai_catalog_flows feature is enabled' do
         before do
-          stub_feature_flags(global_ai_catalog: true)
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: true)
         end
 
         it 'returns successfully' do
@@ -126,9 +152,9 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
         end
       end
 
-      context 'when global_ai_catalog feature is disabled' do
+      context 'when ai_catalog_flows feature is disabled' do
         before do
-          stub_feature_flags(global_ai_catalog: false)
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: false)
         end
 
         it 'returns 404' do

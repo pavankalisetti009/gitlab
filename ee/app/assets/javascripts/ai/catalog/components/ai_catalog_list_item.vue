@@ -49,8 +49,11 @@ export default {
     actionItems() {
       return this.itemTypeConfig.actionItems(this.item);
     },
+    hasActionItems() {
+      return this.actionItems.length > 0;
+    },
     showActions() {
-      return this.canAdmin || Boolean(this.actionItems.length);
+      return this.canAdmin || this.hasActionItems;
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
@@ -139,9 +142,9 @@ export default {
         no-caret
         text-sr-only
       >
-        <gl-disclosure-dropdown-group>
+        <gl-disclosure-dropdown-group v-if="hasActionItems">
           <gl-disclosure-dropdown-item
-            v-for="(actionItem, index) in itemTypeConfig.actionItems(item)"
+            v-for="(actionItem, index) in actionItems"
             :key="index"
             :item="actionItem"
           >
@@ -158,7 +161,7 @@ export default {
             </template>
           </gl-disclosure-dropdown-item>
         </gl-disclosure-dropdown-group>
-        <gl-disclosure-dropdown-group v-if="canAdmin" bordered>
+        <gl-disclosure-dropdown-group v-if="canAdmin" :bordered="hasActionItems">
           <gl-disclosure-dropdown-item variant="danger" @action="$emit('delete')">
             <template #list-item>
               <span>

@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import {
+  AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
 } from 'ee/ai/catalog/router/constants';
@@ -11,6 +12,7 @@ import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
 import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
+import AiAgents from '../pages/agents/ai_agents.vue';
 import AiFlows from '../pages/flows/ai_flows.vue';
 import AiFlowsEdit from '../pages/flows/ai_flows_edit.vue';
 import {
@@ -101,6 +103,20 @@ export const createRouter = (base, namespace) => {
           {
             path: ':id/edit',
             redirect: '/flow-triggers',
+          },
+        ],
+      },
+      {
+        component: NestedRouteApp,
+        path: '/agents',
+        meta: {
+          text: s__('AICatalog|Agents'),
+        },
+        children: [
+          {
+            name: AI_CATALOG_AGENTS_ROUTE,
+            path: '',
+            component: AiAgents,
           },
         ],
       },

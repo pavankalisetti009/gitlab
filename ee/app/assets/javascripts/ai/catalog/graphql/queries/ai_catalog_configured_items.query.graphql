@@ -2,6 +2,7 @@
 #import "../fragments/ai_catalog_item_consumer.fragment.graphql"
 
 query aiCatalogConfiguredItems(
+  $itemType: AiCatalogItemType
   $projectId: ProjectID!
   $before: String
   $after: String
@@ -9,6 +10,7 @@ query aiCatalogConfiguredItems(
   $last: Int
 ) {
   aiCatalogConfiguredItems(
+    itemType: $itemType
     projectId: $projectId
     before: $before
     after: $after

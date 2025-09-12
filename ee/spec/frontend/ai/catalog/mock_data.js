@@ -123,7 +123,6 @@ const mockAgentFactory = (overrides = {}) => ({
   userPermissions: {
     adminAiCatalogItem: true,
   },
-  versions: mockAgentVersions,
   __typename: TYPENAME_AI_CATALOG_ITEM,
   ...overrides,
 });
@@ -146,11 +145,13 @@ export const mockBaseAgent = mockAgentFactory();
 export const mockAgent = mockAgentFactory({
   project: { ...mockProject, name: 'Project name' },
   latestVersion: mockAgentVersion,
+  versions: mockAgentVersions,
 });
 
 export const mockAgents = [
   mockAgentFactory({
     project: mockProjectWithNamespace,
+    versions: mockAgentVersions,
   }),
   mockAgentFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/2',
@@ -158,6 +159,7 @@ export const mockAgents = [
     description: 'Another AI assistant',
     createdAt: '2024-02-10T14:20:00Z',
     project: mockProjectWithNamespace,
+    versions: mockAgentVersions,
   }),
   mockAgentFactory({
     id: 'gid://gitlab/Ai::Catalog::Item/3',
@@ -165,6 +167,7 @@ export const mockAgents = [
     description: 'Another AI assistant',
     createdAt: '2024-02-10T14:20:00Z',
     project: mockProjectWithNamespace,
+    versions: mockAgentVersions,
   }),
 ];
 
@@ -446,6 +449,21 @@ export const mockBaseItemConsumer = {
   __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER,
 };
 
+export const mockConfiguredAgentsResponse = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [
+        {
+          ...mockBaseItemConsumer,
+          item: mockBaseAgent,
+        },
+      ],
+      pageInfo: mockPageInfo,
+      __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_CONNECTION,
+    },
+  },
+};
+
 export const mockConfiguredFlowsResponse = {
   data: {
     aiCatalogConfiguredItems: {
@@ -461,7 +479,7 @@ export const mockConfiguredFlowsResponse = {
   },
 };
 
-export const mockConfiguredFlowsEmptyResponse = {
+export const mockConfiguredItemsEmptyResponse = {
   data: {
     aiCatalogConfiguredItems: {
       nodes: [],
@@ -513,7 +531,7 @@ export const mockAiCatalogItemConsumerDeleteResponse = {
 export const mockAiCatalogItemConsumerDeleteErrorResponse = {
   data: {
     aiCatalogItemConsumerDelete: {
-      errors: ['You do not have permission to delete this AI flow.'],
+      errors: ['You do not have permission to delete this item.'],
       success: false,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE,
     },
