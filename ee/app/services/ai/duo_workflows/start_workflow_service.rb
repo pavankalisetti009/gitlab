@@ -60,14 +60,30 @@ module Ai
           d.image = @workflow.image.presence || configured_image || IMAGE
           d.variables = variables
           d.commands = commands
+          d.cache = cache_configuration if cache_configuration.present?
         end
       end
 
       def configured_image
         return unless project
 
-        config = ::Gitlab::DuoAgentPlatform::Config.new(project)
-        config.default_image
+        duo_config.default_image
+      end
+
+      def duo_config
+        @duo_config ||= ::Gitlab::DuoAgentPlatform::Config.new(project)
+      end
+
+      def cache_configuration
+        return unless project
+
+        duo_config.cache_config
+      end
+
+      def setup_script_commands
+        return [] unless project
+
+        duo_config.setup_script || []
       end
 
       def variables
@@ -97,6 +113,11 @@ module Ai
       end
 
       def commands
+        # Prepend setup_script commands to the main commands
+        setup_script_commands + main_workflow_commands
+      end
+
+      def main_workflow_commands
         [
           %(echo $DUO_WORKFLOW_DEFINITION),
           %(echo $DUO_WORKFLOW_GOAL),
