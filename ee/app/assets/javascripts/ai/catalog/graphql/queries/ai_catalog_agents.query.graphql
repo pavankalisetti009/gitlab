@@ -15,6 +15,7 @@ query aiCatalogAgents($before: String, $after: String, $first: Int, $last: Int, 
       ...BaseAiCatalogItem
       project {
         id
+        nameWithNamespace
       }
       versions {
         nodes {
