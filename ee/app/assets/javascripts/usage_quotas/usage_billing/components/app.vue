@@ -7,6 +7,7 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
+import UsageByUserTab from './usage_by_user_tab.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -18,6 +19,7 @@ export default {
     PageHeading,
     PurchaseCommitmentCard,
     UsageTrendsChart,
+    UsageByUserTab,
   },
   data() {
     return {
@@ -137,7 +139,7 @@ export default {
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
-          {{ s__('UsageBilling|Usage by user') }}
+          <usage-by-user-tab :users-data="gitlabUnitsUsage.usersUsage" />
         </gl-tab>
       </gl-tabs>
 
