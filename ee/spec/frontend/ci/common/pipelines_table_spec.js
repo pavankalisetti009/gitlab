@@ -63,6 +63,27 @@ describe('EE - Pipelines Table', () => {
       },
       merge_request: {
         path: '/project/-/merge_requests/123',
+        source_branch: 'feature-branch',
+      },
+      source: 'merge_request_event',
+    };
+
+    const failedPipelineWithMRPushSource = {
+      ...firstPipeline,
+      path: '/project/-/pipelines/124',
+      details: {
+        ...firstPipeline.details,
+        status: {
+          ...firstPipeline.details.status,
+          group: 'failed',
+        },
+      },
+      merge_request: {
+        path: '/project/-/merge_requests/124',
+      },
+      source: 'push',
+      ref: {
+        name: 'master',
       },
     };
 
@@ -76,6 +97,22 @@ describe('EE - Pipelines Table', () => {
           group: 'failed',
         },
       },
+    };
+
+    const failedPipelineWithMRNoSourceBranch = {
+      ...firstPipeline,
+      path: '/project/-/pipelines/125',
+      details: {
+        ...firstPipeline.details,
+        status: {
+          ...firstPipeline.details.status,
+          group: 'failed',
+        },
+      },
+      merge_request: {
+        path: '/project/-/merge_requests/125',
+      },
+      source: 'merge_train',
     };
 
     const successfulPipelineWithMR = {
@@ -98,36 +135,85 @@ describe('EE - Pipelines Table', () => {
     });
 
     describe('when pipeline has failed and has associated merge request', () => {
-      beforeEach(() => {
-        gon.api_version = 'v4';
-        createComponent({
-          props: { pipelines: [failedPipelineWithMR] },
+      describe('with merge_request_event source', () => {
+        beforeEach(() => {
+          gon.api_version = 'v4';
+          createComponent({
+            props: { pipelines: [failedPipelineWithMR] },
+          });
+        });
+
+        it('renders DuoWorkflowAction component', () => {
+          expect(findDuoWorkflowAction().exists()).toBe(true);
+        });
+
+        it('passes correct props to DuoWorkflowAction with source branch from merge request', () => {
+          expect(findDuoWorkflowAction().props()).toMatchObject({
+            projectPath: 'frontend-fixtures/pipelines-project',
+            goal: 'https://gitlab.com/project/-/pipelines/123',
+            hoverMessage: 'Fix pipeline with Duo',
+            workflowDefinition: 'fix_pipeline/experimental',
+            size: 'medium',
+            agentPrivileges: [1, 2, 3, 5],
+            sourceBranch: 'feature-branch',
+            additionalContext: [
+              {
+                Category: 'agent_user_environment',
+                Content: JSON.stringify({
+                  merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
+                  source_branch: 'feature-branch',
+                }),
+                Metadata: '{}',
+              },
+            ],
+          });
         });
       });
 
-      it('renders DuoWorkflowAction component', () => {
-        expect(findDuoWorkflowAction().exists()).toBe(true);
+      describe('with push source', () => {
+        beforeEach(() => {
+          gon.api_version = 'v4';
+          createComponent({
+            props: { pipelines: [failedPipelineWithMRPushSource] },
+          });
+        });
+
+        it('renders DuoWorkflowAction component', () => {
+          expect(findDuoWorkflowAction().exists()).toBe(true);
+        });
+
+        it('passes correct props to DuoWorkflowAction with ref name', () => {
+          expect(findDuoWorkflowAction().props()).toMatchObject({
+            projectPath: 'frontend-fixtures/pipelines-project',
+            goal: 'https://gitlab.com/project/-/pipelines/124',
+            hoverMessage: 'Fix pipeline with Duo',
+            workflowDefinition: 'fix_pipeline/experimental',
+            size: 'medium',
+            agentPrivileges: [1, 2, 3, 5],
+            sourceBranch: 'master',
+            additionalContext: [
+              {
+                Category: 'agent_user_environment',
+                Content: JSON.stringify({
+                  merge_request_url: 'https://gitlab.com/project/-/merge_requests/124',
+                  source_branch: 'master',
+                }),
+                Metadata: '{}',
+              },
+            ],
+          });
+        });
       });
 
-      it('passes correct props to DuoWorkflowAction', () => {
-        expect(findDuoWorkflowAction().props()).toMatchObject({
-          projectPath: 'frontend-fixtures/pipelines-project',
-          goal: 'https://gitlab.com/project/-/pipelines/123',
-          hoverMessage: 'Fix pipeline with Duo',
-          workflowDefinition: 'fix_pipeline/experimental',
-          size: 'medium',
-          agentPrivileges: [1, 2, 3, 5],
-          sourceBranch: 'master',
-          additionalContext: [
-            {
-              Category: 'agent_user_environment',
-              Content: JSON.stringify({
-                merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
-                source_branch: 'master',
-              }),
-              Metadata: '{}',
-            },
-          ],
+      describe('with other source types', () => {
+        beforeEach(() => {
+          createComponent({
+            props: { pipelines: [failedPipelineWithMRNoSourceBranch] },
+          });
+        });
+
+        it('does not render DuoWorkflowAction component when source branch is null', () => {
+          expect(findDuoWorkflowAction().exists()).toBe(false);
         });
       });
     });
@@ -210,7 +296,7 @@ describe('EE - Pipelines Table', () => {
           Category: 'agent_user_environment',
           Content: JSON.stringify({
             merge_request_url: 'https://gitlab.com/project/-/merge_requests/123',
-            source_branch: 'master',
+            source_branch: 'feature-branch',
           }),
           Metadata: '{}',
         });
@@ -218,14 +304,15 @@ describe('EE - Pipelines Table', () => {
     });
 
     describe('multiple pipelines', () => {
-      it('renders DuoWorkflowAction only for failed pipelines with MRs', () => {
+      it('renders DuoWorkflowAction only for failed pipelines with MRs and valid source branches', () => {
         createComponent({
           props: {
             pipelines: [
               failedPipelineWithMR,
-              failedPipelineWithMR,
+              failedPipelineWithMRPushSource,
               successfulPipelineWithMR,
               failedPipelineWithoutMR,
+              failedPipelineWithMRNoSourceBranch,
             ],
           },
         });
