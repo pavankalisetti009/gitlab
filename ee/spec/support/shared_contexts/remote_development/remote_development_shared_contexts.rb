@@ -338,6 +338,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Boolean] include_network_policy
   # @param [Boolean] include_all_resources
   # @param [String] dns_zone
+  # param [Boolean] gitlab_workspaces_proxy_http_enabled
   # @param [Array<Hash>] egress_ip_rules
   # @param [Hash] max_resources_per_workspace
   # @param [Hash] default_resources_per_workspace_container
@@ -367,6 +368,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     include_network_policy: true,
     include_all_resources: false,
     dns_zone: 'workspaces.localdev.me',
+    gitlab_workspaces_proxy_http_enabled: true,
     egress_ip_rules: [{
       allow: "0.0.0.0/0",
       except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
@@ -485,6 +487,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       labels: labels,
       annotations: workspace_inventory_annotations,
       legacy_poststart_container_command: legacy_poststart_container_command,
+      gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled,
       user_defined_commands: user_defined_commands
     )
 
@@ -1318,6 +1321,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] labels
   # @param [Hash] annotations
   # @param [Boolean] legacy_poststart_container_command
+  # @param [Boolean] gitlab_workspaces_proxy_http_enabled
   # @param [Array<Hash>] user_defined_commands
   # @return [Hash]
   def scripts_configmap(
@@ -1326,11 +1330,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
     labels:,
     annotations:,
     legacy_poststart_container_command:,
+    gitlab_workspaces_proxy_http_enabled:,
     user_defined_commands:
   )
     user_command_ids = user_defined_commands.pluck(:id)
 
     data = {
+      "gl-start-agentw-command": files_module::INTERNAL_POSTSTART_COMMAND_START_AGENTW_SCRIPT,
       "gl-clone-project-command": clone_project_script,
       "gl-clone-unshallow-command": clone_unshallow_script,
       "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
@@ -1349,6 +1355,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       data[create_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
         legacy_poststart_commands_script
     end
+
+    data.delete(:"gl-start-agentw-command") if gitlab_workspaces_proxy_http_enabled
 
     # Add each user-defined command to the data hash
     user_defined_commands.each do |cmd|

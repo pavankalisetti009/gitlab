@@ -5,12 +5,13 @@ require "fast_spec_helper"
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesBuilder, feature_category: :workspaces do
   include_context "with constant modules"
 
-  let(:name) { "name" }
-  let(:dns_zone) { "example.dns.zone" }
+  let(:domain_template) { "${PORT}-name.example.host.suffix" }
+  let(:gitlab_kas_external_url) { "ws://kas.example.com/-/external/namespace/path" }
   let(:personal_access_token_value) { "example-pat-value" }
   let(:user_name) { "example.user.name" }
   let(:user_email) { "example@user.email" }
   let(:workspace_id) { 1 }
+  let(:workspace_token) { "example-agentw-token-value" }
   let(:vscode_extensions_gallery_service_url) { "https://open-vsx.org/vscode/gallery" }
   let(:vscode_extensions_gallery_item_url) { "https://open-vsx.org/vscode/item" }
   let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" }
@@ -85,7 +86,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       },
       {
         key: "GL_WORKSPACE_DOMAIN_TEMPLATE",
-        value: "${PORT}-name.example.dns.zone",
+        value: domain_template,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
@@ -120,6 +121,30 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
         workspace_id: workspace_id
       },
       {
+        key: create_constants_module::AGENTW_TOKEN_FILE_NAME,
+        value: "example-agentw-token-value",
+        variable_type: RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE,
+        workspace_id: workspace_id
+      },
+      {
+        key: "GL_AGENTW_TOKEN_FILE_PATH",
+        value: create_constants_module::AGENTW_TOKEN_FILE_PATH,
+        variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
+        workspace_id: workspace_id
+      },
+      {
+        key: "GL_GITLAB_AGENT_SERVER_ADDRESS",
+        value: gitlab_kas_external_url,
+        variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
+        workspace_id: workspace_id
+      },
+      {
+        key: "GL_AGENTW_OBSERVABILITY_LISTEN_ADDRESS",
+        value: create_constants_module::AGENTW_OBSERVABILITY_LISTEN_ADDRESS,
+        variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
+        workspace_id: workspace_id
+      },
+      {
         key: "VAR1",
         value: "value 1",
         user_provided: true,
@@ -138,12 +163,13 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
 
   subject(:variables) do
     described_class.build(
-      name: name,
-      dns_zone: dns_zone,
+      domain_template: domain_template,
+      gitlab_kas_external_url: gitlab_kas_external_url,
       personal_access_token_value: personal_access_token_value,
       user_name: user_name,
       user_email: user_email,
       workspace_id: workspace_id,
+      workspace_token: workspace_token,
       vscode_extension_marketplace: {
         service_url: vscode_extensions_gallery_service_url,
         item_url: vscode_extensions_gallery_item_url,

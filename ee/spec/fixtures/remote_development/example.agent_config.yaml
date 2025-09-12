@@ -7,6 +7,8 @@ remote_development:
   dns_zone: workspaces.dev.test
   gitlab_workspaces_proxy:
     namespace: "gitlab-workspaces"
+    http_enabled: true
+    ssh_enabled: true
 
   network_policy:
     enabled: true

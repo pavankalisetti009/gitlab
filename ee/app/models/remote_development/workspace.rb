@@ -97,7 +97,7 @@ module RemoteDevelopment
       new_record? || actual_state_changed?
     end
 
-    before_save :delete_workspace_token, if: -> do
+    after_save :delete_workspace_token, if: -> do
       saved_change_to_desired_state? && !desired_state_running?
     end
 
@@ -158,9 +158,12 @@ module RemoteDevelopment
 
     # @return [String]
     def url
-      URI::HTTPS.build(host: "#{url_prefix}.#{workspaces_agent_config.dns_zone}",
-        path: "/",
-        query: url_query_string).to_s
+      RemoteDevelopment::WorkspaceOperations::WorkspaceUrlHelper.url(
+        url_prefix,
+        url_query_string,
+        workspaces_agent_config.dns_zone,
+        workspaces_agent_config.gitlab_workspaces_proxy_http_enabled
+      )
     end
 
     # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/503465 - Remove in 19.0

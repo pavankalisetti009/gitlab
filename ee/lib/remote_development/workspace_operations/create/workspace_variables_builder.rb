@@ -8,19 +8,21 @@ module RemoteDevelopment
         include Files
         include Enums::WorkspaceVariable
 
-        # @param [String] name
-        # @param [String] dns_zone
+        # rubocop:disable Metrics/ParameterLists -- Abstracting this further will not help.
+        # @param [String] domain_template
+        # @param [String] gitlab_kas_external_url
         # @param [String] personal_access_token_value
         # @param [String] user_name
         # @param [String] user_email
         # @param [Integer] workspace_id
+        # @param [String] workspace_token
         # @param [Integer] workspace_actual_state
         # @param [Hash] vscode_extension_marketplace
         # @param [Array<Hash>] variables
         # @return [Array<Hash>]
         def self.build(
-          name:, dns_zone:, personal_access_token_value:, user_name:, user_email:, workspace_id:,
-          vscode_extension_marketplace:, variables:
+          domain_template:, gitlab_kas_external_url:, personal_access_token_value:, user_name:, user_email:,
+          workspace_id:, workspace_token:, vscode_extension_marketplace:, variables:
         )
           vscode_extension_marketplace => {
             service_url: String => vscode_extension_marketplace_service_url,
@@ -115,7 +117,7 @@ module RemoteDevelopment
             # the GDK in a workspce: `support/gitlab-remote-development/setup_workspace.rb`
             {
               key: "GL_WORKSPACE_DOMAIN_TEMPLATE",
-              value: "${PORT}-#{name}.#{dns_zone}",
+              value: domain_template,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
@@ -157,6 +159,32 @@ module RemoteDevelopment
               value: TOKEN_FILE_PATH,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
+            },
+            #-------------------------------------------------------------------
+            # The workspace's token used by Agent for Workspace(agentw) to connect with GitLab Agent Server(KAS).
+            {
+              key: AGENTW_TOKEN_FILE_NAME,
+              value: workspace_token,
+              variable_type: FILE_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GL_AGENTW_TOKEN_FILE_PATH",
+              value: AGENTW_TOKEN_FILE_PATH,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GL_GITLAB_AGENT_SERVER_ADDRESS",
+              value: gitlab_kas_external_url,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GL_AGENTW_OBSERVABILITY_LISTEN_ADDRESS",
+              value: AGENTW_OBSERVABILITY_LISTEN_ADDRESS,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
             }
             #-------------------------------------------------------------------
           ]
@@ -173,6 +201,7 @@ module RemoteDevelopment
 
           internal_variables + user_provided_variables
         end
+        # rubocop:enable Metrics/ParameterLists
       end
     end
   end

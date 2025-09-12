@@ -46,6 +46,11 @@ module RemoteDevelopment
     end
 
     # @return [String] content of the file
+    def self.internal_poststart_command_start_agentw_script
+      read_file("workspace_operations/create/internal_poststart_command_start_agentw.sh")
+    end
+
+    # @return [String] content of the file
     def self.internal_poststart_command_start_vscode_script
       read_file("workspace_operations/create/internal_poststart_command_start_vscode.sh")
     end
@@ -81,6 +86,7 @@ module RemoteDevelopment
     GIT_CREDENTIAL_STORE_SCRIPT = git_credential_store_script
     INTERNAL_POSTSTART_COMMAND_CLONE_PROJECT_SCRIPT = internal_poststart_command_clone_project_script
     INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT = internal_poststart_command_clone_unshallow_script
+    INTERNAL_POSTSTART_COMMAND_START_AGENTW_SCRIPT = internal_poststart_command_start_agentw_script
     INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT = internal_poststart_command_start_vscode_script
     INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_WORKSPACE_IS_RUNNING_SCRIPT =
       internal_poststart_command_sleep_until_workspace_is_running_script

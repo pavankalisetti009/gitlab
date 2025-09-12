@@ -17,10 +17,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::InternalPoststart
     http_url_to_repo = "#{root_url}test-group/#{project_path}.git"
     instance_double("Project", path: project_path, http_url_to_repo: http_url_to_repo) # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   end
+  let(:agent) { instance_double("Clusters::Agent") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 
   let(:context) do
     {
       params: {
+        agent: agent,
         project: project,
         project_ref: "master"
       },
@@ -47,8 +49,16 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::InternalPoststart
     end
   end
 
+  let(:start_agentw) { false }
+
   subject(:returned_value) do
     described_class.insert(context)
+  end
+
+  before do
+    allow(described_class)
+      .to receive(:start_agentw?)
+            .and_return(start_agentw)
   end
 
   it "updates the devfile" do
@@ -66,5 +76,16 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::InternalPoststart
     expect(command_line).to include("git fetch --unshallow")
     expect(command_line).to include("clone-unshallow.log")
     expect(command_line).to include("git rev-parse --is-shallow-repository")
+  end
+
+  context "when start_agentw? returns true" do
+    let(:start_agentw) { true }
+    let(:expected_processed_devfile_name) do
+      "example.internal-poststart-commands-inserted-devfile-with-agentw.yaml.erb"
+    end
+
+    it "updates the devfile" do
+      expect(returned_value[:processed_devfile]).to eq(expected_processed_devfile)
+    end
   end
 end
