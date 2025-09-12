@@ -77,11 +77,10 @@ module Search
       end
 
       def process_batch!
-        if use_scroll_api?
-          process_batch_with_scroll!
-        else
-          process_batch_with_search!
-        end
+        return process_batch_with_search! unless use_scroll_api?
+        return process_batch_with_scroll! unless Feature.enabled?(:search_scroll_api_increase_throughput, :instance)
+
+        optimized_process_batch_with_scroll!
       end
 
       def process_batch_with_search!
@@ -94,28 +93,7 @@ module Search
         document_references = []
         scroll_id = current_scroll_id
 
-        response = if scroll_id.nil?
-                     client.search(
-                       index: index_name,
-                       scroll: SCROLL_TIMEOUT,
-                       body: query_with_old_schema_version.merge(
-                         size: query_batch_size,
-                         sort: [{ reference_primary_key => { order: 'asc' } }]
-                       )
-                     )
-                   else
-                     begin
-                       client.scroll(
-                         body: { scroll_id: scroll_id },
-                         scroll: SCROLL_TIMEOUT
-                       )
-                     rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
-                       log_warn('scroll_id expired, will restart scroll in next migration run',
-                         exception_class: e.class, exception_message: e.message, scroll_id: scroll_id)
-
-                       { '_scroll_id' => nil, 'hits' => { 'hits' => [] } }
-                     end
-                   end
+        response = fetch_scroll_response(scroll_id)
 
         scroll_id = response['_scroll_id']
 
@@ -130,6 +108,62 @@ module Search
         end
 
         document_references
+      end
+
+      def optimized_process_batch_with_scroll!
+        document_references = []
+        scroll_id = current_scroll_id
+        total_processed = 0
+
+        while total_processed < QUEUE_THRESHOLD
+          response = fetch_scroll_response(scroll_id)
+          scroll_id = response['_scroll_id']
+          hits = response&.dig('hits', 'hits') || []
+
+          if hits.empty?
+            cleanup_scroll(scroll_id)
+            set_migration_state(scroll_id: nil, last_processed_id: nil)
+            break
+          end
+
+          batch_references = process_hits(hits)
+          document_references.concat(batch_references)
+          total_processed += batch_references.size
+
+          set_migration_state(scroll_id: scroll_id, last_processed_id: get_last_processed_id(hits))
+
+          log 'Processed batch with scroll', index_name: index_name, batch_size: batch_references.size,
+            total_processed: total_processed
+
+          break if hits.size < query_batch_size
+        end
+
+        document_references
+      end
+
+      def fetch_scroll_response(scroll_id)
+        if scroll_id.nil?
+          client.search(
+            index: index_name,
+            scroll: SCROLL_TIMEOUT,
+            body: query_with_old_schema_version.merge(
+              size: query_batch_size,
+              sort: [{ reference_primary_key => { order: 'asc' } }]
+            )
+          )
+        else
+          begin
+            client.scroll(
+              body: { scroll_id: scroll_id },
+              scroll: SCROLL_TIMEOUT
+            )
+          rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+            log_warn('scroll_id expired, will restart scroll in next migration run',
+              exception_class: e.class, exception_message: e.message, scroll_id: scroll_id)
+
+            { '_scroll_id' => nil, 'hits' => { 'hits' => [] } }
+          end
+        end
       end
 
       def process_hits(hits)
