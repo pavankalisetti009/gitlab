@@ -25,6 +25,7 @@ import PathNavigation from '~/analytics/cycle_analytics/components/path_navigati
 import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
 import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_stream_filters.vue';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
   valueStreams,
   customizableStagesAndEvents,
@@ -47,6 +48,8 @@ describe('EE Value Stream Analytics component', () => {
   const setDateRange = jest.fn();
   const setPredefinedDateRange = jest.fn();
   const updateStageTablePagination = jest.fn();
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createWrapper = ({
     props = {},
@@ -150,6 +153,7 @@ describe('EE Value Stream Analytics component', () => {
   describe('with no value streams', () => {
     beforeEach(() => {
       createWrapper({
+        state: { selectedValueStream: null },
         getters: {
           hasValueStreams: () => false,
         },
@@ -174,6 +178,12 @@ describe('EE Value Stream Analytics component', () => {
       ${'Type of work chart'}  | ${findTypeOfWorkCharts}  | ${false} | ${'not render'}
     `(`will $result the $component`, ({ componentFinder, exists }) => {
       expect(componentFinder().exists()).toBe(exists);
+    });
+
+    it('does not track any events', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -238,6 +248,19 @@ describe('EE Value Stream Analytics component', () => {
 
     it('does not render a link to the value streams dashboard', () => {
       expect(findOverviewMetrics().props('dashboardsPath')).toBeNull();
+    });
+
+    it('tracks `view_value_stream_analytics` event`', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'view_value_stream_analytics',
+        {
+          label: selectedValueStream.name,
+          value: selectedValueStream.id,
+        },
+        undefined,
+      );
     });
 
     describe('without the overview stage selected', () => {
