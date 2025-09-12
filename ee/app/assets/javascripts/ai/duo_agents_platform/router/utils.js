@@ -1,5 +1,6 @@
-import { AGENT_PLATFORM_PROJECT_PAGE } from '../constants';
+import { AGENT_PLATFORM_PROJECT_PAGE, AGENT_PLATFORM_USER_PAGE } from '../constants';
 import ProjectAgentsPlatformIndex from '../namespace/project/project_agents_platform_index.vue';
+import userAgentsPlatformIndex from '../namespace/user/user_agents_platform_index.vue';
 import { updateActiveNavigation } from './dom_utils';
 
 export const extractNavScopeFromRoute = (route) => {
@@ -26,6 +27,7 @@ export const getNamespaceIndexComponent = (namespace) => {
 
   const componentMappings = {
     [AGENT_PLATFORM_PROJECT_PAGE]: ProjectAgentsPlatformIndex,
+    [AGENT_PLATFORM_USER_PAGE]: userAgentsPlatformIndex,
   };
 
   return componentMappings[namespace];

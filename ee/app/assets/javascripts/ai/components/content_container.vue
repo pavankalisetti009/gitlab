@@ -22,6 +22,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    showBackButton: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -29,11 +34,17 @@ export default {
     };
   },
   computed: {
+    goBackTitle() {
+      return __('Go back');
+    },
     maximizeButtonLabel() {
       return this.isMaximized ? __('Minimize Duo Panel') : __('Maximize Duo Panel');
     },
   },
   methods: {
+    handleGoBack() {
+      this.$emit('go-back');
+    },
     toggleIsMaximized() {
       this.isMaximized = !this.isMaximized;
     },
@@ -50,7 +61,27 @@ export default {
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">
-      <h3 class="gl-m-0 gl-text-sm" data-testid="content-container-title">{{ activeTab.title }}</h3>
+      <div class="gl-flex gl-items-center gl-justify-start gl-gap-2">
+        <gl-button
+          v-gl-tooltip
+          class="lg:gl-flex"
+          :class="{ '!gl-hidden': !showBackButton }"
+          icon="go-back"
+          category="tertiary"
+          :aria-label="goBackTitle"
+          :title="goBackTitle"
+          data-testid="content-container-back-button"
+          @click="handleGoBack"
+        />
+        <h3
+          class="gl-m-0 gl-text-sm"
+          :class="{ 'gl-ml-4': !showBackButton }"
+          data-testid="content-container-title"
+        >
+          {{ activeTab.title }}
+        </h3>
+      </div>
+
       <div class="ai-panel-header-actions gl-flex">
         <gl-button
           v-gl-tooltip

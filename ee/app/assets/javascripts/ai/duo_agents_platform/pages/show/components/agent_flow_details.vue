@@ -1,5 +1,6 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
+import { AGENTS_PLATFORM_INDEX_ROUTE } from '../../../router/constants';
 import AgentFlowHeader from './agent_flow_header.vue';
 import AgentFlowInfo from './agent_flow_info.vue';
 import AgentActivityLogs from './agent_activity_logs.vue';
@@ -13,6 +14,7 @@ export default {
     GlTabs,
     GlTab,
   },
+  inject: ['isSidePanelView'],
   props: {
     isLoading: {
       required: true,
@@ -44,12 +46,17 @@ export default {
       required: true,
     },
   },
+  AGENTS_PLATFORM_INDEX_ROUTE,
 };
 </script>
 <template>
   <div>
-    <agent-flow-header :is-loading="isLoading" :agent-flow-definition="agentFlowDefinition" />
-    <div class="gl-mt-6 gl-flex">
+    <agent-flow-header
+      v-if="!isSidePanelView"
+      :is-loading="isLoading"
+      :agent-flow-definition="agentFlowDefinition"
+    />
+    <div class="gl-flex" :class="{ 'gl-mt-6': !isSidePanelView }">
       <gl-tabs class="gl-w-full" content-class="gl-py-0">
         <gl-tab :title="s__('DuoAgentPlatform|Activity')">
           <agent-activity-logs

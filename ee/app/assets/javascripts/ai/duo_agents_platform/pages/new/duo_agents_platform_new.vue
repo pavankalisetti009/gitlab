@@ -11,7 +11,11 @@ export default {
     PageHeading,
     RunAgentFlowForm,
   },
-  inject: ['projectPath'],
+  inject: {
+    projectId: { default: '' },
+    projectPath: { default: '' },
+    duoAgentsInvokePath: { default: '' },
+  },
   methods: {
     handleAgentFlowStarted(data) {
       this.$router.push({ name: AGENTS_PLATFORM_SHOW_ROUTE, params: { id: data.id } });

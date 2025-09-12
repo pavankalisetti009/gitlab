@@ -1,0 +1,17 @@
+#import "../fragments/flow.fragment.graphql"
+
+query getUserAgentFlows($after: String, $before: String, $first: Int, $last: Int) {
+  duoWorkflowWorkflows(first: $first, after: $after, last: $last, before: $before) {
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      node {
+        ...FlowFragment
+      }
+    }
+  }
+}

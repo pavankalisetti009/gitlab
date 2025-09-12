@@ -61162,9 +61162,6 @@ msgstr ""
 msgid "Sessions"
 msgstr ""
 
-msgid "Sessions content placeholder"
-msgstr ""
-
 msgid "Session|There was a error loading the user verification challenge. Refresh to try again."
 msgstr ""
 

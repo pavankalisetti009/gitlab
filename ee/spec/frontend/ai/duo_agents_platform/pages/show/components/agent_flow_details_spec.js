@@ -19,11 +19,15 @@ describe('AgentFlowDetails', () => {
     updatedAt: '2024-01-02T00:34:00Z',
   };
 
-  const createComponent = (props = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMount(AgentFlowDetails, {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      provide: {
+        isSidePanelView: false,
+        ...provide,
       },
     });
   };
@@ -31,18 +35,48 @@ describe('AgentFlowDetails', () => {
   const findAgentFlowHeader = () => wrapper.findComponent(AgentFlowHeader);
   const findAgentFlowInfo = () => wrapper.findComponent(AgentFlowInfo);
   const findAgentActivityLogs = () => wrapper.findComponent(AgentActivityLogs);
+  const findTabsContainer = () => wrapper.find('.gl-flex');
 
-  beforeEach(() => {
-    createComponent();
+  describe('when not in side panel view', () => {
+    beforeEach(() => {
+      createComponent({ provide: { isSidePanelView: false } });
+    });
+
+    it('renders all tab components and their content', () => {
+      expect(findAgentFlowHeader().exists()).toBe(true);
+      expect(findAgentFlowInfo().exists()).toBe(true);
+      expect(findAgentActivityLogs().exists()).toBe(true);
+    });
+
+    it('applies margin top class to tabs container', () => {
+      expect(findTabsContainer().classes()).toContain('gl-mt-6');
+    });
   });
 
-  it('renders all tab components and their content', () => {
-    expect(findAgentFlowHeader().exists()).toBe(true);
-    expect(findAgentFlowInfo().exists()).toBe(true);
-    expect(findAgentActivityLogs().exists()).toBe(true);
+  describe('when in side panel view', () => {
+    beforeEach(() => {
+      createComponent({ provide: { isSidePanelView: true } });
+    });
+
+    it('does not render the agent flow header', () => {
+      expect(findAgentFlowHeader().exists()).toBe(false);
+    });
+
+    it('renders tab components without header', () => {
+      expect(findAgentFlowInfo().exists()).toBe(true);
+      expect(findAgentActivityLogs().exists()).toBe(true);
+    });
+
+    it('does not apply margin top class to tabs container', () => {
+      expect(findTabsContainer().classes()).not.toContain('gl-mt-6');
+    });
   });
 
   describe('props passing', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('passes agentFlowCheckpoint to AgentFlowLogs', () => {
       expect(findAgentActivityLogs().props('agentFlowCheckpoint')).toEqual(
         defaultProps.agentFlowCheckpoint,
@@ -57,6 +91,13 @@ describe('AgentFlowDetails', () => {
         executorUrl: defaultProps.executorUrl,
         createdAt: '2023-01-01T00:54:00Z',
         updatedAt: '2024-01-02T00:34:00Z',
+      });
+    });
+
+    it('passes correct props to AgentFlowHeader when not in side panel', () => {
+      expect(findAgentFlowHeader().props()).toEqual({
+        isLoading: false,
+        agentFlowDefinition: defaultProps.agentFlowDefinition,
       });
     });
   });

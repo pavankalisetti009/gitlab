@@ -14,7 +14,7 @@ export default {
     GlLoadingIcon,
     PageHeading,
   },
-  inject: ['emptyStateIllustrationPath'],
+  inject: ['emptyStateIllustrationPath', 'isSidePanelView'],
   props: {
     workflowQuery: {
       required: true,
@@ -31,6 +31,11 @@ export default {
     isLoadingWorkflows: {
       required: true,
       type: Boolean,
+    },
+  },
+  computed: {
+    headerClass() {
+      return this.isSidePanelView ? 'gl-mt-0' : '';
     },
   },
   methods: {
@@ -57,8 +62,8 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-mt-3 gl-flex gl-flex-col">
-    <page-heading>
+  <div class="gl-flex gl-flex-col">
+    <page-heading v-if="!isSidePanelView" :class="headerClass">
       <template #heading>
         <div class="gl-flex">
           <span>{{ s__('DuoAgentsPlatform|Agent sessions') }}</span>
@@ -67,6 +72,7 @@ export default {
       </template>
       <template #actions>
         <gl-button
+          v-if="!isSidePanelView"
           variant="confirm"
           :to="{ name: $options.newPage }"
           data-testid="new-agent-flow-button"

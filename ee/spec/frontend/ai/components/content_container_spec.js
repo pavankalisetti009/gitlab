@@ -12,7 +12,7 @@ describe('AiContentContainer', () => {
     component: 'Placeholder content',
   };
 
-  const createComponent = ({ activeTab = activeTabMock } = {}) => {
+  const createComponent = ({ activeTab = activeTabMock, showBackButton = false } = {}) => {
     wrapper = shallowMountExtended(AiContentContainer, {
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
@@ -20,6 +20,7 @@ describe('AiContentContainer', () => {
       propsData: {
         activeTab,
         isExpanded: true,
+        showBackButton,
       },
       stubs: {
         GlButton,
@@ -30,6 +31,7 @@ describe('AiContentContainer', () => {
   const findPanelTitle = () => wrapper.findByTestId('content-container-title');
   const findCollapseButton = () => wrapper.findByTestId('content-container-collapse-button');
   const findMaximizeButton = () => wrapper.findByTestId('content-container-maximize-button');
+  const findBackButton = () => wrapper.findByTestId('content-container-back-button');
 
   beforeEach(() => {
     createComponent();
@@ -59,5 +61,38 @@ describe('AiContentContainer', () => {
     await findMaximizeButton().trigger('click');
     await nextTick();
     expect(findMaximizeButton().props('icon')).toBe('minimize');
+  });
+
+  describe('when showBackButton is false', () => {
+    beforeEach(() => {
+      createComponent({ showBackButton: false });
+    });
+
+    it('hides the back button', () => {
+      expect(findBackButton().classes()).toContain('!gl-hidden');
+    });
+  });
+
+  describe('when showBackButton is true', () => {
+    beforeEach(() => {
+      createComponent({ showBackButton: true });
+    });
+
+    it('shows the back button', () => {
+      expect(findBackButton().classes()).not.toContain('!gl-hidden');
+    });
+
+    it('has correct back button attributes', () => {
+      expect(findBackButton().props('icon')).toBe('go-back');
+      expect(findBackButton().props('category')).toBe('tertiary');
+      expect(findBackButton().attributes('aria-label')).toBe('Go back');
+      expect(findBackButton().attributes('title')).toBe('Go back');
+    });
+
+    it('emits go-back event when back button is clicked', async () => {
+      findBackButton().trigger('click');
+      await nextTick();
+      expect(wrapper.emitted('go-back')).toEqual([[]]);
+    });
   });
 });
