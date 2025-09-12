@@ -20,7 +20,7 @@ import {
   removeMavenUpstreamRegistryAssociation,
   updateMavenRegistryUpstreamPosition,
 } from 'ee/api/virtual_registries_api';
-import { mavenVirtualRegistry } from '../mock_data';
+import { mavenVirtualRegistry, upstreamsResponse, multipleUpstreamsResponse } from '../mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
@@ -52,26 +52,6 @@ describe('MavenRegistryDetailsApp', () => {
     password: '',
     cacheValidityHours: 24,
     metadataCacheValidityHours: 24,
-  };
-
-  const upstreamsResponse = {
-    data: [
-      {
-        id: 3,
-        name: 'test',
-        description: 'test description',
-        group_id: 122,
-        url: 'https://gitlab.com',
-        username: '',
-        cache_validity_hours: 24,
-        metadata_cache_validity_hours: 24,
-        created_at: '2025-07-15T04:10:03.060Z',
-        updated_at: '2025-07-15T04:11:00.426Z',
-      },
-    ],
-    headers: {
-      'x-total': '1',
-    },
   };
 
   const createUpstreamSuccessHandler = jest.fn().mockResolvedValue({
@@ -266,13 +246,11 @@ describe('MavenRegistryDetailsApp', () => {
       });
 
       it('shows link form', () => {
-        expect(findLinkUpstreamForm().props('upstreamOptions')).toStrictEqual([
-          {
-            value: 3,
-            text: 'test',
-            secondaryText: 'test description',
-          },
-        ]);
+        expect(findLinkUpstreamForm().props('linkedUpstreams')).toStrictEqual([]);
+        expect(findLinkUpstreamForm().props('initialUpstreams')).toStrictEqual(
+          upstreamsResponse.data,
+        );
+        expect(findLinkUpstreamForm().props('upstreamsCount')).toBe(1);
         expect(findCreateUpstreamForm().exists()).toBe(false);
         expect(findAddUpstream().props('disabled')).toBe(true);
       });
@@ -287,46 +265,24 @@ describe('MavenRegistryDetailsApp', () => {
   });
 
   describe('when there are group level upstreams & registry has upstreams', () => {
+    const registryUpstreams = [upstreams[0]];
+
+    const response = multipleUpstreamsResponse;
     beforeEach(() => {
-      const { name, description, url, username, cacheValidityHours, metadataCacheValidityHours } =
-        upstreams[0];
-      getMavenUpstreamRegistriesList.mockResolvedValue({
-        data: [
-          {
-            ...upstreamsResponse.data[0],
-          },
-          {
-            id: 2,
-            name,
-            description,
-            group_id: 122,
-            url,
-            username,
-            cache_validity_hours: cacheValidityHours,
-            metadata_cache_validity_hours: metadataCacheValidityHours,
-            created_at: '2025-07-15T04:10:03.060Z',
-            updated_at: '2025-07-15T04:11:00.426Z',
-          },
-        ],
-        headers: {
-          'x-total': '2',
-        },
-      });
+      getMavenUpstreamRegistriesList.mockResolvedValue(response);
       createComponent({
-        upstreams: [upstreams[0]],
+        props: {
+          upstreams: registryUpstreams,
+        },
       });
     });
 
     it('when link form is shown, sets the upstream options correctly', async () => {
       await findAddUpstream().vm.$emit('link');
 
-      expect(findLinkUpstreamForm().props('upstreamOptions')).toStrictEqual([
-        {
-          value: 3,
-          text: 'test',
-          secondaryText: 'test description',
-        },
-      ]);
+      expect(findLinkUpstreamForm().props('initialUpstreams')).toStrictEqual(response.data);
+      expect(findLinkUpstreamForm().props('linkedUpstreams')).toStrictEqual(registryUpstreams);
+      expect(findLinkUpstreamForm().props('upstreamsCount')).toBe(2);
     });
   });
 

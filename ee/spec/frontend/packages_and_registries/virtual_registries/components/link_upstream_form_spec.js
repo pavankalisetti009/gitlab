@@ -1,9 +1,11 @@
-import { GlCollapsibleListbox, GlForm, GlSkeletonLoader } from '@gitlab/ui';
+import { GlForm, GlSkeletonLoader } from '@gitlab/ui';
+import { cloneDeep } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/link_upstream_form.vue';
 import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/test_maven_upstream_button.vue';
+import UpstreamSelector from 'ee/packages_and_registries/virtual_registries/components/upstream_selector.vue';
 import { getMavenUpstream } from 'ee/api/virtual_registries_api';
-import { mockUpstream } from '../mock_data';
+import { mockUpstream, upstreamsResponse } from '../mock_data';
 
 jest.mock('ee/api/virtual_registries_api');
 
@@ -11,23 +13,16 @@ describe('LinkUpstreamForm', () => {
   let wrapper;
 
   const defaultProps = {
-    upstreamOptions: [
-      {
-        value: 1,
-        text: 'upstream1',
-        secondaryText: 'description1',
-      },
-      {
-        value: 2,
-        text: 'upstream2',
-        secondaryText: 'description2',
-      },
-    ],
+    linkedUpstreams: [],
+    upstreamsCount: 1,
+    initialUpstreams: upstreamsResponse.data,
   };
 
   const mavenUpstreamResponse = {
     data: { ...mockUpstream, cache_validity_hours: 24, metadata_cache_validity_hours: 48 },
   };
+
+  const upstreamId = upstreamsResponse.data[0].id;
 
   const createComponent = ({ props = defaultProps } = {}) => {
     wrapper = shallowMountExtended(LinkUpstreamForm, {
@@ -36,7 +31,7 @@ describe('LinkUpstreamForm', () => {
   };
 
   const findForm = () => wrapper.findComponent(GlForm);
-  const findUpstreamSelect = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findUpstreamSelect = () => wrapper.findComponent(UpstreamSelector);
   const findSubmitButton = () => wrapper.findByTestId('submit-button');
   const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findTestUpstreamButton = () => wrapper.findComponent(TestMavenUpstreamButton);
@@ -45,19 +40,17 @@ describe('LinkUpstreamForm', () => {
     createComponent();
   });
 
-  it('does not render form if upstreamOptions are empty', () => {
-    createComponent({ props: { upstreamOptions: [] } });
-
-    expect(findForm().exists()).toBe(false);
-  });
-
   it('renders form', () => {
     expect(findForm().exists()).toBe(true);
   });
 
   it('renders upstream select', () => {
-    expect(findUpstreamSelect().props('selected')).toBe(null);
-    expect(findUpstreamSelect().props('items')).toBe(defaultProps.upstreamOptions);
+    expect(cloneDeep(findUpstreamSelect().props())).toEqual({
+      selectedUpstreamName: '',
+      upstreamsCount: defaultProps.upstreamsCount,
+      linkedUpstreams: defaultProps.linkedUpstreams,
+      initialUpstreams: defaultProps.initialUpstreams,
+    });
   });
 
   it('renders empty upstream summary when upstream is not selected', () => {
@@ -78,7 +71,7 @@ describe('LinkUpstreamForm', () => {
 
   describe('when upstream is selected', () => {
     it('renders a loader', async () => {
-      await findUpstreamSelect().vm.$emit('select', defaultProps.upstreamOptions[0].value);
+      await findUpstreamSelect().vm.$emit('select', upstreamId);
 
       expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
     });
@@ -86,13 +79,17 @@ describe('LinkUpstreamForm', () => {
     describe('and API succeeds', () => {
       beforeEach(() => {
         getMavenUpstream.mockResolvedValue(mavenUpstreamResponse);
-        findUpstreamSelect().vm.$emit('select', defaultProps.upstreamOptions[0].value);
+        findUpstreamSelect().vm.$emit('select', upstreamId);
       });
 
       it('calls get upstream API', () => {
         expect(getMavenUpstream).toHaveBeenCalledWith({
-          id: defaultProps.upstreamOptions[0].value,
+          id: upstreamId,
         });
+      });
+
+      it('sets selected upstream name', () => {
+        expect(findUpstreamSelect().props('selectedUpstreamName')).toBe(mockUpstream.name);
       });
 
       it('renders upstream summary', () => {
@@ -114,7 +111,7 @@ describe('LinkUpstreamForm', () => {
     describe('and API fails', () => {
       beforeEach(() => {
         getMavenUpstream.mockRejectedValue();
-        findUpstreamSelect().vm.$emit('select', defaultProps.upstreamOptions[0].value);
+        findUpstreamSelect().vm.$emit('select', upstreamId);
       });
 
       it('renders alert message', () => {
@@ -134,7 +131,7 @@ describe('LinkUpstreamForm', () => {
             description: '',
           },
         });
-        findUpstreamSelect().vm.$emit('select', defaultProps.upstreamOptions[0].value);
+        findUpstreamSelect().vm.$emit('select', upstreamId);
       });
 
       it('does not render `Description` label', () => {
@@ -155,7 +152,7 @@ describe('LinkUpstreamForm', () => {
 
     it('emits event if upstream is selected', async () => {
       getMavenUpstream.mockResolvedValue(mavenUpstreamResponse);
-      await findUpstreamSelect().vm.$emit('select', defaultProps.upstreamOptions[0].value);
+      await findUpstreamSelect().vm.$emit('select', upstreamId);
 
       findForm().vm.$emit('submit', { preventDefault: () => {} });
 
@@ -163,7 +160,7 @@ describe('LinkUpstreamForm', () => {
       const [eventParams] = submittedEvent[0];
 
       expect(Boolean(submittedEvent)).toBe(true);
-      expect(eventParams).toEqual(1);
+      expect(eventParams).toEqual(3);
     });
   });
 
