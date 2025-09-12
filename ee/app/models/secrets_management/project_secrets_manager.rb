@@ -334,6 +334,41 @@ module SecretsManagement
       end
     end
 
+    def user_auth_cel_program(project_id)
+      {
+        variables: [
+          { name: "base",  expression: %("project_#{project_id}") },
+          { name: "uid",   expression: %q(('user_id' in claims) ? string(claims['user_id']) : "") },
+          { name: "mrid",
+            expression: %q(('member_role_id' in claims && claims['member_role_id'] != null) ?
+                            string(claims['member_role_id']) : "") },
+          { name: "rid", expression: %q(('role_id' in claims) ? string(claims['role_id']) : "") },
+          { name: "expected_pid", expression: %("#{project_id}") },
+          { name: "pid",   expression: %q(('project_id' in claims) ? string(claims['project_id']) : "") },
+          { name: "grps",  expression: %q(('groups' in claims) ? claims['groups'] : []) },
+          { name: "who",   expression: %q(uid != "" ? "gitlab-user:" + uid : "gitlab-user:anonymous") },
+          { name: "aud",   expression: %q(('aud' in claims) ? claims['aud'] : "") },
+          { name: "expected_aud", expression: %("#{ProjectSecretsManager.server_url}") }
+        ],
+        expression: <<~'CEL'.strip
+          pid == "" ? "missing project_id" :
+          pid != expected_pid ? "token project_id does not match role base" :
+          aud == "" ? "missing audience" :
+          aud != expected_aud ? "audience validation failed" :
+          uid == "" ? "missing user_id" :
+          pb.Auth{
+            display_name: who,
+            alias: logical.Alias { name: who },
+            policies:
+              (uid  != "" ? [base + "/users/direct/user_"        + uid]  : []) +
+              (mrid != "" ? [base + "/users/direct/member_role_" + mrid] : []) +
+              grps.map(g, base + "/users/direct/group_" + string(g)) +
+              (rid  != "" ? [base + "/users/roles/"              + rid]  : [])
+          }
+        CEL
+      }
+    end
+
     private
 
     def namespace_path

@@ -135,5 +135,19 @@ module SecretsManagement
     def secret_rotation_info_for_project_secret(project, name, version = 1)
       SecretRotationInfo.for_project_secret(project, name, version)
     end
+
+    def update_kv_secret_with_metadata(mount_path, secret_path, value, custom_metadata)
+      client.update_kv_secret(
+        mount_path,
+        secret_path,
+        value
+      )
+
+      client.update_kv_secret_metadata(
+        mount_path,
+        secret_path,
+        custom_metadata
+      )
+    end
   end
 end
