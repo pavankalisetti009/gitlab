@@ -55,7 +55,7 @@ module QA
         runner.remove_via_api!
       end
 
-      it 'takes effect when pipeline is run on the main branch', :smoke,
+      it 'takes effect when pipeline is run on the main branch',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/423944',
         quarantine: {
           issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516911',
@@ -72,7 +72,7 @@ module QA
           "Expected #{job_name} to appear but it is not present"
       end
 
-      it 'does not take effect when pipeline is run on non default branch', :smoke,
+      it 'does not take effect when pipeline is run on non default branch',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/426177' do
         expect(scan_execution_policy_commit.api_response).to have_key(:branch)
         expect(scan_execution_policy_commit.api_response[:branch]).not_to be_nil
