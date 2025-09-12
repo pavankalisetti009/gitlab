@@ -50,7 +50,7 @@ module EE
     override :project_issues_list_data
     def project_issues_list_data(project, current_user)
       super.tap do |data|
-        data[:duo_remote_flows_enabled] = project.duo_remote_flows_enabled.to_s
+        data[:duo_remote_flows_availability] = project.duo_remote_flows_enabled.to_s
 
         if project.feature_available?(:epics) && project.group
           data[:group_path] = project.group.full_path

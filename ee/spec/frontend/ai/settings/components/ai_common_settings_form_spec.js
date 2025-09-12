@@ -5,6 +5,7 @@ import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form
 import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
 import DuoPromptCacheForm from 'ee/ai/settings/components/duo_prompt_cache_form.vue';
+import DuoFlowSettings from 'ee/ai/settings/components/duo_flow_settings.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
 describe('AiCommonSettingsForm', () => {
@@ -15,6 +16,7 @@ describe('AiCommonSettingsForm', () => {
       propsData: {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         duoCoreFeaturesEnabled: true,
+        duoRemoteFlowsAvailability: false,
         experimentFeaturesEnabled: true,
         promptCacheEnabled: false,
         hasParentFormChanged: false,
@@ -32,6 +34,7 @@ describe('AiCommonSettingsForm', () => {
   const findDuoExperimentBetaFeatures = () => wrapper.findComponent(DuoExperimentBetaFeaturesForm);
   const findDuoCoreFeaturesForm = () => wrapper.findComponent(DuoCoreFeaturesForm);
   const findDuoPromptCache = () => wrapper.findComponent(DuoPromptCacheForm);
+  const findDuoFlowSettings = () => wrapper.findComponent(DuoFlowSettings);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
@@ -60,6 +63,10 @@ describe('AiCommonSettingsForm', () => {
       expect(findDuoPromptCache().exists()).toBe(true);
     });
 
+    it('renders DuoFlowSettings component', () => {
+      expect(findDuoFlowSettings().exists()).toBe(true);
+    });
+
     it('disables save button when no changes are made', () => {
       expect(findSaveButton().props('disabled')).toBe(true);
     });
@@ -72,7 +79,18 @@ describe('AiCommonSettingsForm', () => {
     });
 
     it('enables save button when prompt cache changes are made', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
       await findDuoPromptCache().vm.$emit('change', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('enables save button when duo flow changes are made', async () => {
+      expect(findSaveButton().props('disabled')).toBe(true);
+
+      await findDuoFlowSettings().vm.$emit('change', true);
+
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
@@ -110,6 +128,14 @@ describe('AiCommonSettingsForm', () => {
       await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
       expect(findDuoPromptCache().props('disabledCheckbox')).toBe(true);
     });
+
+    it('disables the duo flow checkbox when duo availability is set to never_on', async () => {
+      expect(findDuoFlowSettings().props('disabledCheckbox')).toBe(false);
+
+      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
+
+      expect(findDuoFlowSettings().props('disabledCheckbox')).toBe(true);
+    });
   });
 
   describe('prompt cache integration', () => {
@@ -131,12 +157,30 @@ describe('AiCommonSettingsForm', () => {
       // Verify the form is unchanged
       expect(findSaveButton().props('disabled')).toBe(true);
     });
+  });
 
-    describe('with onGeneralSettingsPage true', () => {
-      it('does not render the Duo Core features form', () => {
-        createComponent({ provide: { onGeneralSettingsPage: true } });
-        expect(findDuoCoreFeaturesForm().exists()).toBe(false);
-      });
+  describe('duo flow integration', () => {
+    it('emits duo-flow-checkbox-changed event when DuoFlowSettings emits change', async () => {
+      await findDuoFlowSettings().vm.$emit('change', true);
+
+      expect(wrapper.emitted('duo-flow-checkbox-changed')[0]).toEqual([true]);
+    });
+
+    it('updates internal flowEnabled data when change event is received', async () => {
+      await findDuoFlowSettings().vm.$emit('change', true);
+
+      expect(findSaveButton().props('disabled')).toBe(false);
+
+      await findDuoFlowSettings().vm.$emit('change', false);
+
+      expect(findSaveButton().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('with onGeneralSettingsPage true', () => {
+    it('does not render the Duo Core features form', () => {
+      createComponent({ provide: { onGeneralSettingsPage: true } });
+      expect(findDuoCoreFeaturesForm().exists()).toBe(false);
     });
   });
 });

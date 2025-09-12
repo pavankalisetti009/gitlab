@@ -672,6 +672,17 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
+    context 'duo_remote_flows_availability' do
+      it 'updates duo_remote_flows_enabled field of namespace settings' do
+        expect do
+          put api("/groups/#{group.id}", user), params: { duo_remote_flows_availability: false }
+        end.to change { group.reload.duo_remote_flows_enabled }.from(true).to(false)
+            .and change { group.reload.lock_duo_remote_flows_enabled }.from(false).to(true)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
     context 'auto_duo_code_review_enabled', :saas do
       using RSpec::Parameterized::TableSyntax
 

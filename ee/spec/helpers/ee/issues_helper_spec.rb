@@ -138,11 +138,11 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expect(helper.project_issues_list_data(project, current_user)).to include(expected)
       end
 
-      it 'includes duo_remote_flows_enabled for projects' do
+      it 'includes duo_remote_flows_availability for projects' do
         result = helper.project_issues_list_data(project, current_user)
 
-        expect(result).to include(:duo_remote_flows_enabled)
-        expect(result[:duo_remote_flows_enabled]).to eq('true')
+        expect(result).to include(:duo_remote_flows_availability)
+        expect(result[:duo_remote_flows_availability]).to eq('true')
       end
 
       context 'when project does not have group' do
@@ -187,11 +187,11 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expect(result).not_to include(:group_path)
       end
 
-      it 'still includes duo_remote_flows_enabled even when other features are disabled' do
+      it 'still includes duo_remote_flows_availability even when other features are disabled' do
         result = helper.project_issues_list_data(project, current_user)
 
-        expect(result).to include(:duo_remote_flows_enabled)
-        expect(result[:duo_remote_flows_enabled]).to eq('true')
+        expect(result).to include(:duo_remote_flows_availability)
+        expect(result[:duo_remote_flows_availability]).to eq('true')
       end
     end
   end
@@ -238,10 +238,10 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expect(helper.group_issues_list_data(group, current_user)).to include(expected)
       end
 
-      it 'does not include duo_remote_flows_enabled for groups' do
+      it 'does not include duo_remote_flows_availability for groups' do
         result = helper.group_issues_list_data(group, current_user)
 
-        expect(result).not_to include(:duo_remote_flows_enabled)
+        expect(result).not_to include(:duo_remote_flows_availability)
       end
     end
 
@@ -316,10 +316,10 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expect(helper.dashboard_issues_list_data(current_user)).to include(expected)
       end
 
-      it 'does not include duo_remote_flows_enabled for dashboard' do
+      it 'does not include duo_remote_flows_availability for dashboard' do
         result = helper.dashboard_issues_list_data(current_user)
 
-        expect(result).not_to include(:duo_remote_flows_enabled)
+        expect(result).not_to include(:duo_remote_flows_availability)
       end
     end
 

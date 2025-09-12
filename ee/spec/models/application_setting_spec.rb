@@ -652,6 +652,27 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#duo_remote_flows_availability=' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:duo_remote_flows_availability, :duo_remote_flows_enabled_expectation,
+        :lock_duo_remote_flows_enabled_expectation) do
+        true  | true  | false
+        false | false | true
+      end
+
+      with_them do
+        before do
+          setting.duo_remote_flows_availability = duo_remote_flows_availability
+        end
+
+        it 'returns the expected response' do
+          expect(setting.duo_remote_flows_enabled).to be duo_remote_flows_enabled_expectation
+          expect(setting.lock_duo_remote_flows_enabled).to be lock_duo_remote_flows_enabled_expectation
+        end
+      end
+    end
+
     describe '#duo_default_off?' do
       it 'returns true when duo_availability is "default_off"' do
         setting.duo_availability = "default_off"

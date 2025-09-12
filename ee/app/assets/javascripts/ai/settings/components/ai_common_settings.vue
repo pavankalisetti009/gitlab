@@ -29,6 +29,7 @@ export default {
     'duoCoreFeaturesEnabled',
     'onGeneralSettingsPage',
     'promptCacheEnabled',
+    'initialDuoRemoteFlowsAvailability',
   ],
   props: {
     hasParentFormChanged: {
@@ -43,6 +44,7 @@ export default {
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
+      duoRemoteFlowsAvailability: this.initialDuoRemoteFlowsAvailability,
     };
   },
   methods: {
@@ -52,6 +54,7 @@ export default {
         experimentFeaturesEnabled: this.experimentsEnabled,
         duoCoreFeaturesEnabled: this.duoCoreEnabled,
         promptCacheEnabled: this.cacheEnabled,
+        duoRemoteFlowsAvailability: this.duoRemoteFlowsAvailability,
       });
     },
     onRadioChanged(value) {
@@ -65,6 +68,9 @@ export default {
     },
     onCacheCheckboxChanged(value) {
       this.cacheEnabled = value;
+    },
+    onDuoFlowChanged(value) {
+      this.duoRemoteFlowsAvailability = value;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/gitlab_duo/_index'),
@@ -91,6 +97,7 @@ export default {
         <template #default>
           <ai-common-settings-form
             :duo-availability="duoAvailability"
+            :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :duo-core-features-enabled="duoCoreFeaturesEnabled"
             :prompt-cache-enabled="promptCacheEnabled"
@@ -100,6 +107,7 @@ export default {
             @experiment-checkbox-changed="experimentCheckboxChanged"
             @duo-core-checkbox-changed="duoCoreCheckboxChanged"
             @cache-checkbox-changed="onCacheCheckboxChanged"
+            @duo-flow-checkbox-changed="onDuoFlowChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -125,6 +133,7 @@ export default {
       </page-heading>
       <ai-common-settings-form
         :duo-availability="duoAvailability"
+        :duo-remote-flows-availability="initialDuoRemoteFlowsAvailability"
         :experiment-features-enabled="experimentFeaturesEnabled"
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
         :prompt-cache-enabled="promptCacheEnabled"
@@ -134,6 +143,7 @@ export default {
         @experiment-checkbox-changed="experimentCheckboxChanged"
         @duo-core-checkbox-changed="duoCoreCheckboxChanged"
         @cache-checkbox-changed="onCacheCheckboxChanged"
+        @duo-flow-checkbox-changed="onDuoFlowChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

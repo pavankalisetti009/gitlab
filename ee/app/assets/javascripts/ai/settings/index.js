@@ -9,7 +9,7 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
-export const initAiSettings = (id, component) => {
+export const initAiSettings = (id, component, options = {}) => {
   const el = document.getElementById(id);
 
   if (!el) {
@@ -21,11 +21,13 @@ export const initAiSettings = (id, component) => {
     duoAgentPlatformServiceUrl,
     exposeDuoAgentPlatformServiceUrl,
     canManageSelfHostedModels,
-    cascadingSettingsData,
+    duoAvailabilityCascadingSettings,
+    duoRemoteFlowsCascadingSettings,
     duoAvailability,
     areDuoSettingsLocked,
     experimentFeaturesEnabled,
     duoCoreFeaturesEnabled,
+    duoRemoteFlowsAvailability,
     promptCacheEnabled,
     redirectPath,
     updateId,
@@ -48,13 +50,25 @@ export const initAiSettings = (id, component) => {
     isSaas,
   } = el.dataset;
 
-  let cascadingSettingsDataParsed;
+  let duoAvailabilityCascadingSettingsParsed;
+  let duoRemoteFlowsCascadingSettingsParsed;
+
   try {
-    cascadingSettingsDataParsed = convertObjectPropsToCamelCase(JSON.parse(cascadingSettingsData), {
-      deep: true,
-    });
+    duoAvailabilityCascadingSettingsParsed = convertObjectPropsToCamelCase(
+      JSON.parse(duoAvailabilityCascadingSettings),
+      {
+        deep: true,
+      },
+    );
+
+    duoRemoteFlowsCascadingSettingsParsed = convertObjectPropsToCamelCase(
+      JSON.parse(duoRemoteFlowsCascadingSettings),
+      {
+        deep: true,
+      },
+    );
   } catch {
-    cascadingSettingsDataParsed = null;
+    duoAvailabilityCascadingSettingsParsed = null;
   }
 
   return new Vue({
@@ -65,7 +79,8 @@ export const initAiSettings = (id, component) => {
       duoAgentPlatformServiceUrl,
       exposeDuoAgentPlatformServiceUrl: parseBoolean(exposeDuoAgentPlatformServiceUrl),
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
-      cascadingSettingsData: cascadingSettingsDataParsed,
+      duoAvailabilityCascadingSettings: duoAvailabilityCascadingSettingsParsed,
+      duoRemoteFlowsCascadingSettings: duoRemoteFlowsCascadingSettingsParsed,
       areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
       duoAvailability,
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
@@ -86,7 +101,9 @@ export const initAiSettings = (id, component) => {
       arePromptCacheSettingsAllowed: parseBoolean(arePromptCacheSettingsAllowed),
       duoChatExpirationDays: parseInt(duoChatExpirationDays, 10),
       duoChatExpirationColumn,
+      initialDuoRemoteFlowsAvailability: parseBoolean(duoRemoteFlowsAvailability),
       isSaaS: parseBoolean(isSaas),
+      isGroupSettings: options?.isGroupSettings || false,
     },
     render: (createElement) =>
       createElement(component, {

@@ -50,10 +50,13 @@ module EE
       end
 
       def group_ai_settings_helper_data
-        cascading_settings_data = cascading_namespace_settings_tooltip_data(:duo_features_enabled, @group, method(:edit_group_path))[:tooltip_data]
+        duo_availability_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_features_enabled, @group, method(:edit_group_path))[:tooltip_data]
+        duo_remote_flows_cascading_settings = cascading_namespace_settings_tooltip_data(:duo_remote_flows_enabled, @group, method(:edit_group_path))[:tooltip_data]
+
         {
-          cascading_settings_data: cascading_settings_data,
+          duo_availability_cascading_settings: duo_availability_cascading_settings,
           duo_availability: @group.namespace_settings.duo_availability.to_s,
+          duo_remote_flows_cascading_settings: duo_remote_flows_cascading_settings,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: @group.namespace_settings.experiment_features_enabled.to_s,
           duo_core_features_enabled: @group.namespace_settings.duo_core_features_enabled.to_s,
@@ -65,6 +68,7 @@ module EE
           update_id: @group.id,
           duo_workflow_available: (@group.root? && current_user.can?(:admin_duo_workflow, @group)).to_s,
           duo_workflow_mcp_enabled: @group.duo_workflow_mcp_enabled.to_s,
+          duo_remote_flows_availability: @group.namespace_settings.duo_remote_flows_availability.to_s,
           is_saas: saas?.to_s
         }
       end
@@ -75,7 +79,7 @@ module EE
           init_availability: @group.namespace_settings.duo_availability.to_s,
           init_auto_review_enabled: @group.amazon_q_integration&.auto_review_enabled.present?,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?,
-          cascading_settings_data: cascading_namespace_settings_tooltip_raw_data(:duo_features_enabled, @group, method(:edit_group_path))
+          duo_availability_cascading_settings: cascading_namespace_settings_tooltip_raw_data(:duo_features_enabled, @group, method(:edit_group_path))
         }
       end
 

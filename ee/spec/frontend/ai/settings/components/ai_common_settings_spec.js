@@ -20,6 +20,7 @@ describe('AiCommonSettings', () => {
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
         promptCacheEnabled: true,
+        initialDuoRemoteFlowsAvailability: false,
         onGeneralSettingsPage: false,
         ...provide,
       },
@@ -68,6 +69,7 @@ describe('AiCommonSettings', () => {
     await findForm().vm.$emit('radio-changed', AVAILABILITY_OPTIONS.DEFAULT_OFF);
     await findForm().vm.$emit('experiment-checkbox-changed', true);
     await findForm().vm.$emit('duo-core-checkbox-changed', true);
+    await findForm().vm.$emit('duo-flow-checkbox-changed', true);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -77,6 +79,7 @@ describe('AiCommonSettings', () => {
       experimentFeaturesEnabled: true,
       duoCoreFeaturesEnabled: true,
       promptCacheEnabled: true,
+      duoRemoteFlowsAvailability: true,
     });
   });
 

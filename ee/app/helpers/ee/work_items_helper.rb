@@ -9,7 +9,7 @@ module EE
       group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
 
       super.merge(
-        duo_remote_flows_enabled: resource_parent.duo_remote_flows_enabled.to_s,
+        duo_remote_flows_availability: resource_parent.duo_remote_flows_enabled.to_s,
         has_blocked_issues_feature: resource_parent.licensed_feature_available?(:blocked_issues).to_s,
         has_group_bulk_edit_feature: resource_parent.licensed_feature_available?(:group_bulk_edit).to_s,
         can_bulk_edit_epics: can?(current_user, :bulk_admin_epic, resource_parent).to_s,

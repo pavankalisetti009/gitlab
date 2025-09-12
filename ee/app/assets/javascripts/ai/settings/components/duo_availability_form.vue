@@ -58,7 +58,7 @@ export default {
     GlFormGroup,
     CascadingLockIcon,
   },
-  inject: ['isSaaS', 'areDuoSettingsLocked', 'cascadingSettingsData'],
+  inject: ['isSaaS', 'areDuoSettingsLocked', 'duoAvailabilityCascadingSettings'],
   props: {
     duoAvailability: {
       type: String,
@@ -74,8 +74,8 @@ export default {
     showCascadingButton() {
       return (
         this.areDuoSettingsLocked &&
-        this.cascadingSettingsData &&
-        Object.keys(this.cascadingSettingsData).length
+        this.duoAvailabilityCascadingSettings &&
+        Object.keys(this.duoAvailabilityCascadingSettings).length
       );
     },
   },
@@ -126,9 +126,11 @@ export default {
           {{ $options.i18n.alwaysOffText }}
           <cascading-lock-icon
             v-if="showCascadingButton"
-            :is-locked-by-group-ancestor="cascadingSettingsData.lockedByAncestor"
-            :is-locked-by-application-settings="cascadingSettingsData.lockedByApplicationSetting"
-            :ancestor-namespace="cascadingSettingsData.ancestorNamespace"
+            :is-locked-by-group-ancestor="duoAvailabilityCascadingSettings.lockedByAncestor"
+            :is-locked-by-application-settings="
+              duoAvailabilityCascadingSettings.lockedByApplicationSetting
+            "
+            :ancestor-namespace="duoAvailabilityCascadingSettings.ancestorNamespace"
             class="gl-ml-1"
           />
           <template #help>

@@ -72,4 +72,4 @@ if (mergeRequestApprovalSetting) {
 
 initServicePingSettingsClickTracking();
 initMergeRequestMergeChecksApp();
-initAiSettings('js-ai-settings', AiGroupSettings);
+initAiSettings('js-ai-settings', AiGroupSettings, { isGroupSettings: true });

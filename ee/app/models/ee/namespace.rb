@@ -189,6 +189,7 @@ module EE
       delegate :duo_core_features_enabled, :duo_core_features_enabled=, :duo_features_enabled,
         :lock_duo_features_enabled, :duo_availability,
         :auto_duo_code_review_enabled, :auto_duo_code_review_enabled=,
+        :duo_remote_flows_enabled, :lock_duo_remote_flows_enabled,
         to: :namespace_settings, allow_nil: true
       delegate :pipeline_execution_policies_per_configuration_limit,
         :pipeline_execution_policies_per_configuration_limit=, :scan_execution_policies_per_configuration_limit,

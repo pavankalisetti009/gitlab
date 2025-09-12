@@ -19,7 +19,7 @@ describe('DuoAvailabilityForm', () => {
       },
       provide: {
         areDuoSettingsLocked: false,
-        cascadingSettingsData: {
+        duoAvailabilityCascadingSettings: {
           lockedByAncestor: false,
           lockedByApplicationSetting: false,
           ancestorNamespace: null,
@@ -114,7 +114,7 @@ describe('DuoAvailabilityForm', () => {
       });
     });
 
-    it('shows CascadingLockIcon when cascadingSettingsData is provided', () => {
+    it('shows CascadingLockIcon when duoAvailabilityCascadingSettings is provided', () => {
       expect(findCascadingLockIcon().exists()).toBe(true);
     });
 
@@ -126,19 +126,19 @@ describe('DuoAvailabilityForm', () => {
       });
     });
 
-    it('does not show CascadingLockIcon when cascadingSettingsData is empty', () => {
+    it('does not show CascadingLockIcon when duoAvailabilityCascadingSettings is empty', () => {
       wrapper = createComponent({
         provide: {
-          cascadingSettingsData: {},
+          duoAvailabilityCascadingSettings: {},
         },
       });
       expect(findCascadingLockIcon().exists()).toBe(false);
     });
 
-    it('does not show CascadingLockIcon when cascadingSettingsData is null', () => {
+    it('does not show CascadingLockIcon when duoAvailabilityCascadingSettings is null', () => {
       wrapper = createComponent({
         provide: {
-          cascadingSettingsData: null,
+          duoAvailabilityCascadingSettings: null,
         },
       });
       expect(findCascadingLockIcon().exists()).toBe(false);

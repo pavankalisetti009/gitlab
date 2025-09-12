@@ -6,6 +6,7 @@ import DuoAvailability from './duo_availability_form.vue';
 import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from './duo_core_features_form.vue';
 import DuoPromptCache from './duo_prompt_cache_form.vue';
+import DuoFlowSettings from './duo_flow_settings.vue';
 
 export default {
   name: 'AiCommonSettingsForm',
@@ -17,6 +18,7 @@ export default {
     DuoExperimentBetaFeatures,
     DuoCoreFeaturesForm,
     DuoPromptCache,
+    DuoFlowSettings,
   },
   i18n: {
     defaultOffWarning: s__(
@@ -28,6 +30,10 @@ export default {
   props: {
     duoAvailability: {
       type: String,
+      required: true,
+    },
+    duoRemoteFlowsAvailability: {
+      type: Boolean,
       required: true,
     },
     experimentFeaturesEnabled: {
@@ -52,6 +58,7 @@ export default {
   data() {
     return {
       availability: this.duoAvailability,
+      flowEnabled: this.duoRemoteFlowsAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
       cacheEnabled: this.promptCacheEnabled,
@@ -70,13 +77,17 @@ export default {
     hasCacheCheckboxChanged() {
       return this.cacheEnabled !== this.promptCacheEnabled;
     },
+    hasFlowFormChanged() {
+      return this.flowEnabled !== this.duoRemoteFlowsAvailability;
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
         this.hasExperimentCheckboxChanged ||
         this.hasDuoCoreCheckboxChanged ||
         this.hasCacheCheckboxChanged ||
-        this.hasParentFormChanged
+        this.hasParentFormChanged ||
+        this.hasFlowFormChanged
       );
     },
     showWarning() {
@@ -118,6 +129,10 @@ export default {
       this.cacheEnabled = value;
       this.$emit('cache-checkbox-changed', value);
     },
+    onFlowCheckboxChanged(value) {
+      this.flowEnabled = value;
+      this.$emit('duo-flow-checkbox-changed', value);
+    },
   },
 };
 </script>
@@ -138,6 +153,12 @@ export default {
       :experiment-features-enabled="experimentsEnabled"
       :disabled-checkbox="disableConfigCheckboxes"
       @change="experimentCheckboxChanged"
+    />
+
+    <duo-flow-settings
+      :duo-remote-flows-availability="duoRemoteFlowsAvailability"
+      :disabled-checkbox="disableConfigCheckboxes"
+      @change="onFlowCheckboxChanged"
     />
 
     <duo-prompt-cache
