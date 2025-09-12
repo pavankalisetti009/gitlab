@@ -24590,6 +24590,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|No flow triggers yet"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Once the service account is configured for use with flow triggers, it cannot be used for other things."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Owner"
 msgstr ""
 

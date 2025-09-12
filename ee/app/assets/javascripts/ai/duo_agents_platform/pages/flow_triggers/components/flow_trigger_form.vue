@@ -190,6 +190,12 @@ export default {
               'DuoAgentsPlatform|Do not assign the service account a role in your project with higher permissions than the users of that service account.',
             )
           }}
+          <br />
+          {{
+            s__(
+              'DuoAgentsPlatform|Once the service account is configured for use with flow triggers, it cannot be used for other things.',
+            )
+          }}
         </template>
         <user-select
           :value="selectedUsers"

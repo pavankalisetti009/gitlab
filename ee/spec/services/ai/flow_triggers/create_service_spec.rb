@@ -7,7 +7,8 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
   let_it_be(:different_group) { create(:group) }
   let_it_be(:human_user) { create(:user, owner_of: [project.group, different_group]) }
   let_it_be(:service_account_provisioned_by_group) do
-    create(:service_account, developer_of: project, provisioned_by_group: project.group)
+    create(:service_account, developer_of: project, provisioned_by_group: project.group,
+      composite_identity_enforced: false)
   end
 
   let(:current_user) { human_user }
@@ -36,6 +37,20 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
       expect(flow_trigger.user).to eq(service_account)
       expect(flow_trigger.event_types).to contain_exactly(Ai::FlowTrigger::EVENT_TYPES[:mention])
       expect(flow_trigger.project).to eq(project)
+      expect(service_account.reload.composite_identity_enforced).to be(true)
+    end
+
+    context 'when duo_workflow_use_composite_identity is disabled' do
+      before do
+        stub_feature_flags(duo_workflow_use_composite_identity: false)
+      end
+
+      it 'does not update composite_identity_enforced field' do
+        response = service.execute(params)
+        expect(response).to be_success
+
+        expect(service_account.reload.composite_identity_enforced).to be(false)
+      end
     end
 
     context 'with invalid params' do
