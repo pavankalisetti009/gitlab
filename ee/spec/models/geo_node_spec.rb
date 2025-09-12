@@ -22,6 +22,8 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
     it { is_expected.to have_many(:geo_node_namespace_links) }
     it { is_expected.to have_many(:namespaces).through(:geo_node_namespace_links) }
+    it { is_expected.to have_many(:geo_node_organization_links) }
+    it { is_expected.to have_many(:organizations).through(:geo_node_organization_links).class_name('Organizations::Organization') }
   end
 
   it_behaves_like 'encrypted attribute', :secret_access_key, :db_key_base_32 do
@@ -41,6 +43,12 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
     it { is_expected.to validate_presence_of(:url) }
     it { is_expected.to validate_uniqueness_of(:name).case_insensitive }
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
+
+    context 'when checking SELECTIVE_SYNC_TYPES constant' do
+      it 'has expected sync types' do
+        expect(GeoNode::SELECTIVE_SYNC_TYPES).to match_array(%w[namespaces shards organizations])
+      end
+    end
 
     context 'when validating primary node' do
       it 'cannot be disabled' do
@@ -748,6 +756,12 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
       is_expected.to be_truthy
     end
 
+    it 'returns true when selective sync is by organizations' do
+      node.update!(selective_sync_type: 'organizations')
+
+      is_expected.to be_truthy
+    end
+
     it 'returns false when selective sync is disabled' do
       node.update!(
         selective_sync_type: '',
@@ -768,6 +782,90 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
       node.selective_sync_type = 'invalid_type'
 
       expect { selective_sync? }.to raise_error(Geo::Errors::UnknownSelectiveSyncType, /Selective sync type is not known: invalid_type/)
+    end
+  end
+
+  describe '#selective_sync_by_organizations?' do
+    subject(:selective_sync_by_organizations?) { node.selective_sync_by_organizations? }
+
+    context 'when selective_sync_type is organizations' do
+      before do
+        node.update!(selective_sync_type: 'organizations')
+      end
+
+      it 'returns true' do
+        is_expected.to be_truthy
+      end
+    end
+
+    context 'when selective_sync_type is namespaces' do
+      before do
+        node.update!(selective_sync_type: 'namespaces')
+      end
+
+      it 'returns false' do
+        is_expected.to be_falsy
+      end
+    end
+
+    context 'when selective_sync_type is shards' do
+      before do
+        node.update!(selective_sync_type: 'shards')
+      end
+
+      it 'returns false' do
+        is_expected.to be_falsy
+      end
+    end
+
+    context 'when selective_sync_type is nil' do
+      before do
+        node.update!(selective_sync_type: nil)
+      end
+
+      it 'returns false' do
+        is_expected.to be_falsy
+      end
+    end
+
+    context 'when selective_sync_type is empty string' do
+      before do
+        node.update!(selective_sync_type: '')
+      end
+
+      it 'returns false' do
+        is_expected.to be_falsy
+      end
+    end
+
+    context 'when selective_sync_type is an invalid value' do
+      before do
+        node.update_column(:selective_sync_type, 'invalid')
+      end
+
+      it 'raises an error' do
+        expect { selective_sync_by_organizations? }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
+      end
+    end
+
+    context 'when selective_sync_type has mixed case' do
+      before do
+        node.update_column(:selective_sync_type, 'Organizations')
+      end
+
+      it 'raises an error' do
+        expect { selective_sync_by_organizations? }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
+      end
+    end
+
+    context 'when selective_sync_type has extra whitespace' do
+      before do
+        node.update_column(:selective_sync_type, ' organizations ')
+      end
+
+      it 'raises an error' do
+        expect { selective_sync_by_organizations? }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
+      end
     end
   end
 
@@ -798,6 +896,14 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
         node.update!(selective_sync_type: 'namespaces', namespaces: [selected_namespace])
 
         is_expected.to contain_exactly(selected_namespace.id, child_namespace.id)
+      end
+    end
+
+    context 'when selective sync is by organization' do
+      it 'returns none' do
+        node.update!(selective_sync_type: 'organizations', organizations: [])
+
+        is_expected.to be_empty
       end
     end
   end

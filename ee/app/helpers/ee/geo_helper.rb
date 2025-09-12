@@ -40,6 +40,13 @@ module EE
         }
       }
 
+      if ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
+        options[:ORGANIZATIONS] = {
+          label: s_('Geo|Projects in certain organizations'),
+          value: 'organizations'
+        }
+      end
+
       options.to_json
     end
 

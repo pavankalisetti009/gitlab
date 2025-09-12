@@ -5463,6 +5463,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
     end
 
+    it 'returns none with selective sync by organizations, for now' do
+      organization_1 = create(:organization)
+      organization_2 = create(:organization)
+      node.update!(selective_sync_type: 'organizations', organizations: [organization_1, organization_2])
+
+      expect(described_class.selective_sync_scope(node)).to be_empty
+    end
+
     it 'raises if an unrecognised selective sync type is used' do
       node.update_attribute(:selective_sync_type, 'unknown')
 

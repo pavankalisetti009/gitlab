@@ -8,6 +8,7 @@ module Geo
       @geo_node = geo_node
       @params = params.dup
       @params[:namespace_ids] = @params[:namespace_ids].to_s.split(',') if @params[:namespace_ids].is_a? String
+      @params[:organization_ids] = @params[:organization_ids].to_s.split(',') if @params[:organization_ids].is_a? String
     end
 
     def execute

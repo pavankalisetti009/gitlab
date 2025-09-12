@@ -108,6 +108,42 @@ RSpec.describe Admin::Geo::NodesController, :geo, feature_category: :geo_replica
           expect(response).to redirect_to(admin_geo_nodes_path)
         end
       end
+
+      context 'with organization_ids parameter' do
+        let(:organization1) { create(:organization) }
+        let(:organization2) { create(:organization) }
+        let(:geo_node_attributes) { { url: 'http://example.com', organization_ids: [organization1.id.to_s, organization2.id.to_s] } }
+
+        context 'when geo_selective_sync_by_organizations feature flag is enabled' do
+          it 'includes organization_ids in the parameters passed to the service' do
+            expected_params = ActionController::Parameters.new(geo_node_attributes).permit!
+
+            expect(Geo::NodeCreateService).to receive(:new)
+              .with(expected_params)
+              .and_call_original
+
+            go
+          end
+        end
+
+        context 'when geo_selective_sync_by_organizations feature flag is disabled' do
+          before do
+            stub_feature_flags(geo_selective_sync_by_organizations: false)
+          end
+
+          it 'excludes organization_ids in the parameters passed to the service' do
+            expected_params = geo_node_attributes.dup
+            expected_params.delete(:organization_ids)
+            expected_params = ActionController::Parameters.new(expected_params).permit!
+
+            expect(Geo::NodeCreateService).to receive(:new)
+              .with(expected_params)
+              .and_call_original
+
+            go
+          end
+        end
+      end
     end
   end
 
@@ -155,6 +191,49 @@ RSpec.describe Admin::Geo::NodesController, :geo, feature_category: :geo_replica
         end
 
         go
+      end
+
+      context 'with organization_ids parameter' do
+        let(:organization1) { create(:organization) }
+        let(:organization2) { create(:organization) }
+        let(:geo_node_attributes) do
+          {
+            url: 'http://example.com',
+            internal_url: 'http://internal-url.com',
+            selective_sync_shards: %w[foo bar],
+            organization_ids: [organization1.id.to_s, organization2.id.to_s]
+          }
+        end
+
+        context 'when geo_selective_sync_by_organizations feature flag is enabled' do
+          it 'includes organization_ids in the parameters passed to the service' do
+            expected_params = ActionController::Parameters.new(geo_node_attributes).permit!
+
+            expect(Geo::NodeUpdateService).to receive(:new)
+              .with(geo_node, expected_params)
+              .and_call_original
+
+            go
+          end
+        end
+
+        context 'when geo_selective_sync_by_organizations feature flag is disabled' do
+          before do
+            stub_feature_flags(geo_selective_sync_by_organizations: false)
+          end
+
+          it 'excludes organization_ids in the parameters passed to the service' do
+            expected_params = geo_node_attributes.dup
+            expected_params.delete(:organization_ids)
+            expected_params = ActionController::Parameters.new(expected_params).permit!
+
+            expect(Geo::NodeUpdateService).to receive(:new)
+              .with(geo_node, expected_params)
+              .and_call_original
+
+            go
+          end
+        end
       end
     end
   end

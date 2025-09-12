@@ -70,12 +70,19 @@ module API
         optional :selective_sync_namespace_ids, as: :namespace_ids, type: Array[Integer],
           coerce_with: Validations::Types::CommaSeparatedToIntegerArray.coerce,
           desc: 'The IDs of groups that should be synced, if `selective_sync_type` == `namespaces`'
+        optional :selective_sync_organization_ids,
+          as: :organization_ids,
+          type: Array[Integer],
+          coerce_with: Validations::Types::CommaSeparatedToIntegerArray.coerce,
+          desc: 'The IDs of organizations that should be synced, if `selective_sync_type` == `organizations`'
         optional :minimum_reverification_interval, type: Integer,
           desc: 'The interval (in days) in which the repository verification is valid. Once expired, it will be ' \
             'reverified. This has no effect when set on a secondary node.'
       end
       post do
         create_params = declared_params(include_missing: false)
+
+        create_params.delete(:organization_ids) unless ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
 
         new_geo_node = ::Geo::NodeCreateService.new(create_params).execute
 
@@ -256,6 +263,11 @@ module API
           optional :selective_sync_namespace_ids, as: :namespace_ids, type: Array[Integer],
             coerce_with: Validations::Types::CommaSeparatedToIntegerArray.coerce,
             desc: 'The IDs of groups that should be synced, if `selective_sync_type` == `namespaces`'
+          optional :selective_sync_organization_ids,
+            as: :organization_ids,
+            type: Array[Integer],
+            coerce_with: Validations::Types::CommaSeparatedToIntegerArray.coerce,
+            desc: 'The IDs of organizations that should be synced, if `selective_sync_type` == `organizations`'
           optional :minimum_reverification_interval, type: Integer,
             desc: 'The interval (in days) in which the repository verification is valid. Once expired, it will be ' \
               'reverified. This has no effect when set on a secondary node.'
@@ -264,6 +276,8 @@ module API
           not_found!('GeoNode') unless geo_node
 
           update_params = declared_params(include_missing: false)
+
+          update_params.delete(:organization_ids) unless ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
 
           updated_geo_node = ::Geo::NodeUpdateService.new(geo_node, update_params).execute
 

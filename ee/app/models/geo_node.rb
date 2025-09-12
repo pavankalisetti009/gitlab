@@ -15,6 +15,8 @@ class GeoNode < ApplicationRecord
 
   has_many :geo_node_namespace_links
   has_many :namespaces, through: :geo_node_namespace_links
+  has_many :geo_node_organization_links, class_name: 'Geo::GeoNodeOrganizationLink'
+  has_many :organizations, through: :geo_node_organization_links, class_name: 'Organizations::Organization'
   has_one :status, class_name: 'GeoNodeStatus'
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 255 }
