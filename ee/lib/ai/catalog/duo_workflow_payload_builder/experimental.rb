@@ -22,8 +22,7 @@ module Ai
             'components' => build_components,
             'routers' => build_routers,
             'flow' => flow_configuration,
-            'prompts' => build_prompt_components,
-            'params' => { 'timeout' => DUO_FLOW_TIMEOUT }
+            'prompts' => build_prompt_components
           }
         end
 
@@ -105,6 +104,9 @@ module Ai
               'system' => system_prompt(definition),
               'user' => user_prompt(definition),
               'placeholder' => PLACEHOLDER_VALUE
+            },
+            'params' => {
+              'timeout' => DUO_FLOW_TIMEOUT
             }
           }
         end

@@ -8,8 +8,7 @@ RSpec.shared_examples 'builds valid flow configuration' do
       'components' => be_an(Array),
       'routers' => be_an(Array),
       'flow' => be_a(Hash),
-      'prompts' => be_an(Array),
-      'params' => be_a(Hash)
+      'prompts' => be_an(Array)
     )
   end
 
@@ -34,7 +33,8 @@ RSpec.shared_examples 'builds valid flow configuration' do
         'system' => be_a(String),
         'user' => be_a(String),
         'placeholder' => be_a(String)
-      )
+      ),
+      'params' => include('timeout' => be_an(Integer))
     ))
   end
 
@@ -43,12 +43,6 @@ RSpec.shared_examples 'builds valid flow configuration' do
     prompt_ids = result['prompts'].pluck('prompt_id')
 
     expect(component_prompt_ids).to match_array(prompt_ids)
-  end
-
-  it 'includes timeout parameter in params section' do
-    expect(result['params']).to include(
-      'timeout' => be_an(Integer)
-    )
   end
 end
 
