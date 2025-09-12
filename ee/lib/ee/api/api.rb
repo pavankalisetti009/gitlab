@@ -9,6 +9,7 @@ module EE
         mount ::EE::API::GroupBoards
 
         mount ::API::AdminMemberRoles
+        mount ::API::Admin::Ai::ActiveContext
         mount ::API::Admin::Search::Zoekt
         mount ::API::Admin::Search::Migrations
         mount ::API::Admin::Security::CompliancePolicySettings

@@ -31,6 +31,15 @@ module Ai
         where(active: true).first
       end
 
+      # Find connection by id. Defaults to active connection.
+      def self.find_connection(id = nil)
+        if id
+          find_by(id: id)
+        else
+          active
+        end
+      end
+
       def activate!
         return if active?
 
