@@ -72,7 +72,24 @@ commands:
   - id: user-defined-command
     exec:
       component: tooling-container
-      commandLine: echo 'user-defined postStart command'
+      commandLine: echo 'executes postStart command in the specified workingDir'
+      workingDir: test-dir
+      hotReloadCapable: false
+  - id: main-component-command-without-working-dir
+    exec:
+      component: tooling-container
+      commandLine: echo 'executes postStart command in the projects/project_path directory'
+      hotReloadCapable: false
+  - id: db-component-command-with-working-dir
+    exec:
+      component: database-container
+      commandLine: echo 'executes postStart command in the specified workingDir'
+      workingDir: test-dir
+      hotReloadCapable: false
+  - id: db-component-command-without-working-dir
+    exec:
+      component: database-container
+      commandLine: echo 'executes postStart command in the the container's default WORKDIR'
       hotReloadCapable: false
   - id: gl-tools-injector-command
     apply:
@@ -83,6 +100,7 @@ commands:
         <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_AGENTW_SCRIPT, 8) %>
       component: tooling-container
       label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
+      workingDir: /projects
   - id: gl-clone-project-command
     exec:
       commandLine: |
@@ -92,6 +110,7 @@ commands:
         %>
       component: tooling-container
       label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
+      workingDir: /projects
   - id: gl-clone-unshallow-command
     exec:
       commandLine: |
@@ -101,18 +120,21 @@ commands:
         %>
       component: tooling-container
       label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
+      workingDir: /projects
   - id: gl-start-sshd-command
     exec:
       commandLine: |
         <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT, 8) %>
       component: tooling-container
       label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
+      workingDir: /projects
   - id: gl-init-tools-command
     exec:
       commandLine: |
         <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT, 8) %>
       component: tooling-container
       label: <%= INTERNAL_BLOCKING_COMMAND_LABEL %>
+      workingDir: /projects
   - id: gl-sleep-until-container-is-running-command
     exec:
       commandLine: |
@@ -125,6 +147,7 @@ commands:
         %>
       component: tooling-container
       label: <%= INTERNAL_COMMAND_LABEL %>
+      workingDir: /projects
 events:
   preStart:
     - gl-tools-injector-command
@@ -135,5 +158,8 @@ events:
     - gl-start-sshd-command
     - gl-init-tools-command
     - gl-sleep-until-container-is-running-command
+    - db-component-command-with-working-dir
+    - db-component-command-without-working-dir
+    - main-component-command-without-working-dir
     - user-defined-command
 variables: {}
