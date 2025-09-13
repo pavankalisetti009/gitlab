@@ -10,7 +10,8 @@ module EE
       def onboarding_first_step_path(user)
         return unless ::Onboarding.enabled?
 
-        return users_sign_up_welcome_path unless onboarding_status_presenter.new_registration_design?
+        # this return is only required during lightweight_trial_registration_redesign and should be removed afterwards
+        return users_sign_up_welcome_path unless onboarding_status_presenter.trial?
 
         # rubocop:disable Cop/ExperimentsTestCoverage -- covered in redirectable_shared_examples.rb
         experiment(:lightweight_trial_registration_redesign, actor: user) do |e|
