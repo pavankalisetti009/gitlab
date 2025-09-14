@@ -52,7 +52,8 @@ module RemoteDevelopment
               exec: {
                 commandLine: INTERNAL_POSTSTART_COMMAND_START_AGENTW_SCRIPT,
                 component: main_component_name,
-                label: INTERNAL_BLOCKING_COMMAND_LABEL
+                label: INTERNAL_BLOCKING_COMMAND_LABEL,
+                workingDir: WORKSPACE_DATA_VOLUME_PATH
               }
             }
           end
