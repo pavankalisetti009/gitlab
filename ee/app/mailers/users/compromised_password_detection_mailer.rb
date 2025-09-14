@@ -10,7 +10,7 @@ module Users
     def compromised_password_detection_email(user)
       @user = user
 
-      @url_to_change_password_docs = help_page_url('user/profile/user_passwords.md', anchor: 'change-a-known-password')
+      @url_to_change_password_docs = help_page_url('user/profile/user_passwords.md', anchor: 'change-your-password')
 
       @url_to_mfa_docs = help_page_url('user/profile/account/two_factor_authentication.md',
         anchor: 'enable-two-factor-authentication')

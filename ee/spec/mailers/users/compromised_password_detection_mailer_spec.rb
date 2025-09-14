@@ -25,9 +25,9 @@ RSpec.describe Users::CompromisedPasswordDetectionMailer, feature_category: :sys
 
     it 'includes the links to relevant docs' do
       expect(email).to have_text_part_content(help_page_url('user/profile/user_passwords.md',
-        anchor: 'change-a-known-password'))
+        anchor: 'change-your-password'))
       expect(email).to have_html_part_content(help_page_url('user/profile/user_passwords.md',
-        anchor: 'change-a-known-password'))
+        anchor: 'change-your-password'))
 
       expect(email).to have_text_part_content(help_page_url('user/profile/account/two_factor_authentication.md',
         anchor: 'enable-two-factor-authentication'))
