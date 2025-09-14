@@ -74,7 +74,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
     end
 
     context 'when there is an existing occurrence' do
-      before do
+      let!(:existing_record) do
         create(:sbom_occurrences_vulnerability,
           sbom_occurrence_id: occurrence_map_1.occurrence_id,
           vulnerability_id: finding_1.vulnerability_id)
@@ -82,6 +82,47 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
 
       it 'does not create a new record for the existing occurrence' do
         expect { ingest_occurrences_vulnerabilities }.to change { Sbom::OccurrencesVulnerability.count }.by(1)
+      end
+
+      it_behaves_like 'it syncs vulnerabilities with elasticsearch' do
+        let(:expected_vulnerability_ids) { [finding_1.vulnerability_id, finding_2.vulnerability_id] }
+      end
+
+      context 'when the vulnerability_id was not ingested' do
+        before do
+          occurrence_map_1.vulnerability_ids = []
+        end
+
+        it 'deletes the record' do
+          expect { ingest_occurrences_vulnerabilities }.to change {
+            Sbom::OccurrencesVulnerability.exists?(existing_record.id)
+          }.from(true).to(false)
+        end
+
+        context 'when show_only_active_vulnerabilities_on_the_dependency_list is disabled' do
+          before do
+            stub_feature_flags(show_only_active_vulnerabilities_on_the_dependency_list: false)
+          end
+
+          it 'does not delete the record' do
+            expect { ingest_occurrences_vulnerabilities }.not_to change {
+              Sbom::OccurrencesVulnerability.exists?(existing_record.id)
+            }.from(true)
+          end
+        end
+
+        context 'when there is another record with the same vulnerability_id' do
+          let!(:other_record) do
+            create(:sbom_occurrences_vulnerability,
+              vulnerability_id: finding_1.vulnerability_id)
+          end
+
+          it 'does not delete the record' do
+            expect { ingest_occurrences_vulnerabilities }.not_to change {
+              Sbom::OccurrencesVulnerability.exists?(other_record.id)
+            }.from(true)
+          end
+        end
       end
     end
 
@@ -128,56 +169,26 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
         let(:expected_vulnerability_ids) { [vulnerability_1.id, vulnerability_2.id] }
 
         it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+
+        context 'when show_only_active_vulnerabilities_on_the_dependency_list is disabled' do
+          before do
+            stub_feature_flags(show_only_active_vulnerabilities_on_the_dependency_list: false)
+          end
+
+          it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+
+          it 'does not use new implementation' do
+            task = described_class.new(pipeline, occurrence_maps)
+            expect(task).not_to receive(:existing_records)
+            task.execute
+          end
+        end
       end
 
       context 'when no vulnerabilities are returned' do
         let(:occurrence_maps) { [] }
 
         it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
-      end
-
-      context 'when return_data is empty' do
-        before do
-          allow_next_instance_of(described_class) do |instance|
-            allow(instance).to receive(:return_data).and_return([])
-          end
-        end
-
-        it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
-      end
-    end
-
-    describe '#after_ingest' do
-      let(:task_instance) { described_class.new(pipeline, occurrence_maps) }
-
-      context 'when return_data is present' do
-        let(:vulnerability_ids) { [finding_1.vulnerability_id, finding_2.vulnerability_id] }
-
-        before do
-          allow(task_instance).to receive(:return_data).and_return(vulnerability_ids)
-          allow(task_instance).to receive(:sync_elasticsearch)
-        end
-
-        it 'calls sync_elasticsearch with the correct vulnerabilities' do
-          task_instance.send(:after_ingest)
-
-          expect(task_instance).to have_received(:sync_elasticsearch).with(
-            match_array([finding_1.vulnerability, finding_2.vulnerability])
-          )
-        end
-      end
-
-      context 'when return_data is not present' do
-        before do
-          allow(task_instance).to receive(:return_data).and_return(nil)
-          allow(task_instance).to receive(:sync_elasticsearch)
-        end
-
-        it 'does not call sync_elasticsearch' do
-          task_instance.send(:after_ingest)
-
-          expect(task_instance).not_to have_received(:sync_elasticsearch)
-        end
       end
     end
   end

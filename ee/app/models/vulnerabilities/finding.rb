@@ -154,6 +154,7 @@ module Vulnerabilities
     scope :report_type, ->(type) { where(report_type: report_types[type]) }
     scope :ordered, -> { order(severity: :desc, id: :asc) }
 
+    scope :active, -> { joins(:vulnerability).merge(Vulnerability.active) }
     scope :by_vulnerability, ->(vulnerability_id) { where(vulnerability: vulnerability_id) }
     scope :ids_by_vulnerability, ->(vulnerability_id) { by_vulnerability(vulnerability_id).pluck(:id) }
     scope :by_report_types, ->(values) { where(report_type: values) }
