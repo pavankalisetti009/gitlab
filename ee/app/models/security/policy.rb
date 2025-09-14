@@ -10,6 +10,7 @@ module Security
     self.inheritance_column = :_type_disabled
 
     DEFAULT_ENFORCEMENT_TYPE = 'enforce'
+    ENFORCEMENT_TYPE_WARN = 'warn'
 
     POLICY_CONTENT_FIELDS = {
       approval_policy: %i[actions approval_settings fallback_behavior policy_tuning bypass_settings enforcement_type],
@@ -86,6 +87,8 @@ module Security
     scope :with_bypass_settings, -> do
       where("content->'bypass_settings' IS NOT NULL").where("content->'bypass_settings' <> ?", '{}')
     end
+
+    scope :with_warn_mode, -> { where("content->>'enforcement_type' = ?", ENFORCEMENT_TYPE_WARN) }
 
     delegate :namespace?, :namespace, :project?, :project, to: :security_orchestration_policy_configuration
 
@@ -310,8 +313,12 @@ module Security
       defined_enforcement_type || DEFAULT_ENFORCEMENT_TYPE
     end
 
+    def enforcement_type_warn?
+      enforcement_type == ENFORCEMENT_TYPE_WARN
+    end
+
     def warn_mode?
-      return defined_enforcement_type == 'warn' if defined_enforcement_type.present?
+      return enforcement_type_warn? if defined_enforcement_type.present?
 
       actions = content&.dig('actions')
       return false unless actions

@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_policy_management do
+  using RSpec::Parameterized::TableSyntax
+
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
     it { is_expected.to belong_to(:scan_result_policy_read) }
@@ -169,6 +171,128 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
 
     it 'returns only running violations' do
       expect(described_class.running).to contain_exactly(running_violation)
+    end
+  end
+
+  describe '.for_security_policies' do
+    let_it_be(:policy_1) { create(:security_policy) }
+    let_it_be(:policy_2) { create(:security_policy) }
+    let_it_be(:rule_1) { create(:approval_policy_rule, security_policy: policy_1) }
+    let_it_be(:rule_2) { create(:approval_policy_rule, security_policy: policy_2) }
+    let_it_be(:violation_1) { create(:scan_result_policy_violation, approval_policy_rule: rule_1) }
+    let_it_be(:violation_2) { create(:scan_result_policy_violation, approval_policy_rule: rule_2) }
+    let_it_be(:violation_without_rule) { create(:scan_result_policy_violation, approval_policy_rule: nil) }
+
+    subject(:violations) { described_class.for_security_policies(policies) }
+
+    context 'when filtering by a single policy' do
+      let(:policies) { policy_1 }
+
+      it { is_expected.to contain_exactly(violation_1) }
+    end
+
+    context 'when filtering by multiple policies' do
+      let(:policies) { [policy_1, policy_2] }
+
+      it { is_expected.to contain_exactly(violation_1, violation_2) }
+    end
+
+    context 'when filtering by a policy with no violations' do
+      let(:policies) { create(:security_policy) }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.group_by_security_policy_id' do
+    let_it_be(:policy_1) { create(:security_policy) }
+    let_it_be(:policy_2) { create(:security_policy) }
+
+    let_it_be(:rule_for_policy_1) { create(:approval_policy_rule, security_policy: policy_1) }
+    let_it_be(:rule_for_policy_2) { create(:approval_policy_rule, security_policy: policy_2) }
+
+    let_it_be(:violation_for_policy_1_a) do
+      create(:scan_result_policy_violation, approval_policy_rule: rule_for_policy_1)
+    end
+
+    let_it_be(:violation_for_policy_1_b) do
+      create(:scan_result_policy_violation, approval_policy_rule: rule_for_policy_1)
+    end
+
+    let_it_be(:violation_for_policy_2) do
+      create(:scan_result_policy_violation, approval_policy_rule: rule_for_policy_2)
+    end
+
+    let_it_be(:violation_without_rule) { create(:scan_result_policy_violation, approval_policy_rule: nil) }
+
+    subject(:grouped_violations) { described_class.where(id: violations).group_by_security_policy_id }
+
+    context 'when grouping violations with and without rules' do
+      let(:violations) do
+        [violation_for_policy_1_a, violation_for_policy_1_b, violation_for_policy_2, violation_without_rule]
+      end
+
+      it 'groups violations by security_policy_id and handles nil rules' do
+        expect(grouped_violations.keys).to contain_exactly(policy_1.id, policy_2.id, nil)
+        expect(grouped_violations[policy_1.id].pluck(:id)).to contain_exactly(violation_for_policy_1_a.id,
+          violation_for_policy_1_b.id)
+        expect(grouped_violations[policy_2.id].pluck(:id)).to contain_exactly(violation_for_policy_2.id)
+        expect(grouped_violations[nil].pluck(:id)).to contain_exactly(violation_without_rule.id)
+      end
+    end
+  end
+
+  describe '#finding_uuids' do
+    let(:violation) { build(:scan_result_policy_violation, violation_data: violation_data) }
+
+    subject(:uuids) { violation.finding_uuids }
+
+    def build_violation_data(previously_existing: [], newly_detected: [])
+      {
+        violations: {
+          scan_finding: {
+            uuids: {
+              previously_existing: previously_existing,
+              newly_detected: newly_detected
+            }
+          }
+        }
+      }
+    end
+
+    context 'when violation_data is nil' do
+      let(:violation_data) { nil }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when violation_data is an empty hash' do
+      let(:violation_data) { {} }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when violation_data does not contain scan_finding uuids' do
+      let(:violation_data) { { violations: { license_scanning: { 'MIT' => ['A'] } } } }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when violation_data contains uuids' do
+      where(:previously_existing, :newly_detected, :expected_uuids) do
+        %w[uuid-1 uuid-2] | []                  | %w[uuid-1 uuid-2]
+        []                | %w[uuid-3 uuid-4]   | %w[uuid-3 uuid-4]
+        %w[uuid-1 uuid-2] | %w[uuid-3 uuid-4]   | %w[uuid-1 uuid-2 uuid-3 uuid-4]
+        []                | []                  | nil
+      end
+
+      with_them do
+        let(:violation_data) do
+          build_violation_data(previously_existing: previously_existing, newly_detected: newly_detected)
+        end
+
+        it { is_expected.to match_array(expected_uuids) }
+      end
     end
   end
 end

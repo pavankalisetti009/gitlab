@@ -18,6 +18,14 @@ module Security
     validates :violation_data, json_schema: { filename: 'scan_result_policy_violation_data' }, allow_blank: true
 
     scope :running, -> { where(status: :running) }
+    scope :for_security_policies, ->(security_policies) {
+      left_outer_joins(:approval_policy_rule).where(approval_policy_rule: { security_policy: security_policies })
+    }
+    scope :group_by_security_policy_id, -> {
+      includes(:approval_policy_rule).group_by do |v|
+        v.approval_policy_rule&.security_policy_id
+      end
+    }
 
     enum :status, {
       running: 0,
@@ -46,9 +54,16 @@ module Security
     }.freeze
 
     MAX_VIOLATIONS = 10
+    FINDING_STATES = %w[previously_existing newly_detected].freeze
 
     def self.trim_violations(violations)
       Array.wrap(violations)[..MAX_VIOLATIONS]
+    end
+
+    def finding_uuids
+      FINDING_STATES.flat_map do |key|
+        violation_data&.dig("violations", "scan_finding", "uuids", key)
+      end.compact_blank
     end
   end
 end
