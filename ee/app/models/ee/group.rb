@@ -1095,7 +1095,7 @@ module EE
     end
 
     def virtual_registry_policy_subject
-      ::VirtualRegistries::Packages::Policies::Group.new(self)
+      ::VirtualRegistries::Policies::Group.new(self)
     end
 
     private

@@ -31,7 +31,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
   describe '#can_create_virtual_registry?' do
     let(:group) { build_stubbed(:group) }
     let(:user) { build_stubbed(:user) }
-    let(:policy_subject) { instance_double(::VirtualRegistries::Packages::Policies::Group) }
+    let(:policy_subject) { instance_double(::VirtualRegistries::Policies::Group) }
 
     before do
       allow(helper).to receive(:current_user) { user }
@@ -55,7 +55,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
   describe '#can_destroy_virtual_registry?' do
     let(:group) { build_stubbed(:group) }
     let(:user) { build_stubbed(:user) }
-    let(:policy_subject) { instance_double(::VirtualRegistries::Packages::Policies::Group) }
+    let(:policy_subject) { instance_double(::VirtualRegistries::Policies::Group) }
 
     before do
       allow(helper).to receive(:current_user) { user }
