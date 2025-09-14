@@ -501,6 +501,30 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
 
+    describe '.active' do
+      def create_finding(state)
+        create(:vulnerabilities_finding, vulnerability: create(:vulnerability, state))
+      end
+
+      let_it_be(:active_findings) do
+        [
+          create_finding(:detected),
+          create_finding(:confirmed)
+        ]
+      end
+
+      let_it_be(:passive_findings) do
+        [
+          create_finding(:dismissed),
+          create_finding(:resolved)
+        ]
+      end
+
+      subject(:active) { described_class.active }
+
+      it { is_expected.to match_array(active_findings) }
+    end
+
     describe '.by_report_types' do
       let!(:vulnerability_sast) { create(:vulnerabilities_finding, report_type: :sast) }
       let!(:vulnerability_secret_detection) { create(:vulnerabilities_finding, report_type: :secret_detection) }

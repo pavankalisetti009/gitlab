@@ -4,13 +4,34 @@ module Sbom
   module Ingestion
     module Tasks
       class IngestOccurrencesVulnerabilities < Base
+        include Gitlab::Utils::StrongMemoize
+
         self.model = Sbom::OccurrencesVulnerability
         self.unique_by = %i[sbom_occurrence_id vulnerability_id].freeze
         self.uses = :vulnerability_id
 
         private
 
-        def attributes
+        def existing_records
+          Sbom::OccurrencesVulnerability.for_occurrence_ids(occurrence_ids)
+        end
+        strong_memoize_attr :existing_records
+
+        def occurrence_ids
+          insertable_maps.map(&:occurrence_id)
+        end
+
+        def existing_links
+          existing_records.map do |link|
+            {
+              sbom_occurrence_id: link.sbom_occurrence_id,
+              vulnerability_id: link.vulnerability_id
+            }
+          end
+        end
+        strong_memoize_attr :existing_links
+
+        def ingested_links
           insertable_maps.flat_map do |occurrence_map|
             occurrence_map.vulnerability_ids.map do |vulnerability_id|
               {
@@ -21,17 +42,63 @@ module Sbom
           end
         end
 
-        def after_ingest
-          return unless return_data.present?
+        def new_links
+          if show_active_vulnerabilities?
+            ingested_links - existing_links
+          else
+            ingested_links
+          end
+        end
+        alias_method :attributes, :new_links
+        strong_memoize_attr :new_links
 
-          vulnerabilities_relation = Vulnerability.id_in(return_data.flatten)
+        def no_longer_present_links
+          existing_links - ingested_links
+        end
+        strong_memoize_attr :no_longer_present_links
 
-          sync_elasticsearch(vulnerabilities_relation) if vulnerabilities_relation.present?
+        def all_links
+          ingested_links + no_longer_present_links
         end
 
-        def sync_elasticsearch(vulnerabilities)
+        def after_ingest
+          delete_old_links if show_active_vulnerabilities?
+          sync_elasticsearch
+        end
+
+        def delete_old_links
+          ids = no_longer_present_links.map do |attributes|
+            existing_records.find do |link|
+              link.sbom_occurrence_id == attributes[:sbom_occurrence_id] &&
+                link.vulnerability_id == attributes[:vulnerability_id]
+            end
+          end
+
+          Sbom::OccurrencesVulnerability.id_in(ids).each_batch { |batch| batch.delete_all }
+        end
+
+        def sync_elasticsearch
+          ids_to_sync = if show_active_vulnerabilities?
+                          # rubocop:disable CodeReuse/ActiveRecord -- This is Hash#pluck
+                          # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- This is Hash#pluck
+                          all_links.pluck(:vulnerability_id).uniq
+                          # rubocop:enable CodeReuse/ActiveRecord
+                          # rubocop:enable Database/AvoidUsingPluckWithoutLimit
+                        else
+                          return_data.flatten
+                        end
+
+          return unless ids_to_sync.present?
+
+          vulnerabilities = Vulnerability.id_in(ids_to_sync)
+
           ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities).execute(&:itself)
         end
+
+        def show_active_vulnerabilities?
+          ::Feature.enabled?(:show_only_active_vulnerabilities_on_the_dependency_list, project)
+        end
+        strong_memoize_attr :show_active_vulnerabilities?
       end
     end
   end

@@ -1,0 +1,10 @@
+---
+name: show_only_active_vulnerabilities_on_the_dependency_list
+description: 'Filter out vulnerabilities in passive states during the ingestion process'
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/353487
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204049
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/569505
+milestone: '18.4'
+group: group::security insights
+type: gitlab_com_derisk
+default_enabled: false
