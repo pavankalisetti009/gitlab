@@ -104,6 +104,12 @@ FactoryBot.define do
       end
     end
 
+    trait :enforcement_type_warn do
+      content do
+        { enforcement_type: 'warn' }
+      end
+    end
+
     trait :with_approval_settings do
       content { { approval_settings: { prevent_approval_by_author: true } } }
     end

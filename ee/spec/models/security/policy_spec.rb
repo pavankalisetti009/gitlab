@@ -1332,6 +1332,19 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '.with_warn_mode' do
+    let_it_be(:policy_with_warn_mode) { create(:security_policy, :enforcement_type_warn) }
+    let_it_be(:policy_without_warn_mode) { create(:security_policy, :require_approval) }
+    let_it_be(:policy_with_enforce_type) do
+      create(:security_policy, content: { enforcement_type: described_class::DEFAULT_ENFORCEMENT_TYPE })
+    end
+
+    it 'returns only policies with non-empty warn_mode' do
+      result = described_class.with_warn_mode
+      expect(result).to contain_exactly(policy_with_warn_mode)
+    end
+  end
+
   describe '#bypass_settings' do
     let(:access_token_id) { 42 }
     let(:service_account_id) { 99 }
