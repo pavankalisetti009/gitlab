@@ -26,16 +26,19 @@ describe('AiCatalogFormSidePanel', () => {
       value: 'gid://gitlab/Ai::Catalog::Item/1',
       text: 'Test AI Agent 1',
       versions: mockAgentVersions,
+      public: true,
     },
     {
       value: 'gid://gitlab/Ai::Catalog::Item/2',
       text: 'Test AI Agent 2',
       versions: mockAgentVersions,
+      public: true,
     },
     {
       value: 'gid://gitlab/Ai::Catalog::Item/3',
       text: 'Test AI Agent 3',
       versions: mockAgentVersions,
+      public: false,
     },
   ];
 
@@ -66,6 +69,7 @@ describe('AiCatalogFormSidePanel', () => {
     steps = [],
     activeStepIndex = 0,
     aiCatalogEnforceReadonlyVersions = true,
+    isFlowPublic = false,
   } = {}) => {
     mockApollo = createMockApollo([[aiCatalogAgentsQuery, catalogItemsQueryHandler]]);
 
@@ -74,6 +78,7 @@ describe('AiCatalogFormSidePanel', () => {
       propsData: {
         steps,
         activeStepIndex,
+        isFlowPublic,
       },
       provide: {
         glFeatures: {
@@ -140,6 +145,15 @@ describe('AiCatalogFormSidePanel', () => {
       await waitForPromises();
 
       expect(findAgentListbox().props('items')).toEqual([]);
+    });
+  });
+
+  describe('when the flow being edited is public', () => {
+    it('does not render private agents as options', async () => {
+      createComponent({ isFlowPublic: true });
+      await waitForPromises();
+
+      expect(findAgentListbox().props('items')).toEqual([agents[0], agents[1]]);
     });
   });
 

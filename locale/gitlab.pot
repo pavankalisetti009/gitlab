@@ -2655,6 +2655,9 @@ msgstr ""
 msgid "AICatalog|Nodes run sequentially."
 msgstr ""
 
+msgid "AICatalog|Only public agents can be used in public flows."
+msgstr ""
+
 msgid "AICatalog|Only this project can use the agent. Only developers, maintainers and owners of this project can view the agent. Only maintainers and owners of this project can edit or delete the agent."
 msgstr ""
 
