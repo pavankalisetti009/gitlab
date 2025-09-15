@@ -294,6 +294,8 @@ export default class Shortcuts {
   }
 
   static async focusSearchFile(e) {
+    if (!/^projects:/.test(document.body.dataset.page)) return;
+
     if (e?.key) {
       InternalEvents.trackEvent(FIND_FILE_SHORTCUT_CLICK);
     }
