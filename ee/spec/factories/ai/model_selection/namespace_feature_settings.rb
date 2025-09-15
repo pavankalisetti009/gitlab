@@ -95,8 +95,7 @@ FactoryBot.define do
             "feature_setting" => "duo_agent_platform",
             "default_model" => "claude_sonnet_4_20250514",
             "selectable_models" => %w[
-              claude-3-5-sonnet-20240620
-              claude-3-7-sonnet-20250219
+              claude_sonnet_3_7_20250219
               claude_sonnet_4_20250514
             ],
             "beta_models" => [],

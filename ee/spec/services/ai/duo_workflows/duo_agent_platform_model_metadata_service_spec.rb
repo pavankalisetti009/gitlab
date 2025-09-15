@@ -4,13 +4,34 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :agent_foundations do
   let_it_be(:group) { create(:group) }
+  let_it_be(:current_user) { create(:user) }
+  let_it_be(:user_selected_model_identifier) { nil }
 
-  subject(:service) { described_class.new(root_namespace: root_namespace) }
+  subject(:service) do
+    described_class.new(
+      root_namespace: root_namespace,
+      current_user: current_user,
+      user_selected_model_identifier: user_selected_model_identifier
+    )
+  end
 
   shared_examples 'returns empty headers' do
     it 'returns empty hash' do
       result = service.execute
       expect(result).to eq({})
+    end
+  end
+
+  shared_examples 'uses the gitlab default model' do
+    it 'uses the gitlab default model' do
+      result = service.execute
+      expect(result).to include(
+        'x-gitlab-agent-platform-model-metadata' => {
+          'provider' => 'gitlab',
+          'feature_setting' => 'duo_agent_platform',
+          'identifier' => nil
+        }.to_json
+      )
     end
   end
 
@@ -139,24 +160,139 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
           stub_feature_flags(self_hosted_agent_platform: false)
         end
 
-        context 'with namespace-level model selection (priority 1)' do
-          before do
+        context 'with a model pinned for namespace-level model selection' do
+          let(:pinned_model_identifier) { 'claude_sonnet_3_7_20250219' }
+          let!(:namespace_setting) do
             create(:ai_namespace_feature_setting,
               namespace: group,
               feature: :duo_agent_platform,
-              offered_model_ref: 'claude-3-7-sonnet-20250219')
+              offered_model_ref: pinned_model_identifier)
           end
 
-          it 'uses namespace-level model selection' do
-            result = service.execute
+          shared_examples 'uses the pinned model' do
+            it 'uses the pinned model' do
+              result = service.execute
 
-            expect(result).to include(
-              'x-gitlab-agent-platform-model-metadata' => {
-                'provider' => 'gitlab',
-                'feature_setting' => 'duo_agent_platform',
-                'identifier' => 'claude-3-7-sonnet-20250219'
-              }.to_json
-            )
+              expect(result).to include(
+                'x-gitlab-agent-platform-model-metadata' => {
+                  'provider' => 'gitlab',
+                  'feature_setting' => 'duo_agent_platform',
+                  'identifier' => pinned_model_identifier
+                }.to_json
+              )
+            end
+          end
+
+          it_behaves_like 'uses the pinned model'
+
+          context 'when user-level model selection is enabled' do
+            before do
+              stub_feature_flags(ai_user_model_switching: true)
+            end
+
+            context 'when a valid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+              it_behaves_like 'uses the pinned model'
+            end
+
+            context 'when an invalid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
+
+              it_behaves_like 'uses the pinned model'
+            end
+
+            context 'when an empty user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { '' }
+
+              it_behaves_like 'uses the pinned model'
+            end
+          end
+
+          context 'when user-level model selection is disabled' do
+            before do
+              stub_feature_flags(ai_user_model_switching: false)
+            end
+
+            context 'when a valid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+              it_behaves_like 'uses the pinned model'
+            end
+
+            context 'when an invalid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
+
+              it_behaves_like 'uses the pinned model'
+            end
+
+            context 'when an empty user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { '' }
+
+              it_behaves_like 'uses the pinned model'
+            end
+          end
+        end
+
+        context 'with no model is pinned for namespace-level model selection' do
+          it_behaves_like 'uses the gitlab default model'
+
+          context 'when user-level model selection is enabled' do
+            before do
+              stub_feature_flags(ai_user_model_switching: true)
+            end
+
+            context 'when a valid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+              it 'uses the user-selected model' do
+                result = service.execute
+
+                expect(result).to include(
+                  'x-gitlab-agent-platform-model-metadata' => {
+                    'provider' => 'gitlab',
+                    'feature_setting' => 'duo_agent_platform',
+                    'identifier' => user_selected_model_identifier
+                  }.to_json
+                )
+              end
+            end
+
+            context 'when an invalid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
+
+              it_behaves_like 'uses the gitlab default model'
+            end
+
+            context 'when an empty user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { '' }
+
+              it_behaves_like 'uses the gitlab default model'
+            end
+          end
+
+          context 'when user-level model selection is disabled' do
+            before do
+              stub_feature_flags(ai_user_model_switching: false)
+            end
+
+            context 'when a valid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
+
+              it_behaves_like 'uses the gitlab default model'
+            end
+
+            context 'when an invalid user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
+
+              it_behaves_like 'uses the gitlab default model'
+            end
+
+            context 'when an empty user_selected_model_identifier is provided' do
+              let(:user_selected_model_identifier) { '' }
+
+              it_behaves_like 'uses the gitlab default model'
+            end
           end
         end
 

@@ -29,6 +29,12 @@ module API
             namespace&.root_ancestor
           end
 
+          def find_user_selected_model_identifier
+            # Currently, only the web agentic chat UI sends this attribute, as a query param.
+            # The IDE does not yet send this attribute.
+            params[:user_selected_model_identifier].presence
+          end
+
           def find_workflow!(id)
             workflow = ::Ai::DuoWorkflows::Workflow.for_user_with_id!(current_user.id, id)
             return workflow if current_user.can?(:read_duo_workflow, workflow)
@@ -233,7 +239,10 @@ module API
               push_feature_flags
 
               model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new(
-                root_namespace: find_root_namespace).execute
+                root_namespace: find_root_namespace,
+                current_user: current_user,
+                user_selected_model_identifier: find_user_selected_model_identifier
+              ).execute
 
               headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
                 'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
