@@ -4,8 +4,8 @@ import { isEqual } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { __, s__ } from '~/locale';
-import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import FrameworkBadge from '../shared/framework_badge.vue';
+import getComplianceFrameworksCompactQuery from './graphql/get_compliance_frameworks_compact.query.graphql';
 
 const frameworksDropdownPlaceholder = s__('ComplianceReport|Select frameworks');
 
@@ -47,14 +47,14 @@ export default {
   },
   data() {
     return {
+      frameworks: [],
       frameworkSearchQuery: '',
       currentSelectedFrameworks: [],
     };
   },
   apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     frameworks: {
-      query: getComplianceFrameworkQuery,
+      query: getComplianceFrameworksCompactQuery,
       variables() {
         return { fullPath: this.groupPath };
       },

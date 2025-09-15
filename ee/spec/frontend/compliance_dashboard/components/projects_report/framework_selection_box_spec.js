@@ -8,9 +8,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 
 import { createAlert } from '~/alert';
 import { createComplianceFrameworksReportResponse } from 'ee_jest/compliance_dashboard/mock_data';
+import getComplianceFrameworksCompactQuery from 'ee/compliance_dashboard/components/projects_report/graphql/get_compliance_frameworks_compact.query.graphql';
 import FrameworkSelectionBox from 'ee/compliance_dashboard/components/projects_report/framework_selection_box.vue';
-
-import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 jest.mock('~/alert');
@@ -33,7 +32,7 @@ describe('FrameworkSelectionBox component', () => {
 
   const createComponent = (props) => {
     apolloProvider = createMockApollo([
-      [getComplianceFrameworkQuery, getComplianceFrameworkQueryResponse],
+      [getComplianceFrameworksCompactQuery, getComplianceFrameworkQueryResponse],
     ]);
 
     wrapper = mount(FrameworkSelectionBox, {
