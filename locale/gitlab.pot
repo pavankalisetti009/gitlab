@@ -28502,6 +28502,9 @@ msgstr ""
 msgid "Fingerprints"
 msgstr ""
 
+msgid "Finish"
+msgstr ""
+
 msgid "Finish editing this message first!"
 msgstr ""
 
@@ -63274,6 +63277,9 @@ msgstr ""
 msgid "Step 1."
 msgstr ""
 
+msgid "Step 2"
+msgstr ""
+
 msgid "Step 2."
 msgstr ""
 
@@ -73516,6 +73522,9 @@ msgstr ""
 msgid "WorkItem|Change lifecycle"
 msgstr ""
 
+msgid "WorkItem|Change lifecycle: %{workItemType}"
+msgstr ""
+
 msgid "WorkItem|Change type"
 msgstr ""
 
@@ -73616,6 +73625,9 @@ msgid "WorkItem|Creating this %{workItemType} will resolve all threads in"
 msgstr ""
 
 msgid "WorkItem|Creating this %{workItemType} will resolve the thread in"
+msgstr ""
+
+msgid "WorkItem|Current lifecycle"
 msgstr ""
 
 msgid "WorkItem|Custom fields"
@@ -73839,6 +73851,9 @@ msgstr ""
 msgid "WorkItem|Lifecycle name cannot be empty"
 msgstr ""
 
+msgid "WorkItem|Lifecycle selection"
+msgstr ""
+
 msgid "WorkItem|Lifecycle:"
 msgstr ""
 
@@ -73994,6 +74009,9 @@ msgstr ""
 msgid "WorkItem|No milestone"
 msgstr ""
 
+msgid "WorkItem|No other lifecycles exist. Create a new lifecycle to use."
+msgstr ""
+
 msgid "WorkItem|No parent"
 msgstr ""
 
@@ -74141,6 +74159,12 @@ msgstr ""
 msgid "WorkItem|Select destination"
 msgstr ""
 
+msgid "WorkItem|Select lifecycle"
+msgstr ""
+
+msgid "WorkItem|Select new lifecycle"
+msgstr ""
+
 msgid "WorkItem|Select parent"
 msgstr ""
 
@@ -74148,6 +74172,9 @@ msgid "WorkItem|Select project"
 msgstr ""
 
 msgid "WorkItem|Select template"
+msgstr ""
+
+msgid "WorkItem|Select the lifecycle you'd like to use for items with type: %{workItemType}. Next, you'll define how to map existing work items to the new lifecycle."
 msgstr ""
 
 msgid "WorkItem|Select type"
@@ -74424,6 +74451,9 @@ msgid "WorkItem|Unarchive %{itemName}"
 msgstr ""
 
 msgid "WorkItem|Undo"
+msgstr ""
+
+msgid "WorkItem|Update work items"
 msgstr ""
 
 msgid "WorkItem|Usage"
