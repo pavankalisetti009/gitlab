@@ -41,7 +41,7 @@ configured for personal access tokens.
 - On GitLab Dedicated and GitLab Self-Managed instances:
   - You can use group access tokens with any license tier. If you have the Free tier:
     - Review your security and compliance policies around user self-enrollment.
-    - Consider restricting the creation of group access tokens to lower potential abuse.
+    - Consider restricting the creation of group access tokens to limit the risk of abuse.
   - Group access tokens are subject to the same [maximum lifetime limits](../../../administration/settings/account_and_limit_settings.md#limit-the-lifetime-of-access-tokens)
     as personal access tokens if the limit is set.
 
