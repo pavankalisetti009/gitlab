@@ -78,7 +78,12 @@ module Ai
 
       def endpoint
         # GitLab Model selection data should always come from cloud connected, never from local AIGW
-        base_url = Gitlab::AiGateway.cloud_connector_url
+        base_url = if ENV['FETCH_MODEL_SELECTION_DATA_FROM_LOCAL'] == '1'
+                     Gitlab::AiGateway.url
+                   else
+                     Gitlab::AiGateway.cloud_connector_url
+                   end
+
         endpoint_route = 'models%2Fdefinitions'
 
         "#{base_url}/v1/#{endpoint_route}"
