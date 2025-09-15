@@ -6,8 +6,6 @@ module RemoteDevelopment
       class CreatorBootstrapper
         include CreateConstants
 
-        RANDOM_STRING_LENGTH = 6
-
         # @param [Hash] context
         # @return [Hash]
         def self.bootstrap(context)
@@ -18,9 +16,7 @@ module RemoteDevelopment
             }
           }
 
-          workspace_name_prefix = "workspace"
-          workspace_name_suffix = generate_unique_workspace_suffix(workspace_name_prefix)
-          workspace_name = "#{workspace_name_prefix}-#{workspace_name_suffix}"
+          workspace_name = WorkspaceNameGenerator.generate
           shared_namespace = agent.unversioned_latest_workspaces_agent_config.shared_namespace
 
           workspace_namespace =
@@ -28,7 +24,7 @@ module RemoteDevelopment
             case shared_namespace
             when ""
               # Use a unique namespace, with one workspace per namespace
-              "#{NAMESPACE_PREFIX}-#{workspace_name_suffix}"
+              "#{NAMESPACE_PREFIX}-#{workspace_name}"
             else
               # Use a shared namespace, with multiple workspaces in the same namespace
               shared_namespace
@@ -39,32 +35,6 @@ module RemoteDevelopment
             workspace_namespace: workspace_namespace
           )
         end
-
-        # @param [String] workspace_name_prefix - This is required to ensure uniqueness
-        # @return [String]
-        def self.generate_unique_workspace_suffix(workspace_name_prefix)
-          max_retries = 30
-
-          max_retries.times do |_|
-            workspace_name_suffix = [
-              FFaker::Food.fruit,
-              FFaker::AnimalUS.common_name,
-              FFaker::Color.name
-            ].map(&:downcase)
-             .map(&:parameterize)
-             .join("-")
-
-            workspace_name = [workspace_name_prefix, workspace_name_suffix].join("-")
-
-            unless workspace_name.length > 64 || RemoteDevelopment::Workspace.by_names(workspace_name).exists?
-              return workspace_name_suffix
-            end
-          end
-
-          raise "Unable to generate unique workspace name after #{max_retries} attempts"
-        end
-
-        private_class_method :generate_unique_workspace_suffix
       end
     end
   end

@@ -44,12 +44,12 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     create(:group, name: "agent-project-group", parent: common_parent_namespace)
   end
 
-  let(:workspace_project_namespace_name) { "workspace-project-group" }
+  let(:workspace_project_namespace_name) { "project-group" }
   let(:workspace_project_namespace) do
     create(:group, name: workspace_project_namespace_name, parent: common_parent_namespace)
   end
 
-  let(:workspace_project_name) { "workspace-project" }
+  let(:workspace_project_name) { "project" }
   let(:workspace_namespace_path) { "#{common_parent_namespace_name}/#{workspace_project_namespace_name}" }
   let(:project_ref) { "master" }
   let(:devfile_path) { ".devfile.yaml" }
@@ -192,7 +192,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
       { key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
-      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{random_string}.#{dns_zone}" },
+      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
       { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: token_file_path }
     ]
@@ -407,15 +407,17 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
-  # @param [Array<String>] random_string_array
+  # @param [Array<String>] workspace_name_parts
   # @param [User, QA::Resource::User] user
   # @return [RemoteDevelopment::Workspace]
-  def do_create_workspace(random_string_array:, user:)
-    allow(FFaker::Food).to receive(:fruit).and_return(random_string_array[0])
-    allow(FFaker::AnimalUS).to receive(:common_name).and_return(random_string_array[1])
-    allow(FFaker::Color).to receive(:name).and_return(random_string_array[2])
+  def do_create_workspace(workspace_name_parts:, user:)
+    allow(FFaker::Food).to receive(:fruit).and_return(workspace_name_parts[0])
+    allow(FFaker::AnimalUS).to receive(:common_name).and_return(workspace_name_parts[1])
+    allow(FFaker::Color).to receive(:name).and_return(workspace_name_parts[2])
 
-    random_string = random_string_array.join("-").parameterize.downcase
+    random_string = workspace_name_parts
+                      .map { |name_segment| name_segment.parameterize(separator: "") }
+                      .join("-").parameterize.downcase
 
     # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
     cluster_agent_gid = "gid://gitlab/Clusters::Agent/#{agent.id}"
@@ -437,7 +439,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(workspace.agent).to eq(agent)
     # noinspection RubyResolve
     expect(workspace.desired_state_updated_at).to eq(Time.current)
-    expect(workspace.name).to eq("workspace-#{random_string}")
+    expect(workspace.name).to eq(random_string)
     namespace_prefix = create_constants_module::NAMESPACE_PREFIX
     expect(workspace.namespace).to eq("#{namespace_prefix}-#{random_string}")
     expect(workspace.url).to eq(URI::HTTPS.build({
@@ -599,7 +601,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       do_create_workspaces_agent_config
 
       # CREATE WORKSPACE VIA GRAPHQL API
-      workspace = do_create_workspace(random_string_array: %w[Date Butterfly Darkturquoise], user: user)
+      workspace = do_create_workspace(workspace_name_parts: %w[Date Butterfly Darkturquoise], user: user)
 
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply_yaml_stream(
@@ -745,7 +747,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       do_create_org_mapping
 
       # CREATE A NEW WORKSPACE WITH THE ORGANIZATION MAPPING WITH MINIMUM USER PRIVILEGES
-      do_create_workspace(random_string_array: ["Peach", "Blue Whale", "Red"], user: organization_user)
+      do_create_workspace(workspace_name_parts: ["Peach", "Blue Whale", "Red"], user: organization_user)
     end
   end
 

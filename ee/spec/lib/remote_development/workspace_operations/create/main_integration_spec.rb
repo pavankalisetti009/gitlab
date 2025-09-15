@@ -13,7 +13,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
   let(:user) { create(:user) }
   let(:group) { create(:group, name: 'test-group', developers: user) }
-  let(:random_string) { "miracle-fruit-camel-slategrey" }
+  let(:random_string) { "miraclefruit-camel-slategrey" }
   let(:project_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
@@ -160,7 +160,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.desired_state_updated_at).to eq(Time.current)
         expect(workspace.actual_state).to eq(states_module::CREATION_REQUESTED)
         expect(workspace.actual_state_updated_at).to eq(Time.current)
-        expect(workspace.name).to eq("workspace-#{random_string}")
+        expect(workspace.name).to eq(random_string)
         expect(workspace.namespace)
           .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{random_string}")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
