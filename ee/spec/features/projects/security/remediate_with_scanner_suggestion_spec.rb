@@ -33,13 +33,8 @@ RSpec.describe "Remediate with scanner suggestion", :js, feature_category: :vuln
     end
 
     def resolve_with_scanner_suggestion
-      vulnerability_details_url = page.current_url
       click_button 'Resolutions'
-      click_button 'Resolve with scanner suggestion'
-
-      wait_until(max_duration: 30, reload: false) do
-        page.current_url != vulnerability_details_url
-      end
+      click_button 'Resolve with scanner suggestion', max_wait_time: 45
     end
 
     it 'creates MR and redirects to it' do
