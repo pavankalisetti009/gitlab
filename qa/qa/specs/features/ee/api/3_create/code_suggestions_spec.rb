@@ -115,7 +115,7 @@ module QA
           }.compact
         end
 
-        context 'on SaaS', :smoke, :external_ai_provider,
+        context 'on SaaS', :external_ai_provider,
           only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'indirect code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
           context 'with context' do
@@ -162,7 +162,7 @@ module QA
           }.compact
         end
 
-        context 'on SaaS', :smoke, :external_ai_provider,
+        context 'on SaaS', :external_ai_provider,
           only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'indirect code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/420973'
         end
@@ -202,7 +202,7 @@ module QA
         context 'when streaming' do
           let(:stream) { true }
 
-          context 'on SaaS', :smoke, :external_ai_provider,
+          context 'on SaaS', :external_ai_provider,
             only: { pipeline: %w[staging-canary staging canary production] } do
             include_examples 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436994'
           end
@@ -291,7 +291,7 @@ module QA
         # connection details for a direct connection will return a 403
         # Since we need to check the feature flag to determine this we require
         # cannot run this spec on canary/production
-        context 'on SaaS when direct connection', :smoke, :external_ai_provider,
+        context 'on SaaS when direct connection', :external_ai_provider,
           only: { pipeline: %w[staging-canary staging] } do
           include_examples 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
           include_examples 'direct code generation', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/487950'

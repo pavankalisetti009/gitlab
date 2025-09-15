@@ -24,7 +24,7 @@ module QA
         project.visit!
       end
 
-      it 'can load Policies page and view the policies list', :smoke,
+      it 'can load Policies page and view the policies list',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347589' do
         Page::Project::Menu.perform(&:go_to_policies)
 
@@ -35,7 +35,7 @@ module QA
         end
       end
 
-      it 'can navigate to Policy Editor page', :smoke,
+      it 'can navigate to Policy Editor page',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347611' do
         Page::Project::Menu.perform(&:go_to_policies)
 
@@ -48,7 +48,7 @@ module QA
         end
       end
 
-      it 'can create a new policy', :smoke,
+      it 'can create a new policy',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/499929' do
         Page::Project::Menu.perform(&:go_to_policies)
 

@@ -55,7 +55,7 @@ module QA
         merge_request.visit!
       end
 
-      it 'displays vulnerabilities in merge request widget', :smoke,
+      it 'displays vulnerabilities in merge request widget',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348031' do
         Page::MergeRequest::Show.perform do |merge_request|
           # skip test when mr_reports_tab FF is enabled as it is WIP
