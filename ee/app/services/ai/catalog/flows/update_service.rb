@@ -3,77 +3,22 @@
 module Ai
   module Catalog
     module Flows
-      class UpdateService < Ai::Catalog::BaseService
+      class UpdateService < Items::BaseUpdateService
+        extend Gitlab::Utils::Override
         include FlowHelper
-
-        def initialize(project:, current_user:, params:)
-          @flow = params[:flow]
-          super
-        end
-
-        def execute
-          return error_max_steps if max_steps_exceeded?
-          return error_no_permissions(payload: payload) unless allowed?
-          return error('Flow not found') unless valid_flow?
-          return error(steps_validation_errors) unless steps_valid?
-
-          item_params = params.slice(:name, :description, :public)
-          flow.assign_attributes(item_params)
-
-          prepare_version_to_update
-
-          Ai::Catalog::Item.transaction do
-            populate_dependencies(flow.latest_version) if flow.save && flow.latest_version.saved_changes?
-          end
-
-          if flow.saved_changes?
-            track_ai_item_events('update_ai_catalog_item', { label: flow.item_type })
-            return ServiceResponse.success(payload: payload)
-          end
-
-          error(flow.errors.full_messages)
-        end
 
         private
 
-        attr_reader :flow
+        override :validate_item
+        def validate_item
+          return error('Flow not found') unless item && item.flow?
+          return error(MAX_STEPS_ERROR) if max_steps_exceeded?
+          return error_no_permissions(payload: payload) unless agents_allowed?
 
-        def valid_flow?
-          flow && flow.flow?
+          error(steps_validation_errors) unless steps_valid?
         end
 
-        def payload
-          { flow: flow }
-        end
-
-        def error(message)
-          super(message, payload: payload)
-        end
-
-        def prepare_version_to_update
-          version_to_update = determine_version_to_update
-
-          # A change to a version's definition will always cause its definition to match
-          # the latest schema version, so ensure that it is set to the latest.
-          if version_to_update.definition_changed?
-            version_to_update.schema_version = Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION
-          end
-
-          version_to_update.release_date ||= Time.zone.now if params[:release] == true
-          version_to_update
-        end
-
-        def determine_version_to_update
-          latest_version = flow.latest_version
-          version_params = build_version_params(latest_version)
-          latest_version.assign_attributes(version_params)
-
-          return latest_version unless latest_version.changed?
-          return latest_version unless should_create_new_version?(latest_version)
-
-          build_new_version(latest_version, version_params)
-        end
-
+        override :build_version_params
         def build_version_params(latest_version)
           return {} unless params.key?(:steps)
 
@@ -82,22 +27,16 @@ module Ai
           }
         end
 
-        def should_create_new_version?(version)
-          version.released? && version.enforce_readonly_versions?
+        override :save_item
+        def save_item
+          Ai::Catalog::Item.transaction do
+            populate_dependencies(item.latest_version) if item.save && item.latest_version.saved_changes?
+          end
         end
 
-        def build_new_version(latest_version, version_params)
-          new_version_params = version_params.merge(
-            version: calculate_next_version(latest_version)
-          )
-
-          flow.build_new_version(new_version_params)
-        end
-
-        def calculate_next_version(latest_version)
-          # TODO: Support params[:version_bump] parameter.
-          # For now, always make a major version bump.
-          latest_version.version_bump(Ai::Catalog::ItemVersion::VERSION_BUMP_MAJOR)
+        override :latest_schema_version
+        def latest_schema_version
+          Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION
         end
       end
     end

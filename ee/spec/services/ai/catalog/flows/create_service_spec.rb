@@ -145,7 +145,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
         super().merge(steps: [{ agent: agent }, { agent: agent }])
       end
 
-      it_behaves_like 'an error response', 'Maximum steps for a flow (1) exceeded'
+      it_behaves_like 'an error response', Ai::Catalog::Flows::FlowHelper::MAX_STEPS_ERROR
     end
   end
 
