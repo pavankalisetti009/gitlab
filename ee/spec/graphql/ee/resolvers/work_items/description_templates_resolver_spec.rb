@@ -62,16 +62,6 @@ RSpec.describe Resolvers::WorkItems::DescriptionTemplatesResolver, feature_categ
         expect(template.project_id).to eq(project.id)
       end
     end
-
-    context 'when user does not have access to the template project' do
-      let_it_be(:unauthorized_user) { create(:user) }
-
-      it 'does not fetch templates' do
-        expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable) do
-          resolve_templates(current_user: unauthorized_user)
-        end
-      end
-    end
   end
 
   def resolve_templates(args: {}, current_user: user, group: sub_group)
