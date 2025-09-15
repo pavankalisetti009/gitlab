@@ -958,8 +958,8 @@ describe('StreamDestinationEditor', () => {
           });
         });
 
-        it('does not render namespace filters', () => {
-          expect(findStreamNamespaceFilters().exists()).toBe(false);
+        it('does render namespace filters', () => {
+          expect(findStreamNamespaceFilters().exists()).toBe(true);
         });
       });
     });

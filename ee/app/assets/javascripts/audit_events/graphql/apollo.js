@@ -14,6 +14,8 @@ import updateInstanceStreamingDestination from './mutations/update_instance_stre
 import createInstanceStreamingDestination from './mutations/create_instance_streaming_destination.mutation.graphql';
 import addInstanceEventTypeFiltersToDestination from './mutations/add_instance_event_type_filters.mutation.graphql';
 import deleteInstanceEventTypeFiltersFromDestination from './mutations/delete_instance_event_type_filters.mutation.graphql';
+import addInstanceNamespaceFiltersToDestination from './mutations/add_instance_namespace_filters.mutation.graphql';
+import deleteInstanceNamespaceFiltersFromDestination from './mutations/delete_instance_namespace_filters.mutation.graphql';
 import {
   addAuditEventsStreamingDestinationToCache,
   updateAuditEventsStreamingDestinationFromCache,
@@ -142,33 +144,38 @@ const removeEventTypeFilters = async ({
  *
  * @param {Object} $apollo - The Apollo client instance.
  * @param {Object} destination - The destination object.
+ * @param {Boolean} isInstance - Flag indicating if the destination is an instance-level destination.
  * @param {String} fetchPolicy - The fetch policy for the mutation.
  *
  * @returns {Promise<Array>} An array of errors.
  */
-const addNamespaceFilters = async ({ $apollo, destination, fetchPolicy }) => {
+const addNamespaceFilters = async ({ $apollo, destination, isInstance, fetchPolicy }) => {
   const variables = {
     destinationId: destination.id,
     namespacePath: destination.namespaceFilter.namespace,
   };
 
+  const mutationName = isInstance
+    ? 'auditEventsInstanceDestinationNamespaceFilterCreate'
+    : 'auditEventsGroupDestinationNamespaceFilterCreate';
+
   const update = (cache, { data }) => {
-    if (
-      data.auditEventsGroupDestinationNamespaceFilterCreate.errors.length ||
-      fetchPolicy === 'no-cache'
-    ) {
+    if (data[mutationName].errors.length || fetchPolicy === 'no-cache') {
       return;
     }
 
     addNamespaceFilterToCache({
       store: cache,
       destinationId: destination.id,
-      filter: data.auditEventsGroupDestinationNamespaceFilterCreate.namespaceFilter,
+      filter: data[mutationName].namespaceFilter,
+      isInstance,
     });
   };
 
   return $apollo.mutate({
-    mutation: addGroupNamespaceFiltersToDestination,
+    mutation: isInstance
+      ? addInstanceNamespaceFiltersToDestination
+      : addGroupNamespaceFiltersToDestination,
     variables,
     fetchPolicy,
     update,
@@ -182,17 +189,26 @@ const addNamespaceFilters = async ({ $apollo, destination, fetchPolicy }) => {
  *
  * @param {Object} $apollo - The Apollo client instance.
  * @param {Object} destination - The destination object.
+ * @param {Boolean} isInstance - Flag indicating if the destination is an instance-level destination.
  *
  * @returns {Promise<Array>} An array of errors.
  */
-const removeNamespaceFilters = async ($apollo, destination) => {
-  if (!destination.namespaceFilters.length) {
+const removeNamespaceFilters = async ($apollo, destination, isInstance) => {
+  if (!destination.namespaceFilters?.length) {
     return [];
   }
 
+  const mutation = isInstance
+    ? deleteInstanceNamespaceFiltersFromDestination
+    : deleteGroupNamespaceFiltersFromDestination;
+
+  const mutationName = isInstance
+    ? 'auditEventsInstanceDestinationNamespaceFilterDelete'
+    : 'auditEventsGroupDestinationNamespaceFilterDelete';
+
   const removeFiltersPromises = destination.namespaceFilters.map(async (namespaceFilter) => {
     const { data } = await $apollo.mutate({
-      mutation: deleteGroupNamespaceFiltersFromDestination,
+      mutation,
       variables: {
         namespaceFilterId: namespaceFilter.id,
       },
@@ -200,7 +216,7 @@ const removeNamespaceFilters = async ($apollo, destination) => {
       update: () => {},
     });
 
-    return data.auditEventsGroupDestinationNamespaceFilterDelete.errors;
+    return data[mutationName].errors;
   });
 
   const results = await Promise.all(removeFiltersPromises);
@@ -305,9 +321,13 @@ export const createDestination = async ({
         ...destination,
         ...createdDestination,
       },
+      isInstance,
       fetchPolicy,
     });
-    errors.push(...namespaceFilterData.auditEventsGroupDestinationNamespaceFilterCreate.errors);
+    const mutationName = isInstance
+      ? 'auditEventsInstanceDestinationNamespaceFilterCreate'
+      : 'auditEventsGroupDestinationNamespaceFilterCreate';
+    errors.push(...namespaceFilterData[mutationName].errors);
   }
 
   return { errors };
@@ -399,15 +419,18 @@ export const updateDestination = async ({
   );
 
   if (hasChangedNamespaceFilter) {
-    errors.push(...(await removeNamespaceFilters($apollo, destination)));
+    errors.push(...(await removeNamespaceFilters($apollo, destination, isInstance)));
     const { data: namespaceFilterData } = await addNamespaceFilters({
       $apollo,
       destination,
+      isInstance,
       fetchPolicy,
     });
-    errors.push(...namespaceFilterData.auditEventsGroupDestinationNamespaceFilterCreate.errors);
-    updatedNamespaceFilter =
-      namespaceFilterData.auditEventsGroupDestinationNamespaceFilterCreate.namespaceFilter;
+    const mutationName = isInstance
+      ? 'auditEventsInstanceDestinationNamespaceFilterCreate'
+      : 'auditEventsGroupDestinationNamespaceFilterCreate';
+    errors.push(...namespaceFilterData[mutationName].errors);
+    updatedNamespaceFilter = namespaceFilterData[mutationName].namespaceFilter;
   }
 
   if (errors.length) return { errors };

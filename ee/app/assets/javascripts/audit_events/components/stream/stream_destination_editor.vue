@@ -241,7 +241,7 @@ export default {
           >
           <stream-event-type-filters v-model="formItem.eventTypeFilters" />
         </div>
-        <div v-if="!isInstance">
+        <div>
           <label
             class="gl-mb-3 gl-mt-5 gl-block"
             for="audit-event-namespace-filter"

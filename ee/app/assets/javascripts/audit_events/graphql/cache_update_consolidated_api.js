@@ -24,9 +24,11 @@ export function addAuditEventsStreamingDestinationToCache({
     ? instanceStreamingDestinationsQuery
     : groupStreamingDestinationsQuery;
 
+  const variables = isInstance ? {} : { fullPath };
+
   const sourceData = store.readQuery({
     query: getDestinationQuery,
-    variables: { fullPath },
+    variables,
   });
 
   if (!sourceData) return;
@@ -38,7 +40,7 @@ export function addAuditEventsStreamingDestinationToCache({
     nodes.unshift(newDestination);
   });
 
-  store.writeQuery({ query: getDestinationQuery, variables: { fullPath }, data });
+  store.writeQuery({ query: getDestinationQuery, variables, data });
 }
 
 export function updateAuditEventsStreamingDestinationFromCache({ store, isInstance, updatedData }) {
@@ -87,8 +89,10 @@ export function updateEventTypeFiltersFromCache({ store, isInstance, destination
   });
 }
 
-export function addNamespaceFilterToCache({ store, destinationId, filter }) {
-  const storedDestinationId = getGroupDestinationId(store, destinationId);
+export function addNamespaceFilterToCache({ store, destinationId, filter, isInstance }) {
+  const storedDestinationId = isInstance
+    ? getInstanceDestinationId(store, destinationId)
+    : getGroupDestinationId(store, destinationId);
 
   if (!storedDestinationId) return;
 
@@ -111,9 +115,12 @@ export function removeAuditEventsStreamingDestinationFromCache({
   const getDestinationQuery = isInstance
     ? instanceStreamingDestinationsQuery
     : groupStreamingDestinationsQuery;
+
+  const variables = isInstance ? {} : { fullPath };
+
   const sourceData = store.readQuery({
     query: getDestinationQuery,
-    variables: { fullPath },
+    variables,
   });
 
   if (!sourceData) return;
@@ -132,5 +139,5 @@ export function removeAuditEventsStreamingDestinationFromCache({
     }
   });
 
-  store.writeQuery({ query: getDestinationQuery, variables: { fullPath }, data });
+  store.writeQuery({ query: getDestinationQuery, variables, data });
 }
