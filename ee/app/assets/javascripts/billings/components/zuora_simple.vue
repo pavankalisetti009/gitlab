@@ -296,6 +296,7 @@ export default {
         this.fixedIframeHeight ? `${this.fixedIframeHeight}` : null,
       );
     },
+    // eslint-disable-next-line vue/no-unused-properties -- public method intended to be called by parent components
     submit() {
       window.Z.submit();
       this.error = null;

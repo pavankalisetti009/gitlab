@@ -94,7 +94,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['isLoadingSubscription', 'hasErrorSubscription', 'plan', 'tables', 'endpoint']),
+    ...mapState(['isLoadingSubscription', 'hasErrorSubscription', 'plan', 'tables']),
     ...mapGetters(['isFreePlan', 'tableKey']),
     isSubscription() {
       return !this.isFreePlan;
