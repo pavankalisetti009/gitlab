@@ -11,6 +11,11 @@ module EE
         # so we need to delegate to the associated project
         project.licensed_feature_available?(feature)
       end
+
+      override :checked_file_template_project
+      def checked_file_template_project
+        project
+      end
     end
   end
 end
