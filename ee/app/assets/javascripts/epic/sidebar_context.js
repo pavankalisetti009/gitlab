@@ -1,4 +1,4 @@
-import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import $ from 'jquery';
 import { setCookie } from '~/lib/utils/common_utils';
 
@@ -33,7 +33,7 @@ export default class SidebarContext {
 
     window.addEventListener('beforeunload', () => {
       // collapsed_gutter cookie hides the sidebar
-      const bpBreakpoint = bp.getBreakpointSize();
+      const bpBreakpoint = GlBreakpointInstance.getBreakpointSize();
       if (bpBreakpoint === 'xs' || bpBreakpoint === 'sm' || bpBreakpoint === 'md') {
         setCookie('collapsed_gutter', true);
       }
