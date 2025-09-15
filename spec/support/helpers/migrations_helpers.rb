@@ -213,8 +213,10 @@ ERROR
   end
 
   def schema_migrate_down!
-    disable_migrations_output do
-      migration_context.down(migration_schema_version)
+    with_db_config do
+      disable_migrations_output do
+        migration_context.down(migration_schema_version)
+      end
     end
 
     reset_column_in_all_models
@@ -223,8 +225,10 @@ ERROR
   def schema_migrate_up!
     reset_column_in_all_models
 
-    disable_migrations_output do
-      migration_context.up
+    with_db_config do
+      disable_migrations_output do
+        migration_context.up
+      end
     end
 
     reset_column_in_all_models
@@ -240,16 +244,23 @@ ERROR
   end
 
   def migrate!
-    open_transactions = Gitlab::Database::Migration::V1_0::MigrationRecord.connection.open_transactions
-    allow_next_instance_of(described_class) do |migration|
-      allow(migration).to receive(:transaction_open?) do
-        Gitlab::Database::Migration::V1_0::MigrationRecord.connection.open_transactions > open_transactions
+    with_db_config do
+      open_transactions = Gitlab::Database::Migration::V1_0::MigrationRecord.connection.open_transactions
+      allow_next_instance_of(described_class) do |migration|
+        allow(migration).to receive(:transaction_open?) do
+          Gitlab::Database::Migration::V1_0::MigrationRecord.connection.open_transactions > open_transactions
+        end
+      end
+
+      migration_context.up do |migration|
+        migration.name == described_class.name
       end
     end
+  end
 
-    migration_context.up do |migration|
-      migration.name == described_class.name
-    end
+  # Overridden in EE to use custom connections
+  def with_db_config(&block)
+    yield
   end
 
   class ReversibleMigrationTest

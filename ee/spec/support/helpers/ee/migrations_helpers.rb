@@ -28,26 +28,12 @@ module EE
       end
     end
 
-    override :schema_migrate_down!
-    def schema_migrate_down!
-      with_db_config { super }
-    end
-
-    override :schema_migrate_up!
-    def schema_migrate_up!
-      with_db_config { super }
-    end
-
-    override :migrate!
-    def migrate!
-      with_db_config { super }
-    end
-
-    def with_db_config(&block)
+    override :with_db_config
+    def with_db_config(...)
       if custom_migration?
-        with_custom_connection { yield }
+        with_custom_connection { super }
       else
-        yield
+        super
       end
     end
 
