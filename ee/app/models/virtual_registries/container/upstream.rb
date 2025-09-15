@@ -4,10 +4,10 @@ module VirtualRegistries
   module Container
     class Upstream < ::VirtualRegistries::Upstream
       has_many :registry_upstreams,
-        class_name: "::VirtualRegistries::Container::RegistryUpstream",
+        class_name: '::VirtualRegistries::Container::RegistryUpstream',
         inverse_of: :upstream,
         autosave: true
-      has_many :registries, class_name: "::VirtualRegistries::Container::Registry", through: :registry_upstreams
+      has_many :registries, class_name: '::VirtualRegistries::Container::Registry', through: :registry_upstreams
 
       encrypts :username, :password
 
