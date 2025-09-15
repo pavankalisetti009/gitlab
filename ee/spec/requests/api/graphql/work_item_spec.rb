@@ -391,14 +391,16 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               end
 
               context 'with custom status' do
-                let_it_be(:lifecycle) do
+                let!(:lifecycle) do
                   create(:work_item_custom_lifecycle, namespace: namespace, default_open_status: custom_status)
                 end
 
-                it 'returns custom status data' do
+                before do
                   create(:work_item_type_custom_lifecycle,
                     lifecycle: lifecycle, work_item_type: work_item.work_item_type, namespace: namespace)
+                end
 
+                it 'returns custom status data' do
                   current_status = create(:work_item_current_status, :custom, custom_status: custom_status,
                     work_item: work_item)
 
@@ -419,6 +421,47 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                       )
                     )
                   )
+                end
+
+                context 'when mapping exists' do
+                  let_it_be(:custom_status) { create(:work_item_custom_status, namespace: namespace) }
+                  let_it_be(:new_custom_status) do
+                    create(:work_item_custom_status,
+                      namespace: namespace,
+                      converted_from_system_defined_status_identifier: nil
+                    )
+                  end
+
+                  before do
+                    create(:work_item_custom_lifecycle_status, lifecycle: lifecycle, status: new_custom_status)
+                    create(:work_item_custom_status_mapping,
+                      namespace: namespace,
+                      work_item_type: work_item.work_item_type,
+                      old_status: custom_status,
+                      new_status: new_custom_status
+                    )
+                    create(:work_item_current_status, :custom, custom_status: custom_status, work_item: work_item)
+                  end
+
+                  it 'returns mapped custom status data' do
+                    post_graphql(query, current_user: current_user)
+
+                    expect(work_item_data).to include(
+                      'id' => work_item.to_gid.to_s,
+                      'widgets' => include(
+                        hash_including(
+                          'type' => 'STATUS',
+                          'status' => {
+                            'id' => new_custom_status.to_gid.to_s,
+                            'name' => new_custom_status.name,
+                            'iconName' => new_custom_status.icon_name,
+                            'color' => new_custom_status.color,
+                            'position' => 0
+                          }
+                        )
+                      )
+                    )
+                  end
                 end
               end
             end

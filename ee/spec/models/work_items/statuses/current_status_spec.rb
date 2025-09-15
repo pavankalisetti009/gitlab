@@ -6,9 +6,9 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
-  let_it_be(:task_work_item) { create(:work_item, :task, project: project) }
-  let_it_be(:issue_work_item) { create(:work_item, :issue, project: project) }
-  let_it_be(:epic_work_item) { create(:work_item, :epic, project: project) }
+  let_it_be_with_refind(:task_work_item) { create(:work_item, :task, project: project) }
+  let_it_be_with_refind(:issue_work_item) { create(:work_item, :issue, project: project) }
+  let_it_be_with_refind(:epic_work_item) { create(:work_item, :epic, project: project) }
 
   let(:work_item) { task_work_item }
 
@@ -22,7 +22,6 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
 
   before do
     stub_licensed_features(work_item_status: true)
-    allow(current_status).to receive(:custom_status_enabled?).and_return(false)
   end
 
   shared_examples 'a valid object' do
@@ -341,8 +340,7 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
           )
         end
 
-        it 'returns the custom status mapped to the system-defined status',
-          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/549760' do
+        it 'returns the custom status mapped to the system-defined status' do
           expect(current_status.status).to eq(mapped_custom_status)
         end
       end
@@ -355,6 +353,251 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
 
       it 'returns custom status' do
         expect(current_status.status).to eq(current_status.custom_status)
+      end
+
+      context 'with status mappings' do
+        let!(:custom_lifecycle) { create(:work_item_custom_lifecycle, :for_tasks, namespace: group) }
+        let!(:old_custom_status) { custom_lifecycle.default_open_status }
+
+        let_it_be(:new_custom_status) do
+          create(:work_item_custom_status, namespace: group, converted_from_system_defined_status_identifier: nil)
+        end
+
+        let_it_be(:another_new_status) do
+          create(:work_item_custom_status, namespace: group, converted_from_system_defined_status_identifier: nil)
+        end
+
+        subject(:current_status) do
+          build(:work_item_current_status, :custom,
+            custom_status: old_custom_status,
+            work_item: work_item,
+            updated_at: Time.current
+          )
+        end
+
+        before do
+          create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: new_custom_status)
+          create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: another_new_status)
+        end
+
+        context 'when no mappings exist' do
+          it 'returns the original custom status' do
+            expect(current_status.status).to eq(old_custom_status)
+          end
+        end
+
+        context 'when single mapping exists' do
+          before do
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status
+            )
+          end
+
+          it 'returns the mapped status' do
+            expect(current_status.status).to eq(new_custom_status)
+          end
+
+          context 'when current status has converted system-defined status' do
+            subject(:current_status) do
+              build(:work_item_current_status, :custom,
+                system_defined_status_id: old_custom_status.converted_from_system_defined_status_identifier,
+                custom_status_id: nil,
+                work_item: work_item,
+                updated_at: Time.current
+              )
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(new_custom_status)
+            end
+          end
+        end
+
+        context 'when mapping with valid_until exists' do
+          before do
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_until: 1.day.ago
+            )
+          end
+
+          context 'when work item updated_at is covered by mapping' do
+            before do
+              current_status.updated_at = 2.days.ago
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(new_custom_status)
+            end
+          end
+
+          context 'when work item updated_at is not covered by mapping' do
+            before do
+              current_status.updated_at = 1.hour.ago
+            end
+
+            it 'returns the original custom status' do
+              expect(current_status.status).to eq(old_custom_status)
+            end
+          end
+        end
+
+        context 'when two sequential mappings exist' do
+          before do
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_until: 3.days.ago
+            )
+
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_from: 3.days.ago
+            )
+          end
+
+          context 'when work item updated_at is covered by second mapping' do
+            before do
+              current_status.updated_at = 2.days.ago
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(new_custom_status)
+            end
+          end
+
+          context 'when work item updated_at is covered by first mapping' do
+            before do
+              current_status.updated_at = 4.days.ago
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(new_custom_status)
+            end
+          end
+        end
+
+        context 'when mappings with gaps exist' do
+          before do
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_until: 7.days.ago
+            )
+
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: another_new_status,
+              valid_from: 5.days.ago,
+              valid_until: 3.days.ago
+            )
+
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_from: 1.day.ago
+            )
+          end
+
+          context 'when work item updated_at is covered by first mapping' do
+            before do
+              current_status.updated_at = 8.days.ago
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(new_custom_status)
+            end
+          end
+
+          context 'when work item updated_at sits between the first two mappings' do
+            before do
+              current_status.updated_at = 6.days.ago
+            end
+
+            it 'returns the original custom status' do
+              expect(current_status.status).to eq(old_custom_status)
+            end
+          end
+
+          context 'when work item updated_at is covered by second mapping' do
+            before do
+              current_status.updated_at = 4.days.ago
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(another_new_status)
+            end
+          end
+
+          context 'when work item updated_at sits between the second two mappings' do
+            before do
+              current_status.updated_at = 2.days.ago
+            end
+
+            it 'returns the original custom status' do
+              expect(current_status.status).to eq(old_custom_status)
+            end
+          end
+
+          context 'when work item updated_at is covered by third mapping' do
+            before do
+              current_status.updated_at = 1.hour.ago
+            end
+
+            it 'returns the mapped status' do
+              expect(current_status.status).to eq(new_custom_status)
+            end
+          end
+        end
+
+        context 'when no mappings exist for the specific combination' do
+          let_it_be(:other_group) { create(:group) }
+          let_it_be(:other_work_item_type) { create(:work_item_type, :non_default) }
+
+          before do
+            # Create mapping for different combination
+            create(:work_item_custom_status_mapping,
+              namespace: other_group,
+              work_item_type: work_item.work_item_type,
+              old_status: create(:work_item_custom_status, namespace: other_group),
+              new_status: create(:work_item_custom_status, namespace: other_group)
+            )
+          end
+
+          it 'returns the original custom status when namespace differs' do
+            expect(current_status.status).to eq(old_custom_status)
+          end
+
+          context 'when work_item_type differs' do
+            let(:work_item) { create(:work_item, work_item_type: other_work_item_type, project: project) }
+
+            it 'returns the original custom status' do
+              expect(current_status.status).to eq(old_custom_status)
+            end
+          end
+        end
+
+        it 'uses SafeRequestStore to cache mappings' do
+          expect(::Gitlab::SafeRequestStore).to receive(:fetch).and_call_original.once
+          current_status.status
+        end
       end
     end
 

@@ -351,7 +351,7 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
   end
 
   describe 'scopes' do
-    describe '.in_namespace' do
+    describe '.with_namespace_id' do
       let!(:mapping_in_namespace) do
         create(:work_item_custom_status_mapping,
           namespace: namespace,
@@ -370,18 +370,112 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
         )
       end
 
-      it 'returns mappings only for the specified namespace' do
-        result = described_class.in_namespace(namespace)
+      it 'returns mappings only for the specified namespace_id' do
+        result = described_class.with_namespace_id(namespace.id)
 
         expect(result).to contain_exactly(mapping_in_namespace)
         expect(result).not_to include(mapping_in_other_namespace)
       end
 
-      it 'returns empty collection when namespace has no mappings' do
+      it 'returns empty collection when namespace_id has no mappings' do
         empty_namespace = create(:namespace)
-        result = described_class.in_namespace(empty_namespace)
+        result = described_class.with_namespace_id(empty_namespace.id)
 
         expect(result).to be_empty
+      end
+    end
+  end
+
+  describe '#applicable_for?' do
+    let(:mapping) { build(:work_item_custom_status_mapping) }
+    let(:test_date) { Time.current }
+
+    context 'when both valid_from and valid_until are nil' do
+      it 'returns true for any date' do
+        expect(mapping.applicable_for?(test_date)).to be true
+        expect(mapping.applicable_for?(1.year.ago)).to be true
+        expect(mapping.applicable_for?(1.year.from_now)).to be true
+      end
+    end
+
+    context 'when only valid_from is set' do
+      before do
+        mapping.valid_from = 5.days.ago
+      end
+
+      it 'returns true for dates on or after valid_from' do
+        expect(mapping.applicable_for?(5.days.ago)).to be true
+        expect(mapping.applicable_for?(4.days.ago)).to be true
+        expect(mapping.applicable_for?(test_date)).to be true
+        expect(mapping.applicable_for?(1.day.from_now)).to be true
+      end
+
+      it 'returns false for dates before valid_from' do
+        expect(mapping.applicable_for?(6.days.ago)).to be false
+        expect(mapping.applicable_for?(1.week.ago)).to be false
+      end
+    end
+
+    context 'when only valid_until is set' do
+      before do
+        mapping.valid_until = 2.days.from_now
+      end
+
+      it 'returns true for dates before valid_until' do
+        expect(mapping.applicable_for?(1.week.ago)).to be true
+        expect(mapping.applicable_for?(test_date)).to be true
+        expect(mapping.applicable_for?(1.day.from_now)).to be true
+      end
+
+      it 'returns false for dates on or after valid_until' do
+        expect(mapping.applicable_for?(2.days.from_now)).to be false
+        expect(mapping.applicable_for?(3.days.from_now)).to be false
+        expect(mapping.applicable_for?(1.week.from_now)).to be false
+      end
+    end
+
+    context 'when both valid_from and valid_until are set' do
+      before do
+        mapping.valid_from = 5.days.ago
+        mapping.valid_until = 2.days.from_now
+      end
+
+      it 'returns true for dates within the range (inclusive of valid_from, exclusive of valid_until)' do
+        expect(mapping.applicable_for?(5.days.ago)).to be true
+        expect(mapping.applicable_for?(3.days.ago)).to be true
+        expect(mapping.applicable_for?(test_date)).to be true
+        expect(mapping.applicable_for?(1.day.from_now)).to be true
+      end
+
+      it 'returns false for dates before valid_from' do
+        expect(mapping.applicable_for?(6.days.ago)).to be false
+        expect(mapping.applicable_for?(1.week.ago)).to be false
+      end
+
+      it 'returns false for dates on or after valid_until' do
+        expect(mapping.applicable_for?(2.days.from_now)).to be false
+        expect(mapping.applicable_for?(3.days.from_now)).to be false
+        expect(mapping.applicable_for?(1.week.from_now)).to be false
+      end
+    end
+
+    context 'with edge cases' do
+      it 'handles exact boundary dates correctly' do
+        mapping.valid_from = 1.day.ago
+        mapping.valid_until = 1.day.from_now
+
+        # valid_from is inclusive
+        expect(mapping.applicable_for?(1.day.ago)).to be true
+        # valid_until is exclusive
+        expect(mapping.applicable_for?(1.day.from_now)).to be false
+      end
+
+      it 'handles same date for valid_from and test date' do
+        exact_date = Time.current.beginning_of_day
+        mapping.valid_from = exact_date
+        mapping.valid_until = nil
+
+        expect(mapping.applicable_for?(exact_date)).to be true
       end
     end
   end
