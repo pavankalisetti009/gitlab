@@ -85,6 +85,7 @@ module RemoteDevelopment
             :annotations,
             :default_resources_per_workspace_container,
             :default_runtime_class,
+            :dns_zone,
             :gitlab_workspaces_proxy_http_enabled,
             :gitlab_workspaces_proxy_namespace,
             :gitlab_workspaces_proxy_ssh_enabled,

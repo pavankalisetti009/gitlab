@@ -24,6 +24,7 @@ module RemoteDevelopment
           ],
           default_resources_per_workspace_container: [{}, Hash],
           default_runtime_class: ["", String],
+          dns_zone: ["", String],
           full_reconciliation_interval_seconds: [3600, Integer],
           gitlab_kas_external_url: ["", String],
           gitlab_workspaces_proxy_http_enabled: [true, :Boolean],
