@@ -237,7 +237,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       end
 
       it_behaves_like 'disabled maven_virtual_registry feature flag'
-      it_behaves_like 'maven virtual registry disabled dependency proxy'
+      it_behaves_like 'virtual registry disabled dependency proxy'
     end
 
     context 'with no user' do
@@ -252,7 +252,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       end
     end
 
-    it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'maven virtual registry feature not licensed'
   end
 
@@ -349,10 +349,10 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       end
 
       it_behaves_like 'disabled maven_virtual_registry feature flag'
-      it_behaves_like 'maven virtual registry disabled dependency proxy'
+      it_behaves_like 'virtual registry disabled dependency proxy'
     end
 
-    it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'maven virtual registry feature not licensed'
   end
 end
