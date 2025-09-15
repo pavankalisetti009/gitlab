@@ -24,7 +24,7 @@ select a limited role, and provide an expiry date.
 
 {{< alert type="note" >}}
 
-Actual access to a project is controlled by a combination of [roles and permissions](../../permissions.md) and token scopes.
+Access to a specific project is controlled by a combination of [roles and permissions](../../permissions.md) and token scopes.
 
 {{< /alert >}}
 
