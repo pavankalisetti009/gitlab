@@ -97,7 +97,7 @@ module API
 
           def duo_workflow_token
             duo_workflow_token_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
-              duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url,
+              duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
               current_user: current_user,
               secure: Gitlab::DuoWorkflow::Client.secure?
             ).generate_token
@@ -204,7 +204,7 @@ module API
                     token_expires_at: oauth_token.expires_at
                   },
                   duo_workflow_service: {
-                    base_url: Gitlab::DuoWorkflow::Client.url,
+                    base_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
                     token: workflow_token[:token],
                     token_expires_at: workflow_token[:expires_at],
                     headers: Gitlab::DuoWorkflow::Client.headers(user: current_user),
@@ -243,7 +243,7 @@ module API
               {
                 DuoWorkflow: {
                   Headers: headers,
-                  ServiceURI: Gitlab::DuoWorkflow::Client.url,
+                  ServiceURI: Gitlab::DuoWorkflow::Client.url(user: current_user),
                   Secure: Gitlab::DuoWorkflow::Client.secure?
                 }
               }

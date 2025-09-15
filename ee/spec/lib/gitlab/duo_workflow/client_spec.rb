@@ -10,7 +10,7 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations
   end
 
   describe '.url' do
-    subject(:url) { described_class.url }
+    subject(:url) { described_class.url(user: user) }
 
     it 'returns cloud connector URL' do
       expect(url).to eq("cloud.gitlab.com:443")
@@ -57,6 +57,26 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations
 
       it 'returns configured url' do
         expect(url).to eq(duo_workflow_service_url)
+      end
+    end
+
+    context 'when duo_workflow_cloud_connector_url feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_workflow_cloud_connector_url: false)
+      end
+
+      it 'returns url to Duo Workflow Service fleet' do
+        expect(url).to eq('duo-workflow-svc.runway.gitlab.net:443')
+      end
+
+      context 'when cloud connector url is staging' do
+        before do
+          allow(::CloudConnector::Config).to receive(:host).and_return('cloud.staging.gitlab.com')
+        end
+
+        it 'returns url to staging Duo Workflow Service fleet' do
+          expect(url).to eq('duo-workflow-svc.staging.runway.gitlab.net:443')
+        end
       end
     end
   end
