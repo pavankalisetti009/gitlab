@@ -46,7 +46,7 @@ export default {
     id="ai-panel-portal"
     :aria-label="activeTab.title"
     :aria-hidden="!isExpanded"
-    class="ai-panel !gl-left-auto gl-h-full gl-w-[400px] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default"
+    class="ai-panel !gl-left-auto gl-h-full gl-w-[400px] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">
