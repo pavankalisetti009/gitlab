@@ -1,4 +1,4 @@
-import ChangeLifecycle from './custom_status/change_lifecycle.vue';
+import ChangeLifecycleSteps from './custom_status/change_lifecycle/change_lifecycle_steps.vue';
 import WorkItemSettingsHome from './work_item_settings_home.vue';
 
 export const getRoutes = (fullPath) => {
@@ -12,7 +12,7 @@ export const getRoutes = (fullPath) => {
     {
       path: `/lifecycle/:workItemType`,
       name: 'changeLifecycle',
-      component: ChangeLifecycle,
+      component: ChangeLifecycleSteps,
       props: { fullPath },
     },
   ];

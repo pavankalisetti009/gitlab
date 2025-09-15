@@ -327,7 +327,7 @@ export default {
               />
             </div>
             <div v-if="filteredLifecycles.length" class="gl-flex gl-max-h-31 gl-overflow-y-auto">
-              <scroll-scrim>
+              <scroll-scrim class="gl-grow">
                 <div class="gl-flex gl-flex-col gl-gap-4">
                   <lifecycle-detail
                     v-for="lifecycle in filteredLifecycles"
@@ -340,7 +340,7 @@ export default {
                     show-radio-selection
                     show-not-in-use-section
                     :show-usage-section="false"
-                    :show-remove-lifecycle-cta="false"
+                    :show-remove-lifecycle-button="false"
                   >
                     <template #radio-selection>
                       <gl-form-radio :key="lifecycle.id" :value="lifecycle.id">

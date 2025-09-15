@@ -47,7 +47,17 @@ export default {
       required: false,
       default: false,
     },
-    showRemoveLifecycleCta: {
+    showRemoveLifecycleButton: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    showChangeLifecycleButton: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    showRenameButton: {
       type: Boolean,
       required: false,
       default: true,
@@ -61,7 +71,7 @@ export default {
   },
   computed: {
     lifecycleId() {
-      return getIdFromGraphQLId(this.lifecycle.id);
+      return getIdFromGraphQLId(this.lifecycle?.id);
     },
     items() {
       return (this.lifecycle.workItemTypes || []).map(({ name }) => ({ text: name, value: name }));
@@ -133,12 +143,14 @@ export default {
       </span>
 
       <lifecycle-name-form
-        v-else
+        v-else-if="showRenameButton"
         :lifecycle="lifecycle"
         :is-lifecycle-template="isLifecycleTemplate"
         :full-path="fullPath"
         :card-hover="cardHover"
       />
+
+      <span v-else class="gl-font-bold gl-text-strong">{{ lifecycle.name }} </span>
 
       <div class="gl-mx-auto gl-my-3 gl-flex gl-flex-wrap gl-gap-3">
         <div v-for="status in lifecycle.statuses" :key="status.id" class="gl-max-w-20">
@@ -165,22 +177,24 @@ export default {
         <span>{{ workItemType.name }}</span>
       </span>
 
-      <gl-button
-        v-if="lifecycle.workItemTypes.length === 1"
-        size="small"
-        @click="linkToItemType(lifecycle.workItemTypes[0].name)"
-        >{{ s__('WorkItem|Change lifecycle') }}</gl-button
-      >
+      <template v-if="showChangeLifecycleButton">
+        <gl-button
+          v-if="lifecycle.workItemTypes.length === 1"
+          size="small"
+          @click="linkToItemType(lifecycle.workItemTypes[0].name)"
+          >{{ s__('WorkItem|Change lifecycle') }}</gl-button
+        >
 
-      <gl-collapsible-listbox
-        v-else
-        :items="items"
-        :header-text="s__('WorkItem|Select type to change')"
-        :toggle-text="s__('WorkItem|Change lifecycle')"
-        category="secondary"
-        size="small"
-        @select="linkToItemType"
-      />
+        <gl-collapsible-listbox
+          v-else
+          :items="items"
+          :header-text="s__('WorkItem|Select type to change')"
+          :toggle-text="s__('WorkItem|Change lifecycle')"
+          category="secondary"
+          size="small"
+          @select="linkToItemType"
+        />
+      </template>
     </div>
 
     <div
@@ -188,7 +202,7 @@ export default {
       :data-testid="`lifecycle-${lifecycleId}-no-usage`"
       class="gl-border-warning-400 -gl-mx-4 gl-flex gl-items-center gl-gap-3 gl-rounded-bl-lg gl-rounded-br-lg gl-border-t-1 gl-bg-feedback-warning gl-px-4 gl-py-2"
       :class="{
-        'gl-py-3': !showRemoveLifecycleCta,
+        'gl-py-3': !showRemoveLifecycleButton,
       }"
     >
       <gl-icon name="warning" :size="14" class="gl-text-orange-700" />
@@ -197,7 +211,7 @@ export default {
       </span>
 
       <gl-button
-        v-if="showRemoveLifecycleCta"
+        v-if="showRemoveLifecycleButton"
         :data-testid="`remove-lifecycle-${lifecycleId}`"
         size="small"
         @click="confirmDeletion"

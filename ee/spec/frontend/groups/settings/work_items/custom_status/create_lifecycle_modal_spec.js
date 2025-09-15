@@ -222,7 +222,7 @@ describe('CreateLifecycle', () => {
       expect(existingLifecycleDetail.props()).toMatchObject({
         showUsageSection: false,
         showNotInUseSection: true,
-        showRemoveLifecycleCta: false,
+        showRemoveLifecycleButton: false,
       });
     });
 
