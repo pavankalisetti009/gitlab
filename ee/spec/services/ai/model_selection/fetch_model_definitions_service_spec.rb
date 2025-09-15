@@ -162,8 +162,19 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
   end
 
   describe '#endpoint' do
-    it 'returns the correct endpoint URL' do
+    it 'returns the cloud-connected endpoint URL' do
       expect(initialized_class.send(:endpoint)).to eq("https://cloud.gitlab.com/ai/v1/models%2Fdefinitions")
+    end
+
+    context 'if FETCH_MODEL_SELECTION_DATA_FROM_LOCAL is true' do
+      before do
+        stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', '1')
+        allow(::Gitlab::AiGateway).to receive(:url).and_return('http://some-url.com')
+      end
+
+      it 'returns the local endpoint URL' do
+        expect(initialized_class.send(:endpoint)).to eq('http://some-url.com/v1/models%2Fdefinitions')
+      end
     end
   end
 end
