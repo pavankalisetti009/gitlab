@@ -59,6 +59,7 @@ module QA
         results = []
 
         resources.each do |resource|
+          path = resource_path(resource)
           resource[:type] = @type
 
           logger.info("Deleting #{@type} #{path}...")
