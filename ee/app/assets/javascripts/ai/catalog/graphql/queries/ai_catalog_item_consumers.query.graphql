@@ -1,7 +1,7 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "../fragments/ai_catalog_item_consumer.fragment.graphql"
 
-query aiCatalogConfiguredItems(
+query aiCatalogItemConsumers(
   $itemType: AiCatalogItemType
   $projectId: ProjectID!
   $before: String
@@ -9,7 +9,7 @@ query aiCatalogConfiguredItems(
   $first: Int
   $last: Int
 ) {
-  aiCatalogConfiguredItems(
+  aiCatalogItemConsumers(
     itemType: $itemType
     projectId: $projectId
     before: $before

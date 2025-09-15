@@ -10,7 +10,7 @@ import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
-import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import aiCatalogItemConsumersQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_item_consumers.query.graphql';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -18,7 +18,7 @@ import {
   mockBaseFlow,
   mockBaseItemConsumer,
   mockConfiguredFlowsResponse,
-  mockConfiguredItemsEmptyResponse,
+  mockItemConsumersEmptyResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
@@ -47,7 +47,7 @@ describe('AiFlows', () => {
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
-      [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
+      [aiCatalogItemConsumersQuery, mockConfiguredFlowsQueryHandler],
       [aiCatalogFlowQuery, mockFlowQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
@@ -96,7 +96,7 @@ describe('AiFlows', () => {
 
     describe('when there are no flows', () => {
       beforeEach(async () => {
-        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
+        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockItemConsumersEmptyResponse);
 
         await waitForPromises();
       });
