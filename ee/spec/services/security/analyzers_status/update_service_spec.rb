@@ -96,10 +96,6 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    before do
-      stub_feature_flags(ci_validate_config_options: false)
-    end
-
     context 'when pipeline doesnt exist' do
       let(:service) { described_class.new(nil) }
 
@@ -623,7 +619,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
     options[:artifacts][:reports] ||= {}
 
     report_types.each do |type|
-      options[:artifacts][:reports][type] = {}
+      options[:artifacts][:reports][type] = "report.json"
     end
 
     options

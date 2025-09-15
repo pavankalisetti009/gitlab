@@ -17,10 +17,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::CreateCrossDatabaseAssociations do
   end
 
   describe '#perform!' do
-    before do
-      stub_feature_flags(ci_validate_config_options: false)
-    end
-
     shared_examples 'it failed' do
       it 'breaks the chain' do
         expect(subject.break?).to be(true)
@@ -38,7 +34,19 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::CreateCrossDatabaseAssociations do
       let(:dast_site_profile_name) { dast_site_profile.name }
       let(:dast_scanner_profile_name) { dast_scanner_profile.name }
 
-      let!(:dast_build) { create(:ci_build, project: project, user: user, pipeline: pipeline, stage_id: stage.id, options: { dast_configuration: { site_profile: dast_site_profile_name, scanner_profile: dast_scanner_profile_name } }) }
+      let!(:dast_build) do
+        create(:ci_build,
+          project: project,
+          user: user,
+          pipeline: pipeline,
+          stage_id: stage.try(:id),
+          options: {
+            dast_configuration: {
+              site_profile: dast_site_profile_name,
+              scanner_profile: dast_scanner_profile_name
+            }
+          })
+      end
 
       context 'when the feature is not licensed' do
         before do
