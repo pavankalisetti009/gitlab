@@ -48,7 +48,7 @@ module Ai
       def ai_gateway_headers
         Gitlab::AiGateway.headers(
           user: current_user,
-          service: :ai_gateway_model_provider_proxy,
+          unit_primitive_name: :ai_gateway_model_provider_proxy,
           ai_feature_name: :duo_workflow
         )
       end
