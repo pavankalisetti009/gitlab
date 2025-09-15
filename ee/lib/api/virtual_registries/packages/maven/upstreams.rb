@@ -6,7 +6,7 @@ module API
       module Maven
         class Upstreams < ::API::Base
           include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedSetup
-          include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedAuthentication
+          include ::API::Concerns::VirtualRegistries::SharedAuthentication
           include ::API::PaginationParams
 
           helpers do
