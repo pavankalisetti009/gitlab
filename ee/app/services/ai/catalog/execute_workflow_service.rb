@@ -108,7 +108,7 @@ module Ai
       end
 
       def determine_workflow_definition
-        'software_development'
+        'ai_catalog_agent'
       end
 
       def allowed?
