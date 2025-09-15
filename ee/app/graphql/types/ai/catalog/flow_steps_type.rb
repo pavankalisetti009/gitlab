@@ -8,7 +8,7 @@ module Types
         graphql_name 'AiCatalogFlowSteps'
 
         field :agent, AgentType,
-          null: false,
+          null: true,
           description: 'Agent used.'
 
         field :pinned_version_prefix, GraphQL::Types::String,
