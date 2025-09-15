@@ -8,36 +8,27 @@
           }
         },
         {
+          "meta": {
+            "key": "archived",
+            "value": "f"
+          }
+        },
+        {
+          "_context": {
+            "name": "access_branches"
+          },
           "or": {
             "children": [
               {
-                "and": {
-                  "children": [
-                    {
-                      "meta": {
-                        "key": "visibility_level",
-                        "value": "20"
-                      }
-                    },
-                    {
-                      "meta": {
-                        "key": "repository_access_level",
-                        "value": "20"
-                      }
-                    }
-                  ]
-                },
                 "_context": {
                   "name": "public_branch"
-                }
-              },
-              {
+                },
                 "and": {
                   "children": [
                     {
                       "meta": {
                         "key": "visibility_level",
-                        "value": "10"
+                        "value": "20"
                       }
                     },
                     {
@@ -47,12 +38,33 @@
                       }
                     }
                   ]
-                },
+                }
+              },
+              {
                 "_context": {
                   "name": "internal_branch"
+                },
+                "and": {
+                  "children": [
+                    {
+                      "meta": {
+                        "key": "visibility_level",
+                        "value": "10"
+                      }
+                    },
+                    {
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20"
+                      }
+                    }
+                  ]
                 }
               },
               {
+                "_context": {
+                  "name": "public_authorized_branch"
+                },
                 "and": {
                   "children": [
                     {
@@ -68,6 +80,9 @@
                       }
                     },
                     {
+                      "_context": {
+                        "name": "user_authorizations"
+                      },
                       "or": {
                         "children": [
                           {
@@ -82,18 +97,15 @@
                             ]
                           }
                         ]
-                      },
-                      "_context": {
-                        "name": "user_authorizations"
                       }
                     }
                   ]
-                },
-                "_context": {
-                  "name": "public_authorized_branch"
                 }
               },
               {
+                "_context": {
+                  "name": "internal_authorized_branch"
+                },
                 "and": {
                   "children": [
                     {
@@ -109,6 +121,9 @@
                       }
                     },
                     {
+                      "_context": {
+                        "name": "user_authorizations"
+                      },
                       "or": {
                         "children": [
                           {
@@ -123,18 +138,15 @@
                             ]
                           }
                         ]
-                      },
-                      "_context": {
-                        "name": "user_authorizations"
                       }
                     }
                   ]
-                },
-                "_context": {
-                  "name": "internal_authorized_branch"
                 }
               },
               {
+                "_context": {
+                  "name": "private_authorized_branch"
+                },
                 "and": {
                   "children": [
                     {
@@ -156,6 +168,9 @@
                       }
                     },
                     {
+                      "_context": {
+                        "name": "user_authorizations"
+                      },
                       "or": {
                         "children": [
                           {
@@ -177,24 +192,12 @@
                             ]
                           }
                         ]
-                      },
-                      "_context": {
-                        "name": "user_authorizations"
                       }
                     }
                   ]
-                },
-                "_context": {
-                  "name": "private_authorized_branch"
                 }
               }
             ]
-          }
-        },
-        {
-          "meta": {
-            "key": "archived",
-            "value": "f"
           }
         }
       ]

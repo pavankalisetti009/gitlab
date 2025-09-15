@@ -15,7 +15,7 @@ module Search
         base_query = Filters.by_query_string(query)
         return build_repo_ids_payload(base_query) unless use_zoekt_traversal_id_query?
 
-        children = [base_query, Filters.or_filters(*access_branches(auth))]
+        children = [base_query]
 
         children << Filters.by_archived(false) unless filters[:include_archived] == true
         children << Filters.by_forked(false) if filters[:exclude_forks] == true
@@ -35,6 +35,9 @@ module Search
         else
           raise ArgumentError, "Unsupported search level for zoekt search: #{options.fetch(:search_level)}"
         end
+
+        # Add access branch filters at the very end because they are more expensive to evaluate.
+        children << Filters.or_filters(*access_branches(auth), context: { name: 'access_branches' })
 
         Filters.and_filters(*children)
       end
