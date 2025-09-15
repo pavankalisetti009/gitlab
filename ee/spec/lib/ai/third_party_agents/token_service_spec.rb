@@ -23,7 +23,7 @@ RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :agent_foun
 
   before do
     allow(Gitlab::AiGateway).to receive(:headers)
-      .with(user: user, service: :ai_gateway_model_provider_proxy, ai_feature_name: :duo_workflow)
+      .with(user: user, unit_primitive_name: :ai_gateway_model_provider_proxy, ai_feature_name: :duo_workflow)
       .and_return(ai_gateway_headers)
 
     allow(Gitlab::AiGateway).to receive(:public_headers)
