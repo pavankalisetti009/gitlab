@@ -60,7 +60,6 @@ export default {
     'app/assets/javascripts/packages_and_registries/settings/project/components/packages_cleanup_policy_form.vue',
     'app/assets/javascripts/packages_and_registries/settings/project/components/packages_protection_rules.vue',
     'app/assets/javascripts/packages_and_registries/shared/components/delete_package_modal.vue',
-    'app/assets/javascripts/performance_bar/components/performance_bar_app.vue',
     'app/assets/javascripts/popovers/components/popovers.vue',
     'app/assets/javascripts/ref/components/ref_selector.vue',
     'app/assets/javascripts/repository/components/blob_content_viewer.vue',
