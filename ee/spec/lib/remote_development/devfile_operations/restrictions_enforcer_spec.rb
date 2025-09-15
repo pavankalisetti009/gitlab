@@ -128,6 +128,7 @@ RSpec.describe ::RemoteDevelopment::DevfileOperations::RestrictionsEnforcer, fea
         "example.invalid-unsupported-starter-projects-devfile.yaml.erb" | "'starterProjects' is not yet supported" | :processed_devfile
         "example.invalid-unsupported-component-container-source-mapping-devfile.yaml.erb" | "Property 'sourceMapping' of component 'example' is not yet supported" | :processed_devfile
         "example.invalid-unsupported-component-container-mount-sources-devfile.yaml.erb" | "Property 'mountSources' of component 'example' is not yet supported" | :devfile
+        "example.invalid-volume-component-name-too-long-devfile.yaml.erb" | "Volume's name must be less than #{described_class::MAX_VOLUME_NAME_LIMIT} characters" | :processed_devfile
       end
       # rubocop:enable Layout/LineLength
 

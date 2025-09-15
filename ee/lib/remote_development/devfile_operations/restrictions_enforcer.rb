@@ -6,6 +6,8 @@ module RemoteDevelopment
       include RemoteDevelopmentConstants
       include Messages
 
+      MAX_VOLUME_NAME_LIMIT = 28
+
       MAX_DEVFILE_SIZE_BYTES = 3.megabytes
 
       # Since this is called after flattening the devfile, we can safely assume that it has valid syntax
@@ -278,6 +280,7 @@ module RemoteDevelopment
 
         context
       end
+
       # rubocop:enable Metrics/CyclomaticComplexity
 
       # @param [Hash] context
@@ -478,6 +481,8 @@ module RemoteDevelopment
               context
             )
           end
+
+          validate_volume_component_name(context, component_name) if component.has_key?(:volume)
         else
           append_err(_("'Component name' must be a String"), context)
         end
@@ -598,10 +603,23 @@ module RemoteDevelopment
         context
       end
 
+      # @param [Hash] context
+      # @param [String] component_name
+      # @return [Hash]
+      def self.validate_volume_component_name(context, component_name)
+        return unless component_name.length >= MAX_VOLUME_NAME_LIMIT
+
+        details = format(_("Volume's name must be less than %{character_limit} characters"),
+          character_limit: MAX_VOLUME_NAME_LIMIT
+        )
+
+        append_err(_(details), context)
+      end
+
       private_class_method :validate_devfile_size, :validate_schema_version, :validate_parent,
         :validate_projects, :validate_root_attributes, :validate_components, :validate_containers,
         :validate_endpoints, :validate_commands, :validate_command_restricted_prefix, :validate_events,
-        :validate_variables, :validate_component, :validate_command, :append_err
+        :validate_variables, :validate_component, :validate_command, :append_err, :validate_volume_component_name
     end
   end
 end
