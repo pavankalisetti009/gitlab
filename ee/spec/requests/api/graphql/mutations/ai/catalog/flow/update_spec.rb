@@ -8,6 +8,10 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
   let_it_be_with_reload(:flow) { create(:ai_catalog_flow, project: project) }
+  let_it_be_with_reload(:latest_released_version) do
+    create(:ai_catalog_flow_version, :released, version: '1.0.0', item: flow)
+  end
+
   let_it_be_with_reload(:latest_version) { create(:ai_catalog_flow_version, version: '1.1.0', item: flow) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_v1) { create(:ai_catalog_agent_version, version: '1.0.0', item: agent) }
@@ -38,7 +42,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       steps: [
         { agent_id: agent.to_global_id },
         { agent_id: agent.to_global_id, pinned_version_prefix: '1.0' }
-      ]
+      ],
+      version_bump: 'PATCH'
     }
   end
 
@@ -128,7 +133,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       )
       expect(latest_version.reload).to have_attributes(
         schema_version: 1,
-        version: '1.1.0',
+        version: '1.0.1',
         release_date: nil,
         definition: {
           steps: [
