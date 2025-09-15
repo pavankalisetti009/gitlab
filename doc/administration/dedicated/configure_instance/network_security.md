@@ -82,9 +82,17 @@ restricted to private networks.
 
 To add a custom hostname to your existing GitLab Dedicated instance, submit a [support ticket](https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=4414917877650).
 
-## Custom certificates
+## Custom certificate authority
 
-Custom certificates establish trust between your GitLab Dedicated instance and certificates signed by non-public Certificate Authorities (CA). If you want to connect to a service that uses a certificate signed by a private or internal CA, you must first add that certificate to your GitLab Dedicated instance.
+If your GitLab Dedicated instance connects to external services with certificates from a private
+or internal certificate authority (CA), you must add that CA to your instance. By default, GitLab
+trusts only publicly recognized certificate authorities and rejects connections to services with
+certificates from untrusted sources.
+
+For example, you might need to add a certificate authority to connect to:
+
+- Internal webhook endpoints
+- Private container registries
 
 ### Add a custom certificate with Switchboard
 
