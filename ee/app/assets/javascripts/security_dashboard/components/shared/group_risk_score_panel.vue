@@ -35,6 +35,8 @@ export default {
         return {
           fullPath: this.groupFullPath,
           projectId: this.filters.projectId,
+          includeByDefault: this.groupedBy === 'default',
+          includeByProject: this.groupedBy === 'project',
         };
       },
       update(data) {

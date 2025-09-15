@@ -147,6 +147,8 @@ describe('GroupRiskScorePanel', () => {
       expect(riskScoreHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
+        includeByDefault: true,
+        includeByProject: false,
       });
     });
 
@@ -177,6 +179,18 @@ describe('GroupRiskScorePanel', () => {
       expect(riskScoreHandler).not.toHaveBeenCalledWith(
         expect.objectContaining({
           unsupportedFilter,
+        }),
+      );
+    });
+
+    it('updates query variables when switching to report type grouping', async () => {
+      await findRiskScoreGroupBy().vm.$emit('input', 'project');
+      await waitForPromises();
+
+      expect(riskScoreHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          includeByDefault: false,
+          includeByProject: true,
         }),
       );
     });
