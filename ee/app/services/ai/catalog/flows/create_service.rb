@@ -7,8 +7,9 @@ module Ai
         include FlowHelper
 
         def execute
-          return error_max_steps if max_steps_exceeded?
           return error_no_permissions unless allowed?
+          return error(MAX_STEPS_ERROR) if max_steps_exceeded?
+          return error_no_permissions unless agents_allowed?
           return error(steps_validation_errors) unless steps_valid?
 
           item_params = params.slice(:name, :description, :public)

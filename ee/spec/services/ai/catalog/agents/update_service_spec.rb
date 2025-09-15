@@ -15,7 +15,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
   let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
   let(:params) do
     {
-      agent: agent,
+      item: agent,
       name: 'New name',
       description: 'New description',
       public: true,
@@ -226,7 +226,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         end
 
         context 'when only agent properties are updated' do
-          let(:params) { { agent: agent, name: 'New name' } }
+          let(:params) { { item: agent, name: 'New name' } }
 
           it 'updates the agent' do
             expect { execute_service }.to change { agent.reload.name }.to('New name')
@@ -239,7 +239,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
       end
 
       context 'when only agent properties are being updated' do
-        let(:params) { { agent: agent, name: 'New name' } }
+        let(:params) { { item: agent, name: 'New name' } }
 
         it 'updates the agent' do
           expect { execute_service }.to change { agent.reload.name }.to('New name')
@@ -265,7 +265,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         end
 
         context 'when the only change to the version is that it is being released' do
-          let(:params) { { agent: agent, release: true } }
+          let(:params) { { item: agent, release: true } }
 
           it 'releases the version' do
             expect { execute_service }.to change { latest_version.reload.released? }.to(true)
@@ -277,7 +277,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
         end
 
         context 'when only the agent is being updated' do
-          let(:params) { { agent: agent, name: 'New name' } }
+          let(:params) { { item: agent, name: 'New name' } }
 
           it 'does not change the current schema version' do
             expect { execute_service }.not_to change { latest_version.reload.schema_version }
@@ -288,7 +288,7 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
       context 'when updated agent is invalid' do
         let(:params) do
           {
-            agent: agent,
+            item: agent,
             name: nil
           }
         end

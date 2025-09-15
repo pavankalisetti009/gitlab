@@ -13,7 +13,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
 
   let(:params) do
     {
-      flow: flow,
+      item: flow,
       name: 'New name',
       description: 'New description',
       public: true,
@@ -33,7 +33,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
 
         expect(result).to be_error
         expect(result.message).to match_array(Array(errors))
-        expect(result.payload[:flow]).to eq(flow)
+        expect(result.payload[:item]).to eq(flow)
       end
 
       it 'does not update the flow' do
@@ -112,14 +112,14 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
           super().merge(steps: [{ agent: agent }, { agent: agent }])
         end
 
-        it_behaves_like 'an error response', 'Maximum steps for a flow (1) exceeded'
+        it_behaves_like 'an error response', Ai::Catalog::Flows::FlowHelper::MAX_STEPS_ERROR
       end
 
       it 'returns success response with flow in payload' do
         result = execute_service
 
         expect(result).to be_success
-        expect(result[:flow]).to eq(flow)
+        expect(result[:item]).to eq(flow)
       end
 
       it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
@@ -200,7 +200,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         end
 
         context 'when only flow properties are updated' do
-          let(:params) { { flow: flow, name: 'New name' } }
+          let(:params) { { item: flow, name: 'New name' } }
 
           it 'updates the flow' do
             expect { execute_service }.to change { flow.reload.name }.to('New name')
@@ -215,7 +215,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
       context 'when updated flow is invalid' do
         let(:params) do
           {
-            flow: flow,
+            item: flow,
             name: nil
           }
         end
@@ -263,7 +263,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
 
         let(:params) do
           {
-            flow: flow,
+            item: flow,
             name: 'New name',
             description: 'New description',
             public: true,
@@ -305,7 +305,7 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
         context 'when the flow version is not changing' do
           let(:params) do
             {
-              flow: flow,
+              item: flow,
               description: 'New description'
             }
           end
@@ -319,15 +319,15 @@ RSpec.describe Ai::Catalog::Flows::UpdateService, feature_category: :workflow_ca
 
         it 'does not cause N+1 queries for each dependency created' do
           # Warmup
-          params = { flow: flow, steps: [{ agent: agent4 }] }
+          params = { item: flow, steps: [{ agent: agent4 }] }
           service = described_class.new(project: project, current_user: user, params: params)
           service.execute
 
-          params = { flow: flow, steps: [{ agent: agent }] }
+          params = { item: flow, steps: [{ agent: agent }] }
           service = described_class.new(project: project, current_user: user, params: params)
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) { service.execute }
 
-          params = { flow: flow, steps: [{ agent: agent2 }, { agent: agent3 }] }
+          params = { item: flow, steps: [{ agent: agent2 }, { agent: agent3 }] }
           service = described_class.new(project: project, current_user: user, params: params)
 
           # Ai::Catalog::Flows::FlowHelper#allowed? queries for each agent to check permissions.

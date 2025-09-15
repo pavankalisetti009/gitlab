@@ -53,7 +53,7 @@ module Mutations
 
           def resolve(args)
             agent = authorized_find!(id: args.delete(:id))
-            params = args.merge(agent: agent)
+            params = args.merge(item: agent)
 
             result = ::Ai::Catalog::Agents::UpdateService.new(
               project: agent.project,

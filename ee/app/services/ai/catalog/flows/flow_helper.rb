@@ -7,6 +7,7 @@ module Ai
         include Gitlab::Utils::StrongMemoize
 
         MAX_STEPS = 100
+        MAX_STEPS_ERROR = "Maximum steps for a flow (#{MAX_STEPS}) exceeded".freeze
 
         private
 
@@ -44,8 +45,7 @@ module Ai
           steps_validation_errors.empty?
         end
 
-        def allowed?
-          return false unless super
+        def agents_allowed?
           return true if params[:steps].nil?
 
           params[:steps].all? { |step| Ability.allowed?(current_user, :read_ai_catalog_item, step[:agent]) }
@@ -53,10 +53,6 @@ module Ai
 
         def max_steps_exceeded?
           params[:steps] && params[:steps].count > MAX_STEPS
-        end
-
-        def error_max_steps
-          error("Maximum steps for a flow (#{MAX_STEPS}) exceeded")
         end
 
         def populate_dependencies(item_version, delete_no_longer_used_dependencies: true)

@@ -41,7 +41,7 @@ module Mutations
           def resolve(args)
             flow = authorized_find!(id: args[:id])
 
-            params = args.except(:id).merge(flow: flow)
+            params = args.except(:id).merge(item: flow)
 
             unless params[:steps].nil?
               # We can't use `loads` because of this bug https://github.com/rmosolgo/graphql-ruby/issues/2966
@@ -58,8 +58,8 @@ module Mutations
               params: params
             ).execute
 
-            item = result.payload[:flow]
-            item.reset unless result.success?
+            item = result.payload[:item]
+            item.reset
 
             {
               item: item,
