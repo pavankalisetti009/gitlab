@@ -187,7 +187,8 @@ module QA
             next unless resource
 
             resource_info = resource_info(resource_hash, key)
-            next if already_marked_for_deletion?(resource)
+            # When deleting immediately, don't skip resources already marked for deletion
+            next if !permanent && already_marked_for_deletion?(resource)
 
             logger.info("Processing #{resource_info}...")
 

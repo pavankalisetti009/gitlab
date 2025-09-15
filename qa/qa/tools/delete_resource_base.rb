@@ -61,13 +61,6 @@ module QA
         resources.each do |resource|
           resource[:type] = @type
 
-          # Get updated group or project path and skip if parent has been marked for deletion
-          path = group_or_project?(resource) ? resource_path(get_resource(resource)) : resource_path(resource)
-          if path.include?('deletion_scheduled')
-            logger.info("Skipping #{@type} #{path}, parent marked for deletion")
-            next
-          end
-
           logger.info("Deleting #{@type} #{path}...")
 
           result = delete_resource(resource, delayed_verification, permanent, skip_verification, **options)
