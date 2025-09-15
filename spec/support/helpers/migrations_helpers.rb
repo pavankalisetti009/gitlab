@@ -222,7 +222,7 @@ ERROR
     reset_column_in_all_models
   end
 
-  def schema_migrate_up!
+  def schema_migrate_up!(skip_refresh_attribute_methods: false)
     reset_column_in_all_models
 
     with_db_config do
@@ -232,7 +232,7 @@ ERROR
     end
 
     reset_column_in_all_models
-    refresh_attribute_methods
+    refresh_attribute_methods unless skip_refresh_attribute_methods
   end
 
   def disable_migrations_output
