@@ -28,6 +28,11 @@ export default {
       required: false,
       default: null,
     },
+    isFlowPublic: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -52,6 +57,7 @@ export default {
           value: agent.id,
           text: agent.name,
           versions: agent.versions,
+          public: agent.public,
         })) || [],
       result() {
         this.isAgentsLoading = false;
@@ -61,6 +67,12 @@ export default {
   computed: {
     isLoading() {
       return this.$apollo.queries.aiCatalogAgents.loading;
+    },
+    agentOptions() {
+      if (this.isFlowPublic) {
+        return this.aiCatalogAgents.filter((a) => a.public === true);
+      }
+      return this.aiCatalogAgents;
     },
     agentListBoxToggleText() {
       if (this.selectedAgent) {
@@ -104,7 +116,7 @@ export default {
   },
   methods: {
     selectAgent(agentId) {
-      this.selectedAgent = this.aiCatalogAgents.find((agent) => agent.value === agentId);
+      this.selectedAgent = this.agentOptions.find((agent) => agent.value === agentId);
       this.selectedVersion = null;
     },
     selectVersion(versionId) {
@@ -149,11 +161,14 @@ export default {
     <div class="gl-p-4">
       <label for="agent-select-listbox" class="gl-mt-3 gl-font-bold">
         {{ s__('AICatalog| Agent') }}
+        <div class="gl-mt-3 gl-font-normal gl-text-subtle">
+          {{ s__('AICatalog|Only public agents can be used in public flows.') }}
+        </div>
       </label>
       <gl-collapsible-listbox
         block
         searchable
-        :items="aiCatalogAgents"
+        :items="agentOptions"
         :toggle-text="agentListBoxToggleText"
         :loading="isAgentsLoading"
         :searching="isLoading"

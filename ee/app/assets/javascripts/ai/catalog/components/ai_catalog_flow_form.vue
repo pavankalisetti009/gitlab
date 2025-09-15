@@ -91,6 +91,9 @@ export default {
     submitButtonText() {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create flow');
     },
+    isPublic() {
+      return this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC;
+    },
     fields() {
       const projectIdField = this.isEditMode
         ? {}
@@ -162,7 +165,7 @@ export default {
         projectId: this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
-        public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
+        public: this.isPublic,
         steps: this.formValues.steps.map((s) => ({
           agentId: s.id,
           pinnedVersionPrefix: s.versionName,
@@ -263,6 +266,7 @@ export default {
         v-model="formValues.steps"
         class="gl-grow"
         :active-step-index="activeStepIndex"
+        :is-flow-public="isPublic"
         @close="onCloseAgentPanel"
       />
     </div>

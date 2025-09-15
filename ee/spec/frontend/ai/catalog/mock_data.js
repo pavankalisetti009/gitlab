@@ -168,6 +168,7 @@ export const mockAgents = [
     createdAt: '2024-02-10T14:20:00Z',
     project: mockProjectWithNamespace,
     versions: mockAgentVersions,
+    public: false,
   }),
 ];
 
