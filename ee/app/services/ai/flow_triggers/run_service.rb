@@ -3,13 +3,14 @@
 module Ai
   module FlowTriggers
     class RunService
-      attr_reader :project, :current_user, :resource, :flow_trigger
-
       def initialize(project:, current_user:, resource:, flow_trigger:)
         @project = project
         @current_user = current_user
         @resource = resource
         @flow_trigger = flow_trigger
+        @flow_trigger_user = flow_trigger.user
+
+        link_composite_identity! if can_use_composite_identity?
       end
 
       def execute(params)
@@ -29,9 +30,8 @@ module Ai
 
         workflow = wf_create_result[:workflow]
         params[:flow_id] = workflow.id
-
         note_service = ::Ai::FlowTriggers::CreateNoteService.new(
-          project: project, resource: resource, author: flow_trigger.user, discussion: params[:discussion]
+          project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
         )
 
         note_service.execute(params) do |updated_params|
@@ -40,6 +40,8 @@ module Ai
       end
 
       private
+
+      attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user
 
       def run_workload(params, workflow)
         flow_definition = fetch_flow_definition
@@ -60,7 +62,7 @@ module Ai
 
         result = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
-          current_user: flow_trigger.user,
+          current_user: flow_trigger_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
           ci_variables_included: flow_definition['variables'] || [],
@@ -92,15 +94,14 @@ module Ai
       end
 
       def build_variables(params)
-        serialized_resource =
-          ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
-
+        serialized_resource = ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
         base_variables = {
           AI_FLOW_CONTEXT: serialized_resource,
-          AI_FLOW_INPUT: params[:input],
-          AI_FLOW_EVENT: params[:event].to_s,
           AI_FLOW_DISCUSSION_ID: params[:discussion_id],
-          AI_FLOW_ID: params[:flow_id]
+          AI_FLOW_EVENT: params[:event].to_s,
+          AI_FLOW_GITLAB_TOKEN: composite_identity_token,
+          AI_FLOW_ID: params[:flow_id],
+          AI_FLOW_INPUT: params[:input]
         }
 
         if params.key?(:token)
@@ -125,6 +126,33 @@ module Ai
         args = { create_branch: true }
         args[:source_branch] = resource.source_branch if resource.is_a?(MergeRequest)
         args
+      end
+
+      def composite_identity_token
+        return unless can_use_composite_identity?
+
+        composite_oauth_token_result = ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService.new(
+          current_user: current_user,
+          organization: project.organization,
+          scopes: ['api'],
+          service_account: flow_trigger_user
+        ).execute
+        return if composite_oauth_token_result.error?
+
+        composite_oauth_token_result[:oauth_access_token].plaintext_token
+      end
+
+      def can_use_composite_identity?
+        return false unless current_user
+        return false unless Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
+        return false if Ai::Setting.instance.duo_workflow_oauth_application.nil?
+
+        flow_trigger_user.composite_identity_enforced?
+      end
+
+      def link_composite_identity!
+        identity = ::Gitlab::Auth::Identity.fabricate(flow_trigger_user)
+        identity.link!(current_user) if identity&.composite?
       end
     end
   end

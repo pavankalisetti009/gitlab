@@ -4,10 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundations do
   let_it_be_with_refind(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:service_account) { create(:service_account, maintainer_of: project) }
 
   let_it_be(:current_user) { create(:user, maintainer_of: project) }
   let_it_be(:resource) { create(:issue, project: project) }
-  let_it_be(:service_account) { create(:service_account, maintainer_of: project) }
   let_it_be(:existing_note) { create(:note, project: project, noteable: resource) }
 
   let(:params) { { input: 'test input', event: 'mention', discussion: existing_note.discussion } }
@@ -75,6 +75,102 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       .to receive(:resource)
       .and_return(authorizer_double)
     allow(authorizer_double).to receive(:allowed?).and_return(true)
+  end
+
+  describe '#initialize' do
+    context 'when composite identity can be used' do
+      let_it_be(:oauth_app) { create(:oauth_application, name: 'Duo Workflow', scopes: %w[api read_user]) }
+
+      before do
+        service_account.update!(composite_identity_enforced: true)
+        ::Ai::Setting.instance.update!(
+          duo_workflow_service_account_user: service_account,
+          duo_workflow_oauth_application: oauth_app
+        )
+        stub_feature_flags(duo_workflow_use_composite_identity: true)
+      end
+
+      it 'calls link_composite_identity!' do
+        identity_double = instance_double(::Gitlab::Auth::Identity)
+        allow(::Gitlab::Auth::Identity).to receive(:fabricate).with(service_account).and_return(identity_double)
+        allow(identity_double).to receive(:composite?).and_return(true)
+        expect(identity_double).to receive(:link!).with(current_user)
+
+        service
+      end
+
+      context 'when identity is not composite' do
+        it 'does not call link! on identity' do
+          identity_double = instance_double(::Gitlab::Auth::Identity)
+          allow(::Gitlab::Auth::Identity).to receive(:fabricate).with(service_account).and_return(identity_double)
+          allow(identity_double).to receive(:composite?).and_return(false)
+          expect(identity_double).not_to receive(:link!)
+          service
+        end
+      end
+
+      context 'when identity is nil' do
+        it 'does not raise an error' do
+          allow(::Gitlab::Auth::Identity).to receive(:fabricate).with(service_account).and_return(nil)
+
+          expect { service }.not_to raise_error
+        end
+      end
+    end
+
+    context 'when composite identity cannot be used' do
+      it 'does not call link_composite_identity!' do
+        expect(::Gitlab::Auth::Identity).not_to receive(:fabricate)
+
+        service
+      end
+
+      context 'when current_user is nil' do
+        let(:current_user) { nil }
+
+        it 'does not call fabricate on Gitlab::Auth::Identity' do
+          expect(::Gitlab::Auth::Identity).not_to receive(:fabricate)
+
+          service
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_workflow_use_composite_identity: false)
+        end
+
+        it 'does not call fabricate on Gitlab::Auth::Identity' do
+          expect(::Gitlab::Auth::Identity).not_to receive(:fabricate)
+
+          service
+        end
+      end
+
+      context 'when oauth application is not configured' do
+        before do
+          ::Ai::Setting.instance.update!(duo_workflow_oauth_application: nil)
+        end
+
+        it 'does not call fabricate on Gitlab::Auth::Identity' do
+          expect(::Gitlab::Auth::Identity).not_to receive(:fabricate)
+
+          service
+        end
+      end
+
+      context 'when service account does not have composite identity enforced' do
+        before do
+          service_account.update!(composite_identity_enforced: false)
+        end
+
+        it 'does not call fabricate on Gitlab::Auth::Identity' do
+          expect(::Gitlab::Auth::Identity).not_to receive(:fabricate)
+
+          service
+        end
+      end
+    end
   end
 
   describe '#execute' do
@@ -333,6 +429,103 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
 
         response = service.execute(params)
         expect(response).to be_success
+      end
+    end
+
+    context 'when duo_workflow_oauth_application is set in Ai::Setting' do
+      let_it_be(:oauth_app) { create(:oauth_application, name: 'Duo Workflow', scopes: %w[api read_user]) }
+
+      before do
+        ::Ai::Setting.instance.update!(
+          duo_workflow_service_account_user: service_account, duo_workflow_oauth_application: oauth_app
+        )
+      end
+
+      context 'when composite identity is not enforced for trigger user' do
+        it 'does not create variable AI_FLOW_GITLAB_TOKEN' do
+          expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+            workload_definition = kwargs[:workload_definition]
+            variables = workload_definition.variables
+
+            expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+            expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+            expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+            expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+            expect(variables[:AI_FLOW_ID]).to be_present
+            expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_nil
+            original_method.call(**kwargs)
+          end
+
+          initial_oauth_access_tokens_count = OauthAccessToken.count
+
+          response = service.execute(params)
+
+          expect(response).to be_success
+          expect(OauthAccessToken.count).to eq initial_oauth_access_tokens_count
+        end
+      end
+
+      context 'when composite identity is enforced for service account' do
+        before do
+          service_account.update!(composite_identity_enforced: true)
+        end
+
+        context 'when FF duo_workflow_use_composite_identity is disabled' do
+          before do
+            stub_feature_flags(duo_workflow_use_composite_identity: false)
+          end
+
+          it 'does not create variable AI_FLOW_GITLAB_TOKEN' do
+            expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+              workload_definition = kwargs[:workload_definition]
+              variables = workload_definition.variables
+
+              expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+              expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+              expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+              expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+              expect(variables[:AI_FLOW_ID]).to be_present
+              expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_nil
+              original_method.call(**kwargs)
+            end
+
+            initial_oauth_access_tokens_count = OauthAccessToken.count
+
+            response = service.execute(params)
+
+            expect(response).to be_success
+            expect(OauthAccessToken.count).to eq initial_oauth_access_tokens_count
+          end
+        end
+
+        it 'creates variable AI_FLOW_GITLAB_TOKEN along with other AI flow variables' do
+          expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+            workload_definition = kwargs[:workload_definition]
+            variables = workload_definition.variables
+
+            expect(variables[:AI_FLOW_CONTEXT]).to match(/id..#{resource.id}/)
+            expect(variables[:AI_FLOW_INPUT]).to eq('test input')
+            expect(variables[:AI_FLOW_EVENT]).to eq('mention')
+            expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+            expect(variables[:AI_FLOW_ID]).to be_present
+            expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_present
+            original_method.call(**kwargs)
+          end
+
+          initial_oauth_access_tokens_count = OauthAccessToken.count
+
+          response = service.execute(params)
+
+          expect(response).to be_success
+          expect(OauthAccessToken.count).to eq initial_oauth_access_tokens_count + 1
+          oauth_access_token = OauthAccessToken.last
+          expect(oauth_access_token.resource_owner).to eq(service_account)
+          expect(oauth_access_token.application).to eq(oauth_app)
+          duration = Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService::TOKEN_EXPIRES_IN
+          expect(oauth_access_token.expires_in).to eq(duration)
+          expect(oauth_access_token.scopes).to contain_exactly('api', "user:#{current_user.id}")
+          expect(oauth_access_token.organization).to eq(project.organization)
+        end
       end
     end
 

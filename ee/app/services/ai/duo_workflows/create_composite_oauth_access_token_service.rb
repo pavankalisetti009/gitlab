@@ -8,17 +8,19 @@ module Ai
 
       CompositeIdentityEnforcedError = Class.new(StandardError)
       IncompleteOnboardingError = Class.new(StandardError)
+      TOKEN_EXPIRES_IN = 1.hour
 
-      def initialize(current_user:, organization:)
+      def initialize(current_user:, organization:, scopes: nil, service_account: nil)
         @current_user = current_user
         @organization = organization
+        @service_account = service_account || ai_settings.duo_workflow_service_account_user
+        @scopes = (scopes || ::Gitlab::Auth::AI_WORKFLOW_SCOPES) + dynamic_user_scope
       end
 
       def execute
-        unless Feature.enabled?(
-          :duo_workflow_use_composite_identity, @current_user)
-          return ServiceResponse.error(message: 'Can not generate token to execute workflow in CI',
-            reason: :feature_unavailable)
+        unless Feature.enabled?(:duo_workflow_use_composite_identity, @current_user)
+          msg = 'Can not generate token to execute workflow in CI'
+          return ServiceResponse.error(message: msg, reason: :feature_unavailable)
         end
 
         ensure_onboarding_complete!
@@ -31,10 +33,10 @@ module Ai
       def create_oauth_access_token
         OauthAccessToken.create!(
           application_id: ai_settings.duo_workflow_oauth_application_id,
-          expires_in: 1.hour,
+          expires_in: TOKEN_EXPIRES_IN,
           resource_owner_id: ai_settings.duo_workflow_service_account_user_id,
           organization: @organization,
-          scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + dynamic_user_scope
+          scopes: @scopes
         )
       end
 
