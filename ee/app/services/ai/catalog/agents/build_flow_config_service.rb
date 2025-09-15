@@ -10,6 +10,7 @@ module Ai
 
         def initialize(project:, current_user:, params:)
           @agent_version = params[:agent_version]
+          @agent = agent_version&.item
           @flow_config_type = params[:flow_config_type]
           super
         end
@@ -35,8 +36,6 @@ module Ai
 
         def validate
           return error('Agent version is required') unless agent_version
-
-          @agent = agent_version.item
 
           ServiceResponse.success
         end
