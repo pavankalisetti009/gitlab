@@ -7,6 +7,13 @@ module Ai
 
       FLOW_CONFIG_VERSION = 'experimental'
       WORKFLOW_ENVIRONMENT = 'web'
+      AGENT_PRIVILEGES = [
+        DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+        DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
+        DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+        DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
+        DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+      ].freeze
 
       def initialize(current_user, params)
         @current_user = current_user
@@ -56,7 +63,9 @@ module Ai
         workflow_params = {
           goal: goal,
           workflow_definition: determine_workflow_definition,
-          environment: WORKFLOW_ENVIRONMENT
+          environment: WORKFLOW_ENVIRONMENT,
+          agent_privileges: AGENT_PRIVILEGES,
+          pre_approved_agent_privileges: AGENT_PRIVILEGES
         }
 
         ::Ai::DuoWorkflows::CreateWorkflowService.new(

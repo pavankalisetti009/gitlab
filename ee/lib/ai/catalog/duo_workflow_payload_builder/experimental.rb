@@ -7,7 +7,10 @@ module Ai
         FLOW_VERSION = 'experimental'
         FLOW_ENVIRONMENT = 'remote'
         AGENT_COMPONENT_TYPE = 'AgentComponent'
-        DEFAULT_INPUTS = [{ 'from' => 'context:goal', 'as' => 'goal' }].freeze
+        DEFAULT_INPUTS = [
+          { 'from' => 'context:goal', 'as' => 'goal' },
+          { 'from' => 'context:project_id', 'as' => 'project_id' }
+        ].freeze
         LLM_MODEL_CLASS_PROVIDER = 'anthropic'
         LLM_MODEL_CLASS_NAME = 'claude-opus-4-20250514'
         MAX_TOKEN_SIZE = 8_192

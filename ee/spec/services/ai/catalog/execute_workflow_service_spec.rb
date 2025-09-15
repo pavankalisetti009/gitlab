@@ -154,17 +154,19 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     context 'when workflow creation succeeds' do
       it_behaves_like 'starts workflow execution'
 
-      it 'creates the Ai::DuoWorkflows::Workflow' do
+      it 'creates a Ai::DuoWorkflows::Workflow correctly' do
         expect do
           service.execute
         end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
 
-        created_workflow = Ai::DuoWorkflows::Workflow.last
+        workflow_session = Ai::DuoWorkflows::Workflow.last
 
-        expect(created_workflow).to have_attributes(
+        expect(workflow_session).to have_attributes(
           goal: goal,
           environment: 'web',
-          workflow_definition: 'ai_catalog_agent'
+          workflow_definition: 'ai_catalog_agent',
+          agent_privileges: described_class::AGENT_PRIVILEGES,
+          pre_approved_agent_privileges: described_class::AGENT_PRIVILEGES
         )
       end
 
