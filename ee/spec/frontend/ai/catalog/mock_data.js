@@ -452,7 +452,7 @@ export const mockBaseItemConsumer = {
 
 export const mockConfiguredAgentsResponse = {
   data: {
-    aiCatalogConfiguredItems: {
+    aiCatalogItemConsumers: {
       nodes: [
         {
           ...mockBaseItemConsumer,
@@ -467,7 +467,7 @@ export const mockConfiguredAgentsResponse = {
 
 export const mockConfiguredFlowsResponse = {
   data: {
-    aiCatalogConfiguredItems: {
+    aiCatalogItemConsumers: {
       nodes: [
         {
           ...mockBaseItemConsumer,
@@ -480,9 +480,9 @@ export const mockConfiguredFlowsResponse = {
   },
 };
 
-export const mockConfiguredItemsEmptyResponse = {
+export const mockItemConsumersEmptyResponse = {
   data: {
-    aiCatalogConfiguredItems: {
+    aiCatalogItemConsumers: {
       nodes: [],
       pageInfo: {
         hasNextPage: false,

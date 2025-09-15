@@ -69,8 +69,8 @@ module EE
             required: false,
             description: 'Runner ID to retrieve data for.'
         end
-        field :ai_catalog_configured_items,
-          resolver: ::Resolvers::Ai::Catalog::ConfiguredItemsResolver,
+        field :ai_catalog_item_consumers,
+          resolver: ::Resolvers::Ai::Catalog::ItemConsumersResolver,
           null: false,
           description: 'AI Catalog items configured for use.',
           experiment: { milestone: '18.2' }
