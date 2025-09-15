@@ -1464,6 +1464,15 @@ describe('Duo Agentic Chat', () => {
             JSON.stringify(selectedModel),
           );
         });
+
+        it('starts a new chat', async () => {
+          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
+
+          await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
+
+          expect(onNewChatSpy).toHaveBeenCalledWith(null, true);
+        });
       });
     });
 
