@@ -150,6 +150,7 @@ export default {
         :full-path="fullPath"
         show-usage-section
         show-not-in-use-section
+        @deleted="handleLifecycleUpdate"
       >
         <template #detail-footer>
           <gl-button @click="openStatusModal(lifecycle.id)">{{
