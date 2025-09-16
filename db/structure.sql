@@ -10935,6 +10935,19 @@ CREATE SEQUENCE audit_events_streaming_instance_namespace_filters_id_seq
 
 ALTER SEQUENCE audit_events_streaming_instance_namespace_filters_id_seq OWNED BY audit_events_streaming_instance_namespace_filters.id;
 
+CREATE TABLE authentication_event_archived_records (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    user_id bigint,
+    result smallint NOT NULL,
+    ip_address inet,
+    provider text NOT NULL,
+    user_name text NOT NULL,
+    archived_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT check_0a55f02112 CHECK ((char_length(provider) <= 64)),
+    CONSTRAINT check_3b5f782c5d CHECK ((char_length(user_name) <= 255))
+);
+
 CREATE TABLE authentication_events (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -30725,6 +30738,9 @@ ALTER TABLE ONLY audit_events_streaming_instance_event_type_filters
 
 ALTER TABLE ONLY audit_events_streaming_instance_namespace_filters
     ADD CONSTRAINT audit_events_streaming_instance_namespace_filters_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY authentication_event_archived_records
+    ADD CONSTRAINT authentication_event_archived_records_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY authentication_events
     ADD CONSTRAINT authentication_events_pkey PRIMARY KEY (id);
