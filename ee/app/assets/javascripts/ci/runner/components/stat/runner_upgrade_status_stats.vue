@@ -1,7 +1,7 @@
 <script>
 import { GlPopover } from '@gitlab/ui';
 import RunnerSingleStat from '~/ci/runner/components/stat/runner_single_stat.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import { UPGRADE_STATUS_AVAILABLE, UPGRADE_STATUS_RECOMMENDED } from '../../constants';
 
 export default {
@@ -9,7 +9,7 @@ export default {
     GlPopover,
     RunnerSingleStat,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   props: {
     scope: {
       type: String,
@@ -24,8 +24,8 @@ export default {
   computed: {
     shouldShowUpgradeStatus() {
       return (
-        this.glFeatures?.runnerUpgradeManagement ||
-        this.glFeatures?.runnerUpgradeManagementForNamespace
+        this.glLicensedFeatures?.runnerUpgradeManagement ||
+        this.glLicensedFeatures?.runnerUpgradeManagementForNamespace
       );
     },
   },

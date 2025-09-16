@@ -95,7 +95,7 @@ describe('AdminRunnersApp', () => {
   describe('upgrade icons', () => {
     beforeEach(async () => {
       await createComponent({
-        provide: { glFeatures: { runnerUpgradeManagement: true } },
+        provide: { glLicensedFeatures: { runnerUpgradeManagement: true } },
       });
     });
 
