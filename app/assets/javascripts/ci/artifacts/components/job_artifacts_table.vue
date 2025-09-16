@@ -169,9 +169,6 @@ export default {
 
       return this.$options.fields;
     },
-    anyArtifactsSelected() {
-      return Boolean(this.selectedArtifacts.length);
-    },
     isSelectedArtifactsLimitReached() {
       return this.selectedArtifacts.length >= this.jobArtifactsCountLimit;
     },
