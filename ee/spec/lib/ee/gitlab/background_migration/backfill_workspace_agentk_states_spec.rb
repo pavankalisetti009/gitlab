@@ -177,6 +177,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillWorkspaceAgentkStates, featu
 
       expect(workspace_1_agentk_state_post_migration.desired_config).to eq(expected_desired_config_workspace_1)
       expect(workspace_2_agentk_state_post_migration.desired_config).to eq(expected_desired_config_workspace_2)
+
+      desired_config_1 = Gitlab::BackgroundMigration::RemoteDevelopment::WorkspaceOperations::BmDesiredConfig.new(
+        desired_config_array: workspace_1_agentk_state_post_migration.desired_config)
+      desired_config_2 = Gitlab::BackgroundMigration::RemoteDevelopment::WorkspaceOperations::BmDesiredConfig.new(
+        desired_config_array: workspace_2_agentk_state_post_migration.desired_config)
+      expect(desired_config_1).to be_valid
+      expect(desired_config_2).to be_valid
     end
   end
 
