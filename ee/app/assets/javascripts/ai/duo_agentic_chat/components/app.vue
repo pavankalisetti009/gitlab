@@ -11,7 +11,7 @@ import { getCookie } from '~/lib/utils/common_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
-import { parseGid, convertToGraphQLId } from '~/graphql_shared/utils';
+import { parseGid, convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import {
   GENIE_CHAT_RESET_MESSAGE,
@@ -140,15 +140,8 @@ export default {
 
         const models = selectableModels.map(({ ref, name }) => ({
           text: name,
-          value: ref,
+          value: ref === defaultModel?.ref ? GITLAB_DEFAULT_MODEL : ref,
         }));
-
-        if (defaultModel) {
-          models.push({
-            text: `GitLab default model (${defaultModel.name})`,
-            value: GITLAB_DEFAULT_MODEL,
-          });
-        }
 
         return models;
       },
@@ -234,6 +227,24 @@ export default {
       set(val) {
         this.selectedModel = val;
       },
+    },
+    websocketUrl() {
+      const baseUrl = '/api/v4/ai/duo_workflows/ws';
+      const params = new URLSearchParams();
+
+      if (this.rootNamespaceId) {
+        params.append('root_namespace_id', getIdFromGraphQLId(this.rootNamespaceId));
+      }
+
+      if (
+        this.rootNamespaceId &&
+        this.userModelSelectionEnabled &&
+        this.currentModel.value !== this.defaultModel.value
+      ) {
+        params.append('user_selected_model_identifier', this.currentModel.value);
+      }
+
+      return params.toString() ? `${baseUrl}?${params}` : baseUrl;
     },
     predefinedPrompts() {
       return this.contextPresets.questions || [];
@@ -376,7 +387,7 @@ export default {
         startRequest.startRequest.flowConfigSchemaVersion = 'experimental';
       }
 
-      this.socketManager = createWebSocket('/api/v4/ai/duo_workflows/ws', {
+      this.socketManager = createWebSocket(this.websocketUrl, {
         onMessage: this.onMessageReceived,
         onError: () => {
           // eslint-disable-next-line @gitlab/require-i18n-strings

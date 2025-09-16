@@ -26,6 +26,7 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
     expect(rendered).to have_css("#js-duo-agentic-chat-app[data-project-id='#{project.to_global_id}']")
     expect(rendered).to have_css("#js-duo-agentic-chat-app[data-resource-id='test_resource_id']")
     expect(rendered).to have_css("#js-duo-agentic-chat-app[data-metadata='#{expected_metadata}']")
+    expect(rendered).to have_css("#js-duo-agentic-chat-app[data-root-namespace-id='test_root_namespace_id']")
   end
 
   context 'when the page is in group scope' do

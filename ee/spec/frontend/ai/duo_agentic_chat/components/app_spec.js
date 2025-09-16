@@ -1389,6 +1389,100 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
+  describe('.websocketUrl', () => {
+    const mockRootNamespaceId = 'gid://gitlab/Group/123';
+
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+    });
+
+    describe('when rootNamespaceId does not exist', () => {
+      it('does not append any query params to the base URL', () => {
+        createComponent({
+          propsData: {
+            rootNamespaceId: null,
+            userModelSelectionEnabled: true,
+          },
+        });
+
+        expect(wrapper.vm.websocketUrl).toBe('/api/v4/ai/duo_workflows/ws');
+      });
+
+      describe('when rootNamespaceId exists', () => {
+        it('appends root_namespace_id query param to the base URL', () => {
+          createComponent({ propsData: { rootNamespaceId: mockRootNamespaceId } });
+
+          expect(wrapper.vm.websocketUrl).toBe('/api/v4/ai/duo_workflows/ws?root_namespace_id=123');
+        });
+
+        describe('when userModelSelectionEnabled is true', () => {
+          useLocalStorageSpy();
+
+          describe('when selected model is not the default', () => {
+            it('appends user_selected_model_identifier query param to the base URL', async () => {
+              const selectedModel = MOCK_MODEL_LIST_ITEMS[1];
+
+              localStorage.setItem(
+                DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
+                JSON.stringify(selectedModel),
+              );
+
+              createComponent({
+                propsData: {
+                  rootNamespaceId: mockRootNamespaceId,
+                  userModelSelectionEnabled: true,
+                },
+              });
+
+              await waitForPromises();
+
+              expect(wrapper.vm.websocketUrl).toBe(
+                `/api/v4/ai/duo_workflows/ws?root_namespace_id=123&user_selected_model_identifier=${selectedModel.value}`,
+              );
+            });
+          });
+
+          describe('when selected model is the default', () => {
+            it('does not append user_selected_model_identifier query param to the base URL', async () => {
+              localStorage.setItem(
+                DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
+                JSON.stringify(MOCK_GITLAB_DEFAULT_MODEL_ITEM),
+              );
+
+              createComponent({
+                propsData: {
+                  rootNamespaceId: mockRootNamespaceId,
+                  userModelSelectionEnabled: true,
+                },
+              });
+
+              await waitForPromises();
+
+              expect(wrapper.vm.websocketUrl).toBe(
+                `/api/v4/ai/duo_workflows/ws?root_namespace_id=123`,
+              );
+            });
+          });
+        });
+
+        describe('when userModelSelectionEnabled is false', () => {
+          it('does not append user_selected_model_identifier query param to the base URL', () => {
+            createComponent({
+              propsData: {
+                rootNamespaceId: mockRootNamespaceId,
+                userModelSelectionEnabled: false,
+              },
+            });
+
+            expect(wrapper.vm.websocketUrl).toBe(
+              `/api/v4/ai/duo_workflows/ws?root_namespace_id=123`,
+            );
+          });
+        });
+      });
+    });
+  });
+
   describe('Agentic chat user model selection', () => {
     useLocalStorageSpy();
 
@@ -1454,7 +1548,7 @@ describe('Duo Agentic Chat', () => {
           });
           await waitForPromises();
 
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
+          const selectedModel = MOCK_MODEL_LIST_ITEMS[1];
 
           await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
 
