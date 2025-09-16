@@ -159,9 +159,13 @@ export default {
 <template>
   <div class="gl-border gl-flex gl-flex-col gl-justify-between">
     <div class="gl-p-4">
-      <label for="agent-select-listbox" class="gl-mt-3 gl-font-bold">
+      <label
+        for="agent-select-listbox"
+        class="gl-mt-3 gl-font-bold"
+        data-testid="agent-select-listbox-label"
+      >
         {{ s__('AICatalog| Agent') }}
-        <div class="gl-mt-3 gl-font-normal gl-text-subtle">
+        <div v-if="isFlowPublic" class="gl-mt-3 gl-font-normal gl-text-subtle">
           {{ s__('AICatalog|Only public agents can be used in public flows.') }}
         </div>
       </label>
