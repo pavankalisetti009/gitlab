@@ -31,14 +31,10 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
         end
       end
 
-      it 'invites a user and completes the invite action and updates the completion status' do
+      it 'invites a user and completes the invite action' do
         sign_in(user)
 
         visit namespace_project_get_started_path(namespace, project)
-
-        within_testid('static-items-section') do
-          expect(page).to have_link('Get started 0%')
-        end
 
         find_by_testid('section-header-1').click
 
@@ -57,37 +53,7 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
         within_testid('get-started-page') do
           expect(page).to have_content('Your team is growing')
         end
-
-        within_testid('get-started-sections') do
-          expect(find_by_testid('progress-bar')).to have_selector('[aria-valuenow="8"]')
-          expect(page).not_to have_link('Invite your colleagues')
-        end
-
-        within_testid('static-items-section') do
-          expect(page).to have_link('Get started 8%')
-        end
       end
-    end
-
-    context 'with completed links' do
-      before do
-        create(:onboarding_progress, namespace: namespace, code_added_at: Date.yesterday)
-      end
-
-      it 'renders correct completed sections' do
-        sign_in(user)
-
-        visit namespace_project_get_started_path(namespace, project)
-
-        within_testid('get-started-sections') do
-          expect_completed_section("Add code to this project's repository")
-        end
-      end
-    end
-
-    def expect_completed_section(text)
-      expect(page).to have_no_link(text)
-      expect(page).to have_content(text)
     end
   end
 end

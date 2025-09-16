@@ -41,31 +41,12 @@ RSpec.describe Sidebars::Projects::Menus::GetStartedMenu, feature_category: :onb
     end
   end
 
-  describe '#has_pill?' do
-    it 'returns true' do
-      expect(menu.has_pill?).to be true
-    end
-  end
-
-  describe '#pill_count' do
-    it 'returns pill count' do
-      expect_next_instance_of(::Onboarding::Completion) do |onboarding|
-        expect(onboarding).to receive(:get_started_percentage).and_return(20)
-      end
-
-      expect(menu.pill_count).to eq '20%'
-    end
-  end
-
   it_behaves_like 'serializable as super_sidebar_menu_args' do
     let(:extra_attrs) do
       {
         item_id: :get_started,
         active_routes: { controller: :get_started },
         sprite_icon: 'bulb',
-        pill_count: menu.pill_count,
-        pill_count_dynamic: true,
-        has_pill: true,
         super_sidebar_parent: ::Sidebars::StaticMenu
       }
     end

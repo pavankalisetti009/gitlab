@@ -5,7 +5,6 @@ import CommandLineModal from 'ee/pages/projects/get_started/components/command_l
 import UploadBlobModal from '~/repository/components/upload_blob_modal.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
-import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from 'ee/pages/projects/get_started/constants';
 import { mockTracking } from 'helpers/tracking_helper';
 
 describe('AddCodeActionItem', () => {
@@ -38,7 +37,6 @@ describe('AddCodeActionItem', () => {
     });
   };
 
-  const findActionIcon = () => wrapper.findByTestId('action-icon');
   const findActionTitle = () => wrapper.find('span');
   const findCommandLineButton = () => wrapper.findByTestId('command-line-button');
   const findUploadFilesButton = () => wrapper.findByTestId('upload-files-button');
@@ -54,44 +52,16 @@ describe('AddCodeActionItem', () => {
       expect(findActionTitle().text()).toBe('Add Code');
     });
 
-    it('renders action title with line-through when completed', () => {
-      createComponent({ completed: true });
-
-      expect(findActionTitle().classes()).toContain('gl-line-through');
-    });
-
-    it('renders the action list when not completed', () => {
-      createComponent({ completed: false });
+    it('renders the action list', () => {
+      createComponent();
 
       expect(findActionsList().exists()).toBe(true);
-    });
-
-    it('does not render the action list when completed', () => {
-      createComponent({ completed: true });
-
-      expect(findActionsList().exists()).toBe(false);
-    });
-  });
-
-  describe('icon display', () => {
-    it('displays completed icon when action is completed', () => {
-      createComponent({ completed: true });
-
-      expect(findActionIcon().exists()).toBe(true);
-      expect(findActionIcon().props('name')).toBe(ICON_TYPE_COMPLETED);
-    });
-
-    it('displays empty icon when action is not completed', () => {
-      createComponent({ completed: false });
-
-      expect(findActionIcon().exists()).toBe(true);
-      expect(findActionIcon().props('name')).toBe(ICON_TYPE_EMPTY);
     });
   });
 
   describe('action buttons and links', () => {
     beforeEach(() => {
-      createComponent({ completed: false });
+      createComponent();
     });
 
     it('renders command line instructions button', () => {

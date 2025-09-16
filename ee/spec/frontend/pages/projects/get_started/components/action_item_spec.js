@@ -5,7 +5,6 @@ import eventHub from '~/invite_members/event_hub';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
-import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from 'ee/pages/projects/get_started/constants';
 
 describe('ActionItem', () => {
   let wrapper;
@@ -36,7 +35,6 @@ describe('ActionItem', () => {
 
   const disabledMessage = () => wrapper.findByTestId('action-disabled');
   const actionLink = () => wrapper.findComponent(GlLink);
-  const actionIcon = () => wrapper.findByTestId('action-icon');
   const disabledIcon = () => wrapper.findByTestId('disabled-icon');
 
   describe('rendering', () => {
@@ -46,18 +44,11 @@ describe('ActionItem', () => {
       expect(wrapper.text()).toContain('Test Action');
     });
 
-    it('renders a link when action is not completed and not disabled', () => {
-      createComponent({ completed: false, enabled: true });
+    it('renders a link when action is not disabled', () => {
+      createComponent({ enabled: true });
 
       expect(actionLink().exists()).toBe(true);
       expect(actionLink().attributes('href')).toBe('https://example.com');
-    });
-
-    it('renders a line-through text when action is completed', () => {
-      createComponent({ completed: true });
-
-      expect(wrapper.find('.gl-line-through').exists()).toBe(true);
-      expect(actionLink().exists()).toBe(false);
     });
 
     it('renders a disabled span with tooltip when action is disabled', () => {
@@ -66,22 +57,6 @@ describe('ActionItem', () => {
       expect(disabledMessage().exists()).toBe(true);
       expect(actionLink().exists()).toBe(false);
       expect(disabledIcon().props('name')).toBe('lock');
-    });
-  });
-
-  describe('icon display', () => {
-    it('displays complete icon when action is completed', () => {
-      createComponent({ completed: true });
-
-      expect(actionIcon().exists()).toBe(true);
-      expect(actionIcon().props('name')).toBe(ICON_TYPE_COMPLETED);
-    });
-
-    it('displays empty icon when action is not completed', () => {
-      createComponent({ completed: false });
-
-      expect(actionIcon().exists()).toBe(true);
-      expect(actionIcon().props('name')).toBe(ICON_TYPE_EMPTY);
     });
   });
 
