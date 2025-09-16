@@ -123,7 +123,7 @@ const MOCK_USER_WORKFLOWS_RESPONSE = {
 
 const MOCK_CONFIGURED_AGENTS_RESPONSE = {
   data: {
-    aiCatalogItemConsumers: {
+    aiCatalogConfiguredItems: {
       nodes: [
         {
           id: 'Configured Item 5',
@@ -1509,7 +1509,7 @@ describe('Duo Agentic Chat', () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
       const agentResponse =
-        MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogItemConsumers.nodes[0].item;
+        MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogConfiguredItems.nodes[0].item;
       agent = { ...agentResponse, text: agentResponse.name };
       flowConfig = 'YAML string';
       ApolloUtils.getAgentFlowConfig.mockResolvedValue(flowConfig);

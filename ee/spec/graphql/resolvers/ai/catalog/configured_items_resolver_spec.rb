@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Ai::Catalog::ItemConsumersResolver, feature_category: :workflow_catalog do
+RSpec.describe Resolvers::Ai::Catalog::ConfiguredItemsResolver, feature_category: :workflow_catalog do
   subject(:resolver) { described_class }
 
   it 'has expected arguments' do

@@ -10,7 +10,7 @@ import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
-import aiCatalogItemConsumersQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_item_consumers.query.graphql';
+import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -18,7 +18,7 @@ import {
   mockBaseAgent,
   mockBaseItemConsumer,
   mockConfiguredAgentsResponse,
-  mockItemConsumersEmptyResponse,
+  mockConfiguredItemsEmptyResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
@@ -49,7 +49,7 @@ describe('AiAgents', () => {
 
   const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
-      [aiCatalogItemConsumersQuery, mockConfiguredAgentsQueryHandler],
+      [aiCatalogConfiguredItemsQuery, mockConfiguredAgentsQueryHandler],
       [aiCatalogAgentQuery, mockAgentQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
@@ -98,7 +98,7 @@ describe('AiAgents', () => {
 
     describe('when there are no agents', () => {
       beforeEach(async () => {
-        mockConfiguredAgentsQueryHandler.mockResolvedValueOnce(mockItemConsumersEmptyResponse);
+        mockConfiguredAgentsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
 
         await waitForPromises();
       });

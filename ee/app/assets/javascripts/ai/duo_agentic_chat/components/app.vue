@@ -165,7 +165,7 @@ export default {
         };
       },
       update(data) {
-        return (data?.aiCatalogItemConsumers.nodes || []).map((agent) => agent.item);
+        return (data?.aiCatalogConfiguredItems.nodes || []).map((agent) => agent.item);
       },
       error(err) {
         this.onError(err);
