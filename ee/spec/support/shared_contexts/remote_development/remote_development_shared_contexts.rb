@@ -420,6 +420,14 @@ RSpec.shared_context 'with remote development shared fixtures' do
         common_annotations.merge({ "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" })
       ).to_h
 
+    common_annotations_for_partial_reconciliation = Gitlab::Utils.deep_sort_hashes(
+      common_annotations.merge({ "workspaces.gitlab.com/include-in-partial-reconciliation" => "true" })
+    )
+
+    workspace_inventory_annotations_for_partial_reconciliation = Gitlab::Utils.deep_sort_hashes(
+      workspace_inventory_annotations.merge({ "workspaces.gitlab.com/include-in-partial-reconciliation" => "true" })
+    )
+
     labels = agent_labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
     labels["workspaces.gitlab.com/id"] = workspace.id.to_s if shared_namespace.present?
     labels = Gitlab::Utils.deep_sort_hashes(labels).to_h
@@ -429,18 +437,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
         common_annotations.merge({ "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory" })
       ).to_h
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     workspace_inventory_config_map = workspace_inventory_config_map(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: common_annotations
+      annotations: common_annotations_for_partial_reconciliation
     )
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     workspace_deployment = workspace_deployment(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_inventory_annotations,
+      annotations: workspace_inventory_annotations_for_partial_reconciliation,
       spec_replicas: spec_replicas,
       default_resources_per_workspace_container: default_resources_per_workspace_container,
       allow_privilege_escalation: allow_privilege_escalation,
@@ -451,41 +461,46 @@ RSpec.shared_context 'with remote development shared fixtures' do
       legacy_poststart_container_command: legacy_poststart_container_command
     )
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     workspace_service = workspace_service(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_inventory_annotations
+      annotations: workspace_inventory_annotations_for_partial_reconciliation
     )
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     workspace_data_pvc = pvc(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_inventory_annotations
+      annotations: workspace_inventory_annotations_for_partial_reconciliation
     )
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     workspace_service_account = workspace_service_account(
       name: workspace.name,
       namespace: workspace.namespace,
       image_pull_secrets: image_pull_secrets,
       labels: labels,
-      annotations: workspace_inventory_annotations
+      annotations: workspace_inventory_annotations_for_partial_reconciliation
     )
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     workspace_network_policy = workspace_network_policy(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_inventory_annotations,
+      annotations: workspace_inventory_annotations_for_partial_reconciliation,
       egress_ip_rules: egress_ip_rules
     )
 
+    # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
     scripts_configmap = scripts_configmap(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_inventory_annotations,
+      annotations: workspace_inventory_annotations_for_partial_reconciliation,
       legacy_poststart_container_command: legacy_poststart_container_command,
       gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled,
       user_defined_commands: user_defined_commands

@@ -25,19 +25,16 @@ module RemoteDevelopment
             )
           end
 
-          #  TODO: Enable it on production by the end of the epic https://gitlab.com/groups/gitlab-org/-/epics/17483
-          if Rails.env.test?
-            workspace_agentk_state = WorkspaceAgentkState.create!(
-              workspace: workspace,
-              project: workspace.project,
-              desired_config: desired_config.symbolized_desired_config_array
-            )
+          workspace_agentk_state = WorkspaceAgentkState.create!(
+            workspace: workspace,
+            project: workspace.project,
+            desired_config: desired_config.symbolized_desired_config_array
+          )
 
-            if workspace_agentk_state.errors.present?
-              return Gitlab::Fp::Result.err(
-                WorkspaceAgentkStateCreateFailed.new({ errors: workspace_agentk_state.errors, context: context })
-              )
-            end
+          if workspace_agentk_state.errors.present?
+            return Gitlab::Fp::Result.err(
+              WorkspaceAgentkStateCreateFailed.new({ errors: workspace_agentk_state.errors, context: context })
+            )
           end
 
           Gitlab::Fp::Result.ok(context)

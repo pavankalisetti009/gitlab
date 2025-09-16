@@ -148,18 +148,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         allow(instance).to receive(:validate!).and_raise("Validation failed")
       end
     end
-
-    # TODO: remove this after a successful shadow run. Issue - https://gitlab.com/gitlab-org/gitlab/-/issues/551935
-    allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ConfigToApplyShadowRunHandler)
-      .to receive(:handle)
-      .with(
-        hash_including(
-          workspace: workspace,
-          new_config_to_apply_array: generated_config_to_apply,
-          include_all_resources: expected_include_all_resources,
-          logger: logger
-        )
-      ) { generated_config_to_apply }
   end
 
   context "when update_type is FULL" do
