@@ -53,11 +53,15 @@ RSpec.describe Users::RecordAgentPlatformCalloutService, :aggregate_failures, fe
         end
       end
 
-      it 'returns error response with error message' do
-        result = execute
+      it 'returns error response' do
+        expect(execute).to be_error
+        expect(execute.message).to eq('Failed to request Duo Agent Platform')
+      end
 
-        expect(result).to be_error
-        expect(result.message).to eq('Feature name has already been taken')
+      it 'logs error' do
+        expect(::Gitlab::ErrorTracking).to receive(:track_exception)
+
+        execute
       end
 
       it 'does not increment request count when save fails' do
