@@ -91,29 +91,27 @@ module RemoteDevelopment
             }
           }
 
-          unless clone_depth_option.empty?
-            # Add the clone_unshallow event
-            clone_unshallow_command_id = "gl-clone-unshallow-command"
-            # SECURITY REVIEWED: Shell interpolation using format() with escaped variables
-            # project_cloning_successful_file (system-controlled, escaped), clone_dir (system-controlled, escaped)
-            # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
-            clone_unshallow_script =
-              format(
-                INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
-                project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
-                clone_dir: Shellwords.shellescape(clone_dir)
-              )
+          # Add the clone_unshallow event
+          clone_unshallow_command_id = "gl-clone-unshallow-command"
+          # SECURITY REVIEWED: Shell interpolation using format() with escaped variables
+          # project_cloning_successful_file (system-controlled, escaped), clone_dir (system-controlled, escaped)
+          # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/547719
+          clone_unshallow_script =
+            format(
+              INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
+              project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
+              clone_dir: Shellwords.shellescape(clone_dir)
+            )
 
-            commands << {
-              id: clone_unshallow_command_id,
-              exec: {
-                commandLine: clone_unshallow_script,
-                component: main_component_name,
-                label: INTERNAL_BLOCKING_COMMAND_LABEL,
-                workingDir: WORKSPACE_DATA_VOLUME_PATH
-              }
+          commands << {
+            id: clone_unshallow_command_id,
+            exec: {
+              commandLine: clone_unshallow_script,
+              component: main_component_name,
+              label: INTERNAL_BLOCKING_COMMAND_LABEL,
+              workingDir: WORKSPACE_DATA_VOLUME_PATH
             }
-          end
+          }
 
           # Add the start_sshd event
           start_sshd_command_id = "gl-start-sshd-command"
@@ -162,13 +160,12 @@ module RemoteDevelopment
 
           commands_to_prepend = [
             clone_project_command_id,
+            clone_unshallow_command_id,
             start_sshd_command_id,
             start_vscode_command_id,
             sleep_until_container_is_running_command_id
           ]
 
-          # Insert the unshallow command after the clone command, if the FF is enabled and clone_depth_option is set.
-          commands_to_prepend.insert(1, clone_unshallow_command_id) unless clone_depth_option.empty?
           # Insert the start agentw command at the beginning, if the appropriate values are set.
           commands_to_prepend.insert(0, start_agentw_command_id) if start_agentw?(agent)
 
