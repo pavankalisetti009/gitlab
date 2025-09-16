@@ -10,11 +10,12 @@ import {
   GlModal,
   GlLoadingIcon,
   GlSprintf,
+  GlTooltip,
   GlTooltipDirective,
   GlLink,
 } from '@gitlab/ui';
 import VueDraggable from 'vuedraggable';
-import { s__, __, sprintf, createListFormat } from '~/locale';
+import { __, createListFormat, n__, s__, sprintf } from '~/locale';
 import { validateHexColor } from '~/lib/utils/color_utils';
 import {
   STATUS_CATEGORIES,
@@ -48,6 +49,7 @@ export default {
     GlModal,
     GlLoadingIcon,
     GlSprintf,
+    GlTooltip,
     StatusForm,
     VueDraggable,
     GlLink,
@@ -535,6 +537,16 @@ export default {
         defaultState,
       });
     },
+    getStatusCount(status) {
+      const count =
+        this.lifecycle.statusCounts.find((statusCount) => statusCount.status.id === status.id)
+          ?.count ?? '0';
+
+      return sprintf(n__('%{count} item', '%{count} items', count), { count });
+    },
+    getStatusCountHref(status) {
+      return `${this.groupWorkItemsPath}?status=${status.name}`;
+    },
     closeModal() {
       this.cancelForm();
       this.$emit('close');
@@ -682,7 +694,7 @@ export default {
               >
                 <div
                   v-if="editingStatusId !== status.id"
-                  class="gl-items-flex-start gl-flex gl-gap-2 gl-px-3 gl-py-4"
+                  class="gl-flex gl-items-start gl-gap-2 gl-px-3 gl-py-4"
                 >
                   <gl-icon
                     name="grip"
@@ -714,9 +726,25 @@ export default {
                       {{ status.description }}
                     </div>
                   </div>
+                  <template v-if="workItemStatusMvc2Enabled">
+                    <gl-link
+                      :id="`count-link-${status.id}`"
+                      class="gl-ml-auto gl-mt-1 gl-text-sm"
+                      :href="getStatusCountHref(status)"
+                      data-testid="status-count-link"
+                    >
+                      {{ getStatusCount(status) }}
+                    </gl-link>
+                    <gl-tooltip :target="`count-link-${status.id}`">
+                      <div class="gl-font-bold">{{ s__('WorkItem|View items') }}</div>
+                      <div>
+                        {{ s__('WorkItem|Items from archived projects will not be shown.') }}
+                      </div>
+                    </gl-tooltip>
+                  </template>
                   <gl-disclosure-dropdown
                     :ref="status.name"
-                    class="gl-ml-auto gl-items-start"
+                    :class="{ 'gl-ml-auto': !workItemStatusMvc2Enabled }"
                     text-sr-only
                     :toggle-text="__('More actions')"
                     no-caret

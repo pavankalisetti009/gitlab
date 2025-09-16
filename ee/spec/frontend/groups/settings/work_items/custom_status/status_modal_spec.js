@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import Draggable from 'vuedraggable';
-import { GlModal, GlSprintf, GlDisclosureDropdown, GlLink } from '@gitlab/ui';
+import { GlLink, GlModal, GlSprintf, GlDisclosureDropdown, GlTooltip } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -16,6 +16,7 @@ import {
   mockNamespaceMetadata,
   deleteStatusErrorResponse,
   mockStatusesResponse,
+  statusCounts,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -69,6 +70,23 @@ describe('StatusLifecycleModal', () => {
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts: [
+      {
+        status: { id: 'status-1', __typename: 'WorkItemStatus' },
+        count: null,
+        __typename: 'WorkItemStatusCount',
+      },
+      {
+        status: { id: 'status-2', __typename: 'WorkItemStatus' },
+        count: '1',
+        __typename: 'WorkItemStatusCount',
+      },
+      {
+        status: { id: 'status-3', __typename: 'WorkItemStatus' },
+        count: '999+',
+        __typename: 'WorkItemStatusCount',
+      },
+    ],
     defaultOpenStatus: {
       id: 'status-1',
       name: 'Open',
@@ -120,6 +138,8 @@ describe('StatusLifecycleModal', () => {
   const findIssuesPathLink = () => wrapper.findComponent(GlLink);
   const findCategorySection = (category) => wrapper.findByTestId(`category-${category}`);
   const findStatusBadges = () => wrapper.findAllByTestId('status-badge');
+  const findStatusCountLinks = () => wrapper.findAllByTestId('status-count-link');
+  const findGlTooltip = () => wrapper.findComponent(GlTooltip);
   const findHelpPageLink = () => wrapper.findByTestId('help-page-link');
   const findDefaultStatusBadges = () => wrapper.findAllByTestId('default-status-badge');
   const findStatusForm = () => wrapper.findComponent(StatusForm);
@@ -575,6 +595,7 @@ describe('StatusLifecycleModal', () => {
             __typename: 'WorkItemStatus',
           },
         ],
+        statusCounts,
         __typename: 'WorkItemLifecycle',
       };
 
@@ -766,6 +787,7 @@ describe('StatusLifecycleModal', () => {
             __typename: 'WorkItemStatus',
           },
         ],
+        statusCounts,
         __typename: 'WorkItemLifecycle',
       };
 
@@ -874,6 +896,51 @@ describe('StatusLifecycleModal', () => {
             defaultOpenStatusIndex: 1,
           }),
         });
+      });
+    });
+  });
+
+  describe('status counts', () => {
+    describe('when `workItemStatusMvc2` FF is true', () => {
+      beforeEach(async () => {
+        createComponent({ workItemStatusMvc2Enabled: true });
+        await waitForPromises();
+      });
+
+      it('renders status count links', () => {
+        expect(findStatusCountLinks()).toHaveLength(3);
+        expect(findStatusCountLinks().at(0).text()).toBe('0 items');
+        expect(findStatusCountLinks().at(0).attributes('href')).toBe(
+          '/groups/gitlab-org/-/issues?status=Open',
+        );
+        expect(findStatusCountLinks().at(1).text()).toBe('1 item');
+        expect(findStatusCountLinks().at(1).attributes('href')).toBe(
+          '/groups/gitlab-org/-/issues?status=In Progress',
+        );
+        expect(findStatusCountLinks().at(2).text()).toBe('999+ items');
+        expect(findStatusCountLinks().at(2).attributes('href')).toBe(
+          '/groups/gitlab-org/-/issues?status=Done',
+        );
+      });
+
+      it('renders tooltip', () => {
+        expect(findGlTooltip().text()).toContain('View items');
+        expect(findGlTooltip().text()).toContain('Items from archived projects will not be shown.');
+      });
+    });
+
+    describe('when `workItemStatusMvc2` FF is false', () => {
+      beforeEach(async () => {
+        createComponent({ workItemStatusMvc2Enabled: false });
+        await waitForPromises();
+      });
+
+      it('does not render status count links', () => {
+        expect(findStatusCountLinks()).toHaveLength(0);
+      });
+
+      it('does not render tooltip', () => {
+        expect(findGlTooltip().exists()).toBe(false);
       });
     });
   });

@@ -10,6 +10,7 @@ import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status/cus
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import CreateLifecycleModal from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
+import { statusCounts } from 'ee_jest/groups/settings/work_items/mock_data';
 
 Vue.use(VueApollo);
 
@@ -19,32 +20,84 @@ const mockLifecycles = [
   {
     id: 'gid://gitlab/WorkItems::Lifecycle/1',
     name: 'Development',
-    defaultOpenStatus: { id: '1', name: 'Open' },
-    defaultClosedStatus: { id: '2', name: 'Closed' },
-    defaultDuplicateStatus: { id: '3', name: 'Duplicate' },
+    defaultOpenStatus: { id: '1', name: 'Open', __typename: 'WorkItemStatus' },
+    defaultClosedStatus: { id: '2', name: 'Closed', __typename: 'WorkItemStatus' },
+    defaultDuplicateStatus: { id: '3', name: 'Duplicate', __typename: 'WorkItemStatus' },
     workItemTypes: [
-      { id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue', iconName: 'issue-type-issue' },
-      { id: 'gid://gitlab/WorkItems::Type/2', name: 'Task', iconName: 'issue-type-task' },
+      {
+        id: 'gid://gitlab/WorkItems::Type/1',
+        name: 'Issue',
+        iconName: 'issue-type-issue',
+        __typename: 'WorkItemType',
+      },
+      {
+        id: 'gid://gitlab/WorkItems::Type/2',
+        name: 'Task',
+        iconName: 'issue-type-task',
+        __typename: 'WorkItemType',
+      },
     ],
     statuses: [
-      { id: '1', name: 'Open', iconName: 'issue-open', color: 'green', description: '' },
-      { id: '2', name: 'In Progress', iconName: 'progress', color: 'blue', description: '' },
-      { id: '3', name: 'Closed', iconName: 'issue-closed', color: 'gray', description: '' },
+      {
+        id: '1',
+        name: 'Open',
+        iconName: 'issue-open',
+        color: 'green',
+        description: '',
+        __typename: 'WorkItemStatus',
+      },
+      {
+        id: '2',
+        name: 'In Progress',
+        iconName: 'progress',
+        color: 'blue',
+        description: '',
+        __typename: 'WorkItemStatus',
+      },
+      {
+        id: '3',
+        name: 'Closed',
+        iconName: 'issue-closed',
+        color: 'gray',
+        description: '',
+        __typename: 'WorkItemStatus',
+      },
     ],
+    statusCounts,
   },
   {
     id: 'gid://gitlab/WorkItems::Lifecycle/2',
     name: 'Operations',
-    defaultOpenStatus: { id: '4', name: 'New' },
-    defaultClosedStatus: { id: '5', name: 'Resolved' },
-    defaultDuplicateStatus: { id: '6', name: 'Duplicate' },
+    defaultOpenStatus: { id: '4', name: 'New', __typename: 'WorkItemStatus' },
+    defaultClosedStatus: { id: '5', name: 'Resolved', __typename: 'WorkItemStatus' },
+    defaultDuplicateStatus: { id: '6', name: 'Duplicate', __typename: 'WorkItemStatus' },
     workItemTypes: [
-      { id: 'gid://gitlab/WorkItems::Type/3', name: 'Incident', iconName: 'issue-type-incident' },
+      {
+        id: 'gid://gitlab/WorkItems::Type/3',
+        name: 'Incident',
+        iconName: 'issue-type-incident',
+        __typename: 'WorkItemType',
+      },
     ],
     statuses: [
-      { id: '4', name: 'New', iconName: 'issue-new', color: 'red', description: '' },
-      { id: '5', name: 'Resolved', iconName: 'check', color: 'green', description: '' },
+      {
+        id: '4',
+        name: 'New',
+        iconName: 'issue-new',
+        color: 'red',
+        description: '',
+        __typename: 'WorkItemStatus',
+      },
+      {
+        id: '5',
+        name: 'Resolved',
+        iconName: 'check',
+        color: 'green',
+        description: '',
+        __typename: 'WorkItemStatus',
+      },
     ],
+    statusCounts,
   },
 ];
 

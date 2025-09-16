@@ -128,7 +128,7 @@ export default {
       class="gl-mb-4 gl-flex gl-items-center gl-justify-between"
     >
       <div>
-        <h5 class="gl-mb-2">{{ s__('WorkItem|Lifecycles') }}</h5>
+        <h3 class="gl-mb-2 gl-text-base">{{ s__('WorkItem|Lifecycles') }}</h3>
         <p class="gl-mb-0 gl-text-subtle">
           {{
             s__(

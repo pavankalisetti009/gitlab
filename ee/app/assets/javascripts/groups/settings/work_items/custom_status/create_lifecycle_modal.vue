@@ -259,7 +259,7 @@ export default {
 
     <gl-form>
       <gl-form-group
-        label="Lifecycle name"
+        :label="s__('WorkItem|Lifecycle name')"
         :invalid-feedback="formError"
         label-size="sm"
         label-for="new-lifecycle-name"
@@ -275,7 +275,7 @@ export default {
         />
       </gl-form-group>
 
-      <h5 class="gl-mb-0 gl-mt-6">{{ s__('WorkItem|Starting statuses') }}</h5>
+      <h3 class="gl-mb-0 gl-mt-6 gl-text-base">{{ s__('WorkItem|Starting statuses') }}</h3>
       <p>
         {{
           s__(

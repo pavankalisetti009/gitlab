@@ -1,3 +1,46 @@
+export const statusCounts = [
+  {
+    status: {
+      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/1',
+      __typename: 'WorkItemStatus',
+    },
+    count: null,
+    __typename: 'WorkItemStatusCount',
+  },
+  {
+    status: {
+      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/2',
+      __typename: 'WorkItemStatus',
+    },
+    count: null,
+    __typename: 'WorkItemStatusCount',
+  },
+  {
+    status: {
+      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/3',
+      __typename: 'WorkItemStatus',
+    },
+    count: null,
+    __typename: 'WorkItemStatusCount',
+  },
+  {
+    status: {
+      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/4',
+      __typename: 'WorkItemStatus',
+    },
+    count: null,
+    __typename: 'WorkItemStatusCount',
+  },
+  {
+    status: {
+      id: 'gid://gitlab/WorkItems::Statuses::Custom::Status/5',
+      __typename: 'WorkItemStatus',
+    },
+    count: null,
+    __typename: 'WorkItemStatusCount',
+  },
+];
+
 export const mockNamespaceMetadata = {
   data: {
     namespace: {
@@ -67,6 +110,7 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -114,6 +158,7 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -161,6 +206,7 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -208,6 +254,7 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -255,6 +302,7 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -302,6 +350,7 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
+    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
 ];
@@ -451,6 +500,7 @@ export const mockDefaultLifecycleTemplateReponse = {
               __typename: 'WorkItemStatus',
             },
           ],
+          statusCounts,
           __typename: 'WorkItemLifecycle',
         },
       ],
@@ -459,9 +509,11 @@ export const mockDefaultLifecycleTemplateReponse = {
   },
 };
 
-export const mockDefaultLifecycle = {
+const mockDefaultLifecycle = {
   ...mockDefaultLifecycleTemplateReponse.data.namespace.lifecycleTemplates[0],
 };
+delete mockDefaultLifecycle.statusCounts;
+export { mockDefaultLifecycle };
 
 export const mockStatusesResponse = {
   data: {
