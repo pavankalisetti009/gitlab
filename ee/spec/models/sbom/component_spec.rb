@@ -77,69 +77,23 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
     end
   end
 
-  describe '.by_namespace' do
-    let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, namespace: group) }
-    let_it_be(:component_1) { create(:sbom_component, name: "activerecord") }
-    let_it_be(:occurrence_1) { create(:sbom_occurrence, component: component_1, project: project) }
-    let_it_be(:component_2) { create(:sbom_component, name: "activesupport") }
-    let_it_be(:occurrence) { create(:sbom_occurrence, component: component_2, project: project) }
-    let_it_be(:other_organization) { create(:organization) }
-    let_it_be(:duplicated_component) { create(:sbom_component, name: "activerecord", organization: other_organization) }
-    let_it_be(:occurrence_for_duplicate) { create(:sbom_occurrence, component: duplicated_component, project: project) }
-
-    subject(:results) { described_class.by_namespace(thing, query) }
-
-    context 'when passed a Namespace' do
-      let(:thing) { group }
-
-      context 'when given a query string' do
-        let(:query) { component_1.name }
-
-        it 'returns matching components' do
-          expect(results).to match_array([component_1])
-        end
-      end
-
-      context 'when no query string is given' do
-        let(:query) { nil }
-
-        it 'returns all components' do
-          names = results.map(&:name)
-          expect(names).to match_array(%w[activerecord activesupport])
-        end
-      end
+  describe 'order_by_name' do
+    before_all do
+      %w[a b c].each { |name| create(:sbom_component, name: name) }
     end
 
-    context 'when passed a project' do
-      let(:thing) { project }
+    subject { described_class.order_by_name(verse) }
 
-      context 'when given a query string' do
-        let(:query) { component_1.name }
+    where(:verse) { %i[asc desc] }
 
-        it 'returns matching components' do
-          names = results.map(&:name)
-          expect(names).to match_array([query])
-        end
-      end
-
-      context 'when no query string is given' do
-        let(:query) { nil }
-
-        it 'returns all components' do
-          names = results.map(&:name)
-          expect(names).to match_array(%w[activerecord activesupport])
-        end
-      end
+    with_them do
+      it { is_expected.to be_sorted(:name, verse) }
     end
 
-    context 'when given anything else' do
-      let(:thing) { build(:user) }
-      let(:query) { "active" }
+    describe 'default' do
+      subject { described_class.order_by_name }
 
-      it 'returns no results' do
-        expect(results).to be_empty
-      end
+      it { is_expected.to be_sorted(:name, :asc) }
     end
   end
 
