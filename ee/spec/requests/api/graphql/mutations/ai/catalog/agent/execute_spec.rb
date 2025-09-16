@@ -28,7 +28,8 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
       'environment' => 'remote',
       'components' => be_an(Array),
       'routers' => be_an(Array),
-      'flow' => be_a(Hash)
+      'flow' => be_a(Hash),
+      'prompts' => be_an(Array)
     }
   end
 
@@ -185,6 +186,32 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
           hash_including(goal: custom_user_prompt)
         )
     end
+
+    it 'configures prompt template with custom user input' do
+      execute
+
+      flow_config = graphql_data_at(:ai_catalog_agent_execute, :flowConfig)
+      parsed_yaml = YAML.safe_load(flow_config)
+
+      expect(parsed_yaml['prompts']).to match([
+        {
+          'prompt_id' => be_a(String),
+          'model' => {
+            'params' => {
+              'max_tokens' => be_a(Integer),
+              'model_class_provider' => be_a(String),
+              'model' => be_a(String)
+            }
+          },
+          'prompt_template' => {
+            'system' => agent_version.def_system_prompt,
+            'user' => custom_user_prompt,
+            'placeholder' => be_a(String)
+          },
+          "params" => { "timeout" => be_a(Integer) }
+        }
+      ])
+    end
   end
 
   context 'when user_prompt is not provided' do
@@ -198,6 +225,32 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
           current_user,
           hash_including(goal: agent_version.def_user_prompt)
         )
+    end
+
+    it 'configures prompt template with agent version user_prompt' do
+      execute
+
+      flow_config = graphql_data_at(:ai_catalog_agent_execute, :flowConfig)
+      parsed_yaml = YAML.safe_load(flow_config)
+
+      expect(parsed_yaml['prompts']).to match([
+        {
+          'prompt_id' => be_a(String),
+          'model' => {
+            'params' => {
+              'max_tokens' => be_a(Integer),
+              'model_class_provider' => be_a(String),
+              'model' => be_a(String)
+            }
+          },
+          'prompt_template' => {
+            'system' => agent_version.def_system_prompt,
+            'user' => agent_version.def_user_prompt,
+            'placeholder' => be_a(String)
+          },
+          "params" => { "timeout" => be_a(Integer) }
+        }
+      ])
     end
   end
 

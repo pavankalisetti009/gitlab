@@ -23,7 +23,8 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
       'environment' => 'remote',
       'components' => be_an(Array),
       'routers' => be_an(Array),
-      'flow' => be_a(Hash)
+      'flow' => be_a(Hash),
+      'prompts' => be_an(Array)
     }
   end
 
@@ -174,6 +175,85 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
 
       it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
         subject { execute }
+      end
+
+      context 'when user_prompt is provided' do
+        let(:custom_user_prompt) { 'Custom user prompt for testing' }
+        let(:service_params) { super().merge({ user_prompt: custom_user_prompt }) }
+
+        it 'passes the custom user_prompt as goal to ExecuteWorkflowService' do
+          allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
+
+          execute
+
+          expect(::Ai::Catalog::ExecuteWorkflowService)
+            .to have_received(:new).with(
+              current_user,
+              hash_including(goal: custom_user_prompt)
+            )
+        end
+
+        it 'configures prompt template with custom user input' do
+          result = execute
+
+          parsed_yaml = YAML.safe_load(result[:flow_config])
+          expect(parsed_yaml['prompts']).to match([
+            {
+              'prompt_id' => be_a(String),
+              'model' => {
+                'params' => {
+                  'max_tokens' => be_a(Integer),
+                  'model_class_provider' => be_a(String),
+                  'model' => be_a(String)
+                }
+              },
+              'prompt_template' => {
+                'system' => agent_version.def_system_prompt,
+                'user' => custom_user_prompt,
+                'placeholder' => be_a(String)
+              },
+              "params" => { "timeout" => be_a(Integer) }
+            }
+          ])
+        end
+      end
+
+      context 'when user_prompt is not provided' do
+        it 'passes the agent version user_prompt as goal to ExecuteWorkflowService' do
+          allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
+
+          execute
+
+          expect(::Ai::Catalog::ExecuteWorkflowService)
+            .to have_received(:new).with(
+              current_user,
+              hash_including(goal: agent_version.def_user_prompt)
+            )
+        end
+
+        it 'configures prompt template with agent version user_prompt' do
+          result = execute
+
+          parsed_yaml = YAML.safe_load(result[:flow_config])
+          expect(parsed_yaml['prompts']).to match([
+            {
+              'prompt_id' => be_a(String),
+              'model' => {
+                'params' => {
+                  'max_tokens' => be_a(Integer),
+                  'model_class_provider' => be_a(String),
+                  'model' => be_a(String)
+                }
+              },
+              'prompt_template' => {
+                'system' => agent_version.def_system_prompt,
+                'user' => agent_version.def_user_prompt,
+                'placeholder' => be_a(String)
+              },
+              "params" => { "timeout" => be_a(Integer) }
+            }
+          ])
+        end
       end
 
       context 'when workflow execution process fails' do

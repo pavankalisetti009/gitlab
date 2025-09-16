@@ -7,7 +7,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ChatFlow, :aggregate_fail
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
 
-  subject(:builder) { described_class.new(flow, flow_version, pinned_version_prefix) }
+  subject(:builder) { described_class.new(flow, flow_version, { pinned_version_prefix: pinned_version_prefix }) }
 
   describe 'inheritance' do
     it 'inherits from ExperimentalAgentWrapper' do
