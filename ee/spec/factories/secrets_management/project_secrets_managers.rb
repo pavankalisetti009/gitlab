@@ -4,12 +4,10 @@ FactoryBot.define do
   factory :project_secrets_manager, class: 'SecretsManagement::ProjectSecretsManager' do
     project
 
-    trait :active do
-      status { SecretsManagement::ProjectSecretsManager::STATUSES[:active] }
-    end
-
-    trait :disabled do
-      status { SecretsManagement::ProjectSecretsManager::STATUSES[:disabled] }
+    SecretsManagement::ProjectSecretsManager::STATUSES.each_key do |k|
+      trait k do
+        status { SecretsManagement::ProjectSecretsManager::STATUSES[k] }
+      end
     end
   end
 end

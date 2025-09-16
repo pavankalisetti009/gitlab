@@ -19,12 +19,9 @@ module SecretsManagement
       def list_secret_permissions(project)
         permissions = []
 
-        secrets_manager_client.list_project_policies(project_id: project.id) do |policy_data|
+        secrets_manager_client.list_project_policies(project_id: project.id, type: :users) do |policy_data|
           policy_name = policy_data["key"]
           policy = policy_data["metadata"]
-
-          # Skip if not a valid policy
-          next unless policy_name.start_with?("project_#{project.id}/users/")
 
           # Extract principal information from policy name
           path_parts = policy_name.split('/')

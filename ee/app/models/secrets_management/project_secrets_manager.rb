@@ -8,7 +8,7 @@ module SecretsManagement
     STATUSES = {
       provisioning: 0,
       active: 1,
-      disabled: 2
+      deprovisioning: 2
     }.freeze
 
     self.table_name = 'project_secrets_managers'
@@ -20,14 +20,14 @@ module SecretsManagement
     state_machine :status, initial: :provisioning do
       state :provisioning, value: STATUSES[:provisioning]
       state :active, value: STATUSES[:active]
-      state :disabled, value: STATUSES[:disabled]
+      state :deprovisioning, value: STATUSES[:deprovisioning]
 
       event :activate do
         transition all - [:active] => :active
       end
 
-      event :disable do
-        transition active: :disabled
+      event :initiate_deprovision do
+        transition active: :deprovisioning
       end
     end
 

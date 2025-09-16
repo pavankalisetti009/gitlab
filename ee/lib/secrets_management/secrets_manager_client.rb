@@ -78,8 +78,9 @@ module SecretsManagement
       end
     end
 
-    def list_project_policies(project_id: nil)
-      result = make_request(:list, "sys/policies/acl/project_#{project_id}/users", {}, optional: true)
+    def list_project_policies(project_id:, type: nil)
+      subdir = "/#{type}" if type
+      result = make_request(:list, "sys/policies/acl/project_#{project_id}#{subdir}", {}, optional: true)
       return [] unless result
 
       result["data"]["keys"].filter_map do |key|
@@ -167,16 +168,16 @@ module SecretsManagement
       make_request(:post, url, update_jwt_role_payload)
     end
 
-    def update_cel_role(mount_path, role_name, **role_data)
+    def update_jwt_cel_role(mount_path, role_name, **role_data)
       payload = {
         name: role_name,
         expiration_leeway: OPENBAO_EXPIRATION_LEEWAY,
         not_before_leeway: OPENBAO_NOT_BEFORE_LEEWAY,
         clock_skew_leeway: OPENBAO_CLOCK_SKEW_LEEWAY
       }
-      update_cel_role_payload = payload.merge(role_data)
+      update_jwt_cel_role_payload = payload.merge(role_data)
 
-      make_request(:post, "auth/#{mount_path}/cel/role/#{role_name}", update_cel_role_payload)
+      make_request(:post, "auth/#{mount_path}/cel/role/#{role_name}", update_jwt_cel_role_payload)
     end
 
     def read_jwt_role(mount_path, role_name)
@@ -189,6 +190,16 @@ module SecretsManagement
       url = "auth/#{mount_path}/cel/role/#{role_name}"
       body = make_request(:get, url)
       body["data"] if body
+    end
+
+    def delete_jwt_role(mount_path, role_name)
+      url = "auth/#{mount_path}/role/#{role_name}"
+      make_request(:delete, url)
+    end
+
+    def delete_jwt_cel_role(mount_path, role_name)
+      url = "auth/#{mount_path}/cel/role/#{role_name}"
+      make_request(:delete, url)
     end
 
     def get_policy(name)

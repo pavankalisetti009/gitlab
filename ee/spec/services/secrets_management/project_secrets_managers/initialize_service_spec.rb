@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe SecretsManagement::ProjectSecretsManagers::InitializeService, feature_category: :secrets_management do
-  let_it_be(:project) { create(:project) }
+RSpec.describe SecretsManagement::ProjectSecretsManagers::InitializeService, :gitlab_secrets_manager, feature_category: :secrets_management do
+  let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
 
   let(:service) { described_class.new(project, user) }
@@ -17,17 +17,19 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::InitializeService, fea
       stub_const('SecretsManagement::ProvisionProjectSecretsManagerWorker', provision_worker_spy)
     end
 
-    it 'creates a secrets manager record for the project', :aggregate_failures do
-      expect(result).to be_success
+    context 'when the project has no secrets manager' do
+      it 'creates a secrets manager record for the project', :aggregate_failures do
+        expect(result).to be_success
 
-      secrets_manager = result.payload[:project_secrets_manager]
-      expect(secrets_manager).to be_present
-      expect(secrets_manager).to be_provisioning
+        secrets_manager = result.payload[:project_secrets_manager]
+        expect(secrets_manager).to be_present
+        expect(secrets_manager).to be_provisioning
 
-      expect(provision_worker_spy).to have_received(:perform_async).with(user.id, secrets_manager.id)
+        expect(provision_worker_spy).to have_received(:perform_async).with(user.id, secrets_manager.id)
+      end
     end
 
-    context 'when there is an existing secrets manager record for the project' do
+    context 'when the project has a secrets manager' do
       it 'fails' do
         create(:project_secrets_manager, project: project)
         project.reload
