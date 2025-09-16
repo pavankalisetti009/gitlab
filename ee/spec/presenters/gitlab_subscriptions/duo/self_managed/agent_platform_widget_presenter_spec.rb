@@ -20,10 +20,10 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
 
     before do
       allow(License).to receive(:duo_core_features_available?).and_return(duo_core_features_available?)
-      allow(::Feature).to receive(:disabled?).and_return(false)
+      stub_feature_flags(duo_agent_platform_widget_self_managed: true)
       allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
       allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
-      allow(::Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)
+      stub_application_setting(gitlab_dedicated_instance: false)
 
       allow(user).to receive(:dismissed_callout?)
                        .with(feature_name: 'duo_agent_platform_requested')
@@ -105,8 +105,7 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
 
       context 'when duo_agent_platform_widget_self_managed feature flag is disabled' do
         before do
-          allow(::Feature).to receive(:disabled?).with(:duo_agent_platform_widget_self_managed,
-            :instance).and_return(true)
+          stub_feature_flags(duo_agent_platform_widget_self_managed: false)
         end
 
         it 'is not eligible' do
@@ -136,7 +135,7 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
 
       context 'when dedicated instance' do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
+          stub_application_setting(gitlab_dedicated_instance: true)
         end
 
         it 'is not eligible' do
