@@ -1,15 +1,12 @@
 <script>
 import { GlSprintf, GlAlert, GlButton } from '@gitlab/ui';
-import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
 import eventHub from '~/invite_members/event_hub';
-import { s__, n__ } from '~/locale';
+import { s__ } from '~/locale';
 import { getCookie, removeCookie, parseBoolean } from '~/lib/utils/common_utils';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
-import eventHubNav from '~/super_sidebar/event_hub';
 import { InternalEvents } from '~/tracking';
 import { ACTION_LABELS, INVITE_MODAL_OPEN_COOKIE } from '../constants';
-import CircularProgressBar from './circular_progress_bar/circular_progress_bar.vue';
 import LearnGitlabSectionCard from './learn_gitlab_section_card.vue';
 
 const trackingMixin = InternalEvents.mixin();
@@ -19,7 +16,6 @@ export default {
     GlSprintf,
     GlAlert,
     GlButton,
-    CircularProgressBar,
     LearnGitlabSectionCard,
   },
   mixins: [trackingMixin],
@@ -57,7 +53,6 @@ export default {
       showSuccessfulInvitationsAlert: false,
       disableEndTutorialButton: false,
       actionsData: this.actions,
-      isDesktop: bp.isDesktop(),
     };
   },
   computed: {
@@ -75,22 +70,6 @@ export default {
     },
     progressPercentage() {
       return Math.round((this.progressValue / this.maxValue) * 100);
-    },
-    progressBarBlockClasses() {
-      return {
-        'gl-mt-6 gl-inline-block': true,
-        'gl-ml-5': !this.isDesktop,
-        'gl-h-0 gl-mr-5 gl-ml-auto': this.isDesktop,
-      };
-    },
-    progressBarLabel() {
-      const tasksToGo = this.maxValue - this.progressValue;
-
-      if (tasksToGo > 0) {
-        return n__('LearnGitLab|%d task to go', 'LearnGitLab|%d tasks to go', tasksToGo);
-      }
-
-      return s__('LearnGitLab|You completed all tasks!');
     },
   },
   mounted() {
@@ -156,14 +135,7 @@ export default {
       Object.keys(this.actionsData).forEach((action) => {
         if (action === completedAction) {
           this.actionsData[action].completed = true;
-          this.modifySidebarPercentage();
         }
-      });
-    },
-    modifySidebarPercentage() {
-      eventHubNav.$emit('updatePillValue', {
-        value: `${this.progressPercentage}%`,
-        itemId: 'learn_gitlab',
       });
     },
     handleEndTutorialClick() {
@@ -194,29 +166,20 @@ export default {
         </template>
       </gl-sprintf>
     </gl-alert>
-    <div class="row">
-      <div class="col-sm-12 col-mb-9 col-lg-9">
+    <div class="gl-flex gl-flex-col gl-items-center gl-justify-between sm:gl-flex-row">
+      <div class="gl-self-start">
         <h1 class="gl-text-size-h1">{{ $options.i18n.title }}</h1>
         <p class="gl-mb-0 gl-text-subtle">{{ $options.i18n.description }}</p>
       </div>
 
-      <div :class="progressBarBlockClasses" data-testid="progress-bar-block">
-        <circular-progress-bar :percentage="progressPercentage" />
-
-        <div class="gl-mt-5 gl-text-center gl-text-lg gl-font-bold">
-          {{ progressBarLabel }}
-        </div>
-
-        <div class="gl-mt-3 gl-flex gl-justify-center">
-          <gl-button
-            :disabled="disableEndTutorialButton"
-            category="tertiary"
-            data-testid="end-tutorial-button"
-            @click="handleEndTutorialClick"
-          >
-            {{ $options.i18n.endTutorialButtonLabel }}
-          </gl-button>
-        </div>
+      <div class="gl-mt-6 gl-self-start">
+        <gl-button
+          :disabled="disableEndTutorialButton"
+          data-testid="end-tutorial-button"
+          @click="handleEndTutorialClick"
+        >
+          {{ $options.i18n.endTutorialButtonLabel }}
+        </gl-button>
       </div>
     </div>
 

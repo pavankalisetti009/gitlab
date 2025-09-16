@@ -1,7 +1,6 @@
 <script>
-import { GlButton, GlCard, GlProgressBar, GlSprintf, GlAlert } from '@gitlab/ui';
+import { GlButton, GlCard, GlSprintf, GlAlert } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
-import eventHubNav from '~/super_sidebar/event_hub';
 import { INVITE_URL_TYPE } from 'ee/pages/projects/get_started/constants';
 import { InternalEvents } from '~/tracking';
 import { visitUrl } from '~/lib/utils/url_utility';
@@ -16,7 +15,6 @@ export default {
   name: 'GetStarted',
   components: {
     GlButton,
-    GlProgressBar,
     GlCard,
     GlSprintf,
     GlAlert,
@@ -86,13 +84,6 @@ export default {
       });
 
       this.calculateActionCounts();
-      this.modifySidebarPercentage();
-    },
-    modifySidebarPercentage() {
-      eventHubNav.$emit('updatePillValue', {
-        value: `${this.completionPercentage}%`,
-        itemId: 'get_started',
-      });
     },
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index;
@@ -171,8 +162,6 @@ export default {
           {{ s__('LearnGitLab|Follow these steps to get familiar with the GitLab workflow.') }}
         </p>
       </header>
-
-      <gl-progress-bar :value="completionPercentage" data-testid="progress-bar" />
 
       <gl-card
         v-for="(section, index) in localSections"

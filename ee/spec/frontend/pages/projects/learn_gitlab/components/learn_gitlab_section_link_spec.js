@@ -33,25 +33,12 @@ describe('Learn GitLab Section Link', () => {
     );
   };
 
-  const findCompletedIcon = () => wrapper.findByTestId('completed-icon');
   const findTrialOnly = () => wrapper.findByTestId('trial-only');
   const findUncompletedLink = () => wrapper.findByTestId('uncompleted-learn-gitlab-link');
   const findDisabledLink = () => wrapper.findByTestId('disabled-learn-gitlab-link');
   const findPopoverTrigger = () => wrapper.findByTestId('contact-admin-popover-trigger');
   const findPopover = () => wrapper.findComponent(GlPopover);
   const findPopoverLink = () => findPopover().findComponent(GlLink);
-
-  it('renders no icon when not completed', () => {
-    createWrapper(undefined, { completed: false });
-
-    expect(findCompletedIcon().exists()).toBe(false);
-  });
-
-  it('renders the completion icon when completed', () => {
-    createWrapper(undefined, { completed: true });
-
-    expect(findCompletedIcon().exists()).toBe(true);
-  });
 
   it('renders no trial only when it is not required', () => {
     createWrapper();

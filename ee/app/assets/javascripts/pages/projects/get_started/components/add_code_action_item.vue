@@ -3,7 +3,6 @@ import { GlIcon, GlLink, GlButton, GlModalDirective } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import Tracking, { InternalEvents } from '~/tracking';
 import UploadBlobModal from '~/repository/components/upload_blob_modal.vue';
-import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from '../constants';
 import CommandLineModal from './command_line_modal.vue';
 
 export default {
@@ -27,9 +26,6 @@ export default {
     },
   },
   computed: {
-    iconName() {
-      return this.action.completed ? ICON_TYPE_COMPLETED : ICON_TYPE_EMPTY;
-    },
     uploadBlobModalId() {
       return uniqueId('modal-upload-blob');
     },
@@ -56,18 +52,12 @@ export default {
 <template>
   <li class="gl-flex gl-flex-col gl-gap-3">
     <div class="gl-flex gl-items-center gl-gap-3">
-      <gl-icon variant="default" :name="iconName" data-testid="action-icon" />
-
-      <span v-if="action.completed" class="gl-display-inline-block gl-line-through">
-        {{ action.title }}
-      </span>
-
-      <span v-else class="gl-display-inline-block">
+      <span class="gl-display-inline-block">
         {{ action.title }}
       </span>
     </div>
 
-    <ul v-if="!action.completed" class="gl-flex gl-list-none gl-flex-col gl-gap-3 gl-pl-6">
+    <ul class="gl-flex gl-list-none gl-flex-col gl-gap-3 gl-pl-0">
       <li>
         <gl-button
           v-gl-modal="commandLineModalId"

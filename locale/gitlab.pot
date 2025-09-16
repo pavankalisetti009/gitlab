@@ -736,9 +736,6 @@ msgstr ""
 msgid "%{completed} of %{total} weight completed"
 msgstr ""
 
-msgid "%{completed}/%{total} completed"
-msgstr ""
-
 msgid "%{component} is not an allowed sub claim component"
 msgstr ""
 
@@ -38161,11 +38158,6 @@ msgstr ""
 msgid "Learn what Duo Chat can do."
 msgstr ""
 
-msgid "LearnGitLab|%d task to go"
-msgid_plural "LearnGitLab|%d tasks to go"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "LearnGitLab|%{percentage}%{percentSymbol} completed"
 msgstr ""
 
@@ -38329,9 +38321,6 @@ msgid "LearnGitLab|Uses open files in your IDE, content before and after the cur
 msgstr ""
 
 msgid "LearnGitLab|Works with various programming languages supported by your development environment."
-msgstr ""
-
-msgid "LearnGitLab|You completed all tasks!"
 msgstr ""
 
 msgid "LearnGitLab|You don't have sufficient access to perform this action"

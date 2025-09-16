@@ -1,4 +1,4 @@
-import { GlProgressBar, GlCard, GlAlert } from '@gitlab/ui';
+import { GlCard, GlAlert } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GetStarted from 'ee/pages/projects/get_started/components/get_started.vue';
@@ -58,7 +58,6 @@ describe('GetStarted', () => {
     });
   };
 
-  const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findCards = () => wrapper.findAllComponents(GlCard);
   const findSectionHeaders = () => wrapper.findAllComponents(SectionHeader);
   const findSectionBodies = () => wrapper.findAllComponents(SectionBody);
@@ -78,10 +77,6 @@ describe('GetStarted', () => {
 
     it('renders the correct title', () => {
       expect(findTitle().text()).toBe('Quick start');
-    });
-
-    it('renders a progress bar', () => {
-      expect(findProgressBar().exists()).toBe(true);
     });
 
     it('renders a card for each section', () => {
@@ -223,22 +218,6 @@ describe('GetStarted', () => {
         'showSuccessfulInvitationsAlert',
         wrapper.vm.handleShowSuccessfulInvitationsAlert,
       );
-    });
-
-    it('marks an action as completed by ID', async () => {
-      expect(findProgressBar().props('value')).toBe(50);
-
-      // Mark action with ID 2 as completed
-      eventHub.$emit('showSuccessfulInvitationsAlert');
-      await nextTick();
-
-      expect(findProgressBar().props('value')).toBe(75);
-
-      // Assert that the sidebar percentage was updated
-      expect(eventHubNav.$emit).toHaveBeenCalledWith('updatePillValue', {
-        value: '75%',
-        itemId: 'get_started',
-      });
     });
   });
 

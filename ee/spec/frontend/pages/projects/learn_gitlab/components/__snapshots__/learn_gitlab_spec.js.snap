@@ -5,10 +5,10 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
   data-testid="learn-gitlab-page"
 >
   <div
-    class="row"
+    class="gl-flex gl-flex-col gl-items-center gl-justify-between sm:gl-flex-row"
   >
     <div
-      class="col-lg-9 col-mb-9 col-sm-12"
+      class="gl-self-start"
     >
       <h1
         class="gl-text-size-h1"
@@ -22,33 +22,19 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
       </p>
     </div>
     <div
-      class="gl-h-0 gl-inline-block gl-ml-auto gl-mr-5 gl-mt-6"
-      data-testid="progress-bar-block"
+      class="gl-mt-6 gl-self-start"
     >
-      <div
-        class="circular-progress-bar"
-        style="--gray100: #dcdcde; --logo-url: url(file-mock); --percentage: 23%; --progress-bar-color: #e24329;"
-      />
-      <div
-        class="gl-font-bold gl-mt-5 gl-text-center gl-text-lg"
+      <button
+        class="btn btn-default btn-md gl-button"
+        data-testid="end-tutorial-button"
+        type="button"
       >
-        10 tasks to go
-      </div>
-      <div
-        class="gl-flex gl-justify-center gl-mt-3"
-      >
-        <button
-          class="btn btn-default btn-default-tertiary btn-md gl-button"
-          data-testid="end-tutorial-button"
-          type="button"
+        <span
+          class="gl-button-text"
         >
-          <span
-            class="gl-button-text"
-          >
-            End tutorial
-          </span>
-        </button>
-      </div>
+          End tutorial
+        </span>
+      </button>
     </div>
   </div>
   <div
@@ -96,21 +82,18 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             <div
               class="gl-flex gl-items-center"
             >
-              <span
-                class="gl-text-success"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="gl-fill-icon-success gl-icon s16"
-                  data-testid="completed-icon"
-                  role="img"
+              <div>
+                <a
+                  class="gl-link"
+                  data-testid="uncompleted-learn-gitlab-link"
+                  data-track-action="click_link"
+                  data-track-label="create_a_repository"
+                  href="http://example.com/"
+                  target="_self"
                 >
-                  <use
-                    href="file-mock#check-circle-filled"
-                  />
-                </svg>
-                Create a repository
-              </span>
+                  Create a repository
+                </a>
+              </div>
             </div>
           </div>
           <div
@@ -119,21 +102,19 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             <div
               class="gl-flex gl-items-center"
             >
-              <span
-                class="gl-text-success"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="gl-fill-icon-success gl-icon s16"
-                  data-testid="completed-icon"
-                  role="img"
+              <div>
+                <a
+                  class="gl-link"
+                  data-testid="uncompleted-learn-gitlab-link"
+                  data-track-action="click_link"
+                  data-track-label="add_code"
+                  href="http://example.com/"
+                  rel="noopener noreferrer"
+                  target="_blank"
                 >
-                  <use
-                    href="file-mock#check-circle-filled"
-                  />
-                </svg>
-                Add code
-              </span>
+                  Add code
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -185,21 +166,18 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             <div
               class="gl-flex gl-items-center"
             >
-              <span
-                class="gl-text-success"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="gl-fill-icon-success gl-icon s16"
-                  data-testid="completed-icon"
-                  role="img"
+              <div>
+                <a
+                  class="gl-link"
+                  data-testid="uncompleted-learn-gitlab-link"
+                  data-track-action="click_link"
+                  data-track-label="invite_your_colleagues"
+                  href="http://example.com/"
+                  target="_self"
                 >
-                  <use
-                    href="file-mock#check-circle-filled"
-                  />
-                </svg>
-                Invite your colleagues
-              </span>
+                  Invite your colleagues
+                </a>
+              </div>
             </div>
           </div>
           <div

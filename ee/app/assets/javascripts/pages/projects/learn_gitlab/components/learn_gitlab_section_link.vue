@@ -1,6 +1,6 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlLink, GlIcon, GlButton, GlPopover, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
+import { GlLink, GlButton, GlPopover, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
 import { s__ } from '~/locale';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
@@ -11,7 +11,6 @@ export default {
   name: 'LearnGitlabSectionLink',
   components: {
     GlLink,
-    GlIcon,
     GlButton,
     GlPopover,
     IncludedInTrialIndicator,
@@ -61,17 +60,7 @@ export default {
 <template>
   <div class="gl-mb-2">
     <div class="gl-flex gl-items-center">
-      <span v-if="value.completed" class="gl-text-success">
-        <gl-icon
-          name="check-circle-filled"
-          :size="16"
-          data-testid="completed-icon"
-          variant="success"
-        />
-        {{ actionLabelValue('title') }}
-        <included-in-trial-indicator v-if="actionLabelValue('trialRequired')" />
-      </span>
-      <div v-else-if="value.enabled">
+      <div v-if="value.enabled">
         <gl-link
           :target="openInNewTab ? '_blank' : '_self'"
           :href="value.url"
