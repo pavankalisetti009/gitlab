@@ -544,6 +544,70 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
       end
     end
 
+    shared_context 'with BSO (block seat overages) enabled', :sidekiq_inline do
+      before do
+        stub_feature_flags(bso_minimal_access_fallback: true)
+
+        stub_licensed_features(
+          instance_level_scim: true,
+          minimal_access_role: true
+        )
+      end
+
+      context 'when operation would consume new seats' do
+        before do
+          allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+            .to receive_messages(
+              block_seat_overages?: true,
+              seats_available_for?: false # No seats available = would consume new seats
+            )
+        end
+
+        it 'adds the user with MINIMAL_ACCESS instead of the configured access level' do
+          api_request
+
+          expect(response).to be_successful
+
+          member = saml_group_link.group.all_group_members.find_by(user: identity.user)
+          expect(member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+        end
+      end
+
+      context 'when operation would NOT consume new seats' do
+        before do
+          allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+            .to receive_messages(
+              block_seat_overages?: true,
+              seats_available_for?: true # Seats available = no new consumption
+            )
+        end
+
+        it 'adds the user with the configured access level' do
+          api_request
+
+          expect(response).to be_successful
+
+          member = saml_group_link.group.all_group_members.find_by(user: identity.user)
+          expect(member.access_level).to eq(Gitlab::Access::GUEST)
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(bso_minimal_access_fallback: false)
+        end
+
+        it 'adds the user with the configured access level' do
+          api_request
+
+          expect(response).to be_successful
+
+          member = saml_group_link.group.all_group_members.find_by(user: identity.user)
+          expect(member.access_level).to eq(Gitlab::Access::GUEST)
+        end
+      end
+    end
+
     describe 'POST api/scim/v2/application/Groups' do
       let(:group_name) { 'Engineering' }
       let(:scim_group_uid) { SecureRandom.uuid }
@@ -936,6 +1000,8 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             expect(response).to have_gitlab_http_status(:no_content)
           end
         end
+
+        include_context 'with BSO (block seat overages) enabled'
       end
 
       context 'with remove operation' do
@@ -1340,6 +1406,8 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             api_request
           end
         end
+
+        include_context 'with BSO (block seat overages) enabled'
       end
 
       context 'with empty members array' do

@@ -114,6 +114,108 @@ RSpec.describe Authn::SyncScimGroupMembersWorker, feature_category: :system_acce
           end
         end
       end
+
+      context 'with BSO (Block Seat Overages) enabled' do
+        before do
+          stub_feature_flags(bso_minimal_access_fallback: true)
+          stub_licensed_features(minimal_access_role: true)
+        end
+
+        subject(:execute_worker) { worker.perform(scim_group_uid, [user1.id], 'add') }
+
+        context 'without available seats' do
+          before do
+            allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+              .to receive_messages(
+                block_seat_overages?: true,
+                seats_available_for?: false
+              )
+          end
+
+          it 'adds users with MINIMAL_ACCESS instead of the desired access level' do
+            execute_worker
+
+            member = group.all_group_members.find_by(user_id: user1.id)
+            expect(member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+          end
+
+          it 'applies BSO adjustment to all groups linked to the SCIM group' do
+            execute_worker
+
+            group_member = group.all_group_members.find_by(user_id: user1.id)
+            another_group_member = another_group.all_group_members.find_by(user_id: user1.id)
+
+            expect(group_member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+            expect(another_group_member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+          end
+
+          it 'logs BSO adjustment when access level is downgraded' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: 'SCIM group membership access level adjusted due to BSO seat limits',
+                scim_group_uid: scim_group_uid,
+                user_id: user1.id,
+                desired_access_level: Gitlab::Access::DEVELOPER,
+                effective_access_level: Gitlab::Access::MINIMAL_ACCESS
+              )
+            ).twice # Once for each group linked to the same SCIM group UID
+
+            execute_worker
+          end
+        end
+
+        context 'with available seats' do
+          before do
+            allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+              .to receive_messages(
+                block_seat_overages?: true,
+                seats_available_for?: true
+              )
+          end
+
+          it 'adds users with the original desired access level' do
+            execute_worker
+
+            member = group.members.find_by(user_id: user1.id)
+            expect(member.access_level).to eq(Gitlab::Access::DEVELOPER)
+          end
+
+          it 'does not log BSO adjustment' do
+            expect(Gitlab::AppLogger).not_to receive(:info).with(
+              hash_including(message: 'SCIM group membership access level adjusted due to BSO seat limits')
+            )
+
+            execute_worker
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(bso_minimal_access_fallback: false)
+          end
+
+          it 'adds users with the original access level (bypasses BSO)' do
+            execute_worker
+
+            member = group.members.find_by(user_id: user1.id)
+            expect(member.access_level).to eq(Gitlab::Access::DEVELOPER)
+          end
+        end
+
+        context 'when BSO is not enabled' do
+          before do
+            allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+              .to receive(:block_seat_overages?).and_return(false)
+          end
+
+          it 'adds users with the original access level' do
+            execute_worker
+
+            member = group.members.find_by(user_id: user1.id)
+            expect(member.access_level).to eq(Gitlab::Access::DEVELOPER)
+          end
+        end
+      end
     end
 
     context 'with remove operation' do
