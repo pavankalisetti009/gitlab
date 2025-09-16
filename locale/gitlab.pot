@@ -1319,7 +1319,7 @@ msgstr[1] ""
 msgid "%{redirect_link_start} Click here to redirect to %{redirect_uri_val} %{redirect_link_end}"
 msgstr ""
 
-msgid "%{reference} %{author} %{stats} %{milestone}"
+msgid "%{reference} %{author} %{stats} %{milestone} %{target}"
 msgstr ""
 
 msgid "%{ref} cannot be added: %{error}"
@@ -64286,6 +64286,9 @@ msgid "Target branch"
 msgstr ""
 
 msgid "Target branch (%{branch}): %{pipelines}"
+msgstr ""
+
+msgid "Target branch: %{targetBranch}"
 msgstr ""
 
 msgid "Target branch: %{target_branch}"
