@@ -32,15 +32,27 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
     end
   end
 
+  def self.sync_to_postgres
+    ::UsageEvents::DumpWriteBufferCronWorker.new.perform
+  end
+
   def initialize(project)
     @project = project
   end
 
   def seed!
-    create_ai_usage_data
+    create_code_suggestions_data
+    create_chat_data
+    create_troubleshoot_job_data
   end
 
-  def create_ai_usage_data # rubocop:disable Metrics/AbcSize -- this is a development seed script
+  private
+
+  def save_event(**attributes)
+    Ai::UsageEvent.new(attributes).tap(&:store_to_pg).tap(&:store_to_clickhouse)
+  end
+
+  def create_code_suggestions_data
     project.users.count.times do
       user = project.users.sample
 
@@ -53,47 +65,71 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
         )
       end
 
-      payload = {
+      extras = {
         unique_tracking_id: 'FOO',
-        branch_name: 'main'
+        branch_name: 'main',
+        ide_vendor: 'IDEVendor',
+        ide_version: '8.1.1',
+        extension_name: 'gitlab-editor-extension',
+        extension_version: '2.1.1',
+        language_server_version: '3.2.2'
       }
 
       CS_EVENT_COUNT_SAMPLE.times do
-        payload[:suggestion_size] = rand(100)
-        payload[:language] = %w[ruby js go].sample
+        extras[:suggestion_size] = rand(100)
+        extras[:language] = %w[ruby js go].sample
+        extras[:ide_name] = %w[VSCode Vim Idea].sample
 
-        Ai::CodeSuggestionEvent.new(
+        save_event(
           user: user,
           event: 'code_suggestion_shown_in_ide',
           timestamp: rand(TIME_PERIOD_DAYS).days.ago,
-          namespace_path: project.project_namespace.traversal_path,
-          payload: payload).tap(&:save!).tap(&:store_to_clickhouse)
+          namespace: project.project_namespace,
+          extras: extras)
 
         next unless rand(100) < 35 # 35% acceptance rate
 
-        Ai::CodeSuggestionEvent.new(
+        save_event(
           user: user,
           event: 'code_suggestion_accepted_in_ide',
           timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds,
-          namespace_path: project.project_namespace.traversal_path,
-          payload: payload).tap(&:save!).tap(&:store_to_clickhouse)
+          namespace: project.project_namespace,
+          extras: extras)
       end
+    end
+  end
+
+  def create_chat_data
+    project.users.count.times do
+      user = project.users.sample
 
       CHAT_EVENT_COUNT_SAMPLE.times do
-        Ai::DuoChatEvent.new(
-          user: user,
-          event: 'request_duo_chat_response',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago).store_to_clickhouse
+        save_event(user: user, event: 'request_duo_chat_response', timestamp: rand(TIME_PERIOD_DAYS).days.ago)
       end
+    end
+  end
 
-      next unless project.builds.count > 0
+  def create_troubleshoot_job_data
+    return unless project.builds.count > 0
+
+    builds = project.builds
+
+    project.users.count.times do
+      user = project.users.sample
 
       TROUBLESHOOT_EVENT_COUNT_SAMPLE.times do
-        Ai::TroubleshootJobEvent.new(
+        job = builds.sample
+        save_event(
           user: user,
           event: 'troubleshoot_job',
-          job: project.builds.sample,
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago).tap(&:save!).tap(&:store_to_clickhouse)
+          namespace: project.project_namespace,
+          extras: {
+            job_id: job.id,
+            project_id: job.project_id,
+            pipeline_id: job.pipeline&.id,
+            merge_request_id: job.pipeline&.merge_request_id
+          },
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago)
       end
     end
   end
@@ -122,10 +158,10 @@ Gitlab::Seeder.quiet do
   projects = projects.id_in(ENV['PROJECT_ID']) if ENV['PROJECT_ID']
 
   projects.find_each do |project|
-    seeder = Gitlab::Seeder::AiUsageStats.new(project)
-    seeder.create_ai_usage_data
+    Gitlab::Seeder::AiUsageStats.new(project).seed!
   end
 
+  Gitlab::Seeder::AiUsageStats.sync_to_postgres
   Gitlab::Seeder::AiUsageStats.sync_to_click_house
 end
 # rubocop:enable Rails/Output
