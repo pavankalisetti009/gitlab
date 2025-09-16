@@ -74,6 +74,11 @@ module EE
           null: false,
           description: 'AI Catalog items configured for use.',
           experiment: { milestone: '18.2' }
+        field :ai_catalog_item_consumer,
+          resolver: ::Resolvers::Ai::Catalog::ItemConsumerResolver,
+          null: true,
+          description: 'Find a single AI Catalog item consumer by ID.',
+          experiment: { milestone: '18.5' }
         field :current_license, ::Types::Admin::CloudLicenses::CurrentLicenseType,
           null: true,
           resolver: ::Resolvers::Admin::CloudLicenses::CurrentLicenseResolver,
