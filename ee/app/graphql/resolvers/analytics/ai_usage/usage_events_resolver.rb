@@ -14,6 +14,14 @@ module Resolvers
           required: false,
           description: 'End date for the date range. Default is the current day.'
 
+        argument :events, [Types::Analytics::AiUsage::AiUsageEventTypeEnum],
+          required: false,
+          description: 'Filters by events.'
+
+        argument :user_ids, [::Types::GlobalIDType[::User]],
+          required: false,
+          description: 'Filters by users.'
+
         def ready?(**args)
           validate_params!(args)
 
@@ -26,7 +34,10 @@ module Resolvers
           ::Ai::UsageEventsFinder.new(current_user,
             namespace: namespace,
             from: params[:start_date],
-            to: params[:end_date]).execute
+            to: params[:end_date],
+            events: params[:events],
+            users: params[:user_ids]&.map(&:model_id)
+          ).execute
         end
 
         private
