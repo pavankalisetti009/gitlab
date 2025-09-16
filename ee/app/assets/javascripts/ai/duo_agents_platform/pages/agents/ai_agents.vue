@@ -10,7 +10,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
-import aiCatalogItemConsumersQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_item_consumers.query.graphql';
+import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import { AI_CATALOG_TYPE_AGENT, PAGE_SIZE } from 'ee/ai/catalog/constants';
@@ -41,7 +41,7 @@ export default {
   },
   apollo: {
     aiAgents: {
-      query: aiCatalogItemConsumersQuery,
+      query: aiCatalogConfiguredItemsQuery,
       variables() {
         return {
           itemType: AI_CATALOG_TYPE_AGENT,
@@ -53,9 +53,9 @@ export default {
         };
       },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
-      update: (data) => data.aiCatalogItemConsumers.nodes,
+      update: (data) => data.aiCatalogConfiguredItems.nodes,
       result({ data }) {
-        this.pageInfo = data.aiCatalogItemConsumers.pageInfo;
+        this.pageInfo = data.aiCatalogConfiguredItems.pageInfo;
       },
     },
     aiCatalogAgent: {
@@ -151,7 +151,7 @@ export default {
           variables: {
             id,
           },
-          refetchQueries: [aiCatalogItemConsumersQuery],
+          refetchQueries: [aiCatalogConfiguredItemsQuery],
         });
 
         if (!data.aiCatalogItemConsumerDelete.success) {

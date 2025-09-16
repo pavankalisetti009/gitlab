@@ -3,7 +3,7 @@
 module Resolvers
   module Ai
     module Catalog
-      class ItemConsumersResolver < BaseResolver
+      class ConfiguredItemsResolver < BaseResolver
         description 'Find AI Catalog items configured for use.'
 
         type ::Types::Ai::Catalog::ItemConsumerType.connection_type, null: false

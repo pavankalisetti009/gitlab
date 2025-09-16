@@ -10,47 +10,47 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   let_it_be(:catalog_agents) { create_list(:ai_catalog_agent, 2) }
   let_it_be(:catalog_flows) { create_list(:ai_catalog_flow, 2) }
   let_it_be(:catalog_items) { [*catalog_agents, *catalog_flows] }
-  let_it_be(:agent_consumers) do
+  let_it_be(:configured_agents) do
     catalog_agents.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
   end
 
-  let_it_be(:flow_consumers) do
+  let_it_be(:configured_flows) do
     catalog_flows.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
   end
 
-  let_it_be(:consumers) do
-    [*agent_consumers, *flow_consumers]
+  let_it_be(:configured_items) do
+    [*configured_agents, *configured_flows]
   end
 
   let(:current_user) { developer }
   let(:project_gid) { project.to_global_id }
-  let(:nodes) { graphql_data_at(:ai_catalog_item_consumers, :nodes) }
+  let(:nodes) { graphql_data_at(:ai_catalog_configured_items, :nodes) }
   let(:args) { { projectId: project_gid } }
 
   let(:query) do
-    "{ #{query_nodes('aiCatalogItemConsumers', of: 'AiCatalogItemConsumer', max_depth: 3, args: args)} }"
+    "{ #{query_nodes('aiCatalogConfiguredItems', of: 'AiCatalogItemConsumer', max_depth: 3, args: args)} }"
   end
 
   it 'returns configured AI catalog items' do
     post_graphql(query, current_user: current_user)
 
     expect(response).to have_gitlab_http_status(:success)
-    expect(nodes).to match_array(consumers.map { |configured_item| a_graphql_entity_for(configured_item) })
+    expect(nodes).to match_array(configured_items.map { |configured_item| a_graphql_entity_for(configured_item) })
   end
 
   context 'when filtering by group and item' do
     let_it_be(:group) { create(:group, developers: developer) }
-    let_it_be(:consumers) do
+    let_it_be(:configured_items) do
       catalog_items.map { |item| create(:ai_catalog_item_consumer, group: group, item: item) }
     end
 
-    let(:args) { { groupId: group.to_global_id, itemId: consumers[0].item.to_global_id } }
+    let(:args) { { groupId: group.to_global_id, itemId: configured_items[0].item.to_global_id } }
 
     it 'returns configured AI catalog items' do
       post_graphql(query, current_user: current_user)
 
       expect(response).to have_gitlab_http_status(:success)
-      expect(nodes).to contain_exactly(a_graphql_entity_for(consumers[0]))
+      expect(nodes).to contain_exactly(a_graphql_entity_for(configured_items[0]))
     end
   end
 
@@ -95,7 +95,7 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
       post_graphql(query, current_user: current_user)
 
       expect(response).to have_gitlab_http_status(:success)
-      expect(nodes).to match_array(flow_consumers.map { |flow| a_graphql_entity_for(flow) })
+      expect(nodes).to match_array(configured_flows.map { |flow| a_graphql_entity_for(flow) })
     end
   end
 
