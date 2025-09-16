@@ -1,4 +1,4 @@
-import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports
@@ -47,7 +47,7 @@ export default () => {
     el.dataset;
 
   // Collapse the sidebar on mobile screens by default
-  const bpBreakpoint = bp.getBreakpointSize();
+  const bpBreakpoint = GlBreakpointInstance.getBreakpointSize();
   if (bpBreakpoint === 'xs' || bpBreakpoint === 'sm' || bpBreakpoint === 'md') {
     setCookie('collapsed_gutter', true);
   }

@@ -1,7 +1,7 @@
 <script>
 import { GlFormGroup, GlFormInput, GlTooltipDirective, GlFormCheckbox } from '@gitlab/ui';
 
-import { GlBreakpointInstance as bp } from '@gitlab/ui/src/utils';
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { debounce } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
@@ -74,7 +74,7 @@ export default {
   computed: {
     ...mapState(['storeGroupName', 'storeGroupPath']),
     placement() {
-      return bp.getBreakpointSize() === 'xs' ? 'bottom' : 'right';
+      return GlBreakpointInstance.getBreakpointSize() === 'xs' ? 'bottom' : 'right';
     },
     urlGroupPath() {
       // for persisted group we should not show suggestions but just slugify group name
