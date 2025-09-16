@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class DatabaseReplicationEnabledCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class DatabaseReplicationEnabledCheck < ::SystemCheck::BaseCheck
       set_name 'Database replication enabled?'
       set_skip_reason 'not a secondary node'
 

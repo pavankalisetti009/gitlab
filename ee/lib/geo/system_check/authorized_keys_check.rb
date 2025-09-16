@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
+module Geo
+  module SystemCheck
     class AuthorizedKeysCheck < ::SystemCheck::BaseCheck
       include ::SystemCheck::MultiCheckHelpers
 
@@ -24,9 +24,11 @@ module SystemCheck
         (?<content>[^#'"]+)        # content should be at least 1 char, non quotes or start-comment symbol
         \k<quote>                  # boundary for command, backtracks the same detected quote, or none
         \s*                        # optional any amount of space character
-        (?:\#.*)?$                 # optional start-comment symbol followed by optionally any character until end of line
+        (?:\#.*)?$                 # optional start-comment symbol followed by
+                                   # optionally any character until end of line
       }x
-      OPENSSH_EXPECTED_COMMAND = '/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell-authorized-keys-check git %u %k'
+      OPENSSH_EXPECTED_COMMAND = '/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell-authorized-keys-check ' \
+        'git %u %k'
 
       def multi_check
         unless openssh_config_exists?
@@ -172,11 +174,13 @@ module SystemCheck
 
         File.open(openssh_config_path) do |f|
           f.each_line do |line|
-            next unless (match = line.strip.match(regexp))
+            match = line.strip.match(regexp)
+            next unless match
 
             raw_content = match[:content]
             # remove linebreak, and lead and trailing spaces
-            return raw_content.chomp.strip # rubocop:disable Cop/AvoidReturnFromBlocks
+            return raw_content.chomp.strip # rubocop:disable Cop/AvoidReturnFromBlocks -- Needs to return from inside
+            # the block. Does not match the use case defined in the Cop.
           end
         end
 

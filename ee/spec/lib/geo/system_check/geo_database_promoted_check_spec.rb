@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::GeoDatabasePromotedCheck, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::GeoDatabasePromotedCheck, feature_category: :geo_replication do
   include EE::GeoHelpers
 
   subject(:geo_database_promoted_check) { described_class.new }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::GeoNodesCheck, :geo, :silence_stdout, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::GeoNodesCheck, :geo, :silence_stdout, feature_category: :geo_replication do
   subject(:check) { described_class.new }
 
   describe '#check?' do

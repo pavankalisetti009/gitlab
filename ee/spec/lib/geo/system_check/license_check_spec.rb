@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::LicenseCheck, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::LicenseCheck, feature_category: :geo_replication do
+  subject(:license_check) { described_class.new }
+
   describe '#check?' do
     using RSpec::Parameterized::TableSyntax
 
@@ -19,13 +21,12 @@ RSpec.describe SystemCheck::Geo::LicenseCheck, feature_category: :geo_replicatio
 
     with_them do
       before do
-        allow(Gitlab::Geo).to receive(:primary?).and_return(primary)
-        allow(Gitlab::Geo).to receive(:enabled?).and_return(geo_enabled)
-        allow(Gitlab::Geo).to receive(:license_allows?).and_return(license_allows)
+        allow(Gitlab::Geo).to receive_messages(primary?: primary, enabled?: geo_enabled,
+          license_allows?: license_allows)
       end
 
       it 'checks the license' do
-        expect(subject.check?).to eq(check_result)
+        expect(license_check.check?).to eq(check_result)
         expect(described_class.check_pass).to eq(pass_message) if check_result
       end
     end
@@ -36,10 +37,10 @@ RSpec.describe SystemCheck::Geo::LicenseCheck, feature_category: :geo_replicatio
       end
 
       it 'returns the geo setup/database page' do
-        expect(subject).to receive(:try_fixing_it).with('Add a new license that includes the GitLab Geo feature')
-        expect(subject).to receive(:for_more_information).with('https://about.gitlab.com/solutions/geo/')
+        expect(license_check).to receive(:try_fixing_it).with('Add a new license that includes the GitLab Geo feature')
+        expect(license_check).to receive(:for_more_information).with('https://about.gitlab.com/solutions/geo/')
 
-        subject.show_error
+        license_check.show_error
       end
     end
   end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module SystemCheck
-  module Geo
-    class HttpConnectionCheck < SystemCheck::BaseCheck
+module Geo
+  module SystemCheck
+    class HttpConnectionCheck < ::SystemCheck::BaseCheck
       set_name 'GitLab Geo HTTP(S) connectivity'
 
       NOT_SECONDARY_NODE = 'not a secondary node'
@@ -62,7 +62,7 @@ module SystemCheck
         display_exception(e)
 
         try_fixing_it(
-          'If you have a self-signed CA or certificate you need to whitelist it in Omnibus'
+          'If you have a self-signed CA or certificate you need to allowlist it in Omnibus'
         )
         for_more_information(see_custom_certificate_doc)
 

@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::SshPortCheck, feature_category: :geo_replication do
   include EE::GeoHelpers
 
-  subject { described_class.new }
+  subject(:ssh_port_check) { described_class.new }
 
   let_it_be(:primary_node) { create(:geo_node, :primary) }
   let_it_be(:secondary_node) { create(:geo_node) }
@@ -25,11 +25,11 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
     it 'skips when Geo is enabled but its a primary site' do
       stub_current_geo_node(primary_node)
 
-      expect(subject.skip?).to be_truthy
+      expect(ssh_port_check.skip?).to be_truthy
     end
 
     it 'does not skip when Geo is enabled and its a secondary site' do
-      expect(subject.skip?).to be_falsey
+      expect(ssh_port_check.skip?).to be_falsey
     end
 
     context 'with different enabled_git_access_protocol settings' do
@@ -48,7 +48,7 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
           stub_application_setting(enabled_git_access_protocol: enabled_protocol)
         end
 
-        it { expect(subject.skip?).to eq(result) }
+        it { expect(ssh_port_check.skip?).to eq(result) }
       end
     end
   end
@@ -68,17 +68,17 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
         let(:primary_ssh_port) { 22 }
         let(:primary_clone_url_prefix) { "git@127.0.0.1" }
 
-        it { expect(subject.check?).to be_truthy }
+        it { expect(ssh_port_check.check?).to be_truthy }
       end
 
       context 'when the primary site has a non default port' do
-        it { expect(subject.check?).to be_truthy }
+        it { expect(ssh_port_check.check?).to be_truthy }
       end
     end
 
     context 'when the secondary site has different port from primary' do
       context 'when secondary site has a default port' do
-        it { expect(subject.check?).to be_falsey }
+        it { expect(ssh_port_check.check?).to be_falsey }
       end
 
       context 'when secondary site has a non default port' do
@@ -92,14 +92,14 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
         end
 
         context 'when the primary site has a non default port' do
-          it { expect(subject.check?).to be_falsey }
+          it { expect(ssh_port_check.check?).to be_falsey }
         end
 
         context 'when the primary site has a default port' do
           let(:primary_ssh_port) { 22 }
           let(:primary_clone_url_prefix) { "git@127.0.0.1" }
 
-          it { expect(subject.check?).to be_falsey }
+          it { expect(ssh_port_check.check?).to be_falsey }
         end
       end
     end
@@ -117,8 +117,8 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
       end
 
       it 'returns the geo index.md#limitations page' do
-        expect(subject).to receive(:for_more_information).with('doc/administration/geo/index.md#limitations')
-        expect(subject).to receive(:try_fixing_it).with(
+        expect(ssh_port_check).to receive(:for_more_information).with('doc/administration/geo/index.md#limitations')
+        expect(ssh_port_check).to receive(:try_fixing_it).with(
           "This site's Git SSH port is: 5678, but the primary site's Git SSH port is: 1234.",
           "Update this site's SSH port to match the primary's SSH port:",
           "- Omnibus GitLab: Update gitlab_rails['gitlab_shell_ssh_port'] in /etc/gitlab/gitlab.rb",
@@ -126,7 +126,7 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
           "- GitLab Development Kit: See https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/ssh.md#change-the-listen-port-or-other-configuration"
         )
 
-        subject.show_error
+        ssh_port_check.show_error
       end
 
       context 'when primary has a default port' do
@@ -135,8 +135,8 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
         end
 
         it 'returns the geo index.md#limitations page' do
-          expect(subject).to receive(:for_more_information).with('doc/administration/geo/index.md#limitations')
-          expect(subject).to receive(:try_fixing_it).with(
+          expect(ssh_port_check).to receive(:for_more_information).with('doc/administration/geo/index.md#limitations')
+          expect(ssh_port_check).to receive(:try_fixing_it).with(
             "This site's Git SSH port is: 5678, but the primary site's Git SSH port is: 22.",
             "Update this site's SSH port to match the primary's SSH port:",
             "- Omnibus GitLab: Update gitlab_rails['gitlab_shell_ssh_port'] in /etc/gitlab/gitlab.rb",
@@ -144,7 +144,7 @@ RSpec.describe SystemCheck::Geo::SshPortCheck, feature_category: :geo_replicatio
             "- GitLab Development Kit: See https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/ssh.md#change-the-listen-port-or-other-configuration"
           )
 
-          subject.show_error
+          ssh_port_check.show_error
         end
       end
     end

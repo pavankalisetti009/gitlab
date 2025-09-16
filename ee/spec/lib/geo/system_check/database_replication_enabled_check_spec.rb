@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SystemCheck::Geo::DatabaseReplicationEnabledCheck, :silence_stdout, feature_category: :geo_replication do
+RSpec.describe Geo::SystemCheck::DatabaseReplicationEnabledCheck, :silence_stdout, feature_category: :geo_replication do
   subject(:database_replication_enabled_check) { described_class.new }
 
   describe '#check?' do
