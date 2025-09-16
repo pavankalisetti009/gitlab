@@ -1,0 +1,20 @@
+fragment VulnerabilitiesPerSeverity on VulnerabilitiesPerSeverity {
+  critical {
+    count
+  }
+  high {
+    count
+  }
+  medium {
+    count
+  }
+  low {
+    count
+  }
+  info {
+    count
+  }
+  unknown {
+    count
+  }
+}

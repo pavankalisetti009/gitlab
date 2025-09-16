@@ -2,20 +2,20 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/charts/vulnerabilities_for_severity_panel.vue';
-import GroupVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_for_severity_panel.vue';
-import vulnerabilitiesPerSeverity from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_per_severity.query.graphql';
+import ProjectVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_for_severity_panel.vue';
+import vulnerabilitiesPerSeverity from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_per_severity.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
-describe('GroupVulnerabilitiesForSeverityPanel', () => {
+describe('ProjectVulnerabilitiesForSeverityPanel', () => {
   let wrapper;
   let vulnerabilitiesPerSeverityHandler;
 
-  const mockGroupFullPath = 'group/subgroup';
-  const mockFilters = { projectId: 'gid://gitlab/Project/123' };
+  const mockProjectFullPath = 'group/project';
+  const mockFilters = { reportType: ['SAST'] };
   const defaultProps = {
     severity: 'medium',
     filters: mockFilters,
@@ -23,8 +23,8 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
 
   const defaultMockVulnerabilitiesPerSeverityData = {
     data: {
-      group: {
-        id: 'gid://gitlab/Group/1',
+      project: {
+        id: 'gid://gitlab/Project/1',
         securityMetrics: {
           vulnerabilitiesPerSeverity: {
             critical: { count: 3, __typename: 'VulnerabilitySeverityCount' },
@@ -37,7 +37,7 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
           },
           __typename: 'SecurityMetrics',
         },
-        __typename: 'Group',
+        __typename: 'Project',
       },
     },
   };
@@ -51,15 +51,15 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
       [vulnerabilitiesPerSeverity, vulnerabilitiesPerSeverityHandler],
     ]);
 
-    wrapper = shallowMountExtended(GroupVulnerabilitiesForSeverityPanel, {
+    wrapper = shallowMountExtended(ProjectVulnerabilitiesForSeverityPanel, {
       apolloProvider,
       propsData: {
         ...defaultProps,
         ...props,
       },
       provide: {
-        groupFullPath: mockGroupFullPath,
-        securityVulnerabilitiesPath: '/group/security/vulnerabilities',
+        projectFullPath: mockProjectFullPath,
+        securityVulnerabilitiesPath: '/project/security/vulnerabilities',
       },
     });
   };
@@ -67,30 +67,32 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
   const findVulnerabilitiesForSeverityPanel = () =>
     wrapper.findComponent(VulnerabilitiesForSeverityPanel);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('component rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders the vulnerabilities for severity panel', () => {
       expect(findVulnerabilitiesForSeverityPanel().exists()).toBe(true);
     });
 
-    it('passes the severity to the panel', () => {
-      expect(findVulnerabilitiesForSeverityPanel().props('severity')).toBe('medium');
-    });
-
-    it('passes the filters to the panel', () => {
-      expect(findVulnerabilitiesForSeverityPanel().props('filters')).toBe(defaultProps.filters);
+    it('passes the correct props to the panel', () => {
+      expect(findVulnerabilitiesForSeverityPanel().props()).toMatchObject({
+        severity: defaultProps.severity,
+        filters: defaultProps.filters,
+      });
     });
 
     it('passes the count based on the data', async () => {
-      const { medium } =
-        defaultMockVulnerabilitiesPerSeverityData.data.group.securityMetrics
+      const {
+        medium: { count },
+      } =
+        defaultMockVulnerabilitiesPerSeverityData.data.project.securityMetrics
           .vulnerabilitiesPerSeverity;
+
       await waitForPromises();
 
-      expect(findVulnerabilitiesForSeverityPanel().props('count')).toBe(medium.count);
+      expect(findVulnerabilitiesForSeverityPanel().props('count')).toBe(count);
     });
 
     it('passes loading state to panels base', async () => {
@@ -104,43 +106,38 @@ describe('GroupVulnerabilitiesForSeverityPanel', () => {
 
   describe('Apollo query', () => {
     it('fetches vulnerabilities per severity data when component is created', () => {
+      createComponent();
+
       expect(vulnerabilitiesPerSeverityHandler).toHaveBeenCalledWith({
-        fullPath: mockGroupFullPath,
-        projectId: mockFilters.projectId,
-        reportType: undefined,
+        fullPath: mockProjectFullPath,
+        reportType: mockFilters.reportType,
       });
     });
 
-    it.each(['projectId', 'reportType'])(
-      'passes filters to the GraphQL query',
-      (availableFilterType) => {
-        createComponent({
-          props: {
-            filters: { [availableFilterType]: ['filterValue'] },
-          },
-        });
-
-        expect(vulnerabilitiesPerSeverityHandler).toHaveBeenCalledWith(
-          expect.objectContaining({
-            [availableFilterType]: ['filterValue'],
-            projectId: availableFilterType === 'projectId' ? ['filterValue'] : undefined,
-            reportType: availableFilterType === 'reportType' ? ['filterValue'] : undefined,
-          }),
-        );
-      },
-    );
-
-    it('does not add unsupported filters that are passed', () => {
-      const unsupportedFilter = ['filterValue'];
+    it('passes reportType filter to the GraphQL query', () => {
       createComponent({
         props: {
-          filters: { unsupportedFilter },
+          filters: { reportType: ['filterValue'] },
+        },
+      });
+
+      expect(vulnerabilitiesPerSeverityHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reportType: ['filterValue'],
+        }),
+      );
+    });
+
+    it('does not add unsupported filters that are passed', () => {
+      createComponent({
+        props: {
+          filters: { projectId: ['filterValue'] },
         },
       });
 
       expect(vulnerabilitiesPerSeverityHandler).not.toHaveBeenCalledWith(
         expect.objectContaining({
-          unsupportedFilter,
+          projectId: ['filterValue'],
         }),
       );
     });
