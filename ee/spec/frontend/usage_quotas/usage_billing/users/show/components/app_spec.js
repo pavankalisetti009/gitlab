@@ -17,7 +17,8 @@ describe('UsageBillingUserDashboardApp', () => {
   /** @type { MockAdapter } */
   let mockAxios;
 
-  const MOCK_USER = mockData.subscription.gitlabUnitsUsage.userUsage.user;
+  const MOCK_USAGE = mockData.subscription.gitlabUnitsUsage.userUsage;
+  const MOCK_USER = MOCK_USAGE.user;
   const USER_ID = MOCK_USER.id;
   const API_ENDPOINT = `/admin/gitlab_duo/usage/users/${USER_ID}/data`;
 
@@ -33,6 +34,9 @@ describe('UsageBillingUserDashboardApp', () => {
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findUserAvatar = () => wrapper.findComponent(GlAvatar);
   const findExportButton = () => wrapper.findByTestId('export-usage-data-button');
+  const findMonthSummaryCard = () => wrapper.findByTestId('month-summary-card');
+  const findMonthPoolCard = () => wrapper.findByTestId('month-pool-card');
+  const findTotalUsageCard = () => wrapper.findByTestId('total-usage-card');
 
   beforeEach(() => {
     mockAxios = new MockAdapter(axios);
@@ -72,6 +76,28 @@ describe('UsageBillingUserDashboardApp', () => {
 
       it('renders export usage data button', () => {
         expect(findExportButton().exists()).toBe(true);
+      });
+    });
+
+    describe('usage cards', () => {
+      it('renders month summary card with correct values', () => {
+        const card = findMonthSummaryCard();
+        expect(card.exists()).toBe(true);
+        expect(card.text()).toContain(
+          `${MOCK_USAGE.allocationUsed} / ${MOCK_USAGE.allocationTotal}`,
+        );
+      });
+
+      it('renders month pool card with correct values', () => {
+        const card = findMonthPoolCard();
+        expect(card.exists()).toBe(true);
+        expect(card.text()).toContain(`${MOCK_USAGE.poolUsed}`);
+      });
+
+      it('renders total usage card with correct values', () => {
+        const card = findTotalUsageCard();
+        expect(card.exists()).toBe(true);
+        expect(card.text()).toContain(`${MOCK_USAGE.totalUnitsUsed}`);
       });
     });
   });
