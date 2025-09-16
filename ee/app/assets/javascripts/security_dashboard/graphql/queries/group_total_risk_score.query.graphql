@@ -1,17 +1,24 @@
-query groupTotalRiskScore($fullPath: ID!, $projectId: [ID!]) {
+query groupTotalRiskScore(
+  $fullPath: ID!
+  $projectId: [ID!]
+  $includeByDefault: Boolean!
+  $includeByProject: Boolean!
+) {
   group(fullPath: $fullPath) {
     id
     securityMetrics(projectId: $projectId) {
       riskScore {
-        score
-        byProject {
-          nodes {
-            rating
-            score
-            project {
-              id
-              name
-              path
+        score @include(if: $includeByDefault)
+        ... @include(if: $includeByProject) {
+          byProject {
+            nodes {
+              rating
+              score
+              project {
+                id
+                name
+                path
+              }
             }
           }
         }
