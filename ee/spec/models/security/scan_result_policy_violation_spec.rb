@@ -242,6 +242,62 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
     end
   end
 
+  describe '.for_merge_request' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request_1) { create(:merge_request, :unique_branches, source_project: project) }
+    let_it_be(:merge_request_2) { create(:merge_request, :unique_branches, source_project: project) }
+    let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+
+    let_it_be(:violation_for_mr1) do
+      create(:scan_result_policy_violation, project: project, merge_request: merge_request_1,
+        scan_result_policy_read: scan_result_policy_read)
+    end
+
+    let_it_be(:violation_for_mr2) do
+      create(:scan_result_policy_violation, project: project, merge_request: merge_request_2,
+        scan_result_policy_read: scan_result_policy_read)
+    end
+
+    subject(:for_merge_request) { described_class.for_merge_request(merge_request) }
+
+    context 'when filtering by a specific merge request' do
+      let(:merge_request) { merge_request_1 }
+
+      it 'returns only violations for that merge request' do
+        expect(for_merge_request).to contain_exactly(violation_for_mr1)
+      end
+    end
+
+    context 'when filtering by a different merge request' do
+      let(:merge_request) { merge_request_2 }
+
+      it 'returns only violations for that merge request' do
+        expect(for_merge_request).to contain_exactly(violation_for_mr2)
+      end
+    end
+
+    context 'when filtering by a merge request with no violations' do
+      let(:merge_request) { create(:merge_request, :unique_branches, source_project: project) }
+
+      it 'returns empty result' do
+        expect(for_merge_request).to be_empty
+      end
+    end
+
+    context 'when there are multiple violations for the same merge request' do
+      let(:merge_request) { merge_request_1 }
+      let_it_be(:scan_result_policy_read_2) { create(:scan_result_policy_read, project: project) }
+      let_it_be(:additional_violation_for_mr1) do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request_1,
+          scan_result_policy_read: scan_result_policy_read_2)
+      end
+
+      it 'returns all violations for that merge request' do
+        expect(for_merge_request).to contain_exactly(violation_for_mr1, additional_violation_for_mr1)
+      end
+    end
+  end
+
   describe '#finding_uuids' do
     let(:violation) { build(:scan_result_policy_violation, violation_data: violation_data) }
 
@@ -292,6 +348,145 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
         end
 
         it { is_expected.to match_array(expected_uuids) }
+      end
+    end
+  end
+
+  describe '#dismissed?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+    let_it_be(:security_policy) { create(:security_policy) }
+    let_it_be(:approval_policy_rule) do
+      create(:approval_policy_rule, :scan_finding, security_policy: security_policy)
+    end
+
+    subject { violation.dismissed? }
+
+    context 'when no dismissal exists' do
+      let(:violation) do
+        create(:scan_result_policy_violation, :new_scan_finding,
+          project: project,
+          merge_request: merge_request,
+          scan_result_policy_read: scan_result_policy_read,
+          approval_policy_rule: approval_policy_rule,
+          uuids: %w[uuid-1 uuid-2]
+        )
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when dismissal exists' do
+      let_it_be(:policy_dismissal) do
+        create(:policy_dismissal,
+          project: project,
+          merge_request: merge_request,
+          security_policy: security_policy,
+          security_findings_uuids: %w[uuid-1 uuid-2 uuid-3]
+        )
+      end
+
+      context 'when violation has no finding UUIDs' do
+        let(:violation) do
+          create(:scan_result_policy_violation,
+            project: project,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['abc123'] } } }
+          )
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when all finding UUIDs are dismissed' do
+        let(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            project: project,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: %w[uuid-1 uuid-2]
+          )
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when some finding UUIDs are missing from dismissal' do
+        let(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            project: project,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: %w[uuid-1 uuid-4]
+          )
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when dismissal contains extra UUIDs beyond violation UUIDs' do
+        let(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            project: project,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: ['uuid-1']
+          )
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when violation has both newly detected and previously existing UUIDs' do
+        let(:violation) do
+          create(:scan_result_policy_violation,
+            project: project,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            violation_data: {
+              'violations' => {
+                'scan_finding' => {
+                  'uuids' => {
+                    'newly_detected' => ['uuid-1'],
+                    'previously_existing' => ['uuid-2']
+                  }
+                }
+              }
+            }
+          )
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when violation has mixed UUIDs with some not dismissed' do
+        let(:violation) do
+          create(:scan_result_policy_violation,
+            project: project,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            violation_data: {
+              'violations' => {
+                'scan_finding' => {
+                  'uuids' => {
+                    'newly_detected' => %w[uuid-1 uuid-missing],
+                    'previously_existing' => ['uuid-2']
+                  }
+                }
+              }
+            }
+          )
+        end
+
+        it { is_expected.to be(false) }
       end
     end
   end

@@ -36,6 +36,7 @@ module Security
 
     scope :including_scan_result_policy_reads, -> { includes(:scan_result_policy_read) }
     scope :including_security_policies, -> { includes(:security_policy) }
+    scope :for_merge_request, ->(merge_request) { where(merge_request: merge_request) }
 
     scope :for_approval_rules,
       ->(approval_rules) {
@@ -64,6 +65,17 @@ module Security
       FINDING_STATES.flat_map do |key|
         violation_data&.dig("violations", "scan_finding", "uuids", key)
       end.compact_blank
+    end
+
+    def dismissed?
+      dismissal = Security::PolicyDismissal.find_by(
+        security_policy: security_policy,
+        merge_request: merge_request
+      )
+
+      return false unless dismissal
+
+      finding_uuids.all? { |uuid| dismissal.security_findings_uuids.include?(uuid) }
     end
   end
 end
