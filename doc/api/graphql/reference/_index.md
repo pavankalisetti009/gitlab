@@ -2549,7 +2549,7 @@ Input type: `AiCatalogAgentExecuteInput`
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogagentexecuteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaicatalogagentexecuteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
-| <a id="mutationaicatalogagentexecuteflowconfig"></a>`flowConfig` | [`String`](#string) | YAML configuration file that can be used in Duo workflow service for flow execution. |
+| <a id="mutationaicatalogagentexecuteflowconfig"></a>`flowConfig` | [`String`](#string) | YAML configuration that can be used in Duo workflow service for flow execution. |
 | <a id="mutationaicatalogagentexecuteworkflow"></a>`workflow` | [`DuoWorkflow`](#duoworkflow) | Created workflow. |
 
 ### `Mutation.aiCatalogAgentUpdate`
@@ -2636,6 +2636,32 @@ Input type: `AiCatalogFlowDeleteInput`
 | <a id="mutationaicatalogflowdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaicatalogflowdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationaicatalogflowdeletesuccess"></a>`success` | [`Boolean!`](#boolean) | Returns true if catalog flow was successfully deleted. |
+
+### `Mutation.aiCatalogFlowExecute`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogFlowExecuteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogflowexecuteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogflowexecuteflowid"></a>`flowId` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the AI catalog flow to execute. |
+| <a id="mutationaicatalogflowexecuteflowversionid"></a>`flowVersionId` | [`AiCatalogItemVersionID`](#aicatalogitemversionid) | Global ID of the specific flow version to use. If not provided, the latest version will be used. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogflowexecuteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogflowexecuteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogflowexecuteflowconfig"></a>`flowConfig` | [`String`](#string) | YAML configuration that can be used in Duo workflow service for flow execution. |
+| <a id="mutationaicatalogflowexecuteworkflow"></a>`workflow` | [`DuoWorkflow`](#duoworkflow) | Created workflow. |
 
 ### `Mutation.aiCatalogFlowUpdate`
 
