@@ -10,18 +10,49 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
   it { is_expected.to validate_presence_of(:project) }
 
   describe 'state machine' do
+    let_it_be(:project) { create(:project) }
+
+    subject(:secrets_manager) { create(:project_secrets_manager, project: project) }
+
     context 'when newly created' do
       it 'defaults to provisioning' do
-        secrets_manager.save!
         expect(secrets_manager).to be_provisioning
       end
     end
 
-    context 'when activated' do
-      it 'becomes active' do
-        secrets_manager.save!
+    context 'when activating' do
+      it 'allows transitions from any non-active status to active' do
+        [:provisioning, :deprovisioning].each do |status|
+          secrets_manager.update!(status: SecretsManagement::ProjectSecretsManager::STATUSES[status])
+          secrets_manager.activate!
+          expect(secrets_manager.reload).to be_active
+        end
+      end
+
+      it 'cannot transition from active to active' do
         secrets_manager.activate!
-        expect(secrets_manager.reload).to be_active
+        expect(secrets_manager).to be_active
+
+        expect { secrets_manager.activate! }
+          .to raise_error(StateMachines::InvalidTransition)
+      end
+    end
+
+    context 'when initiating deprovisioning' do
+      it 'transitions from active to deprovisioning' do
+        secrets_manager.activate!
+        expect(secrets_manager).to be_active
+
+        secrets_manager.initiate_deprovision!
+        expect(secrets_manager.reload).to be_deprovisioning
+      end
+
+      it 'cannot transition from non-active states' do
+        [:provisioning, :deprovisioning].each do |status|
+          secrets_manager.update!(status: SecretsManagement::ProjectSecretsManager::STATUSES[status])
+          expect { secrets_manager.initiate_deprovision! }
+            .to raise_error(StateMachines::InvalidTransition)
+        end
       end
     end
   end

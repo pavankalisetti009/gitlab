@@ -102,6 +102,7 @@ RSpec.configure do |config|
     # things to clean up here later on as we add more features.
     clean_all_kv_secrets_engines
     clean_all_pipeline_jwt_engines
+    clean_all_user_jwt_engines
     clean_all_policies
   end
 end

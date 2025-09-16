@@ -119,7 +119,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
 
     context 'and the project secrets manager is not active' do
       before do
-        secrets_manager.disable!
+        secrets_manager.destroy!
         post_graphql(list_query, current_user: current_user)
       end
 
@@ -132,7 +132,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
 
     context 'and the project secrets manager is not active and attempts to fetch a secret' do
       before do
-        secrets_manager.disable!
+        secrets_manager.destroy!
         get_graphql(read_query, current_user: current_user)
       end
 

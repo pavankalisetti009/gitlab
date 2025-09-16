@@ -71,7 +71,7 @@ module SecretsManagement
       end
 
       def configure_user_auth_cel
-        secrets_manager_client.update_cel_role(
+        secrets_manager_client.update_jwt_cel_role(
           secrets_manager.user_auth_mount,
           secrets_manager.user_auth_role,
           cel_program: secrets_manager.user_auth_cel_program(secrets_manager.project.id),

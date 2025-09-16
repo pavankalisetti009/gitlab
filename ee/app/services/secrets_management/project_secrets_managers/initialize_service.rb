@@ -7,7 +7,6 @@ module SecretsManagement
         if project.secrets_manager.nil?
           secrets_manager = ProjectSecretsManager.create!(project: project)
 
-          # Pass the current_user.id to the worker
           SecretsManagement::ProvisionProjectSecretsManagerWorker.perform_async(
             current_user.id,
             secrets_manager.id

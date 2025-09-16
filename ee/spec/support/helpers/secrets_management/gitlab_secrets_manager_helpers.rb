@@ -21,6 +21,16 @@ module SecretsManagement
       end
     end
 
+    def clean_all_user_jwt_engines
+      client = secrets_manager_client
+      client.each_auth_engine do |path, info|
+        next unless info["type"] == "jwt"
+        next unless path.include? "user_jwt"
+
+        client.disable_auth_engine(path)
+      end
+    end
+
     def clean_all_policies
       client = secrets_manager_client
       client.each_acl_policy do |name|
@@ -84,10 +94,6 @@ module SecretsManagement
         .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
     end
 
-    def expect_policy_not_to_exist(path)
-      expect(secrets_manager_client.get_raw_policy(path)).to be_nil
-    end
-
     def secrets_manager_client
       jwt = TestJwt.new.encoded
 
@@ -148,6 +154,49 @@ module SecretsManagement
         secret_path,
         custom_metadata
       )
+    end
+
+    def expect_jwt_role_to_exist(mount_path, role_name)
+      expect { secrets_manager_client.read_jwt_role(mount_path, role_name) }.not_to raise_error
+    end
+
+    def expect_jwt_role_not_to_exist(mount_path, role_name)
+      expect { secrets_manager_client.read_jwt_role(mount_path, role_name) }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+    end
+
+    def expect_jwt_cel_role_to_exist(mount_path, role_name)
+      expect { secrets_manager_client.read_jwt_cel_role(mount_path, role_name) }.not_to raise_error
+    end
+
+    def expect_jwt_cel_role_not_to_exist(mount_path, role_name)
+      expect { secrets_manager_client.read_jwt_cel_role(mount_path, role_name) }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+    end
+
+    def expect_policy_to_exist(policy_name)
+      expect(secrets_manager_client.get_raw_policy(policy_name)).not_to be_nil,
+        "Expected policy '#{policy_name}' to exist, but it was not found"
+    end
+
+    def expect_policy_not_to_exist(path)
+      expect(secrets_manager_client.get_raw_policy(path)).to be_nil
+    end
+
+    def expect_project_to_have_no_policies(project)
+      project_policies = find_project_policies(project)
+      expect(project_policies).to be_empty,
+        "Expected project #{project.id} to have no policies, but found: #{project_policies.join(', ')}"
+    end
+
+    def find_project_policies(project)
+      project_policies = []
+
+      secrets_manager_client.each_acl_policy do |policy_name|
+        project_policies << policy_name if policy_name.start_with?("project_#{project.id}/")
+      end
+
+      project_policies
     end
   end
 end

@@ -93,6 +93,7 @@ module EE
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Initialize
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagers::Deprovision
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Create
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Delete
         mount_mutation ::Mutations::SecretsManagement::ProjectSecrets::Update

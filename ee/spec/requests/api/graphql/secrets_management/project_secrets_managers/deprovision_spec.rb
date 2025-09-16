@@ -2,17 +2,23 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Initialize secrets manager on a project', feature_category: :secrets_management do
+RSpec.describe 'Deprovision secrets manager on a project', :gitlab_secrets_manager, feature_category: :secrets_management do
   include GraphqlHelpers
 
-  let_it_be(:project) { create(:project) }
+  let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:mutation_name) { :project_secrets_manager_initialize }
+  let_it_be(:mutation_name) { :project_secrets_manager_deprovision }
+
+  let(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
   let(:mutation) { graphql_mutation(mutation_name, project_path: project.full_path) }
   let(:mutation_response) { graphql_mutation_response(mutation_name) }
 
   subject(:post_mutation) { post_graphql_mutation(mutation, current_user: current_user) }
+
+  before do
+    provision_project_secrets_manager(secrets_manager, current_user)
+  end
 
   context 'when current user is not part of the project' do
     it_behaves_like 'a mutation on an unauthorized resource'
@@ -31,7 +37,7 @@ RSpec.describe 'Initialize secrets manager on a project', feature_category: :sec
       project.add_owner(current_user)
     end
 
-    it 'initializes the secrets manager on the project', :aggregate_failures do
+    it 'initiates deprovisioning the secrets manager on the project', :aggregate_failures do
       post_mutation
 
       expect(response).to have_gitlab_http_status(:success)
@@ -40,27 +46,19 @@ RSpec.describe 'Initialize secrets manager on a project', feature_category: :sec
       expect(graphql_data_at(mutation_name, :project_secrets_manager))
         .to match(a_graphql_entity_for(
           project: a_graphql_entity_for(project),
-          status: 'PROVISIONING'
+          status: 'DEPROVISIONING'
         ))
-    end
-
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'enable_ci_secrets_manager_for_project' }
-      let(:namespace) { project.namespace }
-      let(:user) { current_user }
-      let(:category) { 'Mutations::SecretsManagement::ProjectSecretsManagers::Initialize' }
-      let(:additional_properties) { { label: 'graphql' } }
     end
 
     context 'and service results to a failure' do
       before do
-        allow_next_instance_of(SecretsManagement::ProjectSecretsManagers::InitializeService) do |service|
+        allow_next_instance_of(SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService) do |service|
           allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
         end
       end
 
       it 'returns the service error' do
-        expect_next_instance_of(SecretsManagement::ProjectSecretsManagers::InitializeService) do |service|
+        expect_next_instance_of(SecretsManagement::ProjectSecretsManagers::InitiateDeprovisionService) do |service|
           result = ServiceResponse.error(message: 'some error')
           expect(service).to receive(:execute).and_return(result)
         end
@@ -69,8 +67,6 @@ RSpec.describe 'Initialize secrets manager on a project', feature_category: :sec
 
         expect(mutation_response['errors']).to include('some error')
       end
-
-      it_behaves_like 'internal event not tracked'
     end
 
     context 'and secrets_manager feature flag is disabled' do

@@ -58,7 +58,7 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
 
       context 'when secrets manager is not active' do
         before do
-          secrets_manager.disable
+          secrets_manager.initiate_deprovision!
         end
 
         it 'is invalid' do

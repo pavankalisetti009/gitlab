@@ -10516,6 +10516,25 @@ Input type: `ProjectSecretUpdateInput`
 | <a id="mutationprojectsecretupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationprojectsecretupdateprojectsecret"></a>`projectSecret` | [`ProjectSecret`](#projectsecret) | Updated project secret. |
 
+### `Mutation.projectSecretsManagerDeprovision`
+
+Input type: `ProjectSecretsManagerDeprovisionInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationprojectsecretsmanagerdeprovisionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprojectsecretsmanagerdeprovisionprojectpath"></a>`projectPath` | [`ID!`](#id) | Project of the secrets manager. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationprojectsecretsmanagerdeprovisionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprojectsecretsmanagerdeprovisionerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationprojectsecretsmanagerdeprovisionprojectsecretsmanager"></a>`projectSecretsManager` | [`ProjectSecretsManager`](#projectsecretsmanager) | Project secrets manager. |
+
 ### `Mutation.projectSecretsManagerInitialize`
 
 Input type: `ProjectSecretsManagerInitializeInput`
@@ -49467,7 +49486,8 @@ Values for the project secrets manager status.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="projectsecretsmanagerstatusactive"></a>`ACTIVE` | Secrets manager has been provisioned. |
+| <a id="projectsecretsmanagerstatusactive"></a>`ACTIVE` | Secrets manager has been provisioned and enabled. |
+| <a id="projectsecretsmanagerstatusdeprovisioning"></a>`DEPROVISIONING` | Secrets manager has is being deprovisioned. |
 | <a id="projectsecretsmanagerstatusprovisioning"></a>`PROVISIONING` | Secrets manager is being provisioned. |
 
 ### `ProjectSort`

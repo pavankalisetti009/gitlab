@@ -131,14 +131,24 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
   describe '#disable_secrets_engine' do
     let(:mount_path) { 'some/test/path' }
 
-    it 'disables the secrets engine' do
-      client.enable_secrets_engine(mount_path, 'kv-v2')
+    context 'when the secrets engine exists' do
+      before do
+        client.enable_secrets_engine(mount_path, 'kv-v2')
+      end
 
-      expect_kv_secret_engine_to_be_mounted(mount_path)
+      it 'disables the secrets engine' do
+        expect_kv_secret_engine_to_be_mounted(mount_path)
 
-      client.disable_secrets_engine(mount_path)
+        client.disable_secrets_engine(mount_path)
 
-      expect_kv_secret_engine_not_to_be_mounted(mount_path)
+        expect_kv_secret_engine_not_to_be_mounted(mount_path)
+      end
+    end
+
+    context 'when the secrets engine does not exist' do
+      it 'does not raise an error' do
+        expect { client.disable_secrets_engine('non/existent/path') }.not_to raise_error
+      end
     end
   end
 
@@ -206,6 +216,44 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
     it 'raises an error when reading a non-existent role' do
       expect { client.read_jwt_role(mount_path, 'non-existent-role') }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+    end
+  end
+
+  describe '#update_jwt_cel_role and #read_jwt_cel_role' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:role_name) { 'test-role' }
+    let(:server_url) { 'https://gitlab.example.com' }
+    let(:jwk_signer) { Gitlab::CurrentSettings.ci_jwt_signing_key }
+    let(:project_id) { 1234 }
+
+    let(:role_data) do
+      {
+        bound_audiences: [server_url],
+        cel_program: SecretsManagement::ProjectSecretsManager.new.user_auth_cel_program(project_id)
+      }
+    end
+
+    before do
+      client.enable_auth_engine(mount_path, 'jwt')
+      client.configure_jwt(mount_path, server_url, jwk_signer)
+    end
+
+    it 'creates and reads a JWT role' do
+      # Create the role
+      client.update_jwt_cel_role(mount_path, role_name, **role_data)
+
+      # Read the role back
+      role = client.read_jwt_cel_role(mount_path, role_name)
+
+      # Verify the role data
+      expect(role).to be_present
+      expect(role['bound_audiences']).to eq([server_url])
+      expect(role['cel_program']).not_to be_empty
+    end
+
+    it 'raises an error when reading a non-existent role' do
+      expect { client.read_jwt_cel_role(mount_path, 'non-existent-role') }
         .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
     end
   end
@@ -502,28 +550,79 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
   describe '#list_project_policies' do
     let(:project_id) { 123 }
+    let(:type) { nil }
+
+    subject(:result) { client.list_project_policies(project_id: project_id, type: type) }
 
     context 'when no policies exist' do
       it 'returns an empty array' do
-        result = client.list_project_policies(project_id: project_id)
-
         expect(result).to eq([])
       end
     end
 
     context 'when policies exist' do
       before do
+        # Create user policies
         client.set_policy(SecretsManagement::AclPolicy.new("project_123/users/direct/user_123"))
         client.set_policy(SecretsManagement::AclPolicy.new("project_123/users/direct/user_124"))
+        client.set_policy(SecretsManagement::AclPolicy.new("project_123/users/roles/50"))
+
+        # Create pipeline policies
+        client.set_policy(SecretsManagement::AclPolicy.new("project_123/pipelines/global"))
+        client.set_policy(SecretsManagement::AclPolicy.new("project_123/pipelines/branch/6d61696e"))
+
+        # Create a policy for a different project
+        client.set_policy(SecretsManagement::AclPolicy.new("project_456/users/direct/user_789"))
       end
 
-      it 'returns an array of policy data' do
-        result = client.list_project_policies(project_id: project_id)
+      context 'when type is not specified' do
+        it 'returns all policies for the project' do
+          expect(result).to be_an(Array)
+          expect(result.size).to eq(5) # All project_123 policies
 
-        expect(result).to be_an(Array)
-        expect(result.size).to eq(2)
-        expect(result[0]['key']).to eq('project_123/users/direct/user_123')
-        expect(result[1]['key']).to eq('project_123/users/direct/user_124')
+          policy_keys = result.pluck('key')
+          expect(policy_keys).to contain_exactly(
+            'project_123/users/direct/user_123',
+            'project_123/users/direct/user_124',
+            'project_123/users/roles/50',
+            'project_123/pipelines/global',
+            'project_123/pipelines/branch/6d61696e'
+          )
+
+          # Should not include policies from other projects
+          expect(policy_keys).not_to include('project_456/users/direct/user_789')
+        end
+      end
+
+      context 'when type is given' do
+        let(:type) { :users }
+
+        it 'returns only policies under the given type for the project' do
+          expect(result).to be_an(Array)
+          expect(result.size).to eq(3) # Only user policies
+
+          policy_keys = result.pluck('key')
+          expect(policy_keys).to contain_exactly(
+            'project_123/users/direct/user_123',
+            'project_123/users/direct/user_124',
+            'project_123/users/roles/50'
+          )
+        end
+      end
+
+      context 'with a block' do
+        it 'yields each policy data' do
+          policies = []
+          client.list_project_policies(project_id: project_id, type: :users) do |policy_data|
+            policies << policy_data['key']
+          end
+
+          expect(policies).to contain_exactly(
+            'project_123/users/direct/user_123',
+            'project_123/users/direct/user_124',
+            'project_123/users/roles/50'
+          )
+        end
       end
     end
   end
@@ -621,6 +720,125 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
+  describe '#delete_jwt_role' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:role_name) { 'test-role' }
+    let(:server_url) { 'https://gitlab.example.com' }
+    let(:jwk_signer) { Gitlab::CurrentSettings.ci_jwt_signing_key }
+
+    let(:role_data) do
+      {
+        role_type: 'jwt',
+        user_claim: 'project_id',
+        bound_claims: { project_id: 123 },
+        token_policies: ['test-policy']
+      }
+    end
+
+    subject(:result) { client.delete_jwt_role(mount_path, role_name) }
+
+    context 'when the auth mount exists' do
+      before do
+        client.enable_auth_engine(mount_path, 'jwt')
+        client.configure_jwt(mount_path, server_url, jwk_signer)
+      end
+
+      context 'when the role exists' do
+        before do
+          client.update_jwt_role(mount_path, role_name, **role_data)
+        end
+
+        it 'deletes the JWT role' do
+          # Verify role exists first
+          expect(client.read_jwt_role(mount_path, role_name)).to be_present
+
+          expect { result }.not_to raise_error
+          expect(result).to be_nil
+
+          # Verify role does not exist anymore
+          expect { client.read_jwt_role(mount_path, role_name) }
+            .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+        end
+      end
+
+      context 'when the role does not exist' do
+        let(:role_name) { 'non-existent-role' }
+
+        it 'fails silently' do
+          expect { result }.not_to raise_error
+          expect(result).to be_nil
+        end
+      end
+    end
+
+    context 'when the auth mount does not exist' do
+      let(:mount_path) { 'auth/non-existent-mount' }
+
+      it 'raises an error' do
+        expect { result }.to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+      end
+    end
+  end
+
+  describe '#delete_jwt_cel_role' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:role_name) { 'test-role' }
+    let(:server_url) { 'https://gitlab.example.com' }
+    let(:jwk_signer) { Gitlab::CurrentSettings.ci_jwt_signing_key }
+    let(:project_id) { 1234 }
+
+    let(:role_data) do
+      {
+        bound_audiences: [server_url],
+        cel_program: SecretsManagement::ProjectSecretsManager.new.user_auth_cel_program(project_id)
+      }
+    end
+
+    subject(:result) { client.delete_jwt_cel_role(mount_path, role_name) }
+
+    context 'when the auth mount exists' do
+      before do
+        client.enable_auth_engine(mount_path, 'jwt')
+        client.configure_jwt(mount_path, server_url, jwk_signer)
+      end
+
+      context 'when the role exists' do
+        before do
+          client.update_jwt_cel_role(mount_path, role_name, **role_data)
+        end
+
+        it 'deletes the JWT role' do
+          # Verify role exists first
+          expect(client.read_jwt_cel_role(mount_path, role_name)).to be_present
+
+          expect { result }.not_to raise_error
+          expect(result).to be_nil
+
+          # Verify role does not exist anymore
+          expect { client.read_jwt_cel_role(mount_path, role_name) }
+            .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+        end
+      end
+
+      context 'when the role does not exist' do
+        let(:role_name) { 'non-existent-role' }
+
+        it 'fails silently' do
+          expect { result }.not_to raise_error
+          expect(result).to be_nil
+        end
+      end
+    end
+
+    context 'when the auth mount does not exist' do
+      let(:mount_path) { 'auth/non-existent-mount' }
+
+      it 'raises an error' do
+        expect { result }.to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+      end
+    end
+  end
+
   describe "CEL authentication" do
     let(:user_id) { '0' }
     let(:project_id) { '123' }
@@ -677,7 +895,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         client.enable_auth_engine(auth_mount, 'jwt', allow_existing: true)
         client.configure_jwt(auth_mount, issuer, Gitlab::CurrentSettings.ci_jwt_signing_key)
 
-        client.update_cel_role(
+        client.update_jwt_cel_role(
           auth_mount,
           role,
           cel_program: SecretsManagement::ProjectSecretsManager.new.user_auth_cel_program(project_id),
@@ -704,17 +922,6 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
         expect(result).to contain_exactly(new_data: "DBPASS")
       end
-    end
-
-    def update_cel_role
-      secrets_manager = SecretsManagement::ProjectSecretsManager.new
-
-      client.update_cel_role(
-        SecretsManagement::SecretsManagerClient::GITLAB_JWT_AUTH_PATH,
-        SecretsManagement::SecretsManagerClient::DEFAULT_JWT_ROLE,
-        cel_program: secrets_manager.user_auth_cel_program(project_id),
-        bound_audiences: [server_aud]
-      )
     end
   end
 end
