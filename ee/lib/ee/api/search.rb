@@ -19,11 +19,6 @@ module EE
             super.merge(blobs: :with_api_commit_entity_associations).freeze
           end
 
-          override :search_params
-          def search_params
-            super.merge(fields: params[:fields])
-          end
-
           override :verify_search_scope!
           def verify_search_scope!(resource:)
             return unless elasticsearch_scope.include?(params[:scope]) && !use_elasticsearch?(resource)
