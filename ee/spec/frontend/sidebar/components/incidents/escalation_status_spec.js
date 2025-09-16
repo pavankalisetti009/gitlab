@@ -7,15 +7,15 @@ import { i18nStatusHeaderText, STATUS_SUBTEXTS } from 'ee/sidebar/constants';
 describe('EscalationStatus', () => {
   let wrapper;
 
-  function createComponent(glFeatures = {}) {
+  function createComponent(glLicensedFeatures = {}) {
     wrapper = shallowMount(EscalationStatus, {
       propsData: {
         status: STATUS_TRIGGERED,
       },
       provide: {
-        glFeatures: {
+        glLicensedFeatures: {
           escalationPolicies: true,
-          ...glFeatures,
+          ...glLicensedFeatures,
         },
       },
     });
