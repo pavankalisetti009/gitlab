@@ -11,6 +11,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_catalog_agent_flow_config,
       :ai_catalog_built_in_tools,
       :ai_catalog_configured_items,
+      :ai_catalog_item_consumer,
       :ai_catalog_item,
       :ai_catalog_items,
       :ai_messages,

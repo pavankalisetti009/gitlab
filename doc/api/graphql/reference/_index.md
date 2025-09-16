@@ -298,6 +298,23 @@ Returns [`AiCatalogItem`](#aicatalogitem).
 | ---- | ---- | ----------- |
 | <a id="queryaicatalogitemid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog item to find. |
 
+### `Query.aiCatalogItemConsumer`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+Find a single AI Catalog item consumer by ID.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaicatalogitemconsumerid"></a>`id` | [`AiCatalogItemConsumerID!`](#aicatalogitemconsumerid) | Global ID of the AI Catalog item consumer. |
+
 ### `Query.aiCatalogItems`
 
 {{< details >}}
