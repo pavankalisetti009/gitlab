@@ -30,7 +30,7 @@ module GitlabSubscriptions
               namespace: namespace,
               user: user,
               last_activity_on: Time.current,
-              organization_id: namespace.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
+              organization_id: namespace.organization_id
             )
           end
         end
