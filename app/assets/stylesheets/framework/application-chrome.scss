@@ -309,7 +309,7 @@
   // Panel content
   .panel-content {
     @apply gl-overflow-clip gl-h-full gl-pb-0;
-    transform: translate3d(0, 0, 0);
+    contain: strict;
   }
 
   // Vue portal height
