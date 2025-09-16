@@ -102,25 +102,6 @@ FactoryBot.define do
           responded_to_agent_at: 1.second.ago
         )
       else
-        unless evaluator.without_workspace_agentk_state
-          # NOTE: We could attempt to manually build a desired_config_array which has all the correct IDs and values
-          #       agent, namespace, workspace, etc, but this would be a lot of work. For now, we will just use the
-          #       business logic to create a valid one based on the workspace's current state and associations.
-          result = RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Main.main({
-            params: {
-              agent: workspace.agent
-            },
-            workspace: workspace,
-            logger: nil
-          })
-          desired_config_array = result.fetch(:desired_config).symbolized_desired_config_array
-
-          workspace.create_workspace_agentk_state!(
-            project: workspace.project,
-            desired_config: desired_config_array
-          )
-        end
-
         unless evaluator.without_workspace_variables
           workspace_name = workspace.name
           dns_zone = workspace.workspaces_agent_config.dns_zone
@@ -182,6 +163,25 @@ FactoryBot.define do
           desired_state_updated_at: desired_state_updated_at,
           actual_state_updated_at: actual_state_updated_at,
           responded_to_agent_at: responded_to_agent_at
+        )
+      end
+
+      unless evaluator.without_workspace_agentk_state
+        # NOTE: We could attempt to manually build a desired_config_array which has all the correct IDs and values
+        #       agent, namespace, workspace, etc, but this would be a lot of work. For now, we will just use the
+        #       business logic to create a valid one based on the workspace's current state and associations.
+        result = RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Main.main({
+          params: {
+            agent: workspace.agent
+          },
+          workspace: workspace,
+          logger: nil
+        })
+        desired_config_array = result.fetch(:desired_config).symbolized_desired_config_array
+
+        workspace.create_workspace_agentk_state!(
+          project: workspace.project,
+          desired_config: desired_config_array
         )
       end
 

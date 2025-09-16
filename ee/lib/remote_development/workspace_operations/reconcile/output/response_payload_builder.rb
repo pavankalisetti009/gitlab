@@ -96,15 +96,6 @@ module RemoteDevelopment
               DesiredConfig.new(desired_config_array: config_to_apply_array).validate!
             end
 
-            # TODO: remove this and the above 'if' after a succesful shadow run. Issue - https://gitlab.com/gitlab-org/gitlab/-/issues/551935
-            old_config_to_apply = ConfigToApplyShadowRunHandler.handle(
-              workspace: workspace,
-              new_config_to_apply_array: config_to_apply_array,
-              include_all_resources: include_all_resources,
-              logger: logger
-            )
-            config_to_apply_array = old_config_to_apply
-
             stable_sorted_workspace_resources = config_to_apply_array.map do |resource|
               Gitlab::Utils.deep_sort_hash(resource)
             end
