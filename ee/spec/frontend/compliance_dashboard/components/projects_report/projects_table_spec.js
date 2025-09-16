@@ -27,7 +27,7 @@ import FrameworkSelectionBox from 'ee/compliance_dashboard/components/projects_r
 import ProjectsTable from 'ee/compliance_dashboard/components/projects_report/projects_table.vue';
 import SelectionOperations from 'ee/compliance_dashboard/components/projects_report/selection_operations.vue';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
-import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
+import getComplianceFrameworksCompactQuery from 'ee/compliance_dashboard/components/projects_report/graphql/get_compliance_frameworks_compact.query.graphql';
 
 import { mapProjects } from 'ee/compliance_dashboard/graphql/mappers';
 
@@ -90,7 +90,7 @@ describe('ProjectsTable component', () => {
 
     apolloProvider = createMockApollo([
       [updateComplianceFrameworksMutation, updateComplianceFrameworkMockResponse],
-      [getComplianceFrameworkQuery, mockFrameworksGraphQlResponse],
+      [getComplianceFrameworksCompactQuery, mockFrameworksGraphQlResponse],
     ]);
 
     toastMock = { show: jest.fn() };

@@ -18,12 +18,12 @@ import { createAlert } from '~/alert';
 import InternalEvents from '~/tracking/internal_events';
 import CreateForm from 'ee/groups/settings/compliance_frameworks/components/create_form.vue';
 import EditForm from 'ee/groups/settings/compliance_frameworks/components/edit_form.vue';
-import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import FrameworkBadge from '../shared/framework_badge.vue';
 import { isTopLevelGroup } from '../../utils';
 import updateComplianceFrameworksMutation from '../../graphql/mutations/project_update_compliance_frameworks.graphql';
 import { CREATE_FRAMEWORKS_DOCS_URL } from '../../constants';
+import getComplianceFrameworksCompactQuery from './graphql/get_compliance_frameworks_compact.query.graphql';
 import SelectionOperations from './selection_operations.vue';
 import FrameworkSelectionBox from './framework_selection_box.vue';
 
@@ -81,7 +81,7 @@ export default {
   emits: ['updated'],
   apollo: {
     frameworks: {
-      query: getComplianceFrameworkQuery,
+      query: getComplianceFrameworksCompactQuery,
       variables() {
         return { fullPath: this.groupPath };
       },
