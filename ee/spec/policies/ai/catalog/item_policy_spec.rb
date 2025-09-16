@@ -9,13 +9,13 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:guest) { create(:user) }
-  let_it_be(:project) do
-    create(:project, guests: guest, reporters: reporter, developers: developer, maintainers: maintainer)
+  let_it_be(:private_project) do
+    create(:project, :private, guests: guest, reporters: reporter, developers: developer, maintainers: maintainer)
   end
 
   let_it_be(:other_organization) { create(:organization) }
-  let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: project, public: false) }
-  let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: project, public: true) }
+  let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: private_project, public: false) }
+  let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: private_project, public: true) }
 
   before do
     Current.organization = current_organization
@@ -108,6 +108,22 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
   context 'when guest' do
     let(:current_user) { guest }
+
+    context 'with private item' do
+      let(:item) { private_item }
+
+      it_behaves_like 'no permissions'
+    end
+
+    context 'with public item' do
+      let(:item) { public_item }
+
+      it_behaves_like 'read-only permissions'
+    end
+  end
+
+  context 'when anonymous' do
+    let(:current_user) { nil }
 
     context 'with private item' do
       let(:item) { private_item }
