@@ -273,7 +273,7 @@ export default {
         class="pb-1 gl-list-none"
         @select="handleFooterClick($options.ALL_PROTECTED_BRANCHES.name)"
       >
-        {{ $options.ALL_BRANCHES.name }}
+        {{ $options.ALL_PROTECTED_BRANCHES.name }}
       </gl-listbox-item>
     </template>
   </gl-collapsible-listbox>

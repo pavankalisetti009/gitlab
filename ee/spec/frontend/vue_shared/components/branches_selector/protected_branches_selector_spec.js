@@ -143,6 +143,7 @@ describe('Protected Branches Selector', () => {
       });
 
       expect(findFn().exists()).toBe(true);
+      expect(findFn().text()).toEqual(ALL_OPTION.name);
     });
 
     it('does not show the option when $prop is false', () => {
