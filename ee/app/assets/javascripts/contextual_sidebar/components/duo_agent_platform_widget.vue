@@ -241,11 +241,7 @@ export default {
 </script>
 
 <template>
-  <div
-    id="duo-agent-platform-sidebar-widget"
-    class="gl-m-2 gl-bg-default gl-p-4"
-    data-testid="duo-agent-platform-widget-root-element"
-  >
+  <div id="duo-agent-platform-sidebar-widget" class="gl-m-2 gl-bg-default gl-p-4">
     <div
       data-testid="duo-agent-platform-widget-menu"
       class="gl-flex gl-w-full gl-flex-col gl-items-stretch"
