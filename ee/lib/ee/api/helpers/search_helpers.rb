@@ -19,8 +19,8 @@ module EE
             ['wiki_blobs', 'blobs', 'commits', 'notes', *super]
           end
 
-          override :gitlab_search_mcp_params
-          def gitlab_search_mcp_params
+          override :search_param_keys
+          def search_param_keys
             [*super, :fields]
           end
         end
