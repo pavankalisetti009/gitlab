@@ -22,7 +22,7 @@ describe('ClusterAgentShow', () => {
   });
 
   const createWrapper = ({
-    glFeatures = {
+    glLicensedFeatures = {
       kubernetesClusterVulnerabilities: true,
       remoteDevelopment: true,
     },
@@ -30,7 +30,7 @@ describe('ClusterAgentShow', () => {
     wrapper = extendedWrapper(
       shallowMount(ClusterAgentShow, {
         provide: {
-          glFeatures,
+          glLicensedFeatures,
           agentName: 'test-agent',
           projectPath: 'test-project',
           clusterAgentId,
@@ -68,7 +68,7 @@ describe('ClusterAgentShow', () => {
 
     describe('without access', () => {
       beforeEach(() => {
-        createWrapper({ glFeatures: { kubernetesClusterVulnerabilities: false } });
+        createWrapper({ glLicensedFeatures: { kubernetesClusterVulnerabilities: false } });
       });
 
       it('when a user does not have permission', () => {
@@ -84,7 +84,7 @@ describe('ClusterAgentShow', () => {
 
     describe('when remote development feature is enabled', () => {
       beforeEach(() => {
-        createWrapper({ glFeatures: { remoteDevelopment: true } });
+        createWrapper({ glLicensedFeatures: { remoteDevelopment: true } });
       });
 
       it('shows the tab', () => {
@@ -98,7 +98,7 @@ describe('ClusterAgentShow', () => {
 
     describe('when remote development feature is disabled', () => {
       beforeEach(() => {
-        createWrapper({ glFeatures: { remoteDevelopment: false } });
+        createWrapper({ glLicensedFeatures: { remoteDevelopment: false } });
       });
 
       it('does not show the tab', () => {

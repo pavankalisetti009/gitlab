@@ -1,7 +1,7 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
 import CeWebIdeLink from '~/vue_shared/components/web_ide_link.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import WorkspacesDropdownGroup from 'ee_component/workspaces/dropdown_group/components/workspaces_dropdown_group.vue';
 import GetProjectDetailsQuery from 'ee_component/workspaces/common/components/get_project_details_query.vue';
 
@@ -12,7 +12,7 @@ export default {
     GetProjectDetailsQuery,
     CeWebIdeLink,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   inject: {
     newWorkspacePath: {
       default: '',
@@ -45,7 +45,7 @@ export default {
   },
   computed: {
     isWorkspacesDropdownGroupAvailable() {
-      return this.glFeatures.remoteDevelopment;
+      return this.glLicensedFeatures.remoteDevelopment;
     },
     shouldRenderWorkspacesDropdownGroup() {
       return this.isWorkspacesDropdownGroupAvailable && this.isDropdownVisible;

@@ -68,7 +68,7 @@ describe('ee_component/vue_shared/components/web_ide_link', () => {
     it(`getProjectDetailsQuery is${executed ? ' ' : ' not '}executed`, async () => {
       createComponent({
         provide: {
-          glFeatures: {
+          glLicensedFeatures: {
             remoteDevelopment: rdAvailable,
           },
         },
@@ -90,7 +90,7 @@ describe('ee_component/vue_shared/components/web_ide_link', () => {
           provide: {
             newWorkspacePath,
             organizationId,
-            glFeatures: {
+            glLicensedFeatures: {
               remoteDevelopment: true,
             },
           },

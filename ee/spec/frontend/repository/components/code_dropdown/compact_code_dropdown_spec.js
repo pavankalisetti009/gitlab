@@ -48,7 +48,7 @@ describe('EE Compact Code Dropdown component', () => {
         WorkspacesDropdownGroup: true,
       },
       provide: {
-        glFeatures: { remoteDevelopment: remoteDevelopmentFlag },
+        glLicensedFeatures: { remoteDevelopment: remoteDevelopmentFlag },
         newWorkspacePath,
         organizationId,
       },

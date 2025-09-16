@@ -16,7 +16,7 @@ export const WithAPIAccess = (args, { argTypes, createVueApollo }) => {
     components: { WorkspacesDropdownGroup, GlDisclosureDropdown },
     apolloProvider: createVueApollo(),
     provide: {
-      glFeatures: {
+      glLicensedFeatures: {
         remoteDevelopment: true,
       },
     },
