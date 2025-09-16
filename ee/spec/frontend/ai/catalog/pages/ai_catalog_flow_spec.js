@@ -2,14 +2,15 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogFlow from 'ee/ai/catalog/pages/ai_catalog_flow.vue';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import { mockAiCatalogFlowResponse, mockAiCatalogFlowNullResponse, mockFlow } from '../mock_data';
 
-jest.mock('~/alert');
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
 
@@ -45,6 +46,7 @@ describe('AiCatalogFlow', () => {
     });
   };
 
+  const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findGlEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findRouterView = () => wrapper.findComponent(RouterViewStub);
@@ -107,12 +109,10 @@ describe('AiCatalogFlow', () => {
       expect(findGlEmptyState().exists()).toBe(true);
     });
 
-    it('creates an alert', () => {
-      expect(createAlert).toHaveBeenCalledWith({
-        message: error.message,
-        captureError: true,
-        error,
-      });
+    it('renders and captures error', () => {
+      expect(findErrorAlert().exists()).toBe(true);
+      expect(findErrorAlert().props('errors')).toEqual(['Flow does not exist']);
+      expect(Sentry.captureException).toHaveBeenCalledWith(error);
     });
   });
 });

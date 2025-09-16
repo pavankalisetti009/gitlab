@@ -1,7 +1,9 @@
 <script>
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import emptySearchSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-search-md.svg';
-import { createAlert } from '~/alert';
+import { s__ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
@@ -9,12 +11,14 @@ import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graph
 export default {
   name: 'AiCatalogAgent',
   components: {
+    ErrorsAlert,
     GlEmptyState,
     GlLoadingIcon,
   },
   data() {
     return {
       aiCatalogAgent: {},
+      errors: [],
     };
   },
   apollo: {
@@ -29,11 +33,8 @@ export default {
         return data?.aiCatalogItem || {};
       },
       error(error) {
-        createAlert({
-          message: error.message,
-          captureError: true,
-          error,
-        });
+        this.errors = [s__('AICatalog|Agent does not exist')];
+        Sentry.captureException(error);
       },
     },
   },
@@ -51,6 +52,8 @@ export default {
 
 <template>
   <div>
+    <errors-alert :errors="errors" @dismiss="errors = []" />
+
     <gl-loading-icon v-if="isLoading" size="lg" class="gl-my-5" />
 
     <gl-empty-state
