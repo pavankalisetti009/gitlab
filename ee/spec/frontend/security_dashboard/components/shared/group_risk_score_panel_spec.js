@@ -8,6 +8,7 @@ import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_r
 import TotalRiskScore from 'ee/security_dashboard/components/shared/charts/total_risk_score.vue';
 import RiskScoreByProject from 'ee/security_dashboard/components/shared/charts/risk_score_by_project.vue';
 import RiskScoreGroupBy from 'ee/security_dashboard/components/shared/risk_score_group_by.vue';
+import RiskScoreTooltip from 'ee/security_dashboard/components/shared/risk_score_tooltip.vue';
 import groupTotalRiskScore from 'ee/security_dashboard/graphql/queries/group_total_risk_score.query.graphql';
 
 Vue.use(VueApollo);
@@ -19,6 +20,7 @@ describe('GroupRiskScorePanel', () => {
   const mockGroupFullPath = 'group/subgroup';
   const mockFilters = { projectId: 'gid://gitlab/Project/123' };
   const defaultRiskScore = 50;
+  const defaultVulnerabilitiesAverageScore = 2.5;
   const defaultByProjectMockData = [
     {
       rating: 'CRITICAL',
@@ -46,6 +48,11 @@ describe('GroupRiskScorePanel', () => {
         securityMetrics: {
           riskScore: {
             score: defaultRiskScore,
+            factors: {
+              vulnerabilitiesAverageScore: {
+                factor: defaultVulnerabilitiesAverageScore,
+              },
+            },
             byProject: {
               nodes: defaultByProjectMockData,
             },
@@ -77,6 +84,7 @@ describe('GroupRiskScorePanel', () => {
   const findTotalRiskScore = () => wrapper.findComponent(TotalRiskScore);
   const findRiskScoreByProject = () => wrapper.findComponent(RiskScoreByProject);
   const findRiskScoreGroupBy = () => wrapper.findComponent(RiskScoreGroupBy);
+  const findRiskScoreTooltip = () => wrapper.findComponent(RiskScoreTooltip);
 
   beforeEach(() => {
     createComponent();
@@ -110,6 +118,24 @@ describe('GroupRiskScorePanel', () => {
       await waitForPromises();
 
       expect(findRiskScoreByProject().props('riskScores')).toMatchObject(defaultByProjectMockData);
+    });
+
+    it('renders the risk score tooltip', () => {
+      expect(findRiskScoreTooltip().exists()).toBe(true);
+    });
+
+    it('passes correct props to the risk score tooltip', async () => {
+      expect(findRiskScoreTooltip().props()).toMatchObject({
+        vulnerabilitiesAverageScoreFactor: 0,
+        isLoading: true,
+      });
+
+      await waitForPromises();
+
+      expect(findRiskScoreTooltip().props()).toMatchObject({
+        vulnerabilitiesAverageScoreFactor: defaultVulnerabilitiesAverageScore,
+        isLoading: false,
+      });
     });
   });
 
