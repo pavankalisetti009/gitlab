@@ -82,11 +82,7 @@ export default {
       ><template #licensedUserCount>{{ licensedUserCount }}</template
       ><template #userCap>{{ userCap }}</template
       ><template #link="{ content }">
-        <help-page-link
-          href="subscriptions/quarterly_reconciliation"
-          anchor="quarterly-reconciliation-versus-annual-true-ups"
-          >{{ content }}</help-page-link
-        >
+        <help-page-link href="subscriptions/quarterly_reconciliation">{{ content }}</help-page-link>
       </template>
     </gl-sprintf>
   </gl-modal>
