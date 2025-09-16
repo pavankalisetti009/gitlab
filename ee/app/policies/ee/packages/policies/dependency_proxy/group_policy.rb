@@ -12,7 +12,7 @@ module EE
             with_scope :user
             condition(:auditor, score: 0) { false }
 
-            condition(:no_active_sso_session, scope: :subject) do
+            condition(:no_active_sso_session) do
               policy_user = user.user
 
               ::Gitlab::Auth::GroupSaml::SessionEnforcer.new(policy_user, subject).access_restricted?
