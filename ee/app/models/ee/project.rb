@@ -722,7 +722,7 @@ module EE
       def selective_sync_scope(node, **_params)
         return all unless node.selective_sync?
 
-        if node.selective_sync_by_namespaces?
+        if node.selective_sync_by_namespaces? || node.selective_sync_by_organizations?
           where(arel_table.name => { namespace_id: node.namespaces_for_group_owned_replicables.select(:id) })
         elsif node.selective_sync_by_shards?
           within_shards(node.selective_sync_shards)
