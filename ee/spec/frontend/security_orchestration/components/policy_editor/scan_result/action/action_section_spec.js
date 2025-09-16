@@ -28,40 +28,39 @@ describe('ActionSection', () => {
   const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
   const findAllAlerts = () => wrapper.findAllComponents(GlAlert);
 
-  describe('general behavior', () => {
+  describe('rendering', () => {
+    it('renders an approver action for that type of action', () => {
+      factory();
+      expect(findApproverAction().exists()).toBe(true);
+      expect(findBotCommentAction().exists()).toBe(false);
+      expect(findActionSeperator().exists()).toBe(false);
+    });
+
     it('renders the action seperator when the action index is > 0', () => {
       factory({ props: { actionIndex: 1 } });
       expect(findActionSeperator().exists()).toBe(true);
     });
   });
 
-  describe('Approval Action', () => {
+  describe('events', () => {
     beforeEach(() => {
       factory();
     });
 
-    it('renders an approver action for that type of action', () => {
-      expect(findApproverAction().exists()).toBe(true);
-      expect(findBotCommentAction().exists()).toBe(false);
-      expect(findActionSeperator().exists()).toBe(false);
+    it('passes through the "error" event', () => {
+      findApproverAction().vm.$emit('error');
+      expect(wrapper.emitted('error')).toEqual([[]]);
     });
 
-    describe('events', () => {
-      it('passes through the "error" event', () => {
-        findApproverAction().vm.$emit('error');
-        expect(wrapper.emitted('error')).toEqual([[]]);
-      });
+    it('passes through the "changed" event', () => {
+      const event = 'event';
+      findApproverAction().vm.$emit('changed', event);
+      expect(wrapper.emitted('changed')).toEqual([[event]]);
+    });
 
-      it('passes through the "changed" event', () => {
-        const event = 'event';
-        findApproverAction().vm.$emit('changed', event);
-        expect(wrapper.emitted('changed')).toEqual([[event]]);
-      });
-
-      it('passes through the "remove" event', () => {
-        findRemoveButton().vm.$emit('click');
-        expect(wrapper.emitted('remove')).toEqual([[]]);
-      });
+    it('passes through the "remove" event', () => {
+      findRemoveButton().vm.$emit('click');
+      expect(wrapper.emitted('remove')).toEqual([[]]);
     });
   });
 
