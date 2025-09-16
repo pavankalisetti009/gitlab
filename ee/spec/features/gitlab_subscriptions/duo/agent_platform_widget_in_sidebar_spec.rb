@@ -84,6 +84,7 @@ RSpec.describe 'Duo GitLab Duo Core widget in Sidebar', :js, feature_category: :
     let_it_be(:namespace) do
       create(:group_with_plan, :with_duo_never_on, plan: :ultimate_plan) do |g|
         create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: g)
+        g.namespace_settings.update!(duo_agent_platform_request_count: 1)
       end
     end
 
@@ -101,32 +102,15 @@ RSpec.describe 'Duo GitLab Duo Core widget in Sidebar', :js, feature_category: :
         namespace.add_owner(user)
       end
 
-      it 'performs progressive enabling of the Duo agent platform' do
-        visit path
+      it_behaves_like 'Duo GitLab Duo Core progressive enabling'
+    end
 
-        expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core Off'))
-        # expect_widget_to_have_content(_('Team requests'))
-
-        widget_turn_on
-        confirm_modal_turn_on
-
-        expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
-
-        page.refresh
-
-        expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
-        expect_widget_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
-
-        widget_turn_on_preview
-        confirm_modal_turn_on
-
-        expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
-
-        page.refresh
-
-        expect_widget_to_have_content(s_('DuoAgentPlatform|GitLab Duo Core On'))
-        expect_widget_not_to_have_content(s_('DuoAgentPlatform|Access the latest GitLab Duo features'))
+    context 'when requestor' do
+      before_all do
+        namespace.add_developer(user)
       end
+
+      it_behaves_like 'Duo GitLab Duo Core requestor'
     end
   end
 

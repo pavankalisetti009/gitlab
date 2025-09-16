@@ -10,6 +10,9 @@ scope '-/users', module: :users do
   resources :callouts, only: [] do
     post :request_duo_agent_platform, on: :collection
   end
+  resources :group_callouts, only: [] do
+    post :request_duo_agent_platform, on: :collection
+  end
 end
 
 scope(constraints: { username: Gitlab::PathRegex.root_namespace_route_regex }) do

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidgetPresenter, :aggregate_failures, feature_category: :activation do
   describe '#attributes' do
     let(:user) { build_stubbed(:user) }
-    let(:namespace) { build_stubbed(:group) }
+    let(:namespace) { build_stubbed(:group) { |g| build(:namespace_settings, namespace: g) } }
     let(:feature_enabled?) { true }
     let(:trial?) { false }
     let(:duo_core_features_available?) { true }
@@ -67,7 +67,11 @@ RSpec.describe GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidge
           initialState: :enabled,
           contextualAttributes:
             {
-              featurePreviewAttribute: :experiment_features_enabled, isAuthorized: true, requestCount: 0
+              featurePreviewAttribute: :experiment_features_enabled, isAuthorized: true, requestCount: 0,
+              requestText:
+                s_(
+                  'DuoAgentPlatform|The number of users in your group who have requested access to GitLab Duo Core.'
+                )
             }
         }
         expect(presenter.attributes[:duoAgentWidgetProvide]).to eq(results)

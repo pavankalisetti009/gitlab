@@ -12,7 +12,10 @@ module GitlabSubscriptions
           {
             isAuthorized: true,
             featurePreviewAttribute: :instance_level_ai_beta_features_enabled,
-            requestCount: ::Ai::Setting.instance.duo_agent_platform_request_count
+            requestCount: ::Ai::Setting.instance.duo_agent_platform_request_count,
+            requestText: s_(
+              'DuoAgentPlatform|The number of users in your instance who have requested access to GitLab Duo Core.'
+            )
           }
         end
 

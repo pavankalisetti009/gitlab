@@ -43,6 +43,7 @@ export default {
       featurePreviewAttribute: this.contextualAttributes.featurePreviewAttribute,
       showRequestAccess: this.contextualAttributes.showRequestAccess,
       requestCount: this.contextualAttributes.requestCount,
+      requestText: this.contextualAttributes.requestText,
     };
   },
   computed: {
@@ -125,8 +126,7 @@ export default {
     async handleRequestAccess() {
       try {
         await axios.post(this.actionPath);
-        this.hasRequestedDuoPlatform = true;
-        this.$toast.show(__('Request has been sent to the instance Admin'));
+        this.onRequestSuccess();
       } catch (error) {
         createAlert({
           message: __('Failed to submit access request'),
@@ -135,10 +135,16 @@ export default {
         });
       }
     },
+    onRequestSuccess() {
+      this.hasRequestedDuoPlatform = true;
+      this.$toast.show(this.requestText);
+      this.trackEvent('click_request_in_duo_agent_platform_widget_in_sidebar');
+    },
     onEnableSuccess() {
       this.$toast.show(this.toastMessage);
       this.trackEvent('click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar', {
         label: this.currentState,
+        value: this.requestCount,
       });
 
       const currentIndex = this.stateProgression.indexOf(this.currentState);
@@ -155,8 +161,22 @@ export default {
         error,
       });
     },
-    handleLearnMore() {
-      this.trackEvent('click_learn_more_in_duo_agent_platform_widget_in_sidebar');
+    trackLearnMoreClick(label) {
+      this.trackEvent('click_learn_more_in_duo_agent_platform_widget_in_sidebar', {
+        label,
+      });
+    },
+    handleLearnMoreClick() {
+      this.trackLearnMoreClick('authorized');
+    },
+    handleRequestLearnMoreClick() {
+      this.trackLearnMoreClick('request');
+    },
+    handleRequestedLearnMoreClick() {
+      this.trackLearnMoreClick('requested');
+    },
+    handleTeamRequestsHover() {
+      this.trackEvent('hover_team_requests_in_duo_agent_platform_widget_in_sidebar');
     },
   },
   learnMoreHref: LEARN_MORE_HREF,
@@ -252,16 +272,10 @@ export default {
           <button
             v-gl-tooltip
             class="gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0 gl-text-secondary"
-            :title="
-              __(
-                'The number of users in your instance who have requested access to GitLab Duo Core.',
-              )
-            "
-            :aria-label="
-              __(
-                'The number of users in your instance who have requested access to GitLab Duo Core.',
-              )
-            "
+            :title="requestText"
+            :aria-label="requestText"
+            data-testid="request-icon"
+            @mouseenter="handleTeamRequestsHover"
           >
             <gl-icon name="question" />
           </button>
@@ -287,7 +301,7 @@ export default {
           category="tertiary"
           variant="confirm"
           data-testid="learn-about-features-btn"
-          @click.stop="handleLearnMore"
+          @click.stop="handleLearnMoreClick"
         >
           {{ __('Learn more') }}
         </gl-button>
@@ -314,6 +328,7 @@ export default {
             category="tertiary"
             variant="confirm"
             data-testid="learn-about-features-btn"
+            @click.stop="handleRequestLearnMoreClick"
           >
             {{ __('Learn more') }}
           </gl-button>
@@ -338,6 +353,7 @@ export default {
             size="small"
             variant="confirm"
             data-testid="learn-about-features-btn"
+            @click.stop="handleRequestedLearnMoreClick"
           >
             {{ __('Learn more') }}
           </gl-button>

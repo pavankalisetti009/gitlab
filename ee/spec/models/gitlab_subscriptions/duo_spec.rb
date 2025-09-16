@@ -521,4 +521,29 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
       it { is_expected.to eq(expected_result) }
     end
   end
+
+  describe '.requestable?' do
+    let(:namespace) { build_stubbed(:namespace) { |n| build(:namespace_settings, namespace: n) } }
+
+    subject { described_class.requestable?(namespace) }
+
+    before do
+      namespace.namespace_settings.duo_features_enabled = duo_default_on
+      namespace.namespace_settings.lock_duo_features_enabled = !duo_default_on
+      namespace.duo_core_features_enabled = duo_core_features_enabled
+    end
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:duo_default_on, :duo_core_features_enabled, :expected_result) do
+      true  | true  | false
+      false | true  | true
+      true  | false | true
+      false | false | true
+    end
+
+    with_them do
+      it { is_expected.to eq(expected_result) }
+    end
+  end
 end
