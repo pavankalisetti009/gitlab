@@ -1,4 +1,4 @@
-import { GlBreakpointInstance as bp, breakpoints } from '@gitlab/ui/src/utils';
+import { GlBreakpointInstance, breakpoints } from '@gitlab/ui/src/utils';
 import { getCookie, setCookie } from '~/lib/utils/common_utils';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import { sidebarState } from '~/super_sidebar/constants';
@@ -67,7 +67,7 @@ describe('Super Sidebar Collapsed State Manager', () => {
     `(
       'when collapsed is $collapsed, saveCookie is $saveCookie, and windowWidth is $windowWidth then page class contains `page-with-super-sidebar-collapsed` is $hasClass',
       ({ collapsed, saveCookie, windowWidth, hasClass, isPeekable, isMobile }) => {
-        jest.spyOn(bp, 'windowWidth').mockReturnValue(windowWidth);
+        jest.spyOn(GlBreakpointInstance, 'windowWidth').mockReturnValue(windowWidth);
 
         toggleSuperSidebarCollapsed(collapsed, saveCookie);
 
@@ -98,7 +98,7 @@ describe('Super Sidebar Collapsed State Manager', () => {
     `(
       'sets page class to `page-with-super-sidebar-collapsed` when windowWidth is $windowWidth and cookie value is $cookie',
       ({ windowWidth, cookie, hasClass }) => {
-        jest.spyOn(bp, 'windowWidth').mockReturnValue(windowWidth);
+        jest.spyOn(GlBreakpointInstance, 'windowWidth').mockReturnValue(windowWidth);
         getCookie.mockReturnValue(cookie);
 
         initSuperSidebarCollapsedState();
@@ -109,7 +109,7 @@ describe('Super Sidebar Collapsed State Manager', () => {
     );
 
     it('does not collapse sidebar when forceDesktopExpandedSidebar is true and windowWidth is xl', () => {
-      jest.spyOn(bp, 'windowWidth').mockReturnValue(xl);
+      jest.spyOn(GlBreakpointInstance, 'windowWidth').mockReturnValue(xl);
       initSuperSidebarCollapsedState(true);
       expect(findPage().classList).not.toContain(SIDEBAR_COLLAPSED_CLASS);
     });
