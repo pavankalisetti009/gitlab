@@ -31022,6 +31022,9 @@ msgstr ""
 msgid "Go to find file"
 msgstr ""
 
+msgid "Go to homepage"
+msgstr ""
+
 msgid "Go to issue boards"
 msgstr ""
 
