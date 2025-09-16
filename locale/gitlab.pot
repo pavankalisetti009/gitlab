@@ -25597,6 +25597,15 @@ msgstr ""
 msgid "EmailError|Your account has been blocked. If you believe this is in error, contact a staff member."
 msgstr ""
 
+msgid "EmailOTP|Enhanced authentication coming soon"
+msgstr ""
+
+msgid "EmailOTP|On %{date}, GitLab will begin requiring email one-time passcodes for your account. To avoid being locked out, make sure you can access your primary email address before this date."
+msgstr ""
+
+msgid "EmailOTP|Review email addresses"
+msgstr ""
+
 msgid "EmailParticipantsWarning|%{emails} will be notified of your comment."
 msgstr ""
 
