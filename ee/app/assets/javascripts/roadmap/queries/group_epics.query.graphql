@@ -15,6 +15,7 @@ query roadmapGroupEpics(
   $search: String = ""
   $first: Int = 50
   $not: NegatedEpicFilterInput
+  $or: UnionedEpicFilterInput
   $endCursor: String = ""
   $includeDescendantGroups: Boolean = true
 ) {
@@ -34,6 +35,7 @@ query roadmapGroupEpics(
       first: $first
       timeframe: $timeframe
       not: $not
+      or: $or
       after: $endCursor
       includeDescendantGroups: $includeDescendantGroups
     ) {

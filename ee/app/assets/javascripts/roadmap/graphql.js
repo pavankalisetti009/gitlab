@@ -41,6 +41,7 @@ export const defaultClient = createDefaultClient(resolvers, {
               'milestoneTitle',
               'state',
               'not',
+              'or',
               'authorUsername',
               'iid',
               'myReactionEmoji',
