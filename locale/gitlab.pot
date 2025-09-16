@@ -2811,6 +2811,9 @@ msgstr ""
 msgid "AICatalog|is private to another project"
 msgstr ""
 
+msgid "AICatalog|must have at least one node"
+msgstr ""
+
 msgid "AICatalog|organization must match the item consumer's organization"
 msgstr ""
 

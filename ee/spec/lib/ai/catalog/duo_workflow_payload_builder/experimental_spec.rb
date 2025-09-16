@@ -70,13 +70,6 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   end
 
   describe '#build' do
-    context 'when flow has no versions' do
-      let_it_be(:empty_flow) { create(:ai_catalog_flow, project: project) }
-      let_it_be(:builder) { described_class.new(empty_flow) }
-
-      it_behaves_like 'invalid flow configuration'
-    end
-
     context 'when flow has no agents' do
       let_it_be(:empty_steps_definition) { { 'triggers' => [1], 'steps' => [] } }
       let_it_be(:empty_steps_flow) { create(:ai_catalog_flow, project: project) }

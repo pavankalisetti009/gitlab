@@ -28,9 +28,13 @@ FactoryBot.define do
     trait :for_flow do
       item { association :ai_catalog_flow }
       definition do
+        agent = Ai::Catalog::Item.find_by(item_type: :agent) || create(:ai_catalog_agent) # rubocop:disable RSpec/FactoryBot/InlineAssociation -- Not used for an association
+
         {
           'triggers' => [1],
-          'steps' => []
+          'steps' => [
+            { 'agent_id' => agent.id, 'current_version_id' => agent.latest_version.id, 'pinned_version_prefix' => nil }
+          ]
         }
       end
     end

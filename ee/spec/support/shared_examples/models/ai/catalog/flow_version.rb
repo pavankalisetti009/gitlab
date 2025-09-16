@@ -5,6 +5,42 @@ RSpec.shared_examples_for 'Ai::Catalog::Concerns::FlowVersion' do
   let_it_be(:agent2) { create(:ai_catalog_item, :agent) }
   let_it_be(:agent3) { create(:ai_catalog_item, :agent) }
 
+  describe 'validations' do
+    it 'does not allow a released version without steps' do
+      version = build(
+        :ai_catalog_item_version,
+        :released,
+        :for_flow,
+        'definition' => { 'steps' => [], 'triggers' => [] }
+      )
+
+      expect(version).not_to be_valid
+      expect(version.errors[:definition]).to include(s_('AICatalog|must have at least one node'))
+    end
+
+    it 'allow a released version with steps' do
+      version = build(:ai_catalog_item_version, :released, :for_flow)
+
+      expect(version).to be_valid
+    end
+
+    it 'allows an unreleased version to have no steps' do
+      version = build(
+        :ai_catalog_item_version,
+        :for_flow,
+        'definition' => { 'steps' => [], 'triggers' => [] }
+      )
+
+      expect(version).to be_valid
+    end
+
+    it 'allows a released agent version to not have steps' do
+      version = build(:ai_catalog_agent_version, :for_agent, :released)
+
+      expect(version).to be_valid
+    end
+  end
+
   describe '#delete_no_longer_used_dependencies' do
     let_it_be(:flow_version) do
       create(
