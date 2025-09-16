@@ -23,7 +23,7 @@ module Mutations
 
           field :flow_config, GraphQL::Types::String,
             null: true,
-            description: 'YAML configuration file that can be used in Duo workflow service for flow execution.'
+            description: 'YAML configuration that can be used in Duo workflow service for flow execution.'
 
           field :workflow, Types::Ai::DuoWorkflows::WorkflowType,
             null: true,

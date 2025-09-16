@@ -1,0 +1,224 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_category: :workflow_catalog do
+  let_it_be(:maintainer) { create(:user) }
+  let_it_be(:project) { create(:project, :repository, maintainers: maintainer) }
+  let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
+  let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
+  let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
+  let_it_be(:tool_ids) { [1, 2, 5] } # 1 => "gitlab_blob_search" 2 => 'ci_linter', 5 =>  'create_epic'
+
+  let_it_be(:agent_definition) do
+    {
+      'system_prompt' => 'Talk like a pirate!',
+      'user_prompt' => 'What is a leap year?',
+      'tools' => tool_ids
+    }
+  end
+
+  let_it_be(:agent1) do
+    create(:ai_catalog_agent_version, item: agent_item_1, definition: agent_definition, version: '1.1.0')
+  end
+
+  let_it_be(:agent2) do
+    create(:ai_catalog_agent_version, item: agent_item_2, definition: agent_definition, version: '1.1.1')
+  end
+
+  let_it_be(:flow_definition) do
+    {
+      'triggers' => [1],
+      'steps' => [
+        { 'agent_id' => agent_item_1.id, 'current_version_id' => agent1.id, 'pinned_version_prefix' => nil },
+        { 'agent_id' => agent_item_2.id, 'current_version_id' => agent2.id, 'pinned_version_prefix' => nil }
+      ]
+    }
+  end
+
+  let_it_be_with_reload(:flow_version) do
+    item_version = flow.latest_version
+    item_version.update!(definition: flow_definition)
+    item_version
+  end
+
+  let(:service_params) do
+    {
+      flow: flow,
+      flow_version: flow_version,
+      execute_workflow: true
+    }
+  end
+
+  let(:json_config) do
+    {
+      'version' => 'experimental',
+      'environment' => 'remote',
+      'components' => be_an(Array),
+      'routers' => be_an(Array),
+      'flow' => be_a(Hash),
+      'prompts' => be_an(Array)
+    }
+  end
+
+  let(:current_user) { maintainer }
+
+  let(:service) do
+    described_class.new(
+      project: project,
+      current_user: current_user,
+      params: service_params
+    )
+  end
+
+  describe '#execute' do
+    subject(:execute) { service.execute }
+
+    shared_examples 'returns error response' do |expected_message|
+      it 'returns an error service response' do
+        result = execute
+
+        expect(result).to be_error
+        expect(result.message).to match_array(expected_message)
+      end
+    end
+
+    context 'when user lack permission' do
+      let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+
+      it_behaves_like 'returns error response', 'You have insufficient permissions'
+
+      context 'when current_user is nil' do
+        let(:current_user) { nil }
+
+        it_behaves_like 'returns error response', 'You have insufficient permissions'
+      end
+    end
+
+    context 'when flow is nil' do
+      let(:service_params) { super().merge({ flow: nil }) }
+
+      it_behaves_like 'returns error response', 'Flow is required'
+    end
+
+    context 'when flow item_type is agent' do
+      let(:service_params) { super().merge({ flow: build(:ai_catalog_agent) }) }
+
+      it_behaves_like 'returns error response', 'Flow is required'
+    end
+
+    context 'when flow_version is nil' do
+      let(:service_params) { super().merge({ flow_version: nil }) }
+
+      it_behaves_like 'returns error response', 'Flow version is required'
+    end
+
+    context 'when flow_version does not belong to the flow' do
+      let(:other_flow) { build(:ai_catalog_flow, project: project) }
+      let(:other_flow_version) { other_flow.versions.last }
+      let(:service_params) { super().merge({ flow_version: other_flow_version }) }
+
+      it_behaves_like 'returns error response', 'Flow version must belong to the flow'
+    end
+
+    context 'when flow_version has no steps' do
+      before do
+        flow_version.update!(definition: { steps: [], triggers: [1] })
+      end
+
+      it_behaves_like 'returns error response', 'Flow version must have steps'
+    end
+
+    context 'when execute_workflow is false' do
+      let(:service_params) { super().merge({ execute_workflow: false }) }
+
+      it_behaves_like 'prevents CI pipeline creation for Duo Workflow' do
+        subject { execute }
+      end
+
+      it 'does not call execute_workflow_service' do
+        expect(::Ai::Catalog::ExecuteWorkflowService).not_to receive(:new)
+
+        result = execute
+        parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
+
+        expect(result).to be_success
+        expect(parsed_yaml).to include(json_config)
+      end
+    end
+
+    context 'when flow is properly executed' do
+      let(:oauth_token) do
+        { oauth_access_token: instance_double(Doorkeeper::AccessToken, plaintext_token: '***********') }
+      end
+
+      let(:workflow_service_token) do
+        { token: 'workflow_token', expires_at: 1.hour.from_now }
+      end
+
+      before do
+        stub_feature_flags(ci_validate_config_options: false)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        allow(current_user).to receive(:allowed_to_use?).and_return(true)
+        project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+
+        allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+          allow(service).to receive_messages(
+            generate_oauth_token_with_composite_identity_support:
+              ServiceResponse.success(payload: oauth_token),
+            generate_workflow_token:
+              ServiceResponse.success(payload: workflow_service_token),
+            use_service_account?: false
+          )
+        end
+      end
+
+      it 'provides a success response containing workflow and flow details' do
+        expect(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
+
+        result = execute
+        parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
+
+        expect(result).to be_success
+        expect(parsed_yaml).to include(json_config)
+        expect(result.payload[:workflow]).to eq(Ai::DuoWorkflows::Workflow.last)
+        expect(result.payload[:workload_id]).to eq(Ci::Workloads::Workload.last.id)
+      end
+
+      it 'triggers trigger_ai_catalog_item', :clean_gitlab_redis_shared_state do
+        expect { execute }
+          .to trigger_internal_events('trigger_ai_catalog_item')
+          .with(
+            user: current_user,
+            project: project,
+            additional_properties: {
+              label: flow.item_type,
+              property: 'manual',
+              value: flow.id
+            }
+          )
+          .and increment_usage_metrics(
+            'counts.count_total_trigger_ai_catalog_item_weekly',
+            'counts.count_total_trigger_ai_catalog_item_monthly',
+            'counts.count_total_trigger_ai_catalog_item'
+          )
+      end
+
+      it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
+        subject { execute }
+      end
+
+      context 'when workflow execution process fails' do
+        let(:execute_workflow_service) { instance_double(::Ai::Catalog::ExecuteWorkflowService) }
+
+        before do
+          allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_return(execute_workflow_service)
+          allow(execute_workflow_service).to receive(:execute)
+            .and_return(ServiceResponse.error(message: Array('Workflow execution failed')))
+        end
+
+        it_behaves_like 'returns error response', 'Workflow execution failed'
+      end
+    end
+  end
+end
