@@ -76,4 +76,31 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :a
       end
     end
   end
+
+  describe '#list_tools' do
+    let(:list_response) { double('ListToolsResponse') } # rubocop:disable RSpec/VerifiedDoubles -- instance_double keeps raising error
+
+    before do
+      allow(stub).to receive(:list_tools).and_return(list_response)
+      allow(Google::Protobuf).to receive(:encode_json).with(list_response)
+        .and_return('{"tools":[{"name":"foo"}],"evalDataset":{"count":1}}')
+    end
+
+    it 'returns success with sliced tools and evalDataset' do
+      result = client.list_tools
+
+      expect(result).to be_success
+      expect(result.message).to eq('Tools listed')
+      expect(result.payload).to eq({ 'tools' => [{ 'name' => 'foo' }], 'evalDataset' => { 'count' => 1 } })
+    end
+
+    it 'returns error when stub raises' do
+      allow(stub).to receive(:list_tools).and_raise(StandardError, 'boom')
+
+      result = client.list_tools
+
+      expect(result).to be_error
+      expect(result.message).to eq('boom')
+    end
+  end
 end

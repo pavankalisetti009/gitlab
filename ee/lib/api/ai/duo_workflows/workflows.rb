@@ -112,6 +112,17 @@ module API
             duo_workflow_token_result
           end
 
+          def duo_workflow_list_tools
+            duo_workflow_list_tools_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
+              duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
+              current_user: current_user,
+              secure: Gitlab::DuoWorkflow::Client.secure?
+            ).list_tools
+            bad_request!(duo_workflow_list_tools_result[:message]) if duo_workflow_list_tools_result[:status] == :error
+
+            duo_workflow_list_tools_result
+          end
+
           def create_workflow_params
             wrkf_params = declared_params(include_missing: false).except(:start_workflow, :source_branch,
               :additional_context)
@@ -225,6 +236,35 @@ module API
                 }
 
                 present access, with: Grape::Presenters::Presenter
+              end
+            end
+
+            resources :list_tools do
+              desc 'List Duo Agent Platform tools' do
+                detail 'This feature is experimental.'
+                success code: 200
+                failure [
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 404, message: 'Not found' },
+                  { code: 429, message: 'Too many requests' }
+                ]
+              end
+
+              params do
+                optional :workflow_definition, type: String, desc: 'workflow type based on its capability',
+                  documentation: { example: 'software_developer' }
+              end
+
+              get do
+                authorize_feature_flag!
+
+                check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
+                  render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
+                end
+
+                result = duo_workflow_list_tools
+
+                present(result.payload, with: Grape::Presenters::Presenter)
               end
             end
 
