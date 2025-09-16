@@ -24,7 +24,7 @@ class ApprovalWrappedRule
   def_delegators(
     :@approval_rule,
     :regular?, :any_approver?, :code_owner?, :report_approver?,
-    :overridden?, :id, :users, :groups, :code_owner, :from_scan_result_policy?,
+    :overridden?, :id, :users, :groups, :code_owner, :from_scan_result_policy?, :warn_mode_policy?,
     :source_rule, :rule_type, :report_type, :approvals_required, :section, :to_global_id, :rule_project
   )
 
@@ -88,7 +88,7 @@ class ApprovalWrappedRule
 
   def approved?
     strong_memoize(:approved) do
-      approvals_left <= 0 || (invalid_rule? && allow_merge_when_invalid?)
+      approvals_left <= 0 || (invalid_rule? && allow_merge_when_invalid?) || approval_rule_dismissed?
     end
   end
 
@@ -157,6 +157,17 @@ class ApprovalWrappedRule
   end
 
   private
+
+  def approval_rule_dismissed?
+    return false unless warn_mode_policy?
+
+    # There can only be one scan_result_policy_violation for each rule and merge request.
+    violation = approval_rule.scan_result_policy_violations.for_merge_request(merge_request).first
+
+    return false unless violation
+
+    violation.dismissed?
+  end
 
   def filter_approvers(approvers)
     filtered_approvers =

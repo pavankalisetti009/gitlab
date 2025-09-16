@@ -92,6 +92,31 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
       end
 
       it { is_expected.to eq(false) }
+
+      context 'when approval rule is dismissed' do
+        let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: merge_request.project) }
+        let_it_be(:security_policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
+        let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, security_orchestration_policy_configuration: policy_configuration) }
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+        let_it_be(:rule) do
+          create(
+            :approval_merge_request_rule,
+            merge_request: merge_request,
+            approvals_required: 2,
+            scan_result_policy_read: scan_result_policy_read
+          )
+        end
+
+        let_it_be(:security_policy_dismissal) { create(:policy_dismissal, project: merge_request.project, merge_request: merge_request, security_policy: security_policy) }
+
+        let!(:violation) { create(:scan_result_policy_violation, merge_request: merge_request, scan_result_policy_read: scan_result_policy_read, approval_policy_rule: approval_policy_rule) }
+
+        before do
+          allow(rule).to receive(:warn_mode_policy?).and_return(true)
+        end
+
+        it { is_expected.to eq(true) }
+      end
     end
 
     context 'when approvals left is not zero, but there is no unactioned approvers' do

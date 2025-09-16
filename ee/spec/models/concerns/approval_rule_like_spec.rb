@@ -359,6 +359,46 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       end
     end
 
+    describe '#warn_mode_policy?' do
+      let_it_be(:approval_policy_rule) { nil }
+
+      before do
+        allow(subject).to receive(:approval_policy_rule).and_return(approval_policy_rule)
+      end
+
+      specify do
+        expect(subject.warn_mode_policy?).to eq(false)
+      end
+
+      context 'when approval_policy_rule is present' do
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+        let_it_be(:security_policy) { approval_policy_rule.security_policy }
+
+        specify do
+          expect(subject.warn_mode_policy?).to eq(false)
+        end
+
+        context 'and policy is in warn mode' do
+          let_it_be(:security_policy) { create(:security_policy, content: { enforcement_type: 'warn' }) }
+          let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+          specify do
+            expect(subject.warn_mode_policy?).to eq(true)
+          end
+
+          context 'when security_policy_approval_warn_mode feature is disabled' do
+            before do
+              stub_feature_flags(security_policy_approval_warn_mode: false)
+            end
+
+            specify do
+              expect(subject.warn_mode_policy?).to eq(false)
+            end
+          end
+        end
+      end
+    end
+
     describe 'validation' do
       context 'when value is too big' do
         it 'is invalid' do
