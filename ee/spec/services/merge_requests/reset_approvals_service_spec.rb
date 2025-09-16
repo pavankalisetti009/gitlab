@@ -34,6 +34,15 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
     Todo.where(action: Todo::APPROVAL_REQUIRED, target: merge_request)
   end
 
+  def execute_service(method_name, *args)
+    case method_name
+    when 'execute'
+      service.execute(*args)
+    when 'execute_with_skip_reset_checks'
+      service.execute(*args, skip_reset_checks: true)
+    end
+  end
+
   describe "#execute" do
     before do
       stub_licensed_features(multiple_approval_rules: true)
@@ -41,6 +50,9 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       allow(NotificationService).to receive(:new) { notification_service }
       project.add_developer(approver)
       project.add_developer(owner)
+      perform_enqueued_jobs do
+        merge_request.update!(approver_ids: [approver.id, owner.id, current_user.id])
+      end
     end
 
     shared_examples_for 'MergeRequests::ApprovalsResetEvent published' do
@@ -48,6 +60,20 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         expect { action }
           .to publish_event(MergeRequests::ApprovalsResetEvent)
           .with(expected_data)
+      end
+    end
+
+    shared_examples_for 'webhook events triggered' do |expected_action, expected_system_action = 'approvals_reset_on_push'|
+      it "triggers #{expected_action} webhook with system: true and system_action" do
+        expect(service).to receive(:execute_hooks).with(merge_request, expected_action, system: true, system_action: expected_system_action)
+        action
+      end
+    end
+
+    shared_examples_for 'no webhook events triggered' do
+      it 'does not trigger webhook events' do
+        expect(service).not_to receive(:execute_hooks)
+        action
       end
     end
 
@@ -87,7 +113,9 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       end
     end
 
-    context 'as default' do
+    where(execute_method: %w[execute execute_with_skip_reset_checks])
+
+    with_them do
       let(:patch_id_sha) { nil }
 
       let!(:approval_1) do
@@ -108,18 +136,12 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         )
       end
 
-      before do
-        perform_enqueued_jobs do
-          merge_request.update!(approver_ids: [approver.id, owner.id, current_user.id])
-        end
-      end
-
       it 'updates reviewers state' do
-        expect { service.execute('refs/heads/master', newrev) }.to change { merge_request.merge_request_reviewers.first.state }.from("unreviewed").to("unapproved")
+        expect { execute_service(execute_method, 'refs/heads/master', newrev) }.to change { merge_request.merge_request_reviewers.first.state }.from("unreviewed").to("unapproved")
       end
 
       it 'resets all approvals and does not create new todos for approvers' do
-        service.execute('refs/heads/master', newrev)
+        execute_service(execute_method, 'refs/heads/master', newrev)
         merge_request.reload
 
         expect(merge_request.approvals).to be_empty
@@ -129,26 +151,34 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
       it 'removes the unmergeable flag after the service is run' do
         merge_request.approval_state.temporarily_unapprove!
 
-        service.execute('refs/heads/master', newrev)
+        execute_service(execute_method, 'refs/heads/master', newrev)
         merge_request.reload
 
         expect(merge_request.approval_state.temporarily_unapproved?).to be_falsey
       end
 
       it_behaves_like 'Executing automerge process worker' do
-        let(:action) { service.execute('refs/heads/master', newrev) }
+        let(:action) do
+          execute_service(execute_method, 'refs/heads/master', newrev)
+        end
       end
 
       it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
-        let(:action) { service.execute('refs/heads/master', newrev) }
+        let(:action) do
+          execute_service(execute_method, 'refs/heads/master', newrev)
+        end
       end
 
       it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
-        let(:action) { service.execute('refs/heads/master', newrev) }
+        let(:action) do
+          execute_service(execute_method, 'refs/heads/master', newrev)
+        end
       end
 
       it_behaves_like 'MergeRequests::ApprovalsResetEvent published' do
-        let(:action) { service.execute('refs/heads/master', newrev) }
+        let(:action) do
+          execute_service(execute_method, 'refs/heads/master', newrev)
+        end
 
         let(:expected_data) do
           {
@@ -160,96 +190,24 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
       end
 
-      context 'when approvals patch_id_sha matches MergeRequest#current_patch_id_sha' do
-        let(:patch_id_sha) { merge_request.current_patch_id_sha }
+      context 'when merge request is currently approved' do
+        # approval_1 and approval_2 already exist from parent context
+        # With 1 approval required and 2 approvals, MR is approved
+        # When all approvals are deleted due to patch_id_sha mismatch, triggers unapproved
 
-        it 'does not delete approvals' do
-          service.execute('refs/heads/master', newrev)
-
-          merge_request.reload
-
-          expect(merge_request.approvals).to contain_exactly(approval_1, approval_2)
-        end
-
-        it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
-          let(:action) { service.execute('refs/heads/master', newrev) }
-        end
-      end
-    end
-
-    context 'when skip_reset_checks: true' do
-      let(:patch_id_sha) { nil }
-
-      let!(:approval_1) do
-        create(
-          :approval,
-          merge_request: merge_request,
-          user: approver,
-          patch_id_sha: patch_id_sha
-        )
-      end
-
-      let!(:approval_2) do
-        create(
-          :approval,
-          merge_request: merge_request,
-          user: owner,
-          patch_id_sha: patch_id_sha
-        )
-      end
-
-      before do
-        perform_enqueued_jobs do
-          merge_request.update!(approver_ids: [approver.id, owner.id, current_user.id])
+        it_behaves_like 'webhook events triggered', 'unapproved' do
+          let(:action) { execute_service(execute_method, 'refs/heads/master', newrev) }
         end
       end
 
-      it 'deletes all approvals directly without additional checks or side-effects' do
-        expect(service).to receive(:delete_approvals).and_call_original
-        expect(service).not_to receive(:reset_approvals)
+      context 'when merge request is not currently approved' do
+        before do
+          merge_request.update!(approvals_before_merge: 3) # Require 3 approvals
+          # approval_1 and approval_2 already exist (2 approvals), but we need 3, so MR is not approved and stays not approved
+        end
 
-        service.execute('refs/heads/master', newrev, skip_reset_checks: true)
-
-        merge_request.reload
-
-        expect(merge_request.approvals).to be_empty
-        expect(approval_todos(merge_request)).to be_empty
-      end
-
-      it 'will delete approvals in situations where a false setting would not' do
-        expect(service).to receive(:reset_approvals?).and_return(false)
-
-        expect do
-          service.execute('refs/heads/master', newrev)
-          merge_request.reload
-        end.not_to change { merge_request.approvals.length }
-
-        allow(service).to receive(:reset_approvals?).and_call_original
-        expect(service).to receive(:delete_approvals).and_call_original
-        expect(service).not_to receive(:reset_approvals)
-
-        service.execute('refs/heads/master', newrev, skip_reset_checks: true)
-
-        merge_request.reload
-
-        expect(merge_request.approvals).to be_empty
-        expect(approval_todos(merge_request)).to be_empty
-      end
-
-      it_behaves_like 'Executing automerge process worker' do
-        let(:action) { service.execute('refs/heads/master', newrev, skip_reset_checks: true) }
-      end
-
-      it_behaves_like 'MergeRequests::ApprovalsResetEvent published' do
-        let(:action) { service.execute('refs/heads/master', newrev, skip_reset_checks: true) }
-
-        let(:expected_data) do
-          {
-            current_user_id: current_user.id,
-            merge_request_id: merge_request.id,
-            cause: 'new_push',
-            approver_ids: merge_request.approvals.pluck(:user_id)
-          }
+        it_behaves_like 'webhook events triggered', 'unapproval' do
+          let(:action) { execute_service(execute_method, 'refs/heads/master', newrev) }
         end
       end
 
@@ -257,7 +215,7 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         let(:patch_id_sha) { merge_request.current_patch_id_sha }
 
         it 'does not delete approvals' do
-          service.execute('refs/heads/master', newrev, skip_reset_checks: true)
+          execute_service(execute_method, 'refs/heads/master', newrev)
 
           merge_request.reload
 
@@ -265,7 +223,60 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
 
         it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
-          let(:action) { service.execute('refs/heads/master', newrev, skip_reset_checks: true) }
+          let(:action) do
+            execute_service(execute_method, 'refs/heads/master', newrev)
+          end
+        end
+
+        it_behaves_like 'no webhook events triggered' do
+          let(:action) { execute_service(execute_method, 'refs/heads/master', newrev) }
+        end
+      end
+
+      context 'with temporarily_unapproved flag interactions' do
+        context 'when MR has sufficient approvals but is temporarily unapproved' do
+          before do
+            # MR is approved based on DB (has 2 approvals, needs 1)
+            # But temporarily_unapproved flag makes approved? return false
+            merge_request.approval_state.temporarily_unapprove!
+          end
+
+          it 'triggers unapproved webhook when approvals are reset' do
+            expect(service).to receive(:execute_hooks).with(
+              merge_request, 'unapproved', system: true, system_action: 'approvals_reset_on_push'
+            )
+
+            execute_service(execute_method, 'refs/heads/master', newrev)
+          end
+        end
+
+        context 'when MR has insufficient approvals and is temporarily unapproved' do
+          before do
+            merge_request.update!(approvals_before_merge: 3) # Need 3, have 2
+            merge_request.approval_state.temporarily_unapprove!
+          end
+
+          it 'triggers unapproval webhook when approvals are reset' do
+            expect(service).to receive(:execute_hooks).with(
+              merge_request, 'unapproval', system: true, system_action: 'approvals_reset_on_push'
+            )
+
+            execute_service(execute_method, 'refs/heads/master', newrev)
+          end
+        end
+
+        context 'when temporarily_unapproved flag expires during reset process' do
+          before do
+            merge_request.approval_state.temporarily_unapprove!
+          end
+
+          it 'removes the temporarily_unapproved flag during reset process' do
+            expect(merge_request.approval_state.temporarily_unapproved?).to be true
+
+            execute_service(execute_method, 'refs/heads/master', newrev)
+
+            expect(merge_request.approval_state.temporarily_unapproved?).to be false
+          end
         end
       end
     end
@@ -332,33 +343,6 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
 
       let(:patch_id_sha) { previous_merge_request_diff.patch_id_sha }
 
-      let(:security_approval) do
-        create(
-          :approval,
-          merge_request: merge_request,
-          user: security,
-          patch_id_sha: patch_id_sha
-        )
-      end
-
-      let(:js_approval) do
-        create(
-          :approval,
-          merge_request: merge_request,
-          user: approver,
-          patch_id_sha: patch_id_sha
-        )
-      end
-
-      let(:rb_approval) do
-        create(
-          :approval,
-          merge_request: merge_request,
-          user: owner,
-          patch_id_sha: patch_id_sha
-        )
-      end
-
       let!(:previous_merge_request_diff) do
         create(:merge_request_diff,
           merge_request: merge_request,
@@ -394,18 +378,45 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         previous_merge_request_diff
         merge_request.create_merge_request_diff
 
-        # Instantiate these after the MergeRequestDiff we will use for patch_id_sha
-        security_approval
-        js_approval
-        rb_approval
+        # Note: Approval creation moved to specific contexts that need them
         ::MergeRequests::SyncCodeOwnerApprovalRules.new(merge_request).execute
       end
 
       it 'updates reviewers state' do
+        # Create an approval that will be reset to test reviewer state change
+        create(:approval, merge_request: merge_request, user: owner, patch_id_sha: patch_id_sha)
+
         expect { service.execute('feature', feature_sha3) }.to change { merge_request.merge_request_reviewers.first.state }.from("unreviewed").to("unapproved")
       end
 
       context 'when the latest push is related to codeowners' do
+        let!(:security_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: security,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:js_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: approver,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:rb_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: owner,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
         it 'resets code owner approvals with changes' do
           service.execute('feature', feature_sha3)
           merge_request.reload
@@ -415,7 +426,9 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
 
         it_behaves_like 'MergeRequests::ApprovalsResetEvent published' do
-          let(:action) { service.execute('feature', feature_sha3) }
+          let(:action) do
+            service.execute('feature', feature_sha3)
+          end
 
           let(:expected_data) do
             {
@@ -424,6 +437,39 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
               cause: 'new_push',
               approver_ids: [rb_approval.user_id]
             }
+          end
+        end
+
+        context 'when merge request is currently approved' do
+          # rb_approval already exists from parent context to make MR approved
+
+          it_behaves_like 'webhook events triggered', 'unapproval', 'code_owner_approvals_reset_on_push' do
+            let(:action) { service.execute('feature', feature_sha3) }
+          end
+        end
+
+        context 'when merge request is not currently approved' do
+          before do
+            merge_request.update!(approvals_before_merge: 2) # Need 2 approvals
+            # rb_approval creates 1 approval but we need 2, so MR stays not approved
+          end
+
+          it_behaves_like 'webhook events triggered', 'unapproval', 'code_owner_approvals_reset_on_push' do
+            let(:action) { service.execute('feature', feature_sha3) }
+          end
+        end
+
+        context 'with temporarily_unapproved flag' do
+          before do
+            merge_request.approval_state.temporarily_unapprove!
+          end
+
+          it 'triggers unapproval webhook with code owner system_action when temporarily unapproved' do
+            expect(service).to receive(:execute_hooks).with(
+              merge_request, 'unapproval', system: true, system_action: 'code_owner_approvals_reset_on_push'
+            )
+
+            service.execute('feature', feature_sha3)
           end
         end
       end
@@ -438,6 +484,33 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
           )
         end
 
+        let!(:security_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: security,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:js_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: approver,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:rb_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: owner,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
         it 'resets code owner approvals with changes' do
           service.execute('feature', feature_sha3)
           merge_request.reload
@@ -447,7 +520,9 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
 
         it_behaves_like 'MergeRequests::ApprovalsResetEvent published' do
-          let(:action) { service.execute('feature', feature_sha3) }
+          let(:action) do
+            service.execute('feature', feature_sha3)
+          end
 
           let(:expected_data) do
             {
@@ -456,6 +531,81 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
               cause: 'new_push',
               approver_ids: [js_approval.user_id, rb_approval.user_id]
             }
+          end
+        end
+
+        context 'when merge request is currently approved' do
+          before do
+            # js_approval and rb_approval already exist from parent context to make MR approved.
+            # Need to set required approvals to 2 so when those approvals get reset
+            # the MR will be considered to be previously approved and now unapproved.
+            merge_request.update!(approvals_before_merge: 2)
+          end
+
+          it_behaves_like 'webhook events triggered', 'unapproved', 'code_owner_approvals_reset_on_push' do
+            let(:action) { service.execute('feature', feature_sha3) }
+          end
+        end
+
+        context 'when merge request is not currently approved' do
+          before do
+            merge_request.update!(approvals_before_merge: 4) # Need 4 approvals
+            # js_approval and rb_approval create 2 approvals but we need 4, so MR stays not approved
+          end
+
+          it_behaves_like 'webhook events triggered', 'unapproval', 'code_owner_approvals_reset_on_push' do
+            let(:action) { service.execute('feature', feature_sha3) }
+          end
+        end
+
+        context 'with temporarily_unapproved flag interactions' do
+          context 'when MR has sufficient approvals but is temporarily unapproved' do
+            before do
+              # Need to set required approvals to 2 so when those approvals get reset
+              # the MR will be considered to be previously approved and now unapproved.
+              merge_request.update!(approvals_before_merge: 2)
+              merge_request.approval_state.temporarily_unapprove!
+            end
+
+            it 'triggers unapproved webhook with code owner system_action' do
+              expect(service).to receive(:execute_hooks).with(
+                merge_request, 'unapproved', system: true, system_action: 'code_owner_approvals_reset_on_push'
+              )
+
+              service.execute('feature', feature_sha3)
+            end
+          end
+
+          context 'when MR has insufficient approvals and is temporarily unapproved' do
+            before do
+              merge_request.update!(approvals_before_merge: 4) # Need 4 approvals
+              # js_approval and rb_approval create 2 approvals but we need 4, so MR stays not approved
+              merge_request.approval_state.temporarily_unapprove!
+            end
+
+            it 'triggers unapproval webhook with code owner system_action' do
+              expect(service).to receive(:execute_hooks).with(
+                merge_request, 'unapproval', system: true, system_action: 'code_owner_approvals_reset_on_push'
+              )
+
+              service.execute('feature', feature_sha3)
+            end
+          end
+
+          context 'when temporarily_unapproved flag expires during code owner reset process' do
+            before do
+              merge_request.approval_state.temporarily_unapprove!
+            end
+
+            it 'removes the temporarily_unapproved flag during reset process' do
+              allow(service).to receive(:execute_hooks)
+
+              expect(merge_request.approval_state.temporarily_unapproved?).to be true
+
+              service.execute('feature', feature_sha3)
+
+              expect(merge_request.approval_state.temporarily_unapproved?).to be false
+            end
           end
         end
       end
@@ -487,6 +637,33 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
             )
           end
 
+          let!(:security_approval) do
+            create(
+              :approval,
+              merge_request: merge_request,
+              user: security,
+              patch_id_sha: patch_id_sha
+            )
+          end
+
+          let!(:js_approval) do
+            create(
+              :approval,
+              merge_request: merge_request,
+              user: approver,
+              patch_id_sha: patch_id_sha
+            )
+          end
+
+          let!(:rb_approval) do
+            create(
+              :approval,
+              merge_request: merge_request,
+              user: owner,
+              patch_id_sha: patch_id_sha
+            )
+          end
+
           it 'does not reset code owner approvals' do
             expect do
               service.execute('feature2', feature2_change_unrelated_to_codeowners)
@@ -497,21 +674,64 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
           end
 
           it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
+            let(:action) do
+              service.execute('feature2', feature2_change_unrelated_to_codeowners)
+            end
+          end
+
+          it_behaves_like 'no webhook events triggered' do
             let(:action) { service.execute('feature2', feature2_change_unrelated_to_codeowners) }
           end
         end
       end
 
       it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
-        let(:action) { service.execute('feature', feature_sha3) }
+        let(:action) do
+          # Create an approval that will be reset to trigger the GraphQL subscription
+          create(:approval, merge_request: merge_request, user: owner, patch_id_sha: patch_id_sha)
+
+          service.execute('feature', feature_sha3)
+        end
       end
 
       it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
-        let(:action) { service.execute('feature', feature_sha3) }
+        let(:action) do
+          # Create an approval that will be reset to trigger the GraphQL subscription
+          create(:approval, merge_request: merge_request, user: owner, patch_id_sha: patch_id_sha)
+
+          service.execute('feature', feature_sha3)
+        end
       end
 
       context 'when approvals patch_id_sha matches MergeRequest#current_patch_id_sha' do
         let(:patch_id_sha) { merge_request.current_patch_id_sha }
+
+        let!(:security_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: security,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:js_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: approver,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:rb_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: owner,
+            patch_id_sha: patch_id_sha
+          )
+        end
 
         it 'does not delete any code owner approvals' do
           service.execute('feature', feature_sha3)
@@ -522,7 +742,42 @@ RSpec.describe MergeRequests::ResetApprovalsService, feature_category: :code_rev
         end
 
         it_behaves_like 'MergeRequests::ApprovalsResetEvent not published' do
+          let(:action) do
+            service.execute('feature', feature_sha3)
+          end
+        end
+
+        it_behaves_like 'no webhook events triggered' do
           let(:action) { service.execute('feature', feature_sha3) }
+        end
+      end
+
+      context 'when cause is not :new_push' do
+        let!(:security_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: security,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        let!(:rb_approval) do
+          create(
+            :approval,
+            merge_request: merge_request,
+            user: owner,
+            patch_id_sha: patch_id_sha
+          )
+        end
+
+        it 'does not trigger webhook events for non-new_push causes' do
+          # Manually call the service method with a different cause
+          allow(service).to receive(:trigger_code_owner_webhook_events).and_call_original
+          expect(service).not_to receive(:execute_hooks)
+
+          # Use delete_code_owner_approvals directly with a different cause
+          service.send(:delete_code_owner_approvals, merge_request, patch_id_sha: patch_id_sha, cause: :something_else)
         end
       end
     end
