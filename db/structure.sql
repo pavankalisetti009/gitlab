@@ -17247,6 +17247,7 @@ CREATE TABLE jira_connect_installations (
     encrypted_shared_secret_iv character varying,
     base_url character varying,
     instance_url text,
+    organization_id bigint,
     CONSTRAINT check_4c6abed669 CHECK ((char_length(instance_url) <= 255))
 );
 
@@ -30945,6 +30946,9 @@ ALTER TABLE work_item_custom_statuses
 ALTER TABLE packages_packages
     ADD CONSTRAINT check_d6301aedeb CHECK ((char_length(status_message) <= 255)) NOT VALID;
 
+ALTER TABLE jira_connect_installations
+    ADD CONSTRAINT check_dc0d039821 CHECK ((organization_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sprints
     ADD CONSTRAINT check_df3816aed7 CHECK ((due_date IS NOT NULL)) NOT VALID;
 
@@ -37581,6 +37585,8 @@ CREATE INDEX index_iterations_cadences_on_group_id ON iterations_cadences USING 
 CREATE UNIQUE INDEX index_jira_connect_installations_on_client_key ON jira_connect_installations USING btree (client_key);
 
 CREATE INDEX index_jira_connect_installations_on_instance_url ON jira_connect_installations USING btree (instance_url);
+
+CREATE INDEX index_jira_connect_installations_on_organization_id ON jira_connect_installations USING btree (organization_id);
 
 CREATE INDEX index_jira_connect_subscriptions_on_namespace_id ON jira_connect_subscriptions USING btree (namespace_id);
 
@@ -44705,6 +44711,9 @@ ALTER TABLE ONLY ml_models
 
 ALTER TABLE ONLY path_locks
     ADD CONSTRAINT fk_5265c98f24 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY jira_connect_installations
+    ADD CONSTRAINT fk_5326fc7be6 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY agent_user_access_group_authorizations
     ADD CONSTRAINT fk_53fd98ccbf FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
