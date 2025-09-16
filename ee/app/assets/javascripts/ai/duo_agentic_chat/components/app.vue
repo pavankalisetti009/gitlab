@@ -579,6 +579,9 @@ export default {
 
       this.currentModel = model;
       localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(model));
+
+      // start new chat when model is changed
+      this.onNewChat(null, true);
     },
   },
 };
