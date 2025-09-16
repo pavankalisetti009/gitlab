@@ -2,6 +2,8 @@
 
 require 'grpc'
 require 'gitlab/duo_workflow_service'
+require 'google/protobuf'
+require 'json'
 
 module Ai
   module DuoWorkflow
@@ -30,6 +32,25 @@ module Ai
           ServiceResponse.success(
             message: "JWT Generated",
             payload: { token: response.token, expires_at: response.expiresAt }
+          )
+        end
+
+        def list_tools
+          stub = ::DuoWorkflowService::DuoWorkflow::Stub.new(
+            duo_workflow_service_url,
+            channel_credentials
+          )
+
+          begin
+            response = stub.list_tools(::DuoWorkflowService::ListToolsRequest.new, metadata: metadata)
+            data = Gitlab::Json.parse(Google::Protobuf.encode_json(response))
+          rescue StandardError => e
+            return ServiceResponse.error(message: e.message)
+          end
+
+          ServiceResponse.success(
+            message: "Tools listed",
+            payload: data.slice("tools", "evalDataset")
           )
         end
 

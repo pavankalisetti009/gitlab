@@ -1257,6 +1257,154 @@ expires_at: duo_workflow_service_token_expires_at })
     end
   end
 
+  describe 'GET /ai/duo_workflows/list_tools' do
+    let(:path) { '/ai/duo_workflows/list_tools' }
+
+    let(:get_without_params) { get api(path, user) }
+    let(:get_with_definition) { get api(path, user), params: { workflow_definition: workflow_definition } }
+
+    before do
+      allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
+      stub_config(duo_workflow: {
+        service_url: duo_workflow_service_url,
+        secure: true
+      })
+    end
+
+    context 'when the duo_workflows is disabled for the user' do
+      before do
+        stub_feature_flags(duo_workflow: false)
+      end
+
+      context 'when workflow_definition is software_developer' do
+        let(:workflow_definition) { 'software_developer' }
+
+        it 'returns not found' do
+          get_with_definition
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when workflow_definition is chat' do
+        let(:workflow_definition) { 'chat' }
+
+        it 'process request further' do
+          get_with_definition
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      context 'when workflow_definition is omitted' do
+        it 'process request further' do
+          get_without_params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+
+    context 'when agentic_chat feature flag is disabled for the user' do
+      before do
+        stub_feature_flags(duo_agentic_chat: false)
+      end
+
+      context 'when workflow_definition is chat' do
+        let(:workflow_definition) { 'chat' }
+
+        it 'returns not found' do
+          get_with_definition
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when workflow_definition is software_developer' do
+        let(:workflow_definition) { 'software_developer' }
+
+        it 'process request further' do
+          get_with_definition
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+
+    context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
+      before do
+        stub_feature_flags(duo_workflow: false)
+        stub_feature_flags(duo_agentic_chat: false)
+      end
+
+      it 'returns not found' do
+        get_without_params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when rate limited' do
+      it 'returns api error' do
+        allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
+
+        get_without_params
+
+        expect(response).to have_gitlab_http_status(:too_many_requests)
+      end
+    end
+
+    context 'when DuoWorkflowService returns error' do
+      it 'returns api error' do
+        expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          expect(client).to receive(:list_tools).and_return({
+            status: :error,
+            message: "could not list tools"
+          })
+        end
+
+        get_without_params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+      end
+    end
+
+    context 'when success' do
+      let(:payload) do
+        {
+          'tools' => [
+            { 'name' => 'read_write_files' },
+            { 'name' => 'run_commands' }
+          ],
+          'evalDataset' => [
+            { 'tool_name' => 'read_write_files' }
+          ]
+        }
+      end
+
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          allow(client).to receive(:list_tools).and_return(ServiceResponse.success(payload: payload))
+        end
+      end
+
+      it 'returns tools payload' do
+        get_without_params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq(payload)
+      end
+
+      context 'when authenticated with a token that has the ai_workflows scope' do
+        it 'is forbidden' do
+          get api(path, oauth_access_token: ai_workflows_oauth_token)
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+  end
+
   describe 'GET /ai/duo_workflows/workflows/agent_privileges' do
     let(:path) { "/ai/duo_workflows/workflows/agent_privileges" }
 
