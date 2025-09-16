@@ -51617,6 +51617,9 @@ msgstr ""
 msgid "ProjectsNew|Bitbucket Server URL"
 msgstr ""
 
+msgid "ProjectsNew|Both project name and project path are already taken. Please choose different values for both."
+msgstr ""
+
 msgid "ProjectsNew|Choose a group"
 msgstr ""
 
@@ -51780,6 +51783,12 @@ msgid "ProjectsNew|Project description %{tag_start}(optional)%{tag_end}"
 msgstr ""
 
 msgid "ProjectsNew|Project name"
+msgstr ""
+
+msgid "ProjectsNew|Project name is already taken. Please choose a different project name."
+msgstr ""
+
+msgid "ProjectsNew|Project path is already taken. Please choose a different project path."
 msgstr ""
 
 msgid "ProjectsNew|Project slug"
