@@ -57,8 +57,7 @@ module Gitlab
 
       class << self
         def track_event(event_name, **context_hash)
-          tracked = OldApproach.track_event(event_name, **context_hash)
-          tracked = UnifiedApproach.track_event(event_name, **context_hash) || tracked
+          tracked = UnifiedApproach.track_event(event_name, **context_hash)
 
           track_user_activity(context_hash[:user]) if tracked
         end
