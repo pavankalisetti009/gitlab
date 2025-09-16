@@ -11,13 +11,20 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
     let(:project) { nil }
     let(:namespace) { nil }
 
-    shared_examples 'Duo Code Suggestions event endpoint' do
+    shared_examples 'ai event endpoint' do
       let(:additional_properties) do
         {
+          unique_tracking_id: "abc",
+          suggestion_size: 100,
           language: 'ruby',
           timestamp: 1.month.ago.to_s,
-          suggestion_size: 100,
-          branch_name: 'foo'
+          branch_name: 'foo',
+          ide_name: 'IDE',
+          ide_vendor: 'Vendor',
+          ide_version: '1.2.3',
+          extension_name: 'extension',
+          extension_version: '2.3.4',
+          language_server_version: '3.4.5'
         }
       end
 
@@ -43,9 +50,9 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
 
       def assert_db_events
         UsageEvents::DumpWriteBufferCronWorker.new.perform
-        ClickHouse::DumpWriteBufferWorker.new.perform(Ai::CodeSuggestionEvent.clickhouse_table_name)
-        expect(Ai::CodeSuggestionEvent.first.attributes).to match(hash_including(expected_pg_event))
-        expect(ClickHouse::Client.select("SELECT * FROM #{Ai::CodeSuggestionEvent.clickhouse_table_name}", :main).first)
+        ClickHouse::DumpWriteBufferWorker.new.perform(Ai::UsageEvent.clickhouse_table_name)
+        expect(Ai::UsageEvent.first.attributes).to match(hash_including(expected_pg_event))
+        expect(ClickHouse::Client.select("SELECT * FROM #{Ai::UsageEvent.clickhouse_table_name}", :main).first)
           .to match(hash_including(expected_ch_event))
       end
 
@@ -58,25 +65,25 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
         }
       end
 
-      let(:expected_event_attributes) do
+      let(:expected_pg_event) do
         {
           user_id: user.id,
           event: event_name,
           timestamp: DateTime.parse(additional_properties[:timestamp]),
-          namespace_path: project&.reload&.project_namespace&.traversal_path || namespace&.traversal_path
+          namespace_id: project&.reload&.project_namespace&.id || namespace&.id,
+          extras: additional_properties.except(:timestamp),
+          organization_id: personal_namespace.organization&.id
         }.with_indifferent_access
       end
 
-      let(:expected_pg_event) do
-        expected_event_attributes.merge(payload: additional_properties.except(:timestamp).as_json,
-          organization_id: personal_namespace.organization&.id)
-      end
-
       let(:expected_ch_event) do
-        expected_event_attributes.merge(additional_properties.except(:timestamp)).tap do |hash|
-          hash[:event] = Ai::CodeSuggestionEvent.events[hash[:event]]
-          hash[:namespace_path] ||= '0/'
-        end
+        {
+          user_id: user.id,
+          event: Ai::UsageEvent.events[event_name],
+          timestamp: DateTime.parse(additional_properties[:timestamp]),
+          namespace_path: project&.reload&.project_namespace&.traversal_path || namespace&.traversal_path || '0/',
+          extras: additional_properties.except(:timestamp).to_json
+        }.with_indifferent_access
       end
 
       it 'triggers AI tracking without project or namespace' do
@@ -127,7 +134,7 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
       context "for #{event} event", :click_house do
         let(:event_name) { event }
 
-        it_behaves_like 'Duo Code Suggestions event endpoint'
+        it_behaves_like 'ai event endpoint'
       end
     end
   end

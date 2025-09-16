@@ -15,6 +15,18 @@ additional_properties:
     description: programming language used for the suggestion
   suggestion_size:
     description: size of the suggestion
+  ide_name:
+    description: IDE name
+  ide_vendor:
+    description: IDE vendor
+  ide_version:
+    description: IDE version
+  extension_name:
+    description: IDE extension name
+  extension_version:
+    description: IDE extension version
+  language_server_version:
+    description: IDE language server version
 identifiers:
   - user
   - project
