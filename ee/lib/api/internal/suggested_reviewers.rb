@@ -57,7 +57,7 @@ module API
             end
             post do
               ::Gitlab::QueryLimiting.disable!('https://gitlab.com/gitlab-org/gitlab/-/issues/503887',
-                new_threshold: 110)
+                new_threshold: 111)
 
               project = find_project(params[:project_id])
               not_found! unless project&.can_suggest_reviewers?

@@ -22,14 +22,14 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
 
   let(:user) { create(:user, created_at: user_created_at) }
 
-  let(:user_personal_access_token1) { create(:personal_access_token, user: user, group_id: user.enterprise_group_id) }
+  let(:user_personal_access_token1) { create(:personal_access_token, user: user) }
 
   let(:user_personal_access_token2) do
-    create(:personal_access_token, :expired, user: user, group_id: user.enterprise_group_id)
+    create(:personal_access_token, :expired, user: user)
   end
 
   let(:user_personal_access_token3) do
-    create(:personal_access_token, :revoked, user: user, group_id: user.enterprise_group_id)
+    create(:personal_access_token, :revoked, user: user)
   end
 
   let(:another_user_personal_access_token) { create(:personal_access_token) }
@@ -196,19 +196,17 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
       end
 
       it 'does not update group_id for user.personal_access_tokens', :aggregate_failures do
-        previous_enterprise_group_id = user.user_detail.enterprise_group_id
-
-        expect(user_personal_access_token1.group_id).to eq(previous_enterprise_group_id)
-        expect(user_personal_access_token2.group_id).to eq(previous_enterprise_group_id)
-        expect(user_personal_access_token3.group_id).to eq(previous_enterprise_group_id)
+        previous_user_personal_access_token1_group_id = user_personal_access_token1.group_id
+        previous_user_personal_access_token2_group_id = user_personal_access_token2.group_id
+        previous_user_personal_access_token3_group_id = user_personal_access_token3.group_id
 
         expect(another_user_personal_access_token.group_id).to be_nil
 
         service.execute
 
-        expect(user_personal_access_token1.reload.group_id).to eq(previous_enterprise_group_id)
-        expect(user_personal_access_token2.reload.group_id).to eq(previous_enterprise_group_id)
-        expect(user_personal_access_token3.reload.group_id).to eq(previous_enterprise_group_id)
+        expect(user_personal_access_token1.reload.group_id).to eq(previous_user_personal_access_token1_group_id)
+        expect(user_personal_access_token2.reload.group_id).to eq(previous_user_personal_access_token2_group_id)
+        expect(user_personal_access_token3.reload.group_id).to eq(previous_user_personal_access_token3_group_id)
 
         expect(another_user_personal_access_token.reload.group_id).to be_nil
       end
