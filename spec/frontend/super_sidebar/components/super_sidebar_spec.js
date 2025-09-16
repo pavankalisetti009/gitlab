@@ -342,25 +342,34 @@ describe('SuperSidebar component', () => {
 
   describe('in the panel-based layout', () => {
     describe('on desktop', () => {
-      beforeEach(() => {
-        createWrapper({
-          provide: { projectStudioEnabled: true },
-          sidebarState: { isMobile: false },
+      describe('in icon-only mode', () => {
+        beforeEach(() => {
+          createWrapper({
+            provide: { projectStudioEnabled: true },
+            sidebarState: { isMobile: false, isIconOnly: true },
+          });
+        });
+
+        it('renders the icon-only toggle', () => {
+          expect(findIconOnlyToggle().exists()).toBe(true);
+        });
+
+        it('does not render the context header text when in icon-only mode', () => {
+          expect(findContextHeader().exists()).toBe(false);
         });
       });
 
-      it('renders the icon-only toggle', () => {
-        expect(findIconOnlyToggle().exists()).toBe(true);
-      });
+      describe('in full mode', () => {
+        beforeEach(() => {
+          createWrapper({
+            provide: { projectStudioEnabled: true },
+            sidebarState: { isMobile: false, isIconOnly: false },
+          });
+        });
 
-      it('does not render the context header text when in icon-only mode', () => {
-        expect(findContextHeader().exists()).toBe(false);
-      });
-
-      it('renders the context header normally while not in icon-only mode', async () => {
-        findIconOnlyToggle().vm.$emit('toggle');
-        await nextTick();
-        expect(findContextHeader().text()).toBe('Your work');
+        it('renders the context header normally', () => {
+          expect(findContextHeader().text()).toBe('Your work');
+        });
       });
     });
 

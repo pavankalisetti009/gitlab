@@ -7,6 +7,7 @@ import {
   SIDEBAR_COLLAPSED_COOKIE,
   SIDEBAR_COLLAPSED_COOKIE_EXPIRATION,
   toggleSuperSidebarCollapsed,
+  toggleSuperSidebarIconOnly,
   initSuperSidebarCollapsedState,
   findPage,
   bindSuperSidebarCollapsedEvents,
@@ -86,6 +87,24 @@ describe('Super Sidebar Collapsed State Manager', () => {
         expect(sidebarState.isMobile).toBe(isMobile);
       },
     );
+
+    describe('with Project Studio enabled', () => {
+      beforeEach(() => {
+        window.gon = { features: { projectStudioEnabled: true } };
+      });
+
+      afterEach(() => {
+        delete window.gon;
+      });
+
+      it('does not save cookie when Project Studio is enabled', () => {
+        jest.spyOn(bp, 'windowWidth').mockReturnValue(xl);
+
+        toggleSuperSidebarCollapsed(true, true);
+
+        expect(setCookie).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('initSuperSidebarCollapsedState', () => {
@@ -112,6 +131,46 @@ describe('Super Sidebar Collapsed State Manager', () => {
       jest.spyOn(GlBreakpointInstance, 'windowWidth').mockReturnValue(xl);
       initSuperSidebarCollapsedState(true);
       expect(findPage().classList).not.toContain(SIDEBAR_COLLAPSED_CLASS);
+    });
+
+    describe('with Project Studio enabled', () => {
+      beforeEach(() => {
+        window.gon = { features: { projectStudioEnabled: true } };
+      });
+
+      afterEach(() => {
+        delete window.gon;
+      });
+
+      it('does not collapse sidebar on desktop', () => {
+        jest.spyOn(bp, 'windowWidth').mockReturnValue(xl);
+        getCookie.mockReturnValue('true');
+
+        initSuperSidebarCollapsedState();
+
+        expect(findPage().classList).not.toContain(SIDEBAR_COLLAPSED_CLASS);
+        expect(sidebarState.isCollapsed).toBe(false);
+      });
+
+      it('sets only `isIconOnly` (not `isCollapsed`) to true when cookie is true', () => {
+        jest.spyOn(bp, 'windowWidth').mockReturnValue(xl);
+        getCookie.mockReturnValue('true');
+
+        initSuperSidebarCollapsedState();
+
+        expect(sidebarState.isIconOnly).toBe(true);
+        expect(sidebarState.isCollapsed).toBe(false);
+      });
+
+      it('sets `isIconOnly` to false when cookie is false', () => {
+        jest.spyOn(bp, 'windowWidth').mockReturnValue(xl);
+        getCookie.mockReturnValue('false');
+
+        initSuperSidebarCollapsedState();
+
+        expect(sidebarState.isIconOnly).toBe(false);
+        expect(sidebarState.isCollapsed).toBe(false);
+      });
     });
   });
 
@@ -153,6 +212,34 @@ describe('Super Sidebar Collapsed State Manager', () => {
           tracksCollapse(sendsTrackingEvent);
         },
       );
+    });
+  });
+
+  describe('toggleSuperSidebarIconOnly', () => {
+    beforeEach(() => {
+      sidebarState.isIconOnly = false;
+    });
+
+    it('toggles isIconOnly state when called without parameters', () => {
+      toggleSuperSidebarIconOnly();
+      expect(sidebarState.isIconOnly).toBe(true);
+
+      toggleSuperSidebarIconOnly();
+      expect(sidebarState.isIconOnly).toBe(false);
+    });
+
+    it('sets isIconOnly to specific value when provided', () => {
+      toggleSuperSidebarIconOnly(true);
+
+      expect(sidebarState.isIconOnly).toBe(true);
+    });
+
+    it('saves toggle state as cookie', () => {
+      toggleSuperSidebarIconOnly(false);
+
+      expect(setCookie).toHaveBeenCalledWith(SIDEBAR_COLLAPSED_COOKIE, false, {
+        expires: SIDEBAR_COLLAPSED_COOKIE_EXPIRATION,
+      });
     });
   });
 });
