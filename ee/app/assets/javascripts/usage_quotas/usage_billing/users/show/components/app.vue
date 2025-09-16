@@ -1,20 +1,23 @@
 <script>
-import { GlAlert, GlLoadingIcon, GlAvatar, GlButton } from '@gitlab/ui';
+import { GlAlert, GlAvatar, GlButton, GlCard, GlLoadingIcon } from '@gitlab/ui';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { mockData } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
+import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 
 export default {
   name: 'UsageBillingUserDashboardApp',
   components: {
+    GlCard,
     GlLoadingIcon,
     GlAlert,
     GlAvatar,
     GlButton,
     UserDate,
+    HumanTimeframe,
   },
   inject: ['userId'],
   data() {
@@ -68,7 +71,6 @@ export default {
     </div>
 
     <template v-else>
-      <!-- Header with user details -->
       <header class="gl-my-5 gl-flex gl-flex-col gl-gap-3">
         <div
           class="gl-mb-2 gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-3 md:gl-flex-row"
@@ -107,6 +109,53 @@ export default {
           />
         </div>
       </header>
+
+      <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
+        <gl-card data-testid="month-summary-card" class="gl-flex-1 gl-bg-transparent">
+          <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">
+            {{ userUsage.allocationUsed }} / {{ userUsage.allocationTotal }}
+          </dd>
+          <dt>
+            <p class="gl-my-0">
+              {{ s__('UsageBilling|Units used this month') }}
+            </p>
+            <p class="gl-my-0 gl-text-sm gl-text-subtle">
+              (<human-timeframe
+                :from="gitlabUnitsUsage.startDate"
+                :till="gitlabUnitsUsage.endDate"
+              />)
+            </p>
+          </dt>
+        </gl-card>
+
+        <gl-card data-testid="month-pool-card" class="gl-flex-1 gl-bg-transparent">
+          <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">{{ userUsage.poolUsed }}</dd>
+          <dt>
+            <p class="gl-my-0">{{ s__('UsageBilling|Units used from pool this month') }}</p>
+            <p class="gl-my-0 gl-text-sm gl-text-subtle">
+              (<human-timeframe
+                :from="gitlabUnitsUsage.startDate"
+                :till="gitlabUnitsUsage.endDate"
+              />)
+            </p>
+          </dt>
+        </gl-card>
+
+        <gl-card data-testid="total-usage-card" class="gl-flex-1 gl-bg-transparent">
+          <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">
+            {{ userUsage.totalUnitsUsed }}
+          </dd>
+          <dt>
+            <p class="gl-my-0">{{ s__('UsageBilling|Total units used') }}</p>
+            <p class="gl-my-0 gl-text-sm gl-text-subtle">
+              (<human-timeframe
+                :from="gitlabUnitsUsage.startDate"
+                :till="gitlabUnitsUsage.endDate"
+              />)
+            </p>
+          </dt>
+        </gl-card>
+      </dl>
     </template>
   </section>
 </template>
