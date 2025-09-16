@@ -8,6 +8,7 @@ import ProjectToken from 'ee/security_dashboard/components/shared/filtered_searc
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
+import GroupVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_for_severity_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 
@@ -50,7 +51,10 @@ export default {
         ),
         panels: [
           ...(this.glFeatures.newSecurityDashboardVulnerabilitiesPerSeverity
-            ? generateVulnerabilitiesForSeverityPanels(this.filters)
+            ? generateVulnerabilitiesForSeverityPanels({
+                panelComponent: GroupVulnerabilitiesForSeverityPanel,
+                filters: this.filters,
+              })
             : []),
           ...(this.glFeatures.newSecurityDashboardTotalRiskScore
             ? [

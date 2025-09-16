@@ -1,13 +1,13 @@
 <script>
-import groupVulnerabilitiesPerSeverityCount from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_per_severity.query.graphql';
+import projectVulnerabilitiesPerSeverityCount from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_per_severity.query.graphql';
 import VulnerabilitiesForSeverityPanel from './charts/vulnerabilities_for_severity_panel.vue';
 
 export default {
-  name: 'GroupVulnerabilitiesForSeverityPanel',
+  name: 'ProjectVulnerabilitiesForSeverityPanel',
   components: {
     VulnerabilitiesForSeverityPanel,
   },
-  inject: ['groupFullPath'],
+  inject: ['projectFullPath'],
   props: {
     severity: {
       type: String,
@@ -20,16 +20,17 @@ export default {
   },
   apollo: {
     vulnerabilitySeverityCount: {
-      query: groupVulnerabilitiesPerSeverityCount,
+      query: projectVulnerabilitiesPerSeverityCount,
       variables() {
         return {
-          fullPath: this.groupFullPath,
-          projectId: this.filters.projectId,
+          fullPath: this.projectFullPath,
           reportType: this.filters.reportType,
         };
       },
       update(data) {
-        return data.group?.securityMetrics?.vulnerabilitiesPerSeverity?.[this.severity]?.count || 0;
+        return (
+          data.project?.securityMetrics?.vulnerabilitiesPerSeverity?.[this.severity]?.count || 0
+        );
       },
       error() {
         this.hasFetchError = true;

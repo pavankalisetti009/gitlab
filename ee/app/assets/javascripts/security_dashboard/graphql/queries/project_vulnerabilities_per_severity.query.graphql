@@ -1,0 +1,12 @@
+#import "../fragments/vulnerabilities_per_severity.fragment.graphql"
+
+query projectVulnerabilitiesPerSeverity($fullPath: ID!, $reportType: [VulnerabilityReportType!]) {
+  project(fullPath: $fullPath) {
+    id
+    securityMetrics(reportType: $reportType) {
+      vulnerabilitiesPerSeverity {
+        ...VulnerabilitiesPerSeverity
+      }
+    }
+  }
+}
