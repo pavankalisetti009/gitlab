@@ -25,8 +25,10 @@ module GitlabSubscriptions
           GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresenter.new(user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
         elsif authorized_gitlab_com?
           GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidgetPresenter.new(user, context) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        elsif displayable_on_gitlab_com?
+          GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter.new(user, context) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
         else
-          {}.tap { |h| h.define_singleton_method(:attributes) { self } } # placeholder while we iterate on the widget
+          {}.tap { |h| h.define_singleton_method(:attributes) { self } }
         end
       end
 
@@ -39,12 +41,22 @@ module GitlabSubscriptions
       end
 
       def authorized_gitlab_com?
+        display_context_valid_for_gitlab_com? && Ability.allowed?(user, :admin_namespace, context)
+      end
+
+      def displayable_on_gitlab_com?
+        return false unless display_context_valid_for_gitlab_com?
+        return false if Ability.allowed?(user, :admin_namespace, context)
+
+        Ability.allowed?(user, :read_namespace_via_membership, context)
+      end
+
+      def display_context_valid_for_gitlab_com?
         return false unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
         return false unless context
         return false if context.is_a?(Project)
-        return false unless context.root?
 
-        Ability.allowed?(user, :admin_namespace, context)
+        context.root?
       end
     end
   end

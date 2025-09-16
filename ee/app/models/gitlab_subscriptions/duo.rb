@@ -54,6 +54,10 @@ module GitlabSubscriptions
         !namespace.duo_core_features_enabled?
     end
 
+    def self.requestable?(namespace)
+      !namespace.duo_default_on? || !namespace.duo_core_features_enabled?
+    end
+
     def self.todo_message
       s_('Todos|You now have access to AI-native features. Learn how to set up Code Suggestions and Chat in your IDE')
     end

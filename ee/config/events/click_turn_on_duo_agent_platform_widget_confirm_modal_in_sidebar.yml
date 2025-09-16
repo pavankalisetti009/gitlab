@@ -9,6 +9,8 @@ identifiers:
 additional_properties:
   label:
     description: State that was just enabled
+  value:
+    description: "Current request count"
 product_group: activation
 product_categories:
 - activation

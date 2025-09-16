@@ -54,7 +54,11 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWid
           initialState: :enabled,
           contextualAttributes:
             {
-              featurePreviewAttribute: :instance_level_ai_beta_features_enabled, isAuthorized: true, requestCount: 0
+              featurePreviewAttribute: :instance_level_ai_beta_features_enabled, isAuthorized: true, requestCount: 0,
+              requestText:
+                s_(
+                  'DuoAgentPlatform|The number of users in your instance who have requested access to GitLab Duo Core.'
+                )
             }
         }
         expect(presenter.attributes[:duoAgentWidgetProvide]).to eq(results)

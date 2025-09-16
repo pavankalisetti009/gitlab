@@ -49,7 +49,8 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
             actionPath: '/-/users/callouts/request_duo_agent_platform',
             contextualAttributes:
               {
-                isAuthorized: false, showRequestAccess: false, hasRequested: false
+                isAuthorized: false, showRequestAccess: false, hasRequested: false,
+                requestText: s_('DuoAgentPlatform|Request has been sent to the instance Admin')
               }
           }
           expect(presenter.attributes[:duoAgentWidgetProvide]).to match(a_hash_including(results))
@@ -67,7 +68,8 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
               actionPath: '/-/users/callouts/request_duo_agent_platform',
               contextualAttributes:
                 {
-                  isAuthorized: false, showRequestAccess: true, hasRequested: false
+                  isAuthorized: false, showRequestAccess: true, hasRequested: false,
+                  requestText: s_('DuoAgentPlatform|Request has been sent to the instance Admin')
                 }
             }
             expect(presenter.attributes[:duoAgentWidgetProvide]).to match(a_hash_including(results))
@@ -82,7 +84,8 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresent
               actionPath: '/-/users/callouts/request_duo_agent_platform',
               contextualAttributes:
                 {
-                  isAuthorized: false, showRequestAccess: true, hasRequested: true
+                  isAuthorized: false, showRequestAccess: true, hasRequested: true,
+                  requestText: s_('DuoAgentPlatform|Request has been sent to the instance Admin')
                 }
             }
             expect(presenter.attributes[:duoAgentWidgetProvide]).to match(a_hash_including(results))

@@ -24,6 +24,9 @@ describe('DuoAgentPlatformWidget component', () => {
   const findActionButton = () => wrapper.findByTestId('open-modal');
   const findBody = () => wrapper.findByTestId('widget-body');
   const findConfirmModal = () => wrapper.findComponent(ConfirmActionModal);
+  const findRequestButton = () => wrapper.findByTestId('request-access-btn');
+  const findRequestCounter = () => wrapper.findByTestId('request-counter');
+  const findRequestIcon = () => wrapper.findByTestId('request-icon');
 
   const defaultProvide = {
     actionPath: '/admin/application_settings/general',
@@ -32,6 +35,8 @@ describe('DuoAgentPlatformWidget component', () => {
     contextualAttributes: {
       isAuthorized: true,
       featurePreviewAttribute: 'instance_level_ai_beta_features_enabled',
+      requestText: 'Request has been sent to the instance Admin',
+      requestCount: 1,
     },
   };
 
@@ -362,15 +367,13 @@ describe('DuoAgentPlatformWidget component', () => {
       });
 
       it('shows request access section', () => {
-        const requestSection = wrapper.find('[data-testid="request-access-btn"]');
-        expect(requestSection.exists()).toBe(true);
+        expect(findRequestButton().exists()).toBe(true);
       });
 
       it('handles successful request access', async () => {
         mockAxios.onPost('/-/users/callouts/request_duo_agent_platform').reply(HTTP_STATUS_OK);
 
-        const requestBtn = wrapper.findByTestId('request-access-btn');
-        await requestBtn.vm.$emit('click');
+        await findRequestButton().vm.$emit('click');
         await waitForPromises();
 
         expect($toast.show).toHaveBeenCalledWith('Request has been sent to the instance Admin');
@@ -407,10 +410,8 @@ describe('DuoAgentPlatformWidget component', () => {
     });
 
     it('shows request counter when admin has pending requests', () => {
-      const counter = wrapper.findByTestId('request-counter');
-      expect(counter.exists()).toBe(true);
-      expect(counter.text()).toContain('Team requests');
-      expect(counter.text()).toContain('5');
+      expect(findRequestCounter().text()).toContain('Team requests');
+      expect(findRequestCounter().text()).toContain('5');
     });
   });
 
@@ -471,7 +472,7 @@ describe('DuoAgentPlatformWidget component', () => {
       );
     });
 
-    it('tracks learn more button click', () => {
+    it('tracks authorized learn more button click', () => {
       createComponent();
       const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
@@ -481,6 +482,71 @@ describe('DuoAgentPlatformWidget component', () => {
 
       expect(trackEventSpy).toHaveBeenCalledWith(
         'click_learn_more_in_duo_agent_platform_widget_in_sidebar',
+        { label: 'authorized' },
+        undefined,
+      );
+    });
+
+    it('tracks request learn more button click', () => {
+      createComponent({}, { isAuthorized: false, showRequestAccess: true, hasRequested: false });
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      trackEventSpy.mockClear();
+
+      findLearnMoreButton().vm.$emit('click', { stopPropagation: jest.fn() });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_learn_more_in_duo_agent_platform_widget_in_sidebar',
+        { label: 'request' },
+        undefined,
+      );
+    });
+
+    it('tracks requested learn more button click', () => {
+      createComponent({}, { isAuthorized: false, showRequestAccess: true, hasRequested: true });
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      trackEventSpy.mockClear();
+
+      findLearnMoreButton().vm.$emit('click', { stopPropagation: jest.fn() });
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_learn_more_in_duo_agent_platform_widget_in_sidebar',
+        { label: 'requested' },
+        undefined,
+      );
+    });
+
+    it('tracks hover on team requests icon', () => {
+      createComponent();
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      trackEventSpy.mockClear();
+
+      findRequestIcon().trigger('mouseenter');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'hover_team_requests_in_duo_agent_platform_widget_in_sidebar',
+        {},
+        undefined,
+      );
+    });
+
+    it('tracks successful successful request access', async () => {
+      createComponent(
+        { actionPath: '/-/users/callouts/request_duo_agent_platform' },
+        { isAuthorized: false, showRequestAccess: true, hasRequested: false },
+      );
+      mockAxios.onPost('/-/users/callouts/request_duo_agent_platform').reply(HTTP_STATUS_OK);
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      trackEventSpy.mockClear();
+
+      await findRequestButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_request_in_duo_agent_platform_widget_in_sidebar',
         {},
         undefined,
       );
@@ -499,6 +565,7 @@ describe('DuoAgentPlatformWidget component', () => {
         'click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar',
         {
           label: 'enablePlatform',
+          value: 1,
         },
         undefined,
       );
@@ -517,6 +584,7 @@ describe('DuoAgentPlatformWidget component', () => {
         'click_turn_on_duo_agent_platform_widget_confirm_modal_in_sidebar',
         {
           label: 'enableFeaturePreview',
+          value: 1,
         },
         undefined,
       );

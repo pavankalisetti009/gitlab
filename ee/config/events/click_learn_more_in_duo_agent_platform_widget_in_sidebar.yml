@@ -6,6 +6,9 @@ action: click_learn_more_in_duo_agent_platform_widget_in_sidebar
 identifiers:
 - namespace
 - user
+additional_properties:
+  label:
+    description: State of the user. authorized, request, or requested
 product_group: activation
 product_categories:
 - activation

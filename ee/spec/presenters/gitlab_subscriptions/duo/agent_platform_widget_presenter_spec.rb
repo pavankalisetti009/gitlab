@@ -50,17 +50,16 @@ RSpec.describe GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter, feature_c
     context 'when gitlab_duo_saas_only feature is enabled' do
       let(:gitlab_duo_saas_only_enabled?) { true }
       let(:context) { build_stubbed(:group) }
+      let(:request_authorized?) { true }
 
       before do
         allow(Ability).to receive(:allowed?).with(user, :admin_namespace, context).and_return(authorized?)
+        allow(Ability)
+          .to receive(:allowed?).with(user, :read_namespace_via_membership, context).and_return(request_authorized?)
       end
 
-      context 'when user is admin' do
+      context 'when user is an owner' do
         let(:context) { build_stubbed(:group) }
-
-        before do
-          allow(Ability).to receive(:allowed?).with(user, :admin_namespace, context).and_return(authorized?)
-        end
 
         context 'when context is a top-level group' do
           it 'delegates to GitlabCom::AuthorizedAgentPlatformWidgetPresenter' do
@@ -98,11 +97,51 @@ RSpec.describe GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter, feature_c
         end
       end
 
-      context 'when user is not admin' do
+      context 'when user is a non owner member' do
         let(:authorized?) { false }
 
+        context 'when context is a top-level group' do
+          it 'delegates to GitlabCom::AuthorizedAgentPlatformWidgetPresenter' do
+            expected_attributes = { duoAgentWidgetProvide: {} }
+            expected_presenter = instance_double(
+              GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter,
+              attributes: expected_attributes
+            )
+
+            expect(GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter)
+              .to receive(:new).with(user, context).and_return(expected_presenter)
+
+            expect(attributes).to eq(expected_attributes)
+          end
+        end
+
+        context 'when context is a project' do
+          let(:context) { build_stubbed(:project) }
+
+          it 'returns empty hash' do
+            expect(GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter).not_to receive(:new)
+
+            expect(attributes).to eq({})
+          end
+        end
+
+        context 'when context is a sub-group' do
+          let(:context) { build_stubbed(:group, :nested) }
+
+          it 'returns empty hash' do
+            expect(GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter).not_to receive(:new)
+
+            expect(attributes).to eq({})
+          end
+        end
+      end
+
+      context 'when user is not a member' do
+        let(:authorized?) { false }
+        let(:request_authorized?) { false }
+
         it 'returns empty hash' do
-          expect(GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidgetPresenter).not_to receive(:new)
+          expect(GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter).not_to receive(:new)
 
           expect(attributes).to eq({})
         end

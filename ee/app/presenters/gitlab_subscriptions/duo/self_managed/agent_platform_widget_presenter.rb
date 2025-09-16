@@ -16,7 +16,8 @@ module GitlabSubscriptions
           {
             isAuthorized: false,
             showRequestAccess: requestable?,
-            hasRequested: user_has_requested?
+            hasRequested: user_has_requested?,
+            requestText: s_('DuoAgentPlatform|Request has been sent to the instance Admin')
           }
         end
 

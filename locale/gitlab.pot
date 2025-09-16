@@ -24461,6 +24461,12 @@ msgstr ""
 msgid "DuoAgentPlatform|Remote GitLab Duo Flows"
 msgstr ""
 
+msgid "DuoAgentPlatform|Request has been sent to the group Owner"
+msgstr ""
+
+msgid "DuoAgentPlatform|Request has been sent to the instance Admin"
+msgstr ""
+
 msgid "DuoAgentPlatform|Session ID"
 msgstr ""
 
@@ -24468,6 +24474,12 @@ msgid "DuoAgentPlatform|Session triggered"
 msgstr ""
 
 msgid "DuoAgentPlatform|Start using GitLab Duo Core"
+msgstr ""
+
+msgid "DuoAgentPlatform|The number of users in your group who have requested access to GitLab Duo Core."
+msgstr ""
+
+msgid "DuoAgentPlatform|The number of users in your instance who have requested access to GitLab Duo Core."
 msgstr ""
 
 msgid "DuoAgentPlatform|Turn on Feature Preview"
@@ -54292,9 +54304,6 @@ msgstr ""
 msgid "Request details"
 msgstr ""
 
-msgid "Request has been sent to the instance Admin"
-msgstr ""
-
 msgid "Request queued for administrator approval."
 msgstr ""
 
@@ -65330,9 +65339,6 @@ msgid "The number of merge requests merged by month."
 msgstr ""
 
 msgid "The number of times an upload record could not find its file"
-msgstr ""
-
-msgid "The number of users in your instance who have requested access to GitLab Duo Core."
 msgstr ""
 
 msgid "The only thread is resolved"
