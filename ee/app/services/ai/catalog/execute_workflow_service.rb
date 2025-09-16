@@ -12,7 +12,8 @@ module Ai
         DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
         DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
         DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
-        DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+        DuoWorkflows::Workflow::AgentPrivileges::USE_GIT,
+        DuoWorkflows::Workflow::AgentPrivileges::RUN_MCP_TOOLS
       ].freeze
 
       def initialize(current_user, params)
