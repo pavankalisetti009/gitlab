@@ -5,15 +5,15 @@ export const EXCEPTION_MODE = 'exception_mode';
 
 export const WARN_MODE_BYPASS_REASONS = [
   {
-    value: 'policy_false_positive',
+    value: 'POLICY_FALSE_POSITIVE',
     text: s__('SecurityOrchestration|Policy false positive'),
   },
   {
-    value: 'scanner_false_positive',
+    value: 'SCANNER_FALSE_POSITIVE',
     text: s__('SecurityOrchestration|Scanner false positive'),
   },
-  { value: 'emergency_hotfix', text: s__('SecurityOrchestration|Emergency hotfix') },
-  { value: 'other', text: s__('SecurityOrchestration|Other') },
+  { value: 'EMERGENCY_HOT_FIX', text: s__('SecurityOrchestration|Emergency hotfix') },
+  { value: 'OTHER', text: s__('SecurityOrchestration|Other') },
 ];
 
 export const POLICY_EXCEPTIONS_BYPASS_REASONS = [
