@@ -57,36 +57,37 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
       namespace: subgroup_project.reload.project_namespace, timestamp: 10.days.ago)
   end
 
-  shared_examples 'common ai usage events field' do
-    context 'when user cannot read usage events' do
-      before_all do
-        group.add_guest(current_user)
-      end
-
-      it 'returns no data' do
-        post_graphql(query, current_user: current_user)
-
-        expect(response_events).to be_nil
-      end
+  shared_examples 'ai usage events endpoint without permissions' do
+    before_all do
+      group.add_guest(current_user)
     end
 
-    context 'when user can read usage events' do
-      before_all do
-        group.add_reporter(current_user)
-      end
+    it 'returns no data' do
+      post_graphql(query, current_user: current_user)
 
-      it 'returns events' do
-        post_graphql(query, current_user: current_user)
+      expect(response_events).to be_nil
+    end
+  end
 
-        expect(response_events.pluck('id')).to match_array(expected_event_ids)
-      end
+  shared_examples 'ai usage events endpoint with permissions' do
+    before_all do
+      group.add_reporter(current_user)
+    end
+
+    it 'returns events' do
+      post_graphql(query, current_user: current_user)
+
+      expect(response_events.pluck('id')).to match_array(expected_event_ids)
     end
   end
 
   context 'for group' do
-    it_behaves_like 'common ai usage events field' do
-      let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
-      let(:response_events) { graphql_data.dig('group', 'aiUsageData', 'all', 'nodes') }
+    let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
+    let(:response_events) { graphql_data.dig('group', 'aiUsageData', 'all', 'nodes') }
+
+    it_behaves_like 'ai usage events endpoint without permissions'
+
+    it_behaves_like 'ai usage events endpoint with permissions' do
       let(:expected_event_ids) do
         [
           code_suggestion_event_1,
@@ -95,17 +96,50 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
         ].map(&:to_global_id).map(&:to_s)
       end
     end
+
+    context 'when filtering by users and events' do
+      let(:filter_params) do
+        super().merge(
+          user_ids: [user_1.to_global_id.to_s],
+          events: [:CODE_SUGGESTION_SHOWN_IN_IDE]
+        )
+      end
+
+      it_behaves_like 'ai usage events endpoint with permissions' do
+        let(:expected_event_ids) do
+          [code_suggestion_event_1].map(&:to_global_id).map(&:to_s)
+        end
+      end
+    end
   end
 
   context 'for project' do
-    it_behaves_like 'common ai usage events field' do
-      let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
-      let(:response_events) { graphql_data.dig('project', 'aiUsageData', 'all', 'nodes') }
+    let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
+    let(:response_events) { graphql_data.dig('project', 'aiUsageData', 'all', 'nodes') }
+
+    it_behaves_like 'ai usage events endpoint without permissions'
+
+    it_behaves_like 'ai usage events endpoint with permissions' do
       let(:expected_event_ids) do
         [
           code_suggestion_event_2,
           code_suggestion_event_4
         ].map(&:to_global_id).map(&:to_s)
+      end
+    end
+
+    context 'when filtering by users and events' do
+      let(:filter_params) do
+        super().merge(
+          user_ids: [user_1.to_global_id.to_s],
+          events: [:CODE_SUGGESTION_ACCEPTED_IN_IDE]
+        )
+      end
+
+      it_behaves_like 'ai usage events endpoint with permissions' do
+        let(:expected_event_ids) do
+          [code_suggestion_event_2].map(&:to_global_id).map(&:to_s)
+        end
       end
     end
   end
