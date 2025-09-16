@@ -18,6 +18,7 @@ import {
   I18N_TABLE_REMOVE_BUTTON,
   I18N_TABLE_REMOVE_BUTTON_DISABLED,
   I18N_GROUP_COL_LABEL,
+  I18N_TABLE_ACTIONS_LABEL,
 } from '../constants';
 import { getGroupAdoptionPath } from '../utils/helpers';
 import DevopsAdoptionDeleteModal from './devops_adoption_delete_modal.vue';
@@ -113,9 +114,10 @@ export default {
         })),
         {
           key: 'actions',
-          tdClass: 'actions-cell',
+          tdClass: 'actions-cell text-right',
           ...fieldOptions,
           sortable: false,
+          label: I18N_TABLE_ACTIONS_LABEL,
         },
       ];
     },

@@ -31,5 +31,6 @@ export default {
     :presentation="options.presentation"
     height="auto"
     responsive
+    tabindex="0"
   />
 </template>

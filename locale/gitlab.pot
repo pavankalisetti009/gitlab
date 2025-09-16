@@ -23589,6 +23589,9 @@ msgstr ""
 msgid "DevopsAdoption|%{adoptedCount}/%{featuresCount} %{title} features adopted"
 msgstr ""
 
+msgid "DevopsAdoption|Actions"
+msgstr ""
+
 msgid "DevopsAdoption|Add a group to get started"
 msgstr ""
 

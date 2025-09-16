@@ -56,7 +56,7 @@ export default {
 <template>
   <div class="mr-table">
     <div class="card">
-      <div class="card-header border-bottom-0 gl-bg-transparent gl-font-bold">
+      <div role="table" class="card-header border-bottom-0 gl-bg-transparent gl-font-bold">
         <div
           role="row"
           class="gl-responsive-table-row table-row-header gl-border-b gl-flex gl-border-1 gl-border-none gl-py-0 gl-border-b-solid md:gl-border-b-0"
