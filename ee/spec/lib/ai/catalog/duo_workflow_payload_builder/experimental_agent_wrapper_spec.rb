@@ -9,21 +9,15 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
   let_it_be(:wrapped_agent_response) { Ai::Catalog::WrappedAgentFlowBuilder.new(agent, agent_version).execute }
   let_it_be(:flow) { wrapped_agent_response.payload[:flow] }
   let_it_be(:flow_version) { flow.versions.last }
-  let_it_be(:pinned_version_prefix) { nil }
+  let(:user_prompt_input) { 'List all issues from project {{project_id}}' }
 
-  subject(:builder) { described_class.new(flow, flow_version, nil) }
+  let(:params) { { user_prompt_input: user_prompt_input } }
+
+  subject(:builder) { described_class.new(flow, flow_version, params) }
 
   describe 'inheritance' do
     it 'inherits from Experimental' do
       expect(described_class.superclass).to eq(Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental)
-    end
-  end
-
-  describe '#initialize' do
-    it 'sets flow_version and calls super' do
-      expect(builder.instance_variable_get(:@flow_version)).to eq(flow_version)
-      expect(builder.instance_variable_get(:@flow)).to eq(flow)
-      expect(builder.instance_variable_get(:@pinned_version_prefix)).to eq(pinned_version_prefix)
     end
   end
 
@@ -32,6 +26,47 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
       let(:result) { builder.build }
       let(:environment) { 'remote' }
       let(:version) { 'experimental' }
+    end
+
+    it 'builds workflow config correctly' do
+      agent_flow_id = "#{agent.id}/0"
+      result = builder.build
+
+      expect(result['components']).to eq([
+        {
+          'name' => agent_flow_id,
+          'type' => 'AgentComponent',
+          'prompt_id' => "#{agent_flow_id}_prompt",
+          'inputs' => [
+            { 'from' => 'context:goal', 'as' => 'goal' },
+            { 'from' => 'context:project_id', 'as' => 'project_id' }
+          ],
+          'toolset' => %w[gitlab_blob_search],
+          'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
+        }
+      ])
+      expect(result['prompts']).to eq([
+        {
+          'prompt_id' => "#{agent_flow_id}_prompt",
+          'model' => {
+            'params' => {
+              'max_tokens' => described_class::MAX_TOKEN_SIZE,
+              'model_class_provider' => described_class::LLM_MODEL_CLASS_PROVIDER,
+              'model' => described_class::LLM_MODEL_CLASS_NAME
+            }
+          },
+          'prompt_template' => {
+            'system' => agent_version.def_system_prompt,
+            'user' => user_prompt_input,
+            'placeholder' => described_class::PLACEHOLDER_VALUE
+          },
+          "params" => { "timeout" => 30 }
+        }
+      ])
+      expect(result['flow']['entry_point']).to eq(agent_flow_id)
+      expect(result['routers']).to eq([
+        { 'from' => agent_flow_id, 'to' => 'end' }
+      ])
     end
   end
 end

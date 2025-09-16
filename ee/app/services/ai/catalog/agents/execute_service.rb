@@ -76,7 +76,8 @@ module Ai
         def generate_flow_config
           payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper.new(
             flow,
-            flow.latest_version
+            flow.latest_version,
+            { user_prompt_input: agent_goal }
           )
           payload_builder.build
         end
