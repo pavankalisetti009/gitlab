@@ -193,6 +193,42 @@ describe('RoadmapApp', () => {
     expect(groupEpicsWithColorQueryHandler).not.toHaveBeenCalled();
   });
 
+  it('calls group epic query with or filter parameter when provided', async () => {
+    const filterParams = {
+      'or[labelName]': ['bug', 'feature'],
+    };
+
+    createComponent({ filterParams });
+    await waitForPromises();
+
+    expect(groupEpicsWithColorQueryHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        or: {
+          labelName: ['bug', 'feature'],
+        },
+      }),
+    );
+  });
+
+  it('calls group epic query with multiple or filter parameters when provided', async () => {
+    const filterParams = {
+      'or[labelName]': ['bug', 'feature'],
+      'or[authorUsername]': ['user1', 'user2'],
+    };
+
+    createComponent({ filterParams });
+    await waitForPromises();
+
+    expect(groupEpicsWithColorQueryHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        or: {
+          labelName: ['bug', 'feature'],
+          authorUsername: ['user1', 'user2'],
+        },
+      }),
+    );
+  });
+
   it('fetches next page when there is next page and epics list is scrolled to bottom', async () => {
     createComponent();
     await waitForPromises();
