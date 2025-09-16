@@ -1,7 +1,7 @@
 <script>
 import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import { formatDate } from '~/lib/utils/datetime/date_format_utility';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 
 export default {
   components: {
@@ -28,11 +28,13 @@ export default {
     },
     createdAt: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     updatedAt: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     project: {
       type: Object,
@@ -93,7 +95,19 @@ export default {
   },
   methods: {
     formatTimestamp(isoString) {
-      return formatDate(isoString, 'mmm dd, yyyy - HH:MM:ss');
+      if (!isoString) {
+        return __('N/A');
+      }
+
+      try {
+        const date = new Date(isoString);
+        if (Number.isNaN(date.getTime())) {
+          return __('N/A');
+        }
+        return localeDateFormat.asDateTime.format(date);
+      } catch (error) {
+        return __('N/A');
+      }
     },
   },
 };
