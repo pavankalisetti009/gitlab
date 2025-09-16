@@ -685,5 +685,19 @@
   .settings-sticky-footer {
     background-color: var(--theme-background-color) !important;
   }
-
  }
+
+/*
+ * Animations
+ */
+
+:where(.application-chrome) {
+  .nav-flyout-menu {
+    @include gl-prefers-reduced-motion-transition;
+    transition: opacity .2s .1s $gl-easing-out-cubic;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+}
