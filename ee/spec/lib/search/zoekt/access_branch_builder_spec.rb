@@ -37,7 +37,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
       it 'returns admin branch only' do
         result = builder.build
 
-        expect(result.first).to include(:or)
+        expect(result.first.dig(:meta, :key)).to eq('repository_access_level')
+        expect(result.first.dig(:meta, :value)).to eq('20|10')
         expect(result.first.dig(:_context, :name)).to eq('admin_branch')
       end
     end
@@ -75,10 +76,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
 
           expect(branch_contexts).to contain_exactly(
-            'public_branch',
-            'internal_branch',
-            'public_authorized_branch',
-            'internal_authorized_branch',
+            'public_and_internal_branch',
+            'public_and_internal_authorized_branch',
             'private_authorized_branch'
           )
         end
@@ -100,10 +99,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
           expect(branch_contexts).to contain_exactly(
-            'public_branch',
-            'internal_branch',
-            'public_authorized_branch',
-            'internal_authorized_branch'
+            'public_and_internal_branch',
+            'public_and_internal_authorized_branch'
           )
         end
 
@@ -119,10 +116,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
             branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
             expect(branch_contexts).to contain_exactly(
-              'public_branch',
-              'internal_branch',
-              'public_authorized_branch',
-              'internal_authorized_branch',
+              'public_and_internal_branch',
+              'public_and_internal_authorized_branch',
               'private_authorized_branch'
             )
           end
@@ -145,8 +140,7 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
           expect(branch_contexts).to contain_exactly(
-            'public_branch',
-            'internal_branch',
+            'public_and_internal_branch',
             'private_authorized_branch'
           )
         end
@@ -181,10 +175,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
           expect(branch_contexts).to contain_exactly(
-            'public_branch',
-            'internal_branch',
-            'public_authorized_branch',
-            'internal_authorized_branch',
+            'public_and_internal_branch',
+            'public_and_internal_authorized_branch',
             'private_authorized_branch'
           )
         end
@@ -210,10 +202,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
           expect(branch_contexts).to contain_exactly(
-            'public_branch',
-            'internal_branch',
-            'public_authorized_branch',
-            'internal_authorized_branch'
+            'public_and_internal_branch',
+            'public_and_internal_authorized_branch'
           )
         end
 
@@ -229,10 +219,8 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
             branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
             expect(branch_contexts).to contain_exactly(
-              'public_branch',
-              'internal_branch',
-              'public_authorized_branch',
-              'internal_authorized_branch',
+              'public_and_internal_branch',
+              'public_and_internal_authorized_branch',
               'private_authorized_branch'
             )
           end
@@ -259,8 +247,7 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
 
           branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
           expect(branch_contexts).to contain_exactly(
-            'public_branch',
-            'internal_branch',
+            'public_and_internal_branch',
             'private_authorized_branch'
           )
         end
@@ -276,7 +263,7 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
         result = builder.build
 
         branch_contexts = result.map { |branch| branch.dig(:_context, :name) }
-        expect(branch_contexts).to contain_exactly('public_branch', 'internal_branch')
+        expect(branch_contexts).to contain_exactly('public_and_internal_branch')
       end
     end
   end
