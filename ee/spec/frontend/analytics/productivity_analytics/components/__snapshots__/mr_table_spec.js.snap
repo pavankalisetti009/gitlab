@@ -9,6 +9,7 @@ exports[`MergeRequestTable component matches the snapshot 1`] = `
   >
     <div
       class="border-bottom-0 card-header gl-bg-transparent gl-font-bold"
+      role="table"
     >
       <div
         class="gl-border-1 gl-border-b gl-border-b-solid gl-border-none gl-flex gl-py-0 gl-responsive-table-row md:gl-border-b-0 table-row-header"

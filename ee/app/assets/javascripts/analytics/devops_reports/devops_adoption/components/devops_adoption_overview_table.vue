@@ -18,6 +18,7 @@ import {
   I18N_TABLE_REMOVE_BUTTON,
   I18N_OVERVIEW_TABLE_HEADER_GROUP,
   I18N_OVERVIEW_TABLE_HEADER_SUBGROUP,
+  I18N_TABLE_ACTIONS_LABEL,
   DEVOPS_ADOPTION_TABLE_CONFIGURATION,
   OVERVIEW_TABLE_SORT_BY_STORAGE_KEY,
   OVERVIEW_TABLE_SORT_DESC_STORAGE_KEY,
@@ -105,9 +106,10 @@ export default {
         })),
         {
           key: 'actions',
-          tdClass: 'actions-cell',
+          tdClass: 'actions-cell text-right',
           ...fieldOptions,
           sortable: false,
+          label: I18N_TABLE_ACTIONS_LABEL,
         },
       ];
     },

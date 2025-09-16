@@ -83,6 +83,8 @@ export const I18N_OVERVIEW_CHART_Y_AXIS_TITLE = s__(
 );
 export const I18N_NO_FEATURE_META = s__('DevopsAdoption|No tracked features');
 
+export const I18N_TABLE_ACTIONS_LABEL = s__('DevopsAdoption|Actions');
+
 export const OVERVIEW_CHART_X_AXIS_TYPE = 'category';
 export const OVERVIEW_CHART_Y_AXIS_TYPE = 'value';
 
