@@ -14,7 +14,7 @@ import {
 
 describe('RunnerUpgradeStatusBadge', () => {
   let wrapper;
-  let glFeatures;
+  let glLicensedFeatures;
 
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findPopover = () => wrapper.findComponent(GlPopover);
@@ -29,7 +29,7 @@ describe('RunnerUpgradeStatusBadge', () => {
         ...props,
       },
       provide: {
-        glFeatures,
+        glLicensedFeatures,
       },
       stubs: {
         GlSprintf,
@@ -39,7 +39,7 @@ describe('RunnerUpgradeStatusBadge', () => {
 
   describe('When no feature is enabled', () => {
     beforeEach(() => {
-      glFeatures = {};
+      glLicensedFeatures = {};
     });
 
     it('Displays no upgrade status', () => {
@@ -54,7 +54,7 @@ describe('RunnerUpgradeStatusBadge', () => {
     'When feature "%s" is enabled',
     (feature) => {
       beforeEach(() => {
-        glFeatures[feature] = true;
+        glLicensedFeatures[feature] = true;
       });
 
       it.each([UPGRADE_STATUS_RECOMMENDED, UPGRADE_STATUS_AVAILABLE])(

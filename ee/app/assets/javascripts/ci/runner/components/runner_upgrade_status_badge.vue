@@ -1,7 +1,7 @@
 <script>
 import { GlBadge, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import {
   UPGRADE_STATUS_AVAILABLE,
   UPGRADE_STATUS_RECOMMENDED,
@@ -21,7 +21,7 @@ export default {
     GlPopover,
     GlSprintf,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   props: {
     runner: {
       required: true,
@@ -31,8 +31,8 @@ export default {
   computed: {
     shouldShowUpgradeStatus() {
       return (
-        this.glFeatures?.runnerUpgradeManagement ||
-        this.glFeatures?.runnerUpgradeManagementForNamespace
+        this.glLicensedFeatures?.runnerUpgradeManagement ||
+        this.glLicensedFeatures?.runnerUpgradeManagementForNamespace
       );
     },
     upgradeStatus() {

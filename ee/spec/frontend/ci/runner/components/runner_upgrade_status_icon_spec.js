@@ -11,7 +11,7 @@ import {
 
 describe('RunnerUpgradeStatusIcon', () => {
   let wrapper;
-  let glFeatures;
+  let glLicensedFeatures;
 
   const findIcon = () => wrapper.findComponent(GlIcon);
   const getTooltipValue = () => getBinding(wrapper.element, 'gl-tooltip').value;
@@ -25,14 +25,14 @@ describe('RunnerUpgradeStatusIcon', () => {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
       provide: {
-        glFeatures,
+        glLicensedFeatures,
       },
     });
   };
 
   describe('When no feature is enabled', () => {
     beforeEach(() => {
-      glFeatures = {};
+      glLicensedFeatures = {};
     });
 
     it('Displays no upgrade status', () => {
@@ -46,7 +46,7 @@ describe('RunnerUpgradeStatusIcon', () => {
     'When feature "%s" is enabled',
     (feature) => {
       beforeEach(() => {
-        glFeatures[feature] = true;
+        glLicensedFeatures[feature] = true;
       });
 
       it('Displays upgrade available icon', () => {

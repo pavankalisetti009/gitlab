@@ -12,7 +12,11 @@ describe('RunnerStats', () => {
   const findPopoverByTarget = (target) =>
     wrapper.findAllComponents(GlPopover).wrappers.find((w) => w.attributes('target') === target);
 
-  const createComponent = ({ props = {}, glFeatures = {}, mountFn = shallowMount } = {}) => {
+  const createComponent = ({
+    props = {},
+    glLicensedFeatures = {},
+    mountFn = shallowMount,
+  } = {}) => {
     wrapper = mountFn(RunnerUpgradeStatusStats, {
       propsData: {
         scope: INSTANCE_TYPE,
@@ -20,16 +24,16 @@ describe('RunnerStats', () => {
         ...props,
       },
       provide: {
-        glFeatures,
+        glLicensedFeatures,
       },
     });
   };
 
   describe.each`
-    glFeatures
+    glLicensedFeatures
     ${{ runnerUpgradeManagement: true }}
     ${{ runnerUpgradeManagementForNamespace: true }}
-  `('With licensed feature $glFeatures', ({ glFeatures }) => {
+  `('With licensed feature $glLicensedFeatures', ({ glLicensedFeatures }) => {
     const statOptions = [
       {
         index: 0,
@@ -48,7 +52,7 @@ describe('RunnerStats', () => {
     describe('Renders upgrade stats', () => {
       beforeEach(() => {
         createComponent({
-          glFeatures,
+          glLicensedFeatures,
         });
       });
 
@@ -79,7 +83,7 @@ describe('RunnerStats', () => {
         props: {
           variables: { paused: true },
         },
-        glFeatures,
+        glLicensedFeatures,
       });
 
       expect(findRunnerSingleStatAt(index).props('variables')).toEqual({
@@ -93,7 +97,7 @@ describe('RunnerStats', () => {
         props: {
           variables: { upgradeStatus: UPGRADE_STATUS_AVAILABLE },
         },
-        glFeatures,
+        glLicensedFeatures,
       });
 
       expect(findRunnerSingleStatAt(0).props('skip')).toBe(false);
@@ -104,7 +108,7 @@ describe('RunnerStats', () => {
   describe('When no licensed features are available', () => {
     beforeEach(() => {
       createComponent({
-        glFeatures: {},
+        glLicensedFeatures: {},
       });
     });
 

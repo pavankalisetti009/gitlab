@@ -1,6 +1,6 @@
 <script>
 import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import { s__ } from '~/locale';
 import { UPGRADE_STATUS_AVAILABLE, UPGRADE_STATUS_RECOMMENDED } from '../constants';
 
@@ -12,7 +12,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   props: {
     upgradeStatus: {
       type: String,
@@ -23,8 +23,8 @@ export default {
   computed: {
     shouldShowUpgradeStatus() {
       return (
-        this.glFeatures?.runnerUpgradeManagement ||
-        this.glFeatures?.runnerUpgradeManagementForNamespace
+        this.glLicensedFeatures?.runnerUpgradeManagement ||
+        this.glLicensedFeatures?.runnerUpgradeManagementForNamespace
       );
     },
     icon() {

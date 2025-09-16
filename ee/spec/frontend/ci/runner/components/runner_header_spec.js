@@ -31,8 +31,8 @@ describe('RunnerHeader', () => {
   describe('Upgrade status', () => {
     describe.each`
       feature                                      | provide
-      ${'runner_upgrade_management'}               | ${{ glFeatures: { runnerUpgradeManagement: true } }}
-      ${'runner_upgrade_management_for_namespace'} | ${{ glFeatures: { runnerUpgradeManagementForNamespace: true } }}
+      ${'runner_upgrade_management'}               | ${{ glLicensedFeatures: { runnerUpgradeManagement: true } }}
+      ${'runner_upgrade_management_for_namespace'} | ${{ glLicensedFeatures: { runnerUpgradeManagementForNamespace: true } }}
     `('When $feature is available', ({ provide }) => {
       beforeEach(() => {
         createComponent({
