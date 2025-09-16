@@ -72,8 +72,15 @@ RSpec.describe Geo::SystemCheck::GeoDatabaseConfiguredCheck, :silence_stdout, fe
     allow(::Geo::TrackingBase).to receive_message_chain(:connection, :active?).and_return(active)
 
     pending_migrations = tables_missing ? [Struct.new('Migration', :version).new('20250101000000')] : []
-    allow(::Geo::TrackingBase).to receive_message_chain(:connection, :migration_context, :migrations)
-                                    .and_return(pending_migrations)
+
+    if Gitlab.next_rails?
+      allow(::Geo::TrackingBase).to receive_message_chain(:connection, :pool, :migration_context, :migrations)
+                                      .and_return(pending_migrations)
+    else
+      allow(::Geo::TrackingBase).to receive_message_chain(:connection, :migration_context, :migrations)
+                                      .and_return(pending_migrations)
+    end
+
     allow(::Geo::TrackingBase::SchemaMigration).to receive(:table_exists?).and_return(false)
 
     if select_value == 1
