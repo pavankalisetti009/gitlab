@@ -267,7 +267,7 @@ export default {
         @input="onDaterangeInput"
       >
         <template #default="{ daysSelected }">
-          <span class="gl-hidden lg:gl-inline">{{ dateRangeLabel(daysSelected) }}</span>
+          <span class="gl-hidden @lg/panel:gl-inline">{{ dateRangeLabel(daysSelected) }}</span>
         </template>
       </gl-daterange-picker>
 
@@ -278,7 +278,7 @@ export default {
       </div>
     </div>
 
-    <div class="gl-items-start gl-justify-between gl-gap-4 md:gl-flex">
+    <div class="gl-items-start gl-justify-between gl-gap-4 @md/panel:gl-flex">
       <gl-table-lite
         :fields="topProjectsFields"
         :items="topProjects"

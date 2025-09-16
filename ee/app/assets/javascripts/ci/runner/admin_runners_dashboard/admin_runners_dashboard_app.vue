@@ -70,8 +70,8 @@ export default {
       </template>
     </runner-list-header>
 
-    <div class="gl-justify-between gl-gap-x-4 sm:gl-flex">
-      <div class="gl-w-full gl-justify-between gl-gap-x-4 sm:gl-flex">
+    <div class="gl-justify-between gl-gap-x-4 @sm/panel:gl-flex">
+      <div class="gl-w-full gl-justify-between gl-gap-x-4 @sm/panel:gl-flex">
         <div
           class="runners-dashboard-two-thirds-gap-4 gl-mb-4 gl-flex gl-flex-wrap gl-justify-between gl-gap-4"
         >

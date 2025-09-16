@@ -6,7 +6,7 @@
       = s_('AutoRollback|Automatically roll back to the last successful deployment when a critical problem is detected.')
     - c.with_body do
       .row
-        .col-lg-12
+        .gl-col-lg-12
           = gitlab_ui_form_for @project, url: project_settings_ci_cd_path(@project, anchor: 'auto-rollback-settings') do |f|
             = form_errors(@project)
             %fieldset.builds-feature
