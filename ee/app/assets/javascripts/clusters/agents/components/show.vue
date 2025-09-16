@@ -2,7 +2,7 @@
 <script>
 import { GlTab } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 import AgentShowPage from '~/clusters/agents/components/show.vue';
 import AgentVulnerabilityReport from 'ee/security_dashboard/components/agent/agent_vulnerability_report.vue';
 import AgentWorkspacesList from 'ee/workspaces/agent/components/agent_workspaces_list.vue';
@@ -18,13 +18,13 @@ export default {
     AgentVulnerabilityReport,
     AgentWorkspacesList,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   computed: {
     showSecurityTab() {
-      return this.glFeatures.kubernetesClusterVulnerabilities;
+      return this.glLicensedFeatures.kubernetesClusterVulnerabilities;
     },
     showAgentWorkspacesTab() {
-      return this.glFeatures.remoteDevelopment;
+      return this.glLicensedFeatures.remoteDevelopment;
     },
   },
 };

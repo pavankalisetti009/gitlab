@@ -3,7 +3,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import CeCompactCodeDropdown from '~/repository/components/code_dropdown/compact_code_dropdown.vue';
 import WorkspacesDropdownGroup from 'ee/workspaces/dropdown_group/components/workspaces_dropdown_group.vue';
 import GetProjectDetailsQuery from 'ee/workspaces/common/components/get_project_details_query.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import glLicensedFeaturesMixin from '~/vue_shared/mixins/gl_licensed_features_mixin';
 
 export default {
   components: {
@@ -12,7 +12,7 @@ export default {
     CeCompactCodeDropdown,
     GlLoadingIcon,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glLicensedFeaturesMixin()],
   inject: ['newWorkspacePath'],
   props: {
     ...CeCompactCodeDropdown.props,
@@ -37,7 +37,7 @@ export default {
   },
   computed: {
     isWorkspacesDropdownGroupAvailable() {
-      return this.glFeatures.remoteDevelopment;
+      return this.glLicensedFeatures.remoteDevelopment;
     },
     projectIdAsInt() {
       return parseInt(this.projectId, 10);
