@@ -29,6 +29,12 @@ query getNamespaceLifecycles($fullPath: ID!) {
           color
           description
         }
+        statusCounts {
+          status {
+            id
+          }
+          count
+        }
       }
     }
   }
