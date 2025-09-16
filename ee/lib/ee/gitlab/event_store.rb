@@ -106,6 +106,9 @@ module EE
             to: ::MergeRequests::ClosedEvent
           store.subscribe ::Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker,
             to: ::MergeRequests::MergedEvent
+
+          store.subscribe ::Security::ScanResultPolicies::ProcessPipelineCompletionWorker,
+            to: ::Ci::PipelineFinishedEvent
         end
 
         def register_threat_insights_subscribers(store)

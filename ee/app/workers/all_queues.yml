@@ -3824,6 +3824,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_scan_result_policies_process_pipeline_completion
+  :worker_name: Security::ScanResultPolicies::ProcessPipelineCompletionWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_result_policies_sync_any_merge_request_approval_rules
   :worker_name: Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker
   :feature_category: :security_policy_management

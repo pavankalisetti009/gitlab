@@ -14,6 +14,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::Ci::JobArtifactsDeletedEvent,
         ::Ci::PipelineCreatedEvent,
         ::Ci::JobSecurityScanCompletedEvent,
+        ::Ci::PipelineFinishedEvent,
         ::Repositories::KeepAroundRefsCreatedEvent,
         ::MergeRequests::ApprovedEvent,
         ::MergeRequests::MergedEvent,
