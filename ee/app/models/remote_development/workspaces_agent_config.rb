@@ -6,6 +6,9 @@ module RemoteDevelopment
     #       https://gitlab.com/gitlab-org/gitlab/-/issues/410045#note_1385602915
 
     include Sortable
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :dns_zone
 
     UNLIMITED_QUOTA = -1
     MIN_HOURS_BEFORE_TERMINATION = 1
