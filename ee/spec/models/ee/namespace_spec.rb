@@ -83,7 +83,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
-  ::Plan.all_plans.each do |namespace_plan|
+  # Test only plans that have corresponding methods (excluding removed bronze, silver, gold methods)
+  active_plan_methods = ::Plan.all_plans - %w[bronze silver gold]
+  active_plan_methods.each do |namespace_plan|
     describe "#{namespace_plan}_plan?", :saas do
       it_behaves_like 'plan helper', namespace_plan
     end
