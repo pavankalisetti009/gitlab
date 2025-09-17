@@ -65,6 +65,7 @@ module Security
       TOKEN_TYPE_CONFIG = {
         'gitlab_personal_access_token' => PERSONAL_ACCESS_TOKEN_CONFIG,
         'gitlab_personal_access_token_routable' => PERSONAL_ACCESS_TOKEN_CONFIG,
+        'gitlab_personal_access_token_routable_versioned' => PERSONAL_ACCESS_TOKEN_CONFIG,
         'gitlab_deploy_token' => {
           model: DeployToken,
           **ENCRYPTION_CONFIG
