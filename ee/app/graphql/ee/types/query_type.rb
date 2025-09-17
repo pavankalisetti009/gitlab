@@ -411,12 +411,8 @@ module EE
         field :work_item_allowed_statuses, ::Types::WorkItems::StatusType.connection_type,
           null: true,
           description: 'Allowed work item statuses from the root groups the current user belongs to.',
-          experiment: { milestone: '18.4' } do
-          argument :name,
-            type: GraphQL::Types::String,
-            required: false,
-            description: 'Filter statuses by name.'
-        end
+          experiment: { milestone: '18.4' },
+          resolver: ::Resolvers::WorkItems::AllowedStatusesResolver
       end
 
       def vulnerability(id:)
@@ -479,13 +475,6 @@ module EE
       def maven_upstream_registry(id:)
         find_maven_registry_by_id(id)
       end
-
-      # rubocop: disable Lint/UnusedMethodArgument -- temporary placeholder implementation
-      def work_item_allowed_statuses(name: nil)
-        # The API will be implemented via https://gitlab.com/gitlab-org/gitlab/-/issues/560683
-        []
-      end
-      # rubocop: enable Lint/UnusedMethodArgument
 
       private
 
