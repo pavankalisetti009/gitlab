@@ -19,27 +19,19 @@ RSpec.shared_context 'secrets check context' do
       message: 'Initial commit',
       actions: [
         { action: :create, file_path: 'README', content: 'Documentation goes here' },
-        { action: :create, file_path: 'old_config.txt', content: 'CONFIG_VALUE=old' }
+        { action: :create, file_path: 'old_config.txt', content: 'CONFIG_VALUE=old' },
+        { action: :create, file_path: 'to_modify.txt', content: 'VAR=initial' }
       ]
     )
   end
 
   let_it_be(:new_commit) do
-    commit_sha = repository.commit_files(
-      user,
-      branch_name: 'a-new-branch',
-      message: 'Add a file',
-      start_sha: initial_commit,
-      actions: [
-        { action: :create, file_path: '.env', content: 'BASE_URL=https://foo.bar' },
-        { action: :move, file_path: 'new_config.txt', previous_path: 'old_config.txt', content: 'CONFIG_VALUE=old' }
-      ]
-    )
-
-    # `list_blobs` only returns unreferenced blobs because it is used for hooks, so we have
-    # to delete the branch since Gitaly does not allow us to create loose objects via the RPC.
-    repository.delete_branch('a-new-branch')
-    commit_sha
+    actions = [
+      { action: :create, file_path: '.env', content: 'BASE_URL=https://foo.bar' },
+      { action: :move, file_path: 'new_config.txt', previous_path: 'old_config.txt', content: 'CONFIG_VALUE=old' },
+      { action: :update, file_path: 'to_modify.txt', content: 'VAR=new' }
+    ]
+    create_commit_with_actions(actions, 'Add, update and move files', initial_commit)
   end
 
   # Define blob references as follows:
@@ -404,18 +396,20 @@ RSpec.shared_context 'special characters table' do
   end
 end
 
-def create_commit(blobs, message = 'Add a file')
+def create_commit(blobs, message = 'Add a file', initial_commit = nil)
+  actions = blobs.map do |path, content|
+    { action: :create, file_path: path, content: content }
+  end
+  create_commit_with_actions(actions, message, initial_commit)
+end
+
+def create_commit_with_actions(actions, message = 'Add a file', initial_commit = nil)
   commit = repository.commit_files(
     user,
     branch_name: 'a-new-branch',
     message: message,
-    actions: blobs.map do |path, content|
-      {
-        action: :create,
-        file_path: path,
-        content: content
-      }
-    end
+    start_sha: initial_commit,
+    actions: actions
   )
 
   # `list_blobs` only returns unreferenced blobs because it is used for hooks, so we have
