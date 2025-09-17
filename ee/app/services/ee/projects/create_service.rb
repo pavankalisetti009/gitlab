@@ -209,14 +209,14 @@ module EE
 
       def reset_duo_features_to_inherit_from_namespace
         # The project_settings table has a database default of `true` for duo_features_enabled,
-        # but new projects should inherit the actual value from their parent group
+        # but new projects should inherit the actual value from their inheritance chain
         inherited_value = project.group.duo_features_enabled
 
         return if inherited_value # no need to update from default if inherited value will be `true`
 
-        # Check if the setting is locked by an ancestor before attempting to update
+        # Check if the setting is locked by an ancestor or ApplicationSetting before attempting to update
         # If locked, the cascading framework will handle inheritance automatically
-        return if project.project_setting.duo_features_enabled_locked_by_ancestor?
+        return if project.project_setting.duo_features_enabled_locked?
 
         project.project_setting.update!(duo_features_enabled: inherited_value)
       end

@@ -561,8 +561,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           expect(created_project.project_setting.duo_features_enabled_locked_by_ancestor?).to be true
         end
 
-        it 'does not raise validation errors during project creation' do
-          expect { response }.not_to raise_error
+        it 'does not fail during project creation' do
+          expect(created_project.project_setting).to be_valid
           expect(created_project).to be_persisted
         end
 
@@ -601,6 +601,21 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           it 'creates security policy project bot', :sidekiq_inline do
             expect(created_project.security_policy_bot).to be_present
           end
+        end
+      end
+
+      context 'when project is created in an instance with duo_features_enabled locked by application_settings' do
+        let(:extra_params) { { namespace_id: group.id } }
+
+        before_all do
+          group.namespace_settings.update!(duo_features_enabled: false, lock_duo_features_enabled: false)
+          ::Gitlab::CurrentSettings.current_application_settings.update!(duo_features_enabled: false,
+            lock_duo_features_enabled: true)
+        end
+
+        it 'does not fail during project creation' do
+          expect(created_project.project_setting).to be_valid
+          expect(created_project).to be_persisted
         end
       end
     end
