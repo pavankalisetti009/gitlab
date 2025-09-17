@@ -214,6 +214,57 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     end
   end
 
+  describe '.find_by_namespaces_with_partial_name' do
+    let_it_be(:group_2) { create(:group) }
+
+    let_it_be(:to_do_status_1) { create(:work_item_custom_status, :to_do, name: 'To Do', namespace: group) }
+    let_it_be(:to_do_status_2) { create(:work_item_custom_status, :to_do, name: 'To Do', namespace: group_2) }
+    let_it_be(:done_status_1) { create(:work_item_custom_status, :done, name: 'Done', namespace: group) }
+    let_it_be(:done_status_2) { create(:work_item_custom_status, :done, name: 'Done', namespace: group_2) }
+
+    it 'returns unique statuses from multiple namespaces' do
+      result = described_class.find_by_namespaces_with_partial_name([group.id, group_2.id])
+
+      expect(result).to contain_exactly(to_do_status_2, done_status_2)
+    end
+
+    context 'when filtering by name' do
+      context 'when statuses exist' do
+        it 'returns statuses that exactly match the provided name' do
+          result = described_class.find_by_namespaces_with_partial_name([group.id, group_2.id], 'To do')
+
+          expect(result).to contain_exactly(to_do_status_2)
+        end
+
+        it 'returns statuses that partially match the provided name' do
+          result = described_class.find_by_namespaces_with_partial_name([group.id, group_2.id], 'do')
+
+          expect(result).to contain_exactly(to_do_status_2, done_status_2)
+        end
+
+        it 'handles case insensitivity' do
+          result = described_class.find_by_namespaces_with_partial_name([group.id, group_2.id], 'to do')
+
+          expect(result).to contain_exactly(to_do_status_2)
+        end
+
+        it 'handles whitespace' do
+          result = described_class.find_by_namespaces_with_partial_name([group.id, group_2.id], ' To Do ')
+
+          expect(result).to contain_exactly(to_do_status_2)
+        end
+      end
+
+      context 'when statuses do not exist' do
+        it 'returns an empty collection' do
+          result = described_class.find_by_namespaces_with_partial_name([group.id, group_2.id], 'non-existent')
+
+          expect(result).to be_empty
+        end
+      end
+    end
+  end
+
   describe '#icon_name' do
     it 'returns the icon name based on the category' do
       expect(custom_status.icon_name).to eq('status-waiting')

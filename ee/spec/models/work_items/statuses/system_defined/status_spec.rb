@@ -48,14 +48,30 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     let(:work_item) { build_stubbed(:work_item, :task) }
     let(:status_name) { 'in progress' }
 
-    subject { described_class.find_by_name(status_name) }
+    context 'with exact matching' do
+      subject { described_class.find_by_name(status_name) }
 
-    it { is_expected.to have_attributes(id: 2, name: 'In progress') }
+      it { is_expected.to have_attributes(id: 2, name: 'In progress') }
 
-    context 'when status_name does not resolve to a valid status' do
-      let(:status_name) { 'invalid' }
+      context 'when status_name does not resolve to a valid status' do
+        let(:status_name) { 'invalid' }
 
-      it { is_expected.to be_nil }
+        it { is_expected.to be_nil }
+      end
+    end
+
+    context 'with partial matching' do
+      subject(:result) { described_class.find_by_name('do', partial_match: true) }
+
+      it 'returns all statuses containing the substring' do
+        expect(result.map(&:name)).to contain_exactly('To do', 'Done', "Won't do")
+      end
+
+      context 'when no status contains the substring' do
+        subject { described_class.find_by_name('invalid', partial_match: true) }
+
+        it { is_expected.to be_empty }
+      end
     end
   end
 

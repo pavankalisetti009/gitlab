@@ -58,8 +58,13 @@ module WorkItems
             Lifecycle.of_work_item_base_type(base_type)&.find_available_status_by_name(status_name)
           end
 
-          def find_by_name(status_name)
-            all.find { |status| status.matches_name?(status_name) }
+          def find_by_name(status_name, partial_match: false)
+            if partial_match
+              normalized_name = status_name.downcase.strip
+              all.select { |status| status.name.downcase.strip.include?(normalized_name) }
+            else
+              all.find { |status| status.matches_name?(status_name) }
+            end
           end
         end
 

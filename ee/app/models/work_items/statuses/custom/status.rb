@@ -57,6 +57,20 @@ module WorkItems
           in_namespace(namespace).find_by('TRIM(BOTH FROM LOWER(name)) = TRIM(BOTH FROM LOWER(?))', name)
         end
 
+        def self.find_by_namespaces_with_partial_name(namespace_ids, name = nil, limit = 100)
+          query = where(namespace_id: namespace_ids)
+
+          if name.present?
+            sanitized_name = sanitize_sql_like(name.to_s.downcase.strip)
+            query = query.where(['TRIM(BOTH FROM LOWER(name)) LIKE ?', "%#{sanitized_name}%"])
+          end
+
+          query
+            .select(Arel.sql("DISTINCT ON (TRIM(BOTH FROM LOWER(name))) *"))
+            .order(Arel.sql("TRIM(BOTH FROM LOWER(name)), id DESC"))
+            .limit(limit)
+        end
+
         def position
           # Temporarily default to 0 as it is not meaningful without lifecycle context
           0
