@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Security Risk Management', feature_category: :security_policy_management,
-    feature_flag: { name: 'ci_validate_config_options', scope: :project } do
+  RSpec.describe 'Security Risk Management', feature_category: :security_policy_management do
     describe 'Group Pipeline Execution Policy' do
       let(:executor) { "qa-runner-#{Faker::Alphanumeric.alphanumeric(number: 8)}" }
       let(:group) { create(:group) }
@@ -44,7 +43,6 @@ module QA
       let(:expected_job_log) { "This job is due to pipeline execution policy for #{group.path}" }
 
       before do
-        Runtime::Feature.disable(:ci_validate_config_options)
         Flow::Login.sign_in
       end
 
