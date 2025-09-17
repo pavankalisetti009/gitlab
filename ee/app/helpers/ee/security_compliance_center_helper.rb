@@ -44,7 +44,6 @@ module EE
     private
 
     def _compliance_violations_csv_export_path(group)
-      return unless ::Feature.enabled?(:compliance_violations_report, group)
       return unless can?(current_user, :read_compliance_violations_report, group)
 
       group_security_compliance_dashboard_exports_violations_report_path(group, format: :csv)
@@ -85,7 +84,7 @@ module EE
         feature_adherence_report_enabled: adherence_report.to_s,
 
         feature_violations_report_enabled: violations_report.to_s,
-        violations_v2_enabled: ::Feature.enabled?(:compliance_violations_report, group).to_s,
+        violations_v2_enabled: true.to_s, # Issue for removal: https://gitlab.com/gitlab-org/gitlab/-/issues/551236
         active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
         feature_projects_report_enabled: true.to_s,
         can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s,

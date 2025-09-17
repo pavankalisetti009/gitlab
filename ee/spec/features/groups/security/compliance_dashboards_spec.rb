@@ -24,8 +24,6 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
       group_level_compliance_violations_report: true)
     group.add_owner(user)
     sign_in(user)
-
-    stub_feature_flags(compliance_violations_report: false)
   end
 
   context 'tab selection' do
@@ -120,10 +118,12 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
       visit group_security_compliance_dashboard_path(group, vueroute: :violations)
 
       page.within('table') do
-        expect(page).to have_content 'Severity'
-        expect(page).to have_content 'Violation'
-        expect(page).to have_content 'Merge request'
-        expect(page).to have_content 'Date merged'
+        expect(page).to have_content 'Status'
+        expect(page).to have_content 'Violated control and framework'
+        expect(page).to have_content 'Audit Event'
+        expect(page).to have_content 'Project'
+        expect(page).to have_content 'Date detected'
+        expect(page).to have_content 'Action'
       end
     end
 
@@ -137,112 +137,71 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
       end
     end
 
-    context 'when there are merge requests' do
-      let_it_be(:user_2) { create(:user) }
-      let_it_be(:merge_request) { create(:merge_request, source_project: project, state: :merged, author: user, merge_user: user_2, merge_commit_sha: 'b71a6483b96dc303b66fdcaa212d9db6b10591ce') }
-      let_it_be(:merge_request_2) { create(:merge_request, source_project: project_2, state: :merged, author: user_2, merge_commit_sha: '24327319d067f4101cd3edd36d023ab5e49a8579') }
+    context 'when there are project compliance violations' do
+      let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: framework, namespace: group) }
+      let_it_be(:control1) { create(:compliance_requirements_control, :minimum_approvals_required_2, compliance_requirement: requirement) }
+      let_it_be(:control2) { create(:compliance_requirements_control, :default_branch_protected, compliance_requirement: requirement) }
 
-      context 'when less than two approvers', :sidekiq_inline do
-        let_it_be(:compliance_violations_worker) { ComplianceManagement::MergeRequests::ComplianceViolationsWorker.new }
+      let_it_be(:audit_event1) { create(:audit_events_project_audit_event, project_id: project.id) }
+      let_it_be(:audit_event2) { create(:audit_events_project_audit_event, project_id: project_2.id) }
 
-        before do
-          merge_request.metrics.update!(merged_at: 1.day.ago)
-          create(:approval, merge_request: merge_request, user: user_2)
-        end
-
-        it 'creates compliance violation for approved by insufficient number of users', :aggregate_failures do
-          compliance_violations_worker.perform(merge_request.id)
-
-          visit group_security_compliance_dashboard_path(group, vueroute: :violations)
-
-          wait_for_requests
-
-          expect(all('tbody > tr').count).to eq(1)
-          expect(first_row).to have_content('High')
-          expect(first_row).to have_content('Less than 2 approvers')
-          expect(first_row).to have_content(merge_request.title)
-          expect(first_row).to have_content(1.day.ago.to_date.to_s)
-        end
+      let_it_be(:violation1) do
+        create(:project_compliance_violation,
+          namespace: project.namespace,
+          project: project,
+          compliance_control: control1,
+          audit_event_id: audit_event1.id,
+          audit_event_table_name: :project_audit_events,
+          status: :detected,
+          created_at: 1.day.ago
+        )
       end
 
-      context 'and there is a compliance violation' do
-        let_it_be(:violation) do
-          create(:compliance_violation,
-            :approved_by_committer, severity_level: :high, merge_request: merge_request, violating_user: user,
-            title: merge_request.title, target_project_id: project.id, target_branch: merge_request.target_branch,
-            merged_at: 1.day.ago)
-        end
+      let_it_be(:violation2) do
+        create(:project_compliance_violation,
+          namespace: project_2.namespace,
+          project: project_2,
+          compliance_control: control2,
+          audit_event_id: audit_event2.id,
+          audit_event_table_name: :project_audit_events,
+          status: :in_review,
+          created_at: 7.days.ago
+        )
+      end
 
-        let_it_be(:violation_2) do
-          create(:compliance_violation,
-            :approved_by_merge_request_author, severity_level: :medium, merge_request: merge_request_2,
-            violating_user: user, title: merge_request_2.title, target_project_id: project_2.id,
-            target_branch: merge_request_2.target_branch, merged_at: 7.days.ago)
-        end
+      before do
+        visit group_security_compliance_dashboard_path(group, vueroute: :violations)
+        wait_for_requests
+      end
 
-        let(:merged_at) { 1.day.ago }
-        let(:merged_at_2) { 7.days.ago }
+      it 'shows the compliance violations with details', :aggregate_failures do
+        expect(all('tbody > tr').count).to eq(2)
 
-        before do
-          merge_request.metrics.update!(merged_at: merged_at)
-          merge_request_2.metrics.update!(merged_at: merged_at_2)
+        expect(first_row).to have_content('Detected')
+        expect(first_row).to have_content('At least two approvals')
+        expect(first_row).to have_content(project.name)
+        expect(first_row).to have_content(1.day.ago.to_date.to_s)
 
-          visit group_security_compliance_dashboard_path(group, vueroute: :violations)
-          wait_for_requests
-        end
+        expect(second_row).to have_content('In review')
+        expect(second_row).to have_content('Default branch protected')
+        expect(second_row).to have_content(project_2.name)
+        expect(second_row).to have_content(7.days.ago.to_date.to_s)
+      end
 
-        it 'shows the compliance violations with details', :aggregate_failures do
-          expect(all('tbody > tr').count).to eq(2)
+      it 'can sort the violations by clicking on a column header' do
+        expect(first_row).to have_content(project.name)
+        expect(second_row).to have_content(project_2.name)
 
-          expect(first_row).to have_content('High')
-          expect(first_row).to have_content('Approved by committer')
-          expect(first_row).to have_content(merge_request.title)
-          expect(first_row).to have_content(merged_at.to_date.to_s)
-          expect(second_row).to have_content('Medium')
-          expect(second_row).to have_content('Approved by author')
-          expect(second_row).to have_content(merge_request_2.title)
-          expect(second_row).to have_content(merged_at_2.to_date.to_s)
-        end
+        click_column_header 'Status'
 
-        it 'can sort the violations by clicking on a column header' do
-          click_column_header 'Severity'
+        expect(first_row).to have_content(project.name)
+        expect(second_row).to have_content(project_2.name)
 
-          expect(first_row).to have_content(merge_request_2.title)
-        end
+        click_column_header 'Status'
 
-        it 'shows the correct user avatar popover content when the drawer is switched', :aggregate_failures do
-          first_row.click
-          drawer_user_avatar.hover
-
-          within '.popover' do
-            expect(page).to have_content(user.name)
-            expect(page).to have_content(user.username)
-          end
-
-          second_row.click
-          drawer_user_avatar.hover
-
-          within '.popover' do
-            expect(page).to have_content(user_2.name)
-            expect(page).to have_content(user_2.username)
-          end
-        end
-
-        context 'violations filter' do
-          it 'can filter by date range' do
-            set_date_range(7.days.ago.to_date, 6.days.ago.to_date)
-
-            expect(page).to have_content(merge_request_2.title)
-            expect(page).not_to have_content(merge_request.title)
-          end
-
-          it 'can filter by project id' do
-            filter_by_project(merge_request_2.project)
-
-            expect(page).to have_content(merge_request_2.title)
-            expect(page).not_to have_content(merge_request.title)
-          end
-        end
+        expect(first_row).to have_content(project_2.name)
+        expect(second_row).to have_content(project.name)
       end
     end
   end

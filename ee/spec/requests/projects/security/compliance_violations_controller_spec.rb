@@ -32,29 +32,11 @@ RSpec.describe Projects::Security::ComplianceViolationsController, feature_categ
         stub_licensed_features(project_level_compliance_dashboard: true)
       end
 
-      context 'when compliance_violations_report feature flag is disabled' do
-        before do
-          stub_feature_flags(compliance_violations_report: false)
-        end
+      it 'renders the show template' do
+        request
 
-        it 'returns 404' do
-          request
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when compliance_violations_report feature flag is enabled' do
-        before do
-          stub_feature_flags(compliance_violations_report: true)
-        end
-
-        it 'renders the show template' do
-          request
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response).to render_template(:show)
-        end
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:show)
       end
 
       context 'when project_level_compliance_dashboard is not available' do
