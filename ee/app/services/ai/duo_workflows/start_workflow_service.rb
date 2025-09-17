@@ -94,6 +94,7 @@ module Ai
           DUO_WORKFLOW_FLOW_CONFIG: serialized_duo_flow_config,
           DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION: @params[:flow_config_schema_version],
           DUO_WORKFLOW_GOAL: @params[:goal],
+          DUO_WORKFLOW_SOURCE_BRANCH: @params.fetch(:source_branch, nil),
           DUO_WORKFLOW_WORKFLOW_ID: String(@params[:workflow_id]),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
           DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url(user: @current_user),
@@ -121,6 +122,7 @@ module Ai
         [
           %(echo $DUO_WORKFLOW_DEFINITION),
           %(echo $DUO_WORKFLOW_GOAL),
+          %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
           %(git checkout $CI_WORKLOAD_REF),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
