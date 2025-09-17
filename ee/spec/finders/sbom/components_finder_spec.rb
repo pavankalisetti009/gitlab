@@ -64,6 +64,15 @@ RSpec.describe Sbom::ComponentsFinder, feature_category: :vulnerability_manageme
         end
       end
     end
+
+    context 'with invalid target' do
+      let(:target) { Issue.new }
+      let(:query) { nil }
+
+      it 'raises an ArgumentError' do
+        expect { find }.to raise_error(ArgumentError, "can't find components for Issue")
+      end
+    end
   end
 
   def create_component(name, project:)

@@ -27,7 +27,7 @@ module Sbom
       when Group
         group_relation
       else
-        Sbom::Component.none
+        raise ArgumentError, "can't find components for #{namespace.class.name}"
       end
     end
 
