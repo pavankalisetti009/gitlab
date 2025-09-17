@@ -61,8 +61,8 @@ module QA
 
           def get_workspaces_list(tab:)
             within_element("workspace-tab-#{tab}".to_sym, skip_finished_loading_check: true) do
-              all_elements('workspace-list-item', minimum: 0, skip_finished_loading_check: true)
-                .flat_map { |element| element.text.scan(/(^workspace[^.\n]*)/) }.flatten
+              all_elements('workspace-name', minimum: 0, skip_finished_loading_check: true)
+                .map { |element| element.text.strip }
             end
           end
 
