@@ -122,7 +122,9 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
             ide_version: '2',
             extension_name: 'cobol-vscode',
             extension_version: '1',
-            language_server_version: '3.11'
+            language_server_version: '3.11',
+            model_name: 'ModelName',
+            model_engine: 'ModelEngine'
           }
         end
 

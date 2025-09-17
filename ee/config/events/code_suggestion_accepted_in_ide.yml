@@ -27,6 +27,10 @@ additional_properties:
     description: IDE extension version
   language_server_version:
     description: IDE language server version
+  model_name:
+    description: Used LLM model
+  model_engine:
+    description: Used LLM engine
 identifiers:
 - user
 - project
