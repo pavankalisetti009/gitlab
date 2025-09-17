@@ -68229,6 +68229,18 @@ msgstr ""
 msgid "TransferGroup|You don't have enough permissions."
 msgstr ""
 
+msgid "TransferOrganization|Group is already in the target organization."
+msgstr ""
+
+msgid "TransferOrganization|Group organization transfer failed: %{error_message}"
+msgstr ""
+
+msgid "TransferOrganization|Only root groups can be transferred to a different organization."
+msgstr ""
+
+msgid "TransferOrganization|You must be an owner of both the group and new organization."
+msgstr ""
+
 msgid "TransferProject|Please select a new namespace for your project."
 msgstr ""
 
