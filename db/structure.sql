@@ -27904,9 +27904,13 @@ CREATE TABLE vulnerability_flags (
     origin text NOT NULL,
     description text NOT NULL,
     project_id bigint,
+    confidence_score double precision DEFAULT 0.0 NOT NULL,
+    workflow_id bigint,
+    status smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_36177ddefa CHECK ((project_id IS NOT NULL)),
-    CONSTRAINT check_45e743349f CHECK ((char_length(description) <= 1024)),
-    CONSTRAINT check_49c1d00032 CHECK ((char_length(origin) <= 255))
+    CONSTRAINT check_45e743349f CHECK ((char_length(description) <= 10000)),
+    CONSTRAINT check_49c1d00032 CHECK ((char_length(origin) <= 255)),
+    CONSTRAINT check_9a1e4742ac CHECK (((confidence_score >= (0)::double precision) AND (confidence_score <= (1)::double precision)))
 );
 
 CREATE SEQUENCE vulnerability_flags_id_seq
@@ -42317,6 +42321,8 @@ CREATE INDEX index_vulnerability_flags_on_project_id ON vulnerability_flags USIN
 
 CREATE UNIQUE INDEX index_vulnerability_flags_on_unique_columns ON vulnerability_flags USING btree (vulnerability_occurrence_id, flag_type, origin);
 
+CREATE INDEX index_vulnerability_flags_on_workflow_id ON vulnerability_flags USING btree (workflow_id);
+
 CREATE INDEX index_vulnerability_historical_statistics_on_date_and_id ON vulnerability_historical_statistics USING btree (date, id);
 
 CREATE UNIQUE INDEX index_vulnerability_identifiers_on_project_id_and_fingerprint ON vulnerability_identifiers USING btree (project_id, fingerprint);
@@ -46126,6 +46132,8 @@ CREATE TRIGGER ci_triggers_loose_fk_trigger AFTER DELETE ON ci_triggers REFERENC
 CREATE TRIGGER cluster_agents_loose_fk_trigger AFTER DELETE ON cluster_agents REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
 CREATE TRIGGER clusters_loose_fk_trigger AFTER DELETE ON clusters REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
+
+CREATE TRIGGER duo_workflows_workflows_loose_fk_trigger AFTER DELETE ON duo_workflows_workflows REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
 CREATE TRIGGER group_type_ci_runner_machines_loose_fk_trigger AFTER DELETE ON group_type_ci_runner_machines REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('ci_runner_machines');
 
