@@ -196,7 +196,7 @@ module EE
       # Returns groups with public or internal visibility_level.
       # Used by Group.groups_user_can method to include groups
       # where user access_level does not need to be checked.
-      scope :not_private, -> { where('visibility_level > ?', ::Gitlab::VisibilityLevel::PRIVATE) }
+      scope :not_private, -> { with_visibility_level_greater_than(::Gitlab::VisibilityLevel::PRIVATE) }
 
       scope :for_epics, ->(epics) do
         epics_query = epics.select(:group_id)
