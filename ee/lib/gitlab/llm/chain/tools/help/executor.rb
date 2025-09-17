@@ -12,7 +12,7 @@ module Gitlab
 
             NAME = 'Help'
             HUMAN_NAME = 'Help'
-            DESCRIPTION = 'Learn what Duo Chat can do'
+            DESCRIPTION = s_('AI|Learn what Duo Chat can do')
             RESOURCE_NAME = nil
             ACTION = 'help'
             PROVIDER_PROMPT_CLASSES = {}.freeze
@@ -77,7 +77,7 @@ GitLab Duo Chat is your personal AI-native assistant for boosting productivity. 
 
 Ask follow-up questions to dig deeper into or expand on the conversation with Duo. If you want to switch topics, type `/reset` and you might get better results.
 
-Use GitLab Duo Chat in GitLab to ask questions about issues, epics, merge requests, comments, or to ask questions about GitLab or general DevSecOps questions. The Git Lab Duo Chat button is on the top-right in group and project pages. To use it, ask `/help` in GitLab to learn how.
+Use GitLab Duo Chat in GitLab to ask questions about issues, epics, merge requests, comments, or to ask questions about GitLab or general DevSecOps questions. The GitLab Duo Chat button is on the top-right in group and project pages. To use it, ask `/help` in GitLab to learn how.
 
 Learn more about GitLab Duo Chat can do in the [documentation](#{::Gitlab::Routing.url_helpers.help_page_url('user/gitlab_duo_chat/examples.md')}).
             COPY
@@ -114,3 +114,5 @@ Learn more about GitLab Duo Chat can do in the [documentation](#{::Gitlab::Routi
     end
   end
 end
+
+::Gitlab::Llm::Chain::Tools::Help::Executor.prepend_mod
