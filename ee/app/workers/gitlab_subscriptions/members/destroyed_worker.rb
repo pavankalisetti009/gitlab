@@ -23,23 +23,13 @@ module GitlabSubscriptions
 
         return unless seat
 
-        highest_access_level = ::Member.in_hierarchy(namespace).with_user(user)
-                                       .without_invites_and_requests(minimal_access: true).maximum(:access_level)
+        seat_type = ::GitlabSubscriptions::SeatTypeCalculator.execute(user, namespace)
 
-        if highest_access_level.nil?
-          seat.destroy!
-        elsif free_seat?(highest_access_level, namespace)
-          seat.update!(seat_type: :free)
+        if seat_type
+          seat.update!(seat_type: seat_type)
         else
-          seat.update!(seat_type: :base)
+          seat.destroy!
         end
-      end
-
-      private
-
-      def free_seat?(access_level, namespace)
-        (namespace.exclude_guests? && access_level == ::Gitlab::Access::GUEST) ||
-          access_level == ::Gitlab::Access::MINIMAL_ACCESS
       end
     end
   end
