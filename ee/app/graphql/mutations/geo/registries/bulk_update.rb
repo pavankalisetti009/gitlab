@@ -57,7 +57,7 @@ module Mutations
           {
             ids: args[:ids]&.map { |gid| ::GitlabSchema.parse_gid(gid, expected_type:).model_id },
             replication_state: args[:replication_state],
-            verification_state: args[:verification_state]
+            verification_state: args[:verification_state] ? "verification_#{args[:verification_state]}" : nil
           }.compact
         end
 

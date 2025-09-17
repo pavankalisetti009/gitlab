@@ -55,6 +55,7 @@ export const ACTION_TYPES = {
   RESYNC_ALL: 'resync_all',
   RESYNC_ALL_FAILED: 'resync_all_failed',
   REVERIFY_ALL: 'reverify_all',
+  REVERIFY_ALL_FAILED: 'reverify_all_failed',
 };
 
 export const PREV = 'prev';
@@ -180,6 +181,33 @@ export const ADDITIONAL_RESYNC_BULK_ACTIONS = [
   },
 ];
 
+export const ADDITIONAL_REVERIFY_BULK_ACTIONS = [
+  {
+    id: 'geo-bulk-action-reverify-failed',
+    action: ACTION_TYPES.REVERIFY_ALL_FAILED,
+    text: s__('Geo|Reverify all failed'),
+    modal: {
+      title: s__('Geo|Reverify all failed %{type}'),
+      description: s__(
+        'Geo|This will schedule a future job to retry the secondary verification process for all %{type} that have a failed verification status. It may take some time to complete. Are you sure you want to continue?',
+      ),
+      helpLink: {
+        text: s__('Geo|Learn more about manual reverification'),
+        href: helpPagePath(
+          'administration/geo/replication/troubleshooting/synchronization_verification',
+          { anchor: 'manually-retry-replication-or-verification' },
+        ),
+      },
+    },
+    successMessage: s__(
+      'Geo|Scheduled all %{replicableType} with a failed verification status for reverification.',
+    ),
+    errorMessage: s__(
+      'Geo|There was an error scheduling all %{replicableType} with a failed verification status for reverification.',
+    ),
+  },
+];
+
 export const BULK_ACTIONS = [
   {
     id: 'geo-bulk-action-resync',
@@ -221,11 +249,12 @@ export const BULK_ACTIONS = [
           { anchor: 'manually-retry-replication-or-verification' },
         ),
       },
-      successMessage: s__('Geo|Scheduled all %{replicableType} for reverification.'),
-      errorMessage: s__(
-        'Geo|There was an error scheduling all %{replicableType} for reverification.',
-      ),
     },
+    successMessage: s__('Geo|Scheduled all %{replicableType} for reverification.'),
+    errorMessage: s__(
+      'Geo|There was an error scheduling all %{replicableType} for reverification.',
+    ),
+    additionalActions: ADDITIONAL_REVERIFY_BULK_ACTIONS,
   },
 ];
 

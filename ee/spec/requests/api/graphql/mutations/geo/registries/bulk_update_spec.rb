@@ -123,7 +123,7 @@ RSpec.describe Mutations::Geo::Registries::BulkUpdate, feature_category: :geo_re
         expected_arguments = {
           ids: [registry1.id.to_s, registry2.id.to_s],
           replication_state: ::Types::Geo::ReplicationStateEnum.values['SYNCED'].value,
-          verification_state: ::Types::Geo::VerificationStateEnum.values['SUCCEEDED'].value
+          verification_state: "verification_#{::Types::Geo::VerificationStateEnum.values['SUCCEEDED'].value}"
         }
 
         expect(Geo::RegistryBulkUpdateService)
