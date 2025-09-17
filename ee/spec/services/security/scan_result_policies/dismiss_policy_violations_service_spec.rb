@@ -7,7 +7,13 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:current_user) { create(:user) }
 
-  let(:params) { { security_policy_ids: [policy.id] } }
+  let(:params) do
+    {
+      security_policy_ids: [policy.id],
+      dismissal_types: [Security::PolicyDismissal::DISMISSAL_TYPES[:other]],
+      comment: 'Test dismissal'
+    }
+  end
 
   let_it_be(:policy) { create(:security_policy, :enforcement_type_warn) }
   let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: policy) }
@@ -17,8 +23,21 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
   subject(:service) { described_class.new(merge_request, current_user: current_user, params: params) }
 
   describe '#execute' do
+    before_all do
+      # violation for a different policy to ensure it is not included
+      another_policy = create(:security_policy, :enforcement_type_warn)
+      approval_policy_rule = create(:approval_policy_rule, security_policy: another_policy)
+      create(:scan_result_policy_violation,
+        :new_scan_finding,
+        merge_request: merge_request,
+        security_policy: another_policy,
+        project: project,
+        approval_policy_rule: approval_policy_rule,
+        uuids: %w[uuid-5])
+    end
+
     context 'when there are no warn mode policies' do
-      let(:params) { { security_policy_ids: [policy_without_warn_mode.id] } }
+      let(:params) { super().merge(security_policy_ids: [policy_without_warn_mode.id]) }
 
       it 'returns an error' do
         response = service.execute
@@ -74,7 +93,9 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
           security_policy_id: policy.id,
           merge_request_id: merge_request.id,
           project_id: project.id,
-          user_id: current_user.id
+          user_id: current_user.id,
+          dismissal_types: [Security::PolicyDismissal::DISMISSAL_TYPES[:other]],
+          comment: 'Test dismissal'
         )
 
         expect(dismissal.security_findings_uuids).to match_array(%w[uuid-1 uuid-2 uuid-3])
@@ -108,11 +129,11 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
           approval_policy_rule: approval_policy_rule)
       end
 
-      it 'returns success and does not create a dismissal' do
-        expect { service.execute }.not_to change { Security::PolicyDismissal.count }
+      it 'creates a policy dismissal with empty finding uuids' do
+        expect { service.execute }.to change { Security::PolicyDismissal.count }.by(1)
 
-        response = service.execute
-        expect(response.success?).to be_truthy
+        dismissal = Security::PolicyDismissal.last
+        expect(dismissal.security_findings_uuids).to be_empty
       end
     end
 
@@ -140,7 +161,7 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
           uuids: %w[uuid-2])
       end
 
-      let(:params) { { security_policy_ids: [policy.id, policy_2.id] } }
+      let(:params) { super().merge(security_policy_ids: [policy.id, policy_2.id]) }
 
       it 'creates dismissals for each policy' do
         expect { service.execute }.to change { Security::PolicyDismissal.count }.by(2)

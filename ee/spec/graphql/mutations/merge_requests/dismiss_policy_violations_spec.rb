@@ -29,12 +29,13 @@ RSpec.describe Mutations::MergeRequests::DismissPolicyViolations, feature_catego
     {
       project_path: project.full_path,
       iid: merge_request.iid.to_s,
-      security_policy_ids: security_policy_ids
+      security_policy_ids: security_policy_ids,
+      dismissal_types: [Security::PolicyDismissal::DISMISSAL_TYPES[:emergency_hot_fix]],
+      comment: 'Test dismissal'
     }
   end
 
-  let(:params) { { security_policy_ids: security_policy_ids } }
-  let(:service_args) { { current_user: current_user, params: params } }
+  let(:service_args) { { current_user: current_user, params: mutation_vars.except(:project_path, :iid) } }
 
   subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
@@ -44,10 +45,7 @@ RSpec.describe Mutations::MergeRequests::DismissPolicyViolations, feature_catego
   end
 
   describe '#resolve' do
-    subject(:resolve) do
-      mutation.resolve(project_path: project.full_path, iid: merge_request.iid,
-        security_policy_ids: security_policy_ids)
-    end
+    subject(:resolve) { mutation.resolve(**mutation_vars) }
 
     context 'when the user is not authorized' do
       let(:current_user) { guest }
@@ -82,6 +80,7 @@ RSpec.describe Mutations::MergeRequests::DismissPolicyViolations, feature_catego
           expect { resolve }.to change { Security::PolicyDismissal.count }.by(1)
 
           expect(resolve[:errors]).to be_empty
+          expect(resolve[:merge_request]).to eq(merge_request)
         end
       end
 

@@ -43,7 +43,6 @@ module Security
       def build_dismissal_attributes(violations_by_policy)
         violations_by_policy.each_with_object([]) do |(policy_id, violations), attrs|
           finding_uuids = collect_finding_uuids(violations)
-          next unless finding_uuids.any?
 
           attrs << dismissal_attributes_for(policy_id, finding_uuids)
         end
@@ -59,7 +58,9 @@ module Security
           security_policy_id: policy_id,
           merge_request_id: merge_request.id,
           project_id: merge_request.project_id,
-          user_id: current_user.id
+          user_id: current_user.id,
+          dismissal_types: params[:dismissal_types],
+          comment: params[:comment]
         }
       end
 
