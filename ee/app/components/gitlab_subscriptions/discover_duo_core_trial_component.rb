@@ -132,25 +132,18 @@ module GitlabSubscriptions
     override :hero_header_text
     def hero_header_text
       s_(
-        'DuoCoreTrialDiscover|GitLab Premium, now with Duo – native AI Code Suggestions and Chat'
+        'DuoCoreTrialDiscover|GitLab Premium, now with native AI'
       )
     end
 
     override :hero_tagline_text
     def hero_tagline_text
       safe_join([
+        content_tag(:h3, s_('DuoCoreTrialDiscover|Now featuring GitLab Duo'), class: 'gl-heading-4'),
         s_(
-          'DuoCoreTrialDiscover|New customers can now get access to GitLab Premium with Duo at a discount. ' \
-            'Contact Sales to get started.'
-        ),
-        content_tag(:div, class: 'gl-display-inline-flex gl-items-center gl-gap-2 gl-mb-2') do
-          safe_join([
-            content_tag(:span, '$29', class: 'gl-text-lg gl-line-through gl-mr-2'),
-            content_tag(:span, '$19',
-              class: 'gl-text-size-h2-xl gl-font-bold gl-decoration-2 gl-mr-2'),
-            content_tag(:span, s_('per user/month'))
-          ])
-        end
+          'DuoCoreTrialDiscover|Enterprise-grade AI-native capabilities to help ' \
+            'you move faster while maintaining security and IP protection'
+        )
       ])
     end
 
