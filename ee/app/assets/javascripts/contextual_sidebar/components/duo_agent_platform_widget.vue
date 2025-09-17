@@ -44,6 +44,7 @@ export default {
       showRequestAccess: this.contextualAttributes.showRequestAccess,
       requestCount: this.contextualAttributes.requestCount,
       requestText: this.contextualAttributes.requestText,
+      confirmModalFirstParagraphText: this.contextualAttributes.confirmModalFirstParagraphText,
     };
   },
   computed: {
@@ -87,7 +88,9 @@ export default {
       return this.$options.i18n[this.currentState].modalTitle;
     },
     modalBodyText() {
-      return this.$options.i18n[this.currentState].modalBodyText();
+      return this.$options.i18n[this.currentState].modalBodyText(
+        this.confirmModalFirstParagraphText,
+      );
     },
     actionParams() {
       if (this.currentState === 'enableFeaturePreview') {
@@ -189,13 +192,12 @@ export default {
     enablePlatform: {
       toastMessage: __('GitLab Duo Core is on'),
       modalTitle: s__('DuoAgentPlatform|Start using GitLab Duo Core'),
-      modalBodyText() {
+      modalBodyText(firstLine) {
         const termsPath = `${PROMO_URL}/handbook/legal/ai-functionality-terms/`;
 
         return sprintf(
           s__(
-            `DuoAgentPlatform|%{pStart}Access GitLab Duo features throughout this instance by
-            turning on GitLab Duo Core.%{pEnd}
+            `DuoAgentPlatform|%{pStart}%{firstLine}%{pEnd}
             %{pStart}When you turn it on, GitLab Duo will process your code and project data.
             Also, you accept the %{termsStart}GitLab AI Functionality Terms%{linkEnd},
             unless your organization has a separate agreement with GitLab governing AI feature usage.%{pEnd}
@@ -203,6 +205,7 @@ export default {
             Check the %{eligibilityStart}eligibility requirements%{linkEnd} for details.%{pEnd}`,
           ),
           {
+            firstLine,
             pStart: '<p>',
             pEnd: '</p>',
             termsStart: `<a href="${termsPath}" class="gl-link-inline" target="_blank" rel="noopener noreferrer">`,
