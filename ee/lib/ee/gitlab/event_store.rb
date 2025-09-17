@@ -23,8 +23,6 @@ module EE
           ###
           # Add EE only subscriptions here:
 
-          store.subscribe ::Security::Scans::PurgeByJobIdWorker, to: ::Ci::JobArtifactsDeletedEvent
-          store.subscribe ::Security::Scans::IngestReportsWorker, to: ::Ci::JobSecurityScanCompletedEvent
           store.subscribe ::Geo::CreateRepositoryUpdatedEventWorker,
             to: ::Repositories::KeepAroundRefsCreatedEvent,
             if: ->(_) { ::Gitlab::Geo.primary? }
@@ -82,6 +80,7 @@ module EE
           subscribe_to_members_added_event(store)
           subscribe_to_users_activity_events(store)
           subscribe_to_merge_events(store)
+          subscribe_to_ci_events(store)
           subscribe_to_analytics_events(store)
         end
 
@@ -331,8 +330,14 @@ module EE
         end
 
         def subscribe_to_analytics_events(store)
-          store.subscribe ::Analytics::AiUsageEventsBackfillWorker,
-            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
+          store.subscribe ::Analytics::AiUsageEventsBackfillWorker, to: ::Analytics::ClickHouseForAnalyticsEnabledEvent
+        end
+
+        def subscribe_to_ci_events(store)
+          store.subscribe ::Security::Scans::PurgeByJobIdWorker, to: ::Ci::JobArtifactsDeletedEvent
+          store.subscribe ::Security::Scans::IngestReportsWorker, to: ::Ci::JobSecurityScanCompletedEvent
+          store.subscribe ::Ai::DuoWorkflows::UpdateWorkflowStatusEventWorker,
+            to: ::Ci::Workloads::WorkloadFinishedEvent
         end
       end
     end
