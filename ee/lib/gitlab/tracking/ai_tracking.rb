@@ -17,7 +17,8 @@ module Gitlab
         ) do |context|
           context.slice(*%w[unique_tracking_id suggestion_size language branch_name
             ide_name ide_vendor ide_version
-            extension_name extension_version language_server_version])
+            extension_name extension_version language_server_version
+            model_name model_engine])
         end
 
         deprecated_events(code_suggestion_direct_access_token_refresh: 5) # old data

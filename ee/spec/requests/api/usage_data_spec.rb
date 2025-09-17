@@ -24,7 +24,9 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
           ide_version: '1.2.3',
           extension_name: 'extension',
           extension_version: '2.3.4',
-          language_server_version: '3.4.5'
+          language_server_version: '3.4.5',
+          model_name: 'ModelName',
+          model_engine: 'ModelEngine'
         }
       end
 
