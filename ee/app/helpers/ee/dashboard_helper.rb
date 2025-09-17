@@ -27,6 +27,7 @@ module EE
       controller_action_to_child_dashboards.any?(user.dashboard)
     end
 
+    # EE:Self Managed
     def has_start_trial?
       !current_user.has_current_license? && current_user.can_admin_all_resources?
     end
