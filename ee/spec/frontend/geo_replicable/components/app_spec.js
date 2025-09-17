@@ -370,6 +370,7 @@ describe('GeoReplicableApp', () => {
           action: BULK_ACTIONS[0].action.toUpperCase(),
           registryClass: MOCK_REPLICABLE_CLASS.graphqlMutationRegistryClass,
           replicationState: null,
+          verificationState: null,
         });
 
         await waitForPromises();
