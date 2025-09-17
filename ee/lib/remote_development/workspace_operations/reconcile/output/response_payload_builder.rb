@@ -31,8 +31,9 @@ module RemoteDevelopment
             workspace_rails_infos = workspaces_to_be_returned.map do |workspace|
               config_to_apply, config_to_apply_resources_include_type = generate_config_to_apply(workspace: workspace,
                 update_type: update_type, logger: logger)
-              observability_for_rails_infos[workspace.name] = {
-                config_to_apply_resources_included: config_to_apply_resources_include_type
+              observability_for_rails_infos = {
+                name: workspace.name,
+                config_to_apply_resources_include_type: config_to_apply_resources_include_type
               }
 
               config_to_apply_yaml_stream =
