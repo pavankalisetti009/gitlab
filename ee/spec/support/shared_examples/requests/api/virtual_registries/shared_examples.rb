@@ -8,7 +8,7 @@ RSpec.shared_examples 'disabled maven_virtual_registry feature flag' do
   it_behaves_like 'returning response status', :unauthorized
 end
 
-RSpec.shared_examples 'maven virtual registry disabled dependency proxy' do
+RSpec.shared_examples 'virtual registry disabled dependency proxy' do
   before do
     stub_config(dependency_proxy: { enabled: false })
   end
@@ -16,7 +16,7 @@ RSpec.shared_examples 'maven virtual registry disabled dependency proxy' do
   it_behaves_like 'returning response status', :not_found
 end
 
-RSpec.shared_examples 'maven virtual registry not authenticated user' do
+RSpec.shared_examples 'virtual registry not authenticated user' do
   let(:headers) { {} }
 
   it_behaves_like 'returning response status', :unauthorized
@@ -57,4 +57,20 @@ RSpec.shared_examples 'an authenticated virtual registry REST API' do |with_succ
 
     it_behaves_like 'returning response status', params[:status]
   end
+end
+
+RSpec.shared_examples 'disabled container_virtual_registries feature flag' do
+  before do
+    stub_feature_flags(container_virtual_registries: false)
+  end
+
+  it_behaves_like 'returning response status', :unauthorized
+end
+
+RSpec.shared_examples 'container virtual registry feature not licensed' do
+  before do
+    stub_licensed_features(container_virtual_registry: false)
+  end
+
+  it_behaves_like 'returning response status', :not_found
 end

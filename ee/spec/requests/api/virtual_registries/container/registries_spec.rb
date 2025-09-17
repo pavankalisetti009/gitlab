@@ -24,8 +24,8 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
     it { is_expected.to have_request_urgency(:low) }
 
     it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'container virtual registry disabled dependency proxy'
-    it_behaves_like 'container virtual registry not authenticated user'
+    it_behaves_like 'virtual registry disabled dependency proxy'
+    it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'container virtual registry feature not licensed'
 
     context 'with valid group_id' do
@@ -62,7 +62,7 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
       end
     end
 
-    it_behaves_like 'an authenticated container virtual registry REST API'
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 
   describe 'POST /api/v4/groups/:id/-/virtual_registries/container/registries' do
@@ -86,8 +86,8 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
       it { is_expected.to have_request_urgency(:low) }
 
       it_behaves_like 'disabled container_virtual_registries feature flag'
-      it_behaves_like 'container virtual registry disabled dependency proxy'
-      it_behaves_like 'container virtual registry not authenticated user'
+      it_behaves_like 'virtual registry disabled dependency proxy'
+      it_behaves_like 'virtual registry not authenticated user'
       it_behaves_like 'container virtual registry feature not licensed'
 
       where(:user_role, :status) do
@@ -119,7 +119,7 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
         it_behaves_like 'successful response'
       end
 
-      it_behaves_like 'an authenticated container virtual registry REST API', with_successful_status: :created do
+      it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :created do
         before_all do
           group.add_maintainer(user)
         end
@@ -205,8 +205,8 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
     it { is_expected.to have_request_urgency(:low) }
 
     it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'container virtual registry disabled dependency proxy'
-    it_behaves_like 'container virtual registry not authenticated user'
+    it_behaves_like 'virtual registry disabled dependency proxy'
+    it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'container virtual registry feature not licensed'
 
     context 'with valid registry_id' do
@@ -242,7 +242,7 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
       end
     end
 
-    it_behaves_like 'an authenticated container virtual registry REST API'
+    it_behaves_like 'an authenticated virtual registry REST API'
   end
 
   describe 'PATCH /api/v4/virtual_registries/container/registries/:id' do
@@ -256,8 +256,8 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
       it { is_expected.to have_request_urgency(:low) }
 
       it_behaves_like 'disabled container_virtual_registries feature flag'
-      it_behaves_like 'container virtual registry disabled dependency proxy'
-      it_behaves_like 'container virtual registry not authenticated user'
+      it_behaves_like 'virtual registry disabled dependency proxy'
+      it_behaves_like 'virtual registry not authenticated user'
       it_behaves_like 'container virtual registry feature not licensed'
 
       where(:user_role, :status) do
@@ -276,7 +276,7 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
         it_behaves_like 'returning response status', params[:status]
       end
 
-      it_behaves_like 'an authenticated container virtual registry REST API' do
+      it_behaves_like 'an authenticated virtual registry REST API' do
         before_all do
           group.add_maintainer(user)
         end
@@ -320,8 +320,8 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
     it { is_expected.to have_request_urgency(:low) }
 
     it_behaves_like 'disabled container_virtual_registries feature flag'
-    it_behaves_like 'container virtual registry disabled dependency proxy'
-    it_behaves_like 'container virtual registry not authenticated user'
+    it_behaves_like 'virtual registry disabled dependency proxy'
+    it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'container virtual registry feature not licensed'
 
     context 'with valid registry_id' do
@@ -358,7 +358,7 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
       end
     end
 
-    it_behaves_like 'an authenticated container virtual registry REST API', with_successful_status: :no_content do
+    it_behaves_like 'an authenticated virtual registry REST API', with_successful_status: :no_content do
       before_all do
         group.add_maintainer(user)
       end
