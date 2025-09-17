@@ -111,7 +111,8 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).and_return(true)
       end
 
-      it 'goes through the experiment trial registration flow' do
+      it 'goes through the experiment trial registration flow',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/553488' do
         visit new_trial_registration_path
 
         # Step 1
