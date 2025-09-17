@@ -400,8 +400,16 @@ module EE
         ::Gitlab::Llm::StageCheck.available?(@subject.parent, :chat)
       end
 
+      condition(:agentic_chat_allowed_for_parent_group, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject.parent, :agentic_chat)
+      end
+
       condition(:chat_available_for_user, scope: :user) do
         Ability.allowed?(@user, :access_duo_chat)
+      end
+
+      condition(:agentic_chat_available_for_user, scope: :user) do
+        Ability.allowed?(@user, :access_duo_agentic_chat)
       end
 
       condition(:duo_features_enabled, scope: :subject) { @subject.duo_features_enabled }
@@ -1162,13 +1170,11 @@ module EE
         enable :access_duo_chat
       end
 
-      condition(:can_use_agentic_chat) do
-        can?(:access_duo_agentic_chat, subject.root_ancestor)
-      end
-
-      rule { can_use_agentic_chat & duo_features_enabled & ~amazon_q_enabled }.policy do
+      rule { can?(:read_project) & duo_features_enabled & agentic_chat_available_for_user & agentic_chat_allowed_for_parent_group }.policy do
         enable :access_duo_agentic_chat
       end
+
+      rule { amazon_q_enabled }.policy { prevent :access_duo_agentic_chat }
 
       condition(:ai_flow_triggers_enabled) do
         ::Feature.enabled?(:ai_flow_triggers, @user)
