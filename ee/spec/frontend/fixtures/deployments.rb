@@ -6,9 +6,10 @@ RSpec.describe 'Deployments (JavaScript fixtures)' do
   include ApiHelpers
   include JavaScriptFixturesHelpers
 
-  let_it_be(:admin) { create(:admin, username: 'administrator', email: 'admin@example.gitlab.com') }
   let_it_be(:group) { create(:group, path: 'deployment-group') }
+  let_it_be(:user) { create(:user, username: 'my-user', email: 'user@example.gitlab.com', maintainer_of: group) }
   let_it_be(:project) { create(:project, :repository, group: group, path: 'releases-project') }
+  let_it_be(:private_group) { create(:group, :private, path: 'private-group') }
 
   let_it_be(:environment) do
     create(:environment, project: project, external_url: 'http://example.com')
@@ -19,8 +20,12 @@ RSpec.describe 'Deployments (JavaScript fixtures)' do
     create(:protected_environment_approval_rule, group: group, protected_environment: protected_environment)
   end
 
+  let_it_be(:approval_private_group) do
+    create(:protected_environment_approval_rule, group: private_group, protected_environment: protected_environment)
+  end
+
   let_it_be(:approval_user) do
-    create(:protected_environment_approval_rule, user: admin, protected_environment: protected_environment)
+    create(:protected_environment_approval_rule, user: user, protected_environment: protected_environment)
   end
 
   let_it_be(:approval_maintainer) do
@@ -39,7 +44,7 @@ RSpec.describe 'Deployments (JavaScript fixtures)' do
   end
 
   let_it_be(:approval) do
-    create(:deployment_approval, user: admin, deployment: deployment, approval_rule: approval_group)
+    create(:deployment_approval, user: user, deployment: deployment, approval_rule: approval_group)
   end
 
   describe GraphQL::Query, type: :request do
@@ -50,7 +55,7 @@ RSpec.describe 'Deployments (JavaScript fixtures)' do
     it "graphql/#{one_deployment_query_path}.json" do
       query = get_graphql_query_as_string(one_deployment_query_path, ee: true)
 
-      post_graphql(query, current_user: admin, variables: { fullPath: project.full_path, iid: deployment.iid })
+      post_graphql(query, current_user: user, variables: { fullPath: project.full_path, iid: deployment.iid })
 
       expect_graphql_errors_to_be_empty
       expect(graphql_data_at(:project, :deployment)).to be_present
@@ -61,7 +66,7 @@ RSpec.describe 'Deployments (JavaScript fixtures)' do
     it "ee/graphql/#{deployment_details_query_path}.json" do
       query = get_graphql_query_as_string(deployment_details_query_path)
 
-      post_graphql(query, current_user: admin, variables: { fullPath: project.full_path, iid: deployment.iid })
+      post_graphql(query, current_user: user, variables: { fullPath: project.full_path, iid: deployment.iid })
 
       expect_graphql_errors_to_be_empty
       expect(graphql_data_at(:project, :deployment)).to be_present

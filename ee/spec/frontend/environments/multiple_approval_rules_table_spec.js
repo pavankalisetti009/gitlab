@@ -91,10 +91,18 @@ describe('ee/environments/components/multiple_approval_rules_table.vue', () => {
         });
       });
     });
+
+    it('should render row for private group', () => {
+      const cell = wrapper.findByTestId('private-group-rule');
+      expect(cell.text()).toBe('Private group');
+      expect(cell.attributes('title')).toBe(
+        'You do not have access to this group, but members of this group can approve this rule.',
+      );
+    });
   });
 
   describe('approvals', () => {
-    const getRuleName = (index) => rules[index].group?.name || rules[index].user.name;
+    const getRuleName = (index) => rules[index].group?.name || rules[index].user?.name;
     const firstRuleName = getRuleName(0);
     const secondRuleName = getRuleName(1);
 
@@ -141,7 +149,7 @@ describe('ee/environments/components/multiple_approval_rules_table.vue', () => {
 
     describe('when user already approved', () => {
       beforeEach(() => {
-        gon.current_username = 'administrator';
+        gon.current_username = 'my-user';
         wrapper = createWrapper();
       });
 
