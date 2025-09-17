@@ -12,6 +12,10 @@ import ProjectsList from '~/vue_shared/components/projects_list/projects_list.vu
 import { formatGraphQLGroupsAndProjects } from '~/vue_shared/components/nested_groups_projects_list/formatter';
 import { formatGraphQLGroups } from '~/vue_shared/components/groups_list/formatter';
 import { formatGraphQLProjects } from '~/vue_shared/components/projects_list/formatter';
+import SubgroupsAndProjectsEmptyState from '~/groups/components/empty_states/subgroups_and_projects_empty_state.vue';
+import SharedProjectsEmptyState from '~/groups/components/empty_states/shared_projects_empty_state.vue';
+import SharedGroupsEmptyState from '~/groups/components/empty_states/shared_groups_empty_state.vue';
+import InactiveSubgroupsAndProjectsEmptyState from '~/groups/components/empty_states/inactive_subgroups_and_projects_empty_state.vue';
 import sharedGroupsQuery from './graphql/queries/shared_groups.query.graphql';
 import subgroupsAndProjectsQuery from './graphql/queries/subgroups_and_projects.query.graphql';
 import sharedProjectsQuery from './graphql/queries/shared_projects.query.graphql';
@@ -50,6 +54,7 @@ export const SUBGROUPS_AND_PROJECTS_TAB = {
   variables: { active: true },
   text: __('Subgroups and projects'),
   value: 'subgroups_and_projects',
+  emptyStateComponent: SubgroupsAndProjectsEmptyState,
 };
 
 export const SHARED_PROJECTS_TAB = {
@@ -62,6 +67,7 @@ export const SHARED_PROJECTS_TAB = {
     listItemClass: 'gl-px-5',
     showProjectIcon: true,
   },
+  emptyStateComponent: SharedProjectsEmptyState,
   text: __('Shared projects'),
   value: 'shared_projects',
   transformVariables: transformSortToUpperCase,
@@ -78,6 +84,7 @@ export const SHARED_GROUPS_TAB = {
     listItemClass: 'gl-px-5',
     showGroupIcon: true,
   },
+  emptyStateComponent: SharedGroupsEmptyState,
   text: __('Shared groups'),
   value: 'shared_groups',
   transformVariables: transformSortToUpperCase,
@@ -88,6 +95,7 @@ export const INACTIVE_TAB = {
   variables: { active: false },
   text: __('Inactive'),
   value: 'inactive',
+  emptyStateComponent: InactiveSubgroupsAndProjectsEmptyState,
 };
 
 export const SORT_OPTION_NAME = {
