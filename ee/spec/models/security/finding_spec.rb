@@ -423,6 +423,96 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '.oldest_record_stale?' do
+    let(:partition_number) { 1 }
+    let(:mock_partition) do
+      instance_double(Gitlab::Database::Partitioning::SingleNumericListPartition, value: partition_number)
+    end
+
+    subject { described_class.oldest_record_stale?(mock_partition) }
+
+    context 'when there are no records in the partition' do
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when there are records in the partition' do
+      let!(:findings) do
+        create_list(:security_finding, 3, :with_finding_data, partition_number: partition_number)
+      end
+
+      context 'when the oldest record is stale' do
+        before do
+          described_class.oldest_record_in_partition(mock_partition)
+            .scan
+            .update!(created_at: Security::Scan.stale_after.ago - 1.day)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when the oldest record is not stale' do
+        it { is_expected.to be_falsey }
+      end
+    end
+  end
+
+  describe 'partitioning next_partition_if condition' do
+    let(:partition_number) { 1 }
+    let(:mock_partition) do
+      instance_double(
+        Gitlab::Database::Partitioning::SingleNumericListPartition,
+        value: partition_number,
+        data_size: partition_size
+      )
+    end
+
+    let!(:findings) do
+      create_list(:security_finding, 3, :with_finding_data, partition_number: partition_number)
+    end
+
+    let(:partition_size) { 50.gigabytes }
+
+    subject(:should_create_partition) do
+      described_class.partitioning_strategy.next_partition_if.call(mock_partition)
+    end
+
+    context 'when partition is full but oldest record is not stale' do
+      let(:partition_size) { 101.gigabytes }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when partition is not full but oldest record is stale' do
+      let(:partition_size) { 50.gigabytes }
+
+      before do
+        described_class.oldest_record_in_partition(mock_partition)
+          .scan
+          .update!(created_at: Security::Scan.stale_after.ago - 1.day)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when both partition is full and oldest record is stale' do
+      let(:partition_size) { 101.gigabytes }
+
+      before do
+        described_class.oldest_record_in_partition(mock_partition)
+          .scan
+          .update!(created_at: Security::Scan.stale_after.ago - 1.day)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when partition is not full and oldest record is not stale' do
+      let(:partition_size) { 50.gigabytes }
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   describe '.detach_partition?' do
     subject { described_class.detach_partition?(partition_number) }
 
