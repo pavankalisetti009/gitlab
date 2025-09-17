@@ -44481,6 +44481,9 @@ msgstr ""
 msgid "Observability|Are you sure you want to delete the observability service settings? This action cannot be undone."
 msgstr ""
 
+msgid "Observability|Are you sure you want to delete this O11y service setting?"
+msgstr ""
+
 msgid "Observability|Authentication failed"
 msgstr ""
 
@@ -44527,6 +44530,9 @@ msgid "Observability|Custom dashboards with anomaly-based alerting and intellige
 msgstr ""
 
 msgid "Observability|Danger Zone"
+msgstr ""
+
+msgid "Observability|Delete"
 msgstr ""
 
 msgid "Observability|Delete settings"
@@ -44584,6 +44590,9 @@ msgid "Observability|Experimental functionality"
 msgstr ""
 
 msgid "Observability|Failed to create O11y service settings"
+msgstr ""
+
+msgid "Observability|Failed to delete O11y service settings"
 msgstr ""
 
 msgid "Observability|Failed to delete observability service settings."
@@ -44724,10 +44733,13 @@ msgstr ""
 msgid "Observability|Observability service settings updated successfully."
 msgstr ""
 
-msgid "Observability|Observability settings for group ID %{group_id} created successfully."
+msgid "Observability|Observability settings for group %{group_name} created successfully."
 msgstr ""
 
-msgid "Observability|Observability settings for group ID %{group_id} updated successfully."
+msgid "Observability|Observability settings for group %{group_name} deleted successfully."
+msgstr ""
+
+msgid "Observability|Observability settings for group %{group_name} updated successfully."
 msgstr ""
 
 msgid "Observability|OpenTelemetry Native"
@@ -44812,6 +44824,9 @@ msgid "Observability|Try selecting a different period."
 msgstr ""
 
 msgid "Observability|Unified Platform"
+msgstr ""
+
+msgid "Observability|Unknown group"
 msgstr ""
 
 msgid "Observability|Up to one business day"
