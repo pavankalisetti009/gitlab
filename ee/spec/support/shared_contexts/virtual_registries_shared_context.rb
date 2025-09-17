@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-RSpec.shared_context 'for container virtual registry api setup' do
+RSpec.shared_context 'for virtual registry api setup' do
   include WorkhorseHelpers
   include HttpBasicAuthHelpers
 
   let_it_be(:group) { create(:group) }
-  let_it_be_with_reload(:registry) { create(:virtual_registries_container_registry, group: group) }
-  let_it_be(:upstream) { create(:virtual_registries_container_upstream, registries: [registry]) }
-
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be(:job) { create(:ci_build, :running, user: user, project: project) }
@@ -25,7 +22,6 @@ RSpec.shared_context 'for container virtual registry api setup' do
 
   before do
     stub_config(dependency_proxy: { enabled: true }) # not enabled by default
-    stub_licensed_features(container_virtual_registry: true)
   end
 
   def token_header(token, sent_as: :header)
@@ -73,5 +69,30 @@ RSpec.shared_context 'for container virtual registry api setup' do
     when :job_token
       job_basic_auth_header(job)
     end
+  end
+end
+
+RSpec.shared_context 'for maven virtual registry api setup' do
+  include_context 'for virtual registry api setup'
+
+  let_it_be_with_reload(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
+  let_it_be_with_reload(:cache_entry) do
+    create(:virtual_registries_packages_maven_cache_entry, :with_download_metrics, upstream: upstream)
+  end
+
+  before do
+    stub_licensed_features(packages_virtual_registry: true)
+  end
+end
+
+RSpec.shared_context 'for container virtual registry api setup' do
+  include_context 'for virtual registry api setup'
+
+  let_it_be_with_reload(:registry) { create(:virtual_registries_container_registry, group: group) }
+  let_it_be(:upstream) { create(:virtual_registries_container_upstream, registries: [registry]) }
+
+  before do
+    stub_licensed_features(container_virtual_registry: true)
   end
 end
