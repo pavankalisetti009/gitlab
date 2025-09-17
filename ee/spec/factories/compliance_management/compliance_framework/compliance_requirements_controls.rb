@@ -6,6 +6,7 @@ FactoryBot.define do
     compliance_requirement
     namespace_id { compliance_requirement.namespace_id }
     control_type { 'internal' }
+    ping_enabled { true }
 
     # Default to scanner_sast_running
     name { 'scanner_sast_running' }
@@ -61,6 +62,11 @@ FactoryBot.define do
       external_url { FFaker::Internet.unique.http_url }
       control_type { 'external' }
       secret_token { 'token' }
+      ping_enabled { true }
+    end
+
+    trait :ping_disabled do
+      ping_enabled { false }
     end
   end
 end

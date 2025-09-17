@@ -17,7 +17,8 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
   let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
   let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
   let_it_be(:external_control) do
-    create(:compliance_requirements_control, :external, compliance_requirement: requirement)
+    create(:compliance_requirements_control, :external, compliance_requirement: requirement,
+      external_control_name: 'main_external_control')
   end
 
   let_it_be(:project) { create(:project) }
@@ -219,6 +220,104 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
       end
 
       it_behaves_like 'refreshes the requirement status'
+    end
+
+    context 'with ping_enabled filtering for external controls' do
+      let_it_be(:ping_enabled_external_control) do
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement,
+          ping_enabled: true, external_control_name: 'ping_enabled_external_control')
+      end
+
+      let_it_be(:ping_disabled_external_control) do
+        create(:compliance_requirements_control, :external, :ping_disabled,
+          compliance_requirement: requirement, external_control_name: 'ping_disabled_external_control')
+      end
+
+      let(:ping_enabled_service) do
+        instance_double(
+          ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
+        )
+      end
+
+      before do
+        allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new)
+                .with(project, ping_enabled_external_control)
+                .and_return(ping_enabled_service)
+        allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new)
+                .with(project2, ping_enabled_external_control)
+                .and_return(ping_enabled_service)
+        allow(ping_enabled_service).to receive(:execute).and_return(ServiceResponse.success)
+      end
+
+      it 'only triggers external control service for ping-enabled controls' do
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project, ping_enabled_external_control).once
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project2, ping_enabled_external_control).once
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .not_to receive(:new).with(project, ping_disabled_external_control)
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .not_to receive(:new).with(project2, ping_disabled_external_control)
+
+        expect(ping_enabled_service).to receive(:execute).twice
+
+        perform
+      end
+
+      it 'does not call external service for ping-disabled controls' do
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .not_to receive(:new).with(anything, ping_disabled_external_control)
+
+        perform
+      end
+    end
+
+    context 'with mixed ping-enabled and ping-disabled external controls' do
+      let_it_be(:requirement2) { create(:compliance_requirement, framework: framework) }
+      let_it_be(:ping_enabled_control) do
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement2,
+          ping_enabled: true, external_control_name: 'mixed_ping_enabled_control')
+      end
+
+      let_it_be(:ping_disabled_control) do
+        create(:compliance_requirements_control, :external, :ping_disabled,
+          compliance_requirement: requirement2, external_control_name: 'mixed_ping_disabled_control')
+      end
+
+      let(:ping_enabled_service) do
+        instance_double(
+          ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
+        )
+      end
+
+      before do
+        allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new)
+                .with(project, ping_enabled_control)
+                .and_return(ping_enabled_service)
+        allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new)
+                .with(project2, ping_enabled_control)
+                .and_return(ping_enabled_service)
+        allow(ping_enabled_service).to receive(:execute).and_return(ServiceResponse.success)
+      end
+
+      it 'processes only ping-enabled external controls and skips ping-disabled ones' do
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project, ping_enabled_control).once
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project2, ping_enabled_control).once
+        expect(ping_enabled_service).to receive(:execute).twice
+
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .not_to receive(:new).with(project, ping_disabled_control)
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .not_to receive(:new).with(project2, ping_disabled_control)
+
+        perform
+      end
     end
 
     context 'with invalid parameters' do

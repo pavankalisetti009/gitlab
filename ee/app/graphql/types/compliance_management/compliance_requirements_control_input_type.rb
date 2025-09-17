@@ -34,6 +34,11 @@ module Types
         GraphQL::Types::String,
         required: false,
         description: 'Secret token for an external control.'
+
+      argument :ping_enabled,
+        GraphQL::Types::Boolean,
+        required: false,
+        description: 'Whether ping is enabled for external controls.'
     end
   end
 end
