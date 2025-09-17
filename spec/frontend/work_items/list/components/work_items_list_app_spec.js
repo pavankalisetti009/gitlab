@@ -324,6 +324,7 @@ describeSkipVue3(skipReason, () => {
           state: STATUS_OPEN,
           firstPageSize: 20,
           types: ['ISSUE', 'INCIDENT', 'TASK'],
+          excludeGroupWorkItems: false,
         }),
       );
 
@@ -356,6 +357,32 @@ describeSkipVue3(skipReason, () => {
 
       expect(findSubChildIndicator(findChildItem1()).exists()).toBe(true);
       expect(findSubChildIndicator(findChildItem2()).exists()).toBe(false);
+    });
+
+    describe('when isGroupIssuesList is true', () => {
+      it('passes excludeGroupWorkItems: true to GraphQL queries', async () => {
+        mountComponent({ provide: { isGroupIssuesList: true } });
+
+        await waitForPromises();
+
+        expect(defaultQueryHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            excludeGroupWorkItems: true,
+          }),
+        );
+
+        expect(defaultSlimQueryHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            excludeGroupWorkItems: true,
+          }),
+        );
+
+        expect(defaultCountsQueryHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            excludeGroupWorkItems: true,
+          }),
+        );
+      });
     });
   });
 
