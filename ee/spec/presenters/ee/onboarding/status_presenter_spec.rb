@@ -312,6 +312,44 @@ RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
     end
   end
 
+  describe '#trial?' do
+    let(:params) { { trial: true } }
+    let(:current_user) { build(:user) }
+
+    subject { described_class.new(params, nil, current_user).trial? }
+
+    context 'when trial is boolean true' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when trial is string true' do
+      let(:params) { { trial: 'true' } }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when trial is string false' do
+      let(:params) { { trial: 'false' } }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when trial not present' do
+      let(:params) { {} }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when trial not present looks at onboarding_status value' do
+      let(:params) { {} }
+      let(:current_user) do
+        build(:user, onboarding_status_registration_type: "trial", onboarding_status_initial_registration_type: "trial")
+      end
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '#user_return_to' do
     let(:user_return_to) { nil }
 

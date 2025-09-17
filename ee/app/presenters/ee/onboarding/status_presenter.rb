@@ -80,6 +80,11 @@ module EE
         ::Gitlab::Utils.to_boolean(params[:onboarding_status_email_opt_in], default: true)
       end
 
+      # This method is only required during lightweight_trial_registration_redesign and should be removed afterwards
+      def trial?
+        ::Gitlab::Utils.to_boolean(params[:trial], default: false) || new_registration_design?
+      end
+
       def convert_to_automatic_trial?
         return false unless registration_type.convert_to_automatic_trial?
 
