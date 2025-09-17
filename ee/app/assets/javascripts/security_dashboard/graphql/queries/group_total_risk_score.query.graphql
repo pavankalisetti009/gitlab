@@ -8,6 +8,11 @@ query groupTotalRiskScore(
     id
     securityMetrics(projectId: $projectId) {
       riskScore {
+        factors {
+          vulnerabilitiesAverageScore {
+            factor
+          }
+        }
         score @include(if: $includeByDefault)
         ... @include(if: $includeByProject) {
           byProject {
