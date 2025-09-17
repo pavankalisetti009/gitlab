@@ -21,14 +21,14 @@
             "children": [
               {
                 "_context": {
-                  "name": "public_branch"
+                  "name": "public_and_internal_branch"
                 },
                 "and": {
                   "children": [
                     {
                       "meta": {
                         "key": "visibility_level",
-                        "value": "20"
+                        "value": "20|10"
                       }
                     },
                     {
@@ -42,77 +42,14 @@
               },
               {
                 "_context": {
-                  "name": "internal_branch"
+                  "name": "public_and_internal_authorized_branch"
                 },
                 "and": {
                   "children": [
                     {
                       "meta": {
                         "key": "visibility_level",
-                        "value": "10"
-                      }
-                    },
-                    {
-                      "meta": {
-                        "key": "repository_access_level",
-                        "value": "20"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "_context": {
-                  "name": "public_authorized_branch"
-                },
-                "and": {
-                  "children": [
-                    {
-                      "meta": {
-                        "key": "visibility_level",
-                        "value": "20"
-                      }
-                    },
-                    {
-                      "meta": {
-                        "key": "repository_access_level",
-                        "value": "10"
-                      }
-                    },
-                    {
-                      "_context": {
-                        "name": "user_authorizations"
-                      },
-                      "or": {
-                        "children": [
-                          {
-                            "meta": {
-                              "key": "traversal_ids",
-                              "value": "^2270-"
-                            }
-                          },
-                          {
-                            "meta": {
-                              "key": "project_id",
-                              "value": "^1$"
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "_context": {
-                  "name": "internal_authorized_branch"
-                },
-                "and": {
-                  "children": [
-                    {
-                      "meta": {
-                        "key": "visibility_level",
-                        "value": "10"
+                        "value": "20|10"
                       }
                     },
                     {
@@ -152,21 +89,9 @@
                 "and": {
                   "children": [
                     {
-                      "or": {
-                        "children": [
-                          {
-                            "meta": {
-                              "key": "repository_access_level",
-                              "value": "10"
-                            }
-                          },
-                          {
-                            "meta": {
-                              "key": "repository_access_level",
-                              "value": "20"
-                            }
-                          }
-                        ]
+                      "meta": {
+                        "key": "repository_access_level",
+                        "value": "20|10"
                       }
                     },
                     {

@@ -18,7 +18,7 @@ module Search
         return [admin_branch] if admin_access?
         return [public_branch] if anonymous_user?
 
-        access_branches = base_branches
+        access_branches = [public_and_internal_branch]
         access_branches.concat(public_and_internal_authorized_branches)
         access_branches.concat(private_authorized_branches)
 
@@ -35,10 +35,6 @@ module Search
 
       def anonymous_user?
         current_user.blank?
-      end
-
-      def base_branches
-        [public_branch, internal_branch]
       end
 
       def group_id
@@ -89,10 +85,7 @@ module Search
         filters = build_public_internal_auth_filters
         return [] if filters.empty?
 
-        [
-          public_with_access_branch(filters),
-          internal_with_access_branch(filters)
-        ]
+        [public_and_internal_with_access_branch(filters)]
       end
 
       def build_public_internal_auth_filters
@@ -167,8 +160,8 @@ module Search
       end
 
       def admin_branch
-        Filters.or_filters(
-          *private_access_filters,
+        Filters.by_meta(
+          key: 'repository_access_level', value: "#{REPO_ENABLED}|#{REPO_PRIVATE}",
           context: { name: 'admin_branch' }
         )
       end
@@ -181,40 +174,26 @@ module Search
         )
       end
 
-      def public_with_access_branch(filters)
+      def public_and_internal_with_access_branch(filters)
         Filters.and_filters(
-          Filters.by_meta(key: 'visibility_level', value: VIS_PUBLIC),
+          Filters.by_meta(key: 'visibility_level', value: "#{VIS_PUBLIC}|#{VIS_INTERNAL}"),
           Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
           Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
-          context: { name: 'public_authorized_branch' }
+          context: { name: 'public_and_internal_authorized_branch' }
         )
       end
 
-      def internal_branch
+      def public_and_internal_branch
         Filters.and_filters(
-          Filters.by_meta(key: 'visibility_level', value: VIS_INTERNAL),
+          Filters.by_meta(key: 'visibility_level', value: "#{VIS_PUBLIC}|#{VIS_INTERNAL}"),
           Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED),
-          context: { name: 'internal_branch' }
+          context: { name: 'public_and_internal_branch' }
         )
-      end
-
-      def internal_with_access_branch(filters)
-        Filters.and_filters(
-          Filters.by_meta(key: 'visibility_level', value: VIS_INTERNAL),
-          Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
-          Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
-          context: { name: 'internal_authorized_branch' }
-        )
-      end
-
-      def private_access_filters
-        [Filters.by_meta(key: 'repository_access_level', value: REPO_PRIVATE),
-          Filters.by_meta(key: 'repository_access_level', value: REPO_ENABLED)]
       end
 
       def private_branch(filters)
         Filters.and_filters(
-          Filters.or_filters(*private_access_filters),
+          Filters.by_meta(key: 'repository_access_level', value: "#{REPO_ENABLED}|#{REPO_PRIVATE}"),
           Filters.or_filters(*filters, context: { name: 'user_authorizations' }),
           context: { name: 'private_authorized_branch' }
         )
