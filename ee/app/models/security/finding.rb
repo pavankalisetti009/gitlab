@@ -27,7 +27,7 @@ module Security
 
     partitioned_by :partition_number,
       strategy: :sliding_list,
-      next_partition_if: ->(partition) { partition_full?(partition) },
+      next_partition_if: ->(partition) { partition_full?(partition) || oldest_record_stale?(partition) },
       detach_partition_if: ->(partition) { detach_partition?(partition.value) }
 
     belongs_to :scan, inverse_of: :findings, optional: false
@@ -187,6 +187,20 @@ module Security
 
       def partition_full?(partition)
         partition.data_size >= MAX_PARTITION_SIZE
+      end
+
+      def oldest_record_stale?(partition)
+        oldest_record_in_partition = oldest_record_in_partition(partition)
+
+        oldest_record_in_partition.present? &&
+          oldest_record_in_partition.scan.created_at < Security::Scan.stale_after.ago
+      end
+
+      def oldest_record_in_partition(partition)
+        by_partition_number(partition.value)
+          .with_scan
+          .order(:id)
+          .take
       end
 
       def detach_partition?(partition_number)
