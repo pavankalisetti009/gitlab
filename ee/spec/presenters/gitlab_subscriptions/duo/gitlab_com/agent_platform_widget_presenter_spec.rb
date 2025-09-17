@@ -7,7 +7,6 @@ RSpec.describe GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter
     let(:user) { build_stubbed(:user) }
     let(:namespace) { build_stubbed(:group) }
     let(:feature_enabled?) { true }
-    let(:trial?) { false }
     let(:duo_core_features_available?) { true }
     let(:agent_fully_enabled?) { true }
     let(:enabled_without_beta_features?) { false }
